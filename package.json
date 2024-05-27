@@ -1,8 +1,8 @@
 {
   "name": "k6-studio",
   "productName": "k6-studio",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "version": "0.0.0",
+  "description": "k6 studio",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -32,10 +32,10 @@
   },
   "keywords": [],
   "author": {
-    "name": "Llandy Riveron Del Risco",
-    "email": "llandy3d@gmail.com"
+    "name": "Grafana Labs"
   },
-  "license": "MIT",
+  "license": "UNLICENSED",
+  "private": true,
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1"
   }
