@@ -18,10 +18,12 @@ export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     proxyScript = path.join(app.getAppPath(), 'resources', 'json_output.py');
     proxyPath = path.join(app.getAppPath(), 'resources', getPlatform(), getArch(), 'mitmdump');
+    certificatesPath = path.join(app.getAppPath(), 'resources', 'certificates');
   } else {
     proxyScript = path.join(process.resourcesPath, 'json_output.py');
     // only the architecture directory will be in resources on the packaged app
     proxyPath = path.join(process.resourcesPath, getArch(), 'mitmdump');
+    certificatesPath = path.join(process.resourcesPath, 'certificates');
   }
 
   // add .exe on windows
