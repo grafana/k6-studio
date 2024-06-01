@@ -90,3 +90,6 @@ typings/
 
 # Electron-Forge
 out/
+
+# proxy certificates
+resources/certificates
