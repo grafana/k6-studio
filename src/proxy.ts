@@ -1,0 +1,35 @@
+import { app } from 'electron';
+import path from 'path';
+import { spawn } from 'node:child_process';
+import { getPlatform, getArch } from './utils';
+
+export const launchProxy = () => {
+  let proxyScript: string;
+  let proxyPath: string;
+
+  // if we are in dev server we take resources directly, otherwise look in the app resources folder.
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    proxyScript = path.join(app.getAppPath(), 'resources', 'json_output.py');
+    proxyPath = path.join(app.getAppPath(), 'resources', getPlatform(), getArch(), 'mitmdump');
+  } else {
+    proxyScript = path.join(process.resourcesPath, 'json_output.py');
+    // only the architecture directory will be in resources on the packaged app
+    proxyPath = path.join(process.resourcesPath, getArch(), 'mitmdump');
+  }
+
+  const proxy = spawn(proxyPath, ['-q', '-s', proxyScript]);
+
+  proxy.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
+
+  proxy.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`);
+  });
+
+  proxy.on('close', (code) => {
+    console.log(`proxy process exited with code ${code}`);
+  });
+
+  return proxy
+}
