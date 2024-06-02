@@ -1,11 +1,11 @@
-import { app } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { spawn } from 'node:child_process';
 import { getPlatform, getArch } from './utils';
 import forge from 'node-forge';
 import { readFile } from 'fs/promises';
 
-export const launchProxy = () => {
+export const launchProxy = (browserWindow: BrowserWindow) => {
   let proxyScript: string;
   let proxyPath: string;
   const certificatesPath = getCertificatesPath();
@@ -24,6 +24,10 @@ export const launchProxy = () => {
 
   proxy.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
+
+    if (data.toString() === 'Proxy Started~\n') {
+      browserWindow.webContents.send('proxy:started');
+    }
   });
 
   proxy.stderr.on('data', (data) => {

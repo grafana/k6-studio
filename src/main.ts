@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { launchProxy, getCertificateSPKI } from './proxy';
 
@@ -60,8 +60,9 @@ app.on('activate', () => {
   }
 });
 
-const proxy = launchProxy();
-getCertificateSPKI();
-setTimeout(() => {
-  proxy.kill();
-}, 60000);
+ipcMain.on('proxy:start', async (event) => {
+  console.info('proxy:start event received');
+  const browserWindow = BrowserWindow.fromWebContents(event.sender);
+  const proxy = launchProxy(browserWindow);
+});
+

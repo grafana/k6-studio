@@ -29,3 +29,12 @@
 import './index.css';
 
 console.log('👋 This message is being logged by "renderer.ts", included via Vite');
+
+window.studio.proxy.onProxyStarted(() => {
+  console.log('proxy launched');
+});
+
+document.getElementById('launch_proxy').addEventListener('click', async () => {
+  window.studio.proxy.launchProxy();
+  console.log('launch proxy event sent');
+});
