@@ -1,11 +1,13 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import { spawn } from 'node:child_process';
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { getPlatform, getArch } from './utils';
 import forge from 'node-forge';
 import { readFile } from 'fs/promises';
 
-export const launchProxy = (browserWindow: BrowserWindow) => {
+export type ProxyProcess = ChildProcessWithoutNullStreams;
+
+export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
   let proxyScript: string;
   let proxyPath: string;
   const certificatesPath = getCertificatesPath();

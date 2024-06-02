@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { launchProxy, getCertificateSPKI } from './proxy';
+import { launchProxy, type ProxyProcess } from './proxy';
+
+let currentProxyProcess: ProxyProcess;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -63,6 +65,13 @@ app.on('activate', () => {
 ipcMain.on('proxy:start', async (event) => {
   console.info('proxy:start event received');
   const browserWindow = BrowserWindow.fromWebContents(event.sender);
-  const proxy = launchProxy(browserWindow);
+  currentProxyProcess = launchProxy(browserWindow);
 });
 
+ipcMain.on('proxy:stop', async () => {
+  console.info('proxy:stop event received');
+  if (currentProxyProcess) {
+    currentProxyProcess.kill();
+  }
+  currentProxyProcess = null;
+});

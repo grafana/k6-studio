@@ -34,7 +34,12 @@ window.studio.proxy.onProxyStarted(() => {
   console.log('proxy launched');
 });
 
-document.getElementById('launch_proxy').addEventListener('click', async () => {
+document.getElementById('launch_proxy').addEventListener('click', () => {
   window.studio.proxy.launchProxy();
   console.log('launch proxy event sent');
+});
+
+document.getElementById('stop_proxy').addEventListener('click', () => {
+  window.studio.proxy.stopProxy();
+  console.log('stop proxy event sent');
 });

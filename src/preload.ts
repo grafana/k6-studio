@@ -12,6 +12,9 @@ const proxy = {
       callback();
     });
   },
+  stopProxy: () => {
+    ipcRenderer.send('proxy:stop');
+  },
 } as const;
 
 const studio = {
