@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import json
 import mitmproxy
@@ -73,13 +74,8 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
             content_length = None
             content_hash = None
 
-        # let's cleanup the content
-        content = ""
-        content_type = flow.request.headers.get("content-type")
-        if content_type and (content_type.startswith("image") or content_type.startswith("video") or content_type.startswith("audio") or content_type.startswith("message/ohttp-") or content_type.startswith("application/x-protobuf") or content_type.startswith("font/")):
-            content = "<redacted content>"
-        elif flow.request.content:
-            content = flow.request.content.decode()
+        # we base64 encode content and let the client deal with it depending on mimetype
+        content = base64.b64encode(flow.request.content).decode() if flow.request.content else None
 
         f["request"] = {
             "method": flow.request.method,
@@ -103,13 +99,9 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
             else:
                 content_length = None
                 content_hash = None
-            # decode the response and ignore images
-            flow.response.decode()
-            content_type = flow.response.headers.get("content-type")
-            if content_type and (content_type.startswith("image") or content_type.startswith("video") or content_type.startswith("audio") or content_type.startswith("message/ohttp-") or content_type.startswith("application/x-protobuf") or content_type.startswith('font/')):
-                content = "<redacted content>"
-            else:
-                content = flow.response.content.decode()
+
+            # we base64 encode content and let the client deal with it depending on mimetype
+            content = base64.b64encode(flow.response.content).decode() if flow.response.content else None
 
             f["response"] = {
                 "http_version": flow.response.http_version,
@@ -120,7 +112,7 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
                 "contentHash": content_hash,
                 "timestamp_start": flow.response.timestamp_start,
                 "timestamp_end": flow.response.timestamp_end,
-                "content": str(content),
+                "content": content,
             }
             if flow.response.data.trailers:
                 f["response"]["trailers"] = tuple(
