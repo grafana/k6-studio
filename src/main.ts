@@ -1,8 +1,11 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { launchProxy, type ProxyProcess } from './proxy';
+import { launchBrowser } from './browser';
+import { Process } from '@puppeteer/browsers';
 
 let currentProxyProcess: ProxyProcess;
+let currentBrowserProcess: Process;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -62,6 +65,7 @@ app.on('activate', () => {
   }
 });
 
+// Proxy
 ipcMain.on('proxy:start', async (event) => {
   console.info('proxy:start event received');
   const browserWindow = BrowserWindow.fromWebContents(event.sender);
@@ -72,6 +76,23 @@ ipcMain.on('proxy:stop', async () => {
   console.info('proxy:stop event received');
   if (currentProxyProcess) {
     currentProxyProcess.kill();
+    currentProxyProcess = null;
   }
-  currentProxyProcess = null;
+});
+
+// Browser
+ipcMain.on('browser:start', async (event) => {
+  console.info('browser:start event received');
+  const browserWindow = BrowserWindow.fromWebContents(event.sender);
+  currentBrowserProcess = await launchBrowser(browserWindow);
+  browserWindow.webContents.send('browser:started')
+  console.info('browser:started event sent');
+});
+
+ipcMain.on('browser:stop', async () => {
+  console.info('browser:stop event received');
+  if (currentBrowserProcess) {
+    currentBrowserProcess.close();
+    currentBrowserProcess = null;
+  }
 });

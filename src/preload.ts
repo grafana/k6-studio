@@ -23,8 +23,23 @@ const proxy = {
   },
 } as const;
 
+const browser = {
+  launchBrowser: () => {
+    ipcRenderer.send('browser:start');
+  },
+  onBrowserStarted: (callback: () => void) => {
+    ipcRenderer.on('browser:started', () => {
+      callback();
+    });
+  },
+  stopBrowser: () => {
+    ipcRenderer.send('browser:stop');
+  },
+} as const;
+
 const studio = {
   proxy: proxy,
+  browser: browser,
 } as const;
 
 contextBridge.exposeInMainWorld('studio', studio);
