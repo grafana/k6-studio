@@ -38,6 +38,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@puppeteer/browsers": "^2.2.3",
     "electron-squirrel-startup": "^1.0.1",
     "node-forge": "^1.3.1"
   }
