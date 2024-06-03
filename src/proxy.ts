@@ -24,6 +24,9 @@ export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
     proxyPath = path.join(process.resourcesPath, getArch(), 'mitmdump');
   }
 
+  // add .exe on windows
+  proxyPath += getPlatform() === 'win' ? '.exe' : ''
+
   const proxy = spawn(proxyPath, ['-q', '-s', proxyScript, '--set', `confdir=${certificatesPath}`]);
 
   let proxyDataBuffer: Buffer;
