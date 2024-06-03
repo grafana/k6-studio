@@ -27,6 +27,7 @@
  */
 
 import './index.css';
+import { ProxyData } from './lib/types';
 
 console.log('👋 This message is being logged by "renderer.ts", included via Vite');
 
@@ -42,4 +43,13 @@ document.getElementById('launch_proxy').addEventListener('click', () => {
 document.getElementById('stop_proxy').addEventListener('click', () => {
   window.studio.proxy.stopProxy();
   console.log('stop proxy event sent');
+});
+
+window.studio.proxy.onProxyData((data: ProxyData) => {
+  console.log(data);
+
+  const list = document.getElementById('requests_list');
+  const listElement = document.createElement('li');
+  listElement.innerHTML = `<pre>method: ${data.request.method} host: ${data.request.host} path: ${data.request.path}</pre>`;
+  list.appendChild(listElement);
 });

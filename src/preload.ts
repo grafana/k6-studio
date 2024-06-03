@@ -2,6 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { ipcRenderer, contextBridge } from "electron";
+import { ProxyData } from "./lib/types";
 
 const proxy = {
   launchProxy: () => {
@@ -14,6 +15,11 @@ const proxy = {
   },
   stopProxy: () => {
     ipcRenderer.send('proxy:stop');
+  },
+  onProxyData: (callback: (data: ProxyData) => void) => {
+    ipcRenderer.on('proxy:data', (_, data) => {
+      callback(data);
+    });
   },
 } as const;
 

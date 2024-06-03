@@ -4,6 +4,8 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
 import { getPlatform, getArch } from './utils';
 import forge from 'node-forge';
 import { readFile } from 'fs/promises';
+import { ProxyData } from './lib/types';
+import { Buffer } from 'node:buffer';
 
 export type ProxyProcess = ChildProcessWithoutNullStreams;
 
@@ -24,11 +26,31 @@ export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
 
   const proxy = spawn(proxyPath, ['-q', '-s', proxyScript, '--set', `confdir=${certificatesPath}`]);
 
+  let proxyDataBuffer: Buffer;
+
   proxy.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
 
     if (data.toString() === 'Proxy Started~\n') {
       browserWindow.webContents.send('proxy:started');
+      return;
+    }
+
+    // we buffer data since messages could be coming by multiple stdout data events
+    if (proxyDataBuffer) {
+      proxyDataBuffer = Buffer.concat([proxyDataBuffer, data]);
+    } else {
+      proxyDataBuffer = data;
+    }
+
+    // try to parse the json and if it fails we just wait for more data
+    // when the buffer is used we also clean it up in here.
+    try {
+      const proxyData: ProxyData = JSON.parse(proxyDataBuffer.toString());
+      browserWindow.webContents.send('proxy:data', proxyData);
+      proxyDataBuffer = null;
+    } catch (error) {
+      return;
     }
   });
 
