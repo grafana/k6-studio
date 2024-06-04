@@ -1,0 +1,10 @@
+{
+  "endOfLine": "auto",
+  "trailingComma": "es5",
+  "jsxSingleQuote": false,
+  "singleQuote": true,
+  "useTabs": false,
+  "tabWidth": 2,
+  "semi": false,
+  "printWidth": 80
+}

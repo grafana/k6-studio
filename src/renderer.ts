@@ -26,48 +26,50 @@
  * ```
  */
 
-import './index.css';
-import { ProxyData } from './lib/types';
+import './index.css'
+import { ProxyData } from './lib/types'
 
-console.log('👋 This message is being logged by "renderer.ts", included via Vite');
+console.log(
+  '👋 This message is being logged by "renderer.ts", included via Vite'
+)
 
 // Proxy
 
 window.studio.proxy.onProxyStarted(() => {
-  console.log('proxy launched');
-});
+  console.log('proxy launched')
+})
 
 document.getElementById('launch_proxy').addEventListener('click', () => {
-  window.studio.proxy.launchProxy();
-  console.log('launch proxy event sent');
-});
+  window.studio.proxy.launchProxy()
+  console.log('launch proxy event sent')
+})
 
 document.getElementById('stop_proxy').addEventListener('click', () => {
-  window.studio.proxy.stopProxy();
-  console.log('stop proxy event sent');
-});
+  window.studio.proxy.stopProxy()
+  console.log('stop proxy event sent')
+})
 
 window.studio.proxy.onProxyData((data: ProxyData) => {
-  console.log(data);
+  console.log(data)
 
-  const list = document.getElementById('requests_list');
-  const listElement = document.createElement('li');
-  listElement.innerHTML = `<pre>method: ${data.request.method} host: ${data.request.host} path: ${data.request.path}</pre>`;
-  list.appendChild(listElement);
-});
+  const list = document.getElementById('requests_list')
+  const listElement = document.createElement('li')
+  listElement.innerHTML = `<pre>method: ${data.request.method} host: ${data.request.host} path: ${data.request.path}</pre>`
+  list.appendChild(listElement)
+})
 
 // Browser
 
 window.studio.browser.onBrowserStarted(() => {
-  console.log('browser launched');
-});
+  console.log('browser launched')
+})
 
 document.getElementById('launch_browser').addEventListener('click', () => {
-  window.studio.browser.launchBrowser();
-  console.log('launch browser event sent');
-});
+  window.studio.browser.launchBrowser()
+  console.log('launch browser event sent')
+})
 
 document.getElementById('stop_browser').addEventListener('click', () => {
-  window.studio.browser.stopBrowser();
-  console.log('stop browser event sent');
-});
+  window.studio.browser.stopBrowser()
+  console.log('stop browser event sent')
+})

@@ -1,7 +1,7 @@
-import { platform, arch } from "os";
+import { platform, arch } from 'os'
 
-type Platform = 'linux' | 'mac' | 'win';
-type Arch = 'arm64' | 'x86_64';
+type Platform = 'linux' | 'mac' | 'win'
+type Arch = 'arm64' | 'x86_64'
 
 export function getPlatform(): Platform {
   switch (platform()) {
@@ -10,14 +10,14 @@ export function getPlatform(): Platform {
     case 'linux':
     case 'openbsd':
     case 'android':
-      return 'linux';
+      return 'linux'
     case 'darwin':
     case 'sunos':
-      return 'mac';
+      return 'mac'
     case 'win32':
-      return 'win';
+      return 'win'
     default:
-      throw new Error('unsupported platform');
+      throw new Error('unsupported platform')
   }
 }
 
@@ -25,13 +25,12 @@ export function getPlatform(): Platform {
 // be wrong for our use case since we want to fish binaries for specific architectures we are building for.
 // TODO: validate behaviour
 export function getArch(): Arch {
-  switch(arch()) {
+  switch (arch()) {
     case 'arm64':
-      return 'arm64';
+      return 'arm64'
     case 'x64':
-      return 'x86_64';
+      return 'x86_64'
     default:
       throw new Error('unsupported arch')
   }
-
 }
