@@ -6,7 +6,7 @@ export interface Request {
   method: string,
   path: string,
   content: string,
-  timestamp_start: string,
+  timestampStart: string,
   id?: string,
   response?: Response
 }
@@ -14,10 +14,10 @@ export interface Request {
 export interface Response {
   headers: Array<Array<string>>;
   reason: string,
-  status_code: number,
+  statusCode: number,
   content: string,
   path: string,
-  timestamp_start: string,
+  timestampStart: string,
 }
 
 export interface ProxyData {
