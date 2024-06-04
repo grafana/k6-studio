@@ -1,15 +1,15 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import path from 'path';
-import { launchProxy, type ProxyProcess } from './proxy';
-import { launchBrowser } from './browser';
-import { Process } from '@puppeteer/browsers';
+import { app, BrowserWindow, ipcMain } from 'electron'
+import path from 'path'
+import { launchProxy, type ProxyProcess } from './proxy'
+import { launchBrowser } from './browser'
+import { Process } from '@puppeteer/browsers'
 
-let currentProxyProcess: ProxyProcess;
-let currentBrowserProcess: Process;
+let currentProxyProcess: ProxyProcess
+let currentBrowserProcess: Process
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
-  app.quit();
+  app.quit()
 }
 
 const createWindow = () => {
@@ -21,31 +21,33 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
-  });
+  })
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
-    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    mainWindow.loadFile(
+      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
+    )
   }
 
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
   mainWindow.once('ready-to-show', () => {
-      mainWindow.show();
-      mainWindow.focus();
-  });
+    mainWindow.show()
+    mainWindow.focus()
+  })
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools({ mode: "detach" });
-};
+  mainWindow.webContents.openDevTools({ mode: 'detach' })
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 // https://github.com/electron/electron/pull/21972
 app.whenReady().then(() => {
-  createWindow();
+  createWindow()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -53,46 +55,46 @@ app.whenReady().then(() => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit();
+    app.quit()
   }
-});
+})
 
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    createWindow()
   }
-});
+})
 
 // Proxy
 ipcMain.on('proxy:start', async (event) => {
-  console.info('proxy:start event received');
-  const browserWindow = BrowserWindow.fromWebContents(event.sender);
-  currentProxyProcess = launchProxy(browserWindow);
-});
+  console.info('proxy:start event received')
+  const browserWindow = BrowserWindow.fromWebContents(event.sender)
+  currentProxyProcess = launchProxy(browserWindow)
+})
 
 ipcMain.on('proxy:stop', async () => {
-  console.info('proxy:stop event received');
+  console.info('proxy:stop event received')
   if (currentProxyProcess) {
-    currentProxyProcess.kill();
-    currentProxyProcess = null;
+    currentProxyProcess.kill()
+    currentProxyProcess = null
   }
-});
+})
 
 // Browser
 ipcMain.on('browser:start', async (event) => {
-  console.info('browser:start event received');
-  const browserWindow = BrowserWindow.fromWebContents(event.sender);
-  currentBrowserProcess = await launchBrowser(browserWindow);
+  console.info('browser:start event received')
+  const browserWindow = BrowserWindow.fromWebContents(event.sender)
+  currentBrowserProcess = await launchBrowser(browserWindow)
   browserWindow.webContents.send('browser:started')
-  console.info('browser:started event sent');
-});
+  console.info('browser:started event sent')
+})
 
 ipcMain.on('browser:stop', async () => {
-  console.info('browser:stop event received');
+  console.info('browser:stop event received')
   if (currentBrowserProcess) {
-    currentBrowserProcess.close();
-    currentBrowserProcess = null;
+    currentBrowserProcess.close()
+    currentBrowserProcess = null
   }
-});
+})

@@ -1,26 +1,34 @@
-import { computeSystemExecutablePath, Browser, ChromeReleaseChannel, launch } from '@puppeteer/browsers';
-import { getCertificateSPKI } from './proxy';
-import { mkdtemp } from 'fs/promises';
-import path from 'path';
-import os from 'os';
+import {
+  computeSystemExecutablePath,
+  Browser,
+  ChromeReleaseChannel,
+  launch,
+} from '@puppeteer/browsers'
+import { getCertificateSPKI } from './proxy'
+import { mkdtemp } from 'fs/promises'
+import path from 'path'
+import os from 'os'
 
 const createUserDataDir = async () => {
-    return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'));
-};
+  return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
+}
 
 export const launchBrowser = async () => {
-  const path = computeSystemExecutablePath({browser: Browser.CHROME, channel: ChromeReleaseChannel.STABLE})
-  console.info(`browser path: ${path}`);
+  const path = computeSystemExecutablePath({
+    browser: Browser.CHROME,
+    channel: ChromeReleaseChannel.STABLE,
+  })
+  console.info(`browser path: ${path}`)
 
-  const userDataDir = await createUserDataDir();
-  console.log(userDataDir);
-  const certificateSPKI = await getCertificateSPKI();
+  const userDataDir = await createUserDataDir()
+  console.log(userDataDir)
+  const certificateSPKI = await getCertificateSPKI()
 
   const optimizationsToDisable = [
-    "OptimizationGuideModelDownloading",
-    "OptimizationHintsFetching",
-    "OptimizationTargetPrediction",
-    "OptimizationHints",
+    'OptimizationGuideModelDownloading',
+    'OptimizationHintsFetching',
+    'OptimizationTargetPrediction',
+    'OptimizationHints',
   ]
   const disableChromeOptimizations = `--disable-features=${optimizationsToDisable.join(',')}`
 
@@ -40,5 +48,5 @@ export const launchBrowser = async () => {
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
       disableChromeOptimizations,
     ],
-  });
-};
+  })
+}
