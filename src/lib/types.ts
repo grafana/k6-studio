@@ -1,3 +1,4 @@
+// TODO: modify json_output.py to use CamelCase instead of snake_case
 export interface Request {
   headers: Array<Array<string>>;
   scheme: string,
@@ -5,7 +6,7 @@ export interface Request {
   method: string,
   path: string,
   content: string,
-  timestamp_start: Date,
+  timestamp_start: string,
   id?: string,
   response?: Response
 }
@@ -16,7 +17,7 @@ export interface Response {
   status_code: number,
   content: string,
   path: string,
-  timestamp_start: Date,
+  timestamp_start: string,
 }
 
 export interface ProxyData {

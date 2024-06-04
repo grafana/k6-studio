@@ -5,7 +5,7 @@ import path from 'path';
 import os from 'os';
 
 const createUserDataDir = async () => {
-    return await mkdtemp(path.join(os.tmpdir(), 'k6-studio-'));
+    return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'));
 };
 
 export const launchBrowser = async () => {
@@ -15,7 +15,14 @@ export const launchBrowser = async () => {
   const userDataDir = await createUserDataDir();
   console.log(userDataDir);
   const certificateSPKI = await getCertificateSPKI();
-  const disableChromeOptimizations = "--disable-features=OptimizationGuideModelDownloading,OptimizationHintsFetching,OptimizationTargetPrediction,OptimizationHints";
+
+  const optimizationsToDisable = [
+    "OptimizationGuideModelDownloading",
+    "OptimizationHintsFetching",
+    "OptimizationTargetPrediction",
+    "OptimizationHints",
+  ]
+  const disableChromeOptimizations = `--disable-features=${optimizationsToDisable.join(',')}`
 
   return launch({
     executablePath: path,
