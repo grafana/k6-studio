@@ -24,18 +24,22 @@
     "@electron-forge/plugin-vite": "^7.4.0",
     "@electron/fuses": "^1.8.0",
     "@types/node-forge": "^1.3.11",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "electron": "30.0.8",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.25.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.5",
     "prettier": "3.3.0",
     "ts-node": "^10.0.0",
     "typescript": "~4.5.4",
-    "vite": "^5.0.12"
+    "vite": "^5.0.12",
+    "vite-tsconfig-paths": "^4.3.2"
   },
   "keywords": [],
   "author": {
@@ -45,8 +49,11 @@
   "private": true,
   "dependencies": {
     "@puppeteer/browsers": "^2.2.3",
+    "@radix-ui/themes": "^3.0.5",
     "electron-squirrel-startup": "^1.0.1",
-    "node-forge": "^1.3.1"
+    "node-forge": "^1.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

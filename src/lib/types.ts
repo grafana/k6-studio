@@ -6,7 +6,7 @@ export interface Request {
   method: string
   path: string
   content: string
-  timestampStart: string
+  timestampStart: number
   id?: string
   response?: Response
 }
@@ -17,7 +17,7 @@ export interface Response {
   statusCode: number
   content: string
   path: string
-  timestampStart: string
+  timestampStart: number
 }
 
 export interface ProxyData {

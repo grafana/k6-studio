@@ -13,5 +13,12 @@
     "plugin:import/typescript",
     "prettier"
   ],
-  "parser": "@typescript-eslint/parser"
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["import"],
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
+  }
+
 }
