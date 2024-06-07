@@ -3,9 +3,11 @@ import path from 'path'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { Process } from '@puppeteer/browsers'
+import { writeFile } from 'fs/promises'
 
 let currentProxyProcess: ProxyProcess
 let currentBrowserProcess: Process
+let harBuffer: string
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -86,7 +88,7 @@ ipcMain.on('proxy:stop', async () => {
 ipcMain.on('browser:start', async (event) => {
   console.info('browser:start event received')
   const browserWindow = BrowserWindow.fromWebContents(event.sender)
-  currentBrowserProcess = await launchBrowser(browserWindow)
+  currentBrowserProcess = await launchBrowser()
   browserWindow.webContents.send('browser:started')
   console.info('browser:started event sent')
 })
@@ -97,4 +99,26 @@ ipcMain.on('browser:stop', async () => {
     currentBrowserProcess.close()
     currentBrowserProcess = null
   }
+})
+
+ipcMain.on('har:start', async () => {
+  console.info('har:start event received')
+
+  harBuffer = ''
+
+  ipcMain.on('har:data', async (data) => {
+    console.info('har:data event received')
+    harBuffer += data
+  })
+})
+
+ipcMain.on('har:stop', async () => {
+  console.info('har:stop event received')
+
+  ipcMain.removeAllListeners('har:data')
+  await writeFile(
+    path.join(app.getPath('home'), 'k6-studio', 'recording.har'),
+    harBuffer
+  )
+  harBuffer = ''
 })
