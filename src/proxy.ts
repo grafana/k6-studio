@@ -4,7 +4,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import { getPlatform, getArch } from './utils'
 import forge from 'node-forge'
 import { readFile } from 'fs/promises'
-import { ProxyData } from './lib/types'
+import { ProxyData } from './types'
 import readline from 'readline/promises'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "strict": true,
     "target": "ESNext",
     "module": "commonjs",
     "allowJs": true,
@@ -16,5 +17,5 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  },
+  }
 }

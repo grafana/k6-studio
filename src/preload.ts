@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { ipcRenderer, contextBridge } from 'electron'
-import { ProxyData } from './lib/types'
+import { ProxyData } from './types'
 
 const proxy = {
   launchProxy: () => {

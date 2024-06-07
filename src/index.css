@@ -1,5 +1,9 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
-  margin: auto;
+  word-break: break-all;
+}
+
+pre {
+    white-space: pre-wrap;
 }

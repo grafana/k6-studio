@@ -26,8 +26,7 @@
  * ```
  */
 
-import './index.css'
-import { ProxyData } from './lib/types'
+import { ProxyData } from './types'
 import './index.tsx'
 
 console.log(
