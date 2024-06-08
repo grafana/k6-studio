@@ -1,13 +1,13 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { Process } from '@puppeteer/browsers'
-import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
+import { runScript, showScriptSelectDialog, type K6Process } from './script'
 
 let currentProxyProcess: ProxyProcess
 let currentBrowserProcess: Process
-let currentk6Process: ChildProcessWithoutNullStreams
+let currentk6Process: K6Process
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -110,54 +110,9 @@ ipcMain.handle('script:select', async (event) => {
   return scriptPath
 })
 
-const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
-  const result = await dialog.showOpenDialog(browserWindow, {
-    properties: ['openFile'],
-    filters: [{ name: 'Javascript script', extensions: ['js'] }],
-  })
-
-  if (result.canceled) return
-
-  const [scriptPath] = result.filePaths
-  return scriptPath
-}
-
-ipcMain.on('script:run', async (_, scriptPath) => {
+ipcMain.on('script:run', async (_, scriptPath: string) => {
   console.info('script:run event received')
-
-  const proxyEnv = {
-    HTTP_PROXY: 'http://localhost:8080',
-    HTTPS_PROXY: 'http://localhost:8080',
-  }
-
-  const k6 = spawn(
-    'k6',
-    [
-      'run',
-      scriptPath,
-      '--vus=1',
-      '--iterations=1',
-      '--insecure-skip-tls-verify',
-    ],
-    {
-      env: { ...process.env, ...proxyEnv },
-    }
-  )
-
-  k6.stdout.on('data', (data) => {
-    console.error(`stdout: ${data}`)
-  })
-
-  k6.stderr.on('data', (data) => {
-    console.error(`stderr: ${data}`)
-  })
-
-  k6.on('close', (code) => {
-    console.log(`k6 process exited with code ${code}`)
-    // TODO: cleanup global k6 process variable
-  })
-
-  currentk6Process = k6
+  currentk6Process = await runScript(scriptPath)
 })
 
 ipcMain.on('script:stop', () => {

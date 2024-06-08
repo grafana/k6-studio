@@ -77,6 +77,11 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
         # we base64 encode content and let the client deal with it depending on mimetype
         content = base64.b64encode(flow.request.content).decode() if flow.request.content else None
 
+        # pop the group header we set on validation
+        if "X-K6-Group" in flow.request.headers:
+            group = flow.request.headers.pop("X-K6-Group")
+            f["comment"] = group
+
         f["request"] = {
             "method": flow.request.method,
             "scheme": flow.request.scheme,

@@ -24,4 +24,5 @@ export interface ProxyData {
   id: string
   request: Request
   response?: Response
+  comment?: string
 }
