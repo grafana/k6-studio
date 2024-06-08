@@ -81,3 +81,13 @@ document.getElementById('script_select').addEventListener('click', async () => {
   console.log(`script: ${scriptPath}`)
   document.getElementById('script_name').textContent = scriptPath
 })
+
+document.getElementById('script_run').addEventListener('click', () => {
+  const scriptPath = document.getElementById('script_name').textContent
+  console.log(`running script: ${scriptPath}`)
+  window.studio.script.runScript(scriptPath)
+})
+
+document.getElementById('script_stop').addEventListener('click', () => {
+  window.studio.script.stopScript()
+})

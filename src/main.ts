@@ -3,9 +3,11 @@ import path from 'path'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { Process } from '@puppeteer/browsers'
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 
 let currentProxyProcess: ProxyProcess
 let currentBrowserProcess: Process
+let currentk6Process: ChildProcessWithoutNullStreams
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -119,3 +121,32 @@ const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   const [scriptPath] = result.filePaths
   return scriptPath
 }
+
+ipcMain.on('script:run', async (_, scriptPath) => {
+  console.info('script:run event received')
+
+  const k6 = spawn('k6', ['run', scriptPath, '--vus=1', '--iterations=1'])
+
+  k6.stdout.on('data', (data) => {
+    console.error(`stdout: ${data}`)
+  })
+
+  k6.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`)
+  })
+
+  k6.on('close', (code) => {
+    console.log(`proxy process exited with code ${code}`)
+    // TODO: cleanup global k6 process variable
+  })
+
+  currentk6Process = k6
+})
+
+ipcMain.on('script:stop', () => {
+  console.info('script:stop event received')
+  if (currentk6Process) {
+    currentk6Process.kill()
+    currentk6Process = null
+  }
+})

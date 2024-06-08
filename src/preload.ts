@@ -41,6 +41,12 @@ const script = {
   showScriptSelectDialog: async () => {
     return await ipcRenderer.invoke('script:select')
   },
+  runScript: (scriptPath: string) => {
+    ipcRenderer.send('script:run', scriptPath)
+  },
+  stopScript: () => {
+    ipcRenderer.send('script:stop')
+  },
 } as const
 
 const studio = {
