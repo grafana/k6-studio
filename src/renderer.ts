@@ -27,7 +27,7 @@
  */
 
 import './index.css'
-import { ProxyData } from './lib/types'
+import { ProxyData, K6Log } from './lib/types'
 
 console.log(
   '👋 This message is being logged by "renderer.ts", included via Vite'
@@ -90,4 +90,13 @@ document.getElementById('script_run').addEventListener('click', () => {
 
 document.getElementById('script_stop').addEventListener('click', () => {
   window.studio.script.stopScript()
+})
+
+window.studio.script.onScriptLog((data: K6Log) => {
+  console.log(data)
+
+  const list = document.getElementById('logs_list')
+  const listElement = document.createElement('li')
+  listElement.innerHTML = `<pre>level: ${data.level} message: ${data.msg} timestamp: ${data.time}</pre>`
+  list.appendChild(listElement)
 })

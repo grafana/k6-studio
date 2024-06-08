@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { ipcRenderer, contextBridge } from 'electron'
-import { ProxyData } from './lib/types'
+import { ProxyData, K6Log } from './lib/types'
 
 const proxy = {
   launchProxy: () => {
@@ -46,6 +46,11 @@ const script = {
   },
   stopScript: () => {
     ipcRenderer.send('script:stop')
+  },
+  onScriptLog: (callback: (data: K6Log) => void) => {
+    ipcRenderer.on('script:log', (_, data) => {
+      callback(data)
+    })
   },
 } as const
 

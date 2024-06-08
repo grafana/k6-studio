@@ -26,3 +26,10 @@ export interface ProxyData {
   response?: Response
   comment?: string
 }
+
+export interface K6Log {
+  level: 'info' | 'debug' | 'warning' | 'error'
+  msg: string
+  source?: string
+  time: string
+}

@@ -2,6 +2,8 @@ import { app, dialog, BrowserWindow } from 'electron'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
+import readline from 'readline/promises'
+import { K6Log } from './lib/types'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -17,7 +19,10 @@ export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   return scriptPath
 }
 
-export const runScript = async (scriptPath: string) => {
+export const runScript = async (
+  browserWindow: BrowserWindow,
+  scriptPath: string
+) => {
   const modifiedScript = await enhanceScript(scriptPath)
   const modifiedScriptPath = path.join(
     app.getPath('temp'),
@@ -38,18 +43,27 @@ export const runScript = async (scriptPath: string) => {
       '--vus=1',
       '--iterations=1',
       '--insecure-skip-tls-verify',
+      '--log-format=json',
+      '--no-summary',
+      '--quiet',
     ],
     {
       env: { ...process.env, ...proxyEnv },
     }
   )
 
+  // we use a reader to read entire lines from stderr instead of buffered data
+  const stderrReader = readline.createInterface(k6.stderr)
+
   k6.stdout.on('data', (data) => {
     console.error(`stdout: ${data}`)
   })
 
-  k6.stderr.on('data', (data) => {
-    console.error(`stderr: ${data}`)
+  stderrReader.on('line', (data) => {
+    console.log(`stderr: ${data}`)
+
+    const logData: K6Log = JSON.parse(data)
+    browserWindow.webContents.send('script:log', logData)
   })
 
   k6.on('close', (code) => {

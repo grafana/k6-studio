@@ -110,9 +110,10 @@ ipcMain.handle('script:select', async (event) => {
   return scriptPath
 })
 
-ipcMain.on('script:run', async (_, scriptPath: string) => {
+ipcMain.on('script:run', async (event, scriptPath: string) => {
   console.info('script:run event received')
-  currentk6Process = await runScript(scriptPath)
+  const browserWindow = BrowserWindow.fromWebContents(event.sender)
+  currentk6Process = await runScript(browserWindow, scriptPath)
 })
 
 ipcMain.on('script:stop', () => {
