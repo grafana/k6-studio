@@ -125,7 +125,24 @@ const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
 ipcMain.on('script:run', async (_, scriptPath) => {
   console.info('script:run event received')
 
-  const k6 = spawn('k6', ['run', scriptPath, '--vus=1', '--iterations=1'])
+  const proxyEnv = {
+    HTTP_PROXY: 'http://localhost:8080',
+    HTTPS_PROXY: 'http://localhost:8080',
+  }
+
+  const k6 = spawn(
+    'k6',
+    [
+      'run',
+      scriptPath,
+      '--vus=1',
+      '--iterations=1',
+      '--insecure-skip-tls-verify',
+    ],
+    {
+      env: { ...process.env, ...proxyEnv },
+    }
+  )
 
   k6.stdout.on('data', (data) => {
     console.error(`stdout: ${data}`)
@@ -136,7 +153,7 @@ ipcMain.on('script:run', async (_, scriptPath) => {
   })
 
   k6.on('close', (code) => {
-    console.log(`proxy process exited with code ${code}`)
+    console.log(`k6 process exited with code ${code}`)
     // TODO: cleanup global k6 process variable
   })
 
