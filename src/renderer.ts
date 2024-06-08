@@ -73,3 +73,11 @@ document.getElementById('stop_browser').addEventListener('click', () => {
   window.studio.browser.stopBrowser()
   console.log('stop browser event sent')
 })
+
+// Script
+
+document.getElementById('script_select').addEventListener('click', async () => {
+  const scriptPath = await window.studio.script.showScriptSelectDialog()
+  console.log(`script: ${scriptPath}`)
+  document.getElementById('script_name').textContent = scriptPath
+})

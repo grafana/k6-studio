@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import path from 'path'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
@@ -86,7 +86,7 @@ ipcMain.on('proxy:stop', async () => {
 ipcMain.on('browser:start', async (event) => {
   console.info('browser:start event received')
   const browserWindow = BrowserWindow.fromWebContents(event.sender)
-  currentBrowserProcess = await launchBrowser(browserWindow)
+  currentBrowserProcess = await launchBrowser()
   browserWindow.webContents.send('browser:started')
   console.info('browser:started event sent')
 })
@@ -98,3 +98,24 @@ ipcMain.on('browser:stop', async () => {
     currentBrowserProcess = null
   }
 })
+
+// Script
+ipcMain.handle('script:select', async (event) => {
+  console.info('script:select event received')
+  const browserWindow = BrowserWindow.fromWebContents(event.sender)
+  const scriptPath = await showScriptSelectDialog(browserWindow)
+  console.info(`selected script: ${scriptPath}`)
+  return scriptPath
+})
+
+const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
+  const result = await dialog.showOpenDialog(browserWindow, {
+    properties: ['openFile'],
+    filters: [{ name: 'Javascript script', extensions: ['js'] }],
+  })
+
+  if (result.canceled) return
+
+  const [scriptPath] = result.filePaths
+  return scriptPath
+}

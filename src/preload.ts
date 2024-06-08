@@ -37,9 +37,16 @@ const browser = {
   },
 } as const
 
+const script = {
+  showScriptSelectDialog: async () => {
+    return await ipcRenderer.invoke('script:select')
+  },
+} as const
+
 const studio = {
   proxy: proxy,
   browser: browser,
+  script: script,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)
