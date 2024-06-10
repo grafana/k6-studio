@@ -53,6 +53,13 @@ window.studio.proxy.onProxyData((data: ProxyData) => {
   console.log(data)
 
   const list = document.getElementById('requests_list')
+
+  if (data.comment) {
+    const listElement = document.createElement('h3')
+    listElement.innerText = data.comment
+    list.appendChild(listElement)
+  }
+
   const listElement = document.createElement('li')
   listElement.innerHTML = `<pre>method: ${data.request.method} host: ${data.request.host} path: ${data.request.path}</pre>`
   list.appendChild(listElement)
