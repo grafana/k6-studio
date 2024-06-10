@@ -24,8 +24,8 @@ export function Headers({ data }: { data: ProxyData }) {
       {data.response && (
         <>
           <Strong>Response headers</Strong>
-          {data.response?.headers.map(([key, value]) => (
-            <DataList.Item key={key}>
+          {data.response?.headers.map(([key, value], index) => (
+            <DataList.Item key={`${key}_${index}`}>
               <DataList.Label>{key}</DataList.Label>
               <DataList.Value>{value}</DataList.Value>
             </DataList.Item>
@@ -34,8 +34,8 @@ export function Headers({ data }: { data: ProxyData }) {
       )}
 
       <Strong>Request headers</Strong>
-      {data.request.headers.map(([key, value]) => (
-        <DataList.Item key={key}>
+      {data.request.headers.map(([key, value], index) => (
+        <DataList.Item key={`${key}_${index}`}>
           <DataList.Label>{key}</DataList.Label>
           <DataList.Value>{value}</DataList.Value>
         </DataList.Item>
