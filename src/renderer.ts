@@ -27,7 +27,7 @@
  */
 
 import './index.css'
-import { ProxyData } from './lib/types'
+import { ProxyData, K6Log } from './lib/types'
 
 console.log(
   '👋 This message is being logged by "renderer.ts", included via Vite'
@@ -53,6 +53,13 @@ window.studio.proxy.onProxyData((data: ProxyData) => {
   console.log(data)
 
   const list = document.getElementById('requests_list')
+
+  if (data.comment) {
+    const listElement = document.createElement('h3')
+    listElement.innerText = data.comment
+    list.appendChild(listElement)
+  }
+
   const listElement = document.createElement('li')
   listElement.innerHTML = `<pre>method: ${data.request.method} host: ${data.request.host} path: ${data.request.path}</pre>`
   list.appendChild(listElement)
@@ -72,4 +79,31 @@ document.getElementById('launch_browser').addEventListener('click', () => {
 document.getElementById('stop_browser').addEventListener('click', () => {
   window.studio.browser.stopBrowser()
   console.log('stop browser event sent')
+})
+
+// Script
+
+document.getElementById('script_select').addEventListener('click', async () => {
+  const scriptPath = await window.studio.script.showScriptSelectDialog()
+  console.log(`script: ${scriptPath}`)
+  document.getElementById('script_name').textContent = scriptPath
+})
+
+document.getElementById('script_run').addEventListener('click', () => {
+  const scriptPath = document.getElementById('script_name').textContent
+  console.log(`running script: ${scriptPath}`)
+  window.studio.script.runScript(scriptPath)
+})
+
+document.getElementById('script_stop').addEventListener('click', () => {
+  window.studio.script.stopScript()
+})
+
+window.studio.script.onScriptLog((data: K6Log) => {
+  console.log(data)
+
+  const list = document.getElementById('logs_list')
+  const listElement = document.createElement('li')
+  listElement.innerHTML = `<pre>level: ${data.level} message: ${data.msg} timestamp: ${data.time}</pre>`
+  list.appendChild(listElement)
 })
