@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { ipcRenderer, contextBridge } from 'electron'
-import { ProxyData, K6Log } from './lib/types'
+import { ProxyData, K6Log } from './types'
 
 const proxy = {
   launchProxy: () => {

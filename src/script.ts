@@ -3,7 +3,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 import readline from 'readline/promises'
-import { K6Log } from './lib/types'
+import { K6Log } from './types'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
