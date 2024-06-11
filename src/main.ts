@@ -3,10 +3,12 @@ import path from 'path'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { Process } from '@puppeteer/browsers'
+import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { writeFile } from 'fs/promises'
 
 let currentProxyProcess: ProxyProcess
 let currentBrowserProcess: Process
+let currentk6Process: K6Process
 let harBuffer: string
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -98,6 +100,29 @@ ipcMain.on('browser:stop', async () => {
   if (currentBrowserProcess) {
     currentBrowserProcess.close()
     currentBrowserProcess = null
+  }
+})
+
+// Script
+ipcMain.handle('script:select', async (event) => {
+  console.info('script:select event received')
+  const browserWindow = BrowserWindow.fromWebContents(event.sender)
+  const scriptPath = await showScriptSelectDialog(browserWindow)
+  console.info(`selected script: ${scriptPath}`)
+  return scriptPath
+})
+
+ipcMain.on('script:run', async (event, scriptPath: string) => {
+  console.info('script:run event received')
+  const browserWindow = BrowserWindow.fromWebContents(event.sender)
+  currentk6Process = await runScript(browserWindow, scriptPath)
+})
+
+ipcMain.on('script:stop', () => {
+  console.info('script:stop event received')
+  if (currentk6Process) {
+    currentk6Process.kill()
+    currentk6Process = null
   }
 })
 

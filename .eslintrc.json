@@ -11,7 +11,18 @@
     "plugin:import/recommended",
     "plugin:import/electron",
     "plugin:import/typescript",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:react-hooks/recommended",
     "prettier"
   ],
-  "parser": "@typescript-eslint/parser"
+  "parser": "@typescript-eslint/parser",
+  "ignorePatterns": ["resources/group_snippet.js"],
+  "plugins": ["import"],
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
+  }
+
 }
