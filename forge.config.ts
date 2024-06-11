@@ -13,6 +13,7 @@ const config: ForgeConfig = {
     asar: true,
     extraResource: [
       './resources/json_output.py',
+      './resources/group_snippet.js',
       './resources/' + getPlatform() + '/' + getArch(),
     ],
   },
