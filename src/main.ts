@@ -6,9 +6,9 @@ import { Process } from '@puppeteer/browsers'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { writeFile } from 'fs/promises'
 
-let currentProxyProcess: ProxyProcess
-let currentBrowserProcess: Process
-let currentk6Process: K6Process
+let currentProxyProcess: ProxyProcess | null
+let currentBrowserProcess: Process | null
+let currentk6Process: K6Process | null
 let harBuffer: string
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -75,6 +75,11 @@ app.on('activate', () => {
 ipcMain.on('proxy:start', async (event) => {
   console.info('proxy:start event received')
   const browserWindow = BrowserWindow.fromWebContents(event.sender)
+
+  if (!browserWindow) {
+    throw new Error('failed to obtain browserWindow')
+  }
+
   currentProxyProcess = launchProxy(browserWindow)
 })
 
@@ -91,7 +96,7 @@ ipcMain.on('browser:start', async (event) => {
   console.info('browser:start event received')
   const browserWindow = BrowserWindow.fromWebContents(event.sender)
   currentBrowserProcess = await launchBrowser()
-  browserWindow.webContents.send('browser:started')
+  browserWindow?.webContents.send('browser:started')
   console.info('browser:started event sent')
 })
 
@@ -107,6 +112,11 @@ ipcMain.on('browser:stop', async () => {
 ipcMain.handle('script:select', async (event) => {
   console.info('script:select event received')
   const browserWindow = BrowserWindow.fromWebContents(event.sender)
+
+  if (!browserWindow) {
+    throw new Error('failed to obtain browserWindow')
+  }
+
   const scriptPath = await showScriptSelectDialog(browserWindow)
   console.info(`selected script: ${scriptPath}`)
   return scriptPath
@@ -115,6 +125,11 @@ ipcMain.handle('script:select', async (event) => {
 ipcMain.on('script:run', async (event, scriptPath: string) => {
   console.info('script:run event received')
   const browserWindow = BrowserWindow.fromWebContents(event.sender)
+
+  if (!browserWindow) {
+    throw new Error('failed to obtain browserWindow')
+  }
+
   currentk6Process = await runScript(browserWindow, scriptPath)
 })
 
