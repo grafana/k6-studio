@@ -1,33 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
-import { Button, Flex, Heading } from '@radix-ui/themes'
+import { Flex, Heading } from '@radix-ui/themes'
 import { WebLogView } from '@/components/WebLogView'
 import { GroupedProxyData, ProxyData } from '@/types'
-import { reverse, uniqBy } from 'lodash-es'
 import { GroupForm } from './GroupForm'
+import { proxyDataToHar } from '@/utils/proxyDataToHar'
+import { DebugControls } from './DebugControls'
+import { mergeRequestsById } from './Recorder.utils'
+import { RecordingButton } from './RecordingButton'
+import { SaveHarDialog } from './SaveHarDialog'
 
 export function Recorder() {
   const [requests, setRequests] = useState<GroupedProxyData>({})
-
   const [group, setGroup] = useState<string>('Default')
+  const [showHarSaveDialog, setShowHarSaveDialog] = useState(false)
   const groupRef = useRef(group)
-
-  function handleLaunchProxy() {
-    console.log('starting proxy')
-    window.studio.proxy.launchProxy()
-  }
-
-  function handleStopProxy() {
-    window.studio.proxy.stopProxy()
-  }
-
-  function handleLaunchBrowser() {
-    console.log('starting browser')
-    window.studio.browser.launchBrowser()
-  }
-
-  function handleStopBrowser() {
-    window.studio.browser.stopBrowser()
-  }
 
   useEffect(() => {
     // Create ref to avoid creating multiple listeners
@@ -35,46 +21,58 @@ export function Recorder() {
     groupRef.current = group
   }, [group])
 
+  function saveHarToFile() {
+    const har = proxyDataToHar(requests)
+    window.studio.har.saveFile(JSON.stringify(har, null, 4))
+  }
+
   useEffect(() => {
     window.studio.proxy.onProxyData((data) => {
-      setRequests((prev) => {
-        const current = prev[groupRef.current] || []
-        const mergedRequests = mergeRequestsById([...current, data])
-
-        return {
-          ...prev,
-          [groupRef.current]: mergedRequests,
-        }
-      })
+      setRequests((prev) =>
+        mergeRequestsIntoGroup(prev, data, groupRef.current)
+      )
     })
   }, [])
 
   return (
     <>
-      <Flex direction="column" gap="2" pb="4">
-        <Flex gap="1">
-          <Button onClick={handleLaunchProxy}>Launch Proxy</Button>
-          <Button color="red" onClick={handleStopProxy}>
-            Stop Proxy
-          </Button>
-        </Flex>
-        <Flex gap="1">
-          <Button onClick={handleLaunchBrowser}>Launch Browser</Button>
-          <Button color="red" onClick={handleStopBrowser}>
-            Stop Browser
-          </Button>
+      <Flex justify="between" wrap="wrap" gap="2">
+        <GroupForm onChange={setGroup} value={group} />
+        <Flex
+          width="50%"
+          justify="start"
+          align="end"
+          direction="column"
+          gap="2"
+        >
+          <RecordingButton
+            onStop={() => setShowHarSaveDialog(true)}
+            onStart={() => setRequests({})}
+          />
+          <DebugControls />
         </Flex>
       </Flex>
-      <GroupForm onChange={setGroup} value={group} />
       <Heading my="4">Requests</Heading>
       <WebLogView requests={requests} />
+      <SaveHarDialog
+        onConfirm={saveHarToFile}
+        open={showHarSaveDialog}
+        onOpenChange={setShowHarSaveDialog}
+      />
     </>
   )
 }
 
-// We get 2 requests with the same id, one when
-// the request is sent and another when the response is received
-function mergeRequestsById(requests: ProxyData[]) {
-  // Reverse to keep the latest request
-  return reverse(uniqBy(reverse(requests), 'id'))
+function mergeRequestsIntoGroup(
+  groups: GroupedProxyData,
+  requests: ProxyData,
+  group: string
+) {
+  const current = groups[group] || []
+  const mergedRequests = mergeRequestsById([...current, requests])
+
+  return {
+    ...groups,
+    [group]: mergedRequests,
+  }
 }

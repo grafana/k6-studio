@@ -1,6 +1,5 @@
 import { ProxyData } from '@/types'
 import { DataList, Strong } from '@radix-ui/themes'
-import { requestToFullUrl } from './RequestDetails.utils'
 
 export function Headers({ data }: { data: ProxyData }) {
   return (
@@ -8,7 +7,7 @@ export function Headers({ data }: { data: ProxyData }) {
       <Strong>General</Strong>
       <DataList.Item>
         <DataList.Label>Request URL</DataList.Label>
-        <DataList.Value>{requestToFullUrl(data.request)}</DataList.Value>
+        <DataList.Value>{data.request.url}</DataList.Value>
       </DataList.Item>
 
       <DataList.Item>

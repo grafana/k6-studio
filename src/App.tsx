@@ -8,7 +8,6 @@ export function App() {
     <Theme>
       <Box p="5">
         <h1>💖 Welcome to k6 studio!</h1>
-        <p>🎉🎉🎉🎉🎉🎉</p>
         <Recorder />
       </Box>
     </Theme>

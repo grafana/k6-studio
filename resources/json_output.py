@@ -96,6 +96,9 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
             "timestampEnd": flow.request.timestamp_end,
             "prettyHost": flow.request.pretty_host,
             "content": content,
+            "url": flow.request.url,
+            "query": tuple(flow.request.query.items(True)),
+            "cookies": tuple(flow.request.cookies.items(True)),
         }
         if flow.response:
             if flow.response.raw_content is not None:
@@ -118,6 +121,7 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
                 "timestampStart": flow.response.timestamp_start,
                 "timestampEnd": flow.response.timestamp_end,
                 "content": content,
+                "cookies": tuple(flow.request.cookies.items(True)),
             }
             if flow.response.data.trailers:
                 f["response"]["trailers"] = tuple(

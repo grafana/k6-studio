@@ -1,0 +1,122 @@
+import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
+import type { Entry, Har, Log, Page } from 'har-format'
+import packageJson from '../../package.json'
+import { getContentTypeHeader } from './headers'
+
+export function proxyDataToHar(groups: GroupedProxyData): Har {
+  return {
+    log: createLog(createPages(groups), createEntries(groups)),
+  }
+}
+
+function createLog(pages: Page[], entries: Entry[]): Log {
+  return {
+    version: '1.2',
+    creator: {
+      name: 'k6-studio',
+      version: packageJson.version,
+    },
+    pages,
+    entries,
+  }
+}
+
+function createPages(groups: GroupedProxyData): Page[] {
+  return Object.entries(groups).map(([group, data]) => ({
+    id: group,
+    title: group,
+    startedDateTime: timeStampToISO(data[0]?.request.timestampStart),
+    pageTimings: {},
+  }))
+}
+
+function createEntries(groups: GroupedProxyData): Entry[] {
+  return Object.entries(groups).flatMap(([group, data]) =>
+    data.filter(hasResponse).map(
+      (proxyData): Entry => ({
+        startedDateTime: timeStampToISO(proxyData.request.timestampStart),
+        request: createRequest(proxyData.request),
+        response: createResponse(proxyData.response),
+        pageref: group,
+        cache: {},
+        timings: {
+          wait: 0,
+          receive: 0,
+        },
+        time: 0,
+      })
+    )
+  )
+}
+
+function createRequest(request: Request): Entry['request'] {
+  return {
+    method: request.method,
+    url: request.url,
+    httpVersion: request.httpVersion,
+    headers: request.headers.map(([name, value]) => ({ name, value })),
+    queryString: request.query.map(([name, value]) => ({ name, value })),
+    postData: createPostData(request),
+    cookies: request.cookies.map(([name, value]) => ({ name, value })),
+    headersSize: -1,
+    bodySize: -1,
+  }
+}
+
+function createResponse(response: Response): Entry['response'] {
+  return {
+    status: response.statusCode,
+    statusText: response.reason,
+    httpVersion: response.httpVersion,
+    headers: response.headers.map(([name, value]) => ({ name, value })),
+    content: {
+      size: response.contentLength,
+      mimeType: getContentTypeHeader(response.headers) ?? '',
+      text: response.content,
+      encoding: 'base64',
+    },
+    cookies: response.cookies.map(([name, value]) => ({ name, value })),
+    redirectURL: '',
+    headersSize: -1,
+    bodySize: -1,
+  }
+}
+
+function createPostData(request: Request): Entry['request']['postData'] {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+    return
+  }
+  const contentTypeHeader = getContentTypeHeader(request.headers) ?? ''
+  const content = atob(request.content)
+
+  // Extract params for urlencoded form
+  if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
+    const params = new URLSearchParams(content)
+    const paramsArray = Object.entries(
+      Object.fromEntries(params.entries())
+    ).map(([key, value]) => ({ name: key, value }))
+
+    return {
+      mimeType: contentTypeHeader,
+      params: paramsArray,
+    }
+  }
+
+  return {
+    mimeType: getContentTypeHeader(request.headers) ?? '',
+    text: atob(request.content),
+  }
+}
+
+function timeStampToISO(timeStamp: number | undefined): string {
+  if (!timeStamp) {
+    return ''
+  }
+  return new Date(timeStamp * 1000).toISOString()
+}
+
+function hasResponse(
+  proxyData: ProxyData
+): proxyData is ProxyData & { response: Response } {
+  return !!proxyData.response
+}

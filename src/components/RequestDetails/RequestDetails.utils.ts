@@ -1,19 +1,12 @@
-import { ProxyData, Request } from '@/types'
+import { ProxyData } from '@/types'
+import { getContentType } from '@/utils/headers'
 
 export function parseContent(data: ProxyData) {
   if (!data.response || data.request.method === 'OPTIONS') {
     return
   }
 
-  const headersObj = data.response.headers.reduce(
-    (acc, [key, value]) => {
-      acc[key.toLowerCase()] = value
-      return acc
-    },
-    {} as Record<string, string>
-  )
-
-  const contentType = headersObj['content-type']?.split(';')[0]
+  const contentType = getContentType(data.response.headers)
 
   try {
     switch (contentType) {
@@ -31,8 +24,4 @@ export function parseContent(data: ProxyData) {
     console.error('Failed to parse content', e)
     return
   }
-}
-
-export function requestToFullUrl(request: Request) {
-  return `${request.scheme}://${request.host}${request.path}`
 }
