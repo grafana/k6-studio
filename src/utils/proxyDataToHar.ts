@@ -1,21 +1,22 @@
-import {
-  GroupedProxyData,
-  ProxyData,
-  ProxyDataWithResponse,
-  Request,
-  Response,
-} from '@/types'
-import type { Entry, Har, Log, Page } from 'har-format'
+import { GroupedProxyData, Request, Response } from '@/types'
+import type { Entry, Page } from 'har-format'
 import packageJson from '../../package.json'
 import { getContentTypeWithCharsetHeader } from './headers'
+import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
 
-export function proxyDataToHar(groups: GroupedProxyData): Har {
+export function proxyDataToHar(
+  groups: GroupedProxyData
+): HarWithOptionalResponse {
   return {
     log: createLog(createPages(groups), createEntries(groups)),
   }
 }
 
-function createLog(pages: Page[], entries: Entry[]): Log {
+function createLog(
+  pages: Page[],
+  entries: EntryWithOptionalResponse[]
+): HarWithOptionalResponse['log'] {
+  console.log(entries[0]?.response)
   return {
     version: '1.2',
     creator: {
@@ -36,23 +37,21 @@ function createPages(groups: GroupedProxyData): Page[] {
   }))
 }
 
-function createEntries(groups: GroupedProxyData): Entry[] {
+function createEntries(groups: GroupedProxyData): EntryWithOptionalResponse[] {
   return Object.entries(groups).flatMap(([group, data]) =>
-    data.filter(hasResponse).map(
-      (proxyData): Entry => ({
-        startedDateTime: timeStampToISO(proxyData.request.timestampStart),
-        request: createRequest(proxyData.request),
-        response: createResponse(proxyData.response),
-        pageref: group,
-        cache: {},
-        // TODO: add actual values
-        timings: {
-          wait: 0,
-          receive: 0,
-        },
-        time: 0,
-      })
-    )
+    data.map((proxyData) => ({
+      startedDateTime: timeStampToISO(proxyData.request.timestampStart),
+      request: createRequest(proxyData.request),
+      response: proxyData.response && createResponse(proxyData.response),
+      pageref: group,
+      cache: {},
+      // TODO: add actual values
+      timings: {
+        wait: 0,
+        receive: 0,
+      },
+      time: 0,
+    }))
   )
 }
 
@@ -123,8 +122,4 @@ function timeStampToISO(timeStamp: number | undefined): string {
     return ''
   }
   return new Date(timeStamp * 1000).toISOString()
-}
-
-function hasResponse(proxyData: ProxyData): proxyData is ProxyDataWithResponse {
-  return !!proxyData.response
 }
