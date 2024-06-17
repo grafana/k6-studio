@@ -89,10 +89,10 @@ ipcMain.on('proxy:stop', async () => {
 // Browser
 ipcMain.on('browser:start', async (event) => {
   console.info('browser:start event received')
-  const browserWindow = BrowserWindow.fromWebContents(event.sender)
+  const browserWindow = browserWindowFromEvent(event)
 
   currentBrowserProcess = await launchBrowser()
-  browserWindow?.webContents.send('browser:started')
+  browserWindow.webContents.send('browser:started')
   console.info('browser:started event sent')
 })
 
