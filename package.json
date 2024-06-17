@@ -65,7 +65,8 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
-      "prettier --ignore-unknown --write"
+      "prettier --ignore-unknown --write",
+      "bash -c tsc --noEmit"
     ]
   }
 }
