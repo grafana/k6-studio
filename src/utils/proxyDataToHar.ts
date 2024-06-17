@@ -1,7 +1,13 @@
-import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
+import {
+  GroupedProxyData,
+  ProxyData,
+  ProxyDataWithResponse,
+  Request,
+  Response,
+} from '@/types'
 import type { Entry, Har, Log, Page } from 'har-format'
 import packageJson from '../../package.json'
-import { getContentTypeHeader } from './headers'
+import { getContentTypeWithCharsetHeader } from './headers'
 
 export function proxyDataToHar(groups: GroupedProxyData): Har {
   return {
@@ -39,6 +45,7 @@ function createEntries(groups: GroupedProxyData): Entry[] {
         response: createResponse(proxyData.response),
         pageref: group,
         cache: {},
+        // TODO: add actual values
         timings: {
           wait: 0,
           receive: 0,
@@ -58,6 +65,7 @@ function createRequest(request: Request): Entry['request'] {
     queryString: request.query.map(([name, value]) => ({ name, value })),
     postData: createPostData(request),
     cookies: request.cookies.map(([name, value]) => ({ name, value })),
+    // TODO: add actual values
     headersSize: -1,
     bodySize: -1,
   }
@@ -71,12 +79,13 @@ function createResponse(response: Response): Entry['response'] {
     headers: response.headers.map(([name, value]) => ({ name, value })),
     content: {
       size: response.contentLength,
-      mimeType: getContentTypeHeader(response.headers) ?? '',
+      mimeType: getContentTypeWithCharsetHeader(response.headers) ?? '',
       text: response.content,
       encoding: 'base64',
     },
     cookies: response.cookies.map(([name, value]) => ({ name, value })),
     redirectURL: '',
+    // TODO: add actual values
     headersSize: -1,
     bodySize: -1,
   }
@@ -86,7 +95,8 @@ function createPostData(request: Request): Entry['request']['postData'] {
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
     return
   }
-  const contentTypeHeader = getContentTypeHeader(request.headers) ?? ''
+  const contentTypeHeader =
+    getContentTypeWithCharsetHeader(request.headers) ?? ''
   const content = atob(request.content)
 
   // Extract params for urlencoded form
@@ -103,7 +113,7 @@ function createPostData(request: Request): Entry['request']['postData'] {
   }
 
   return {
-    mimeType: getContentTypeHeader(request.headers) ?? '',
+    mimeType: getContentTypeWithCharsetHeader(request.headers) ?? '',
     text: atob(request.content),
   }
 }
@@ -115,8 +125,6 @@ function timeStampToISO(timeStamp: number | undefined): string {
   return new Date(timeStamp * 1000).toISOString()
 }
 
-function hasResponse(
-  proxyData: ProxyData
-): proxyData is ProxyData & { response: Response } {
+function hasResponse(proxyData: ProxyData): proxyData is ProxyDataWithResponse {
   return !!proxyData.response
 }

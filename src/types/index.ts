@@ -43,6 +43,7 @@ export interface Response {
   path: string
   timestampStart: number
   httpVersion: string
+  contentLength: number
 }
 
 export interface ProxyData {
@@ -51,6 +52,8 @@ export interface ProxyData {
   response?: Response
   comment?: string
 }
+
+export type ProxyDataWithResponse = ProxyData & { response: Response }
 
 export interface K6Log {
   level: 'info' | 'debug' | 'warning' | 'error'

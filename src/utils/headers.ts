@@ -12,7 +12,7 @@ export function getHeaderValues(headers: Header[], name: string) {
  * @example
  * application/json; charset=utf-8
  */
-export function getContentTypeHeader(headers: Header[]) {
+export function getContentTypeWithCharsetHeader(headers: Header[]) {
   return getHeaderValues(headers, 'content-type')[0]
 }
 
@@ -22,5 +22,5 @@ export function getContentTypeHeader(headers: Header[]) {
  * application/json
  */
 export function getContentType(headers: Header[]) {
-  return getContentTypeHeader(headers)?.split(';')[0]
+  return getContentTypeWithCharsetHeader(headers)?.split(';')[0]
 }

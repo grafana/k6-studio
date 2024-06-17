@@ -66,7 +66,7 @@
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
       "prettier --ignore-unknown --write",
-      "bash -c tsc --noEmit"
+      "bash -c 'tsc --noEmit'"
     ]
   }
 }
