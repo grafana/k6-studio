@@ -54,10 +54,17 @@ const script = {
   },
 } as const
 
+const har = {
+  saveFile: (data: string) => {
+    ipcRenderer.send('har:save', data)
+  },
+} as const
+
 const studio = {
-  proxy: proxy,
-  browser: browser,
-  script: script,
+  proxy,
+  browser,
+  script,
+  har,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

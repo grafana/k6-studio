@@ -10,25 +10,40 @@ export type Method =
   | 'CONNECT'
   | 'TRACE'
 
+type KeyValueTuple = [string, string]
+
+export type Header = KeyValueTuple
+export type Cookie = KeyValueTuple
+export type Query = KeyValueTuple
+
 export interface Request {
-  headers: Array<[string, string]>
+  headers: Header[]
+  cookies: Cookie[]
+  query: Query[]
   scheme: string
   host: string
   method: Method
   path: string
   content: string
   timestampStart: number
+  timestampEnd: number
   id?: string
   response?: Response
+  contentLength: number
+  httpVersion: string
+  url: string
 }
 
 export interface Response {
-  headers: Array<[string, string]>
+  headers: Header[]
+  cookies: Cookie[]
   reason: string
   statusCode: number
   content: string
   path: string
   timestampStart: number
+  httpVersion: string
+  contentLength: number
 }
 
 export interface ProxyData {
@@ -37,6 +52,8 @@ export interface ProxyData {
   response?: Response
   comment?: string
 }
+
+export type ProxyDataWithResponse = ProxyData & { response: Response }
 
 export interface K6Log {
   level: 'info' | 'debug' | 'warning' | 'error'

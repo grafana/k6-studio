@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import { getPlatform, getArch } from './utils'
+import { getPlatform, getArch } from './utils/electron'
 import forge from 'node-forge'
 import { readFile } from 'fs/promises'
 import { ProxyData } from './types'

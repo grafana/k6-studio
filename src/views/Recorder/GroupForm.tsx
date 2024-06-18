@@ -1,5 +1,5 @@
 import { Button, Flex, TextField, Text } from '@radix-ui/themes'
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 
 export function GroupForm({
   onChange,
@@ -10,7 +10,9 @@ export function GroupForm({
 }) {
   const [value, setValue] = useState(savedValue || '')
 
-  function handleSumbmit() {
+  function handleSumbmit(e: FormEvent) {
+    e.preventDefault()
+
     if (value.trim() === '') {
       return
     }
@@ -19,22 +21,17 @@ export function GroupForm({
   }
 
   return (
-    <Flex direction="column" width="300px" asChild>
-      <form>
-        <Text>Current group: {savedValue}</Text>
-        <Text as="label" weight="medium" htmlFor="group">
-          Group
-        </Text>
+    <Flex direction="column" width="200px" asChild>
+      <form onSubmit={handleSumbmit}>
         <TextField.Root
           id="group"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           mb="2"
+          placeholder="Group"
         />
 
-        <Button onClick={handleSumbmit} disabled={value === savedValue}>
-          Set group
-        </Button>
+        <Button disabled={value === savedValue}>Set group</Button>
       </form>
     </Flex>
   )

@@ -72,7 +72,7 @@ export function getBuildDefine(env: ConfigEnv<'build'>) {
 }
 
 export function pluginExposeRenderer(name: string): Plugin {
-  const { VITE_DEV_SERVER_URL } = getDefineKeys([name])[name]
+  const { VITE_DEV_SERVER_URL } = getDefineKeys([name])[name]!
 
   return {
     name: '@electron-forge/plugin-vite:expose-renderer',
