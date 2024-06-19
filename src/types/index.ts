@@ -51,6 +51,7 @@ export interface ProxyData {
   request: Request
   response?: Response
   comment?: string
+  group?: string
 }
 
 export type ProxyDataWithResponse = ProxyData & { response: Response }
@@ -60,6 +61,7 @@ export interface K6Log {
   msg: string
   source?: string
   time: string
+  error?: string
 }
 
 export type GroupedProxyData = Record<string, ProxyData[]>

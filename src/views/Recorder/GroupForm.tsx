@@ -1,4 +1,4 @@
-import { Button, Flex, TextField, Text } from '@radix-ui/themes'
+import { Button, Flex, TextField } from '@radix-ui/themes'
 import { FormEvent, useState } from 'react'
 
 export function GroupForm({

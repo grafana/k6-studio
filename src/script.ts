@@ -68,6 +68,7 @@ export const runScript = async (
 
   k6.on('close', (code) => {
     console.log(`k6 process exited with code ${code}`)
+    browserWindow.webContents.send('script:stopped')
   })
 
   return k6

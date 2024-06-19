@@ -52,6 +52,11 @@ const script = {
       callback(data)
     })
   },
+  onScriptStopped: (callback: () => void) => {
+    ipcRenderer.on('script:stopped', () => {
+      callback()
+    })
+  },
 } as const
 
 const har = {
