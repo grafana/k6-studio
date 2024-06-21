@@ -52,8 +52,14 @@ export function Validator() {
             disabled={!scriptPath || isRunning}
             onClick={handleRunScript}
           >
-            {isRunning ? <Spinner /> : null}
-            {isRunning ? 'Running...' : 'Run Script'}
+            {isRunning ? (
+              <>
+                <Spinner />
+                Running...
+              </>
+            ) : (
+              'Run Script'
+            )}
           </Button>
           <Button color="amber" disabled={!isRunning}>
             Stop Script
