@@ -1,6 +1,6 @@
 import { GroupedProxyData, ProxyData } from '@/types'
 import { CustomCodeRule, TestRule } from '@/types/rules'
-import { exhaustive } from './typescript'
+import { exhaustive } from '../utils/typescript'
 
 interface RequestSnippetSchema {
   data: ProxyData

@@ -1,6 +1,6 @@
 import { GroupedProxyData } from '@/types'
 import { TestRule } from '@/types/rules'
-import { generateScript } from '@/utils/codegen'
+import { generateScript } from '@/codegen'
 import { applyRequestFilter } from '@/utils/requestFilters'
 import { format } from 'prettier/standalone'
 import * as prettierPluginBabel from 'prettier/plugins/babel'
