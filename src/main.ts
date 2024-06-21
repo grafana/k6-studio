@@ -2,15 +2,10 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { writeFile } from 'fs/promises'
 import path from 'path'
 import { Process } from '@puppeteer/browsers'
-import { format } from 'prettier'
 
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
-import { generateScript } from './utils/codegen'
-import { GroupedProxyData } from './types'
-import { TestRule } from './types/rules'
-import { applyRequestFilter } from './utils/requestFilters'
 
 let currentProxyProcess: ProxyProcess | null
 let currentBrowserProcess: Process | null
@@ -138,34 +133,22 @@ ipcMain.on('script:stop', () => {
   }
 })
 
-ipcMain.on(
-  'script:generate',
-  async (
-    event,
-    proxyData: GroupedProxyData,
-    rules: TestRule[],
-    allowlist: string[]
-  ) => {
-    console.info('script:generate event received')
+ipcMain.on('script:save', async (event, script: string) => {
+  console.info('script:save event received')
 
-    const filteredProxyData = applyRequestFilter(proxyData, allowlist)
-    const script = generateScript(filteredProxyData, rules)
-    const prettifiedScript = await format(script, { parser: 'babel' })
+  const browserWindow = browserWindowFromEvent(event)
+  const dialogResult = await dialog.showSaveDialog(browserWindow, {
+    message: 'Save test script',
+    defaultPath: 'script.js',
+    filters: [{ name: 'JavaScript', extensions: ['js'] }],
+  })
 
-    const browserWindow = browserWindowFromEvent(event)
-    const dialogResult = await dialog.showSaveDialog(browserWindow, {
-      message: 'Save test script',
-      defaultPath: 'script.js',
-      filters: [{ name: 'JavaScript', extensions: ['js'] }],
-    })
-
-    if (dialogResult.canceled) {
-      return
-    }
-
-    await writeFile(dialogResult.filePath, prettifiedScript)
+  if (dialogResult.canceled) {
+    return
   }
-)
+
+  await writeFile(dialogResult.filePath, script)
+})
 
 // HAR
 ipcMain.on('har:save', async (event, data) => {

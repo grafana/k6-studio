@@ -1,6 +1,6 @@
 import { GroupedProxyData } from '@/types'
 import { Button, Flex, Heading, TextField } from '@radix-ui/themes'
-import { exportScript } from './Generator.utils'
+import { exportScript, saveScript } from './Generator.utils'
 import { useState } from 'react'
 
 type Props = {
@@ -14,8 +14,8 @@ export function Generator({ requests }: Props) {
     return null
   }
 
-  const handleExport = () => {
-    exportScript(
+  const handleExport = async () => {
+    const script = await exportScript(
       requests,
       [
         {
@@ -27,6 +27,8 @@ export function Generator({ requests }: Props) {
       ],
       [filter]
     )
+
+    saveScript(script)
   }
 
   return (

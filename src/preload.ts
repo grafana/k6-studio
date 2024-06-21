@@ -2,8 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
-import { ProxyData, K6Log, GroupedProxyData } from './types'
-import { TestRule } from './types/rules'
+import { ProxyData, K6Log } from './types'
 
 // Create listener and return clean up function to be used in useEffect
 function createListener<T>(channel: string, callback: (data: T) => void) {
@@ -49,12 +48,8 @@ const script = {
   showScriptSelectDialog: async () => {
     return await ipcRenderer.invoke('script:select')
   },
-  generateScript: (
-    proxyData: GroupedProxyData,
-    rules: TestRule[],
-    allowlist: string[]
-  ) => {
-    ipcRenderer.send('script:generate', proxyData, rules, allowlist)
+  saveScript: (script: string) => {
+    ipcRenderer.send('script:save', script)
   },
   runScript: (scriptPath: string) => {
     ipcRenderer.send('script:run', scriptPath)
