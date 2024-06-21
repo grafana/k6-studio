@@ -4,8 +4,8 @@ import { exhaustive } from './typescript'
 
 interface RequestSnippetSchema {
   data: ProxyData
-  beforeBlock: string[]
-  afterBlock: string[]
+  before: string[]
+  after: string[]
 }
 
 export function generateScript(recording: GroupedProxyData, rules: TestRule[]) {
@@ -28,8 +28,8 @@ export function generateScript(recording: GroupedProxyData, rules: TestRule[]) {
           },
           {
             data,
-            beforeBlock: [],
-            afterBlock: [],
+            before: [],
+            after: [],
           }
         )
 
@@ -48,8 +48,8 @@ export function generateScript(recording: GroupedProxyData, rules: TestRule[]) {
 
 function generateRequestSnippet(requestSnippetSchema: RequestSnippetSchema) {
   const {
-    beforeBlock,
-    afterBlock,
+    before,
+    after,
     data: { request },
   } = requestSnippetSchema
 
@@ -57,7 +57,7 @@ function generateRequestSnippet(requestSnippetSchema: RequestSnippetSchema) {
     http.request('${request.method}', '${request.url}', '${JSON.stringify(request.content)}', {});
   `
 
-  return [...beforeBlock, main, ...afterBlock].join('\n')
+  return [...before, main, ...after].join('\n')
 }
 
 function applyRule(
@@ -80,7 +80,7 @@ function applyCustomCodeRule(
   requestSnippetSchema: RequestSnippetSchema,
   rule: CustomCodeRule
 ): RequestSnippetSchema {
-  const block = rule.placement === 'before' ? 'beforeBlock' : 'afterBlock'
+  const block = rule.placement === 'before' ? 'before' : 'after'
 
   return {
     ...requestSnippetSchema,
