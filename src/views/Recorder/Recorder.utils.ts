@@ -22,18 +22,13 @@ function onBrowserStarted() {
 
 // TODO: add error and timeout handling
 export async function startRecording() {
-  // Kill previous instances
-  window.studio.proxy.stopProxy()
+  // Kill previous browser window
   window.studio.browser.stopBrowser()
-
-  window.studio.proxy.launchProxy()
-  await onProxyStarted()
 
   window.studio.browser.launchBrowser()
   await onBrowserStarted()
 }
 
 export function stopRecording() {
-  window.studio.proxy.stopProxy()
   window.studio.browser.stopBrowser()
 }

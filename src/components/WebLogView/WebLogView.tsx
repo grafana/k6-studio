@@ -46,9 +46,7 @@ function NoRequestsMessage() {
       <Callout.Icon>
         <InfoCircledIcon />
       </Callout.Icon>
-      <Callout.Text>
-        Your request will appear here when you start the recording.
-      </Callout.Text>
+      <Callout.Text>Your requests will appear here.</Callout.Text>
     </Callout.Root>
   )
 }

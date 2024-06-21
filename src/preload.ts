@@ -1,25 +1,34 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { ipcRenderer, contextBridge } from 'electron'
+import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log } from './types'
+
+// Create listener and return clean up function to be used in useEffect
+function createListener<T>(channel: string, callback: (data: T) => void) {
+  const listener = (_: IpcRendererEvent, data: T) => {
+    callback(data)
+  }
+
+  ipcRenderer.on(channel, listener)
+
+  return () => {
+    ipcRenderer.removeListener(channel, listener)
+  }
+}
 
 const proxy = {
   launchProxy: () => {
     ipcRenderer.send('proxy:start')
   },
   onProxyStarted: (callback: () => void) => {
-    ipcRenderer.on('proxy:started', () => {
-      callback()
-    })
+    return createListener('proxy:started', callback)
   },
   stopProxy: () => {
     ipcRenderer.send('proxy:stop')
   },
   onProxyData: (callback: (data: ProxyData) => void) => {
-    ipcRenderer.on('proxy:data', (_, data) => {
-      callback(data)
-    })
+    return createListener('proxy:data', callback)
   },
 } as const
 
@@ -28,9 +37,7 @@ const browser = {
     ipcRenderer.send('browser:start')
   },
   onBrowserStarted: (callback: () => void) => {
-    ipcRenderer.on('browser:started', () => {
-      callback()
-    })
+    return createListener('browser:started', callback)
   },
   stopBrowser: () => {
     ipcRenderer.send('browser:stop')
@@ -48,9 +55,10 @@ const script = {
     ipcRenderer.send('script:stop')
   },
   onScriptLog: (callback: (data: K6Log) => void) => {
-    ipcRenderer.on('script:log', (_, data) => {
-      callback(data)
-    })
+    return createListener('script:log', callback)
+  },
+  onScriptStopped: (callback: () => void) => {
+    return createListener('script:stopped', callback)
   },
 } as const
 

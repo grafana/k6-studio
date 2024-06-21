@@ -1,15 +1,12 @@
-import { Box, Theme } from '@radix-ui/themes'
-import { Recorder } from '@/views/Recorder'
+import { Theme } from '@radix-ui/themes'
 import '@radix-ui/themes/styles.css'
 import './index.css'
+import { Layout } from './components/Layout/Layout'
 
 export function App() {
   return (
-    <Theme>
-      <Box p="5">
-        <h1>💖 Welcome to k6 studio!</h1>
-        <Recorder />
-      </Box>
+    <Theme accentColor="violet">
+      <Layout />
     </Theme>
   )
 }
