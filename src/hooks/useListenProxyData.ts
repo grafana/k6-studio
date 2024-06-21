@@ -13,7 +13,7 @@ export function useListenProxyData(group?: string) {
   }, [group])
 
   useEffect(() => {
-    window.studio.proxy.onProxyData((data) => {
+    return window.studio.proxy.onProxyData((data) => {
       setProxyData((prev) => {
         return mergeRequestsById([
           ...prev,

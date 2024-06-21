@@ -31,13 +31,13 @@ export function Validator() {
   }
 
   useEffect(() => {
-    window.studio.script.onScriptStopped(() => {
+    return window.studio.script.onScriptStopped(() => {
       setIsRunning(false)
     })
   }, [])
 
   useEffect(() => {
-    window.studio.script.onScriptLog((log) => {
+    return window.studio.script.onScriptLog((log) => {
       setLogs((prev) => [...prev, log])
     })
   }, [])
