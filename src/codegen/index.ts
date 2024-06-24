@@ -1,12 +1,6 @@
-import { GroupedProxyData, ProxyData } from '@/types'
-import { CustomCodeRule, TestRule } from '@/types/rules'
-import { exhaustive } from '../utils/typescript'
-
-interface RequestSnippetSchema {
-  data: ProxyData
-  before: string[]
-  after: string[]
-}
+import { GroupedProxyData, RequestSnippetSchema } from '@/types'
+import { TestRule } from '@/types/rules'
+import { applyRule } from '@/utils/rules'
 
 export function generateScript(recording: GroupedProxyData, rules: TestRule[]) {
   const before = `
@@ -53,37 +47,16 @@ function generateRequestSnippet(requestSnippetSchema: RequestSnippetSchema) {
     data: { request },
   } = requestSnippetSchema
 
+  const method = `'${request.method}'`
+  const url = `'${request.url}'`
+  const content = request.content
+    ? `'${JSON.stringify(request.content)}'`
+    : 'null'
+  const options = '{}'
+
   const main = `
-    http.request('${request.method}', '${request.url}', '${JSON.stringify(request.content)}', {});
+    http.request(${method}, ${url}, ${content}, ${options});
   `
 
   return [...before, main, ...after].join('\n')
-}
-
-function applyRule(
-  requestSnippetSchema: RequestSnippetSchema,
-  rule: TestRule
-): RequestSnippetSchema {
-  switch (rule.type) {
-    case 'customCode':
-      return applyCustomCodeRule(requestSnippetSchema, rule)
-    case 'correlation':
-    case 'parameterization':
-    case 'verification':
-      return requestSnippetSchema
-    default:
-      return exhaustive(rule)
-  }
-}
-
-function applyCustomCodeRule(
-  requestSnippetSchema: RequestSnippetSchema,
-  rule: CustomCodeRule
-): RequestSnippetSchema {
-  const block = rule.placement === 'before' ? 'before' : 'after'
-
-  return {
-    ...requestSnippetSchema,
-    [block]: [...requestSnippetSchema[block], rule.snippet],
-  }
 }

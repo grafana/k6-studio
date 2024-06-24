@@ -65,3 +65,9 @@ export interface K6Log {
 }
 
 export type GroupedProxyData = Record<string, ProxyData[]>
+
+export interface RequestSnippetSchema {
+  data: ProxyData
+  before: string[]
+  after: string[]
+}
