@@ -10,7 +10,7 @@ export interface ArrayValue {
 
 export interface CustomCodeValue {
   type: 'customCode'
-  foo: () => string | number | null | void
+  getValue: () => string | number | null | void
 }
 
 export interface RecordedValue {

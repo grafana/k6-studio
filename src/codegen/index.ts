@@ -7,7 +7,8 @@ export function generateScript(recording: GroupedProxyData, rules: TestRule[]) {
     import { group, sleep } from 'k6'
     import http from 'k6/http'
     
-    const options = {};
+    export const options = {}
+    
     export default function() {
   `
 
@@ -29,6 +30,8 @@ export function generateScript(recording: GroupedProxyData, rules: TestRule[]) {
 
         return [acc, generateRequestSnippet(requestSnippetSchema)].join('\n')
       }, '')
+
+      if (groups.length === 1) return requestSnippets
 
       return `
         group('${groupName}', function() {${requestSnippets}});`
