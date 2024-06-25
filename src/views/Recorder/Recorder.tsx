@@ -9,6 +9,7 @@ import { SaveHarDialog } from './SaveHarDialog'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { groupBy } from 'lodash-es'
+import { Generator } from '../Generator/Generator'
 
 export function Recorder() {
   const [group, setGroup] = useState<string>('Default')
@@ -38,6 +39,7 @@ export function Recorder() {
       </Flex>
       <Heading my="4">Requests</Heading>
       <WebLogView requests={groupedProxyData} />
+      <Generator requests={groupedProxyData} />
       <SaveHarDialog
         onConfirm={saveHarToFile}
         open={showHarSaveDialog}

@@ -1,10 +1,11 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { writeFile } from 'fs/promises'
 import path from 'path'
+import { Process } from '@puppeteer/browsers'
+
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
-import { Process } from '@puppeteer/browsers'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
-import { writeFile } from 'fs/promises'
 
 let currentProxyProcess: ProxyProcess | null
 let currentBrowserProcess: Process | null
@@ -132,6 +133,24 @@ ipcMain.on('script:stop', () => {
   }
 })
 
+ipcMain.on('script:save', async (event, script: string) => {
+  console.info('script:save event received')
+
+  const browserWindow = browserWindowFromEvent(event)
+  const dialogResult = await dialog.showSaveDialog(browserWindow, {
+    message: 'Save test script',
+    defaultPath: 'script.js',
+    filters: [{ name: 'JavaScript', extensions: ['js'] }],
+  })
+
+  if (dialogResult.canceled) {
+    return
+  }
+
+  await writeFile(dialogResult.filePath, script)
+})
+
+// HAR
 ipcMain.on('har:save', async (event, data) => {
   console.info('har:save event received')
   const browserWindow = browserWindowFromEvent(event)
