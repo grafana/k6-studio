@@ -16,7 +16,7 @@ export function Home() {
             navigate('recorder')
           }}
         >
-          Record a flow
+          Record flow
         </Button>
         <Button
           variant="solid"
