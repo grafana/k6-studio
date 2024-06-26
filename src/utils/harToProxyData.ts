@@ -48,8 +48,7 @@ function parseRequest(request: Entry['request']): Request {
         isoToUnixTimestamp(request.startedDateTime)
       : 0,
     timestampEnd: 0,
-    // TODO: check if this needs a value
-    scheme: '',
+    scheme: url.protocol.replace(':', ''),
     host: url.hostname,
     path: url.pathname,
     contentLength: content.length,
