@@ -1,24 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { generateScript, generateRequestSnippets } from './codegen'
 import { TestRule } from '@/types/rules'
 import { ProxyData } from '@/types'
 
 describe('Code generation', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('generateScript', () => {
-    vi.mock('fs-extra', async () => {
-      const codegen = await vi.importActual('./codegen')
-
-      return {
-        ...codegen,
-        generateOptions: vi.fn(() => '{}'),
-        generateVUCode: vi.fn(() => ''),
-      }
-    })
-
     it('should generate script', () => {
       const expectedResult = `
       import { group, sleep } from 'k6'
