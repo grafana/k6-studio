@@ -15,10 +15,7 @@ export function useListenProxyData(group?: string) {
   useEffect(() => {
     return window.studio.proxy.onProxyData((data) => {
       setProxyData((prev) => {
-        return mergeRequestsById([
-          ...prev,
-          { ...data, group: groupRef.current },
-        ])
+        return mergeRequestsById(prev, { ...data, group: groupRef.current })
       })
     })
   }, [])
