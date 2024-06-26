@@ -7,8 +7,7 @@ export function harToGroupedProxyData(
 ): GroupedProxyData {
   return har.log.entries.reduce<GroupedProxyData>((acc, entry) => {
     const proxyData = {
-      // TODO: 👀
-      id: Math.random().toString(),
+      id: self.crypto.randomUUID(),
       request: parseRequest(entry.request),
       response: entry.response ? parseResponse(entry.response) : undefined,
     }
