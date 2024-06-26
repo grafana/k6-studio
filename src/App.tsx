@@ -1,6 +1,7 @@
 import { Theme } from '@radix-ui/themes'
 import '@radix-ui/themes/styles.css'
 import { HashRouter, Route, Routes } from 'react-router-dom'
+import 'allotment/dist/style.css'
 import './index.css'
 
 import { Layout } from '@/components/Layout/Layout'

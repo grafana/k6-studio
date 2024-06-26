@@ -20,7 +20,7 @@ export function PageHeading({
 
   return (
     <>
-      <Flex gap="2" pb="4" align="center">
+      <Flex gap="2" pb="2" align="center">
         <IconButton
           onClick={() => {
             navigate('/')
