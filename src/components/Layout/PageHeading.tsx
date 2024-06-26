@@ -1,4 +1,13 @@
-import { Card, Flex, Heading, Inset, Separator } from '@radix-ui/themes'
+import { HomeIcon } from '@radix-ui/react-icons'
+import {
+  Card,
+  Flex,
+  Heading,
+  IconButton,
+  Inset,
+  Separator,
+} from '@radix-ui/themes'
+import { useNavigate } from 'react-router-dom'
 
 export function PageHeading({
   text,
@@ -7,13 +16,23 @@ export function PageHeading({
   text: string
   children: React.ReactNode
 }) {
+  const navigate = useNavigate()
+
   return (
     <>
       <Flex gap="2" pb="4" align="center">
-        <Flex width="50%">
+        <IconButton
+          onClick={() => {
+            navigate('/')
+          }}
+          aria-label="Home"
+        >
+          <HomeIcon width="18" height="18" />
+        </IconButton>
+        <Flex maxWidth="50%" flexGrow="1">
           <Heading>{text}</Heading>
         </Flex>
-        <Flex width="50%" justify="end">
+        <Flex maxWidth="50%" flexGrow="1" justify="end">
           {children}
         </Flex>
       </Flex>

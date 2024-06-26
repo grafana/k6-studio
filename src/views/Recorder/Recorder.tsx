@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Flex, Heading } from '@radix-ui/themes'
+import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { WebLogView } from '@/components/WebLogView'
 import { GroupForm } from './GroupForm'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
@@ -38,7 +38,9 @@ export function Recorder() {
         </Flex>
       </Flex>
       <Heading my="4">Requests</Heading>
-      <WebLogView requests={groupedProxyData} />
+      <ScrollArea scrollbars="vertical">
+        <WebLogView requests={groupedProxyData} />
+      </ScrollArea>
       <Generator requests={groupedProxyData} />
       <SaveHarDialog
         onConfirm={saveHarToFile}

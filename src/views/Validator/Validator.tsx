@@ -3,7 +3,7 @@ import { LogView } from '@/components/LogView'
 import { WebLogView } from '@/components/WebLogView'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { K6Log } from '@/types'
-import { Box, Button, Flex, Heading, Spinner } from '@radix-ui/themes'
+import { Button, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
 import { groupBy } from 'lodash-es'
 import { useEffect, useState } from 'react'
 
@@ -72,19 +72,24 @@ export function Validator() {
           </Button>
         </Flex>
       </PageHeading>
-      <Flex gap="3">
-        <Box width="50%">
+      <Flex gap="3" flexGrow="1" minHeight="0">
+        <Flex width="50%" maxHeight="100%" direction="column">
           <Heading size="4" mb="2">
             Requests
           </Heading>
-          <WebLogView requests={groupedProxyData} />
-        </Box>
-        <Box width="50%">
+          <ScrollArea scrollbars="vertical">
+            <WebLogView requests={groupedProxyData} />
+          </ScrollArea>
+        </Flex>
+
+        <Flex width="50%" maxHeight="100%" direction="column">
           <Heading size="4" mb="2">
             Logs
           </Heading>
-          <LogView logs={logs} />
-        </Box>
+          <ScrollArea scrollbars="vertical">
+            <LogView logs={logs} />
+          </ScrollArea>
+        </Flex>
       </Flex>
     </>
   )
