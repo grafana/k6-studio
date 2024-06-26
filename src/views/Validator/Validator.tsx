@@ -4,6 +4,7 @@ import { WebLogView } from '@/components/WebLogView'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { K6Log } from '@/types'
 import { Button, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
+import { groupBy } from 'lodash-es'
 import { useEffect, useState } from 'react'
 
 export function Validator() {
@@ -11,6 +12,11 @@ export function Validator() {
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
   const { proxyData, resetProxyData } = useListenProxyData()
+
+  const groupedProxyData = groupBy(
+    proxyData,
+    (item) => item.comment || 'Default'
+  )
 
   function handleSelectScript() {
     window.studio.script.showScriptSelectDialog().then((path) => {
@@ -72,7 +78,7 @@ export function Validator() {
             Requests
           </Heading>
           <ScrollArea scrollbars="vertical">
-            <WebLogView requests={proxyData} />
+            <WebLogView requests={groupedProxyData} />
           </ScrollArea>
         </Flex>
 

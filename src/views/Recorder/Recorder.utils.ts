@@ -1,11 +1,28 @@
 import { ProxyData } from '@/types'
-import { reverse, uniqBy } from 'lodash-es'
 
 // We get 2 requests with the same id, one when
 // the request is sent and another when the response is received
-export function mergeRequestsById(requests: ProxyData[]) {
-  // Reverse to keep the latest request
-  return reverse(uniqBy(reverse(requests), 'id'))
+export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
+  const existingRequestIndex = previous.findIndex(
+    (request) => request.id === proxyData.id
+  )
+
+  if (existingRequestIndex !== -1) {
+    return previous.map((request) => {
+      if (request.id === proxyData.id) {
+        return {
+          ...proxyData,
+          // When response is received it will not have the group in comment,
+          // so we need to copy it from the request
+          comment: previous[existingRequestIndex]?.comment,
+        }
+      }
+
+      return request
+    })
+  }
+
+  return [...previous, proxyData]
 }
 
 function onProxyStarted() {
