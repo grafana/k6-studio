@@ -18,10 +18,9 @@ export function Validator() {
     (item) => item.comment || 'Default'
   )
 
-  function handleSelectScript() {
-    window.studio.script.showScriptSelectDialog().then((path) => {
-      setScriptPath(path)
-    })
+  async function handleSelectScript() {
+    const path = await window.studio.script.showScriptSelectDialog()
+    setScriptPath(path)
   }
 
   function handleRunScript() {
@@ -51,26 +50,24 @@ export function Validator() {
   return (
     <>
       <PageHeading text="Validator">
-        <Flex gap="2" justify="end" align="center">
-          <Button onClick={handleSelectScript}>Select Script</Button>
-          <Button
-            color="green"
-            disabled={!scriptPath || isRunning}
-            onClick={handleRunScript}
-          >
-            {isRunning ? (
-              <>
-                <Spinner />
-                Running...
-              </>
-            ) : (
-              'Run Script'
-            )}
-          </Button>
-          <Button color="amber" disabled={!isRunning}>
-            Stop Script
-          </Button>
-        </Flex>
+        <Button onClick={handleSelectScript}>Select Script</Button>
+        <Button
+          color="green"
+          disabled={!scriptPath || isRunning}
+          onClick={handleRunScript}
+        >
+          {isRunning ? (
+            <>
+              <Spinner />
+              Running...
+            </>
+          ) : (
+            'Run Script'
+          )}
+        </Button>
+        <Button color="amber" disabled={!isRunning}>
+          Stop Script
+        </Button>
       </PageHeading>
       <Flex gap="3" flexGrow="1" minHeight="0">
         <Flex width="50%" maxHeight="100%" direction="column">
