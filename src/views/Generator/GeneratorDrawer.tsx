@@ -11,14 +11,7 @@ export function GeneratorDrawer({
   onFilterChange,
 }: GeneratorDrawerProps) {
   return (
-    <Box
-      p="2"
-      flexGrow="1"
-      style={{
-        backgroundColor: 'var(--gray-4)',
-        borderRadius: 'var(--radius-2)',
-      }}
-    >
+    <Box height="100%">
       <Tabs.Root defaultValue="requestFilters">
         <Tabs.List>
           <Tabs.Trigger value="rule">Rule</Tabs.Trigger>
