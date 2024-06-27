@@ -2,20 +2,20 @@ import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
 import { TestRule } from '@/types/rules'
 import { applyRule } from '@/utils/rules'
 
-/**
- * Generates a k6 script from the recording and rules
- * @param {Object} params - The parameters object
- * @param {GroupedProxyData} params.recording - The recording
- * @param {TestRule[]} params.rules - The set of rules to apply to the recording
- * @param {Record<string, string>} [params.variables] - The variables to include in the script
- * @returns {string}
- */
 interface GenerateScriptParams {
   recording: GroupedProxyData
   rules: TestRule[]
   variables?: Record<string, string>
 }
 
+/**
+ * Generates a k6 script from the recording and rules
+ * @param {GenerateScriptParams} params - The parameters object
+ * @param {GroupedProxyData} params.recording - The recording
+ * @param {TestRule[]} params.rules - The set of rules to apply to the recording
+ * @param {Record<string, string>} [params.variables] - The variables to include in the script
+ * @returns {string}
+ */
 export function generateScript({
   recording,
   rules,
@@ -52,7 +52,7 @@ export function generateVariableDeclarations(
   variables: Record<string, string>
 ): string {
   return Object.entries(variables)
-    .map(([key, value]) => `const ${key} = ${value}`)
+    .map(([key, value]) => `const ${key} = "${value}"`)
     .join('\n')
 }
 
