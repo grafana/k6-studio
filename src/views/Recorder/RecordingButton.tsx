@@ -54,7 +54,7 @@ export function RecordingControls({
         <Icon recording={isRecording} loading={isLoading} />
         {isRecording ? 'Stop Recording' : 'Start Recording'}
       </Button>
-      {!isEmpty && (
+      {!isRecording && !isEmpty && (
         <>
           <Button onClick={handleSave}>Save to HAR</Button>
           <Button onClick={handleCreateTestGenerator}>
