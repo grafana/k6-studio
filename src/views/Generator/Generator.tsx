@@ -1,5 +1,6 @@
 import { Allotment } from 'allotment'
-import { Box, Button } from '@radix-ui/themes'
+import { Button } from '@radix-ui/themes'
+import { useEffect } from 'react'
 
 import { exportScript, saveScript } from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
@@ -7,7 +8,7 @@ import { harToGroupedProxyData } from '@/utils/harToProxyData'
 import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import { useEffect } from 'react'
+import { TestRuleContainer } from './TestRuleContainer'
 
 export function Generator() {
   const { recording, requestFilters, rules, setRecording, resetRecording } =
@@ -28,10 +29,6 @@ export function Generator() {
     setRecording(groupedProxyData)
   }
 
-  const handleValidate = async () => {
-    const script = await exportScript(recording, rules, requestFilters)
-  }
-
   const handleExport = async () => {
     const script = await exportScript(recording, rules, requestFilters)
 
@@ -42,9 +39,6 @@ export function Generator() {
     <>
       <PageHeading text="Generator">
         <Button onClick={handleImport}>Import HAR</Button>
-        <Button onClick={handleValidate} disabled={!hasRecording}>
-          Validate script
-        </Button>
         <Button onClick={handleExport} disabled={!hasRecording}>
           Export script
         </Button>
@@ -53,7 +47,7 @@ export function Generator() {
         <Allotment.Pane minSize={400}>
           <Allotment vertical defaultSizes={[2, 1]}>
             <Allotment.Pane minSize={300}>
-              <Box height="100%">Rules:</Box>
+              <TestRuleContainer />
             </Allotment.Pane>
             <Allotment.Pane minSize={200}>
               <GeneratorDrawer />
