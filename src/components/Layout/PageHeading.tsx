@@ -38,9 +38,7 @@ export function PageHeading({
         </Flex>
       </Flex>
       <Box py="2">
-        <Inset side="x">
-          <Separator size="4" style={{ backgroundColor: 'var(--gray-4)' }} />
-        </Inset>
+        <Separator size="4" style={{ backgroundColor: 'var(--gray-4)' }} />
       </Box>
     </>
   )

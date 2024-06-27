@@ -1,32 +1,18 @@
-import { GroupedProxyData, Method, Request, Response } from '@/types'
+import { GroupedProxyData, Method, ProxyData, Request, Response } from '@/types'
 import { HarWithOptionalResponse } from '@/types/har'
 import type { Entry } from 'har-format'
+import { groupBy } from 'lodash-es'
 
 export function harToGroupedProxyData(
   har: HarWithOptionalResponse
 ): GroupedProxyData {
-  return har.log.entries.reduce<GroupedProxyData>((acc, entry) => {
-    const proxyData = {
-      id: self.crypto.randomUUID(),
-      request: parseRequest(entry.request),
-      response: entry.response ? parseResponse(entry.response) : undefined,
-    }
-
-    const group = entry.pageref || 'default'
-
-    if (!acc[group]) {
-      return {
-        ...acc,
-        [group]: [proxyData],
-      }
-    }
-
-    return {
-      ...acc,
-      // @ts-expect-error acc[group] is always defined
-      [group]: [...acc[group], proxyData],
-    }
-  }, {})
+  const proxyData: ProxyData[] = har.log.entries.map((entry) => ({
+    id: self.crypto.randomUUID(),
+    request: parseRequest(entry.request),
+    response: entry.response ? parseResponse(entry.response) : undefined,
+    group: entry.pageref || 'default',
+  }))
+  return groupBy(proxyData, (item) => item.group || 'Default')
 }
 
 function parseRequest(request: Entry['request']): Request {
@@ -62,7 +48,7 @@ function parseResponse(response: Entry['response']): Response {
     httpVersion: response.httpVersion,
     headers: response.headers.map((h) => [h.name, h.value]),
     cookies: response.cookies.map((c) => [c.name, c.value]),
-    content: response.content?.text ? btoa(response.content.text) : '',
+    content: response.content?.text ?? '',
     contentLength: response.content?.size ?? 0,
     timestampStart: 0,
     path: '',

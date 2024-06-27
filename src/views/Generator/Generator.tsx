@@ -46,7 +46,7 @@ export function Generator() {
         </Button>
       </PageHeading>
       <Flex gap="2" flexGrow="1" minHeight="0">
-        <Flex direction="column" flexGrow="1">
+        <Flex gap="2" direction="column" flexGrow="1">
           <Box
             p="2"
             flexBasis="70%"
