@@ -69,11 +69,6 @@
     "react-router-dom": "^6.24.0",
     "zustand": "^4.5.3"
   },
-  "overrides": {
-    "vite": {
-      "rollup": "npm:@rollup/wasm-node"
-    }
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
