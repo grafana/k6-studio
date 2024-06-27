@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { generateScript, generateRequestSnippets } from './codegen'
+import {
+  generateScript,
+  generateRequestSnippets,
+  generateVariableDeclarations,
+} from './codegen'
 import { TestRule } from '@/types/rules'
 import { ProxyData } from '@/types'
 
@@ -17,7 +21,27 @@ describe('Code generation', () => {
       }
       `
 
-      expect(generateScript({}, []).replace(/\s/g, '')).toBe(
+      expect(
+        generateScript({
+          recording: {},
+          rules: [],
+          variables: {},
+        }).replace(/\s/g, '')
+      ).toBe(expectedResult.replace(/\s/g, ''))
+    })
+  })
+
+  describe('generateVariableDeclarations', () => {
+    it('should generate variable declarations', () => {
+      const variables = {
+        test: 'test',
+      }
+
+      const expectedResult = `
+        const test = "test"
+      `
+
+      expect(generateVariableDeclarations(variables).replace(/\s/g, '')).toBe(
         expectedResult.replace(/\s/g, '')
       )
     })

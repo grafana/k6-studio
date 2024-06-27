@@ -13,7 +13,10 @@ export async function exportScript(
   allowlist: string[]
 ) {
   const filteredProxyData = applyRequestFilter(recording, allowlist)
-  const script = generateScript(filteredProxyData, rules)
+  const script = generateScript({
+    recording: filteredProxyData,
+    rules,
+  })
   const prettifiedScript = await format(script, {
     parser: 'babel',
     plugins: [prettierPluginBabel, prettierPluginEStree],
