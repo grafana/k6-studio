@@ -4,19 +4,30 @@ import { applyRule } from '@/utils/rules'
 
 /**
  * Generates a k6 script from the recording and rules
- * @param {GroupedProxyData} recording - The recording
- * @param {TestRule[]} rules - The set of rules to apply to the recording
+ * @param {Object} params - The parameters object
+ * @param {GroupedProxyData} params.recording - The recording
+ * @param {TestRule[]} params.rules - The set of rules to apply to the recording
+ * @param {Record<string, string>} [params.variables] - The variables to include in the script
  * @returns {string}
  */
-export function generateScript(
-  recording: GroupedProxyData,
+interface GenerateScriptParams {
+  recording: GroupedProxyData
   rules: TestRule[]
-): string {
+  variables?: Record<string, string>
+}
+
+export function generateScript({
+  recording,
+  rules,
+  variables = {},
+}: GenerateScriptParams): string {
   return `
     import { group, sleep } from 'k6'
     import http from 'k6/http'
     
     export const options = ${generateOptions()}
+
+    ${generateVariableDeclarations(variables)}
     
     export default function() {
       ${generateVUCode(recording, rules)}
@@ -30,6 +41,19 @@ export function generateScript(
  */
 export function generateOptions(): string {
   return '{}'
+}
+
+/**
+ * Generates declarations for test variables
+ * @param {Record<string, string>} variables - The variables to include in the script
+ * @returns {string}
+ */
+export function generateVariableDeclarations(
+  variables: Record<string, string>
+): string {
+  return Object.entries(variables)
+    .map(([key, value]) => `const ${key} = ${value}`)
+    .join('\n')
 }
 
 /**

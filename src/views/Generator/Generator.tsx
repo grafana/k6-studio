@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Box, Button, Flex, ScrollArea, TextField } from '@radix-ui/themes'
+import { Box, Button, Flex, ScrollArea } from '@radix-ui/themes'
 
 import { GroupedProxyData } from '@/types'
 import { exportScript, saveScript } from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { harToGroupedProxyData } from '@/utils/harToProxyData'
 import { WebLogView } from '@/components/WebLogView'
+import { GeneratorDrawer } from './GeneratorDrawer'
 
 export function Generator() {
   const [requests, setRequests] = useState<GroupedProxyData>({})
@@ -57,22 +58,7 @@ export function Generator() {
           >
             Rules:
           </Box>
-          <Box
-            p="2"
-            flexGrow="1"
-            style={{
-              backgroundColor: 'var(--gray-4)',
-              borderRadius: 'var(--radius-2)',
-            }}
-          >
-            Filters:
-            <TextField.Root
-              id="group"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              placeholder="Allow requests containing..."
-            />
-          </Box>
+          <GeneratorDrawer filter={filter} onFilterChange={setFilter} />
         </Flex>
         <Flex
           p="2"

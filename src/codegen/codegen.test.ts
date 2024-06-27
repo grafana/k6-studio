@@ -17,9 +17,13 @@ describe('Code generation', () => {
       }
       `
 
-      expect(generateScript({}, []).replace(/\s/g, '')).toBe(
-        expectedResult.replace(/\s/g, '')
-      )
+      expect(
+        generateScript({
+          recording: {},
+          rules: [],
+          variables: {},
+        }).replace(/\s/g, '')
+      ).toBe(expectedResult.replace(/\s/g, ''))
     })
   })
 
