@@ -1,15 +1,7 @@
-import * as Label from '@radix-ui/react-label'
-import { Box, Flex, Tabs, TextField } from '@radix-ui/themes'
+import { Box, Tabs } from '@radix-ui/themes'
+import { RequestFilters } from './RequestFilters'
 
-interface GeneratorDrawerProps {
-  filter: string
-  onFilterChange: (filters: string) => void
-}
-
-export function GeneratorDrawer({
-  filter,
-  onFilterChange,
-}: GeneratorDrawerProps) {
+export function GeneratorDrawer() {
   return (
     <Box height="100%">
       <Tabs.Root defaultValue="requestFilters">
@@ -27,18 +19,7 @@ export function GeneratorDrawer({
         <Tabs.Content value="thinkTime">Think time content</Tabs.Content>
         <Tabs.Content value="testData">Test data content</Tabs.Content>
         <Tabs.Content value="requestFilters">
-          <Flex gap="2" p="2" align="center" width="100%">
-            <Label.Root htmlFor="requestFilterInput">
-              Allow requests containing
-            </Label.Root>
-            <TextField.Root
-              style={{ flex: 1 }}
-              id="requestFilterInput"
-              value={filter}
-              onChange={(e) => onFilterChange(e.target.value)}
-              placeholder="Type part of the request URL to filter requests"
-            />
-          </Flex>
+          <RequestFilters />
         </Tabs.Content>
       </Tabs.Root>
     </Box>

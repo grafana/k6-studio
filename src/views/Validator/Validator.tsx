@@ -2,6 +2,7 @@ import { PageHeading } from '@/components/Layout/PageHeading'
 import { LogView } from '@/components/LogView'
 import { WebLogView } from '@/components/WebLogView'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { useRecorderStore } from '@/hooks/useRecorderStore'
 import { K6Log } from '@/types'
 import { Button, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
 import { groupBy } from 'lodash-es'
@@ -11,7 +12,8 @@ export function Validator() {
   const [scriptPath, setScriptPath] = useState<string>()
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
-  const { proxyData, resetProxyData } = useListenProxyData()
+  useListenProxyData()
+  const { proxyData, resetProxyData } = useRecorderStore()
 
   const groupedProxyData = groupBy(
     proxyData,
