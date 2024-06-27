@@ -13,3 +13,10 @@ pre {
 .rt-ScrollAreaViewport > * {
   width: auto;
 }
+
+:root {
+  /* Allotment */
+  --focus-border: var(--gray-8);
+  --separator-border: var(--gray-4);
+  --sash-hover-size: 2px;
+}
