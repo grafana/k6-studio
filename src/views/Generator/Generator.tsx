@@ -1,40 +1,36 @@
-import { useState } from 'react'
-import { Box, Button } from '@radix-ui/themes'
+import { Allotment } from 'allotment'
+import { Button } from '@radix-ui/themes'
+import { useEffect } from 'react'
 
-import { GroupedProxyData } from '@/types'
 import { exportScript, saveScript } from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { harToGroupedProxyData } from '@/utils/harToProxyData'
 import { GeneratorDrawer } from './GeneratorDrawer'
-import { Allotment } from 'allotment'
 import { GeneratorSidebar } from './GeneratorSidebar'
+import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { TestRuleContainer } from './TestRuleContainer'
 
 export function Generator() {
-  const [requests, setRequests] = useState<GroupedProxyData>({})
-  const [filter, setFilter] = useState('')
-  const hasRecording = Object.entries(requests).length > 0
+  const { recording, requestFilters, rules, setRecording, resetRecording } =
+    useGeneratorStore()
+  const hasRecording = Object.entries(recording).length > 0
+
+  useEffect(() => {
+    return () => {
+      resetRecording()
+    }
+  }, [resetRecording])
 
   const handleImport = async () => {
     const har = await window.studio.har.openFile()
     if (!har) return
 
     const groupedProxyData = harToGroupedProxyData(har)
-    setRequests(groupedProxyData)
+    setRecording(groupedProxyData)
   }
 
   const handleExport = async () => {
-    const script = await exportScript(
-      requests,
-      [
-        {
-          type: 'customCode',
-          filter: { path: '' },
-          snippet: 'console.log("Hello, world!")',
-          placement: 'before',
-        },
-      ],
-      [filter]
-    )
+    const script = await exportScript(recording, rules, requestFilters)
 
     saveScript(script)
   }
@@ -50,16 +46,16 @@ export function Generator() {
       <Allotment defaultSizes={[3, 1]}>
         <Allotment.Pane minSize={400}>
           <Allotment vertical defaultSizes={[2, 1]}>
-            <Allotment.Pane>
-              <Box height="100%">Rules:</Box>
+            <Allotment.Pane minSize={300}>
+              <TestRuleContainer />
             </Allotment.Pane>
-            <Allotment.Pane>
-              <GeneratorDrawer filter={filter} onFilterChange={setFilter} />
+            <Allotment.Pane minSize={200}>
+              <GeneratorDrawer />
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>
         <Allotment.Pane minSize={300}>
-          <GeneratorSidebar requests={requests} />
+          <GeneratorSidebar requests={recording} />
         </Allotment.Pane>
       </Allotment>
     </>

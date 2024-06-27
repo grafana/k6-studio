@@ -1,42 +1,68 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button, Spinner } from '@radix-ui/themes'
 import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
-import { startRecording, stopRecording } from './Recorder.utils'
 
-export function RecordingButton({
-  onStop,
-  onStart,
+import { startRecording, stopRecording } from './Recorder.utils'
+import { useRecorderStore } from '@/hooks/useRecorderStore'
+import { proxyDataToHar } from '@/utils/proxyDataToHar'
+import { GroupedProxyData } from '@/types'
+import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+
+export function RecordingControls({
+  requests,
 }: {
-  onStop?: () => void
-  onStart?: () => void
+  requests: GroupedProxyData
 }) {
-  const [recording, setRecording] = useState(false)
+  const { isRecording, setIsRecording, resetProxyData } = useRecorderStore()
+  const isEmpty = Object.keys(requests).length === 0
+  const { setRecording } = useGeneratorStore()
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
 
   function handleStartRecording() {
-    onStart?.()
+    resetProxyData()
     setIsLoading(true)
     startRecording().then(() => {
       setIsLoading(false)
-      setRecording(true)
+      setIsRecording(true)
     })
   }
 
   function handleStopRecording() {
     stopRecording()
-    setRecording(false)
-    onStop?.()
+    setIsRecording(false)
+  }
+
+  function handleSave() {
+    const har = proxyDataToHar(requests)
+    window.studio.har.saveFile(JSON.stringify(har, null, 4))
+  }
+
+  function handleCreateTestGenerator() {
+    setRecording(requests)
+    navigate('/generator')
   }
 
   return (
-    <Button
-      onClick={recording ? handleStopRecording : handleStartRecording}
-      disabled={isLoading}
-      color={recording ? 'red' : 'green'}
-    >
-      <Icon recording={recording} loading={isLoading} />
-      {recording ? 'Stop Recording' : 'Start Recording'}
-    </Button>
+    <>
+      <Button
+        onClick={isRecording ? handleStopRecording : handleStartRecording}
+        disabled={isLoading}
+        color={isRecording ? 'red' : 'green'}
+      >
+        <Icon recording={isRecording} loading={isLoading} />
+        {isRecording ? 'Stop Recording' : 'Start Recording'}
+      </Button>
+      {!isRecording && !isEmpty && (
+        <>
+          <Button onClick={handleSave}>Save to HAR</Button>
+          <Button onClick={handleCreateTestGenerator}>
+            Create Test Generator
+          </Button>
+        </>
+      )}
+    </>
   )
 }
 
