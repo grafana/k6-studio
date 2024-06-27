@@ -10,7 +10,8 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
     "format": "prettier --ignore-unknown --write \"./**/*\"",
     "prepare": "husky"
   },
