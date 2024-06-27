@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
-import { writeFile } from 'fs/promises'
+import { open, writeFile } from 'fs/promises'
 import path from 'path'
 import { Process } from '@puppeteer/browsers'
 
@@ -167,6 +167,31 @@ ipcMain.on('har:save', async (event, data) => {
   }
 
   await writeFile(dialogResult.filePath, data)
+})
+
+ipcMain.handle('har:open', async (event) => {
+  console.info('har:open event received')
+  const browserWindow = browserWindowFromEvent(event)
+
+  const dialogResult = await dialog.showOpenDialog(browserWindow, {
+    message: 'Open HAR file',
+    properties: ['openFile'],
+    filters: [{ name: 'HAR', extensions: ['har'] }],
+  })
+
+  if (!dialogResult.canceled && dialogResult.filePaths[0]) {
+    const fileHandle = await open(dialogResult.filePaths[0], 'r')
+    try {
+      const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+      const har = await JSON.parse(data)
+
+      return har
+    } finally {
+      await fileHandle?.close()
+    }
+  }
+
+  return
 })
 
 const browserWindowFromEvent = (

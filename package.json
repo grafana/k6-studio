@@ -10,6 +10,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
+    "test": "vitest",
     "format": "prettier --ignore-unknown --write \"./**/*\"",
     "prepare": "husky"
   },
@@ -42,7 +43,8 @@
     "ts-node": "^10.0.0",
     "typescript": "^5.4.5",
     "vite": "^5.0.12",
-    "vite-tsconfig-paths": "^4.3.2"
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^1.6.0"
   },
   "keywords": [],
   "author": {

@@ -8,6 +8,7 @@ import { Layout } from '@/components/Layout/Layout'
 import { Recorder } from '@/views/Recorder'
 import { Validator } from '@/views/Validator'
 import { Home } from '@/views/Home'
+import { Generator } from './views/Generator/Generator'
 
 export function App() {
   return (
@@ -18,6 +19,7 @@ export function App() {
             <Route index element={<Home />} />
             <Route path="recorder" element={<Recorder />} />
             <Route path="validator" element={<Validator />} />
+            <Route path="generator" element={<Generator />} />
           </Route>
         </Routes>
       </HashRouter>

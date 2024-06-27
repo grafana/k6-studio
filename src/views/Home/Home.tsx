@@ -21,6 +21,14 @@ export function Home() {
         <Button
           variant="solid"
           onClick={() => {
+            navigate('generator')
+          }}
+        >
+          Generate test
+        </Button>
+        <Button
+          variant="solid"
+          onClick={() => {
             navigate('validator')
           }}
         >

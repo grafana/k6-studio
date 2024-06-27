@@ -1,17 +1,23 @@
-import { GroupedProxyData } from '@/types'
-import { Button, Flex, Heading, TextField } from '@radix-ui/themes'
-import { exportScript, saveScript } from './Generator.utils'
 import { useState } from 'react'
+import { Box, Button, Flex, ScrollArea, TextField } from '@radix-ui/themes'
 
-type Props = {
-  requests: GroupedProxyData
-}
+import { GroupedProxyData } from '@/types'
+import { exportScript, saveScript } from './Generator.utils'
+import { PageHeading } from '@/components/Layout/PageHeading'
+import { harToGroupedProxyData } from '@/utils/harToProxyData'
+import { WebLogView } from '@/components/WebLogView'
 
-export function Generator({ requests }: Props) {
+export function Generator() {
+  const [requests, setRequests] = useState<GroupedProxyData>({})
   const [filter, setFilter] = useState('')
+  const hasRecording = Object.entries(requests).length > 0
 
-  if (Object.entries(requests).length === 0) {
-    return null
+  const handleImport = async () => {
+    const har = await window.studio.har.openFile()
+    if (!har) return
+
+    const groupedProxyData = harToGroupedProxyData(har)
+    setRequests(groupedProxyData)
   }
 
   const handleExport = async () => {
@@ -33,15 +39,55 @@ export function Generator({ requests }: Props) {
 
   return (
     <>
-      <Heading my="4">Generator</Heading>
-      <Flex justify="between" align="center" gap="2">
-        <TextField.Root
-          id="group"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="Allow requests containing..."
-        />
-        <Button onClick={handleExport}>Export script</Button>
+      <PageHeading text="Generator">
+        <Button onClick={handleImport}>Import HAR</Button>
+        <Button onClick={handleExport} disabled={!hasRecording}>
+          Export script
+        </Button>
+      </PageHeading>
+      <Flex gap="2" flexGrow="1" minHeight="0">
+        <Flex gap="2" direction="column" flexGrow="1">
+          <Box
+            p="2"
+            flexBasis="70%"
+            style={{
+              backgroundColor: 'var(--gray-4)',
+              borderRadius: 'var(--radius-2)',
+            }}
+          >
+            Rules:
+          </Box>
+          <Box
+            p="2"
+            flexGrow="1"
+            style={{
+              backgroundColor: 'var(--gray-4)',
+              borderRadius: 'var(--radius-2)',
+            }}
+          >
+            Filters:
+            <TextField.Root
+              id="group"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Allow requests containing..."
+            />
+          </Box>
+        </Flex>
+        <Flex
+          p="2"
+          direction="column"
+          width="30%"
+          style={{
+            backgroundColor: 'var(--gray-4)',
+            borderRadius: 'var(--radius-2)',
+          }}
+        >
+          Requests:
+          <ScrollArea scrollbars="vertical">
+            <WebLogView requests={requests} />
+          </ScrollArea>
+        </Flex>
       </Flex>
     </>
   )
