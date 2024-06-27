@@ -5,23 +5,12 @@ import { isEmpty } from 'lodash-es'
 import { isGroupedProxyData } from './WebLogView.utils'
 import { Row } from './Row'
 import { Group } from './Group'
-import { useEffect } from 'react'
-import { useSidebar } from '@/hooks/useSidebar'
 
 export function WebLogView({
   requests,
 }: {
   requests: ProxyData[] | GroupedProxyData
 }) {
-  const { close } = useSidebar()
-
-  // Close sidebar when navigating away
-  useEffect(() => {
-    return () => {
-      close()
-    }
-  }, [close])
-
   if (isEmpty(requests)) {
     return <NoRequestsMessage />
   }

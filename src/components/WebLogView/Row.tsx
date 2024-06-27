@@ -1,13 +1,13 @@
 import { ProxyData } from '@/types'
-import { Box, Flex, Text } from '@radix-ui/themes'
+import { Box, Button, Flex, Text } from '@radix-ui/themes'
 import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
 import { RequestDetails } from '../RequestDetails'
 import { removeQueryStringFromUrl } from './WebLogView.utils'
-import { useSidebar } from '@/hooks/useSidebar'
+import { useDrawer } from '@/hooks/useDrawer'
 
 export function Row({ data }: { data: ProxyData }) {
-  const { renderInSidebar } = useSidebar()
+  const { renderInSidebar } = useDrawer('right')
   return (
     <Flex
       align="center"
