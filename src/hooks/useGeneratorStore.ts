@@ -9,6 +9,7 @@ interface GeneratorState {
   rules: TestRule[]
   requestFilters: string[]
   setRecording: (recording: GroupedProxyData) => void
+  resetRecording: () => void
   addRequestFilter: (filter: string) => void
 }
 
@@ -32,6 +33,10 @@ export const useGeneratorStore = create<GeneratorState>()(
     setRecording: (recording: GroupedProxyData) =>
       set((state) => {
         state.recording = recording
+      }),
+    resetRecording: () =>
+      set((state) => {
+        state.recording = {}
       }),
   }))
 )

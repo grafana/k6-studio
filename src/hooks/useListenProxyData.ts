@@ -3,8 +3,14 @@ import { useEffect, useRef } from 'react'
 import { useRecorderStore } from './useRecorderStore'
 
 export function useListenProxyData(group?: string) {
-  const { addRequest } = useRecorderStore()
+  const { resetProxyData, addRequest } = useRecorderStore()
   const groupRef = useRef(group)
+
+  useEffect(() => {
+    return () => {
+      resetProxyData()
+    }
+  }, [resetProxyData])
 
   useEffect(() => {
     // Create ref to avoid creating multiple listeners

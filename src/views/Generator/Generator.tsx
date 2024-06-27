@@ -7,10 +7,18 @@ import { harToGroupedProxyData } from '@/utils/harToProxyData'
 import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useEffect } from 'react'
 
 export function Generator() {
-  const { recording, requestFilters, rules, setRecording } = useGeneratorStore()
+  const { recording, requestFilters, rules, setRecording, resetRecording } =
+    useGeneratorStore()
   const hasRecording = Object.entries(recording).length > 0
+
+  useEffect(() => {
+    return () => {
+      resetRecording()
+    }
+  }, [resetRecording])
 
   const handleImport = async () => {
     const har = await window.studio.har.openFile()
@@ -18,6 +26,10 @@ export function Generator() {
 
     const groupedProxyData = harToGroupedProxyData(har)
     setRecording(groupedProxyData)
+  }
+
+  const handleValidate = async () => {
+    const script = await exportScript(recording, rules, requestFilters)
   }
 
   const handleExport = async () => {
@@ -30,6 +42,9 @@ export function Generator() {
     <>
       <PageHeading text="Generator">
         <Button onClick={handleImport}>Import HAR</Button>
+        <Button onClick={handleValidate} disabled={!hasRecording}>
+          Validate script
+        </Button>
         <Button onClick={handleExport} disabled={!hasRecording}>
           Export script
         </Button>
