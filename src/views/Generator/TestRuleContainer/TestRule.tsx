@@ -23,6 +23,11 @@ export function TestRuleItem({ rule }: TestRuleItemProps) {
           {rule.placement} all requests <Code>{rule.snippet}</Code>
         </>
       )}
+      {rule.type === 'correlation' && (
+        <>
+          {rule.extractor.filter.path} all requests <Code>{rule.extractor.selector.type}</Code>
+        </>
+      )}
     </Flex>
   )
 }
@@ -33,7 +38,7 @@ function TestRuleType({ rule }: TestRuleItemProps) {
       case 'customCode':
         return 'Custom code'
       case 'correlation':
-        return 'Delay'
+        return 'Correlation'
       case 'parameterization':
         return 'Response'
       case 'verification':

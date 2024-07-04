@@ -21,9 +21,30 @@ export interface Filter {
   path: string
 }
 
+export interface BeginEndSelector {
+  type: 'begin-end'
+  begin: string
+  end: string
+}
+
 export interface Selector {
   type: 'url'
   value: string
+}
+
+export type CorrelationSelector =
+  | BeginEndSelector
+
+export interface CorrelationExtractor {
+  from: 'headers' | 'body' | 'url'
+  filter: Filter
+  selector: CorrelationSelector
+  variableName?: string
+}
+
+export interface CorrelationReplacer {
+  filter: Filter
+  selector: CorrelationSelector
 }
 
 export interface ParameterizationRule {
@@ -35,15 +56,9 @@ export interface ParameterizationRule {
 
 export interface CorrelationRule {
   type: 'correlation'
-  extractor: {
-    filter: Filter
-    selector: Selector
-    variableName?: string
-  }
-  replacer?: {
-    filter: Filter
-    selector: Selector
-  }
+  id: string
+  extractor: CorrelationExtractor
+  replacer?: CorrelationReplacer
 }
 
 export interface VerificationRule {

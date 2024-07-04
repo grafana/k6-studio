@@ -24,11 +24,11 @@ export function generateScript({
   return `
     import { group, sleep } from 'k6'
     import http from 'k6/http'
-    
+
     export const options = ${generateOptions()}
 
     ${generateVariableDeclarations(variables)}
-    
+
     export default function() {
       ${generateVUCode(recording, rules)}
     }
@@ -136,7 +136,7 @@ export function generateSingleRequestSnippet(
 
   try {
     if (request.content) {
-      content = `'${JSON.stringify(request.content)}'`
+      content = `\`${JSON.stringify(request.content)}\``
     }
   } catch (error) {
     console.error('Failed to serialize request content', error)
@@ -145,7 +145,7 @@ export function generateSingleRequestSnippet(
   const params = '{}'
 
   const main = `
-    http.request(${method}, ${url}, ${content}, ${params})
+    var resp = http.request(${method}, ${url}, ${content}, ${params})
   `
 
   return [...before, main, ...after].join('\n')

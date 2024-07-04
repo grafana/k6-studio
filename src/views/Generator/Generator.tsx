@@ -49,7 +49,7 @@ export function Generator() {
             <Allotment.Pane minSize={300}>
               <TestRuleContainer />
             </Allotment.Pane>
-            <Allotment.Pane minSize={200}>
+            <Allotment.Pane minSize={500}>
               <GeneratorDrawer />
             </Allotment.Pane>
           </Allotment>
