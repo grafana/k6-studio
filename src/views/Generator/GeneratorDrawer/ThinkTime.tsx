@@ -22,19 +22,6 @@ interface RangeTiming {
 
 type Timing = FixedTiming | RangeTiming
 
-const createFixedTiming = (value: number | null = null): FixedTiming => ({
-  type: 'fixed',
-  value,
-})
-
-const createRangeTiming = (
-  min: number | null = null,
-  max: number | null = null
-): RangeTiming => ({
-  type: 'range',
-  value: { min, max },
-})
-
 export function ThinkTime() {
   const [sleepType, setSleepType] = useState<SleepType>('groups')
   const [timing, setTiming] = useState<Timing>(createFixedTiming)
@@ -155,3 +142,16 @@ export function ThinkTime() {
     </Container>
   )
 }
+
+const createFixedTiming = (value: number | null = null): FixedTiming => ({
+  type: 'fixed',
+  value,
+})
+
+const createRangeTiming = (
+  min: number | null = null,
+  max: number | null = null
+): RangeTiming => ({
+  type: 'range',
+  value: { min, max },
+})
