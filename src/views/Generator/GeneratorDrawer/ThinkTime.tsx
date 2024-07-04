@@ -1,39 +1,88 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Box, Callout, Flex, Select, Text, TextField } from '@radix-ui/themes'
+import * as Label from '@radix-ui/react-label'
+import { Callout, Container, Flex, Select, TextField } from '@radix-ui/themes'
 import { useState } from 'react'
 
-type Timing = 'fixed' | 'range'
 type SleepType = 'groups' | 'requests' | 'iterations'
 
+type TimingType = 'fixed' | 'range'
+
+interface FixedTiming {
+  type: 'fixed'
+  value: number | null
+}
+
+interface RangeTiming {
+  type: 'range'
+  value: {
+    min: number | null
+    max: number | null
+  }
+}
+
+type Timing = FixedTiming | RangeTiming
+
+const createFixedTiming = (value: number | null = null): FixedTiming => ({
+  type: 'fixed',
+  value,
+})
+
+const createRangeTiming = (
+  min: number | null = null,
+  max: number | null = null
+): RangeTiming => ({
+  type: 'range',
+  value: { min, max },
+})
+
 export function ThinkTime() {
-  const [timing, setTiming] = useState<Timing>('fixed')
   const [sleepType, setSleepType] = useState<SleepType>('groups')
-  const [fixed, setFixed] = useState<number | null>(null)
-  const [min, setMin] = useState<number | null>(null)
-  const [max, setMax] = useState<number | null>(null)
+  const [timing, setTiming] = useState<Timing>(createFixedTiming)
 
   function handleMinChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setMin(parseInt(e.target.value))
+    if (timing.type === 'fixed') {
+      return
+    }
+
+    setTiming(createRangeTiming(parseInt(e.target.value), timing.value.max))
   }
 
   function handleMaxChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setMax(parseInt(e.target.value))
+    if (timing.type === 'fixed') {
+      return
+    }
+
+    setTiming(createRangeTiming(timing.value.min, parseInt(e.target.value)))
   }
 
   function handleFixedTimingChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setFixed(parseInt(e.target.value))
+    if (timing.type === 'range') {
+      return
+    }
+
+    setTiming(createFixedTiming(parseInt(e.target.value)))
+  }
+
+  function handleTimingTypeChange(timingType: TimingType) {
+    if (timingType === 'fixed') {
+      setTiming(createFixedTiming())
+    } else {
+      setTiming(createRangeTiming())
+    }
   }
 
   return (
-    <Box p="2" maxWidth="400px">
-      <Flex gap="2" direction="column">
-        <Flex direction="column" gap="1">
-          <Text>Configure sleep timing</Text>
-          <Flex gap="2">
+    <Container align="left" size="1" p="1">
+      <Flex gap="3" direction="column">
+        <Flex direction="column" gap="2">
+          <Label.Root>Configure timing</Label.Root>
+          <Flex gap="1">
             <Select.Root
               size="2"
               defaultValue="fixed"
-              onValueChange={(timing: Timing) => setTiming(timing)}
+              onValueChange={(timingType: TimingType) =>
+                handleTimingTypeChange(timingType)
+              }
             >
               <Select.Trigger />
               <Select.Content>
@@ -42,31 +91,30 @@ export function ThinkTime() {
               </Select.Content>
             </Select.Root>
 
-            {timing === 'fixed' && (
+            {timing.type === 'fixed' && (
               <TextField.Root
                 size="2"
                 placeholder="seconds"
                 type="number"
-                value={fixed || ''}
+                value={timing.value || ''}
                 onChange={handleFixedTimingChange}
               />
             )}
 
-            {timing === 'range' && (
+            {timing.type === 'range' && (
               <Flex gap="2" align="center">
                 <TextField.Root
                   size="2"
                   placeholder="min"
                   type="number"
-                  value={min || ''}
+                  value={timing.value.min || ''}
                   onChange={handleMinChange}
                 />
                 <TextField.Root
-                  disabled={min === 0}
                   size="2"
                   placeholder="max"
                   type="number"
-                  value={max || ''}
+                  value={timing.value.max || ''}
                   onChange={handleMaxChange}
                 />
               </Flex>
@@ -75,7 +123,7 @@ export function ThinkTime() {
         </Flex>
 
         <Flex direction="column" gap="1">
-          <Text>When do you want to add sleep?</Text>
+          <Label.Root>Choose where to apply timing</Label.Root>
           <Select.Root
             size="2"
             defaultValue="groups"
@@ -97,13 +145,13 @@ export function ThinkTime() {
               <InfoCircledIcon />
             </Callout.Icon>
             <Callout.Text>
-              You should not use this option if you have included groups, as
-              this may result in unexpected delays between requests, even within
-              a group.
+              It is advisable not to use this option if you have included
+              groups, as it may cause unexpected delays between requests, even
+              within a group.
             </Callout.Text>
           </Callout.Root>
         )}
       </Flex>
-    </Box>
+    </Container>
   )
 }
