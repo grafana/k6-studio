@@ -17,12 +17,55 @@ export const useGeneratorStore = create<GeneratorState>()(
   immer((set) => ({
     recording: {},
     rules: [
+      // {
+      //   type: 'customCode',
+      //   filter: { path: '' },
+      //   snippet: 'console.log("Hello, world!")',
+      //   placement: 'before',
+      // },
       {
-        type: 'customCode',
-        filter: { path: '' },
-        snippet: 'console.log("Hello, world!")',
-        placement: 'before',
+        type: 'correlation',
+        id: '1',
+        extractor: {
+          from: 'body',
+          filter: { path: '' },
+          selector: {
+            type: 'begin-end',
+            // begin: '"mimeType": "',
+            // end: '",'
+            // begin: '<stop offset="0.951255" stop-color="',
+            // end: '" stop-opacity="0"/>'
+            begin: '<meta name=Copyright content="',
+            end: '">'
+          }
+        }
       },
+      {
+        type: 'correlation',
+        id: '3',
+        extractor: {
+          from: 'url',
+          filter: { path: '' },
+          selector: {
+            type: 'begin-end',
+            begin: 'grafana.com/',
+            end: '/'
+          }
+        }
+      },
+      // {
+      //   type: 'correlation',
+      //   id: '2',
+      //   extractor: {
+      //     from: 'headers',
+      //     filter: { path: '' },
+      //     selector: {
+      //       type: 'begin-end',
+      //       begin: 'charset=',
+      //       end: '-8'
+      //     }
+      //   }
+      // },
     ],
     requestFilters: [],
 
