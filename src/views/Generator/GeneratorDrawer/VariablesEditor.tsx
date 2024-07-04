@@ -1,6 +1,13 @@
 import { useState, ChangeEvent } from 'react'
-import { Box, Button, Flex, IconButton, TextField } from '@radix-ui/themes'
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import {
+  Box,
+  Button,
+  Heading,
+  IconButton,
+  Table,
+  TextField,
+} from '@radix-ui/themes'
 
 interface Variable {
   name: string
@@ -40,32 +47,46 @@ export function VariablesEditor() {
 
   return (
     <Box p="2">
+      <Heading color="gray" mb="2" size="4">
+        Default Environment
+      </Heading>
+
       {variables.length !== 0 && (
-        <Flex gap="2" p="2" direction="column" width="100%">
-          {variables.map((variable, index) => (
-            <Flex gap="2" key={index}>
-              <TextField.Root
-                placeholder="name"
-                value={variable.name}
-                onChange={handleChangeVariable(index, 'name')}
-              />
+        <Table.Root size="1" variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>value</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
 
-              <TextField.Root
-                placeholder="value"
-                value={variable.value}
-                onChange={handleChangeVariable(index, 'value')}
-              />
-
-              <IconButton>
-                <TrashIcon
-                  width="18"
-                  height="18"
-                  onClick={handleRemoveVariable(index)}
-                />
-              </IconButton>
-            </Flex>
-          ))}
-        </Flex>
+          <Table.Body>
+            {variables.map((variable, index) => (
+              <Table.Row key={index}>
+                <Table.Cell>
+                  <TextField.Root
+                    placeholder="name"
+                    value={variable.name}
+                    onChange={handleChangeVariable(index, 'name')}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <TextField.Root
+                    placeholder="value"
+                    value={variable.value}
+                    onChange={handleChangeVariable(index, 'value')}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <IconButton onClick={handleRemoveVariable(index)}>
+                    <TrashIcon width="18" height="18" />
+                  </IconButton>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
       )}
       <Button m="4" variant="ghost" onClick={handleAddVariable}>
         <PlusIcon width="18" height="18" /> Add variable
