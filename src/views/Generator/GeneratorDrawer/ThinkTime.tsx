@@ -127,11 +127,11 @@ export function ThinkTime() {
         </Flex>
 
         {sleepType === 'requests' && (
-          <Callout.Root color="amber">
+          <Callout.Root color="amber" role="alert" variant="surface">
             <Callout.Icon>
               <InfoCircledIcon />
             </Callout.Icon>
-            <Callout.Text>
+            <Callout.Text wrap="balance">
               It is advisable not to use this option if you have included
               groups, as it may cause unexpected delays between requests, even
               within a group.
