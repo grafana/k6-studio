@@ -2,19 +2,12 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
 import { GroupedProxyData } from '@/types'
-import { TestRule } from '@/types/rules'
-
-interface GeneratorState {
-  recording: GroupedProxyData
-  rules: TestRule[]
-  requestFilters: string[]
-  setRecording: (recording: GroupedProxyData) => void
-  resetRecording: () => void
-  addRequestFilter: (filter: string) => void
-}
+import { createLoadProfileSlice } from './slices/loadProfile'
+import { GeneratorState } from './types'
 
 export const useGeneratorStore = create<GeneratorState>()(
-  immer((set) => ({
+  immer((set, get, store) => ({
+    ...createLoadProfileSlice(set, get, store),
     recording: {},
     rules: [
       {

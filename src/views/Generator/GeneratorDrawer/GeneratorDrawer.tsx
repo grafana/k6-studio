@@ -1,10 +1,16 @@
-import { Box, Tabs } from '@radix-ui/themes'
+import { type ComponentProps } from 'react'
+import { Box, ScrollArea, Tabs } from '@radix-ui/themes'
+
 import { RequestFilters } from './RequestFilters'
+import { LoadProfile } from './LoadProfile'
 
 export function GeneratorDrawer() {
   return (
     <Box height="100%">
-      <Tabs.Root defaultValue="requestFilters">
+      <Tabs.Root
+        defaultValue="requestFilters"
+        style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+      >
         <Tabs.List>
           <Tabs.Trigger value="rule">Rule</Tabs.Trigger>
           <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
@@ -13,15 +19,35 @@ export function GeneratorDrawer() {
           <Tabs.Trigger value="testData">Test data</Tabs.Trigger>
           <Tabs.Trigger value="requestFilters">Request filters</Tabs.Trigger>
         </Tabs.List>
-        <Tabs.Content value="rule">Rule content</Tabs.Content>
-        <Tabs.Content value="loadProfile">Load profile content</Tabs.Content>
-        <Tabs.Content value="thresholds">Thresholds content</Tabs.Content>
-        <Tabs.Content value="thinkTime">Think time content</Tabs.Content>
-        <Tabs.Content value="testData">Test data content</Tabs.Content>
-        <Tabs.Content value="requestFilters">
+        <ScrollableTabsContent value="rule">Rule content</ScrollableTabsContent>
+        <ScrollableTabsContent value="loadProfile">
+          <LoadProfile />
+        </ScrollableTabsContent>
+        <ScrollableTabsContent value="thresholds">
+          Thresholds content
+        </ScrollableTabsContent>
+        <ScrollableTabsContent value="thinkTime">
+          Think time content
+        </ScrollableTabsContent>
+        <ScrollableTabsContent value="testData">
+          Test data content
+        </ScrollableTabsContent>
+        <ScrollableTabsContent value="requestFilters">
           <RequestFilters />
-        </Tabs.Content>
+        </ScrollableTabsContent>
       </Tabs.Root>
     </Box>
+  )
+}
+
+const ScrollableTabsContent = ({
+  children,
+  value,
+  ...props
+}: ComponentProps<typeof Tabs.Content>) => {
+  return (
+    <Tabs.Content style={{ height: '100%' }} value={value} {...props}>
+      <ScrollArea style={{ height: '100%' }}>{children}</ScrollArea>
+    </Tabs.Content>
   )
 }
