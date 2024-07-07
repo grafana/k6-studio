@@ -48,7 +48,7 @@ function applyCorrelationRule(
       const originalRequest = cloneDeep(requestSnippetSchema.data.request)
 
       // default behaviour replaces all occurences of the string
-      const replacedRequestContent = requestSnippetSchema.data.request.content.replaceAll(correlationState.extractedValue, `\${correl_${rule.id}}`)
+      const replacedRequestContent = requestSnippetSchema.data.request.content.replaceAll(correlationState.extractedValue, `\${correl_${correlationState.generatedUniqueId}}`)
 
       snippetSchemaReturnValue.data.request.content = replacedRequestContent
       // we clone to keep a reference even if the objects gets mutated further
@@ -66,7 +66,7 @@ function applyCorrelationRule(
   }
 
   // try to extract the value
-  const { extractedValue, correlationExtractionSnippet } = tryCorrelationExtraction(rule, requestSnippetSchema.data)
+  const { extractedValue, correlationExtractionSnippet, generatedUniqueId } = tryCorrelationExtraction(rule, requestSnippetSchema.data)
 
   if (extractedValue) {
     if (correlationState) {
@@ -79,7 +79,8 @@ function applyCorrelationRule(
         extractedValue: extractedValue,
         count: 1,
         responsesExtracted: [requestSnippetSchema.data],
-        requestsReplaced: []
+        requestsReplaced: [],
+        generatedUniqueId: generatedUniqueId,
       }
 
       return {
@@ -118,7 +119,7 @@ const tryCorrelationExtraction = (rule: CorrelationRule, proxyData: ProxyData) =
         }
       break  // <--- editor complains about missing break and then complains that break is unreachable :/
   }
-  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
 }
 
 const extractCorrelationBeginEndBody = (rule: CorrelationRule, response: Response) => {
@@ -130,6 +131,7 @@ const extractCorrelationBeginEndBody = (rule: CorrelationRule, response: Respons
   if (match) {
 
     const uniqueId = sequentialIdGenerator.next().value
+
     const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
 var match = resp.body.match(regex)
@@ -139,10 +141,10 @@ if (match) {
 }
 console.log('*********')
 console.log(correl_${uniqueId})`
-    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: uniqueId}
   }
 
-  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
 }
 
 const extractCorrelationBeginEndHeaders = (rule: CorrelationRule, response: Response) => {
@@ -167,11 +169,11 @@ correl_${uniqueId} = match[1]
 console.log('*********')
 console.log('HEADER')
 console.log(correl_${uniqueId})`
-      return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+      return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: uniqueId}
     }
   }
 
-  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
 }
 
 const extractCorrelationBeginEndUrl = (rule: CorrelationRule, request: Request) => {
@@ -182,6 +184,7 @@ const extractCorrelationBeginEndUrl = (rule: CorrelationRule, request: Request) 
   if (match) {
 
     const uniqueId = sequentialIdGenerator.next().value
+
     const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
 var match = resp.url.match(regex)
@@ -191,10 +194,10 @@ if (match) {
 }
 console.log('*********')
 console.log(correl_${uniqueId})`
-    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: uniqueId}
   }
 
-  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
 }
 
 const extractCorrelationRegexBody = (rule: CorrelationRule, response: Response) => {
@@ -212,6 +215,7 @@ const extractCorrelationRegexBody = (rule: CorrelationRule, response: Response) 
   if (match) {
 
     const uniqueId = sequentialIdGenerator.next().value
+
     const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.regex}')
 var match = resp.body.match(regex)
@@ -221,10 +225,10 @@ if (match) {
 }
 console.log('*********')
 console.log(correl_${uniqueId})`
-    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: uniqueId}
   }
 
-  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
 }
 
 const extractCorrelationRegexHeaders = (rule: CorrelationRule, response: Response) => {
@@ -244,6 +248,7 @@ const extractCorrelationRegexHeaders = (rule: CorrelationRule, response: Respons
 
     if (match) {
       const uniqueId = sequentialIdGenerator.next().value
+
       const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.regex}')
 var match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
@@ -254,11 +259,11 @@ correl_${uniqueId} = match[1]
 console.log('*********')
 console.log('HEADER')
 console.log(correl_${uniqueId})`
-      return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+      return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: uniqueId}
     }
   }
 
-  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
 }
 
 const extractCorrelationRegexUrl = (rule: CorrelationRule, request: Request) => {
@@ -275,6 +280,7 @@ const extractCorrelationRegexUrl = (rule: CorrelationRule, request: Request) => 
   if (match) {
 
     const uniqueId = sequentialIdGenerator.next().value
+
     const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.regex}')
 var match = resp.url.match(regex)
@@ -284,10 +290,10 @@ if (match) {
 }
 console.log('*********')
 console.log(correl_${uniqueId})`
-    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: uniqueId}
   }
 
-  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
 }
 
 /**
@@ -308,6 +314,7 @@ interface CorrelationState {
   count: number
   responsesExtracted: ProxyData[]
   requestsReplaced: [Request, Request][]
+  generatedUniqueId: number | void
 }
 
 // TODO: these needs to be reset
