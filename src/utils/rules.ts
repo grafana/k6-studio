@@ -72,13 +72,13 @@ function applyCorrelationRule(
     if (correlationState) {
       // we only increment the count and we keep the first extracted value
       correlationState.count += 1
-      // TODO: need to add request instead when extracting from URL
-      correlationState.responsesExtracted.push(requestSnippetSchema.data.response)
+      // note: if the correlation extracts from URL we will need to showcase the request
+      correlationState.responsesExtracted.push(requestSnippetSchema.data)
     } else {
       correlationsState[rule.id] = {
         extractedValue: extractedValue,
         count: 1,
-        responsesExtracted: [requestSnippetSchema.data.response],
+        responsesExtracted: [requestSnippetSchema.data],
         requestsReplaced: []
       }
 
@@ -117,15 +117,16 @@ const extractCorrelationBeginEndBody = (rule: CorrelationRule, response: Respons
 
   if (match) {
 
+    const uniqueId = sequentialIdGenerator.next().value
     const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
 var match = resp.body.match(regex)
-let correl_${rule.id}
+let correl_${uniqueId}
 if (match) {
-  correl_${rule.id} = match[1]
+  correl_${uniqueId} = match[1]
 }
 console.log('*********')
-console.log(correl_${rule.id})`
+console.log(correl_${uniqueId})`
     return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
   }
 
@@ -142,17 +143,18 @@ const extractCorrelationBeginEndHeaders = (rule: CorrelationRule, response: Resp
     const match = value.match(regex)
 
     if (match) {
-      console.log(key)
+      const uniqueId = sequentialIdGenerator.next().value
+      // TODO: replace regex with findBetween from k6-utils once we have imports
       const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
 var match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
-let correl_${rule.id}
+let correl_${uniqueId}
 if (match) {
-correl_${rule.id} = match[1]
+correl_${uniqueId} = match[1]
 }
 console.log('*********')
 console.log('HEADER')
-console.log(correl_${rule.id})`
+console.log(correl_${uniqueId})`
       return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
     }
   }
@@ -167,15 +169,16 @@ const extractCorrelationBeginEndUrl = (rule: CorrelationRule, request: Request) 
 
   if (match) {
 
+    const uniqueId = sequentialIdGenerator.next().value
     const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
 var match = resp.url.match(regex)
-let correl_${rule.id}
+let correl_${uniqueId}
 if (match) {
-  correl_${rule.id} = match[1]
+  correl_${uniqueId} = match[1]
 }
 console.log('*********')
-console.log(correl_${rule.id})`
+console.log(correl_${uniqueId})`
     return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
   }
 
@@ -198,9 +201,18 @@ function canonicalHeaderKey(headerKey: string) {
 interface CorrelationState {
   extractedValue?: string
   count: number
-  responsesExtracted: Response[]
+  responsesExtracted: ProxyData[]
   requestsReplaced: [Request, Request][]
 }
 
-// TODO: this needs to be reset
+// TODO: these needs to be reset
 const correlationsState: Record<string, CorrelationState> = {}
+const sequentialIdGenerator = generateSequentialInt()
+
+function* generateSequentialInt() {
+  let num = 0
+  while (true) {
+    yield num
+    num += 1
+  }
+}

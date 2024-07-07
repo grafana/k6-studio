@@ -25,6 +25,7 @@ export const useGeneratorStore = create<GeneratorState>()(
       // },
       {
         type: 'correlation',
+        name: 'correlation_1',
         id: '1',
         extractor: {
           from: 'body',
@@ -42,6 +43,7 @@ export const useGeneratorStore = create<GeneratorState>()(
       },
       {
         type: 'correlation',
+        name: 'correlation_3',
         id: '3',
         extractor: {
           from: 'url',

@@ -56,6 +56,7 @@ export interface ParameterizationRule {
 
 export interface CorrelationRule {
   type: 'correlation'
+  name: string
   id: string
   extractor: CorrelationExtractor
   replacer?: CorrelationReplacer
