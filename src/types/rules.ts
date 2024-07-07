@@ -27,6 +27,11 @@ export interface BeginEndSelector {
   end: string
 }
 
+export interface RegexSelector {
+  type: 'regex'
+  regex: string
+}
+
 export interface Selector {
   type: 'url'
   value: string
@@ -34,6 +39,7 @@ export interface Selector {
 
 export type CorrelationSelector =
   | BeginEndSelector
+  | RegexSelector
 
 export interface CorrelationExtractor {
   from: 'headers' | 'body' | 'url'

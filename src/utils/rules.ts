@@ -105,6 +105,18 @@ const tryCorrelationExtraction = (rule: CorrelationRule, proxyData: ProxyData) =
         case 'url':
           return extractCorrelationBeginEndUrl(rule, proxyData.request)
         }
+      break  // <--- editor complains about missing break and then complains that break is unreachable :/
+    case 'regex':
+      switch (rule.extractor.from) {
+        case 'body':
+          // TODO: we know that we have a response, how to make typescript accept it ?
+          return extractCorrelationRegexBody(rule, proxyData.response)
+        case 'headers':
+          return extractCorrelationRegexHeaders(rule, proxyData.response)
+        case 'url':
+          return extractCorrelationRegexUrl(rule, proxyData.request)
+        }
+      break  // <--- editor complains about missing break and then complains that break is unreachable :/
   }
   return {extractedValue: undefined, correlationExtractionSnippet: undefined}
 }
@@ -185,6 +197,99 @@ console.log(correl_${uniqueId})`
   return {extractedValue: undefined, correlationExtractionSnippet: undefined}
 }
 
+const extractCorrelationRegexBody = (rule: CorrelationRule, response: Response) => {
+
+  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
+  // TODO: remove this obscenity!
+  if (rule.extractor.selector.type !== 'regex') {
+    throw new Error('regex operation on wrong rule type')
+  }
+
+  // Note: currently matches only the first occurrence
+  const regex = new RegExp(rule.extractor.selector.regex)
+  const match = response.content.match(regex)
+
+  if (match) {
+
+    const uniqueId = sequentialIdGenerator.next().value
+    const correlationExtractionSnippet = `
+var regex = new RegExp('${rule.extractor.selector.regex}')
+var match = resp.body.match(regex)
+let correl_${uniqueId}
+if (match) {
+  correl_${uniqueId} = match[1]
+}
+console.log('*********')
+console.log(correl_${uniqueId})`
+    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+  }
+
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+}
+
+const extractCorrelationRegexHeaders = (rule: CorrelationRule, response: Response) => {
+
+  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
+  // TODO: remove this obscenity!
+  if (rule.extractor.selector.type !== 'regex') {
+    throw new Error('regex operation on wrong rule type')
+  }
+
+  // Note: currently matches only the first occurrence
+  const regex = new RegExp(`${rule.extractor.selector.regex}`)
+
+  for (const [key, value] of response.headers) {
+
+    const match = value.match(regex)
+
+    if (match) {
+      const uniqueId = sequentialIdGenerator.next().value
+      const correlationExtractionSnippet = `
+var regex = new RegExp('${rule.extractor.selector.regex}')
+var match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
+let correl_${uniqueId}
+if (match) {
+correl_${uniqueId} = match[1]
+}
+console.log('*********')
+console.log('HEADER')
+console.log(correl_${uniqueId})`
+      return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+    }
+  }
+
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+}
+
+const extractCorrelationRegexUrl = (rule: CorrelationRule, request: Request) => {
+
+  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
+  // TODO: remove this obscenity!
+  if (rule.extractor.selector.type !== 'regex') {
+    throw new Error('regex operation on wrong rule type')
+  }
+
+  const regex = new RegExp(`${rule.extractor.selector.regex}`)
+  const match = request.url.match(regex)
+
+  if (match) {
+
+    const uniqueId = sequentialIdGenerator.next().value
+    const correlationExtractionSnippet = `
+var regex = new RegExp('${rule.extractor.selector.regex}')
+var match = resp.url.match(regex)
+let correl_${uniqueId}
+if (match) {
+  correl_${uniqueId} = match[1]
+}
+console.log('*********')
+console.log(correl_${uniqueId})`
+    return { extractedValue: match[1], correlationExtractionSnippet: correlationExtractionSnippet}
+  }
+
+  return {extractedValue: undefined, correlationExtractionSnippet: undefined}
+}
+
 /**
  * Converts a header key to its canonical form.
  * ex. content-type -> Content-Type
@@ -209,6 +314,9 @@ interface CorrelationState {
 const correlationsState: Record<string, CorrelationState> = {}
 const sequentialIdGenerator = generateSequentialInt()
 
+/**
+ * Generates sequentials integers to be used for generated variables distinction for the final script.
+ */
 function* generateSequentialInt() {
   let num = 0
   while (true) {
