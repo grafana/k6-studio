@@ -49,9 +49,8 @@ export const useGeneratorStore = create<GeneratorState>()(
           from: 'url',
           filter: { path: '' },
           selector: {
-            type: 'begin-end',
-            begin: 'grafana.com/',
-            end: '/'
+            type: 'regex',
+            regex: 'grafana.com/(.*?)/'
           }
         }
       },
