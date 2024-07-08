@@ -1,6 +1,7 @@
 import { Box, Tabs } from '@radix-ui/themes'
 import { RequestFilters } from './RequestFilters'
 import { VariablesEditor } from './VariablesEditor'
+import { ThinkTime } from './ThinkTime'
 
 export function GeneratorDrawer() {
   return (
@@ -17,7 +18,9 @@ export function GeneratorDrawer() {
         <Tabs.Content value="rule">Rule content</Tabs.Content>
         <Tabs.Content value="loadProfile">Load profile content</Tabs.Content>
         <Tabs.Content value="thresholds">Thresholds content</Tabs.Content>
-        <Tabs.Content value="thinkTime">Think time content</Tabs.Content>
+        <Tabs.Content value="thinkTime">
+          <ThinkTime />
+        </Tabs.Content>
         <Tabs.Content value="testData">
           <VariablesEditor />
         </Tabs.Content>
