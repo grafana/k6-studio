@@ -67,6 +67,19 @@ export const useGeneratorStore = create<GeneratorState>()(
       //     }
       //   }
       // },
+      {
+        type: 'correlation',
+        name: 'correlation_4',
+        id: '4',
+        extractor: {
+          from: 'body',
+          filter: { path: '' },
+          selector: {
+            type: 'json',
+            path: '[0].title'
+          }
+        }
+      },
     ],
     requestFilters: [],
 
