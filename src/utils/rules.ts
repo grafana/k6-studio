@@ -2,6 +2,8 @@ import { RequestSnippetSchema, Response, Request, ProxyData } from '@/types'
 import { CustomCodeRule, TestRule, CorrelationRule } from '@/types/rules'
 import { exhaustive } from '../utils/typescript'
 import { cloneDeep } from 'lodash-es'
+import { JSONPath } from 'jsonpath-plus'
+import { getHeaderValues } from './headers'
 
 export function applyRule(
   requestSnippetSchema: RequestSnippetSchema,
@@ -117,6 +119,10 @@ const tryCorrelationExtraction = (rule: CorrelationRule, proxyData: ProxyData) =
         case 'url':
           return extractCorrelationRegexUrl(rule, proxyData.request)
         }
+      break  // <--- editor complains about missing break and then complains that break is unreachable :/
+    case 'json':
+      // TODO: we know that we have a response, how to make typescript accept it ?
+      return extractCorrelationJsonBody(rule, proxyData.response)
       break  // <--- editor complains about missing break and then complains that break is unreachable :/
   }
   return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
@@ -294,6 +300,43 @@ console.log(correl_${uniqueId})`
   }
 
   return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
+}
+
+const extractCorrelationJsonBody = (rule: CorrelationRule, response: Response) => {
+
+  const contentTypeValues = getHeaderValues(response.headers, 'content-type')
+  let contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
+
+  // NOTE: this is a small hack to skip google malformed json that starts this way, those requests are made automatically by the chrome
+  // browser. Most likely we want a better way of filtering them out since it can't be just parsed
+  if (response.content.startsWith(')]}')) {
+    contentTypeValue = undefined
+  }
+
+  // works only on json
+  if ( !contentTypeValue || !contentTypeValue.includes('application/json') ) {
+    return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
+  }
+
+  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
+  // TODO: remove this obscenity! (create appropriate more fine-grained types)
+  if (rule.extractor.selector.type !== 'json') {
+    throw new Error('operation on wrong rule type')
+  }
+
+  const extractedValue = JSONPath({path: `$${rule.extractor.selector.path}`, json: JSON.parse(response.content)})
+
+  if (!extractedValue || extractedValue.length === 0) {
+    return {extractedValue: undefined, correlationExtractionSnippet: undefined, generatedUniqueId: undefined}
+  }
+
+  const uniqueId = sequentialIdGenerator.next().value
+
+  const correlationExtractionSnippet = `
+let correl_${uniqueId} = resp.json()${rule.extractor.selector.path}
+console.log('*********')
+console.log(correl_${uniqueId})`
+  return { extractedValue: extractedValue[0], correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: uniqueId}
 }
 
 /**

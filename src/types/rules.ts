@@ -32,6 +32,11 @@ export interface RegexSelector {
   regex: string
 }
 
+export interface JsonSelector {
+  type: 'json'
+  path: string
+}
+
 export interface Selector {
   type: 'url'
   value: string
@@ -40,6 +45,7 @@ export interface Selector {
 export type CorrelationSelector =
   | BeginEndSelector
   | RegexSelector
+  | JsonSelector
 
 export interface CorrelationExtractor {
   from: 'headers' | 'body' | 'url'
