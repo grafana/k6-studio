@@ -1,13 +1,6 @@
 import { useState, ChangeEvent } from 'react'
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
-import {
-  Box,
-  Button,
-  Heading,
-  IconButton,
-  Table,
-  TextField,
-} from '@radix-ui/themes'
+import { Box, Button, IconButton, Table, TextField } from '@radix-ui/themes'
 
 interface Variable {
   name: string
@@ -47,16 +40,12 @@ export function VariablesEditor() {
 
   return (
     <Box p="2">
-      <Heading color="gray" mb="2" size="4">
-        Default Environment
-      </Heading>
-
       {variables.length !== 0 && (
         <Table.Root size="1" variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>value</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>

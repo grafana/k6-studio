@@ -6,7 +6,7 @@ export function TestRuleContainer() {
   const { rules } = useGeneratorStore()
 
   return (
-    <Box height="100%" pr="2">
+    <Box height="100%" p="2">
       Rules:
       {rules.map((rule, i) => (
         <TestRuleItem rule={rule} key={i} />

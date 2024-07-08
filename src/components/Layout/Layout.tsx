@@ -27,7 +27,6 @@ export function Layout() {
                 overflow="hidden"
                 maxWidth="100%"
                 height="100dvh"
-                p="2"
               >
                 <Outlet />
               </Flex>
