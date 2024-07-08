@@ -99,7 +99,7 @@ function applyCorrelationRule(
 const tryCorrelationExtraction = (rule: CorrelationRule, proxyData: ProxyData) => {
   switch (rule.extractor.selector.type) {
     case 'begin-end':
-      switch (rule.extractor.from) {
+      switch (rule.extractor.selector.from) {
         case 'body':
           // TODO: we know that we have a response, how to make typescript accept it ?
           return extractCorrelationBeginEndBody(rule, proxyData.response)
@@ -110,7 +110,7 @@ const tryCorrelationExtraction = (rule: CorrelationRule, proxyData: ProxyData) =
         }
       break  // <--- editor complains about missing break and then complains that break is unreachable :/
     case 'regex':
-      switch (rule.extractor.from) {
+      switch (rule.extractor.selector.from) {
         case 'body':
           // TODO: we know that we have a response, how to make typescript accept it ?
           return extractCorrelationRegexBody(rule, proxyData.response)
