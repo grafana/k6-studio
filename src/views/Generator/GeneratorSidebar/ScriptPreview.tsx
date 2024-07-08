@@ -30,12 +30,11 @@ const options: editor.IStandaloneEditorConstructionOptions = {
 export function ScriptPreview() {
   const { recording, requestFilters, rules } = useGeneratorStore()
   const monaco = useMonaco()
-  const [preview, setPreview] = useState('')
 
   useEffect(() => {
     async function updatePreview() {
       const script = await exportScript(recording, rules, requestFilters)
-      setPreview(script)
+
       monaco?.editor?.getModels()?.[0]?.setValue(script)
     }
 
@@ -44,13 +43,7 @@ export function ScriptPreview() {
 
   return (
     <div>
-      <Editor
-        height="90vh"
-        defaultLanguage="javascript"
-        value={preview}
-        options={options}
-      />
-      ;<pre>{preview}</pre>
+      <Editor height="90vh" defaultLanguage="javascript" options={options} />
     </div>
   )
 }
