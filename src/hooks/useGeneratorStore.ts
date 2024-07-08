@@ -28,10 +28,10 @@ export const useGeneratorStore = create<GeneratorState>()(
         name: 'correlation_1',
         id: '1',
         extractor: {
-          from: 'body',
           filter: { path: '' },
           selector: {
             type: 'begin-end',
+            from: 'body',
             // begin: '"mimeType": "',
             // end: '",'
             // begin: '<stop offset="0.951255" stop-color="',
@@ -46,10 +46,10 @@ export const useGeneratorStore = create<GeneratorState>()(
         name: 'correlation_3',
         id: '3',
         extractor: {
-          from: 'url',
           filter: { path: '' },
           selector: {
             type: 'regex',
+            from: 'url',
             regex: 'grafana.com/(.*?)/'
           }
         }
@@ -62,6 +62,7 @@ export const useGeneratorStore = create<GeneratorState>()(
       //     filter: { path: '' },
       //     selector: {
       //       type: 'begin-end',
+      //       from: 'headers',
       //       begin: 'charset=',
       //       end: '-8'
       //     }
@@ -72,7 +73,6 @@ export const useGeneratorStore = create<GeneratorState>()(
         name: 'correlation_4',
         id: '4',
         extractor: {
-          from: 'body',
           filter: { path: '' },
           selector: {
             type: 'json',

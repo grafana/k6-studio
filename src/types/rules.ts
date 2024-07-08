@@ -23,12 +23,14 @@ export interface Filter {
 
 export interface BeginEndSelector {
   type: 'begin-end'
+  from: 'headers' | 'body' | 'url'
   begin: string
   end: string
 }
 
 export interface RegexSelector {
   type: 'regex'
+  from: 'headers' | 'body' | 'url'
   regex: string
 }
 
@@ -48,7 +50,6 @@ export type CorrelationSelector =
   | JsonSelector
 
 export interface CorrelationExtractor {
-  from: 'headers' | 'body' | 'url'
   filter: Filter
   selector: CorrelationSelector
   variableName?: string
