@@ -1,3 +1,5 @@
+import { Request, ProxyData } from '@/types'
+
 export interface VariableValue {
   type: 'variable'
   variableName: string
@@ -113,3 +115,13 @@ export type TestRule =
   | CorrelationRule
   | VerificationRule
   | CustomCodeRule
+
+interface CorrelationState {
+  extractedValue?: string
+  count: number
+  responsesExtracted: ProxyData[]
+  requestsReplaced: [Request, Request][] // original, modified
+  generatedUniqueId: number | void | undefined
+}
+
+export type CorrelationStateMap = Record<string, CorrelationState>

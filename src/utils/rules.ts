@@ -1,6 +1,11 @@
 /* eslint-disable  @typescript-eslint/no-non-null-assertion */
 import { RequestSnippetSchema, Response, Request, ProxyData } from '@/types'
-import { CustomCodeRule, TestRule, CorrelationRule } from '@/types/rules'
+import {
+  CustomCodeRule,
+  TestRule,
+  CorrelationRule,
+  CorrelationStateMap,
+} from '@/types/rules'
 import { exhaustive } from '../utils/typescript'
 import { cloneDeep } from 'lodash-es'
 import { JSONPath } from 'jsonpath-plus'
@@ -8,13 +13,20 @@ import { getHeaderValues } from './headers'
 
 export function applyRule(
   requestSnippetSchema: RequestSnippetSchema,
-  rule: TestRule
+  rule: TestRule,
+  correlationStateMap: CorrelationStateMap,
+  sequentialIdGenerator: Generator<number>
 ): RequestSnippetSchema {
   switch (rule.type) {
     case 'customCode':
       return applyCustomCodeRule(requestSnippetSchema, rule)
     case 'correlation':
-      return applyCorrelationRule(requestSnippetSchema, rule)
+      return applyCorrelationRule(
+        requestSnippetSchema,
+        rule,
+        correlationStateMap,
+        sequentialIdGenerator
+      )
     case 'parameterization':
     case 'verification':
       return requestSnippetSchema
@@ -37,7 +49,9 @@ function applyCustomCodeRule(
 
 function applyCorrelationRule(
   requestSnippetSchema: RequestSnippetSchema,
-  rule: CorrelationRule
+  rule: CorrelationRule,
+  correlationStateMap: CorrelationStateMap,
+  sequentialIdGenerator: Generator<number>
 ): RequestSnippetSchema {
   // this is the modified schema that we return to the accumulator
   const snippetSchemaReturnValue = cloneDeep(requestSnippetSchema)
@@ -93,7 +107,12 @@ function applyCorrelationRule(
 
   // try to extract the value
   const { extractedValue, correlationExtractionSnippet, generatedUniqueId } =
-    tryCorrelationExtraction(rule, requestSnippetSchema.data, uniqueId)
+    tryCorrelationExtraction(
+      rule,
+      requestSnippetSchema.data,
+      uniqueId,
+      sequentialIdGenerator
+    )
 
   if (extractedValue) {
     if (correlationState) {
@@ -127,7 +146,8 @@ function applyCorrelationRule(
 const tryCorrelationExtraction = (
   rule: CorrelationRule,
   proxyData: ProxyData,
-  uniqueId: number | void
+  uniqueId: number | void,
+  sequentialIdGenerator: Generator<number>
 ) => {
   // correlation works on responses so if we have no response we should return early except in case the selector is checking
   // the url, in that case the value is extracted from a request so it's fine to not have a response
@@ -153,19 +173,22 @@ const tryCorrelationExtraction = (
           return extractCorrelationBeginEndBody(
             rule,
             proxyData.response!,
-            uniqueId
+            uniqueId,
+            sequentialIdGenerator
           )
         case 'headers':
           return extractCorrelationBeginEndHeaders(
             rule,
             proxyData.response!,
-            uniqueId
+            uniqueId,
+            sequentialIdGenerator
           )
         case 'url':
           return extractCorrelationBeginEndUrl(
             rule,
             proxyData.request,
-            uniqueId
+            uniqueId,
+            sequentialIdGenerator
           )
       }
       break // <--- editor complains about missing break and then complains that break is unreachable :/
@@ -175,22 +198,39 @@ const tryCorrelationExtraction = (
           return extractCorrelationRegexBody(
             rule,
             proxyData.response!,
-            uniqueId
+            uniqueId,
+            sequentialIdGenerator
           )
         case 'headers':
           return extractCorrelationRegexHeaders(
             rule,
             proxyData.response!,
-            uniqueId
+            uniqueId,
+            sequentialIdGenerator
           )
         case 'url':
-          return extractCorrelationRegexUrl(rule, proxyData.request, uniqueId)
+          return extractCorrelationRegexUrl(
+            rule,
+            proxyData.request,
+            uniqueId,
+            sequentialIdGenerator
+          )
       }
       break // <--- editor complains about missing break and then complains that break is unreachable :/
     case 'json':
-      return extractCorrelationJsonBody(rule, proxyData.response!, uniqueId)
+      return extractCorrelationJsonBody(
+        rule,
+        proxyData.response!,
+        uniqueId,
+        sequentialIdGenerator
+      )
     case 'custom-code':
-      return extractCorrelationCustomCode(rule, proxyData.response!, uniqueId)
+      return extractCorrelationCustomCode(
+        rule,
+        proxyData.response!,
+        uniqueId,
+        sequentialIdGenerator
+      )
   }
   return {
     extractedValue: undefined,
@@ -202,7 +242,8 @@ const tryCorrelationExtraction = (
 const extractCorrelationBeginEndBody = (
   rule: CorrelationRule,
   response: Response,
-  uniqueId: number | void | undefined
+  uniqueId: number | void | undefined,
+  sequentialIdGenerator: Generator<number>
 ) => {
   // TODO: remove this obscenity!
   if (rule.extractor.selector.type !== 'begin-end') {
@@ -246,7 +287,8 @@ console.log(correl_${uniqueId})`
 const extractCorrelationBeginEndHeaders = (
   rule: CorrelationRule,
   response: Response,
-  uniqueId: number | void | undefined
+  uniqueId: number | void | undefined,
+  sequentialIdGenerator: Generator<number>
 ) => {
   // TODO: remove this obscenity!
   if (rule.extractor.selector.type !== 'begin-end') {
@@ -294,7 +336,8 @@ console.log(correl_${uniqueId})`
 const extractCorrelationBeginEndUrl = (
   rule: CorrelationRule,
   request: Request,
-  uniqueId: number | void | undefined
+  uniqueId: number | void | undefined,
+  sequentialIdGenerator: Generator<number>
 ) => {
   // TODO: remove this obscenity!
   if (rule.extractor.selector.type !== 'begin-end') {
@@ -337,7 +380,8 @@ console.log(correl_${uniqueId})`
 const extractCorrelationRegexBody = (
   rule: CorrelationRule,
   response: Response,
-  uniqueId: number | void | undefined
+  uniqueId: number | void | undefined,
+  sequentialIdGenerator: Generator<number>
 ) => {
   // Note: why does typescript complains about this, we can see the usage only on the regex path :(
   // TODO: remove this obscenity!
@@ -380,7 +424,8 @@ console.log(correl_${uniqueId})`
 const extractCorrelationRegexHeaders = (
   rule: CorrelationRule,
   response: Response,
-  uniqueId: number | void | undefined
+  uniqueId: number | void | undefined,
+  sequentialIdGenerator: Generator<number>
 ) => {
   // Note: why does typescript complains about this, we can see the usage only on the regex path :(
   // TODO: remove this obscenity!
@@ -427,7 +472,8 @@ console.log(correl_${uniqueId})`
 const extractCorrelationRegexUrl = (
   rule: CorrelationRule,
   request: Request,
-  uniqueId: number | void | undefined
+  uniqueId: number | void | undefined,
+  sequentialIdGenerator: Generator<number>
 ) => {
   // Note: why does typescript complains about this, we can see the usage only on the regex path :(
   // TODO: remove this obscenity!
@@ -469,7 +515,8 @@ console.log(correl_${uniqueId})`
 const extractCorrelationJsonBody = (
   rule: CorrelationRule,
   response: Response,
-  uniqueId: number | void | undefined
+  uniqueId: number | void | undefined,
+  sequentialIdGenerator: Generator<number>
 ) => {
   const contentTypeValues = getHeaderValues(response.headers, 'content-type')
   let contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
@@ -526,7 +573,8 @@ console.log(correl_${uniqueId})`
 const extractCorrelationCustomCode = (
   rule: CorrelationRule,
   response: Response,
-  uniqueId: number | void | undefined
+  uniqueId: number | void | undefined,
+  sequentialIdGenerator: Generator<number>
 ) => {
   // Note: why does typescript complains about this, we can see the usage only on the regex path :(
   // TODO: remove this obscenity! (create appropriate more fine-grained types)
@@ -598,22 +646,10 @@ function canonicalHeaderKey(headerKey: string) {
     .join('-')
 }
 
-interface CorrelationState {
-  extractedValue?: string
-  count: number
-  responsesExtracted: ProxyData[]
-  requestsReplaced: [Request, Request][] // original, modified
-  generatedUniqueId: number | void | undefined
-}
-
-// TODO: these needs to be reset
-const correlationStateMap: Record<string, CorrelationState> = {}
-const sequentialIdGenerator = generateSequentialInt()
-
 /**
  * Generates sequentials integers to be used for generated variables distinction for the final script.
  */
-function* generateSequentialInt() {
+export function* generateSequentialInt() {
   let num = 0
   while (true) {
     yield num
