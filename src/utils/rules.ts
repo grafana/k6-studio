@@ -51,25 +51,42 @@ function applyCorrelationRule(
     // this will be passed to the tryCorrelationExtraction function
     uniqueId = correlationState.generatedUniqueId
 
+    // TODO: this is the global replacer when the replacer object is not configured, the replacer functioncality has to be implemented
     if (
       requestSnippetSchema.data.request.content.includes(
         correlationState.extractedValue
       )
     ) {
-      const originalRequest = cloneDeep(requestSnippetSchema.data.request)
-
       // default behaviour replaces all occurences of the string
+      // content
       const replacedRequestContent =
         requestSnippetSchema.data.request.content.replaceAll(
           correlationState.extractedValue,
           `\${correl_${correlationState.generatedUniqueId}}`
         )
+      // url
+      const replacedRequestUrl =
+        requestSnippetSchema.data.request.url.replaceAll(
+          correlationState.extractedValue,
+          `\${correl_${correlationState.generatedUniqueId}}`
+        )
+      // headers
+      const replacedRequestHeaders =
+        requestSnippetSchema.data.request.headers.map(([key, value]) => {
+          const replacedValue = value.replaceAll(
+            correlationState.extractedValue!, // we know that we have this value since we just used it above..
+            `\${correl_${correlationState.generatedUniqueId}}`
+          )
+          return [key, replacedValue] as [string, string]
+        })
 
       snippetSchemaReturnValue.data.request.content = replacedRequestContent
-      // we clone to keep a reference even if the objects gets mutated further
-      const modifiedRequest = cloneDeep(requestSnippetSchema.data.request)
-      modifiedRequest.content = replacedRequestContent
+      snippetSchemaReturnValue.data.request.url = replacedRequestUrl
+      snippetSchemaReturnValue.data.request.headers = replacedRequestHeaders
 
+      // we clone to keep a reference even if the objects gets mutated further
+      const originalRequest = cloneDeep(requestSnippetSchema.data.request)
+      const modifiedRequest = cloneDeep(snippetSchemaReturnValue.data.request)
       correlationState.requestsReplaced.push([originalRequest, modifiedRequest])
     }
   }
@@ -133,7 +150,6 @@ const tryCorrelationExtraction = (
     case 'begin-end':
       switch (rule.extractor.selector.from) {
         case 'body':
-          // TODO: we know that we have a response, how to make typescript accept it ?
           return extractCorrelationBeginEndBody(
             rule,
             proxyData.response!,
@@ -156,7 +172,6 @@ const tryCorrelationExtraction = (
     case 'regex':
       switch (rule.extractor.selector.from) {
         case 'body':
-          // TODO: we know that we have a response, how to make typescript accept it ?
           return extractCorrelationRegexBody(
             rule,
             proxyData.response!,
@@ -173,10 +188,8 @@ const tryCorrelationExtraction = (
       }
       break // <--- editor complains about missing break and then complains that break is unreachable :/
     case 'json':
-      // TODO: we know that we have a response, how to make typescript accept it ?
       return extractCorrelationJsonBody(rule, proxyData.response!, uniqueId)
     case 'custom-code':
-      // TODO: we know that we have a response, how to make typescript accept it ?
       return extractCorrelationCustomCode(rule, proxyData.response!, uniqueId)
   }
   return {
@@ -538,8 +551,9 @@ correlationCustomCode()
     console.log(extractedValue)
   } catch (error) {
     // console.log(error)
-    // TODO: we need to report this error to the frontned
-    // this can be done when the uniqueId is migrated
+    // Not sure if we should be reporting errors here since the process is the same so the rule gets
+    // applied to every response, making error reporting meaningless/noisy :/
+    // Most likely the fact that we report the responses that got extracted should suffice for debugging purposes
   }
 
   if (!extractedValue) {
@@ -588,7 +602,7 @@ interface CorrelationState {
   extractedValue?: string
   count: number
   responsesExtracted: ProxyData[]
-  requestsReplaced: [Request, Request][]
+  requestsReplaced: [Request, Request][] // original, modified
   generatedUniqueId: number | void | undefined
 }
 
