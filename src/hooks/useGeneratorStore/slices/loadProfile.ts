@@ -13,9 +13,7 @@ const createStage = () => ({
   duration: '',
 })
 
-const createCommonOptionsSlice: ImmerStateCreator<CommonProfileState> = (
-  set
-) => ({
+const createCommonSlice: ImmerStateCreator<CommonProfileState> = (set) => ({
   executor: ExecutorType.RampingVUs,
 
   setExecutor: (value) =>
@@ -44,6 +42,10 @@ const createRampingSlice: ImmerStateCreator<RampingVUsState> = (set) => ({
   removeStage: (index) =>
     set((state) => {
       state.stages.splice(index, 1)
+    }),
+  updateStage: (index, value) =>
+    set((state) => {
+      state.stages[index] = value
     }),
   setGracefulRampDown: (value) =>
     set((state) => {
@@ -81,7 +83,7 @@ export const createLoadProfileSlice: ImmerStateCreator<LoadProfileState> = (
   get,
   store
 ) => ({
-  ...createCommonOptionsSlice(set, get, store),
+  ...createCommonSlice(set, get, store),
   ...createRampingSlice(set, get, store),
   ...createSharedIterationsSlice(set, get, store),
 })

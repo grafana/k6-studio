@@ -11,7 +11,7 @@ interface StageProps {
 }
 
 export function Stage({ index, target, duration }: StageProps) {
-  const { removeStage } = useGeneratorStore()
+  const { removeStage, updateStage } = useGeneratorStore()
 
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
@@ -21,6 +21,7 @@ export function Stage({ index, target, duration }: StageProps) {
       console.error(
         'onChange requires [name=(target|duration)] to be set on the event target.'
       )
+
       return
     }
 
@@ -28,8 +29,7 @@ export function Stage({ index, target, duration }: StageProps) {
       return
     }
 
-    return null
-    // setScenarioStage(index, key as 'target' | 'duration', value)
+    updateStage(index, { duration, target, [key]: value })
   }
 
   const handleDelete = () => {

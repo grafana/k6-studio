@@ -2,6 +2,7 @@ import { GroupedProxyData } from '@/types'
 import { TestRule } from '@/types/rules'
 import {
   CommonOptions,
+  RampingStage,
   RampingVUsOptions,
   SharedIterationsOptions,
 } from '@/views/Generator/GeneratorDrawer/LoadProfile/types'
@@ -15,6 +16,7 @@ export interface CommonProfileState extends CommonOptions {
 export interface RampingVUsState extends Omit<RampingVUsOptions, 'executor'> {
   addStage: () => void
   removeStage: (index: number) => void
+  updateStage: (index: number, value: RampingStage) => void
   setGracefulRampDown: (value: RampingVUsOptions['gracefulRampDown']) => void
   setStartVUs: (value: RampingVUsOptions['startVUs']) => void
 }

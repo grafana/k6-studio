@@ -11,7 +11,7 @@ export function GeneratorDrawer() {
         defaultValue="requestFilters"
         style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
       >
-        <Tabs.List>
+        <Tabs.List style={{ flex: '1 0 auto' }}>
           <Tabs.Trigger value="rule">Rule</Tabs.Trigger>
           <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
           <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
@@ -19,22 +19,26 @@ export function GeneratorDrawer() {
           <Tabs.Trigger value="testData">Test data</Tabs.Trigger>
           <Tabs.Trigger value="requestFilters">Request filters</Tabs.Trigger>
         </Tabs.List>
-        <ScrollableTabsContent value="rule">Rule content</ScrollableTabsContent>
-        <ScrollableTabsContent value="loadProfile">
-          <LoadProfile />
-        </ScrollableTabsContent>
-        <ScrollableTabsContent value="thresholds">
-          Thresholds content
-        </ScrollableTabsContent>
-        <ScrollableTabsContent value="thinkTime">
-          Think time content
-        </ScrollableTabsContent>
-        <ScrollableTabsContent value="testData">
-          Test data content
-        </ScrollableTabsContent>
-        <ScrollableTabsContent value="requestFilters">
-          <RequestFilters />
-        </ScrollableTabsContent>
+        <div style={{ flex: '0 1 auto', height: '100%', overflow: 'hidden' }}>
+          <ScrollableTabsContent value="rule">
+            Rule content
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="loadProfile">
+            <LoadProfile />
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="thresholds">
+            Thresholds content
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="thinkTime">
+            Think time content
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="testData">
+            Test data content
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="requestFilters">
+            <RequestFilters />
+          </ScrollableTabsContent>
+        </div>
       </Tabs.Root>
     </Box>
   )
