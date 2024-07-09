@@ -1,6 +1,6 @@
 import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
-import { TestRule } from '@/types/rules'
-import { applyRule } from '@/utils/rules'
+import { TestRule, CorrelationStateMap } from '@/types/rules'
+import { applyRule, generateSequentialInt } from '@/utils/rules'
 
 interface GenerateScriptParams {
   recording: GroupedProxyData
@@ -68,10 +68,17 @@ export function generateVUCode(
 ): string {
   const groups = Object.entries(recording)
   const isSingleGroup = groups.length === 1
+  const correlationStateMap: CorrelationStateMap = {}
+  const sequentialIdGenerator = generateSequentialInt()
 
   const groupSnippets = groups
     .map(([groupName, recording]) => {
-      const requestSnippets = generateRequestSnippets(recording, rules)
+      const requestSnippets = generateRequestSnippets(
+        recording,
+        rules,
+        correlationStateMap,
+        sequentialIdGenerator
+      )
       return isSingleGroup
         ? requestSnippets
         : generateGroupSnippet(groupName, requestSnippets)
@@ -89,11 +96,14 @@ export function generateVUCode(
  */
 export function generateRequestSnippets(
   recording: ProxyData[],
-  rules: TestRule[]
+  rules: TestRule[],
+  correlationStateMap: CorrelationStateMap,
+  sequentialIdGenerator: Generator<number>
 ): string {
   return recording.reduce((acc, data) => {
     const requestSnippetSchema = rules.reduce<RequestSnippetSchema>(
-      (acc, rule) => applyRule(acc, rule),
+      (acc, rule) =>
+        applyRule(acc, rule, correlationStateMap, sequentialIdGenerator),
       { data, before: [], after: [] }
     )
 

@@ -4,7 +4,8 @@ import {
   generateRequestSnippets,
   generateVariableDeclarations,
 } from './codegen'
-import { TestRule } from '@/types/rules'
+import { TestRule, CorrelationStateMap } from '@/types/rules'
+import { generateSequentialInt } from '@/utils/rules'
 import { ProxyData } from '@/types'
 
 describe('Code generation', () => {
@@ -13,9 +14,9 @@ describe('Code generation', () => {
       const expectedResult = `
       import { group, sleep } from 'k6'
       import http from 'k6/http'
-    
+
       export const options = {}
-    
+
       export default function() {
         sleep(1)
       }
@@ -71,14 +72,21 @@ describe('Code generation', () => {
       ]
 
       const rules: TestRule[] = []
+      const correlationStateMap: CorrelationStateMap = {}
+      const sequentialIdGenerator = generateSequentialInt()
 
       const expectedResult = `
         http.request('GET', '/api/v1/users', null, {})
       `
 
-      expect(generateRequestSnippets(recording, rules).replace(/\s/g, '')).toBe(
-        expectedResult.replace(/\s/g, '')
-      )
+      expect(
+        generateRequestSnippets(
+          recording,
+          rules,
+          correlationStateMap,
+          sequentialIdGenerator
+        ).replace(/\s/g, '')
+      ).toBe(expectedResult.replace(/\s/g, ''))
     })
   })
 })
