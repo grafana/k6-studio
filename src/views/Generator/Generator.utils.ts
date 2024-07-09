@@ -12,7 +12,6 @@ export async function exportScript(
   rules: TestRule[],
   allowlist: string[]
 ) {
-  // const filteredProxyData = applyRequestFilter(recording, allowlist)
   const filteredProxyData = applyRequestFilter(recording, allowlist)
   const script = generateScript({
     recording: filteredProxyData,
