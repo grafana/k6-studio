@@ -1,39 +1,114 @@
-import * as Label from '@radix-ui/react-label'
-import { Box, Button, Flex, TextField } from '@radix-ui/themes'
-import { useState } from 'react'
+import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import {
+  Button,
+  Container,
+  Flex,
+  Heading,
+  IconButton,
+  Select,
+  Table,
+  Text,
+  TextField,
+} from '@radix-ui/themes'
 
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 
 export function RequestFilters() {
-  const [newFilter, setNewFilter] = useState('')
-  const { requestFilters, addRequestFilter } = useGeneratorStore()
+  const { requestFilters = [], setRequestFilters } = useGeneratorStore()
+
+  function handleAddFilter() {
+    setRequestFilters([...requestFilters, { url: '', allowed: true }])
+  }
+
+  function handleRemoveFilter(index: number) {
+    return () => {
+      const newVariables = requestFilters.filter((_, i) => i !== index)
+      setRequestFilters(newVariables)
+    }
+  }
+
+  function handleChangeFilter(
+    index: number,
+    key: 'url' | 'allowed',
+    value: string | boolean
+  ) {
+    const newRequestFilters = requestFilters.map((filter, i) => {
+      if (i !== index) {
+        return filter
+      }
+
+      return {
+        ...filter,
+        [key]: value,
+      }
+    })
+
+    setRequestFilters(newRequestFilters)
+  }
 
   return (
-    <Box p="2">
-      <Flex gap="2" p="2" align="center" width="100%">
-        <Label.Root htmlFor="requestFilterInput">
-          Allow requests containing
-        </Label.Root>
-        <TextField.Root
-          style={{ flex: 1 }}
-          id="requestFilterInput"
-          value={newFilter}
-          onChange={(e) => setNewFilter(e.target.value)}
-          placeholder="Type part of the request URL to filter requests"
-        />
-        <Button
-          onClick={() => {
-            addRequestFilter(newFilter)
-          }}
-        >
-          Add
-        </Button>
+    <Container align="left" size="2" p="2">
+      <Flex direction="column" gap="2">
+        <div>
+          <Heading color="gray" mb="1" size="3">
+            Request Filters
+          </Heading>
+          <Text size="2" wrap="balance">
+            Add URL patterns here to allow or block matching requests.
+          </Text>
+        </div>
+        {requestFilters.length !== 0 && (
+          <Table.Root layout="auto" size="1" variant="surface">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>URL</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Allowed</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+
+            <Table.Body>
+              {requestFilters.map((filter, index) => (
+                <Table.Row key={index}>
+                  <Table.Cell>
+                    <TextField.Root
+                      placeholder="http://example.com"
+                      value={filter.url}
+                      onChange={(e) =>
+                        handleChangeFilter(index, 'url', e.target.value)
+                      }
+                    />
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Select.Root
+                      size="2"
+                      defaultValue="true"
+                      value={String(filter.allowed)}
+                      onValueChange={(allowed) =>
+                        handleChangeFilter(index, 'allowed', allowed === 'true')
+                      }
+                    >
+                      <Select.Trigger style={{ width: '100%' }} />
+                      <Select.Content>
+                        <Select.Item value="true">true</Select.Item>
+                        <Select.Item value="false">false</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  </Table.Cell>
+                  <Table.Cell justify="end" width="18px">
+                    <IconButton onClick={handleRemoveFilter(index)}>
+                      <TrashIcon width="18" height="18" />
+                    </IconButton>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        )}
       </Flex>
-      <ul>
-        {requestFilters.map((filter) => (
-          <li key={filter}>{filter}</li>
-        ))}
-      </ul>
-    </Box>
+      <Button m="4" variant="ghost" onClick={handleAddFilter}>
+        <PlusIcon width="18" height="18" /> Add request filter
+      </Button>
+    </Container>
   )
 }

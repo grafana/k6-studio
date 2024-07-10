@@ -4,17 +4,22 @@ import { immer } from 'zustand/middleware/immer'
 import { GroupedProxyData } from '@/types'
 import { TestRule } from '@/types/rules'
 
-interface GeneratorState {
+import {
+  createRequestFiltersSlice,
+  RequestFilterState,
+} from './slices/requestFilters'
+
+interface GeneratorState extends RequestFilterState {
   recording: GroupedProxyData
   rules: TestRule[]
-  requestFilters: string[]
+
   setRecording: (recording: GroupedProxyData) => void
   resetRecording: () => void
-  addRequestFilter: (filter: string) => void
 }
 
 export const useGeneratorStore = create<GeneratorState>()(
-  immer((set) => ({
+  immer((set, get, store) => ({
+    ...createRequestFiltersSlice(set, get, store),
     recording: {},
     rules: [
       {
@@ -24,12 +29,7 @@ export const useGeneratorStore = create<GeneratorState>()(
         placement: 'before',
       },
     ],
-    requestFilters: [],
 
-    addRequestFilter: (filter: string) =>
-      set((state) => {
-        state.requestFilters.push(filter)
-      }),
     setRecording: (recording: GroupedProxyData) =>
       set((state) => {
         state.recording = recording

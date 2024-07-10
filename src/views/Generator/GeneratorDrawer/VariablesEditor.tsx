@@ -1,6 +1,12 @@
 import { useState, ChangeEvent } from 'react'
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
-import { Box, Button, IconButton, Table, TextField } from '@radix-ui/themes'
+import {
+  Button,
+  Container,
+  IconButton,
+  Table,
+  TextField,
+} from '@radix-ui/themes'
 
 interface Variable {
   name: string
@@ -39,9 +45,9 @@ export function VariablesEditor() {
   }
 
   return (
-    <Box p="2">
+    <Container align="left" size="2" p="2">
       {variables.length !== 0 && (
-        <Table.Root size="1" variant="surface">
+        <Table.Root layout="auto" size="1" variant="surface">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
@@ -67,7 +73,7 @@ export function VariablesEditor() {
                     onChange={handleChangeVariable(index, 'value')}
                   />
                 </Table.Cell>
-                <Table.Cell>
+                <Table.Cell justify="end" width="18px">
                   <IconButton onClick={handleRemoveVariable(index)}>
                     <TrashIcon width="18" height="18" />
                   </IconButton>
@@ -80,6 +86,6 @@ export function VariablesEditor() {
       <Button m="4" variant="ghost" onClick={handleAddVariable}>
         <PlusIcon width="18" height="18" /> Add variable
       </Button>
-    </Box>
+    </Container>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import type { editor } from 'monaco-editor'
 import { Editor, useMonaco } from '@monaco-editor/react'
 
@@ -33,7 +33,8 @@ export function ScriptPreview() {
 
   useEffect(() => {
     async function updatePreview() {
-      const script = await exportScript(recording, rules, requestFilters)
+      const requestFilterUrls = requestFilters.map((filter) => filter.url)
+      const script = await exportScript(recording, rules, requestFilterUrls)
 
       monaco?.editor?.getModels()?.[0]?.setValue(script)
     }

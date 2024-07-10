@@ -30,7 +30,8 @@ export function Generator() {
   }
 
   const handleExport = async () => {
-    const script = await exportScript(recording, rules, requestFilters)
+    const requestFilterUrls = requestFilters.map((filter) => filter.url)
+    const script = await exportScript(recording, rules, requestFilterUrls)
 
     saveScript(script)
   }
