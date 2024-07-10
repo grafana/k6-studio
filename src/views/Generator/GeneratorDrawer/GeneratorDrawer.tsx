@@ -3,6 +3,9 @@ import { Box, ScrollArea, Tabs } from '@radix-ui/themes'
 
 import { RequestFilters } from './RequestFilters'
 import { LoadProfile } from './LoadProfile'
+import { VariablesEditor } from './VariablesEditor'
+import { ThinkTime } from './ThinkTime'
+import { ImportSelector } from './ImportsSelector'
 
 export function GeneratorDrawer() {
   return (
@@ -17,6 +20,7 @@ export function GeneratorDrawer() {
           <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
           <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
           <Tabs.Trigger value="testData">Test data</Tabs.Trigger>
+          <Tabs.Trigger value="imports">Imports</Tabs.Trigger>
           <Tabs.Trigger value="requestFilters">Request filters</Tabs.Trigger>
         </Tabs.List>
         <div style={{ flex: '0 1 auto', height: '100%', overflow: 'hidden' }}>
@@ -30,11 +34,14 @@ export function GeneratorDrawer() {
             Thresholds content
           </ScrollableTabsContent>
           <ScrollableTabsContent value="thinkTime">
-            Think time content
+            <ThinkTime />
           </ScrollableTabsContent>
           <ScrollableTabsContent value="testData">
-            Test data content
+            <VariablesEditor />
           </ScrollableTabsContent>
+          <Tabs.Content value="imports">
+            <ImportSelector />
+          </Tabs.Content>
           <ScrollableTabsContent value="requestFilters">
             <RequestFilters />
           </ScrollableTabsContent>

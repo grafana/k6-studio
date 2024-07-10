@@ -1,13 +1,5 @@
 import { HomeIcon } from '@radix-ui/react-icons'
-import {
-  Box,
-  Card,
-  Flex,
-  Heading,
-  IconButton,
-  Inset,
-  Separator,
-} from '@radix-ui/themes'
+import { Box, Flex, Heading, IconButton, Separator } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
 
 export function PageHeading({
@@ -21,7 +13,7 @@ export function PageHeading({
 
   return (
     <>
-      <Flex gap="2" align="center">
+      <Flex gap="2" align="center" p="2">
         <IconButton
           onClick={() => {
             navigate('/')
@@ -37,9 +29,8 @@ export function PageHeading({
           {children}
         </Flex>
       </Flex>
-      <Box py="2">
-        <Separator size="4" style={{ backgroundColor: 'var(--gray-4)' }} />
-      </Box>
+
+      <Separator size="4" style={{ backgroundColor: 'var(--gray-4)' }} />
     </>
   )
 }
