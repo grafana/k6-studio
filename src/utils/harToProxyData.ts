@@ -16,7 +16,7 @@ export function harToGroupedProxyData(
 }
 
 function parseRequest(request: Entry['request']): Request {
-  const content = request.postData?.text ? btoa(request.postData.text) : ''
+  const content = request.postData?.text ? request.postData.text : ''
   const url = new URL(request.url)
 
   return {
@@ -42,13 +42,14 @@ function parseRequest(request: Entry['request']): Request {
 }
 
 function parseResponse(response: Entry['response']): Response {
+  const content = response.content?.text ? atob(response.content.text) : ''
   return {
     statusCode: response.status,
     reason: response.statusText,
     httpVersion: response.httpVersion,
     headers: response.headers.map((h) => [h.name, h.value]),
     cookies: response.cookies.map((c) => [c.name, c.value]),
-    content: response.content?.text ?? '',
+    content,
     contentLength: response.content?.size ?? 0,
     timestampStart: 0,
     path: '',
