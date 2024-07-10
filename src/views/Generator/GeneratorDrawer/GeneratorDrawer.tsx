@@ -1,5 +1,8 @@
-import { Box, Tabs } from '@radix-ui/themes'
+import { type ComponentProps } from 'react'
+import { Box, ScrollArea, Tabs } from '@radix-ui/themes'
+
 import { RequestFilters } from './RequestFilters'
+import { LoadProfile } from './LoadProfile'
 import { VariablesEditor } from './VariablesEditor'
 import { ThinkTime } from './ThinkTime'
 import { ImportSelector } from './ImportsSelector'
@@ -7,8 +10,11 @@ import { ImportSelector } from './ImportsSelector'
 export function GeneratorDrawer() {
   return (
     <Box height="100%">
-      <Tabs.Root defaultValue="requestFilters">
-        <Tabs.List>
+      <Tabs.Root
+        defaultValue="requestFilters"
+        style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+      >
+        <Tabs.List style={{ flex: '1 0 auto' }}>
           <Tabs.Trigger value="rule">Rule</Tabs.Trigger>
           <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
           <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
@@ -17,22 +23,42 @@ export function GeneratorDrawer() {
           <Tabs.Trigger value="imports">Imports</Tabs.Trigger>
           <Tabs.Trigger value="requestFilters">Request filters</Tabs.Trigger>
         </Tabs.List>
-        <Tabs.Content value="rule">Rule content</Tabs.Content>
-        <Tabs.Content value="loadProfile">Load profile content</Tabs.Content>
-        <Tabs.Content value="thresholds">Thresholds content</Tabs.Content>
-        <Tabs.Content value="thinkTime">
-          <ThinkTime />
-        </Tabs.Content>
-        <Tabs.Content value="testData">
-          <VariablesEditor />
-        </Tabs.Content>
-        <Tabs.Content value="imports">
-          <ImportSelector />
-        </Tabs.Content>
-        <Tabs.Content value="requestFilters">
-          <RequestFilters />
-        </Tabs.Content>
+        <div style={{ flex: '0 1 auto', height: '100%', overflow: 'hidden' }}>
+          <ScrollableTabsContent value="rule">
+            Rule content
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="loadProfile">
+            <LoadProfile />
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="thresholds">
+            Thresholds content
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="thinkTime">
+            <ThinkTime />
+          </ScrollableTabsContent>
+          <ScrollableTabsContent value="testData">
+            <VariablesEditor />
+          </ScrollableTabsContent>
+          <Tabs.Content value="imports">
+            <ImportSelector />
+          </Tabs.Content>
+          <ScrollableTabsContent value="requestFilters">
+            <RequestFilters />
+          </ScrollableTabsContent>
+        </div>
       </Tabs.Root>
     </Box>
+  )
+}
+
+const ScrollableTabsContent = ({
+  children,
+  value,
+  ...props
+}: ComponentProps<typeof Tabs.Content>) => {
+  return (
+    <Tabs.Content style={{ height: '100%' }} value={value} {...props}>
+      <ScrollArea style={{ height: '100%' }}>{children}</ScrollArea>
+    </Tabs.Content>
   )
 }
