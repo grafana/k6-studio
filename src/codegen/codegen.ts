@@ -1,6 +1,7 @@
 import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
-import { TestRule } from '@/types/rules'
-import { applyRule } from '@/utils/rules'
+import { TestRule, CorrelationStateMap } from '@/types/rules'
+import { applyRule } from '@/rules/rules'
+import { generateSequentialInt } from '@/rules/utils'
 
 interface GenerateScriptParams {
   recording: GroupedProxyData
@@ -24,12 +25,13 @@ export function generateScript({
   return `
     import { group, sleep } from 'k6'
     import http from 'k6/http'
-    
+
     export const options = ${generateOptions()}
 
     ${generateVariableDeclarations(variables)}
-    
+
     export default function() {
+      let resp
       ${generateVUCode(recording, rules)}
     }
   `
@@ -68,10 +70,17 @@ export function generateVUCode(
 ): string {
   const groups = Object.entries(recording)
   const isSingleGroup = groups.length === 1
+  const correlationStateMap: CorrelationStateMap = {}
+  const sequentialIdGenerator = generateSequentialInt()
 
   const groupSnippets = groups
     .map(([groupName, recording]) => {
-      const requestSnippets = generateRequestSnippets(recording, rules)
+      const requestSnippets = generateRequestSnippets(
+        recording,
+        rules,
+        correlationStateMap,
+        sequentialIdGenerator
+      )
       return isSingleGroup
         ? requestSnippets
         : generateGroupSnippet(groupName, requestSnippets)
@@ -89,11 +98,14 @@ export function generateVUCode(
  */
 export function generateRequestSnippets(
   recording: ProxyData[],
-  rules: TestRule[]
+  rules: TestRule[],
+  correlationStateMap: CorrelationStateMap,
+  sequentialIdGenerator: Generator<number>
 ): string {
   return recording.reduce((acc, data) => {
     const requestSnippetSchema = rules.reduce<RequestSnippetSchema>(
-      (acc, rule) => applyRule(acc, rule),
+      (acc, rule) =>
+        applyRule(acc, rule, correlationStateMap, sequentialIdGenerator),
       { data, before: [], after: [] }
     )
 
@@ -136,7 +148,7 @@ export function generateSingleRequestSnippet(
 
   try {
     if (request.content) {
-      content = `'${JSON.stringify(request.content)}'`
+      content = `\`${JSON.stringify(request.content)}\``
     }
   } catch (error) {
     console.error('Failed to serialize request content', error)
@@ -145,7 +157,7 @@ export function generateSingleRequestSnippet(
   const params = '{}'
 
   const main = `
-    http.request(${method}, ${url}, ${content}, ${params})
+    resp = http.request(${method}, ${url}, ${content}, ${params})
   `
 
   return [...before, main, ...after].join('\n')
