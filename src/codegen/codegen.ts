@@ -1,6 +1,7 @@
 import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
 import { TestRule, CorrelationStateMap } from '@/types/rules'
-import { applyRule, generateSequentialInt } from '@/utils/rules'
+import { applyRule } from '@/rules/rules'
+import { generateSequentialInt } from '@/rules/utils'
 
 interface GenerateScriptParams {
   recording: GroupedProxyData
@@ -30,6 +31,7 @@ export function generateScript({
     ${generateVariableDeclarations(variables)}
 
     export default function() {
+      let resp
       ${generateVUCode(recording, rules)}
     }
   `
@@ -155,7 +157,7 @@ export function generateSingleRequestSnippet(
   const params = '{}'
 
   const main = `
-    var resp = http.request(${method}, ${url}, ${content}, ${params})
+    resp = http.request(${method}, ${url}, ${content}, ${params})
   `
 
   return [...before, main, ...after].join('\n')

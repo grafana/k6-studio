@@ -5,7 +5,7 @@ import {
   generateVariableDeclarations,
 } from './codegen'
 import { TestRule, CorrelationStateMap } from '@/types/rules'
-import { generateSequentialInt } from '@/utils/rules'
+import { generateSequentialInt } from '@/rules/utils'
 import { ProxyData } from '@/types'
 
 describe('Code generation', () => {

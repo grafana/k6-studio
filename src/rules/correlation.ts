@@ -1,53 +1,12 @@
-/* eslint-disable  @typescript-eslint/no-non-null-assertion */
-import { RequestSnippetSchema, Response, Request, ProxyData } from '@/types'
-import {
-  CustomCodeRule,
-  TestRule,
-  CorrelationRule,
-  CorrelationStateMap,
-} from '@/types/rules'
-import { exhaustive } from '../utils/typescript'
+import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
+import { CorrelationRule, CorrelationStateMap } from '@/types/rules'
 import { cloneDeep } from 'lodash-es'
+import { canonicalHeaderKey } from './utils'
+import { getHeaderValues } from '@/utils/headers'
 import { JSONPath } from 'jsonpath-plus'
-import { getHeaderValues } from './headers'
+import { exhaustive } from '@/utils/typescript'
 
-export function applyRule(
-  requestSnippetSchema: RequestSnippetSchema,
-  rule: TestRule,
-  correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>
-): RequestSnippetSchema {
-  switch (rule.type) {
-    case 'customCode':
-      return applyCustomCodeRule(requestSnippetSchema, rule)
-    case 'correlation':
-      return applyCorrelationRule(
-        requestSnippetSchema,
-        rule,
-        correlationStateMap,
-        sequentialIdGenerator
-      )
-    case 'parameterization':
-    case 'verification':
-      return requestSnippetSchema
-    default:
-      return exhaustive(rule)
-  }
-}
-
-function applyCustomCodeRule(
-  requestSnippetSchema: RequestSnippetSchema,
-  rule: CustomCodeRule
-): RequestSnippetSchema {
-  const block = rule.placement === 'before' ? 'before' : 'after'
-
-  return {
-    ...requestSnippetSchema,
-    [block]: [...requestSnippetSchema[block], rule.snippet],
-  }
-}
-
-function applyCorrelationRule(
+export function applyCorrelationRule(
   requestSnippetSchema: RequestSnippetSchema,
   rule: CorrelationRule,
   correlationStateMap: CorrelationStateMap,
@@ -59,18 +18,15 @@ function applyCorrelationRule(
   // if we have an extracted value we try to apply it to the request
   // note: this comes before the extractor to avoid applying an extracted value on the same request/response pair
   const correlationState = correlationStateMap[rule.id]
-  let uniqueId
+  let uniqueId: number | undefined
   if (correlationState?.extractedValue) {
+    const extractedValue = correlationState.extractedValue
     // we populate uniqueId since it doesn't have to be regenerated
     // this will be passed to the tryCorrelationExtraction function
     uniqueId = correlationState.generatedUniqueId
 
     // TODO: this is the global replacer when the replacer object is not configured, the replacer functioncality has to be implemented
-    if (
-      requestSnippetSchema.data.request.content.includes(
-        correlationState.extractedValue
-      )
-    ) {
+    if (requestSnippetSchema.data.request.content.includes(extractedValue)) {
       // default behaviour replaces all occurences of the string
       // content
       const replacedRequestContent =
@@ -81,14 +37,14 @@ function applyCorrelationRule(
       // url
       const replacedRequestUrl =
         requestSnippetSchema.data.request.url.replaceAll(
-          correlationState.extractedValue,
+          extractedValue,
           `\${correl_${correlationState.generatedUniqueId}}`
         )
       // headers
       const replacedRequestHeaders =
         requestSnippetSchema.data.request.headers.map(([key, value]) => {
           const replacedValue = value.replaceAll(
-            correlationState.extractedValue!, // we know that we have this value since we just used it above..
+            extractedValue,
             `\${correl_${correlationState.generatedUniqueId}}`
           )
           return [key, replacedValue] as [string, string]
@@ -114,7 +70,7 @@ function applyCorrelationRule(
       sequentialIdGenerator
     )
 
-  if (extractedValue) {
+  if (extractedValue && correlationExtractionSnippet) {
     if (correlationState) {
       // we only increment the count and we keep the first extracted value
       correlationState.count += 1
@@ -122,19 +78,16 @@ function applyCorrelationRule(
       correlationState.responsesExtracted.push(requestSnippetSchema.data)
     } else {
       correlationStateMap[rule.id] = {
-        extractedValue: extractedValue,
+        extractedValue,
         count: 1,
         responsesExtracted: [requestSnippetSchema.data],
         requestsReplaced: [],
-        generatedUniqueId: generatedUniqueId,
+        generatedUniqueId,
       }
 
       return {
         ...requestSnippetSchema,
-        after: [
-          ...requestSnippetSchema['after'],
-          correlationExtractionSnippet!,
-        ], // ! we know that we have the values because we are in the if condition but might need better types
+        after: [...requestSnippetSchema['after'], correlationExtractionSnippet], // ! we know that we have the values because we are in the if condition but might need better types
       }
     }
   }
@@ -146,23 +99,20 @@ function applyCorrelationRule(
 const tryCorrelationExtraction = (
   rule: CorrelationRule,
   proxyData: ProxyData,
-  uniqueId: number | void,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
   // correlation works on responses so if we have no response we should return early except in case the selector is checking
   // the url, in that case the value is extracted from a request so it's fine to not have a response
-  if (!proxyData.response) {
-    if (
-      'from' in rule.extractor.selector &&
-      rule.extractor.selector.from === 'url'
-    ) {
-      // we do nothing
-    } else {
-      return {
-        extractedValue: undefined,
-        correlationExtractionSnippet: undefined,
-        generatedUniqueId: undefined,
-      }
+  if (
+    !proxyData.response &&
+    (!('from' in rule.extractor.selector) ||
+      rule.extractor.selector.from !== 'url')
+  ) {
+    return {
+      extractedValue: undefined,
+      correlationExtractionSnippet: undefined,
+      generatedUniqueId: undefined,
     }
   }
 
@@ -172,14 +122,14 @@ const tryCorrelationExtraction = (
         case 'body':
           return extractCorrelationBeginEndBody(
             rule,
-            proxyData.response!,
+            proxyData.response,
             uniqueId,
             sequentialIdGenerator
           )
         case 'headers':
           return extractCorrelationBeginEndHeaders(
             rule,
-            proxyData.response!,
+            proxyData.response,
             uniqueId,
             sequentialIdGenerator
           )
@@ -190,21 +140,22 @@ const tryCorrelationExtraction = (
             uniqueId,
             sequentialIdGenerator
           )
+        default:
+          return exhaustive(rule.extractor.selector.from)
       }
-      break // <--- editor complains about missing break and then complains that break is unreachable :/
     case 'regex':
       switch (rule.extractor.selector.from) {
         case 'body':
           return extractCorrelationRegexBody(
             rule,
-            proxyData.response!,
+            proxyData.response,
             uniqueId,
             sequentialIdGenerator
           )
         case 'headers':
           return extractCorrelationRegexHeaders(
             rule,
-            proxyData.response!,
+            proxyData.response,
             uniqueId,
             sequentialIdGenerator
           )
@@ -215,37 +166,39 @@ const tryCorrelationExtraction = (
             uniqueId,
             sequentialIdGenerator
           )
+        default:
+          return exhaustive(rule.extractor.selector.from)
       }
-      break // <--- editor complains about missing break and then complains that break is unreachable :/
     case 'json':
       return extractCorrelationJsonBody(
         rule,
-        proxyData.response!,
+        proxyData.response,
         uniqueId,
         sequentialIdGenerator
       )
     case 'custom-code':
       return extractCorrelationCustomCode(
         rule,
-        proxyData.response!,
+        proxyData.response,
         uniqueId,
         sequentialIdGenerator
       )
-  }
-  return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
+    default:
+      return exhaustive(rule.extractor.selector)
   }
 }
 
 const extractCorrelationBeginEndBody = (
   rule: CorrelationRule,
-  response: Response,
-  uniqueId: number | void | undefined,
+  response: Response | undefined,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
   // TODO: remove this obscenity!
+  if (!response) {
+    throw new Error('no response to extract from')
+  }
+
   if (rule.extractor.selector.type !== 'begin-end') {
     throw new Error('operation on wrong rule type')
   }
@@ -256,12 +209,19 @@ const extractCorrelationBeginEndBody = (
   )
   const match = response.content.match(regex)
 
-  if (match) {
-    if (!uniqueId) {
-      uniqueId = sequentialIdGenerator.next().value
+  if (!match) {
+    return {
+      extractedValue: undefined,
+      correlationExtractionSnippet: undefined,
+      generatedUniqueId: undefined,
     }
+  }
 
-    const correlationExtractionSnippet = `
+  if (!uniqueId) {
+    uniqueId = sequentialIdGenerator.next().value
+  }
+
+  const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
 var match = resp.body.match(regex)
 let correl_${uniqueId}
@@ -270,26 +230,22 @@ if (match) {
 }
 console.log('*********')
 console.log(correl_${uniqueId})`
-    return {
-      extractedValue: match[1],
-      correlationExtractionSnippet: correlationExtractionSnippet,
-      generatedUniqueId: uniqueId,
-    }
-  }
-
   return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
+    extractedValue: match[1],
+    correlationExtractionSnippet: correlationExtractionSnippet,
+    generatedUniqueId: uniqueId,
   }
 }
 
 const extractCorrelationBeginEndHeaders = (
   rule: CorrelationRule,
-  response: Response,
-  uniqueId: number | void | undefined,
+  response: Response | undefined,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
+  if (!response) {
+    throw new Error('no response to extract from')
+  }
   // TODO: remove this obscenity!
   if (rule.extractor.selector.type !== 'begin-end') {
     throw new Error('operation on wrong rule type')
@@ -336,7 +292,7 @@ console.log(correl_${uniqueId})`
 const extractCorrelationBeginEndUrl = (
   rule: CorrelationRule,
   request: Request,
-  uniqueId: number | void | undefined,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
   // TODO: remove this obscenity!
@@ -349,12 +305,19 @@ const extractCorrelationBeginEndUrl = (
   )
   const match = request.url.match(regex)
 
-  if (match) {
-    if (!uniqueId) {
-      uniqueId = sequentialIdGenerator.next().value
+  if (!match) {
+    return {
+      extractedValue: undefined,
+      correlationExtractionSnippet: undefined,
+      generatedUniqueId: undefined,
     }
+  }
 
-    const correlationExtractionSnippet = `
+  if (!uniqueId) {
+    uniqueId = sequentialIdGenerator.next().value
+  }
+
+  const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
 var match = resp.url.match(regex)
 let correl_${uniqueId}
@@ -363,26 +326,22 @@ if (match) {
 }
 console.log('*********')
 console.log(correl_${uniqueId})`
-    return {
-      extractedValue: match[1],
-      correlationExtractionSnippet: correlationExtractionSnippet,
-      generatedUniqueId: uniqueId,
-    }
-  }
-
   return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
+    extractedValue: match[1],
+    correlationExtractionSnippet: correlationExtractionSnippet,
+    generatedUniqueId: uniqueId,
   }
 }
 
 const extractCorrelationRegexBody = (
   rule: CorrelationRule,
-  response: Response,
-  uniqueId: number | void | undefined,
+  response: Response | undefined,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
+  if (!response) {
+    throw new Error('no response to extract from')
+  }
   // Note: why does typescript complains about this, we can see the usage only on the regex path :(
   // TODO: remove this obscenity!
   if (rule.extractor.selector.type !== 'regex') {
@@ -393,12 +352,19 @@ const extractCorrelationRegexBody = (
   const regex = new RegExp(rule.extractor.selector.regex)
   const match = response.content.match(regex)
 
-  if (match) {
-    if (!uniqueId) {
-      uniqueId = sequentialIdGenerator.next().value
+  if (!match) {
+    return {
+      extractedValue: undefined,
+      correlationExtractionSnippet: undefined,
+      generatedUniqueId: undefined,
     }
+  }
 
-    const correlationExtractionSnippet = `
+  if (!uniqueId) {
+    uniqueId = sequentialIdGenerator.next().value
+  }
+
+  const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.regex}')
 var match = resp.body.match(regex)
 let correl_${uniqueId}
@@ -407,26 +373,22 @@ if (match) {
 }
 console.log('*********')
 console.log(correl_${uniqueId})`
-    return {
-      extractedValue: match[1],
-      correlationExtractionSnippet: correlationExtractionSnippet,
-      generatedUniqueId: uniqueId,
-    }
-  }
-
   return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
+    extractedValue: match[1],
+    correlationExtractionSnippet: correlationExtractionSnippet,
+    generatedUniqueId: uniqueId,
   }
 }
 
 const extractCorrelationRegexHeaders = (
   rule: CorrelationRule,
-  response: Response,
-  uniqueId: number | void | undefined,
+  response: Response | undefined,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
+  if (!response) {
+    throw new Error('no response to extract from')
+  }
   // Note: why does typescript complains about this, we can see the usage only on the regex path :(
   // TODO: remove this obscenity!
   if (rule.extractor.selector.type !== 'regex') {
@@ -456,7 +418,7 @@ console.log('HEADER')
 console.log(correl_${uniqueId})`
       return {
         extractedValue: match[1],
-        correlationExtractionSnippet: correlationExtractionSnippet,
+        correlationExtractionSnippet,
         generatedUniqueId: uniqueId,
       }
     }
@@ -472,7 +434,7 @@ console.log(correl_${uniqueId})`
 const extractCorrelationRegexUrl = (
   rule: CorrelationRule,
   request: Request,
-  uniqueId: number | void | undefined,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
   // Note: why does typescript complains about this, we can see the usage only on the regex path :(
@@ -484,12 +446,19 @@ const extractCorrelationRegexUrl = (
   const regex = new RegExp(`${rule.extractor.selector.regex}`)
   const match = request.url.match(regex)
 
-  if (match) {
-    if (!uniqueId) {
-      uniqueId = sequentialIdGenerator.next().value
+  if (!match) {
+    return {
+      extractedValue: undefined,
+      correlationExtractionSnippet: undefined,
+      generatedUniqueId: undefined,
     }
+  }
 
-    const correlationExtractionSnippet = `
+  if (!uniqueId) {
+    uniqueId = sequentialIdGenerator.next().value
+  }
+
+  const correlationExtractionSnippet = `
 var regex = new RegExp('${rule.extractor.selector.regex}')
 var match = resp.url.match(regex)
 let correl_${uniqueId}
@@ -498,26 +467,23 @@ if (match) {
 }
 console.log('*********')
 console.log(correl_${uniqueId})`
-    return {
-      extractedValue: match[1],
-      correlationExtractionSnippet: correlationExtractionSnippet,
-      generatedUniqueId: uniqueId,
-    }
-  }
-
   return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
+    extractedValue: match[1],
+    correlationExtractionSnippet: correlationExtractionSnippet,
+    generatedUniqueId: uniqueId,
   }
 }
 
 const extractCorrelationJsonBody = (
   rule: CorrelationRule,
-  response: Response,
-  uniqueId: number | void | undefined,
+  response: Response | undefined,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
+  if (!response) {
+    throw new Error('no response to extract from')
+  }
+
   const contentTypeValues = getHeaderValues(response.headers, 'content-type')
   let contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
 
@@ -572,10 +538,13 @@ console.log(correl_${uniqueId})`
 
 const extractCorrelationCustomCode = (
   rule: CorrelationRule,
-  response: Response,
-  uniqueId: number | void | undefined,
+  response: Response | undefined,
+  uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
+  if (!response) {
+    throw new Error('no response to extract from')
+  }
   // Note: why does typescript complains about this, we can see the usage only on the regex path :(
   // TODO: remove this obscenity! (create appropriate more fine-grained types)
   if (rule.extractor.selector.type !== 'custom-code') {
@@ -583,7 +552,7 @@ const extractCorrelationCustomCode = (
   }
 
   const extractorFunctionSnippetWithoutId = `
-function correlationCustomCode () {
+function correlationCustomCode (response) {
   ${rule.extractor.selector.snippet}
 }
 correlationCustomCode()
@@ -591,8 +560,9 @@ correlationCustomCode()
   // NOTE: for the custom code rule to work correctly we would need the same api available in k6 in here.
   // Currently our response object are different and do not support methods like `json`.
   // TODO: implement a response object that behaves like in k6
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const resp = response
-  resp // <--- just to please typescript about resp not being used while it's used in eval :/
+
   let extractedValue
   try {
     extractedValue = eval(extractorFunctionSnippetWithoutId)
@@ -628,31 +598,8 @@ let correl_${uniqueId} = correlationCustomCode_${uniqueId}(resp)
 console.log('*********')
 console.log(correl_${uniqueId})`
   return {
-    extractedValue: extractedValue,
-    correlationExtractionSnippet: correlationExtractionSnippet,
+    extractedValue,
+    correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
-  }
-}
-
-/**
- * Converts a header key to its canonical form.
- * ex. content-type -> Content-Type
- */
-function canonicalHeaderKey(headerKey: string) {
-  return headerKey
-    .toLowerCase()
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('-')
-}
-
-/**
- * Generates sequentials integers to be used for generated variables distinction for the final script.
- */
-export function* generateSequentialInt() {
-  let num = 0
-  while (true) {
-    yield num
-    num += 1
   }
 }
