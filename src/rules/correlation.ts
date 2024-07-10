@@ -1,9 +1,8 @@
 import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
 import { CorrelationRule, CorrelationStateMap } from '@/types/rules'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, get } from 'lodash-es'
 import { canonicalHeaderKey } from './utils'
 import { getHeaderValues } from '@/utils/headers'
-import { JSONPath } from 'jsonpath-plus'
 import { exhaustive } from '@/utils/typescript'
 
 export function applyCorrelationRule(
@@ -501,10 +500,10 @@ const extractCorrelationJsonBody = (
     throw new Error('operation on wrong rule type')
   }
 
-  const extractedValue = JSONPath({
-    path: `$${rule.extractor.selector.path}`,
-    json: JSON.parse(response.content),
-  })
+  const extractedValue = get(
+    JSON.parse(response.content),
+    rule.extractor.selector.path
+  )
 
   if (!extractedValue || extractedValue.length === 0) {
     return {
