@@ -1,4 +1,3 @@
-import { ChangeEvent, useMemo } from 'react'
 import { Flex, Select, Tooltip } from '@radix-ui/themes'
 import * as Label from '@radix-ui/react-label'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
@@ -6,13 +5,22 @@ import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { ExecutorType } from '@/constants/generator'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 
+const EXECUTOR_LABEL_MAP = {
+  [ExecutorType.RampingVUs]: 'Ramping VUs',
+  [ExecutorType.SharedIterations]: 'Shared iterations',
+}
+
+const options = Object.entries(EXECUTOR_LABEL_MAP).map(([value, label]) => ({
+  label,
+  value,
+}))
+
 interface ExecutorProps {
   value: ExecutorType
 }
 
 export function Executor({ value = ExecutorType.RampingVUs }: ExecutorProps) {
   const { setExecutor } = useGeneratorStore()
-  const options = useOptions()
 
   return (
     <Flex direction="column" gap="1">
@@ -41,18 +49,4 @@ export function Executor({ value = ExecutorType.RampingVUs }: ExecutorProps) {
       </Select.Root>
     </Flex>
   )
-}
-
-const EXECUTOR_LABEL_MAP = {
-  [ExecutorType.RampingVUs]: 'Ramping VUs',
-  [ExecutorType.SharedIterations]: 'Shared iterations',
-}
-
-function useOptions() {
-  return useMemo(() => {
-    return Object.entries(EXECUTOR_LABEL_MAP).map(([value, label]) => ({
-      label,
-      value,
-    }))
-  }, [])
 }

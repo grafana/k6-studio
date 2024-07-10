@@ -15,18 +15,20 @@ const createStage = () => ({
 
 const createCommonSlice: ImmerStateCreator<CommonProfileState> = (set) => ({
   executor: ExecutorType.RampingVUs,
+  gracefulStop: undefined,
+  startTime: undefined,
 
   setExecutor: (value) =>
     set((state) => {
       state.executor = value
     }),
-  setStartTime: (value) =>
-    set((state) => {
-      state.startTime = value
-    }),
   setGracefulStop: (value) =>
     set((state) => {
       state.gracefulStop = value
+    }),
+  setStartTime: (value) =>
+    set((state) => {
+      state.startTime = value
     }),
 })
 
@@ -35,6 +37,10 @@ const createRampingSlice: ImmerStateCreator<RampingVUsState> = (set) => ({
   stages: [],
   startVUs: undefined,
 
+  setGracefulRampDown: (value) =>
+    set((state) => {
+      state.gracefulRampDown = value
+    }),
   addStage: () =>
     set((state) => {
       state.stages.push(createStage())
@@ -47,10 +53,6 @@ const createRampingSlice: ImmerStateCreator<RampingVUsState> = (set) => ({
     set((state) => {
       state.stages[index] = value
     }),
-  setGracefulRampDown: (value) =>
-    set((state) => {
-      state.gracefulRampDown = value
-    }),
   setStartVUs: (value) =>
     set((state) => {
       state.startVUs = value
@@ -60,14 +62,10 @@ const createRampingSlice: ImmerStateCreator<RampingVUsState> = (set) => ({
 const createSharedIterationsSlice: ImmerStateCreator<SharedIterationsState> = (
   set
 ) => ({
-  vus: undefined,
   iterations: undefined,
   maxDuration: undefined,
+  vus: undefined,
 
-  setVus: (value) =>
-    set((state) => {
-      state.vus = value
-    }),
   setIterations: (value) =>
     set((state) => {
       state.iterations = value
@@ -75,6 +73,10 @@ const createSharedIterationsSlice: ImmerStateCreator<SharedIterationsState> = (
   setMaxDuration: (value) =>
     set((state) => {
       state.maxDuration = value
+    }),
+  setVus: (value) =>
+    set((state) => {
+      state.vus = value
     }),
 })
 
