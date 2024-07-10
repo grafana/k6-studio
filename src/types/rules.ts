@@ -69,6 +69,7 @@ export interface CorrelationReplacer {
 
 export interface ParameterizationRule {
   type: 'parameterization'
+  id: string
   filter: Filter
   selector: Selector
   value: VariableValue | ArrayValue | CustomCodeValue
@@ -76,7 +77,6 @@ export interface ParameterizationRule {
 
 export interface CorrelationRule {
   type: 'correlation'
-  name: string
   id: string
   extractor: CorrelationExtractor
   replacer?: CorrelationReplacer
@@ -85,18 +85,22 @@ export interface CorrelationRule {
 export type BeginEndCorrelationRule = CorrelationRule & {
   extractor: { selector: BeginEndSelector }
 }
+
 export type RegexCorrelationRule = CorrelationRule & {
   extractor: { selector: RegexSelector }
 }
+
 export type JsonCorrelationRule = CorrelationRule & {
   extractor: { selector: JsonSelector }
 }
+
 export type CustomCodeCorrelationRule = CorrelationRule & {
   extractor: { selector: CustomCodeSelector }
 }
 
 export interface VerificationRule {
   type: 'verification'
+  id: string
   filter: Filter
   selector: Selector
   value: VariableValue | ArrayValue | CustomCodeValue | RecordedValue
@@ -104,6 +108,7 @@ export interface VerificationRule {
 
 export interface CustomCodeRule {
   type: 'customCode'
+  id: string
   filter: Filter
   placement: 'before' | 'after'
   snippet: string

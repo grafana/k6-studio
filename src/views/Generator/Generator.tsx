@@ -45,11 +45,11 @@ export function Generator() {
       </PageHeading>
       <Allotment defaultSizes={[3, 1]}>
         <Allotment.Pane minSize={400}>
-          <Allotment vertical defaultSizes={[2, 1]}>
+          <Allotment vertical defaultSizes={[1, 1]}>
             <Allotment.Pane minSize={300}>
               <TestRuleContainer />
             </Allotment.Pane>
-            <Allotment.Pane minSize={500}>
+            <Allotment.Pane minSize={300}>
               <GeneratorDrawer />
             </Allotment.Pane>
           </Allotment>

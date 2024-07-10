@@ -10,25 +10,21 @@ export const useGeneratorStore = create<GeneratorState>()(
     ...createLoadProfileSlice(set, get, store),
     recording: {},
     rules: [
-      // {
-      //   type: 'customCode',
-      //   filter: { path: '' },
-      //   snippet: 'console.log("Hello, world!")',
-      //   placement: 'before',
-      // },
+      {
+        id: '0',
+        type: 'customCode',
+        filter: { path: '' },
+        snippet: 'console.log("Hello, world!")',
+        placement: 'before',
+      },
       {
         type: 'correlation',
-        name: 'correlation_1',
         id: '1',
         extractor: {
           filter: { path: '' },
           selector: {
             type: 'begin-end',
             from: 'body',
-            // begin: '"mimeType": "',
-            // end: '",'
-            // begin: '<stop offset="0.951255" stop-color="',
-            // end: '" stop-opacity="0"/>'
             begin: '<meta name=Copyright content="',
             end: '">',
           },
@@ -36,7 +32,6 @@ export const useGeneratorStore = create<GeneratorState>()(
       },
       {
         type: 'correlation',
-        name: 'correlation_3',
         id: '3',
         extractor: {
           filter: { path: '' },
@@ -47,23 +42,22 @@ export const useGeneratorStore = create<GeneratorState>()(
           },
         },
       },
-      // {
-      //   type: 'correlation',
-      //   id: '2',
-      //   extractor: {
-      //     from: 'headers',
-      //     filter: { path: '' },
-      //     selector: {
-      //       type: 'begin-end',
-      //       from: 'headers',
-      //       begin: 'charset=',
-      //       end: '-8'
-      //     }
-      //   }
-      // },
       {
         type: 'correlation',
-        name: 'correlation_4',
+        id: '2',
+        extractor: {
+          from: 'headers',
+          filter: { path: '' },
+          selector: {
+            type: 'begin-end',
+            from: 'headers',
+            begin: 'charset=',
+            end: '-8',
+          },
+        },
+      },
+      {
+        type: 'correlation',
         id: '4',
         extractor: {
           filter: { path: '' },
@@ -87,6 +81,10 @@ export const useGeneratorStore = create<GeneratorState>()(
     resetRecording: () =>
       set((state) => {
         state.recording = {}
+      }),
+    deleteRule: (id: string) =>
+      set((state) => {
+        state.rules = state.rules.filter((rule) => rule.id !== id)
       }),
   }))
 )
