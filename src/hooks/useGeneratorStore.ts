@@ -80,24 +80,6 @@ export const useGeneratorStore = create<GeneratorState>()(
           },
         },
       },
-      // {
-      //   type: 'correlation',
-      //   name: 'correlation_5',
-      //   id: '5',
-      //   extractor: {
-      //     filter: { path: '' },
-      //     selector: {
-      //       type: 'custom-code',
-      //       snippet: `
-      // if ('content-type' in resp.headers && !resp.headers['content-type'].includes('application/json')) {
-      // return null
-      // }
-      // const json_resp = JSON.parse(resp.content);
-      // return json_resp[0].title;
-      // `
-      //     }
-      //   }
-      // },
     ],
     requestFilters: [],
 

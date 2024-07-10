@@ -55,7 +55,6 @@ export type CorrelationSelector =
   | BeginEndSelector
   | RegexSelector
   | JsonSelector
-  | CustomCodeSelector
 
 export interface CorrelationExtractor {
   filter: Filter

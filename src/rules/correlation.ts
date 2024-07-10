@@ -176,13 +176,6 @@ const tryCorrelationExtraction = (
         uniqueId,
         sequentialIdGenerator
       )
-    case 'custom-code':
-      return extractCorrelationCustomCode(
-        rule,
-        proxyData.response,
-        uniqueId,
-        sequentialIdGenerator
-      )
     default:
       return exhaustive(rule.extractor.selector)
   }
@@ -532,74 +525,6 @@ console.log(correl_${uniqueId})`
   return {
     extractedValue: extractedValue[0],
     correlationExtractionSnippet: correlationExtractionSnippet,
-    generatedUniqueId: uniqueId,
-  }
-}
-
-const extractCorrelationCustomCode = (
-  rule: CorrelationRule,
-  response: Response | undefined,
-  uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
-) => {
-  if (!response) {
-    throw new Error('no response to extract from')
-  }
-  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
-  // TODO: remove this obscenity! (create appropriate more fine-grained types)
-  if (rule.extractor.selector.type !== 'custom-code') {
-    throw new Error('operation on wrong rule type')
-  }
-
-  const extractorFunctionSnippetWithoutId = `
-function correlationCustomCode (response) {
-  ${rule.extractor.selector.snippet}
-}
-correlationCustomCode()
-`
-  // NOTE: for the custom code rule to work correctly we would need the same api available in k6 in here.
-  // Currently our response object are different and do not support methods like `json`.
-  // TODO: implement a response object that behaves like in k6
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const resp = response
-
-  let extractedValue
-  try {
-    extractedValue = eval(extractorFunctionSnippetWithoutId)
-    console.log(extractedValue)
-  } catch (error) {
-    // console.log(error)
-    // Not sure if we should be reporting errors here since the process is the same so the rule gets
-    // applied to every response, making error reporting meaningless/noisy :/
-    // Most likely the fact that we report the responses that got extracted should suffice for debugging purposes
-  }
-
-  if (!extractedValue) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
-  }
-
-  if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
-  }
-
-  const extractorFunctionSnippet = `
-function correlationCustomCode_${uniqueId} (resp) {
-  ${rule.extractor.selector.snippet}
-}
-`
-
-  const correlationExtractionSnippet = `
-${extractorFunctionSnippet}
-let correl_${uniqueId} = correlationCustomCode_${uniqueId}(resp)
-console.log('*********')
-console.log(correl_${uniqueId})`
-  return {
-    extractedValue,
-    correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
 }
