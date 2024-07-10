@@ -121,7 +121,7 @@ interface CorrelationState {
   count: number
   responsesExtracted: ProxyData[]
   requestsReplaced: [Request, Request][] // original, modified
-  generatedUniqueId: number | void | undefined
+  generatedUniqueId: number | undefined
 }
 
 export type CorrelationStateMap = Record<string, CorrelationState>
