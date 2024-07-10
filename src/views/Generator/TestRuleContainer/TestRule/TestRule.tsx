@@ -44,7 +44,7 @@ function TestRuleType({ rule }: TestRuleItemProps) {
       case 'correlation':
         return 'Correlation'
       case 'parameterization':
-        return 'Response'
+        return 'Parameterization'
       case 'verification':
         return 'Verification'
       default:
