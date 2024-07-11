@@ -8,6 +8,8 @@ interface GeneratorSidebarProps {
 }
 
 export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
+  const hasRecording = Object.entries(requests).length > 0
+
   return (
     <Flex direction="column" height="100%" minHeight="0">
       <Tabs.Root
@@ -18,7 +20,9 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
       >
         <Tabs.List>
           <Tabs.Trigger value="requests">Requests</Tabs.Trigger>
-          <Tabs.Trigger value="script">Script</Tabs.Trigger>
+          <Tabs.Trigger value="script" disabled={!hasRecording}>
+            Script
+          </Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content
           value="requests"

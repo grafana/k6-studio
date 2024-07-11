@@ -67,17 +67,19 @@ export interface CorrelationReplacer {
   selector: CorrelationSelector
 }
 
-export interface ParameterizationRule {
+interface RuleBase {
+  id: string
+}
+
+export interface ParameterizationRule extends RuleBase {
   type: 'parameterization'
   filter: Filter
   selector: Selector
   value: VariableValue | ArrayValue | CustomCodeValue
 }
 
-export interface CorrelationRule {
+export interface CorrelationRule extends RuleBase {
   type: 'correlation'
-  name: string
-  id: string
   extractor: CorrelationExtractor
   replacer?: CorrelationReplacer
 }
@@ -85,24 +87,27 @@ export interface CorrelationRule {
 export type BeginEndCorrelationRule = CorrelationRule & {
   extractor: { selector: BeginEndSelector }
 }
+
 export type RegexCorrelationRule = CorrelationRule & {
   extractor: { selector: RegexSelector }
 }
+
 export type JsonCorrelationRule = CorrelationRule & {
   extractor: { selector: JsonSelector }
 }
+
 export type CustomCodeCorrelationRule = CorrelationRule & {
   extractor: { selector: CustomCodeSelector }
 }
 
-export interface VerificationRule {
+export interface VerificationRule extends RuleBase {
   type: 'verification'
   filter: Filter
   selector: Selector
   value: VariableValue | ArrayValue | CustomCodeValue | RecordedValue
 }
 
-export interface CustomCodeRule {
+export interface CustomCodeRule extends RuleBase {
   type: 'customCode'
   filter: Filter
   placement: 'before' | 'after'

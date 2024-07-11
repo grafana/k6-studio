@@ -1,6 +1,8 @@
+import { Badge, Code, Flex } from '@radix-ui/themes'
+
 import type { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
-import { Box, Code, Flex } from '@radix-ui/themes'
+import { TestRuleActions } from './TestRuleActions'
 
 interface TestRuleItemProps {
   rule: TestRule
@@ -14,7 +16,7 @@ export function TestRuleItem({ rule }: TestRuleItemProps) {
       p="1"
       style={{
         borderRadius: 'var(--radius-1)',
-        backgroundColor: 'var(--gray-4)',
+        backgroundColor: 'var(--gray-3)',
       }}
     >
       <TestRuleType rule={rule} />
@@ -25,9 +27,11 @@ export function TestRuleItem({ rule }: TestRuleItemProps) {
       )}
       {rule.type === 'correlation' && (
         <>
-          {rule.extractor.filter.path} all requests <Code>{rule.extractor.selector.type}</Code>
+          {rule.extractor.filter.path} all requests{' '}
+          <Code>{rule.extractor.selector.type}</Code>
         </>
       )}
+      <TestRuleActions ruleId={rule.id} />
     </Flex>
   )
 }
@@ -40,7 +44,7 @@ function TestRuleType({ rule }: TestRuleItemProps) {
       case 'correlation':
         return 'Correlation'
       case 'parameterization':
-        return 'Response'
+        return 'Parameterization'
       case 'verification':
         return 'Verification'
       default:
@@ -48,17 +52,5 @@ function TestRuleType({ rule }: TestRuleItemProps) {
     }
   }
 
-  return (
-    <Box
-      px="2"
-      py="1"
-      style={{
-        display: 'inline-block',
-        backgroundColor: 'var(--violet-7)',
-        borderRadius: 'var(--radius-1)',
-      }}
-    >
-      {getLabel(rule)}
-    </Box>
-  )
+  return <Badge>{getLabel(rule)}</Badge>
 }

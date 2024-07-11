@@ -1,16 +1,16 @@
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import { Box } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 import { TestRuleItem } from './TestRule'
 
 export function TestRuleContainer() {
   const { rules } = useGeneratorStore()
 
   return (
-    <Box height="100%" p="2">
-      Rules:
+    <Flex direction="column" gap="1" height="100%" p="2">
+      Test rules ({rules.length}):
       {rules.map((rule, i) => (
         <TestRuleItem rule={rule} key={i} />
       ))}
-    </Box>
+    </Flex>
   )
 }

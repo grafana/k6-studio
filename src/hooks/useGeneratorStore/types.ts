@@ -39,4 +39,5 @@ export interface GeneratorState extends LoadProfileState {
   setRecording: (recording: GroupedProxyData) => void
   resetRecording: () => void
   addRequestFilter: (filter: string) => void
+  deleteRule: (id: string) => void
 }
