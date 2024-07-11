@@ -1,5 +1,5 @@
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import { GearIcon } from '@radix-ui/react-icons'
+import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton } from '@radix-ui/themes'
 
 interface TestRuleActionsProps {
@@ -21,18 +21,17 @@ export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
         <IconButton
-          size="1"
           variant="soft"
           style={{
             marginLeft: 'auto',
           }}
           aria-label="Configure test rule"
         >
-          <GearIcon width="15" height="15" />
+          <DotsVerticalIcon width="15" height="15" />
         </IconButton>
       </DropdownMenu.Trigger>
-      <DropdownMenu.Content size="1">
-        <DropdownMenu.Item>Edit</DropdownMenu.Item>
+      <DropdownMenu.Content>
+        <DropdownMenu.Item onClick={handleEdit}>Edit</DropdownMenu.Item>
         <DropdownMenu.Item color="red" onClick={handleDelete}>
           Delete
         </DropdownMenu.Item>

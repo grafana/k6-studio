@@ -46,7 +46,6 @@ export const useGeneratorStore = create<GeneratorState>()(
         type: 'correlation',
         id: '2',
         extractor: {
-          from: 'headers',
           filter: { path: '' },
           selector: {
             type: 'begin-end',
@@ -63,6 +62,7 @@ export const useGeneratorStore = create<GeneratorState>()(
           filter: { path: '' },
           selector: {
             type: 'json',
+            from: 'body',
             path: '[0].title',
           },
         },

@@ -140,7 +140,7 @@ const tryCorrelationExtraction = (
             sequentialIdGenerator
           )
         default:
-          return exhaustive(rule.extractor.selector.from)
+          return exhaustive(rule.extractor.selector)
       }
     case 'regex':
       switch (rule.extractor.selector.from) {
@@ -166,7 +166,7 @@ const tryCorrelationExtraction = (
             sequentialIdGenerator
           )
         default:
-          return exhaustive(rule.extractor.selector.from)
+          return exhaustive(rule.extractor.selector)
       }
     case 'json':
       return extractCorrelationJsonBody(
