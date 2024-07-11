@@ -38,6 +38,7 @@ export interface RegexSelector {
 
 export interface JsonSelector {
   type: 'json'
+  from: 'body'
   path: string
 }
 
@@ -46,25 +47,17 @@ export interface CustomCodeSelector {
   snippet: string
 }
 
-export interface Selector {
-  type: 'url'
-  value: string
-}
-
-export type CorrelationSelector =
-  | BeginEndSelector
-  | RegexSelector
-  | JsonSelector
+export type Selector = BeginEndSelector | RegexSelector | JsonSelector
 
 export interface CorrelationExtractor {
   filter: Filter
-  selector: CorrelationSelector
+  selector: Selector
   variableName?: string
 }
 
 export interface CorrelationReplacer {
   filter: Filter
-  selector: CorrelationSelector
+  selector: Selector
 }
 
 interface RuleBase {
