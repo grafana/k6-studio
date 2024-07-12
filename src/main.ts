@@ -8,6 +8,7 @@ import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 
 let currentProxyProcess: ProxyProcess | null
+let proxyReady = false
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
 
@@ -77,7 +78,7 @@ app.on('activate', () => {
 })
 
 // Proxy
-ipcMain.on('proxy:start', async (event) => {
+ipcMain.handle('proxy:start', async (event) => {
   console.info('proxy:start event received')
 
   const browserWindow = browserWindowFromEvent(event)
@@ -89,17 +90,35 @@ ipcMain.on('proxy:stop', async () => {
   if (currentProxyProcess) {
     currentProxyProcess.kill()
     currentProxyProcess = null
+    proxyReady = false
   }
 })
 
+ipcMain.on('proxy:started', () => {
+  proxyReady = true
+})
+
+const waitForProxy = () => {
+  if (proxyReady) {
+    return Promise.resolve()
+  }
+
+  return new Promise<void>((resolve) => {
+    ipcMain.on('proxy:started', () => {
+      proxyReady = true
+      resolve()
+    })
+  })
+}
+
 // Browser
-ipcMain.on('browser:start', async (event) => {
+ipcMain.handle('browser:start', async () => {
   console.info('browser:start event received')
-  const browserWindow = browserWindowFromEvent(event)
+
+  await waitForProxy()
 
   currentBrowserProcess = await launchBrowser()
-  browserWindow.webContents.send('browser:started')
-  console.info('browser:started event sent')
+  console.info('browser started')
 })
 
 ipcMain.on('browser:stop', async () => {
@@ -120,19 +139,24 @@ ipcMain.handle('script:select', async (event) => {
   return scriptPath
 })
 
-ipcMain.on('script:run', async (event, scriptPath: string) => {
+ipcMain.handle('script:run', async (event, scriptPath: string) => {
   console.info('script:run event received')
+  await waitForProxy()
+
   const browserWindow = browserWindowFromEvent(event)
 
   currentk6Process = await runScript(browserWindow, scriptPath)
 })
 
-ipcMain.on('script:stop', () => {
+ipcMain.on('script:stop', (event) => {
   console.info('script:stop event received')
   if (currentk6Process) {
     currentk6Process.kill()
     currentk6Process = null
   }
+
+  const browserWindow = browserWindowFromEvent(event)
+  browserWindow.webContents.send('script:stopped')
 })
 
 ipcMain.on('script:save', async (event, script: string) => {

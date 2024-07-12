@@ -35,16 +35,6 @@ console.log(
 
 // Proxy
 
-window.studio.proxy.onProxyStarted(() => {
-  console.log('proxy launched')
-})
-
 window.studio.proxy.onProxyData((data: ProxyData) => {
   console.log(data)
-})
-
-// Browser
-
-window.studio.browser.onBrowserStarted(() => {
-  console.log('browser launched')
 })

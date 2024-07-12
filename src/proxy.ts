@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import { getPlatform, getArch } from './utils/electron'
@@ -48,7 +48,7 @@ export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
     console.log(`stdout: ${data}`)
 
     if (data === 'Proxy Started~') {
-      browserWindow.webContents.send('proxy:started')
+      ipcMain.emit('proxy:started')
       return
     }
 
