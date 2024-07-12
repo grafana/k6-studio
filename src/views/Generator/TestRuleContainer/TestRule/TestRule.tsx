@@ -7,9 +7,10 @@ import { TestRuleInlineContent } from './TestRuleInlineContent'
 
 interface TestRuleItemProps {
   rule: TestRule
+  isSelected: boolean
 }
 
-export function TestRuleItem({ rule }: TestRuleItemProps) {
+export function TestRuleItem({ rule, isSelected }: TestRuleItemProps) {
   return (
     <Flex
       gap="2"
@@ -17,7 +18,9 @@ export function TestRuleItem({ rule }: TestRuleItemProps) {
       p="1"
       style={{
         borderRadius: 'var(--radius-1)',
-        backgroundColor: 'var(--gray-2)',
+        border: '1px solid transparent',
+        borderColor: isSelected ? 'var(--accent-5)' : 'transparent',
+        backgroundColor: isSelected ? 'var(--accent-3)' : 'var(--gray-2)',
       }}
     >
       <TestRuleTypeBadge rule={rule} />

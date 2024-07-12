@@ -4,7 +4,7 @@ import { TestRuleItem } from './TestRule'
 import { NewRuleMenu } from '../NewRuleMenu'
 
 export function TestRuleContainer() {
-  const { rules } = useGeneratorStore()
+  const { rules, selectedRuleId } = useGeneratorStore()
 
   return (
     <Flex
@@ -28,7 +28,11 @@ export function TestRuleContainer() {
       </Flex>
 
       {rules.map((rule, i) => (
-        <TestRuleItem rule={rule} key={i} />
+        <TestRuleItem
+          rule={rule}
+          isSelected={rule.id === selectedRuleId}
+          key={i}
+        />
       ))}
     </Flex>
   )
