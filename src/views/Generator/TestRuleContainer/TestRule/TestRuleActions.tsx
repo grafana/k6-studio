@@ -7,14 +7,18 @@ interface TestRuleActionsProps {
 }
 
 export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
-  const { deleteRule } = useGeneratorStore()
+  const { cloneRule, deleteRule, selectRule } = useGeneratorStore()
 
   const handleEdit = () => {
-    console.log('Edit rule', ruleId)
+    selectRule(ruleId)
   }
 
   const handleDelete = () => {
     deleteRule(ruleId)
+  }
+
+  const handleCopy = () => {
+    cloneRule(ruleId)
   }
 
   return (
@@ -32,6 +36,7 @@ export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         <DropdownMenu.Item onClick={handleEdit}>Edit</DropdownMenu.Item>
+        <DropdownMenu.Item onClick={handleCopy}>Clone</DropdownMenu.Item>
         <DropdownMenu.Item color="red" onClick={handleDelete}>
           Delete
         </DropdownMenu.Item>

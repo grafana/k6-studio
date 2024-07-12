@@ -19,7 +19,7 @@ export function App() {
             <Route index element={<Home />} />
             <Route path="recorder" element={<Recorder />} />
             <Route path="validator" element={<Validator />} />
-            <Route path="generator" element={<Generator />} />
+            <Route path="generator/*" element={<Generator />} />
           </Route>
         </Routes>
       </HashRouter>

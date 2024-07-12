@@ -6,7 +6,7 @@ body {
 }
 
 pre {
-    white-space: pre-wrap;
+  white-space: pre-wrap;
 }
 
 /* Prevent overflow in scroll area with flex parent */

@@ -1,64 +1,64 @@
-import { type ComponentProps } from 'react'
-import { Box, ScrollArea, Tabs } from '@radix-ui/themes'
+import { Flex, ScrollArea, TabNav } from '@radix-ui/themes'
+import { Link, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
 import { RequestFilters } from './RequestFilters'
 import { LoadProfile } from './LoadProfile'
 import { VariablesEditor } from './VariablesEditor'
 import { ThinkTime } from './ThinkTime'
 import { ImportSelector } from './ImportsSelector'
+import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { RuleForm } from './RuleForm'
 
 export function GeneratorDrawer() {
+  const { selectedRuleId } = useGeneratorStore()
+  const { pathname } = useLocation()
+
   return (
-    <Box height="100%">
-      <Tabs.Root
-        defaultValue="requestFilters"
-        style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-      >
-        <Tabs.List style={{ flex: '1 0 auto' }}>
-          <Tabs.Trigger value="rule">Rule</Tabs.Trigger>
-          <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
-          <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
-          <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
-          <Tabs.Trigger value="testData">Test data</Tabs.Trigger>
-          <Tabs.Trigger value="imports">Imports</Tabs.Trigger>
-          <Tabs.Trigger value="requestFilters">Request filters</Tabs.Trigger>
-        </Tabs.List>
-        <div style={{ flex: '0 1 auto', height: '100%', overflow: 'hidden' }}>
-          <ScrollableTabsContent value="rule">
-            Rule content
-          </ScrollableTabsContent>
-          <ScrollableTabsContent value="loadProfile">
-            <LoadProfile />
-          </ScrollableTabsContent>
-          <ScrollableTabsContent value="thresholds">
-            Thresholds content
-          </ScrollableTabsContent>
-          <ScrollableTabsContent value="thinkTime">
-            <ThinkTime />
-          </ScrollableTabsContent>
-          <ScrollableTabsContent value="testData">
-            <VariablesEditor />
-          </ScrollableTabsContent>
-          <Tabs.Content value="imports">
-            <ImportSelector />
-          </Tabs.Content>
-          <ScrollableTabsContent value="requestFilters">
-            <RequestFilters />
-          </ScrollableTabsContent>
-        </div>
-      </Tabs.Root>
-    </Box>
+    <Flex direction="column" height="100%">
+      <TabNav.Root>
+        {selectedRuleId !== null && (
+          <TabNav.Link asChild active={pathname.includes('rule')}>
+            <Link to={`rule/${selectedRuleId}`}>Rule</Link>
+          </TabNav.Link>
+        )}
+        <TabNav.Link asChild active={pathname.includes('loadProfile')}>
+          <Link to="loadProfile">Load profile</Link>
+        </TabNav.Link>
+        <TabNav.Link asChild active={pathname.includes('thresholds')}>
+          <Link to="thresholds">Thresholds</Link>
+        </TabNav.Link>
+        <TabNav.Link asChild active={pathname.includes('thinkTime')}>
+          <Link to="thinkTime">Think time</Link>
+        </TabNav.Link>
+        <TabNav.Link asChild active={pathname.includes('testData')}>
+          <Link to="testData">Test data</Link>
+        </TabNav.Link>
+        <TabNav.Link asChild active={pathname.includes('imports')}>
+          <Link to="imports">Imports</Link>
+        </TabNav.Link>
+        <TabNav.Link asChild active={pathname.includes('requestFilters')}>
+          <Link to="requestFilters">Request filters</Link>
+        </TabNav.Link>
+      </TabNav.Root>
+      <Routes>
+        <Route path="/" element={<ScrollableContent />}>
+          <Route path="rule/:id" element={<RuleForm />} />
+          <Route path="loadProfile" element={<LoadProfile />} />
+          <Route path="thresholds" element={<VariablesEditor />} />
+          <Route path="thinkTime" element={<ThinkTime />} />
+          <Route path="testData" element={<VariablesEditor />} />
+          <Route path="imports" element={<ImportSelector />} />
+          <Route path="requestFilters" element={<RequestFilters />} />
+        </Route>
+      </Routes>
+    </Flex>
   )
 }
 
-const ScrollableTabsContent = ({
-  children,
-  value,
-  ...props
-}: ComponentProps<typeof Tabs.Content>) => {
+const ScrollableContent = () => {
   return (
-    <Tabs.Content style={{ height: '100%' }} value={value} {...props}>
-      <ScrollArea style={{ height: '100%' }}>{children}</ScrollArea>
-    </Tabs.Content>
+    <ScrollArea style={{ height: '100%' }}>
+      <Outlet />
+    </ScrollArea>
   )
 }
