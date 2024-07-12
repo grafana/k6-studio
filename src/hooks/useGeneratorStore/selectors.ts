@@ -2,6 +2,10 @@ import { useGeneratorStore } from './useGeneratorStore'
 
 export function useSelectedRule() {
   return useGeneratorStore((state) => {
+    if (!state.selectedRuleId) {
+      return
+    }
+
     const rule = state.rules.find((rule) => rule.id === state.selectedRuleId)
 
     if (!rule) {
