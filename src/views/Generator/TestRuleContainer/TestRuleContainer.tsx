@@ -7,8 +7,8 @@ export function TestRuleContainer() {
   const { rules, selectedRuleId } = useGeneratorStore()
 
   return (
-    <Flex direction="column" gap="1" height="100%" p="2" pt="0">
-      <ScrollArea scrollbars="vertical">
+    <ScrollArea scrollbars="vertical">
+      <Flex direction="column" height="100%" gap="1" p="2" pt="0">
         <Flex
           position="sticky"
           align="center"
@@ -27,7 +27,7 @@ export function TestRuleContainer() {
             key={i}
           />
         ))}
-      </ScrollArea>
-    </Flex>
+      </Flex>
+    </ScrollArea>
   )
 }
