@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import path from 'path'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import { getPlatform, getArch } from './utils/electron'
@@ -9,7 +9,14 @@ import readline from 'readline/promises'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
-export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
+interface options {
+  onReady?: () => void
+}
+
+export const launchProxy = (
+  browserWindow: BrowserWindow,
+  { onReady }: options = {}
+): ProxyProcess => {
   let proxyScript: string
   let proxyPath: string
   const certificatesPath = getCertificatesPath()
@@ -48,7 +55,7 @@ export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
     console.log(`stdout: ${data}`)
 
     if (data === 'Proxy Started~') {
-      ipcMain.emit('proxy:started')
+      onReady?.()
       return
     }
 

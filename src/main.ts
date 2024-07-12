@@ -6,9 +6,13 @@ import { Process } from '@puppeteer/browsers'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
+import eventEmmitter from 'events'
+
+const proxyEmitter = new eventEmmitter()
 
 let currentProxyProcess: ProxyProcess | null
 let proxyReady = false
+
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
 
@@ -31,7 +35,7 @@ const createWindow = () => {
   })
 
   // Start proxy
-  currentProxyProcess = launchProxy(mainWindow)
+  currentProxyProcess = launchProxyAndAttachEmitter(mainWindow)
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -82,7 +86,7 @@ ipcMain.handle('proxy:start', async (event) => {
   console.info('proxy:start event received')
 
   const browserWindow = browserWindowFromEvent(event)
-  currentProxyProcess = launchProxy(browserWindow)
+  currentProxyProcess = launchProxyAndAttachEmitter(browserWindow)
 })
 
 ipcMain.on('proxy:stop', async () => {
@@ -94,18 +98,13 @@ ipcMain.on('proxy:stop', async () => {
   }
 })
 
-ipcMain.on('proxy:started', () => {
-  proxyReady = true
-})
-
-const waitForProxy = () => {
+const waitForProxy = async (): Promise<void> => {
   if (proxyReady) {
     return Promise.resolve()
   }
 
-  return new Promise<void>((resolve) => {
-    ipcMain.on('proxy:started', () => {
-      proxyReady = true
+  return new Promise((resolve) => {
+    proxyEmitter.once('ready', () => {
       resolve()
     })
   })
@@ -228,4 +227,13 @@ const browserWindowFromEvent = (
   }
 
   return browserWindow
+}
+
+const launchProxyAndAttachEmitter = (browserWindow: BrowserWindow) => {
+  return launchProxy(browserWindow, {
+    onReady: () => {
+      proxyReady = true
+      proxyEmitter.emit('ready')
+    },
+  })
 }
