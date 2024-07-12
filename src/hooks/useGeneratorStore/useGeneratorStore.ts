@@ -86,6 +86,7 @@ export const useGeneratorStore = create<GeneratorState>()(
     deleteRule: (id: string) =>
       set((state) => {
         state.rules = state.rules.filter((rule) => rule.id !== id)
+        state.selectedRuleId = null
       }),
     selectRule: (id: string) =>
       set((state) => {
