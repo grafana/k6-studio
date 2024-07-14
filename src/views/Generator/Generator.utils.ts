@@ -6,6 +6,13 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 // eslint-disable-next-line import/namespace
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
+import { GeneratorState } from '@/hooks/useGeneratorStore/types'
+import {
+  CommonOptions,
+  LoadProfileExecutorOptions,
+} from './GeneratorDrawer/LoadProfile/types'
+import { ExecutorType } from '@/constants/generator'
+import { exhaustive } from '@/utils/typescript'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
   const groupedProxyData = groupProxyData(recording)
@@ -23,4 +30,37 @@ export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
 
 export function saveScript(script: string) {
   window.studio.script.saveScript(script)
+}
+
+export const getLoadProfile = (state: GeneratorState) => {
+  const commonOptions: CommonOptions = {
+    executor: state.executor,
+    startTime: state.startTime,
+    gracefulStop: state.gracefulStop,
+  }
+
+  let loadProfileExecutorOptions: LoadProfileExecutorOptions
+
+  switch (state.executor) {
+    case ExecutorType.RampingVUs:
+      loadProfileExecutorOptions = {
+        stages: state.stages,
+        gracefulRampDown: state.gracefulRampDown,
+        startVUs: state.startVUs,
+        ...commonOptions,
+        executor: ExecutorType.RampingVUs,
+      }
+      return loadProfileExecutorOptions
+    case ExecutorType.SharedIterations:
+      loadProfileExecutorOptions = {
+        iterations: state.iterations,
+        maxDuration: state.maxDuration,
+        vus: state.vus,
+        ...commonOptions,
+        executor: ExecutorType.SharedIterations,
+      }
+      return loadProfileExecutorOptions
+    default:
+      exhaustive(state.executor)
+  }
 }

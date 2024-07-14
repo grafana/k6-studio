@@ -2,7 +2,7 @@ import { Allotment } from 'allotment'
 import { Button } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
-import { exportScript, saveScript } from './Generator.utils'
+import { exportScript, saveScript, getLoadProfile } from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { GeneratorDrawer } from './GeneratorDrawer'
@@ -37,9 +37,16 @@ export function Generator() {
     saveScript(script)
   }
 
+  const generatorState = useGeneratorStore()
+  const saveGenerator = async () => {
+    const loadProfile = getLoadProfile(generatorState)
+    console.log(loadProfile)
+  }
+
   return (
     <>
       <PageHeading text="Generator">
+        <Button onClick={saveGenerator}>Save</Button>
         <Button onClick={handleImport}>Import HAR</Button>
         <AllowList />
         <Button onClick={handleExport} disabled={!hasRecording}>
