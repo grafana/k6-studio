@@ -1,5 +1,5 @@
 import { Flex, ScrollArea, TabNav } from '@radix-ui/themes'
-import { Link, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Outlet, Route, Routes, useMatch } from 'react-router-dom'
 
 import { RequestFilters } from './RequestFilters'
 import { LoadProfile } from './LoadProfile'
@@ -11,34 +11,19 @@ import { RuleForm } from './RuleForm'
 
 export function GeneratorDrawer() {
   const { selectedRuleId } = useGeneratorStore()
-  const { pathname } = useLocation()
 
   return (
     <Flex direction="column" height="100%">
       <TabNav.Root>
         {selectedRuleId !== null && (
-          <TabNav.Link asChild active={pathname.includes('rule')}>
-            <Link to={`rule/${selectedRuleId}`}>Rule</Link>
-          </TabNav.Link>
+          <TabNavLink path={`rule/${selectedRuleId}`} label="Rule" />
         )}
-        <TabNav.Link asChild active={pathname.includes('loadProfile')}>
-          <Link to="loadProfile">Load profile</Link>
-        </TabNav.Link>
-        <TabNav.Link asChild active={pathname.includes('thresholds')}>
-          <Link to="thresholds">Thresholds</Link>
-        </TabNav.Link>
-        <TabNav.Link asChild active={pathname.includes('thinkTime')}>
-          <Link to="thinkTime">Think time</Link>
-        </TabNav.Link>
-        <TabNav.Link asChild active={pathname.includes('testData')}>
-          <Link to="testData">Test data</Link>
-        </TabNav.Link>
-        <TabNav.Link asChild active={pathname.includes('imports')}>
-          <Link to="imports">Imports</Link>
-        </TabNav.Link>
-        <TabNav.Link asChild active={pathname.includes('requestFilters')}>
-          <Link to="requestFilters">Request filters</Link>
-        </TabNav.Link>
+        <TabNavLink path="loadProfile" label="Load profile" />
+        <TabNavLink path="thresholds" label="Thresholds" />
+        <TabNavLink path="thinkTime" label="Think time" />
+        <TabNavLink path="testData" label="Test data" />
+        <TabNavLink path="imports" label="Imports" />
+        <TabNavLink path="requestFilters" label="Request filters" />
       </TabNav.Root>
       <Routes>
         <Route path="/" element={<ScrollableContent />}>
@@ -55,7 +40,17 @@ export function GeneratorDrawer() {
   )
 }
 
-const ScrollableContent = () => {
+function TabNavLink({ path, label }: { path: string; label: string }) {
+  const match = useMatch(`generator/${path}`)
+
+  return (
+    <TabNav.Link asChild active={match !== null}>
+      <Link to={path}>{label}</Link>
+    </TabNav.Link>
+  )
+}
+
+function ScrollableContent() {
   return (
     <ScrollArea style={{ height: '100%' }}>
       <Outlet />
