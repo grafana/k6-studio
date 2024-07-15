@@ -1,8 +1,9 @@
 import { CorrelationRule, CustomCodeRule, TestRule } from '@/types/rules'
 import { TestRuleFilter } from './TestRuleFilter'
-import { Badge, Code } from '@radix-ui/themes'
+import { Badge, Tooltip } from '@radix-ui/themes'
 import { exhaustive } from '@/utils/typescript'
 import { TestRuleSelector } from './TestRuleSelector'
+import { EyeOpenIcon } from '@radix-ui/react-icons'
 
 interface TestRuleInlineContentProps {
   rule: TestRule
@@ -34,8 +35,14 @@ function CorrelationContent({ rule }: { rule: CorrelationRule }) {
 function CustomCodeContent({ rule }: { rule: CustomCodeRule }) {
   return (
     <>
-      <Badge>{rule.placement}</Badge> <TestRuleFilter filter={rule.filter} />{' '}
-      <Code>{rule.snippet}</Code>
+      <Badge color="gray">{rule.placement}</Badge>{' '}
+      <TestRuleFilter filter={rule.filter} />{' '}
+      <Badge color="gray">
+        Snippet
+        <Tooltip content={<code>{rule.snippet}</code>}>
+          <EyeOpenIcon width={15} height={15} />
+        </Tooltip>
+      </Badge>
     </>
   )
 }

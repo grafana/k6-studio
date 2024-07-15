@@ -1,11 +1,11 @@
 import { ProxyData } from '@/types'
-import { TestRule } from '@/types/rules'
 import {
   CommonOptions,
   RampingStage,
   RampingVUsOptions,
   SharedIterationsOptions,
 } from '@/views/Generator/GeneratorDrawer/LoadProfile/types'
+import { TestRule } from '@/types/rules'
 
 export interface CommonProfileState extends CommonOptions {
   setExecutor: (value: CommonOptions['executor']) => void
@@ -32,12 +32,20 @@ export type LoadProfileState = CommonProfileState &
   RampingVUsState &
   SharedIterationsState
 
-export interface GeneratorState extends LoadProfileState {
-  requests: ProxyData[]
+export interface RulesState {
   rules: TestRule[]
+  selectedRuleId: string | null
+  createRule: (type: TestRule['type']) => void
+  updateRule: (rule: TestRule) => void
+  cloneRule: (id: string) => void
+  deleteRule: (id: string) => void
+  selectRule: (id: string) => void
+}
+
+export interface GeneratorState extends LoadProfileState, RulesState {
+  requests: ProxyData[]
   setRecording: (recording: ProxyData[]) => void
   resetRecording: () => void
-  deleteRule: (id: string) => void
   allowList: string[]
   setAllowList: (value: string[]) => void
   filteredRequests: ProxyData[]
