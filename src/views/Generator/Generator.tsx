@@ -37,8 +37,8 @@ export function Generator() {
     saveScript(script)
   }
 
-  const generatorState = useGeneratorStore()
   const saveGenerator = async () => {
+    const generatorState = useGeneratorStore.getState()
     const loadProfile = getLoadProfile(generatorState)
     console.log(loadProfile)
   }
