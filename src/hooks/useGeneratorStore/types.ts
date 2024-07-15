@@ -1,4 +1,4 @@
-import { ProxyData } from '@/types'
+import { ProxyData, Variable } from '@/types'
 import {
   CommonOptions,
   RampingStage,
@@ -6,6 +6,7 @@ import {
   SharedIterationsOptions,
 } from '@/views/Generator/GeneratorDrawer/LoadProfile/types'
 import { TestRule } from '@/types/rules'
+import { SleepType, Timing } from '@/types/testOptions'
 
 // load profile
 export interface CommonProfileState extends CommonOptions {
@@ -33,12 +34,6 @@ export type LoadProfileState = CommonProfileState &
   RampingVUsState &
   SharedIterationsState
 
-// variables
-export interface Variable {
-  name: string
-  value: string
-}
-
 export interface VariablesState {
   variables: Variable[]
 }
@@ -46,24 +41,6 @@ export interface VariablesState {
 export interface VariablesActions {
   setVariables: (variables: Variable[]) => void
 }
-
-// think time
-export type SleepType = 'groups' | 'requests' | 'iterations'
-
-export interface FixedTiming {
-  type: 'fixed'
-  value: number | null
-}
-
-export interface RangeTiming {
-  type: 'range'
-  value: {
-    min: number | null
-    max: number | null
-  }
-}
-
-export type Timing = FixedTiming | RangeTiming
 
 export interface ThinkTimeState {
   sleepType: SleepType

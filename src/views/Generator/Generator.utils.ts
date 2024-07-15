@@ -7,10 +7,7 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
 import { GeneratorState } from '@/hooks/useGeneratorStore/types'
-import {
-  CommonOptions,
-  LoadProfileExecutorOptions,
-} from './GeneratorDrawer/LoadProfile/types'
+import { CommonOptions } from './GeneratorDrawer/LoadProfile/types'
 import { ExecutorType } from '@/constants/generator'
 import { exhaustive } from '@/utils/typescript'
 
@@ -39,27 +36,23 @@ export const getLoadProfile = (state: GeneratorState) => {
     gracefulStop: state.gracefulStop,
   }
 
-  let loadProfileExecutorOptions: LoadProfileExecutorOptions
-
   switch (state.executor) {
     case ExecutorType.RampingVUs:
-      loadProfileExecutorOptions = {
+      return {
         stages: state.stages,
         gracefulRampDown: state.gracefulRampDown,
         startVUs: state.startVUs,
         ...commonOptions,
         executor: ExecutorType.RampingVUs,
       }
-      return loadProfileExecutorOptions
     case ExecutorType.SharedIterations:
-      loadProfileExecutorOptions = {
+      return {
         iterations: state.iterations,
         maxDuration: state.maxDuration,
         vus: state.vus,
         ...commonOptions,
         executor: ExecutorType.SharedIterations,
       }
-      return loadProfileExecutorOptions
     default:
       exhaustive(state.executor)
   }

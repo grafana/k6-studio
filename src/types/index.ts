@@ -71,3 +71,8 @@ export interface RequestSnippetSchema {
   before: string[]
   after: string[]
 }
+
+export interface Variable {
+  name: string
+  value: string
+}

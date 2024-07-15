@@ -1,11 +1,6 @@
 import { ImmerStateCreator } from '@/utils/typescript'
-import {
-  ThinkTimeState,
-  ThinkTimeActions,
-  FixedTiming,
-  SleepType,
-  Timing,
-} from '../types'
+import { ThinkTimeState, ThinkTimeActions } from '../types'
+import { FixedTiming, SleepType, Timing } from '@/types/testOptions'
 
 export const createThinkTimeSlice: ImmerStateCreator<
   ThinkTimeState & ThinkTimeActions

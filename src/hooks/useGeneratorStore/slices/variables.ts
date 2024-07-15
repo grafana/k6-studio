@@ -1,5 +1,6 @@
 import { ImmerStateCreator } from '@/utils/typescript'
-import { VariablesState, VariablesActions, Variable } from '../types'
+import { VariablesState, VariablesActions } from '../types'
+import { Variable } from '@/types'
 
 export const createVariablesSlice: ImmerStateCreator<
   VariablesState & VariablesActions
