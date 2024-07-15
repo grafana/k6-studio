@@ -1,17 +1,17 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Callout, Container, Flex, Select, TextField } from '@radix-ui/themes'
-import {
-  useThinkTimeStore,
-  RangeTiming,
-  createFixedTiming,
-  SleepType,
-} from '@/hooks/useThinkTimeStore'
+import { RangeTiming, SleepType } from '@/hooks/useGeneratorStore/types'
+import { createFixedTiming } from '@/hooks/useGeneratorStore/slices/thinkTime'
+import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 
 type TimingType = 'fixed' | 'range'
 
 export function ThinkTime() {
-  const { sleepType, timing, setSleepType, setTiming } = useThinkTimeStore()
+  const sleepType = useGeneratorStore((store) => store.sleepType)
+  const timing = useGeneratorStore((store) => store.timing)
+  const setSleepType = useGeneratorStore((store) => store.setSleepType)
+  const setTiming = useGeneratorStore((store) => store.setTiming)
 
   function handleMinChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (timing.type === 'fixed') {
