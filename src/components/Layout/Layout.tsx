@@ -12,13 +12,15 @@ export function Layout() {
   return (
     <Box height="100dvh">
       <Allotment>
-        <Allotment.Pane
-          minSize={200}
-          preferredSize={400}
-          visible={leftDrawer.isOpen}
-        >
-          <Drawer close={leftDrawer.close}>{leftDrawer.content}</Drawer>
-        </Allotment.Pane>
+        {leftDrawer.isOpen && (
+          <Allotment.Pane
+            minSize={200}
+            preferredSize={400}
+            visible={leftDrawer.isOpen}
+          >
+            <Drawer close={leftDrawer.close}>{leftDrawer.content}</Drawer>
+          </Allotment.Pane>
+        )}
         <Allotment.Pane>
           <Allotment vertical>
             <Allotment.Pane>

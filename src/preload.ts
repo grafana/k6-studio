@@ -69,11 +69,18 @@ const har = {
   },
 } as const
 
+const settings = {
+  toggleTheme: () => {
+    ipcRenderer.send('settings:toggle-theme')
+  },
+}
+
 const studio = {
   proxy,
   browser,
   script,
   har,
+  settings,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

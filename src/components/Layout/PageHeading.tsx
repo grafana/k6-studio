@@ -1,6 +1,7 @@
 import { HomeIcon } from '@radix-ui/react-icons'
 import { Flex, Heading, IconButton, Separator } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
+import { ThemeSwitcher } from '../ThemeSwitcher'
 
 export function PageHeading({
   text,
@@ -26,6 +27,7 @@ export function PageHeading({
           <Heading>{text}</Heading>
         </Flex>
         <Flex maxWidth="50%" flexGrow="1" justify="end" align="center" gap="2">
+          <ThemeSwitcher />
           {children}
         </Flex>
       </Flex>
