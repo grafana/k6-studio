@@ -19,11 +19,8 @@ function createListener<T>(channel: string, callback: (data: T) => void) {
 }
 
 const proxy = {
-  launchProxy: () => {
-    ipcRenderer.send('proxy:start')
-  },
-  onProxyStarted: (callback: () => void) => {
-    return createListener('proxy:started', callback)
+  launchProxy: (): Promise<void> => {
+    return ipcRenderer.invoke('proxy:start')
   },
   stopProxy: () => {
     ipcRenderer.send('proxy:stop')
@@ -34,11 +31,8 @@ const proxy = {
 } as const
 
 const browser = {
-  launchBrowser: () => {
-    ipcRenderer.send('browser:start')
-  },
-  onBrowserStarted: (callback: () => void) => {
-    return createListener('browser:started', callback)
+  launchBrowser: (): Promise<void> => {
+    return ipcRenderer.invoke('browser:start')
   },
   stopBrowser: () => {
     ipcRenderer.send('browser:stop')
@@ -52,8 +46,8 @@ const script = {
   saveScript: (script: string) => {
     ipcRenderer.send('script:save', script)
   },
-  runScript: (scriptPath: string) => {
-    ipcRenderer.send('script:run', scriptPath)
+  runScript: (scriptPath: string): Promise<void> => {
+    return ipcRenderer.invoke('script:run', scriptPath)
   },
   stopScript: () => {
     ipcRenderer.send('script:stop')

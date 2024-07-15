@@ -9,7 +9,14 @@ import readline from 'readline/promises'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
-export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
+interface options {
+  onReady?: () => void
+}
+
+export const launchProxy = (
+  browserWindow: BrowserWindow,
+  { onReady }: options = {}
+): ProxyProcess => {
   let proxyScript: string
   let proxyPath: string
   const certificatesPath = getCertificatesPath()
@@ -48,7 +55,7 @@ export const launchProxy = (browserWindow: BrowserWindow): ProxyProcess => {
     console.log(`stdout: ${data}`)
 
     if (data === 'Proxy Started~') {
-      browserWindow.webContents.send('proxy:started')
+      onReady?.()
       return
     }
 

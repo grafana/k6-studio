@@ -37,6 +37,10 @@ export function Validator() {
     setIsRunning(true)
   }
 
+  function handleStopScript() {
+    window.studio.script.stopScript()
+  }
+
   useEffect(() => {
     return window.studio.script.onScriptStopped(() => {
       setIsRunning(false)
@@ -67,7 +71,7 @@ export function Validator() {
             'Run Script'
           )}
         </Button>
-        <Button color="amber" disabled={!isRunning}>
+        <Button color="amber" disabled={!isRunning} onClick={handleStopScript}>
           Stop Script
         </Button>
       </PageHeading>

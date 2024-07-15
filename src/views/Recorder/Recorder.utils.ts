@@ -25,25 +25,12 @@ export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
   return [...previous, proxyData]
 }
 
-function onProxyStarted() {
-  return new Promise<void>((resolve) => {
-    window.studio.proxy.onProxyStarted(resolve)
-  })
-}
-
-function onBrowserStarted() {
-  return new Promise<void>((resolve) => {
-    window.studio.browser.onBrowserStarted(resolve)
-  })
-}
-
 // TODO: add error and timeout handling
 export async function startRecording() {
   // Kill previous browser window
   window.studio.browser.stopBrowser()
 
-  window.studio.browser.launchBrowser()
-  await onBrowserStarted()
+  return window.studio.browser.launchBrowser()
 }
 
 export function stopRecording() {
