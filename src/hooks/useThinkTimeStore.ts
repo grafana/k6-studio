@@ -16,11 +16,14 @@ export interface RangeTiming {
   }
 }
 
-type Timing = FixedTiming | RangeTiming
+export type Timing = FixedTiming | RangeTiming
 
-interface ThinkTimeStore {
+interface ThinkTimeState {
   sleepType: SleepType
   timing: Timing
+}
+
+interface ThinkTimeActions {
   setSleepType: (value: SleepType) => void
   setTiming: (timing: Timing) => void
 }
@@ -32,7 +35,7 @@ export const createFixedTiming = (
   value,
 })
 
-export const useThinkTimeStore = create<ThinkTimeStore>()(
+export const useThinkTimeStore = create<ThinkTimeState & ThinkTimeActions>()(
   immer((set) => ({
     sleepType: 'groups',
     timing: createFixedTiming(),

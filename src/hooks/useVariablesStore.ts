@@ -1,17 +1,20 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
-interface Variable {
+export interface Variable {
   name: string
   value: string
 }
 
-interface VariablesStore {
+interface VariablesState {
   variables: Variable[]
+}
+
+interface VariablesActions {
   setVariables: (variables: Variable[]) => void
 }
 
-export const useVariablesStore = create<VariablesStore>()(
+export const useVariablesStore = create<VariablesState & VariablesActions>()(
   immer((set) => ({
     variables: [],
 
