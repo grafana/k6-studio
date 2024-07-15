@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
-import { groupBy } from 'lodash-es'
 
 import { WebLogView } from '@/components/WebLogView'
 import { GroupForm } from './GroupForm'
@@ -9,17 +8,18 @@ import { RecordingControls } from './RecordingButton'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { useRecorderStore } from '@/hooks/useRecorderStore'
+import { groupProxyData } from '@/utils/groups'
 
 export function Recorder() {
   const { proxyData } = useRecorderStore()
   const [group, setGroup] = useState<string>('Default')
   useListenProxyData(group)
-  const groupedProxyData = groupBy(proxyData, 'group')
+  const groupedProxyData = groupProxyData(proxyData)
 
   return (
     <>
       <PageHeading text="Recorder">
-        <RecordingControls requests={groupedProxyData} />
+        <RecordingControls requests={proxyData} />
       </PageHeading>
       <Flex justify="between" wrap="wrap" gap="2">
         <GroupForm onChange={setGroup} value={group} />

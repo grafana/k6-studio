@@ -1,5 +1,5 @@
 import { HomeIcon } from '@radix-ui/react-icons'
-import { Box, Flex, Heading, IconButton, Separator } from '@radix-ui/themes'
+import { Flex, Heading, IconButton, Separator } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
 
 export function PageHeading({

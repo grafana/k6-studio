@@ -1,7 +1,6 @@
 import { type ComponentProps } from 'react'
 import { Box, ScrollArea, Tabs } from '@radix-ui/themes'
 
-import { RequestFilters } from './RequestFilters'
 import { LoadProfile } from './LoadProfile'
 import { VariablesEditor } from './VariablesEditor'
 import { ThinkTime } from './ThinkTime'
@@ -11,7 +10,7 @@ export function GeneratorDrawer() {
   return (
     <Box height="100%">
       <Tabs.Root
-        defaultValue="requestFilters"
+        defaultValue="testData"
         style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
       >
         <Tabs.List style={{ flex: '1 0 auto' }}>
@@ -21,7 +20,6 @@ export function GeneratorDrawer() {
           <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
           <Tabs.Trigger value="testData">Test data</Tabs.Trigger>
           <Tabs.Trigger value="imports">Imports</Tabs.Trigger>
-          <Tabs.Trigger value="requestFilters">Request filters</Tabs.Trigger>
         </Tabs.List>
         <div style={{ flex: '0 1 auto', height: '100%', overflow: 'hidden' }}>
           <ScrollableTabsContent value="rule">
@@ -42,9 +40,6 @@ export function GeneratorDrawer() {
           <Tabs.Content value="imports">
             <ImportSelector />
           </Tabs.Content>
-          <ScrollableTabsContent value="requestFilters">
-            <RequestFilters />
-          </ScrollableTabsContent>
         </div>
       </Tabs.Root>
     </Box>

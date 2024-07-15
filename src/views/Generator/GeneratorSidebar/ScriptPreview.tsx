@@ -28,18 +28,18 @@ const options: editor.IStandaloneEditorConstructionOptions = {
 }
 
 export function ScriptPreview() {
-  const { recording, requestFilters, rules } = useGeneratorStore()
+  const { filteredRequests, rules } = useGeneratorStore()
   const monaco = useMonaco()
 
   useEffect(() => {
     async function updatePreview() {
-      const script = await exportScript(recording, rules, requestFilters)
+      const script = await exportScript(filteredRequests, rules)
 
       monaco?.editor?.getModels()?.[0]?.setValue(script)
     }
 
     updatePreview()
-  }, [monaco?.editor, recording, requestFilters, rules])
+  }, [monaco?.editor, filteredRequests, rules])
 
   return (
     <div>

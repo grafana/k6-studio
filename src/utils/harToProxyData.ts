@@ -1,18 +1,14 @@
-import { GroupedProxyData, Method, ProxyData, Request, Response } from '@/types'
+import { Method, ProxyData, Request, Response } from '@/types'
 import { HarWithOptionalResponse } from '@/types/har'
 import type { Entry } from 'har-format'
-import { groupBy } from 'lodash-es'
 
-export function harToGroupedProxyData(
-  har: HarWithOptionalResponse
-): GroupedProxyData {
-  const proxyData: ProxyData[] = har.log.entries.map((entry) => ({
+export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
+  return har.log.entries.map((entry) => ({
     id: self.crypto.randomUUID(),
     request: parseRequest(entry.request),
     response: entry.response ? parseResponse(entry.response) : undefined,
     group: entry.pageref || 'default',
   }))
-  return groupBy(proxyData, (item) => item.group || 'Default')
 }
 
 function parseRequest(request: Entry['request']): Request {

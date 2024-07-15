@@ -501,7 +501,7 @@ const extractCorrelationJsonBody = (
   }
 
   const extractedValue = get(
-    JSON.parse(response.content),
+    safeJsonParse(response.content),
     rule.extractor.selector.path
   )
 
@@ -525,5 +525,14 @@ console.log(correl_${uniqueId})`
     extractedValue: extractedValue[0],
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
+  }
+}
+
+function safeJsonParse(value: string) {
+  try {
+    return JSON.parse(value)
+  } catch (error) {
+    console.error('Failed to parse JSON', error)
+    return undefined
   }
 }

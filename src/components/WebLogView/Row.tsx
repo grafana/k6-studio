@@ -1,5 +1,5 @@
 import { ProxyData } from '@/types'
-import { Box, Button, Flex, Text } from '@radix-ui/themes'
+import { Box, Flex, Text } from '@radix-ui/themes'
 import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
 import { RequestDetails } from '../RequestDetails'

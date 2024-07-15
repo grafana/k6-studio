@@ -1,14 +1,16 @@
 import { WebLogView } from '@/components/WebLogView'
-import { GroupedProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import { Box, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
+import { groupProxyData } from '@/utils/groups'
 
 interface GeneratorSidebarProps {
-  requests: GroupedProxyData
+  requests: ProxyData[]
 }
 
 export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
-  const hasRecording = Object.entries(requests).length > 0
+  const hasRecording = requests.length > 0
+  const groupedProxyData = groupProxyData(requests)
 
   return (
     <Flex direction="column" height="100%" minHeight="0">
@@ -32,7 +34,7 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
         >
           <ScrollArea scrollbars="vertical">
             <Box p="2">
-              <WebLogView requests={requests} />
+              <WebLogView requests={groupedProxyData} />
             </Box>
           </ScrollArea>
         </Tabs.Content>

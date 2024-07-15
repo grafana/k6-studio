@@ -1,4 +1,4 @@
-import { GroupedProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import { TestRule } from '@/types/rules'
 import {
   CommonOptions,
@@ -33,11 +33,15 @@ export type LoadProfileState = CommonProfileState &
   SharedIterationsState
 
 export interface GeneratorState extends LoadProfileState {
-  recording: GroupedProxyData
+  requests: ProxyData[]
   rules: TestRule[]
-  requestFilters: string[]
-  setRecording: (recording: GroupedProxyData) => void
+  setRecording: (recording: ProxyData[]) => void
   resetRecording: () => void
-  addRequestFilter: (filter: string) => void
   deleteRule: (id: string) => void
+  allowList: string[]
+  setAllowList: (value: string[]) => void
+  filteredRequests: ProxyData[]
+  setFilteredRequests: (requests: ProxyData[]) => void
+  showAllowListDialog: boolean
+  setShowAllowListDialog: (value: boolean) => void
 }

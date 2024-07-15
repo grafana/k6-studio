@@ -4,16 +4,17 @@ import { useEffect } from 'react'
 
 import { exportScript, saveScript } from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
-import { harToGroupedProxyData } from '@/utils/harToProxyData'
+import { harToProxyData } from '@/utils/harToProxyData'
 import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { TestRuleContainer } from './TestRuleContainer'
 
 export function Generator() {
-  const { recording, requestFilters, rules, setRecording, resetRecording } =
+  const { rules, setRecording, resetRecording, filteredRequests } =
     useGeneratorStore()
-  const hasRecording = Object.entries(recording).length > 0
+
+  const hasRecording = filteredRequests.length > 0
 
   useEffect(() => {
     return () => {
@@ -25,12 +26,12 @@ export function Generator() {
     const har = await window.studio.har.openFile()
     if (!har) return
 
-    const groupedProxyData = harToGroupedProxyData(har)
-    setRecording(groupedProxyData)
+    const proxyData = harToProxyData(har)
+    setRecording(proxyData)
   }
 
   const handleExport = async () => {
-    const script = await exportScript(recording, rules, requestFilters)
+    const script = await exportScript(filteredRequests, rules)
 
     saveScript(script)
   }
@@ -55,7 +56,7 @@ export function Generator() {
           </Allotment>
         </Allotment.Pane>
         <Allotment.Pane minSize={300}>
-          <GeneratorSidebar requests={recording} />
+          <GeneratorSidebar requests={filteredRequests} />
         </Allotment.Pane>
       </Allotment>
     </>
