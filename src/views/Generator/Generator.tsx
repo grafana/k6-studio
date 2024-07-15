@@ -9,6 +9,7 @@ import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { TestRuleContainer } from './TestRuleContainer'
+import { AllowList } from './AllowList/AllowList'
 
 export function Generator() {
   const { rules, setRecording, resetRecording, filteredRequests } =
@@ -40,6 +41,7 @@ export function Generator() {
     <>
       <PageHeading text="Generator">
         <Button onClick={handleImport}>Import HAR</Button>
+        <AllowList />
         <Button onClick={handleExport} disabled={!hasRecording}>
           Export script
         </Button>

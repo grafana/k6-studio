@@ -30,7 +30,6 @@ export function AllowList() {
   return (
     <>
       <Button
-        size="1"
         onClick={() => setShowAllowListDialog(true)}
         disabled={requests.length === 0}
       >
