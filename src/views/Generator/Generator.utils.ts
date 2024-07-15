@@ -1,20 +1,16 @@
-import { GroupedProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import { TestRule } from '@/types/rules'
 import { generateScript } from '@/codegen'
-import { applyRequestFilter } from '@/utils/requestFilters'
 import { format } from 'prettier/standalone'
 import * as prettierPluginBabel from 'prettier/plugins/babel'
 // eslint-disable-next-line import/namespace
 import * as prettierPluginEStree from 'prettier/plugins/estree'
+import { groupProxyData } from '@/utils/groups'
 
-export async function exportScript(
-  recording: GroupedProxyData,
-  rules: TestRule[],
-  allowlist: string[]
-) {
-  const filteredProxyData = applyRequestFilter(recording, allowlist)
+export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
+  const groupedProxyData = groupProxyData(recording)
   const script = generateScript({
-    recording: filteredProxyData,
+    recording: groupedProxyData,
     rules,
   })
   const prettifiedScript = await format(script, {

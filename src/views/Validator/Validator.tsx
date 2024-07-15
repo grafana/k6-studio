@@ -4,8 +4,8 @@ import { WebLogView } from '@/components/WebLogView'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRecorderStore } from '@/hooks/useRecorderStore'
 import { K6Log } from '@/types'
+import { groupProxyData } from '@/utils/groups'
 import { Button, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
-import { groupBy } from 'lodash-es'
 import { useEffect, useState } from 'react'
 
 export function Validator() {
@@ -15,10 +15,7 @@ export function Validator() {
   useListenProxyData()
   const { proxyData, resetProxyData } = useRecorderStore()
 
-  const groupedProxyData = groupBy(
-    proxyData,
-    (item) => item.comment || 'Default'
-  )
+  const groupedProxyData = groupProxyData(proxyData)
 
   async function handleSelectScript() {
     const path = await window.studio.script.showScriptSelectDialog()

@@ -1,7 +1,6 @@
 import { Flex, ScrollArea, TabNav } from '@radix-ui/themes'
 import { Link, Outlet, Route, Routes, useMatch } from 'react-router-dom'
 
-import { RequestFilters } from './RequestFilters'
 import { LoadProfile } from './LoadProfile'
 import { VariablesEditor } from './VariablesEditor'
 import { ThinkTime } from './ThinkTime'
@@ -23,7 +22,6 @@ export function GeneratorDrawer() {
         <TabNavLink path="thinkTime" label="Think time" />
         <TabNavLink path="testData" label="Test data" />
         <TabNavLink path="imports" label="Imports" />
-        <TabNavLink path="requestFilters" label="Request filters" />
       </TabNav.Root>
       <Routes>
         <Route path="/" element={<ScrollableContent />}>
@@ -33,7 +31,6 @@ export function GeneratorDrawer() {
           <Route path="thinkTime" element={<ThinkTime />} />
           <Route path="testData" element={<VariablesEditor />} />
           <Route path="imports" element={<ImportSelector />} />
-          <Route path="requestFilters" element={<RequestFilters />} />
         </Route>
       </Routes>
     </Flex>

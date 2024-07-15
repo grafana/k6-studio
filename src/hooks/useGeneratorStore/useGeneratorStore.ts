@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
-import { GroupedProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import { createLoadProfileSlice } from './slices/loadProfile'
 import { GeneratorState } from './types'
 import { createRulesSlice } from './slices/rules'
@@ -10,19 +10,36 @@ export const useGeneratorStore = create<GeneratorState>()(
   immer((set, get, store) => ({
     ...createLoadProfileSlice(set, get, store),
     ...createRulesSlice(set, get, store),
-    recording: {},
-    requestFilters: [],
-    addRequestFilter: (filter: string) =>
+    requests: [],
+    filteredRequests: [],
+    setRecording: (requests: ProxyData[]) =>
       set((state) => {
-        state.requestFilters.push(filter)
-      }),
-    setRecording: (recording: GroupedProxyData) =>
-      set((state) => {
-        state.recording = recording
+        state.requests = requests
+        state.allowList = []
+        state.showAllowListDialog = true
       }),
     resetRecording: () =>
       set((state) => {
-        state.recording = {}
+        state.requests = []
+        state.filteredRequests = []
+        state.allowList = []
+      }),
+
+    allowList: [],
+    setAllowList: (value) =>
+      set((state) => {
+        state.allowList = value
+      }),
+
+    setFilteredRequests: (requests) =>
+      set((state) => {
+        state.filteredRequests = requests
+      }),
+
+    showAllowListDialog: false,
+    setShowAllowListDialog: (value) =>
+      set((state) => {
+        state.showAllowListDialog = value
       }),
   }))
 )

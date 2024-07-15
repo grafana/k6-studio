@@ -6,16 +6,13 @@ import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
 import { startRecording, stopRecording } from './Recorder.utils'
 import { useRecorderStore } from '@/hooks/useRecorderStore'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
-import { GroupedProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { groupProxyData } from '@/utils/groups'
 
-export function RecordingControls({
-  requests,
-}: {
-  requests: GroupedProxyData
-}) {
+export function RecordingControls({ requests }: { requests: ProxyData[] }) {
   const { isRecording, setIsRecording, resetProxyData } = useRecorderStore()
-  const isEmpty = Object.keys(requests).length === 0
+  const isEmpty = requests.length === 0
   const { setRecording } = useGeneratorStore()
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
@@ -35,7 +32,8 @@ export function RecordingControls({
   }
 
   function handleSave() {
-    const har = proxyDataToHar(requests)
+    const grouped = groupProxyData(requests)
+    const har = proxyDataToHar(grouped)
     window.studio.har.saveFile(JSON.stringify(har, null, 4))
   }
 

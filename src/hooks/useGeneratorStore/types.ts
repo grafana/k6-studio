@@ -1,4 +1,4 @@
-import { GroupedProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import {
   CommonOptions,
   RampingStage,
@@ -43,10 +43,13 @@ export interface RulesState {
 }
 
 export interface GeneratorState extends LoadProfileState, RulesState {
-  recording: GroupedProxyData
-  requestFilters: string[]
-  selectedRuleId: string | null
-  setRecording: (recording: GroupedProxyData) => void
+  requests: ProxyData[]
+  setRecording: (recording: ProxyData[]) => void
   resetRecording: () => void
-  addRequestFilter: (filter: string) => void
+  allowList: string[]
+  setAllowList: (value: string[]) => void
+  filteredRequests: ProxyData[]
+  setFilteredRequests: (requests: ProxyData[]) => void
+  showAllowListDialog: boolean
+  setShowAllowListDialog: (value: boolean) => void
 }
