@@ -3,7 +3,7 @@ import { ProxyData } from '@/types'
 import { Button } from '@radix-ui/themes'
 import { uniq } from 'lodash-es'
 import { useEffect } from 'react'
-import { AllowListDialog } from './AllowListModal'
+import { AllowListDialog } from './AllowListDialog'
 
 export function AllowList() {
   const requests = useGeneratorStore((store) => store.requests)

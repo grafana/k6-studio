@@ -1,10 +1,12 @@
 import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import {
+  Box,
   Button,
   CheckboxGroup,
   Dialog,
   Flex,
   IconButton,
+  ScrollArea,
   TextField,
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
@@ -91,16 +93,20 @@ export function AllowListDialog({
           </Flex>
         </Flex>
 
-        <CheckboxGroup.Root
-          value={selectedHosts}
-          onValueChange={(e) => setSelectedHosts(e)}
-        >
-          {filteredHosts.map((host) => (
-            <CheckboxGroup.Item value={host} key={host}>
-              {host}
-            </CheckboxGroup.Item>
-          ))}
-        </CheckboxGroup.Root>
+        <Box height="200px" asChild pr="3">
+          <ScrollArea>
+            <CheckboxGroup.Root
+              value={selectedHosts}
+              onValueChange={(e) => setSelectedHosts(e)}
+            >
+              {filteredHosts.map((host) => (
+                <CheckboxGroup.Item value={host} key={host}>
+                  {host}
+                </CheckboxGroup.Item>
+              ))}
+            </CheckboxGroup.Root>
+          </ScrollArea>
+        </Box>
 
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close>
