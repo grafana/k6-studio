@@ -36,13 +36,16 @@ export function AllowList() {
       >
         Allowed hosts [{allowList.length}/{hosts.length}]
       </Button>
-      <AllowListDialog
-        open={showAllowListDialog}
-        onOpenChange={setShowAllowListDialog}
-        hosts={hosts}
-        allowList={allowList}
-        onAllowListChange={setAllowList}
-      />
+      {/* Radix does not unmount dialog on close, this is need to clear local state */}
+      {showAllowListDialog && (
+        <AllowListDialog
+          open={showAllowListDialog}
+          onOpenChange={setShowAllowListDialog}
+          hosts={hosts}
+          allowList={allowList}
+          onAllowListChange={setAllowList}
+        />
+      )}
     </>
   )
 }
