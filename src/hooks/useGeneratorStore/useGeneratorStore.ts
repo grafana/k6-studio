@@ -14,6 +14,11 @@ export const useGeneratorStore = create<GeneratorState>()(
     ...createRulesSlice(set, get, store),
     ...createVariablesSlice(set, get, store),
     ...createThinkTimeSlice(set, get, store),
+    name: `generator_${Date()}`,
+    setName: (name: string) =>
+      set((state) => {
+        state.name = name
+      }),
     requests: [],
     filteredRequests: [],
     setRecording: (requests: ProxyData[]) =>

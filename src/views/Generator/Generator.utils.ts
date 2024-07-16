@@ -54,6 +54,6 @@ export const getLoadProfile = (state: GeneratorState) => {
         executor: ExecutorType.SharedIterations,
       }
     default:
-      exhaustive(state.executor)
+      return exhaustive(state.executor)
   }
 }

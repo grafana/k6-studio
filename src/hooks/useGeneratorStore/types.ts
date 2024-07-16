@@ -69,6 +69,8 @@ export interface GeneratorState
     VariablesActions,
     ThinkTimeState,
     ThinkTimeActions {
+  name: string
+  setName: (name: string) => void
   requests: ProxyData[]
   setRecording: (recording: ProxyData[]) => void
   resetRecording: () => void
