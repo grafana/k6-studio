@@ -1,3 +1,7 @@
+import { Filter, TestRule } from '@/types/rules'
+import { Request, RequestSnippetSchema } from '@/types'
+import { exhaustive } from '@/utils/typescript'
+
 /**
  * Converts a header key to its canonical form.
  * ex. content-type -> Content-Type
@@ -18,5 +22,27 @@ export function* generateSequentialInt(): Generator<number> {
   while (true) {
     yield num
     num += 1
+  }
+}
+
+export function matchFilter(
+  { data: { request } }: RequestSnippetSchema,
+  rule: TestRule
+) {
+  switch (rule.type) {
+    case 'correlation': {
+      const {
+        extractor: { filter },
+      } = rule
+      return request.url.toLowerCase().includes(filter.path.toLowerCase())
+    }
+    case 'customCode':
+    case 'parameterization':
+    case 'verification': {
+      const { filter } = rule
+      return request.url.toLowerCase().includes(filter.path.toLowerCase())
+    }
+    default:
+      return exhaustive(rule)
   }
 }
