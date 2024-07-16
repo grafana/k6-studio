@@ -38,7 +38,7 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
             </Box>
           </ScrollArea>
         </Tabs.Content>
-        <Tabs.Content value="script">
+        <Tabs.Content value="script" style={{ height: '100%' }}>
           <ScriptPreview />
         </Tabs.Content>
       </Tabs.Root>

@@ -24,25 +24,8 @@ export function NewRuleMenu() {
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => {
-            createRule('verification')
-          }}
-          disabled
-        >
-          Verification rule
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={() => {
-            createRule('parameterization')
-          }}
-          disabled
-        >
-          Parameterization rule
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={() => {
             createRule('customCode')
           }}
-          disabled
         >
           Custom code rule
         </DropdownMenu.Item>

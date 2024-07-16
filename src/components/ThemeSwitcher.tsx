@@ -5,8 +5,6 @@ import { IconButton } from '@radix-ui/themes'
 export function ThemeSwitcher() {
   const theme = useTheme()
 
-  console.log('theme', theme)
-
   const handleClick = () => {
     window.studio.settings.toggleTheme()
   }

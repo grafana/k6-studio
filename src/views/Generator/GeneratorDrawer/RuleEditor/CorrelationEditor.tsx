@@ -1,38 +1,19 @@
 import { Container, Text } from '@radix-ui/themes'
 
-import { useGeneratorStore, useSelectedRule } from '@/hooks/useGeneratorStore'
-import { CorrelationRule, Selector, type Filter } from '@/types/rules'
-import { exhaustive } from '@/utils/typescript'
-import { SelectorField } from './SelectorField'
+import { CorrelationRule, Filter, Selector } from '@/types/rules'
 import { FilterField } from './FilterField'
+import { SelectorField } from './SelectorField'
 
-export function RuleForm() {
-  const rule = useSelectedRule()
-  const { updateRule } = useGeneratorStore()
-
-  if (!rule) {
-    return null
-  }
-
-  switch (rule.type) {
-    case 'correlation':
-      return <CorrelationForm rule={rule} onChangeRule={updateRule} />
-    case 'customCode':
-    case 'parameterization':
-    case 'verification':
-      return null
-    default:
-      return exhaustive(rule)
-  }
-}
-
-interface CorrelationFormProps {
+interface CorrelationEditorProps {
   rule: CorrelationRule
   onChangeRule: (rule: CorrelationRule) => void
 }
 
 // Only supports extractor at the moment
-function CorrelationForm({ rule, onChangeRule }: CorrelationFormProps) {
+export function CorrelationEditor({
+  rule,
+  onChangeRule,
+}: CorrelationEditorProps) {
   const handleFilterChange = (filter: Filter) => {
     onChangeRule({ ...rule, extractor: { ...rule.extractor, filter } })
   }
