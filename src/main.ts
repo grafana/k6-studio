@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import { open, writeFile } from 'fs/promises'
 import path from 'path'
 import { Process } from '@puppeteer/browsers'
@@ -215,6 +215,11 @@ ipcMain.handle('har:open', async (event) => {
   }
 
   return
+})
+
+// Settings
+ipcMain.on('settings:toggle-theme', () => {
+  nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
 
 const browserWindowFromEvent = (

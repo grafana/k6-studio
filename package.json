@@ -54,6 +54,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.11.4",
     "@monaco-editor/react": "^4.6.0",
     "@puppeteer/browsers": "^2.2.3",
     "@radix-ui/react-collapsible": "^1.0.3",
