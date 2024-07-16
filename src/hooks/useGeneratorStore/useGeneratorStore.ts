@@ -61,6 +61,10 @@ export const useGeneratorStore = create<GeneratorState>()(
 )
 
 function generateNewName() {
-  const date = new Date().toISOString().split('T')[0]
-  return `Generator ${date}`
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  })
+  const formattedDate = formatter.format(new Date())
+  return `Generator ${formattedDate}`
 }
