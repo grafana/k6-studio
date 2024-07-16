@@ -2,7 +2,7 @@ import { Allotment } from 'allotment'
 import { Button } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
-import { exportScript, saveScript } from './Generator.utils'
+import { exportScript, saveScript, saveGenerator } from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { GeneratorDrawer } from './GeneratorDrawer'
@@ -12,8 +12,13 @@ import { TestRuleContainer } from './TestRuleContainer'
 import { AllowList } from './AllowList/AllowList'
 
 export function Generator() {
-  const { rules, setRecording, resetRecording, filteredRequests } =
-    useGeneratorStore()
+  const {
+    rules,
+    setRecording,
+    resetRecording,
+    filteredRequests,
+    setRecordingPath,
+  } = useGeneratorStore()
 
   const hasRecording = filteredRequests.length > 0
 
@@ -24,11 +29,12 @@ export function Generator() {
   }, [resetRecording])
 
   const handleImport = async () => {
-    const har = await window.studio.har.openFile()
-    if (!har) return
+    const harFile = await window.studio.har.openFile()
+    if (!harFile) return
 
-    const proxyData = harToProxyData(har)
+    const proxyData = harToProxyData(harFile.content)
     setRecording(proxyData)
+    setRecordingPath(harFile.path)
   }
 
   const handleExport = async () => {
@@ -40,6 +46,7 @@ export function Generator() {
   return (
     <>
       <PageHeading text="Generator">
+        <Button onClick={saveGenerator}>Save</Button>
         <Button onClick={handleImport}>Import HAR</Button>
         <AllowList />
         <Button onClick={handleExport} disabled={!hasRecording}>

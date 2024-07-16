@@ -1,30 +1,17 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Callout, Container, Flex, Select, TextField } from '@radix-ui/themes'
-import { useState } from 'react'
-
-type SleepType = 'groups' | 'requests' | 'iterations'
+import { createFixedTiming } from '@/hooks/useGeneratorStore/slices/thinkTime'
+import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { RangeTiming, SleepType } from '@/types/testOptions'
 
 type TimingType = 'fixed' | 'range'
 
-interface FixedTiming {
-  type: 'fixed'
-  value: number | null
-}
-
-interface RangeTiming {
-  type: 'range'
-  value: {
-    min: number | null
-    max: number | null
-  }
-}
-
-type Timing = FixedTiming | RangeTiming
-
 export function ThinkTime() {
-  const [sleepType, setSleepType] = useState<SleepType>('groups')
-  const [timing, setTiming] = useState<Timing>(createFixedTiming)
+  const sleepType = useGeneratorStore((store) => store.sleepType)
+  const timing = useGeneratorStore((store) => store.timing)
+  const setSleepType = useGeneratorStore((store) => store.setSleepType)
+  const setTiming = useGeneratorStore((store) => store.setTiming)
 
   function handleMinChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (timing.type === 'fixed') {
@@ -142,11 +129,6 @@ export function ThinkTime() {
     </Container>
   )
 }
-
-const createFixedTiming = (value: number | null = null): FixedTiming => ({
-  type: 'fixed',
-  value,
-})
 
 const createRangeTiming = (
   min: number | null = null,

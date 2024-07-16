@@ -1,4 +1,4 @@
-import { ProxyData } from '@/types'
+import { ProxyData, Variable } from '@/types'
 import {
   CommonOptions,
   RampingStage,
@@ -6,7 +6,9 @@ import {
   SharedIterationsOptions,
 } from '@/views/Generator/GeneratorDrawer/LoadProfile/types'
 import { TestRule } from '@/types/rules'
+import { SleepType, Timing } from '@/types/testOptions'
 
+// load profile
 export interface CommonProfileState extends CommonOptions {
   setExecutor: (value: CommonOptions['executor']) => void
   setGracefulStop: (value: CommonOptions['gracefulStop']) => void
@@ -32,6 +34,24 @@ export type LoadProfileState = CommonProfileState &
   RampingVUsState &
   SharedIterationsState
 
+export interface VariablesState {
+  variables: Variable[]
+}
+
+export interface VariablesActions {
+  setVariables: (variables: Variable[]) => void
+}
+
+export interface ThinkTimeState {
+  sleepType: SleepType
+  timing: Timing
+}
+
+export interface ThinkTimeActions {
+  setSleepType: (value: SleepType) => void
+  setTiming: (timing: Timing) => void
+}
+
 export interface RulesState {
   rules: TestRule[]
   selectedRuleId: string | null
@@ -42,10 +62,20 @@ export interface RulesState {
   selectRule: (id: string) => void
 }
 
-export interface GeneratorState extends LoadProfileState, RulesState {
+export interface GeneratorState
+  extends LoadProfileState,
+    RulesState,
+    VariablesState,
+    VariablesActions,
+    ThinkTimeState,
+    ThinkTimeActions {
+  name: string
+  setName: (name: string) => void
   requests: ProxyData[]
   setRecording: (recording: ProxyData[]) => void
   resetRecording: () => void
+  recordingPath: string
+  setRecordingPath: (path: string) => void
   allowList: string[]
   setAllowList: (value: string[]) => void
   filteredRequests: ProxyData[]

@@ -1,14 +1,11 @@
-import { useState, ChangeEvent } from 'react'
+import { ChangeEvent } from 'react'
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import { Box, Button, IconButton, Table, TextField } from '@radix-ui/themes'
-
-interface Variable {
-  name: string
-  value: string
-}
+import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 
 export function VariablesEditor() {
-  const [variables, setVariables] = useState<Variable[]>([])
+  const variables = useGeneratorStore((store) => store.variables)
+  const setVariables = useGeneratorStore((store) => store.setVariables)
 
   function handleAddVariable() {
     setVariables([...variables, { name: '', value: '' }])

@@ -3,6 +3,8 @@ import { immer } from 'zustand/middleware/immer'
 
 import { ProxyData } from '@/types'
 import { createLoadProfileSlice } from './slices/loadProfile'
+import { createVariablesSlice } from './slices/variables'
+import { createThinkTimeSlice } from './slices/thinkTime'
 import { GeneratorState } from './types'
 import { createRulesSlice } from './slices/rules'
 
@@ -10,6 +12,13 @@ export const useGeneratorStore = create<GeneratorState>()(
   immer((set, get, store) => ({
     ...createLoadProfileSlice(set, get, store),
     ...createRulesSlice(set, get, store),
+    ...createVariablesSlice(set, get, store),
+    ...createThinkTimeSlice(set, get, store),
+    name: `generator_${Date()}`,
+    setName: (name: string) =>
+      set((state) => {
+        state.name = name
+      }),
     requests: [],
     filteredRequests: [],
     setRecording: (requests: ProxyData[]) =>
@@ -23,6 +32,12 @@ export const useGeneratorStore = create<GeneratorState>()(
         state.requests = []
         state.filteredRequests = []
         state.allowList = []
+      }),
+
+    recordingPath: '',
+    setRecordingPath: (path: string) =>
+      set((state) => {
+        state.recordingPath = path
       }),
 
     allowList: [],
