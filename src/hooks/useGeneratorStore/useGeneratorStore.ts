@@ -14,7 +14,7 @@ export const useGeneratorStore = create<GeneratorState>()(
     ...createRulesSlice(set, get, store),
     ...createVariablesSlice(set, get, store),
     ...createThinkTimeSlice(set, get, store),
-    name: `generator_${Date()}`,
+    name: generateNewName(),
     setName: (name: string) =>
       set((state) => {
         state.name = name
@@ -30,6 +30,7 @@ export const useGeneratorStore = create<GeneratorState>()(
     resetRecording: () =>
       set((state) => {
         state.requests = []
+        state.recordingPath = ''
         state.filteredRequests = []
         state.allowList = []
       }),
@@ -58,3 +59,8 @@ export const useGeneratorStore = create<GeneratorState>()(
       }),
   }))
 )
+
+function generateNewName() {
+  const date = new Date().toISOString().split('T')[0]
+  return `Generator ${date}`
+}

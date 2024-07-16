@@ -29,12 +29,11 @@ export function AllowList() {
 
   return (
     <>
-      <Button
-        onClick={() => setShowAllowListDialog(true)}
-        disabled={requests.length === 0}
-      >
-        Allowed hosts [{allowList.length}/{hosts.length}]
-      </Button>
+      {requests.length > 0 && (
+        <Button onClick={() => setShowAllowListDialog(true)}>
+          Allowed hosts [{allowList.length}/{hosts.length}]
+        </Button>
+      )}
       {/* Radix does not unmount dialog on close, this is need to clear local state */}
       {showAllowListDialog && (
         <AllowListDialog

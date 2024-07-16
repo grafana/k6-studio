@@ -16,3 +16,7 @@ export function useSelectedRule() {
     return rule
   })
 }
+
+export function useHasRecording() {
+  return useGeneratorStore((state) => state.requests.length > 0)
+}

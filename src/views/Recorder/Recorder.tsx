@@ -9,12 +9,14 @@ import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { useRecorderStore } from '@/hooks/useRecorderStore'
 import { groupProxyData } from '@/utils/groups'
+import { useWindowTitle } from '@/hooks/useWindowTitle'
 
 export function Recorder() {
   const { proxyData } = useRecorderStore()
   const [group, setGroup] = useState<string>('Default')
   useListenProxyData(group)
   const groupedProxyData = groupProxyData(proxyData)
+  useWindowTitle('Recorder')
 
   return (
     <>

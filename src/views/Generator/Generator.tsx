@@ -4,38 +4,27 @@ import { useEffect } from 'react'
 
 import { exportScript, saveScript, saveGenerator } from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore, useHasRecording } from '@/hooks/useGeneratorStore'
 import { TestRuleContainer } from './TestRuleContainer'
 import { AllowList } from './AllowList/AllowList'
+import { RecordingSelector } from './RecordingSelector'
+import { useWindowTitle } from '@/hooks/useWindowTitle'
 
 export function Generator() {
-  const {
-    rules,
-    setRecording,
-    resetRecording,
-    filteredRequests,
-    setRecordingPath,
-  } = useGeneratorStore()
-
-  const hasRecording = filteredRequests.length > 0
+  const rules = useGeneratorStore((store) => store.rules)
+  const name = useGeneratorStore((store) => store.name)
+  const resetRecording = useGeneratorStore((store) => store.resetRecording)
+  const filteredRequests = useGeneratorStore((store) => store.filteredRequests)
+  const hasRecording = useHasRecording()
+  useWindowTitle(name)
 
   useEffect(() => {
     return () => {
       resetRecording()
     }
   }, [resetRecording])
-
-  const handleImport = async () => {
-    const harFile = await window.studio.har.openFile()
-    if (!harFile) return
-
-    const proxyData = harToProxyData(harFile.content)
-    setRecording(proxyData)
-    setRecordingPath(harFile.path)
-  }
 
   const handleExport = async () => {
     const script = await exportScript(filteredRequests, rules)
@@ -46,12 +35,10 @@ export function Generator() {
   return (
     <>
       <PageHeading text="Generator">
-        <Button onClick={saveGenerator}>Save</Button>
-        <Button onClick={handleImport}>Import HAR</Button>
+        <RecordingSelector />
         <AllowList />
-        <Button onClick={handleExport} disabled={!hasRecording}>
-          Export script
-        </Button>
+        {hasRecording && <Button onClick={saveGenerator}>Save</Button>}
+        {hasRecording && <Button onClick={handleExport}>Export script</Button>}
       </PageHeading>
       <Allotment defaultSizes={[3, 1]}>
         <Allotment.Pane minSize={400}>
@@ -64,7 +51,7 @@ export function Generator() {
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>
-        <Allotment.Pane minSize={300}>
+        <Allotment.Pane minSize={300} visible={hasRecording}>
           <GeneratorSidebar requests={filteredRequests} />
         </Allotment.Pane>
       </Allotment>
