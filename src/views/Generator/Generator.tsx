@@ -29,10 +29,10 @@ export function Generator() {
   }, [resetRecording])
 
   const handleImport = async () => {
-    const har = await window.studio.har.openFile()
-    if (!har) return
+    const harFile = await window.studio.har.openFile()
+    if (!harFile) return
 
-    const proxyData = harToProxyData(har)
+    const proxyData = harToProxyData(harFile.content)
     setRecording(proxyData)
   }
 

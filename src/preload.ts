@@ -3,7 +3,7 @@
 
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log } from './types'
-import { HarWithOptionalResponse } from './types/har'
+import { HarFile, HarWithOptionalResponse } from './types/har'
 
 // Create listener and return clean up function to be used in useEffect
 function createListener<T>(channel: string, callback: (data: T) => void) {
@@ -64,7 +64,7 @@ const har = {
   saveFile: (data: string) => {
     ipcRenderer.send('har:save', data)
   },
-  openFile: (): Promise<HarWithOptionalResponse | void> => {
+  openFile: (): Promise<HarFile | void> => {
     return ipcRenderer.invoke('har:open')
   },
 } as const

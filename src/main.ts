@@ -208,7 +208,7 @@ ipcMain.handle('har:open', async (event) => {
       const data = await fileHandle?.readFile({ encoding: 'utf-8' })
       const har = await JSON.parse(data)
 
-      return har
+      return { path: dialogResult.filePaths[0], content: har }
     } finally {
       await fileHandle?.close()
     }
