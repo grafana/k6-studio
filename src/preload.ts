@@ -75,12 +75,19 @@ const settings = {
   },
 }
 
+const generator = {
+  saveGenerator: (generatorFile: string) => {
+    ipcRenderer.send('generator:save', generatorFile)
+  },
+} as const
+
 const studio = {
   proxy,
   browser,
   script,
   har,
   settings,
+  generator,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

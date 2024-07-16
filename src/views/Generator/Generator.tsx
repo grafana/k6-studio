@@ -81,7 +81,9 @@ export function Generator() {
       allowlist: generatorState.allowList,
     }
 
-    console.log(generatorFile)
+    window.studio.generator.saveGenerator(
+      JSON.stringify(generatorFile, null, 2)
+    )
   }
 
   return (

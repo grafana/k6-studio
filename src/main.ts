@@ -217,10 +217,28 @@ ipcMain.handle('har:open', async (event) => {
   return
 })
 
+ipcMain.on('generator:save', async (event, generatorFile: string) => {
+  console.info('generator:save event received')
+
+  const browserWindow = browserWindowFromEvent(event)
+  const dialogResult = await dialog.showSaveDialog(browserWindow, {
+    message: 'Save Generator',
+    defaultPath: 'generator.json',
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+  })
+
+  if (dialogResult.canceled) {
+    return
+  }
+
+  await writeFile(dialogResult.filePath, generatorFile)
+})
+
 // Settings
 ipcMain.on('settings:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
+
 
 const browserWindowFromEvent = (
   event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
