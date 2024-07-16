@@ -10,7 +10,7 @@ interface FilterFieldProps {
 
 export function FilterField({ filter, onChange }: FilterFieldProps) {
   return (
-    <>
+    <div>
       <Label.Root htmlFor="filter-path-input">Filter</Label.Root>
       <TextField.Root
         id="filter-path-input"
@@ -18,6 +18,6 @@ export function FilterField({ filter, onChange }: FilterFieldProps) {
         onChange={(event) => onChange({ ...filter, path: event.target.value })}
         placeholder="Filter by path"
       />
-    </>
+    </div>
   )
 }
