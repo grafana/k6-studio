@@ -17,7 +17,13 @@ export default defineConfig((env) => {
     build: {
       outDir: `.vite/renderer/${name}`,
     },
-    plugins: [react(), pluginExposeRenderer(name), tsconfigPaths()],
+    plugins: [
+      react({
+        jsxImportSource: '@emotion/react',
+      }),
+      pluginExposeRenderer(name),
+      tsconfigPaths(),
+    ],
     resolve: {
       preserveSymlinks: true,
     },
