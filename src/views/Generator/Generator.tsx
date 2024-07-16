@@ -17,8 +17,13 @@ import {
 } from '@/types/generator'
 
 export function Generator() {
-  const { rules, setRecording, resetRecording, filteredRequests } =
-    useGeneratorStore()
+  const {
+    rules,
+    setRecording,
+    resetRecording,
+    filteredRequests,
+    setRecordingPath,
+  } = useGeneratorStore()
 
   const hasRecording = filteredRequests.length > 0
 
@@ -34,6 +39,7 @@ export function Generator() {
 
     const proxyData = harToProxyData(harFile.content)
     setRecording(proxyData)
+    setRecordingPath(harFile.path)
   }
 
   const handleExport = async () => {
@@ -44,7 +50,6 @@ export function Generator() {
 
   const saveGenerator = async () => {
     const generatorState = useGeneratorStore.getState()
-    // recording
     const options: GeneratorOptions = {
       loadProfile: {
         executor: generatorState.executor,
@@ -69,6 +74,7 @@ export function Generator() {
     const generatorFile: GeneratorFile = {
       name: generatorState.name,
       version: '0',
+      recordingPath: generatorState.recordingPath,
       options: options,
       testData: generatorTestData,
       rules: generatorState.rules,

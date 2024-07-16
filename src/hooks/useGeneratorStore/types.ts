@@ -74,6 +74,8 @@ export interface GeneratorState
   requests: ProxyData[]
   setRecording: (recording: ProxyData[]) => void
   resetRecording: () => void
+  recordingPath: string
+  setRecordingPath: (path: string) => void
   allowList: string[]
   setAllowList: (value: string[]) => void
   filteredRequests: ProxyData[]

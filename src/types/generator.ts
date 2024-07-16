@@ -15,6 +15,7 @@ export interface GeneratorTestData {
 export interface GeneratorFile {
   name: string
   version: string
+  recordingPath: string
   options: GeneratorOptions
   testData: GeneratorTestData
   rules: TestRule[]

@@ -34,6 +34,12 @@ export const useGeneratorStore = create<GeneratorState>()(
         state.allowList = []
       }),
 
+    recordingPath: '',
+    setRecordingPath: (path: string) =>
+      set((state) => {
+        state.recordingPath = path
+      }),
+
     allowList: [],
     setAllowList: (value) =>
       set((state) => {
