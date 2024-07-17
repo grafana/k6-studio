@@ -1,4 +1,7 @@
-import { useGeneratorStore, useSelectedRule } from '@/hooks/useGeneratorStore'
+import {
+  selectSelectedRule,
+  useGeneratorStore,
+} from '@/hooks/useGeneratorStore'
 import { exhaustive } from '@/utils/typescript'
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
@@ -6,8 +9,8 @@ import { Callout } from '@radix-ui/themes'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 
 export function RuleEditor() {
-  const rule = useSelectedRule()
-  const { updateRule } = useGeneratorStore()
+  const rule = useGeneratorStore(selectSelectedRule)
+  const updateRule = useGeneratorStore((state) => state.updateRule)
 
   if (!rule) {
     return null

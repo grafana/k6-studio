@@ -6,7 +6,10 @@ import { exportScript, saveScript, saveGenerator } from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
-import { useGeneratorStore, useHasRecording } from '@/hooks/useGeneratorStore'
+import {
+  useGeneratorStore,
+  selectHasRecording,
+} from '@/hooks/useGeneratorStore'
 import { TestRuleContainer } from './TestRuleContainer'
 import { AllowList } from './AllowList/AllowList'
 import { RecordingSelector } from './RecordingSelector'
@@ -17,7 +20,7 @@ export function Generator() {
   const name = useGeneratorStore((store) => store.name)
   const resetRecording = useGeneratorStore((store) => store.resetRecording)
   const filteredRequests = useGeneratorStore((store) => store.filteredRequests)
-  const hasRecording = useHasRecording()
+  const hasRecording = useGeneratorStore(selectHasRecording)
   useSetWindowTitle(name)
 
   useEffect(() => {
