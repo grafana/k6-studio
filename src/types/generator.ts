@@ -1,11 +1,10 @@
-import { LoadProfileExecutorOptions } from '@/views/Generator/GeneratorDrawer/LoadProfile/types'
 import { TestRule } from './rules'
 import { Variable } from '.'
-import { ThinkTimeState } from '@/hooks/useGeneratorStore/types'
+import { LoadProfileExecutorOptions, SleepTypeConfig } from './testOptions'
 
 export interface GeneratorOptions {
   loadProfile: LoadProfileExecutorOptions
-  thinkTime: ThinkTimeState
+  thinkTime: SleepTypeConfig
 }
 
 export interface GeneratorTestData {
