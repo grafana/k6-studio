@@ -88,7 +88,7 @@ function requestsReplacedToProxyData(
   requests: [Request, Request][]
 ): ProxyData[] {
   console.log('request', requests)
-  return requests.map(([original, modified], i) => ({
+  return requests.map(([, modified], i) => ({
     request: modified,
     id: i.toString(),
   }))
