@@ -2,6 +2,7 @@ import { GroupedProxyData, ProxyData } from '@/types'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Callout } from '@radix-ui/themes'
 import { isEmpty } from 'lodash-es'
+
 import { isGroupedProxyData } from './WebLogView.utils'
 import { Row } from './Row'
 import { Group } from './Group'
