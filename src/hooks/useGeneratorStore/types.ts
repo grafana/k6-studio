@@ -60,7 +60,6 @@ export interface RulesState {
   cloneRule: (id: string) => void
   deleteRule: (id: string) => void
   selectRule: (id: string) => void
-  getSelectedRule: () => TestRule | undefined
 }
 
 export interface GeneratorState
