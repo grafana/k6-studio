@@ -234,11 +234,37 @@ ipcMain.on('generator:save', async (event, generatorFile: string) => {
   await writeFile(dialogResult.filePath, generatorFile)
 })
 
+ipcMain.handle('generator:open', async (event) => {
+  console.info('generator:open event received')
+  const browserWindow = browserWindowFromEvent(event)
+
+  const dialogResult = await dialog.showOpenDialog(browserWindow, {
+    message: 'Open Generator file',
+    properties: ['openFile'],
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+  })
+
+  if (!dialogResult.canceled && dialogResult.filePaths[0]) {
+    const fileHandle = await open(dialogResult.filePaths[0], 'r')
+    try {
+      const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+      // TODO: we might want to send an error on wrong file, a system to send and show errors from the main process
+      // could be levereged for many things mmmm
+      const generator = await JSON.parse(data)
+
+      return { path: dialogResult.filePaths[0], content: generator }
+    } finally {
+      await fileHandle?.close()
+    }
+  }
+
+  return
+})
+
 // Settings
 ipcMain.on('settings:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
-
 
 const browserWindowFromEvent = (
   event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent

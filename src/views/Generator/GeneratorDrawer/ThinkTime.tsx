@@ -2,7 +2,7 @@ import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Callout, Container, Flex, Select, TextField } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import { RangeTiming, SleepType } from '@/types/testOptions'
+import { RangeTiming, SleepType } from '@/schemas/testOptions'
 import { createFixedTiming } from '@/utils/thinkTime'
 
 type TimingType = 'fixed' | 'range'

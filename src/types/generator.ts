@@ -1,6 +1,7 @@
 import { TestRule } from './rules'
 import { Variable } from '.'
-import { LoadProfileExecutorOptions, ThinkTime } from './testOptions'
+import { LoadProfileExecutorOptions } from './testOptions'
+import { ThinkTime } from '@/schemas/testOptions'
 
 export interface GeneratorOptions {
   loadProfile: LoadProfileExecutorOptions
@@ -11,7 +12,7 @@ export interface GeneratorTestData {
   variables: Variable[]
 }
 
-export interface GeneratorFile {
+export interface GeneratorFileData {
   name: string
   version: string
   recordingPath: string
@@ -19,4 +20,9 @@ export interface GeneratorFile {
   testData: GeneratorTestData
   rules: TestRule[]
   allowlist: string[]
+}
+
+export interface GeneratorFile {
+  path: string
+  content: GeneratorFileData
 }

@@ -1,4 +1,4 @@
-import { FixedTiming } from '@/types/testOptions'
+import { FixedTiming } from '@/schemas/testOptions'
 
 export const createFixedTiming = (
   value: number | null = null

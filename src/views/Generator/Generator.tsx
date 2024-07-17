@@ -2,7 +2,12 @@ import { Allotment } from 'allotment'
 import { Button } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
-import { exportScript, saveScript, saveGenerator } from './Generator.utils'
+import {
+  exportScript,
+  saveScript,
+  saveGenerator,
+  loadGenerator,
+} from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
@@ -41,6 +46,7 @@ export function Generator() {
         <RecordingSelector />
         <AllowList />
         {hasRecording && <Button onClick={saveGenerator}>Save</Button>}
+        <Button onClick={loadGenerator}>Load</Button>
         {hasRecording && <Button onClick={handleExport}>Export script</Button>}
       </PageHeading>
       <Allotment defaultSizes={[3, 1]}>
