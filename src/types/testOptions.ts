@@ -17,7 +17,7 @@ export interface RangeTiming {
 
 export type Timing = FixedTiming | RangeTiming
 
-export interface SleepTypeConfig {
+export interface ThinkTime {
   sleepType: SleepType
   timing: Timing
 }

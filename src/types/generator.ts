@@ -1,10 +1,10 @@
 import { TestRule } from './rules'
 import { Variable } from '.'
-import { LoadProfileExecutorOptions, SleepTypeConfig } from './testOptions'
+import { LoadProfileExecutorOptions, ThinkTime } from './testOptions'
 
 export interface GeneratorOptions {
   loadProfile: LoadProfileExecutorOptions
-  thinkTime: SleepTypeConfig
+  thinkTime: ThinkTime
 }
 
 export interface GeneratorTestData {
