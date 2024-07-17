@@ -18,7 +18,7 @@
   ],
   "parser": "@typescript-eslint/parser",
   "ignorePatterns": ["resources/group_snippet.js"],
-  "plugins": ["import"],
+  "plugins": ["import", "unused-imports"],
   "settings": {
     "import/resolver": {
       "typescript": {}

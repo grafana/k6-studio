@@ -3,13 +3,17 @@ import { ProxyData } from '@/types'
 import { Box, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
 import { groupProxyData } from '@/utils/groups'
+import {
+  selectHasRecording,
+  useGeneratorStore,
+} from '@/hooks/useGeneratorStore'
 
 interface GeneratorSidebarProps {
   requests: ProxyData[]
 }
 
 export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
-  const hasRecording = requests.length > 0
+  const hasRecording = useGeneratorStore(selectHasRecording)
   const groupedProxyData = groupProxyData(requests)
 
   return (
@@ -21,9 +25,11 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
         }}
       >
         <Tabs.List>
-          <Tabs.Trigger value="requests">Requests</Tabs.Trigger>
+          <Tabs.Trigger value="requests">
+            Requests ({requests.length})
+          </Tabs.Trigger>
           <Tabs.Trigger value="script" disabled={!hasRecording}>
-            Script
+            Script preview
           </Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content
