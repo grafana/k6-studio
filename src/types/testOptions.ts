@@ -1,27 +1,5 @@
 import { ExecutorType } from '@/constants/generator'
 
-export type SleepType = 'groups' | 'requests' | 'iterations'
-
-export interface FixedTiming {
-  type: 'fixed'
-  value: number | null
-}
-
-export interface RangeTiming {
-  type: 'range'
-  value: {
-    min: number | null
-    max: number | null
-  }
-}
-
-export type Timing = FixedTiming | RangeTiming
-
-export interface ThinkTime {
-  sleepType: SleepType
-  timing: Timing
-}
-
 export interface CommonOptions {
   executor: ExecutorType
   startTime?: string
