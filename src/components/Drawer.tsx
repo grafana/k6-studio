@@ -16,9 +16,7 @@ export function Drawer({
           <Cross2Icon />
         </IconButton>
       </Box>
-      <Box height="100%" pt="9px">
-        {children}
-      </Box>
+      <Box height="100%">{children}</Box>
     </>
   )
 }
