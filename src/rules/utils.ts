@@ -1,5 +1,5 @@
-import { Filter, TestRule } from '@/types/rules'
-import { Request, RequestSnippetSchema } from '@/types'
+import { TestRule } from '@/types/rules'
+import { RequestSnippetSchema } from '@/types'
 import { exhaustive } from '@/utils/typescript'
 
 /**
