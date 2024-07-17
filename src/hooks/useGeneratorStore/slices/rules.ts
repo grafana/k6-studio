@@ -3,7 +3,7 @@ import { ImmerStateCreator } from '@/utils/typescript'
 import { rules } from '../fixtures'
 import { RulesState } from '../types'
 
-export const createRulesSlice: ImmerStateCreator<RulesState> = (set) => ({
+export const createRulesSlice: ImmerStateCreator<RulesState> = (set, get) => ({
   rules,
   selectedRuleId: null,
   createRule: (type: TestRule['type']) =>
@@ -35,6 +35,9 @@ export const createRulesSlice: ImmerStateCreator<RulesState> = (set) => ({
     set((state) => {
       state.selectedRuleId = id
     }),
+
+  getSelectedRule: () =>
+    get().rules.find((rule) => rule.id === get().selectedRuleId),
 })
 
 function createEmptyRule(type: TestRule['type']): TestRule {

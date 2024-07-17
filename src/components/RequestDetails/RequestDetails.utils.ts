@@ -11,7 +11,11 @@ export function parseContent(data: ProxyData) {
   try {
     switch (contentType) {
       case 'application/json':
-        return JSON.stringify(JSON.parse(atob(data.response.content)), null, 2)
+        return JSON.stringify(
+          JSON.parse(safeAtob(data.response.content)),
+          null,
+          2
+        )
       case 'text/html':
       case 'text/javascript':
       case 'text/plain':
@@ -23,5 +27,13 @@ export function parseContent(data: ProxyData) {
     // TODO: add catchers around the JSON.parse and atob calls only, this may swallow other errors
     console.error('Failed to parse content', e)
     return
+  }
+}
+
+function safeAtob(content: string) {
+  try {
+    return atob(content)
+  } catch {
+    return content
   }
 }
