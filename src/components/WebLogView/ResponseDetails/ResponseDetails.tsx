@@ -4,6 +4,7 @@ import { ProxyData } from '@/types'
 import { Tabs } from '../Tabs'
 import { Headers } from './Headers'
 import { Content } from './Content'
+import { Cookies } from './Cookies'
 
 export function ResponseDetails({ data }: { data: ProxyData }) {
   return (
@@ -11,6 +12,7 @@ export function ResponseDetails({ data }: { data: ProxyData }) {
       <Tabs.List>
         <Tabs.Trigger value="headers">Headers</Tabs.Trigger>
         <Tabs.Trigger value="content">Content</Tabs.Trigger>
+        <Tabs.Trigger value="cookies">Cookies</Tabs.Trigger>
       </Tabs.List>
 
       <Tabs.Content value="headers">
@@ -22,6 +24,13 @@ export function ResponseDetails({ data }: { data: ProxyData }) {
       </Tabs.Content>
       <Tabs.Content value="content">
         <Content data={data} />
+      </Tabs.Content>
+      <Tabs.Content value="cookies">
+        <ScrollArea style={{ height: '100%' }}>
+          <Box p="4" height="100%">
+            <Cookies data={data} />
+          </Box>
+        </ScrollArea>
       </Tabs.Content>
     </Tabs.Root>
   )
