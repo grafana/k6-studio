@@ -1,16 +1,13 @@
-import { useGeneratorStore, useHasRecording } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { harToProxyData } from '@/utils/harToProxyData'
-import { css } from '@emotion/react'
-import { ArrowDownIcon, CaretDownIcon } from '@radix-ui/react-icons'
+import { CaretDownIcon } from '@radix-ui/react-icons'
 import { Button, Flex, IconButton, Popover, Text } from '@radix-ui/themes'
-import { startRecording } from '../Recorder/Recorder.utils'
 import { Link } from 'react-router-dom'
 
 export function RecordingSelector() {
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
   const setRecording = useGeneratorStore((store) => store.setRecording)
   const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
-  const hasRecording = useHasRecording()
 
   const fileName = recordingPath?.split('/').pop()
 

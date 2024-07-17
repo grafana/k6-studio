@@ -10,7 +10,7 @@ import { useGeneratorStore, useHasRecording } from '@/hooks/useGeneratorStore'
 import { TestRuleContainer } from './TestRuleContainer'
 import { AllowList } from './AllowList/AllowList'
 import { RecordingSelector } from './RecordingSelector'
-import { useWindowTitle } from '@/hooks/useWindowTitle'
+import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 
 export function Generator() {
   const rules = useGeneratorStore((store) => store.rules)
@@ -18,7 +18,7 @@ export function Generator() {
   const resetRecording = useGeneratorStore((store) => store.resetRecording)
   const filteredRequests = useGeneratorStore((store) => store.filteredRequests)
   const hasRecording = useHasRecording()
-  useWindowTitle(name)
+  useSetWindowTitle(name)
 
   useEffect(() => {
     return () => {

@@ -3,7 +3,7 @@ import { LogView } from '@/components/LogView'
 import { WebLogView } from '@/components/WebLogView'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRecorderStore } from '@/hooks/useRecorderStore'
-import { useWindowTitle } from '@/hooks/useWindowTitle'
+import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { K6Log } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 import { Button, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
@@ -16,7 +16,7 @@ export function Validator() {
   useListenProxyData()
   const proxyData = useRecorderStore((store) => store.proxyData)
   const resetProxyData = useRecorderStore((store) => store.resetProxyData)
-  useWindowTitle('Validator')
+  useSetWindowTitle('Validator')
 
   const groupedProxyData = groupProxyData(proxyData)
 
