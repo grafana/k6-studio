@@ -18,11 +18,4 @@ export const globalStyles = css`
   .rt-ScrollAreaViewport > * {
     width: auto;
   }
-
-  :root {
-    /* Allotment */
-    --focus-border: var(--violet-9);
-    --separator-border: var(--gray-4);
-    --sash-hover-size: 2px;
-  }
 `
