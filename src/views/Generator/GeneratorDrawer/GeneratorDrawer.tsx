@@ -1,5 +1,12 @@
 import { Flex, ScrollArea, TabNav } from '@radix-ui/themes'
-import { Link, Outlet, Route, Routes, useMatch } from 'react-router-dom'
+import {
+  Link,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useMatch,
+} from 'react-router-dom'
 
 import { LoadProfile } from './LoadProfile'
 import { VariablesEditor } from './VariablesEditor'
@@ -23,6 +30,7 @@ export function GeneratorDrawer() {
       </TabNav.Root>
       <Routes>
         <Route path="/" element={<ScrollableContent />}>
+          <Route path="/" element={<Navigate to="loadProfile" replace />} />
           <Route path="rule/:id" element={<RuleEditor />} />
           <Route path="loadProfile" element={<LoadProfile />} />
           <Route path="thresholds" element={<VariablesEditor />} />

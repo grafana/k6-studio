@@ -14,8 +14,10 @@
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
     "jsx": "react-jsx",
+    "jsxImportSource": "@emotion/react",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["vite/client", "@emotion/react/types/css-prop"]
   }
 }
