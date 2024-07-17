@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom'
 export function RecordingSelector() {
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
   const setRecording = useGeneratorStore((store) => store.setRecording)
-  const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
 
   const fileName = recordingPath?.split('/').pop()
 
@@ -16,8 +15,7 @@ export function RecordingSelector() {
     if (!harFile) return
 
     const proxyData = harToProxyData(harFile.content)
-    setRecording(proxyData)
-    setRecordingPath(harFile.path)
+    setRecording(proxyData, harFile.path)
   }
 
   return (

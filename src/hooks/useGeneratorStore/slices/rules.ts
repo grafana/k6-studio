@@ -1,9 +1,23 @@
 import { TestRule } from '@/types/rules'
 import { ImmerStateCreator } from '@/utils/typescript'
 import { rules } from '../fixtures'
-import { RulesState } from '../types'
 
-export const createRulesSlice: ImmerStateCreator<RulesState> = (set) => ({
+interface State {
+  rules: TestRule[]
+  selectedRuleId: string | null
+}
+
+interface Actions {
+  createRule: (type: TestRule['type']) => void
+  updateRule: (rule: TestRule) => void
+  cloneRule: (id: string) => void
+  deleteRule: (id: string) => void
+  selectRule: (id: string) => void
+}
+
+export type RulesSliceStore = State & Actions
+
+export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
   rules,
   selectedRuleId: null,
   createRule: (type: TestRule['type']) =>
