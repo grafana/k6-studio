@@ -9,7 +9,7 @@ import { groupProxyData } from '@/utils/groups'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { GeneratorOptions, GeneratorFileData } from '@/types/generator'
 import { GeneratorTestData } from '@/schemas/generator'
-import { ThinkTime } from '@/schemas/testOptions'
+import { ThinkTime, LoadProfileExecutorOptions } from '@/schemas/testOptions'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
   const groupedProxyData = groupProxyData(recording)
@@ -76,4 +76,9 @@ export const loadGenerator = async () => {
 
   const y = ThinkTime.parse(generatorFile.content.options.thinkTime)
   console.log(y)
+
+  const z = LoadProfileExecutorOptions.parse(
+    generatorFile.content.options.loadProfile
+  )
+  console.log(z)
 }
