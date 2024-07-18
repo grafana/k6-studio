@@ -1,5 +1,8 @@
 import { ExecutorType } from '@/constants/generator'
-import type { CommonOptions, SharedIterationsOptions } from './types'
+import type {
+  CommonOptions,
+  SharedIterationsOptions,
+} from '@/types/testOptions'
 
 export const COMMON_DEFAULTS: CommonOptions = {
   executor: ExecutorType.RampingVUs,

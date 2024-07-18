@@ -13,6 +13,14 @@ export function queryStringToJSON(str: string) {
   )
 }
 
+export function safeAtob(content: string) {
+  try {
+    return atob(content)
+  } catch {
+    return content
+  }
+}
+
 export function stringify(obj: object) {
   return JSON.stringify(obj, null, 2)
 }

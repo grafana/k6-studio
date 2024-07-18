@@ -45,7 +45,7 @@ export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item onClick={handleCopy}>Clone</DropdownMenu.Item>
+          <DropdownMenu.Item onClick={handleCopy}>Duplicate</DropdownMenu.Item>
           <DropdownMenu.Item color="red" onClick={handleDelete}>
             Delete
           </DropdownMenu.Item>

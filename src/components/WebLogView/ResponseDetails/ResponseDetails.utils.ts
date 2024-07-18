@@ -1,5 +1,5 @@
 import { ProxyData } from '@/types'
-import { stringify } from '@/utils/format'
+import { safeAtob, stringify } from '@/utils/format'
 
 export function toFormat(contentType: string | undefined) {
   if (!contentType) {
@@ -46,11 +46,11 @@ export function parseContent(format: string | undefined, data: ProxyData) {
   try {
     switch (format) {
       case 'json':
-        return stringify(JSON.parse(atob(content)))
+        return stringify(JSON.parse(safeAtob(content)))
       case 'html':
       case 'javascript':
       case 'plain':
-        return atob(content)
+        return safeAtob(content)
       case 'audio':
       case 'font':
       case 'image':
@@ -60,7 +60,6 @@ export function parseContent(format: string | undefined, data: ProxyData) {
         return
     }
   } catch (e) {
-    // TODO: add catchers around the JSON.parse and atob calls only, this may swallow other errors
     console.error('Failed to parse content', e)
     return
   }

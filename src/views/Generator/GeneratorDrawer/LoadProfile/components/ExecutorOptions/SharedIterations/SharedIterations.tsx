@@ -1,10 +1,10 @@
 import { Flex, Heading, Text } from '@radix-ui/themes'
 
-import { SharedIterationsOptions } from '../../../types'
 import { SHARED_ITERATIONS_DEFAULTS } from '../../../constants'
 import { Iterations } from './Iterations'
 import { MaxDuration } from './MaxDuration'
 import { VUs } from './VUs'
+import { SharedIterationsOptions } from '@/types/testOptions'
 
 export function SharedIterations({
   iterations,

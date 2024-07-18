@@ -1,9 +1,10 @@
 import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
 import { CorrelationRule, CorrelationStateMap } from '@/types/rules'
-import { cloneDeep, get } from 'lodash-es'
-import { canonicalHeaderKey } from './utils'
+import { cloneDeep, get, isEqual } from 'lodash-es'
+import { canonicalHeaderKey, matchFilter } from './utils'
 import { getHeaderValues } from '@/utils/headers'
 import { exhaustive } from '@/utils/typescript'
+import { replaceCorrelatedValues, safeJsonParse } from './correlation.utils'
 
 export function applyCorrelationRule(
   requestSnippetSchema: RequestSnippetSchema,
@@ -18,46 +19,33 @@ export function applyCorrelationRule(
   // note: this comes before the extractor to avoid applying an extracted value on the same request/response pair
   const correlationState = correlationStateMap[rule.id]
   let uniqueId: number | undefined
+
   if (correlationState?.extractedValue) {
-    const extractedValue = correlationState.extractedValue
+    const { extractedValue } = correlationState
+    // const extractedValue = correlationState.extractedValue
     // we populate uniqueId since it doesn't have to be regenerated
     // this will be passed to the tryCorrelationExtraction function
     uniqueId = correlationState.generatedUniqueId
 
-    // TODO: this is the global replacer when the replacer object is not configured, the replacer functioncality has to be implemented
-    if (requestSnippetSchema.data.request.content.includes(extractedValue)) {
-      // default behaviour replaces all occurences of the string
-      // content
-      const replacedRequestContent =
-        requestSnippetSchema.data.request.content.replaceAll(
-          correlationState.extractedValue,
-          `\${correl_${correlationState.generatedUniqueId}}`
-        )
-      // url
-      const replacedRequestUrl =
-        requestSnippetSchema.data.request.url.replaceAll(
-          extractedValue,
-          `\${correl_${correlationState.generatedUniqueId}}`
-        )
-      // headers
-      const replacedRequestHeaders =
-        requestSnippetSchema.data.request.headers.map(([key, value]) => {
-          const replacedValue = value.replaceAll(
-            extractedValue,
-            `\${correl_${correlationState.generatedUniqueId}}`
-          )
-          return [key, replacedValue] as [string, string]
-        })
+    snippetSchemaReturnValue.data.request = replaceCorrelatedValues({
+      rule,
+      extractedValue,
+      uniqueId: uniqueId ?? 0,
+      request: requestSnippetSchema.data.request,
+    })
 
-      snippetSchemaReturnValue.data.request.content = replacedRequestContent
-      snippetSchemaReturnValue.data.request.url = replacedRequestUrl
-      snippetSchemaReturnValue.data.request.headers = replacedRequestHeaders
-
-      // we clone to keep a reference even if the objects gets mutated further
-      const originalRequest = cloneDeep(requestSnippetSchema.data.request)
-      const modifiedRequest = cloneDeep(snippetSchemaReturnValue.data.request)
-      correlationState.requestsReplaced.push([originalRequest, modifiedRequest])
+    // Keep track of modified requests to display in preview
+    if (!isEqual(requestSnippetSchema, snippetSchemaReturnValue)) {
+      correlationState.requestsReplaced.push([
+        requestSnippetSchema.data.request,
+        snippetSchemaReturnValue.data.request,
+      ])
     }
+  }
+
+  // Skip extraction if filter doesn't match
+  if (!matchFilter(requestSnippetSchema, rule)) {
+    return snippetSchemaReturnValue
   }
 
   // try to extract the value
@@ -219,9 +207,8 @@ var match = resp.body.match(regex)
 let correl_${uniqueId}
 if (match) {
   correl_${uniqueId} = match[1]
-}
-console.log('*********')
-console.log(correl_${uniqueId})`
+}`
+
   return {
     extractedValue: match[1],
     correlationExtractionSnippet: correlationExtractionSnippet,
@@ -262,10 +249,8 @@ var match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
 let correl_${uniqueId}
 if (match) {
 correl_${uniqueId} = match[1]
-}
-console.log('*********')
-console.log('HEADER')
-console.log(correl_${uniqueId})`
+}`
+
       return {
         extractedValue: match[1],
         correlationExtractionSnippet: correlationExtractionSnippet,
@@ -315,9 +300,8 @@ var match = resp.url.match(regex)
 let correl_${uniqueId}
 if (match) {
   correl_${uniqueId} = match[1]
-}
-console.log('*********')
-console.log(correl_${uniqueId})`
+}`
+
   return {
     extractedValue: match[1],
     correlationExtractionSnippet: correlationExtractionSnippet,
@@ -362,9 +346,8 @@ var match = resp.body.match(regex)
 let correl_${uniqueId}
 if (match) {
   correl_${uniqueId} = match[1]
-}
-console.log('*********')
-console.log(correl_${uniqueId})`
+}`
+
   return {
     extractedValue: match[1],
     correlationExtractionSnippet: correlationExtractionSnippet,
@@ -404,10 +387,8 @@ var match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
 let correl_${uniqueId}
 if (match) {
 correl_${uniqueId} = match[1]
-}
-console.log('*********')
-console.log('HEADER')
-console.log(correl_${uniqueId})`
+}`
+
       return {
         extractedValue: match[1],
         correlationExtractionSnippet,
@@ -456,9 +437,8 @@ var match = resp.url.match(regex)
 let correl_${uniqueId}
 if (match) {
   correl_${uniqueId} = match[1]
-}
-console.log('*********')
-console.log(correl_${uniqueId})`
+}`
+
   return {
     extractedValue: match[1],
     correlationExtractionSnippet: correlationExtractionSnippet,
@@ -518,21 +498,10 @@ const extractCorrelationJsonBody = (
   }
 
   const correlationExtractionSnippet = `
-let correl_${uniqueId} = resp.json()${rule.extractor.selector.path}
-console.log('*********')
-console.log(correl_${uniqueId})`
+let correl_${uniqueId} = resp.json().${rule.extractor.selector.path}`
   return {
-    extractedValue: extractedValue[0],
+    extractedValue: extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
-  }
-}
-
-function safeJsonParse(value: string) {
-  try {
-    return JSON.parse(value)
-  } catch (error) {
-    console.error('Failed to parse JSON', error)
-    return undefined
   }
 }

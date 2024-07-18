@@ -65,6 +65,7 @@ export function getBuildDefine(env: ConfigEnv<'build'>) {
       }
       return { ...acc, ...def }
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     {} as Record<string, any>
   )
 

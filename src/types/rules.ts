@@ -113,7 +113,7 @@ export type TestRule =
   | VerificationRule
   | CustomCodeRule
 
-interface CorrelationState {
+export interface CorrelationState {
   extractedValue?: string
   count: number
   responsesExtracted: ProxyData[]
