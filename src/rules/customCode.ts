@@ -1,5 +1,5 @@
 import { RequestSnippetSchema } from '@/types'
-import { CustomCodeRule } from '@/types/rules'
+import { CustomCodeRule } from '@/schemas/rules'
 
 export function applyCustomCodeRule(
   requestSnippetSchema: RequestSnippetSchema,

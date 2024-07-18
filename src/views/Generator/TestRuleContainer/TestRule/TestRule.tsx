@@ -1,6 +1,6 @@
 import { Flex } from '@radix-ui/themes'
 
-import type { TestRule } from '@/types/rules'
+import type { TestRule } from '@/schemas/rules'
 import { TestRuleActions } from './TestRuleActions'
 import { TestRuleTypeBadge } from './TestRuleTypeBadge'
 import { TestRuleInlineContent } from './TestRuleInlineContent'
