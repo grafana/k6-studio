@@ -7,9 +7,8 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import { GeneratorOptions, GeneratorFileData } from '@/types/generator'
-import { GeneratorTestData } from '@/schemas/generator'
-import { ThinkTime, LoadProfileExecutorOptions } from '@/schemas/testOptions'
+import { GeneratorFileData } from '@/types/generator'
+import { GeneratorTestData, GeneratorOptions } from '@/schemas/generator'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
   const groupedProxyData = groupProxyData(recording)
@@ -74,11 +73,6 @@ export const loadGenerator = async () => {
   const x = GeneratorTestData.parse(generatorFile.content.testData)
   console.log(x)
 
-  const y = ThinkTime.parse(generatorFile.content.options.thinkTime)
+  const y = GeneratorOptions.parse(generatorFile.content.options)
   console.log(y)
-
-  const z = LoadProfileExecutorOptions.parse(
-    generatorFile.content.options.loadProfile
-  )
-  console.log(z)
 }

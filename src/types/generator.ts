@@ -1,11 +1,6 @@
 import { TestRule } from './rules'
 import { Variable } from '.'
-import { ThinkTime, LoadProfileExecutorOptions } from '@/schemas/testOptions'
-
-export interface GeneratorOptions {
-  loadProfile: LoadProfileExecutorOptions
-  thinkTime: ThinkTime
-}
+import { GeneratorOptions } from '@/schemas/generator'
 
 export interface GeneratorTestData {
   variables: Variable[]
