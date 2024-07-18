@@ -23,38 +23,46 @@ export const ThinkTime = z.object({
   timing: Timing,
 })
 
+export const CommonOptions = z.object({
+  executor: z.nativeEnum(ExecutorType),
+  startTime: z.string().optional(),
+  gracefulStop: z.string().optional(),
+})
+
+export const SharedIterationsOptions = CommonOptions.extend({
+  executor: z.literal(ExecutorType.SharedIterations),
+  vus: z.union([z.number(), z.literal('')]).optional(),
+  iterations: z.number().optional(),
+  maxDuration: z.string().optional(),
+})
+
+export const RampingStage = z.object({
+  id: z.string().optional(),
+  target: z.union([z.string(), z.number()]).optional(),
+  duration: z.string(),
+})
+
+export const RampingVUsOptions = CommonOptions.extend({
+  executor: z.literal(ExecutorType.RampingVUs),
+  stages: RampingStage.array(),
+  startVUs: z.union([z.number(), z.literal('')]).optional(),
+  gracefulRampDown: z.string().optional(),
+})
+
+export const LoadProfileExecutorOptions = z.discriminatedUnion('executor', [
+  SharedIterationsOptions,
+  RampingVUsOptions,
+])
+
 export type SleepType = z.infer<typeof SleepType>
 export type FixedTiming = z.infer<typeof FixedTiming>
 export type RangeTiming = z.infer<typeof RangeTiming>
 export type Timing = z.infer<typeof Timing>
 export type ThinkTime = z.infer<typeof ThinkTime>
-
-export interface CommonOptions {
-  executor: ExecutorType
-  startTime?: string
-  gracefulStop?: string
-}
-
-export interface SharedIterationsOptions extends CommonOptions {
-  executor: ExecutorType.SharedIterations
-  vus?: number | ''
-  iterations?: number
-  maxDuration?: string
-}
-
-export interface RampingStage {
-  id?: string
-  target?: string | number
-  duration: string
-}
-
-export interface RampingVUsOptions extends CommonOptions {
-  executor: ExecutorType.RampingVUs
-  stages: RampingStage[]
-  startVUs?: number | ''
-  gracefulRampDown?: string
-}
-
-export type LoadProfileExecutorOptions =
-  | SharedIterationsOptions
-  | RampingVUsOptions
+export type CommonOptions = z.infer<typeof CommonOptions>
+export type SharedIterationsOptions = z.infer<typeof SharedIterationsOptions>
+export type RampingStage = z.infer<typeof RampingStage>
+export type RampingVUsOptions = z.infer<typeof RampingVUsOptions>
+export type LoadProfileExecutorOptions = z.infer<
+  typeof LoadProfileExecutorOptions
+>
