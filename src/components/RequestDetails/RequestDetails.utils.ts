@@ -11,6 +11,7 @@ export function parseContent(data: ProxyData) {
   try {
     switch (contentType) {
       case 'application/json':
+        // TODO: we have double atob somewhere, remove safeAtob hack when fixed
         return JSON.stringify(
           JSON.parse(safeAtob(data.response.content)),
           null,
