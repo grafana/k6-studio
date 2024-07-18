@@ -1,17 +1,13 @@
 import { TestRule } from './rules'
-import { Variable } from '.'
 import { GeneratorOptions } from '@/schemas/generator'
-
-export interface GeneratorTestData {
-  variables: Variable[]
-}
+import { TestData } from '@/schemas/testData'
 
 export interface GeneratorFileData {
   name: string
   version: string
   recordingPath: string
   options: GeneratorOptions
-  testData: GeneratorTestData
+  testData: TestData
   rules: TestRule[]
   allowlist: string[]
 }
