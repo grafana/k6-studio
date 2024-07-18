@@ -1,6 +1,10 @@
 import { Tabs as RadixTabs } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
 
+/**
+ * This is a custom Tabs component that uses Radix Tabs under the hood.
+ * It's very specific styles are required to successfully enable scrolling within the tabs.
+ */
 function Root({ children, ...props }: ComponentProps<typeof RadixTabs.Root>) {
   return (
     <RadixTabs.Root
