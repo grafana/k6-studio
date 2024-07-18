@@ -1,4 +1,6 @@
 import { ProxyData } from '@/types'
+import { formDataToJSON, stringify } from '@/utils/format'
+import { getContentType } from '@/utils/headers'
 
 export function parseParams(data: ProxyData) {
   const hasParams = data.request.query.length || data.request.content
@@ -8,9 +10,17 @@ export function parseParams(data: ProxyData) {
   }
 
   try {
-    return data.request.query.length
-      ? JSON.stringify(data.request.query, null, 2)
-      : JSON.stringify(JSON.parse(atob(data.request.content)), null, 2)
+    if (data.request.query.length) {
+      return stringify(data.request.query)
+    }
+
+    const contentType = getContentType(data.request?.headers ?? [])
+
+    if (contentType === 'application/x-www-form-urlencoded') {
+      return stringify(formDataToJSON(atob(data.request.content)))
+    }
+
+    return stringify(JSON.parse(atob(data.request.content)))
   } catch (e) {
     console.error('Failed to parse query parameters', e)
     return

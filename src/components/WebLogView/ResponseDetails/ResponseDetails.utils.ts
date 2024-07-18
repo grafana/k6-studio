@@ -1,4 +1,5 @@
 import { ProxyData } from '@/types'
+import { stringify } from '@/utils/format'
 
 export function toFormat(contentType: string | undefined) {
   if (!contentType) {
@@ -45,7 +46,7 @@ export function parseContent(format: string | undefined, data: ProxyData) {
   try {
     switch (format) {
       case 'json':
-        return JSON.stringify(JSON.parse(atob(content)), null, 2)
+        return stringify(JSON.parse(atob(content)))
       case 'html':
       case 'javascript':
       case 'plain':

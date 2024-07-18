@@ -4,7 +4,7 @@ import { Box, ScrollArea } from '@radix-ui/themes'
 import { ProxyData } from '@/types'
 
 import { Tabs } from '../Tabs'
-import { Cookies } from './Cookies'
+import { Cookies } from '../Cookies'
 import { Headers } from './Headers'
 import { Payload } from './Payload'
 
@@ -24,7 +24,7 @@ export function RequestDetails({ data }: { data: ProxyData }) {
         <Payload data={data} />
       </ScrollableTabsContent>
       <ScrollableTabsContent value="cookies">
-        <Cookies data={data} />
+        <Cookies cookies={data.request?.cookies} />
       </ScrollableTabsContent>
     </Tabs.Root>
   )

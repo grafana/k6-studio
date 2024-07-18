@@ -4,7 +4,7 @@ import { ProxyData } from '@/types'
 import { Tabs } from '../Tabs'
 import { Headers } from './Headers'
 import { Content } from './Content'
-import { Cookies } from './Cookies'
+import { Cookies } from '../Cookies'
 
 export function ResponseDetails({ data }: { data: ProxyData }) {
   return (
@@ -28,7 +28,7 @@ export function ResponseDetails({ data }: { data: ProxyData }) {
       <Tabs.Content value="cookies">
         <ScrollArea style={{ height: '100%' }}>
           <Box p="4" height="100%">
-            <Cookies data={data} />
+            <Cookies cookies={data.response?.cookies} />
           </Box>
         </ScrollArea>
       </Tabs.Content>

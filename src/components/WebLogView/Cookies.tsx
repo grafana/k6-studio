@@ -1,10 +1,8 @@
 import { Flex, Table } from '@radix-ui/themes'
 
-import { ProxyData } from '@/types'
+import { Cookie } from '@/types'
 
-export function Cookies({ data }: { data: ProxyData }) {
-  const cookies = data.response?.cookies ?? []
-
+export function Cookies({ cookies = [] }: { cookies?: Cookie[] }) {
   if (!cookies.length) {
     return (
       <Flex height="200px" justify="center" align="center">

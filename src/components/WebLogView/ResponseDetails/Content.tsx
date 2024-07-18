@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Flex, ScrollArea, Switch, Text } from '@radix-ui/themes'
+import { Box, Flex, ScrollArea, SegmentedControl, Text } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
@@ -30,17 +30,18 @@ export function Content({ data }: { data: ProxyData }) {
 
   return (
     <Flex direction="column" gap="4" height="100%" py="4">
-      <Text as="label" size="2">
-        <Flex gap="2" justify="end" px="4">
-          <Switch
-            defaultChecked
-            size="1"
-            variant="surface"
-            onClick={() => setIsPreview(!isPreview)}
-          />
-          Preview
-        </Flex>
-      </Text>
+      <Flex gap="2" justify="end" px="4">
+        <SegmentedControl.Root
+          defaultValue="preview"
+          radius="small"
+          size="1"
+          variant="classic"
+          onValueChange={(value) => setIsPreview(value === 'preview')}
+        >
+          <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
+          <SegmentedControl.Item value="preview">Preview</SegmentedControl.Item>
+        </SegmentedControl.Root>
+      </Flex>
       <ScrollArea style={{ height: '100%' }}>
         <Box px="4" height="100%">
           {isPreview ? (
