@@ -1,5 +1,5 @@
 import { ProxyData } from '@/types'
-import { TestRule } from '@/types/rules'
+import { TestRule } from '@/schemas/rules'
 import { generateScript } from '@/codegen'
 import { format } from 'prettier/standalone'
 import * as prettierPluginBabel from 'prettier/plugins/babel'
@@ -7,7 +7,7 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import { GeneratorFileData } from '@/types/generator'
+import { GeneratorFileData } from '@/schemas/generator'
 import { TestOptions } from '@/schemas/testOptions'
 import { TestData } from '@/schemas/testData'
 
@@ -76,4 +76,7 @@ export const loadGenerator = async () => {
 
   const y = TestOptions.parse(generatorFile.content.options)
   console.log(y)
+
+  const z = GeneratorFileData.parse(generatorFile.content)
+  console.log(z)
 }

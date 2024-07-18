@@ -1,6 +1,6 @@
 import { Badge, Code } from '@radix-ui/themes'
 
-import { Selector } from '@/types/rules'
+import { Selector } from '@/schemas/rules'
 import { TargetIcon } from '@radix-ui/react-icons'
 import { exhaustive } from '@/utils/typescript'
 

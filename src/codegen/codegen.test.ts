@@ -4,7 +4,8 @@ import {
   generateRequestSnippets,
   generateVariableDeclarations,
 } from './codegen'
-import { TestRule, CorrelationStateMap } from '@/types/rules'
+import { CorrelationStateMap } from '@/types/rules'
+import { TestRule } from '@/schemas/rules'
 import { generateSequentialInt } from '@/rules/utils'
 import { ProxyData } from '@/types'
 import { correlationRecording } from '@/test/fixtures/correlationRecording'
