@@ -54,6 +54,11 @@ export const LoadProfileExecutorOptions = z.discriminatedUnion('executor', [
   RampingVUsOptions,
 ])
 
+export const TestOptions = z.object({
+  loadProfile: LoadProfileExecutorOptions,
+  thinkTime: ThinkTime,
+})
+
 export type SleepType = z.infer<typeof SleepType>
 export type FixedTiming = z.infer<typeof FixedTiming>
 export type RangeTiming = z.infer<typeof RangeTiming>
@@ -66,3 +71,4 @@ export type RampingVUsOptions = z.infer<typeof RampingVUsOptions>
 export type LoadProfileExecutorOptions = z.infer<
   typeof LoadProfileExecutorOptions
 >
+export type TestOptions = z.infer<typeof TestOptions>
