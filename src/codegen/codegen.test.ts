@@ -7,6 +7,7 @@ import {
 import { TestRule, CorrelationStateMap } from '@/types/rules'
 import { generateSequentialInt } from '@/rules/utils'
 import { ProxyData } from '@/types'
+import { correlationRecording } from '@/test/fixtures/correlationRecording'
 
 describe('Code generation', () => {
   describe('generateScript', () => {
@@ -18,6 +19,7 @@ describe('Code generation', () => {
       export const options = {}
 
       export default function() {
+        let resp
         sleep(1)
       }
       `
@@ -76,12 +78,52 @@ describe('Code generation', () => {
       const sequentialIdGenerator = generateSequentialInt()
 
       const expectedResult = `
-        http.request('GET', '/api/v1/users', null, {})
+        resp = http.request('GET', \`/api/v1/users\`, null, {})
       `
 
       expect(
         generateRequestSnippets(
           recording,
+          rules,
+          correlationStateMap,
+          sequentialIdGenerator
+        ).replace(/\s/g, '')
+      ).toBe(expectedResult.replace(/\s/g, ''))
+    })
+
+    it('should replace correlated values', () => {
+      const rules: TestRule[] = [
+        {
+          type: 'correlation',
+          id: '1',
+          extractor: {
+            filter: { path: '/login' },
+            selector: {
+              type: 'json',
+              from: 'body',
+              path: 'user_id',
+            },
+          },
+        },
+      ]
+      const correlationStateMap: CorrelationStateMap = {}
+      const sequentialIdGenerator = generateSequentialInt()
+
+      const expectedResult = `
+        resp = http.request('POST', \`http://test.k6.io/api/v1/foo\`, null, {})
+
+        resp = http.request('POST', \`http://test.k6.io/api/v1/login\`, null, {})
+        let correl_0 = resp.json().user_id
+
+        resp = http.request('GET', \`http://test.k6.io/api/v1/users/\${correl_0}\`, null, {})
+
+        resp = http.request('POST', \`http://test.k6.io/api/v1/users\`, \`${JSON.stringify({ user_id: '${correl_0}' })}\`, {})
+
+      `
+
+      expect(
+        generateRequestSnippets(
+          correlationRecording,
           rules,
           correlationStateMap,
           sequentialIdGenerator
