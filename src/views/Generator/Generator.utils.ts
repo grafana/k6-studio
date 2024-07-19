@@ -125,10 +125,8 @@ const setLoadedGeneratorData = (generatorFileData: GeneratorFileData) => {
   }
 
   // rules
-  // TODO: add action for adding rule
   const rules = generatorFileData.rules
   rules.map((rule) => {
-    generatorState.createRule(rule.type)
-    generatorState.updateRule(rule)
+    generatorState.loadRule(rule)
   })
 }
