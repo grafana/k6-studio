@@ -75,7 +75,7 @@ export function Validator() {
           Stop Script
         </Button>
       </PageHeading>
-      <Flex gap="3" flexGrow="1" minHeight="0">
+      <Flex gap="3" flexGrow="1" minHeight="0" p="2">
         <Flex width="50%" maxHeight="100%" direction="column">
           <Heading size="4" mb="2">
             Requests

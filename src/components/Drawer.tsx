@@ -11,14 +11,19 @@ export function Drawer({
 }) {
   return (
     <>
-      <Box p="2" position="absolute" right="0" top="0">
+      <Box
+        p="2"
+        position="absolute"
+        right="0"
+        top="0"
+        pt="9px"
+        style={{ zIndex: 1 }}
+      >
         <IconButton size="1" variant="ghost" onClick={close}>
           <Cross2Icon />
         </IconButton>
       </Box>
-      <Box height="100%" pt="9px">
-        {children}
-      </Box>
+      <Box height="100%">{children}</Box>
     </>
   )
 }
