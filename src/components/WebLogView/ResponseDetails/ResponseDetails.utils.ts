@@ -56,6 +56,7 @@ export function parseContent(format: string | undefined, data: ProxyData) {
       case 'plain':
         return safeAtob(content)
       case 'audio':
+      case 'font':
       case 'image':
       case 'video':
         return content

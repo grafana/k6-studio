@@ -1,4 +1,5 @@
 import { ReadOnlyEditor } from '../ReadOnlyEditor'
+import { Font } from './Font'
 
 interface PreviewProps {
   content: string
@@ -13,6 +14,10 @@ export function Preview({ content, contentType, format }: PreviewProps) {
         <source src={`data:${contentType};base64,${content}`} />
       </audio>
     )
+  }
+
+  if (format === 'font') {
+    return <Font url={`data:${contentType};base64,${content}`} />
   }
 
   if (format === 'image') {
