@@ -108,7 +108,7 @@ export function ThinkTime() {
             <Select.Content>
               <Select.Item value="groups">Between Groups</Select.Item>
               <Select.Item value="requests">Between Requests</Select.Item>
-              <Select.Item value="iteration">End of iteration</Select.Item>
+              <Select.Item value="iterations">End of iteration</Select.Item>
             </Select.Content>
           </Select.Root>
         </Flex>
