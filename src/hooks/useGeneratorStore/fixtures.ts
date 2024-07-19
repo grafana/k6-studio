@@ -50,11 +50,11 @@ export const rules: TestRule[] = [
     type: 'correlation',
     id: '4',
     extractor: {
-      filter: { path: '' },
+      filter: { path: 'api.k6.io/v3/account/me' },
       selector: {
         type: 'json',
         from: 'body',
-        path: '[0].title',
+        path: 'organizations[0].id',
       },
     },
   },

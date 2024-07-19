@@ -5,7 +5,6 @@ import { TestRule } from '@/schemas/rules'
 import { exhaustive } from '../utils/typescript'
 import { applyCustomCodeRule } from './customCode'
 import { applyCorrelationRule } from './correlation'
-import { matchFilter } from './utils'
 
 export function applyRule(
   requestSnippetSchema: RequestSnippetSchema,
@@ -13,10 +12,6 @@ export function applyRule(
   correlationStateMap: CorrelationStateMap,
   sequentialIdGenerator: Generator<number>
 ): RequestSnippetSchema {
-  if (!matchFilter(requestSnippetSchema, rule)) {
-    return requestSnippetSchema
-  }
-
   switch (rule.type) {
     case 'customCode':
       return applyCustomCodeRule(requestSnippetSchema, rule)

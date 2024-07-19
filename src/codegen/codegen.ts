@@ -144,12 +144,13 @@ export function generateSingleRequestSnippet(
   } = requestSnippetSchema
 
   const method = `'${request.method}'`
-  const url = `'${request.url}'`
+  // use backticks to allow insert correlation variables later
+  const url = `\`${request.url}\``
   let content = 'null'
 
   try {
     if (request.content) {
-      content = `\`${JSON.stringify(request.content)}\``
+      content = `\`${request.content}\``
     }
   } catch (error) {
     console.error('Failed to serialize request content', error)
