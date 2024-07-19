@@ -10,8 +10,6 @@ import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { GeneratorFileData } from '@/schemas/generator'
 import { TestOptions } from '@/schemas/testOptions'
 import { TestData } from '@/schemas/testData'
-import { ExecutorType } from '@/constants/generator'
-import { exhaustive } from '@/utils/typescript'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
   const groupedProxyData = groupProxyData(recording)
@@ -69,66 +67,16 @@ export const saveGenerator = () => {
 
 export const loadGenerator = async () => {
   const generatorFile = await window.studio.generator.loadGenerator()
+  console.log(generatorFile)
 
   if (!generatorFile) return
 
-  const generatorFileData = GeneratorFileData.safeParse(generatorFile.content)
-  console.log(generatorFileData)
+  const x = TestData.parse(generatorFile.content.testData)
+  console.log(x)
 
-  if (!generatorFileData.success) {
-    console.log(!generatorFileData.error)
-    return
-  }
+  const y = TestOptions.parse(generatorFile.content.options)
+  console.log(y)
 
-  setLoadedGeneratorData(generatorFileData.data)
-}
-
-const setLoadedGeneratorData = (generatorFileData: GeneratorFileData) => {
-  const generatorState = useGeneratorStore.getState()
-
-  // generator
-  generatorState.setName(generatorFileData.name)
-
-  // recording
-  generatorState.setAllowList(generatorFileData.allowlist)
-  // TODO: function to open the specific HAR file
-  generatorState.setRecording([], generatorFileData.recordingPath)
-
-  // test data
-  generatorState.setVariables(generatorFileData.testData.variables)
-
-  // think time
-  generatorState.setSleepType(generatorFileData.options.thinkTime.sleepType)
-  generatorState.setTiming(generatorFileData.options.thinkTime.timing)
-
-  // load profile
-  const loadProfile = generatorFileData.options.loadProfile
-  generatorState.setExecutor(loadProfile.executor)
-  generatorState.setGracefulStop(loadProfile.gracefulStop)
-  generatorState.setStartTime(loadProfile.startTime)
-  switch (loadProfile.executor) {
-    case ExecutorType.RampingVUs:
-      loadProfile.stages.map((stage, index) => {
-        generatorState.addStage()
-        generatorState.updateStage(index, stage)
-      })
-      generatorState.setGracefulRampDown(loadProfile.gracefulRampDown)
-      generatorState.setStartVUs(loadProfile.startVUs)
-      break
-    case ExecutorType.SharedIterations:
-      generatorState.setIterations(loadProfile.iterations)
-      generatorState.setMaxDuration(loadProfile.maxDuration)
-      generatorState.setVus(loadProfile.vus)
-      break
-    default:
-      exhaustive(loadProfile)
-  }
-
-  // rules
-  // TODO: add action for adding rule
-  const rules = generatorFileData.rules
-  rules.map((rule) => {
-    generatorState.createRule(rule.type)
-    generatorState.updateRule(rule)
-  })
+  const z = GeneratorFileData.parse(generatorFile.content)
+  console.log(z)
 }
