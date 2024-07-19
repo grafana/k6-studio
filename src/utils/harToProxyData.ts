@@ -38,7 +38,8 @@ function parseRequest(request: Entry['request']): Request {
 }
 
 function parseResponse(response: Entry['response']): Response {
-  const content = response.content?.text ? atob(response.content.text) : ''
+  const content = response.content?.text ?? ''
+
   return {
     statusCode: response.status,
     reason: response.statusText,
