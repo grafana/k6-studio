@@ -10,7 +10,6 @@ interface State {
 interface Actions {
   createRule: (type: TestRule['type']) => void
   updateRule: (rule: TestRule) => void
-  loadRule: (rule: TestRule) => void
   cloneRule: (id: string) => void
   deleteRule: (id: string) => void
   selectRule: (id: string) => void
@@ -33,10 +32,6 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
       if (index !== -1) {
         state.rules[index] = rule
       }
-    }),
-  loadRule: (rule: TestRule) =>
-    set((state) => {
-      state.rules.push(rule)
     }),
   cloneRule: (id: string) =>
     set((state) => {
