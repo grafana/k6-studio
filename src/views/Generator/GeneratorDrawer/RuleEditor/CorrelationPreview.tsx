@@ -1,6 +1,7 @@
 import { Box, Callout, Code, Heading } from '@radix-ui/themes'
 
-import { CorrelationStateMap, TestRule } from '@/types/rules'
+import { CorrelationStateMap } from '@/types/rules'
+import { TestRule } from '@/schemas/rules'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { applyRule } from '@/rules/rules'
 import { ProxyData, RequestSnippetSchema, Request } from '@/types'
