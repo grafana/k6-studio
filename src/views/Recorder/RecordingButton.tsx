@@ -38,7 +38,7 @@ export function RecordingControls({ requests }: { requests: ProxyData[] }) {
   }
 
   function handleCreateTestGenerator() {
-    setRecording(requests, '')
+    setRecording(requests, '', true)
     navigate('/generator')
   }
 

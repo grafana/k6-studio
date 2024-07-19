@@ -9,7 +9,11 @@ interface State {
 }
 
 interface Actions {
-  setRecording: (recording: ProxyData[], path: string) => void
+  setRecording: (
+    recording: ProxyData[],
+    path: string,
+    showAllowListDialog: boolean
+  ) => void
   resetRecording: () => void
   setAllowList: (value: string[]) => void
   setShowAllowListDialog: (value: boolean) => void
@@ -25,12 +29,16 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   allowList: [],
   showAllowListDialog: false,
 
-  setRecording: (requests: ProxyData[], path: string) =>
+  setRecording: (
+    requests: ProxyData[],
+    path: string,
+    showAllowListDialog: boolean
+  ) =>
     set((state) => {
       state.requests = requests
       state.allowList = []
       state.recordingPath = path
-      state.showAllowListDialog = true
+      state.showAllowListDialog = showAllowListDialog
     }),
   resetRecording: () =>
     set((state) => {

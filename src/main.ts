@@ -192,9 +192,13 @@ ipcMain.on('har:save', async (event, data) => {
   await writeFile(dialogResult.filePath, data)
 })
 
-ipcMain.handle('har:open', async (event) => {
+ipcMain.handle('har:open', async (event, filePath?: string) => {
   console.info('har:open event received')
   const browserWindow = browserWindowFromEvent(event)
+
+  if (filePath) {
+    return loadHarFile(filePath)
+  }
 
   const dialogResult = await dialog.showOpenDialog(browserWindow, {
     message: 'Open HAR file',
@@ -203,19 +207,23 @@ ipcMain.handle('har:open', async (event) => {
   })
 
   if (!dialogResult.canceled && dialogResult.filePaths[0]) {
-    const fileHandle = await open(dialogResult.filePaths[0], 'r')
-    try {
-      const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-      const har = await JSON.parse(data)
-
-      return { path: dialogResult.filePaths[0], content: har }
-    } finally {
-      await fileHandle?.close()
-    }
+    return loadHarFile(dialogResult.filePaths[0])
   }
 
   return
 })
+
+const loadHarFile = async (filePath: string) => {
+  const fileHandle = await open(filePath, 'r')
+  try {
+    const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+    const har = await JSON.parse(data)
+
+    return { path: filePath, content: har }
+  } finally {
+    await fileHandle?.close()
+  }
+}
 
 ipcMain.on('generator:save', async (event, generatorFile: string) => {
   console.info('generator:save event received')
