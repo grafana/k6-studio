@@ -1,9 +1,8 @@
-import { Box, Flex, Text } from '@radix-ui/themes'
+import { Box, Text } from '@radix-ui/themes'
 
 import { CorrelationRule, Filter, Selector } from '@/schemas/rules'
 import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
-import { CorrelationPreview } from './CorrelationPreview'
 
 interface CorrelationEditorProps {
   rule: CorrelationRule
@@ -24,25 +23,20 @@ export function CorrelationEditor({
   }
 
   return (
-    <Flex gap="3" p="2">
-      <Box width="50%">
-        <Text>Extractor</Text>
-        <div>
-          <FilterField
-            filter={rule.extractor.filter}
-            onChange={handleFilterChange}
-          />
-        </div>
-        <div>
-          <SelectorField
-            selector={rule.extractor.selector}
-            onChange={handleSelectorChange}
-          />
-        </div>
-      </Box>
-      <Box width="50%">
-        <CorrelationPreview rule={rule} />
-      </Box>
-    </Flex>
+    <Box p="2" width="50%">
+      <Text>Extractor</Text>
+      <div>
+        <FilterField
+          filter={rule.extractor.filter}
+          onChange={handleFilterChange}
+        />
+      </div>
+      <div>
+        <SelectorField
+          selector={rule.extractor.selector}
+          onChange={handleSelectorChange}
+        />
+      </div>
+    </Box>
   )
 }

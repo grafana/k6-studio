@@ -5,21 +5,39 @@ import { ScriptPreview } from './ScriptPreview'
 import { groupProxyData } from '@/utils/groups'
 import {
   selectHasRecording,
+  selectSelectedRule,
   useGeneratorStore,
 } from '@/hooks/useGeneratorStore'
+import { CorrelationPreview } from '../GeneratorDrawer/RuleEditor/CorrelationPreview'
+import { useEffect, useState } from 'react'
 
 interface GeneratorSidebarProps {
   requests: ProxyData[]
 }
 
 export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
+  const [tab, setTab] = useState('requests')
+
   const hasRecording = useGeneratorStore(selectHasRecording)
   const groupedProxyData = groupProxyData(requests)
+  const selectedRule = useGeneratorStore(selectSelectedRule)
+
+  useEffect(() => {
+    if (!selectedRule) {
+      setTab((currentTab) =>
+        currentTab === 'rule-preview' ? 'requests' : currentTab
+      )
+      return
+    }
+
+    setTab('rule-preview')
+  }, [selectedRule])
 
   return (
     <Flex direction="column" height="100%" minHeight="0">
       <Tabs.Root
-        defaultValue="requests"
+        value={tab}
+        onValueChange={(value) => setTab(value)}
         style={{
           height: '100%',
         }}
@@ -31,7 +49,19 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
           <Tabs.Trigger value="script" disabled={!hasRecording}>
             Script preview
           </Tabs.Trigger>
+          {selectedRule && (
+            <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
+          )}
         </Tabs.List>
+        {selectedRule && (
+          <Tabs.Content value="rule-preview" style={{ height: '100%' }}>
+            <ScrollArea>
+              <Box p="2" mb="5">
+                <CorrelationPreview rule={selectedRule} />
+              </Box>
+            </ScrollArea>
+          </Tabs.Content>
+        )}
         <Tabs.Content
           value="requests"
           style={{
