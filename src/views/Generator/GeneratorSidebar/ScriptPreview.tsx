@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 
 import { exportScript } from '../Generator.utils'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import {
+  selectFilteredRequests,
+  useGeneratorStore,
+} from '@/hooks/useGeneratorStore'
 import { CodeEditor } from '@/components/CodeEditor'
 
 export function ScriptPreview() {
   const [preview, setPreview] = useState('')
-  const { filteredRequests, rules } = useGeneratorStore()
+  const rules = useGeneratorStore((state) => state.rules)
+  const filteredRequests = useGeneratorStore(selectFilteredRequests)
 
   useEffect(() => {
     async function updatePreview() {
