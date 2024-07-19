@@ -23,12 +23,15 @@ export function toFormat(contentType: string | undefined) {
   }
 
   switch (contentType) {
+    case 'application/javascript':
+      return 'javascript'
     case 'application/json':
+    case 'application/manifest+json':
       return 'json'
+    case 'text/css':
+      return 'css'
     case 'text/html':
       return 'html'
-    case 'text/javascript':
-      return 'javascript'
     case 'text/plain':
       return 'plain'
     default:
@@ -47,12 +50,12 @@ export function parseContent(format: string | undefined, data: ProxyData) {
     switch (format) {
       case 'json':
         return stringify(JSON.parse(safeAtob(content)))
+      case 'css':
       case 'html':
       case 'javascript':
       case 'plain':
         return safeAtob(content)
       case 'audio':
-      case 'font':
       case 'image':
       case 'video':
         return content

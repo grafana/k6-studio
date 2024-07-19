@@ -30,18 +30,22 @@ export function Content({ data }: { data: ProxyData }) {
 
   return (
     <Flex direction="column" gap="4" height="100%" py="4">
-      <Flex gap="2" justify="end" px="4">
-        <SegmentedControl.Root
-          defaultValue="preview"
-          radius="small"
-          size="1"
-          variant="classic"
-          onValueChange={(value) => setIsPreview(value === 'preview')}
-        >
-          <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
-          <SegmentedControl.Item value="preview">Preview</SegmentedControl.Item>
-        </SegmentedControl.Root>
-      </Flex>
+      {!isMedia(format) && (
+        <Flex gap="2" justify="end" px="4">
+          <SegmentedControl.Root
+            defaultValue="preview"
+            radius="small"
+            size="1"
+            variant="classic"
+            onValueChange={(value) => setIsPreview(value === 'preview')}
+          >
+            <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
+            <SegmentedControl.Item value="preview">
+              Preview
+            </SegmentedControl.Item>
+          </SegmentedControl.Root>
+        </Flex>
+      )}
       <ScrollArea style={{ height: '100%' }}>
         <Box px="4" height="100%">
           {isPreview ? (
@@ -54,3 +58,6 @@ export function Content({ data }: { data: ProxyData }) {
     </Flex>
   )
 }
+
+const isMedia = (format: string) =>
+  ['audio', 'font', 'image', 'video'].includes(format)
