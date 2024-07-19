@@ -15,7 +15,7 @@ export function RecordingSelector() {
     if (!harFile) return
 
     const proxyData = harToProxyData(harFile.content)
-    setRecording(proxyData, harFile.path)
+    setRecording(proxyData, harFile.path, true)
   }
 
   return (

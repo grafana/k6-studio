@@ -92,7 +92,7 @@ const setLoadedGeneratorData = (generatorFileData: GeneratorFileData) => {
   // recording
   generatorState.setAllowList(generatorFileData.allowlist)
   // TODO: function to open the specific HAR file
-  generatorState.setRecording([], generatorFileData.recordingPath)
+  generatorState.setRecording([], generatorFileData.recordingPath, false)
 
   // test data
   generatorState.setVariables(generatorFileData.testData.variables)
