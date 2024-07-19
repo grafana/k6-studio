@@ -65,8 +65,8 @@ const har = {
   saveFile: (data: string) => {
     ipcRenderer.send('har:save', data)
   },
-  openFile: (): Promise<HarFile | void> => {
-    return ipcRenderer.invoke('har:open')
+  openFile: (filePath?: string): Promise<HarFile | void> => {
+    return ipcRenderer.invoke('har:open', filePath)
   },
 } as const
 

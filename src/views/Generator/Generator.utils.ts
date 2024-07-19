@@ -12,6 +12,7 @@ import { TestOptions } from '@/schemas/testOptions'
 import { TestData } from '@/schemas/testData'
 import { ExecutorType } from '@/constants/generator'
 import { exhaustive } from '@/utils/typescript'
+import { harToProxyData } from '@/utils/harToProxyData'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
   const groupedProxyData = groupProxyData(recording)
@@ -80,10 +81,10 @@ export const loadGenerator = async () => {
     return
   }
 
-  setLoadedGeneratorData(generatorFileData.data)
+  await setLoadedGeneratorData(generatorFileData.data)
 }
 
-const setLoadedGeneratorData = (generatorFileData: GeneratorFileData) => {
+const setLoadedGeneratorData = async (generatorFileData: GeneratorFileData) => {
   const generatorState = useGeneratorStore.getState()
 
   // generator
@@ -91,8 +92,24 @@ const setLoadedGeneratorData = (generatorFileData: GeneratorFileData) => {
 
   // recording
   generatorState.setAllowList(generatorFileData.allowlist)
-  // TODO: function to open the specific HAR file
-  generatorState.setRecording([], generatorFileData.recordingPath, false)
+  const harFile = await window.studio.har.openFile(
+    generatorFileData.recordingPath
+  )
+  if (harFile) {
+    // TODO: we need to better handle errors scenarios
+    const proxyData = harToProxyData(harFile.content)
+    generatorState.setRecording(
+      proxyData,
+      generatorFileData.recordingPath,
+      false
+    )
+
+    const filteredRequests = proxyData.filter((request) =>
+      generatorFileData.allowlist.includes(request.request.host)
+    )
+    console.log(filteredRequests)
+    generatorState.setFilteredRequests(filteredRequests)
+  }
 
   // test data
   generatorState.setVariables(generatorFileData.testData.variables)
