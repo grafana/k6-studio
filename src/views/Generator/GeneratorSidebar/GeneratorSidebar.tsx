@@ -8,8 +8,8 @@ import {
   selectSelectedRule,
   useGeneratorStore,
 } from '@/hooks/useGeneratorStore'
-import { CorrelationPreview } from '../GeneratorDrawer/RuleEditor/CorrelationPreview'
 import { useEffect, useState } from 'react'
+import { RulePreview } from '../RulePreview/RulePreview'
 
 interface GeneratorSidebarProps {
   requests: ProxyData[]
@@ -57,7 +57,7 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
           <Tabs.Content value="rule-preview" style={{ height: '100%' }}>
             <ScrollArea>
               <Box p="2" mb="5">
-                <CorrelationPreview rule={selectedRule} />
+                <RulePreview rule={selectedRule} />
               </Box>
             </ScrollArea>
           </Tabs.Content>
