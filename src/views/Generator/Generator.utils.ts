@@ -1,5 +1,5 @@
 import { ProxyData } from '@/types'
-import { TestRule } from '@/types/rules'
+import { TestRule } from '@/schemas/rules'
 import { generateScript } from '@/codegen'
 import { format } from 'prettier/standalone'
 import * as prettierPluginBabel from 'prettier/plugins/babel'
@@ -7,11 +7,9 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import {
-  GeneratorOptions,
-  GeneratorTestData,
-  GeneratorFile,
-} from '@/types/generator'
+import { GeneratorFileData } from '@/schemas/generator'
+import { TestOptions } from '@/schemas/testOptions'
+import { TestData } from '@/schemas/testData'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
   const groupedProxyData = groupProxyData(recording)
@@ -33,7 +31,7 @@ export function saveScript(script: string) {
 
 export const saveGenerator = () => {
   const generatorState = useGeneratorStore.getState()
-  const options: GeneratorOptions = {
+  const options: TestOptions = {
     loadProfile: {
       executor: generatorState.executor,
       startTime: generatorState.startTime,
@@ -50,11 +48,11 @@ export const saveGenerator = () => {
       timing: generatorState.timing,
     },
   }
-  const generatorTestData: GeneratorTestData = {
+  const generatorTestData: TestData = {
     variables: generatorState.variables,
   }
 
-  const generatorFile: GeneratorFile = {
+  const generatorFile: GeneratorFileData = {
     name: generatorState.name,
     version: '0',
     recordingPath: generatorState.recordingPath,
@@ -65,4 +63,20 @@ export const saveGenerator = () => {
   }
 
   window.studio.generator.saveGenerator(JSON.stringify(generatorFile, null, 2))
+}
+
+export const loadGenerator = async () => {
+  const generatorFile = await window.studio.generator.loadGenerator()
+  console.log(generatorFile)
+
+  if (!generatorFile) return
+
+  const x = TestData.parse(generatorFile.content.testData)
+  console.log(x)
+
+  const y = TestOptions.parse(generatorFile.content.options)
+  console.log(y)
+
+  const z = GeneratorFileData.parse(generatorFile.content)
+  console.log(z)
 }

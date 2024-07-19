@@ -4,6 +4,7 @@
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log } from './types'
 import { HarFile } from './types/har'
+import { GeneratorFile } from './types/generator'
 
 // Create listener and return clean up function to be used in useEffect
 function createListener<T>(channel: string, callback: (data: T) => void) {
@@ -78,6 +79,9 @@ const settings = {
 const generator = {
   saveGenerator: (generatorFile: string) => {
     ipcRenderer.send('generator:save', generatorFile)
+  },
+  loadGenerator: (): Promise<GeneratorFile | void> => {
+    return ipcRenderer.invoke('generator:open')
   },
 } as const
 

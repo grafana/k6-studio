@@ -1,6 +1,6 @@
 import { Flex, SegmentedControl, Select, TextField } from '@radix-ui/themes'
 
-import type { Selector } from '@/types/rules'
+import type { Selector } from '@/schemas/rules'
 import * as Label from '@radix-ui/react-label'
 import { exhaustive } from '@/utils/typescript'
 
