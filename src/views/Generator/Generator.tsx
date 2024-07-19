@@ -14,6 +14,7 @@ import { GeneratorSidebar } from './GeneratorSidebar'
 import {
   useGeneratorStore,
   selectHasRecording,
+  selectFilteredRequests,
 } from '@/hooks/useGeneratorStore'
 import { TestRuleContainer } from './TestRuleContainer'
 import { AllowList } from './AllowList/AllowList'
@@ -24,7 +25,7 @@ export function Generator() {
   const rules = useGeneratorStore((store) => store.rules)
   const name = useGeneratorStore((store) => store.name)
   const resetRecording = useGeneratorStore((store) => store.resetRecording)
-  const filteredRequests = useGeneratorStore((store) => store.filteredRequests)
+  const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const hasRecording = useGeneratorStore(selectHasRecording)
   useSetWindowTitle(name)
 

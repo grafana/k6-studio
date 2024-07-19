@@ -18,3 +18,9 @@ export function selectSelectedRule(state: GeneratorState) {
 export function selectHasRecording(state: GeneratorState) {
   return state.requests.length > 0
 }
+
+export function selectFilteredRequests(state: GeneratorState) {
+  return state.requests.filter((request) => {
+    return state.allowList.includes(request.request.host)
+  })
+}

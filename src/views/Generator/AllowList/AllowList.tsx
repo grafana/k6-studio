@@ -2,7 +2,6 @@ import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { ProxyData } from '@/types'
 import { Button } from '@radix-ui/themes'
 import { uniq } from 'lodash-es'
-import { useEffect } from 'react'
 import { AllowListDialog } from './AllowListDialog'
 
 export function AllowList() {
@@ -15,15 +14,6 @@ export function AllowList() {
   const setShowAllowListDialog = useGeneratorStore(
     (store) => store.setShowAllowListDialog
   )
-  const setFilteredRequests = useGeneratorStore(
-    (store) => store.setFilteredRequests
-  )
-
-  useEffect(() => {
-    setFilteredRequests(
-      requests.filter((request) => allowList.includes(request.request.host))
-    )
-  }, [allowList, requests, setFilteredRequests])
 
   const hosts = extractUniqueHosts(requests)
 
