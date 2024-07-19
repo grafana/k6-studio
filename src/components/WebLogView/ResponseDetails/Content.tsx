@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Flex, ScrollArea, SegmentedControl, Text } from '@radix-ui/themes'
+import { Box, Flex, ScrollArea, SegmentedControl } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'

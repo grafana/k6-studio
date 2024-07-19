@@ -1,9 +1,3 @@
-export function formDataToJSON(str: string) {
-  const result = queryStringToJSON(str)
-
-  return queryStringToJSON(result.body)
-}
-
 export function queryStringToJSON(str: string) {
   return JSON.parse(
     '{"' + str.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
