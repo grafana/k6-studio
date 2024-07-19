@@ -10,8 +10,6 @@ import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { GeneratorFileData } from '@/schemas/generator'
 import { TestOptions } from '@/schemas/testOptions'
 import { TestData } from '@/schemas/testData'
-import { ExecutorType } from '@/constants/generator'
-import { exhaustive } from '@/utils/typescript'
 import { harToProxyData } from '@/utils/harToProxyData'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
@@ -69,6 +67,7 @@ export const saveGenerator = () => {
 }
 
 export const loadGenerator = async () => {
+  const setGeneratorFile = useGeneratorStore.getState().setGeneratorFile
   const generatorFile = await window.studio.generator.loadGenerator()
 
   if (!generatorFile) return
@@ -80,69 +79,12 @@ export const loadGenerator = async () => {
     return
   }
 
-  await setLoadedGeneratorData(generatorFileData.data)
-}
-
-const setLoadedGeneratorData = async (generatorFileData: GeneratorFileData) => {
-  const generatorState = useGeneratorStore.getState()
-
-  // generator
-  generatorState.setName(generatorFileData.name)
-
-  // recording
-  generatorState.setAllowList(generatorFileData.allowlist)
   const harFile = await window.studio.har.openFile(
-    generatorFileData.recordingPath
+    generatorFileData.data.recordingPath
   )
-  if (harFile) {
-    // TODO: we need to better handle errors scenarios
-    const proxyData = harToProxyData(harFile.content)
-    generatorState.setRecording(
-      proxyData,
-      generatorFileData.recordingPath,
-      false
-    )
 
-    const filteredRequests = proxyData.filter((request) =>
-      generatorFileData.allowlist.includes(request.request.host)
-    )
-    // TODO: is this really required to be set ?
-    generatorState.setFilteredRequests(filteredRequests)
-  }
+  // TODO: we need to better handle errors scenarios
+  const recording = harFile ? harToProxyData(harFile.content) : []
 
-  // test data
-  generatorState.setVariables(generatorFileData.testData.variables)
-
-  // think time
-  generatorState.setSleepType(generatorFileData.options.thinkTime.sleepType)
-  generatorState.setTiming(generatorFileData.options.thinkTime.timing)
-
-  // load profile
-  const loadProfile = generatorFileData.options.loadProfile
-  generatorState.setExecutor(loadProfile.executor)
-  generatorState.setGracefulStop(loadProfile.gracefulStop)
-  generatorState.setStartTime(loadProfile.startTime)
-  switch (loadProfile.executor) {
-    case ExecutorType.RampingVUs:
-      loadProfile.stages.map((stage, index) => {
-        generatorState.addStage()
-        generatorState.updateStage(index, stage)
-      })
-      generatorState.setGracefulRampDown(loadProfile.gracefulRampDown)
-      generatorState.setStartVUs(loadProfile.startVUs)
-      break
-    case ExecutorType.SharedIterations:
-      generatorState.setIterations(loadProfile.iterations)
-      generatorState.setMaxDuration(loadProfile.maxDuration)
-      generatorState.setVus(loadProfile.vus)
-      break
-    default:
-      exhaustive(loadProfile)
-  }
-
-  // rules
-  const rules = generatorFileData.rules
-  rules.map((rule) => {
-    generatorState.loadRule(rule)
-  })
+  setGeneratorFile(generatorFileData.data, recording)
 }
