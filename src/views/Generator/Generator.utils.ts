@@ -74,7 +74,6 @@ export const loadGenerator = async () => {
   if (!generatorFile) return
 
   const generatorFileData = GeneratorFileData.safeParse(generatorFile.content)
-  console.log(generatorFileData)
 
   if (!generatorFileData.success) {
     console.log(!generatorFileData.error)
@@ -107,7 +106,7 @@ const setLoadedGeneratorData = async (generatorFileData: GeneratorFileData) => {
     const filteredRequests = proxyData.filter((request) =>
       generatorFileData.allowlist.includes(request.request.host)
     )
-    console.log(filteredRequests)
+    // TODO: is this really required to be set ?
     generatorState.setFilteredRequests(filteredRequests)
   }
 
