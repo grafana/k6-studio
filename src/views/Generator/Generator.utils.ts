@@ -9,7 +9,7 @@ import { groupProxyData } from '@/utils/groups'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { GeneratorFileData } from '@/schemas/generator'
 import { TestOptions } from '@/schemas/testOptions'
-import { TestData } from '@/schemas/testData'
+import { TestData } from '@/types/testData'
 import { harToProxyData } from '@/utils/harToProxyData'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
