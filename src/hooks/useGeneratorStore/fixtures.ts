@@ -1,4 +1,4 @@
-import { TestRule } from '@/schemas/rules'
+import { TestRule } from '@/types/rules'
 
 export const rules: TestRule[] = [
   {

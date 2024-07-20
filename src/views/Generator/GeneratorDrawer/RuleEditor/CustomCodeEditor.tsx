@@ -1,7 +1,7 @@
 import { Container, Flex, Select, Text } from '@radix-ui/themes'
 import * as Label from '@radix-ui/react-label'
 
-import { CustomCodeRule } from '@/schemas/rules'
+import { CustomCodeRule } from '@/types/rules'
 import { FilterField } from './FilterField'
 import { CodeEditor } from '@/components/CodeEditor'
 

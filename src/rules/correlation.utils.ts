@@ -1,4 +1,4 @@
-import { CorrelationRule } from '@/schemas/rules'
+import { CorrelationRule } from '@/types/rules'
 import { Header, Request } from '@/types'
 
 export function safeJsonParse(value: string) {

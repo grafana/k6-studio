@@ -1,4 +1,4 @@
-import { CorrelationRule, CustomCodeRule, TestRule } from '@/schemas/rules'
+import { CorrelationRule, CustomCodeRule, TestRule } from '@/types/rules'
 import { TestRuleFilter } from './TestRuleFilter'
 import { Badge, Tooltip } from '@radix-ui/themes'
 import { exhaustive } from '@/utils/typescript'

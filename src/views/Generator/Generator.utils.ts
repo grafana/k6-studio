@@ -1,5 +1,5 @@
 import { ProxyData } from '@/types'
-import { TestRule } from '@/schemas/rules'
+import { TestRule } from '@/types/rules'
 import { generateScript } from '@/codegen'
 import { format } from 'prettier/standalone'
 import * as prettierPluginBabel from 'prettier/plugins/babel'

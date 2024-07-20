@@ -1,7 +1,7 @@
 import * as Label from '@radix-ui/react-label'
 import { TextField } from '@radix-ui/themes'
 
-import type { Filter } from '@/schemas/rules'
+import type { Filter } from '@/types/rules'
 
 interface FilterFieldProps {
   filter: Filter

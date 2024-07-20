@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { TestRule } from '@/schemas/rules'
+import { TestRuleSchema } from '@/schemas/rules'
 import { TestDataSchema } from '@/schemas/testData'
 import { TestOptionsSchema } from '@/schemas/testOptions'
 
@@ -9,7 +9,7 @@ export const GeneratorFileData = z.object({
   recordingPath: z.string(),
   options: TestOptionsSchema,
   testData: TestDataSchema,
-  rules: TestRule.array(),
+  rules: TestRuleSchema.array(),
   allowlist: z.string().array(),
 })
 

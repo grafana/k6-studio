@@ -1,6 +1,6 @@
 import { Badge } from '@radix-ui/themes'
 
-import { Filter } from '@/schemas/rules'
+import { Filter } from '@/types/rules'
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons'
 
 interface TestRuleFilterProps {

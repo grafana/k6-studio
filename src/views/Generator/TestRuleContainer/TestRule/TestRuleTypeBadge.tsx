@@ -1,6 +1,6 @@
 import { Badge } from '@radix-ui/themes'
 
-import { TestRule } from '@/schemas/rules'
+import { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
 interface TestRuleTypeBadgeProps {
