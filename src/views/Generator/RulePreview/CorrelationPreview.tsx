@@ -1,7 +1,7 @@
 import { Box, Callout, Code, Heading } from '@radix-ui/themes'
 
 import { CorrelationStateMap } from '@/types/rules'
-import { TestRule } from '@/schemas/rules'
+import { TestRule, CorrelationRule } from '@/schemas/rules'
 import {
   selectFilteredRequests,
   useGeneratorStore,
@@ -12,7 +12,7 @@ import { generateSequentialInt } from '@/rules/utils'
 import { useMemo } from 'react'
 import { WebLogView } from '@/components/WebLogView'
 
-export function CorrelationPreview({ rule }: { rule: TestRule }) {
+export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 

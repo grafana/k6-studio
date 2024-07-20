@@ -12,7 +12,7 @@ interface Actions {
   updateRule: (rule: TestRule) => void
   cloneRule: (id: string) => void
   deleteRule: (id: string) => void
-  selectRule: (id: string) => void
+  selectRule: (id: string | null) => void
 }
 
 export type RulesSliceStore = State & Actions
@@ -20,32 +20,32 @@ export type RulesSliceStore = State & Actions
 export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
   rules,
   selectedRuleId: null,
-  createRule: (type: TestRule['type']) =>
+  createRule: (type) =>
     set((state) => {
       const newRule = createEmptyRule(type)
       state.rules.push(newRule)
       state.selectedRuleId = newRule.id
     }),
-  updateRule: (rule: TestRule) =>
+  updateRule: (rule) =>
     set((state) => {
       const index = state.rules.findIndex((r) => r.id === rule.id)
       if (index !== -1) {
         state.rules[index] = rule
       }
     }),
-  cloneRule: (id: string) =>
+  cloneRule: (id) =>
     set((state) => {
       const rule = state.rules.find((rule) => rule.id === id)
       if (rule) {
         state.rules.push({ ...rule, id: self.crypto.randomUUID() })
       }
     }),
-  deleteRule: (id: string) =>
+  deleteRule: (id) =>
     set((state) => {
       state.rules = state.rules.filter((rule) => rule.id !== id)
       state.selectedRuleId = null
     }),
-  selectRule: (id: string) =>
+  selectRule: (id) =>
     set((state) => {
       state.selectedRuleId = id
     }),
