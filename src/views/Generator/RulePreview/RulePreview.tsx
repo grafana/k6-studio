@@ -1,6 +1,6 @@
 import { CorrelationPreview } from './CorrelationPreview'
 import { exhaustive } from '@/utils/typescript'
-import { TestRule } from '@/types/rules'
+import { TestRule } from '@/schemas/rules'
 
 export function RulePreview({ rule }: { rule: TestRule }) {
   switch (rule.type) {
