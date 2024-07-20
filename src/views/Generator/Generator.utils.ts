@@ -7,7 +7,8 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import { GeneratorFileData } from '@/schemas/generator'
+import { GeneratorFileData } from '@/types/generator'
+import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { TestOptions } from '@/types/testOptions'
 import { TestData } from '@/types/testData'
 import { harToProxyData } from '@/utils/harToProxyData'
@@ -72,7 +73,9 @@ export const loadGenerator = async () => {
 
   if (!generatorFile) return
 
-  const generatorFileData = GeneratorFileData.safeParse(generatorFile.content)
+  const generatorFileData = GeneratorFileDataSchema.safeParse(
+    generatorFile.content
+  )
 
   if (!generatorFileData.success) {
     console.log(!generatorFileData.error)

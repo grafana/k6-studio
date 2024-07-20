@@ -3,7 +3,7 @@ import { TestRuleSchema } from '@/schemas/rules'
 import { TestDataSchema } from '@/schemas/testData'
 import { TestOptionsSchema } from '@/schemas/testOptions'
 
-export const GeneratorFileData = z.object({
+export const GeneratorFileDataSchema = z.object({
   name: z.string(),
   version: z.string(),
   recordingPath: z.string(),
@@ -12,5 +12,3 @@ export const GeneratorFileData = z.object({
   rules: TestRuleSchema.array(),
   allowlist: z.string().array(),
 })
-
-export type GeneratorFileData = z.infer<typeof GeneratorFileData>

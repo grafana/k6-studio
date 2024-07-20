@@ -1,6 +1,6 @@
 import { RecordingSliceStore } from './slices/recording'
 import { RulesSliceStore, TestDataStore, TestOptionsStore } from './slices'
-import { GeneratorFileData } from '@/schemas/generator'
+import { GeneratorFileData } from '@/types/generator'
 import { ProxyData } from '@/types'
 
 export interface GeneratorState
