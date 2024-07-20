@@ -3,7 +3,7 @@ import { Flex, Heading, Text } from '@radix-ui/themes'
 import { StartVUs } from './StartVUs'
 import { GracefulRampDown } from './GracefulRampDown'
 import { VUStages } from './VUStages'
-import { RampingVUsOptions } from '@/schemas/testOptions'
+import { RampingVUsOptions } from '@/types/testOptions'
 
 export function RampingVUs({
   gracefulRampDown,

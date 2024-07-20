@@ -8,7 +8,7 @@ import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { GeneratorFileData } from '@/schemas/generator'
-import { TestOptions } from '@/schemas/testOptions'
+import { TestOptions } from '@/types/testOptions'
 import { TestData } from '@/types/testData'
 import { harToProxyData } from '@/utils/harToProxyData'
 

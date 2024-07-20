@@ -3,7 +3,7 @@ import {
   RampingStage,
   RampingVUsOptions,
   SharedIterationsOptions,
-} from '@/schemas/testOptions'
+} from '@/types/testOptions'
 import { ImmerStateCreator } from '@/utils/typescript'
 
 interface SharedIterationsState
