@@ -62,7 +62,7 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 // https://github.com/electron/electron/pull/21972
-app.whenReady().then(async () => {
+app.whenReady().then(() => {
   createWindow()
   setupProjectStructure()
 })
