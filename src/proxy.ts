@@ -12,11 +12,13 @@ export type ProxyProcess = ChildProcessWithoutNullStreams
 
 interface options {
   onReady?: () => void
+  onFailure?: () => void
 }
 
 export const launchProxy = (
   browserWindow: BrowserWindow,
-  { onReady }: options = {}
+  port?: number,
+  { onReady, onFailure }: options = {}
 ): ProxyProcess => {
   let proxyScript: string
   let proxyPath: string
@@ -41,13 +43,19 @@ export const launchProxy = (
   // add .exe on windows
   proxyPath += getPlatform() === 'win' ? '.exe' : ''
 
-  const proxy = spawn(proxyPath, [
+  const proxyArgs = [
     '-q',
     '-s',
     proxyScript,
     '--set',
     `confdir=${certificatesPath}`,
-  ])
+  ]
+
+  if (port) {
+    proxyArgs.push('--mode', `regular@${port}`)
+  }
+
+  const proxy = spawn(proxyPath, proxyArgs)
 
   // we use a reader to read entire lines from stdout instead of buffered data
   const stdoutReader = readline.createInterface(proxy.stdout)
@@ -73,6 +81,7 @@ export const launchProxy = (
   proxy.on('close', (code) => {
     console.log(`proxy process exited with code ${code}`)
     browserWindow.webContents.send('proxy:close', code)
+    onFailure?.()
   })
 
   return proxy
