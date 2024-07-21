@@ -6,6 +6,7 @@ import forge from 'node-forge'
 import { readFile } from 'fs/promises'
 import { ProxyData } from './types'
 import readline from 'readline/promises'
+import { safeJsonParse } from './utils/json'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
@@ -59,8 +60,10 @@ export const launchProxy = (
       return
     }
 
-    const proxyData: ProxyData = JSON.parse(data)
-    browserWindow.webContents.send('proxy:data', proxyData)
+    const proxyData: ProxyData = safeJsonParse(data)
+    if (proxyData) {
+      browserWindow.webContents.send('proxy:data', proxyData)
+    }
   })
 
   proxy.stderr.on('data', (data) => {
@@ -69,6 +72,7 @@ export const launchProxy = (
 
   proxy.on('close', (code) => {
     console.log(`proxy process exited with code ${code}`)
+    browserWindow.webContents.send('proxy:close', code)
   })
 
   return proxy
