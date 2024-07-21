@@ -7,6 +7,7 @@ import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
+import { RECORDINGS_PATH } from './constants/workspace'
 import eventEmmitter from 'events'
 
 const proxyEmitter = new eventEmmitter()
@@ -185,7 +186,7 @@ ipcMain.on('har:save', async (event, data) => {
 
   const dialogResult = await dialog.showSaveDialog(browserWindow, {
     message: 'Save HAR file of the recording',
-    defaultPath: 'k6-studio-recording.har',
+    defaultPath: path.join(RECORDINGS_PATH, `${new Date().toISOString()}.har`),
   })
 
   if (dialogResult.canceled) {
