@@ -1,7 +1,8 @@
 name: 'Manual Release'
 
 on:
-  workflow_dispatch:
+  push:
+  # workflow_dispatch:
 
 jobs:
   publish-studio:
