@@ -1,5 +1,5 @@
 import { ProxyData } from '@/types'
-import { TestRule } from '@/schemas/rules'
+import { TestRule } from '@/types/rules'
 import { generateScript } from '@/codegen'
 import { format } from 'prettier/standalone'
 import * as prettierPluginBabel from 'prettier/plugins/babel'
@@ -7,9 +7,10 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
-import { GeneratorFileData } from '@/schemas/generator'
-import { TestOptions } from '@/schemas/testOptions'
-import { TestData } from '@/schemas/testData'
+import { GeneratorFileData } from '@/types/generator'
+import { GeneratorFileDataSchema } from '@/schemas/generator'
+import { TestOptions } from '@/types/testOptions'
+import { TestData } from '@/types/testData'
 import { harToProxyData } from '@/utils/harToProxyData'
 
 export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
@@ -72,7 +73,9 @@ export const loadGenerator = async () => {
 
   if (!generatorFile) return
 
-  const generatorFileData = GeneratorFileData.safeParse(generatorFile.content)
+  const generatorFileData = GeneratorFileDataSchema.safeParse(
+    generatorFile.content
+  )
 
   if (!generatorFileData.success) {
     console.log(!generatorFileData.error)

@@ -1,6 +1,5 @@
 import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
-import { CorrelationStateMap } from '@/types/rules'
-import { TestRule } from '@/schemas/rules'
+import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { applyRule } from '@/rules/rules'
 import { generateSequentialInt } from '@/rules/utils'
 

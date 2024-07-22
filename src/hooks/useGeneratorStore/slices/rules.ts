@@ -1,4 +1,4 @@
-import { TestRule } from '@/schemas/rules'
+import { TestRule } from '@/types/rules'
 import { ImmerStateCreator } from '@/utils/typescript'
 import { rules } from '../fixtures'
 

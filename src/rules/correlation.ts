@@ -1,6 +1,5 @@
 import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
-import { CorrelationStateMap } from '@/types/rules'
-import { CorrelationRule } from '@/schemas/rules'
+import { CorrelationStateMap, CorrelationRule } from '@/types/rules'
 import { cloneDeep, get, isEqual } from 'lodash-es'
 import { canonicalHeaderKey, matchFilter } from './utils'
 import { getHeaderValues } from '@/utils/headers'

@@ -1,7 +1,5 @@
 import { Box, Callout, Code, Heading } from '@radix-ui/themes'
-
-import { CorrelationStateMap } from '@/types/rules'
-import { TestRule, CorrelationRule } from '@/schemas/rules'
+import { TestRule, CorrelationRule, CorrelationStateMap } from '@/types/rules'
 import {
   selectFilteredRequests,
   useGeneratorStore,

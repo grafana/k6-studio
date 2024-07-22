@@ -1,13 +1,10 @@
 import { z } from 'zod'
 
-export const Variable = z.object({
+export const VariableSchema = z.object({
   name: z.string(),
   value: z.string(),
 })
 
-export const TestData = z.object({
-  variables: Variable.array(),
+export const TestDataSchema = z.object({
+  variables: VariableSchema.array(),
 })
-
-export type Variable = z.infer<typeof Variable>
-export type TestData = z.infer<typeof TestData>

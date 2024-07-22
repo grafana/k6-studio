@@ -1,6 +1,6 @@
 import { Box, Text } from '@radix-ui/themes'
 
-import { CorrelationRule, Filter, Selector } from '@/schemas/rules'
+import { CorrelationRule, Filter, Selector } from '@/types/rules'
 import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
 

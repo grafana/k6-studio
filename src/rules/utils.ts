@@ -1,4 +1,4 @@
-import { TestRule } from '@/schemas/rules'
+import { TestRule } from '@/types/rules'
 import { RequestSnippetSchema } from '@/types'
 import { exhaustive } from '@/utils/typescript'
 

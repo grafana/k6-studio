@@ -4,7 +4,7 @@ import { SHARED_ITERATIONS_DEFAULTS } from '../../../constants'
 import { Iterations } from './Iterations'
 import { MaxDuration } from './MaxDuration'
 import { VUs } from './VUs'
-import { SharedIterationsOptions } from '@/schemas/testOptions'
+import { SharedIterationsOptions } from '@/types/testOptions'
 
 export function SharedIterations({
   iterations,
