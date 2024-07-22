@@ -8,6 +8,7 @@ import { getCertificateSPKI } from './proxy'
 import { mkdtemp } from 'fs/promises'
 import path from 'path'
 import os from 'os'
+import { proxyPort } from './main'
 
 const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
@@ -44,7 +45,7 @@ export const launchBrowser = async () => {
       '--no-first-run',
       '--disable-background-networking',
       '--disable-component-update',
-      '--proxy-server=http://localhost:8080', // TODO: consider passing in the proxy port
+      `--proxy-server=http://localhost:${proxyPort}`,
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
       disableChromeOptimizations,
     ],

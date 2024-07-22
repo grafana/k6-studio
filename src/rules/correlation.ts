@@ -4,7 +4,8 @@ import { cloneDeep, get, isEqual } from 'lodash-es'
 import { canonicalHeaderKey, matchFilter } from './utils'
 import { getHeaderValues } from '@/utils/headers'
 import { exhaustive } from '@/utils/typescript'
-import { replaceCorrelatedValues, safeJsonParse } from './correlation.utils'
+import { replaceCorrelatedValues } from './correlation.utils'
+import { safeJsonParse } from '@/utils/json'
 
 export function applyCorrelationRule(
   requestSnippetSchema: RequestSnippetSchema,

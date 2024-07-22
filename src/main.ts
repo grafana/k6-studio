@@ -12,6 +12,7 @@ const proxyEmitter = new eventEmmitter()
 
 let currentProxyProcess: ProxyProcess | null
 let proxyReady = false
+export let proxyPort = 8080
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
@@ -82,11 +83,11 @@ app.on('activate', () => {
 })
 
 // Proxy
-ipcMain.handle('proxy:start', async (event) => {
+ipcMain.handle('proxy:start', async (event, port?: number) => {
   console.info('proxy:start event received')
 
   const browserWindow = browserWindowFromEvent(event)
-  currentProxyProcess = launchProxyAndAttachEmitter(browserWindow)
+  currentProxyProcess = launchProxyAndAttachEmitter(browserWindow, port)
 })
 
 ipcMain.on('proxy:stop', async () => {
@@ -286,11 +287,22 @@ const browserWindowFromEvent = (
   return browserWindow
 }
 
-const launchProxyAndAttachEmitter = (browserWindow: BrowserWindow) => {
-  return launchProxy(browserWindow, {
+const launchProxyAndAttachEmitter = (
+  browserWindow: BrowserWindow,
+  port?: number
+) => {
+  return launchProxy(browserWindow, port, {
     onReady: () => {
       proxyReady = true
       proxyEmitter.emit('ready')
+    },
+    onFailure: () => {
+      proxyReady = false
+      proxyPort += 10
+      currentProxyProcess = launchProxyAndAttachEmitter(
+        browserWindow,
+        proxyPort
+      )
     },
   })
 }
