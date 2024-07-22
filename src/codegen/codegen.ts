@@ -70,6 +70,7 @@ export function generateVUCode(
 
   return [
     `
+    let params
     let resp
     let match
     let regex
@@ -134,13 +135,14 @@ export function generateSingleRequestSnippet(
     console.error('Failed to serialize request content', error)
   }
 
-  const params = '{}'
+  console.log(request)
+  const params = `params = ${generateRequestParams(request)}`
 
   const main = `
-    resp = http.request(${method}, ${url}, ${content}, ${params})
+    resp = http.request(${method}, ${url}, ${content}, params)
   `
 
-  return [...before, main, ...after].join('\n')
+  return [params, ...before, main, ...after].join('\n')
 }
 
 function generateSleep(timing: ThinkTime['timing']): string {
@@ -152,4 +154,17 @@ function generateSleep(timing: ThinkTime['timing']): string {
     default:
       return exhaustive(timing)
   }
+}
+
+function generateRequestParams(request: ProxyData['request']): string {
+  return `
+    {
+      headers: {
+        ${request.headers.map(([name, value]) => `'${name}': '${value}'`).join(',\n')}
+      },
+      cookies: {
+        ${request.cookies.map(([name, value]) => `'${name}': '${value}'`).join(',\n')}
+      },
+    }
+  `
 }
