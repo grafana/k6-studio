@@ -1,5 +1,5 @@
 import { ProxyData } from '@/types'
-import { safeAtob, stringify } from '@/utils/format'
+import { isBase64, safeAtob, safeBtoa, stringify } from '@/utils/format'
 
 export function toFormat(contentType: string | undefined) {
   if (!contentType) {
@@ -59,7 +59,7 @@ export function parseContent(format: string | undefined, data: ProxyData) {
       case 'font':
       case 'image':
       case 'video':
-        return content
+        return !isBase64(content) ? safeBtoa(content) : content
       default:
         return
     }
