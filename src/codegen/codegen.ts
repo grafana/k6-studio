@@ -48,7 +48,6 @@ export function generateVUCode(
   thinkTime: ThinkTime
 ): string {
   const groups = Object.entries(recording)
-  const isSingleGroup = groups.length === 1
   const correlationStateMap: CorrelationStateMap = {}
   const sequentialIdGenerator = generateSequentialInt()
 
@@ -62,9 +61,7 @@ export function generateVUCode(
         thinkTime
       )
 
-      return isSingleGroup
-        ? requestSnippets
-        : generateGroupSnippet(groupName, requestSnippets, thinkTime)
+      return generateGroupSnippet(groupName, requestSnippets, thinkTime)
     })
     .join(`\n`)
 
