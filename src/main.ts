@@ -7,6 +7,7 @@ import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
+import { RECORDINGS_PATH } from './constants/workspace'
 import eventEmmitter from 'events'
 
 const proxyEmitter = new eventEmmitter()
@@ -62,7 +63,7 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 // https://github.com/electron/electron/pull/21972
-app.whenReady().then(async () => {
+app.whenReady().then(() => {
   createWindow()
   setupProjectStructure()
 })
@@ -185,7 +186,7 @@ ipcMain.on('har:save', async (event, data) => {
 
   const dialogResult = await dialog.showSaveDialog(browserWindow, {
     message: 'Save HAR file of the recording',
-    defaultPath: 'k6-studio-recording.har',
+    defaultPath: path.join(RECORDINGS_PATH, `${new Date().toISOString()}.har`),
   })
 
   if (dialogResult.canceled) {
