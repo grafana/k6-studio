@@ -8,6 +8,10 @@ interface PreviewProps {
 }
 
 export function Preview({ content, contentType, format }: PreviewProps) {
+  if (format === 'html') {
+    return <div dangerouslySetInnerHTML={{ __html: content }} />
+  }
+
   if (format === 'audio') {
     return (
       <audio controls>
