@@ -5,7 +5,7 @@ import {
   RECORDINGS_PATH,
   GENERATORS_PATH,
   SCRIPTS_PATH,
-} from '../constants/workflow'
+} from '../constants/workspace'
 
 export const setupProjectStructure = async () => {
   if (!existsSync(PROJECT_PATH)) {
