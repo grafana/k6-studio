@@ -1,0 +1,37 @@
+name: 'Manual Release'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish-studio:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-20.04, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # try earlier python version for appdmg
+      # https://github.com/electron/forge/issues/3371#issuecomment-2105195302
+      - name: Install Python 3.11.4
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11.4'
+
+      - name: install dependencies
+        run: npm ci
+
+      - name: publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run publish
