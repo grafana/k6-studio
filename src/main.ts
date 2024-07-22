@@ -63,7 +63,7 @@ const createWindow = () => {
 // https://github.com/electron/electron/pull/21972
 app.whenReady().then(async () => {
   createWindow()
-  await setupProjectStructure()
+  setupProjectStructure()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
