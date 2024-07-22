@@ -6,7 +6,7 @@ import { Process } from '@puppeteer/browsers'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
-import { setupProjectStructure } from './utils/project'
+import { setupProjectStructure } from './utils/workflow'
 import eventEmmitter from 'events'
 
 const proxyEmitter = new eventEmmitter()
