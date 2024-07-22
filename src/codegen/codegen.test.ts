@@ -20,6 +20,7 @@ describe('Code generation', () => {
       export const options = {}
 
       export default function() {
+        let params
         let resp
         let match
         let regex
@@ -115,7 +116,8 @@ describe('Code generation', () => {
       }
 
       const expectedResult = `
-        resp = http.request('GET', \`/api/v1/users\`, null, {})
+        params = { headers: {}, cookies: {} }
+        resp = http.request('GET', \`/api/v1/users\`, null, params)
       `
 
       expect(
@@ -155,14 +157,18 @@ describe('Code generation', () => {
       }
 
       const expectedResult = `
-        resp = http.request('POST', \`http://test.k6.io/api/v1/foo\`, null, {})
+        params = { headers: {}, cookies: {} }
+        resp = http.request('POST', \`http://test.k6.io/api/v1/foo\`, null, params)
 
-        resp = http.request('POST', \`http://test.k6.io/api/v1/login\`, null, {})
+        params = { headers: {}, cookies: {} }
+        resp = http.request('POST', \`http://test.k6.io/api/v1/login\`, null, params)
         let correl_0 = resp.json().user_id
 
-        resp = http.request('GET', \`http://test.k6.io/api/v1/users/\${correl_0}\`, null, {})
+        params = { headers: {}, cookies: {} }
+        resp = http.request('GET', \`http://test.k6.io/api/v1/users/\${correl_0}\`, null, params)
 
-        resp = http.request('POST', \`http://test.k6.io/api/v1/users\`, \`${JSON.stringify({ user_id: '${correl_0}' })}\`, {})
+        params = { headers: {}, cookies: {} }
+        resp = http.request('POST', \`http://test.k6.io/api/v1/users\`, \`${JSON.stringify({ user_id: '${correl_0}' })}\`, params)
 
       `
 

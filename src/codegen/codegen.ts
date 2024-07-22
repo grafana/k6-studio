@@ -164,7 +164,7 @@ function generateRequestParams(request: ProxyData['request']): string {
       },
       cookies: {
         ${request.cookies.map(([name, value]) => `'${name}': '${value}'`).join(',\n')}
-      },
+      }
     }
   `
 }
