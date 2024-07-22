@@ -6,6 +6,7 @@ import { Process } from '@puppeteer/browsers'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
+import { setupProjectStructure } from './utils/workspace'
 import eventEmmitter from 'events'
 
 const proxyEmitter = new eventEmmitter()
@@ -61,8 +62,9 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 // https://github.com/electron/electron/pull/21972
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   createWindow()
+  setupProjectStructure()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
