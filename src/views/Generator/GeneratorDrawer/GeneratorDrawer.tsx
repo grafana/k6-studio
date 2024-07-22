@@ -24,7 +24,6 @@ export function GeneratorDrawer() {
           <TabNavLink path={`rule/${selectedRuleId}`} label="Rule" />
         )}
         <TabNavLink path="loadProfile" label="Load profile" />
-        <TabNavLink path="thresholds" label="Thresholds" />
         <TabNavLink path="thinkTime" label="Think time" />
         <TabNavLink path="testData" label="Test data" />
       </TabNav.Root>
@@ -33,7 +32,6 @@ export function GeneratorDrawer() {
           <Route path="/" element={<Navigate to="loadProfile" replace />} />
           <Route path="rule/:id" element={<RuleEditor />} />
           <Route path="loadProfile" element={<LoadProfile />} />
-          <Route path="thresholds" element={<VariablesEditor />} />
           <Route path="thinkTime" element={<ThinkTime />} />
           <Route path="testData" element={<VariablesEditor />} />
         </Route>
