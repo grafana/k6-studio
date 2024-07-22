@@ -12,13 +12,6 @@ interface GenerateScriptParams {
   generator: GeneratorFileData
 }
 
-/**
- * Generates a k6 script from the recording and rules
- * @param params - The parameters object
- * @param params.recording - The group recording
- * @param params.generator - The generator object
- * @returns {string}
- */
 export function generateScript({
   recording,
   generator,
@@ -37,20 +30,11 @@ export function generateScript({
   `
 }
 
-/**
- * Generates the options object for the k6 script
- * @returns {string}
- */
 export function generateOptions(options: TestOptions): string {
   console.log(options)
   return '{}'
 }
 
-/**
- * Generates declarations for test variables
- * @param variables - The variables to include in the script
- * @returns {string}
- */
 export function generateVariableDeclarations(variables: Variable[]): string {
   return variables
     .filter(({ name }) => name)
@@ -58,12 +42,6 @@ export function generateVariableDeclarations(variables: Variable[]): string {
     .join('\n')
 }
 
-/**
- * Generates the VU code for the k6 script
- * @param recording - The recording
- * @param rules - The set of rules to apply to the recording
- * @returns {string}
- */
 export function generateVUCode(
   recording: GroupedProxyData,
   rules: TestRule[],
@@ -101,12 +79,6 @@ export function generateVUCode(
   ].join('\n')
 }
 
-/**
- * Generates request snippets for a single group
- * @param recording - The recording of a single group
- * @param rules - The set of rules to apply to the recording
- * @returns {string}
- */
 export function generateRequestSnippets(
   recording: ProxyData[],
   rules: TestRule[],
@@ -129,12 +101,6 @@ export function generateRequestSnippets(
   }, '')
 }
 
-/**
- *
- * @param groupName - The name of the group
- * @param requestSnippets - The request snippets
- * @returns {string}
- */
 export function generateGroupSnippet(
   groupName: string,
   requestSnippets: string,
@@ -146,11 +112,6 @@ export function generateGroupSnippet(
   });`
 }
 
-/**
- * Generates a single HTTP request snippet
- * @param {RequestSnippetSchema} requestSnippetSchema
- * @returns {string}
- */
 export function generateSingleRequestSnippet(
   requestSnippetSchema: RequestSnippetSchema
 ): string {
