@@ -2,37 +2,37 @@ import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
 import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { applyRule } from '@/rules/rules'
 import { generateSequentialInt } from '@/rules/utils'
+import { GeneratorFileData } from '@/types/generator'
+import { Variable } from '@/types/testData'
+import { TestOptions, ThinkTime } from '@/types/testOptions'
+import { exhaustive } from '@/utils/typescript'
 
 interface GenerateScriptParams {
   recording: GroupedProxyData
-  rules: TestRule[]
-  variables?: Record<string, string>
+  generator: GeneratorFileData
 }
 
 /**
  * Generates a k6 script from the recording and rules
- * @param {GenerateScriptParams} params - The parameters object
- * @param {GroupedProxyData} params.recording - The recording
- * @param {TestRule[]} params.rules - The set of rules to apply to the recording
- * @param {Record<string, string>} [params.variables] - The variables to include in the script
+ * @param params - The parameters object
+ * @param params.recording - The group recording
+ * @param params.generator - The generator object
  * @returns {string}
  */
 export function generateScript({
   recording,
-  rules,
-  variables = {},
+  generator,
 }: GenerateScriptParams): string {
   return `
     import { group, sleep } from 'k6'
     import http from 'k6/http'
 
-    export const options = ${generateOptions()}
+    export const options = ${generateOptions(generator.options)}
 
-    ${generateVariableDeclarations(variables)}
+    ${generateVariableDeclarations(generator.testData.variables)}
 
     export default function() {
-      let resp
-      ${generateVUCode(recording, rules)}
+      ${generateVUCode(recording, generator.rules, generator.options.thinkTime)}
     }
   `
 }
@@ -41,20 +41,20 @@ export function generateScript({
  * Generates the options object for the k6 script
  * @returns {string}
  */
-export function generateOptions(): string {
+export function generateOptions(options: TestOptions): string {
+  console.log(options)
   return '{}'
 }
 
 /**
  * Generates declarations for test variables
- * @param {Record<string, string>} variables - The variables to include in the script
+ * @param variables - The variables to include in the script
  * @returns {string}
  */
-export function generateVariableDeclarations(
-  variables: Record<string, string>
-): string {
-  return Object.entries(variables)
-    .map(([key, value]) => `const ${key} = "${value}"`)
+export function generateVariableDeclarations(variables: Variable[]): string {
+  return variables
+    .filter(({ name }) => name)
+    .map(({ name, value }) => `const ${name} = "${value}"`)
     .join('\n')
 }
 
@@ -66,7 +66,8 @@ export function generateVariableDeclarations(
  */
 export function generateVUCode(
   recording: GroupedProxyData,
-  rules: TestRule[]
+  rules: TestRule[],
+  thinkTime: ThinkTime
 ): string {
   const groups = Object.entries(recording)
   const isSingleGroup = groups.length === 1
@@ -79,15 +80,25 @@ export function generateVUCode(
         recording,
         rules,
         correlationStateMap,
-        sequentialIdGenerator
+        sequentialIdGenerator,
+        thinkTime
       )
+
       return isSingleGroup
         ? requestSnippets
-        : generateGroupSnippet(groupName, requestSnippets)
+        : generateGroupSnippet(groupName, requestSnippets, thinkTime)
     })
     .join(`\n`)
 
-  return [groupSnippets, 'sleep(1)'].join('\n')
+  return [
+    `
+    let resp
+    let match
+    let regex
+    `,
+    groupSnippets,
+    thinkTime.sleepType === 'iterations' ? generateSleep(thinkTime.timing) : '',
+  ].join('\n')
 }
 
 /**
@@ -100,7 +111,8 @@ export function generateRequestSnippets(
   recording: ProxyData[],
   rules: TestRule[],
   correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: Generator<number>,
+  thinkTime: ThinkTime
 ): string {
   return recording.reduce((acc, data) => {
     const requestSnippetSchema = rules.reduce<RequestSnippetSchema>(
@@ -111,7 +123,9 @@ export function generateRequestSnippets(
 
     const requestSnippet = generateSingleRequestSnippet(requestSnippetSchema)
 
-    return `${acc}\n${requestSnippet}`
+    return `${acc}
+      ${requestSnippet}
+      ${thinkTime.sleepType === 'requests' ? `${generateSleep(thinkTime.timing)}` : ''}`
   }, '')
 }
 
@@ -123,9 +137,13 @@ export function generateRequestSnippets(
  */
 export function generateGroupSnippet(
   groupName: string,
-  requestSnippets: string
+  requestSnippets: string,
+  thinkTime: ThinkTime
 ): string {
-  return `group('${groupName}', function() {${requestSnippets}});`
+  return `group('${groupName}', function() {
+    ${requestSnippets}
+    ${thinkTime.sleepType === 'groups' ? `${generateSleep(thinkTime.timing)}` : ''}
+  });`
 }
 
 /**
@@ -162,4 +180,15 @@ export function generateSingleRequestSnippet(
   `
 
   return [...before, main, ...after].join('\n')
+}
+
+function generateSleep(timing: ThinkTime['timing']): string {
+  switch (timing.type) {
+    case 'fixed':
+      return `sleep(${timing.value})`
+    case 'range':
+      return `sleep(Math.random() * (${timing.value.max} - ${timing.value.min}) + ${timing.value.min})`
+    default:
+      return exhaustive(timing)
+  }
 }

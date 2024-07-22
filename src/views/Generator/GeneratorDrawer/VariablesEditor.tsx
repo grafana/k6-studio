@@ -8,7 +8,10 @@ export function VariablesEditor() {
   const setVariables = useGeneratorStore((store) => store.setVariables)
 
   function handleAddVariable() {
-    setVariables([...variables, { name: '', value: '' }])
+    setVariables([
+      ...variables,
+      { name: `variable_${variables.length}`, value: '' },
+    ])
   }
 
   function handleRemoveVariable(index: number) {

@@ -1,5 +1,3 @@
-import { ProxyData } from '@/types'
-import { TestRule } from '@/types/rules'
 import { generateScript } from '@/codegen'
 import { format } from 'prettier/standalone'
 import * as prettierPluginBabel from 'prettier/plugins/babel'
@@ -10,14 +8,69 @@ import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { GeneratorFileData } from '@/types/generator'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { TestOptions } from '@/types/testOptions'
-import { TestData } from '@/types/testData'
 import { harToProxyData } from '@/utils/harToProxyData'
+import { GeneratorState } from '@/hooks/useGeneratorStore/types'
 
-export async function exportScript(recording: ProxyData[], rules: TestRule[]) {
-  const groupedProxyData = groupProxyData(recording)
-  const script = generateScript({
-    recording: groupedProxyData,
+function storeToGeneratorFileData({
+  name,
+  executor,
+  startTime,
+  gracefulStop,
+  gracefulRampDown,
+  stages,
+  startVUs,
+  vus,
+  iterations,
+  maxDuration,
+  sleepType,
+  timing,
+  variables,
+  recordingPath,
+  rules,
+  allowList,
+}: GeneratorState): GeneratorFileData {
+  const loadProfile: TestOptions['loadProfile'] =
+    executor === 'ramping-vus'
+      ? {
+          executor,
+          startTime,
+          gracefulStop,
+          stages,
+          startVUs,
+          gracefulRampDown,
+        }
+      : {
+          executor,
+          startTime,
+          gracefulStop,
+          vus,
+          iterations,
+          maxDuration,
+        }
+
+  return {
+    name,
+    version: '0',
+    recordingPath,
+    options: {
+      loadProfile,
+      thinkTime: {
+        sleepType,
+        timing,
+      },
+    },
+    testData: { variables },
     rules,
+    allowlist: allowList,
+  }
+}
+
+export async function exportScript() {
+  const generatorState = useGeneratorStore.getState()
+  const groupedProxyData = groupProxyData(generatorState.requests)
+  const script = generateScript({
+    generator: storeToGeneratorFileData(generatorState),
+    recording: groupedProxyData,
   })
   const prettifiedScript = await format(script, {
     parser: 'babel',
@@ -32,37 +85,7 @@ export function saveScript(script: string) {
 }
 
 export const saveGenerator = () => {
-  const generatorState = useGeneratorStore.getState()
-  const options: TestOptions = {
-    loadProfile: {
-      executor: generatorState.executor,
-      startTime: generatorState.startTime,
-      gracefulStop: generatorState.gracefulStop,
-      stages: generatorState.stages,
-      gracefulRampDown: generatorState.gracefulRampDown,
-      startVUs: generatorState.startVUs,
-      iterations: generatorState.iterations,
-      maxDuration: generatorState.maxDuration,
-      vus: generatorState.vus,
-    },
-    thinkTime: {
-      sleepType: generatorState.sleepType,
-      timing: generatorState.timing,
-    },
-  }
-  const generatorTestData: TestData = {
-    variables: generatorState.variables,
-  }
-
-  const generatorFile: GeneratorFileData = {
-    name: generatorState.name,
-    version: '0',
-    recordingPath: generatorState.recordingPath,
-    options: options,
-    testData: generatorTestData,
-    rules: generatorState.rules,
-    allowlist: generatorState.allowList,
-  }
+  const generatorFile = storeToGeneratorFileData(useGeneratorStore.getState())
 
   window.studio.generator.saveGenerator(JSON.stringify(generatorFile, null, 2))
 }

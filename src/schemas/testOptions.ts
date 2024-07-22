@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { ExecutorType } from '@/constants/generator'
 
 export const SleepTypeSchema = z.enum(['groups', 'requests', 'iterations'])
 
@@ -27,13 +26,13 @@ export const ThinkTimeSchema = z.object({
 })
 
 export const CommonOptionsSchema = z.object({
-  executor: z.nativeEnum(ExecutorType),
+  executor: z.enum(['shared-iterations', 'ramping-vus']),
   startTime: z.string().optional(),
   gracefulStop: z.string().optional(),
 })
 
 export const SharedIterationsOptionsSchema = CommonOptionsSchema.extend({
-  executor: z.literal(ExecutorType.SharedIterations),
+  executor: z.literal('shared-iterations'),
   vus: z.union([z.number(), z.literal('')]).optional(),
   iterations: z.number().optional(),
   maxDuration: z.string().optional(),
@@ -46,7 +45,7 @@ export const RampingStageSchema = z.object({
 })
 
 export const RampingVUsOptionsSchema = CommonOptionsSchema.extend({
-  executor: z.literal(ExecutorType.RampingVUs),
+  executor: z.literal('ramping-vus'),
   stages: RampingStageSchema.array(),
   startVUs: z.union([z.number(), z.literal('')]).optional(),
   gracefulRampDown: z.string().optional(),

@@ -2,12 +2,15 @@ import { Flex, Select, Tooltip } from '@radix-ui/themes'
 import * as Label from '@radix-ui/react-label'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 
-import { ExecutorType } from '@/constants/generator'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
 
-const EXECUTOR_LABEL_MAP = {
-  [ExecutorType.RampingVUs]: 'Ramping VUs',
-  [ExecutorType.SharedIterations]: 'Shared iterations',
+const EXECUTOR_LABEL_MAP: Record<
+  LoadProfileExecutorOptions['executor'],
+  string
+> = {
+  'ramping-vus': 'Ramping VUs',
+  'shared-iterations': 'Shared iterations',
 }
 
 const options = Object.entries(EXECUTOR_LABEL_MAP).map(([value, label]) => ({
@@ -16,10 +19,10 @@ const options = Object.entries(EXECUTOR_LABEL_MAP).map(([value, label]) => ({
 }))
 
 interface ExecutorProps {
-  value: ExecutorType
+  value: LoadProfileExecutorOptions['executor']
 }
 
-export function Executor({ value = ExecutorType.RampingVUs }: ExecutorProps) {
+export function Executor({ value = 'ramping-vus' }: ExecutorProps) {
   const { setExecutor } = useGeneratorStore()
 
   return (
@@ -34,7 +37,7 @@ export function Executor({ value = ExecutorType.RampingVUs }: ExecutorProps) {
 
       <Select.Root
         size="2"
-        defaultValue={ExecutorType.RampingVUs}
+        defaultValue={'ramping-vus'}
         value={value}
         onValueChange={setExecutor}
       >

@@ -202,12 +202,12 @@ const extractCorrelationBeginEndBody = (
   }
 
   const correlationExtractionSnippet = `
-var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-var match = resp.body.match(regex)
-let correl_${uniqueId}
-if (match) {
-  correl_${uniqueId} = match[1]
-}`
+    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    match = resp.body.match(regex)
+    let correl_${uniqueId}
+    if (match) {
+      correl_${uniqueId} = match[1]
+    }`
 
   return {
     extractedValue: match[1],
@@ -244,12 +244,12 @@ const extractCorrelationBeginEndHeaders = (
       }
       // TODO: replace regex with findBetween from k6-utils once we have imports
       const correlationExtractionSnippet = `
-var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-var match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
-let correl_${uniqueId}
-if (match) {
-correl_${uniqueId} = match[1]
-}`
+        regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+        match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
+        let correl_${uniqueId}
+        if (match) {
+          correl_${uniqueId} = match[1]
+        }`
 
       return {
         extractedValue: match[1],
@@ -295,12 +295,12 @@ const extractCorrelationBeginEndUrl = (
   }
 
   const correlationExtractionSnippet = `
-var regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-var match = resp.url.match(regex)
-let correl_${uniqueId}
-if (match) {
-  correl_${uniqueId} = match[1]
-}`
+    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    match = resp.url.match(regex)
+    let correl_${uniqueId}
+    if (match) {
+      correl_${uniqueId} = match[1]
+    }`
 
   return {
     extractedValue: match[1],
@@ -341,12 +341,12 @@ const extractCorrelationRegexBody = (
   }
 
   const correlationExtractionSnippet = `
-var regex = new RegExp('${rule.extractor.selector.regex}')
-var match = resp.body.match(regex)
-let correl_${uniqueId}
-if (match) {
-  correl_${uniqueId} = match[1]
-}`
+    regex = new RegExp('${rule.extractor.selector.regex}')
+    match = resp.body.match(regex)
+    let correl_${uniqueId}
+    if (match) {
+      correl_${uniqueId} = match[1]
+    }`
 
   return {
     extractedValue: match[1],
@@ -382,12 +382,12 @@ const extractCorrelationRegexHeaders = (
       }
 
       const correlationExtractionSnippet = `
-var regex = new RegExp('${rule.extractor.selector.regex}')
-var match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
-let correl_${uniqueId}
-if (match) {
-correl_${uniqueId} = match[1]
-}`
+        regex = new RegExp('${rule.extractor.selector.regex}')
+        match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
+        let correl_${uniqueId}
+        if (match) {
+          correl_${uniqueId} = match[1]
+        }`
 
       return {
         extractedValue: match[1],
@@ -432,12 +432,13 @@ const extractCorrelationRegexUrl = (
   }
 
   const correlationExtractionSnippet = `
-var regex = new RegExp('${rule.extractor.selector.regex}')
-var match = resp.url.match(regex)
-let correl_${uniqueId}
-if (match) {
-  correl_${uniqueId} = match[1]
-}`
+    regex = new RegExp('${rule.extractor.selector.regex}')
+    match = resp.url.match(regex)
+    let correl_${uniqueId}
+
+    if (match) {
+      correl_${uniqueId} = match[1]
+    }`
 
   return {
     extractedValue: match[1],

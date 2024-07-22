@@ -8,6 +8,7 @@ import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { generateSequentialInt } from '@/rules/utils'
 import { ProxyData } from '@/types'
 import { correlationRecording } from '@/test/fixtures/correlationRecording'
+import { ThinkTime } from '@/types/testOptions'
 
 describe('Code generation', () => {
   describe('generateScript', () => {
@@ -20,6 +21,8 @@ describe('Code generation', () => {
 
       export default function() {
         let resp
+        let match
+        let regex
         sleep(1)
       }
       `
@@ -27,8 +30,32 @@ describe('Code generation', () => {
       expect(
         generateScript({
           recording: {},
-          rules: [],
-          variables: {},
+          generator: {
+            name: 'test',
+            version: '0',
+            recordingPath: 'test',
+            options: {
+              loadProfile: {
+                executor: 'shared-iterations',
+                startTime: '0',
+                vus: 1,
+                iterations: 1,
+                maxDuration: '1',
+              },
+              thinkTime: {
+                sleepType: 'iterations',
+                timing: {
+                  type: 'fixed',
+                  value: 1,
+                },
+              },
+            },
+            testData: {
+              variables: [],
+            },
+            rules: [],
+            allowlist: [],
+          },
         }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
@@ -36,9 +63,12 @@ describe('Code generation', () => {
 
   describe('generateVariableDeclarations', () => {
     it('should generate variable declarations', () => {
-      const variables = {
-        test: 'test',
-      }
+      const variables = [
+        {
+          name: 'test',
+          value: 'test',
+        },
+      ]
 
       const expectedResult = `
         const test = "test"
@@ -76,6 +106,13 @@ describe('Code generation', () => {
       const rules: TestRule[] = []
       const correlationStateMap: CorrelationStateMap = {}
       const sequentialIdGenerator = generateSequentialInt()
+      const thinkTime: ThinkTime = {
+        sleepType: 'iterations',
+        timing: {
+          type: 'fixed',
+          value: 1,
+        },
+      }
 
       const expectedResult = `
         resp = http.request('GET', \`/api/v1/users\`, null, {})
@@ -86,7 +123,8 @@ describe('Code generation', () => {
           recording,
           rules,
           correlationStateMap,
-          sequentialIdGenerator
+          sequentialIdGenerator,
+          thinkTime
         ).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
@@ -108,6 +146,13 @@ describe('Code generation', () => {
       ]
       const correlationStateMap: CorrelationStateMap = {}
       const sequentialIdGenerator = generateSequentialInt()
+      const thinkTime: ThinkTime = {
+        sleepType: 'iterations',
+        timing: {
+          type: 'fixed',
+          value: 1,
+        },
+      }
 
       const expectedResult = `
         resp = http.request('POST', \`http://test.k6.io/api/v1/foo\`, null, {})
@@ -126,7 +171,8 @@ describe('Code generation', () => {
           correlationRecording,
           rules,
           correlationStateMap,
-          sequentialIdGenerator
+          sequentialIdGenerator,
+          thinkTime
         ).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
