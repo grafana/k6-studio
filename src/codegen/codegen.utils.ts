@@ -1,27 +1,20 @@
-export function stringifyObject(obj: object): string {
-  const properties = Object.entries(obj)
-    .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => `${key}: ${stringifyValue(value)}`)
-    .join(',\n')
-
-  return `{${properties}}`
-}
-
-export function stringifyArray(arr: unknown[]): string {
-  return `[${arr.map(stringifyValue).join(', ')}]`
-}
-
-export function stringifyValue(value: unknown): string {
+// TODO: find a well-maintained library for this
+export function stringify(value: unknown): string {
   if (typeof value === 'string') {
     return `'${value}'`
   }
 
   if (Array.isArray(value)) {
-    return stringifyArray(value)
+    return `[${value.map(stringify).join(', ')}]`
   }
 
   if (typeof value === 'object' && value !== null) {
-    return stringifyObject(value)
+    const properties = Object.entries(value)
+      .filter(([, value]) => value !== undefined)
+      .map(([key, value]) => `${key}: ${stringify(value)}`)
+      .join(',\n')
+
+    return `{${properties}}`
   }
 
   return `${value}`
