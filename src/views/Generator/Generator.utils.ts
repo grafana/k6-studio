@@ -4,12 +4,12 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 // eslint-disable-next-line import/namespace
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { TestOptions } from '@/types/testOptions'
 import { harToProxyData } from '@/utils/harToProxyData'
-import { GeneratorState } from '@/hooks/useGeneratorStore/types'
+import { GeneratorState } from '@/store/generator/types'
 
 function storeToGeneratorFileData({
   name,

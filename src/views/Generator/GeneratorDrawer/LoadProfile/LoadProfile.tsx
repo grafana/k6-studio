@@ -1,6 +1,6 @@
 import { Container, Flex, Heading } from '@radix-ui/themes'
 
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { ExecutorOptions } from './components/ExecutorOptions'
 import { Executor } from './components/Executor'
 import { StartTime } from './components/StartTime'

@@ -1,5 +1,5 @@
 import { COMMON_DEFAULTS } from '../constants'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { DurationInput } from '@/components/DurationInput'
 
 interface GracefulStopProps {

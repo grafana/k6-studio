@@ -15,7 +15,7 @@ import {
   useGeneratorStore,
   selectHasRecording,
   selectFilteredRequests,
-} from '@/hooks/useGeneratorStore'
+} from '@/store/generator'
 import { TestRuleContainer } from './TestRuleContainer'
 import { AllowList } from './AllowList/AllowList'
 import { RecordingSelector } from './RecordingSelector'

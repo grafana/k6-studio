@@ -1,4 +1,4 @@
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { Flex, ScrollArea } from '@radix-ui/themes'
 import { TestRuleItem } from './TestRule'
 import { NewRuleMenu } from '../NewRuleMenu'

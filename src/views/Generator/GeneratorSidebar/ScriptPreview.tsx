@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { exportScript } from '../Generator.utils'
-import {
-  selectFilteredRequests,
-  useGeneratorStore,
-} from '@/hooks/useGeneratorStore'
+import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import { CodeEditor } from '@/components/CodeEditor'
 
 export function ScriptPreview() {

@@ -2,7 +2,7 @@ import { PageHeading } from '@/components/Layout/PageHeading'
 import { LogView } from '@/components/LogView'
 import { WebLogView } from '@/components/WebLogView'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useRecorderStore } from '@/hooks/useRecorderStore'
+import { useRecorderStore } from '@/store/recorder'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { K6Log } from '@/types'
 import { groupProxyData } from '@/utils/groups'
@@ -13,9 +13,9 @@ export function Validator() {
   const [scriptPath, setScriptPath] = useState<string>()
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
-  useListenProxyData()
   const proxyData = useRecorderStore((store) => store.proxyData)
   const resetProxyData = useRecorderStore((store) => store.resetProxyData)
+  useListenProxyData()
   useSetWindowTitle('Validator')
 
   const groupedProxyData = groupProxyData(proxyData)

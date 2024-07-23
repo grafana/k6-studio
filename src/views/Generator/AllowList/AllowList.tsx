@@ -1,4 +1,4 @@
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { ProxyData } from '@/types'
 import { Button } from '@radix-ui/themes'
 import { uniq } from 'lodash-es'

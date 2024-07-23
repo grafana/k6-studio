@@ -7,7 +7,7 @@ import {
   selectHasRecording,
   selectSelectedRule,
   useGeneratorStore,
-} from '@/hooks/useGeneratorStore'
+} from '@/store/generator'
 import { useEffect, useState } from 'react'
 import { RulePreview } from '../RulePreview/RulePreview'
 

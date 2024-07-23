@@ -1,4 +1,4 @@
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { CaretDownIcon } from '@radix-ui/react-icons'
 import { Button, Flex, IconButton, Popover, Text } from '@radix-ui/themes'

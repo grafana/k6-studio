@@ -1,7 +1,7 @@
 import { ChangeEvent } from 'react'
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import { Box, Button, IconButton, Table, TextField } from '@radix-ui/themes'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 
 export function VariablesEditor() {
   const variables = useGeneratorStore((store) => store.variables)
