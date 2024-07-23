@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { useRecorderStore } from './useRecorderStore'
+import { useRecorderStore } from '@/store/recorder/useRecorderStore'
 
 export function useListenProxyData(group?: string) {
   const { resetProxyData, addRequest } = useRecorderStore()

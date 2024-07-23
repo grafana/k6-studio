@@ -2,7 +2,7 @@ import { ChangeEvent } from 'react'
 import { TrashIcon } from '@radix-ui/react-icons'
 import { IconButton, Table, TextField } from '@radix-ui/themes'
 
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 
 interface StageProps {
   index: number

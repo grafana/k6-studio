@@ -1,4 +1,4 @@
-import { GeneratorState } from '@/hooks/useGeneratorStore/types'
+import { GeneratorState } from '@/store/generator/types'
 
 import { RampingVUs } from './RampingVUs'
 import { SharedIterations } from './SharedIterations/SharedIterations'

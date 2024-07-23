@@ -1,9 +1,6 @@
 import { Box, Callout, Code, Heading } from '@radix-ui/themes'
 import { TestRule, CorrelationRule, CorrelationStateMap } from '@/types/rules'
-import {
-  selectFilteredRequests,
-  useGeneratorStore,
-} from '@/hooks/useGeneratorStore'
+import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import { applyRule } from '@/rules/rules'
 import { ProxyData, RequestSnippetSchema, Request } from '@/types'
 import { generateSequentialInt } from '@/rules/utils'

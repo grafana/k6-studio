@@ -7,21 +7,20 @@ import { DebugControls } from './DebugControls'
 import { RecordingControls } from './RecordingButton'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { PageHeading } from '@/components/Layout/PageHeading'
-import { useRecorderStore } from '@/hooks/useRecorderStore'
-import { groupProxyData } from '@/utils/groups'
+import { useRecorderStore } from '@/store/recorder'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
+import { selectGroupedProxyData } from '@/store/recorder/selectors'
 
 export function Recorder() {
-  const { proxyData } = useRecorderStore()
   const [group, setGroup] = useState<string>('Default')
   useListenProxyData(group)
-  const groupedProxyData = groupProxyData(proxyData)
+  const groupedProxyData = useRecorderStore(selectGroupedProxyData)
   useSetWindowTitle('Recorder')
 
   return (
     <>
       <PageHeading text="Recorder">
-        <RecordingControls requests={proxyData} />
+        <RecordingControls />
       </PageHeading>
       <Flex justify="between" wrap="wrap" gap="2">
         <GroupForm onChange={setGroup} value={group} />

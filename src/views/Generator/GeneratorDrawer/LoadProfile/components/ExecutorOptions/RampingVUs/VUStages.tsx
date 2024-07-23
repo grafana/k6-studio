@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Table } from '@radix-ui/themes'
 
 import { Stage } from './Stage'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { RampingStage } from '@/types/testOptions'
 
 interface VUStagesProps {

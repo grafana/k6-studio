@@ -1,7 +1,4 @@
-import {
-  selectSelectedRule,
-  useGeneratorStore,
-} from '@/hooks/useGeneratorStore'
+import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
 import { exhaustive } from '@/utils/typescript'
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'

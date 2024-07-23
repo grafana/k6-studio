@@ -11,7 +11,7 @@ import {
 import { LoadProfile } from './LoadProfile'
 import { VariablesEditor } from './VariablesEditor'
 import { ThinkTime } from './ThinkTime'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { RuleEditor } from './RuleEditor'
 
 export function GeneratorDrawer() {
