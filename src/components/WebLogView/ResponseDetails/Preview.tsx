@@ -9,7 +9,13 @@ interface PreviewProps {
 
 export function Preview({ content, contentType, format }: PreviewProps) {
   if (format === 'html') {
-    return <div dangerouslySetInnerHTML={{ __html: content }} />
+    return (
+      <iframe
+        sandbox="allow-same-origin"
+        srcDoc={content}
+        style={{ width: '100%', height: '100%' }}
+      />
+    )
   }
 
   if (format === 'audio') {
