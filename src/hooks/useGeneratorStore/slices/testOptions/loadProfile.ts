@@ -58,7 +58,7 @@ type RampingStore = Omit<RampingVUsOptions, 'executor'> & RampingActions
 
 const createRampingSlice: ImmerStateCreator<RampingStore> = (set) => ({
   gracefulRampDown: undefined,
-  stages: [],
+  stages: getInitialStages(),
   startVUs: undefined,
 
   setGracefulRampDown: (value) =>
@@ -125,9 +125,17 @@ export const createLoadProfileSlice: ImmerStateCreator<LoadProfileStore> = (
   ...createSharedIterationsSlice(...args),
 })
 
-function createStage() {
+// TODO: Add validation
+function createStage(
+  target: number | string = '',
+  duration = ''
+): RampingStage {
   return {
-    target: '',
-    duration: '',
+    target,
+    duration,
   }
+}
+
+function getInitialStages() {
+  return [createStage(20, '1m'), createStage(20, '3m30s'), createStage(0, '1m')]
 }
