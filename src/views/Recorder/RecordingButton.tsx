@@ -9,6 +9,7 @@ import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { ProxyData } from '@/types'
 import { useGeneratorStore } from '@/hooks/useGeneratorStore'
 import { groupProxyData } from '@/utils/groups'
+import { recordingToProxyData } from '@/utils/serializers/recording'
 
 export function RecordingControls({ requests }: { requests: ProxyData[] }) {
   const { isRecording, setIsRecording, resetProxyData } = useRecorderStore()
@@ -38,7 +39,8 @@ export function RecordingControls({ requests }: { requests: ProxyData[] }) {
   }
 
   function handleCreateTestGenerator() {
-    setRecording(requests, '', true)
+    const proxyData = recordingToProxyData(requests)
+    setRecording(proxyData, '', true)
     navigate('/generator')
   }
 
