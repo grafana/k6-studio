@@ -8,7 +8,6 @@ import {
   createTestOptionsSlice,
 } from './slices'
 import { createRecordingSlice } from './slices/recording'
-import { ExecutorType } from '@/constants/generator'
 import { exhaustive } from '@/utils/typescript'
 
 export const useGeneratorStore = create<GeneratorState>()(
@@ -42,12 +41,12 @@ export const useGeneratorStore = create<GeneratorState>()(
         state.startTime = loadProfile.startTime
         state.gracefulStop = loadProfile.gracefulStop
         switch (loadProfile.executor) {
-          case ExecutorType.RampingVUs:
+          case 'ramping-vus':
             state.stages = loadProfile.stages
             state.gracefulRampDown = loadProfile.gracefulRampDown
             state.startVUs = loadProfile.startVUs
             break
-          case ExecutorType.SharedIterations:
+          case 'shared-iterations':
             state.iterations = loadProfile.iterations
             state.maxDuration = loadProfile.maxDuration
             state.vus = loadProfile.vus

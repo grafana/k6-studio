@@ -14,11 +14,12 @@ export function ScriptPreview() {
 
   useEffect(() => {
     async function updatePreview() {
-      const script = await exportScript(filteredRequests, rules)
+      const script = await exportScript()
       setPreview(script)
     }
 
     updatePreview()
+    // TODO: implement a more reactive way to update the preview
   }, [filteredRequests, rules])
 
   return <CodeEditor readOnly value={preview} />

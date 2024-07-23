@@ -22,7 +22,6 @@ import { RecordingSelector } from './RecordingSelector'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 
 export function Generator() {
-  const rules = useGeneratorStore((store) => store.rules)
   const name = useGeneratorStore((store) => store.name)
   const resetRecording = useGeneratorStore((store) => store.resetRecording)
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
@@ -36,7 +35,7 @@ export function Generator() {
   }, [resetRecording])
 
   const handleExport = async () => {
-    const script = await exportScript(filteredRequests, rules)
+    const script = await exportScript()
 
     saveScript(script)
   }

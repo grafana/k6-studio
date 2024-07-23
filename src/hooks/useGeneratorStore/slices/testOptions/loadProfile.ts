@@ -1,5 +1,5 @@
-import { ExecutorType } from '@/constants/generator'
 import {
+  LoadProfileExecutorOptions,
   RampingStage,
   RampingVUsOptions,
   SharedIterationsOptions,
@@ -14,13 +14,13 @@ interface SharedIterationsState
 }
 
 interface CommonState {
-  executor: ExecutorType
+  executor: LoadProfileExecutorOptions['executor']
   gracefulStop: string | undefined
   startTime: string | undefined
 }
 
 interface CommonActions {
-  setExecutor: (value: ExecutorType) => void
+  setExecutor: (value: LoadProfileExecutorOptions['executor']) => void
   setGracefulStop: (value: string | undefined) => void
   setStartTime: (value: string | undefined) => void
 }
@@ -28,7 +28,7 @@ interface CommonActions {
 type CommonStore = CommonState & CommonActions
 
 const createCommonSlice: ImmerStateCreator<CommonStore> = (set) => ({
-  executor: ExecutorType.RampingVUs,
+  executor: 'ramping-vus',
   gracefulStop: undefined,
   startTime: undefined,
 

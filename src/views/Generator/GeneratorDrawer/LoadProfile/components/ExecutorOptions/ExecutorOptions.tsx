@@ -1,4 +1,3 @@
-import { ExecutorType } from '@/constants/generator'
 import { GeneratorState } from '@/hooks/useGeneratorStore/types'
 
 import { RampingVUs } from './RampingVUs'
@@ -6,7 +5,7 @@ import { SharedIterations } from './SharedIterations/SharedIterations'
 
 export function ExecutorOptions(options: GeneratorState) {
   switch (options.executor) {
-    case ExecutorType.RampingVUs:
+    case 'ramping-vus':
       return (
         <RampingVUs
           stages={options.stages}
@@ -14,7 +13,7 @@ export function ExecutorOptions(options: GeneratorState) {
           startVUs={options.startVUs}
         />
       )
-    case ExecutorType.SharedIterations:
+    case 'shared-iterations':
       return (
         <SharedIterations
           iterations={options.iterations}
