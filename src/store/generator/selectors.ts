@@ -1,4 +1,6 @@
+import { GeneratorFileData } from '@/types/generator'
 import type { GeneratorState } from './types'
+import { TestOptions } from '@/types/testOptions'
 
 export function selectSelectedRule(state: GeneratorState) {
   if (!state.selectedRuleId) {
@@ -23,4 +25,58 @@ export function selectFilteredRequests(state: GeneratorState) {
   return state.requests.filter((request) => {
     return state.allowList.includes(request.request.host)
   })
+}
+
+export function selectGeneratorData({
+  name,
+  executor,
+  startTime,
+  gracefulStop,
+  gracefulRampDown,
+  stages,
+  startVUs,
+  vus,
+  iterations,
+  maxDuration,
+  sleepType,
+  timing,
+  variables,
+  recordingPath,
+  rules,
+  allowList,
+}: GeneratorState): GeneratorFileData {
+  const loadProfile: TestOptions['loadProfile'] =
+    executor === 'ramping-vus'
+      ? {
+          executor,
+          startTime,
+          gracefulStop,
+          stages,
+          startVUs,
+          gracefulRampDown,
+        }
+      : {
+          executor,
+          startTime,
+          gracefulStop,
+          vus,
+          iterations,
+          maxDuration,
+        }
+
+  return {
+    name,
+    version: '0',
+    recordingPath,
+    options: {
+      loadProfile,
+      thinkTime: {
+        sleepType,
+        timing,
+      },
+    },
+    testData: { variables },
+    rules,
+    allowlist: allowList,
+  }
 }
