@@ -1,4 +1,7 @@
+import { GeneratorFileData } from '@/types/generator'
 import type { GeneratorState } from './types'
+import { TestOptions } from '@/types/testOptions'
+import { exhaustive } from '@/utils/typescript'
 
 export function selectSelectedRule(state: GeneratorState) {
   if (!state.selectedRuleId) {
@@ -23,4 +26,68 @@ export function selectFilteredRequests(state: GeneratorState) {
   return state.requests.filter((request) => {
     return state.allowList.includes(request.request.host)
   })
+}
+
+export function selectGeneratorData(state: GeneratorState): GeneratorFileData {
+  const loadProfile = selectLoadProfile(state)
+  const {
+    name,
+    sleepType,
+    timing,
+    variables,
+    recordingPath,
+    rules,
+    allowList,
+  } = state
+
+  return {
+    name,
+    version: '0',
+    recordingPath,
+    options: {
+      loadProfile,
+      thinkTime: {
+        sleepType,
+        timing,
+      },
+    },
+    testData: { variables },
+    rules,
+    allowlist: allowList,
+  }
+}
+
+function selectLoadProfile({
+  executor,
+  startTime,
+  gracefulStop,
+  stages,
+  startVUs,
+  gracefulRampDown,
+  vus,
+  iterations,
+  maxDuration,
+}: GeneratorState): TestOptions['loadProfile'] {
+  switch (executor) {
+    case 'ramping-vus':
+      return {
+        executor,
+        startTime,
+        gracefulStop,
+        stages,
+        startVUs,
+        gracefulRampDown,
+      }
+    case 'shared-iterations':
+      return {
+        executor,
+        startTime,
+        gracefulStop,
+        vus,
+        iterations,
+        maxDuration,
+      }
+    default:
+      return exhaustive(executor)
+  }
 }
