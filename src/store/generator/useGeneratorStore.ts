@@ -59,7 +59,7 @@ export const useGeneratorStore = create<GeneratorState>()(
         // recording
         state.requests = recording
         state.recordingPath = recordingPath
-        state.showAllowListDialog = false
+        state.showAllowlistDialog = false
         state.allowlist = allowlist
         // rules
         state.rules = rules

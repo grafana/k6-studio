@@ -12,18 +12,18 @@ import {
 import { isEqual } from 'lodash-es'
 import { useState } from 'react'
 
-export function AllowListDialog({
+export function AllowlistDialog({
   open,
   onOpenChange,
   hosts,
   allowlist,
-  onAllowListChange,
+  onAllowlistChange,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   hosts: string[]
   allowlist: string[]
-  onAllowListChange: (allowlist: string[]) => void
+  onAllowlistChange: (allowlist: string[]) => void
 }) {
   const [filter, setFilter] = useState('')
   const [selectedHosts, setSelectedHosts] = useState(allowlist)
@@ -39,7 +39,7 @@ export function AllowListDialog({
   }
 
   function handleSave() {
-    onAllowListChange(selectedHosts)
+    onAllowlistChange(selectedHosts)
   }
 
   return (
