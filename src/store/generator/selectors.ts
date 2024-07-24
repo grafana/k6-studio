@@ -1,6 +1,7 @@
 import { GeneratorFileData } from '@/types/generator'
 import type { GeneratorState } from './types'
 import { TestOptions } from '@/types/testOptions'
+import { exhaustive } from '@/utils/typescript'
 
 export function selectSelectedRule(state: GeneratorState) {
   if (!state.selectedRuleId) {
@@ -27,42 +28,17 @@ export function selectFilteredRequests(state: GeneratorState) {
   })
 }
 
-export function selectGeneratorData({
-  name,
-  executor,
-  startTime,
-  gracefulStop,
-  gracefulRampDown,
-  stages,
-  startVUs,
-  vus,
-  iterations,
-  maxDuration,
-  sleepType,
-  timing,
-  variables,
-  recordingPath,
-  rules,
-  allowList,
-}: GeneratorState): GeneratorFileData {
-  const loadProfile: TestOptions['loadProfile'] =
-    executor === 'ramping-vus'
-      ? {
-          executor,
-          startTime,
-          gracefulStop,
-          stages,
-          startVUs,
-          gracefulRampDown,
-        }
-      : {
-          executor,
-          startTime,
-          gracefulStop,
-          vus,
-          iterations,
-          maxDuration,
-        }
+export function selectGeneratorData(state: GeneratorState): GeneratorFileData {
+  const loadProfile = selectLoadProfile(state)
+  const {
+    name,
+    sleepType,
+    timing,
+    variables,
+    recordingPath,
+    rules,
+    allowList,
+  } = state
 
   return {
     name,
@@ -78,5 +54,40 @@ export function selectGeneratorData({
     testData: { variables },
     rules,
     allowlist: allowList,
+  }
+}
+
+function selectLoadProfile({
+  executor,
+  startTime,
+  gracefulStop,
+  stages,
+  startVUs,
+  gracefulRampDown,
+  vus,
+  iterations,
+  maxDuration,
+}: GeneratorState): TestOptions['loadProfile'] {
+  switch (executor) {
+    case 'ramping-vus':
+      return {
+        executor,
+        startTime,
+        gracefulStop,
+        stages,
+        startVUs,
+        gracefulRampDown,
+      }
+    case 'shared-iterations':
+      return {
+        executor,
+        startTime,
+        gracefulStop,
+        vus,
+        iterations,
+        maxDuration,
+      }
+    default:
+      return exhaustive(executor)
   }
 }
