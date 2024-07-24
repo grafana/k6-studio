@@ -34,7 +34,7 @@ export function Generator() {
       <PageHeading text="Generator">
         <RecordingSelector />
         <AllowList />
-        {hasRecording && <Button onClick={saveGenerator}>Save</Button>}
+        <Button onClick={saveGenerator}>Save</Button>
         <Button onClick={loadGenerator}>Load</Button>
         {hasRecording && <Button onClick={exportScript}>Export script</Button>}
       </PageHeading>

@@ -16,17 +16,17 @@ export function AllowListDialog({
   open,
   onOpenChange,
   hosts,
-  allowList,
+  allowlist,
   onAllowListChange,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   hosts: string[]
-  allowList: string[]
-  onAllowListChange: (allowList: string[]) => void
+  allowlist: string[]
+  onAllowListChange: (allowlist: string[]) => void
 }) {
   const [filter, setFilter] = useState('')
-  const [selectedHosts, setSelectedHosts] = useState(allowList)
+  const [selectedHosts, setSelectedHosts] = useState(allowlist)
 
   const filteredHosts = hosts.filter((host) => host.includes(filter))
 

@@ -6,7 +6,7 @@ import { AllowListDialog } from './AllowListDialog'
 
 export function AllowList() {
   const requests = useGeneratorStore((store) => store.requests)
-  const allowList = useGeneratorStore((store) => store.allowList)
+  const allowlist = useGeneratorStore((store) => store.allowlist)
   const setAllowList = useGeneratorStore((store) => store.setAllowList)
   const showAllowListDialog = useGeneratorStore(
     (store) => store.showAllowListDialog
@@ -21,7 +21,7 @@ export function AllowList() {
     <>
       {requests.length > 0 && (
         <Button onClick={() => setShowAllowListDialog(true)}>
-          Allowed hosts [{allowList.length}/{hosts.length}]
+          Allowed hosts [{allowlist.length}/{hosts.length}]
         </Button>
       )}
       {/* Radix does not unmount dialog on close, this is need to clear local state */}
@@ -30,7 +30,7 @@ export function AllowList() {
           open={showAllowListDialog}
           onOpenChange={setShowAllowListDialog}
           hosts={hosts}
-          allowList={allowList}
+          allowlist={allowlist}
           onAllowListChange={setAllowList}
         />
       )}

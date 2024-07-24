@@ -4,7 +4,7 @@ import { ImmerStateCreator } from '@/utils/typescript'
 interface State {
   requests: ProxyData[]
   recordingPath: string
-  allowList: string[]
+  allowlist: string[]
   showAllowListDialog: boolean
 }
 
@@ -26,7 +26,7 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
 ) => ({
   requests: [],
   recordingPath: '',
-  allowList: [],
+  allowlist: [],
   showAllowListDialog: false,
 
   setRecording: (
@@ -36,19 +36,19 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   ) =>
     set((state) => {
       state.requests = requests
-      state.allowList = []
+      state.allowlist = []
       state.recordingPath = path
       state.showAllowListDialog = showAllowListDialog
     }),
   resetRecording: () =>
     set((state) => {
       state.requests = []
-      state.allowList = []
+      state.allowlist = []
       state.recordingPath = ''
     }),
   setAllowList: (value) =>
     set((state) => {
-      state.allowList = value
+      state.allowlist = value
     }),
   setShowAllowListDialog: (value) =>
     set((state) => {
