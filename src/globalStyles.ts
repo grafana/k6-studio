@@ -6,7 +6,6 @@ export const globalStyles = css`
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
       Helvetica, Arial, sans-serif;
-    word-break: break-all;
     margin: 0;
   }
 
