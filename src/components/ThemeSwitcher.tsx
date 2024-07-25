@@ -6,11 +6,11 @@ export function ThemeSwitcher() {
   const theme = useTheme()
 
   const handleClick = () => {
-    window.studio.settings.toggleTheme()
+    window.studio.ui.toggleTheme()
   }
 
   return (
-    <IconButton onClick={handleClick} variant="soft" aria-label="Change theme">
+    <IconButton onClick={handleClick} variant="ghost" aria-label="Change theme">
       {theme === 'light' ? <SunIcon /> : <MoonIcon />}
     </IconButton>
   )

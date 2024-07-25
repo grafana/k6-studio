@@ -27,6 +27,7 @@ export function useScriptPreview() {
         const script = await generateScriptPreview(generator, groupedRequests)
         setPreview(script)
       } catch (e) {
+        console.error(e)
         setError(true)
       }
     }, 100)

@@ -1,13 +1,13 @@
 import { Box, Flex } from '@radix-ui/themes'
+import { css } from '@emotion/react'
 import { Allotment } from 'allotment'
 import { Outlet } from 'react-router-dom'
 
 import { useDrawer } from '@/hooks/useDrawer'
 import { Drawer } from '@/components/Drawer'
-import { css } from '@emotion/react'
+import { Sidebar } from './Sidebar'
 
 export function Layout() {
-  const leftDrawer = useDrawer('left')
   const rightDrawer = useDrawer('right')
   const bottomDrawer = useDrawer('bottom')
 
@@ -22,15 +22,10 @@ export function Layout() {
       `}
     >
       <Allotment>
-        {leftDrawer.isOpen && (
-          <Allotment.Pane
-            minSize={200}
-            preferredSize={400}
-            visible={leftDrawer.isOpen}
-          >
-            <Drawer close={leftDrawer.close}>{leftDrawer.content}</Drawer>
-          </Allotment.Pane>
-        )}
+        <Allotment.Pane minSize={200} preferredSize={240} maxSize={300}>
+          <Sidebar />
+        </Allotment.Pane>
+
         <Allotment.Pane>
           <Allotment vertical>
             <Allotment.Pane>

@@ -17,10 +17,10 @@ export function parseParams(data: ProxyData) {
     const contentType = getContentType(data.request?.headers ?? [])
 
     if (contentType === 'application/x-www-form-urlencoded') {
-      return stringify(queryStringToJSON(safeAtob(data.request.content)))
+      return stringify(queryStringToJSON(safeAtob(data.request.content ?? '')))
     }
 
-    return stringify(JSON.parse(safeAtob(data.request.content)))
+    return stringify(JSON.parse(safeAtob(data.request.content ?? '')))
   } catch (e) {
     console.error('Failed to parse query parameters', e)
     return

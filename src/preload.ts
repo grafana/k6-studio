@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
-import { ProxyData, K6Log } from './types'
+import { ProxyData, K6Log, FolderContent } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 
@@ -70,18 +70,22 @@ const har = {
   },
 } as const
 
-const settings = {
+const ui = {
   toggleTheme: () => {
-    ipcRenderer.send('settings:toggle-theme')
+    ipcRenderer.send('ui:toggle-theme')
   },
-}
+  getFiles: (): Promise<FolderContent> => ipcRenderer.invoke('ui:get-files'),
+  onAddFile: (callback: (path: string) => void) => {
+    return createListener('ui:add-file', callback)
+  },
+} as const
 
 const generator = {
   saveGenerator: (generatorFile: string) => {
     ipcRenderer.send('generator:save', generatorFile)
   },
-  loadGenerator: (): Promise<GeneratorFile | void> => {
-    return ipcRenderer.invoke('generator:open')
+  loadGenerator: (path?: string): Promise<GeneratorFile | void> => {
+    return ipcRenderer.invoke('generator:open', path)
   },
 } as const
 
@@ -90,7 +94,7 @@ const studio = {
   browser,
   script,
   har,
-  settings,
+  ui,
   generator,
 } as const
 

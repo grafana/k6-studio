@@ -26,10 +26,10 @@ export function replaceTextMatches(
   extractedValue: string,
   uniqueId: number
 ): Request {
-  const content = request.content.replaceAll(
-    extractedValue,
-    `\${correl_${uniqueId}}`
-  )
+  console.log('Replacing text matches', request)
+  const content =
+    request.content?.replaceAll(extractedValue, `\${correl_${uniqueId}}`) ??
+    null
   const url = request.url.replaceAll(extractedValue, `\${correl_${uniqueId}}`)
   const path = request.path.replaceAll(extractedValue, `\${correl_${uniqueId}}`)
   const headers: Header[] = request.headers.map(([key, value]) => {

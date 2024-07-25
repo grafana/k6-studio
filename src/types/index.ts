@@ -24,7 +24,7 @@ export interface Request {
   host: string
   method: Method
   path: string
-  content: string
+  content: string | null
   timestampStart: number
   timestampEnd: number
   id?: string
@@ -70,4 +70,10 @@ export interface RequestSnippetSchema {
   data: ProxyData
   before: string[]
   after: string[]
+}
+
+export interface FolderContent {
+  recordings: string[]
+  generators: string[]
+  scripts: string[]
 }

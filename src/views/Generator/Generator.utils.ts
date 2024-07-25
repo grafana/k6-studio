@@ -45,9 +45,9 @@ export const saveGenerator = () => {
   window.studio.generator.saveGenerator(JSON.stringify(generatorFile, null, 2))
 }
 
-export const loadGenerator = async () => {
+export const loadGenerator = async (path?: string) => {
   const setGeneratorFile = useGeneratorStore.getState().setGeneratorFile
-  const generatorFile = await window.studio.generator.loadGenerator()
+  const generatorFile = await window.studio.generator.loadGenerator(path)
 
   if (!generatorFile) return
 
