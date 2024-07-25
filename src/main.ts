@@ -189,7 +189,7 @@ ipcMain.on('script:save', async (event, script: string) => {
   const browserWindow = browserWindowFromEvent(event)
   const dialogResult = await dialog.showSaveDialog(browserWindow, {
     message: 'Save test script',
-    defaultPath: 'script.js',
+    defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
     filters: [{ name: 'JavaScript', extensions: ['js'] }],
   })
 
