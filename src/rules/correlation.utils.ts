@@ -26,7 +26,6 @@ export function replaceTextMatches(
   extractedValue: string,
   uniqueId: number
 ): Request {
-  console.log('Replacing text matches', request)
   const content =
     request.content?.replaceAll(extractedValue, `\${correl_${uniqueId}}`) ??
     null
