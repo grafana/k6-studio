@@ -291,7 +291,6 @@ ipcMain.handle('generator:open', async (event, path?: string) => {
   const fileHandle = await open(filePath, 'r')
   try {
     const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-    console.log('file data', data)
     // TODO: we might want to send an error on wrong file, a system to send and show errors from the main process
     // could be leveraged for many things
     const generator = await JSON.parse(data)
