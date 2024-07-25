@@ -3,11 +3,7 @@ import { ProxyData } from '@/types'
 import { Box, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
 import { groupProxyData } from '@/utils/groups'
-import {
-  selectHasRecording,
-  selectSelectedRule,
-  useGeneratorStore,
-} from '@/store/generator'
+import { selectHasRecording, useGeneratorStore } from '@/store/generator'
 import { useEffect, useState } from 'react'
 import { RulePreview } from '../RulePreview/RulePreview'
 
@@ -20,10 +16,10 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
 
   const hasRecording = useGeneratorStore(selectHasRecording)
   const groupedProxyData = groupProxyData(requests)
-  const selectedRule = useGeneratorStore(selectSelectedRule)
+  const selectedRuleId = useGeneratorStore((store) => store.selectedRuleId)
 
   useEffect(() => {
-    if (!selectedRule) {
+    if (selectedRuleId === null) {
       setTab((currentTab) =>
         currentTab === 'rule-preview' ? 'requests' : currentTab
       )
@@ -31,7 +27,7 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
     }
 
     setTab('rule-preview')
-  }, [selectedRule])
+  }, [selectedRuleId])
 
   return (
     <Flex direction="column" height="100%" minHeight="0">
@@ -49,15 +45,15 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
           <Tabs.Trigger value="script" disabled={!hasRecording}>
             Script preview
           </Tabs.Trigger>
-          {selectedRule && (
+          {selectedRuleId !== null && (
             <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
           )}
         </Tabs.List>
-        {selectedRule && (
+        {selectedRuleId !== null && (
           <Tabs.Content value="rule-preview" style={{ height: '100%' }}>
             <ScrollArea>
               <Box p="2" mb="5">
-                <RulePreview rule={selectedRule} />
+                <RulePreview />
               </Box>
             </ScrollArea>
           </Tabs.Content>

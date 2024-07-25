@@ -1,8 +1,14 @@
 import { CorrelationPreview } from './CorrelationPreview'
 import { exhaustive } from '@/utils/typescript'
-import { TestRule } from '@/types/rules'
+import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
 
-export function RulePreview({ rule }: { rule: TestRule }) {
+export function RulePreview() {
+  const rule = useGeneratorStore(selectSelectedRule)
+
+  if (!rule) {
+    return null
+  }
+
   switch (rule.type) {
     case 'correlation':
       return <CorrelationPreview rule={rule} />
@@ -11,9 +17,6 @@ export function RulePreview({ rule }: { rule: TestRule }) {
     case 'parameterization':
     case 'verification':
       return <div>Not implemented</div>
-
-    case undefined:
-      return null
 
     default:
       return exhaustive(rule)

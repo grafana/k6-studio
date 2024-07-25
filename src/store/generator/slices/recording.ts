@@ -4,19 +4,19 @@ import { ImmerStateCreator } from '@/utils/typescript'
 interface State {
   requests: ProxyData[]
   recordingPath: string
-  allowList: string[]
-  showAllowListDialog: boolean
+  allowlist: string[]
+  showAllowlistDialog: boolean
 }
 
 interface Actions {
   setRecording: (
     recording: ProxyData[],
     path: string,
-    showAllowListDialog: boolean
+    showAllowlistDialog: boolean
   ) => void
   resetRecording: () => void
-  setAllowList: (value: string[]) => void
-  setShowAllowListDialog: (value: boolean) => void
+  setAllowlist: (value: string[]) => void
+  setShowAllowlistDialog: (value: boolean) => void
 }
 
 export type RecordingSliceStore = State & Actions
@@ -26,32 +26,32 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
 ) => ({
   requests: [],
   recordingPath: '',
-  allowList: [],
-  showAllowListDialog: false,
+  allowlist: [],
+  showAllowlistDialog: false,
 
   setRecording: (
     requests: ProxyData[],
     path: string,
-    showAllowListDialog: boolean
+    showAllowlistDialog: boolean
   ) =>
     set((state) => {
       state.requests = requests
-      state.allowList = []
+      state.allowlist = []
       state.recordingPath = path
-      state.showAllowListDialog = showAllowListDialog
+      state.showAllowlistDialog = showAllowlistDialog
     }),
   resetRecording: () =>
     set((state) => {
       state.requests = []
-      state.allowList = []
+      state.allowlist = []
       state.recordingPath = ''
     }),
-  setAllowList: (value) =>
+  setAllowlist: (value) =>
     set((state) => {
-      state.allowList = value
+      state.allowlist = value
     }),
-  setShowAllowListDialog: (value) =>
+  setShowAllowlistDialog: (value) =>
     set((state) => {
-      state.showAllowListDialog = value
+      state.showAllowlistDialog = value
     }),
 })

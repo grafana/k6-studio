@@ -24,7 +24,7 @@ export function selectHasRecording(state: GeneratorState) {
 
 export function selectFilteredRequests(state: GeneratorState) {
   return state.requests.filter((request) => {
-    return state.allowList.includes(request.request.host)
+    return state.allowlist.includes(request.request.host)
   })
 }
 
@@ -37,7 +37,7 @@ export function selectGeneratorData(state: GeneratorState): GeneratorFileData {
     variables,
     recordingPath,
     rules,
-    allowList,
+    allowlist,
   } = state
 
   return {
@@ -53,7 +53,7 @@ export function selectGeneratorData(state: GeneratorState): GeneratorFileData {
     },
     testData: { variables },
     rules,
-    allowlist: allowList,
+    allowlist,
   }
 }
 
