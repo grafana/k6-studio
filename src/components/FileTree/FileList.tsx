@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
 import { Button } from '@radix-ui/themes'
 import { File } from './File'
+import { useStudioUIStore } from '@/store/ui'
 
 interface FileListProps {
   files: string[]
@@ -9,6 +10,15 @@ interface FileListProps {
 }
 
 export function FileList({ files, onOpenFile, noFilesMessage }: FileListProps) {
+  const selectedFile = useStudioUIStore((state) => state.selectedFile)
+  const setSelectedFile = useStudioUIStore((state) => state.setSelectedFile)
+
+  const handleOpenFile = (path: string) => {
+    if (!onOpenFile) return
+    onOpenFile(path)
+    setSelectedFile(path)
+  }
+
   if (files.length === 0) {
     return (
       <Button
@@ -40,7 +50,11 @@ export function FileList({ files, onOpenFile, noFilesMessage }: FileListProps) {
     >
       {files.map((file) => (
         <li key={file}>
-          <File path={file} onOpen={onOpenFile} />
+          <File
+            path={file}
+            isSelected={selectedFile === file}
+            onOpen={handleOpenFile}
+          />
         </li>
       ))}
     </ul>

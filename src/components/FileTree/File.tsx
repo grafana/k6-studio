@@ -3,10 +3,11 @@ import { Button, Tooltip } from '@radix-ui/themes'
 
 interface FileProps {
   path: string
+  isSelected?: boolean
   onOpen?: (path: string) => void
 }
 
-export function File({ path, onOpen }: FileProps) {
+export function File({ path, isSelected, onOpen }: FileProps) {
   const fileName = path.split('/').pop()
 
   return (
@@ -14,7 +15,7 @@ export function File({ path, onOpen }: FileProps) {
       <Button
         variant="outline"
         onClick={() => onOpen?.(path)}
-        color="gray"
+        color={isSelected ? 'violet' : 'gray'}
         radius="full"
         css={css`
           width: 100%;
