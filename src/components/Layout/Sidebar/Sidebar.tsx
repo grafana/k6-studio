@@ -45,13 +45,24 @@ export function Sidebar() {
         <ThemeSwitcher />
       </Flex>
       <ScrollArea scrollbars="vertical">
-        <FileTree label="Recordings" files={recordings} />
-        <FileTree
-          label="Generators"
-          files={generators}
-          onOpenFile={handleOpenGenerator}
-        />
-        <FileTree label="Scripts" files={scripts} />
+        <Flex direction="column" gap="2">
+          <FileTree
+            label="Recordings"
+            files={recordings}
+            noFilesMessage="No recordings found"
+          />
+          <FileTree
+            label="Test generators"
+            files={generators}
+            onOpenFile={handleOpenGenerator}
+            noFilesMessage="No generators found"
+          />
+          <FileTree
+            label="Scripts"
+            files={scripts}
+            noFilesMessage="No scripts found"
+          />
+        </Flex>
       </ScrollArea>
     </Box>
   )

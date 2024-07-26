@@ -10,18 +10,20 @@ export function File({ path, onOpen }: FileProps) {
   const fileName = path.split('/').pop()
 
   return (
-    <Button
-      variant="ghost"
-      onClick={() => onOpen?.(path)}
-      color="gray"
-      css={css`
-        width: 100%;
-        max-width: 100%;
-        text-align: left;
-        justify-content: flex-start;
-      `}
-    >
-      <Tooltip content={path}>
+    <Tooltip content={path}>
+      <Button
+        variant="outline"
+        onClick={() => onOpen?.(path)}
+        color="gray"
+        radius="full"
+        css={css`
+          width: 100%;
+          max-width: 100%;
+          justify-content: flex-start;
+          border: none;
+          box-shadow: none;
+        `}
+      >
         <span
           css={css`
             overflow: hidden;
@@ -31,7 +33,7 @@ export function File({ path, onOpen }: FileProps) {
         >
           {fileName}
         </span>
-      </Tooltip>
-    </Button>
+      </Button>
+    </Tooltip>
   )
 }
