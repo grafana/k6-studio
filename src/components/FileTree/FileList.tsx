@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Text } from '@radix-ui/themes'
+import { Button } from '@radix-ui/themes'
 import { File } from './File'
 
 interface FileListProps {
@@ -11,15 +11,22 @@ interface FileListProps {
 export function FileList({ files, onOpenFile, noFilesMessage }: FileListProps) {
   if (files.length === 0) {
     return (
-      <Text
-        size="2"
+      <Button
+        variant="outline"
         color="gray"
+        radius="full"
+        disabled
         css={css`
-          padding: var(--space-1);
+          width: 100%;
+          max-width: 100%;
+          justify-content: flex-start;
+          border: none;
+          box-shadow: none;
+          margin: var(--space-1);
         `}
       >
         {noFilesMessage}
-      </Text>
+      </Button>
     )
   }
 
