@@ -41,7 +41,10 @@ const browser = {
 } as const
 
 const script = {
-  showScriptSelectDialog: () => {
+  showScriptSelectDialog: (): Promise<{
+    path: string
+    content: string
+  } | void> => {
     return ipcRenderer.invoke('script:select')
   },
   saveScript: (script: string) => {
