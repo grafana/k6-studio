@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import {
   generateScript,
   generateRequestSnippets,
@@ -11,6 +11,16 @@ import { correlationRecording } from '@/test/fixtures/correlationRecording'
 import { ThinkTime } from '@/types/testOptions'
 
 describe('Code generation', () => {
+  beforeAll(() => {
+    vi.mock('./options', () => ({
+      generateOptions: () => '{}',
+    }))
+  })
+
+  afterAll(() => {
+    vi.resetAllMocks()
+  })
+
   describe('generateScript', () => {
     it('should generate script', () => {
       const expectedResult = `

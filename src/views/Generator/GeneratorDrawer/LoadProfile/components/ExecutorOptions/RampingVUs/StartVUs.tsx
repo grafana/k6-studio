@@ -3,7 +3,7 @@ import { Flex, TextField, Tooltip } from '@radix-ui/themes'
 import * as Label from '@radix-ui/react-label'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 
 interface StartVUsProps {
   value?: number | string

@@ -1,26 +1,18 @@
-import { useEffect, useState } from 'react'
-
-import { exportScript } from '../Generator.utils'
-import {
-  selectFilteredRequests,
-  useGeneratorStore,
-} from '@/hooks/useGeneratorStore'
 import { CodeEditor } from '@/components/CodeEditor'
+import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { Callout } from '@radix-ui/themes'
 
 export function ScriptPreview() {
-  const [preview, setPreview] = useState('')
-  const rules = useGeneratorStore((state) => state.rules)
-  const filteredRequests = useGeneratorStore(selectFilteredRequests)
+  const { preview, error } = useScriptPreview()
 
-  useEffect(() => {
-    async function updatePreview() {
-      const script = await exportScript()
-      setPreview(script)
-    }
-
-    updatePreview()
-    // TODO: implement a more reactive way to update the preview
-  }, [filteredRequests, rules])
+  if (error) {
+    return (
+      <Callout.Root color="amber" role="alert" variant="surface">
+        Failed to generate script preview. Please make sure your custom code
+        snippets do not contain syntax errors.
+      </Callout.Root>
+    )
+  }
 
   return <CodeEditor readOnly value={preview} />
 }

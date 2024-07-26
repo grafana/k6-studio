@@ -4,6 +4,7 @@ import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 import readline from 'readline/promises'
 import { K6Log } from './types'
+import { getArch, getPlatform } from './utils/electron'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -35,8 +36,27 @@ export const runScript = async (
     HTTPS_PROXY: 'http://localhost:8080',
   }
 
+  let k6Path: string
+
+  // if we are in dev server we take resources directly, otherwise look in the app resources folder.
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    k6Path = path.join(
+      app.getAppPath(),
+      'resources',
+      getPlatform(),
+      getArch(),
+      'k6'
+    )
+  } else {
+    // only the architecture directory will be in resources on the packaged app
+    k6Path = path.join(process.resourcesPath, getArch(), 'k6')
+  }
+
+  // add .exe on windows
+  k6Path += getPlatform() === 'win' ? '.exe' : ''
+
   const k6 = spawn(
-    'k6',
+    k6Path,
     [
       'run',
       modifiedScriptPath,

@@ -4,8 +4,9 @@ import { applyRule } from '@/rules/rules'
 import { generateSequentialInt } from '@/rules/utils'
 import { GeneratorFileData } from '@/types/generator'
 import { Variable } from '@/types/testData'
-import { TestOptions, ThinkTime } from '@/types/testOptions'
+import { ThinkTime } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
+import { generateOptions } from './options'
 
 interface GenerateScriptParams {
   recording: GroupedProxyData
@@ -28,11 +29,6 @@ export function generateScript({
       ${generateVUCode(recording, generator.rules, generator.options.thinkTime)}
     }
   `
-}
-
-export function generateOptions(options: TestOptions): string {
-  console.log(options)
-  return '{}'
 }
 
 export function generateVariableDeclarations(variables: Variable[]): string {

@@ -2,24 +2,20 @@ import { Allotment } from 'allotment'
 import { Button } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
-import {
-  exportScript,
-  saveScript,
-  saveGenerator,
-  loadGenerator,
-} from './Generator.utils'
 import { PageHeading } from '@/components/Layout/PageHeading'
-import { GeneratorDrawer } from './GeneratorDrawer'
-import { GeneratorSidebar } from './GeneratorSidebar'
+import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import {
   useGeneratorStore,
   selectHasRecording,
   selectFilteredRequests,
-} from '@/hooks/useGeneratorStore'
+} from '@/store/generator'
+import { exportScript, saveGenerator, loadGenerator } from './Generator.utils'
+import { GeneratorDrawer } from './GeneratorDrawer'
+import { GeneratorSidebar } from './GeneratorSidebar'
+
 import { TestRuleContainer } from './TestRuleContainer'
-import { AllowList } from './AllowList/AllowList'
+import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
-import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 
 export function Generator() {
   const name = useGeneratorStore((store) => store.name)
@@ -34,20 +30,14 @@ export function Generator() {
     }
   }, [resetRecording])
 
-  const handleExport = async () => {
-    const script = await exportScript()
-
-    saveScript(script)
-  }
-
   return (
     <>
       <PageHeading text="Generator">
         <RecordingSelector />
-        <AllowList />
-        {hasRecording && <Button onClick={saveGenerator}>Save</Button>}
+        <Allowlist />
+        <Button onClick={saveGenerator}>Save</Button>
         <Button onClick={loadGenerator}>Load</Button>
-        {hasRecording && <Button onClick={handleExport}>Export script</Button>}
+        {hasRecording && <Button onClick={exportScript}>Export script</Button>}
       </PageHeading>
       <Allotment defaultSizes={[3, 1]}>
         <Allotment.Pane minSize={400}>

@@ -3,27 +3,25 @@ import { Box, Flex, Heading, ScrollArea } from '@radix-ui/themes'
 
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { WebLogView } from '@/components/WebLogView'
-import { groupProxyData } from '@/utils/groups'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useRecorderStore } from '@/hooks/useRecorderStore'
+import { useRecorderStore } from '@/store/recorder'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 
 import { GroupForm } from './GroupForm'
 import { DebugControls } from './DebugControls'
 import { RecordingControls } from './RecordingButton'
+import { selectGroupedProxyData } from '@/store/recorder/selectors'
 
 export function Recorder() {
-  const { proxyData } = useRecorderStore()
   const [group, setGroup] = useState<string>('Default')
   useListenProxyData(group)
+  const groupedProxyData = useRecorderStore(selectGroupedProxyData)
   useSetWindowTitle('Recorder')
-
-  const groupedProxyData = groupProxyData(proxyData)
 
   return (
     <>
       <PageHeading text="Recorder">
-        <RecordingControls requests={proxyData} />
+        <RecordingControls />
       </PageHeading>
       <Box p="2">
         <Flex justify="between" wrap="wrap" gap="2">

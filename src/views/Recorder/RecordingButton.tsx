@@ -4,17 +4,19 @@ import { Button, Spinner } from '@radix-ui/themes'
 import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
 
 import { startRecording, stopRecording } from './Recorder.utils'
-import { useRecorderStore } from '@/hooks/useRecorderStore'
+import { useRecorderStore } from '@/store/recorder'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
-import { ProxyData } from '@/types'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { groupProxyData } from '@/utils/groups'
 import { recordingToProxyData } from '@/utils/serializers/recording'
 
-export function RecordingControls({ requests }: { requests: ProxyData[] }) {
-  const { isRecording, setIsRecording, resetProxyData } = useRecorderStore()
-  const isEmpty = requests.length === 0
-  const { setRecording } = useGeneratorStore()
+export function RecordingControls() {
+  const requests = useRecorderStore((state) => state.proxyData)
+  const isRecording = useRecorderStore((state) => state.isRecording)
+  const setIsRecording = useRecorderStore((state) => state.setIsRecording)
+  const resetProxyData = useRecorderStore((state) => state.resetProxyData)
+  const isEmpty = useRecorderStore((state) => state.proxyData.length === 0)
+  const setGeneratorRecording = useGeneratorStore((state) => state.setRecording)
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -40,7 +42,8 @@ export function RecordingControls({ requests }: { requests: ProxyData[] }) {
 
   function handleCreateTestGenerator() {
     const proxyData = recordingToProxyData(requests)
-    setRecording(proxyData, '', true)
+
+    setGeneratorRecording(proxyData, '', true)
     navigate('/generator')
   }
 

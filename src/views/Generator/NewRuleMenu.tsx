@@ -1,7 +1,7 @@
 import { PlusIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu } from '@radix-ui/themes'
 
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 
 export function NewRuleMenu() {
   const { createRule } = useGeneratorStore()

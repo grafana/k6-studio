@@ -2,7 +2,7 @@ import { Flex, Select, Tooltip } from '@radix-ui/themes'
 import * as Label from '@radix-ui/react-label'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
 
 const EXECUTOR_LABEL_MAP: Record<

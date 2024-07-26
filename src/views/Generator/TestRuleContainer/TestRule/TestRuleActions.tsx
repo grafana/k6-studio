@@ -1,7 +1,7 @@
 import { DotsVerticalIcon, Pencil1Icon } from '@radix-ui/react-icons'
 import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
-import { useGeneratorStore } from '@/hooks/useGeneratorStore'
+import { useGeneratorStore } from '@/store/generator'
 
 interface TestRuleActionsProps {
   ruleId: string
