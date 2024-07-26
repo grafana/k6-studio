@@ -22,7 +22,7 @@ export function Layout() {
       `}
     >
       <Allotment>
-        <Allotment.Pane minSize={200} preferredSize={240} maxSize={300}>
+        <Allotment.Pane minSize={200} preferredSize={200} maxSize={240}>
           <Sidebar />
         </Allotment.Pane>
 
