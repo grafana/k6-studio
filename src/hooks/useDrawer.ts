@@ -18,11 +18,10 @@ function createDrawerStore() {
 }
 
 const drawerStores = {
-  left: createDrawerStore(),
   right: createDrawerStore(),
   bottom: createDrawerStore(),
 }
 
-export function useDrawer(position: 'left' | 'right' | 'bottom') {
+export function useDrawer(position: 'right' | 'bottom') {
   return drawerStores[position]()
 }

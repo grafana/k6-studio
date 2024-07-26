@@ -36,7 +36,7 @@ export function Generator() {
         <RecordingSelector />
         <Allowlist />
         <Button onClick={saveGenerator}>Save</Button>
-        <Button onClick={loadGenerator}>Load</Button>
+        <Button onClick={() => loadGenerator()}>Load</Button>
         {hasRecording && <Button onClick={exportScript}>Export script</Button>}
       </PageHeading>
       <Allotment defaultSizes={[3, 1]}>

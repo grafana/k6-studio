@@ -96,7 +96,7 @@ function createPostData(request: Request): Entry['request']['postData'] {
   }
   const contentTypeHeader =
     getContentTypeWithCharsetHeader(request.headers) ?? ''
-  const content = atob(request.content)
+  const content = atob(request.content ?? '')
 
   // Extract params for urlencoded form
   if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
@@ -113,7 +113,7 @@ function createPostData(request: Request): Entry['request']['postData'] {
 
   return {
     mimeType: getContentTypeWithCharsetHeader(request.headers) ?? '',
-    text: atob(request.content),
+    text: atob(request.content ?? ''),
   }
 }
 

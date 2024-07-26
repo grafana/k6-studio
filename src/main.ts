@@ -1,14 +1,20 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import { open, writeFile } from 'fs/promises'
+import { readdirSync } from 'fs'
 import path from 'path'
+import eventEmmitter from 'events'
 import { Process } from '@puppeteer/browsers'
+import chokidar from 'chokidar'
 
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
-import { RECORDINGS_PATH } from './constants/workspace'
-import eventEmmitter from 'events'
+import {
+  GENERATORS_PATH,
+  RECORDINGS_PATH,
+  SCRIPTS_PATH,
+} from './constants/workspace'
 
 const proxyEmitter = new eventEmmitter()
 
@@ -57,6 +63,8 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools({ mode: 'detach' })
+
+  return mainWindow
 }
 
 // This method will be called when Electron has finished
@@ -64,8 +72,21 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 // https://github.com/electron/electron/pull/21972
 app.whenReady().then(() => {
-  createWindow()
+  const mainWindow = createWindow()
   setupProjectStructure()
+
+  const watcher = chokidar.watch(
+    [RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH],
+    { ignoreInitial: true }
+  )
+
+  watcher.on('add', (path) => {
+    mainWindow.webContents.send('ui:add-file', path)
+  })
+
+  watcher.on('unlink', (path) => {
+    mainWindow.webContents.send('ui:remove-file', path)
+  })
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -168,7 +189,7 @@ ipcMain.on('script:save', async (event, script: string) => {
   const browserWindow = browserWindowFromEvent(event)
   const dialogResult = await dialog.showSaveDialog(browserWindow, {
     message: 'Save test script',
-    defaultPath: 'script.js',
+    defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
     filters: [{ name: 'JavaScript', extensions: ['js'] }],
   })
 
@@ -235,7 +256,7 @@ ipcMain.on('generator:save', async (event, generatorFile: string) => {
   const browserWindow = browserWindowFromEvent(event)
   const dialogResult = await dialog.showSaveDialog(browserWindow, {
     message: 'Save Generator',
-    defaultPath: 'generator.json',
+    defaultPath: path.join(GENERATORS_PATH, 'generator.json'),
     filters: [{ name: 'JSON', extensions: ['json'] }],
   })
 
@@ -246,36 +267,64 @@ ipcMain.on('generator:save', async (event, generatorFile: string) => {
   await writeFile(dialogResult.filePath, generatorFile)
 })
 
-ipcMain.handle('generator:open', async (event) => {
+ipcMain.handle('generator:open', async (event, path?: string) => {
   console.info('generator:open event received')
   const browserWindow = browserWindowFromEvent(event)
 
-  const dialogResult = await dialog.showOpenDialog(browserWindow, {
-    message: 'Open Generator file',
-    properties: ['openFile'],
-    filters: [{ name: 'JSON', extensions: ['json'] }],
-  })
+  let filePath = path
 
-  if (!dialogResult.canceled && dialogResult.filePaths[0]) {
-    const fileHandle = await open(dialogResult.filePaths[0], 'r')
-    try {
-      const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-      // TODO: we might want to send an error on wrong file, a system to send and show errors from the main process
-      // could be levereged for many things mmmm
-      const generator = await JSON.parse(data)
+  if (!filePath) {
+    console.log('no path provided, opening dialog', event, path, filePath)
+    const dialogResult = await dialog.showOpenDialog(browserWindow, {
+      message: 'Open Generator file',
+      properties: ['openFile'],
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+    })
 
-      return { path: dialogResult.filePaths[0], content: generator }
-    } finally {
-      await fileHandle?.close()
+    if (dialogResult.canceled || !dialogResult.filePaths[0] || !path) {
+      return
     }
+
+    filePath = dialogResult.filePaths[0]
   }
 
-  return
+  const fileHandle = await open(filePath, 'r')
+  try {
+    const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+    // TODO: we might want to send an error on wrong file, a system to send and show errors from the main process
+    // could be leveraged for many things
+    const generator = await JSON.parse(data)
+
+    return { path: filePath, content: generator }
+  } finally {
+    await fileHandle?.close()
+  }
 })
 
-// Settings
-ipcMain.on('settings:toggle-theme', () => {
+// UI
+ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
+})
+
+ipcMain.handle('ui:get-files', () => {
+  console.info('ui:get-files event received')
+  const recordings = readdirSync(RECORDINGS_PATH, { withFileTypes: true })
+    .filter((f) => f.isFile() && f.name.split('.').pop() === 'har')
+    .map((f) => path.join(RECORDINGS_PATH, f.name))
+
+  const generators = readdirSync(GENERATORS_PATH, { withFileTypes: true })
+    .filter((f) => f.isFile() && f.name.split('.').pop() === 'json')
+    .map((f) => path.join(GENERATORS_PATH, f.name))
+
+  const scripts = readdirSync(SCRIPTS_PATH, { withFileTypes: true })
+    .filter((f) => f.isFile() && f.name.split('.').pop() === 'js')
+    .map((f) => path.join(SCRIPTS_PATH, f.name))
+
+  return {
+    recordings,
+    generators,
+    scripts,
+  }
 })
 
 const browserWindowFromEvent = (
