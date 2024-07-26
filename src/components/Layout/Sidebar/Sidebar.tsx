@@ -1,5 +1,4 @@
 import { css } from '@emotion/react'
-import { HomeIcon } from '@radix-ui/react-icons'
 import { Box, Flex, Heading, IconButton, ScrollArea } from '@radix-ui/themes'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -7,6 +6,7 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { FileTree } from '@/components/FileTree'
 import { useFolderContent } from './Sidebar.hooks'
 import { loadGenerator } from '@/views/Generator/Generator.utils'
+import K6Logo from '@/assets/logo.svg'
 
 export function Sidebar() {
   const { recordings, generators, scripts } = useFolderContent()
@@ -31,7 +31,7 @@ export function Sidebar() {
       <Flex gap="2" align="center" mb="2">
         <IconButton asChild aria-label="Home" variant="ghost">
           <Link to="/">
-            <HomeIcon width="18" height="18" />
+            <img src={K6Logo} alt="k6 Logo" width="18" height="18" />
           </Link>
         </IconButton>
         <Heading
@@ -40,7 +40,7 @@ export function Sidebar() {
             flex-grow: 1;
           `}
         >
-          k6 Studio
+          k6 studio
         </Heading>
         <ThemeSwitcher />
       </Flex>
