@@ -1,10 +1,12 @@
 import { useGeneratorStore } from '@/store/generator'
 import { Flex, ScrollArea } from '@radix-ui/themes'
-import { TestRuleItem } from './TestRule'
 import { NewRuleMenu } from '../NewRuleMenu'
+import { SortableRuleList } from './SortableRuleList'
 
 export function TestRuleContainer() {
-  const { rules, selectedRuleId } = useGeneratorStore()
+  const rules = useGeneratorStore((store) => store.rules)
+  const selectedRuleId = useGeneratorStore((store) => store.selectedRuleId)
+  const swapRules = useGeneratorStore((store) => store.swapRules)
 
   return (
     <ScrollArea scrollbars="vertical">
@@ -20,13 +22,11 @@ export function TestRuleContainer() {
           Test rules ({rules.length})<NewRuleMenu />
         </Flex>
 
-        {rules.map((rule, i) => (
-          <TestRuleItem
-            rule={rule}
-            isSelected={rule.id === selectedRuleId}
-            key={i}
-          />
-        ))}
+        <SortableRuleList
+          rules={rules}
+          selectedRuleId={selectedRuleId}
+          onSwapRules={swapRules}
+        />
       </Flex>
     </ScrollArea>
   )
