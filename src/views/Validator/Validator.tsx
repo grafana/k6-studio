@@ -8,9 +8,12 @@ import { K6Log } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 import { Button, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
+import { Allotment } from 'allotment'
+import { ReadOnlyEditor } from '@/components/WebLogView/ReadOnlyEditor'
 
 export function Validator() {
   const [scriptPath, setScriptPath] = useState<string>()
+  const [script, setScript] = useState<string>('')
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
   const proxyData = useRecorderStore((store) => store.proxyData)
@@ -21,12 +24,14 @@ export function Validator() {
   const groupedProxyData = groupProxyData(proxyData)
 
   async function handleSelectScript() {
-    const path = await window.studio.script.showScriptSelectDialog()
+    const { path = '', content = '' } =
+      (await window.studio.script.showScriptSelectDialog()) || {}
     setScriptPath(path)
+    setScript(content)
   }
 
   function handleRunScript() {
-    if (!scriptPath) {
+    if (!scriptPath || !script) {
       return
     }
 
@@ -75,25 +80,40 @@ export function Validator() {
           Stop Script
         </Button>
       </PageHeading>
-      <Flex gap="3" flexGrow="1" minHeight="0" p="2">
-        <Flex width="50%" maxHeight="100%" direction="column">
-          <Heading size="4" mb="2">
-            Requests
-          </Heading>
-          <ScrollArea scrollbars="vertical">
-            <WebLogView requests={groupedProxyData} />
-          </ScrollArea>
-        </Flex>
-
-        <Flex width="50%" maxHeight="100%" direction="column">
-          <Heading size="4" mb="2">
-            Logs
-          </Heading>
-          <ScrollArea scrollbars="vertical">
-            <LogView logs={logs} />
-          </ScrollArea>
-        </Flex>
-      </Flex>
+      <Allotment vertical defaultSizes={[3, 2]}>
+        <Allotment.Pane minSize={300}>
+          <Allotment defaultSizes={[1, 1]}>
+            <Allotment.Pane>
+              <Flex maxHeight="100%" direction="column" p="2">
+                <Heading size="2" mb="2">
+                  Requests
+                </Heading>
+                <ScrollArea scrollbars="vertical">
+                  <WebLogView requests={groupedProxyData} />
+                </ScrollArea>
+              </Flex>
+            </Allotment.Pane>
+            <Allotment.Pane>
+              <Flex maxHeight="100%" height="100%" direction="column" p="2">
+                <Heading size="2" mb="2">
+                  Script
+                </Heading>
+                <ReadOnlyEditor language="javascript" value={script} />
+              </Flex>
+            </Allotment.Pane>
+          </Allotment>
+        </Allotment.Pane>
+        <Allotment.Pane minSize={300}>
+          <Flex maxHeight="100%" direction="column" p="2">
+            <Heading size="2" mb="2">
+              Logs
+            </Heading>
+            <ScrollArea scrollbars="vertical">
+              <LogView logs={logs} />
+            </ScrollArea>
+          </Flex>
+        </Allotment.Pane>
+      </Allotment>
     </>
   )
 }

@@ -160,7 +160,17 @@ ipcMain.handle('script:select', async (event) => {
 
   const scriptPath = await showScriptSelectDialog(browserWindow)
   console.info(`selected script: ${scriptPath}`)
-  return scriptPath
+
+  if (!scriptPath) return
+
+  const fileHandle = await open(scriptPath, 'r')
+  try {
+    const script = await fileHandle?.readFile({ encoding: 'utf-8' })
+
+    return { path: scriptPath, content: script }
+  } finally {
+    await fileHandle?.close()
+  }
 })
 
 ipcMain.handle('script:run', async (event, scriptPath: string) => {
