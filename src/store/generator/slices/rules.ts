@@ -13,6 +13,7 @@ interface Actions {
   cloneRule: (id: string) => void
   deleteRule: (id: string) => void
   selectRule: (id: string | null) => void
+  swapRules: (idA: string, idB: string) => void
 }
 
 export type RulesSliceStore = State & Actions
@@ -48,6 +49,16 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
   selectRule: (id) =>
     set((state) => {
       state.selectedRuleId = id
+    }),
+  swapRules: (idA, idB) =>
+    set((state) => {
+      const indexA = state.rules.findIndex((rule) => rule.id === idA)
+      const indexB = state.rules.findIndex((rule) => rule.id === idB)
+      if (state.rules[indexA] && state.rules[indexB]) {
+        const ruleA = state.rules[indexA]
+        state.rules[indexA] = state.rules[indexB]
+        state.rules[indexB] = ruleA
+      }
     }),
 })
 
