@@ -184,7 +184,7 @@ ipcMain.handle('script:run', async (event, scriptPath: string) => {
 
   const browserWindow = browserWindowFromEvent(event)
 
-  currentk6Process = await runScript(browserWindow, scriptPath)
+  currentk6Process = await runScript(browserWindow, scriptPath, proxyPort)
 })
 
 ipcMain.on('script:stop', (event) => {
