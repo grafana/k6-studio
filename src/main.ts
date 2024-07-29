@@ -24,6 +24,7 @@ export let proxyPort = 8080
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
+let watcher: chokidar.FSWatcher
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -75,10 +76,9 @@ app.whenReady().then(() => {
   const mainWindow = createWindow()
   setupProjectStructure()
 
-  const watcher = chokidar.watch(
-    [RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH],
-    { ignoreInitial: true }
-  )
+  watcher = chokidar.watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
+    ignoreInitial: true,
+  })
 
   watcher.on('add', (path) => {
     mainWindow.webContents.send('ui:add-file', path)
@@ -104,6 +104,11 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
+})
+
+app.on('before-quit', async () => {
+  // stop watching files to avoid crash on exit
+  await watcher.close()
 })
 
 // Proxy
