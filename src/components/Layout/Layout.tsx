@@ -32,8 +32,8 @@ export function Layout() {
               <Flex
                 direction="column"
                 overflow="hidden"
-                maxWidth="100%"
-                height="100dvh"
+                width="100%"
+                height="100%"
               >
                 <Outlet />
               </Flex>

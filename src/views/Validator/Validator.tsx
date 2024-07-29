@@ -10,6 +10,7 @@ import { Button, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 import { Allotment } from 'allotment'
 import { ReadOnlyEditor } from '@/components/WebLogView/ReadOnlyEditor'
+import { useAutoScroll } from '@/hooks/useAutoScroll'
 
 export function Validator() {
   const [scriptPath, setScriptPath] = useState<string>()
@@ -18,6 +19,10 @@ export function Validator() {
   const [logs, setLogs] = useState<K6Log[]>([])
   const proxyData = useRecorderStore((store) => store.proxyData)
   const resetProxyData = useRecorderStore((store) => store.resetProxyData)
+
+  const requestsRef = useAutoScroll(proxyData)
+  const logsRef = useAutoScroll(logs)
+
   useListenProxyData()
   useSetWindowTitle('Validator')
 
@@ -89,7 +94,9 @@ export function Validator() {
                   Requests
                 </Heading>
                 <ScrollArea scrollbars="vertical">
-                  <WebLogView requests={groupedProxyData} />
+                  <div ref={requestsRef}>
+                    <WebLogView requests={groupedProxyData} />
+                  </div>
                 </ScrollArea>
               </Flex>
             </Allotment.Pane>
@@ -109,7 +116,9 @@ export function Validator() {
               Logs
             </Heading>
             <ScrollArea scrollbars="vertical">
-              <LogView logs={logs} />
+              <div ref={logsRef}>
+                <LogView logs={logs} />
+              </div>
             </ScrollArea>
           </Flex>
         </Allotment.Pane>

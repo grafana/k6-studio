@@ -1,21 +1,22 @@
 import { useState } from 'react'
-import { Box, Flex, Heading, ScrollArea } from '@radix-ui/themes'
+import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 
 import { PageHeading } from '@/components/Layout/PageHeading'
 import { WebLogView } from '@/components/WebLogView'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useRecorderStore } from '@/store/recorder'
+import { useRecorderStore, selectGroupedProxyData } from '@/store/recorder'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
+import { useAutoScroll } from '@/hooks/useAutoScroll'
 
 import { GroupForm } from './GroupForm'
 import { DebugControls } from './DebugControls'
 import { RecordingControls } from './RecordingButton'
-import { selectGroupedProxyData } from '@/store/recorder/selectors'
 
 export function Recorder() {
   const [group, setGroup] = useState<string>('Default')
-  useListenProxyData(group)
   const groupedProxyData = useRecorderStore(selectGroupedProxyData)
+  const contentRef = useAutoScroll(groupedProxyData)
+  useListenProxyData(group)
   useSetWindowTitle('Recorder')
 
   return (
@@ -23,7 +24,7 @@ export function Recorder() {
       <PageHeading text="Recorder">
         <RecordingControls />
       </PageHeading>
-      <Box p="2">
+      <Flex direction="column" p="2" minHeight="0">
         <Flex justify="between" wrap="wrap" gap="2">
           <GroupForm onChange={setGroup} value={group} />
 
@@ -33,9 +34,11 @@ export function Recorder() {
         </Flex>
         <Heading my="4">Requests</Heading>
         <ScrollArea scrollbars="vertical">
-          <WebLogView requests={groupedProxyData} />
+          <div ref={contentRef}>
+            <WebLogView requests={groupedProxyData} />
+          </div>
         </ScrollArea>
-      </Box>
+      </Flex>
     </>
   )
 }
