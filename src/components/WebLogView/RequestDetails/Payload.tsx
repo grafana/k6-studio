@@ -2,7 +2,7 @@ import { Flex } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 
-import { ReadOnlyEditor } from '../ReadOnlyEditor'
+import { ReadOnlyEditor } from '../../Monaco/ReadOnlyEditor'
 import { parseParams } from './utils'
 
 export function Payload({ data }: { data: ProxyData }) {

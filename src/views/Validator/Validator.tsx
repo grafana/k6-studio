@@ -9,7 +9,7 @@ import { groupProxyData } from '@/utils/groups'
 import { Button, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 import { Allotment } from 'allotment'
-import { ReadOnlyEditor } from '@/components/WebLogView/ReadOnlyEditor'
+import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 
 export function Validator() {
   const [scriptPath, setScriptPath] = useState<string>()

@@ -3,7 +3,7 @@ import * as Label from '@radix-ui/react-label'
 
 import { CustomCodeRule } from '@/types/rules'
 import { FilterField } from './FilterField'
-import { CodeEditor } from '@/components/CodeEditor'
+import { CodeEditor } from '@/components/Monaco/CodeEditor'
 
 interface CustomCodeEditorProps {
   rule: CustomCodeRule
