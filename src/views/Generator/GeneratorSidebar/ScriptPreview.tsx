@@ -1,4 +1,4 @@
-import { CodeEditor } from '@/components/CodeEditor'
+import { CodeEditor } from '@/components/Monaco/CodeEditor'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { Callout } from '@radix-ui/themes'
 

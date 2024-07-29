@@ -28,10 +28,9 @@
 
 import { ProxyData } from './types'
 import './index.tsx'
+import { setMonacoEnv } from './components/Monaco/setMonacoEnv'
 
-console.log(
-  '👋 This message is being logged by "renderer.ts", included via Vite'
-)
+setMonacoEnv()
 
 // Proxy
 

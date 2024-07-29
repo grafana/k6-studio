@@ -1,4 +1,4 @@
-import { ReadOnlyEditor } from '../ReadOnlyEditor'
+import { ReadOnlyEditor } from '../../Monaco/ReadOnlyEditor'
 import { Font } from './Font'
 
 interface PreviewProps {
