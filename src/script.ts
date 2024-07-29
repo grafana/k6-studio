@@ -22,7 +22,8 @@ export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
 
 export const runScript = async (
   browserWindow: BrowserWindow,
-  scriptPath: string
+  scriptPath: string,
+  proxyPort: number
 ) => {
   const modifiedScript = await enhanceScript(scriptPath)
   const modifiedScriptPath = path.join(
@@ -32,8 +33,8 @@ export const runScript = async (
   await writeFile(modifiedScriptPath, modifiedScript)
 
   const proxyEnv = {
-    HTTP_PROXY: 'http://localhost:8080',
-    HTTPS_PROXY: 'http://localhost:8080',
+    HTTP_PROXY: `http://localhost:${proxyPort}`,
+    HTTPS_PROXY: `http://localhost:${proxyPort}`,
   }
 
   let k6Path: string
