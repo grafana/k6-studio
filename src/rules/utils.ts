@@ -29,20 +29,25 @@ export function matchFilter(
   { data: { request } }: RequestSnippetSchema,
   rule: TestRule
 ) {
-  switch (rule.type) {
-    case 'correlation': {
-      const {
-        extractor: { filter },
-      } = rule
-      return request.url.toLowerCase().includes(filter.path.toLowerCase())
+  try {
+    switch (rule.type) {
+      case 'correlation': {
+        const {
+          extractor: { filter },
+        } = rule
+        return new RegExp(filter.path).test(request.url)
+      }
+      case 'customCode':
+      case 'parameterization':
+      case 'verification': {
+        const { filter } = rule
+        return new RegExp(filter.path).test(request.url)
+      }
+      default:
+        return exhaustive(rule)
     }
-    case 'customCode':
-    case 'parameterization':
-    case 'verification': {
-      const { filter } = rule
-      return request.url.toLowerCase().includes(filter.path.toLowerCase())
-    }
-    default:
-      return exhaustive(rule)
+  } catch (e) {
+    console.error(e)
+    return false
   }
 }
