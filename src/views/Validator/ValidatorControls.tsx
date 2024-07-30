@@ -1,4 +1,5 @@
-import { Button } from '@radix-ui/themes'
+import { DotsVerticalIcon } from '@radix-ui/react-icons'
+import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 
 interface ValidatorControlsProps {
   isRunning: boolean
@@ -17,9 +18,6 @@ export function ValidatorControls({
 }: ValidatorControlsProps) {
   return (
     <>
-      <Button onClick={onSelectScript} variant="outline">
-        Select Script
-      </Button>
       <Button
         variant={isRunning ? 'outline' : 'solid'}
         color={isRunning ? 'orange' : 'green'}
@@ -28,6 +26,21 @@ export function ValidatorControls({
       >
         {isRunning ? 'Stop script' : 'Run script'}
       </Button>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          <IconButton variant="soft" aria-label="Actions">
+            <DotsVerticalIcon />
+          </IconButton>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content>
+          <DropdownMenu.Item onClick={onSelectScript}>
+            Select script
+          </DropdownMenu.Item>
+          <DropdownMenu.Item color="red" disabled>
+            Delete
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     </>
   )
 }

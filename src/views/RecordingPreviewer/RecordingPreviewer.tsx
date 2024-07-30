@@ -75,13 +75,13 @@ export function RecordingPreviewer() {
           </Button>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton variant="soft" aria-label="Test rule actions">
-                <DotsVerticalIcon width="15" height="15" />
+              <IconButton variant="soft" aria-label="Actions">
+                <DotsVerticalIcon />
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item asChild>
-                <Link to="/recorder">Create new recording</Link>
+                <Link to="/recorder">New recording</Link>
               </DropdownMenu.Item>
               <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
                 Delete
