@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
-import { open, writeFile } from 'fs/promises'
+import { open, writeFile, unlink } from 'fs/promises'
 import { readdirSync } from 'fs'
 import path from 'path'
 import eventEmmitter from 'events'
@@ -178,6 +178,17 @@ ipcMain.handle('script:select', async (event) => {
   }
 })
 
+ipcMain.handle('script:open', async (_, filePath: string) => {
+  const fileHandle = await open(filePath, 'r')
+  try {
+    const script = await fileHandle?.readFile({ encoding: 'utf-8' })
+
+    return { path: filePath, content: script }
+  } finally {
+    await fileHandle?.close()
+  }
+})
+
 ipcMain.handle('script:run', async (event, scriptPath: string) => {
   console.info('script:run event received')
   await waitForProxy()
@@ -216,20 +227,10 @@ ipcMain.on('script:save', async (event, script: string) => {
 })
 
 // HAR
-ipcMain.on('har:save', async (event, data) => {
-  console.info('har:save event received')
-  const browserWindow = browserWindowFromEvent(event)
-
-  const dialogResult = await dialog.showSaveDialog(browserWindow, {
-    message: 'Save HAR file of the recording',
-    defaultPath: path.join(RECORDINGS_PATH, `${new Date().toISOString()}.har`),
-  })
-
-  if (dialogResult.canceled) {
-    return
-  }
-
-  await writeFile(dialogResult.filePath, data)
+ipcMain.handle('har:save', (_, data) => {
+  const fineName = `${new Date().toISOString()}.har`
+  writeFile(path.join(RECORDINGS_PATH, fineName), data)
+  return fineName
 })
 
 ipcMain.handle('har:open', async (event, filePath?: string) => {
@@ -243,6 +244,7 @@ ipcMain.handle('har:open', async (event, filePath?: string) => {
   const dialogResult = await dialog.showOpenDialog(browserWindow, {
     message: 'Open HAR file',
     properties: ['openFile'],
+    defaultPath: RECORDINGS_PATH,
     filters: [{ name: 'HAR', extensions: ['har'] }],
   })
 
@@ -253,10 +255,16 @@ ipcMain.handle('har:open', async (event, filePath?: string) => {
   return
 })
 
+ipcMain.handle('har:delete', async (_, filePath: string) => {
+  console.info('har:delete event received')
+  return unlink(filePath)
+})
+
 const loadHarFile = async (filePath: string) => {
   const fileHandle = await open(filePath, 'r')
   try {
     const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+    console.log(data)
     const har = await JSON.parse(data)
 
     return { path: filePath, content: har }
@@ -265,22 +273,32 @@ const loadHarFile = async (filePath: string) => {
   }
 }
 
-ipcMain.on('generator:save', async (event, generatorFile: string) => {
-  console.info('generator:save event received')
+// Generator
+ipcMain.handle(
+  'generator:save',
+  async (event, generatorFile: string, fileName?: string) => {
+    console.info('generator:save event received')
 
-  const browserWindow = browserWindowFromEvent(event)
-  const dialogResult = await dialog.showSaveDialog(browserWindow, {
-    message: 'Save Generator',
-    defaultPath: path.join(GENERATORS_PATH, 'generator.json'),
-    filters: [{ name: 'JSON', extensions: ['json'] }],
-  })
+    if (fileName) {
+      await writeFile(path.join(GENERATORS_PATH, fileName), generatorFile)
+      return path.join(GENERATORS_PATH, fileName)
+    }
 
-  if (dialogResult.canceled) {
-    return
+    const browserWindow = browserWindowFromEvent(event)
+    const dialogResult = await dialog.showSaveDialog(browserWindow, {
+      message: 'Save Generator',
+      defaultPath: path.join(GENERATORS_PATH, 'generator.json'),
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+    })
+
+    if (dialogResult.canceled) {
+      return
+    }
+
+    await writeFile(dialogResult.filePath, generatorFile)
+    return dialogResult.filePath
   }
-
-  await writeFile(dialogResult.filePath, generatorFile)
-})
+)
 
 ipcMain.handle('generator:open', async (event, path?: string) => {
   console.info('generator:open event received')
@@ -293,6 +311,7 @@ ipcMain.handle('generator:open', async (event, path?: string) => {
     const dialogResult = await dialog.showOpenDialog(browserWindow, {
       message: 'Open Generator file',
       properties: ['openFile'],
+      defaultPath: GENERATORS_PATH,
       filters: [{ name: 'JSON', extensions: ['json'] }],
     })
 

@@ -47,6 +47,14 @@ const script = {
   } | void> => {
     return ipcRenderer.invoke('script:select')
   },
+  openScript: (
+    filePath: string
+  ): Promise<{
+    path: string
+    content: string
+  }> => {
+    return ipcRenderer.invoke('script:open', filePath)
+  },
   saveScript: (script: string) => {
     ipcRenderer.send('script:save', script)
   },
@@ -65,11 +73,14 @@ const script = {
 } as const
 
 const har = {
-  saveFile: (data: string) => {
-    ipcRenderer.send('har:save', data)
+  saveFile: (data: string): Promise<string> => {
+    return ipcRenderer.invoke('har:save', data)
   },
   openFile: (filePath?: string): Promise<HarFile | void> => {
     return ipcRenderer.invoke('har:open', filePath)
+  },
+  deleteFile: (filePath: string): Promise<void> => {
+    return ipcRenderer.invoke('har:delete', filePath)
   },
 } as const
 
@@ -81,11 +92,17 @@ const ui = {
   onAddFile: (callback: (path: string) => void) => {
     return createListener('ui:add-file', callback)
   },
+  onRemoveFile: (callback: (path: string) => void) => {
+    return createListener('ui:remove-file', callback)
+  },
 } as const
 
 const generator = {
-  saveGenerator: (generatorFile: string) => {
-    ipcRenderer.send('generator:save', generatorFile)
+  saveGenerator: (
+    generatorFile: string,
+    fileName?: string
+  ): Promise<string> => {
+    return ipcRenderer.invoke('generator:save', generatorFile, fileName)
   },
   loadGenerator: (path?: string): Promise<GeneratorFile | void> => {
     return ipcRenderer.invoke('generator:open', path)

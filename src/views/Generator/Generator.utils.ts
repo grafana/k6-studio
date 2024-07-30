@@ -42,12 +42,16 @@ export async function exportScript() {
 export const saveGenerator = () => {
   const generatorFile = selectGeneratorData(useGeneratorStore.getState())
 
-  window.studio.generator.saveGenerator(JSON.stringify(generatorFile, null, 2))
+  return window.studio.generator.saveGenerator(
+    JSON.stringify(generatorFile, null, 2)
+  )
 }
 
 export const loadGenerator = async (path?: string) => {
   const setGeneratorFile = useGeneratorStore.getState().setGeneratorFile
   const generatorFile = await window.studio.generator.loadGenerator(path)
+
+  console.log(generatorFile)
 
   if (!generatorFile) return
 

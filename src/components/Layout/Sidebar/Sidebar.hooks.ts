@@ -6,6 +6,7 @@ export function useFolderContent() {
   const generators = useStudioUIStore((s) => s.generators)
   const scripts = useStudioUIStore((s) => s.scripts)
   const addFile = useStudioUIStore((s) => s.addFile)
+  const removeFile = useStudioUIStore((s) => s.removeFile)
   const setFolderContent = useStudioUIStore((s) => s.setFolderContent)
 
   useEffect(() => {
@@ -21,6 +22,14 @@ export function useFolderContent() {
         addFile(path)
       }),
     [addFile]
+  )
+
+  useEffect(
+    () =>
+      window.studio.ui.onRemoveFile((path) => {
+        removeFile(path)
+      }),
+    [removeFile]
   )
 
   return {

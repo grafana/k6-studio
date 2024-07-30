@@ -4,6 +4,7 @@ import {
   RampingVUsOptions,
   SharedIterationsOptions,
 } from '@/types/testOptions'
+import { createStage, getInitialStages } from '@/utils/generator'
 import { ImmerStateCreator } from '@/utils/typescript'
 
 interface SharedIterationsState
@@ -124,18 +125,3 @@ export const createLoadProfileSlice: ImmerStateCreator<LoadProfileStore> = (
   ...createRampingSlice(...args),
   ...createSharedIterationsSlice(...args),
 })
-
-// TODO: Add validation
-function createStage(
-  target: number | string = '',
-  duration = ''
-): RampingStage {
-  return {
-    target,
-    duration,
-  }
-}
-
-function getInitialStages() {
-  return [createStage(20, '1m'), createStage(20, '3m30s'), createStage(0, '1m')]
-}

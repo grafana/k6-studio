@@ -1,4 +1,4 @@
-import { Box, Flex } from '@radix-ui/themes'
+import { Box } from '@radix-ui/themes'
 import { css } from '@emotion/react'
 import { Allotment } from 'allotment'
 import { Outlet } from 'react-router-dom'
@@ -29,14 +29,7 @@ export function Layout() {
         <Allotment.Pane>
           <Allotment vertical>
             <Allotment.Pane>
-              <Flex
-                direction="column"
-                overflow="hidden"
-                width="100%"
-                height="100%"
-              >
-                <Outlet />
-              </Flex>
+              <Outlet />
             </Allotment.Pane>
             {bottomDrawer.isOpen && (
               <Allotment.Pane visible={bottomDrawer.isOpen}>

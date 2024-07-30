@@ -1,23 +1,17 @@
 import { css } from '@emotion/react'
 import { Button } from '@radix-ui/themes'
 import { File } from './File'
-import { useStudioUIStore } from '@/store/ui'
+import { useParams } from 'react-router-dom'
 
 interface FileListProps {
   files: string[]
+  viewPath: string
   noFilesMessage: string
   onOpenFile?: (path: string) => void
 }
 
-export function FileList({ files, onOpenFile, noFilesMessage }: FileListProps) {
-  const selectedFile = useStudioUIStore((state) => state.selectedFile)
-  const setSelectedFile = useStudioUIStore((state) => state.setSelectedFile)
-
-  const handleOpenFile = (path: string) => {
-    if (!onOpenFile) return
-    onOpenFile(path)
-    setSelectedFile(path)
-  }
+export function FileList({ files, noFilesMessage, viewPath }: FileListProps) {
+  const { path } = useParams()
 
   if (files.length === 0) {
     return (
@@ -50,11 +44,7 @@ export function FileList({ files, onOpenFile, noFilesMessage }: FileListProps) {
     >
       {files.map((file) => (
         <li key={file}>
-          <File
-            path={file}
-            isSelected={selectedFile === file}
-            onOpen={handleOpenFile}
-          />
+          <File path={file} isSelected={file === path} viewPath={viewPath} />
         </li>
       ))}
     </ul>

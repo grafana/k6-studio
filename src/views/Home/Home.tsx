@@ -11,17 +11,17 @@ export function Home() {
         <NavigationCard
           title="Record flow"
           description="Use our built-in proxy to record a user flow"
-          to="recorder"
+          to="/recorder"
         />
         <NavigationCard
           title="Generate test"
           description="Transform a recorded flow into a k6 test script"
-          to="generator"
+          to="/generator"
         />
         <NavigationCard
           title="Validate script"
           description="Debug and validate your k6 script"
-          to="validator"
+          to="/validator"
         />
       </Grid>
     </Flex>

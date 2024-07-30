@@ -1,4 +1,5 @@
 import { useGeneratorStore } from '@/store/generator'
+import { getFileNameFromPath } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { CaretDownIcon } from '@radix-ui/react-icons'
 import { Button, Flex, IconButton, Popover, Text } from '@radix-ui/themes'
@@ -7,8 +8,7 @@ import { Link } from 'react-router-dom'
 export function RecordingSelector() {
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
   const setRecording = useGeneratorStore((store) => store.setRecording)
-
-  const fileName = recordingPath?.split('/').pop()
+  const fileName = getFileNameFromPath(recordingPath)
 
   const handleImport = async () => {
     const harFile = await window.studio.har.openFile()

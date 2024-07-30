@@ -2,13 +2,11 @@ import { FolderContent } from '@/types'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
-interface State extends FolderContent {
-  selectedFile: string | null
-}
+interface State extends FolderContent {}
 
 interface Actions {
   addFile: (path: string) => void
-  setSelectedFile: (path: string | null) => void
+  removeFile: (path: string) => void
   setFolderContent: (content: FolderContent) => void
 }
 
@@ -19,7 +17,6 @@ export const useStudioUIStore = create<StudioUIStore>()(
     recordings: [],
     generators: [],
     scripts: [],
-    selectedFile: null,
 
     addFile: (path) =>
       set((state) => {
@@ -35,9 +32,19 @@ export const useStudioUIStore = create<StudioUIStore>()(
           state.scripts.push(path)
         }
       }),
-    setSelectedFile: (path) =>
+    removeFile: (path) =>
       set((state) => {
-        state.selectedFile = path
+        if (path.endsWith('.har')) {
+          state.recordings = state.recordings.filter((file) => file !== path)
+        }
+
+        if (path.endsWith('.json')) {
+          state.generators = state.generators.filter((file) => file !== path)
+        }
+
+        if (path.endsWith('.js')) {
+          state.scripts = state.scripts.filter((file) => file !== path)
+        }
       }),
     setFolderContent: ({ recordings, generators, scripts }) =>
       set((state) => {
