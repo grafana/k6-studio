@@ -33,7 +33,7 @@ export function toFormat(contentType: string | undefined) {
     case 'text/html':
       return 'html'
     case 'text/plain':
-      return 'plain'
+      return 'plaintext'
     default:
       return
   }
@@ -53,13 +53,13 @@ export function parseContent(format: string | undefined, data: ProxyData) {
       case 'css':
       case 'html':
       case 'javascript':
-      case 'plain':
-        return safeAtob(content)
+      case 'plaintext':
+        return isBase64(content) ? safeAtob(content) : content
       case 'audio':
       case 'font':
       case 'image':
       case 'video':
-        return !isBase64(content) ? safeBtoa(content) : content
+        return isBase64(content) ? content : safeBtoa(content)
       default:
         return
     }
