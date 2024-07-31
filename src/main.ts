@@ -264,7 +264,6 @@ const loadHarFile = async (filePath: string) => {
   const fileHandle = await open(filePath, 'r')
   try {
     const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-    console.log(data)
     const har = await JSON.parse(data)
 
     return { path: filePath, content: har }
