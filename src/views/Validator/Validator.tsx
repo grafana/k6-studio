@@ -15,6 +15,7 @@ import { ValidatorControls } from './ValidatorControls'
 import { View } from '@/components/Layout/View'
 
 export function Validator() {
+  const [isLoading, setIsLoading] = useState(false)
   const [scriptPath, setScriptPath] = useState<string>()
   const [script, setScript] = useState<string>('')
   const [isRunning, setIsRunning] = useState(false)
@@ -42,8 +43,10 @@ export function Validator() {
     }
 
     ;(async () => {
+      setIsLoading(true)
       const { path = '', content = '' } =
         (await window.studio.script.openScript(scripPath)) || {}
+      setIsLoading(false)
       setScriptPath(path)
       setScript(content)
     })()
@@ -89,6 +92,7 @@ export function Validator() {
           onStopScript={handleStopScript}
         />
       }
+      loading={isLoading}
     >
       <Allotment vertical defaultSizes={[3, 2]}>
         <Allotment.Pane minSize={300}>

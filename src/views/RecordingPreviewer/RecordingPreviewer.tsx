@@ -13,7 +13,7 @@ import { DotsVerticalIcon } from '@radix-ui/react-icons'
 
 export function RecordingPreviewer() {
   const [groupedProxyData, setGroupedProxyData] = useState<GroupedProxyData>({})
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const { path } = useParams()
   const navigate = useNavigate()
 
@@ -24,10 +24,10 @@ export function RecordingPreviewer() {
     }
 
     ;(async () => {
-      setLoading(true)
+      setIsLoading(true)
       setGroupedProxyData({})
       const har = await window.studio.har.openFile(path)
-      setLoading(false)
+      setIsLoading(false)
 
       if (!har) {
         return
@@ -67,7 +67,7 @@ export function RecordingPreviewer() {
   return (
     <View
       title={`Recording - ${getFileNameFromPath(path ?? '')}`}
-      loading={loading}
+      loading={isLoading}
       actions={
         <>
           <Button onClick={handleCreateTestGenerator}>

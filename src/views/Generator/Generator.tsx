@@ -15,14 +15,28 @@ import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
 import { View } from '@/components/Layout/View'
-import { useGeneratorView } from './Generator.hooks'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 export function Generator() {
   const name = useGeneratorStore((store) => store.name)
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const { loading } = useGeneratorView()
+  const [isLoading, setIsLoading] = useState(false)
+  const { path } = useParams()
   useSetWindowTitle(name)
+
+  useEffect(() => {
+    if (!path) {
+      return
+    }
+
+    ;(async () => {
+      setIsLoading(true)
+      await loadGenerator(path)
+      setIsLoading(false)
+    })()
+  }, [path])
 
   return (
     <View
@@ -38,7 +52,7 @@ export function Generator() {
           )}
         </>
       }
-      loading={loading}
+      loading={isLoading}
     >
       <Allotment defaultSizes={[3, 1]}>
         <Allotment.Pane minSize={400}>
