@@ -3,6 +3,7 @@ import {
   generateScript,
   generateRequestSnippets,
   generateVariableDeclarations,
+  generateGroupSnippet,
 } from './codegen'
 import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { generateSequentialInt } from '@/rules/utils'
@@ -190,6 +191,25 @@ describe('Code generation', () => {
           sequentialIdGenerator,
           thinkTime
         ).replace(/\s/g, '')
+      ).toBe(expectedResult.replace(/\s/g, ''))
+    })
+  })
+
+  describe('generateGroupSnippet', () => {
+    it('should generate group snippet', () => {
+      const expectedResult = `
+      group('group_1', function(){});
+      sleep(1)
+    `
+
+      expect(
+        generateGroupSnippet('group_1', '', {
+          sleepType: 'groups',
+          timing: {
+            type: 'fixed',
+            value: 1,
+          },
+        }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
   })
