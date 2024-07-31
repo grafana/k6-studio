@@ -1,16 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import { useRecorderStore } from '@/store/recorder/useRecorderStore'
+import { ProxyData } from '@/types'
+import { mergeRequestsById } from '@/views/Recorder/Recorder.utils'
 
 export function useListenProxyData(group?: string) {
-  const { resetProxyData, addRequest } = useRecorderStore()
+  const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const groupRef = useRef(group)
-
-  useEffect(() => {
-    return () => {
-      resetProxyData()
-    }
-  }, [resetProxyData])
 
   useEffect(() => {
     // Create ref to avoid creating multiple listeners
@@ -20,7 +15,14 @@ export function useListenProxyData(group?: string) {
 
   useEffect(() => {
     return window.studio.proxy.onProxyData((data) => {
-      addRequest(data, groupRef.current ?? 'default')
+      setProxyData((s) =>
+        mergeRequestsById(s, {
+          ...data,
+          group: groupRef.current ?? 'default',
+        })
+      )
     })
-  }, [addRequest])
+  }, [])
+
+  return { proxyData, resetProxyData: () => setProxyData([]) }
 }

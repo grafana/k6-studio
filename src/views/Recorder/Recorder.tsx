@@ -1,33 +1,73 @@
-import { useState, useEffect } from 'react'
-import { Flex } from '@radix-ui/themes'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button, Flex } from '@radix-ui/themes'
+import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
 
 import { GroupForm } from './GroupForm'
 import { DebugControls } from './DebugControls'
-import { RecordingControls } from './RecordingButton'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
-import { selectGroupedProxyData, useRecorderStore } from '@/store/recorder'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { groupProxyData } from '@/utils/groups'
+import { startRecording, stopRecording } from './Recorder.utils'
+import { proxyDataToHar } from '@/utils/proxyDataToHar'
 
 export function Recorder() {
   const [group, setGroup] = useState<string>('Default')
-  const groupedProxyData = useRecorderStore(selectGroupedProxyData)
-
-  const setProxyData = useRecorderStore((store) => store.setProxyData)
-  const resetProxyData = useRecorderStore((store) => store.resetProxyData)
-
+  const { proxyData, resetProxyData } = useListenProxyData(group)
+  const groupedProxyData = groupProxyData(proxyData)
   useSetWindowTitle('Recorder')
-  useListenProxyData(group)
 
-  useEffect(() => {
-    return () => {
-      resetProxyData()
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+
+  async function handleStartRecording() {
+    resetProxyData()
+    setIsLoading(true)
+
+    await startRecording()
+
+    setIsLoading(false)
+    setIsRecording(true)
+  }
+
+  async function handleStopRecording() {
+    stopRecording()
+    setIsRecording(false)
+
+    if (proxyData.length > 0) {
+      const har = proxyDataToHar(groupedProxyData)
+      const filePath = await window.studio.har.saveFile(
+        JSON.stringify(har, null, 4)
+      )
+
+      navigate(`/recording-previewer/${encodeURIComponent(filePath)}`)
     }
-  }, [setProxyData, resetProxyData])
+  }
 
   return (
-    <View title="Recorder" actions={<RecordingControls />}>
+    <View
+      title="Recorder"
+      actions={
+        <Button
+          onClick={isRecording ? handleStopRecording : handleStartRecording}
+          loading={isLoading}
+          color={isRecording ? 'red' : 'green'}
+        >
+          {isRecording ? (
+            <>
+              <StopIcon /> Stop recording
+            </>
+          ) : (
+            <>
+              <PlayIcon /> Start recording
+            </>
+          )}
+        </Button>
+      }
+    >
       <Flex justify="between" wrap="wrap" gap="2" p="2">
         <GroupForm onChange={setGroup} value={group} />
 

@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom'
 import { Allotment } from 'allotment'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useRecorderStore } from '@/store/recorder'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { K6Log } from '@/types'
 import { groupProxyData } from '@/utils/groups'
@@ -20,12 +19,10 @@ export function Validator() {
   const [script, setScript] = useState<string>('')
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
-  const proxyData = useRecorderStore((store) => store.proxyData)
-  const resetProxyData = useRecorderStore((store) => store.resetProxyData)
   const { path: scripPath } = useParams()
   const fileName = getFileNameFromPath(scripPath ?? '')
 
-  useListenProxyData()
+  const { proxyData, resetProxyData } = useListenProxyData()
   useSetWindowTitle(fileName || 'Validator')
 
   const groupedProxyData = groupProxyData(proxyData)
