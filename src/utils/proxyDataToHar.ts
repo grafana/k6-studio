@@ -16,7 +16,6 @@ function createLog(
   pages: Page[],
   entries: EntryWithOptionalResponse[]
 ): HarWithOptionalResponse['log'] {
-  console.log(entries[0]?.response)
   return {
     version: '1.2',
     creator: {
