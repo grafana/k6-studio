@@ -79,7 +79,7 @@ export function Validator() {
 
   return (
     <View
-      title={`Validator${scripPath ? `- ${getFileNameFromPath(scripPath)}` : ''}`}
+      title={`Validator${scripPath ? ` - ${getFileNameFromPath(scripPath)}` : ''}`}
       actions={
         <ValidatorControls
           isRunning={isRunning}
