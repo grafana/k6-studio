@@ -102,8 +102,8 @@ export function generateGroupSnippet(
 ): string {
   return `group('${groupName}', function() {
     ${requestSnippets}
-    ${thinkTime.sleepType === 'groups' ? `${generateSleep(thinkTime.timing)}` : ''}
-  });`
+  });
+  ${thinkTime.sleepType === 'groups' ? `${generateSleep(thinkTime.timing)}` : ''}`
 }
 
 export function generateSingleRequestSnippet(
@@ -128,7 +128,6 @@ export function generateSingleRequestSnippet(
     console.error('Failed to serialize request content', error)
   }
 
-  console.log(request)
   const params = `params = ${generateRequestParams(request)}`
 
   const main = `
