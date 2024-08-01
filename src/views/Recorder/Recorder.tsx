@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button, Flex } from '@radix-ui/themes'
 import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
 
@@ -17,13 +17,15 @@ export function Recorder() {
   const [group, setGroup] = useState<string>('Default')
   const { proxyData, resetProxyData } = useListenProxyData(group)
   const groupedProxyData = groupProxyData(proxyData)
-  useSetWindowTitle('Recorder')
-
-  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
 
-  async function handleStartRecording() {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const autoStart = searchParams.get('autoStart') !== null
+  useSetWindowTitle('Recorder')
+
+  const handleStartRecording = useCallback(async () => {
     resetProxyData()
     setIsLoading(true)
 
@@ -31,7 +33,7 @@ export function Recorder() {
 
     setIsLoading(false)
     setIsRecording(true)
-  }
+  }, [resetProxyData])
 
   async function handleStopRecording() {
     stopRecording()
@@ -43,9 +45,17 @@ export function Recorder() {
         JSON.stringify(har, null, 4)
       )
 
-      navigate(`/recording-previewer/${encodeURIComponent(filePath)}`)
+      navigate(
+        `/recording-previewer/${encodeURIComponent(filePath)}?discardable`
+      )
     }
   }
+
+  useEffect(() => {
+    if (autoStart) {
+      handleStartRecording()
+    }
+  }, [autoStart, handleStartRecording])
 
   return (
     <View

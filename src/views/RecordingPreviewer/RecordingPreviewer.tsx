@@ -1,5 +1,5 @@
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 
 import { getFileNameFromPath } from '@/utils/file'
@@ -16,6 +16,8 @@ export function RecordingPreviewer() {
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const isDiscardable = searchParams.get('discardable') !== null
 
   useEffect(() => {
     if (!path) {
@@ -64,12 +66,26 @@ export function RecordingPreviewer() {
     navigate(`/generator/${encodeURIComponent(generatorPath)}`)
   }
 
+  async function handleDiscard() {
+    if (!path) {
+      return
+    }
+
+    await window.studio.har.deleteFile(path)
+    navigate('/recorder?autoStart')
+  }
+
   return (
     <View
       title={`Recording - ${getFileNameFromPath(path ?? '')}`}
       loading={isLoading}
       actions={
         <>
+          {isDiscardable && (
+            <Button onClick={handleDiscard} variant="outline" color="red">
+              Discard and start over
+            </Button>
+          )}
           <Button onClick={handleCreateTestGenerator}>
             Create test generator
           </Button>
