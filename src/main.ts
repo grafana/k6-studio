@@ -275,27 +275,11 @@ const loadHarFile = async (filePath: string) => {
 // Generator
 ipcMain.handle(
   'generator:save',
-  async (event, generatorFile: string, fileName?: string) => {
+  async (_, generatorFile: string, fileName: string) => {
     console.info('generator:save event received')
 
-    if (fileName) {
-      await writeFile(path.join(GENERATORS_PATH, fileName), generatorFile)
-      return path.join(GENERATORS_PATH, fileName)
-    }
-
-    const browserWindow = browserWindowFromEvent(event)
-    const dialogResult = await dialog.showSaveDialog(browserWindow, {
-      message: 'Save Generator',
-      defaultPath: path.join(GENERATORS_PATH, 'generator.json'),
-      filters: [{ name: 'JSON', extensions: ['json'] }],
-    })
-
-    if (dialogResult.canceled) {
-      return
-    }
-
-    await writeFile(dialogResult.filePath, generatorFile)
-    return dialogResult.filePath
+    await writeFile(path.join(GENERATORS_PATH, fileName), generatorFile)
+    return path.join(GENERATORS_PATH, fileName)
   }
 )
 

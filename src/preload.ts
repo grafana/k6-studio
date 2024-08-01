@@ -98,12 +98,10 @@ const ui = {
 } as const
 
 const generator = {
-  saveGenerator: (
-    generatorFile: string,
-    fileName?: string
-  ): Promise<string> => {
+  saveGenerator: (generatorFile: string, fileName: string): Promise<string> => {
     return ipcRenderer.invoke('generator:save', generatorFile, fileName)
   },
+  // TODO: add a separate method for importing a generator file into the workspace
   loadGenerator: (path?: string): Promise<GeneratorFile | void> => {
     return ipcRenderer.invoke('generator:open', path)
   },

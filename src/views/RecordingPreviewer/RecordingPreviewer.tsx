@@ -1,6 +1,8 @@
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
+import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import invariant from 'tiny-invariant'
 
 import { getFileNameFromPath } from '@/utils/file'
 import { View } from '@/components/Layout/View'
@@ -9,7 +11,6 @@ import { createNewGeneratorFile } from '@/utils/generator'
 import { GroupedProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { groupProxyData } from '@/utils/groups'
-import { DotsVerticalIcon } from '@radix-ui/react-icons'
 
 export function RecordingPreviewer() {
   const [groupedProxyData, setGroupedProxyData] = useState<GroupedProxyData>({})
@@ -18,22 +19,16 @@ export function RecordingPreviewer() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isDiscardable = searchParams.get('discardable') !== null
+  invariant(path, 'Path is required')
 
   useEffect(() => {
-    if (!path) {
-      navigate('/')
-      return
-    }
-
     ;(async () => {
       setIsLoading(true)
       setGroupedProxyData({})
       const har = await window.studio.har.openFile(path)
       setIsLoading(false)
 
-      if (!har) {
-        return
-      }
+      invariant(har, 'Failed to open file')
 
       setGroupedProxyData(groupProxyData(harToProxyData(har.content)))
     })()
@@ -43,20 +38,12 @@ export function RecordingPreviewer() {
     }
   }, [path, navigate])
 
-  async function handleDeleteRecording() {
-    if (!path) {
-      return
-    }
-
+  const handleDeleteRecording = async () => {
     await window.studio.har.deleteFile(path)
     navigate('/')
   }
 
-  async function handleCreateTestGenerator() {
-    if (!path) {
-      return
-    }
-
+  const handleCreateTestGenerator = async () => {
     const newGenerator = createNewGeneratorFile(path)
     const generatorPath = await window.studio.generator.saveGenerator(
       JSON.stringify(newGenerator, null, 2),
@@ -66,18 +53,14 @@ export function RecordingPreviewer() {
     navigate(`/generator/${encodeURIComponent(generatorPath)}`)
   }
 
-  async function handleDiscard() {
-    if (!path) {
-      return
-    }
-
+  const handleDiscard = async () => {
     await window.studio.har.deleteFile(path)
     navigate('/recorder?autoStart')
   }
 
   return (
     <View
-      title={`Recording - ${getFileNameFromPath(path ?? '')}`}
+      title={`Recording - ${getFileNameFromPath(path)}`}
       loading={isLoading}
       actions={
         <>

@@ -1,19 +1,23 @@
+import { useNavigate, useParams } from 'react-router-dom'
+
 import { DotsVerticalIcon, Pencil1Icon } from '@radix-ui/react-icons'
 import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
-import { useNavigate } from 'react-router-dom'
 import { useGeneratorStore } from '@/store/generator'
+import invariant from 'tiny-invariant'
 
 interface TestRuleActionsProps {
   ruleId: string
 }
 
 export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
+  const { path } = useParams()
   const navigate = useNavigate()
   const { cloneRule, deleteRule, selectRule } = useGeneratorStore()
+  invariant(path, 'Path is required')
 
   const handleEdit = () => {
     selectRule(ruleId)
-    navigate(`/generator/rule/${ruleId}`)
+    navigate(`/generator/${encodeURIComponent(path)}/rule/${ruleId}`)
   }
 
   const handleDelete = () => {
