@@ -9,6 +9,7 @@ import { GeneratorFileData } from '@/types/generator'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { GroupedProxyData } from '@/types'
+import { HarFile } from '@/types/har'
 
 export async function generateScriptPreview(
   generator: GeneratorFileData,
@@ -63,11 +64,16 @@ export const loadGenerator = async (path?: string) => {
     return
   }
 
-  const harFile = generatorFileData.data.recordingPath
-    ? await window.studio.har.openFile(generatorFileData.data.recordingPath)
-    : undefined
-
   // TODO: we need to better handle errors scenarios
+  let harFile: HarFile | undefined
+  try {
+    harFile = generatorFileData.data.recordingPath
+      ? await window.studio.har.openFile(generatorFileData.data.recordingPath)
+      : undefined
+  } catch (error) {
+    console.error(error)
+  }
+
   const recording = harFile ? harToProxyData(harFile.content) : []
 
   setGeneratorFile(generatorFileData.data, recording)

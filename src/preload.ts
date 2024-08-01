@@ -76,7 +76,7 @@ const har = {
   saveFile: (data: string): Promise<string> => {
     return ipcRenderer.invoke('har:save', data)
   },
-  openFile: (filePath?: string): Promise<HarFile | void> => {
+  openFile: (filePath?: string): Promise<HarFile | undefined> => {
     return ipcRenderer.invoke('har:open', filePath)
   },
   deleteFile: (filePath: string): Promise<void> => {

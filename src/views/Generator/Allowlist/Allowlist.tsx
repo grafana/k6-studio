@@ -1,19 +1,25 @@
+import { useEffect, useState } from 'react'
+import { uniq } from 'lodash-es'
+
+import { Button } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { ProxyData } from '@/types'
-import { Button } from '@radix-ui/themes'
-import { uniq } from 'lodash-es'
 import { AllowlistDialog } from './AllowlistDialog'
 
 export function Allowlist() {
   const requests = useGeneratorStore((store) => store.requests)
+  const hasRecording = useGeneratorStore(
+    (store) => !!store.recordingPath && store.requests.length > 0
+  )
   const allowlist = useGeneratorStore((store) => store.allowlist)
   const setAllowlist = useGeneratorStore((store) => store.setAllowlist)
-  const showAllowlistDialog = useGeneratorStore(
-    (store) => store.showAllowlistDialog
-  )
-  const setShowAllowlistDialog = useGeneratorStore(
-    (store) => store.setShowAllowlistDialog
-  )
+  const [showAllowlistDialog, setShowAllowlistDialog] = useState(false)
+
+  useEffect(() => {
+    if (hasRecording && allowlist.length === 0) {
+      setShowAllowlistDialog(true)
+    }
+  }, [allowlist, hasRecording])
 
   const hosts = extractUniqueHosts(requests)
 
