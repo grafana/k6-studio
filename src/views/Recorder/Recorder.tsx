@@ -39,16 +39,16 @@ export function Recorder() {
     stopRecording()
     setIsRecording(false)
 
-    if (proxyData.length > 0) {
-      const har = proxyDataToHar(groupedProxyData)
-      const filePath = await window.studio.har.saveFile(
-        JSON.stringify(har, null, 4)
-      )
-
-      navigate(
-        `/recording-previewer/${encodeURIComponent(filePath)}?discardable`
-      )
+    if (proxyData.length === 0) {
+      return
     }
+
+    const har = proxyDataToHar(groupedProxyData)
+    const filePath = await window.studio.har.saveFile(
+      JSON.stringify(har, null, 4)
+    )
+
+    navigate(`/recording-previewer/${encodeURIComponent(filePath)}?discardable`)
   }
 
   useEffect(() => {

@@ -227,9 +227,9 @@ ipcMain.on('script:save', async (event, script: string) => {
 })
 
 // HAR
-ipcMain.handle('har:save', (_, data) => {
+ipcMain.handle('har:save', async (_, data) => {
   const fineName = `${new Date().toISOString()}.har`
-  writeFile(path.join(RECORDINGS_PATH, fineName), data)
+  await writeFile(path.join(RECORDINGS_PATH, fineName), data)
   return path.join(RECORDINGS_PATH, fineName)
 })
 
