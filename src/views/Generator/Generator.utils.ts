@@ -39,11 +39,12 @@ export async function exportScript() {
   saveScript(script)
 }
 
-export const saveGenerator = () => {
+export const saveGenerator = (fileName: string) => {
   const generatorFile = selectGeneratorData(useGeneratorStore.getState())
 
   return window.studio.generator.saveGenerator(
-    JSON.stringify(generatorFile, null, 2)
+    JSON.stringify(generatorFile, null, 2),
+    fileName
   )
 }
 

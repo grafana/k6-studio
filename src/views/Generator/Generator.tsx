@@ -1,4 +1,6 @@
 import { Allotment } from 'allotment'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { Button } from '@radix-ui/themes'
 
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
@@ -15,8 +17,8 @@ import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
 import { View } from '@/components/Layout/View'
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { getFileNameFromPath } from '@/utils/file'
+import invariant from 'tiny-invariant'
 
 export function Generator() {
   const name = useGeneratorStore((store) => store.name)
@@ -24,13 +26,10 @@ export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useParams()
+  invariant(path, 'Path is required')
   useSetWindowTitle(name)
 
   useEffect(() => {
-    if (!path) {
-      return
-    }
-
     ;(async () => {
       setIsLoading(true)
       await loadGenerator(path)
@@ -45,7 +44,9 @@ export function Generator() {
         <>
           <RecordingSelector />
           <Allowlist />
-          <Button onClick={() => saveGenerator()}>Save</Button>
+          <Button onClick={() => saveGenerator(getFileNameFromPath(path))}>
+            Save
+          </Button>
           <Button onClick={() => loadGenerator()}>Load</Button>
           {hasRecording && (
             <Button onClick={exportScript}>Export script</Button>
