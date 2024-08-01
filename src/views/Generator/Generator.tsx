@@ -1,8 +1,6 @@
 import { Allotment } from 'allotment'
 import { Button } from '@radix-ui/themes'
-import { useEffect } from 'react'
 
-import { PageHeading } from '@/components/Layout/PageHeading'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import {
   useGeneratorStore,
@@ -16,29 +14,46 @@ import { GeneratorSidebar } from './GeneratorSidebar'
 import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
+import { View } from '@/components/Layout/View'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 export function Generator() {
   const name = useGeneratorStore((store) => store.name)
-  const resetRecording = useGeneratorStore((store) => store.resetRecording)
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const hasRecording = useGeneratorStore(selectHasRecording)
+  const [isLoading, setIsLoading] = useState(false)
+  const { path } = useParams()
   useSetWindowTitle(name)
 
   useEffect(() => {
-    return () => {
-      resetRecording()
+    if (!path) {
+      return
     }
-  }, [resetRecording])
+
+    ;(async () => {
+      setIsLoading(true)
+      await loadGenerator(path)
+      setIsLoading(false)
+    })()
+  }, [path])
 
   return (
-    <>
-      <PageHeading text="Generator">
-        <RecordingSelector />
-        <Allowlist />
-        <Button onClick={saveGenerator}>Save</Button>
-        <Button onClick={() => loadGenerator()}>Load</Button>
-        {hasRecording && <Button onClick={exportScript}>Export script</Button>}
-      </PageHeading>
+    <View
+      title="Generator"
+      actions={
+        <>
+          <RecordingSelector />
+          <Allowlist />
+          <Button onClick={() => saveGenerator()}>Save</Button>
+          <Button onClick={() => loadGenerator()}>Load</Button>
+          {hasRecording && (
+            <Button onClick={exportScript}>Export script</Button>
+          )}
+        </>
+      }
+      loading={isLoading}
+    >
       <Allotment defaultSizes={[3, 1]}>
         <Allotment.Pane minSize={400}>
           <Allotment vertical defaultSizes={[1, 1]}>
@@ -54,6 +69,6 @@ export function Generator() {
           <GeneratorSidebar requests={filteredRequests} />
         </Allotment.Pane>
       </Allotment>
-    </>
+    </View>
   )
 }

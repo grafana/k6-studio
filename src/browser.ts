@@ -45,6 +45,7 @@ export const launchBrowser = async () => {
       '--no-first-run',
       '--disable-background-networking',
       '--disable-component-update',
+      '--disable-search-engine-choice-screen',
       `--proxy-server=http://localhost:${proxyPort}`,
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
       disableChromeOptimizations,

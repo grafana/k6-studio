@@ -1,6 +1,5 @@
 import { TestRule } from '@/types/rules'
 import { ImmerStateCreator } from '@/utils/typescript'
-import { rules } from '../fixtures'
 
 interface State {
   rules: TestRule[]
@@ -19,7 +18,7 @@ interface Actions {
 export type RulesSliceStore = State & Actions
 
 export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
-  rules,
+  rules: [],
   selectedRuleId: null,
   createRule: (type) =>
     set((state) => {

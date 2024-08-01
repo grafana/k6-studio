@@ -1,27 +1,26 @@
 import { Card, Text } from '@radix-ui/themes'
-import { Link, To } from 'react-router-dom'
 
 interface NavigationCardProps {
   title: string
   description: string
-  to: To
+  onClick: () => void
 }
 
 export function NavigationCard({
   title,
   description,
-  to,
+  onClick,
 }: NavigationCardProps) {
   return (
     <Card asChild>
-      <Link to={to}>
+      <button type="button" onClick={onClick}>
         <Text as="div" size="2" weight="bold">
           {title}
         </Text>
         <Text as="div" size="2" color="gray">
           {description}
         </Text>
-      </Link>
+      </button>
     </Card>
   )
 }

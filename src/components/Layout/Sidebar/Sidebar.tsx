@@ -1,21 +1,14 @@
 import { css } from '@emotion/react'
 import { Box, Flex, Heading, IconButton, ScrollArea } from '@radix-ui/themes'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { FileTree } from '@/components/FileTree'
 import { useFolderContent } from './Sidebar.hooks'
-import { loadGenerator } from '@/views/Generator/Generator.utils'
 import K6Logo from '@/assets/logo.svg'
 
 export function Sidebar() {
   const { recordings, generators, scripts } = useFolderContent()
-  const navigate = useNavigate()
-
-  const handleOpenGenerator = (path: string) => {
-    loadGenerator(path)
-    navigate('/generator')
-  }
 
   return (
     <Box
@@ -50,17 +43,19 @@ export function Sidebar() {
             label="Recordings"
             files={recordings}
             noFilesMessage="No recordings found"
+            viewPath="/recording-previewer"
           />
           <FileTree
             label="Test generators"
             files={generators}
-            onOpenFile={handleOpenGenerator}
             noFilesMessage="No generators found"
+            viewPath="/generator"
           />
           <FileTree
             label="Scripts"
             files={scripts}
             noFilesMessage="No scripts found"
+            viewPath="/validator"
           />
         </Flex>
       </ScrollArea>

@@ -41,7 +41,7 @@ export function GeneratorDrawer() {
 }
 
 function TabNavLink({ path, label }: { path: string; label: string }) {
-  const match = useMatch(`generator/${path}`)
+  const match = useMatch(`generator/:pathp/${path}`)
 
   return (
     <TabNav.Link asChild active={match !== null}>

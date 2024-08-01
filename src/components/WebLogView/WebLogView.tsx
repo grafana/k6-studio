@@ -7,13 +7,14 @@ import { isGroupedProxyData } from './WebLogView.utils'
 import { Row } from './Row'
 import { Group } from './Group'
 
-export function WebLogView({
-  requests,
-}: {
+interface WebLogViewProps {
   requests: ProxyData[] | GroupedProxyData
-}) {
+  noRequestsMessage?: string
+}
+
+export function WebLogView({ requests, noRequestsMessage }: WebLogViewProps) {
   if (isEmpty(requests)) {
-    return <NoRequestsMessage />
+    return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
   }
 
   if (isGroupedProxyData(requests)) {
@@ -31,7 +32,11 @@ export function WebLogView({
   return <RequestList requests={requests} />
 }
 
-function RequestList({ requests }: { requests: ProxyData[] }) {
+interface RequestListProps {
+  requests: ProxyData[]
+}
+
+function RequestList({ requests }: RequestListProps) {
   return (
     <>
       {requests.map((data) => (
@@ -41,13 +46,19 @@ function RequestList({ requests }: { requests: ProxyData[] }) {
   )
 }
 
-function NoRequestsMessage() {
+interface NoRequestsMessageProps {
+  noRequestsMessage?: string
+}
+
+function NoRequestsMessage({
+  noRequestsMessage = 'Your requests will appear here.',
+}: NoRequestsMessageProps) {
   return (
     <Callout.Root>
       <Callout.Icon>
         <InfoCircledIcon />
       </Callout.Icon>
-      <Callout.Text>Your requests will appear here.</Callout.Text>
+      <Callout.Text>{noRequestsMessage}</Callout.Text>
     </Callout.Root>
   )
 }

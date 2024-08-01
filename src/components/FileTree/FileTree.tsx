@@ -8,15 +8,15 @@ import { FileList } from './FileList'
 interface FileTreeProps {
   label: string
   files: string[]
+  viewPath: string
   noFilesMessage?: string
-  onOpenFile?: (path: string) => void
 }
 
 export function FileTree({
   label,
   files,
+  viewPath,
   noFilesMessage = 'No files found',
-  onOpenFile,
 }: FileTreeProps) {
   const [open, setOpen] = useState(true)
 
@@ -37,7 +37,7 @@ export function FileTree({
       <Collapsible.Content>
         <FileList
           files={files}
-          onOpenFile={onOpenFile}
+          viewPath={viewPath}
           noFilesMessage={noFilesMessage}
         />
       </Collapsible.Content>

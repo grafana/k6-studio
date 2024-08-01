@@ -1,7 +1,31 @@
 import { Flex, Grid, Text } from '@radix-ui/themes'
 import { NavigationCard } from './NavigationCard'
+import { createNewGeneratorFile } from '@/utils/generator'
+import { useNavigate } from 'react-router-dom'
 
 export function Home() {
+  const navigate = useNavigate()
+
+  // TODO: offer to create a new generator or use an existing one
+  async function handleCreateTestGenerator() {
+    const newGenerator = createNewGeneratorFile()
+    const generatorPath = await window.studio.generator.saveGenerator(
+      JSON.stringify(newGenerator, null, 2),
+      `${new Date().toISOString()}.json`
+    )
+
+    navigate(`/generator/${encodeURIComponent(generatorPath)}`)
+  }
+
+  function handleNavigateToRecorder() {
+    navigate('/recorder')
+  }
+
+  // TODO: offer to select a script to validate
+  function handleNavigateToValidator() {
+    navigate('/validator')
+  }
+
   return (
     <Flex direction="column" align="center" justify="center" height="100%">
       <Text size="3" weight="bold" mb="4">
@@ -11,17 +35,17 @@ export function Home() {
         <NavigationCard
           title="Record flow"
           description="Use our built-in proxy to record a user flow"
-          to="recorder"
+          onClick={handleNavigateToRecorder}
         />
         <NavigationCard
           title="Generate test"
           description="Transform a recorded flow into a k6 test script"
-          to="generator"
+          onClick={handleCreateTestGenerator}
         />
         <NavigationCard
           title="Validate script"
           description="Debug and validate your k6 script"
-          to="validator"
+          onClick={handleNavigateToValidator}
         />
       </Grid>
     </Flex>

@@ -42,7 +42,9 @@ export async function exportScript() {
 export const saveGenerator = () => {
   const generatorFile = selectGeneratorData(useGeneratorStore.getState())
 
-  window.studio.generator.saveGenerator(JSON.stringify(generatorFile, null, 2))
+  return window.studio.generator.saveGenerator(
+    JSON.stringify(generatorFile, null, 2)
+  )
 }
 
 export const loadGenerator = async (path?: string) => {
@@ -60,9 +62,9 @@ export const loadGenerator = async (path?: string) => {
     return
   }
 
-  const harFile = await window.studio.har.openFile(
-    generatorFileData.data.recordingPath
-  )
+  const harFile = generatorFileData.data.recordingPath
+    ? await window.studio.har.openFile(generatorFileData.data.recordingPath)
+    : undefined
 
   // TODO: we need to better handle errors scenarios
   const recording = harFile ? harToProxyData(harFile.content) : []

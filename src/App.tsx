@@ -9,6 +9,7 @@ import { Home } from '@/views/Home'
 import { Generator } from './views/Generator/Generator'
 import { useTheme } from './hooks/useTheme'
 import { globalStyles } from './globalStyles'
+import { RecordingPreviewer } from './views/RecordingPreviewer'
 
 export function App() {
   const theme = useTheme()
@@ -21,8 +22,12 @@ export function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="recorder" element={<Recorder />} />
-            <Route path="validator" element={<Validator />} />
-            <Route path="generator/*" element={<Generator />} />
+            <Route
+              path="recording-previewer/:path"
+              element={<RecordingPreviewer />}
+            />
+            <Route path="generator/:path/*" element={<Generator />} />
+            <Route path="validator/:path?" element={<Validator />} />
           </Route>
         </Routes>
       </HashRouter>
