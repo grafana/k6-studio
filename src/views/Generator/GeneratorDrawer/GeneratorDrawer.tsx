@@ -1,59 +1,67 @@
 import { Flex, ScrollArea, TabNav } from '@radix-ui/themes'
-import {
-  Link,
-  Navigate,
-  Outlet,
-  Route,
-  Routes,
-  useMatch,
-} from 'react-router-dom'
+import { Link, Outlet, useMatch } from 'react-router-dom'
 
-import { LoadProfile } from './LoadProfile'
-import { VariablesEditor } from './VariablesEditor'
-import { ThinkTime } from './ThinkTime'
-import { RuleEditor } from './RuleEditor'
 import { useGeneratorParams } from '../Generator.hooks'
+import { getRoutePath, RouteName } from '@/routeMap'
 
 export function GeneratorDrawer() {
-  return (
-    <Routes>
-      <Route path="/" element={<GeneratorDrawerLayout />}>
-        <Route path="/" element={<Navigate to="loadProfile" replace />} />
-        <Route path="rule/:ruleId" element={<RuleEditor />} />
-        <Route path="loadProfile" element={<LoadProfile />} />
-        <Route path="thinkTime" element={<ThinkTime />} />
-        <Route path="testData" element={<VariablesEditor />} />
-      </Route>
-    </Routes>
-  )
-}
-
-function TabNavLink({ to, label }: { to: string; label: string }) {
-  const match = useMatch(`generator/:path/${to}`)
-
-  return (
-    <TabNav.Link asChild active={match !== null}>
-      <Link to={to}>{label}</Link>
-    </TabNav.Link>
-  )
-}
-
-function GeneratorDrawerLayout() {
-  const { ruleId } = useGeneratorParams()
+  const { path: decodedPath, ruleId } = useGeneratorParams()
+  const path = encodeURIComponent(decodedPath)
 
   return (
     <Flex direction="column" height="100%">
       <TabNav.Root>
         {ruleId !== undefined && (
-          <TabNavLink to={`rule/${ruleId}`} label="Rule" />
+          <TabNavLink
+            route="rule"
+            params={{
+              path,
+              ruleId,
+            }}
+            label="Rule"
+          />
         )}
-        <TabNavLink to="loadProfile" label="Load profile" />
-        <TabNavLink to="thinkTime" label="Think time" />
-        <TabNavLink to="testData" label="Test data" />
+        <TabNavLink
+          route="loadProfile"
+          params={{
+            path,
+          }}
+          label="Load profile"
+        />
+        <TabNavLink
+          route="thinkTime"
+          params={{
+            path,
+          }}
+          label="Think time"
+        />
+        <TabNavLink
+          route="testData"
+          params={{
+            path,
+          }}
+          label="Test data"
+        />
       </TabNav.Root>
       <ScrollArea style={{ height: '100%' }}>
         <Outlet />
       </ScrollArea>
     </Flex>
+  )
+}
+
+interface TabNavLinkProps {
+  route: RouteName
+  params: Record<string, string | number> | 0 | false | null
+  label: string
+}
+
+function TabNavLink({ route, params, label }: TabNavLinkProps) {
+  const match = useMatch(getRoutePath(route))
+
+  return (
+    <TabNav.Link asChild active={match !== null}>
+      <Link to={getRoutePath(route, params)}>{label}</Link>
+    </TabNav.Link>
   )
 }

@@ -12,12 +12,12 @@ import {
 import { View } from '@/components/Layout/View'
 import { getFileNameFromPath } from '@/utils/file'
 import { exportScript, saveGenerator, loadGenerator } from './Generator.utils'
-import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
 import { useGeneratorParams } from './Generator.hooks'
+import { Outlet } from 'react-router-dom'
 
 export function Generator() {
   const name = useGeneratorStore((store) => store.name)
@@ -61,7 +61,7 @@ export function Generator() {
               <TestRuleContainer />
             </Allotment.Pane>
             <Allotment.Pane minSize={300}>
-              <GeneratorDrawer />
+              <Outlet />
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>

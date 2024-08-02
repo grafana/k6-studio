@@ -4,6 +4,7 @@ import { DotsVerticalIcon, Pencil1Icon } from '@radix-ui/react-icons'
 import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { useGeneratorParams } from '../../Generator.hooks'
+import { getRoutePath } from '@/routeMap'
 
 interface TestRuleActionsProps {
   ruleId: string
@@ -15,12 +16,12 @@ export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
   const { cloneRule, deleteRule } = useGeneratorStore()
 
   const handleEdit = () => {
-    navigate(`/generator/${encodeURIComponent(path)}/rule/${ruleId}`)
+    navigate(getRoutePath('rule', { path: encodeURIComponent(path), ruleId }))
   }
 
   const handleDelete = () => {
     deleteRule(ruleId)
-    navigate(`/generator/${encodeURIComponent(path)}`)
+    navigate(getRoutePath('generator', { path: encodeURIComponent(path) }))
   }
 
   const handleCopy = () => {

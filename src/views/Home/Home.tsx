@@ -2,6 +2,7 @@ import { Flex, Grid, Text } from '@radix-ui/themes'
 import { NavigationCard } from './NavigationCard'
 import { createNewGeneratorFile } from '@/utils/generator'
 import { useNavigate } from 'react-router-dom'
+import { getRoutePath } from '@/routeMap'
 
 export function Home() {
   const navigate = useNavigate()
@@ -14,16 +15,18 @@ export function Home() {
       `${new Date().toISOString()}.json`
     )
 
-    navigate(`/generator/${encodeURIComponent(generatorPath)}`)
+    navigate(
+      getRoutePath('generator', { path: encodeURIComponent(generatorPath) })
+    )
   }
 
   function handleNavigateToRecorder() {
-    navigate('/recorder')
+    navigate(getRoutePath('recorder'))
   }
 
   // TODO: offer to select a script to validate
   function handleNavigateToValidator() {
-    navigate('/validator')
+    navigate(getRoutePath('validator'))
   }
 
   return (

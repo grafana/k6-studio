@@ -6,6 +6,7 @@ import { useGeneratorStore } from '@/store/generator'
 import { TestRule } from '@/types/rules'
 import { createEmptyRule } from '@/utils/rules'
 import { useGeneratorParams } from './Generator.hooks'
+import { getRoutePath } from '@/routeMap'
 
 export function NewRuleMenu() {
   const navigate = useNavigate()
@@ -15,8 +16,12 @@ export function NewRuleMenu() {
   const createRule = (type: TestRule['type']) => {
     const newRule = createEmptyRule(type)
     addRule(newRule)
-    console.log(newRule)
-    navigate(`/generator/${encodeURIComponent(path)}/rule/${newRule.id}`)
+    navigate(
+      getRoutePath('rule', {
+        path: encodeURIComponent(path),
+        ruleId: newRule.id,
+      })
+    )
   }
 
   return (

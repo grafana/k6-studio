@@ -1,11 +1,13 @@
+import { useNavigate } from 'react-router-dom'
+import { Box, Callout, IconButton } from '@radix-ui/themes'
+
 import { selectRuleById, useGeneratorStore } from '@/store/generator'
 import { exhaustive } from '@/utils/typescript'
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
-import { Box, Callout, IconButton } from '@radix-ui/themes'
 import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
-import { useNavigate } from 'react-router-dom'
 import { useGeneratorParams } from '../../Generator.hooks'
+import { getRoutePath } from '@/routeMap'
 
 export function RuleEditorSwitch() {
   const { ruleId } = useGeneratorParams()
@@ -41,7 +43,7 @@ export function RuleEditor() {
   const navigate = useNavigate()
 
   const handleClose = () => {
-    navigate(`/generator/${encodeURIComponent(path)}`)
+    navigate(getRoutePath('generator', { path: encodeURIComponent(path) }))
   }
 
   return (
