@@ -1,18 +1,30 @@
 import { PlusIcon } from '@radix-ui/react-icons'
-import { Button, DropdownMenu } from '@radix-ui/themes'
+import { DropdownMenu, IconButton } from '@radix-ui/themes'
+import { useNavigate } from 'react-router-dom'
 
 import { useGeneratorStore } from '@/store/generator'
+import { TestRule } from '@/types/rules'
+import { createEmptyRule } from '@/utils/rules'
+import { useGeneratorParams } from './Generator.hooks'
 
 export function NewRuleMenu() {
-  const { createRule } = useGeneratorStore()
+  const navigate = useNavigate()
+  const { path } = useGeneratorParams()
+  const addRule = useGeneratorStore((store) => store.addRule)
+
+  const createRule = (type: TestRule['type']) => {
+    const newRule = createEmptyRule(type)
+    addRule(newRule)
+    console.log(newRule)
+    navigate(`/generator/${encodeURIComponent(path)}/rule/${newRule.id}`)
+  }
 
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <Button variant="solid">
-          Add rule
-          <PlusIcon width="15" height="15" />
-        </Button>
+        <IconButton aria-label="Add rule" variant="soft" radius="full" size="1">
+          <PlusIcon />
+        </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         <DropdownMenu.Item

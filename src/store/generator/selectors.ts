@@ -3,19 +3,8 @@ import type { GeneratorState } from './types'
 import { TestOptions } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
 
-export function selectSelectedRule(state: GeneratorState) {
-  if (!state.selectedRuleId) {
-    return
-  }
-
-  const rule = state.rules.find((rule) => rule.id === state.selectedRuleId)
-
-  if (!rule) {
-    // TODO: make sure this is handled
-    console.error('Rule not found')
-  }
-
-  return rule
+export function selectRuleById(state: GeneratorState, id?: string) {
+  return state.rules.find((rule) => rule.id === id)
 }
 
 export function selectHasRecording(state: GeneratorState) {
