@@ -4,7 +4,11 @@ import * as prettierPluginBabel from 'prettier/plugins/babel'
 // eslint-disable-next-line import/namespace
 import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
-import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
+import {
+  selectFilteredRequests,
+  selectGeneratorData,
+  useGeneratorStore,
+} from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
@@ -33,9 +37,12 @@ export function saveScript(script: string) {
 
 export async function exportScript() {
   const generator = selectGeneratorData(useGeneratorStore.getState())
-  const recording = groupProxyData(useGeneratorStore.getState().requests)
+  const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
-  const script = await generateScriptPreview(generator, recording)
+  const script = await generateScriptPreview(
+    generator,
+    groupProxyData(filteredRequests)
+  )
 
   saveScript(script)
 }
