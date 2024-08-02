@@ -152,7 +152,7 @@ function generateRequestParams(request: ProxyData['request']): string {
   return `
     {
       headers: {
-        ${request.headers.map(([name, value]) => `'${name}': '${value}'`).join(',\n')}
+        ${request.headers.map(([name, value]) => `'${name}': \`${value}\``).join(',\n')}
       }
     }
   `
