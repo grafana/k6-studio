@@ -6,6 +6,7 @@ import { getFileNameFromPath } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { CaretDownIcon } from '@radix-ui/react-icons'
 import { useStudioUIStore } from '@/store/ui'
+import { css } from '@emotion/react'
 
 // TODO: Improve accessibility and UX in general
 export function RecordingSelector() {
@@ -42,6 +43,10 @@ export function RecordingSelector() {
                   <Button
                     key={filePath}
                     variant="ghost"
+                    color={recordingPath === filePath ? 'violet' : 'gray'}
+                    css={css`
+                      justify-content: start;
+                    `}
                     onClick={() => handleOpen(filePath)}
                   >
                     {getFileNameFromPath(filePath)}

@@ -39,7 +39,7 @@ export function RecordingPreviewer() {
   }, [path, navigate])
 
   const handleDeleteRecording = async () => {
-    await window.studio.har.deleteFile(path)
+    await window.studio.ui.deleteFile(path)
     navigate('/')
   }
 
@@ -54,7 +54,7 @@ export function RecordingPreviewer() {
   }
 
   const handleDiscard = async () => {
-    await window.studio.har.deleteFile(path)
+    await window.studio.ui.deleteFile(path)
     navigate('/recorder?autoStart')
   }
 

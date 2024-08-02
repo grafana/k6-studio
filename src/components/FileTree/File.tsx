@@ -1,8 +1,9 @@
 import { css } from '@emotion/react'
-import { Button, Tooltip } from '@radix-ui/themes'
+import { Text } from '@radix-ui/themes'
+import { Link } from 'react-router-dom'
 
 import { getFileNameFromPath } from '@/utils/file'
-import { Link } from 'react-router-dom'
+import { FileContextMenu } from './FileContextMenu'
 
 interface FileProps {
   path: string
@@ -14,32 +15,41 @@ export function File({ path, viewPath, isSelected }: FileProps) {
   const fileName = getFileNameFromPath(path)
 
   return (
-    <Tooltip content={path}>
-      <Button
-        variant="outline"
+    <FileContextMenu path={path} isSelected={isSelected}>
+      <Text
+        size="2"
         color={isSelected ? 'violet' : 'gray'}
-        radius="full"
         css={css`
-          width: 100%;
-          max-width: 100%;
-          justify-content: flex-start;
-          border: none;
-          box-shadow: none;
+          display: block;
+          padding: var(--space-1) var(--space-2);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          text-decoration: none;
+
+          &:hover {
+            background-color: var(--gray-4);
+          }
         `}
         asChild
       >
-        <Link to={`${viewPath}/${encodeURIComponent(path)}`}>
-          <span
-            css={css`
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            `}
-          >
-            {fileName}
-          </span>
-        </Link>
-      </Button>
-    </Tooltip>
+        <Link to={`${viewPath}/${encodeURIComponent(path)}`}>{fileName}</Link>
+      </Text>
+    </FileContextMenu>
+  )
+}
+
+export function NoFileMessage({ message }: { message: string }) {
+  return (
+    <Text
+      size="2"
+      color="gray"
+      css={css`
+        display: block;
+        padding: var(--space-1) var(--space-2);
+      `}
+    >
+      {message}
+    </Text>
   )
 }

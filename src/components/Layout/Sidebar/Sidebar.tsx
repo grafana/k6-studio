@@ -12,7 +12,6 @@ export function Sidebar() {
 
   return (
     <Box
-      p="2"
       css={css`
         background-color: var(--gray-2);
         height: 100%;
@@ -21,7 +20,7 @@ export function Sidebar() {
         overflow: hidden;
       `}
     >
-      <Flex gap="2" align="center" mb="2">
+      <Flex gap="2" align="center" mb="2" p="2">
         <IconButton asChild aria-label="Home" variant="ghost">
           <Link to="/">
             <img src={K6Logo} alt="k6 Logo" width="18" height="18" />
