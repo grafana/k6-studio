@@ -41,7 +41,7 @@ export function RuleEditor() {
 
   const handleClose = () => {
     selectRule(null)
-    navigate('/generator')
+    navigate(-1)
   }
 
   return (
