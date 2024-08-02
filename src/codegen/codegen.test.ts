@@ -127,7 +127,7 @@ describe('Code generation', () => {
       }
 
       const expectedResult = `
-        params = { headers: {}, cookies: {} }
+        params = { headers: {} }
         resp = http.request('GET', \`/api/v1/users\`, null, params)
       `
 
@@ -168,17 +168,17 @@ describe('Code generation', () => {
       }
 
       const expectedResult = `
-        params = { headers: {}, cookies: {} }
+        params = { headers: {} }
         resp = http.request('POST', \`http://test.k6.io/api/v1/foo\`, null, params)
 
-        params = { headers: {}, cookies: {} }
+        params = { headers: {} }
         resp = http.request('POST', \`http://test.k6.io/api/v1/login\`, null, params)
         let correl_0 = resp.json().user_id
 
-        params = { headers: {}, cookies: {} }
+        params = { headers: {} }
         resp = http.request('GET', \`http://test.k6.io/api/v1/users/\${correl_0}\`, null, params)
 
-        params = { headers: {}, cookies: {} }
+        params = { headers: {} }
         resp = http.request('POST', \`http://test.k6.io/api/v1/users\`, \`${JSON.stringify({ user_id: '${correl_0}' })}\`, params)
 
       `
