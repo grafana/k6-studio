@@ -79,14 +79,17 @@ const har = {
   openFile: (filePath?: string): Promise<HarFile | undefined> => {
     return ipcRenderer.invoke('har:open', filePath)
   },
-  deleteFile: (filePath: string): Promise<void> => {
-    return ipcRenderer.invoke('har:delete', filePath)
-  },
 } as const
 
 const ui = {
   toggleTheme: () => {
     ipcRenderer.send('ui:toggle-theme')
+  },
+  openContainingFolder: (path: string) => {
+    ipcRenderer.send('ui:open-folder', path)
+  },
+  deleteFile: (path: string): Promise<void> => {
+    return ipcRenderer.invoke('ui:delete-file', path)
   },
   getFiles: (): Promise<FolderContent> => ipcRenderer.invoke('ui:get-files'),
   onAddFile: (callback: (path: string) => void) => {

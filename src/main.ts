@@ -1,4 +1,11 @@
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  nativeTheme,
+  shell,
+} from 'electron'
 import { open, writeFile, unlink } from 'fs/promises'
 import { readdirSync } from 'fs'
 import path from 'path'
@@ -255,11 +262,6 @@ ipcMain.handle('har:open', async (event, filePath?: string) => {
   return
 })
 
-ipcMain.handle('har:delete', async (_, filePath: string) => {
-  console.info('har:delete event received')
-  return unlink(filePath)
-})
-
 const loadHarFile = async (filePath: string) => {
   const fileHandle = await open(filePath, 'r')
   try {
@@ -321,6 +323,16 @@ ipcMain.handle('generator:open', async (event, path?: string) => {
 // UI
 ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
+})
+
+ipcMain.handle('ui:delete-file', async (_, filePath: string) => {
+  console.info('ui:delete-file event received')
+  return unlink(filePath)
+})
+
+ipcMain.on('ui:open-folder', async (_, filePath: string) => {
+  console.info('ui:open-folder event received')
+  shell.showItemInFolder(filePath)
 })
 
 ipcMain.handle('ui:get-files', () => {

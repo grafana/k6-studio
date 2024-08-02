@@ -22,7 +22,7 @@ export function FileTree({
 
   return (
     <Collapsible.Root open={open} onOpenChange={setOpen}>
-      <Flex align="center" gap="2" width="100%" pl="1" pt="1">
+      <Flex align="center" gap="2" width="100%" px="2" pt="1">
         <Collapsible.Trigger asChild>
           <IconButton variant="ghost" color="gray" radius="full" size="1">
             {open ? <CaretDownIcon /> : <CaretRightIcon />}

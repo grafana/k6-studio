@@ -1,6 +1,5 @@
 import { css } from '@emotion/react'
-import { Button } from '@radix-ui/themes'
-import { File } from './File'
+import { File, NoFileMessage } from './File'
 import { useParams } from 'react-router-dom'
 
 interface FileListProps {
@@ -14,31 +13,14 @@ export function FileList({ files, noFilesMessage, viewPath }: FileListProps) {
   const { path } = useParams()
 
   if (files.length === 0) {
-    return (
-      <Button
-        variant="outline"
-        color="gray"
-        radius="full"
-        disabled
-        css={css`
-          width: 100%;
-          max-width: 100%;
-          justify-content: flex-start;
-          border: none;
-          box-shadow: none;
-          margin: var(--space-1);
-        `}
-      >
-        {noFilesMessage}
-      </Button>
-    )
+    return <NoFileMessage message={noFilesMessage} />
   }
 
   return (
     <ul
       css={css`
         list-style: none;
-        padding: var(--space-1);
+        padding: 0;
         margin: var(--space-1) 0 0;
       `}
     >
