@@ -12,7 +12,20 @@ export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
 }
 
 function parseRequest(request: Entry['request']): Request {
-  const content = request.postData?.text ? request.postData.text : ''
+  let content = request.postData?.text ? request.postData.text : ''
+  if (request.postData?.params) {
+    content = JSON.stringify(
+      request.postData.params.reduce(
+        (acc, param) => {
+          //@ts-expect-error we need to handle the various possible params types in postData
+          acc[param.name] = param.value
+          return acc
+        },
+        {} as { [key: string]: string }
+      )
+    )
+  }
+
   const url = new URL(request.url)
 
   return {

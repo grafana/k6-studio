@@ -500,7 +500,7 @@ const extractCorrelationJsonBody = (
   }
 
   const correlationExtractionSnippet = `
-let correl_${uniqueId} = resp.json().${rule.extractor.selector.path}`
+let correl_${uniqueId} = resp.json()${rule.extractor.selector.path}`
   return {
     extractedValue: extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
