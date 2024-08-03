@@ -13,6 +13,7 @@ import { Variable } from '@/types/testData'
 import { ThinkTime } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
 import { generateOptions } from './options'
+import { getContentTypeWithCharsetHeader } from '@/utils/headers'
 
 interface GenerateScriptParams {
   recording: GroupedProxyData
@@ -129,6 +130,14 @@ export function generateSingleRequestSnippet(
   try {
     if (request.content) {
       content = `\`${request.content}\``
+
+      // if we have postData parameters we need to pass an object to the k6 post function because if it receives
+      // a stringified json it won't correctly post the data.
+      const contentTypeHeader =
+        getContentTypeWithCharsetHeader(request.headers) ?? ''
+      if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
+        content = `JSON.parse(\`${request.content}\`)`
+      }
     }
   } catch (error) {
     console.error('Failed to serialize request content', error)
