@@ -18,6 +18,6 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["vite/client", "@emotion/react/types/css-prop"]
+    "types": ["vite/client", "@emotion/react/types/css-prop", "vitest/importMeta"]
   }
 }

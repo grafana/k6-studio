@@ -512,3 +512,155 @@ let correl_${uniqueId} = resp.json()${json_path}`
     generatedUniqueId: uniqueId,
   }
 }
+
+import { generateSequentialInt } from './utils'
+if (import.meta.vitest) {
+  const { it, expect } = import.meta.vitest
+
+  const generateResponse = (content: string): Response => {
+    return {
+      statusCode: 200,
+      path: '/api/v1/foo',
+      reason: 'OK',
+      httpVersion: '1.1',
+      headers: [['Content-Type', 'application/json']],
+      cookies: [],
+      content: content,
+      contentLength: 0,
+      timestampStart: 0,
+    }
+  }
+
+  const generateRequest = (): Request => {
+    return {
+      method: 'POST',
+      url: 'http://test.k6.io/api/v1/foo',
+      headers: [],
+      cookies: [],
+      query: [],
+      scheme: 'http',
+      host: 'localhost:3000',
+      content: '',
+      path: '/api/v1/foo',
+      timestampStart: 0,
+      timestampEnd: 0,
+      contentLength: 0,
+      httpVersion: '1.1',
+    }
+  }
+
+
+  it('extract correlation json body', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse(JSON.stringify({ user_id: '444' }))
+
+    const rule: CorrelationRule = {
+        type: 'correlation',
+        id: '1',
+        extractor: {
+          filter: { path: '' },
+          selector: {
+            type: 'json',
+            from: 'body',
+            path: 'user_id',
+          },
+        },
+    }
+
+    const correlationExtractionSnippet = `
+let correl_1 = resp.json().user_id`
+    const expectedResult = { extractedValue: '444', correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: 1}
+
+    expect(extractCorrelationJsonBody(rule, response, 1, sequentialIdGenerator)).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation begin end body', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('noise<hello>bob<world>blah')
+
+    const rule: CorrelationRule = {
+        type: 'correlation',
+        id: '1',
+        extractor: {
+          filter: { path: '' },
+          selector: {
+            type: 'begin-end',
+            from: 'body',
+            begin: 'hello>',
+            end: '<world>'
+          },
+        },
+    }
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    match = resp.body.match(regex)
+    let correl_1
+    if (match) {
+      correl_1 = match[1]
+    }`
+    const expectedResult = { extractedValue: 'bob', correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: 1}
+
+    expect(extractCorrelationBeginEndBody(rule, response, 1, sequentialIdGenerator)).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation begin end header', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('')
+
+    const rule: CorrelationRule = {
+        type: 'correlation',
+        id: '1',
+        extractor: {
+          filter: { path: '' },
+          selector: {
+            type: 'begin-end',
+            from: 'headers',
+            begin: 'application',
+            end: 'json'
+          },
+        },
+    }
+
+    const correlationExtractionSnippet = `
+        regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+        match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
+        let correl_1
+        if (match) {
+          correl_1 = match[1]
+        }`
+    const expectedResult = { extractedValue: '/', correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: 1}
+
+    expect(extractCorrelationBeginEndHeaders(rule, response, 1, sequentialIdGenerator)).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation begin end url', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const request: Request = generateRequest()
+
+    const rule: CorrelationRule = {
+        type: 'correlation',
+        id: '1',
+        extractor: {
+          filter: { path: '' },
+          selector: {
+            type: 'begin-end',
+            from: 'url',
+            begin: 'api/',
+            end: '/foo'
+          },
+        },
+    }
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    match = resp.url.match(regex)
+    let correl_1
+    if (match) {
+      correl_1 = match[1]
+    }`
+    const expectedResult = { extractedValue: 'v1', correlationExtractionSnippet: correlationExtractionSnippet, generatedUniqueId: 1}
+
+    expect(extractCorrelationBeginEndUrl(rule, request, 1, sequentialIdGenerator)).toStrictEqual(expectedResult)
+  })
+}
