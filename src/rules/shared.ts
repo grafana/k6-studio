@@ -1,3 +1,6 @@
+import { get } from 'lodash-es'
+import { safeJsonParse } from '@/utils/json'
+
 export const matchBeginEnd = (value: string, begin: string, end: string) => {
   // matches only the first occurrence
   const regex = new RegExp(`${begin}(.*?)${end}`)
@@ -16,6 +19,10 @@ export const matchRegex = (value: string, regexString: string) => {
   }
 }
 
+export const getJsonObjectFromPath = (value: string, path: string) => {
+  return get(safeJsonParse(value), path)
+}
+
 // @ts-expect-error we have commonjs set as module option
 if (import.meta.vitest) {
   // @ts-expect-error we have commonjs set as module option
@@ -31,5 +38,14 @@ if (import.meta.vitest) {
     expect(matchRegex('<div>cat</div>', '<div>(.*?)</div>')).toBe('cat')
     expect(matchRegex('jumpinginthelake', 'ing(.*?)the')).toBe('in')
     expect(matchRegex('hello', '<a>(.*?)</a>')).toBeUndefined()
+  })
+
+  it('get json object', () => {
+    expect(getJsonObjectFromPath('{"hello":"world"}', 'hello')).toBe('world')
+    expect(getJsonObjectFromPath('{"hello":"world"}', 'world')).toBeUndefined()
+    expect(getJsonObjectFromPath('[{"hello":"world"}]', '[0].hello')).toBe(
+      'world'
+    )
+    expect(getJsonObjectFromPath('hello', '[0]')).toBeUndefined()
   })
 }

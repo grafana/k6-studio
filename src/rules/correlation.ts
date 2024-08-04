@@ -6,13 +6,12 @@ import {
   CorrelationRuleRegex,
   CorrelationRuleJson,
 } from '@/types/rules'
-import { cloneDeep, get, isEqual } from 'lodash-es'
+import { cloneDeep, isEqual } from 'lodash-es'
 import { canonicalHeaderKey, matchFilter, generateSequentialInt } from './utils'
 import { getHeaderValues } from '@/utils/headers'
 import { exhaustive } from '@/utils/typescript'
 import { replaceCorrelatedValues } from './correlation.utils'
-import { safeJsonParse } from '@/utils/json'
-import { matchBeginEnd, matchRegex } from './shared'
+import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
 
 export function applyCorrelationRule(
   requestSnippetSchema: RequestSnippetSchema,
@@ -454,8 +453,8 @@ const extractCorrelationJsonBody = (
     return noCorrelationResult
   }
 
-  const extractedValue = get(
-    safeJsonParse(response.content),
+  const extractedValue = getJsonObjectFromPath(
+    response.content,
     rule.extractor.selector.path
   )
 
@@ -475,7 +474,7 @@ const extractCorrelationJsonBody = (
   const correlationExtractionSnippet = `
 let correl_${uniqueId} = resp.json()${json_path}`
   return {
-    extractedValue: extractedValue,
+    extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
