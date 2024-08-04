@@ -7,8 +7,12 @@ import {
   CorrelationRuleJson,
 } from '@/types/rules'
 import { cloneDeep, isEqual } from 'lodash-es'
-import { canonicalHeaderKey, matchFilter, generateSequentialInt } from './utils'
-import { getHeaderValues } from '@/utils/headers'
+import {
+  canonicalHeaderKey,
+  matchFilter,
+  generateSequentialInt,
+  isJsonResponse,
+} from './utils'
 import { exhaustive } from '@/utils/typescript'
 import { replaceCorrelatedValues } from './correlation.utils'
 import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
@@ -455,17 +459,7 @@ const extractCorrelationJsonBody = (
     throw new Error('no response to extract from')
   }
 
-  const contentTypeValues = getHeaderValues(response.headers, 'content-type')
-  let contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
-
-  // NOTE: this is a small hack to skip google malformed json that starts this way, those requests are made automatically by the chrome
-  // browser. Most likely we want a better way of filtering them out since it can't be just parsed
-  if (response.content.startsWith(')]}')) {
-    contentTypeValue = undefined
-  }
-
-  // works only on json
-  if (!contentTypeValue || !contentTypeValue.includes('application/json')) {
+  if (!isJsonResponse(response)) {
     return noCorrelationResult
   }
 
