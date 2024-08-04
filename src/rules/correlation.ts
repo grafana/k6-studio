@@ -205,15 +205,34 @@ const extractCorrelationRegex = (
   }
 }
 
-const getCorrelationVariableSnippet = (
-  matchStatement: string,
-  uniqueId: number | undefined
-) => {
-  return `match = ${matchStatement}
-    let correl_${uniqueId}
+const getCorrelationVariableSnippet = (uniqueId: number | undefined) => {
+  return `let correl_${uniqueId}
     if (match) {
       correl_${uniqueId} = match[1]
     }`
+}
+
+const getCorrelationBeginEndSnippet = (
+  rule: CorrelationRuleBeginEnd,
+  matchStatement: string,
+  uniqueId: number | undefined
+) => {
+  // TODO: replace regex with findBetween from k6-utils once we have imports
+  return `
+    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    match = ${matchStatement}
+    ${getCorrelationVariableSnippet(uniqueId)}`
+}
+
+const getCorrelationRegexSnippet = (
+  rule: CorrelationRuleRegex,
+  matchStatement: string,
+  uniqueId: number | undefined
+) => {
+  return `
+    regex = new RegExp('${rule.extractor.selector.regex}')
+    match = ${matchStatement}
+    ${getCorrelationVariableSnippet(uniqueId)}`
 }
 
 const extractCorrelationBeginEndBody = (
@@ -240,9 +259,11 @@ const extractCorrelationBeginEndBody = (
     uniqueId = sequentialIdGenerator.next().value
   }
 
-  const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-    ${getCorrelationVariableSnippet('resp.body.match(regex)', uniqueId)}`
+  const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
+    rule,
+    'resp.body.match(regex)',
+    uniqueId
+  )
 
   return {
     extractedValue,
@@ -273,10 +294,11 @@ const extractCorrelationBeginEndHeaders = (
       if (!uniqueId) {
         uniqueId = sequentialIdGenerator.next().value
       }
-      // TODO: replace regex with findBetween from k6-utils once we have imports
-      const correlationExtractionSnippet = `
-        regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-        ${getCorrelationVariableSnippet(`resp.headers["${canonicalHeaderKey(key)}"].match(regex)`, uniqueId)}`
+      const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
+        rule,
+        `resp.headers["${canonicalHeaderKey(key)}"].match(regex)`,
+        uniqueId
+      )
 
       return {
         extractedValue,
@@ -309,9 +331,11 @@ const extractCorrelationBeginEndUrl = (
     uniqueId = sequentialIdGenerator.next().value
   }
 
-  const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-    ${getCorrelationVariableSnippet('resp.url.match(regex)', uniqueId)}`
+  const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
+    rule,
+    'resp.url.match(regex)',
+    uniqueId
+  )
 
   return {
     extractedValue,
@@ -343,9 +367,11 @@ const extractCorrelationRegexBody = (
     uniqueId = sequentialIdGenerator.next().value
   }
 
-  const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.regex}')
-    ${getCorrelationVariableSnippet('resp.body.match(regex)', uniqueId)}`
+  const correlationExtractionSnippet = getCorrelationRegexSnippet(
+    rule,
+    'resp.body.match(regex)',
+    uniqueId
+  )
 
   return {
     extractedValue,
@@ -373,9 +399,11 @@ const extractCorrelationRegexHeaders = (
         uniqueId = sequentialIdGenerator.next().value
       }
 
-      const correlationExtractionSnippet = `
-        regex = new RegExp('${rule.extractor.selector.regex}')
-        ${getCorrelationVariableSnippet(`resp.headers["${canonicalHeaderKey(key)}"].match(regex)`, uniqueId)}`
+      const correlationExtractionSnippet = getCorrelationRegexSnippet(
+        rule,
+        `resp.headers["${canonicalHeaderKey(key)}"].match(regex)`,
+        uniqueId
+      )
 
       return {
         extractedValue,
@@ -404,9 +432,11 @@ const extractCorrelationRegexUrl = (
     uniqueId = sequentialIdGenerator.next().value
   }
 
-  const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.regex}')
-    ${getCorrelationVariableSnippet('resp.url.match(regex)', uniqueId)}`
+  const correlationExtractionSnippet = getCorrelationRegexSnippet(
+    rule,
+    'resp.url.match(regex)',
+    uniqueId
+  )
 
   return {
     extractedValue,
@@ -590,8 +620,8 @@ let correl_1 = resp.json().user_id`
     }
 
     const correlationExtractionSnippet = `
-        regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-        match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
+    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
     let correl_1
     if (match) {
       correl_1 = match[1]
@@ -701,8 +731,8 @@ let correl_1 = resp.json().user_id`
     }
 
     const correlationExtractionSnippet = `
-        regex = new RegExp('${rule.extractor.selector.regex}')
-        match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
+    regex = new RegExp('${rule.extractor.selector.regex}')
+    match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
     let correl_1
     if (match) {
       correl_1 = match[1]
