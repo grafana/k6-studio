@@ -1,6 +1,7 @@
 import { TestRule } from '@/types/rules'
-import { RequestSnippetSchema } from '@/types'
+import { RequestSnippetSchema, Response } from '@/types'
 import { exhaustive } from '@/utils/typescript'
+import { getHeaderValues } from '@/utils/headers'
 
 /**
  * Converts a header key to its canonical form.
@@ -50,4 +51,22 @@ export function matchFilter(
     console.error(e)
     return false
   }
+}
+
+export const isJsonResponse = (response: Response) => {
+  const contentTypeValues = getHeaderValues(response.headers, 'content-type')
+  let contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
+
+  // NOTE: this is a small hack to skip google malformed json that starts this way, those requests are made automatically by the chrome
+  // browser. Most likely we want a better way of filtering them out since it can't be just parsed
+  if (response.content.startsWith(')]}')) {
+    contentTypeValue = undefined
+  }
+
+  // works only on json
+  if (!contentTypeValue || !contentTypeValue.includes('application/json')) {
+    return false
+  }
+
+  return true
 }
