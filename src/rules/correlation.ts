@@ -90,6 +90,12 @@ export function applyCorrelationRule(
   return snippetSchemaReturnValue
 }
 
+const noCorrelationResult = {
+  extractedValue: undefined,
+  correlationExtractionSnippet: undefined,
+  generatedUniqueId: undefined,
+}
+
 const tryCorrelationExtraction = (
   rule: CorrelationRule,
   proxyData: ProxyData,
@@ -103,11 +109,7 @@ const tryCorrelationExtraction = (
     (!('from' in rule.extractor.selector) ||
       rule.extractor.selector.from !== 'url')
   ) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   switch (rule.extractor.selector.type) {
@@ -220,11 +222,7 @@ const extractCorrelationBeginEndBody = (
   const match = response.content.match(regex)
 
   if (!match) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
@@ -285,11 +283,7 @@ const extractCorrelationBeginEndHeaders = (
     }
   }
 
-  return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
-  }
+  return noCorrelationResult
 }
 
 const extractCorrelationBeginEndUrl = (
@@ -304,11 +298,7 @@ const extractCorrelationBeginEndUrl = (
   const match = request.url.match(regex)
 
   if (!match) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
@@ -345,11 +335,7 @@ const extractCorrelationRegexBody = (
   const match = response.content.match(regex)
 
   if (!match) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
@@ -408,11 +394,7 @@ const extractCorrelationRegexHeaders = (
     }
   }
 
-  return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
-  }
+  return noCorrelationResult
 }
 
 const extractCorrelationRegexUrl = (
@@ -425,11 +407,7 @@ const extractCorrelationRegexUrl = (
   const match = request.url.match(regex)
 
   if (!match) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
@@ -473,11 +451,7 @@ const extractCorrelationJsonBody = (
 
   // works only on json
   if (!contentTypeValue || !contentTypeValue.includes('application/json')) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   const extractedValue = get(
@@ -486,11 +460,7 @@ const extractCorrelationJsonBody = (
   )
 
   if (!extractedValue || extractedValue.length === 0) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
