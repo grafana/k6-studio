@@ -1,5 +1,5 @@
 import { ProxyData } from '@/types'
-import { queryStringToJSON, safeAtob, stringify } from '@/utils/format'
+import { safeAtob, stringify } from '@/utils/format'
 import { getContentType } from '@/utils/headers'
 
 export function parseParams(data: ProxyData) {
@@ -17,7 +17,7 @@ export function parseParams(data: ProxyData) {
     const contentType = getContentType(data.request?.headers ?? [])
 
     if (contentType === 'application/x-www-form-urlencoded') {
-      return stringify(queryStringToJSON(safeAtob(data.request.content ?? '')))
+      return safeAtob(data.request.content ?? '')
     }
 
     return stringify(JSON.parse(safeAtob(data.request.content ?? '')))
