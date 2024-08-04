@@ -12,6 +12,7 @@ import { getHeaderValues } from '@/utils/headers'
 import { exhaustive } from '@/utils/typescript'
 import { replaceCorrelatedValues } from './correlation.utils'
 import { safeJsonParse } from '@/utils/json'
+import { matchBeginEnd } from './shared'
 
 export function applyCorrelationRule(
   requestSnippetSchema: RequestSnippetSchema,
@@ -216,12 +217,13 @@ const extractCorrelationBeginEndBody = (
   }
 
   // Note: currently matches only the first occurrence
-  const regex = new RegExp(
-    `${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}`
+  const extractedValue = matchBeginEnd(
+    response.content,
+    rule.extractor.selector.begin,
+    rule.extractor.selector.end
   )
-  const match = response.content.match(regex)
 
-  if (!match) {
+  if (!extractedValue) {
     return noCorrelationResult
   }
 
@@ -238,7 +240,7 @@ const extractCorrelationBeginEndBody = (
     }`
 
   return {
-    extractedValue: match[1],
+    extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
@@ -255,14 +257,14 @@ const extractCorrelationBeginEndHeaders = (
   }
 
   // Note: currently matches only the first occurrence
-  const regex = new RegExp(
-    `${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}`
-  )
-
   for (const [key, value] of response.headers) {
-    const match = value.match(regex)
+    const extractedValue = matchBeginEnd(
+      value,
+      rule.extractor.selector.begin,
+      rule.extractor.selector.end
+    )
 
-    if (match) {
+    if (extractedValue) {
       if (!uniqueId) {
         uniqueId = sequentialIdGenerator.next().value
       }
@@ -276,7 +278,7 @@ const extractCorrelationBeginEndHeaders = (
         }`
 
       return {
-        extractedValue: match[1],
+        extractedValue,
         correlationExtractionSnippet: correlationExtractionSnippet,
         generatedUniqueId: uniqueId,
       }
@@ -292,12 +294,13 @@ const extractCorrelationBeginEndUrl = (
   uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
-  const regex = new RegExp(
-    `${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}`
+  const extractedValue = matchBeginEnd(
+    request.url,
+    rule.extractor.selector.begin,
+    rule.extractor.selector.end
   )
-  const match = request.url.match(regex)
 
-  if (!match) {
+  if (!extractedValue) {
     return noCorrelationResult
   }
 
@@ -314,7 +317,7 @@ const extractCorrelationBeginEndUrl = (
     }`
 
   return {
-    extractedValue: match[1],
+    extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
