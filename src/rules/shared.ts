@@ -1,9 +1,16 @@
 export const matchBeginEnd = (value: string, begin: string, end: string) => {
   // matches only the first occurrence
   const regex = new RegExp(`${begin}(.*?)${end}`)
-
   const match = value.match(regex)
+  if (match) {
+    return match[1]
+  }
+}
 
+export const matchRegex = (value: string, regexString: string) => {
+  // matches only the first occurrence
+  const regex = new RegExp(regexString)
+  const match = value.match(regex)
   if (match) {
     return match[1]
   }
@@ -18,5 +25,11 @@ if (import.meta.vitest) {
     expect(matchBeginEnd('<div>cat</div>', '<div>', '</div>')).toBe('cat')
     expect(matchBeginEnd('jumpinginthelake', 'ing', 'the')).toBe('in')
     expect(matchBeginEnd('hello', '<a>', '</a>')).toBeUndefined()
+  })
+
+  it('match regex', () => {
+    expect(matchRegex('<div>cat</div>', '<div>(.*?)</div>')).toBe('cat')
+    expect(matchRegex('jumpinginthelake', 'ing(.*?)the')).toBe('in')
+    expect(matchRegex('hello', '<a>(.*?)</a>')).toBeUndefined()
   })
 }
