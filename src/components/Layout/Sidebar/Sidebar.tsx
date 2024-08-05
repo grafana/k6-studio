@@ -1,5 +1,12 @@
 import { css } from '@emotion/react'
-import { Box, Flex, Heading, IconButton, ScrollArea } from '@radix-ui/themes'
+import {
+  Box,
+  Flex,
+  Heading,
+  IconButton,
+  ScrollArea,
+  Tooltip,
+} from '@radix-ui/themes'
 import { Link } from 'react-router-dom'
 
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
@@ -45,16 +52,18 @@ export function Sidebar() {
             noFilesMessage="No recordings found"
             viewPath="/recording-previewer"
             actions={
-              <IconButton
-                asChild
-                aria-label="New recording"
-                variant="ghost"
-                size="1"
-              >
-                <Link to="/recorder?autoStart">
-                  <PlusIcon />
-                </Link>
-              </IconButton>
+              <Tooltip content="New recording" side="right">
+                <IconButton
+                  asChild
+                  aria-label="New recording"
+                  variant="ghost"
+                  size="1"
+                >
+                  <Link to="/recorder?autoStart">
+                    <PlusIcon />
+                  </Link>
+                </IconButton>
+              </Tooltip>
             }
           />
           <FileTree
