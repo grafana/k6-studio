@@ -3,5 +3,10 @@ import viteTsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   plugins: [viteTsconfigPaths()],
-  test: {},
+  test: {
+    includeSource: ['src/**/*.{js,ts}'],
+  },
+  define: {
+    'import.meta.vitest': 'undefined',
+  },
 })
