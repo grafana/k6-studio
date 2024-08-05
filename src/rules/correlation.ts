@@ -499,8 +499,13 @@ const extractCorrelationJsonBody = (
     uniqueId = sequentialIdGenerator.next().value
   }
 
+  // array indexing doesn't start with a dot so we add it only in the other cases
+  const json_path = rule.extractor.selector.path.startsWith('[')
+    ? rule.extractor.selector.path
+    : `.${rule.extractor.selector.path}`
+
   const correlationExtractionSnippet = `
-let correl_${uniqueId} = resp.json().${rule.extractor.selector.path}`
+let correl_${uniqueId} = resp.json()${json_path}`
   return {
     extractedValue: extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
