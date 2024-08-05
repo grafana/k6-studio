@@ -1,7 +1,7 @@
-import { BeginEndSelector, CorrelationRule } from '@/types/rules'
+import { BeginEndSelector, CorrelationRule, RegexSelector } from '@/types/rules'
 import { Header, Request, Cookie } from '@/types'
 import {exhaustive} from '@/utils/typescript'
-import { replaceContent, replaceBeginEndBody, replaceBeginEndHeaders, replaceUrl, replaceHeaders, replaceBeginEndUrl, replaceCookies } from './shared'
+import { replaceContent, replaceBeginEndBody, replaceBeginEndHeaders, replaceUrl, replaceHeaders, replaceBeginEndUrl, replaceCookies, replaceRegexBody, replaceRegexHeaders, replaceRegexUrl } from './shared'
 
 export function replaceCorrelatedValues({
   rule,
@@ -22,20 +22,8 @@ export function replaceCorrelatedValues({
   switch (rule.replacer.selector.type) {
     case 'begin-end':
       return replaceBeginEnd(rule.replacer.selector as BeginEndSelector, request, `correl_${uniqueId}`)
-    // case 'headers':
-    //   return extractCorrelationBeginEndHeaders(
-    //     rule,
-    //     proxyData.response,
-    //     uniqueId,
-    //     sequentialIdGenerator
-    //   )
-    // case 'url':
-    //   return extractCorrelationBeginEndUrl(
-    //     rule,
-    //     proxyData.request,
-    //     uniqueId,
-    //     sequentialIdGenerator
-    //   )
+    case 'regex':
+      return replaceRegex(rule.replacer.selector as RegexSelector, request, `correl_${uniqueId}`)
     default:
       return exhaustive(rule.replacer.selector.type)
   }
@@ -53,6 +41,23 @@ const replaceBeginEnd = (
       return replaceBeginEndHeaders(selector, request, variableName)
     case 'url':
       return replaceBeginEndUrl(selector, request, variableName)
+    default:
+      return exhaustive(selector.from)
+  }
+}
+
+const replaceRegex = (
+  selector: RegexSelector,
+  request: Request,
+  variableName: string
+) => {
+  switch (selector.from) {
+    case 'body':
+      return replaceRegexBody(selector, request, variableName)
+    case 'headers':
+      return replaceRegexHeaders(selector, request, variableName)
+    case 'url':
+      return replaceRegexUrl(selector, request, variableName)
     default:
       return exhaustive(selector.from)
   }

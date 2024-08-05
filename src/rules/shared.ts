@@ -1,7 +1,7 @@
 import { get } from 'lodash-es'
 import { safeJsonParse } from '@/utils/json'
 import { Header, Request, Cookie } from '@/types'
-import { BeginEndSelector } from '@/types/rules'
+import { BeginEndSelector, RegexSelector } from '@/types/rules'
 
 export const matchBeginEnd = (value: string, begin: string, end: string) => {
   // matches only the first occurrence
@@ -82,6 +82,37 @@ export const replaceBeginEndHeaders = (selector: BeginEndSelector, request: Requ
 
 export const replaceBeginEndUrl = (selector: BeginEndSelector, request: Request, variableName: string) => {
   const valueToReplace = matchBeginEnd(request.url, selector.begin, selector.end)
+  if (!valueToReplace) return request
+
+  const url = replaceUrl(request, valueToReplace, variableName)
+  return { ...request, url }
+}
+
+export const replaceRegexBody = (selector: RegexSelector, request: Request, variableName: string) => {
+  const valueToReplace = matchRegex(request.content ?? '', selector.regex)
+  if (!valueToReplace) return request
+
+  const content = replaceContent(request, valueToReplace, variableName)
+  return { ...request, content }
+}
+
+export const replaceRegexHeaders = (selector: RegexSelector, request: Request, variableName: string) => {
+  for (const [, value] of request.headers) {
+    const valueToReplace = matchRegex(
+      value,
+      selector.regex,
+    )
+    if (valueToReplace) {
+      const headers = replaceHeaders(request, valueToReplace, variableName)
+      return { ...request, headers }
+    }
+  }
+
+  return request
+}
+
+export const replaceRegexUrl = (selector: RegexSelector, request: Request, variableName: string) => {
+  const valueToReplace = matchRegex(request.url, selector.regex)
   if (!valueToReplace) return request
 
   const url = replaceUrl(request, valueToReplace, variableName)
@@ -171,13 +202,13 @@ if (import.meta.vitest) {
     const request = generateRequest('')
     const selectorMatch: BeginEndSelector = {
       type: 'begin-end',
-      from: 'body',
+      from: 'headers',
       begin: 'application',
       end: 'json'
     }
     const selectorNotMatch: BeginEndSelector = {
       type: 'begin-end',
-      from: 'body',
+      from: 'headers',
       begin: 'hello',
       end: 'world'
     }
@@ -201,5 +232,47 @@ if (import.meta.vitest) {
     }
     expect(replaceBeginEndUrl(selectorMatch, request, 'correl_0').url).toBe('http://test.k6.io/${correl_0}/v1/foo')
     expect(replaceBeginEndUrl(selectorNotMatch, request, 'correl_0').url).toBe('http://test.k6.io/api/v1/foo')
+  })
+
+  it('replace regex body', () => {
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'body',
+      regex: '<div>(.*?)</div>'
+    }
+    expect(replaceRegexBody(selector, generateRequest('<div>hello</div>'), 'correl_0').content).toBe('<div>${correl_0}</div>')
+    expect(replaceRegexBody(selector, generateRequest('<a>hello</a>'), 'correl_0').content).toBe('<a>hello</a>')
+  })
+
+  it('replace regex headers', () => {
+    const request = generateRequest('')
+    const selectorMatch: RegexSelector = {
+      type: 'regex',
+      from: 'headers',
+      regex: 'application(.*?)json'
+    }
+    const selectorNotMatch: RegexSelector = {
+      type: 'regex',
+      from: 'headers',
+      regex: 'hello(.*?)world'
+    }
+    expect(replaceRegexHeaders(selectorMatch, request, 'correl_0').headers[0]).toStrictEqual(['content-type', 'application${correl_0}json'])
+    expect(replaceRegexHeaders(selectorNotMatch, request, 'correl_0').headers[0]).toStrictEqual(['content-type', 'application/json'])
+  })
+
+  it('replace regex url', () => {
+    const request = generateRequest('')
+    const selectorMatch: RegexSelector = {
+      type: 'regex',
+      from: 'url',
+      regex: '.io/(.*?)/v1'
+    }
+    const selectorNotMatch: RegexSelector = {
+      type: 'regex',
+      from: 'url',
+      regex: 'supercali(.*?)fragilisti'
+    }
+    expect(replaceRegexUrl(selectorMatch, request, 'correl_0').url).toBe('http://test.k6.io/${correl_0}/v1/foo')
+    expect(replaceRegexUrl(selectorNotMatch, request, 'correl_0').url).toBe('http://test.k6.io/api/v1/foo')
   })
 }
