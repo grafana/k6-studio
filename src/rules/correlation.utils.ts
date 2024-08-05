@@ -1,5 +1,7 @@
-import { CorrelationRule } from '@/types/rules'
+import { BeginEndSelector, CorrelationRule } from '@/types/rules'
 import { Header, Request, Cookie } from '@/types'
+import {exhaustive} from '@/utils/typescript'
+import { replaceContent, replaceBeginEndBody, replaceBeginEndHeaders, replaceUrl, replaceHeaders, replaceBeginEndUrl, replaceCookies } from './shared'
 
 export function replaceCorrelatedValues({
   rule,
@@ -14,37 +16,58 @@ export function replaceCorrelatedValues({
 }) {
   // Default behaviour replaces all occurences of the string
   if (!rule.replacer) {
-    return replaceTextMatches(request, extractedValue, uniqueId)
+    return replaceTextMatches(request, extractedValue, `correl_${uniqueId}`)
   }
 
-  // Add logic for replacer
-  throw new Error('Not implemented')
+  switch (rule.replacer.selector.type) {
+    case 'begin-end':
+      return replaceBeginEnd(rule.replacer.selector as BeginEndSelector, request, `correl_${uniqueId}`)
+    // case 'headers':
+    //   return extractCorrelationBeginEndHeaders(
+    //     rule,
+    //     proxyData.response,
+    //     uniqueId,
+    //     sequentialIdGenerator
+    //   )
+    // case 'url':
+    //   return extractCorrelationBeginEndUrl(
+    //     rule,
+    //     proxyData.request,
+    //     uniqueId,
+    //     sequentialIdGenerator
+    //   )
+    default:
+      return exhaustive(rule.replacer.selector.type)
+  }
+}
+
+const replaceBeginEnd = (
+  selector: BeginEndSelector,
+  request: Request,
+  variableName: string
+) => {
+  switch (selector.from) {
+    case 'body':
+      return replaceBeginEndBody(selector, request, variableName)
+    case 'headers':
+      return replaceBeginEndHeaders(selector, request, variableName)
+    case 'url':
+      return replaceBeginEndUrl(selector, request, variableName)
+    default:
+      return exhaustive(selector.from)
+  }
 }
 
 export function replaceTextMatches(
   request: Request,
   extractedValue: string,
-  uniqueId: number
+  variableName: string
 ): Request {
-  const content =
-    request.content?.replaceAll(extractedValue, `\${correl_${uniqueId}}`) ??
-    null
-  const url = request.url.replaceAll(extractedValue, `\${correl_${uniqueId}}`)
-  const path = request.path.replaceAll(extractedValue, `\${correl_${uniqueId}}`)
-  const headers: Header[] = request.headers.map(([key, value]) => {
-    const replacedValue = value.replaceAll(
-      extractedValue,
-      `\${correl_${uniqueId}}`
-    )
-    return [key, replacedValue]
-  })
-  const cookies: Cookie[] = request.cookies.map(([key, value]) => {
-    const replacedValue = value.replaceAll(
-      extractedValue,
-      `\${correl_${uniqueId}}`
-    )
-    return [key, replacedValue]
-  })
+  const content = replaceContent(request, extractedValue, variableName)
+  const url = replaceUrl(request, extractedValue, variableName)
+  const path = request.path.replaceAll(extractedValue, `\${${variableName}}`)
+  const headers: Header[] = replaceHeaders(request, extractedValue, variableName)
+  const cookies: Cookie[] = replaceCookies(request, extractedValue, variableName)
 
   return {
     ...request,
