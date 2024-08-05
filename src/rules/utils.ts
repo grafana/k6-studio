@@ -1,5 +1,5 @@
 import { TestRule } from '@/types/rules'
-import { RequestSnippetSchema, Response } from '@/types'
+import { RequestSnippetSchema, Response, Request } from '@/types'
 import { exhaustive } from '@/utils/typescript'
 import { getHeaderValues } from '@/utils/headers'
 
@@ -62,6 +62,18 @@ export const isJsonResponse = (response: Response) => {
   if (response.content.startsWith(')]}')) {
     contentTypeValue = undefined
   }
+
+  // works only on json
+  if (!contentTypeValue || !contentTypeValue.includes('application/json')) {
+    return false
+  }
+
+  return true
+}
+
+export const isJsonRequest = (request: Request) => {
+  const contentTypeValues = getHeaderValues(request.headers, 'content-type')
+  const contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
 
   // works only on json
   if (!contentTypeValue || !contentTypeValue.includes('application/json')) {

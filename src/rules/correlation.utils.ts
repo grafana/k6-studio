@@ -1,7 +1,24 @@
-import { BeginEndSelector, CorrelationRule, RegexSelector } from '@/types/rules'
+import {
+  BeginEndSelector,
+  CorrelationRule,
+  JsonSelector,
+  RegexSelector,
+} from '@/types/rules'
 import { Header, Request, Cookie } from '@/types'
-import {exhaustive} from '@/utils/typescript'
-import { replaceContent, replaceBeginEndBody, replaceBeginEndHeaders, replaceUrl, replaceHeaders, replaceBeginEndUrl, replaceCookies, replaceRegexBody, replaceRegexHeaders, replaceRegexUrl } from './shared'
+import { exhaustive } from '@/utils/typescript'
+import {
+  replaceContent,
+  replaceBeginEndBody,
+  replaceBeginEndHeaders,
+  replaceUrl,
+  replaceHeaders,
+  replaceBeginEndUrl,
+  replaceCookies,
+  replaceRegexBody,
+  replaceRegexHeaders,
+  replaceRegexUrl,
+  replaceJsonBody,
+} from './shared'
 
 export function replaceCorrelatedValues({
   rule,
@@ -21,11 +38,25 @@ export function replaceCorrelatedValues({
 
   switch (rule.replacer.selector.type) {
     case 'begin-end':
-      return replaceBeginEnd(rule.replacer.selector as BeginEndSelector, request, `correl_${uniqueId}`)
+      return replaceBeginEnd(
+        rule.replacer.selector as BeginEndSelector,
+        request,
+        `correl_${uniqueId}`
+      )
     case 'regex':
-      return replaceRegex(rule.replacer.selector as RegexSelector, request, `correl_${uniqueId}`)
+      return replaceRegex(
+        rule.replacer.selector as RegexSelector,
+        request,
+        `correl_${uniqueId}`
+      )
+    case 'json':
+      return replaceJsonBody(
+        rule.replacer.selector as JsonSelector,
+        request,
+        `correl_${uniqueId}`
+      )
     default:
-      return exhaustive(rule.replacer.selector.type)
+      return exhaustive(rule.replacer.selector)
   }
 }
 
@@ -71,8 +102,16 @@ export function replaceTextMatches(
   const content = replaceContent(request, extractedValue, variableName)
   const url = replaceUrl(request, extractedValue, variableName)
   const path = request.path.replaceAll(extractedValue, `\${${variableName}}`)
-  const headers: Header[] = replaceHeaders(request, extractedValue, variableName)
-  const cookies: Cookie[] = replaceCookies(request, extractedValue, variableName)
+  const headers: Header[] = replaceHeaders(
+    request,
+    extractedValue,
+    variableName
+  )
+  const cookies: Cookie[] = replaceCookies(
+    request,
+    extractedValue,
+    variableName
+  )
 
   return {
     ...request,
