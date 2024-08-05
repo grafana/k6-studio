@@ -1,5 +1,5 @@
 import { CorrelationRule } from '@/types/rules'
-import { Header, Request } from '@/types'
+import { Header, Request, Cookie } from '@/types'
 
 export function replaceCorrelatedValues({
   rule,
@@ -38,6 +38,13 @@ export function replaceTextMatches(
     )
     return [key, replacedValue]
   })
+  const cookies: Cookie[] = request.cookies.map(([key, value]) => {
+    const replacedValue = value.replaceAll(
+      extractedValue,
+      `\${correl_${uniqueId}}`
+    )
+    return [key, replacedValue]
+  })
 
   return {
     ...request,
@@ -45,5 +52,6 @@ export function replaceTextMatches(
     url,
     path,
     headers,
+    cookies,
   }
 }
