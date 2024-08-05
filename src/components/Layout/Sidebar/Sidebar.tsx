@@ -6,6 +6,7 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { FileTree } from '@/components/FileTree'
 import { useFolderContent } from './Sidebar.hooks'
 import K6Logo from '@/assets/logo.svg'
+import { PlusIcon } from '@radix-ui/react-icons'
 
 export function Sidebar() {
   const { recordings, generators, scripts } = useFolderContent()
@@ -43,6 +44,18 @@ export function Sidebar() {
             files={recordings}
             noFilesMessage="No recordings found"
             viewPath="/recording-previewer"
+            actions={
+              <IconButton
+                asChild
+                aria-label="New recording"
+                variant="ghost"
+                size="1"
+              >
+                <Link to="/recorder?autoStart">
+                  <PlusIcon />
+                </Link>
+              </IconButton>
+            }
           />
           <FileTree
             label="Test generators"
