@@ -6,6 +6,7 @@ import { groupProxyData } from '@/utils/groups'
 import { selectHasRecording, useGeneratorStore } from '@/store/generator'
 import { useEffect, useState } from 'react'
 import { RulePreview } from '../RulePreview/RulePreview'
+import { useGeneratorParams } from '../Generator.hooks'
 
 interface GeneratorSidebarProps {
   requests: ProxyData[]
@@ -16,10 +17,10 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
 
   const hasRecording = useGeneratorStore(selectHasRecording)
   const groupedProxyData = groupProxyData(requests)
-  const selectedRuleId = useGeneratorStore((store) => store.selectedRuleId)
+  const { ruleId } = useGeneratorParams()
 
   useEffect(() => {
-    if (selectedRuleId === null) {
+    if (ruleId === undefined) {
       setTab((currentTab) =>
         currentTab === 'rule-preview' ? 'requests' : currentTab
       )
@@ -27,7 +28,7 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
     }
 
     setTab('rule-preview')
-  }, [selectedRuleId])
+  }, [ruleId])
 
   return (
     <Flex direction="column" height="100%" minHeight="0">
@@ -45,11 +46,11 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
           <Tabs.Trigger value="script" disabled={!hasRecording}>
             Script preview
           </Tabs.Trigger>
-          {selectedRuleId !== null && (
+          {ruleId !== undefined && (
             <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
           )}
         </Tabs.List>
-        {selectedRuleId !== null && (
+        {ruleId !== undefined && (
           <Tabs.Content value="rule-preview" style={{ height: '100%' }}>
             <ScrollArea>
               <Box p="2" mb="5">

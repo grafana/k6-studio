@@ -1,9 +1,11 @@
 import { CorrelationPreview } from './CorrelationPreview'
 import { exhaustive } from '@/utils/typescript'
-import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
+import { selectRuleById, useGeneratorStore } from '@/store/generator'
+import { useGeneratorParams } from '../Generator.hooks'
 
 export function RulePreview() {
-  const rule = useGeneratorStore(selectSelectedRule)
+  const { ruleId } = useGeneratorParams()
+  const rule = useGeneratorStore((store) => selectRuleById(store, ruleId))
 
   if (!rule) {
     return null

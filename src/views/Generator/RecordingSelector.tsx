@@ -7,6 +7,7 @@ import { harToProxyData } from '@/utils/harToProxyData'
 import { CaretDownIcon } from '@radix-ui/react-icons'
 import { useStudioUIStore } from '@/store/ui'
 import { css } from '@emotion/react'
+import { getRoutePath } from '@/routeMap'
 
 // TODO: Improve accessibility and UX in general
 export function RecordingSelector() {
@@ -58,7 +59,9 @@ export function RecordingSelector() {
             <Flex gap="2">
               <Popover.Close>
                 <Button variant="outline" asChild>
-                  <Link to="/recorder?autoStart">Start recording</Link>
+                  <Link to={`${getRoutePath('recorder')}?autoStart`}>
+                    Start recording
+                  </Link>
                 </Button>
               </Popover.Close>
               <Popover.Close>

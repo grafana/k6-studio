@@ -1,7 +1,7 @@
 import { Allotment } from 'allotment'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import { Button } from '@radix-ui/themes'
+import invariant from 'tiny-invariant'
 
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import {
@@ -9,23 +9,22 @@ import {
   selectHasRecording,
   selectFilteredRequests,
 } from '@/store/generator'
+import { View } from '@/components/Layout/View'
+import { getFileNameFromPath } from '@/utils/file'
 import { exportScript, saveGenerator, loadGenerator } from './Generator.utils'
-import { GeneratorDrawer } from './GeneratorDrawer'
 import { GeneratorSidebar } from './GeneratorSidebar'
-
 import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
-import { View } from '@/components/Layout/View'
-import { getFileNameFromPath } from '@/utils/file'
-import invariant from 'tiny-invariant'
+import { useGeneratorParams } from './Generator.hooks'
+import { Outlet } from 'react-router-dom'
 
 export function Generator() {
   const name = useGeneratorStore((store) => store.name)
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const hasRecording = useGeneratorStore(selectHasRecording)
   const [isLoading, setIsLoading] = useState(false)
-  const { path } = useParams()
+  const { path } = useGeneratorParams()
   invariant(path, 'Path is required')
   useSetWindowTitle(name)
 
@@ -62,7 +61,7 @@ export function Generator() {
               <TestRuleContainer />
             </Allotment.Pane>
             <Allotment.Pane minSize={300}>
-              <GeneratorDrawer />
+              <Outlet />
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>

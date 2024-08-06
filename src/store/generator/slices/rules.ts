@@ -3,15 +3,13 @@ import { ImmerStateCreator } from '@/utils/typescript'
 
 interface State {
   rules: TestRule[]
-  selectedRuleId: string | null
 }
 
 interface Actions {
-  createRule: (type: TestRule['type']) => void
+  addRule: (rule: TestRule) => void
   updateRule: (rule: TestRule) => void
   cloneRule: (id: string) => void
   deleteRule: (id: string) => void
-  selectRule: (id: string | null) => void
   swapRules: (idA: string, idB: string) => void
 }
 
@@ -19,12 +17,9 @@ export type RulesSliceStore = State & Actions
 
 export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
   rules: [],
-  selectedRuleId: null,
-  createRule: (type) =>
+  addRule: (rule) =>
     set((state) => {
-      const newRule = createEmptyRule(type)
-      state.rules.push(newRule)
-      state.selectedRuleId = newRule.id
+      state.rules.push(rule)
     }),
   updateRule: (rule) =>
     set((state) => {
@@ -43,11 +38,6 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
   deleteRule: (id) =>
     set((state) => {
       state.rules = state.rules.filter((rule) => rule.id !== id)
-      state.selectedRuleId = null
-    }),
-  selectRule: (id) =>
-    set((state) => {
-      state.selectedRuleId = id
     }),
   swapRules: (idA, idB) =>
     set((state) => {
@@ -60,58 +50,3 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
       }
     }),
 })
-
-function createEmptyRule(type: TestRule['type']): TestRule {
-  switch (type) {
-    case 'correlation':
-      return {
-        type: 'correlation',
-        id: self.crypto.randomUUID(),
-        extractor: {
-          filter: { path: '' },
-          selector: {
-            type: 'begin-end',
-            from: 'body',
-            begin: '',
-            end: '',
-          },
-        },
-      }
-    case 'customCode':
-      return {
-        type: 'customCode',
-        id: self.crypto.randomUUID(),
-        filter: { path: '' },
-        snippet: '',
-        placement: 'before',
-      }
-    case 'parameterization':
-      return {
-        type: 'parameterization',
-        id: self.crypto.randomUUID(),
-        filter: { path: '' },
-        selector: {
-          type: 'begin-end',
-          from: 'body',
-          begin: '',
-          end: '',
-        },
-        value: { type: 'variable', variableName: '' },
-      }
-    case 'verification':
-      return {
-        type: 'verification',
-        id: self.crypto.randomUUID(),
-        filter: { path: '' },
-        selector: {
-          type: 'begin-end',
-          from: 'body',
-          begin: '',
-          end: '',
-        },
-        value: {
-          type: 'recordedValue',
-        },
-      }
-  }
-}

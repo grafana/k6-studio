@@ -6,6 +6,7 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { FileTree } from '@/components/FileTree'
 import { useFolderContent } from './Sidebar.hooks'
 import K6Logo from '@/assets/logo.svg'
+import { getRoutePath } from '@/routeMap'
 
 export function Sidebar() {
   const { recordings, generators, scripts } = useFolderContent()
@@ -22,7 +23,7 @@ export function Sidebar() {
     >
       <Flex gap="2" align="center" mb="2" p="2">
         <IconButton asChild aria-label="Home" variant="ghost">
-          <Link to="/">
+          <Link to={getRoutePath('home')}>
             <img src={K6Logo} alt="k6 Logo" width="18" height="18" />
           </Link>
         </IconButton>
