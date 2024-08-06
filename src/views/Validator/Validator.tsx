@@ -85,7 +85,7 @@ export function Validator() {
     // Reset requests and logs when script changes
     resetProxyData()
     setLogs([])
-  }, [script])
+  }, [script, resetProxyData])
 
   return (
     <View
