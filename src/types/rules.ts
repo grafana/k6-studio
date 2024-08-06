@@ -49,8 +49,3 @@ export type CorrelationRule = z.infer<typeof CorrelationRuleSchema>
 export type VerificationRule = z.infer<typeof VerificationRuleSchema>
 export type CustomCodeRule = z.infer<typeof CustomCodeRuleSchema>
 export type TestRule = z.infer<typeof TestRuleSchema>
-
-export type CorrelationRuleBeginEnd = CorrelationRule & { extractor: { selector: BeginEndSelector } }
-export type CorrelationRuleRegex = CorrelationRule & { extractor: { selector: RegexSelector } }
-export type CorrelationRuleJson = CorrelationRule & { extractor: { selector: JsonSelector } }
-export type CorrelationRuleCustomCode = CorrelationRule & { extractor: { selector: CustomCodeSelector } }

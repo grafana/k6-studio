@@ -2,9 +2,6 @@ import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
 import {
   CorrelationStateMap,
   CorrelationRule,
-  CorrelationRuleBeginEnd,
-  CorrelationRuleRegex,
-  CorrelationRuleJson,
   BeginEndSelector,
   RegexSelector,
   JsonSelector,
@@ -526,17 +523,10 @@ if (import.meta.vitest) {
       JSON.stringify({ user_id: '444' })
     )
 
-    const rule: CorrelationRuleJson = {
-      type: 'correlation',
-      id: '1',
-      extractor: {
-        filter: { path: '' },
-        selector: {
-          type: 'json',
-          from: 'body',
-          path: 'user_id',
-        },
-      },
+    const selector: JsonSelector = {
+      type: 'json',
+      from: 'body',
+      path: 'user_id',
     }
 
     const correlationExtractionSnippet = `
@@ -548,12 +538,7 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationJsonBody(
-        rule.extractor.selector,
-        response,
-        1,
-        sequentialIdGenerator
-      )
+      extractCorrelationJsonBody(selector, response, 1, sequentialIdGenerator)
     ).toStrictEqual(expectedResult)
   })
 
@@ -561,22 +546,15 @@ let correl_1 = resp.json().user_id`
     const sequentialIdGenerator = generateSequentialInt()
     const response: Response = generateResponse('noise<hello>bob<world>blah')
 
-    const rule: CorrelationRuleBeginEnd = {
-      type: 'correlation',
-      id: '1',
-      extractor: {
-        filter: { path: '' },
-        selector: {
-          type: 'begin-end',
-          from: 'body',
-          begin: 'hello>',
-          end: '<world>',
-        },
-      },
+    const selector: BeginEndSelector = {
+      type: 'begin-end',
+      from: 'body',
+      begin: 'hello>',
+      end: '<world>',
     }
 
     const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.body.match(regex)
     let correl_1
     if (match) {
@@ -590,7 +568,7 @@ let correl_1 = resp.json().user_id`
 
     expect(
       extractCorrelationBeginEndBody(
-        rule.extractor.selector,
+        selector,
         response,
         1,
         sequentialIdGenerator
@@ -602,22 +580,15 @@ let correl_1 = resp.json().user_id`
     const sequentialIdGenerator = generateSequentialInt()
     const response: Response = generateResponse('')
 
-    const rule: CorrelationRuleBeginEnd = {
-      type: 'correlation',
-      id: '1',
-      extractor: {
-        filter: { path: '' },
-        selector: {
-          type: 'begin-end',
-          from: 'headers',
-          begin: 'application',
-          end: 'json',
-        },
-      },
+    const selector: BeginEndSelector = {
+      type: 'begin-end',
+      from: 'headers',
+      begin: 'application',
+      end: 'json',
     }
 
     const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
     let correl_1
     if (match) {
@@ -631,7 +602,7 @@ let correl_1 = resp.json().user_id`
 
     expect(
       extractCorrelationBeginEndHeaders(
-        rule.extractor.selector,
+        selector,
         response,
         1,
         sequentialIdGenerator
@@ -643,22 +614,15 @@ let correl_1 = resp.json().user_id`
     const sequentialIdGenerator = generateSequentialInt()
     const request: Request = generateRequest()
 
-    const rule: CorrelationRuleBeginEnd = {
-      type: 'correlation',
-      id: '1',
-      extractor: {
-        filter: { path: '' },
-        selector: {
-          type: 'begin-end',
-          from: 'url',
-          begin: 'api/',
-          end: '/foo',
-        },
-      },
+    const selector: BeginEndSelector = {
+      type: 'begin-end',
+      from: 'url',
+      begin: 'api/',
+      end: '/foo',
     }
 
     const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
+    regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.url.match(regex)
     let correl_1
     if (match) {
@@ -671,12 +635,7 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationBeginEndUrl(
-        rule.extractor.selector,
-        request,
-        1,
-        sequentialIdGenerator
-      )
+      extractCorrelationBeginEndUrl(selector, request, 1, sequentialIdGenerator)
     ).toStrictEqual(expectedResult)
   })
 
@@ -684,21 +643,14 @@ let correl_1 = resp.json().user_id`
     const sequentialIdGenerator = generateSequentialInt()
     const response: Response = generateResponse('noise<hello>bob<world>blah')
 
-    const rule: CorrelationRuleRegex = {
-      type: 'correlation',
-      id: '1',
-      extractor: {
-        filter: { path: '' },
-        selector: {
-          type: 'regex',
-          from: 'body',
-          regex: 'hello>(.*?)<world>',
-        },
-      },
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'body',
+      regex: 'hello>(.*?)<world>',
     }
 
     const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.regex}')
+    regex = new RegExp('${selector.regex}')
     match = resp.body.match(regex)
     let correl_1
     if (match) {
@@ -711,12 +663,7 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationRegexBody(
-        rule.extractor.selector,
-        response,
-        1,
-        sequentialIdGenerator
-      )
+      extractCorrelationRegexBody(selector, response, 1, sequentialIdGenerator)
     ).toStrictEqual(expectedResult)
   })
 
@@ -724,21 +671,14 @@ let correl_1 = resp.json().user_id`
     const sequentialIdGenerator = generateSequentialInt()
     const response: Response = generateResponse('')
 
-    const rule: CorrelationRuleRegex = {
-      type: 'correlation',
-      id: '1',
-      extractor: {
-        filter: { path: '' },
-        selector: {
-          type: 'regex',
-          from: 'headers',
-          regex: 'application(.*?)json',
-        },
-      },
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'headers',
+      regex: 'application(.*?)json',
     }
 
     const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.regex}')
+    regex = new RegExp('${selector.regex}')
     match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
     let correl_1
     if (match) {
@@ -752,7 +692,7 @@ let correl_1 = resp.json().user_id`
 
     expect(
       extractCorrelationRegexHeaders(
-        rule.extractor.selector,
+        selector,
         response,
         1,
         sequentialIdGenerator
@@ -764,21 +704,14 @@ let correl_1 = resp.json().user_id`
     const sequentialIdGenerator = generateSequentialInt()
     const request: Request = generateRequest()
 
-    const rule: CorrelationRuleRegex = {
-      type: 'correlation',
-      id: '1',
-      extractor: {
-        filter: { path: '' },
-        selector: {
-          type: 'regex',
-          from: 'url',
-          regex: 'api/(.*?)/foo',
-        },
-      },
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'url',
+      regex: 'api/(.*?)/foo',
     }
 
     const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.regex}')
+    regex = new RegExp('${selector.regex}')
     match = resp.url.match(regex)
     let correl_1
     if (match) {
@@ -791,12 +724,7 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationRegexUrl(
-        rule.extractor.selector,
-        request,
-        1,
-        sequentialIdGenerator
-      )
+      extractCorrelationRegexUrl(selector, request, 1, sequentialIdGenerator)
     ).toStrictEqual(expectedResult)
   })
 }
