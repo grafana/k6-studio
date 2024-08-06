@@ -1,59 +1,67 @@
 import { Flex, ScrollArea, TabNav } from '@radix-ui/themes'
-import {
-  Link,
-  Navigate,
-  Outlet,
-  Route,
-  Routes,
-  useMatch,
-} from 'react-router-dom'
+import { Link, Outlet, useMatch } from 'react-router-dom'
 
-import { LoadProfile } from './LoadProfile'
-import { VariablesEditor } from './VariablesEditor'
-import { ThinkTime } from './ThinkTime'
-import { useGeneratorStore } from '@/store/generator'
-import { RuleEditor } from './RuleEditor'
+import { useGeneratorParams } from '../Generator.hooks'
+import { getRoutePath, RouteName } from '@/routeMap'
 
 export function GeneratorDrawer() {
-  const { selectedRuleId } = useGeneratorStore()
+  const { path: decodedPath, ruleId } = useGeneratorParams()
+  const path = encodeURIComponent(decodedPath)
 
   return (
     <Flex direction="column" height="100%">
       <TabNav.Root>
-        {selectedRuleId !== null && (
-          <TabNavLink path={`rule/${selectedRuleId}`} label="Rule" />
+        {ruleId !== undefined && (
+          <TabNavLink
+            route="rule"
+            params={{
+              path,
+              ruleId,
+            }}
+            label="Rule"
+          />
         )}
-        <TabNavLink path="loadProfile" label="Load profile" />
-        <TabNavLink path="thinkTime" label="Think time" />
-        <TabNavLink path="testData" label="Test data" />
+        <TabNavLink
+          route="loadProfile"
+          params={{
+            path,
+          }}
+          label="Load profile"
+        />
+        <TabNavLink
+          route="thinkTime"
+          params={{
+            path,
+          }}
+          label="Think time"
+        />
+        <TabNavLink
+          route="testData"
+          params={{
+            path,
+          }}
+          label="Test data"
+        />
       </TabNav.Root>
-      <Routes>
-        <Route path="/" element={<ScrollableContent />}>
-          <Route path="/" element={<Navigate to="loadProfile" replace />} />
-          <Route path="rule/:id" element={<RuleEditor />} />
-          <Route path="loadProfile" element={<LoadProfile />} />
-          <Route path="thinkTime" element={<ThinkTime />} />
-          <Route path="testData" element={<VariablesEditor />} />
-        </Route>
-      </Routes>
+      <ScrollArea style={{ height: '100%' }}>
+        <Outlet />
+      </ScrollArea>
     </Flex>
   )
 }
 
-function TabNavLink({ path, label }: { path: string; label: string }) {
-  const match = useMatch(`generator/:pathp/${path}`)
+interface TabNavLinkProps {
+  route: RouteName
+  params: Record<string, string | number> | 0 | false | null
+  label: string
+}
+
+function TabNavLink({ route, params, label }: TabNavLinkProps) {
+  const match = useMatch(getRoutePath(route))
 
   return (
     <TabNav.Link asChild active={match !== null}>
-      <Link to={path}>{label}</Link>
+      <Link to={getRoutePath(route, params)}>{label}</Link>
     </TabNav.Link>
-  )
-}
-
-function ScrollableContent() {
-  return (
-    <ScrollArea style={{ height: '100%' }}>
-      <Outlet />
-    </ScrollArea>
   )
 }
