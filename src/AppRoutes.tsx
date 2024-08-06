@@ -1,4 +1,10 @@
-import { HashRouter, Navigate, Routes, Route } from 'react-router-dom'
+import {
+  HashRouter,
+  Navigate,
+  Routes,
+  Route,
+  useLocation,
+} from 'react-router-dom'
 import { Layout } from '@/components/Layout/Layout'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
@@ -47,9 +53,16 @@ export function AppRoutes() {
             </Route>
           </Route>
           <Route path={routeMap.validator} element={<Validator />} />
-          <Route path="*" element={<Navigate to={routeMap.home} replace />} />
+          <Route path="*" element={<NoRouteFound />} />
         </Route>
       </Routes>
     </HashRouter>
   )
+}
+
+function NoRouteFound() {
+  const location = useLocation()
+  console.error(`No route found for ${location.pathname}`)
+
+  return <Navigate to={routeMap.home} replace />
 }
