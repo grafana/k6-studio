@@ -11,6 +11,7 @@ import { createNewGeneratorFile } from '@/utils/generator'
 import { GroupedProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { groupProxyData } from '@/utils/groups'
+import { getRoutePath } from '@/routeMap'
 
 export function RecordingPreviewer() {
   const [groupedProxyData, setGroupedProxyData] = useState<GroupedProxyData>({})
@@ -40,7 +41,7 @@ export function RecordingPreviewer() {
 
   const handleDeleteRecording = async () => {
     await window.studio.ui.deleteFile(path)
-    navigate('/')
+    navigate(getRoutePath('home'))
   }
 
   const handleCreateTestGenerator = async () => {
@@ -50,12 +51,14 @@ export function RecordingPreviewer() {
       `${new Date().toISOString()}.json`
     )
 
-    navigate(`/generator/${encodeURIComponent(generatorPath)}`)
+    navigate(
+      getRoutePath('generator', { path: encodeURIComponent(generatorPath) })
+    )
   }
 
   const handleDiscard = async () => {
     await window.studio.ui.deleteFile(path)
-    navigate('/recorder?autoStart')
+    navigate(`${getRoutePath('recorder')}?autoStart`)
   }
 
   return (
@@ -80,7 +83,7 @@ export function RecordingPreviewer() {
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item asChild>
-                <Link to="/recorder">New recording</Link>
+                <Link to={getRoutePath('recorder')}>New recording</Link>
               </DropdownMenu.Item>
               <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
                 Delete

@@ -1,11 +1,11 @@
 import { useGeneratorStore } from '@/store/generator'
-import { Flex, ScrollArea } from '@radix-ui/themes'
+import { Flex, ScrollArea, Text } from '@radix-ui/themes'
 import { NewRuleMenu } from '../NewRuleMenu'
 import { SortableRuleList } from './SortableRuleList'
+import { css } from '@emotion/react'
 
 export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)
-  const selectedRuleId = useGeneratorStore((store) => store.selectedRuleId)
   const swapRules = useGeneratorStore((store) => store.swapRules)
 
   return (
@@ -14,19 +14,23 @@ export function TestRuleContainer() {
         <Flex
           position="sticky"
           align="center"
-          justify="between"
           top="0"
-          py="2"
-          style={{ background: 'var(--color-background)' }}
+          px="2"
+          py="1"
+          mx="-2"
+          gap="1"
+          css={css`
+            background-color: var(--color-background);
+            z-index: 1;
+          `}
         >
-          Test rules ({rules.length})<NewRuleMenu />
+          <Text size="2" weight="bold">
+            Test rules ({rules.length})
+          </Text>
+          <NewRuleMenu />
         </Flex>
 
-        <SortableRuleList
-          rules={rules}
-          selectedRuleId={selectedRuleId}
-          onSwapRules={swapRules}
-        />
+        <SortableRuleList rules={rules} onSwapRules={swapRules} />
       </Flex>
     </ScrollArea>
   )

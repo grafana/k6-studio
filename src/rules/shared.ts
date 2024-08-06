@@ -214,12 +214,20 @@ if (import.meta.vitest) {
     expect(matchBeginEnd('<div>cat</div>', '<div>', '</div>')).toBe('cat')
     expect(matchBeginEnd('jumpinginthelake', 'ing', 'the')).toBe('in')
     expect(matchBeginEnd('hello', '<a>', '</a>')).toBeUndefined()
+    // matches only the first occurrence
+    expect(
+      matchBeginEnd('<div>cat</div><div>bob</div>', '<div>', '</div>')
+    ).toBe('cat')
   })
 
   it('match regex', () => {
     expect(matchRegex('<div>cat</div>', '<div>(.*?)</div>')).toBe('cat')
     expect(matchRegex('jumpinginthelake', 'ing(.*?)the')).toBe('in')
     expect(matchRegex('hello', '<a>(.*?)</a>')).toBeUndefined()
+    // matches only the first occurrence
+    expect(matchRegex('<div>cat</div><div>bob</div>', '<div>(.*?)</div>')).toBe(
+      'cat'
+    )
   })
 
   it('get json object', () => {

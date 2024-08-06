@@ -17,11 +17,10 @@ function parseRequest(request: Entry['request']): Request {
     content = JSON.stringify(
       request.postData.params.reduce(
         (acc, param) => {
-          //@ts-expect-error we need to handle the various possible params types in postData
           acc[param.name] = param.value
           return acc
         },
-        {} as { [key: string]: string }
+        {} as Record<string, string | undefined>
       )
     )
   }

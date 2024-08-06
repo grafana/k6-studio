@@ -1,3 +1,4 @@
+import { getRoutePath } from '@/routeMap'
 import { ContextMenu } from '@radix-ui/themes'
 import { PropsWithChildren } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -20,7 +21,7 @@ export function FileContextMenu({
   const handleDelete = async () => {
     await window.studio.ui.deleteFile(path)
     if (isSelected) {
-      navigate('/')
+      navigate(getRoutePath('home'))
     }
   }
 

@@ -1,11 +1,20 @@
 import { css } from '@emotion/react'
-import { Box, Flex, Heading, IconButton, ScrollArea } from '@radix-ui/themes'
+import {
+  Box,
+  Flex,
+  Heading,
+  IconButton,
+  ScrollArea,
+  Tooltip,
+} from '@radix-ui/themes'
 import { Link } from 'react-router-dom'
 
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { FileTree } from '@/components/FileTree'
 import { useFolderContent } from './Sidebar.hooks'
 import K6Logo from '@/assets/logo.svg'
+import { getRoutePath } from '@/routeMap'
+import { PlusIcon } from '@radix-ui/react-icons'
 
 export function Sidebar() {
   const { recordings, generators, scripts } = useFolderContent()
@@ -22,7 +31,7 @@ export function Sidebar() {
     >
       <Flex gap="2" align="center" mb="2" p="2">
         <IconButton asChild aria-label="Home" variant="ghost">
-          <Link to="/">
+          <Link to={getRoutePath('home')}>
             <img src={K6Logo} alt="k6 Logo" width="18" height="18" />
           </Link>
         </IconButton>
@@ -43,6 +52,20 @@ export function Sidebar() {
             files={recordings}
             noFilesMessage="No recordings found"
             viewPath="/recording-previewer"
+            actions={
+              <Tooltip content="New recording" side="right">
+                <IconButton
+                  asChild
+                  aria-label="New recording"
+                  variant="ghost"
+                  size="1"
+                >
+                  <Link to={`${getRoutePath('recorder')}?autoStart`}>
+                    <PlusIcon />
+                  </Link>
+                </IconButton>
+              </Tooltip>
+            }
           />
           <FileTree
             label="Test generators"

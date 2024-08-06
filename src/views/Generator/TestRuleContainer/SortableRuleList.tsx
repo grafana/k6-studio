@@ -23,19 +23,19 @@ import {
 import { TestRuleItem } from './TestRule'
 import { TestRule } from '@/types/rules'
 import { useState } from 'react'
+import { useGeneratorParams } from '../Generator.hooks'
 
 interface SortableRuleListProps {
   rules: TestRule[]
-  selectedRuleId: string | null
   onSwapRules: (idA: string, idB: string) => void
 }
 
 export function SortableRuleList({
   rules,
-  selectedRuleId,
   onSwapRules,
 }: SortableRuleListProps) {
   const [active, setActive] = useState<TestRule | null>(null)
+  const { ruleId } = useGeneratorParams()
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -68,16 +68,13 @@ export function SortableRuleList({
           {rules.map((rule) => (
             <TestRuleItem
               rule={rule}
-              isSelected={rule.id === selectedRuleId}
+              isSelected={rule.id === ruleId}
               key={rule.id}
             />
           ))}
           <DragOverlay modifiers={[restrictToFirstScrollableAncestor]}>
             {active ? (
-              <TestRuleItem
-                rule={active}
-                isSelected={active.id === selectedRuleId}
-              />
+              <TestRuleItem rule={active} isSelected={active.id === ruleId} />
             ) : null}
           </DragOverlay>
         </SortableContext>

@@ -12,6 +12,7 @@ import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { groupProxyData } from '@/utils/groups'
 import { startRecording, stopRecording } from './Recorder.utils'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
+import { getRoutePath } from '@/routeMap'
 
 export function Recorder() {
   const [group, setGroup] = useState<string>('Default')
@@ -48,7 +49,9 @@ export function Recorder() {
       JSON.stringify(har, null, 4)
     )
 
-    navigate(`/recording-previewer/${encodeURIComponent(filePath)}?discardable`)
+    navigate(
+      `${getRoutePath('recordingPreviewer', { path: encodeURIComponent(filePath) })}?discardable`
+    )
   }
 
   useEffect(() => {
