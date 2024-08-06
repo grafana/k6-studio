@@ -25,7 +25,12 @@ export function AppRoutes() {
           />
           <Route path={routeMap.generator.root} element={<Generator />}>
             <Route element={<GeneratorDrawer />}>
-              <Route path="" element={<Navigate to="loadProfile" replace />} />
+              <Route
+                path=""
+                element={
+                  <Navigate to={routeMap.generator.loadProfile} replace />
+                }
+              />
               <Route path={routeMap.generator.rule} element={<RuleEditor />} />
               <Route
                 path={routeMap.generator.loadProfile}
@@ -42,6 +47,7 @@ export function AppRoutes() {
             </Route>
           </Route>
           <Route path={routeMap.validator} element={<Validator />} />
+          <Route path="*" element={<Navigate to={routeMap.home} replace />} />
         </Route>
       </Routes>
     </HashRouter>

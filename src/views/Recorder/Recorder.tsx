@@ -50,7 +50,7 @@ export function Recorder() {
     )
 
     navigate(
-      `${getRoutePath('recordingPreviewer', { path: filePath })}}?discardable`
+      `${getRoutePath('recordingPreviewer', { path: filePath })}?discardable`
     )
   }
 
