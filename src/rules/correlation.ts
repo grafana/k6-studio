@@ -11,7 +11,7 @@ import {
   canonicalHeaderKey,
   matchFilter,
   generateSequentialInt,
-  isJsonResponse,
+  isJsonReqResp,
 } from './utils'
 import { exhaustive } from '@/utils/typescript'
 import { replaceCorrelatedValues } from './correlation.utils'
@@ -450,7 +450,7 @@ const extractCorrelationJsonBody = (
     throw new Error('no response to extract from')
   }
 
-  if (!isJsonResponse(response)) {
+  if (!isJsonReqResp(response)) {
     return noCorrelationResult
   }
 

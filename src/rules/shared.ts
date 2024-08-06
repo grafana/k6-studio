@@ -2,7 +2,7 @@ import { get, set } from 'lodash-es'
 import { safeJsonParse } from '@/utils/json'
 import { Header, Request, Cookie } from '@/types'
 import { BeginEndSelector, JsonSelector, RegexSelector } from '@/types/rules'
-import { isJsonRequest } from './utils'
+import { isJsonReqResp } from './utils'
 
 export const matchBeginEnd = (value: string, begin: string, end: string) => {
   // matches only the first occurrence
@@ -170,7 +170,7 @@ export const replaceJsonBody = (
   request: Request,
   variableName: string
 ) => {
-  if (!isJsonRequest(request) || !request.content) {
+  if (!isJsonReqResp(request) || !request.content) {
     return request
   }
 
