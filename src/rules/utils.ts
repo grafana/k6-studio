@@ -55,18 +55,54 @@ export function matchFilter(
 
 export const isJsonResponse = (response: Response) => {
   const contentTypeValues = getHeaderValues(response.headers, 'content-type')
-  let contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
+  const contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
 
-  // NOTE: this is a small hack to skip google malformed json that starts this way, those requests are made automatically by the chrome
-  // browser. Most likely we want a better way of filtering them out since it can't be just parsed
-  if (response.content.startsWith(')]}')) {
-    contentTypeValue = undefined
-  }
-
-  // works only on json
+  // check Content-Type header
   if (!contentTypeValue || !contentTypeValue.includes('application/json')) {
     return false
   }
 
+  // check content
+  try {
+    JSON.parse(response.content)
+  } catch (error) {
+    return false
+  }
+
   return true
+}
+
+// @ts-expect-error we have commonjs set as module option
+if (import.meta.vitest) {
+  // @ts-expect-error we have commonjs set as module option
+  const { it, expect } = import.meta.vitest
+
+  const generateResponse = (
+    content: string,
+    contentType: string = 'application/json'
+  ): Response => {
+    return {
+      statusCode: 200,
+      path: '/api/v1/foo',
+      reason: 'OK',
+      httpVersion: '1.1',
+      headers: [['Content-Type', contentType]],
+      cookies: [],
+      content: content,
+      contentLength: 0,
+      timestampStart: 0,
+    }
+  }
+
+  it('is json response', () => {
+    expect(isJsonResponse(generateResponse('{"hello":"world"}'))).toBe(true)
+    expect(isJsonResponse(generateResponse('[{"hello":"world"}]'))).toBe(true)
+    expect(isJsonResponse(generateResponse('{"hello":world"}hello'))).toBe(
+      false
+    )
+    expect(isJsonResponse(generateResponse(')]}'))).toBe(false)
+    expect(
+      isJsonResponse(generateResponse('{"hello":"world"}', 'text/plain'))
+    ).toBe(false)
+  })
 }
