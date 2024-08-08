@@ -1,9 +1,4 @@
-import {
-  BeginEndSelector,
-  CorrelationRule,
-  JsonSelector,
-  RegexSelector,
-} from '@/types/rules'
+import { BeginEndSelector, CorrelationRule, RegexSelector } from '@/types/rules'
 import { Header, Request, Cookie } from '@/types'
 import { exhaustive } from '@/utils/typescript'
 import {
@@ -39,19 +34,15 @@ export function replaceCorrelatedValues({
   switch (rule.replacer.selector.type) {
     case 'begin-end':
       return replaceBeginEnd(
-        rule.replacer.selector as BeginEndSelector,
+        rule.replacer.selector,
         request,
         `correl_${uniqueId}`
       )
     case 'regex':
-      return replaceRegex(
-        rule.replacer.selector as RegexSelector,
-        request,
-        `correl_${uniqueId}`
-      )
+      return replaceRegex(rule.replacer.selector, request, `correl_${uniqueId}`)
     case 'json':
       return replaceJsonBody(
-        rule.replacer.selector as JsonSelector,
+        rule.replacer.selector,
         request,
         `correl_${uniqueId}`
       )
