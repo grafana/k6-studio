@@ -37,44 +37,41 @@ export const setJsonObjectFromPath = (
 }
 
 export const replaceContent = (
-  request: Request,
+  content: string | null,
   value: string,
   variableName: string
 ) => {
-  return request.content?.replaceAll(value, `\${${variableName}}`) ?? null
+  return content?.replaceAll(value, `\${${variableName}}`) ?? null
 }
 
 export const replaceUrl = (
-  request: Request,
+  url: string,
   value: string,
   variableName: string
 ) => {
-  return request.url.replaceAll(value, `\${${variableName}}`)
+  return url.replaceAll(value, `\${${variableName}}`)
 }
 
 export const replaceHeaders = (
-  request: Request,
+  headers: Header[],
   value: string,
   variableName: string
-) => {
-  const headers: Header[] = request.headers.map(([key, headerValue]) => {
+): Header[] => {
+  return headers.map(([key, headerValue]) => {
     const replacedValue = headerValue.replaceAll(value, `\${${variableName}}`)
     return [key, replacedValue]
   })
-  return headers
 }
 
 export const replaceCookies = (
-  request: Request,
+  cookies: Cookie[],
   value: string,
   variableName: string
-) => {
-  const cookies: Cookie[] = request.cookies.map(([key, cookieValue]) => {
+): Cookie[] => {
+  return cookies.map(([key, cookieValue]) => {
     const replacedValue = cookieValue.replaceAll(value, `\${${variableName}}`)
     return [key, replacedValue]
   })
-
-  return cookies
 }
 
 export const replaceBeginEndBody = (
@@ -89,7 +86,7 @@ export const replaceBeginEndBody = (
   )
   if (!valueToReplace) return request
 
-  const content = replaceContent(request, valueToReplace, variableName)
+  const content = replaceContent(request.content, valueToReplace, variableName)
   return { ...request, content }
 }
 
@@ -101,7 +98,11 @@ export const replaceBeginEndHeaders = (
   for (const [, value] of request.headers) {
     const valueToReplace = matchBeginEnd(value, selector.begin, selector.end)
     if (valueToReplace) {
-      const headers = replaceHeaders(request, valueToReplace, variableName)
+      const headers = replaceHeaders(
+        request.headers,
+        valueToReplace,
+        variableName
+      )
       return { ...request, headers }
     }
   }
@@ -121,7 +122,7 @@ export const replaceBeginEndUrl = (
   )
   if (!valueToReplace) return request
 
-  const url = replaceUrl(request, valueToReplace, variableName)
+  const url = replaceUrl(request.url, valueToReplace, variableName)
   return { ...request, url }
 }
 
@@ -133,7 +134,7 @@ export const replaceRegexBody = (
   const valueToReplace = matchRegex(request.content ?? '', selector.regex)
   if (!valueToReplace) return request
 
-  const content = replaceContent(request, valueToReplace, variableName)
+  const content = replaceContent(request.content, valueToReplace, variableName)
   return { ...request, content }
 }
 
@@ -145,7 +146,11 @@ export const replaceRegexHeaders = (
   for (const [, value] of request.headers) {
     const valueToReplace = matchRegex(value, selector.regex)
     if (valueToReplace) {
-      const headers = replaceHeaders(request, valueToReplace, variableName)
+      const headers = replaceHeaders(
+        request.headers,
+        valueToReplace,
+        variableName
+      )
       return { ...request, headers }
     }
   }
@@ -161,7 +166,7 @@ export const replaceRegexUrl = (
   const valueToReplace = matchRegex(request.url, selector.regex)
   if (!valueToReplace) return request
 
-  const url = replaceUrl(request, valueToReplace, variableName)
+  const url = replaceUrl(request.url, valueToReplace, variableName)
   return { ...request, url }
 }
 
@@ -251,44 +256,43 @@ if (import.meta.vitest) {
 
   it('replace content', () => {
     const request = generateRequest('<div>hello</div>')
-    expect(replaceContent(request, 'hello', 'correl_0')).toBe(
+    expect(replaceContent(request.content, 'hello', 'correl_0')).toBe(
       '<div>${correl_0}</div>'
     )
-    expect(replaceContent(request, 'world', 'correl_0')).toBe(
+    expect(replaceContent(request.content, 'world', 'correl_0')).toBe(
       '<div>hello</div>'
     )
   })
 
   it('replace headers', () => {
     const request = generateRequest('')
-    expect(replaceHeaders(request, 'application', 'correl_0')[0]).toStrictEqual(
-      ['content-type', '${correl_0}/json']
-    )
-    expect(replaceHeaders(request, 'protobuf', 'correl_0')[0]).toStrictEqual([
-      'content-type',
-      'application/json',
-    ])
+    expect(
+      replaceHeaders(request.headers, 'application', 'correl_0')[0]
+    ).toStrictEqual(['content-type', '${correl_0}/json'])
+    expect(
+      replaceHeaders(request.headers, 'protobuf', 'correl_0')[0]
+    ).toStrictEqual(['content-type', 'application/json'])
   })
 
   it('replace url', () => {
     const request = generateRequest('')
-    expect(replaceUrl(request, 'api', 'correl_0')).toBe(
+    expect(replaceUrl(request.url, 'api', 'correl_0')).toBe(
       'http://test.k6.io/${correl_0}/v1/foo'
     )
-    expect(replaceUrl(request, 'jumanji', 'correl_0')).toBe(
+    expect(replaceUrl(request.url, 'jumanji', 'correl_0')).toBe(
       'http://test.k6.io/api/v1/foo'
     )
   })
 
   it('replace cookies', () => {
     const request = generateRequest('')
-    expect(replaceCookies(request, 'on', 'correl_0')[0]).toStrictEqual([
+    expect(replaceCookies(request.cookies, 'on', 'correl_0')[0]).toStrictEqual([
       'security',
       'n${correl_0}e',
     ])
-    expect(replaceCookies(request, 'notincookie', 'correl_0')[0]).toStrictEqual(
-      ['security', 'none']
-    )
+    expect(
+      replaceCookies(request.cookies, 'notincookie', 'correl_0')[0]
+    ).toStrictEqual(['security', 'none'])
   })
 
   it('replace begin end body', () => {

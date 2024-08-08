@@ -90,16 +90,16 @@ export function replaceTextMatches(
   extractedValue: string,
   variableName: string
 ): Request {
-  const content = replaceContent(request, extractedValue, variableName)
-  const url = replaceUrl(request, extractedValue, variableName)
+  const content = replaceContent(request.content, extractedValue, variableName)
+  const url = replaceUrl(request.url, extractedValue, variableName)
   const path = request.path.replaceAll(extractedValue, `\${${variableName}}`)
   const headers: Header[] = replaceHeaders(
-    request,
+    request.headers,
     extractedValue,
     variableName
   )
   const cookies: Cookie[] = replaceCookies(
-    request,
+    request.cookies,
     extractedValue,
     variableName
   )
