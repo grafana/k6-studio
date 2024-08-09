@@ -1,6 +1,7 @@
 import { TestRule } from '@/types/rules'
-import { RequestSnippetSchema } from '@/types'
+import { RequestSnippetSchema, Response } from '@/types'
 import { exhaustive } from '@/utils/typescript'
+import { getHeaderValues } from '@/utils/headers'
 
 /**
  * Converts a header key to its canonical form.
@@ -50,4 +51,58 @@ export function matchFilter(
     console.error(e)
     return false
   }
+}
+
+export const isJsonResponse = (response: Response) => {
+  const contentTypeValues = getHeaderValues(response.headers, 'content-type')
+  const contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
+
+  // check Content-Type header
+  if (!contentTypeValue || !contentTypeValue.includes('application/json')) {
+    return false
+  }
+
+  // check content
+  try {
+    JSON.parse(response.content)
+  } catch (error) {
+    return false
+  }
+
+  return true
+}
+
+// @ts-expect-error we have commonjs set as module option
+if (import.meta.vitest) {
+  // @ts-expect-error we have commonjs set as module option
+  const { it, expect } = import.meta.vitest
+
+  const generateResponse = (
+    content: string,
+    contentType: string = 'application/json'
+  ): Response => {
+    return {
+      statusCode: 200,
+      path: '/api/v1/foo',
+      reason: 'OK',
+      httpVersion: '1.1',
+      headers: [['Content-Type', contentType]],
+      cookies: [],
+      content: content,
+      contentLength: 0,
+      timestampStart: 0,
+    }
+  }
+
+  it('is json response', () => {
+    expect(isJsonResponse(generateResponse('{"hello":"world"}'))).toBe(true)
+    expect(isJsonResponse(generateResponse('[{"hello":"world"}]'))).toBe(true)
+    expect(isJsonResponse(generateResponse('{"hello":world"}hello'))).toBe(
+      false
+    )
+    expect(isJsonResponse(generateResponse(')]}'))).toBe(false)
+    expect(
+      isJsonResponse(generateResponse('{"hello":"world"}', 'text/plain'))
+    ).toBe(false)
+  })
 }

@@ -22,7 +22,7 @@ export function useListenProxyData(group?: string) {
       setProxyData((s) =>
         mergeRequestsById(s, {
           ...data,
-          group: groupRef.current ?? 'default',
+          group: groupRef.current,
         })
       )
     })

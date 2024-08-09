@@ -1,11 +1,21 @@
 import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
-import { CorrelationStateMap, CorrelationRule } from '@/types/rules'
-import { cloneDeep, get, isEqual } from 'lodash-es'
-import { canonicalHeaderKey, matchFilter } from './utils'
-import { getHeaderValues } from '@/utils/headers'
+import {
+  CorrelationStateMap,
+  CorrelationRule,
+  BeginEndSelector,
+  RegexSelector,
+  JsonSelector,
+} from '@/types/rules'
+import { cloneDeep, isEqual } from 'lodash-es'
+import {
+  canonicalHeaderKey,
+  matchFilter,
+  generateSequentialInt,
+  isJsonResponse,
+} from './utils'
 import { exhaustive } from '@/utils/typescript'
 import { replaceCorrelatedValues } from './correlation.utils'
-import { safeJsonParse } from '@/utils/json'
+import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
 
 export function applyCorrelationRule(
   requestSnippetSchema: RequestSnippetSchema,
@@ -84,6 +94,12 @@ export function applyCorrelationRule(
   return snippetSchemaReturnValue
 }
 
+const noCorrelationResult = {
+  extractedValue: undefined,
+  correlationExtractionSnippet: undefined,
+  generatedUniqueId: undefined,
+}
+
 const tryCorrelationExtraction = (
   rule: CorrelationRule,
   proxyData: ProxyData,
@@ -97,69 +113,27 @@ const tryCorrelationExtraction = (
     (!('from' in rule.extractor.selector) ||
       rule.extractor.selector.from !== 'url')
   ) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   switch (rule.extractor.selector.type) {
     case 'begin-end':
-      switch (rule.extractor.selector.from) {
-        case 'body':
-          return extractCorrelationBeginEndBody(
-            rule,
-            proxyData.response,
-            uniqueId,
-            sequentialIdGenerator
-          )
-        case 'headers':
-          return extractCorrelationBeginEndHeaders(
-            rule,
-            proxyData.response,
-            uniqueId,
-            sequentialIdGenerator
-          )
-        case 'url':
-          return extractCorrelationBeginEndUrl(
-            rule,
-            proxyData.request,
-            uniqueId,
-            sequentialIdGenerator
-          )
-        default:
-          return exhaustive(rule.extractor.selector)
-      }
+      return extractCorrelationBeginEnd(
+        rule.extractor.selector,
+        proxyData,
+        uniqueId,
+        sequentialIdGenerator
+      )
     case 'regex':
-      switch (rule.extractor.selector.from) {
-        case 'body':
-          return extractCorrelationRegexBody(
-            rule,
-            proxyData.response,
-            uniqueId,
-            sequentialIdGenerator
-          )
-        case 'headers':
-          return extractCorrelationRegexHeaders(
-            rule,
-            proxyData.response,
-            uniqueId,
-            sequentialIdGenerator
-          )
-        case 'url':
-          return extractCorrelationRegexUrl(
-            rule,
-            proxyData.request,
-            uniqueId,
-            sequentialIdGenerator
-          )
-        default:
-          return exhaustive(rule.extractor.selector)
-      }
+      return extractCorrelationRegex(
+        rule.extractor.selector,
+        proxyData,
+        uniqueId,
+        sequentialIdGenerator
+      )
     case 'json':
       return extractCorrelationJsonBody(
-        rule,
+        rule.extractor.selector,
         proxyData.response,
         uniqueId,
         sequentialIdGenerator
@@ -169,56 +143,141 @@ const tryCorrelationExtraction = (
   }
 }
 
+const extractCorrelationBeginEnd = (
+  selector: BeginEndSelector,
+  proxyData: ProxyData,
+  uniqueId: number | undefined,
+  sequentialIdGenerator: Generator<number>
+) => {
+  switch (selector.from) {
+    case 'body':
+      return extractCorrelationBeginEndBody(
+        selector,
+        proxyData.response,
+        uniqueId,
+        sequentialIdGenerator
+      )
+    case 'headers':
+      return extractCorrelationBeginEndHeaders(
+        selector,
+        proxyData.response,
+        uniqueId,
+        sequentialIdGenerator
+      )
+    case 'url':
+      return extractCorrelationBeginEndUrl(
+        selector,
+        proxyData.request,
+        uniqueId,
+        sequentialIdGenerator
+      )
+    default:
+      return exhaustive(selector.from)
+  }
+}
+
+const extractCorrelationRegex = (
+  selector: RegexSelector,
+  proxyData: ProxyData,
+  uniqueId: number | undefined,
+  sequentialIdGenerator: Generator<number>
+) => {
+  switch (selector.from) {
+    case 'body':
+      return extractCorrelationRegexBody(
+        selector,
+        proxyData.response,
+        uniqueId,
+        sequentialIdGenerator
+      )
+    case 'headers':
+      return extractCorrelationRegexHeaders(
+        selector,
+        proxyData.response,
+        uniqueId,
+        sequentialIdGenerator
+      )
+    case 'url':
+      return extractCorrelationRegexUrl(
+        selector,
+        proxyData.request,
+        uniqueId,
+        sequentialIdGenerator
+      )
+    default:
+      return exhaustive(selector.from)
+  }
+}
+
+const getCorrelationVariableSnippet = (uniqueId: number | undefined) => {
+  return `let correl_${uniqueId}
+    if (match) {
+      correl_${uniqueId} = match[1]
+    }`
+}
+
+const getCorrelationBeginEndSnippet = (
+  selector: BeginEndSelector,
+  matchStatement: string,
+  uniqueId: number | undefined
+) => {
+  // TODO: replace regex with findBetween from k6-utils once we have imports
+  return `
+    regex = new RegExp('${selector.begin}(.*?)${selector.end}')
+    match = ${matchStatement}
+    ${getCorrelationVariableSnippet(uniqueId)}`
+}
+
+const getCorrelationRegexSnippet = (
+  selector: RegexSelector,
+  matchStatement: string,
+  uniqueId: number | undefined
+) => {
+  return `
+    regex = new RegExp('${selector.regex}')
+    match = ${matchStatement}
+    ${getCorrelationVariableSnippet(uniqueId)}`
+}
+
 const extractCorrelationBeginEndBody = (
-  rule: CorrelationRule,
+  selector: BeginEndSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
-  // TODO: remove this obscenity!
   if (!response) {
     throw new Error('no response to extract from')
   }
 
-  if (rule.extractor.selector.type !== 'begin-end') {
-    throw new Error('operation on wrong rule type')
-  }
-
-  // Note: currently matches only the first occurrence
-  const regex = new RegExp(
-    `${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}`
+  const extractedValue = matchBeginEnd(
+    response.content,
+    selector.begin,
+    selector.end
   )
-  const match = response.content.match(regex)
 
-  if (!match) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+  if (!extractedValue) {
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
     uniqueId = sequentialIdGenerator.next().value
   }
 
-  const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-    match = resp.body.match(regex)
-    let correl_${uniqueId}
-    if (match) {
-      correl_${uniqueId} = match[1]
-    }`
+  const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
+    selector,
+    'resp.body.match(regex)',
+    uniqueId
+  )
 
   return {
-    extractedValue: match[1],
+    extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
 }
 
 const extractCorrelationBeginEndHeaders = (
-  rule: CorrelationRule,
+  selector: BeginEndSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
@@ -226,92 +285,67 @@ const extractCorrelationBeginEndHeaders = (
   if (!response) {
     throw new Error('no response to extract from')
   }
-  // TODO: remove this obscenity!
-  if (rule.extractor.selector.type !== 'begin-end') {
-    throw new Error('operation on wrong rule type')
-  }
 
   // Note: currently matches only the first occurrence
-  const regex = new RegExp(
-    `${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}`
-  )
-
   for (const [key, value] of response.headers) {
-    const match = value.match(regex)
+    const extractedValue = matchBeginEnd(value, selector.begin, selector.end)
 
-    if (match) {
+    if (extractedValue) {
       if (!uniqueId) {
         uniqueId = sequentialIdGenerator.next().value
       }
-      // TODO: replace regex with findBetween from k6-utils once we have imports
-      const correlationExtractionSnippet = `
-        regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-        match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
-        let correl_${uniqueId}
-        if (match) {
-          correl_${uniqueId} = match[1]
-        }`
+      const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
+        selector,
+        `resp.headers["${canonicalHeaderKey(key)}"].match(regex)`,
+        uniqueId
+      )
 
       return {
-        extractedValue: match[1],
+        extractedValue,
         correlationExtractionSnippet: correlationExtractionSnippet,
         generatedUniqueId: uniqueId,
       }
     }
   }
 
-  return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
-  }
+  return noCorrelationResult
 }
 
 const extractCorrelationBeginEndUrl = (
-  rule: CorrelationRule,
+  selector: BeginEndSelector,
   request: Request,
   uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
-  // TODO: remove this obscenity!
-  if (rule.extractor.selector.type !== 'begin-end') {
-    throw new Error('operation on wrong rule type')
-  }
-
-  const regex = new RegExp(
-    `${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}`
+  const extractedValue = matchBeginEnd(
+    request.url,
+    selector.begin,
+    selector.end
   )
-  const match = request.url.match(regex)
 
-  if (!match) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+  if (!extractedValue) {
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
     uniqueId = sequentialIdGenerator.next().value
   }
 
-  const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.begin}(.*?)${rule.extractor.selector.end}')
-    match = resp.url.match(regex)
-    let correl_${uniqueId}
-    if (match) {
-      correl_${uniqueId} = match[1]
-    }`
+  const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
+    selector,
+    'resp.url.match(regex)',
+    uniqueId
+  )
 
   return {
-    extractedValue: match[1],
+    extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
 }
 
 const extractCorrelationRegexBody = (
-  rule: CorrelationRule,
+  selector: RegexSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
@@ -319,45 +353,32 @@ const extractCorrelationRegexBody = (
   if (!response) {
     throw new Error('no response to extract from')
   }
-  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
-  // TODO: remove this obscenity!
-  if (rule.extractor.selector.type !== 'regex') {
-    throw new Error('regex operation on wrong rule type')
-  }
 
-  // Note: currently matches only the first occurrence
-  const regex = new RegExp(rule.extractor.selector.regex)
-  const match = response.content.match(regex)
+  const extractedValue = matchRegex(response.content, selector.regex)
 
-  if (!match) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+  if (!extractedValue) {
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
     uniqueId = sequentialIdGenerator.next().value
   }
 
-  const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.regex}')
-    match = resp.body.match(regex)
-    let correl_${uniqueId}
-    if (match) {
-      correl_${uniqueId} = match[1]
-    }`
+  const correlationExtractionSnippet = getCorrelationRegexSnippet(
+    selector,
+    'resp.body.match(regex)',
+    uniqueId
+  )
 
   return {
-    extractedValue: match[1],
+    extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
 }
 
 const extractCorrelationRegexHeaders = (
-  rule: CorrelationRule,
+  selector: RegexSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
@@ -365,91 +386,64 @@ const extractCorrelationRegexHeaders = (
   if (!response) {
     throw new Error('no response to extract from')
   }
-  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
-  // TODO: remove this obscenity!
-  if (rule.extractor.selector.type !== 'regex') {
-    throw new Error('regex operation on wrong rule type')
-  }
 
   // Note: currently matches only the first occurrence
-  const regex = new RegExp(`${rule.extractor.selector.regex}`)
-
   for (const [key, value] of response.headers) {
-    const match = value.match(regex)
+    const extractedValue = matchRegex(value, selector.regex)
 
-    if (match) {
+    if (extractedValue) {
       if (!uniqueId) {
         uniqueId = sequentialIdGenerator.next().value
       }
 
-      const correlationExtractionSnippet = `
-        regex = new RegExp('${rule.extractor.selector.regex}')
-        match = resp.headers["${canonicalHeaderKey(key)}"].match(regex)
-        let correl_${uniqueId}
-        if (match) {
-          correl_${uniqueId} = match[1]
-        }`
+      const correlationExtractionSnippet = getCorrelationRegexSnippet(
+        selector,
+        `resp.headers["${canonicalHeaderKey(key)}"].match(regex)`,
+        uniqueId
+      )
 
       return {
-        extractedValue: match[1],
+        extractedValue,
         correlationExtractionSnippet,
         generatedUniqueId: uniqueId,
       }
     }
   }
 
-  return {
-    extractedValue: undefined,
-    correlationExtractionSnippet: undefined,
-    generatedUniqueId: undefined,
-  }
+  return noCorrelationResult
 }
 
 const extractCorrelationRegexUrl = (
-  rule: CorrelationRule,
+  selector: RegexSelector,
   request: Request,
   uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
 ) => {
-  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
-  // TODO: remove this obscenity!
-  if (rule.extractor.selector.type !== 'regex') {
-    throw new Error('regex operation on wrong rule type')
-  }
+  const extractedValue = matchRegex(request.url, selector.regex)
 
-  const regex = new RegExp(`${rule.extractor.selector.regex}`)
-  const match = request.url.match(regex)
-
-  if (!match) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+  if (!extractedValue) {
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
     uniqueId = sequentialIdGenerator.next().value
   }
 
-  const correlationExtractionSnippet = `
-    regex = new RegExp('${rule.extractor.selector.regex}')
-    match = resp.url.match(regex)
-    let correl_${uniqueId}
-
-    if (match) {
-      correl_${uniqueId} = match[1]
-    }`
+  const correlationExtractionSnippet = getCorrelationRegexSnippet(
+    selector,
+    'resp.url.match(regex)',
+    uniqueId
+  )
 
   return {
-    extractedValue: match[1],
+    extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
 }
 
 const extractCorrelationJsonBody = (
-  rule: CorrelationRule,
+  selector: JsonSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
   sequentialIdGenerator: Generator<number>
@@ -458,41 +452,14 @@ const extractCorrelationJsonBody = (
     throw new Error('no response to extract from')
   }
 
-  const contentTypeValues = getHeaderValues(response.headers, 'content-type')
-  let contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
-
-  // NOTE: this is a small hack to skip google malformed json that starts this way, those requests are made automatically by the chrome
-  // browser. Most likely we want a better way of filtering them out since it can't be just parsed
-  if (response.content.startsWith(')]}')) {
-    contentTypeValue = undefined
+  if (!isJsonResponse(response)) {
+    return noCorrelationResult
   }
 
-  // works only on json
-  if (!contentTypeValue || !contentTypeValue.includes('application/json')) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
-  }
-
-  // Note: why does typescript complains about this, we can see the usage only on the regex path :(
-  // TODO: remove this obscenity! (create appropriate more fine-grained types)
-  if (rule.extractor.selector.type !== 'json') {
-    throw new Error('operation on wrong rule type')
-  }
-
-  const extractedValue = get(
-    safeJsonParse(response.content),
-    rule.extractor.selector.path
-  )
+  const extractedValue = getJsonObjectFromPath(response.content, selector.path)
 
   if (!extractedValue || extractedValue.length === 0) {
-    return {
-      extractedValue: undefined,
-      correlationExtractionSnippet: undefined,
-      generatedUniqueId: undefined,
-    }
+    return noCorrelationResult
   }
 
   if (!uniqueId) {
@@ -500,15 +467,264 @@ const extractCorrelationJsonBody = (
   }
 
   // array indexing doesn't start with a dot so we add it only in the other cases
-  const json_path = rule.extractor.selector.path.startsWith('[')
-    ? rule.extractor.selector.path
-    : `.${rule.extractor.selector.path}`
+  const json_path = selector.path.startsWith('[')
+    ? selector.path
+    : `.${selector.path}`
 
   const correlationExtractionSnippet = `
 let correl_${uniqueId} = resp.json()${json_path}`
   return {
-    extractedValue: extractedValue,
+    extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
     generatedUniqueId: uniqueId,
   }
+}
+
+// @ts-expect-error we have commonjs set as module option
+if (import.meta.vitest) {
+  // @ts-expect-error we have commonjs set as module option
+  const { it, expect } = import.meta.vitest
+
+  const generateResponse = (content: string): Response => {
+    return {
+      statusCode: 200,
+      path: '/api/v1/foo',
+      reason: 'OK',
+      httpVersion: '1.1',
+      headers: [['Content-Type', 'application/json']],
+      cookies: [],
+      content: content,
+      contentLength: 0,
+      timestampStart: 0,
+    }
+  }
+
+  const generateRequest = (): Request => {
+    return {
+      method: 'POST',
+      url: 'http://test.k6.io/api/v1/foo',
+      headers: [],
+      cookies: [],
+      query: [],
+      scheme: 'http',
+      host: 'localhost:3000',
+      content: '',
+      path: '/api/v1/foo',
+      timestampStart: 0,
+      timestampEnd: 0,
+      contentLength: 0,
+      httpVersion: '1.1',
+    }
+  }
+
+  it('extract correlation json body', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse(
+      JSON.stringify({ user_id: '444' })
+    )
+
+    const selector: JsonSelector = {
+      type: 'json',
+      from: 'body',
+      path: 'user_id',
+    }
+
+    const correlationExtractionSnippet = `
+let correl_1 = resp.json().user_id`
+    const expectedResult = {
+      extractedValue: '444',
+      correlationExtractionSnippet: correlationExtractionSnippet,
+      generatedUniqueId: 1,
+    }
+
+    expect(
+      extractCorrelationJsonBody(selector, response, 1, sequentialIdGenerator)
+    ).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation begin end body', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('noise<hello>bob<world>blah')
+
+    const selector: BeginEndSelector = {
+      type: 'begin-end',
+      from: 'body',
+      begin: 'hello>',
+      end: '<world>',
+    }
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${selector.begin}(.*?)${selector.end}')
+    match = resp.body.match(regex)
+    let correl_1
+    if (match) {
+      correl_1 = match[1]
+    }`
+    const expectedResult = {
+      extractedValue: 'bob',
+      correlationExtractionSnippet: correlationExtractionSnippet,
+      generatedUniqueId: 1,
+    }
+
+    expect(
+      extractCorrelationBeginEndBody(
+        selector,
+        response,
+        1,
+        sequentialIdGenerator
+      )
+    ).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation begin end header', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('')
+
+    const selector: BeginEndSelector = {
+      type: 'begin-end',
+      from: 'headers',
+      begin: 'application',
+      end: 'json',
+    }
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${selector.begin}(.*?)${selector.end}')
+    match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
+    let correl_1
+    if (match) {
+      correl_1 = match[1]
+    }`
+    const expectedResult = {
+      extractedValue: '/',
+      correlationExtractionSnippet: correlationExtractionSnippet,
+      generatedUniqueId: 1,
+    }
+
+    expect(
+      extractCorrelationBeginEndHeaders(
+        selector,
+        response,
+        1,
+        sequentialIdGenerator
+      )
+    ).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation begin end url', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const request: Request = generateRequest()
+
+    const selector: BeginEndSelector = {
+      type: 'begin-end',
+      from: 'url',
+      begin: 'api/',
+      end: '/foo',
+    }
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${selector.begin}(.*?)${selector.end}')
+    match = resp.url.match(regex)
+    let correl_1
+    if (match) {
+      correl_1 = match[1]
+    }`
+    const expectedResult = {
+      extractedValue: 'v1',
+      correlationExtractionSnippet: correlationExtractionSnippet,
+      generatedUniqueId: 1,
+    }
+
+    expect(
+      extractCorrelationBeginEndUrl(selector, request, 1, sequentialIdGenerator)
+    ).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation regex body', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('noise<hello>bob<world>blah')
+
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'body',
+      regex: 'hello>(.*?)<world>',
+    }
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${selector.regex}')
+    match = resp.body.match(regex)
+    let correl_1
+    if (match) {
+      correl_1 = match[1]
+    }`
+    const expectedResult = {
+      extractedValue: 'bob',
+      correlationExtractionSnippet: correlationExtractionSnippet,
+      generatedUniqueId: 1,
+    }
+
+    expect(
+      extractCorrelationRegexBody(selector, response, 1, sequentialIdGenerator)
+    ).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation regex header', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('')
+
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'headers',
+      regex: 'application(.*?)json',
+    }
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${selector.regex}')
+    match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
+    let correl_1
+    if (match) {
+      correl_1 = match[1]
+    }`
+    const expectedResult = {
+      extractedValue: '/',
+      correlationExtractionSnippet: correlationExtractionSnippet,
+      generatedUniqueId: 1,
+    }
+
+    expect(
+      extractCorrelationRegexHeaders(
+        selector,
+        response,
+        1,
+        sequentialIdGenerator
+      )
+    ).toStrictEqual(expectedResult)
+  })
+
+  it('extract correlation regex url', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const request: Request = generateRequest()
+
+    const selector: RegexSelector = {
+      type: 'regex',
+      from: 'url',
+      regex: 'api/(.*?)/foo',
+    }
+
+    const correlationExtractionSnippet = `
+    regex = new RegExp('${selector.regex}')
+    match = resp.url.match(regex)
+    let correl_1
+    if (match) {
+      correl_1 = match[1]
+    }`
+    const expectedResult = {
+      extractedValue: 'v1',
+      correlationExtractionSnippet: correlationExtractionSnippet,
+      generatedUniqueId: 1,
+    }
+
+    expect(
+      extractCorrelationRegexUrl(selector, request, 1, sequentialIdGenerator)
+    ).toStrictEqual(expectedResult)
+  })
 }
