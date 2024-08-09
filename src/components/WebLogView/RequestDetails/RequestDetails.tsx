@@ -7,12 +7,14 @@ import { Tabs } from '../Tabs'
 import { Cookies } from '../Cookies'
 import { Headers } from './Headers'
 import { Payload } from './Payload'
+import { QueryParams } from './QueryParams'
 
 export function RequestDetails({ data }: { data: ProxyData }) {
   return (
     <Tabs.Root defaultValue="headers">
       <Tabs.List>
         <Tabs.Trigger value="headers">Headers</Tabs.Trigger>
+        <Tabs.Trigger value="queryParams">Query parameters</Tabs.Trigger>
         <Tabs.Trigger value="payload">Payload</Tabs.Trigger>
         <Tabs.Trigger value="cookies">Cookies</Tabs.Trigger>
       </Tabs.List>
@@ -20,9 +22,15 @@ export function RequestDetails({ data }: { data: ProxyData }) {
       <ScrollableTabsContent value="headers">
         <Headers data={data} />
       </ScrollableTabsContent>
+
+      <ScrollableTabsContent value="queryParams">
+        <QueryParams request={data.request} />
+      </ScrollableTabsContent>
+
       <ScrollableTabsContent value="payload">
         <Payload data={data} />
       </ScrollableTabsContent>
+
       <ScrollableTabsContent value="cookies">
         <Cookies cookies={data.request?.cookies} />
       </ScrollableTabsContent>

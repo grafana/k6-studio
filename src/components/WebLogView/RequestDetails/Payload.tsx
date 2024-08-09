@@ -13,7 +13,7 @@ export function Payload({ data }: { data: ProxyData }) {
 
   if (!content) {
     return (
-      <Flex height="200px" justify="center" align="center">
+      <Flex height="100%" justify="center" align="center">
         Payload not available
       </Flex>
     )

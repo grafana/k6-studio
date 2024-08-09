@@ -10,19 +10,22 @@ export function parseParams(data: ProxyData) {
   }
 
   try {
-    if (data.request.query.length) {
-      return stringify(data.request.query)
-    }
-
     const contentType = getContentType(data.request?.headers ?? [])
 
     if (contentType === 'application/x-www-form-urlencoded') {
       return safeAtob(data.request.content ?? '')
     }
 
-    return stringify(JSON.parse(safeAtob(data.request.content ?? '')))
+    return stringify(
+      JSON.parse(parsePythonByteString(safeAtob(data.request.content ?? '')))
+    )
   } catch (e) {
     console.error('Failed to parse query parameters', e)
     return
   }
+}
+
+// Python byte strings are prefixed with b' and suffixed with '
+function parsePythonByteString(byteString: string) {
+  return byteString.replace(/b'(.*)'/, '$1')
 }
