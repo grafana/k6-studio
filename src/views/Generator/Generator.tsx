@@ -1,7 +1,7 @@
 import { Allotment } from 'allotment'
 import { useEffect, useState } from 'react'
 import { Button } from '@radix-ui/themes'
-import invariant from 'tiny-invariant'
+import { Outlet } from 'react-router-dom'
 
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import {
@@ -17,7 +17,6 @@ import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
 import { useGeneratorParams } from './Generator.hooks'
-import { Outlet } from 'react-router-dom'
 import { useToast } from '@/store/ui/useToast'
 
 export function Generator() {
@@ -26,7 +25,6 @@ export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useGeneratorParams()
-  invariant(path, 'Path is required')
   useSetWindowTitle(name)
   const showToast = useToast()
 
