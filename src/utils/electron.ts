@@ -1,4 +1,6 @@
+import { AddToastPayload } from '@/types/toast'
 import { platform, arch } from 'os'
+import { WebContents } from 'electron'
 
 type Platform = 'linux' | 'mac' | 'win'
 type Arch = 'arm64' | 'x86_64'
@@ -33,4 +35,11 @@ export function getArch(): Arch {
     default:
       throw new Error('unsupported arch')
   }
+}
+
+/**
+ * Show a toast in React
+ */
+export function sendToast(webContents: WebContents, toast: AddToastPayload) {
+  webContents.send('ui:toast', toast)
 }

@@ -4,6 +4,8 @@ import { Global } from '@emotion/react'
 import { useTheme } from './hooks/useTheme'
 import { globalStyles } from './globalStyles'
 import { AppRoutes } from './AppRoutes'
+import { Toasts } from './components/Toast/Toasts'
+import { ElectronToastListener } from './components/EletronToastListener'
 
 export function App() {
   const theme = useTheme()
@@ -11,6 +13,8 @@ export function App() {
   return (
     <Theme accentColor="violet" appearance={theme}>
       <Global styles={globalStyles} />
+      <Toasts />
+      <ElectronToastListener />
       <AppRoutes />
     </Theme>
   )

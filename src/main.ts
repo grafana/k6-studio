@@ -22,6 +22,7 @@ import {
   RECORDINGS_PATH,
   SCRIPTS_PATH,
 } from './constants/workspace'
+import { sendToast } from './utils/electron'
 
 const proxyEmitter = new eventEmmitter()
 
@@ -384,6 +385,11 @@ const launchProxyAndAttachEmitter = (
         browserWindow,
         proxyPort
       )
+
+      sendToast(browserWindow.webContents, {
+        title: 'Proxy failed to start, restarting...',
+        status: 'error',
+      })
     },
   })
 }
