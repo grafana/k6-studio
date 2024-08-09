@@ -5,6 +5,7 @@ import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, FolderContent } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
+import { AddToastPayload } from './types/toast'
 
 // Create listener and return clean up function to be used in useEffect
 function createListener<T>(channel: string, callback: (data: T) => void) {
@@ -97,6 +98,9 @@ const ui = {
   },
   onRemoveFile: (callback: (path: string) => void) => {
     return createListener('ui:remove-file', callback)
+  },
+  onToast: (callback: (toast: AddToastPayload) => void) => {
+    return createListener('ui:toast', callback)
   },
 } as const
 

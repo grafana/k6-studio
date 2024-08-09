@@ -17,6 +17,7 @@ import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
 import { useGeneratorParams } from './Generator.hooks'
+import { useToast } from '@/store/ui/useToast'
 
 export function Generator() {
   const name = useGeneratorStore((store) => store.name)
@@ -25,6 +26,7 @@ export function Generator() {
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useGeneratorParams()
   useSetWindowTitle(name)
+  const showToast = useToast()
 
   useEffect(() => {
     ;(async () => {
@@ -34,6 +36,12 @@ export function Generator() {
     })()
   }, [path])
 
+  const handleSave = () => {
+    saveGenerator(getFileNameFromPath(path)).then(() => {
+      showToast({ title: 'Generator saved', status: 'success' })
+    })
+  }
+
   return (
     <View
       title="Generator"
@@ -41,9 +49,7 @@ export function Generator() {
         <>
           <RecordingSelector />
           <Allowlist />
-          <Button onClick={() => saveGenerator(getFileNameFromPath(path))}>
-            Save
-          </Button>
+          <Button onClick={handleSave}>Save</Button>
           <Button onClick={() => loadGenerator()}>Load</Button>
           {hasRecording && (
             <Button onClick={exportScript}>Export script</Button>
