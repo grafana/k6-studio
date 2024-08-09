@@ -32,7 +32,7 @@ export const setJsonObjectFromPath = (
   value: string
 ) => {
   const jsonObject = safeJsonParse(json)
-  set(jsonObject, path, value)
+  set(jsonObject ?? {}, path, value)
   return JSON.stringify(jsonObject)
 }
 

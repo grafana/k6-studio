@@ -68,7 +68,7 @@ export const launchProxy = (
       return
     }
 
-    const proxyData: ProxyData = safeJsonParse(data)
+    const proxyData = safeJsonParse<ProxyData>(data)
     if (proxyData) {
       browserWindow.webContents.send('proxy:data', proxyData)
     }
