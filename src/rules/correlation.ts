@@ -11,7 +11,7 @@ import {
   canonicalHeaderKey,
   matchFilter,
   generateSequentialInt,
-  isJsonResponse,
+  isJsonReqResp,
 } from './utils'
 import { exhaustive } from '@/utils/typescript'
 import { replaceCorrelatedValues } from './correlation.utils'
@@ -33,7 +33,6 @@ export function applyCorrelationRule(
 
   if (correlationState?.extractedValue) {
     const { extractedValue } = correlationState
-    // const extractedValue = correlationState.extractedValue
     // we populate uniqueId since it doesn't have to be regenerated
     // this will be passed to the tryCorrelationExtraction function
     uniqueId = correlationState.generatedUniqueId
@@ -90,7 +89,6 @@ export function applyCorrelationRule(
     }
   }
 
-  // return requestSnippetSchema
   return snippetSchemaReturnValue
 }
 
@@ -452,7 +450,7 @@ const extractCorrelationJsonBody = (
     throw new Error('no response to extract from')
   }
 
-  if (!isJsonResponse(response)) {
+  if (!isJsonReqResp(response)) {
     return noCorrelationResult
   }
 

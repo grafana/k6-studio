@@ -1,5 +1,5 @@
 import { TestRule } from '@/types/rules'
-import { RequestSnippetSchema, Response } from '@/types'
+import { RequestSnippetSchema, Response, Request } from '@/types'
 import { exhaustive } from '@/utils/typescript'
 import { getHeaderValues } from '@/utils/headers'
 
@@ -53,8 +53,8 @@ export function matchFilter(
   }
 }
 
-export const isJsonResponse = (response: Response) => {
-  const contentTypeValues = getHeaderValues(response.headers, 'content-type')
+export const isJsonReqResp = (reqResp: Request | Response) => {
+  const contentTypeValues = getHeaderValues(reqResp.headers, 'content-type')
   const contentTypeValue = contentTypeValues ? contentTypeValues[0] : undefined
 
   // check Content-Type header
@@ -64,7 +64,7 @@ export const isJsonResponse = (response: Response) => {
 
   // check content
   try {
-    JSON.parse(response.content)
+    JSON.parse(reqResp.content ?? '')
   } catch (error) {
     return false
   }
@@ -94,15 +94,44 @@ if (import.meta.vitest) {
     }
   }
 
+  const generateRequest = (
+    content: string,
+    contentType: string = 'application/json'
+  ): Request => {
+    return {
+      method: 'POST',
+      url: 'http://test.k6.io/api/v1/foo',
+      headers: [['Content-Type', contentType]],
+      cookies: [],
+      query: [],
+      scheme: 'http',
+      host: 'localhost:3000',
+      content,
+      path: '/api/v1/foo',
+      timestampStart: 0,
+      timestampEnd: 0,
+      contentLength: 0,
+      httpVersion: '1.1',
+    }
+  }
+
   it('is json response', () => {
-    expect(isJsonResponse(generateResponse('{"hello":"world"}'))).toBe(true)
-    expect(isJsonResponse(generateResponse('[{"hello":"world"}]'))).toBe(true)
-    expect(isJsonResponse(generateResponse('{"hello":world"}hello'))).toBe(
-      false
-    )
-    expect(isJsonResponse(generateResponse(')]}'))).toBe(false)
+    expect(isJsonReqResp(generateResponse('{"hello":"world"}'))).toBe(true)
+    expect(isJsonReqResp(generateResponse('[{"hello":"world"}]'))).toBe(true)
+    expect(isJsonReqResp(generateResponse('{"hello":world"}hello'))).toBe(false)
+    expect(isJsonReqResp(generateResponse(')]}'))).toBe(false)
     expect(
-      isJsonResponse(generateResponse('{"hello":"world"}', 'text/plain'))
+      isJsonReqResp(generateResponse('{"hello":"world"}', 'text/plain'))
+    ).toBe(false)
+  })
+
+  it('is json request', () => {
+    expect(isJsonReqResp(generateRequest('{"hello":"world"}'))).toBe(true)
+    expect(isJsonReqResp(generateRequest('[{"hello":"world"}]'))).toBe(true)
+    expect(isJsonReqResp(generateRequest('{"hello":world"}hello'))).toBe(false)
+    expect(isJsonReqResp(generateRequest(')]}'))).toBe(false)
+    expect(
+      isJsonReqResp(generateRequest('{"hello":"world"}', 'text/plain'))
     ).toBe(false)
   })
 }
