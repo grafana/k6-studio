@@ -27,5 +27,5 @@ export function parseParams(data: ProxyData) {
 
 // Python byte strings are prefixed with b' and suffixed with '
 function parsePythonByteString(byteString: string) {
-  return byteString.replace(/b'(.*)'/, '$1')
+  return byteString.replace(/^b'(.*)'$/, '$1')
 }
