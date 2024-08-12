@@ -14,17 +14,15 @@ export function RequestDetails({ data }: { data: ProxyData }) {
     <Tabs.Root defaultValue="headers">
       <Tabs.List>
         <Tabs.Trigger value="headers">Headers</Tabs.Trigger>
-        <Tabs.Trigger value="queryParams">Query parameters</Tabs.Trigger>
         <Tabs.Trigger value="payload">Payload</Tabs.Trigger>
         <Tabs.Trigger value="cookies">Cookies</Tabs.Trigger>
+        {data.request?.query && data.request.query.length > 0 && (
+          <Tabs.Trigger value="queryParams">Query parameters</Tabs.Trigger>
+        )}
       </Tabs.List>
 
       <ScrollableTabsContent value="headers">
         <Headers data={data} />
-      </ScrollableTabsContent>
-
-      <ScrollableTabsContent value="queryParams">
-        <QueryParams request={data.request} />
       </ScrollableTabsContent>
 
       <ScrollableTabsContent value="payload">
@@ -33,6 +31,10 @@ export function RequestDetails({ data }: { data: ProxyData }) {
 
       <ScrollableTabsContent value="cookies">
         <Cookies cookies={data.request?.cookies} />
+      </ScrollableTabsContent>
+
+      <ScrollableTabsContent value="queryParams">
+        <QueryParams request={data.request} />
       </ScrollableTabsContent>
     </Tabs.Root>
   )
