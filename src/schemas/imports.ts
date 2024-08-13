@@ -1,13 +1,13 @@
 import { z } from 'zod'
 
+const ImportSchema = z.object({
+  name: z.string(),
+  alias: z.string().optional(),
+})
+
 const NamedImportsSchema = z.object({
   type: z.literal('named'),
-  imports: z
-    .object({
-      name: z.string(),
-      alias: z.string().optional(),
-    })
-    .array(),
+  imports: ImportSchema.array(),
 })
 
 const NamespaceImportsSchema = z.object({
