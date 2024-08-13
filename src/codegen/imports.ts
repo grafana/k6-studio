@@ -11,8 +11,6 @@ export function generateImportStatement(importModule: ImportModule): string {
   if (importModule.imports) {
     switch (importModule.imports.type) {
       case 'named':
-        // TODO: handle string literal imports:
-        // import { "a-b" as a } from "/modules/my-module.js";
         imports.push(
           `{ ${importModule.imports.imports
             .map((i) => (i.alias ? `${i.name} as ${i.alias}` : i.name))
