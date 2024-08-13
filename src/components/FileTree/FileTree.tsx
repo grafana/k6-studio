@@ -1,6 +1,6 @@
 import * as Collapsible from '@radix-ui/react-collapsible'
 import { CaretDownIcon, CaretRightIcon } from '@radix-ui/react-icons'
-import { Badge, Flex, IconButton, Text } from '@radix-ui/themes'
+import { Flex, IconButton, Text } from '@radix-ui/themes'
 import { ReactNode, useState } from 'react'
 
 import { FileList } from './FileList'
@@ -35,14 +35,14 @@ export function FileTree({
           size="2"
           css={css`
             flex-grow: 1;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
           `}
         >
-          {label}
+          {label} ({files.length})
         </Text>
         {actions}
-        <Badge radius="full" color="gray">
-          {files.length}
-        </Badge>
       </Flex>
 
       <Collapsible.Content>

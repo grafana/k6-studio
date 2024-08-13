@@ -3,7 +3,11 @@ import { TestRuleFilter } from './TestRuleFilter'
 import { Badge, Tooltip } from '@radix-ui/themes'
 import { exhaustive } from '@/utils/typescript'
 import { TestRuleSelector } from './TestRuleSelector'
-import { EyeOpenIcon } from '@radix-ui/react-icons'
+import {
+  BorderLeftIcon,
+  BorderRightIcon,
+  EyeOpenIcon,
+} from '@radix-ui/react-icons'
 
 interface TestRuleInlineContentProps {
   rule: TestRule
@@ -35,7 +39,10 @@ function CorrelationContent({ rule }: { rule: CorrelationRule }) {
 function CustomCodeContent({ rule }: { rule: CustomCodeRule }) {
   return (
     <>
-      <Badge color="gray">{rule.placement}</Badge>{' '}
+      <Badge color="gray">
+        {rule.placement === 'after' ? <BorderRightIcon /> : <BorderLeftIcon />}
+        {rule.placement}
+      </Badge>{' '}
       <TestRuleFilter filter={rule.filter} />{' '}
       <Badge color="gray">
         Snippet

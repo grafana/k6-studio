@@ -18,7 +18,7 @@ export function File({ path, viewPath, isSelected }: FileProps) {
     <FileContextMenu path={path} isSelected={isSelected}>
       <Text
         size="2"
-        color={isSelected ? 'violet' : 'gray'}
+        color={isSelected ? 'orange' : 'gray'}
         css={css`
           display: block;
           padding: var(--space-1) var(--space-2);

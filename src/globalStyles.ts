@@ -4,8 +4,7 @@ import 'allotment/dist/style.css'
 
 export const globalStyles = css`
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-      Helvetica, Arial, sans-serif;
+    font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
     margin: 0;
   }
 

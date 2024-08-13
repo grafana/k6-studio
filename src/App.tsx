@@ -11,7 +11,7 @@ export function App() {
   const theme = useTheme()
 
   return (
-    <Theme accentColor="violet" appearance={theme}>
+    <Theme accentColor="orange" appearance={theme}>
       <Global styles={globalStyles} />
       <Toasts />
       <ElectronToastListener />
