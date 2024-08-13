@@ -1,122 +1,122 @@
-export interface K6ExportConfig {
-  exports: string[]
-  path: string
-  defaultName?: string
-  importAlias?: string
-}
+import { ImportModule } from '@/types/imports'
 
-type K6ExportMap = { [key: string]: K6ExportConfig }
+type K6ExportMap = { [key: string]: ImportModule }
 
 export const K6_EXPORTS: K6ExportMap = {
   k6: {
-    exports: ['check', 'fail', 'group', 'randomSeed', 'sleep'],
     path: 'k6',
+    imports: {
+      type: 'named',
+      imports: [
+        { name: 'check' },
+        { name: 'fail' },
+        { name: 'group' },
+        { name: 'randomSeed' },
+        { name: 'sleep' },
+      ],
+    },
   },
   'k6/crypto': {
-    exports: ['default'],
-    defaultName: 'crypto',
     path: 'k6/crypto',
+    default: { name: 'crypto' },
   },
   'k6/encoding': {
-    exports: ['default'],
-    defaultName: 'encoding',
     path: 'k6/encoding',
+    default: { name: 'encoding' },
   },
   'k6/data': {
-    exports: ['SharedArray'],
     path: 'k6/data',
+    imports: {
+      type: 'named',
+      imports: [{ name: 'SharedArray' }],
+    },
   },
   'k6/execution': {
-    exports: ['default'],
-    defaultName: 'execution',
     path: 'k6/execution',
+    default: { name: 'execution' },
   },
   'k6/html': {
-    exports: ['parseHTML'],
     path: 'k6/html',
+    imports: {
+      type: 'named',
+      imports: [{ name: 'parseHTML' }],
+    },
   },
   'k6/http': {
-    exports: ['default'],
-    defaultName: 'http',
     path: 'k6/http',
+    default: { name: 'http' },
   },
   'k6/net/grpc': {
-    exports: ['default'],
-    defaultName: 'grpc',
     path: 'k6/net/grpc',
+    default: { name: 'grpc' },
   },
   'k6/ws': {
-    exports: ['default'],
-    defaultName: 'ws',
     path: 'k6/ws',
-  },
-  'k6/experimental/browser': {
-    exports: ['browser'],
-    path: 'k6/experimental/browser',
-    defaultName: 'browser',
+    default: { name: 'ws' },
   },
 }
 
 const JSLIB: K6ExportMap = {
   'k6-utils': {
-    exports: [
-      'uuidv4',
-      'randomIntBetween',
-      'randomItem',
-      'randomString',
-      'findBetween',
-    ],
     path: 'https://jslib.k6.io/k6-utils/1.4.0/index.js',
+    imports: {
+      type: 'named',
+      imports: [
+        { name: 'uuidv4' },
+        { name: 'randomIntBetween' },
+        { name: 'randomItem' },
+        { name: 'randomString' },
+        { name: 'findBetween' },
+      ],
+    },
   },
   'k6-summary': {
-    exports: ['humanizeValue', 'textSummary', 'jUnit'],
     path: 'https://jslib.k6.io/k6-summary/0.1.0/index.js',
+    imports: {
+      type: 'named',
+      imports: [
+        { name: 'humanizeValue' },
+        { name: 'textSummary' },
+        { name: 'jUnit' },
+      ],
+    },
   },
   jsonpath: {
-    exports: ['default'],
-    defaultName: 'jsonpath',
     path: 'https://jslib.k6.io/jsonpath/1.0.2/index.js',
+    default: { name: 'jsonpath' },
   },
   formdata: {
-    exports: ['FormData'],
     path: 'https://jslib.k6.io/formdata/0.0.2/index.js',
+    imports: {
+      type: 'named',
+      imports: [{ name: 'FormData' }],
+    },
   },
   'form-urlencoded': {
-    exports: ['default'],
-    defaultName: 'formUrlEncoded',
     path: 'https://jslib.k6.io/form-urlencoded/3.0.0/index.js',
+    default: { name: 'formUrlEncoded' },
   },
   papaparse: {
-    exports: ['default'],
-    defaultName: 'Papa',
+    default: { name: 'Papa' },
     path: 'https://jslib.k6.io/papaparse/5.1.1/index.js',
   },
   ajv: {
-    exports: ['default'],
-    defaultName: 'Ajv',
+    default: { name: 'Ajv' },
     path: 'https://jslib.k6.io/ajv/6.12.5/index.js',
   },
   httpx: {
-    exports: ['*'],
-    importAlias: 'httpdx',
     path: 'https://jslib.k6.io/httpx/0.1.0/index.js',
-  },
-  k6chaijs: {
-    exports: ['*'],
-    importAlias: 'chai',
-    path: 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js',
-  },
-  'k6chaijs-contracts': {
-    exports: ['initContractPlugin'],
-    path: 'https://jslib.k6.io/k6chaijs-contracts/4.3.4.1/index.js',
+    imports: {
+      type: 'namespace',
+      alias: 'httpdx',
+    },
   },
   url: {
-    exports: ['URL', 'URLSearchParams'],
     path: 'https://jslib.k6.io/url/1.0.0/index.js',
-  },
-  kahwah: {
-    exports: ['*'],
-    path: 'https://jslib.k6.io/kahwah/0.1.6/index.js',
+    imports: {
+      type: 'named',
+      imports: [{ name: 'URL' }],
+    },
   },
 }
 
@@ -124,3 +124,11 @@ export const ALL_EXPORTS = {
   ...K6_EXPORTS,
   ...JSLIB,
 }
+
+export const REQUIRED_IMPORTS: ImportModule[] = [
+  {
+    path: 'k6',
+    imports: { type: 'named', imports: [{ name: 'group' }, { name: 'sleep' }] },
+  },
+  { path: 'k6/http', default: { name: 'http' } },
+]
