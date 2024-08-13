@@ -1,8 +1,6 @@
 import { ImportModule } from '@/types/imports'
 
-type K6ExportMap = { [key: string]: ImportModule }
-
-export const K6_EXPORTS: K6ExportMap = {
+export const K6_EXPORTS: Record<string, ImportModule> = {
   k6: {
     path: 'k6',
     imports: {
@@ -56,7 +54,7 @@ export const K6_EXPORTS: K6ExportMap = {
   },
 }
 
-const JSLIB: K6ExportMap = {
+const JSLIB: Record<string, ImportModule> = {
   'k6-utils': {
     path: 'https://jslib.k6.io/k6-utils/1.4.0/index.js',
     imports: {
