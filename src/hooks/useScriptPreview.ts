@@ -5,8 +5,8 @@ import {
   selectFilteredRequests,
   selectGeneratorData,
   useGeneratorStore,
+  GeneratorStore,
 } from '@/store/generator'
-import { GeneratorState } from '@/store/generator/types'
 import { groupProxyData } from '@/utils/groups'
 import { generateScriptPreview } from '@/views/Generator/Generator.utils'
 
@@ -16,7 +16,7 @@ export function useScriptPreview() {
 
   // Connect to the store on mount, disconnect on unmount, regenerate preview on state change
   useEffect(() => {
-    const updatePreview = debounce(async (state: GeneratorState) => {
+    const updatePreview = debounce(async (state: GeneratorStore) => {
       console.log('Generating preview')
       try {
         setError(false)

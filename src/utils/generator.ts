@@ -3,7 +3,6 @@ import { RampingStage } from '@/types/testOptions'
 
 export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
   return {
-    name: 'New test generator',
     version: '0',
     recordingPath,
     options: {
