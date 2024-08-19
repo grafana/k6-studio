@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import { Text } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
 
@@ -8,7 +9,15 @@ type Props = ComponentProps<typeof Text> & {
 export function ResponseStatusBadge({ status, ...props }: Props) {
   const color = statusColor(status)
   return (
-    <Text align="right" weight="medium" color={color} {...props}>
+    <Text
+      align="right"
+      color={color}
+      css={css`
+        font-size: 13px;
+        line-height: 24px;
+      `}
+      {...props}
+    >
       {status ?? '-'}
     </Text>
   )

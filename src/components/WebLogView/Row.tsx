@@ -10,6 +10,7 @@ import { ResponseStatusBadge } from '../ResponseStatusBadge'
 import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
 import { removeQueryStringFromUrl } from './WebLogView.utils'
+import { css } from '@emotion/react'
 
 export function Row({ data }: { data: ProxyData }) {
   const { renderInSidebar } = useDrawer('right')
@@ -19,17 +20,28 @@ export function Row({ data }: { data: ProxyData }) {
       align="center"
       justify="between"
       flexGrow="1"
-      my="1"
       overflow="hidden"
-      mr="3"
+      px="3"
+      py="1"
       onClick={() => renderInSidebar(<SideBar data={data} />)}
       style={{ cursor: 'var(--cursor-button)' }}
+      css={css`
+        cursor: var(--cursor-button);
+
+        &:not(:last-child) {
+          border-bottom: 1px solid var(--gray-3);
+        }
+      `}
     >
-      <Flex width="80px" asChild justify="center">
-        <MethodBadge method={data.request.method} />
-      </Flex>
+      <MethodBadge method={data.request.method} />
       <Box flexGrow="1" asChild>
-        <Text truncate>
+        <Text
+          truncate
+          css={css`
+            font-size: 13px;
+            line-height: 24px;
+          `}
+        >
           {data.request.host}
           {removeQueryStringFromUrl(data.request.path)}
         </Text>
