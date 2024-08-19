@@ -66,9 +66,7 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
           }}
         >
           <ScrollArea scrollbars="vertical">
-            <Box p="2">
-              <WebLogView requests={groupedProxyData} />
-            </Box>
+            <WebLogView requests={groupedProxyData} />
           </ScrollArea>
         </Tabs.Content>
         <Tabs.Content value="script" style={{ height: '100%' }}>

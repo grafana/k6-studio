@@ -1,6 +1,5 @@
 import { css } from '@emotion/react'
-import { Text } from '@radix-ui/themes'
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
 import { getFileNameFromPath } from '@/utils/file'
 import { FileContextMenu } from './FileContextMenu'
@@ -16,12 +15,14 @@ export function File({ path, viewPath, isSelected }: FileProps) {
 
   return (
     <FileContextMenu path={path} isSelected={isSelected}>
-      <Text
-        size="2"
-        color={isSelected ? 'orange' : 'gray'}
+      <NavLink
         css={css`
           display: block;
-          padding: var(--space-1) var(--space-2);
+          padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
+          color: var(--gray-11);
+          font-size: 12px;
+          font-weight: ${isSelected ? 700 : 400};
+          line-height: 22px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -30,26 +31,31 @@ export function File({ path, viewPath, isSelected }: FileProps) {
           &:hover {
             background-color: var(--gray-4);
           }
+
+          &.active {
+            color: var(--accent-9);
+          }
         `}
-        asChild
+        to={`${viewPath}/${encodeURIComponent(path)}`}
       >
-        <Link to={`${viewPath}/${encodeURIComponent(path)}`}>{fileName}</Link>
-      </Text>
+        {fileName}
+      </NavLink>
     </FileContextMenu>
   )
 }
 
 export function NoFileMessage({ message }: { message: string }) {
   return (
-    <Text
-      size="2"
-      color="gray"
+    <span
       css={css`
         display: block;
-        padding: var(--space-1) var(--space-2);
+        padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
+        color: var(--gray-11);
+        font-size: 12px;
+        line-height: 22px;
       `}
     >
       {message}
-    </Text>
+    </span>
   )
 }

@@ -1,21 +1,31 @@
 import { Method } from '@/types'
-import { Badge, Strong } from '@radix-ui/themes'
+import { css } from '@emotion/react'
+import { Text } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
 
-type Props = ComponentProps<typeof Badge> & {
+interface MethodBadgeProps {
   method: Method
 }
 
-export function MethodBadge({ method, ...props }: Props) {
+export function MethodBadge({ method }: MethodBadgeProps) {
   const color = methodColor(method)
   return (
-    <Badge mr="2" size="3" color={color} {...props}>
-      <Strong>{method}</Strong>
-    </Badge>
+    <Text
+      color={color}
+      css={css`
+        font-size: 13px;
+        line-height: 24px;
+        font-weight: 700;
+        width: 70px;
+        flex-shrink: 0;
+      `}
+    >
+      {method}
+    </Text>
   )
 }
 
-function methodColor(method: Method): Props['color'] {
+function methodColor(method: Method): ComponentProps<typeof Text>['color'] {
   switch (method) {
     case 'GET':
       return 'green'

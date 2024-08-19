@@ -21,7 +21,7 @@ export function WebLogView({ requests, noRequestsMessage }: WebLogViewProps) {
     return (
       <>
         {Object.entries(requests).map(([group, data]) => (
-          <Group name={group} key={group}>
+          <Group name={group} length={data.length} key={group}>
             <RequestList requests={data} />
           </Group>
         ))}
