@@ -43,7 +43,6 @@ describe('Code generation', () => {
         generateScript({
           recording: {},
           generator: {
-            name: 'test',
             version: '0',
             recordingPath: 'test',
             options: {
