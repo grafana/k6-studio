@@ -44,7 +44,7 @@ export function RecordingSelector() {
                   <Button
                     key={filePath}
                     variant="ghost"
-                    color={recordingPath === filePath ? 'violet' : 'gray'}
+                    color={recordingPath === filePath ? 'orange' : 'gray'}
                     css={css`
                       justify-content: start;
                     `}

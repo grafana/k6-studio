@@ -28,12 +28,7 @@ export function FileTree({
       <Flex align="center" gap="2" width="100%" px="1" pt="1">
         <Collapsible.Trigger asChild>
           <Reset>
-            <button
-              type="button"
-              css={css`
-                flex: 1;
-              `}
-            >
+            <button type="button">
               <Flex align="center" gap="1">
                 {open ? (
                   <CaretDownIcon width="16" height="16" />
