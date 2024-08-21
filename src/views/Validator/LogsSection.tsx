@@ -6,10 +6,11 @@ import { useAutoScroll } from '@/hooks/useAutoScroll'
 
 interface LogsSectionProps {
   logs: K6Log[]
+  autoScroll?: boolean
 }
 
-export function LogsSection({ logs }: LogsSectionProps) {
-  const ref = useAutoScroll(logs)
+export function LogsSection({ logs, autoScroll = true }: LogsSectionProps) {
+  const ref = useAutoScroll(logs, autoScroll)
 
   return (
     <ScrollArea scrollbars="vertical">

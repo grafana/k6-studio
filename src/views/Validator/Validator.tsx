@@ -98,7 +98,7 @@ export function Validator() {
     >
       <Allotment vertical defaultSizes={[1, 1]}>
         <Allotment.Pane>
-          <RequestsSection proxyData={proxyData} autoScroll />
+          <RequestsSection proxyData={proxyData} autoScroll={isRunning} />
         </Allotment.Pane>
         <Allotment.Pane minSize={300}>
           <Box height="100%">
@@ -110,10 +110,12 @@ export function Validator() {
                 flex-direction: column;
               `}
             >
-              <Tabs.List>
-                <Tabs.Trigger value="logs" disabled={logs.length === 0}>
-                  Logs ({logs.length})
-                </Tabs.Trigger>
+              <Tabs.List
+                css={css`
+                  flex-shrink: 0;
+                `}
+              >
+                <Tabs.Trigger value="logs">Logs ({logs.length})</Tabs.Trigger>
                 <Tabs.Trigger value="script">Script</Tabs.Trigger>
               </Tabs.List>
 
@@ -124,7 +126,7 @@ export function Validator() {
                   min-height: 0;
                 `}
               >
-                <LogsSection logs={logs} />
+                <LogsSection logs={logs} autoScroll={isRunning} />
               </Tabs.Content>
               <Tabs.Content
                 value="script"
