@@ -20,7 +20,6 @@ export function ValidatorControls({
     <>
       <Button
         variant={isRunning ? 'outline' : 'solid'}
-        color={isRunning ? 'orange' : 'green'}
         disabled={!isScriptSelected}
         onClick={isRunning ? onStopScript : onRunScript}
       >

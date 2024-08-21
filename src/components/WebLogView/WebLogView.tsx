@@ -1,11 +1,12 @@
 import { GroupedProxyData, ProxyData } from '@/types'
-import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Callout } from '@radix-ui/themes'
+import { Flex, Text } from '@radix-ui/themes'
 import { isEmpty } from 'lodash-es'
 
 import { isGroupedProxyData } from './WebLogView.utils'
 import { Row } from './Row'
 import { Group } from './Group'
+import grotIllustration from '@/assets/grot.svg'
+import { css } from '@emotion/react'
 
 interface WebLogViewProps {
   requests: ProxyData[] | GroupedProxyData
@@ -54,11 +55,18 @@ function NoRequestsMessage({
   noRequestsMessage = 'Your requests will appear here.',
 }: NoRequestsMessageProps) {
   return (
-    <Callout.Root>
-      <Callout.Icon>
-        <InfoCircledIcon />
-      </Callout.Icon>
-      <Callout.Text>{noRequestsMessage}</Callout.Text>
-    </Callout.Root>
+    <Flex direction="column" align="center" gap="4" pt="8">
+      <img
+        src={grotIllustration}
+        role="presentation"
+        css={css`
+          width: 50%;
+          max-width: 300px;
+        `}
+      />
+      <Text color="gray" size="1">
+        {noRequestsMessage}
+      </Text>
+    </Flex>
   )
 }
