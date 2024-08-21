@@ -1,26 +1,25 @@
-import { Card, Text } from '@radix-ui/themes'
+import { Text } from '@radix-ui/themes'
+import { PropsWithChildren } from 'react'
 
 interface NavigationCardProps {
   title: string
   description: string
-  onClick: () => void
 }
 
 export function NavigationCard({
   title,
   description,
-  onClick,
-}: NavigationCardProps) {
+  children,
+}: PropsWithChildren<NavigationCardProps>) {
   return (
-    <Card asChild>
-      <button type="button" onClick={onClick}>
-        <Text as="div" size="2" weight="bold">
-          {title}
-        </Text>
-        <Text as="div" size="2" color="gray">
-          {description}
-        </Text>
-      </button>
-    </Card>
+    <div>
+      <Text as="div" size="3" weight="medium" mb="1">
+        {title}
+      </Text>
+      <Text as="div" size="2" color="gray" mb="3">
+        {description}
+      </Text>
+      {children}
+    </div>
   )
 }
