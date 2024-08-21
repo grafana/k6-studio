@@ -97,7 +97,9 @@ export function Validator() {
       loading={isLoading}
     >
       <Allotment vertical defaultSizes={[1, 1]}>
-        <RequestsSection proxyData={proxyData} autoScroll />
+        <Allotment.Pane>
+          <RequestsSection proxyData={proxyData} autoScroll />
+        </Allotment.Pane>
         <Allotment.Pane minSize={300}>
           <Box height="100%">
             <Tabs.Root
