@@ -17,7 +17,6 @@ export function useScriptPreview() {
   // Connect to the store on mount, disconnect on unmount, regenerate preview on state change
   useEffect(() => {
     const updatePreview = debounce(async (state: GeneratorStore) => {
-      console.log('Generating preview')
       try {
         setError(false)
         const generator = selectGeneratorData(state)

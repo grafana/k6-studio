@@ -118,10 +118,7 @@ export function Validator() {
                 proxyData={proxyData}
                 autoScroll={isRunning}
                 selectedRequestId={selectedRequest?.id}
-                onSelectRequest={(data) => {
-                  console.log(data)
-                  setSelectedRequest(data)
-                }}
+                onSelectRequest={setSelectedRequest}
               />
             </Allotment.Pane>
             <Allotment.Pane minSize={300}>

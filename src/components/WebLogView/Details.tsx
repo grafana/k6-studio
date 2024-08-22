@@ -23,7 +23,6 @@ export function Details({
 
   useEffect(() => {
     if (data === undefined) {
-      console.log('TEST')
       onSelectRequest(null)
     }
   }, [data, onSelectRequest, selectedRequestId])
