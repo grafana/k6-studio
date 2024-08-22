@@ -75,6 +75,7 @@ export function generateVUCode(
     let resp
     let match
     let regex
+    let url
     `,
     groupSnippets,
     thinkTime.sleepType === 'iterations' ? generateSleep(thinkTime.timing) : '',
@@ -147,7 +148,8 @@ export function generateSingleRequestSnippet(
   const params = `params = ${generateRequestParams(request)}`
 
   const main = `
-    resp = http.request(${method}, ${url}, ${content}, params)
+    url = http.url${url}
+    resp = http.request(${method}, url, ${content}, params)
   `
 
   return [params, ...before, main, ...after].join('\n')
