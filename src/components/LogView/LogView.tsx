@@ -17,14 +17,15 @@ export function LogView({ logs }: { logs: K6Log[] }) {
 
   // TODO: figure out a better key
   return (
-    <Box>
+    <Flex direction="column" gap="1">
       {logs.map((log, index) => (
-        <Flex key={index} gap="3" mb="1" asChild>
+        <Flex key={index} gap="3" asChild>
           <Code
             variant="ghost"
             size="2"
             css={css`
-              border-left: 4px solid var(--${colors[log.level]}-8);
+              padding: var(--space-1) var(--space-2);
+              border-left: 3px solid var(--${colors[log.level]}-9);
               border-radius: 0;
             `}
           >
@@ -33,7 +34,7 @@ export function LogView({ logs }: { logs: K6Log[] }) {
           </Code>
         </Flex>
       ))}
-    </Box>
+    </Flex>
   )
 }
 
