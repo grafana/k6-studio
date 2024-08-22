@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { Box, Tabs } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Allotment } from 'allotment'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
@@ -13,6 +13,7 @@ import { ValidatorControls } from './ValidatorControls'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { getRoutePath } from '@/routeMap'
 
 export function Validator() {
   const [isLoading, setIsLoading] = useState(false)
@@ -21,6 +22,7 @@ export function Validator() {
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
   const { path: paramScriptPath } = useParams()
+  const navigate = useNavigate()
   const fileName = getFileNameFromPath(paramScriptPath ?? '')
 
   const { proxyData, resetProxyData } = useListenProxyData()
@@ -47,6 +49,14 @@ export function Validator() {
       setScript(content)
     })()
   }, [paramScriptPath])
+
+  async function handleDeleteScript() {
+    if (!paramScriptPath) {
+      return
+    }
+    await window.studio.ui.deleteFile(paramScriptPath)
+    navigate(getRoutePath('home'))
+  }
 
   function handleRunScript() {
     if (!scriptPath || !script) {
@@ -89,6 +99,7 @@ export function Validator() {
         <ValidatorControls
           isRunning={isRunning}
           isScriptSelected={Boolean(scriptPath)}
+          onDeleteScript={handleDeleteScript}
           onRunScript={handleRunScript}
           onSelectScript={handleSelectScript}
           onStopScript={handleStopScript}
