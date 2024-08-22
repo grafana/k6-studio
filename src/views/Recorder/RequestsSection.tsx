@@ -19,7 +19,7 @@ export function RequestsSection({
   const ref = useAutoScroll(proxyData, autoScroll)
 
   return (
-    <Flex direction="column" minHeight="0">
+    <Flex direction="column" minHeight="0" height="100%">
       <Heading
         css={css`
           font-size: 15px;

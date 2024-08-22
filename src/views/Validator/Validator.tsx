@@ -1,17 +1,19 @@
+import { css } from '@emotion/react'
+import { Box, Tabs } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Allotment } from 'allotment'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { K6Log } from '@/types'
 import { getFileNameFromPath } from '@/utils/file'
-import { LogsPaneContent } from './LogsPaneContent'
-import { ScriptPaneContent } from './ScriptPaneContent'
-import { RequestPaneContent } from './RequestsPaneContent'
+import { LogsSection } from './LogsSection'
 import { ValidatorControls } from './ValidatorControls'
 import { View } from '@/components/Layout/View'
-import { groupBy } from 'lodash-es'
+import { RequestsSection } from '@/views/Recorder/RequestsSection'
+import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { getRoutePath } from '@/routeMap'
 
 export function Validator() {
   const [isLoading, setIsLoading] = useState(false)
@@ -20,16 +22,11 @@ export function Validator() {
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
   const { path: paramScriptPath } = useParams()
+  const navigate = useNavigate()
   const fileName = getFileNameFromPath(paramScriptPath ?? '')
 
   const { proxyData, resetProxyData } = useListenProxyData()
   useSetWindowTitle(fileName || 'Validator')
-
-  // k6 returns group as comment
-  const groupedProxyData = groupBy(
-    proxyData,
-    (item) => item.comment || 'Default'
-  )
 
   const handleSelectScript = useCallback(async () => {
     const { path = '', content = '' } =
@@ -52,6 +49,14 @@ export function Validator() {
       setScript(content)
     })()
   }, [paramScriptPath])
+
+  async function handleDeleteScript() {
+    if (!paramScriptPath) {
+      return
+    }
+    await window.studio.ui.deleteFile(paramScriptPath)
+    navigate(getRoutePath('home'))
+  }
 
   function handleRunScript() {
     if (!scriptPath || !script) {
@@ -94,6 +99,7 @@ export function Validator() {
         <ValidatorControls
           isRunning={isRunning}
           isScriptSelected={Boolean(scriptPath)}
+          onDeleteScript={handleDeleteScript}
           onRunScript={handleRunScript}
           onSelectScript={handleSelectScript}
           onStopScript={handleStopScript}
@@ -101,19 +107,48 @@ export function Validator() {
       }
       loading={isLoading}
     >
-      <Allotment vertical defaultSizes={[3, 2]}>
-        <Allotment.Pane minSize={300}>
-          <Allotment defaultSizes={[1, 1]}>
-            <Allotment.Pane>
-              <RequestPaneContent requests={groupedProxyData} />
-            </Allotment.Pane>
-            <Allotment.Pane>
-              <ScriptPaneContent script={script} />
-            </Allotment.Pane>
-          </Allotment>
+      <Allotment vertical defaultSizes={[1, 1]}>
+        <Allotment.Pane>
+          <RequestsSection proxyData={proxyData} autoScroll={isRunning} />
         </Allotment.Pane>
         <Allotment.Pane minSize={300}>
-          <LogsPaneContent logs={logs} />
+          <Box height="100%">
+            <Tabs.Root
+              defaultValue="script"
+              css={css`
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+              `}
+            >
+              <Tabs.List
+                css={css`
+                  flex-shrink: 0;
+                `}
+              >
+                <Tabs.Trigger value="logs">Logs ({logs.length})</Tabs.Trigger>
+                <Tabs.Trigger value="script">Script</Tabs.Trigger>
+              </Tabs.List>
+
+              <Tabs.Content
+                value="logs"
+                css={css`
+                  flex: 1;
+                  min-height: 0;
+                `}
+              >
+                <LogsSection logs={logs} autoScroll={isRunning} />
+              </Tabs.Content>
+              <Tabs.Content
+                value="script"
+                css={css`
+                  flex: 1;
+                `}
+              >
+                <ReadOnlyEditor language="javascript" value={script} />
+              </Tabs.Content>
+            </Tabs.Root>
+          </Box>
         </Allotment.Pane>
       </Allotment>
     </View>

@@ -22,7 +22,7 @@ export function Row({ data }: { data: ProxyData }) {
       flexGrow="1"
       overflow="hidden"
       px="3"
-      py="1"
+      py="2"
       onClick={() => renderInSidebar(<SideBar data={data} />)}
       style={{ cursor: 'var(--cursor-button)' }}
       css={css`
