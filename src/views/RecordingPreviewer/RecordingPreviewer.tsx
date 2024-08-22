@@ -1,3 +1,4 @@
+import { Allotment } from 'allotment'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -11,10 +12,12 @@ import { createNewGeneratorFile } from '@/utils/generator'
 import { ProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { getRoutePath } from '@/routeMap'
+import { Details } from '@/components/WebLogView/Details'
 
 export function RecordingPreviewer() {
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const { path } = useParams()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -92,10 +95,23 @@ export function RecordingPreviewer() {
         </>
       }
     >
-      <RequestsSection
-        proxyData={proxyData}
-        noRequestsMessage="The recording is empty"
-      />
+      <Allotment defaultSizes={[1, 1]}>
+        <Allotment.Pane>
+          <RequestsSection
+            proxyData={proxyData}
+            noRequestsMessage="The recording is empty"
+            selectedRequestId={selectedRequest?.id}
+            onSelectRequest={setSelectedRequest}
+          />
+        </Allotment.Pane>
+        <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
+          <Details
+            requests={proxyData}
+            selectedRequestId={selectedRequest?.id}
+            onSelectRequest={setSelectedRequest}
+          />
+        </Allotment.Pane>
+      </Allotment>
     </View>
   )
 }

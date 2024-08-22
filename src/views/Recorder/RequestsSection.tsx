@@ -7,14 +7,18 @@ import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
+  selectedRequestId?: string
   autoScroll?: boolean
   noRequestsMessage?: string
+  onSelectRequest: (data: ProxyData | null) => void
 }
 
 export function RequestsSection({
   proxyData,
+  selectedRequestId,
   noRequestsMessage,
   autoScroll = false,
+  onSelectRequest,
 }: RequestsSectionProps) {
   const ref = useAutoScroll(proxyData, autoScroll)
 
@@ -35,6 +39,8 @@ export function RequestsSection({
           <WebLogView
             requests={groupProxyData(proxyData)}
             noRequestsMessage={noRequestsMessage}
+            selectedRequestId={selectedRequestId}
+            onSelectRequest={onSelectRequest}
           />
         </div>
       </ScrollArea>
