@@ -31,14 +31,8 @@ export function GeneratorSidebar() {
   }, [ruleId])
 
   return (
-    <Flex direction="column" height="100%" minHeight="0">
-      <Tabs.Root
-        value={tab}
-        onValueChange={(value) => setTab(value)}
-        css={css`
-          height: 100%;
-        `}
-      >
+    <Flex direction="column" height="100%" minHeight="0" asChild>
+      <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
         <Tabs.List>
           <Tabs.Trigger value="requests">
             Requests ({filteredRequests.length})

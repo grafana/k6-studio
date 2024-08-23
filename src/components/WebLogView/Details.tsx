@@ -81,7 +81,7 @@ function PaneContent({
         p="2"
         css={css`
           background-color: var(--accent-3);
-          flex: 1 0 auto;
+          flex-shrink: 0;
         `}
       >
         <Heading size="2">{heading}</Heading>

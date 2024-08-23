@@ -17,7 +17,7 @@ export function ResponseDetails({ data }: { data: ProxyData }) {
 
       <Tabs.Content value="headers">
         <ScrollArea style={{ height: '100%' }}>
-          <Box p="4" height="100%">
+          <Box p="2" height="100%">
             <Headers data={data} />
           </Box>
         </ScrollArea>
@@ -27,7 +27,7 @@ export function ResponseDetails({ data }: { data: ProxyData }) {
       </Tabs.Content>
       <Tabs.Content value="cookies">
         <ScrollArea style={{ height: '100%' }}>
-          <Box p="4" height="100%">
+          <Box p="2" height="100%">
             <Cookies cookies={data.response?.cookies} />
           </Box>
         </ScrollArea>
