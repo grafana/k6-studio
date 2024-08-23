@@ -96,17 +96,20 @@ export function Recorder() {
           <RequestsSection
             proxyData={proxyData}
             noRequestsMessage="Your requests will appear here"
+            selectedRequestId={selectedRequest?.id}
             onSelectRequest={setSelectedRequest}
             autoScroll
           />
         </Allotment.Pane>
-        <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-          <Details
-            requests={proxyData}
-            selectedRequestId={selectedRequest?.id}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
+        {selectedRequest !== null && (
+          <Allotment.Pane minSize={300}>
+            <Details
+              requests={proxyData}
+              selectedRequestId={selectedRequest?.id}
+              onSelectRequest={setSelectedRequest}
+            />
+          </Allotment.Pane>
+        )}
       </Allotment>
     </View>
   )

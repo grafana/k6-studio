@@ -28,13 +28,15 @@ export function RequestList({ requests }: RequestListProps) {
           />
         </ScrollArea>
       </Allotment.Pane>
-      <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-        <Details
-          requests={requests}
-          selectedRequestId={selectedRequest?.id}
-          onSelectRequest={setSelectedRequest}
-        />
-      </Allotment.Pane>
+      {selectedRequest !== null && (
+        <Allotment.Pane minSize={300}>
+          <Details
+            requests={requests}
+            selectedRequestId={selectedRequest?.id}
+            onSelectRequest={setSelectedRequest}
+          />
+        </Allotment.Pane>
+      )}
     </Allotment>
   )
 }
