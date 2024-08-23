@@ -62,6 +62,7 @@
     "@dnd-kit/sortable": "^8.0.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.13.0",
+    "@microlink/react-json-view": "^1.23.1",
     "@monaco-editor/react": "^4.6.0",
     "@puppeteer/browsers": "^2.2.3",
     "@radix-ui/react-collapsible": "^1.0.3",
