@@ -23,12 +23,16 @@ export function Validator() {
   const [logs, setLogs] = useState<K6Log[]>([])
   const { path: paramScriptPath } = useParams()
   const navigate = useNavigate()
-  const [fileName, setFileName] = useState('')
+  const [fileName, setFileName] = useState(
+    getFileNameFromPath(paramScriptPath ?? '')
+  )
   const { proxyData, resetProxyData } = useListenProxyData()
-  const { setWindowTitle } = useSetWindowTitle(fileName || 'Validator')
+  const { setWindowTitle } = useSetWindowTitle('Validator')
 
   useEffect(() => {
-    setWindowTitle(fileName)
+    if (fileName) {
+      setWindowTitle(fileName)
+    }
   }, [fileName, setWindowTitle])
 
   const handleSelectScript = useCallback(async () => {
