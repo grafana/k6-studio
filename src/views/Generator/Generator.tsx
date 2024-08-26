@@ -25,12 +25,8 @@ export function Generator() {
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useGeneratorParams()
   const fileName = getFileNameFromPath(path)
-  const { setWindowTitle } = useSetWindowTitle(fileName)
+  useSetWindowTitle(fileName)
   const showToast = useToast()
-
-  useEffect(() => {
-    setWindowTitle(fileName)
-  }, [fileName, setWindowTitle])
 
   useEffect(() => {
     ;(async () => {

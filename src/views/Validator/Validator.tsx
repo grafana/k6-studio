@@ -23,20 +23,16 @@ export function Validator() {
   const [logs, setLogs] = useState<K6Log[]>([])
   const { path: paramScriptPath } = useParams()
   const navigate = useNavigate()
-  const [fileName, setFileName] = useState('')
-  const { proxyData, resetProxyData } = useListenProxyData()
-  const { setWindowTitle } = useSetWindowTitle(fileName || 'Validator')
+  const fileName = getFileNameFromPath(paramScriptPath ?? '')
 
-  useEffect(() => {
-    setWindowTitle(fileName)
-  }, [fileName, setWindowTitle])
+  const { proxyData, resetProxyData } = useListenProxyData()
+  useSetWindowTitle(fileName || 'Validator')
 
   const handleSelectScript = useCallback(async () => {
     const { path = '', content = '' } =
       (await window.studio.script.showScriptSelectDialog()) || {}
     setScriptPath(path)
     setScript(content)
-    setFileName(getFileNameFromPath(path))
   }, [])
 
   useEffect(() => {
@@ -51,7 +47,6 @@ export function Validator() {
       setIsLoading(false)
       setScriptPath(path)
       setScript(content)
-      setFileName(getFileNameFromPath(paramScriptPath))
     })()
   }, [paramScriptPath])
 
@@ -99,7 +94,7 @@ export function Validator() {
 
   return (
     <View
-      title={`Validator${fileName && ` - ${fileName}`}`}
+      title={`Validator${paramScriptPath ? ` - ${getFileNameFromPath(paramScriptPath)}` : ''}`}
       actions={
         <ValidatorControls
           isRunning={isRunning}
