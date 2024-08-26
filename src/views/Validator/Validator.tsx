@@ -36,7 +36,8 @@ export function Validator() {
       (await window.studio.script.showScriptSelectDialog()) || {}
     setScriptPath(path)
     setScript(content)
-  }, [])
+    navigate(getRoutePath('validator', { path: encodeURIComponent(path) }))
+  }, [navigate])
 
   useEffect(() => {
     if (!paramScriptPath) {
