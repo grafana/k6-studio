@@ -14,6 +14,8 @@ import { ThinkTime } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
 import { generateOptions } from './options'
 import { getContentTypeWithCharsetHeader } from '@/utils/headers'
+import { REQUIRED_IMPORTS } from '@/constants/imports'
+import { generateImportStatement } from './imports'
 
 interface GenerateScriptParams {
   recording: GroupedProxyData
@@ -25,8 +27,7 @@ export function generateScript({
   generator,
 }: GenerateScriptParams): string {
   return `
-    import { group, sleep } from 'k6'
-    import http from 'k6/http'
+    ${REQUIRED_IMPORTS.map(generateImportStatement).join('\n')}
 
     export const options = ${generateOptions(generator.options)}
 
@@ -74,6 +75,7 @@ export function generateVUCode(
     let resp
     let match
     let regex
+    let url
     `,
     groupSnippets,
     thinkTime.sleepType === 'iterations' ? generateSleep(thinkTime.timing) : '',
@@ -146,7 +148,8 @@ export function generateSingleRequestSnippet(
   const params = `params = ${generateRequestParams(request)}`
 
   const main = `
-    resp = http.request(${method}, ${url}, ${content}, params)
+    url = http.url${url}
+    resp = http.request(${method}, url, ${content}, params)
   `
 
   return [params, ...before, main, ...after].join('\n')

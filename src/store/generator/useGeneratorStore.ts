@@ -1,29 +1,39 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
-import { GeneratorState } from './types'
 import {
+  createRecordingSlice,
   createRulesSlice,
   createTestDataSlice,
   createTestOptionsSlice,
+  RecordingSliceStore,
+  RulesSliceStore,
+  TestDataStore,
+  TestOptionsStore,
 } from './slices'
-import { createRecordingSlice } from './slices/recording'
 import { exhaustive } from '@/utils/typescript'
+import { GeneratorFileData } from '@/types/generator'
+import { ProxyData } from '@/types'
 
-export const useGeneratorStore = create<GeneratorState>()(
+export interface GeneratorStore
+  extends RecordingSliceStore,
+    RulesSliceStore,
+    TestDataStore,
+    TestOptionsStore {
+  setGeneratorFile: (
+    generatorFile: GeneratorFileData,
+    recording?: ProxyData[]
+  ) => void
+}
+
+export const useGeneratorStore = create<GeneratorStore>()(
   immer((set, ...rest) => ({
     ...createRecordingSlice(set, ...rest),
     ...createRulesSlice(set, ...rest),
     ...createTestDataSlice(set, ...rest),
     ...createTestOptionsSlice(set, ...rest),
-    name: generateNewName(),
-    setName: (name) =>
-      set((state) => {
-        state.name = name
-      }),
     setGeneratorFile: (
       {
-        name,
         options: { thinkTime, loadProfile },
         testData: { variables },
         recordingPath,
@@ -33,7 +43,6 @@ export const useGeneratorStore = create<GeneratorState>()(
       recording = []
     ) =>
       set((state) => {
-        state.name = name
         // options
         state.sleepType = thinkTime.sleepType
         state.timing = thinkTime.timing
@@ -65,12 +74,3 @@ export const useGeneratorStore = create<GeneratorState>()(
       }),
   }))
 )
-
-function generateNewName() {
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  })
-  const formattedDate = formatter.format(new Date())
-  return `Generator ${formattedDate}`
-}

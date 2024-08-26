@@ -1,9 +1,9 @@
-import { GeneratorState } from '@/store/generator/types'
+import { GeneratorStore } from '@/store/generator'
 
 import { RampingVUs } from './RampingVUs'
 import { SharedIterations } from './SharedIterations/SharedIterations'
 
-export function ExecutorOptions(options: GeneratorState) {
+export function ExecutorOptions(options: GeneratorStore) {
   switch (options.executor) {
     case 'ramping-vus':
       return (

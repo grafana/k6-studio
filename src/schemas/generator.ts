@@ -4,7 +4,6 @@ import { TestDataSchema } from '@/schemas/testData'
 import { TestOptionsSchema } from '@/schemas/testOptions'
 
 export const GeneratorFileDataSchema = z.object({
-  name: z.string(),
   version: z.string(),
   recordingPath: z.string(),
   options: TestOptionsSchema,

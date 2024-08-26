@@ -62,20 +62,13 @@ export const loadGenerator = async (path?: string) => {
 
   if (!generatorFile) return
 
-  const generatorFileData = GeneratorFileDataSchema.safeParse(
-    generatorFile.content
-  )
-
-  if (!generatorFileData.success) {
-    console.log(!generatorFileData.error)
-    return
-  }
+  const generatorFileData = GeneratorFileDataSchema.parse(generatorFile.content)
 
   // TODO: we need to better handle errors scenarios
   let harFile: HarFile | undefined
   try {
-    harFile = generatorFileData.data.recordingPath
-      ? await window.studio.har.openFile(generatorFileData.data.recordingPath)
+    harFile = generatorFileData.recordingPath
+      ? await window.studio.har.openFile(generatorFileData.recordingPath)
       : undefined
   } catch (error) {
     console.error(error)
@@ -83,5 +76,5 @@ export const loadGenerator = async (path?: string) => {
 
   const recording = harFile ? harToProxyData(harFile.content) : []
 
-  setGeneratorFile(generatorFileData.data, recording)
+  setGeneratorFile(generatorFileData, recording)
 }

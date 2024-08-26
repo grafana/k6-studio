@@ -20,22 +20,30 @@ import { useGeneratorParams } from './Generator.hooks'
 import { useToast } from '@/store/ui/useToast'
 
 export function Generator() {
-  const name = useGeneratorStore((store) => store.name)
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
 
   const hasRecording = useGeneratorStore(selectHasRecording)
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useGeneratorParams()
-  useSetWindowTitle(name)
+  const fileName = getFileNameFromPath(path)
+  useSetWindowTitle(fileName)
   const showToast = useToast()
 
   useEffect(() => {
     ;(async () => {
       setIsLoading(true)
-      await loadGenerator(path)
-      setIsLoading(false)
+      try {
+        await loadGenerator(path)
+      } catch (error) {
+        showToast({
+          title: 'Failed to load generator: corrupted file',
+          status: 'error',
+        })
+      } finally {
+        setIsLoading(false)
+      }
     })()
-  }, [path])
+  }, [path, showToast])
 
   const handleSave = () => {
     saveGenerator(getFileNameFromPath(path)).then(() => {
@@ -51,7 +59,6 @@ export function Generator() {
           <RecordingSelector />
           <Allowlist />
           <Button onClick={handleSave}>Save</Button>
-          <Button onClick={() => loadGenerator()}>Load</Button>
           {hasRecording && (
             <Button onClick={exportScript}>Export script</Button>
           )}

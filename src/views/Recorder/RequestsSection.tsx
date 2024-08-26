@@ -3,6 +3,7 @@ import { WebLogView } from '@/components/WebLogView'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { ProxyData } from '@/types'
 import { groupProxyData } from '@/utils/groups'
+import { css } from '@emotion/react'
 import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { useState } from 'react'
 
@@ -22,10 +23,17 @@ export function RequestsSection({
   const ref = useAutoScroll(groupedProxyData, autoScroll)
 
   return (
-    <Flex direction="column" p="2" minHeight="0">
-      <Flex justify="between">
-        <Heading size="2" mb="2">
-          Requests
+    <Flex direction="column" minHeight="0" height="100%">
+      <Flex justify="between" pr="2">
+        <Heading
+          css={css`
+            font-size: 15px;
+            line-height: 24px;
+            font-weight: 500;
+            padding: var(--space-2) var(--space-3);
+          `}
+        >
+          Requests ({filteredProxyData.length})
         </Heading>
 
         <StaticAssetsFilter

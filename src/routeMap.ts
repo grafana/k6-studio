@@ -37,13 +37,13 @@ export function getRoutePath(
 export const routeMap = {
   home: getRoutePath('home'),
   recorder: getRoutePath('recorder'),
-  recordingPreviewer: getRoutePath('recordingPreviewer', { path: ':path' }),
+  recordingPreviewer: getRoutePath('recordingPreviewer'),
   generator: {
-    root: getRoutePath('generator', { path: ':path' }),
-    rule: getRoutePath('rule', { path: ':path', ruleId: ':ruleId' }),
-    loadProfile: getRoutePath('loadProfile', { path: ':path' }),
-    thinkTime: getRoutePath('thinkTime', { path: ':path' }),
-    testData: getRoutePath('testData', { path: ':path' }),
+    root: getRoutePath('generator'),
+    rule: getRoutePath('rule'),
+    loadProfile: getRoutePath('loadProfile'),
+    thinkTime: getRoutePath('thinkTime'),
+    testData: getRoutePath('testData'),
   },
-  validator: getRoutePath('validator', { path: ':path' }),
+  validator: getRoutePath('validator'),
 }

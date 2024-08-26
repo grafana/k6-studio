@@ -1,24 +1,24 @@
 import { GeneratorFileData } from '@/types/generator'
-import type { GeneratorState } from './types'
+import type { GeneratorStore } from '@/store/generator'
 import { TestOptions } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
-export function selectRuleById(state: GeneratorState, id?: string) {
+export function selectRuleById(state: GeneratorStore, id?: string) {
   return state.rules.find((rule) => rule.id === id)
 }
 
-export function selectHasRecording(state: GeneratorState) {
+export function selectHasRecording(state: GeneratorStore) {
   return state.requests.length > 0
 }
 
-function selectAllowedRequests(state: GeneratorState) {
+export function selectAllowedRequests(state: GeneratorStore) {
   return state.requests.filter((request) => {
     return state.allowlist.includes(request.request.host)
   })
 }
 
-export function selectFilteredRequests(state: GeneratorState) {
+export function selectFilteredRequests(state: GeneratorStore) {
   const requests = selectAllowedRequests(state)
 
   return state.includeStaticAssets
@@ -26,27 +26,19 @@ export function selectFilteredRequests(state: GeneratorState) {
     : requests.filter(isNonStaticAssetResponse)
 }
 
-export function selectStaticAssetCount(state: GeneratorState) {
+export function selectStaticAssetCount(state: GeneratorStore) {
   return (
     state.requests.length -
     state.requests.filter(isNonStaticAssetResponse).length
   )
 }
 
-export function selectGeneratorData(state: GeneratorState): GeneratorFileData {
+export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
   const loadProfile = selectLoadProfile(state)
-  const {
-    name,
-    sleepType,
-    timing,
-    variables,
-    recordingPath,
-    rules,
-    allowlist,
-  } = state
+  const { sleepType, timing, variables, recordingPath, rules, allowlist } =
+    state
 
   return {
-    name,
     version: '0',
     recordingPath,
     options: {
@@ -72,7 +64,7 @@ function selectLoadProfile({
   vus,
   iterations,
   maxDuration,
-}: GeneratorState): TestOptions['loadProfile'] {
+}: GeneratorStore): TestOptions['loadProfile'] {
   switch (executor) {
     case 'ramping-vus':
       return {
