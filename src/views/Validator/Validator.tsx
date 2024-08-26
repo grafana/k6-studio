@@ -7,7 +7,6 @@ import { Allotment } from 'allotment'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { K6Log, ProxyData } from '@/types'
-import { getFileNameFromPath } from '@/utils/file'
 import { LogsSection } from './LogsSection'
 import { ValidatorControls } from './ValidatorControls'
 import { View } from '@/components/Layout/View'
@@ -23,45 +22,45 @@ export function Validator() {
   const [script, setScript] = useState<string>('')
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
-  const { path: paramScriptPath } = useParams()
+  const { fileName } = useParams()
   const navigate = useNavigate()
-  const fileName = getFileNameFromPath(paramScriptPath ?? '')
 
   const { proxyData, resetProxyData } = useListenProxyData()
   useSetWindowTitle(fileName || 'Validator')
 
-  const handleSelectScript = useCallback(async () => {
+  const handleSelectExternalScript = useCallback(async () => {
     const { path = '', content = '' } =
       (await window.studio.script.showScriptSelectDialog()) || {}
+    navigate(getRoutePath('validator', {}))
     setScriptPath(path)
     setScript(content)
   }, [])
 
   useEffect(() => {
-    if (!paramScriptPath) {
+    if (!fileName) {
       return
     }
 
     ;(async () => {
       setIsLoading(true)
       const { path = '', content = '' } =
-        (await window.studio.script.openScript(paramScriptPath)) || {}
+        (await window.studio.script.openScript(fileName)) || {}
       setIsLoading(false)
       setScriptPath(path)
       setScript(content)
     })()
-  }, [paramScriptPath])
+  }, [fileName])
 
   async function handleDeleteScript() {
-    if (!paramScriptPath) {
+    if (!fileName) {
       return
     }
-    await window.studio.ui.deleteFile(paramScriptPath)
+    await window.studio.ui.deleteFile(fileName)
     navigate(getRoutePath('home'))
   }
 
   function handleRunScript() {
-    if (!scriptPath || !script) {
+    if (!fileName || !scriptPath || !script) {
       return
     }
 
@@ -97,14 +96,14 @@ export function Validator() {
 
   return (
     <View
-      title={`Validator${paramScriptPath ? ` - ${getFileNameFromPath(paramScriptPath)}` : ''}`}
+      title={`Validator${fileName ? ` - ${fileName}` : ''}`}
       actions={
         <ValidatorControls
           isRunning={isRunning}
           isScriptSelected={Boolean(scriptPath)}
           onDeleteScript={handleDeleteScript}
           onRunScript={handleRunScript}
-          onSelectScript={handleSelectScript}
+          onSelectScript={handleSelectExternalScript}
           onStopScript={handleStopScript}
         />
       }

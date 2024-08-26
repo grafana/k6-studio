@@ -5,10 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import invariant from 'tiny-invariant'
 
-import {
-  generateFileNameWithTimestamp,
-  getFileNameFromPath,
-} from '@/utils/file'
+import { generateFileNameWithTimestamp } from '@/utils/file'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { createNewGeneratorFile } from '@/utils/generator'
@@ -21,17 +18,17 @@ export function RecordingPreviewer() {
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-  const { path } = useParams()
+  const { fileName } = useParams()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isDiscardable = searchParams.get('discardable') !== null
-  invariant(path, 'Path is required')
+  invariant(fileName, 'fileName is required')
 
   useEffect(() => {
     ;(async () => {
       setIsLoading(true)
       setProxyData([])
-      const har = await window.studio.har.openFile(path)
+      const har = await window.studio.har.openFile(fileName)
       setIsLoading(false)
 
       invariant(har, 'Failed to open file')
@@ -42,33 +39,35 @@ export function RecordingPreviewer() {
     return () => {
       setProxyData([])
     }
-  }, [path, navigate])
+  }, [fileName, navigate])
 
   const handleDeleteRecording = async () => {
-    await window.studio.ui.deleteFile(path)
+    await window.studio.ui.deleteFile(fileName)
     navigate(getRoutePath('home'))
   }
 
   const handleCreateTestGenerator = async () => {
-    const newGenerator = createNewGeneratorFile(path)
-    const generatorPath = await window.studio.generator.saveGenerator(
+    const newGenerator = createNewGeneratorFile(fileName)
+    const generatorFileName = await window.studio.generator.saveGenerator(
       JSON.stringify(newGenerator, null, 2),
       generateFileNameWithTimestamp('json', 'Generator')
     )
 
     navigate(
-      getRoutePath('generator', { path: encodeURIComponent(generatorPath) })
+      getRoutePath('generator', {
+        fileName: encodeURIComponent(generatorFileName),
+      })
     )
   }
 
   const handleDiscard = async () => {
-    await window.studio.ui.deleteFile(path)
+    await window.studio.ui.deleteFile(fileName)
     navigate(`${getRoutePath('recorder')}?autoStart`)
   }
 
   return (
     <View
-      title={`Recording - ${getFileNameFromPath(path)}`}
+      title={`Recording - ${fileName}`}
       loading={isLoading}
       actions={
         <>

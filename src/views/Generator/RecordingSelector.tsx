@@ -1,28 +1,33 @@
 import { Button, Flex, IconButton, Popover, Text } from '@radix-ui/themes'
 import { Link } from 'react-router-dom'
+import { css } from '@emotion/react'
+import { CaretDownIcon } from '@radix-ui/react-icons'
 
 import { useGeneratorStore } from '@/store/generator'
-import { getFileNameFromPath } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
-import { CaretDownIcon } from '@radix-ui/react-icons'
 import { useStudioUIStore } from '@/store/ui'
-import { css } from '@emotion/react'
 import { getRoutePath } from '@/routeMap'
 
 // TODO: Improve accessibility and UX in general
 export function RecordingSelector() {
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
   const setRecording = useGeneratorStore((store) => store.setRecording)
-  const displayedValue =
-    getFileNameFromPath(recordingPath) || 'Select recording'
+  const displayedValue = recordingPath || 'Select recording'
   const recordings = useStudioUIStore((store) => store.recordings)
 
-  const handleOpen = async (filePath?: string) => {
+  const handleOpen = async (filePath: string) => {
     const harFile = await window.studio.har.openFile(filePath)
-    if (!harFile) return
 
     const proxyData = harToProxyData(harFile.content)
-    setRecording(proxyData, harFile.path)
+    setRecording(proxyData, harFile.name)
+  }
+
+  const handleImport = async () => {
+    const filePath = await window.studio.har.importFile()
+
+    if (!filePath) return
+
+    await handleOpen(filePath)
   }
 
   return (
@@ -40,17 +45,17 @@ export function RecordingSelector() {
               <Text size="2">You don{"'"}t have saved recordings</Text>
             ) : (
               <>
-                {recordings.map((filePath) => (
+                {recordings.map((harFileName) => (
                   <Button
-                    key={filePath}
+                    key={harFileName}
                     variant="ghost"
-                    color={recordingPath === filePath ? 'orange' : 'gray'}
+                    color={recordingPath === harFileName ? 'orange' : 'gray'}
                     css={css`
                       justify-content: start;
                     `}
-                    onClick={() => handleOpen(filePath)}
+                    onClick={() => handleOpen(harFileName)}
                   >
-                    {getFileNameFromPath(filePath)}
+                    {harFileName}
                   </Button>
                 ))}
               </>
@@ -65,8 +70,7 @@ export function RecordingSelector() {
                 </Button>
               </Popover.Close>
               <Popover.Close>
-                {/* TODO: should copy the imported file into the workspace */}
-                <Button onClick={() => handleOpen()}>Import HAR</Button>
+                <Button onClick={() => handleImport()}>Import HAR</Button>
               </Popover.Close>
             </Flex>
           </Flex>

@@ -11,17 +11,21 @@ interface TestRuleActionsProps {
 }
 
 export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
-  const { path } = useGeneratorParams()
+  const { fileName } = useGeneratorParams()
   const navigate = useNavigate()
   const { cloneRule, deleteRule } = useGeneratorStore()
 
   const handleEdit = () => {
-    navigate(getRoutePath('rule', { path: encodeURIComponent(path), ruleId }))
+    navigate(
+      getRoutePath('rule', { fileName: encodeURIComponent(fileName), ruleId })
+    )
   }
 
   const handleDelete = () => {
     deleteRule(ruleId)
-    navigate(getRoutePath('generator', { path: encodeURIComponent(path) }))
+    navigate(
+      getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
+    )
   }
 
   const handleCopy = () => {

@@ -39,11 +39,13 @@ export function RuleEditorSwitch() {
 }
 
 export function RuleEditor() {
-  const { path } = useGeneratorParams()
+  const { fileName } = useGeneratorParams()
   const navigate = useNavigate()
 
   const handleClose = () => {
-    navigate(getRoutePath('generator', { path: encodeURIComponent(path) }))
+    navigate(
+      getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
+    )
   }
 
   return (

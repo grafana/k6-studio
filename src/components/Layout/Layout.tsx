@@ -51,7 +51,7 @@ export function Layout() {
         <Allotment.Pane
           minSize={200}
           maxSize={300}
-          preferredSize={240}
+          preferredSize={280}
           visible={isSidebarExpanded}
           snap
         >

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 
 export interface GeneratorFile {
-  path: string
+  name: string
   content: GeneratorFileData
 }
 

@@ -1,20 +1,17 @@
 import { css } from '@emotion/react'
 import { NavLink } from 'react-router-dom'
 
-import { getFileNameFromPath } from '@/utils/file'
 import { FileContextMenu } from './FileContextMenu'
 
 interface FileProps {
-  path: string
+  fileName: string
   viewPath: string
   isSelected: boolean
 }
 
-export function File({ path, viewPath, isSelected }: FileProps) {
-  const fileName = getFileNameFromPath(path)
-
+export function File({ fileName, viewPath, isSelected }: FileProps) {
   return (
-    <FileContextMenu path={path} isSelected={isSelected}>
+    <FileContextMenu path={fileName} isSelected={isSelected}>
       <NavLink
         css={css`
           display: block;
@@ -36,7 +33,7 @@ export function File({ path, viewPath, isSelected }: FileProps) {
             color: var(--accent-9);
           }
         `}
-        to={`${viewPath}/${encodeURIComponent(path)}`}
+        to={`${viewPath}/${encodeURIComponent(fileName)}`}
       >
         {fileName}
       </NavLink>

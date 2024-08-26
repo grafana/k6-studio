@@ -8,17 +8,17 @@ const routes = {
   recorder: '/recorder',
 
   // Recording Previewer
-  recordingPreviewer: '/recording-previewer/:path',
+  recordingPreviewer: '/recording-previewer/:fileName',
 
   // Validator
-  validator: '/validator/:path?',
+  validator: '/validator/:fileName?',
 
   // Generator
-  generator: '/generator/:path/',
-  rule: '/generator/:path/rule/:ruleId',
-  loadProfile: '/generator/:path/loadProfile',
-  thinkTime: '/generator/:path/thinkTime',
-  testData: '/generator/:path/testData',
+  generator: '/generator/:fileName/',
+  rule: '/generator/:fileName/rule/:ruleId',
+  loadProfile: '/generator/:fileName/loadProfile',
+  thinkTime: '/generator/:fileName/thinkTime',
+  testData: '/generator/:fileName/testData',
 }
 
 export type RouteName = keyof typeof routes
