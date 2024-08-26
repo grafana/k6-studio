@@ -23,6 +23,9 @@ import {
   SCRIPTS_PATH,
 } from './constants/workspace'
 import { sendToast } from './utils/electron'
+import invariant from 'tiny-invariant'
+import { INVALID_FILENAME_CHARS } from './constants/files'
+import { generateFileNameWithTimestamp } from './utils/file'
 
 const proxyEmitter = new eventEmmitter()
 
@@ -236,7 +239,7 @@ ipcMain.on('script:save', async (event, script: string) => {
 
 // HAR
 ipcMain.handle('har:save', async (_, data) => {
-  const fineName = `${new Date().toISOString()}.har`
+  const fineName = generateFileNameWithTimestamp('har')
   await writeFile(path.join(RECORDINGS_PATH, fineName), data)
   return path.join(RECORDINGS_PATH, fineName)
 })
@@ -280,6 +283,8 @@ ipcMain.handle(
   'generator:save',
   async (_, generatorFile: string, fileName: string) => {
     console.info('generator:save event received')
+
+    invariant(!INVALID_FILENAME_CHARS.test(fileName), 'Invalid file name')
 
     await writeFile(path.join(GENERATORS_PATH, fileName), generatorFile)
     return path.join(GENERATORS_PATH, fileName)

@@ -4,7 +4,10 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import invariant from 'tiny-invariant'
 
-import { getFileNameFromPath } from '@/utils/file'
+import {
+  generateFileNameWithTimestamp,
+  getFileNameFromPath,
+} from '@/utils/file'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { createNewGeneratorFile } from '@/utils/generator'
@@ -47,7 +50,7 @@ export function RecordingPreviewer() {
     const newGenerator = createNewGeneratorFile(path)
     const generatorPath = await window.studio.generator.saveGenerator(
       JSON.stringify(newGenerator, null, 2),
-      `${new Date().toISOString()}.json`
+      generateFileNameWithTimestamp('json', 'Generator')
     )
 
     navigate(
