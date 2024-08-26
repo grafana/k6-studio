@@ -9,23 +9,16 @@ import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
 
 interface DetailsProps {
-  requests: ProxyData[]
-  selectedRequestId?: string
+  selectedRequest: ProxyData | null
   onSelectRequest: (data: ProxyData | null) => void
 }
 
-export function Details({
-  requests,
-  selectedRequestId,
-  onSelectRequest,
-}: DetailsProps) {
-  const data = requests.find((r) => r.id === selectedRequestId)
-
+export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
   useEffect(() => {
-    if (data === undefined) {
+    return () => {
       onSelectRequest(null)
     }
-  }, [data, onSelectRequest, selectedRequestId])
+  }, [onSelectRequest])
 
   return (
     <>
@@ -47,17 +40,17 @@ export function Details({
           <Cross2Icon />
         </IconButton>
       </Box>
-      {data !== undefined && (
+      {selectedRequest !== null && (
         <Box height="100%">
           <Allotment defaultSizes={[1, 1]} vertical>
             <Allotment.Pane minSize={200}>
               <PaneContent heading="Request">
-                <RequestDetails data={data} />
+                <RequestDetails data={selectedRequest} />
               </PaneContent>
             </Allotment.Pane>
             <Allotment.Pane minSize={200}>
               <PaneContent heading="Response">
-                <ResponseDetails data={data} />
+                <ResponseDetails data={selectedRequest} />
               </PaneContent>
             </Allotment.Pane>
           </Allotment>

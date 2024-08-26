@@ -107,8 +107,7 @@ export function RecordingPreviewer() {
         {selectedRequest !== null && (
           <Allotment.Pane minSize={300}>
             <Details
-              requests={proxyData}
-              selectedRequestId={selectedRequest?.id}
+              selectedRequest={selectedRequest}
               onSelectRequest={setSelectedRequest}
             />
           </Allotment.Pane>
