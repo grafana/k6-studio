@@ -9,7 +9,6 @@ import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { groupProxyData } from '@/utils/groups'
 import { startRecording, stopRecording } from './Recorder.utils'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
@@ -17,7 +16,6 @@ import { getRoutePath } from '@/routeMap'
 export function Recorder() {
   const [group, setGroup] = useState<string>('Default')
   const { proxyData, resetProxyData } = useListenProxyData(group)
-  const groupedProxyData = groupProxyData(proxyData)
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
 
@@ -44,7 +42,7 @@ export function Recorder() {
       return
     }
 
-    const har = proxyDataToHar(groupedProxyData)
+    const har = proxyDataToHar(proxyData)
     const filePath = await window.studio.har.saveFile(
       JSON.stringify(har, null, 4)
     )
@@ -89,7 +87,7 @@ export function Recorder() {
         </Flex>
       </Flex>
       <RequestsSection
-        groupedProxyData={groupedProxyData}
+        proxyData={proxyData}
         noRequestsMessage="Your requests will appear here"
         autoScroll
       />

@@ -13,6 +13,13 @@ export function Allowlist() {
   )
   const allowlist = useGeneratorStore((store) => store.allowlist)
   const setAllowlist = useGeneratorStore((store) => store.setAllowlist)
+
+  const includeStaticAssets = useGeneratorStore(
+    (store) => store.includeStaticAssets
+  )
+  const setIncludeStaticAssets = useGeneratorStore(
+    (store) => store.setIncludeStaticAssets
+  )
   const [showAllowlistDialog, setShowAllowlistDialog] = useState(false)
 
   useEffect(() => {
@@ -38,6 +45,8 @@ export function Allowlist() {
           hosts={hosts}
           allowlist={allowlist}
           onAllowlistChange={setAllowlist}
+          includeStaticAssets={includeStaticAssets}
+          setIncludeStaticAssets={setIncludeStaticAssets}
         />
       )}
     </>

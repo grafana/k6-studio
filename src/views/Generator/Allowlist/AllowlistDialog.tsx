@@ -1,13 +1,18 @@
+import { Label } from '@/components/Label'
+import { selectStaticAssetCount, useGeneratorStore } from '@/store/generator'
 import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import {
   Box,
   Button,
+  Checkbox,
   CheckboxGroup,
   Dialog,
   Flex,
   IconButton,
   ScrollArea,
   TextField,
+  Text,
+  Strong,
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
 import { useState } from 'react'
@@ -18,15 +23,21 @@ export function AllowlistDialog({
   hosts,
   allowlist,
   onAllowlistChange,
+  includeStaticAssets,
+  setIncludeStaticAssets,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   hosts: string[]
   allowlist: string[]
   onAllowlistChange: (allowlist: string[]) => void
+  includeStaticAssets: boolean
+  setIncludeStaticAssets: (includeStaticAssets: boolean) => void
 }) {
   const [filter, setFilter] = useState('')
   const [selectedHosts, setSelectedHosts] = useState(allowlist)
+  // TODO shoud it be moved to parent component to keep this component pure?
+  const staticAssetCount = useGeneratorStore(selectStaticAssetCount)
 
   const filteredHosts = hosts.filter((host) => host.includes(filter))
 
@@ -42,9 +53,13 @@ export function AllowlistDialog({
     onAllowlistChange(selectedHosts)
   }
 
+  // TODO: change include static assets only when save is clicked
+  // function handleIncludeStaticAssetsChange() {}
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content maxWidth="450px" size="2">
+        {/* TODO: title will need to be changed if we allow to toggle static assets, check how it looks in figma */}
         <Dialog.Title>Allowed hosts</Dialog.Title>
         <Dialog.Description size="2" mb="4">
           Select hosts that you want to include in the test generator
@@ -93,7 +108,7 @@ export function AllowlistDialog({
           </Flex>
         </Flex>
 
-        <Box height="200px" asChild pr="3">
+        <Box maxHeight="200px" asChild pr="3" mb="3">
           <ScrollArea>
             <CheckboxGroup.Root
               value={selectedHosts}
@@ -107,6 +122,17 @@ export function AllowlistDialog({
             </CheckboxGroup.Root>
           </ScrollArea>
         </Box>
+        <Label>
+          <Checkbox
+            onCheckedChange={setIncludeStaticAssets}
+            checked={includeStaticAssets}
+          />
+          Include static assets
+        </Label>
+        <Text size="1" color="gray">
+          Select to include <Strong>{staticAssetCount}</Strong> static assets
+          requests (fonts, images, css, js etc).
+        </Text>
 
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close>

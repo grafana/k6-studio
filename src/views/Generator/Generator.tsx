@@ -22,6 +22,7 @@ import { useToast } from '@/store/ui/useToast'
 export function Generator() {
   const name = useGeneratorStore((store) => store.name)
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
+
   const hasRecording = useGeneratorStore(selectHasRecording)
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useGeneratorParams()

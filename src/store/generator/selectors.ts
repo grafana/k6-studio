@@ -2,6 +2,7 @@ import { GeneratorFileData } from '@/types/generator'
 import type { GeneratorState } from './types'
 import { TestOptions } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
+import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 export function selectRuleById(state: GeneratorState, id?: string) {
   return state.rules.find((rule) => rule.id === id)
@@ -11,10 +12,25 @@ export function selectHasRecording(state: GeneratorState) {
   return state.requests.length > 0
 }
 
-export function selectFilteredRequests(state: GeneratorState) {
+function selectAllowedRequests(state: GeneratorState) {
   return state.requests.filter((request) => {
     return state.allowlist.includes(request.request.host)
   })
+}
+
+export function selectFilteredRequests(state: GeneratorState) {
+  const requests = selectAllowedRequests(state)
+
+  return state.includeStaticAssets
+    ? requests
+    : requests.filter(isNonStaticAssetResponse)
+}
+
+export function selectStaticAssetCount(state: GeneratorState) {
+  return (
+    state.requests.length -
+    state.requests.filter(isNonStaticAssetResponse).length
+  )
 }
 
 export function selectGeneratorData(state: GeneratorState): GeneratorFileData {

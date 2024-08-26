@@ -8,13 +8,12 @@ import { getFileNameFromPath } from '@/utils/file'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { createNewGeneratorFile } from '@/utils/generator'
-import { GroupedProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
-import { groupProxyData } from '@/utils/groups'
 import { getRoutePath } from '@/routeMap'
 
 export function RecordingPreviewer() {
-  const [groupedProxyData, setGroupedProxyData] = useState<GroupedProxyData>({})
+  const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useParams()
   const navigate = useNavigate()
@@ -25,17 +24,17 @@ export function RecordingPreviewer() {
   useEffect(() => {
     ;(async () => {
       setIsLoading(true)
-      setGroupedProxyData({})
+      setProxyData([])
       const har = await window.studio.har.openFile(path)
       setIsLoading(false)
 
       invariant(har, 'Failed to open file')
 
-      setGroupedProxyData(groupProxyData(harToProxyData(har.content)))
+      setProxyData(harToProxyData(har.content))
     })()
 
     return () => {
-      setGroupedProxyData({})
+      setProxyData([])
     }
   }, [path, navigate])
 
@@ -94,7 +93,7 @@ export function RecordingPreviewer() {
       }
     >
       <RequestsSection
-        groupedProxyData={groupedProxyData}
+        proxyData={proxyData}
         noRequestsMessage="The recording is empty"
       />
     </View>
