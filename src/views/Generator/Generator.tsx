@@ -4,11 +4,7 @@ import { Button } from '@radix-ui/themes'
 import { Outlet } from 'react-router-dom'
 
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
-import {
-  useGeneratorStore,
-  selectHasRecording,
-  selectFilteredRequests,
-} from '@/store/generator'
+import { useGeneratorStore, selectHasRecording } from '@/store/generator'
 import { View } from '@/components/Layout/View'
 import { getFileNameFromPath } from '@/utils/file'
 import { exportScript, saveGenerator, loadGenerator } from './Generator.utils'
@@ -20,7 +16,6 @@ import { useGeneratorParams } from './Generator.hooks'
 import { useToast } from '@/store/ui/useToast'
 
 export function Generator() {
-  const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const hasRecording = useGeneratorStore(selectHasRecording)
   const [isLoading, setIsLoading] = useState(false)
   const { path } = useGeneratorParams()
@@ -77,7 +72,7 @@ export function Generator() {
           </Allotment>
         </Allotment.Pane>
         <Allotment.Pane minSize={300} visible={hasRecording}>
-          <GeneratorSidebar requests={filteredRequests} />
+          <GeneratorSidebar />
         </Allotment.Pane>
       </Allotment>
     </View>

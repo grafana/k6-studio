@@ -3,16 +3,12 @@ import { css } from '@emotion/react'
 import { Allotment } from 'allotment'
 import { Outlet } from 'react-router-dom'
 
-import { useDrawer } from '@/hooks/useDrawer'
-import { Drawer } from '@/components/Drawer'
 import { Sidebar } from './Sidebar'
 import { ActivityBar } from './ActivityBar'
 import { useState } from 'react'
 import { PinRightIcon } from '@radix-ui/react-icons'
 
 export function Layout() {
-  const rightDrawer = useDrawer('right')
-  const bottomDrawer = useDrawer('bottom')
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
 
   const handleVisibleChange = (index: number, visible: boolean) => {
@@ -66,28 +62,8 @@ export function Layout() {
         </Allotment.Pane>
 
         <Allotment.Pane>
-          <Allotment vertical>
-            <Allotment.Pane>
-              <Outlet />
-            </Allotment.Pane>
-            {bottomDrawer.isOpen && (
-              <Allotment.Pane visible={bottomDrawer.isOpen}>
-                <Drawer close={rightDrawer.close}>
-                  {bottomDrawer.content}
-                </Drawer>
-              </Allotment.Pane>
-            )}
-          </Allotment>
+          <Outlet />
         </Allotment.Pane>
-        {rightDrawer.isOpen && (
-          <Allotment.Pane
-            minSize={200}
-            preferredSize={200}
-            visible={rightDrawer.isOpen}
-          >
-            <Drawer close={rightDrawer.close}>{rightDrawer.content}</Drawer>
-          </Allotment.Pane>
-        )}
       </Allotment>
     </Box>
   )

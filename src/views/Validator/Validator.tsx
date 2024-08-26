@@ -6,7 +6,7 @@ import { Allotment } from 'allotment'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
-import { K6Log } from '@/types'
+import { K6Log, ProxyData } from '@/types'
 import { getFileNameFromPath } from '@/utils/file'
 import { LogsSection } from './LogsSection'
 import { ValidatorControls } from './ValidatorControls'
@@ -14,8 +14,10 @@ import { View } from '@/components/Layout/View'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { getRoutePath } from '@/routeMap'
+import { Details } from '@/components/WebLogView/Details'
 
 export function Validator() {
+  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [scriptPath, setScriptPath] = useState<string>()
   const [script, setScript] = useState<string>('')
@@ -90,6 +92,7 @@ export function Validator() {
     // Reset requests and logs when script changes
     resetProxyData()
     setLogs([])
+    setSelectedRequest(null)
   }, [script, resetProxyData])
 
   return (
@@ -107,49 +110,68 @@ export function Validator() {
       }
       loading={isLoading}
     >
-      <Allotment vertical defaultSizes={[1, 1]}>
-        <Allotment.Pane>
-          <RequestsSection proxyData={proxyData} autoScroll={isRunning} />
-        </Allotment.Pane>
+      <Allotment defaultSizes={[3, 2]}>
         <Allotment.Pane minSize={300}>
-          <Box height="100%">
-            <Tabs.Root
-              defaultValue="script"
-              css={css`
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-              `}
-            >
-              <Tabs.List
-                css={css`
-                  flex-shrink: 0;
-                `}
-              >
-                <Tabs.Trigger value="logs">Logs ({logs.length})</Tabs.Trigger>
-                <Tabs.Trigger value="script">Script</Tabs.Trigger>
-              </Tabs.List>
+          <Allotment vertical defaultSizes={[1, 1]}>
+            <Allotment.Pane>
+              <RequestsSection
+                proxyData={proxyData}
+                autoScroll={isRunning}
+                selectedRequestId={selectedRequest?.id}
+                onSelectRequest={setSelectedRequest}
+              />
+            </Allotment.Pane>
+            <Allotment.Pane minSize={300}>
+              <Box height="100%">
+                <Tabs.Root
+                  defaultValue="script"
+                  css={css`
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                  `}
+                >
+                  <Tabs.List
+                    css={css`
+                      flex-shrink: 0;
+                    `}
+                  >
+                    <Tabs.Trigger value="logs">
+                      Logs ({logs.length})
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="script">Script</Tabs.Trigger>
+                  </Tabs.List>
 
-              <Tabs.Content
-                value="logs"
-                css={css`
-                  flex: 1;
-                  min-height: 0;
-                `}
-              >
-                <LogsSection logs={logs} autoScroll={isRunning} />
-              </Tabs.Content>
-              <Tabs.Content
-                value="script"
-                css={css`
-                  flex: 1;
-                `}
-              >
-                <ReadOnlyEditor language="javascript" value={script} />
-              </Tabs.Content>
-            </Tabs.Root>
-          </Box>
+                  <Tabs.Content
+                    value="logs"
+                    css={css`
+                      flex: 1;
+                      min-height: 0;
+                    `}
+                  >
+                    <LogsSection logs={logs} autoScroll={isRunning} />
+                  </Tabs.Content>
+                  <Tabs.Content
+                    value="script"
+                    css={css`
+                      flex: 1;
+                    `}
+                  >
+                    <ReadOnlyEditor language="javascript" value={script} />
+                  </Tabs.Content>
+                </Tabs.Root>
+              </Box>
+            </Allotment.Pane>
+          </Allotment>
         </Allotment.Pane>
+        {selectedRequest !== null && (
+          <Allotment.Pane minSize={300}>
+            <Details
+              selectedRequest={selectedRequest}
+              onSelectRequest={setSelectedRequest}
+            />
+          </Allotment.Pane>
+        )}
       </Allotment>
     </View>
   )
