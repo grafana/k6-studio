@@ -14,6 +14,7 @@ function Root({ children, ...props }: ComponentProps<typeof RadixTabs.Root>) {
         display: flex;
         flex-direction: column;
         flex: 0 1 auto;
+        height: 100%;
         overflow: hidden;
       `}
     >
