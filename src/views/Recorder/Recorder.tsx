@@ -98,6 +98,7 @@ export function Recorder() {
         proxyData={debouncedProxyData}
         noRequestsMessage="Your requests will appear here"
         autoScroll
+        resetProxyData={resetProxyData}
       />
     </View>
   )
