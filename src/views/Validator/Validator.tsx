@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Box, Tabs } from '@radix-ui/themes'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Allotment } from 'allotment'
 
@@ -23,7 +23,10 @@ export function Validator() {
   const [logs, setLogs] = useState<K6Log[]>([])
   const { path: paramScriptPath } = useParams()
   const navigate = useNavigate()
-  const fileName = getFileNameFromPath(paramScriptPath ?? '')
+  const fileName = useMemo(
+    () => getFileNameFromPath(scriptPath ?? ''),
+    [scriptPath]
+  )
 
   const { proxyData, resetProxyData } = useListenProxyData()
   useSetWindowTitle(fileName || 'Validator')
@@ -94,7 +97,7 @@ export function Validator() {
 
   return (
     <View
-      title={`Validator${paramScriptPath ? ` - ${getFileNameFromPath(paramScriptPath)}` : ''}`}
+      title={`Validator${fileName ? ` - ${fileName}` : ''}`}
       actions={
         <ValidatorControls
           isRunning={isRunning}
