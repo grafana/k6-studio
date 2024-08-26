@@ -22,11 +22,10 @@ import {
   RECORDINGS_PATH,
   SCRIPTS_PATH,
 } from './constants/workspace'
-import { sendToast } from './utils/electron'
+import { sendToast, getFilePathFromName } from './utils/electron'
 import invariant from 'tiny-invariant'
 import { INVALID_FILENAME_CHARS } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
-import { getFilePathFromName } from './electron/utils/file'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 
