@@ -22,7 +22,7 @@ import {
   RECORDINGS_PATH,
   SCRIPTS_PATH,
 } from './constants/workspace'
-import { sendToast } from './utils/electron'
+import { sendToast, findOpenPort } from './utils/electron'
 import invariant from 'tiny-invariant'
 import { INVALID_FILENAME_CHARS } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
@@ -44,7 +44,7 @@ if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
-const createWindow = () => {
+const createWindow = async () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -59,7 +59,7 @@ const createWindow = () => {
   })
 
   // Start proxy
-  currentProxyProcess = launchProxyAndAttachEmitter(mainWindow)
+  currentProxyProcess = await launchProxyAndAttachEmitter(mainWindow)
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -84,8 +84,8 @@ const createWindow = () => {
   return mainWindow
 }
 
-app.whenReady().then(() => {
-  const mainWindow = createWindow()
+app.whenReady().then(async () => {
+  const mainWindow = await createWindow()
   setupProjectStructure()
 
   watcher = chokidar.watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
@@ -110,7 +110,7 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('activate', () => {
+app.on('activate', async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
@@ -128,7 +128,7 @@ ipcMain.handle('proxy:start', async (event, port?: number) => {
   console.info('proxy:start event received')
 
   const browserWindow = browserWindowFromEvent(event)
-  currentProxyProcess = launchProxyAndAttachEmitter(browserWindow, port)
+  currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow, port)
 })
 
 ipcMain.on('proxy:stop', async () => {
@@ -376,19 +376,31 @@ const browserWindowFromEvent = (
   return browserWindow
 }
 
-const launchProxyAndAttachEmitter = (
+const launchProxyAndAttachEmitter = async (
   browserWindow: BrowserWindow,
   port?: number
 ) => {
+  // if no port is specified we try the latest we set
+  port = port ?? proxyPort
+
+  // confirm that the port is still open and if not get the next open one
+  const availableOpenport = await findOpenPort(proxyPort)
+  console.log(`proxy open port found: ${availableOpenport}`)
+
+  if (availableOpenport !== port) {
+    port = availableOpenport
+    proxyPort = availableOpenport
+  }
+
   return launchProxy(browserWindow, port, {
     onReady: () => {
       proxyReady = true
       proxyEmitter.emit('ready')
     },
-    onFailure: () => {
+    onFailure: async () => {
       proxyReady = false
       proxyPort += 10
-      currentProxyProcess = launchProxyAndAttachEmitter(
+      currentProxyProcess = await launchProxyAndAttachEmitter(
         browserWindow,
         proxyPort
       )
