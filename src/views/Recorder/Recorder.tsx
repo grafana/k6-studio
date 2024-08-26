@@ -48,12 +48,12 @@ export function Recorder() {
     }
 
     const har = proxyDataToHar(groupProxyData(proxyData))
-    const filePath = await window.studio.har.saveFile(
+    const fileName = await window.studio.har.saveFile(
       JSON.stringify(har, null, 4)
     )
 
     navigate(
-      `${getRoutePath('recordingPreviewer', { path: encodeURIComponent(filePath) })}?discardable`
+      `${getRoutePath('recordingPreviewer', { fileName: encodeURIComponent(fileName) })}?discardable`
     )
   }
 

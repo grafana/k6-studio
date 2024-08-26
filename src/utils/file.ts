@@ -1,7 +1,3 @@
-export function getFileNameFromPath(path: string) {
-  return path.split('/').pop() ?? ''
-}
-
 export function generateFileNameWithTimestamp(
   extension: string,
   prefix?: string
@@ -10,7 +6,7 @@ export function generateFileNameWithTimestamp(
     new Date()
       .toISOString()
       .replace(/:/g, '-')
-      .replace(/T/g, ' - ')
+      .replace(/T/g, '_')
       .split('.')[0] ?? ''
   return `${prefix ? `${prefix} - ` : ''}${timestamp}.${extension}`
 }

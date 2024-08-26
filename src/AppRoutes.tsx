@@ -36,7 +36,7 @@ export function AppRoutes() {
                 element={
                   <Navigate
                     // TODO: this is a hack to make sure path is relative
-                    // and :path is not lost while redirecting the user to load profile
+                    // and :fileName is not lost while redirecting the user to load profile
                     to={routeMap.generator.loadProfile.split('/').pop()!}
                     replace
                   />

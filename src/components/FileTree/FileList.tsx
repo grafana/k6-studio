@@ -10,7 +10,7 @@ interface FileListProps {
 }
 
 export function FileList({ files, noFilesMessage, viewPath }: FileListProps) {
-  const { path } = useParams()
+  const { fileName: currentFile } = useParams()
 
   if (files.length === 0) {
     return <NoFileMessage message={noFilesMessage} />
@@ -26,7 +26,11 @@ export function FileList({ files, noFilesMessage, viewPath }: FileListProps) {
     >
       {files.map((file) => (
         <li key={file}>
-          <File path={file} isSelected={file === path} viewPath={viewPath} />
+          <File
+            fileName={file}
+            isSelected={file === currentFile}
+            viewPath={viewPath}
+          />
         </li>
       ))}
     </ul>

@@ -1,13 +1,12 @@
 import { css } from '@emotion/react'
 import { Box, Tabs } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Allotment } from 'allotment'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { K6Log, ProxyData } from '@/types'
-import { getFileNameFromPath } from '@/utils/file'
 import { LogsSection } from './LogsSection'
 import { ValidatorControls } from './ValidatorControls'
 import { View } from '@/components/Layout/View'
@@ -15,60 +14,60 @@ import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
+import { useScriptPath } from './Validator.hooks'
 
 export function Validator() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [scriptPath, setScriptPath] = useState<string>()
-  const [script, setScript] = useState<string>('')
+  const [script, setScript] = useState('')
+  const { scriptPath, isExternal } = useScriptPath()
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
-  const { path: paramScriptPath } = useParams()
   const navigate = useNavigate()
-  const fileName = getFileNameFromPath(paramScriptPath ?? '')
 
   const { proxyData, resetProxyData } = useListenProxyData()
-  useSetWindowTitle(fileName || 'Validator')
+  useSetWindowTitle(scriptPath || 'Validator')
 
-  const handleSelectScript = useCallback(async () => {
+  const handleSelectExternalScript = useCallback(async () => {
     const { path = '', content = '' } =
       (await window.studio.script.showScriptSelectDialog()) || {}
-    setScriptPath(path)
+    navigate(getRoutePath('validator', {}), {
+      state: { externalScriptPath: path },
+    })
     setScript(content)
-  }, [])
+  }, [navigate])
 
   useEffect(() => {
-    if (!paramScriptPath) {
+    if (!scriptPath || isExternal) {
       return
     }
 
     ;(async () => {
       setIsLoading(true)
-      const { path = '', content = '' } =
-        (await window.studio.script.openScript(paramScriptPath)) || {}
+      const { content = '' } =
+        (await window.studio.script.openScript(scriptPath)) || {}
       setIsLoading(false)
-      setScriptPath(path)
       setScript(content)
     })()
-  }, [paramScriptPath])
+  }, [scriptPath, isExternal])
 
   async function handleDeleteScript() {
-    if (!paramScriptPath) {
+    if (isExternal || !scriptPath) {
       return
     }
-    await window.studio.ui.deleteFile(paramScriptPath)
+
+    await window.studio.ui.deleteFile(scriptPath)
     navigate(getRoutePath('home'))
   }
 
   function handleRunScript() {
-    if (!scriptPath || !script) {
+    if (!scriptPath) {
       return
     }
 
     resetProxyData()
     setLogs([])
-
-    window.studio.script.runScript(scriptPath)
+    window.studio.script.runScript(scriptPath, isExternal)
     setIsRunning(true)
   }
 
@@ -97,14 +96,15 @@ export function Validator() {
 
   return (
     <View
-      title={`Validator${paramScriptPath ? ` - ${getFileNameFromPath(paramScriptPath)}` : ''}`}
+      title={`Validator${scriptPath ? ` - ${scriptPath}` : ''}`}
       actions={
         <ValidatorControls
           isRunning={isRunning}
-          isScriptSelected={Boolean(scriptPath)}
+          isExternal={isExternal}
+          isScriptSelected={scriptPath !== undefined}
           onDeleteScript={handleDeleteScript}
           onRunScript={handleRunScript}
-          onSelectScript={handleSelectScript}
+          onSelectScript={handleSelectExternalScript}
           onStopScript={handleStopScript}
         />
       }

@@ -4,6 +4,7 @@ import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 interface ValidatorControlsProps {
   isRunning: boolean
   isScriptSelected: boolean
+  isExternal: boolean
   onDeleteScript: () => void
   onRunScript: () => void
   onSelectScript: () => void
@@ -13,6 +14,7 @@ interface ValidatorControlsProps {
 export function ValidatorControls({
   isRunning,
   isScriptSelected,
+  isExternal,
   onDeleteScript,
   onRunScript,
   onSelectScript,
@@ -35,9 +37,9 @@ export function ValidatorControls({
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item onClick={onSelectScript}>
-            Select script
+            Open external script
           </DropdownMenu.Item>
-          {isScriptSelected && (
+          {isScriptSelected && !isExternal && (
             <DropdownMenu.Item color="red" onClick={onDeleteScript}>
               Delete
             </DropdownMenu.Item>

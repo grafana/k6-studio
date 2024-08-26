@@ -5,8 +5,8 @@ import { useGeneratorParams } from '../Generator.hooks'
 import { getRoutePath, RouteName } from '@/routeMap'
 
 export function GeneratorDrawer() {
-  const { path: decodedPath, ruleId } = useGeneratorParams()
-  const path = encodeURIComponent(decodedPath)
+  const { fileName: decodedFileName, ruleId } = useGeneratorParams()
+  const fileName = encodeURIComponent(decodedFileName)
 
   return (
     <Flex direction="column" height="100%">
@@ -15,7 +15,7 @@ export function GeneratorDrawer() {
           <TabNavLink
             route="rule"
             params={{
-              path,
+              fileName,
               ruleId,
             }}
             label="Rule"
@@ -24,21 +24,21 @@ export function GeneratorDrawer() {
         <TabNavLink
           route="loadProfile"
           params={{
-            path,
+            fileName,
           }}
           label="Load profile"
         />
         <TabNavLink
           route="thinkTime"
           params={{
-            path,
+            fileName,
           }}
           label="Think time"
         />
         <TabNavLink
           route="testData"
           params={{
-            path,
+            fileName,
           }}
           label="Test data"
         />
