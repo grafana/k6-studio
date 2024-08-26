@@ -1,12 +1,17 @@
 import { WebLogView } from '@/components/WebLogView'
 import { ProxyData } from '@/types'
-import { Box, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
+import { Box, Checkbox, Flex, ScrollArea, Tabs, Text } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
 import { groupProxyData } from '@/utils/groups'
-import { selectHasRecording, useGeneratorStore } from '@/store/generator'
+import {
+  selectHasRecording,
+  selectStaticAssetCount,
+  useGeneratorStore,
+} from '@/store/generator'
 import { useEffect, useState } from 'react'
 import { RulePreview } from '../RulePreview/RulePreview'
 import { useGeneratorParams } from '../Generator.hooks'
+import { Label } from '@/components/Label'
 
 interface GeneratorSidebarProps {
   requests: ProxyData[]
@@ -18,6 +23,15 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
   const hasRecording = useGeneratorStore(selectHasRecording)
   const groupedProxyData = groupProxyData(requests)
   const { ruleId } = useGeneratorParams()
+
+  const includeStaticAssets = useGeneratorStore(
+    (store) => store.includeStaticAssets
+  )
+  const setIncludeStaticAssets = useGeneratorStore(
+    (store) => store.setIncludeStaticAssets
+  )
+
+  const staticAssetCount = useGeneratorStore(selectStaticAssetCount)
 
   useEffect(() => {
     if (ruleId === undefined) {
@@ -65,6 +79,13 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
             height: '100%',
           }}
         >
+          <Label p="2">
+            <Checkbox
+              onCheckedChange={setIncludeStaticAssets}
+              checked={includeStaticAssets}
+            />
+            <Text size="2">Include static assets ({staticAssetCount})</Text>
+          </Label>
           <ScrollArea scrollbars="vertical">
             <WebLogView requests={groupedProxyData} />
           </ScrollArea>

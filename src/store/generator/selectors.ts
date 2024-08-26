@@ -27,9 +27,10 @@ export function selectFilteredRequests(state: GeneratorStore) {
 }
 
 export function selectStaticAssetCount(state: GeneratorStore) {
+  const allowedRequests = selectAllowedRequests(state)
   return (
-    state.requests.length -
-    state.requests.filter(isNonStaticAssetResponse).length
+    allowedRequests.length -
+    allowedRequests.filter(isNonStaticAssetResponse).length
   )
 }
 

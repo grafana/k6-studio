@@ -1,4 +1,6 @@
 import { ProxyData } from '@/types'
+import { debounce } from 'lodash-es'
+import { useState, useMemo, useEffect } from 'react'
 
 // We get 2 requests with the same id, one when
 // the request is sent and another when the response is received
@@ -35,4 +37,19 @@ export async function startRecording() {
 
 export function stopRecording() {
   window.studio.browser.stopBrowser()
+}
+
+export const useDebouncedProxyData = (proxyData: ProxyData[]): ProxyData[] => {
+  const [debouncedProxyData, setDebouncedProxyData] = useState<ProxyData[]>([])
+
+  const debouncedSetProxyData = useMemo(
+    () => debounce(setDebouncedProxyData, 100),
+    []
+  )
+
+  useEffect(() => {
+    debouncedSetProxyData(proxyData)
+  }, [proxyData, debouncedSetProxyData])
+
+  return debouncedProxyData
 }

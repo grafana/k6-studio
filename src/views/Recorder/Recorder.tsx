@@ -9,7 +9,11 @@ import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { startRecording, stopRecording } from './Recorder.utils'
+import {
+  startRecording,
+  stopRecording,
+  useDebouncedProxyData,
+} from './Recorder.utils'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
 
@@ -18,6 +22,10 @@ export function Recorder() {
   const { proxyData, resetProxyData } = useListenProxyData(group)
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
+
+  // Debounce the proxy data to avoid disappearing static asset requests
+  // when recording
+  const debouncedProxyData = useDebouncedProxyData(proxyData)
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -87,7 +95,7 @@ export function Recorder() {
         </Flex>
       </Flex>
       <RequestsSection
-        proxyData={proxyData}
+        proxyData={debouncedProxyData}
         noRequestsMessage="Your requests will appear here"
         autoScroll
       />
