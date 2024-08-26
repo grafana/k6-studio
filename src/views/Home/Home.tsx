@@ -9,16 +9,16 @@ import {
   DiscIcon,
   PlusCircledIcon,
 } from '@radix-ui/react-icons'
+import { generateFileNameWithTimestamp } from '@/utils/file'
 
 export function Home() {
   const navigate = useNavigate()
 
-  // TODO: offer to create a new generator or use an existing one
   async function handleCreateTestGenerator() {
     const newGenerator = createNewGeneratorFile()
     const generatorPath = await window.studio.generator.saveGenerator(
       JSON.stringify(newGenerator, null, 2),
-      `${new Date().toISOString()}.json`
+      generateFileNameWithTimestamp('json', 'Generator')
     )
 
     navigate(
