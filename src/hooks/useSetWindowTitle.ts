@@ -1,17 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 const defaultTitle = 'k6 studio'
 
-export function useSetWindowTitle(initialTitle: string) {
-  const [windowTitle, setWindowTitle] = useState(initialTitle)
-
+export function useSetWindowTitle(title: string) {
   useEffect(() => {
-    document.title = `${defaultTitle} - ${windowTitle}`
+    document.title = `${defaultTitle} - ${title}`
 
     return () => {
       document.title = defaultTitle
     }
-  }, [windowTitle])
-
-  return { windowTitle, setWindowTitle }
+  }, [title])
 }
