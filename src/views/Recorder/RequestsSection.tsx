@@ -4,8 +4,9 @@ import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { ProxyData } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 import { css } from '@emotion/react'
-import { Button, Flex, Heading, ScrollArea } from '@radix-ui/themes'
+import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { useState } from 'react'
+import { ClearRequestsButton } from './ClearRequestsButton'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
@@ -43,14 +44,10 @@ export function RequestsSection({
             Requests ({filteredProxyData.length})
           </Heading>
           {resetProxyData && (
-            <Button
-              color="red"
-              size="1"
-              variant="surface"
-              onClick={resetProxyData}
-            >
-              Clear
-            </Button>
+            <ClearRequestsButton
+              handleConfirm={resetProxyData}
+              disabled={proxyData.length === 0}
+            />
           )}
         </Flex>
 
