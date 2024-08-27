@@ -22,7 +22,7 @@ import {
   RECORDINGS_PATH,
   SCRIPTS_PATH,
 } from './constants/workspace'
-import { sendToast, getFilePathFromName } from './utils/electron'
+import { sendToast } from './utils/electron'
 import invariant from 'tiny-invariant'
 import { INVALID_FILENAME_CHARS } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
@@ -396,4 +396,22 @@ const launchProxyAndAttachEmitter = (
       })
     },
   })
+}
+
+function getFilePathFromName(name: string) {
+  invariant(process, 'Only use this function in the main process')
+
+  switch (name.split('.').pop()) {
+    case 'har':
+      return path.join(RECORDINGS_PATH, name)
+
+    case 'json':
+      return path.join(GENERATORS_PATH, name)
+
+    case 'js':
+      return path.join(SCRIPTS_PATH, name)
+
+    default:
+      throw new Error('Invalid file type')
+  }
 }
