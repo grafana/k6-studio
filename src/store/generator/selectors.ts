@@ -36,8 +36,15 @@ export function selectStaticAssetCount(state: GeneratorStore) {
 
 export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
   const loadProfile = selectLoadProfile(state)
-  const { sleepType, timing, variables, recordingPath, rules, allowlist } =
-    state
+  const {
+    sleepType,
+    timing,
+    variables,
+    recordingPath,
+    rules,
+    allowlist,
+    includeStaticAssets,
+  } = state
 
   return {
     version: '0',
@@ -52,6 +59,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     testData: { variables },
     rules,
     allowlist,
+    includeStaticAssets,
   }
 }
 

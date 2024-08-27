@@ -39,6 +39,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         recordingPath,
         rules,
         allowlist,
+        includeStaticAssets,
       },
       recording = []
     ) =>
@@ -69,6 +70,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.requests = recording
         state.recordingPath = recordingPath
         state.allowlist = allowlist
+        state.includeStaticAssets = includeStaticAssets
         // rules
         state.rules = rules
       }),

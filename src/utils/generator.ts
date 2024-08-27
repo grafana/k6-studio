@@ -23,6 +23,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     },
     rules: [],
     allowlist: [],
+    includeStaticAssets: false,
   }
 }
 
