@@ -1,27 +1,24 @@
-import { WebLogView } from '@/components/WebLogView'
-import { ProxyData } from '@/types'
-import { Box, Checkbox, Flex, ScrollArea, Tabs, Text } from '@radix-ui/themes'
-import { ScriptPreview } from './ScriptPreview'
-import { groupProxyData } from '@/utils/groups'
-import {
-  selectHasRecording,
-  selectStaticAssetCount,
-  useGeneratorStore,
-} from '@/store/generator'
+import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
+
+import { Checkbox, Flex, Tabs, Text } from '@radix-ui/themes'
+import { ScriptPreview } from './ScriptPreview'
+import {
+  selectFilteredRequests,
+  selectHasRecording,
+  useGeneratorStore,
+  selectStaticAssetCount,
+} from '@/store/generator'
 import { RulePreview } from '../RulePreview/RulePreview'
 import { useGeneratorParams } from '../Generator.hooks'
 import { Label } from '@/components/Label'
+import { RequestList } from './RequestList'
 
-interface GeneratorSidebarProps {
-  requests: ProxyData[]
-}
-
-export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
+export function GeneratorSidebar() {
   const [tab, setTab] = useState('requests')
+  const filteredRequests = useGeneratorStore(selectFilteredRequests)
 
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const groupedProxyData = groupProxyData(requests)
   const { ruleId } = useGeneratorParams()
 
   const includeStaticAssets = useGeneratorStore(
@@ -45,17 +42,11 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
   }, [ruleId])
 
   return (
-    <Flex direction="column" height="100%" minHeight="0">
-      <Tabs.Root
-        value={tab}
-        onValueChange={(value) => setTab(value)}
-        style={{
-          height: '100%',
-        }}
-      >
+    <Flex direction="column" height="100%" minHeight="0" asChild>
+      <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
         <Tabs.List>
           <Tabs.Trigger value="requests">
-            Requests ({requests.length})
+            Requests ({filteredRequests.length})
           </Tabs.Trigger>
           <Tabs.Trigger value="script" disabled={!hasRecording}>
             Script preview
@@ -65,19 +56,20 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
           )}
         </Tabs.List>
         {ruleId !== undefined && (
-          <Tabs.Content value="rule-preview" style={{ height: '100%' }}>
-            <ScrollArea>
-              <Box p="2" mb="5">
-                <RulePreview />
-              </Box>
-            </ScrollArea>
+          <Tabs.Content
+            value="rule-preview"
+            css={css`
+              height: 100%;
+            `}
+          >
+            <RulePreview />
           </Tabs.Content>
         )}
         <Tabs.Content
           value="requests"
-          style={{
-            height: '100%',
-          }}
+          css={css`
+            height: 100%;
+          `}
         >
           <Label p="2">
             <Checkbox
@@ -86,11 +78,14 @@ export function GeneratorSidebar({ requests }: GeneratorSidebarProps) {
             />
             <Text size="2">Include static assets ({staticAssetCount})</Text>
           </Label>
-          <ScrollArea scrollbars="vertical">
-            <WebLogView requests={groupedProxyData} />
-          </ScrollArea>
+          <RequestList requests={filteredRequests} />
         </Tabs.Content>
-        <Tabs.Content value="script" style={{ height: '100%' }}>
+        <Tabs.Content
+          value="script"
+          css={css`
+            height: 100%;
+          `}
+        >
           <ScriptPreview />
         </Tabs.Content>
       </Tabs.Root>

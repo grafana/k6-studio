@@ -16,6 +16,6 @@ export interface HarWithOptionalResponse extends Omit<Har, 'log'> {
 }
 
 export interface HarFile {
-  path: string
+  name: string
   content: HarWithOptionalResponse
 }

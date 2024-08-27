@@ -4,13 +4,8 @@ import { Button } from '@radix-ui/themes'
 import { Outlet } from 'react-router-dom'
 
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
-import {
-  useGeneratorStore,
-  selectHasRecording,
-  selectFilteredRequests,
-} from '@/store/generator'
+import { useGeneratorStore, selectHasRecording } from '@/store/generator'
 import { View } from '@/components/Layout/View'
-import { getFileNameFromPath } from '@/utils/file'
 import { exportScript, saveGenerator, loadGenerator } from './Generator.utils'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { TestRuleContainer } from './TestRuleContainer'
@@ -20,12 +15,9 @@ import { useGeneratorParams } from './Generator.hooks'
 import { useToast } from '@/store/ui/useToast'
 
 export function Generator() {
-  const filteredRequests = useGeneratorStore(selectFilteredRequests)
-
   const hasRecording = useGeneratorStore(selectHasRecording)
   const [isLoading, setIsLoading] = useState(false)
-  const { path } = useGeneratorParams()
-  const fileName = getFileNameFromPath(path)
+  const { fileName } = useGeneratorParams()
   useSetWindowTitle(fileName)
   const showToast = useToast()
 
@@ -33,7 +25,7 @@ export function Generator() {
     ;(async () => {
       setIsLoading(true)
       try {
-        await loadGenerator(path)
+        await loadGenerator(fileName)
       } catch (error) {
         showToast({
           title: 'Failed to load generator: corrupted file',
@@ -43,10 +35,10 @@ export function Generator() {
         setIsLoading(false)
       }
     })()
-  }, [path, showToast])
+  }, [fileName, showToast])
 
   const handleSave = () => {
-    saveGenerator(getFileNameFromPath(path)).then(() => {
+    saveGenerator(fileName).then(() => {
       showToast({ title: 'Generator saved', status: 'success' })
     })
   }
@@ -78,7 +70,7 @@ export function Generator() {
           </Allotment>
         </Allotment.Pane>
         <Allotment.Pane minSize={300} visible={hasRecording}>
-          <GeneratorSidebar requests={filteredRequests} />
+          <GeneratorSidebar />
         </Allotment.Pane>
       </Allotment>
     </View>

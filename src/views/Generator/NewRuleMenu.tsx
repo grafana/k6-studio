@@ -10,7 +10,7 @@ import { getRoutePath } from '@/routeMap'
 
 export function NewRuleMenu() {
   const navigate = useNavigate()
-  const { path } = useGeneratorParams()
+  const { fileName } = useGeneratorParams()
   const addRule = useGeneratorStore((store) => store.addRule)
 
   const createRule = (type: TestRule['type']) => {
@@ -18,7 +18,7 @@ export function NewRuleMenu() {
     addRule(newRule)
     navigate(
       getRoutePath('rule', {
-        path: encodeURIComponent(path),
+        fileName: encodeURIComponent(fileName),
         ruleId: newRule.id,
       })
     )

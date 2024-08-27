@@ -9,15 +9,19 @@ import { useState } from 'react'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
+  selectedRequestId?: string
   autoScroll?: boolean
   noRequestsMessage?: string
+  onSelectRequest: (data: ProxyData | null) => void
   resetProxyData?: () => void
 }
 
 export function RequestsSection({
   proxyData,
+  selectedRequestId,
   noRequestsMessage,
   autoScroll = false,
+  onSelectRequest,
   resetProxyData,
 }: RequestsSectionProps) {
   const [filteredProxyData, setFilterdedProxyData] = useState<ProxyData[]>([])
@@ -61,6 +65,8 @@ export function RequestsSection({
           <WebLogView
             requests={groupedProxyData}
             noRequestsMessage={noRequestsMessage}
+            selectedRequestId={selectedRequestId}
+            onSelectRequest={onSelectRequest}
           />
         </div>
       </ScrollArea>

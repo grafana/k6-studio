@@ -1,6 +1,3 @@
-import { ComponentProps } from 'react'
-import { Box, ScrollArea } from '@radix-ui/themes'
-
 import { ProxyData } from '@/types'
 
 import { Tabs } from '../Tabs'
@@ -21,37 +18,21 @@ export function RequestDetails({ data }: { data: ProxyData }) {
         )}
       </Tabs.List>
 
-      <ScrollableTabsContent value="headers">
+      <Tabs.Content value="headers">
         <Headers data={data} />
-      </ScrollableTabsContent>
+      </Tabs.Content>
 
-      <ScrollableTabsContent value="payload">
+      <Tabs.Content value="payload">
         <Payload data={data} />
-      </ScrollableTabsContent>
+      </Tabs.Content>
 
-      <ScrollableTabsContent value="cookies">
+      <Tabs.Content value="cookies">
         <Cookies cookies={data.request?.cookies} />
-      </ScrollableTabsContent>
+      </Tabs.Content>
 
-      <ScrollableTabsContent value="queryParams">
+      <Tabs.Content value="queryParams">
         <QueryParams request={data.request} />
-      </ScrollableTabsContent>
+      </Tabs.Content>
     </Tabs.Root>
-  )
-}
-
-const ScrollableTabsContent = ({
-  children,
-  value,
-  ...props
-}: ComponentProps<typeof Tabs.Content>) => {
-  return (
-    <Tabs.Content value={value} {...props}>
-      <ScrollArea style={{ height: '100%' }}>
-        <Box p="4" height="100%">
-          {children}
-        </Box>
-      </ScrollArea>
-    </Tabs.Content>
   )
 }
