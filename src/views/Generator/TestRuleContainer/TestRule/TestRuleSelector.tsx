@@ -1,8 +1,8 @@
-import { Badge, Code } from '@radix-ui/themes'
+import { Badge, Code, Tooltip } from '@radix-ui/themes'
+import { css } from '@emotion/react'
 
 import { Selector } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
-import { css } from '@emotion/react'
 
 interface TestRuleSelectorProps {
   selector: Selector
@@ -10,17 +10,25 @@ interface TestRuleSelectorProps {
 
 export function TestRuleSelector({ selector }: TestRuleSelectorProps) {
   return (
-    <Badge
-      color="gray"
-      css={css`
-        flex-shrink: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      `}
+    <Tooltip
+      content={
+        <>
+          <SelectorContent selector={selector} /> from {selector.from}
+        </>
+      }
     >
-      <SelectorContent selector={selector} /> from {selector.from}
-    </Badge>
+      <Badge
+        color="gray"
+        css={css`
+          flex-shrink: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        `}
+      >
+        <SelectorContent selector={selector} /> from {selector.from}
+      </Badge>
+    </Tooltip>
   )
 }
 

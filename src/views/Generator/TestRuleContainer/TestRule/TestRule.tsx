@@ -55,7 +55,7 @@ export function TestRuleItem({ rule, isSelected }: TestRuleItemProps) {
         background-color: ${isSelected ? 'var(--accent-2)' : 'unset'};
         opacity: ${isDragging ? 0.5 : 1};
 
-        &:first-child {
+        &:first-of-type {
           border-top: 1px solid var(--gray-3);
         }
 
