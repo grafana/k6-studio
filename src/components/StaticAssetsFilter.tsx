@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Checkbox } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 import { Label } from '@/components/Label'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
+import { useLocalStorage } from 'react-use'
 
 export function StaticAssetsFilter({
   proxyData,
@@ -12,7 +13,10 @@ export function StaticAssetsFilter({
   proxyData: ProxyData[]
   setFilteredProxyData: (data: ProxyData[]) => void
 }) {
-  const [includeStaticAssets, setIncludeStaticAssets] = useState(false)
+  const [includeStaticAssets, setIncludeStaticAssets] = useLocalStorage(
+    'includeStaticAssets',
+    false
+  )
 
   useEffect(() => {
     if (includeStaticAssets) {
@@ -26,7 +30,7 @@ export function StaticAssetsFilter({
     <Label>
       Show static assets
       <Checkbox
-        onCheckedChange={() => setIncludeStaticAssets((val) => !val)}
+        onCheckedChange={() => setIncludeStaticAssets(!includeStaticAssets)}
         checked={includeStaticAssets}
       />
     </Label>
