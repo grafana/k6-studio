@@ -46,16 +46,18 @@ export function TestRuleItem({ rule, isSelected }: TestRuleItemProps) {
       ref={setNodeRef}
       gap="2"
       align="center"
-      p="1"
+      p="2"
       css={css`
         position: relative;
         transition: ${transition};
         transform: ${isSorting ? undefined : CSS.Translate.toString(transform)};
-        border-radius: var(--radius-1);
-        border: 1px solid transparent;
-        border-color: ${isSelected ? 'var(--accent-5)' : 'transparent'};
-        background-color: ${isSelected ? 'var(--accent-3)' : 'var(--gray-2)'};
+        border-bottom: 1px solid var(--gray-3);
+        background-color: ${isSelected ? 'var(--accent-2)' : 'unset'};
         opacity: ${isDragging ? 0.5 : 1};
+
+        &:first-child {
+          border-top: 1px solid var(--gray-3);
+        }
 
         &::before {
           content: '';
@@ -71,7 +73,13 @@ export function TestRuleItem({ rule, isSelected }: TestRuleItemProps) {
         }
       `}
     >
-      <IconButton variant="ghost" color="gray" {...attributes} {...listeners}>
+      <IconButton
+        variant="ghost"
+        color="gray"
+        aria-label="Drag to reorder"
+        {...attributes}
+        {...listeners}
+      >
         <DragHandleDots2Icon
           color="gray"
           css={css`

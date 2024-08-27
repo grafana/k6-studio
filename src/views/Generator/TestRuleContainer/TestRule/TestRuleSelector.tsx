@@ -1,8 +1,8 @@
 import { Badge, Code } from '@radix-ui/themes'
 
 import { Selector } from '@/types/rules'
-import { TargetIcon } from '@radix-ui/react-icons'
 import { exhaustive } from '@/utils/typescript'
+import { css } from '@emotion/react'
 
 interface TestRuleSelectorProps {
   selector: Selector
@@ -10,8 +10,15 @@ interface TestRuleSelectorProps {
 
 export function TestRuleSelector({ selector }: TestRuleSelectorProps) {
   return (
-    <Badge radius="full">
-      <TargetIcon width={15} height={15} />
+    <Badge
+      color="gray"
+      css={css`
+        flex-shrink: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      `}
+    >
       <SelectorContent selector={selector} /> from {selector.from}
     </Badge>
   )
@@ -20,15 +27,16 @@ export function TestRuleSelector({ selector }: TestRuleSelectorProps) {
 function SelectorContent({ selector }: { selector: Selector }) {
   switch (selector.type) {
     case 'json':
-      return <Code>{selector.path}</Code>
+      return <Code truncate>{selector.path}</Code>
     case 'begin-end':
       return (
         <>
-          between <Code>{selector.begin}</Code> and <Code>{selector.end}</Code>
+          between <Code truncate>{selector.begin}</Code> and{' '}
+          <Code truncate>{selector.end}</Code>
         </>
       )
     case 'regex':
-      return <Code>{selector.regex}</Code>
+      return <Code truncate>{selector.regex}</Code>
     default:
       return exhaustive(selector)
   }

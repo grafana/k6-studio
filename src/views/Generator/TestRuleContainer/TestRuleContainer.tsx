@@ -1,5 +1,5 @@
 import { useGeneratorStore } from '@/store/generator'
-import { Flex, ScrollArea, Text } from '@radix-ui/themes'
+import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { NewRuleMenu } from '../NewRuleMenu'
 import { SortableRuleList } from './SortableRuleList'
 import { css } from '@emotion/react'
@@ -10,28 +10,32 @@ export function TestRuleContainer() {
 
   return (
     <ScrollArea scrollbars="vertical">
-      <Flex direction="column" height="100%" gap="1" p="2" pt="0">
-        <Flex
-          position="sticky"
-          align="center"
-          top="0"
-          px="2"
-          py="1"
-          mx="-2"
-          gap="1"
+      <Flex
+        position="sticky"
+        justify="between"
+        align="center"
+        top="0"
+        px="6"
+        py="3"
+        gap="1"
+        css={css`
+          background-color: var(--color-background);
+          z-index: 1;
+        `}
+      >
+        <Heading
           css={css`
-            background-color: var(--color-background);
-            z-index: 1;
+            font-size: 15px;
+            line-height: 24px;
+            font-weight: 500;
           `}
         >
-          <Text size="2" weight="bold">
-            Test rules ({rules.length})
-          </Text>
-          <NewRuleMenu />
-        </Flex>
-
-        <SortableRuleList rules={rules} onSwapRules={swapRules} />
+          Test rules ({rules.length})
+        </Heading>
+        <NewRuleMenu />
       </Flex>
+
+      <SortableRuleList rules={rules} onSwapRules={swapRules} />
     </ScrollArea>
   )
 }

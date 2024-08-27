@@ -56,7 +56,7 @@ export function SortableRuleList({
   }
 
   return (
-    <Flex direction="column" gap="1">
+    <Flex direction="column">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
