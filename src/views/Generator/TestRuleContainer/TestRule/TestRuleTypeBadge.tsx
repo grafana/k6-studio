@@ -18,6 +18,7 @@ export function TestRuleTypeBadge({ rule }: TestRuleTypeBadgeProps) {
       color="gray"
       css={css`
         text-transform: uppercase;
+        min-width: 100px;
       `}
     >
       {label}

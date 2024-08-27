@@ -1,5 +1,5 @@
-import { PlusIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, IconButton } from '@radix-ui/themes'
+import { PlusCircledIcon } from '@radix-ui/react-icons'
+import { Button, DropdownMenu } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
 
 import { useGeneratorStore } from '@/store/generator'
@@ -27,9 +27,10 @@ export function NewRuleMenu() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <IconButton aria-label="Add rule" variant="soft" radius="full" size="1">
-          <PlusIcon />
-        </IconButton>
+        <Button aria-label="Add rule" variant="ghost" size="1" color="gray">
+          <PlusCircledIcon />
+          Add rule
+        </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         <DropdownMenu.Item
