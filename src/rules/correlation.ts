@@ -209,7 +209,7 @@ const extractCorrelationRegex = (
 
 const getCorrelationVariableSnippet = (uniqueId: number | undefined) => {
   return `if (match) {
-      CORRELATION_VARS[${uniqueId}] = match[1]
+      correlation_vars[${uniqueId}] = match[1]
     }`
 }
 
@@ -469,7 +469,7 @@ const extractCorrelationJsonBody = (
     : `.${selector.path}`
 
   const correlationExtractionSnippet = `
-CORRELATION_VARS[${uniqueId}] = resp.json()${json_path}`
+correlation_vars[${uniqueId}] = resp.json()${json_path}`
   return {
     extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
@@ -527,7 +527,7 @@ if (import.meta.vitest) {
     }
 
     const correlationExtractionSnippet = `
-CORRELATION_VARS[1] = resp.json().user_id`
+correlation_vars[1] = resp.json().user_id`
     const expectedResult = {
       extractedValue: '444',
       correlationExtractionSnippet: correlationExtractionSnippet,
@@ -554,7 +554,7 @@ CORRELATION_VARS[1] = resp.json().user_id`
     regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.body.match(regex)
     if (match) {
-      CORRELATION_VARS[1] = match[1]
+      correlation_vars[1] = match[1]
     }`
     const expectedResult = {
       extractedValue: 'bob',
@@ -587,7 +587,7 @@ CORRELATION_VARS[1] = resp.json().user_id`
     regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
     if (match) {
-      CORRELATION_VARS[1] = match[1]
+      correlation_vars[1] = match[1]
     }`
     const expectedResult = {
       extractedValue: '/',
@@ -620,7 +620,7 @@ CORRELATION_VARS[1] = resp.json().user_id`
     regex = new RegExp('${selector.begin}(.*?)${selector.end}')
     match = resp.url.match(regex)
     if (match) {
-      CORRELATION_VARS[1] = match[1]
+      correlation_vars[1] = match[1]
     }`
     const expectedResult = {
       extractedValue: 'v1',
@@ -647,7 +647,7 @@ CORRELATION_VARS[1] = resp.json().user_id`
     regex = new RegExp('${selector.regex}')
     match = resp.body.match(regex)
     if (match) {
-      CORRELATION_VARS[1] = match[1]
+      correlation_vars[1] = match[1]
     }`
     const expectedResult = {
       extractedValue: 'bob',
@@ -674,7 +674,7 @@ CORRELATION_VARS[1] = resp.json().user_id`
     regex = new RegExp('${selector.regex}')
     match = resp.headers["${canonicalHeaderKey('Content-type')}"].match(regex)
     if (match) {
-      CORRELATION_VARS[1] = match[1]
+      correlation_vars[1] = match[1]
     }`
     const expectedResult = {
       extractedValue: '/',
@@ -706,7 +706,7 @@ CORRELATION_VARS[1] = resp.json().user_id`
     regex = new RegExp('${selector.regex}')
     match = resp.url.match(regex)
     if (match) {
-      CORRELATION_VARS[1] = match[1]
+      correlation_vars[1] = match[1]
     }`
     const expectedResult = {
       extractedValue: 'v1',

@@ -38,7 +38,7 @@ describe('Code generation', () => {
         let match
         let regex
         let url
-        const CORRELATION_VARS = {}
+        const correlation_vars = {}
         sleep(1)
       }
       `
@@ -179,7 +179,7 @@ describe('Code generation', () => {
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/login\`
         resp = http.request('POST', url, null, params)
-        CORRELATION_VARS[0] = resp.json().user_id
+        correlation_vars[0] = resp.json().user_id
 
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/users/\${correl_0}\`

@@ -78,7 +78,7 @@ export function generateVUCode(
     let match
     let regex
     let url
-    const CORRELATION_VARS = {}
+    const correlation_vars = {}
     `,
     groupSnippets,
     thinkTime.sleepType === 'iterations' ? generateSleep(thinkTime.timing) : '',
