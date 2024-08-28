@@ -21,7 +21,8 @@ export function applyCorrelationRule(
   requestSnippetSchema: RequestSnippetSchema,
   rule: CorrelationRule,
   correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined,
+  uniqueId: number | undefined
 ): RequestSnippetSchema {
   // this is the modified schema that we return to the accumulator
   const snippetSchemaReturnValue = cloneDeep(requestSnippetSchema)
@@ -29,14 +30,11 @@ export function applyCorrelationRule(
   // if we have an extracted value we try to apply it to the request
   // note: this comes before the extractor to avoid applying an extracted value on the same request/response pair
   const correlationState = correlationStateMap[rule.id]
-  let uniqueId: number | undefined
 
   if (correlationState?.extractedValue) {
     const { extractedValue } = correlationState
     // we populate uniqueId since it doesn't have to be regenerated
     // this will be passed to the tryCorrelationExtraction function
-    uniqueId = correlationState.generatedUniqueId
-
     snippetSchemaReturnValue.data.request = replaceCorrelatedValues({
       rule,
       extractedValue,
@@ -63,8 +61,8 @@ export function applyCorrelationRule(
     tryCorrelationExtraction(
       rule,
       requestSnippetSchema.data,
-      uniqueId,
-      sequentialIdGenerator
+      onCreateUniqueId,
+      uniqueId
     )
 
   if (extractedValue && correlationExtractionSnippet) {
@@ -101,8 +99,8 @@ const noCorrelationResult = {
 const tryCorrelationExtraction = (
   rule: CorrelationRule,
   proxyData: ProxyData,
-  uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined,
+  uniqueId: number | undefined
 ) => {
   // correlation works on responses so if we have no response we should return early except in case the selector is checking
   // the url, in that case the value is extracted from a request so it's fine to not have a response
@@ -120,21 +118,21 @@ const tryCorrelationExtraction = (
         rule.extractor.selector,
         proxyData,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     case 'regex':
       return extractCorrelationRegex(
         rule.extractor.selector,
         proxyData,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     case 'json':
       return extractCorrelationJsonBody(
         rule.extractor.selector,
         proxyData.response,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     default:
       return exhaustive(rule.extractor.selector)
@@ -145,7 +143,7 @@ const extractCorrelationBeginEnd = (
   selector: BeginEndSelector,
   proxyData: ProxyData,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   switch (selector.from) {
     case 'body':
@@ -153,21 +151,21 @@ const extractCorrelationBeginEnd = (
         selector,
         proxyData.response,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     case 'headers':
       return extractCorrelationBeginEndHeaders(
         selector,
         proxyData.response,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     case 'url':
       return extractCorrelationBeginEndUrl(
         selector,
         proxyData.request,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     default:
       return exhaustive(selector.from)
@@ -178,7 +176,7 @@ const extractCorrelationRegex = (
   selector: RegexSelector,
   proxyData: ProxyData,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   switch (selector.from) {
     case 'body':
@@ -186,21 +184,21 @@ const extractCorrelationRegex = (
         selector,
         proxyData.response,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     case 'headers':
       return extractCorrelationRegexHeaders(
         selector,
         proxyData.response,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     case 'url':
       return extractCorrelationRegexUrl(
         selector,
         proxyData.request,
         uniqueId,
-        sequentialIdGenerator
+        onCreateUniqueId
       )
     default:
       return exhaustive(selector.from)
@@ -241,7 +239,7 @@ const extractCorrelationBeginEndBody = (
   selector: BeginEndSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -258,7 +256,7 @@ const extractCorrelationBeginEndBody = (
   }
 
   if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
+    uniqueId = onCreateUniqueId()
   }
 
   const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
@@ -278,7 +276,7 @@ const extractCorrelationBeginEndHeaders = (
   selector: BeginEndSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -290,7 +288,7 @@ const extractCorrelationBeginEndHeaders = (
 
     if (extractedValue) {
       if (!uniqueId) {
-        uniqueId = sequentialIdGenerator.next().value
+        uniqueId = onCreateUniqueId()
       }
       const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
         selector,
@@ -313,7 +311,7 @@ const extractCorrelationBeginEndUrl = (
   selector: BeginEndSelector,
   request: Request,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   const extractedValue = matchBeginEnd(
     request.url,
@@ -326,7 +324,7 @@ const extractCorrelationBeginEndUrl = (
   }
 
   if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
+    uniqueId = onCreateUniqueId()
   }
 
   const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
@@ -346,7 +344,7 @@ const extractCorrelationRegexBody = (
   selector: RegexSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -359,7 +357,7 @@ const extractCorrelationRegexBody = (
   }
 
   if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
+    uniqueId = onCreateUniqueId()
   }
 
   const correlationExtractionSnippet = getCorrelationRegexSnippet(
@@ -379,7 +377,7 @@ const extractCorrelationRegexHeaders = (
   selector: RegexSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -391,7 +389,7 @@ const extractCorrelationRegexHeaders = (
 
     if (extractedValue) {
       if (!uniqueId) {
-        uniqueId = sequentialIdGenerator.next().value
+        uniqueId = onCreateUniqueId()
       }
 
       const correlationExtractionSnippet = getCorrelationRegexSnippet(
@@ -415,7 +413,7 @@ const extractCorrelationRegexUrl = (
   selector: RegexSelector,
   request: Request,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   const extractedValue = matchRegex(request.url, selector.regex)
 
@@ -424,7 +422,7 @@ const extractCorrelationRegexUrl = (
   }
 
   if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
+    uniqueId = onCreateUniqueId()
   }
 
   const correlationExtractionSnippet = getCorrelationRegexSnippet(
@@ -444,7 +442,7 @@ const extractCorrelationJsonBody = (
   selector: JsonSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -461,7 +459,7 @@ const extractCorrelationJsonBody = (
   }
 
   if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
+    uniqueId = onCreateUniqueId()
   }
 
   // array indexing doesn't start with a dot so we add it only in the other cases
@@ -516,7 +514,18 @@ if (import.meta.vitest) {
   }
 
   it('extract correlation json body', () => {
+    let uniqueId: number | undefined
     const sequentialIdGenerator = generateSequentialInt()
+
+    const createUniqueId = () => {
+      if (uniqueId) {
+        return uniqueId
+      }
+
+      uniqueId = sequentialIdGenerator.next().value
+      return uniqueId
+    }
+
     const response: Response = generateResponse(
       JSON.stringify({ user_id: '444' })
     )
@@ -536,12 +545,23 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationJsonBody(selector, response, 1, sequentialIdGenerator)
+      extractCorrelationJsonBody(selector, response, 1, createUniqueId)
     ).toStrictEqual(expectedResult)
   })
 
   it('extract correlation begin end body', () => {
+    let uniqueId: number | undefined
     const sequentialIdGenerator = generateSequentialInt()
+
+    const createUniqueId = () => {
+      if (uniqueId) {
+        return uniqueId
+      }
+
+      uniqueId = sequentialIdGenerator.next().value
+      return uniqueId
+    }
+
     const response: Response = generateResponse('noise<hello>bob<world>blah')
 
     const selector: BeginEndSelector = {
@@ -565,17 +585,23 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationBeginEndBody(
-        selector,
-        response,
-        1,
-        sequentialIdGenerator
-      )
+      extractCorrelationBeginEndBody(selector, response, 1, createUniqueId)
     ).toStrictEqual(expectedResult)
   })
 
   it('extract correlation begin end header', () => {
+    let uniqueId: number | undefined
     const sequentialIdGenerator = generateSequentialInt()
+
+    const createUniqueId = () => {
+      if (uniqueId) {
+        return uniqueId
+      }
+
+      uniqueId = sequentialIdGenerator.next().value
+      return uniqueId
+    }
+
     const response: Response = generateResponse('')
 
     const selector: BeginEndSelector = {
@@ -599,17 +625,23 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationBeginEndHeaders(
-        selector,
-        response,
-        1,
-        sequentialIdGenerator
-      )
+      extractCorrelationBeginEndHeaders(selector, response, 1, createUniqueId)
     ).toStrictEqual(expectedResult)
   })
 
   it('extract correlation begin end url', () => {
+    let uniqueId: number | undefined
     const sequentialIdGenerator = generateSequentialInt()
+
+    const createUniqueId = () => {
+      if (uniqueId) {
+        return uniqueId
+      }
+
+      uniqueId = sequentialIdGenerator.next().value
+      return uniqueId
+    }
+
     const request: Request = generateRequest()
 
     const selector: BeginEndSelector = {
@@ -633,12 +665,23 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationBeginEndUrl(selector, request, 1, sequentialIdGenerator)
+      extractCorrelationBeginEndUrl(selector, request, 1, createUniqueId)
     ).toStrictEqual(expectedResult)
   })
 
   it('extract correlation regex body', () => {
+    let uniqueId: number | undefined
     const sequentialIdGenerator = generateSequentialInt()
+
+    const createUniqueId = () => {
+      if (uniqueId) {
+        return uniqueId
+      }
+
+      uniqueId = sequentialIdGenerator.next().value
+      return uniqueId
+    }
+
     const response: Response = generateResponse('noise<hello>bob<world>blah')
 
     const selector: RegexSelector = {
@@ -661,12 +704,23 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationRegexBody(selector, response, 1, sequentialIdGenerator)
+      extractCorrelationRegexBody(selector, response, 1, createUniqueId)
     ).toStrictEqual(expectedResult)
   })
 
   it('extract correlation regex header', () => {
+    let uniqueId: number | undefined
     const sequentialIdGenerator = generateSequentialInt()
+
+    const createUniqueId = () => {
+      if (uniqueId) {
+        return uniqueId
+      }
+
+      uniqueId = sequentialIdGenerator.next().value
+      return uniqueId
+    }
+
     const response: Response = generateResponse('')
 
     const selector: RegexSelector = {
@@ -689,17 +743,23 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationRegexHeaders(
-        selector,
-        response,
-        1,
-        sequentialIdGenerator
-      )
+      extractCorrelationRegexHeaders(selector, response, 1, createUniqueId)
     ).toStrictEqual(expectedResult)
   })
 
   it('extract correlation regex url', () => {
+    let uniqueId: number | undefined
     const sequentialIdGenerator = generateSequentialInt()
+
+    const createUniqueId = () => {
+      if (uniqueId) {
+        return uniqueId
+      }
+
+      uniqueId = sequentialIdGenerator.next().value
+      return uniqueId
+    }
+
     const request: Request = generateRequest()
 
     const selector: RegexSelector = {
@@ -722,7 +782,7 @@ let correl_1 = resp.json().user_id`
     }
 
     expect(
-      extractCorrelationRegexUrl(selector, request, 1, sequentialIdGenerator)
+      extractCorrelationRegexUrl(selector, request, 1, createUniqueId)
     ).toStrictEqual(expectedResult)
   })
 }

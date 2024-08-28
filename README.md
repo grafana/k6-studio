@@ -13,7 +13,7 @@ npm start
 
 ## Troubleshooting
 
-Currently any code change will trigger an hotreload causing the proxy service to possibly leak while starting a new one. 
+Currently any code change will trigger an hotreload causing the proxy service to possibly leak while starting a new one.
 If you encounter issues with the proxy please kill the service:
 
 ```

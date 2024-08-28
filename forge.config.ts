@@ -67,11 +67,11 @@ const config: ForgeConfig = {
       config: {
         repository: {
           owner: 'grafana',
-          name: 'k6-studio'
+          name: 'k6-studio',
         },
-        prerelease: true
-      }
-    }
+        prerelease: true,
+      },
+    },
   ],
 }
 

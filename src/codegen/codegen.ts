@@ -54,6 +54,16 @@ export function generateVUCode(
   const groups = Object.entries(recording)
   const correlationStateMap: CorrelationStateMap = {}
   const sequentialIdGenerator = generateSequentialInt()
+  let uniqueId: number | undefined
+
+  const createUniqueId = () => {
+    if (uniqueId) {
+      return uniqueId
+    }
+
+    uniqueId = sequentialIdGenerator.next().value
+    return uniqueId
+  }
 
   const groupSnippets = groups
     .map(([groupName, recording]) => {
@@ -61,7 +71,8 @@ export function generateVUCode(
         recording,
         rules,
         correlationStateMap,
-        sequentialIdGenerator,
+        createUniqueId,
+        uniqueId,
         thinkTime
       )
 
@@ -86,13 +97,14 @@ export function generateRequestSnippets(
   recording: ProxyData[],
   rules: TestRule[],
   correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>,
+  onCreateUniqueId: () => number | undefined,
+  uniqueId: number | undefined,
   thinkTime: ThinkTime
 ): string {
   return recording.reduce((acc, data) => {
     const requestSnippetSchema = rules.reduce<RequestSnippetSchema>(
       (acc, rule) =>
-        applyRule(acc, rule, correlationStateMap, sequentialIdGenerator),
+        applyRule(acc, rule, correlationStateMap, onCreateUniqueId, uniqueId),
       { data, before: [], after: [] }
     )
 

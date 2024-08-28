@@ -19,6 +19,8 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
     [rules, requests, rule]
   )
 
+  console.log({ requests, rule, rules, result })
+
   return (
     <Allotment defaultSizes={[1, 2]} vertical>
       <Allotment.Pane minSize={200}>
@@ -84,15 +86,32 @@ function applyRules(
   const sequentialIdGenerator = generateSequentialInt()
   const correlationStateMap: CorrelationStateMap = {}
 
-  requests.forEach((request) => {
-    rules.forEach((rule) => {
+  rules.forEach((rule) => {
+    let uniqueId: number | undefined
+
+    const createUniqueId = () => {
+      if (uniqueId) {
+        return uniqueId
+      }
+
+      uniqueId = sequentialIdGenerator.next().value
+      return uniqueId
+    }
+
+    requests.forEach((request) => {
       const snippetSchema: RequestSnippetSchema = {
         data: request,
         before: [],
         after: [],
       }
 
-      applyRule(snippetSchema, rule, correlationStateMap, sequentialIdGenerator)
+      applyRule(
+        snippetSchema,
+        rule,
+        correlationStateMap,
+        createUniqueId,
+        uniqueId
+      )
     })
   })
 

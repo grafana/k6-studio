@@ -43,6 +43,7 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
     set((state) => {
       const indexA = state.rules.findIndex((rule) => rule.id === idA)
       const indexB = state.rules.findIndex((rule) => rule.id === idB)
+
       if (state.rules[indexA] && state.rules[indexB]) {
         const ruleA = state.rules[indexA]
         state.rules[indexA] = state.rules[indexB]

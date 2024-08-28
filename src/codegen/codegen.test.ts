@@ -117,7 +117,18 @@ describe('Code generation', () => {
 
       const rules: TestRule[] = []
       const correlationStateMap: CorrelationStateMap = {}
+      let uniqueId: number | undefined
       const sequentialIdGenerator = generateSequentialInt()
+
+      const createUniqueId = () => {
+        if (uniqueId) {
+          return uniqueId
+        }
+
+        uniqueId = sequentialIdGenerator.next().value
+        return uniqueId
+      }
+
       const thinkTime: ThinkTime = {
         sleepType: 'iterations',
         timing: {
@@ -137,7 +148,8 @@ describe('Code generation', () => {
           recording,
           rules,
           correlationStateMap,
-          sequentialIdGenerator,
+          createUniqueId,
+          uniqueId,
           thinkTime
         ).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
@@ -159,7 +171,17 @@ describe('Code generation', () => {
         },
       ]
       const correlationStateMap: CorrelationStateMap = {}
+      let uniqueId: number | undefined
       const sequentialIdGenerator = generateSequentialInt()
+
+      const createUniqueId = () => {
+        if (uniqueId) {
+          return uniqueId
+        }
+
+        uniqueId = sequentialIdGenerator.next().value
+        return uniqueId
+      }
       const thinkTime: ThinkTime = {
         sleepType: 'iterations',
         timing: {
@@ -193,7 +215,8 @@ describe('Code generation', () => {
           correlationRecording,
           rules,
           correlationStateMap,
-          sequentialIdGenerator,
+          createUniqueId,
+          uniqueId,
           thinkTime
         ).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))

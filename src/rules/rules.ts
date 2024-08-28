@@ -9,7 +9,8 @@ export function applyRule(
   requestSnippetSchema: RequestSnippetSchema,
   rule: TestRule,
   correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>
+  onCreateUniqueId: () => number | undefined,
+  uniqueId: number | undefined
 ): RequestSnippetSchema {
   switch (rule.type) {
     case 'customCode':
@@ -19,7 +20,8 @@ export function applyRule(
         requestSnippetSchema,
         rule,
         correlationStateMap,
-        sequentialIdGenerator
+        onCreateUniqueId,
+        uniqueId
       )
     case 'parameterization':
     case 'verification':

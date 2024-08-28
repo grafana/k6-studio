@@ -20,9 +20,12 @@ export function canonicalHeaderKey(headerKey: string) {
  */
 export function* generateSequentialInt(): Generator<number> {
   let num = 0
+  console.log('generateSequentialInt:init', num)
+
   while (true) {
     yield num
     num += 1
+    console.log('generateSequentialInt:yield', num)
   }
 }
 
