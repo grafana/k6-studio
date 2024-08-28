@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Checkbox } from '@radix-ui/themes'
+import { useEffect, useMemo } from 'react'
+import { Switch, Text } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 import { Label } from '@/components/Label'
@@ -18,18 +18,38 @@ export function StaticAssetsFilter({
     false
   )
 
+  const requestsWithoutStaticAssets = useMemo(
+    () => proxyData.filter(isNonStaticAssetResponse),
+    [proxyData]
+  )
+
+  const staticAssetCount = useMemo(
+    () => proxyData.length - requestsWithoutStaticAssets.length,
+    [proxyData.length, requestsWithoutStaticAssets.length]
+  )
+
   useEffect(() => {
     if (includeStaticAssets) {
       setFilteredProxyData(proxyData)
       return
     }
-    setFilteredProxyData(proxyData.filter(isNonStaticAssetResponse))
-  }, [proxyData, includeStaticAssets, setFilteredProxyData])
+
+    setFilteredProxyData(requestsWithoutStaticAssets)
+  }, [
+    includeStaticAssets,
+    proxyData,
+    requestsWithoutStaticAssets,
+    setFilteredProxyData,
+  ])
+
+  if (staticAssetCount === 0) {
+    return null
+  }
 
   return (
     <Label>
-      Show static assets
-      <Checkbox
+      <Text size="2">Show static assets ({staticAssetCount})</Text>
+      <Switch
         onCheckedChange={() => setIncludeStaticAssets(!includeStaticAssets)}
         checked={includeStaticAssets}
       />
