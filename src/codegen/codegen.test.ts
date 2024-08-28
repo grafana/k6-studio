@@ -49,10 +49,8 @@ describe('Code generation', () => {
             options: {
               loadProfile: {
                 executor: 'shared-iterations',
-                startTime: '0',
                 vus: 1,
                 iterations: 1,
-                maxDuration: '1',
               },
               thinkTime: {
                 sleepType: 'iterations',
