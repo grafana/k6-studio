@@ -40,10 +40,12 @@ export function generateScript({
 }
 
 export function generateVariableDeclarations(variables: Variable[]): string {
-  return variables
+  const variables_lines = variables
     .filter(({ name }) => name)
-    .map(({ name, value }) => `const ${name} = "${value}"`)
+    .map(({ name, value }) => `"${name}": "${value}",`)
     .join('\n')
+
+  return `const VARS = {\n${variables_lines}\n}\n`
 }
 
 export function generateVUCode(
