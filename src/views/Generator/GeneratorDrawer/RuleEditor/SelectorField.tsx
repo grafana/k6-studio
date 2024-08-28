@@ -1,7 +1,7 @@
 import { Flex, SegmentedControl, Select, TextField } from '@radix-ui/themes'
+import * as Label from '@radix-ui/react-label'
 
 import type { Selector } from '@/types/rules'
-import * as Label from '@radix-ui/react-label'
 import { exhaustive } from '@/utils/typescript'
 
 interface SelectorFieldProps {
@@ -32,15 +32,14 @@ const allowedTypes: Record<Selector['from'], Selector['type'][]> = {
 
 export function SelectorField({ selector, onChange }: SelectorFieldProps) {
   // value is always a string in Radix Select
-  const handleFromChange = (value: string) => {
-    const type = allowedTypes[value as Selector['from']].includes(selector.type)
+  const handleFromChange = (value: Selector['from']) => {
+    const type = allowedTypes[value].includes(selector.type)
       ? selector.type
-      : allowedTypes[value as Selector['from']]?.[0]
+      : allowedTypes[value]?.[0]
 
-    // TODO: handle types properly
     onChange({
       ...selector,
-      from: value as Selector['from'],
+      from: value,
       type,
     } as Selector)
   }
