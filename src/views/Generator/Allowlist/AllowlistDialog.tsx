@@ -150,7 +150,12 @@ export function AllowlistDialog({
               </Button>
             </Dialog.Close>
             <Dialog.Close>
-              <Button onClick={handleSave}>Save</Button>
+              <Button
+                disabled={selectedHosts.length === 0}
+                onClick={handleSave}
+              >
+                Save
+              </Button>
             </Dialog.Close>
           </Flex>
         </Flex>
