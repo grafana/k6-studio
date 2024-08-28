@@ -83,7 +83,6 @@ const har = {
 } as const
 
 const ui = {
-  version: process.env.npm_package_version,
   toggleTheme: () => {
     ipcRenderer.send('ui:toggle-theme')
   },
