@@ -28,7 +28,11 @@ export function replaceCorrelatedValues({
 }) {
   // Default behaviour replaces all occurences of the string
   if (!rule.replacer) {
-    return replaceTextMatches(request, extractedValue, `correl_${uniqueId}`)
+    return replaceTextMatches(
+      request,
+      extractedValue,
+      `correlation_vars[${uniqueId}]`
+    )
   }
 
   switch (rule.replacer.selector.type) {
@@ -36,15 +40,19 @@ export function replaceCorrelatedValues({
       return replaceBeginEnd(
         rule.replacer.selector,
         request,
-        `correl_${uniqueId}`
+        `correlation_vars[${uniqueId}]`
       )
     case 'regex':
-      return replaceRegex(rule.replacer.selector, request, `correl_${uniqueId}`)
+      return replaceRegex(
+        rule.replacer.selector,
+        request,
+        `correlation_vars[${uniqueId}]`
+      )
     case 'json':
       return replaceJsonBody(
         rule.replacer.selector,
         request,
-        `correl_${uniqueId}`
+        `correlation_vars[${uniqueId}]`
       )
     default:
       return exhaustive(rule.replacer.selector)
