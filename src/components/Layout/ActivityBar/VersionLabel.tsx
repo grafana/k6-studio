@@ -1,5 +1,4 @@
 import { Code, Flex, Tooltip } from '@radix-ui/themes'
-import pkg from '../../../../package.json'
 
 export function VersionLabel() {
   return (
@@ -14,7 +13,7 @@ export function VersionLabel() {
     >
       <Flex direction="column" gap="1" align="center">
         <Code size="1" variant="ghost" color="gray">
-          v{pkg.version}
+          v{__APP_VERSION__}
         </Code>
 
         <Code size="1" variant="ghost" color="gray">

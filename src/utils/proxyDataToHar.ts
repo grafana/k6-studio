@@ -1,6 +1,5 @@
 import { GroupedProxyData, Request, Response } from '@/types'
 import type { Entry, Page } from 'har-format'
-import packageJson from '../../package.json'
 import { getContentTypeWithCharsetHeader } from './headers'
 import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
 
@@ -20,7 +19,7 @@ function createLog(
     version: '1.2',
     creator: {
       name: 'k6-studio',
-      version: packageJson.version,
+      version: __APP_VERSION__,
     },
     pages,
     entries,
