@@ -6,7 +6,7 @@ export function VersionLabel() {
     <Tooltip
       content={
         <>
-          This is a beta version of k6 Studio.
+          This is an alpha version of k6 Studio.
           <br />
           Please report any issues you encounter.
         </>
@@ -18,7 +18,7 @@ export function VersionLabel() {
         </Code>
 
         <Code size="1" variant="ghost" color="gray">
-          beta
+          alpha
         </Code>
       </Flex>
     </Tooltip>
