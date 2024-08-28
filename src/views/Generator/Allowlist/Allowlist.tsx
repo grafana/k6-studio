@@ -13,7 +13,26 @@ export function Allowlist() {
   )
   const allowlist = useGeneratorStore((store) => store.allowlist)
   const setAllowlist = useGeneratorStore((store) => store.setAllowlist)
+
+  const includeStaticAssets = useGeneratorStore(
+    (store) => store.includeStaticAssets
+  )
+  const setIncludeStaticAssets = useGeneratorStore(
+    (store) => store.setIncludeStaticAssets
+  )
+
   const [showAllowlistDialog, setShowAllowlistDialog] = useState(false)
+
+  const handleSave = ({
+    allowlist,
+    includeStaticAssets,
+  }: {
+    allowlist: string[]
+    includeStaticAssets: boolean
+  }) => {
+    setAllowlist(allowlist)
+    setIncludeStaticAssets(includeStaticAssets)
+  }
 
   useEffect(() => {
     if (hasRecording && allowlist.length === 0) {
@@ -37,7 +56,9 @@ export function Allowlist() {
           onOpenChange={setShowAllowlistDialog}
           hosts={hosts}
           allowlist={allowlist}
-          onAllowlistChange={setAllowlist}
+          onSave={handleSave}
+          requests={requests}
+          includeStaticAssets={includeStaticAssets}
         />
       )}
     </>

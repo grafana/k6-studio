@@ -2,6 +2,7 @@ import { GeneratorFileData } from '@/types/generator'
 import type { GeneratorStore } from '@/store/generator'
 import { TestOptions } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
+import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 export function selectRuleById(state: GeneratorStore, id?: string) {
   return state.rules.find((rule) => rule.id === id)
@@ -12,15 +13,26 @@ export function selectHasRecording(state: GeneratorStore) {
 }
 
 export function selectFilteredRequests(state: GeneratorStore) {
-  return state.requests.filter((request) => {
+  const allowedRequests = state.requests.filter((request) => {
     return state.allowlist.includes(request.request.host)
   })
+
+  return state.includeStaticAssets
+    ? allowedRequests
+    : allowedRequests.filter(isNonStaticAssetResponse)
 }
 
 export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
   const loadProfile = selectLoadProfile(state)
-  const { sleepType, timing, variables, recordingPath, rules, allowlist } =
-    state
+  const {
+    sleepType,
+    timing,
+    variables,
+    recordingPath,
+    rules,
+    allowlist,
+    includeStaticAssets,
+  } = state
 
   return {
     version: '0',
@@ -35,6 +47,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     testData: { variables },
     rules,
     allowlist,
+    includeStaticAssets,
   }
 }
 

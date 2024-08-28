@@ -67,6 +67,7 @@ describe('Code generation', () => {
             },
             rules: [],
             allowlist: [],
+            includeStaticAssets: false,
           },
         }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))

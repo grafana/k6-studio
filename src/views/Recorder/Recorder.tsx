@@ -10,8 +10,11 @@ import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { groupProxyData } from '@/utils/groups'
-import { startRecording, stopRecording } from './Recorder.utils'
+import {
+  startRecording,
+  stopRecording,
+  useDebouncedProxyData,
+} from './Recorder.utils'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
@@ -23,6 +26,10 @@ export function Recorder() {
   const { proxyData, resetProxyData } = useListenProxyData(group)
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
+
+  // Debounce the proxy data to avoid disappearing static asset requests
+  // when recording
+  const debouncedProxyData = useDebouncedProxyData(proxyData)
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -47,7 +54,7 @@ export function Recorder() {
       return
     }
 
-    const har = proxyDataToHar(groupProxyData(proxyData))
+    const har = proxyDataToHar(proxyData)
     const fileName = await window.studio.har.saveFile(
       JSON.stringify(har, null, 4)
     )
@@ -94,11 +101,12 @@ export function Recorder() {
             </Flex>
           </Flex>
           <RequestsSection
-            proxyData={proxyData}
+            proxyData={debouncedProxyData}
             noRequestsMessage="Your requests will appear here"
             selectedRequestId={selectedRequest?.id}
             onSelectRequest={setSelectedRequest}
             autoScroll
+            resetProxyData={resetProxyData}
           />
         </Allotment.Pane>
         {selectedRequest !== null && (
