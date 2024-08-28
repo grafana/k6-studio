@@ -45,11 +45,33 @@ export function SelectorField({ selector, onChange }: SelectorFieldProps) {
     } as Selector)
   }
 
-  const handleTypeChange = (value: string) => {
-    onChange({
-      ...selector,
-      type: value as Selector['type'],
-    } as Selector)
+  const handleTypeChange = (value: Selector['type']) => {
+    switch (value) {
+      case 'begin-end':
+        onChange({
+          type: value,
+          begin: '',
+          end: '',
+          from: selector.from,
+        })
+        break
+      case 'regex':
+        onChange({
+          type: value,
+          regex: '',
+          from: selector.from,
+        })
+        break
+      case 'json':
+        onChange({
+          type: value,
+          from: 'body',
+          path: '',
+        })
+        break
+      default:
+        return exhaustive(value)
+    }
   }
 
   return (
