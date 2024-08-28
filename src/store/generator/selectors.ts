@@ -12,26 +12,14 @@ export function selectHasRecording(state: GeneratorStore) {
   return state.requests.length > 0
 }
 
-export function selectAllowedRequests(state: GeneratorStore) {
-  return state.requests.filter((request) => {
+export function selectFilteredRequests(state: GeneratorStore) {
+  const allowedRequests = state.requests.filter((request) => {
     return state.allowlist.includes(request.request.host)
   })
-}
-
-export function selectFilteredRequests(state: GeneratorStore) {
-  const requests = selectAllowedRequests(state)
 
   return state.includeStaticAssets
-    ? requests
-    : requests.filter(isNonStaticAssetResponse)
-}
-
-export function selectStaticAssetCount(state: GeneratorStore) {
-  const allowedRequests = selectAllowedRequests(state)
-  return (
-    allowedRequests.length -
-    allowedRequests.filter(isNonStaticAssetResponse).length
-  )
+    ? allowedRequests
+    : allowedRequests.filter(isNonStaticAssetResponse)
 }
 
 export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {

@@ -1,32 +1,43 @@
+import { Label } from '@/components/Label'
+import { ProxyData } from '@/types'
+import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import {
   Box,
   Button,
+  Checkbox,
   CheckboxGroup,
   Dialog,
   Flex,
   IconButton,
   ScrollArea,
   TextField,
+  Text,
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 export function AllowlistDialog({
   open,
   onOpenChange,
   hosts,
   allowlist,
-  onAllowlistChange,
+  onSave,
+  requests,
+  includeStaticAssets,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   hosts: string[]
   allowlist: string[]
-  onAllowlistChange: (allowlist: string[]) => void
+  includeStaticAssets: boolean
+  requests: ProxyData[]
+  onSave: (data: { allowlist: string[]; includeStaticAssets: boolean }) => void
 }) {
   const [filter, setFilter] = useState('')
   const [selectedHosts, setSelectedHosts] = useState(allowlist)
+  const [isStaticAssetsChecked, setIsStaticAssetsChecked] =
+    useState(includeStaticAssets)
 
   const filteredHosts = hosts.filter((host) => host.includes(filter))
 
@@ -39,8 +50,21 @@ export function AllowlistDialog({
   }
 
   function handleSave() {
-    onAllowlistChange(selectedHosts)
+    onSave({
+      allowlist: selectedHosts,
+      includeStaticAssets: isStaticAssetsChecked && staticAssetCount > 0,
+    })
   }
+
+  const staticAssetCount = useMemo(() => {
+    const allowedRequests = requests.filter((request) => {
+      return selectedHosts.includes(request.request.host)
+    })
+
+    return allowedRequests.filter(
+      (request) => !isNonStaticAssetResponse(request)
+    ).length
+  }, [requests, selectedHosts])
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -93,7 +117,7 @@ export function AllowlistDialog({
           </Flex>
         </Flex>
 
-        <Box height="200px" asChild pr="3">
+        <Box height="210px" asChild pr="3" mb="4">
           <ScrollArea>
             <CheckboxGroup.Root
               value={selectedHosts}
@@ -108,15 +132,27 @@ export function AllowlistDialog({
           </ScrollArea>
         </Box>
 
-        <Flex gap="3" mt="4" justify="end">
-          <Dialog.Close>
-            <Button variant="soft" color="gray">
-              Cancel
-            </Button>
-          </Dialog.Close>
-          <Dialog.Close>
-            <Button onClick={handleSave}>Save</Button>
-          </Dialog.Close>
+        <Flex justify="between" align="center">
+          <Label>
+            <Checkbox
+              onCheckedChange={() =>
+                setIsStaticAssetsChecked((value) => !value)
+              }
+              checked={isStaticAssetsChecked}
+              disabled={staticAssetCount === 0}
+            />
+            <Text size="2">Include static assets ({staticAssetCount})</Text>
+          </Label>
+          <Flex gap="3" justify="end">
+            <Dialog.Close>
+              <Button variant="soft" color="gray">
+                Cancel
+              </Button>
+            </Dialog.Close>
+            <Dialog.Close>
+              <Button onClick={handleSave}>Save</Button>
+            </Dialog.Close>
+          </Flex>
         </Flex>
       </Dialog.Content>
     </Dialog.Root>

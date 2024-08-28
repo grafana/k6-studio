@@ -1,17 +1,15 @@
 import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
 
-import { Checkbox, Flex, Tabs, Text } from '@radix-ui/themes'
+import { Flex, Tabs } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
 import {
   selectFilteredRequests,
   selectHasRecording,
   useGeneratorStore,
-  selectStaticAssetCount,
 } from '@/store/generator'
 import { RulePreview } from '../RulePreview/RulePreview'
 import { useGeneratorParams } from '../Generator.hooks'
-import { Label } from '@/components/Label'
 import { RequestList } from './RequestList'
 
 export function GeneratorSidebar() {
@@ -20,15 +18,6 @@ export function GeneratorSidebar() {
 
   const hasRecording = useGeneratorStore(selectHasRecording)
   const { ruleId } = useGeneratorParams()
-
-  const includeStaticAssets = useGeneratorStore(
-    (store) => store.includeStaticAssets
-  )
-  const setIncludeStaticAssets = useGeneratorStore(
-    (store) => store.setIncludeStaticAssets
-  )
-
-  const staticAssetCount = useGeneratorStore(selectStaticAssetCount)
 
   useEffect(() => {
     if (ruleId === undefined) {
@@ -71,13 +60,6 @@ export function GeneratorSidebar() {
             height: 100%;
           `}
         >
-          <Label p="2">
-            <Checkbox
-              onCheckedChange={setIncludeStaticAssets}
-              checked={includeStaticAssets}
-            />
-            <Text size="2">Include static assets ({staticAssetCount})</Text>
-          </Label>
           <RequestList requests={filteredRequests} />
         </Tabs.Content>
         <Tabs.Content
