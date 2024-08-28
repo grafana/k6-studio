@@ -30,8 +30,6 @@ describe('Code generation', () => {
 
       export const options = {}
 
-      const VARS = {}
-
       export default function() {
         let params
         let resp

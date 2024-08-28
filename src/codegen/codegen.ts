@@ -40,6 +40,10 @@ export function generateScript({
 }
 
 export function generateVariableDeclarations(variables: Variable[]): string {
+  if (variables.length === 0) {
+    return ''
+  }
+
   const variables_lines = variables
     .filter(({ name }) => name)
     .map(({ name, value }) => `"${name}": "${value}",`)
