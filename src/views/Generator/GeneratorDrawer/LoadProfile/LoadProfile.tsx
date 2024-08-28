@@ -3,8 +3,6 @@ import { Container, Flex, Heading } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { ExecutorOptions } from './components/ExecutorOptions'
 import { Executor } from './components/Executor'
-import { StartTime } from './components/StartTime'
-import { GracefulStop } from './components/GracefulStop'
 
 export function LoadProfile() {
   const state = useGeneratorStore()
@@ -18,8 +16,6 @@ export function LoadProfile() {
           </Heading>
           <Flex gap="3">
             <Executor value={state.executor} />
-            <StartTime value={state.startTime} />
-            <GracefulStop value={state.gracefulStop} />
           </Flex>
         </Flex>
         <ExecutorOptions {...state} />
