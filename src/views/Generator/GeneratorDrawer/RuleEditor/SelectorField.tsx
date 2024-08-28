@@ -1,7 +1,7 @@
 import { Flex, SegmentedControl, Select, TextField } from '@radix-ui/themes'
+import * as Label from '@radix-ui/react-label'
 
 import type { Selector } from '@/types/rules'
-import * as Label from '@radix-ui/react-label'
 import { exhaustive } from '@/utils/typescript'
 
 interface SelectorFieldProps {
@@ -32,24 +32,45 @@ const allowedTypes: Record<Selector['from'], Selector['type'][]> = {
 
 export function SelectorField({ selector, onChange }: SelectorFieldProps) {
   // value is always a string in Radix Select
-  const handleFromChange = (value: string) => {
-    const type = allowedTypes[value as Selector['from']].includes(selector.type)
+  const handleFromChange = (value: Selector['from']) => {
+    const type = allowedTypes[value].includes(selector.type)
       ? selector.type
-      : allowedTypes[value as Selector['from']]?.[0]
+      : allowedTypes[value]?.[0]
 
-    // TODO: handle types properly
     onChange({
       ...selector,
-      from: value as Selector['from'],
+      from: value,
       type,
     } as Selector)
   }
 
-  const handleTypeChange = (value: string) => {
-    onChange({
-      ...selector,
-      type: value as Selector['type'],
-    } as Selector)
+  const handleTypeChange = (value: Selector['type']) => {
+    switch (value) {
+      case 'begin-end':
+        onChange({
+          type: value,
+          begin: '',
+          end: '',
+          from: selector.from,
+        })
+        break
+      case 'regex':
+        onChange({
+          type: value,
+          regex: '',
+          from: selector.from,
+        })
+        break
+      case 'json':
+        onChange({
+          type: value,
+          from: 'body',
+          path: '',
+        })
+        break
+      default:
+        return exhaustive(value)
+    }
   }
 
   return (
