@@ -54,6 +54,7 @@ const createWindow = () => {
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      devTools: process.env.NODE_ENV === 'development',
     },
   })
 
@@ -76,7 +77,9 @@ const createWindow = () => {
   })
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools({ mode: 'detach' })
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools({ mode: 'detach' })
+  }
 
   return mainWindow
 }

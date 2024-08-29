@@ -1,6 +1,3 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, FolderContent } from './types'
 import { HarFile } from './types/har'
@@ -111,7 +108,6 @@ const generator = {
   saveGenerator: (generatorFile: string, fileName: string): Promise<string> => {
     return ipcRenderer.invoke('generator:save', generatorFile, fileName)
   },
-  // TODO: add a separate method for importing a generator file into the workspace
   loadGenerator: (fileName: string): Promise<GeneratorFile> => {
     return ipcRenderer.invoke('generator:open', fileName)
   },
