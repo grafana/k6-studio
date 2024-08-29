@@ -36,6 +36,7 @@ describe('Code generation', () => {
         let match
         let regex
         let url
+        const correlation_vars = {}
         sleep(1)
       }
       `
@@ -84,7 +85,7 @@ describe('Code generation', () => {
       ]
 
       const expectedResult = `
-        const test = "test"
+        const VARS = {"test": "test",}
       `
 
       expect(generateVariableDeclarations(variables).replace(/\s/g, '')).toBe(
@@ -177,15 +178,15 @@ describe('Code generation', () => {
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/login\`
         resp = http.request('POST', url, null, params)
-        let correl_0 = resp.json().user_id
+        correlation_vars[0] = resp.json().user_id
 
         params = { headers: {}, cookies: {} }
-        url = http.url\`http://test.k6.io/api/v1/users/\${correl_0}\`
+        url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars[0]}\`
         resp = http.request('GET', url, null, params)
 
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/users\`
-        resp = http.request('POST', url, \`${JSON.stringify({ user_id: '${correl_0}' })}\`, params)
+        resp = http.request('POST', url, \`${JSON.stringify({ user_id: '${correlation_vars[0]}' })}\`, params)
 
       `
 
