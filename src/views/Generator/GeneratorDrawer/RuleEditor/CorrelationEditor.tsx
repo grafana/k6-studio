@@ -46,7 +46,9 @@ export function CorrelationEditor({
   return (
     <Flex wrap="wrap">
       <Box p="2" width="50%">
-        <Heading mb="2">Extractor</Heading>
+        <Heading size="4" weight="medium" mb="2">
+          Extractor
+        </Heading>
         <FilterField
           filter={rule.extractor.filter}
           onChange={(filter) => handleFilterChange(filter, 'extractor')}
@@ -59,14 +61,16 @@ export function CorrelationEditor({
 
       <Box width="50%" p="2" pr="3">
         <Label mb="2">
-          <Heading>Replacer</Heading>
+          <Heading size="4" weight="medium">
+            Replacer
+          </Heading>
           <Switch onCheckedChange={toggleCustomReplacer} checked={!!replacer} />
         </Label>
         {!replacer && (
           <Text size="2">
-            By default correlation rule will replace all found occurrences of
-            the extracted value in the requests, you can enable this option to
-            fine tune your selection
+            By default correlation rule will replace all occurrences of the
+            extracted value in the requests, you can enable this option to fine
+            tune your selection
           </Text>
         )}
         {replacer && (
