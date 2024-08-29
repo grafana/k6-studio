@@ -266,7 +266,7 @@ const extractCorrelationBeginEndBody = (
 
   return {
     extractedValue,
-    correlationExtractionSnippet: correlationExtractionSnippet,
+    correlationExtractionSnippet,
     generatedUniqueId,
   }
 }
@@ -298,7 +298,7 @@ const extractCorrelationBeginEndHeaders = (
 
     return {
       extractedValue,
-      correlationExtractionSnippet: correlationExtractionSnippet,
+      correlationExtractionSnippet,
       generatedUniqueId,
     }
   }
@@ -332,7 +332,7 @@ const extractCorrelationBeginEndUrl = (
 
   return {
     extractedValue,
-    correlationExtractionSnippet: correlationExtractionSnippet,
+    correlationExtractionSnippet,
     generatedUniqueId,
   }
 }
@@ -363,7 +363,7 @@ const extractCorrelationRegexBody = (
 
   return {
     extractedValue,
-    correlationExtractionSnippet: correlationExtractionSnippet,
+    correlationExtractionSnippet,
     generatedUniqueId,
   }
 }
@@ -426,7 +426,7 @@ const extractCorrelationRegexUrl = (
 
   return {
     extractedValue,
-    correlationExtractionSnippet: correlationExtractionSnippet,
+    correlationExtractionSnippet,
     generatedUniqueId,
   }
 }
@@ -462,7 +462,7 @@ const extractCorrelationJsonBody = (
 correlation_vars[${generatedUniqueId}] = resp.json()${json_path}`
   return {
     extractedValue,
-    correlationExtractionSnippet: correlationExtractionSnippet,
+    correlationExtractionSnippet,
     generatedUniqueId,
   }
 }
@@ -520,7 +520,7 @@ if (import.meta.vitest) {
 correlation_vars[1] = resp.json().user_id`
     const expectedResult = {
       extractedValue: '444',
-      correlationExtractionSnippet: correlationExtractionSnippet,
+      correlationExtractionSnippet,
       generatedUniqueId: 1,
     }
 
@@ -548,7 +548,7 @@ correlation_vars[1] = resp.json().user_id`
     }`
     const expectedResult = {
       extractedValue: 'bob',
-      correlationExtractionSnippet: correlationExtractionSnippet,
+      correlationExtractionSnippet,
       generatedUniqueId: 1,
     }
 
@@ -581,7 +581,7 @@ correlation_vars[1] = resp.json().user_id`
     }`
     const expectedResult = {
       extractedValue: '/',
-      correlationExtractionSnippet: correlationExtractionSnippet,
+      correlationExtractionSnippet,
       generatedUniqueId: 1,
     }
 
@@ -614,7 +614,7 @@ correlation_vars[1] = resp.json().user_id`
     }`
     const expectedResult = {
       extractedValue: 'v1',
-      correlationExtractionSnippet: correlationExtractionSnippet,
+      correlationExtractionSnippet,
       generatedUniqueId: 1,
     }
 
@@ -641,7 +641,7 @@ correlation_vars[1] = resp.json().user_id`
     }`
     const expectedResult = {
       extractedValue: 'bob',
-      correlationExtractionSnippet: correlationExtractionSnippet,
+      correlationExtractionSnippet,
       generatedUniqueId: 1,
     }
 
@@ -668,7 +668,7 @@ correlation_vars[1] = resp.json().user_id`
     }`
     const expectedResult = {
       extractedValue: '/',
-      correlationExtractionSnippet: correlationExtractionSnippet,
+      correlationExtractionSnippet,
       generatedUniqueId: 1,
     }
 
@@ -700,7 +700,7 @@ correlation_vars[1] = resp.json().user_id`
     }`
     const expectedResult = {
       extractedValue: 'v1',
-      correlationExtractionSnippet: correlationExtractionSnippet,
+      correlationExtractionSnippet,
       generatedUniqueId: 1,
     }
 
