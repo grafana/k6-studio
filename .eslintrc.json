@@ -25,6 +25,7 @@
     }
   },
   "rules": {
-    "react/no-unknown-property": ["error", { "ignore": ["css"] }]
+    "react/no-unknown-property": ["error", { "ignore": ["css"] }],
+    "no-param-reassign": "error"
   }
 }

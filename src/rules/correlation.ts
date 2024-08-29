@@ -216,7 +216,7 @@ const getCorrelationVariableSnippet = (uniqueId: number | undefined) => {
 const getCorrelationBeginEndSnippet = (
   selector: BeginEndSelector,
   matchStatement: string,
-  uniqueId: number | undefined
+  uniqueId: number
 ) => {
   // TODO: replace regex with findBetween from k6-utils once we have imports
   return `
@@ -228,7 +228,7 @@ const getCorrelationBeginEndSnippet = (
 const getCorrelationRegexSnippet = (
   selector: RegexSelector,
   matchStatement: string,
-  uniqueId: number | undefined
+  uniqueId: number
 ) => {
   return `
     regex = new RegExp('${selector.regex}')
@@ -256,20 +256,18 @@ const extractCorrelationBeginEndBody = (
     return noCorrelationResult
   }
 
-  if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
-  }
+  const generatedUniqueId = uniqueId ?? sequentialIdGenerator.next().value
 
   const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
     selector,
     'resp.body.match(regex)',
-    uniqueId
+    generatedUniqueId
   )
 
   return {
     extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
-    generatedUniqueId: uniqueId,
+    generatedUniqueId,
   }
 }
 
@@ -287,21 +285,21 @@ const extractCorrelationBeginEndHeaders = (
   for (const [key, value] of response.headers) {
     const extractedValue = matchBeginEnd(value, selector.begin, selector.end)
 
-    if (extractedValue) {
-      if (!uniqueId) {
-        uniqueId = sequentialIdGenerator.next().value
-      }
-      const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
-        selector,
-        `resp.headers["${canonicalHeaderKey(key)}"].match(regex)`,
-        uniqueId
-      )
+    if (!extractedValue) {
+      continue
+    }
 
-      return {
-        extractedValue,
-        correlationExtractionSnippet: correlationExtractionSnippet,
-        generatedUniqueId: uniqueId,
-      }
+    const generatedUniqueId = uniqueId ?? sequentialIdGenerator.next().value
+    const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
+      selector,
+      `resp.headers["${canonicalHeaderKey(key)}"].match(regex)`,
+      generatedUniqueId
+    )
+
+    return {
+      extractedValue,
+      correlationExtractionSnippet: correlationExtractionSnippet,
+      generatedUniqueId,
     }
   }
 
@@ -324,20 +322,18 @@ const extractCorrelationBeginEndUrl = (
     return noCorrelationResult
   }
 
-  if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
-  }
+  const generatedUniqueId = uniqueId ?? sequentialIdGenerator.next().value
 
   const correlationExtractionSnippet = getCorrelationBeginEndSnippet(
     selector,
     'resp.url.match(regex)',
-    uniqueId
+    generatedUniqueId
   )
 
   return {
     extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
-    generatedUniqueId: uniqueId,
+    generatedUniqueId,
   }
 }
 
@@ -357,20 +353,18 @@ const extractCorrelationRegexBody = (
     return noCorrelationResult
   }
 
-  if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
-  }
+  const generatedUniqueId = uniqueId ?? sequentialIdGenerator.next().value
 
   const correlationExtractionSnippet = getCorrelationRegexSnippet(
     selector,
     'resp.body.match(regex)',
-    uniqueId
+    generatedUniqueId
   )
 
   return {
     extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
-    generatedUniqueId: uniqueId,
+    generatedUniqueId,
   }
 }
 
@@ -388,22 +382,22 @@ const extractCorrelationRegexHeaders = (
   for (const [key, value] of response.headers) {
     const extractedValue = matchRegex(value, selector.regex)
 
-    if (extractedValue) {
-      if (!uniqueId) {
-        uniqueId = sequentialIdGenerator.next().value
-      }
+    if (!extractedValue) {
+      continue
+    }
 
-      const correlationExtractionSnippet = getCorrelationRegexSnippet(
-        selector,
-        `resp.headers["${canonicalHeaderKey(key)}"].match(regex)`,
-        uniqueId
-      )
+    const generatedUniqueId = uniqueId ?? sequentialIdGenerator.next().value
 
-      return {
-        extractedValue,
-        correlationExtractionSnippet,
-        generatedUniqueId: uniqueId,
-      }
+    const correlationExtractionSnippet = getCorrelationRegexSnippet(
+      selector,
+      `resp.headers["${canonicalHeaderKey(key)}"].match(regex)`,
+      generatedUniqueId
+    )
+
+    return {
+      extractedValue,
+      correlationExtractionSnippet,
+      generatedUniqueId,
     }
   }
 
@@ -422,20 +416,18 @@ const extractCorrelationRegexUrl = (
     return noCorrelationResult
   }
 
-  if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
-  }
+  const generatedUniqueId = uniqueId ?? sequentialIdGenerator.next().value
 
   const correlationExtractionSnippet = getCorrelationRegexSnippet(
     selector,
     'resp.url.match(regex)',
-    uniqueId
+    generatedUniqueId
   )
 
   return {
     extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
-    generatedUniqueId: uniqueId,
+    generatedUniqueId,
   }
 }
 
@@ -459,9 +451,7 @@ const extractCorrelationJsonBody = (
     return noCorrelationResult
   }
 
-  if (!uniqueId) {
-    uniqueId = sequentialIdGenerator.next().value
-  }
+  const generatedUniqueId = uniqueId ?? sequentialIdGenerator.next().value
 
   // array indexing doesn't start with a dot so we add it only in the other cases
   const json_path = selector.path.startsWith('[')
@@ -469,11 +459,11 @@ const extractCorrelationJsonBody = (
     : `.${selector.path}`
 
   const correlationExtractionSnippet = `
-correlation_vars[${uniqueId}] = resp.json()${json_path}`
+correlation_vars[${generatedUniqueId}] = resp.json()${json_path}`
   return {
     extractedValue,
     correlationExtractionSnippet: correlationExtractionSnippet,
-    generatedUniqueId: uniqueId,
+    generatedUniqueId,
   }
 }
 
