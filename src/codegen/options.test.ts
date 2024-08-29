@@ -12,9 +12,8 @@ describe('Code generation - options', () => {
     }
 
     const expectedResult = `{
-      executor: 'shared-iterations',
       vus: 1,
-      iterations: 1,
+      iterations: 1
     }`
 
     expect(
@@ -34,13 +33,12 @@ describe('Code generation - options', () => {
     }
 
     const expectedResult = `{
-      executor: 'ramping-vus',
       stages: [
         {
           duration: '1',
           target: 1
         }
-      ],
+      ]
     }`
 
     expect(
