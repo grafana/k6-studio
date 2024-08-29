@@ -60,7 +60,9 @@ export function Recorder() {
     )
 
     navigate(
-      `${getRoutePath('recordingPreviewer', { fileName: encodeURIComponent(fileName) })}`,
+      getRoutePath('recordingPreviewer', {
+        fileName: encodeURIComponent(fileName),
+      }),
       {
         state: { discardable: true },
       }
