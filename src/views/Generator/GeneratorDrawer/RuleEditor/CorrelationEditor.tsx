@@ -59,14 +59,14 @@ export function CorrelationEditor({
 
       <Box width="50%" p="2" pr="3">
         <Label mb="2">
-          <Heading>Custom Replacer</Heading>
+          <Heading>Replacer</Heading>
           <Switch onCheckedChange={toggleCustomReplacer} checked={!!replacer} />
         </Label>
         {!replacer && (
           <Text size="2">
             By default correlation rule will replace all found occurrences of
-            the extracted value in the requests, but you can customize this
-            behavior
+            the extracted value in the requests, you can enable this option to
+            fine tune your selection
           </Text>
         )}
         {replacer && (
