@@ -32,12 +32,12 @@ export const launchProxy = (
       'resources',
       getPlatform(),
       getArch(),
-      'mitmdump'
+      'k6-studio-proxy'
     )
   } else {
     proxyScript = path.join(process.resourcesPath, 'json_output.py')
     // only the architecture directory will be in resources on the packaged app
-    proxyPath = path.join(process.resourcesPath, getArch(), 'mitmdump')
+    proxyPath = path.join(process.resourcesPath, getArch(), 'k6-studio-proxy')
   }
 
   // add .exe on windows
