@@ -1,3 +1,4 @@
+import { BrowserWindow } from 'electron'
 import {
   computeSystemExecutablePath,
   Browser,
@@ -14,7 +15,7 @@ const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
 }
 
-export const launchBrowser = async () => {
+export const launchBrowser = async (browserWindow: BrowserWindow) => {
   const path = computeSystemExecutablePath({
     browser: Browser.CHROME,
     channel: ChromeReleaseChannel.STABLE,
@@ -33,6 +34,13 @@ export const launchBrowser = async () => {
   ]
   const disableChromeOptimizations = `--disable-features=${optimizationsToDisable.join(',')}`
 
+  const sendBrowserClosedEvent = (): Promise<void> => {
+    // we send the browser:stopped event when the browser is closed
+    // NOTE: on macos pressing the X button does not close the application so it won't be fired
+    browserWindow.webContents.send('browser:closed')
+    return Promise.resolve()
+  }
+
   return launch({
     executablePath: path,
     args: [
@@ -50,5 +58,6 @@ export const launchBrowser = async () => {
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
       disableChromeOptimizations,
     ],
+    onExit: sendBrowserClosedEvent,
   })
 }
