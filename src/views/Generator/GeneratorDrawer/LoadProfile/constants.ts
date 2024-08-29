@@ -5,8 +5,6 @@ import type {
 
 export const COMMON_DEFAULTS: CommonOptions = {
   executor: 'ramping-vus',
-  startTime: undefined,
-  gracefulStop: '30s',
 }
 
 export const SHARED_ITERATIONS_DEFAULTS: Omit<
@@ -16,5 +14,4 @@ export const SHARED_ITERATIONS_DEFAULTS: Omit<
   ...COMMON_DEFAULTS,
   vus: 20,
   iterations: 200,
-  maxDuration: '10m',
 }

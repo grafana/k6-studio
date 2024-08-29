@@ -53,33 +53,21 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
 
 function selectLoadProfile({
   executor,
-  startTime,
-  gracefulStop,
   stages,
-  startVUs,
-  gracefulRampDown,
   vus,
   iterations,
-  maxDuration,
 }: GeneratorStore): TestOptions['loadProfile'] {
   switch (executor) {
     case 'ramping-vus':
       return {
         executor,
-        startTime,
-        gracefulStop,
         stages,
-        startVUs,
-        gracefulRampDown,
       }
     case 'shared-iterations':
       return {
         executor,
-        startTime,
-        gracefulStop,
         vus,
         iterations,
-        maxDuration,
       }
     default:
       return exhaustive(executor)
