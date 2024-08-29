@@ -17,6 +17,7 @@ export function FilterField({ filter, onChange }: FilterFieldProps) {
         value={filter.path}
         onChange={(event) => onChange({ ...filter, path: event.target.value })}
         placeholder="Filter by path"
+        css={{ marginBottom: 'var(--space-2)' }}
       />
     </div>
   )
