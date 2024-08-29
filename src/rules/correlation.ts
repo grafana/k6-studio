@@ -207,7 +207,7 @@ const extractCorrelationRegex = (
   }
 }
 
-const getCorrelationVariableSnippet = (uniqueId: number | undefined) => {
+const getCorrelationVariableSnippet = (uniqueId: number) => {
   return `if (match) {
       correlation_vars[${uniqueId}] = match[1]
     }`
