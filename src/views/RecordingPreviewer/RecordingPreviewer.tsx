@@ -1,7 +1,7 @@
 import { Allotment } from 'allotment'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import invariant from 'tiny-invariant'
 
@@ -21,8 +21,8 @@ export function RecordingPreviewer() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const { fileName } = useParams()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const isDiscardable = searchParams.get('discardable') !== null
+  const { state } = useLocation()
+  const isDiscardable = Boolean(state?.discardable)
   invariant(fileName, 'fileName is required')
   useSetWindowTitle(fileName)
 
@@ -64,7 +64,7 @@ export function RecordingPreviewer() {
 
   const handleDiscard = async () => {
     await window.studio.ui.deleteFile(fileName)
-    navigate(`${getRoutePath('recorder')}?autoStart`)
+    navigate(`${getRoutePath('recorder')}`, { state: { autoStart: true } })
   }
 
   return (

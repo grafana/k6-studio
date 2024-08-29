@@ -20,7 +20,15 @@ export function CollapsibleSection({
 
   return (
     <Collapsible.Root open={open} onOpenChange={setOpen}>
-      <Collapsible.Trigger asChild style={{ cursor: 'var(--cursor-button)' }}>
+      <Collapsible.Trigger
+        asChild
+        css={{
+          cursor: 'var(--cursor-button)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1,
+        }}
+      >
         <Reset>
           <button
             type="button"

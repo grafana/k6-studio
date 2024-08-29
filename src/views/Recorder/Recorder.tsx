@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Flex } from '@radix-ui/themes'
-import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
+import { DiscIcon, StopIcon } from '@radix-ui/react-icons'
 import { Allotment } from 'allotment'
 
 import { GroupForm } from './GroupForm'
@@ -32,8 +32,8 @@ export function Recorder() {
   const debouncedProxyData = useDebouncedProxyData(proxyData)
 
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const autoStart = searchParams.get('autoStart') !== null
+  const { state } = useLocation()
+  const autoStart = Boolean(state?.autoStart)
   useSetWindowTitle('Recorder')
 
   const handleStartRecording = useCallback(async () => {
@@ -60,7 +60,10 @@ export function Recorder() {
     )
 
     navigate(
-      `${getRoutePath('recordingPreviewer', { fileName: encodeURIComponent(fileName) })}?discardable`
+      `${getRoutePath('recordingPreviewer', { fileName: encodeURIComponent(fileName) })}`,
+      {
+        state: { discardable: true },
+      }
     )
   }
 
@@ -77,7 +80,7 @@ export function Recorder() {
         <Button
           onClick={isRecording ? handleStopRecording : handleStartRecording}
           loading={isLoading}
-          color={isRecording ? 'red' : 'green'}
+          color={isRecording ? 'red' : 'orange'}
         >
           {isRecording ? (
             <>
@@ -85,7 +88,7 @@ export function Recorder() {
             </>
           ) : (
             <>
-              <PlayIcon /> Start recording
+              <DiscIcon /> Start recording
             </>
           )}
         </Button>
@@ -93,21 +96,24 @@ export function Recorder() {
     >
       <Allotment defaultSizes={[1, 1]}>
         <Allotment.Pane minSize={200}>
-          <Flex justify="between" wrap="wrap" gap="2" p="2">
-            <GroupForm onChange={setGroup} value={group} />
+          <Flex direction="column" height="100%">
+            <Flex justify="between" wrap="wrap" gap="2" p="2" flexShrink="0">
+              <GroupForm onChange={setGroup} value={group} />
 
-            <Flex justify="start" align="end" direction="column" gap="2">
               <DebugControls />
             </Flex>
+            <div css={{ flexGrow: 1, minHeight: 0 }}>
+              <RequestsSection
+                proxyData={debouncedProxyData}
+                noRequestsMessage="Your requests will appear here"
+                selectedRequestId={selectedRequest?.id}
+                autoScroll
+                activeGroup={group}
+                onSelectRequest={setSelectedRequest}
+                resetProxyData={resetProxyData}
+              />
+            </div>
           </Flex>
-          <RequestsSection
-            proxyData={debouncedProxyData}
-            noRequestsMessage="Your requests will appear here"
-            selectedRequestId={selectedRequest?.id}
-            onSelectRequest={setSelectedRequest}
-            autoScroll
-            resetProxyData={resetProxyData}
-          />
         </Allotment.Pane>
         {selectedRequest !== null && (
           <Allotment.Pane minSize={300}>
