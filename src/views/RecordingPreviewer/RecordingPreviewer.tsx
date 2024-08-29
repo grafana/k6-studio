@@ -64,7 +64,7 @@ export function RecordingPreviewer() {
 
   const handleDiscard = async () => {
     await window.studio.ui.deleteFile(fileName)
-    navigate(`${getRoutePath('recorder')}`, { state: { autoStart: true } })
+    navigate(getRoutePath('recorder'), { state: { autoStart: true } })
   }
 
   return (
