@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Box, Tabs } from '@radix-ui/themes'
+import { Box, Button, Tabs } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Allotment } from 'allotment'
@@ -96,12 +96,12 @@ export function Validator() {
 
   return (
     <View
-      title={`Validator${scriptPath ? ` - ${scriptPath}` : ''}`}
+      title="Validator"
       actions={
         <ValidatorControls
           isRunning={isRunning}
           isExternal={isExternal}
-          isScriptSelected={scriptPath !== undefined}
+          isScriptSelected={Boolean(scriptPath)}
           onDeleteScript={handleDeleteScript}
           onRunScript={handleRunScript}
           onSelectScript={handleSelectExternalScript}
@@ -118,6 +118,15 @@ export function Validator() {
                 proxyData={proxyData}
                 autoScroll={isRunning}
                 selectedRequestId={selectedRequest?.id}
+                noRequestsMessage={
+                  !scriptPath ? (
+                    <Button onClick={handleSelectExternalScript}>
+                      Open script
+                    </Button>
+                  ) : (
+                    'Once you start the script, requests will appear here'
+                  )
+                }
                 onSelectRequest={setSelectedRequest}
               />
             </Allotment.Pane>

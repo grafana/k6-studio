@@ -7,11 +7,12 @@ import { isGroupedProxyData } from './WebLogView.utils'
 import { Row } from './Row'
 import { Group } from './Group'
 import grotIllustration from '@/assets/grot.svg'
+import { ReactNode } from 'react'
 
 interface WebLogViewProps {
   requests: ProxyData[] | GroupedProxyData
   selectedRequestId?: string
-  noRequestsMessage?: string
+  noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
 }
 
@@ -76,7 +77,7 @@ function RequestList({
 }
 
 interface NoRequestsMessageProps {
-  noRequestsMessage?: string
+  noRequestsMessage?: ReactNode
 }
 
 function NoRequestsMessage({
@@ -92,9 +93,13 @@ function NoRequestsMessage({
           max-width: 300px;
         `}
       />
-      <Text color="gray" size="1">
-        {noRequestsMessage}
-      </Text>
+      {typeof noRequestsMessage === 'string' ? (
+        <Text color="gray" size="1">
+          {noRequestsMessage}
+        </Text>
+      ) : (
+        noRequestsMessage
+      )}
     </Flex>
   )
 }
