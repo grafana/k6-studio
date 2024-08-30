@@ -207,6 +207,7 @@ if (import.meta.vitest) {
       scheme: 'http',
       host: 'localhost:3000',
       content,
+      contentHash: '',
       path: '/api/v1/foo',
       timestampStart: 0,
       timestampEnd: 0,

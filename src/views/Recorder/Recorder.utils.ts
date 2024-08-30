@@ -34,6 +34,22 @@ export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
   ]
 }
 
+export function findAndOverrideCachedResponse(
+  previous: ProxyData[],
+  proxyData: ProxyData
+) {
+  if (proxyData.response) {
+    const { contentHash: responseContentHash } = proxyData.response
+    const cachedResponse = previous.find(
+      (data) => data.request.contentHash === responseContentHash
+    )
+    if (cachedResponse && cachedResponse.response?.content) {
+      proxyData.response.content = cachedResponse.response.content
+      proxyData.response.headers = cachedResponse.response.headers
+    }
+  }
+}
+
 // TODO: add error and timeout handling
 export async function startRecording() {
   // Kill previous browser window

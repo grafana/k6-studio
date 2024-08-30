@@ -70,7 +70,9 @@ export const launchProxy = (
 
     const proxyData = safeJsonParse<ProxyData>(data)
     if (proxyData) {
-      browserWindow.webContents.send('proxy:data', proxyData)
+      if (proxyData.request?.host === 'grafana.com') {
+        browserWindow.webContents.send('proxy:data', proxyData)
+      }
     }
   })
 

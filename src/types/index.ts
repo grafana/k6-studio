@@ -25,6 +25,7 @@ export interface Request {
   method: Method
   path: string
   content: string | null
+  contentHash: string
   timestampStart: number
   timestampEnd: number
   id?: string
@@ -40,6 +41,7 @@ export interface Response {
   reason: string
   statusCode: number
   content: string
+  contentHash: string
   path: string
   timestampStart: number
   httpVersion: string
