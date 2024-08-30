@@ -5,14 +5,14 @@ import { ProxyData } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 import { css } from '@emotion/react'
 import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
-import { useState } from 'react'
+import { useState, ReactNode } from 'react'
 import { ClearRequestsButton } from './ClearRequestsButton'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
   selectedRequestId?: string
   autoScroll?: boolean
-  noRequestsMessage?: string
+  noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
   resetProxyData?: () => void
 }
