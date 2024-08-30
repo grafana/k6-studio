@@ -1,47 +1,19 @@
 import { Allotment } from 'allotment'
-import { useEffect, useState } from 'react'
 import { Button } from '@radix-ui/themes'
 import { Outlet } from 'react-router-dom'
 
-import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useGeneratorStore, selectHasRecording } from '@/store/generator'
 import { View } from '@/components/Layout/View'
-import { exportScript, saveGenerator, loadGenerator } from './Generator.utils'
+import { exportScript } from './Generator.utils'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
-import { useGeneratorParams } from './Generator.hooks'
-import { useToast } from '@/store/ui/useToast'
+import { useGeneratorFile } from './Generator.hooks'
 
 export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const [isLoading, setIsLoading] = useState(false)
-  const { fileName } = useGeneratorParams()
-  useSetWindowTitle(fileName)
-  const showToast = useToast()
-
-  useEffect(() => {
-    ;(async () => {
-      setIsLoading(true)
-      try {
-        await loadGenerator(fileName)
-      } catch (error) {
-        showToast({
-          title: 'Failed to load generator: corrupted file',
-          status: 'error',
-        })
-      } finally {
-        setIsLoading(false)
-      }
-    })()
-  }, [fileName, showToast])
-
-  const handleSave = () => {
-    saveGenerator(fileName).then(() => {
-      showToast({ title: 'Generator saved', status: 'success' })
-    })
-  }
+  const { isLoading, onSave } = useGeneratorFile()
 
   return (
     <View
@@ -50,7 +22,7 @@ export function Generator() {
         <>
           <RecordingSelector />
           <Allowlist />
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={onSave}>Save</Button>
           {hasRecording && (
             <Button onClick={exportScript}>Export script</Button>
           )}
