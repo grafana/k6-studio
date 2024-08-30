@@ -64,7 +64,10 @@ export function RecordingSelector() {
             <Flex gap="2">
               <Popover.Close>
                 <Button variant="outline" asChild>
-                  <Link to={`${getRoutePath('recorder')}?autoStart`}>
+                  <Link
+                    to={getRoutePath('recorder')}
+                    state={{ autoStart: true }}
+                  >
                     Start recording
                   </Link>
                 </Button>

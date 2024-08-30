@@ -12,6 +12,7 @@ interface RequestsSectionProps {
   proxyData: ProxyData[]
   selectedRequestId?: string
   autoScroll?: boolean
+  activeGroup?: string
   noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
   resetProxyData?: () => void
@@ -22,6 +23,7 @@ export function RequestsSection({
   selectedRequestId,
   noRequestsMessage,
   autoScroll = false,
+  activeGroup,
   onSelectRequest,
   resetProxyData,
 }: RequestsSectionProps) {
@@ -32,7 +34,7 @@ export function RequestsSection({
   return (
     <Flex direction="column" minHeight="0" height="100%">
       <Flex justify="between" pr="2">
-        <Flex align="center">
+        <Flex align="center" gap="1">
           <Heading
             css={css`
               font-size: 15px;
@@ -61,6 +63,7 @@ export function RequestsSection({
         <div ref={ref}>
           <WebLogView
             requests={groupedProxyData}
+            activeGroup={activeGroup}
             noRequestsMessage={noRequestsMessage}
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}

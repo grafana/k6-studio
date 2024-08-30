@@ -6,6 +6,7 @@ import { globalStyles } from './globalStyles'
 import { AppRoutes } from './AppRoutes'
 import { Toasts } from './components/Toast/Toasts'
 import { ElectronToastListener } from './components/EletronToastListener'
+import { DevTools } from './components/DevTools'
 
 export function App() {
   const theme = useTheme()
@@ -16,6 +17,7 @@ export function App() {
       <Toasts />
       <ElectronToastListener />
       <AppRoutes />
+      <DevTools />
     </Theme>
   )
 }

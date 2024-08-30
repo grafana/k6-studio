@@ -11,6 +11,7 @@ import { ReactNode } from 'react'
 
 interface WebLogViewProps {
   requests: ProxyData[] | GroupedProxyData
+  activeGroup?: string
   selectedRequestId?: string
   noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
@@ -18,6 +19,7 @@ interface WebLogViewProps {
 
 export function WebLogView({
   requests,
+  activeGroup,
   selectedRequestId,
   noRequestsMessage,
   onSelectRequest,
@@ -27,9 +29,17 @@ export function WebLogView({
   }
 
   if (isGroupedProxyData(requests)) {
+    const groups = Object.entries(requests)
+    if (
+      activeGroup &&
+      (!requests[activeGroup] || requests[activeGroup].length === 0)
+    ) {
+      groups.push([activeGroup, []])
+    }
+
     return (
       <>
-        {Object.entries(requests).map(([group, data]) => (
+        {groups.map(([group, data]) => (
           <Group name={group} length={data.length} key={group}>
             <RequestList
               requests={data}
