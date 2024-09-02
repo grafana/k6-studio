@@ -17,6 +17,19 @@ const config: ForgeConfig = {
       './resources/group_snippet.js',
       './resources/' + getPlatform() + '/' + getArch(),
     ],
+    osxSign: {
+      optionsForFile: (filePath) => {
+        console.log(filePath)
+        return {
+          entitlements: './entitlements.plist',
+        }
+      },
+    },
+    osxNotarize: {
+      appleApiKey: process.env.APPLE_API_KEY ?? '',
+      appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
+      appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
+    },
   },
   rebuildConfig: {},
   makers: [
@@ -67,11 +80,11 @@ const config: ForgeConfig = {
       config: {
         repository: {
           owner: 'grafana',
-          name: 'k6-studio'
+          name: 'k6-studio',
         },
-        prerelease: true
-      }
-    }
+        prerelease: true,
+      },
+    },
   ],
 }
 
