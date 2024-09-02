@@ -18,8 +18,7 @@ const config: ForgeConfig = {
       './resources/' + getPlatform() + '/' + getArch(),
     ],
     osxSign: {
-      optionsForFile: (filePath) => {
-        console.log(filePath)
+      optionsForFile: () => {
         return {
           entitlements: './entitlements.plist',
         }
