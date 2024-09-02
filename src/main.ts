@@ -395,10 +395,7 @@ const launchProxyAndAttachEmitter = async (
     },
     onFailure: async () => {
       proxyReady = false
-      currentProxyProcess = await launchProxyAndAttachEmitter(
-        browserWindow,
-        proxyPort
-      )
+      currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       sendToast(browserWindow.webContents, {
         title: 'Proxy failed to start, restarting...',
