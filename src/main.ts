@@ -33,7 +33,7 @@ const proxyEmitter = new eventEmmitter()
 
 let currentProxyProcess: ProxyProcess | null
 let proxyReady = false
-export let proxyPort = 8080
+export let proxyPort = 6000
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
