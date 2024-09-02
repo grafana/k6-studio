@@ -378,28 +378,23 @@ const browserWindowFromEvent = (
 
 const launchProxyAndAttachEmitter = async (
   browserWindow: BrowserWindow,
-  port?: number
+  port: number = proxyPort
 ) => {
-  // if no port is specified we try the latest we set
-  let portToUse = port ?? proxyPort
-
   // confirm that the port is still open and if not get the next open one
-  const availableOpenport = await findOpenPort(proxyPort)
+  const availableOpenport = await findOpenPort(port)
   console.log(`proxy open port found: ${availableOpenport}`)
 
-  if (availableOpenport !== portToUse) {
-    portToUse = availableOpenport
+  if (availableOpenport !== proxyPort) {
     proxyPort = availableOpenport
   }
 
-  return launchProxy(browserWindow, portToUse, {
+  return launchProxy(browserWindow, proxyPort, {
     onReady: () => {
       proxyReady = true
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
       proxyReady = false
-      proxyPort += 10
       currentProxyProcess = await launchProxyAndAttachEmitter(
         browserWindow,
         proxyPort
