@@ -12,11 +12,11 @@ export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
   if (existingRequestIndex !== -1) {
     return previous.map((request) => {
       if (request.id === proxyData.id) {
+        const previousRequest = previous[existingRequestIndex]
         return {
           ...proxyData,
-          // When response is received it will not have the group in comment,
-          // so we need to copy it from the request
-          comment: previous[existingRequestIndex]?.comment,
+          // When listening to k6 emitted events group is set only in the request event, so we need to copy it to response event
+          group: proxyData.group ? proxyData.group : previousRequest?.group,
         }
       }
 
@@ -24,7 +24,14 @@ export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
     })
   }
 
-  return [...previous, proxyData]
+  return [
+    ...previous,
+    {
+      ...proxyData,
+      // k6 emmits group as comment property
+      group: proxyData.group ?? proxyData.comment,
+    },
+  ]
 }
 
 // TODO: add error and timeout handling

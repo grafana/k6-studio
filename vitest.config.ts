@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [viteTsconfigPaths()],
   test: {
     includeSource: ['src/**/*.{js,ts}'],
+    environment: 'jsdom',
   },
   define: {
     'import.meta.vitest': 'undefined',

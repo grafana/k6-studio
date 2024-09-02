@@ -49,11 +49,9 @@ export const launchProxy = (
     proxyScript,
     '--set',
     `confdir=${certificatesPath}`,
+    '--mode',
+    `regular@${port}`,
   ]
-
-  if (port) {
-    proxyArgs.push('--mode', `regular@${port}`)
-  }
 
   const proxy = spawn(proxyPath, proxyArgs)
 
