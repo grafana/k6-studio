@@ -51,6 +51,7 @@ export function Preview({ content, contentType, format }: PreviewProps) {
   if (format === 'json') {
     return (
       <ReactJson
+        shouldCollapse={(field) => field.name !== 'root'}
         style={reactJsonStyles}
         src={JSON.parse(content)}
         theme={theme === 'dark' ? 'brewer' : 'rjv-default'}
