@@ -1,14 +1,9 @@
 import { Flex, Heading, Text } from '@radix-ui/themes'
-
-import { StartVUs } from './StartVUs'
-import { GracefulRampDown } from './GracefulRampDown'
 import { VUStages } from './VUStages'
 import { RampingVUsOptions } from '@/types/testOptions'
 
 export function RampingVUs({
-  gracefulRampDown,
   stages = [],
-  startVUs,
 }: Omit<RampingVUsOptions, 'executor'>) {
   return (
     <Flex direction="column" gap="4">
@@ -21,11 +16,6 @@ export function RampingVUs({
           specified amount of time.
         </Text>
       </div>
-
-      <Flex gap="3">
-        <StartVUs value={startVUs} />
-        <GracefulRampDown value={gracefulRampDown} />
-      </Flex>
 
       <VUStages stages={stages} />
     </Flex>

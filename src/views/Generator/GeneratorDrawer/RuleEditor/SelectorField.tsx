@@ -1,7 +1,7 @@
-import { Flex, SegmentedControl, Select, TextField } from '@radix-ui/themes'
+import { Box, Flex, Select, TextField } from '@radix-ui/themes'
+import * as Label from '@radix-ui/react-label'
 
 import type { Selector } from '@/types/rules'
-import * as Label from '@radix-ui/react-label'
 import { exhaustive } from '@/utils/typescript'
 
 interface SelectorFieldProps {
@@ -32,51 +32,77 @@ const allowedTypes: Record<Selector['from'], Selector['type'][]> = {
 
 export function SelectorField({ selector, onChange }: SelectorFieldProps) {
   // value is always a string in Radix Select
-  const handleFromChange = (value: string) => {
-    const type = allowedTypes[value as Selector['from']].includes(selector.type)
+  const handleFromChange = (value: Selector['from']) => {
+    const type = allowedTypes[value].includes(selector.type)
       ? selector.type
-      : allowedTypes[value as Selector['from']]?.[0]
+      : allowedTypes[value]?.[0]
 
-    // TODO: handle types properly
     onChange({
       ...selector,
-      from: value as Selector['from'],
+      from: value,
       type,
     } as Selector)
   }
 
-  const handleTypeChange = (value: string) => {
-    onChange({
-      ...selector,
-      type: value as Selector['type'],
-    } as Selector)
+  const handleTypeChange = (value: Selector['type']) => {
+    switch (value) {
+      case 'begin-end':
+        onChange({
+          type: value,
+          begin: '',
+          end: '',
+          from: selector.from,
+        })
+        break
+      case 'regex':
+        onChange({
+          type: value,
+          regex: '',
+          from: selector.from,
+        })
+        break
+      case 'json':
+        onChange({
+          type: value,
+          from: 'body',
+          path: '',
+        })
+        break
+      default:
+        return exhaustive(value)
+    }
   }
 
   return (
     <>
-      <Label.Root>Select from</Label.Root>
-      <Flex gap="2">
-        <Select.Root value={selector.from} onValueChange={handleFromChange}>
-          <Select.Trigger />
-          <Select.Content>
-            {fromOptions.map(({ label, value }) => (
-              <Select.Item key={value} value={value}>
-                {label}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+      <Flex gap="2" wrap="wrap" mb="2">
+        <Box flexGrow="1">
+          <Label.Root>Target</Label.Root>
+          <Select.Root value={selector.from} onValueChange={handleFromChange}>
+            <Select.Trigger css={{ width: '100%' }} />
+            <Select.Content>
+              {fromOptions.map(({ label, value }) => (
+                <Select.Item key={value} value={value}>
+                  {label}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+        </Box>
 
-        <SegmentedControl.Root
-          value={selector.type}
-          onValueChange={handleTypeChange}
-        >
-          {allowedTypes[selector.from].map((type) => (
-            <SegmentedControl.Item key={type} value={type}>
-              {typeLabels[type]}
-            </SegmentedControl.Item>
-          ))}
-        </SegmentedControl.Root>
+        <Box flexGrow="1">
+          <Label.Root>Type</Label.Root>
+          <Select.Root value={selector.type} onValueChange={handleTypeChange}>
+            <Select.Trigger css={{ width: '100%' }} />
+            <Select.Content>
+              {allowedTypes[selector.from].map((type) => (
+                <Select.Item key={type} value={type}>
+                  {typeLabels[type]}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+        </Box>
       </Flex>
       <SelectorContent selector={selector} onChange={onChange} />
     </>
@@ -97,6 +123,7 @@ function SelectorContent({
           <Label.Root>JSON path</Label.Root>
           <TextField.Root
             value={selector.path}
+            css={{ marginBottom: 'var(--space-2)' }}
             onChange={(event) =>
               onChange({
                 ...selector,
@@ -112,6 +139,7 @@ function SelectorContent({
           <Label.Root>Begin</Label.Root>
           <TextField.Root
             value={selector.begin}
+            css={{ marginBottom: 'var(--space-2)' }}
             onChange={(event) =>
               onChange({
                 ...selector,
@@ -122,6 +150,7 @@ function SelectorContent({
           <Label.Root>End</Label.Root>
           <TextField.Root
             value={selector.end}
+            css={{ marginBottom: 'var(--space-2)' }}
             onChange={(event) =>
               onChange({
                 ...selector,
@@ -137,6 +166,7 @@ function SelectorContent({
           <Label.Root>Regex</Label.Root>
           <TextField.Root
             value={selector.regex}
+            css={{ marginBottom: 'var(--space-2)' }}
             onChange={(event) =>
               onChange({
                 ...selector,

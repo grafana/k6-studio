@@ -1,6 +1,3 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, FolderContent } from './types'
 import { HarFile } from './types/har'
@@ -59,8 +56,8 @@ const script = {
   saveScript: (script: string) => {
     ipcRenderer.send('script:save', script)
   },
-  runScript: (scriptPath: string): Promise<void> => {
-    return ipcRenderer.invoke('script:run', scriptPath)
+  runScript: (scriptPath: string, absolute = false): Promise<void> => {
+    return ipcRenderer.invoke('script:run', scriptPath, absolute)
   },
   stopScript: () => {
     ipcRenderer.send('script:stop')
@@ -77,8 +74,11 @@ const har = {
   saveFile: (data: string): Promise<string> => {
     return ipcRenderer.invoke('har:save', data)
   },
-  openFile: (filePath?: string): Promise<HarFile | undefined> => {
+  openFile: (filePath: string): Promise<HarFile> => {
     return ipcRenderer.invoke('har:open', filePath)
+  },
+  importFile: (): Promise<string | undefined> => {
+    return ipcRenderer.invoke('har:import')
   },
 } as const
 
@@ -86,17 +86,17 @@ const ui = {
   toggleTheme: () => {
     ipcRenderer.send('ui:toggle-theme')
   },
-  openContainingFolder: (path: string) => {
-    ipcRenderer.send('ui:open-folder', path)
+  openContainingFolder: (fileName: string) => {
+    ipcRenderer.send('ui:open-folder', fileName)
   },
-  deleteFile: (path: string): Promise<void> => {
-    return ipcRenderer.invoke('ui:delete-file', path)
+  deleteFile: (fileName: string): Promise<void> => {
+    return ipcRenderer.invoke('ui:delete-file', fileName)
   },
   getFiles: (): Promise<FolderContent> => ipcRenderer.invoke('ui:get-files'),
-  onAddFile: (callback: (path: string) => void) => {
+  onAddFile: (callback: (fileName: string) => void) => {
     return createListener('ui:add-file', callback)
   },
-  onRemoveFile: (callback: (path: string) => void) => {
+  onRemoveFile: (callback: (fileName: string) => void) => {
     return createListener('ui:remove-file', callback)
   },
   onToast: (callback: (toast: AddToastPayload) => void) => {
@@ -108,9 +108,8 @@ const generator = {
   saveGenerator: (generatorFile: string, fileName: string): Promise<string> => {
     return ipcRenderer.invoke('generator:save', generatorFile, fileName)
   },
-  // TODO: add a separate method for importing a generator file into the workspace
-  loadGenerator: (path?: string): Promise<GeneratorFile | void> => {
-    return ipcRenderer.invoke('generator:open', path)
+  loadGenerator: (fileName: string): Promise<GeneratorFile> => {
+    return ipcRenderer.invoke('generator:open', fileName)
   },
 } as const
 

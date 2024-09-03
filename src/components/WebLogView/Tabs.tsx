@@ -1,4 +1,5 @@
-import { Tabs as RadixTabs } from '@radix-ui/themes'
+import { css } from '@emotion/react'
+import { Box, Tabs as RadixTabs, ScrollArea } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
 
 /**
@@ -8,14 +9,14 @@ import { ComponentProps } from 'react'
 function Root({ children, ...props }: ComponentProps<typeof RadixTabs.Root>) {
   return (
     <RadixTabs.Root
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        flex: '0 1 auto',
-        height: '100%',
-        overflow: 'hidden',
-      }}
       {...props}
+      css={css`
+        display: flex;
+        flex-direction: column;
+        flex: 0 1 auto;
+        height: 100%;
+        overflow: hidden;
+      `}
     >
       {children}
     </RadixTabs.Root>
@@ -26,9 +27,9 @@ function List({ children, ...props }: ComponentProps<typeof RadixTabs.List>) {
   return (
     <RadixTabs.List
       {...props}
-      style={{
-        flex: '1 0 auto',
-      }}
+      css={css`
+        flex-shrink: 0;
+      `}
     >
       {children}
     </RadixTabs.List>
@@ -42,11 +43,22 @@ function Content({
 }: ComponentProps<typeof RadixTabs.Content>) {
   return (
     <RadixTabs.Content
-      style={{ height: '100%', overflow: 'hidden', flex: '0 1 auto' }}
-      value={value}
       {...props}
+      css={css`
+        flex: 1;
+        min-height: 0;
+      `}
+      value={value}
     >
-      {children}
+      <ScrollArea
+        css={css`
+          height: 100%;
+        `}
+      >
+        <Box p="2" height="100%">
+          {children}
+        </Box>
+      </ScrollArea>
     </RadixTabs.Content>
   )
 }

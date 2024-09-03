@@ -6,20 +6,10 @@ import { SharedIterations } from './SharedIterations/SharedIterations'
 export function ExecutorOptions(options: GeneratorStore) {
   switch (options.executor) {
     case 'ramping-vus':
-      return (
-        <RampingVUs
-          stages={options.stages}
-          gracefulRampDown={options.gracefulRampDown}
-          startVUs={options.startVUs}
-        />
-      )
+      return <RampingVUs stages={options.stages} />
     case 'shared-iterations':
       return (
-        <SharedIterations
-          iterations={options.iterations}
-          maxDuration={options.maxDuration}
-          vus={options.vus}
-        />
+        <SharedIterations iterations={options.iterations} vus={options.vus} />
       )
 
     default:

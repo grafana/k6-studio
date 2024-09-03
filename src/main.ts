@@ -6,7 +6,7 @@ import {
   nativeTheme,
   shell,
 } from 'electron'
-import { open, writeFile, unlink } from 'fs/promises'
+import { open, copyFile, writeFile, unlink, FileHandle } from 'fs/promises'
 import { readdirSync } from 'fs'
 import path from 'path'
 import eventEmmitter from 'events'
@@ -22,13 +22,18 @@ import {
   RECORDINGS_PATH,
   SCRIPTS_PATH,
 } from './constants/workspace'
-import { sendToast } from './utils/electron'
+import { sendToast, findOpenPort } from './utils/electron'
+import invariant from 'tiny-invariant'
+import { INVALID_FILENAME_CHARS } from './constants/files'
+import { generateFileNameWithTimestamp } from './utils/file'
+import { HarFile } from './types/har'
+import { GeneratorFile } from './types/generator'
 
 const proxyEmitter = new eventEmmitter()
 
 let currentProxyProcess: ProxyProcess | null
 let proxyReady = false
-export let proxyPort = 8080
+export let proxyPort = 6000
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
@@ -39,7 +44,7 @@ if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
-const createWindow = () => {
+const createWindow = async () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -49,11 +54,12 @@ const createWindow = () => {
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      devTools: process.env.NODE_ENV === 'development',
     },
   })
 
   // Start proxy
-  currentProxyProcess = launchProxyAndAttachEmitter(mainWindow)
+  currentProxyProcess = await launchProxyAndAttachEmitter(mainWindow)
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -71,29 +77,27 @@ const createWindow = () => {
   })
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools({ mode: 'detach' })
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools({ mode: 'detach' })
+  }
 
   return mainWindow
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-// https://github.com/electron/electron/pull/21972
-app.whenReady().then(() => {
-  const mainWindow = createWindow()
+app.whenReady().then(async () => {
+  const mainWindow = await createWindow()
   setupProjectStructure()
 
   watcher = chokidar.watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
     ignoreInitial: true,
   })
 
-  watcher.on('add', (path) => {
-    mainWindow.webContents.send('ui:add-file', path)
+  watcher.on('add', (filePath) => {
+    mainWindow.webContents.send('ui:add-file', path.basename(filePath))
   })
 
-  watcher.on('unlink', (path) => {
-    mainWindow.webContents.send('ui:remove-file', path)
+  watcher.on('unlink', (filePath) => {
+    mainWindow.webContents.send('ui:remove-file', path.basename(filePath))
   })
 })
 
@@ -106,7 +110,7 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('activate', () => {
+app.on('activate', async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
@@ -124,7 +128,7 @@ ipcMain.handle('proxy:start', async (event, port?: number) => {
   console.info('proxy:start event received')
 
   const browserWindow = browserWindowFromEvent(event)
-  currentProxyProcess = launchProxyAndAttachEmitter(browserWindow, port)
+  currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow, port)
 })
 
 ipcMain.on('proxy:stop', async () => {
@@ -186,25 +190,37 @@ ipcMain.handle('script:select', async (event) => {
   }
 })
 
-ipcMain.handle('script:open', async (_, filePath: string) => {
-  const fileHandle = await open(filePath, 'r')
+ipcMain.handle('script:open', async (_, fileName: string) => {
+  console.log(getFilePathFromName(fileName))
+  const fileHandle = await open(getFilePathFromName(fileName), 'r')
   try {
     const script = await fileHandle?.readFile({ encoding: 'utf-8' })
 
-    return { path: filePath, content: script }
+    return { name: fileName, content: script }
   } finally {
     await fileHandle?.close()
   }
 })
 
-ipcMain.handle('script:run', async (event, scriptPath: string) => {
-  console.info('script:run event received')
-  await waitForProxy()
+ipcMain.handle(
+  'script:run',
+  async (event, scriptPath: string, absolute = false) => {
+    console.info('script:run event received')
+    await waitForProxy()
 
-  const browserWindow = browserWindowFromEvent(event)
+    const browserWindow = browserWindowFromEvent(event)
 
-  currentk6Process = await runScript(browserWindow, scriptPath, proxyPort)
-})
+    const resolvedScriptPath = absolute
+      ? scriptPath
+      : getFilePathFromName(scriptPath)
+
+    currentk6Process = await runScript(
+      browserWindow,
+      resolvedScriptPath,
+      proxyPort
+    )
+  }
+)
 
 ipcMain.on('script:stop', (event) => {
   console.info('script:stop event received')
@@ -236,18 +252,29 @@ ipcMain.on('script:save', async (event, script: string) => {
 
 // HAR
 ipcMain.handle('har:save', async (_, data) => {
-  const fineName = `${new Date().toISOString()}.har`
-  await writeFile(path.join(RECORDINGS_PATH, fineName), data)
-  return path.join(RECORDINGS_PATH, fineName)
+  const fileName = generateFileNameWithTimestamp('har')
+  await writeFile(path.join(RECORDINGS_PATH, fileName), data)
+  return fileName
 })
 
-ipcMain.handle('har:open', async (event, filePath?: string) => {
+ipcMain.handle('har:open', async (_, fileName: string): Promise<HarFile> => {
   console.info('har:open event received')
-  const browserWindow = browserWindowFromEvent(event)
+  let fileHandle: FileHandle | undefined
+  try {
+    fileHandle = await open(path.join(RECORDINGS_PATH, fileName), 'r')
+    const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+    const har = await JSON.parse(data)
 
-  if (filePath) {
-    return loadHarFile(filePath)
+    return { name: fileName, content: har }
+  } finally {
+    await fileHandle?.close()
   }
+})
+
+ipcMain.handle('har:import', async (event) => {
+  console.info('har:import event received')
+
+  const browserWindow = browserWindowFromEvent(event)
 
   const dialogResult = await dialog.showOpenDialog(browserWindow, {
     message: 'Open HAR file',
@@ -256,24 +283,16 @@ ipcMain.handle('har:open', async (event, filePath?: string) => {
     filters: [{ name: 'HAR', extensions: ['har'] }],
   })
 
-  if (!dialogResult.canceled && dialogResult.filePaths[0]) {
-    return loadHarFile(dialogResult.filePaths[0])
+  const filePath = dialogResult.filePaths[0]
+
+  if (dialogResult.canceled || !filePath) {
+    return
   }
 
-  return
+  await copyFile(filePath, path.join(RECORDINGS_PATH, path.basename(filePath)))
+
+  return path.basename(filePath)
 })
-
-const loadHarFile = async (filePath: string) => {
-  const fileHandle = await open(filePath, 'r')
-  try {
-    const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-    const har = await JSON.parse(data)
-
-    return { path: filePath, content: har }
-  } finally {
-    await fileHandle?.close()
-  }
-}
 
 // Generator
 ipcMain.handle(
@@ -281,74 +300,62 @@ ipcMain.handle(
   async (_, generatorFile: string, fileName: string) => {
     console.info('generator:save event received')
 
+    invariant(!INVALID_FILENAME_CHARS.test(fileName), 'Invalid file name')
+
     await writeFile(path.join(GENERATORS_PATH, fileName), generatorFile)
-    return path.join(GENERATORS_PATH, fileName)
+    return fileName
   }
 )
 
-ipcMain.handle('generator:open', async (event, path?: string) => {
-  console.info('generator:open event received')
-  const browserWindow = browserWindowFromEvent(event)
+ipcMain.handle(
+  'generator:open',
+  async (_, fileName: string): Promise<GeneratorFile> => {
+    console.info('generator:open event received')
 
-  let filePath = path
+    let fileHandle: FileHandle | undefined
 
-  if (!filePath) {
-    console.log('no path provided, opening dialog', event, path, filePath)
-    const dialogResult = await dialog.showOpenDialog(browserWindow, {
-      message: 'Open Generator file',
-      properties: ['openFile'],
-      defaultPath: GENERATORS_PATH,
-      filters: [{ name: 'JSON', extensions: ['json'] }],
-    })
+    try {
+      fileHandle = await open(path.join(GENERATORS_PATH, fileName), 'r')
 
-    if (dialogResult.canceled || !dialogResult.filePaths[0] || !path) {
-      return
+      const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+      const generator = await JSON.parse(data)
+
+      return { name: fileName, content: generator }
+    } finally {
+      await fileHandle?.close()
     }
-
-    filePath = dialogResult.filePaths[0]
   }
-
-  const fileHandle = await open(filePath, 'r')
-  try {
-    const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-    // TODO: we might want to send an error on wrong file, a system to send and show errors from the main process
-    // could be leveraged for many things
-    const generator = await JSON.parse(data)
-
-    return { path: filePath, content: generator }
-  } finally {
-    await fileHandle?.close()
-  }
-})
+)
 
 // UI
 ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
 
-ipcMain.handle('ui:delete-file', async (_, filePath: string) => {
+ipcMain.handle('ui:delete-file', async (_, fileName: string) => {
   console.info('ui:delete-file event received')
-  return unlink(filePath)
+
+  return unlink(getFilePathFromName(fileName))
 })
 
-ipcMain.on('ui:open-folder', async (_, filePath: string) => {
+ipcMain.on('ui:open-folder', async (_, fileName: string) => {
   console.info('ui:open-folder event received')
-  shell.showItemInFolder(filePath)
+  shell.showItemInFolder(getFilePathFromName(fileName))
 })
 
 ipcMain.handle('ui:get-files', () => {
   console.info('ui:get-files event received')
   const recordings = readdirSync(RECORDINGS_PATH, { withFileTypes: true })
     .filter((f) => f.isFile() && f.name.split('.').pop() === 'har')
-    .map((f) => path.join(RECORDINGS_PATH, f.name))
+    .map((f) => f.name)
 
   const generators = readdirSync(GENERATORS_PATH, { withFileTypes: true })
     .filter((f) => f.isFile() && f.name.split('.').pop() === 'json')
-    .map((f) => path.join(GENERATORS_PATH, f.name))
+    .map((f) => f.name)
 
   const scripts = readdirSync(SCRIPTS_PATH, { withFileTypes: true })
     .filter((f) => f.isFile() && f.name.split('.').pop() === 'js')
-    .map((f) => path.join(SCRIPTS_PATH, f.name))
+    .map((f) => f.name)
 
   return {
     recordings,
@@ -369,22 +376,26 @@ const browserWindowFromEvent = (
   return browserWindow
 }
 
-const launchProxyAndAttachEmitter = (
+const launchProxyAndAttachEmitter = async (
   browserWindow: BrowserWindow,
-  port?: number
+  port: number = proxyPort
 ) => {
-  return launchProxy(browserWindow, port, {
+  // confirm that the port is still open and if not get the next open one
+  const availableOpenport = await findOpenPort(port)
+  console.log(`proxy open port found: ${availableOpenport}`)
+
+  if (availableOpenport !== proxyPort) {
+    proxyPort = availableOpenport
+  }
+
+  return launchProxy(browserWindow, proxyPort, {
     onReady: () => {
       proxyReady = true
       proxyEmitter.emit('ready')
     },
-    onFailure: () => {
+    onFailure: async () => {
       proxyReady = false
-      proxyPort += 10
-      currentProxyProcess = launchProxyAndAttachEmitter(
-        browserWindow,
-        proxyPort
-      )
+      currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       sendToast(browserWindow.webContents, {
         title: 'Proxy failed to start, restarting...',
@@ -392,4 +403,22 @@ const launchProxyAndAttachEmitter = (
       })
     },
   })
+}
+
+function getFilePathFromName(name: string) {
+  invariant(process, 'Only use this function in the main process')
+
+  switch (name.split('.').pop()) {
+    case 'har':
+      return path.join(RECORDINGS_PATH, name)
+
+    case 'json':
+      return path.join(GENERATORS_PATH, name)
+
+    case 'js':
+      return path.join(SCRIPTS_PATH, name)
+
+    default:
+      throw new Error('Invalid file type')
+  }
 }

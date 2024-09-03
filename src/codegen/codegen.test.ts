@@ -35,6 +35,8 @@ describe('Code generation', () => {
         let resp
         let match
         let regex
+        let url
+        const correlation_vars = {}
         sleep(1)
       }
       `
@@ -48,10 +50,8 @@ describe('Code generation', () => {
             options: {
               loadProfile: {
                 executor: 'shared-iterations',
-                startTime: '0',
                 vus: 1,
                 iterations: 1,
-                maxDuration: '1',
               },
               thinkTime: {
                 sleepType: 'iterations',
@@ -66,6 +66,7 @@ describe('Code generation', () => {
             },
             rules: [],
             allowlist: [],
+            includeStaticAssets: false,
           },
         }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
@@ -82,7 +83,7 @@ describe('Code generation', () => {
       ]
 
       const expectedResult = `
-        const test = "test"
+        const VARS = {"test": "test",}
       `
 
       expect(generateVariableDeclarations(variables).replace(/\s/g, '')).toBe(
@@ -127,7 +128,8 @@ describe('Code generation', () => {
 
       const expectedResult = `
         params = { headers: {}, cookies: {} }
-        resp = http.request('GET', \`/api/v1/users\`, null, params)
+        url = http.url\`/api/v1/users\`
+        resp = http.request('GET', url, null, params)
       `
 
       expect(
@@ -168,17 +170,21 @@ describe('Code generation', () => {
 
       const expectedResult = `
         params = { headers: {}, cookies: {} }
-        resp = http.request('POST', \`http://test.k6.io/api/v1/foo\`, null, params)
+        url = http.url\`http://test.k6.io/api/v1/foo\`
+        resp = http.request('POST', url, null, params)
 
         params = { headers: {}, cookies: {} }
-        resp = http.request('POST', \`http://test.k6.io/api/v1/login\`, null, params)
-        let correl_0 = resp.json().user_id
+        url = http.url\`http://test.k6.io/api/v1/login\`
+        resp = http.request('POST', url, null, params)
+        correlation_vars[0] = resp.json().user_id
 
         params = { headers: {}, cookies: {} }
-        resp = http.request('GET', \`http://test.k6.io/api/v1/users/\${correl_0}\`, null, params)
+        url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars[0]}\`
+        resp = http.request('GET', url, null, params)
 
         params = { headers: {}, cookies: {} }
-        resp = http.request('POST', \`http://test.k6.io/api/v1/users\`, \`${JSON.stringify({ user_id: '${correl_0}' })}\`, params)
+        url = http.url\`http://test.k6.io/api/v1/users\`
+        resp = http.request('POST', url, \`${JSON.stringify({ user_id: '${correlation_vars[0]}' })}\`, params)
 
       `
 

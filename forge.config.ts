@@ -17,10 +17,27 @@ const config: ForgeConfig = {
       './resources/group_snippet.js',
       './resources/' + getPlatform() + '/' + getArch(),
     ],
+    osxSign: {
+      optionsForFile: () => {
+        return {
+          entitlements: './entitlements.plist',
+        }
+      },
+    },
+    osxNotarize: {
+      appleApiKey: process.env.APPLE_API_KEY ?? '',
+      appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
+      appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
+    },
   },
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({}),
+    new MakerSquirrel({
+      windowsSign: {
+        certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
+        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+      },
+    }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG({}, ['darwin']),
     new MakerRpm({}),
@@ -67,11 +84,11 @@ const config: ForgeConfig = {
       config: {
         repository: {
           owner: 'grafana',
-          name: 'k6-studio'
+          name: 'k6-studio',
         },
-        prerelease: true
-      }
-    }
+        prerelease: true,
+      },
+    },
   ],
 }
 

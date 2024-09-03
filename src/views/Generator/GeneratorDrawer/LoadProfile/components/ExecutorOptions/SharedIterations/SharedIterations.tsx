@@ -2,13 +2,11 @@ import { Flex, Heading, Text } from '@radix-ui/themes'
 
 import { SHARED_ITERATIONS_DEFAULTS } from '../../../constants'
 import { Iterations } from './Iterations'
-import { MaxDuration } from './MaxDuration'
 import { VUs } from './VUs'
 import { SharedIterationsOptions } from '@/types/testOptions'
 
 export function SharedIterations({
   iterations,
-  maxDuration,
   vus,
 }: Omit<SharedIterationsOptions, 'executor'>) {
   return (
@@ -31,10 +29,6 @@ export function SharedIterations({
         <Iterations
           value={iterations}
           placeholder={SHARED_ITERATIONS_DEFAULTS.iterations?.toString()}
-        />
-        <MaxDuration
-          value={maxDuration}
-          placeholder={SHARED_ITERATIONS_DEFAULTS.maxDuration}
         />
       </Flex>
     </Flex>

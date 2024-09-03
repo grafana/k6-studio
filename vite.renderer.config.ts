@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { pluginExposeRenderer } from './vite.base.config'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import { version } from './package.json'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -26,6 +27,9 @@ export default defineConfig((env) => {
     ],
     resolve: {
       preserveSymlinks: true,
+    },
+    define: {
+      __APP_VERSION__: JSON.stringify(version),
     },
     clearScreen: false,
   } as UserConfig

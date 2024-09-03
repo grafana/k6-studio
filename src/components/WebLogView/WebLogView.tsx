@@ -1,54 +1,93 @@
-import { GroupedProxyData, ProxyData } from '@/types'
+import { css } from '@emotion/react'
 import { Flex, Text } from '@radix-ui/themes'
 import { isEmpty } from 'lodash-es'
 
+import { GroupedProxyData, ProxyData } from '@/types'
 import { isGroupedProxyData } from './WebLogView.utils'
 import { Row } from './Row'
 import { Group } from './Group'
 import grotIllustration from '@/assets/grot.svg'
-import { css } from '@emotion/react'
+import { ReactNode } from 'react'
 
 interface WebLogViewProps {
   requests: ProxyData[] | GroupedProxyData
-  noRequestsMessage?: string
+  activeGroup?: string
+  selectedRequestId?: string
+  noRequestsMessage?: ReactNode
+  onSelectRequest: (data: ProxyData | null) => void
 }
 
-export function WebLogView({ requests, noRequestsMessage }: WebLogViewProps) {
+export function WebLogView({
+  requests,
+  activeGroup,
+  selectedRequestId,
+  noRequestsMessage,
+  onSelectRequest,
+}: WebLogViewProps) {
   if (isEmpty(requests)) {
     return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
   }
 
   if (isGroupedProxyData(requests)) {
+    const groups = Object.entries(requests)
+    if (
+      activeGroup &&
+      (!requests[activeGroup] || requests[activeGroup].length === 0)
+    ) {
+      groups.push([activeGroup, []])
+    }
+
     return (
       <>
-        {Object.entries(requests).map(([group, data]) => (
+        {groups.map(([group, data]) => (
           <Group name={group} length={data.length} key={group}>
-            <RequestList requests={data} />
+            <RequestList
+              requests={data}
+              selectedRequestId={selectedRequestId}
+              onSelectRequest={onSelectRequest}
+            />
           </Group>
         ))}
       </>
     )
   }
 
-  return <RequestList requests={requests} />
+  return (
+    <RequestList
+      requests={requests}
+      selectedRequestId={selectedRequestId}
+      onSelectRequest={onSelectRequest}
+    />
+  )
 }
 
 interface RequestListProps {
   requests: ProxyData[]
+  selectedRequestId?: string
+  onSelectRequest: (data: ProxyData) => void
 }
 
-function RequestList({ requests }: RequestListProps) {
+function RequestList({
+  requests,
+  selectedRequestId,
+  onSelectRequest,
+}: RequestListProps) {
   return (
     <>
       {requests.map((data) => (
-        <Row key={data.id} data={data} />
+        <Row
+          key={data.id}
+          data={data}
+          isSelected={selectedRequestId === data.id}
+          onSelectRequest={onSelectRequest}
+        />
       ))}
     </>
   )
 }
 
 interface NoRequestsMessageProps {
-  noRequestsMessage?: string
+  noRequestsMessage?: ReactNode
 }
 
 function NoRequestsMessage({
@@ -64,9 +103,13 @@ function NoRequestsMessage({
           max-width: 300px;
         `}
       />
-      <Text color="gray" size="1">
-        {noRequestsMessage}
-      </Text>
+      {typeof noRequestsMessage === 'string' ? (
+        <Text color="gray" size="1">
+          {noRequestsMessage}
+        </Text>
+      ) : (
+        noRequestsMessage
+      )}
     </Flex>
   )
 }

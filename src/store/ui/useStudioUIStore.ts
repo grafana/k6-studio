@@ -2,12 +2,15 @@ import { FolderContent } from '@/types'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
-interface State extends FolderContent {}
+interface State extends FolderContent {
+  devToggles: Record<string, boolean>
+}
 
 interface Actions {
   addFile: (path: string) => void
   removeFile: (path: string) => void
   setFolderContent: (content: FolderContent) => void
+  toggleDevToggle: (key: string) => void
 }
 
 export type StudioUIStore = State & Actions
@@ -17,6 +20,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
     recordings: [],
     generators: [],
     scripts: [],
+    devToggles: {},
 
     addFile: (path) =>
       set((state) => {
@@ -51,6 +55,10 @@ export const useStudioUIStore = create<StudioUIStore>()(
         state.recordings = recordings
         state.generators = generators
         state.scripts = scripts
+      }),
+    toggleDevToggle: (key) =>
+      set((state) => {
+        state.devToggles[key] = !state.devToggles[key]
       }),
   }))
 )

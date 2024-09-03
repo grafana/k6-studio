@@ -1,7 +1,8 @@
-import { Badge } from '@radix-ui/themes'
+import { Text } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
+import { css } from '@emotion/react'
 
 interface TestRuleTypeBadgeProps {
   rule: TestRule
@@ -9,12 +10,19 @@ interface TestRuleTypeBadgeProps {
 
 export function TestRuleTypeBadge({ rule }: TestRuleTypeBadgeProps) {
   const label = getLabel(rule)
-  const color = getColor(rule)
 
   return (
-    <Badge color={color} variant="solid">
+    <Text
+      size="1"
+      weight="bold"
+      color="gray"
+      css={css`
+        text-transform: uppercase;
+        min-width: 100px;
+      `}
+    >
       {label}
-    </Badge>
+    </Text>
   )
 }
 
@@ -28,21 +36,6 @@ function getLabel(rule: TestRule) {
       return 'Parameterization'
     case 'verification':
       return 'Verification'
-    default:
-      return exhaustive(rule)
-  }
-}
-
-function getColor(rule: TestRule) {
-  switch (rule.type) {
-    case 'customCode':
-      return 'amber'
-    case 'correlation':
-      return 'blue'
-    case 'parameterization':
-      return 'green'
-    case 'verification':
-      return 'yellow'
     default:
       return exhaustive(rule)
   }

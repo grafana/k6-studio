@@ -39,6 +39,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         recordingPath,
         rules,
         allowlist,
+        includeStaticAssets,
       },
       recording = []
     ) =>
@@ -47,17 +48,12 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.sleepType = thinkTime.sleepType
         state.timing = thinkTime.timing
         state.executor = loadProfile.executor
-        state.startTime = loadProfile.startTime
-        state.gracefulStop = loadProfile.gracefulStop
         switch (loadProfile.executor) {
           case 'ramping-vus':
             state.stages = loadProfile.stages
-            state.gracefulRampDown = loadProfile.gracefulRampDown
-            state.startVUs = loadProfile.startVUs
             break
           case 'shared-iterations':
             state.iterations = loadProfile.iterations
-            state.maxDuration = loadProfile.maxDuration
             state.vus = loadProfile.vus
             break
           default:
@@ -69,6 +65,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.requests = recording
         state.recordingPath = recordingPath
         state.allowlist = allowlist
+        state.includeStaticAssets = includeStaticAssets
         // rules
         state.rules = rules
       }),

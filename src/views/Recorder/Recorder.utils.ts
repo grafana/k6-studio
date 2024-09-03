@@ -1,4 +1,6 @@
 import { ProxyData } from '@/types'
+import { debounce } from 'lodash-es'
+import { useState, useMemo, useEffect } from 'react'
 
 // We get 2 requests with the same id, one when
 // the request is sent and another when the response is received
@@ -10,11 +12,11 @@ export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
   if (existingRequestIndex !== -1) {
     return previous.map((request) => {
       if (request.id === proxyData.id) {
+        const previousRequest = previous[existingRequestIndex]
         return {
           ...proxyData,
-          // When response is received it will not have the group in comment,
-          // so we need to copy it from the request
-          comment: previous[existingRequestIndex]?.comment,
+          // When listening to k6 emitted events group is set only in the request event, so we need to copy it to response event
+          group: proxyData.group ? proxyData.group : previousRequest?.group,
         }
       }
 
@@ -22,7 +24,14 @@ export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
     })
   }
 
-  return [...previous, proxyData]
+  return [
+    ...previous,
+    {
+      ...proxyData,
+      // k6 emmits group as comment property
+      group: proxyData.group ?? proxyData.comment,
+    },
+  ]
 }
 
 // TODO: add error and timeout handling
@@ -35,4 +44,19 @@ export async function startRecording() {
 
 export function stopRecording() {
   window.studio.browser.stopBrowser()
+}
+
+export const useDebouncedProxyData = (proxyData: ProxyData[]): ProxyData[] => {
+  const [debouncedProxyData, setDebouncedProxyData] = useState<ProxyData[]>([])
+
+  const debouncedSetProxyData = useMemo(
+    () => debounce(setDebouncedProxyData, 100),
+    []
+  )
+
+  useEffect(() => {
+    debouncedSetProxyData(proxyData)
+  }, [proxyData, debouncedSetProxyData])
+
+  return debouncedProxyData
 }

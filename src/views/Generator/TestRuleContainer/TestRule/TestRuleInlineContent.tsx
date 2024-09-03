@@ -39,11 +39,19 @@ function CorrelationContent({ rule }: { rule: CorrelationRule }) {
 function CustomCodeContent({ rule }: { rule: CustomCodeRule }) {
   return (
     <>
-      <Badge color="gray">
-        {rule.placement === 'after' ? <BorderRightIcon /> : <BorderLeftIcon />}
-        {rule.placement}
-      </Badge>{' '}
       <TestRuleFilter filter={rule.filter} />{' '}
+      <Tooltip
+        content={`${rule.placement === 'after' ? 'After' : 'Before'} matched requests`}
+      >
+        <Badge color="gray">
+          {rule.placement === 'after' ? (
+            <BorderRightIcon />
+          ) : (
+            <BorderLeftIcon />
+          )}
+          {rule.placement}
+        </Badge>
+      </Tooltip>
       <Badge color="gray">
         Snippet
         <Tooltip content={<code>{rule.snippet}</code>}>

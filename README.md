@@ -17,6 +17,6 @@ Currently any code change will trigger an hotreload causing the proxy service to
 If you encounter issues with the proxy please kill the service:
 
 ```
-ps aux | grep mitmdump
+ps aux | grep k6-studio-proxy
 kill -9 <id>
 ```

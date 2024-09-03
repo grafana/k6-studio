@@ -1,12 +1,11 @@
-import { GroupedProxyData, Request, Response } from '@/types'
+import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
 import type { Entry, Page } from 'har-format'
-import packageJson from '../../package.json'
 import { getContentTypeWithCharsetHeader } from './headers'
 import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
+import { groupProxyData } from './groups'
 
-export function proxyDataToHar(
-  groups: GroupedProxyData
-): HarWithOptionalResponse {
+export function proxyDataToHar(data: ProxyData[]): HarWithOptionalResponse {
+  const groups = groupProxyData(data)
   return {
     log: createLog(createPages(groups), createEntries(groups)),
   }
@@ -20,7 +19,7 @@ function createLog(
     version: '1.2',
     creator: {
       name: 'k6-studio',
-      version: packageJson.version,
+      version: __APP_VERSION__,
     },
     pages,
     entries,

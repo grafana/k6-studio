@@ -1,10 +1,11 @@
 import { css } from '@emotion/react'
 import { Box, Flex, Text } from '@radix-ui/themes'
+import { Link } from 'react-router-dom'
 
 import K6Logo from '@/assets/logo.svg'
 import { getRoutePath } from '@/routeMap'
-import { Link } from 'react-router-dom'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
+import { VersionLabel } from './VersionLabel'
 
 export function ActivityBar() {
   return (
@@ -35,6 +36,7 @@ export function ActivityBar() {
         <Box mt="auto">
           <ThemeSwitcher />
         </Box>
+        <VersionLabel />
       </Box>
     </Flex>
   )

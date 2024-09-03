@@ -40,10 +40,16 @@ export function generateScript({
 }
 
 export function generateVariableDeclarations(variables: Variable[]): string {
-  return variables
+  if (variables.length === 0) {
+    return ''
+  }
+
+  const variables_lines = variables
     .filter(({ name }) => name)
-    .map(({ name, value }) => `const ${name} = "${value}"`)
+    .map(({ name, value }) => `"${name}": "${value}",`)
     .join('\n')
+
+  return `const VARS = {\n${variables_lines}\n}\n`
 }
 
 export function generateVUCode(
@@ -75,6 +81,8 @@ export function generateVUCode(
     let resp
     let match
     let regex
+    let url
+    const correlation_vars = {}
     `,
     groupSnippets,
     thinkTime.sleepType === 'iterations' ? generateSleep(thinkTime.timing) : '',
@@ -147,7 +155,8 @@ export function generateSingleRequestSnippet(
   const params = `params = ${generateRequestParams(request)}`
 
   const main = `
-    resp = http.request(${method}, ${url}, ${content}, params)
+    url = http.url${url}
+    resp = http.request(${method}, url, ${content}, params)
   `
 
   return [params, ...before, main, ...after].join('\n')

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Flex } from '@radix-ui/themes'
-import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
+import { DiscIcon, StopIcon } from '@radix-ui/react-icons'
+import { Allotment } from 'allotment'
 
 import { GroupForm } from './GroupForm'
 import { DebugControls } from './DebugControls'
@@ -9,20 +10,30 @@ import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { groupProxyData } from '@/utils/groups'
-import { startRecording, stopRecording } from './Recorder.utils'
+import {
+  startRecording,
+  stopRecording,
+  useDebouncedProxyData,
+} from './Recorder.utils'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
+import { Details } from '@/components/WebLogView/Details'
+import { ProxyData } from '@/types'
 
 export function Recorder() {
+  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [group, setGroup] = useState<string>('Default')
   const { proxyData, resetProxyData } = useListenProxyData(group)
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
 
+  // Debounce the proxy data to avoid disappearing static asset requests
+  // when recording
+  const debouncedProxyData = useDebouncedProxyData(proxyData)
+
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const autoStart = searchParams.get('autoStart') !== null
+  const { state } = useLocation()
+  const autoStart = Boolean(state?.autoStart)
   useSetWindowTitle('Recorder')
 
   const handleStartRecording = useCallback(async () => {
@@ -43,13 +54,18 @@ export function Recorder() {
       return
     }
 
-    const har = proxyDataToHar(groupProxyData(proxyData))
-    const filePath = await window.studio.har.saveFile(
+    const har = proxyDataToHar(proxyData)
+    const fileName = await window.studio.har.saveFile(
       JSON.stringify(har, null, 4)
     )
 
     navigate(
-      `${getRoutePath('recordingPreviewer', { path: encodeURIComponent(filePath) })}?discardable`
+      getRoutePath('recordingPreviewer', {
+        fileName: encodeURIComponent(fileName),
+      }),
+      {
+        state: { discardable: true },
+      }
     )
   }
 
@@ -66,7 +82,7 @@ export function Recorder() {
         <Button
           onClick={isRecording ? handleStopRecording : handleStartRecording}
           loading={isLoading}
-          color={isRecording ? 'red' : 'green'}
+          color={isRecording ? 'red' : 'orange'}
         >
           {isRecording ? (
             <>
@@ -74,24 +90,42 @@ export function Recorder() {
             </>
           ) : (
             <>
-              <PlayIcon /> Start recording
+              <DiscIcon /> Start recording
             </>
           )}
         </Button>
       }
     >
-      <Flex justify="between" wrap="wrap" gap="2" p="2">
-        <GroupForm onChange={setGroup} value={group} />
+      <Allotment defaultSizes={[1, 1]}>
+        <Allotment.Pane minSize={200}>
+          <Flex direction="column" height="100%">
+            <Flex justify="between" wrap="wrap" gap="2" p="2" flexShrink="0">
+              <GroupForm onChange={setGroup} value={group} />
 
-        <Flex justify="start" align="end" direction="column" gap="2">
-          <DebugControls />
-        </Flex>
-      </Flex>
-      <RequestsSection
-        proxyData={proxyData}
-        noRequestsMessage="Your requests will appear here"
-        autoScroll
-      />
+              <DebugControls />
+            </Flex>
+            <div css={{ flexGrow: 1, minHeight: 0 }}>
+              <RequestsSection
+                proxyData={debouncedProxyData}
+                noRequestsMessage="Your requests will appear here"
+                selectedRequestId={selectedRequest?.id}
+                autoScroll
+                activeGroup={group}
+                onSelectRequest={setSelectedRequest}
+                resetProxyData={resetProxyData}
+              />
+            </div>
+          </Flex>
+        </Allotment.Pane>
+        {selectedRequest !== null && (
+          <Allotment.Pane minSize={300}>
+            <Details
+              selectedRequest={selectedRequest}
+              onSelectRequest={setSelectedRequest}
+            />
+          </Allotment.Pane>
+        )}
+      </Allotment>
     </View>
   )
 }

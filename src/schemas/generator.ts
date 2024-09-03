@@ -10,4 +10,5 @@ export const GeneratorFileDataSchema = z.object({
   testData: TestDataSchema,
   rules: TestRuleSchema.array(),
   allowlist: z.string().array(),
+  includeStaticAssets: z.boolean(),
 })

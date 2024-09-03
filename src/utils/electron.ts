@@ -1,6 +1,7 @@
 import { AddToastPayload } from '@/types/toast'
 import { platform, arch } from 'os'
 import { WebContents } from 'electron'
+import net from 'net'
 
 type Platform = 'linux' | 'mac' | 'win'
 type Arch = 'arm64' | 'x86_64'
@@ -42,4 +43,21 @@ export function getArch(): Arch {
  */
 export function sendToast(webContents: WebContents, toast: AddToastPayload) {
   webContents.send('ui:toast', toast)
+}
+
+export const findOpenPort = (startPort: number = 3000): Promise<number> => {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer()
+
+    server.listen(startPort, () => {
+      server.once('close', () => resolve(startPort))
+      server.close()
+    })
+
+    server.on('error', () => {
+      findOpenPort(startPort + 1)
+        .then(resolve)
+        .catch(reject)
+    })
+  })
 }
