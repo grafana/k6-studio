@@ -36,6 +36,9 @@ const browser = {
   stopBrowser: () => {
     ipcRenderer.send('browser:stop')
   },
+  onBrowserClosed: (callback: () => void) => {
+    return createListener('browser:closed', callback)
+  },
 } as const
 
 const script = {
