@@ -44,6 +44,9 @@ export function matchFilter(
         const { filter } = rule
         return new RegExp(filter.path).test(request.url)
       }
+      case 'recording-verification':
+        // NOTE: no filtering yet on recording verification
+        return true
       default:
         return exhaustive(rule)
     }

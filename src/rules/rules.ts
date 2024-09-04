@@ -4,7 +4,7 @@ import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { exhaustive } from '../utils/typescript'
 import { applyCustomCodeRule } from './customCode'
 import { applyCorrelationRule } from './correlation'
-import { applyVerificationRule } from './verification'
+import { applyRecordingVerificationRule } from './verification'
 
 export function applyRule(
   requestSnippetSchema: RequestSnippetSchema,
@@ -23,14 +23,10 @@ export function applyRule(
         sequentialIdGenerator
       )
     case 'parameterization':
-      return requestSnippetSchema
     case 'verification':
-      return applyVerificationRule(
-        requestSnippetSchema,
-        rule,
-        correlationStateMap,
-        sequentialIdGenerator
-      )
+      return requestSnippetSchema
+    case 'recording-verification':
+      return applyRecordingVerificationRule(requestSnippetSchema)
     default:
       return exhaustive(rule)
   }

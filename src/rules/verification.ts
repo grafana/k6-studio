@@ -1,37 +1,21 @@
-import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
-import {
-  CorrelationStateMap,
-  CorrelationRule,
-  BeginEndSelector,
-  RegexSelector,
-  JsonSelector,
-} from '@/types/rules'
-import { cloneDeep, isEqual } from 'lodash-es'
-import {
-  canonicalHeaderKey,
-  matchFilter,
-  generateSequentialInt,
-  isJsonReqResp,
-} from './utils'
-import { exhaustive } from '@/utils/typescript'
-import { replaceCorrelatedValues } from './correlation.utils'
-import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
+import { RequestSnippetSchema } from '@/types'
 
-export function applyVerificationRule(
-  requestSnippetSchema: RequestSnippetSchema,
-  rule: VerificationRule,
-  correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>
+export function applyRecordingVerificationRule(
+  requestSnippetSchema: RequestSnippetSchema
 ): RequestSnippetSchema {
-  // Skip verification if filter doesn't match
-  if (!matchFilter(requestSnippetSchema, rule)) {
+  const response = requestSnippetSchema.data.response
+
+  if (!response) {
     return requestSnippetSchema
   }
 
-  // add snippet for extraction
-
+  const verificationSnippet = `
+check(resp, {
+    'is status ${response.statusCode}': (r) => r.status === ${response.statusCode},
+  });
+`
   return {
     ...requestSnippetSchema,
-    after: [...requestSnippetSchema['after'], "HELLO"],
+    after: [...requestSnippetSchema['after'], verificationSnippet],
   }
 }
