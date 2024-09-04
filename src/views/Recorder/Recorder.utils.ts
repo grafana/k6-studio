@@ -1,4 +1,5 @@
-import { ProxyData } from '@/types'
+import { ProxyData, Request } from '@/types'
+import { getContentTypeWithCharsetHeader, upsertHeader } from '@/utils/headers'
 import { debounce } from 'lodash-es'
 import { useState, useMemo, useEffect } from 'react'
 
@@ -39,15 +40,26 @@ export function findAndOverrideCachedResponse(
   proxyData: ProxyData
 ) {
   if (proxyData.response) {
-    const { contentHash: responseContentHash } = proxyData.response
+    const requestSignature = getRequestSignature(proxyData.request)
     const cachedResponse = previous.find(
-      (data) => data.request.contentHash === responseContentHash
+      (data) => getRequestSignature(data.request) === requestSignature
     )
     if (cachedResponse && cachedResponse.response?.content) {
       proxyData.response.content = cachedResponse.response.content
-      proxyData.response.headers = cachedResponse.response.headers
+      const cachedContentType = getContentTypeWithCharsetHeader(
+        cachedResponse.response.headers
+      )
+      upsertHeader(
+        proxyData.response.headers,
+        'content-type',
+        cachedContentType ?? ''
+      )
     }
   }
+}
+
+function getRequestSignature(request: Request) {
+  return `${request.method} ${request.url}`
 }
 
 // TODO: add error and timeout handling
