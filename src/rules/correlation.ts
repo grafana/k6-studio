@@ -481,7 +481,6 @@ if (import.meta.vitest) {
       headers: [['Content-Type', 'application/json']],
       cookies: [],
       content: content,
-      contentHash: '',
       contentLength: 0,
       timestampStart: 0,
     }
@@ -497,7 +496,6 @@ if (import.meta.vitest) {
       scheme: 'http',
       host: 'localhost:3000',
       content: '',
-      contentHash: '',
       path: '/api/v1/foo',
       timestampStart: 0,
       timestampEnd: 0,

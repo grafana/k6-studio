@@ -106,7 +106,6 @@ describe('Code generation', () => {
             scheme: 'http',
             host: 'localhost:3000',
             content: '',
-            contentHash: '',
             path: '/api/v1/users',
             timestampStart: 0,
             timestampEnd: 0,

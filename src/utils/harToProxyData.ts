@@ -37,7 +37,6 @@ function parseRequest(request: Entry['request']): Request {
     query: request.queryString.map((q) => [q.name, q.value]),
     cookies: request.cookies.map((c) => [c.name, c.value]),
     content,
-    contentHash: '',
     // TODO: add actual values
     // @ts-expect-error incomplete type
     timestampStart: request.startedDateTime
@@ -61,7 +60,6 @@ function parseResponse(response: Entry['response']): Response {
     headers: response.headers.map((h) => [h.name, h.value]),
     cookies: response.cookies.map((c) => [c.name, c.value]),
     content,
-    contentHash: '',
     contentLength: response.content?.size ?? 0,
     timestampStart: 0,
     path: '',
