@@ -1,5 +1,6 @@
 import { GeneratorFileData } from '@/types/generator'
 import { RampingStage } from '@/types/testOptions'
+import { createEmptyRule } from './rules'
 
 export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
   return {
@@ -21,7 +22,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     testData: {
       variables: [],
     },
-    rules: [],
+    rules: [createEmptyRule('recording-verification')],
     allowlist: [],
     includeStaticAssets: false,
   }
