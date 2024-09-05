@@ -26,29 +26,17 @@ export function getContentType(headers: Header[]) {
 }
 
 /**
- * Returns the index of a particular header
+ * Returns the header with the updated value
  */
-export function findHeaderIndex(headers: Header[], key: string) {
-  if (!headers) {
-    return -1
-  }
-  return headers.findIndex(
-    ([k]) => k.toLocaleLowerCase() === key.toLocaleLowerCase()
-  )
-}
-
-/**
- * Updates the value of a header in-place if the key exists
- * or inserts the key-value pair at the end of the header if the key doesn't exist
- */
-export function upsertHeader(headers: Header[], key: string, value: string) {
-  if (key === '') {
-    return
-  }
-  const index = findHeaderIndex(headers, key)
-  if (index !== -1) {
-    headers[index] = [key, value]
-  } else {
-    headers.push([key, value])
-  }
+export function upsertHeader(
+  headers: Header[],
+  key: string,
+  value: string
+): Header[] {
+  return [
+    ...headers.filter(
+      ([existingKey]) => existingKey.toLowerCase() !== key.toLowerCase()
+    ),
+    [key, value],
+  ]
 }

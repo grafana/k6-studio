@@ -35,26 +35,39 @@ export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
   ]
 }
 
-export function findAndOverrideCachedResponse(
+export function findCachedResponse(
   previous: ProxyData[],
   proxyData: ProxyData
 ) {
-  if (proxyData.response) {
-    const requestSignature = getRequestSignature(proxyData.request)
-    const cachedResponse = previous.find(
-      (data) => getRequestSignature(data.request) === requestSignature
-    )
-    if (cachedResponse && cachedResponse.response?.content) {
-      proxyData.response.content = cachedResponse.response.content
-      const cachedContentType = getContentTypeWithCharsetHeader(
-        cachedResponse.response.headers
-      )
-      upsertHeader(
-        proxyData.response.headers,
-        'content-type',
-        cachedContentType ?? ''
-      )
-    }
+  if (!proxyData.response) {
+    return proxyData
+  }
+
+  const requestSignature = getRequestSignature(proxyData.request)
+  const cachedResponse = previous.find(
+    (data) => getRequestSignature(data.request) === requestSignature
+  )
+
+  if (!cachedResponse || !cachedResponse.response) {
+    return proxyData
+  }
+
+  const cachedContentType = getContentTypeWithCharsetHeader(
+    cachedResponse.response.headers
+  )
+  const headers = upsertHeader(
+    proxyData.response.headers,
+    'content-type',
+    cachedContentType ?? ''
+  )
+
+  return {
+    ...proxyData,
+    response: {
+      ...proxyData.response,
+      headers,
+      content: cachedResponse.response.content,
+    },
   }
 }
 
