@@ -46,8 +46,7 @@ export function Recorder() {
     setIsRecording(true)
   }, [resetProxyData])
 
-  async function handleStopRecording() {
-    stopRecording()
+  const validateAndSaveHarFile = useCallback(async () => {
     setIsRecording(false)
 
     if (proxyData.length === 0) {
@@ -67,6 +66,11 @@ export function Recorder() {
         state: { discardable: true },
       }
     )
+  }, [proxyData, navigate])
+
+  function handleStopRecording() {
+    stopRecording()
+    validateAndSaveHarFile()
   }
 
   useEffect(() => {
@@ -74,6 +78,10 @@ export function Recorder() {
       handleStartRecording()
     }
   }, [autoStart, handleStartRecording])
+
+  useEffect(() => {
+    return window.studio.browser.onBrowserClosed(validateAndSaveHarFile)
+  }, [validateAndSaveHarFile])
 
   return (
     <View
