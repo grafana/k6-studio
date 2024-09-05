@@ -9,6 +9,7 @@ import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { generateSequentialInt } from '@/rules/utils'
 import { ProxyData } from '@/types'
 import { correlationRecording } from '@/test/fixtures/correlationRecording'
+import { checksRecording } from '@/test/fixtures/checksRecording'
 import { ThinkTime } from '@/types/testOptions'
 
 describe('Code generation', () => {
@@ -191,6 +192,42 @@ describe('Code generation', () => {
       expect(
         generateRequestSnippets(
           correlationRecording,
+          rules,
+          correlationStateMap,
+          sequentialIdGenerator,
+          thinkTime
+        ).replace(/\s/g, '')
+      ).toBe(expectedResult.replace(/\s/g, ''))
+    })
+
+    it('should generate checks', () => {
+      const rules: TestRule[] = [
+        {
+          type: 'recording-verification',
+          id: '1',
+        },
+      ]
+      const correlationStateMap: CorrelationStateMap = {}
+      const sequentialIdGenerator = generateSequentialInt()
+      const thinkTime: ThinkTime = {
+        sleepType: 'iterations',
+        timing: {
+          type: 'fixed',
+          value: 1,
+        },
+      }
+
+      const expectedResult = `
+        params = { headers: {}, cookies: {} }
+        url = http.url\`http://test.k6.io/api/v1/foo\`
+        resp = http.request('POST', url, null, params)
+        check(resp,{'isstatus200':(r)=>r.status===200,})
+
+      `
+
+      expect(
+        generateRequestSnippets(
+          checksRecording,
           rules,
           correlationStateMap,
           sequentialIdGenerator,

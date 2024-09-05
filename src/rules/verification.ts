@@ -12,7 +12,7 @@ export function applyRecordingVerificationRule(
   const verificationSnippet = `
 check(resp, {
     'is status ${response.statusCode}': (r) => r.status === ${response.statusCode},
-  });
+  })
 `
   return {
     ...requestSnippetSchema,
