@@ -46,17 +46,18 @@ export function RecordingSelector() {
             ) : (
               <>
                 {recordings.map((harFileName) => (
-                  <Button
-                    key={harFileName}
-                    variant="ghost"
-                    color={recordingPath === harFileName ? 'orange' : 'gray'}
-                    css={css`
-                      justify-content: start;
-                    `}
-                    onClick={() => handleOpen(harFileName)}
-                  >
-                    {harFileName}
-                  </Button>
+                  <Popover.Close key={harFileName}>
+                    <Button
+                      variant="ghost"
+                      color={recordingPath === harFileName ? 'orange' : 'gray'}
+                      css={css`
+                        justify-content: start;
+                      `}
+                      onClick={() => handleOpen(harFileName)}
+                    >
+                      {harFileName}
+                    </Button>
+                  </Popover.Close>
                 ))}
               </>
             )}

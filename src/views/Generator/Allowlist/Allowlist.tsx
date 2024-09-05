@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { uniq } from 'lodash-es'
 
 import { Button } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { ProxyData } from '@/types'
 import { AllowlistDialog } from './AllowlistDialog'
+import { usePrevious } from 'react-use'
 
 export function Allowlist() {
   const requests = useGeneratorStore((store) => store.requests)
@@ -23,6 +24,42 @@ export function Allowlist() {
 
   const [showAllowlistDialog, setShowAllowlistDialog] = useState(false)
 
+  const previousRequests = usePrevious(requests)
+  const hosts = extractUniqueHosts(requests)
+
+  const shouldResetAllowList = useMemo(() => {
+    // Reset allowlist if selected recording doesn't have previously selected hosts
+    return !allowlist.every((host) => hosts.includes(host))
+  }, [hosts, allowlist])
+
+  const newHostsDetected = useMemo(() => {
+    if (!previousRequests) {
+      return false
+    }
+    const previousHosts = extractUniqueHosts(previousRequests)
+    return previousHosts && hosts.length > previousHosts.length
+  }, [hosts, previousRequests])
+
+  const shouldShowAllowlistDialog = useMemo(() => {
+    if (hasRecording && allowlist.length === 0) {
+      return true
+    }
+
+    return newHostsDetected
+  }, [allowlist, hasRecording, newHostsDetected])
+
+  useEffect(() => {
+    if (shouldResetAllowList) {
+      setAllowlist([])
+    }
+  }, [setAllowlist, shouldResetAllowList])
+
+  useEffect(() => {
+    if (shouldShowAllowlistDialog) {
+      setShowAllowlistDialog(true)
+    }
+  }, [shouldShowAllowlistDialog])
+
   const handleSave = ({
     allowlist,
     includeStaticAssets,
@@ -33,14 +70,6 @@ export function Allowlist() {
     setAllowlist(allowlist)
     setIncludeStaticAssets(includeStaticAssets)
   }
-
-  useEffect(() => {
-    if (hasRecording && allowlist.length === 0) {
-      setShowAllowlistDialog(true)
-    }
-  }, [allowlist, hasRecording])
-
-  const hosts = extractUniqueHosts(requests)
 
   return (
     <>
