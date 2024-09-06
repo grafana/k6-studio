@@ -104,9 +104,18 @@ const enhanceScript = async (scriptPath: string) => {
   const httpImportIndex = scriptLines.findIndex((line) =>
     line.includes('k6/http')
   )
+  const handleSummaryIndex = scriptLines.findIndex(
+    (line) =>
+      // NOTE: if the custom handle summary is commented out we can still insert our snippet
+      // this check should be improved
+      line.includes('export function handleSummary(') && !line.includes('//')
+  )
 
-  // add checks snippet to script
-  scriptLines.push(checksSnippet)
+  // NOTE: checks works only if the user doesn't define a custom summary handler
+  // if no custom handleSummary is defined we add our version to retrieve checks
+  if (handleSummaryIndex === -1) {
+    scriptLines.push(checksSnippet)
+  }
 
   if (httpImportIndex !== -1) {
     scriptLines.splice(httpImportIndex + 1, 0, groupSnippet)
