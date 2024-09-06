@@ -124,7 +124,7 @@ app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
   appShuttingDown = true
   await watcher.close()
-  await stopProxyProcess()
+  stopProxyProcess()
 })
 
 // Proxy
@@ -137,7 +137,7 @@ ipcMain.handle('proxy:start', async (event, port?: number) => {
 
 ipcMain.on('proxy:stop', async () => {
   console.info('proxy:stop event received')
-  await stopProxyProcess()
+  stopProxyProcess()
 })
 
 const waitForProxy = async (): Promise<void> => {
@@ -428,7 +428,7 @@ function getFilePathFromName(name: string) {
   }
 }
 
-const stopProxyProcess = async () => {
+const stopProxyProcess = () => {
   if (currentProxyProcess) {
     currentProxyProcess.kill()
     currentProxyProcess = null
