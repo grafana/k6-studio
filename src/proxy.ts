@@ -59,9 +59,10 @@ export const launchProxy = (
   const stdoutReader = readline.createInterface(proxy.stdout)
 
   stdoutReader.on('line', (data) => {
-    console.log(`stdout: ${data}`)
+    // console.log(`stdout: ${data}`)
 
     if (data === 'Proxy Started~') {
+      console.log(data)
       onReady?.()
       return
     }

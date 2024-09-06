@@ -126,7 +126,10 @@ export const ALL_EXPORTS = {
 export const REQUIRED_IMPORTS: ImportModule[] = [
   {
     path: 'k6',
-    imports: { type: 'named', imports: [{ name: 'group' }, { name: 'sleep' }] },
+    imports: {
+      type: 'named',
+      imports: [{ name: 'group' }, { name: 'sleep' }, { name: 'check' }],
+    },
   },
   { path: 'k6/http', default: { name: 'http' } },
 ]

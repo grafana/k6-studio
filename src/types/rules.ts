@@ -13,12 +13,15 @@ import {
   JsonSelectorSchema,
   ParameterizationRuleSchema,
   RecordedValueSchema,
+  RecordingVerificationRuleSchema,
   RegexSelectorSchema,
   RuleBaseSchema,
   SelectorSchema,
+  StatusCodeSelectorSchema,
   TestRuleSchema,
   VariableValueSchema,
   VerificationRuleSchema,
+  VerificationRuleSelectorSchema,
 } from '@/schemas/rules'
 
 interface CorrelationState {
@@ -39,8 +42,12 @@ export type Filter = z.infer<typeof FilterSchema>
 export type BeginEndSelector = z.infer<typeof BeginEndSelectorSchema>
 export type RegexSelector = z.infer<typeof RegexSelectorSchema>
 export type JsonSelector = z.infer<typeof JsonSelectorSchema>
+export type StatusCodeSelector = z.infer<typeof StatusCodeSelectorSchema>
 export type CustomCodeSelector = z.infer<typeof CustomCodeSelectorSchema>
 export type Selector = z.infer<typeof SelectorSchema>
+export type VerificationRuleSelector = z.infer<
+  typeof VerificationRuleSelectorSchema
+>
 export type CorrelationExtractor = z.infer<typeof CorrelationExtractorSchema>
 export type CorrelationReplacer = z.infer<typeof CorrelationReplacerSchema>
 export type RuleBase = z.infer<typeof RuleBaseSchema>
@@ -48,4 +55,7 @@ export type ParameterizationRule = z.infer<typeof ParameterizationRuleSchema>
 export type CorrelationRule = z.infer<typeof CorrelationRuleSchema>
 export type VerificationRule = z.infer<typeof VerificationRuleSchema>
 export type CustomCodeRule = z.infer<typeof CustomCodeRuleSchema>
+export type RecordingVerificationRule = z.infer<
+  typeof RecordingVerificationRuleSchema
+>
 export type TestRule = z.infer<typeof TestRuleSchema>

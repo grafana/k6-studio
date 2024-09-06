@@ -18,6 +18,7 @@ export function RulePreview() {
     case 'customCode':
     case 'parameterization':
     case 'verification':
+    case 'recording-verification':
       return <div>Not implemented</div>
 
     default:
