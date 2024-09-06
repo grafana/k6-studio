@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ProxyData } from '@/types'
-import { mergeRequestsById } from '@/views/Recorder/Recorder.utils'
+import {
+  mergeRequestsById,
+  findCachedResponse,
+} from '@/views/Recorder/Recorder.utils'
 
 export function useListenProxyData(group?: string) {
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
@@ -19,12 +22,14 @@ export function useListenProxyData(group?: string) {
 
   useEffect(() => {
     return window.studio.proxy.onProxyData((data) => {
-      setProxyData((s) =>
-        mergeRequestsById(s, {
-          ...data,
+      setProxyData((s) => {
+        const proxyData =
+          data.response?.statusCode === 304 ? findCachedResponse(s, data) : data
+        return mergeRequestsById(s, {
+          ...proxyData,
           group: groupRef.current,
         })
-      )
+      })
     })
   }, [])
 
