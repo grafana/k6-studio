@@ -221,7 +221,7 @@ describe('Code generation', () => {
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/foo\`
         resp = http.request('POST', url, null, params)
-        check(resp,{'isstatus200':(r)=>r.status===200,})
+        check(resp,{'RecordingVerificationRule:statusmatchesrecording':(r)=>r.status===200,})
 
       `
 
