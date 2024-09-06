@@ -11,7 +11,7 @@ export function applyRecordingVerificationRule(
 
   const verificationSnippet = `
 check(resp, {
-    'is status ${response.statusCode}': (r) => r.status === ${response.statusCode},
+    'Recording Verification Rule: status matches recording': (r) => r.status === ${response.statusCode},
   })
 `
   return {
