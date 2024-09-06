@@ -14,6 +14,8 @@ export function Content({ data }: { data: ProxyData }) {
   const contentType = getContentType(data.response?.headers ?? [])
   const format = toFormat(contentType)
   const content = parseContent(format, data)
+  const rawFormat = format === 'json' ? 'json-raw' : format
+  const rawContent = parseContent(rawFormat, data)
 
   if (!contentType || !content || !format) {
     return (
@@ -53,7 +55,7 @@ export function Content({ data }: { data: ProxyData }) {
       <ScrollArea style={{ height: '100%' }}>
         <Box px="4" height="100%">
           {selectedTab === 'preview' && <Preview {...contentProps} />}
-          {selectedTab === 'raw' && <Raw {...contentProps} />}
+          {selectedTab === 'raw' && <Raw content={rawContent ?? ''} />}
           {selectedTab === 'content' && <OriginalContent {...contentProps} />}
         </Box>
       </ScrollArea>

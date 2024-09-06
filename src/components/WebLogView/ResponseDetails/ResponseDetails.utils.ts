@@ -50,6 +50,8 @@ export function parseContent(format: string | undefined, data: ProxyData) {
     switch (format) {
       case 'json':
         return stringify(JSON.parse(safeAtob(content)))
+      case 'json-raw':
+        return stringify(JSON.parse(safeAtob(content)), 0)
       case 'css':
       case 'html':
       case 'javascript':
