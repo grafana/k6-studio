@@ -31,6 +31,8 @@ import { GeneratorFile } from './types/generator'
 
 const proxyEmitter = new eventEmmitter()
 
+// Used mainly to avoid starting a new proxy when closing the active one on shutdown
+let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
 let proxyReady = false
 export let proxyPort = 6000
@@ -120,7 +122,9 @@ app.on('activate', async () => {
 
 app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
+  appShuttingDown = true
   await watcher.close()
+  stopProxyProcess()
 })
 
 // Proxy
@@ -133,11 +137,7 @@ ipcMain.handle('proxy:start', async (event, port?: number) => {
 
 ipcMain.on('proxy:stop', async () => {
   console.info('proxy:stop event received')
-  if (currentProxyProcess) {
-    currentProxyProcess.kill()
-    currentProxyProcess = null
-    proxyReady = false
-  }
+  stopProxyProcess()
 })
 
 const waitForProxy = async (): Promise<void> => {
@@ -395,6 +395,10 @@ const launchProxyAndAttachEmitter = async (
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
+      if (appShuttingDown) {
+        // we don't have to restart the proxy if the app is shutting down
+        return
+      }
       proxyReady = false
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
@@ -421,5 +425,13 @@ function getFilePathFromName(name: string) {
 
     default:
       throw new Error('Invalid file type')
+  }
+}
+
+const stopProxyProcess = () => {
+  if (currentProxyProcess) {
+    currentProxyProcess.kill()
+    currentProxyProcess = null
+    proxyReady = false
   }
 }

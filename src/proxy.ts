@@ -78,6 +78,12 @@ export const launchProxy = (
 
   proxy.on('close', (code) => {
     console.log(`proxy process exited with code ${code}`)
+
+    // if the window is destroyed we don't have to do anything else since we are quitting
+    if (browserWindow.isDestroyed()) {
+      return
+    }
+
     browserWindow.webContents.send('proxy:close', code)
     onFailure?.()
   })
