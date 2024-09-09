@@ -26,6 +26,13 @@ describe('Checks Section - utils', () => {
       const expected = 60
       expect(actual).toEqual(expected)
     })
+
+    it('should return 0 if passes and fails are zero', () => {
+      const check = buildCheck({ passes: 0, fails: 0 })
+      const actual = getPassPercentage(check)
+      const expected = 0
+      expect(actual).toEqual(expected)
+    })
   })
 
   describe('groupChecksByPath', () => {

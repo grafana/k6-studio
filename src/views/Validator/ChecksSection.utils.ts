@@ -30,5 +30,8 @@ export function hasFailures(check: K6Check) {
 
 export function getPassPercentage(check: K6Check) {
   const total = check.passes + check.fails
+  if (total === 0) {
+    return 0
+  }
   return (check.passes / total) * 100
 }
