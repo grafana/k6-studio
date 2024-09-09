@@ -31,7 +31,7 @@ export function replaceCorrelatedValues({
     return replaceTextMatches(
       request,
       extractedValue,
-      `correlation_vars[${uniqueId}]`
+      `correlation_vars['correlation_${uniqueId}']`
     )
   }
 
@@ -40,19 +40,19 @@ export function replaceCorrelatedValues({
       return replaceBeginEnd(
         rule.replacer.selector,
         request,
-        `correlation_vars[${uniqueId}]`
+        `correlation_vars['correlation_${uniqueId}']`
       )
     case 'regex':
       return replaceRegex(
         rule.replacer.selector,
         request,
-        `correlation_vars[${uniqueId}]`
+        `correlation_vars['correlation_${uniqueId}']`
       )
     case 'json':
       return replaceJsonBody(
         rule.replacer.selector,
         request,
-        `correlation_vars[${uniqueId}]`
+        `correlation_vars['correlation_${uniqueId}']`
       )
     default:
       return exhaustive(rule.replacer.selector)

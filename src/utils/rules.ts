@@ -52,5 +52,10 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
           type: 'recordedValue',
         },
       }
+    case 'recording-verification':
+      return {
+        type: 'recording-verification',
+        id: self.crypto.randomUUID(),
+      }
   }
 }

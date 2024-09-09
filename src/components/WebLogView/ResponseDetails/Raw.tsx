@@ -7,10 +7,8 @@ interface RawProps {
 
 export function Raw({ content }: RawProps) {
   return (
-    <Text size="1" wrap="pretty">
-      <pre css={style}>
-        <code>{content}</code>
-      </pre>
+    <Text size="1" wrap="pretty" css={style}>
+      <code>{content}</code>
     </Text>
   )
 }

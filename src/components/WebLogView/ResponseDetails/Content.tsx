@@ -6,13 +6,16 @@ import { getContentType } from '@/utils/headers'
 import { Preview } from './Preview'
 import { Raw } from './Raw'
 import { parseContent, toFormat } from './ResponseDetails.utils'
+import { OriginalContent } from './OriginalContent'
 
 export function Content({ data }: { data: ProxyData }) {
-  const [isPreview, setIsPreview] = useState(true)
+  const [selectedTab, setSelectedTab] = useState('preview')
 
   const contentType = getContentType(data.response?.headers ?? [])
   const format = toFormat(contentType)
   const content = parseContent(format, data)
+  const rawFormat = format === 'json' ? 'json-raw' : format
+  const rawContent = parseContent(rawFormat, data)
 
   if (!contentType || !content || !format) {
     return (
@@ -37,9 +40,12 @@ export function Content({ data }: { data: ProxyData }) {
             radius="small"
             size="1"
             variant="classic"
-            onValueChange={(value) => setIsPreview(value === 'preview')}
+            onValueChange={(value) => setSelectedTab(value)}
           >
             <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
+            <SegmentedControl.Item value="content">
+              Content
+            </SegmentedControl.Item>
             <SegmentedControl.Item value="preview">
               Preview
             </SegmentedControl.Item>
@@ -48,11 +54,9 @@ export function Content({ data }: { data: ProxyData }) {
       )}
       <ScrollArea style={{ height: '100%' }}>
         <Box px="4" height="100%">
-          {isPreview ? (
-            <Preview {...contentProps} />
-          ) : (
-            <Raw {...contentProps} />
-          )}
+          {selectedTab === 'preview' && <Preview {...contentProps} />}
+          {selectedTab === 'raw' && <Raw content={rawContent ?? ''} />}
+          {selectedTab === 'content' && <OriginalContent {...contentProps} />}
         </Box>
       </ScrollArea>
     </Flex>

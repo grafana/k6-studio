@@ -56,9 +56,8 @@ export function Recorder() {
     }
   }, [resetProxyData])
 
-  async function saveRecording() {
+  const validateAndSaveHarFile = useCallback(async () => {
     try {
-      stopRecording()
       setRecorderState('saving')
 
       if (proxyData.length === 0) {
@@ -74,10 +73,12 @@ export function Recorder() {
     } finally {
       setRecorderState('idle')
     }
-  }
+  }, [proxyData])
 
   async function handleStopRecording() {
-    const fileName = await saveRecording()
+    stopRecording()
+
+    const fileName = await validateAndSaveHarFile()
 
     if (fileName === null) {
       return
@@ -98,7 +99,9 @@ export function Recorder() {
   }
 
   async function handleConfirmNavigation() {
-    await saveRecording()
+    stopRecording()
+
+    await validateAndSaveHarFile()
 
     blocker.proceed?.()
   }
@@ -108,6 +111,10 @@ export function Recorder() {
       handleStartRecording()
     }
   }, [autoStart, handleStartRecording])
+
+  useEffect(() => {
+    return window.studio.browser.onBrowserClosed(validateAndSaveHarFile)
+  }, [validateAndSaveHarFile])
 
   return (
     <View

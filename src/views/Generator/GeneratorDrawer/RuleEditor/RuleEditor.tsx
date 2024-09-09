@@ -25,6 +25,7 @@ export function RuleEditorSwitch() {
       return <CustomCodeEditor rule={rule} onChangeRule={updateRule} />
     case 'parameterization':
     case 'verification':
+    case 'recording-verification':
       return (
         <Callout.Root>
           <Callout.Icon>

@@ -82,6 +82,28 @@ describe('useListenProxyData', () => {
       },
     ])
   })
+
+  it('updates content and headers of a 304 response', () => {
+    const { result } = renderHook(() => useListenProxyData())
+
+    act(() => {
+      callback(proxyDataWithResponse)
+      callback({ ...proxyDataWith304Response, id: '2' })
+    })
+
+    const expectedResponse = {
+      ...proxyDataWith304Response.response,
+      statusCode: 304,
+      content: proxyDataWithResponse.response?.content,
+      headers: [
+        proxyDataWithResponse.response?.headers.find(
+          ([key]) => key === 'content-type'
+        ),
+      ],
+    }
+
+    expect(result.current.proxyData[1]?.response).toEqual(expectedResponse)
+  })
 })
 
 const request: ProxyData['request'] = {
@@ -102,10 +124,10 @@ const request: ProxyData['request'] = {
 
 const response: ProxyData['response'] = {
   statusCode: 200,
-  headers: [],
+  headers: [['content-type', 'application/json']],
   cookies: [],
   reason: 'OK',
-  content: '',
+  content: '{"hello":"world"}',
   path: '/api/v1/users',
   httpVersion: '1.1',
   timestampStart: 0,
@@ -121,4 +143,15 @@ const proxyDataWithResponse: ProxyData = {
   id: '1',
   request,
   response,
+}
+
+const proxyDataWith304Response: ProxyData = {
+  ...proxyDataWithResponse,
+  request,
+  response: {
+    ...response,
+    statusCode: 304,
+    content: '',
+    headers: [],
+  },
 }

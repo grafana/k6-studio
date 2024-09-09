@@ -15,6 +15,7 @@ const config: ForgeConfig = {
     extraResource: [
       './resources/json_output.py',
       './resources/group_snippet.js',
+      './resources/checks_snippet.js',
       './resources/' + getPlatform() + '/' + getArch(),
     ],
     osxSign: {
@@ -32,7 +33,12 @@ const config: ForgeConfig = {
   },
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({}),
+    new MakerSquirrel({
+      windowsSign: {
+        certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
+        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+      },
+    }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG({}, ['darwin']),
     new MakerRpm({}),

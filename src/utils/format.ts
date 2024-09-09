@@ -23,8 +23,8 @@ export function safeBtoa(content: string) {
   }
 }
 
-export function stringify(obj: object) {
-  return JSON.stringify(obj, null, 2)
+export function stringify(obj: object, space: number = 2) {
+  return JSON.stringify(obj, null, space)
 }
 
 export function isBase64(str: string) {

@@ -1,5 +1,7 @@
 import { ReadOnlyEditor } from '../../Monaco/ReadOnlyEditor'
+import ReactJson from '@microlink/react-json-view'
 import { Font } from './Font'
+import { useTheme } from '@/hooks/useTheme'
 
 interface PreviewProps {
   content: string
@@ -8,6 +10,8 @@ interface PreviewProps {
 }
 
 export function Preview({ content, contentType, format }: PreviewProps) {
+  const theme = useTheme()
+
   if (format === 'html') {
     return (
       <iframe
@@ -44,6 +48,17 @@ export function Preview({ content, contentType, format }: PreviewProps) {
     )
   }
 
+  if (format === 'json') {
+    return (
+      <ReactJson
+        shouldCollapse={(field) => field.name !== 'root'}
+        style={reactJsonStyles}
+        src={JSON.parse(content)}
+        theme={theme === 'dark' ? 'brewer' : 'rjv-default'}
+      />
+    )
+  }
+
   return <ReadOnlyEditor language={format} value={content} />
 }
 
@@ -51,4 +66,8 @@ const mediaStyles = {
   display: 'block',
   maxWidth: '100%',
   boxShadow: 'var(--shadow-3)',
+}
+
+const reactJsonStyles = {
+  fontSize: 12,
 }

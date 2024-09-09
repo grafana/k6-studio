@@ -9,6 +9,7 @@ import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { generateSequentialInt } from '@/rules/utils'
 import { ProxyData } from '@/types'
 import { correlationRecording } from '@/test/fixtures/correlationRecording'
+import { checksRecording } from '@/test/fixtures/checksRecording'
 import { ThinkTime } from '@/types/testOptions'
 
 describe('Code generation', () => {
@@ -25,7 +26,7 @@ describe('Code generation', () => {
   describe('generateScript', () => {
     it('should generate script', () => {
       const expectedResult = `
-      import { group, sleep } from 'k6'
+      import { group, sleep, check } from 'k6'
       import http from 'k6/http'
 
       export const options = {}
@@ -176,21 +177,57 @@ describe('Code generation', () => {
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/login\`
         resp = http.request('POST', url, null, params)
-        correlation_vars[0] = resp.json().user_id
+        correlation_vars['correlation_0'] = resp.json().user_id
 
         params = { headers: {}, cookies: {} }
-        url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars[0]}\`
+        url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars['correlation_0']}\`
         resp = http.request('GET', url, null, params)
 
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/users\`
-        resp = http.request('POST', url, \`${JSON.stringify({ user_id: '${correlation_vars[0]}' })}\`, params)
+        resp = http.request('POST', url, \`${JSON.stringify({ user_id: "${correlation_vars['correlation_0']}" })}\`, params)
 
       `
 
       expect(
         generateRequestSnippets(
           correlationRecording,
+          rules,
+          correlationStateMap,
+          sequentialIdGenerator,
+          thinkTime
+        ).replace(/\s/g, '')
+      ).toBe(expectedResult.replace(/\s/g, ''))
+    })
+
+    it('should generate checks', () => {
+      const rules: TestRule[] = [
+        {
+          type: 'recording-verification',
+          id: '1',
+        },
+      ]
+      const correlationStateMap: CorrelationStateMap = {}
+      const sequentialIdGenerator = generateSequentialInt()
+      const thinkTime: ThinkTime = {
+        sleepType: 'iterations',
+        timing: {
+          type: 'fixed',
+          value: 1,
+        },
+      }
+
+      const expectedResult = `
+        params = { headers: {}, cookies: {} }
+        url = http.url\`http://test.k6.io/api/v1/foo\`
+        resp = http.request('POST', url, null, params)
+        check(resp,{'RecordingVerificationRule:statusmatchesrecording':(r)=>r.status===200,})
+
+      `
+
+      expect(
+        generateRequestSnippets(
+          checksRecording,
           rules,
           correlationStateMap,
           sequentialIdGenerator,
