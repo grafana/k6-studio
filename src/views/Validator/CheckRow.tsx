@@ -40,7 +40,9 @@ export function CheckRow({ check }: { check: K6Check }) {
       </Box>
       <Flex justify="end" asChild>
         {hasFailures(check) && (
-          <Tooltip content={`${getPassPercentage(check)}% success rate`}>
+          <Tooltip
+            content={`${getPassPercentage(check).toFixed(2)}% success rate`}
+          >
             <Text
               truncate
               css={css`
