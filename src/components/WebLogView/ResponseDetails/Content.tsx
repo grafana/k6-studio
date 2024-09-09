@@ -20,7 +20,7 @@ export function Content({ data }: { data: ProxyData }) {
   if (!contentType || !content || !format) {
     return (
       <Flex height="200px" justify="center" align="center">
-        Content not available
+        No content
       </Flex>
     )
   }
