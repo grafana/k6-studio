@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
 import { Button, Flex } from '@radix-ui/themes'
 import { DiscIcon, StopIcon } from '@radix-ui/react-icons'
 import { Allotment } from 'allotment'
@@ -19,13 +19,14 @@ import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { ProxyData } from '@/types'
+import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
+import { RecorderState } from './types'
 
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [group, setGroup] = useState<string>('Default')
   const { proxyData, resetProxyData } = useListenProxyData(group)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
+  const [recorderState, setRecorderState] = useState<RecorderState>('idle')
 
   // Debounce the proxy data to avoid disappearing static asset requests
   // when recording
@@ -33,31 +34,54 @@ export function Recorder() {
 
   const navigate = useNavigate()
   const { state } = useLocation()
+  const blocker = useBlocker(
+    recorderState === 'starting' || recorderState === 'recording'
+  )
+
   const autoStart = Boolean(state?.autoStart)
   useSetWindowTitle('Recorder')
 
+  const isLoading = recorderState === 'starting' || recorderState === 'saving'
+
   const handleStartRecording = useCallback(async () => {
-    resetProxyData()
-    setIsLoading(true)
+    try {
+      resetProxyData()
+      setRecorderState('starting')
 
-    await startRecording()
+      await startRecording()
 
-    setIsLoading(false)
-    setIsRecording(true)
+      setRecorderState('recording')
+    } catch {
+      setRecorderState('idle')
+    }
   }, [resetProxyData])
 
-  async function handleStopRecording() {
-    stopRecording()
-    setIsRecording(false)
+  async function saveRecording() {
+    try {
+      stopRecording()
+      setRecorderState('saving')
 
-    if (proxyData.length === 0) {
+      if (proxyData.length === 0) {
+        return null
+      }
+
+      const har = proxyDataToHar(proxyData)
+      const fileName = await window.studio.har.saveFile(
+        JSON.stringify(har, null, 4)
+      )
+
+      return fileName
+    } finally {
+      setRecorderState('idle')
+    }
+  }
+
+  async function handleStopRecording() {
+    const fileName = await saveRecording()
+
+    if (fileName === null) {
       return
     }
-
-    const har = proxyDataToHar(proxyData)
-    const fileName = await window.studio.har.saveFile(
-      JSON.stringify(har, null, 4)
-    )
 
     navigate(
       getRoutePath('recordingPreviewer', {
@@ -67,6 +91,16 @@ export function Recorder() {
         state: { discardable: true },
       }
     )
+  }
+
+  function handleCancelNavigation() {
+    blocker.reset?.()
+  }
+
+  async function handleConfirmNavigation() {
+    await saveRecording()
+
+    blocker.proceed?.()
   }
 
   useEffect(() => {
@@ -79,21 +113,26 @@ export function Recorder() {
     <View
       title="Recorder"
       actions={
-        <Button
-          onClick={isRecording ? handleStopRecording : handleStartRecording}
-          loading={isLoading}
-          color={isRecording ? 'red' : 'orange'}
-        >
-          {isRecording ? (
-            <>
-              <StopIcon /> Stop recording
-            </>
-          ) : (
-            <>
+        <>
+          {recorderState === 'idle' && (
+            <Button
+              loading={isLoading}
+              color="red"
+              onClick={handleStartRecording}
+            >
               <DiscIcon /> Start recording
-            </>
+            </Button>
           )}
-        </Button>
+          {recorderState !== 'idle' && (
+            <Button
+              loading={isLoading}
+              color="orange"
+              onClick={handleStopRecording}
+            >
+              <StopIcon /> Stop recording
+            </Button>
+          )}
+        </>
       }
     >
       <Allotment defaultSizes={[1, 1]}>
@@ -126,6 +165,13 @@ export function Recorder() {
           </Allotment.Pane>
         )}
       </Allotment>
+
+      <ConfirmNavigationDialog
+        open={blocker.state === 'blocked'}
+        state={recorderState}
+        onCancel={handleCancelNavigation}
+        onStopRecording={handleConfirmNavigation}
+      />
     </View>
   )
 }
