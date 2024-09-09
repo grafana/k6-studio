@@ -6,7 +6,7 @@ export function QueryParams({ request }: { request: Request }) {
   if (request.query.length === 0) {
     return (
       <Flex height="100%" justify="center" align="center">
-        No Query parameters
+        No query parameters
       </Flex>
     )
   }
