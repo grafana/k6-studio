@@ -4,14 +4,14 @@ export const SleepTypeSchema = z.enum(['groups', 'requests', 'iterations'])
 
 export const FixedTimingSchema = z.object({
   type: z.literal('fixed'),
-  value: z.number().nullable(),
+  value: z.number().positive().nullable(),
 })
 
 export const RangeTimingSchema = z.object({
   type: z.literal('range'),
   value: z.object({
-    min: z.number().nullable(),
-    max: z.number().nullable(),
+    min: z.number().positive().nullable(),
+    max: z.number().positive().nullable(),
   }),
 })
 
