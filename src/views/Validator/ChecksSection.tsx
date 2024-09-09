@@ -16,7 +16,6 @@ export function ChecksSection({ checks, isRunning }: ChecksSectionProps) {
     return <NoChecksMessage />
   }
 
-  console.log(JSON.stringify(checks))
   const groupedChecks = groupChecksByPath(checks)
 
   return (
