@@ -156,7 +156,9 @@ export function Validator() {
                     <Tabs.Trigger value="logs">
                       Logs ({logs.length})
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="checks">Checks</Tabs.Trigger>
+                    <Tabs.Trigger value="checks">
+                      Checks ({checks.length})
+                    </Tabs.Trigger>
                     <Tabs.Trigger value="script">Script</Tabs.Trigger>
                   </Tabs.List>
 
