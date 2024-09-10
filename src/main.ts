@@ -74,7 +74,8 @@ const createWindow = async () => {
 
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show()
+    // maximize will also show the window so mainWindow.show() is unneeded
+    mainWindow.maximize()
     mainWindow.focus()
   })
 
