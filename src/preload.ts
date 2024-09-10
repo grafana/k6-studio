@@ -1,5 +1,5 @@
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
-import { ProxyData, K6Log, FolderContent } from './types'
+import { ProxyData, K6Log, FolderContent, K6Check } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
@@ -73,6 +73,9 @@ const script = {
   },
   onScriptFinished: (callback: () => void) => {
     return createListener('script:finished', callback)
+  },
+  onScriptCheck: (callback: (data: K6Check[]) => void) => {
+    return createListener('script:check', callback)
   },
 } as const
 
