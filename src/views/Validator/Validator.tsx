@@ -18,6 +18,8 @@ import { useScriptPath } from './Validator.hooks'
 import { useToast } from '@/store/ui/useToast'
 import { ChecksSection } from './ChecksSection'
 
+type ValidatorTabValue = 'logs' | 'checks' | 'script'
+
 export function Validator() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -26,6 +28,7 @@ export function Validator() {
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
   const [checks, setChecks] = useState<K6Check[]>([])
+  const [selectedTab, setSelectedTab] = useState<ValidatorTabValue>('script')
   const navigate = useNavigate()
   const showToast = useToast()
 
@@ -80,6 +83,7 @@ export function Validator() {
     setIsRunning(false)
     showToast({
       title: 'Script execution stopped',
+      description: 'The script execution was stopped by the user',
       status: 'error',
     })
   }
@@ -91,6 +95,18 @@ export function Validator() {
         title: 'Script execution finished',
         status: 'success',
       })
+    })
+  }, [showToast])
+
+  useEffect(() => {
+    return window.studio.script.onScriptFailed(() => {
+      setIsRunning(false)
+      showToast({
+        title: 'Script execution finished',
+        description: 'The script finished running with errors',
+        status: 'error',
+      })
+      setSelectedTab('logs')
     })
   }, [showToast])
 
@@ -152,7 +168,10 @@ export function Validator() {
             <Allotment.Pane minSize={300}>
               <Box height="100%">
                 <Tabs.Root
-                  defaultValue="script"
+                  value={selectedTab}
+                  onValueChange={(value) =>
+                    setSelectedTab(value as ValidatorTabValue)
+                  }
                   css={css`
                     height: 100%;
                     display: flex;
