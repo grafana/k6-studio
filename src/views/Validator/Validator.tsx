@@ -15,6 +15,7 @@ import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { useScriptPath } from './Validator.hooks'
+import { useToast } from '@/store/ui/useToast'
 
 export function Validator() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
@@ -24,6 +25,7 @@ export function Validator() {
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
   const navigate = useNavigate()
+  const showToast = useToast()
 
   const { proxyData, resetProxyData } = useListenProxyData()
   useSetWindowTitle(scriptPath || 'Validator')
@@ -73,13 +75,22 @@ export function Validator() {
 
   function handleStopScript() {
     window.studio.script.stopScript()
+    setIsRunning(false)
+    showToast({
+      title: 'Script execution stopped',
+      status: 'error',
+    })
   }
 
   useEffect(() => {
-    return window.studio.script.onScriptStopped(() => {
+    return window.studio.script.onScriptFinished(() => {
       setIsRunning(false)
+      showToast({
+        title: 'Script execution finished',
+        status: 'success',
+      })
     })
-  }, [])
+  }, [showToast])
 
   useEffect(() => {
     return window.studio.script.onScriptLog((log) => {

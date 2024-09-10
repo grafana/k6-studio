@@ -71,6 +71,9 @@ const script = {
   onScriptStopped: (callback: () => void) => {
     return createListener('script:stopped', callback)
   },
+  onScriptFinished: (callback: () => void) => {
+    return createListener('script:finished', callback)
+  },
 } as const
 
 const har = {
