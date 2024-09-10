@@ -10,6 +10,8 @@ interface FileProps {
 }
 
 export function File({ fileName, viewPath, isSelected }: FileProps) {
+  const fileNameWithoutExtension = fileName.replace(/\.[^/.]+$/, '')
+
   return (
     <FileContextMenu path={fileName} isSelected={isSelected}>
       <NavLink
@@ -35,7 +37,7 @@ export function File({ fileName, viewPath, isSelected }: FileProps) {
         `}
         to={`${viewPath}/${encodeURIComponent(fileName)}`}
       >
-        {fileName}
+        {fileNameWithoutExtension}
       </NavLink>
     </FileContextMenu>
   )

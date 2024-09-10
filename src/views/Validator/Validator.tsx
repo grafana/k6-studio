@@ -6,7 +6,7 @@ import { Allotment } from 'allotment'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
-import { K6Log, ProxyData } from '@/types'
+import { K6Check, K6Log, ProxyData } from '@/types'
 import { LogsSection } from './LogsSection'
 import { ValidatorControls } from './ValidatorControls'
 import { View } from '@/components/Layout/View'
@@ -15,6 +15,7 @@ import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { useScriptPath } from './Validator.hooks'
+import { ChecksSection } from './ChecksSection'
 
 export function Validator() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
@@ -23,6 +24,7 @@ export function Validator() {
   const { scriptPath, isExternal } = useScriptPath()
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
+  const [checks, setChecks] = useState<K6Check[]>([])
   const navigate = useNavigate()
 
   const { proxyData, resetProxyData } = useListenProxyData()
@@ -88,6 +90,12 @@ export function Validator() {
   }, [])
 
   useEffect(() => {
+    return window.studio.script.onScriptCheck((checks) => {
+      setChecks(checks)
+    })
+  }, [])
+
+  useEffect(() => {
     // Reset requests and logs when script changes
     resetProxyData()
     setLogs([])
@@ -148,6 +156,9 @@ export function Validator() {
                     <Tabs.Trigger value="logs">
                       Logs ({logs.length})
                     </Tabs.Trigger>
+                    <Tabs.Trigger value="checks">
+                      Checks ({checks.length})
+                    </Tabs.Trigger>
                     <Tabs.Trigger value="script">Script</Tabs.Trigger>
                   </Tabs.List>
 
@@ -159,6 +170,15 @@ export function Validator() {
                     `}
                   >
                     <LogsSection logs={logs} autoScroll={isRunning} />
+                  </Tabs.Content>
+                  <Tabs.Content
+                    value="checks"
+                    css={css`
+                      flex: 1;
+                      min-height: 0;
+                    `}
+                  >
+                    <ChecksSection checks={checks} isRunning={isRunning} />
                   </Tabs.Content>
                   <Tabs.Content
                     value="script"
