@@ -71,6 +71,12 @@ const script = {
   onScriptStopped: (callback: () => void) => {
     return createListener('script:stopped', callback)
   },
+  onScriptFinished: (callback: () => void) => {
+    return createListener('script:finished', callback)
+  },
+  onScriptFailed: (callback: () => void) => {
+    return createListener('script:failed', callback)
+  },
   onScriptCheck: (callback: (data: K6Check[]) => void) => {
     return createListener('script:check', callback)
   },

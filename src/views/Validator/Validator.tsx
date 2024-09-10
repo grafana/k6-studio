@@ -15,7 +15,10 @@ import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { useScriptPath } from './Validator.hooks'
+import { useToast } from '@/store/ui/useToast'
 import { ChecksSection } from './ChecksSection'
+
+type ValidatorTabValue = 'logs' | 'checks' | 'script'
 
 export function Validator() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
@@ -25,7 +28,9 @@ export function Validator() {
   const [isRunning, setIsRunning] = useState(false)
   const [logs, setLogs] = useState<K6Log[]>([])
   const [checks, setChecks] = useState<K6Check[]>([])
+  const [selectedTab, setSelectedTab] = useState<ValidatorTabValue>('script')
   const navigate = useNavigate()
+  const showToast = useToast()
 
   const { proxyData, resetProxyData } = useListenProxyData()
   useSetWindowTitle(scriptPath || 'Validator')
@@ -75,13 +80,35 @@ export function Validator() {
 
   function handleStopScript() {
     window.studio.script.stopScript()
+    setIsRunning(false)
+    showToast({
+      title: 'Script execution stopped',
+      description: 'The script execution was stopped by the user',
+      status: 'error',
+    })
   }
 
   useEffect(() => {
-    return window.studio.script.onScriptStopped(() => {
+    return window.studio.script.onScriptFinished(() => {
       setIsRunning(false)
+      showToast({
+        title: 'Script execution finished',
+        status: 'success',
+      })
     })
-  }, [])
+  }, [showToast])
+
+  useEffect(() => {
+    return window.studio.script.onScriptFailed(() => {
+      setIsRunning(false)
+      showToast({
+        title: 'Script execution finished',
+        description: 'The script finished running with errors',
+        status: 'error',
+      })
+      setSelectedTab('logs')
+    })
+  }, [showToast])
 
   useEffect(() => {
     return window.studio.script.onScriptLog((log) => {
@@ -141,7 +168,10 @@ export function Validator() {
             <Allotment.Pane minSize={300}>
               <Box height="100%">
                 <Tabs.Root
-                  defaultValue="script"
+                  value={selectedTab}
+                  onValueChange={(value) =>
+                    setSelectedTab(value as ValidatorTabValue)
+                  }
                   css={css`
                     height: 100%;
                     display: flex;

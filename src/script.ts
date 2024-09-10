@@ -90,7 +90,13 @@ export const runScript = async (
 
   k6.on('close', (code) => {
     console.log(`k6 process exited with code ${code}`)
-    browserWindow.webContents.send('script:stopped')
+    let channel = 'script:failed'
+    if (code === 0) {
+      channel = 'script:finished'
+    } else if (code === 105) {
+      channel = 'script:stopped'
+    }
+    browserWindow.webContents.send(channel)
   })
 
   return k6
