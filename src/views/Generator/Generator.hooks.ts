@@ -32,6 +32,7 @@ export function useGeneratorFile() {
       try {
         await loadGenerator(fileName)
       } catch (error) {
+        console.log('Failed to load generator', error)
         setHasError(true)
       } finally {
         setIsLoading(false)

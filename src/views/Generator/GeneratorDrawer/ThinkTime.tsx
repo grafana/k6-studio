@@ -38,7 +38,6 @@ export function ThinkTime() {
       sleepType,
       timing,
     },
-    mode: 'onChange',
     shouldFocusError: false,
   })
 

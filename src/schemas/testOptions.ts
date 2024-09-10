@@ -4,14 +4,14 @@ export const SleepTypeSchema = z.enum(['groups', 'requests', 'iterations'])
 
 export const FixedTimingSchema = z.object({
   type: z.literal('fixed'),
-  value: z.number().positive().nullable(),
+  value: z.number().nonnegative().nullable(),
 })
 
 export const RangeTimingSchema = z.object({
   type: z.literal('range'),
   value: z.object({
-    min: z.number().positive().nullable(),
-    max: z.number().positive().nullable(),
+    min: z.number().nonnegative().nullable(),
+    max: z.number().nonnegative().nullable(),
   }),
 })
 
@@ -33,14 +33,14 @@ export const CommonOptionsSchema = z.object({
 // TODO: check if vus can be optional
 export const SharedIterationsOptionsSchema = CommonOptionsSchema.extend({
   executor: z.literal('shared-iterations'),
-  vus: z.union([z.number().positive().int(), z.literal('')]).optional(),
-  iterations: z.number().positive().int().optional(),
+  vus: z.union([z.number().nonnegative().int(), z.literal('')]).optional(),
+  iterations: z.number().nonnegative().int().optional(),
 })
 
 // TODO: check if target z.string can be removed
 export const RampingStageSchema = z.object({
   id: z.string().optional(),
-  target: z.union([z.string(), z.number().positive().int()]).optional(),
+  target: z.union([z.string(), z.number().nonnegative().int()]).optional(),
   duration: z
     .string()
     .regex(

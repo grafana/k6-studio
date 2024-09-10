@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const VariableSchema = z.object({
-  name: z.string(),
+  name: z.string().nonempty({ message: 'Required' }),
   value: z.string(),
 })
 
