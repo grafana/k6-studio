@@ -36,6 +36,7 @@ interface RampingActions {
   addStage: () => void
   removeStage: (index: number) => void
   updateStage: (index: number, value: RampingStage) => void
+  setStages: (value: RampingStage[]) => void
 }
 
 type RampingStore = Omit<RampingVUsOptions, 'executor'> & RampingActions
@@ -54,6 +55,10 @@ const createRampingSlice: ImmerStateCreator<RampingStore> = (set) => ({
   updateStage: (index, value) =>
     set((state) => {
       state.stages[index] = value
+    }),
+  setStages: (value) =>
+    set((state) => {
+      state.stages = value
     }),
 })
 

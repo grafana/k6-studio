@@ -1,10 +1,7 @@
 import { Flex, Heading, Text } from '@radix-ui/themes'
 import { VUStages } from './VUStages'
-import { RampingVUsOptions } from '@/types/testOptions'
 
-export function RampingVUs({
-  stages = [],
-}: Omit<RampingVUsOptions, 'executor'>) {
+export function RampingVUs() {
   return (
     <Flex direction="column" gap="4">
       <div>
@@ -17,7 +14,7 @@ export function RampingVUs({
         </Text>
       </div>
 
-      <VUStages stages={stages} />
+      <VUStages />
     </Flex>
   )
 }

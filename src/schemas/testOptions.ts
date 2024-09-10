@@ -29,16 +29,26 @@ export const CommonOptionsSchema = z.object({
   executor: z.enum(['shared-iterations', 'ramping-vus']),
 })
 
+// TODO: check if z.literal('') can be removed
+// TODO: check if vus can be optional
 export const SharedIterationsOptionsSchema = CommonOptionsSchema.extend({
   executor: z.literal('shared-iterations'),
-  vus: z.union([z.number(), z.literal('')]).optional(),
-  iterations: z.number().optional(),
+  vus: z.union([z.number().positive().int(), z.literal('')]).optional(),
+  iterations: z.number().positive().int().optional(),
 })
 
+// TODO: check if target z.string can be removed
 export const RampingStageSchema = z.object({
   id: z.string().optional(),
-  target: z.union([z.string(), z.number()]).optional(),
-  duration: z.string(),
+  target: z.union([z.string(), z.number().positive().int()]).optional(),
+  duration: z
+    .string()
+    .regex(
+      /^(\d+([hms]))$|^(\d+h)(\d+m)(\d+s)$|^(\d+h)(\d+m)$|^(\d+m)(\d+s)$/,
+      {
+        message: 'Must be in format 1m30s',
+      }
+    ),
 })
 
 export const RampingVUsOptionsSchema = CommonOptionsSchema.extend({
