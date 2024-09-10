@@ -1,5 +1,12 @@
+import { css } from '@emotion/react'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
-import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
+import {
+  Button,
+  DropdownMenu,
+  IconButton,
+  Spinner,
+  Text,
+} from '@radix-ui/themes'
 
 interface ValidatorControlsProps {
   isRunning: boolean
@@ -22,6 +29,7 @@ export function ValidatorControls({
 }: ValidatorControlsProps) {
   return (
     <>
+      {isRunning && <RunningSpinner />}
       <Button
         variant={isRunning ? 'outline' : 'solid'}
         disabled={!isScriptSelected}
@@ -30,7 +38,7 @@ export function ValidatorControls({
         {isRunning ? 'Stop script' : 'Run script'}
       </Button>
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
+        <DropdownMenu.Trigger disabled={isRunning}>
           <IconButton variant="soft" aria-label="Actions">
             <DotsVerticalIcon />
           </IconButton>
@@ -46,6 +54,21 @@ export function ValidatorControls({
           )}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
+    </>
+  )
+}
+
+function RunningSpinner() {
+  return (
+    <>
+      <Spinner />{' '}
+      <Text
+        css={css`
+          font-size: 14px;
+        `}
+      >
+        Running
+      </Text>
     </>
   )
 }
