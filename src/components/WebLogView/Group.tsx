@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
-import { Box } from '@radix-ui/themes'
+import { Box, IconButton } from '@radix-ui/themes'
 import { CollapsibleSection } from '../CollapsibleSection'
+import { Pencil1Icon } from '@radix-ui/react-icons'
 
 export function Group({
   name,
@@ -13,7 +14,15 @@ export function Group({
 }) {
   return (
     <Box pb="2">
-      <CollapsibleSection content={<Box>{children}</Box>} defaultOpen>
+      <CollapsibleSection
+        defaultOpen
+        content={<Box>{children}</Box>}
+        actions={
+          <IconButton variant="ghost">
+            <Pencil1Icon />
+          </IconButton>
+        }
+      >
         <span
           css={css`
             font-size: 13px;
