@@ -54,10 +54,6 @@ export function Recorder() {
       await startRecording()
 
       setRecorderState('recording')
-      showToast({
-        title: 'Recording started',
-        status: 'success',
-      })
     } catch {
       setRecorderState('idle')
       showToast({
@@ -65,7 +61,7 @@ export function Recorder() {
         status: 'error',
       })
     }
-  }, [resetProxyData])
+  }, [resetProxyData, showToast])
 
   const validateAndSaveHarFile = useCallback(async () => {
     try {
