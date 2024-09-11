@@ -94,6 +94,7 @@ out/
 # proxy certificates
 resources/certificates
 
+# editors
 .vscode
 .idea
 *.sublime-workspace
