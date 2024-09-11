@@ -12,8 +12,8 @@ export function VUStages() {
   } = useFormContext<LoadProfileExecutorOptions>()
 
   const { fields, append, remove } = useFieldArray({
-    control, // control props comes from useForm (optional: if you are using FormProvider)
-    name: 'stages', // unique name for your Field Array
+    control,
+    name: 'stages',
   })
 
   return (
