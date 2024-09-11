@@ -19,6 +19,8 @@ import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { ProxyData } from '@/types'
+import { useToast } from '@/store/ui/useToast'
+import TextSpinner from '@/components/TextSpinner/TextSpinner'
 
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
@@ -26,6 +28,7 @@ export function Recorder() {
   const { proxyData, resetProxyData } = useListenProxyData(group)
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
+  const showToast = useToast()
 
   // Debounce the proxy data to avoid disappearing static asset requests
   // when recording
@@ -37,14 +40,28 @@ export function Recorder() {
   useSetWindowTitle('Recorder')
 
   const handleStartRecording = useCallback(async () => {
-    resetProxyData()
-    setIsLoading(true)
+    try {
+      resetProxyData()
+      setIsLoading(true)
 
-    await startRecording()
+      await startRecording()
 
-    setIsLoading(false)
-    setIsRecording(true)
-  }, [resetProxyData])
+      setIsLoading(false)
+      setIsRecording(true)
+
+      showToast({
+        title: 'Recording started',
+        status: 'success',
+      })
+    } catch (err) {
+      showToast({
+        title: 'There was an error starting the recording',
+        status: 'error',
+      })
+      setIsLoading(false)
+      setIsRecording(false)
+    }
+  }, [resetProxyData, showToast])
 
   const validateAndSaveHarFile = useCallback(async () => {
     setIsRecording(false)
@@ -80,28 +97,37 @@ export function Recorder() {
   }, [autoStart, handleStartRecording])
 
   useEffect(() => {
-    return window.studio.browser.onBrowserClosed(validateAndSaveHarFile)
-  }, [validateAndSaveHarFile])
+    return window.studio.browser.onBrowserClosed(() => {
+      validateAndSaveHarFile()
+      showToast({
+        title: 'Recording stopped',
+        status: 'success',
+      })
+    })
+  }, [validateAndSaveHarFile, showToast])
 
   return (
     <View
       title="Recorder"
       actions={
-        <Button
-          onClick={isRecording ? handleStopRecording : handleStartRecording}
-          loading={isLoading}
-          color={isRecording ? 'red' : 'orange'}
-        >
-          {isRecording ? (
-            <>
-              <StopIcon /> Stop recording
-            </>
-          ) : (
-            <>
-              <DiscIcon /> Start recording
-            </>
-          )}
-        </Button>
+        <>
+          {isLoading && <TextSpinner text="Starting" />}
+          <Button
+            onClick={isRecording ? handleStopRecording : handleStartRecording}
+            loading={isLoading}
+            color={isRecording ? 'red' : 'orange'}
+          >
+            {isRecording ? (
+              <>
+                <StopIcon /> Stop recording
+              </>
+            ) : (
+              <>
+                <DiscIcon /> Start recording
+              </>
+            )}
+          </Button>
+        </>
       }
     >
       <Allotment defaultSizes={[1, 1]}>
