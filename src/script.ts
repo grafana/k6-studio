@@ -3,7 +3,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 import readline from 'readline/promises'
-import { K6Log } from './types'
+import { K6Check, K6Log } from './types'
 import { getArch, getPlatform } from './utils/electron'
 
 export type K6Process = ChildProcessWithoutNullStreams
@@ -65,7 +65,6 @@ export const runScript = async (
       '--iterations=1',
       '--insecure-skip-tls-verify',
       '--log-format=json',
-      '--no-summary',
       '--quiet',
     ],
     {
@@ -75,33 +74,54 @@ export const runScript = async (
 
   // we use a reader to read entire lines from stderr instead of buffered data
   const stderrReader = readline.createInterface(k6.stderr)
+  const stdoutReader = readline.createInterface(k6.stdout)
 
-  k6.stdout.on('data', (data) => {
-    console.error(`stdout: ${data}`)
+  stdoutReader.on('line', (data) => {
+    console.log(`stdout: ${data}`)
+
+    const checkData: K6Check[] = JSON.parse(data)
+    browserWindow.webContents.send('script:check', checkData)
   })
 
   stderrReader.on('line', (data) => {
-    console.log(`stderr: ${data}`)
-
     const logData: K6Log = JSON.parse(data)
     browserWindow.webContents.send('script:log', logData)
   })
 
   k6.on('close', (code) => {
     console.log(`k6 process exited with code ${code}`)
-    browserWindow.webContents.send('script:stopped')
+    let channel = 'script:failed'
+    if (code === 0) {
+      channel = 'script:finished'
+    } else if (code === 105) {
+      channel = 'script:stopped'
+    }
+    browserWindow.webContents.send(channel)
   })
 
   return k6
 }
 
 const enhanceScript = async (scriptPath: string) => {
-  const groupSnippet = await getGroupSnippet()
+  const groupSnippet = await getJsSnippet('group_snippet.js')
+  const checksSnippet = await getJsSnippet('checks_snippet.js')
   const scriptContent = await readFile(scriptPath, { encoding: 'utf-8' })
   const scriptLines = scriptContent.split('\n')
   const httpImportIndex = scriptLines.findIndex((line) =>
     line.includes('k6/http')
   )
+  const handleSummaryIndex = scriptLines.findIndex(
+    (line) =>
+      // NOTE: if the custom handle summary is commented out we can still insert our snippet
+      // this check should be improved
+      line.includes('export function handleSummary(') && !line.includes('//')
+  )
+
+  // NOTE: checks works only if the user doesn't define a custom summary handler
+  // if no custom handleSummary is defined we add our version to retrieve checks
+  if (handleSummaryIndex === -1) {
+    scriptLines.push(checksSnippet)
+  }
 
   if (httpImportIndex !== -1) {
     scriptLines.splice(httpImportIndex + 1, 0, groupSnippet)
@@ -112,19 +132,15 @@ const enhanceScript = async (scriptPath: string) => {
   }
 }
 
-const getGroupSnippet = async () => {
-  let groupSnippetPath: string
+const getJsSnippet = async (snippetName: string) => {
+  let jsSnippetPath: string
 
   // if we are in dev server we take resources directly, otherwise look in the app resources folder.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    groupSnippetPath = path.join(
-      app.getAppPath(),
-      'resources',
-      'group_snippet.js'
-    )
+    jsSnippetPath = path.join(app.getAppPath(), 'resources', snippetName)
   } else {
-    groupSnippetPath = path.join(process.resourcesPath, 'group_snippet.js')
+    jsSnippetPath = path.join(process.resourcesPath, snippetName)
   }
 
-  return readFile(groupSnippetPath, { encoding: 'utf-8' })
+  return readFile(jsSnippetPath, { encoding: 'utf-8' })
 }

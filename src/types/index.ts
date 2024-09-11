@@ -64,6 +64,14 @@ export interface K6Log {
   error?: string
 }
 
+export interface K6Check {
+  id: string
+  name: string
+  path: string
+  passes: number
+  fails: number
+}
+
 export type GroupedProxyData = Record<string, ProxyData[]>
 
 export interface RequestSnippetSchema {

@@ -1,4 +1,5 @@
-import { ProxyData } from '@/types'
+import { ProxyData, Request } from '@/types'
+import { getContentTypeWithCharsetHeader, upsertHeader } from '@/utils/headers'
 import { debounce } from 'lodash-es'
 import { useState, useMemo, useEffect } from 'react'
 
@@ -32,6 +33,46 @@ export function mergeRequestsById(previous: ProxyData[], proxyData: ProxyData) {
       group: proxyData.group ?? proxyData.comment,
     },
   ]
+}
+
+export function findCachedResponse(
+  previous: ProxyData[],
+  proxyData: ProxyData
+) {
+  if (!proxyData.response) {
+    return proxyData
+  }
+
+  const requestSignature = getRequestSignature(proxyData.request)
+  const cachedResponse = previous.find(
+    (data) => getRequestSignature(data.request) === requestSignature
+  )
+
+  if (!cachedResponse || !cachedResponse.response) {
+    return proxyData
+  }
+
+  const cachedContentType = getContentTypeWithCharsetHeader(
+    cachedResponse.response.headers
+  )
+  const headers = upsertHeader(
+    proxyData.response.headers,
+    'content-type',
+    cachedContentType ?? ''
+  )
+
+  return {
+    ...proxyData,
+    response: {
+      ...proxyData.response,
+      headers,
+      content: cachedResponse.response.content,
+    },
+  }
+}
+
+function getRequestSignature(request: Request) {
+  return `${request.method} ${request.url}`
 }
 
 // TODO: add error and timeout handling

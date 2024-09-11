@@ -6,7 +6,7 @@ export function Cookies({ cookies = [] }: { cookies?: Cookie[] }) {
   if (!cookies.length) {
     return (
       <Flex height="200px" justify="center" align="center">
-        Cookies not available
+        No cookies
       </Flex>
     )
   }

@@ -24,3 +24,19 @@ export function getContentTypeWithCharsetHeader(headers: Header[]) {
 export function getContentType(headers: Header[]) {
   return getContentTypeWithCharsetHeader(headers)?.split(';')[0]
 }
+
+/**
+ * Returns the header with the updated value
+ */
+export function upsertHeader(
+  headers: Header[],
+  key: string,
+  value: string
+): Header[] {
+  return [
+    ...headers.filter(
+      ([existingKey]) => existingKey.toLowerCase() !== key.toLowerCase()
+    ),
+    [key, value],
+  ]
+}

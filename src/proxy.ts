@@ -59,9 +59,10 @@ export const launchProxy = (
   const stdoutReader = readline.createInterface(proxy.stdout)
 
   stdoutReader.on('line', (data) => {
-    console.log(`stdout: ${data}`)
+    // console.log(`stdout: ${data}`)
 
     if (data === 'Proxy Started~') {
+      console.log(data)
       onReady?.()
       return
     }
@@ -78,6 +79,12 @@ export const launchProxy = (
 
   proxy.on('close', (code) => {
     console.log(`proxy process exited with code ${code}`)
+
+    // if the window is destroyed we don't have to do anything else since we are quitting
+    if (browserWindow.isDestroyed()) {
+      return
+    }
+
     browserWindow.webContents.send('proxy:close', code)
     onFailure?.()
   })

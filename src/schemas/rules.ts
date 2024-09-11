@@ -59,10 +59,21 @@ export const CustomCodeSelectorSchema = z.object({
   snippet: z.string(),
 })
 
+export const StatusCodeSelectorSchema = z.object({
+  type: z.literal('status-code'),
+})
+
 export const SelectorSchema = z.discriminatedUnion('type', [
   BeginEndSelectorSchema,
   RegexSelectorSchema,
   JsonSelectorSchema,
+])
+
+export const VerificationRuleSelectorSchema = z.discriminatedUnion('type', [
+  BeginEndSelectorSchema,
+  RegexSelectorSchema,
+  JsonSelectorSchema,
+  StatusCodeSelectorSchema,
 ])
 
 export const CorrelationExtractorSchema = z.object({
@@ -100,13 +111,17 @@ export const CorrelationRuleSchema = RuleBaseSchema.extend({
 export const VerificationRuleSchema = RuleBaseSchema.extend({
   type: z.literal('verification'),
   filter: FilterSchema,
-  selector: SelectorSchema,
+  selector: VerificationRuleSelectorSchema,
   value: z.discriminatedUnion('type', [
     VariableValueSchema,
     ArrayValueSchema,
     CustomCodeValueSchema,
     RecordedValueSchema,
   ]),
+})
+
+export const RecordingVerificationRuleSchema = RuleBaseSchema.extend({
+  type: z.literal('recording-verification'),
 })
 
 export const CustomCodeRuleSchema = RuleBaseSchema.extend({
@@ -121,4 +136,5 @@ export const TestRuleSchema = z.discriminatedUnion('type', [
   CorrelationRuleSchema,
   VerificationRuleSchema,
   CustomCodeRuleSchema,
+  RecordingVerificationRuleSchema,
 ])
