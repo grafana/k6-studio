@@ -114,7 +114,7 @@ export function Recorder() {
           {isLoading && <TextSpinner text="Starting" />}
           <Button
             onClick={isRecording ? handleStopRecording : handleStartRecording}
-            loading={isLoading}
+            disabled={isLoading}
             color={isRecording ? 'red' : 'orange'}
           >
             {isRecording ? (
