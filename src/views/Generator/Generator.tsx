@@ -21,7 +21,7 @@ export function Generator() {
       actions={
         <>
           <RecordingSelector />
-          <Allowlist />
+          <Allowlist isLoading={isLoading} />
           <Button onClick={onSave}>Save</Button>
           {hasRecording && (
             <Button onClick={exportScript}>Export script</Button>

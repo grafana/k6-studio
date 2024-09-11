@@ -28,7 +28,6 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   setRecording: (requests: ProxyData[], path: string) =>
     set((state) => {
       state.requests = requests
-      state.allowlist = []
       state.recordingPath = path
     }),
   resetRecording: () =>
