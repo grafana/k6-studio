@@ -103,6 +103,7 @@ export function ThinkTime() {
                 size="2"
                 placeholder="min"
                 type="number"
+                id="timing.value.min"
                 {...register('timing.value.min', {
                   setValueAs: stringAsOptionalNumber,
                 })}
@@ -119,6 +120,7 @@ export function ThinkTime() {
                 size="2"
                 placeholder="max"
                 type="number"
+                id="timing.value.max"
                 {...register('timing.value.max', {
                   setValueAs: stringAsOptionalNumber,
                 })}

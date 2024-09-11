@@ -1,6 +1,6 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
-import { Box, BoxProps, Flex, Tooltip } from '@radix-ui/themes'
+import { Box, BoxProps, Flex, Tooltip, Text } from '@radix-ui/themes'
 import { ErrorMessage } from '@hookform/error-message'
 import { FieldErrors } from 'react-hook-form'
 import { FieldError } from './FieldError'
@@ -22,11 +22,13 @@ export function FieldGroup({
   ...props
 }: FieldGroupProps) {
   return (
-    <Box mb="2" {...props}>
+    <Box mb="3" {...props}>
       {label && (
         <Label.Root htmlFor={name}>
-          <Flex align="center" gap="1">
-            {label}
+          <Flex align="center" gap="1" mb="1">
+            <Text size="2" weight="medium">
+              {label}
+            </Text>
             {hint && (
               <Tooltip content={hint}>
                 <InfoCircledIcon />
