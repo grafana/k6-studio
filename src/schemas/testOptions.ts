@@ -34,18 +34,15 @@ export const CommonOptionsSchema = z.object({
   executor: z.enum(['shared-iterations', 'ramping-vus']),
 })
 
-// TODO: check if z.literal('') can be removed
-// TODO: check if vus can be optional
 export const SharedIterationsOptionsSchema = CommonOptionsSchema.extend({
   executor: z.literal('shared-iterations'),
-  vus: z.union([z.number().nonnegative().int(), z.literal('')]).optional(),
+  vus: z.number().nonnegative().int().optional(),
   iterations: z.number().nonnegative().int().optional(),
 })
 
-// TODO: check if target z.string can be removed
 export const RampingStageSchema = z.object({
   id: z.string().optional(),
-  target: z.union([z.string(), z.number().nonnegative().int()]).optional(),
+  target: z.number().nonnegative().int(),
   duration: z
     .string()
     .regex(

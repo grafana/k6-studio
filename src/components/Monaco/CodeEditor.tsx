@@ -16,7 +16,6 @@ export function CodeEditor({
   readOnly = false,
 }: CodeEditorProps) {
   const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>()
-  console.log('value', value)
 
   useEffect(() => {
     if (!editor) return

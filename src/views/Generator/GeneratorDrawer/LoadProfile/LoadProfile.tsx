@@ -36,7 +36,6 @@ export function LoadProfile() {
 
   const onSubmit = useCallback(
     (data: LoadProfileExecutorOptions) => {
-      console.log('submit', data)
       setExecutor(data.executor)
 
       if (data.executor === 'ramping-vus') {

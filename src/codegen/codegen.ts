@@ -167,7 +167,6 @@ function generateSleep(timing: ThinkTime['timing']): string {
     case 'fixed':
       return timing.value !== null ? `sleep(${timing.value})` : ''
     case 'range':
-      // TODO: fix add condition
       return `sleep(Math.random() * (${timing.value.max} - ${timing.value.min}) + ${timing.value.min})`
     default:
       return exhaustive(timing)

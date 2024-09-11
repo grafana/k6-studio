@@ -27,10 +27,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
   }
 }
 
-export function createStage(
-  target: number | string = '',
-  duration = ''
-): RampingStage {
+export function createStage(target: number, duration = ''): RampingStage {
   return {
     target,
     duration,

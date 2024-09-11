@@ -4,7 +4,7 @@ import {
   RampingVUsOptions,
   SharedIterationsOptions,
 } from '@/types/testOptions'
-import { createStage, getInitialStages } from '@/utils/generator'
+import { getInitialStages } from '@/utils/generator'
 import { ImmerStateCreator } from '@/utils/typescript'
 
 interface SharedIterationsState
@@ -33,9 +33,6 @@ const createCommonSlice: ImmerStateCreator<CommonStore> = (set) => ({
 })
 
 interface RampingActions {
-  addStage: () => void
-  removeStage: (index: number) => void
-  updateStage: (index: number, value: RampingStage) => void
   setStages: (value: RampingStage[]) => void
 }
 
@@ -44,18 +41,6 @@ type RampingStore = Omit<RampingVUsOptions, 'executor'> & RampingActions
 const createRampingSlice: ImmerStateCreator<RampingStore> = (set) => ({
   stages: getInitialStages(),
 
-  addStage: () =>
-    set((state) => {
-      state.stages.push(createStage())
-    }),
-  removeStage: (index) =>
-    set((state) => {
-      state.stages.splice(index, 1)
-    }),
-  updateStage: (index, value) =>
-    set((state) => {
-      state.stages[index] = value
-    }),
   setStages: (value) =>
     set((state) => {
       state.stages = value
