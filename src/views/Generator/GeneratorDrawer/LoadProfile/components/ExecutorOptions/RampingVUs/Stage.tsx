@@ -4,7 +4,7 @@ import { IconButton, Table, TextField } from '@radix-ui/themes'
 import { FieldErrors, UseFormRegister } from 'react-hook-form'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { stringAsOptionalNumber } from '@/utils/form'
-import { FieldGroup } from '@/views/Generator/GeneratorDrawer/ThinkTime'
+import { FieldGroup } from '@/components/Form'
 
 interface StageProps {
   index: number

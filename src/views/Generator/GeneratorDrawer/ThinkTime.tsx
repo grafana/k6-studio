@@ -1,30 +1,24 @@
 import { InfoCircledIcon } from '@radix-ui/react-icons'
-import * as Label from '@radix-ui/react-label'
-import {
-  Box,
-  Callout,
-  Flex,
-  Select,
-  TextField,
-  Text,
-  Tooltip,
-  BoxProps,
-} from '@radix-ui/themes'
+import { Box, Callout, Flex, TextField } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { ThinkTimeSchema } from '@/schemas/testOptions'
-import {
-  Control,
-  Controller,
-  FieldErrors,
-  FieldValues,
-  Path,
-  useForm,
-} from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useEffect } from 'react'
-import { ErrorMessage } from '@hookform/error-message'
 import type { ThinkTime } from '@/types/testOptions'
 import { stringAsNullableNumber, stringAsOptionalNumber } from '@/utils/form'
+import { ControlledSelect, FieldGroup } from '@/components/Form'
+
+const TYPE_OPTIONS = [
+  { value: 'fixed', label: 'Fixed' },
+  { value: 'range', label: 'Range' },
+]
+
+const SLEEP_TYPE_OPTIONS = [
+  { value: 'groups', label: 'Between groups' },
+  { value: 'requests', label: 'Between requests' },
+  { value: 'iterations', label: 'End of iteration' },
+]
 
 export function ThinkTime() {
   const sleepType = useGeneratorStore((store) => store.sleepType)
@@ -75,25 +69,12 @@ export function ThinkTime() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <FieldGroup name="timing.type" label="Configure timing" errors={errors}>
-        <Flex direction="column">
-          <Controller
-            name="timing.type"
-            control={control}
-            render={({ field }) => (
-              <Select.Root
-                size="2"
-                onValueChange={handleTypeChange}
-                value={field.value}
-              >
-                <Select.Trigger onBlur={field.onBlur} id="timing.type" />
-                <Select.Content>
-                  <Select.Item value="fixed">Fixed</Select.Item>
-                  <Select.Item value="range">Range</Select.Item>
-                </Select.Content>
-              </Select.Root>
-            )}
-          />
-        </Flex>
+        <ControlledSelect
+          name="timing.type"
+          control={control}
+          options={TYPE_OPTIONS}
+          onChange={handleTypeChange}
+        />
       </FieldGroup>
 
       {data.timing.type === 'fixed' && (
@@ -152,26 +133,11 @@ export function ThinkTime() {
         label="Choose where to apply timing"
         errors={errors}
       >
-        <Flex direction="column">
-          <Controller
-            name="sleepType"
-            control={control}
-            render={({ field }) => (
-              <Select.Root
-                size="2"
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <Select.Trigger onBlur={field.onBlur} id="sleepType" />
-                <Select.Content>
-                  <Select.Item value="groups">Between Groups</Select.Item>
-                  <Select.Item value="requests">Between Requests</Select.Item>
-                  <Select.Item value="iterations">End of iteration</Select.Item>
-                </Select.Content>
-              </Select.Root>
-            )}
-          />
-        </Flex>
+        <ControlledSelect
+          name="sleepType"
+          control={control}
+          options={SLEEP_TYPE_OPTIONS}
+        />
       </FieldGroup>
 
       {data.sleepType === 'requests' && (
@@ -187,92 +153,5 @@ export function ThinkTime() {
         </Callout.Root>
       )}
     </form>
-  )
-}
-
-function FieldError({ children }: { children: React.ReactNode }) {
-  return (
-    <Text color="red" size="1">
-      {children}
-    </Text>
-  )
-}
-
-type FieldGroupProps = BoxProps & {
-  children: React.ReactNode
-  errors: FieldErrors
-  name: string
-  label?: React.ReactNode
-  hint?: React.ReactNode
-}
-
-export function FieldGroup({
-  children,
-  label,
-  name,
-  errors,
-  hint,
-  ...props
-}: FieldGroupProps) {
-  return (
-    <Box mb="2" {...props}>
-      {label && (
-        <Label.Root htmlFor={name}>
-          <Flex align="center" gap="1">
-            {label}
-            {hint && (
-              <Tooltip content={hint}>
-                <InfoCircledIcon />
-              </Tooltip>
-            )}
-          </Flex>
-        </Label.Root>
-      )}
-      <Box>{children}</Box>
-      <ErrorMessage errors={errors} name={name} as={FieldError} />
-    </Box>
-  )
-}
-
-type Option = { label: string; value: string }
-// TODO: apply in this component
-export function ControlledSelect<T extends FieldValues, O extends Option>({
-  name,
-  control,
-  options,
-  selectProps = {},
-  onChange,
-}: {
-  name: Path<T>
-  control: Control<T>
-  options: O[]
-  selectProps?: Select.RootProps
-  onChange?: (value: O['value']) => void
-}) {
-  return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field }) => (
-        <Select.Root
-          {...selectProps}
-          value={field.value}
-          onValueChange={onChange ?? field.onChange}
-        >
-          <Select.Trigger
-            onBlur={field.onBlur}
-            id={name}
-            css={{ width: '100%' }}
-          />
-          <Select.Content>
-            {options.map((option) => (
-              <Select.Item key={option.value} value={option.value}>
-                {option.label}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
-      )}
-    />
   )
 }

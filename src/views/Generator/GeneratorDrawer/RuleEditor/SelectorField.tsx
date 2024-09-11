@@ -3,7 +3,7 @@ import { Box, Flex, TextField } from '@radix-ui/themes'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { useFormContext } from 'react-hook-form'
-import { ControlledSelect, FieldGroup } from '../ThinkTime'
+import { ControlledSelect, FieldGroup } from '@/components/Form'
 
 const fromOptions: Array<{
   value: Selector['from']

@@ -22,8 +22,8 @@ export function CorrelationEditor() {
   }
 
   return (
-    <Flex wrap="wrap">
-      <Box p="2" width="50%">
+    <Flex gap="3">
+      <Box width="50%">
         <Heading size="4" weight="medium" mb="2">
           Extractor
         </Heading>
@@ -31,7 +31,7 @@ export function CorrelationEditor() {
         <SelectorField type="extractor" />
       </Box>
 
-      <Box width="50%" p="2" pr="3">
+      <Box width="50%">
         <Label mb="2">
           <Heading size="4" weight="medium">
             Replacer

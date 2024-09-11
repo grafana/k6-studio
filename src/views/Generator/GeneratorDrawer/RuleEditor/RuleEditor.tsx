@@ -8,18 +8,17 @@ import { CustomCodeEditor } from './CustomCodeEditor'
 import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
 import { useGeneratorParams } from '../../Generator.hooks'
 import { getRoutePath } from '@/routeMap'
-import { FormProvider, useForm } from 'react-hook-form'
+import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { TestRule } from '@/types/rules'
 import { useCallback, useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TestRuleSchema } from '@/schemas/rules'
 
-export function RuleEditorSwitch({ rule }: { rule?: TestRule }) {
-  if (!rule) {
-    return null
-  }
+export function RuleEditorSwitch() {
+  const { watch } = useFormContext<TestRule>()
+  const ruleType = watch('type')
 
-  switch (rule.type) {
+  switch (ruleType) {
     case 'correlation':
       return <CorrelationEditor />
     case 'customCode':
@@ -35,7 +34,7 @@ export function RuleEditorSwitch({ rule }: { rule?: TestRule }) {
         </Callout.Root>
       )
     default:
-      return exhaustive(rule)
+      return exhaustive(ruleType)
   }
 }
 
@@ -45,7 +44,7 @@ export function RuleEditor() {
 
   const { ruleId } = useGeneratorParams()
   const updateRule = useGeneratorStore((state) => state.updateRule)
-  const rule = useGeneratorStore((store) => selectRuleById(store, ruleId))
+  const rule = useGeneratorStore((state) => selectRuleById(state, ruleId))
 
   const formMethods = useForm<TestRule>({
     resolver: zodResolver(TestRuleSchema),
@@ -53,7 +52,7 @@ export function RuleEditor() {
     shouldFocusError: false,
   })
 
-  const { watch, handleSubmit } = formMethods
+  const { watch, handleSubmit, reset } = formMethods
 
   const handleClose = () => {
     navigate(
@@ -74,6 +73,13 @@ export function RuleEditor() {
     return () => subscription.unsubscribe()
   }, [watch, handleSubmit, onSubmit])
 
+  // Reset form when switching rules
+  useEffect(() => {
+    reset(rule)
+    // TODO: fix infinite loop when including all dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ruleId])
+
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -88,7 +94,7 @@ export function RuleEditor() {
               <Cross2Icon />
             </IconButton>
           </Box>
-          <RuleEditorSwitch rule={rule} />
+          <RuleEditorSwitch />
         </Box>
       </form>
     </FormProvider>

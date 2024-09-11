@@ -1,8 +1,8 @@
 import { Box, Flex, Heading, Text, TextField } from '@radix-ui/themes'
 
-import { FieldGroup } from '@/views/Generator/GeneratorDrawer/ThinkTime'
 import { useFormContext } from 'react-hook-form'
 import { stringAsOptionalNumber } from '@/utils/form'
+import { FieldGroup } from '@/components/Form'
 
 export function SharedIterations() {
   const {

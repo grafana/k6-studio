@@ -2,8 +2,8 @@ import { Box, Flex } from '@radix-ui/themes'
 
 import { FilterField } from './FilterField'
 import { CodeEditor } from '@/components/Monaco/CodeEditor'
-import { ControlledSelect, FieldGroup } from '../ThinkTime'
 import { Controller, useFormContext } from 'react-hook-form'
+import { ControlledSelect, FieldGroup } from '@/components/Form'
 
 const PLACEMENT_OPTIONS = [
   { value: 'before', label: 'Before request' },

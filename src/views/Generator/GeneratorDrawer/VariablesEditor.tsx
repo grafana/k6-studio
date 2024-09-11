@@ -6,7 +6,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { TestData } from '@/types/testData'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TestDataSchema } from '@/schemas/testData'
-import { FieldGroup } from './ThinkTime'
+import { FieldGroup } from '@/components/Form'
 
 export function VariablesEditor() {
   const variables = useGeneratorStore((store) => store.variables)

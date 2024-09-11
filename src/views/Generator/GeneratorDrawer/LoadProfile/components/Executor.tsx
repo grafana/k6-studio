@@ -1,6 +1,6 @@
+import { ControlledSelect, FieldGroup } from '@/components/Form'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { useFormContext } from 'react-hook-form'
-import { ControlledSelect, FieldGroup } from '../../ThinkTime'
 
 const EXECUTOR_LABEL_MAP: Record<
   LoadProfileExecutorOptions['executor'],
