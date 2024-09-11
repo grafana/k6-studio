@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
 import { Button, Flex } from '@radix-ui/themes'
 import { DiscIcon, StopIcon } from '@radix-ui/react-icons'
 import { Allotment } from 'allotment'
@@ -19,6 +19,8 @@ import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { ProxyData } from '@/types'
+import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
+import { RecorderState } from './types'
 import { useToast } from '@/store/ui/useToast'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 
@@ -26,8 +28,7 @@ export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [group, setGroup] = useState<string>('Default')
   const { proxyData, resetProxyData } = useListenProxyData(group)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
+  const [recorderState, setRecorderState] = useState<RecorderState>('idle')
   const showToast = useToast()
 
   // Debounce the proxy data to avoid disappearing static asset requests
@@ -36,44 +37,63 @@ export function Recorder() {
 
   const navigate = useNavigate()
   const { state } = useLocation()
+  const blocker = useBlocker(
+    recorderState === 'starting' || recorderState === 'recording'
+  )
+
   const autoStart = Boolean(state?.autoStart)
   useSetWindowTitle('Recorder')
+
+  const isLoading = recorderState === 'starting' || recorderState === 'saving'
 
   const handleStartRecording = useCallback(async () => {
     try {
       resetProxyData()
-      setIsLoading(true)
+      setRecorderState('starting')
 
       await startRecording()
 
-      setIsLoading(false)
-      setIsRecording(true)
-
+      setRecorderState('recording')
       showToast({
         title: 'Recording started',
         status: 'success',
       })
-    } catch (err) {
+    } catch {
+      setRecorderState('idle')
       showToast({
         title: 'There was an error starting the recording',
         status: 'error',
       })
-      setIsLoading(false)
-      setIsRecording(false)
     }
-  }, [resetProxyData, showToast])
+  }, [resetProxyData])
 
   const validateAndSaveHarFile = useCallback(async () => {
-    setIsRecording(false)
+    try {
+      setRecorderState('saving')
 
-    if (proxyData.length === 0) {
+      if (proxyData.length === 0) {
+        return null
+      }
+
+      const har = proxyDataToHar(proxyData)
+      const fileName = await window.studio.har.saveFile(
+        JSON.stringify(har, null, 4)
+      )
+
+      return fileName
+    } finally {
+      setRecorderState('idle')
+    }
+  }, [proxyData])
+
+  async function handleStopRecording() {
+    stopRecording()
+
+    const fileName = await validateAndSaveHarFile()
+
+    if (fileName === null) {
       return
     }
-
-    const har = proxyDataToHar(proxyData)
-    const fileName = await window.studio.har.saveFile(
-      JSON.stringify(har, null, 4)
-    )
 
     navigate(
       getRoutePath('recordingPreviewer', {
@@ -83,11 +103,18 @@ export function Recorder() {
         state: { discardable: true },
       }
     )
-  }, [proxyData, navigate])
+  }
 
-  function handleStopRecording() {
+  function handleCancelNavigation() {
+    blocker.reset?.()
+  }
+
+  async function handleConfirmNavigation() {
     stopRecording()
-    validateAndSaveHarFile()
+
+    await validateAndSaveHarFile()
+
+    blocker.proceed?.()
   }
 
   useEffect(() => {
@@ -111,22 +138,27 @@ export function Recorder() {
       title="Recorder"
       actions={
         <>
-          {isLoading && <TextSpinner text="Starting" />}
-          <Button
-            onClick={isRecording ? handleStopRecording : handleStartRecording}
-            disabled={isLoading}
-            color={isRecording ? 'red' : 'orange'}
-          >
-            {isRecording ? (
-              <>
+          {recorderState === 'idle' && (
+            <Button
+              disabled={isLoading}
+              color="red"
+              onClick={handleStartRecording}
+            >
+              <DiscIcon /> Start recording
+            </Button>
+          )}
+          {recorderState !== 'idle' && (
+            <>
+              {isLoading && <TextSpinner text="Starting" />}
+              <Button
+                disabled={isLoading}
+                color="orange"
+                onClick={handleStopRecording}
+              >
                 <StopIcon /> Stop recording
-              </>
-            ) : (
-              <>
-                <DiscIcon /> Start recording
-              </>
-            )}
-          </Button>
+              </Button>
+            </>
+          )}
         </>
       }
     >
@@ -160,6 +192,13 @@ export function Recorder() {
           </Allotment.Pane>
         )}
       </Allotment>
+
+      <ConfirmNavigationDialog
+        open={blocker.state === 'blocked'}
+        state={recorderState}
+        onCancel={handleCancelNavigation}
+        onStopRecording={handleConfirmNavigation}
+      />
     </View>
   )
 }
