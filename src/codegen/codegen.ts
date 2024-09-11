@@ -46,7 +46,7 @@ export function generateVariableDeclarations(variables: Variable[]): string {
 
   const variables_lines = variables
     .filter(({ name }) => name)
-    .map(({ name, value }) => `"${name}": "${value}",`)
+    .map(({ name, value }) => `"${name}": ${JSON.stringify(value)},`)
     .join('\n')
 
   return `const VARS = {\n${variables_lines}\n}\n`
