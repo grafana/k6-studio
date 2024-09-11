@@ -1,58 +1,52 @@
-import { Container, Flex, Select, Text } from '@radix-ui/themes'
-import * as Label from '@radix-ui/react-label'
+import { Box, Flex } from '@radix-ui/themes'
 
-import { CustomCodeRule } from '@/types/rules'
 import { FilterField } from './FilterField'
 import { CodeEditor } from '@/components/Monaco/CodeEditor'
+import { ControlledSelect, FieldGroup } from '../ThinkTime'
+import { Controller, useFormContext } from 'react-hook-form'
 
-interface CustomCodeEditorProps {
-  rule: CustomCodeRule
-  onChangeRule: (rule: CustomCodeRule) => void
-}
-export function CustomCodeEditor({
-  rule,
-  onChangeRule,
-}: CustomCodeEditorProps) {
+const PLACEMENT_OPTIONS = [
+  { value: 'before', label: 'Before request' },
+  { value: 'after', label: 'After request' },
+]
+
+export function CustomCodeEditor() {
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext()
   return (
-    <Container align="left" size="1" p="2" height="100%" maxHeight="100%">
+    <Box>
       <Flex gap="2">
-        <FilterField
-          filter={rule.filter}
-          onChange={(filter) => onChangeRule({ ...rule, filter })}
-        />
-        <Flex direction="column">
-          <Label.Root>Placement</Label.Root>
-          <Select.Root
-            value={rule.placement}
-            onValueChange={(value) =>
-              onChangeRule({
-                ...rule,
-                placement: value as CustomCodeRule['placement'],
-              })
-            }
-          >
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="before">Before request</Select.Item>
-              <Select.Item value="after">After request</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Flex>
+        <Box width="50%">
+          <FilterField path="filter" />
+        </Box>
+        <Box width="50%">
+          <FieldGroup name="placement" errors={errors} label="Placement">
+            <ControlledSelect
+              name="placement"
+              control={control}
+              options={PLACEMENT_OPTIONS}
+            />
+          </FieldGroup>
+        </Box>
       </Flex>
 
-      <div
-        style={{
-          height: 200,
-        }}
-      >
-        <Text>Snippet</Text>
-        <CodeEditor
-          value={rule.snippet}
-          onChange={(value = '') => {
-            onChangeRule({ ...rule, snippet: value })
-          }}
+      <FieldGroup name="snippet" errors={errors} label="Snippet">
+        <Controller
+          name="snippet"
+          render={({ field }) => (
+            <div css={{ height: 200 }}>
+              <CodeEditor
+                value={field.value}
+                onChange={(value = '') => {
+                  field.onChange(value)
+                }}
+              />
+            </div>
+          )}
         />
-      </div>
-    </Container>
+      </FieldGroup>
+    </Box>
   )
 }

@@ -12,12 +12,19 @@ import {
 } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { ThinkTimeSchema } from '@/schemas/testOptions'
-import { Control, Controller, FieldErrors, useForm } from 'react-hook-form'
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  FieldValues,
+  Path,
+  useForm,
+} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useEffect } from 'react'
 import { ErrorMessage } from '@hookform/error-message'
 import type { ThinkTime } from '@/types/testOptions'
-import { stringAsNullableNumber } from '@/utils/form'
+import { stringAsNullableNumber, stringAsOptionalNumber } from '@/utils/form'
 
 export function ThinkTime() {
   const sleepType = useGeneratorStore((store) => store.sleepType)
@@ -58,10 +65,10 @@ export function ThinkTime() {
 
   function handleTypeChange(type: string) {
     if (type === 'fixed') {
-      setValue('timing', { type: 'fixed', value: null })
+      setValue('timing', { type: 'fixed', value: 1 })
     }
     if (type === 'range') {
-      setValue('timing', { type: 'range', value: { min: null, max: null } })
+      setValue('timing', { type: 'range', value: { min: 1, max: 3 } })
     }
   }
 
@@ -75,10 +82,7 @@ export function ThinkTime() {
             render={({ field }) => (
               <Select.Root
                 size="2"
-                onValueChange={(value) => {
-                  field.onChange(value)
-                  handleTypeChange(value)
-                }}
+                onValueChange={handleTypeChange}
                 value={field.value}
               >
                 <Select.Trigger onBlur={field.onBlur} id="timing.type" />
@@ -119,7 +123,7 @@ export function ThinkTime() {
                 placeholder="min"
                 type="number"
                 {...register('timing.value.min', {
-                  setValueAs: stringAsNullableNumber,
+                  setValueAs: stringAsOptionalNumber,
                 })}
               />
             </FieldGroup>
@@ -135,7 +139,7 @@ export function ThinkTime() {
                 placeholder="max"
                 type="number"
                 {...register('timing.value.max', {
-                  setValueAs: stringAsNullableNumber,
+                  setValueAs: stringAsOptionalNumber,
                 })}
               />
             </FieldGroup>
@@ -230,17 +234,20 @@ export function FieldGroup({
   )
 }
 
+type Option = { label: string; value: string }
 // TODO: apply in this component
-export function ControlledSelect({
+export function ControlledSelect<T extends FieldValues, O extends Option>({
   name,
   control,
   options,
   selectProps = {},
+  onChange,
 }: {
-  name: string
-  control: Control
-  options: { label: string; value: string }[]
+  name: Path<T>
+  control: Control<T>
+  options: O[]
   selectProps?: Select.RootProps
+  onChange?: (value: O['value']) => void
 }) {
   return (
     <Controller
@@ -250,9 +257,13 @@ export function ControlledSelect({
         <Select.Root
           {...selectProps}
           value={field.value}
-          onValueChange={field.onChange}
+          onValueChange={onChange ?? field.onChange}
         >
-          <Select.Trigger onBlur={field.onBlur} id={name} />
+          <Select.Trigger
+            onBlur={field.onBlur}
+            id={name}
+            css={{ width: '100%' }}
+          />
           <Select.Content>
             {options.map((option) => (
               <Select.Item key={option.value} value={option.value}>

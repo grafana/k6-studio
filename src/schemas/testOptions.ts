@@ -9,10 +9,15 @@ export const FixedTimingSchema = z.object({
 
 export const RangeTimingSchema = z.object({
   type: z.literal('range'),
-  value: z.object({
-    min: z.number().nonnegative().nullable(),
-    max: z.number().nonnegative().nullable(),
-  }),
+  value: z
+    .object({
+      min: z.number().nonnegative(),
+      max: z.number().nonnegative(),
+    })
+    .refine(({ min, max }) => max > min, {
+      message: 'Max must be greater than min',
+      path: ['max'],
+    }),
 })
 
 export const TimingSchema = z.discriminatedUnion('type', [
