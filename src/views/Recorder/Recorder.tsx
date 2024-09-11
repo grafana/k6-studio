@@ -25,7 +25,7 @@ import { RecorderState } from './types'
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [group, setGroup] = useState<string>('Default')
-  const { proxyData, resetProxyData } = useListenProxyData(group)
+  const { proxyData, resetProxyData, setProxyData } = useListenProxyData(group)
   const [recorderState, setRecorderState] = useState<RecorderState>('idle')
 
   // Debounce the proxy data to avoid disappearing static asset requests
@@ -106,6 +106,18 @@ export function Recorder() {
     blocker.proceed?.()
   }
 
+  function handleRenameGroup(oldName: string, newName: string) {
+    setProxyData((requests) =>
+      requests.map((request) =>
+        request.group === oldName ? { ...request, group: newName } : request
+      )
+    )
+
+    if (group === oldName) {
+      setGroup(newName)
+    }
+  }
+
   useEffect(() => {
     if (autoStart) {
       handleStartRecording()
@@ -158,6 +170,7 @@ export function Recorder() {
                 autoScroll
                 activeGroup={group}
                 onSelectRequest={setSelectedRequest}
+                onRenameGroup={handleRenameGroup}
                 resetProxyData={resetProxyData}
               />
             </div>

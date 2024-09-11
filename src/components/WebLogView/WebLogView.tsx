@@ -15,6 +15,7 @@ interface WebLogViewProps {
   selectedRequestId?: string
   noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
+  onRenameGroup?: (oldName: string, newName: string) => void
 }
 
 export function WebLogView({
@@ -23,6 +24,7 @@ export function WebLogView({
   selectedRequestId,
   noRequestsMessage,
   onSelectRequest,
+  onRenameGroup,
 }: WebLogViewProps) {
   if (isEmpty(requests)) {
     return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
@@ -40,7 +42,12 @@ export function WebLogView({
     return (
       <>
         {groups.map(([group, data]) => (
-          <Group name={group} length={data.length} key={group}>
+          <Group
+            name={group}
+            length={data.length}
+            key={group}
+            onRename={onRenameGroup}
+          >
             <RequestList
               requests={data}
               selectedRequestId={selectedRequestId}
