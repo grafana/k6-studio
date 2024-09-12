@@ -78,7 +78,12 @@ export function ValidatorDialog({
                     Close
                   </Button>
                 </Dialog.Close>
-                <Button variant="soft" color="gray" loading={isRunning}>
+                <Button
+                  variant="soft"
+                  color="gray"
+                  loading={isRunning}
+                  onClick={handleRunScript}
+                >
                   Re-run script
                 </Button>
               </Flex>
