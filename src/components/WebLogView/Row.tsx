@@ -6,6 +6,7 @@ import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
 import { removeProtocolFromUrl } from './WebLogView.utils'
 import { css } from '@emotion/react'
+import { useState } from 'react'
 
 interface RowProps {
   data: ProxyData
@@ -15,6 +16,13 @@ interface RowProps {
 
 export function Row({ data, isSelected, onSelectRequest }: RowProps) {
   const urlWithoutProtocol = removeProtocolFromUrl(data.request.url)
+  const [isEllipsisActive, setIsEllipsisActive] = useState(false)
+
+  const onTextRef = (node: HTMLSpanElement) => {
+    if (!node) return
+    const isOverflowing = node.clientWidth !== node.scrollWidth
+    setIsEllipsisActive(isOverflowing)
+  }
 
   return (
     <Flex
@@ -36,13 +44,14 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
       `}
     >
       <MethodBadge method={data.request.method} />
-      <Tooltip content={urlWithoutProtocol}>
+      <Tooltip content={urlWithoutProtocol} hidden={!isEllipsisActive}>
         <Text
           truncate
           css={css`
             font-size: 13px;
             line-height: 24px;
           `}
+          ref={onTextRef}
         >
           {urlWithoutProtocol}
         </Text>
