@@ -33,7 +33,7 @@ export function UnsavedChangesDialog({
         </Box>
         <Flex justify="end" gap="2">
           <Button onClick={onDiscard} color="red">
-            Discard change
+            Discard changes
           </Button>
           <Dialog.Close>
             <Button color="green">Continue editing</Button>
