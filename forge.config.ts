@@ -11,6 +11,7 @@ import { getPlatform, getArch } from './src/utils/electron'
 
 const config: ForgeConfig = {
   packagerConfig: {
+    icon: './resources/icons/logo',
     asar: true,
     extraResource: [
       './resources/json_output.py',
@@ -43,7 +44,7 @@ const config: ForgeConfig = {
     new MakerDMG({}, ['darwin']),
     new MakerRpm({}),
     new MakerRpm({}),
-    new MakerDeb({}),
+    new MakerDeb({ options: { icon: './src/assets/icons/logo.png' } }),
   ],
   plugins: [
     new VitePlugin({
