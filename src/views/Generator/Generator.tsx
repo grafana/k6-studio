@@ -1,5 +1,5 @@
 import { Allotment } from 'allotment'
-import { Box, Button, Dialog, Flex, Text } from '@radix-ui/themes'
+import { Button } from '@radix-ui/themes'
 import { Outlet, useBlocker, useNavigate } from 'react-router-dom'
 
 import {
@@ -23,6 +23,7 @@ import {
 import { useEffect } from 'react'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
+import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 
 export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
@@ -134,39 +135,5 @@ export function Generator() {
         onCancel={() => blocker.reset?.()}
       />
     </View>
-  )
-}
-
-function UnsavedChangesDialog({
-  open,
-  onSave,
-  onDiscard,
-  onCancel,
-}: {
-  open: boolean
-  onSave: () => void
-  onDiscard: () => void
-  onCancel: () => void
-}) {
-  return (
-    <Dialog.Root open={open} onOpenChange={onCancel}>
-      <Dialog.Content size="3">
-        <Flex direction="column" minHeight="150px">
-          <Dialog.Title>Unsaved changed</Dialog.Title>
-          <Box flexGrow="1" flexShrink="1" flexBasis="0">
-            <Text>You have unsaved changes in the generator</Text>
-          </Box>
-          <Flex justify="end" gap="3">
-            <Dialog.Close>
-              <Button variant="soft" color="gray">
-                Cancel
-              </Button>
-            </Dialog.Close>
-            <Button onClick={onDiscard}>Discard</Button>
-            <Button onClick={onSave}>Save</Button>
-          </Flex>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
   )
 }
