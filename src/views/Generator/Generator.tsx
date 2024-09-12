@@ -1,19 +1,83 @@
 import { Allotment } from 'allotment'
 import { Button } from '@radix-ui/themes'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 
-import { useGeneratorStore, selectHasRecording } from '@/store/generator'
+import {
+  useGeneratorStore,
+  selectHasRecording,
+  selectGeneratorData,
+} from '@/store/generator'
 import { View } from '@/components/Layout/View'
 import { exportScript } from './Generator.utils'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
-import { useGeneratorFile } from './Generator.hooks'
+import {
+  useGeneratorParams,
+  useIsGeneratorDirty,
+  useLoadGeneratorFile,
+  useLoadHarFile,
+  useSaveGeneratorFile,
+} from './Generator.hooks'
+import { useEffect } from 'react'
+import { useToast } from '@/store/ui/useToast'
+import { getRoutePath } from '@/routeMap'
 
 export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const { isLoading, onSave } = useGeneratorFile()
+
+  const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
+  const generatorState = useGeneratorStore(selectGeneratorData)
+
+  const showToast = useToast()
+  const navigate = useNavigate()
+
+  const { fileName } = useGeneratorParams()
+
+  const {
+    data: generatorFileData,
+    isLoading: isLoadingGenerator,
+    error: generatorError,
+  } = useLoadGeneratorFile(fileName)
+
+  const {
+    data: recording,
+    isLoading: isLoadingRecording,
+    error: harError,
+  } = useLoadHarFile(generatorFileData?.recordingPath)
+
+  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(fileName)
+
+  const isLoading = isLoadingGenerator || isLoadingRecording
+
+  const isDirty = useIsGeneratorDirty(fileName)
+
+  useEffect(() => {
+    if (!generatorFileData) return
+    setGeneratorFile(generatorFileData, recording)
+  }, [setGeneratorFile, generatorFileData, recording])
+
+  useEffect(() => {
+    if (generatorError) {
+      showToast({
+        title: 'Failed to load generator',
+        status: 'error',
+      })
+
+      navigate(getRoutePath('home'))
+    }
+  }, [generatorError, showToast, navigate])
+
+  useEffect(() => {
+    if (harError) {
+      showToast({
+        title: 'Failed to har file',
+        status: 'error',
+        description: 'Select another recording from top menu',
+      })
+    }
+  }, [harError, showToast])
 
   return (
     <View
@@ -22,7 +86,12 @@ export function Generator() {
         <>
           <RecordingSelector />
           <Allowlist />
-          <Button onClick={onSave}>Save</Button>
+          <Button
+            disabled={!isDirty}
+            onClick={() => saveGenerator(generatorState)}
+          >
+            Save
+          </Button>
           {hasRecording && (
             <Button onClick={exportScript}>Export script</Button>
           )}

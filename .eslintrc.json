@@ -14,11 +14,12 @@
     "plugin:react/recommended",
     "plugin:react/jsx-runtime",
     "plugin:react-hooks/recommended",
+    "plugin:@tanstack/eslint-plugin-query/recommended",
     "prettier"
   ],
   "parser": "@typescript-eslint/parser",
   "ignorePatterns": ["resources/group_snippet.js"],
-  "plugins": ["import", "unused-imports"],
+  "plugins": ["import", "unused-imports", "@tanstack/query"],
   "settings": {
     "import/resolver": {
       "typescript": {}
