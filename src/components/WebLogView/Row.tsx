@@ -1,10 +1,10 @@
-import { Box, Flex, Text } from '@radix-ui/themes'
+import { Flex, Text, Tooltip } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 
 import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
-import { removeQueryStringFromUrl } from './WebLogView.utils'
+import { removeProtocolFromUrl } from './WebLogView.utils'
 import { css } from '@emotion/react'
 
 interface RowProps {
@@ -14,6 +14,8 @@ interface RowProps {
 }
 
 export function Row({ data, isSelected, onSelectRequest }: RowProps) {
+  const urlWithoutProtocol = removeProtocolFromUrl(data.request.url)
+
   return (
     <Flex
       align="center"
@@ -34,7 +36,7 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
       `}
     >
       <MethodBadge method={data.request.method} />
-      <Box flexGrow="1" asChild>
+      <Tooltip content={urlWithoutProtocol}>
         <Text
           truncate
           css={css`
@@ -42,11 +44,10 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
             line-height: 24px;
           `}
         >
-          {data.request.host}
-          {removeQueryStringFromUrl(data.request.path)}
+          {urlWithoutProtocol}
         </Text>
-      </Box>
-      <Flex minWidth="40px" justify="end" asChild>
+      </Tooltip>
+      <Flex minWidth="40px" justify="end" flexGrow="1" asChild>
         <ResponseStatusBadge status={data.response?.statusCode} />
       </Flex>
     </Flex>
