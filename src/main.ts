@@ -255,7 +255,7 @@ ipcMain.on('script:stop', (event) => {
   browserWindow.webContents.send('script:stopped')
 })
 
-ipcMain.on(
+ipcMain.handle(
   'script:save',
   async (event, script: string, fromGenerator: boolean = false) => {
     console.info('script:save event received')

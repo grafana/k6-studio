@@ -1,11 +1,10 @@
+import { Box, Button, Dialog, Flex } from '@radix-ui/themes'
+import { useCallback, useEffect, useState } from 'react'
+
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunLogs } from '@/hooks/useRunLogs'
 import { ValidatorContent } from '@/views/Validator/ValidatorContent'
-import { Box, Button, Dialog, Flex, Spinner, Text } from '@radix-ui/themes'
-import { useEffect, useState } from 'react'
-import { exportScript } from '../Generator.utils'
 import { useRunChecks } from '@/hooks/useRunChecks'
-import { css } from '@emotion/react'
 
 interface ValidatorDialogProps {
   script: string
@@ -23,61 +22,65 @@ export function ValidatorDialog({
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
 
-  function handleStopScript() {
-    if (!isRunning) return
-    window.studio.script.stopScript()
-    setIsRunning(false)
-  }
-
-  useEffect(() => {
+  const resetState = useCallback(() => {
     resetLogs()
     resetProxyData()
     resetChecks()
-    setIsRunning(open)
+  }, [resetChecks, resetLogs, resetProxyData])
 
-    if (open) {
-      window.studio.script.saveScript(script, true)
-      window.studio.script.runScript(
-        'k6-studio-generator-script.js',
-        false,
-        true
-      )
-      console.log('Running script')
-    }
-  }, [open, resetChecks, resetLogs, resetProxyData])
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        window.studio.script.stopScript()
+        setIsRunning(false)
+        resetState()
+      }
+
+      onOpenChange(open)
+    },
+    [onOpenChange, resetState]
+  )
+
+  const handleRunScript = useCallback(async () => {
+    resetState()
+    setIsRunning(true)
+
+    await window.studio.script.saveScript(script, true)
+    await window.studio.script.runScript(
+      'k6-studio-generator-script.js',
+      false,
+      true
+    )
+  }, [resetState, script])
+
+  useEffect(() => {
+    if (!open) return
+
+    handleRunScript()
+  }, [open, handleRunScript])
+
+  useEffect(() => {
+    return window.studio.script.onScriptFinished(() => {
+      setIsRunning(false)
+    })
+  }, [])
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Content maxWidth="95vw" height="85vh" size="2" asChild>
         <Flex direction="column">
           <Dialog.Title>
             <Flex justify="between">
               Validator
               <Flex gap="3" justify="end" align="center">
-                {isRunning && (
-                  <>
-                    <Spinner />{' '}
-                    <Text
-                      css={css`
-                        font-size: 14px;
-                      `}
-                    >
-                      Running
-                    </Text>
-                  </>
-                )}
                 <Dialog.Close>
-                  <Button
-                    variant="soft"
-                    color="gray"
-                    onClick={handleStopScript}
-                  >
+                  <Button variant="soft" color="gray">
                     Close
                   </Button>
                 </Dialog.Close>
-                <Dialog.Close>
-                  <Button onClick={exportScript}>Save script</Button>
-                </Dialog.Close>
+                <Button variant="soft" color="gray" loading={isRunning}>
+                  Re-run script
+                </Button>
               </Flex>
             </Flex>
           </Dialog.Title>

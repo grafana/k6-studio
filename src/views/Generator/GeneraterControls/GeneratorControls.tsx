@@ -19,7 +19,6 @@ export function GeneratorControls({ onSave }: GeneratorControlsProps) {
     <>
       <RecordingSelector />
       <Allowlist />
-      <Button onClick={onSave}>Save</Button>
 
       {!!preview && (
         <>
@@ -29,16 +28,20 @@ export function GeneratorControls({ onSave }: GeneratorControlsProps) {
             }
           >
             <ButtonWithTooltip
+              color="gray"
+              variant="soft"
               disabled={error}
               tooltip={tooltip}
               onClick={() => {
                 setIsDialogOpen(true)
               }}
             >
-              Run script
+              Validate script
             </ButtonWithTooltip>
           </Tooltip>
           <ButtonWithTooltip
+            color="gray"
+            variant="soft"
             disabled={error}
             tooltip={tooltip}
             onClick={exportScript}
@@ -54,6 +57,7 @@ export function GeneratorControls({ onSave }: GeneratorControlsProps) {
           />
         </>
       )}
+      <Button onClick={onSave}>Save</Button>
     </>
   )
 }
