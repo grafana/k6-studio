@@ -1,6 +1,6 @@
 import { Allotment } from 'allotment'
-import { Button } from '@radix-ui/themes'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Box, Button, Dialog, Flex, Text } from '@radix-ui/themes'
+import { Outlet, useBlocker, useNavigate } from 'react-router-dom'
 
 import {
   useGeneratorStore,
@@ -53,6 +53,18 @@ export function Generator() {
 
   const isDirty = useIsGeneratorDirty(fileName)
 
+  const blocker = useBlocker(({ nextLocation, historyAction }) => {
+    const isNavigationInsideGenerator = nextLocation.pathname.includes(
+      encodeURI(getRoutePath('generator', { fileName }))
+    )
+
+    // Don't show on 'REPLACE' because after navigating
+    // to generator it redirects to load profile tab
+    return (
+      isDirty && !isNavigationInsideGenerator && historyAction !== 'REPLACE'
+    )
+  })
+
   useEffect(() => {
     if (!generatorFileData) return
     setGeneratorFile(generatorFileData, recording)
@@ -79,6 +91,8 @@ export function Generator() {
     }
   }, [harError, showToast])
 
+  const handleSaveGenerator = () => saveGenerator(generatorState)
+
   return (
     <View
       title="Generator"
@@ -86,10 +100,7 @@ export function Generator() {
         <>
           <RecordingSelector />
           <Allowlist />
-          <Button
-            disabled={!isDirty}
-            onClick={() => saveGenerator(generatorState)}
-          >
+          <Button disabled={!isDirty} onClick={handleSaveGenerator}>
             Save
           </Button>
           {hasRecording && (
@@ -114,6 +125,48 @@ export function Generator() {
           <GeneratorSidebar />
         </Allotment.Pane>
       </Allotment>
+      <UnsavedChangesDialog
+        open={blocker.state === 'blocked'}
+        onSave={() => {
+          handleSaveGenerator().then(() => blocker.proceed?.())
+        }}
+        onDiscard={() => blocker.proceed?.()}
+        onCancel={() => blocker.reset?.()}
+      />
     </View>
+  )
+}
+
+function UnsavedChangesDialog({
+  open,
+  onSave,
+  onDiscard,
+  onCancel,
+}: {
+  open: boolean
+  onSave: () => void
+  onDiscard: () => void
+  onCancel: () => void
+}) {
+  return (
+    <Dialog.Root open={open} onOpenChange={onCancel}>
+      <Dialog.Content size="3">
+        <Flex direction="column" minHeight="150px">
+          <Dialog.Title>Unsaved changed</Dialog.Title>
+          <Box flexGrow="1" flexShrink="1" flexBasis="0">
+            <Text>You have unsaved changes in the generator</Text>
+          </Box>
+          <Flex justify="end" gap="3">
+            <Dialog.Close>
+              <Button variant="soft" color="gray">
+                Cancel
+              </Button>
+            </Dialog.Close>
+            <Button onClick={onDiscard}>Discard</Button>
+            <Button onClick={onSave}>Save</Button>
+          </Flex>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
   )
 }

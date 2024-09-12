@@ -11,7 +11,6 @@ import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '@/utils/query'
-import { isEqual } from 'lodash-es'
 
 export function useGeneratorParams() {
   const { fileName, ruleId } = useParams()
@@ -70,5 +69,7 @@ export function useIsGeneratorDirty(fileName: string) {
   const generatorState = useGeneratorStore(selectGeneratorData)
   const { data } = useLoadGeneratorFile(fileName)
 
-  return !isEqual(generatorState, data)
+  // Convert to JSON instead of doing deep equal to remove
+  // `property: undefined` values
+  return JSON.stringify(generatorState) !== JSON.stringify(data)
 }
