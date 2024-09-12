@@ -56,7 +56,7 @@
   "author": {
     "name": "Grafana Labs"
   },
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-only",
   "private": true,
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
