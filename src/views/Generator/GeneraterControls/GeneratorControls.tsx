@@ -22,23 +22,17 @@ export function GeneratorControls({ onSave }: GeneratorControlsProps) {
 
       {!!preview && (
         <>
-          <Tooltip
-            content={
-              error ? 'Invalid script. Please check your rules' : undefined
-            }
+          <ButtonWithTooltip
+            color="gray"
+            variant="soft"
+            disabled={error}
+            tooltip={tooltip}
+            onClick={() => {
+              setIsDialogOpen(true)
+            }}
           >
-            <ButtonWithTooltip
-              color="gray"
-              variant="soft"
-              disabled={error}
-              tooltip={tooltip}
-              onClick={() => {
-                setIsDialogOpen(true)
-              }}
-            >
-              Validate script
-            </ButtonWithTooltip>
-          </Tooltip>
+            Validate script
+          </ButtonWithTooltip>
           <ButtonWithTooltip
             color="gray"
             variant="soft"
