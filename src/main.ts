@@ -22,7 +22,12 @@ import {
   RECORDINGS_PATH,
   SCRIPTS_PATH,
 } from './constants/workspace'
-import { sendToast, findOpenPort, getAppIcon } from './utils/electron'
+import {
+  sendToast,
+  findOpenPort,
+  getAppIcon,
+  getPlatform,
+} from './utils/electron'
 import invariant from 'tiny-invariant'
 import { INVALID_FILENAME_CHARS } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
@@ -48,7 +53,9 @@ if (require('electron-squirrel-startup')) {
 
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
-  app.dock.setIcon(icon)
+  if (getPlatform() === 'mac') {
+    app.dock.setIcon(icon)
+  }
   app.setName('k6 Studio')
 
   // Create the browser window.
