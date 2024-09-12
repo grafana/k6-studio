@@ -206,15 +206,29 @@ ipcMain.handle('script:open', async (_, fileName: string) => {
 
 ipcMain.handle(
   'script:run',
-  async (event, scriptPath: string, absolute = false) => {
+  async (
+    event,
+    scriptPath: string,
+    absolute: boolean = false,
+    fromGenerator: boolean = false
+  ) => {
     console.info('script:run event received')
     await waitForProxy()
 
     const browserWindow = browserWindowFromEvent(event)
 
-    const resolvedScriptPath = absolute
-      ? scriptPath
-      : getFilePathFromName(scriptPath)
+    let resolvedScriptPath
+
+    if (fromGenerator) {
+      resolvedScriptPath = path.join(
+        app.getPath('temp'),
+        'k6-studio-generator-script.js'
+      )
+    } else {
+      resolvedScriptPath = absolute
+        ? scriptPath
+        : getFilePathFromName(scriptPath)
+    }
 
     currentk6Process = await runScript(
       browserWindow,
@@ -235,22 +249,35 @@ ipcMain.on('script:stop', (event) => {
   browserWindow.webContents.send('script:stopped')
 })
 
-ipcMain.on('script:save', async (event, script: string) => {
-  console.info('script:save event received')
+ipcMain.on(
+  'script:save',
+  async (event, script: string, fromGenerator: boolean = false) => {
+    console.info('script:save event received')
 
-  const browserWindow = browserWindowFromEvent(event)
-  const dialogResult = await dialog.showSaveDialog(browserWindow, {
-    message: 'Save test script',
-    defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
-    filters: [{ name: 'JavaScript', extensions: ['js'] }],
-  })
+    // we are validating from the generator so we save the script in a temporary directory
+    if (fromGenerator) {
+      const scriptFromGeneratorPath = path.join(
+        app.getPath('temp'),
+        'k6-studio-generator-script.js'
+      )
+      await writeFile(scriptFromGeneratorPath, script)
+      return
+    }
 
-  if (dialogResult.canceled) {
-    return
+    const browserWindow = browserWindowFromEvent(event)
+    const dialogResult = await dialog.showSaveDialog(browserWindow, {
+      message: 'Save test script',
+      defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
+      filters: [{ name: 'JavaScript', extensions: ['js'] }],
+    })
+
+    if (dialogResult.canceled) {
+      return
+    }
+
+    await writeFile(dialogResult.filePath, script)
   }
-
-  await writeFile(dialogResult.filePath, script)
-})
+)
 
 // HAR
 ipcMain.handle('har:save', async (_, data) => {

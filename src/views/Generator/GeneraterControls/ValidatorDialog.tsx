@@ -36,7 +36,12 @@ export function ValidatorDialog({
     setIsRunning(open)
 
     if (open) {
-      //window.studio.script.runScript(scriptPath, isExternal)
+      window.studio.script.saveScript(script, true)
+      window.studio.script.runScript(
+        'k6-studio-generator-script.js',
+        false,
+        true
+      )
       console.log('Running script')
     }
   }, [open, resetChecks, resetLogs, resetProxyData])
