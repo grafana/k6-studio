@@ -1,7 +1,11 @@
 import { z } from 'zod'
 
 export const VariableSchema = z.object({
-  name: z.string().nonempty({ message: 'Required' }),
+  name: z
+    .string()
+    .nonempty({ message: 'Required' })
+    // Don't allow native object properties, like __proto__, valueOf, etc.
+    .refine((val) => !(val in {}), { message: 'Invalid name' }),
   value: z.string(),
 })
 
