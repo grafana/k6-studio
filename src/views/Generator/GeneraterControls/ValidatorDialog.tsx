@@ -1,4 +1,5 @@
 import { Box, Button, Dialog, Flex } from '@radix-ui/themes'
+import { css } from '@emotion/react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
@@ -86,7 +87,14 @@ export function ValidatorDialog({
               </Flex>
             </Flex>
           </Dialog.Title>
-          <Box flexGrow="1" mx="-4" mb="-4">
+          <Box
+            flexGrow="1"
+            mx="-4"
+            mb="-4"
+            css={css`
+              border-top: 1px solid var(--gray-5);
+            `}
+          >
             <ValidatorContent
               script={script}
               proxyData={proxyData}
