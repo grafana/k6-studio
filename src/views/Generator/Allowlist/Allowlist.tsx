@@ -7,7 +7,7 @@ import { ProxyData } from '@/types'
 import { AllowlistDialog } from './AllowlistDialog'
 import { usePrevious } from 'react-use'
 
-export function Allowlist() {
+export function Allowlist({ isLoading }: { isLoading: boolean }) {
   const requests = useGeneratorStore((store) => store.requests)
   const hasRecording = useGeneratorStore(
     (store) => !!store.recordingPath && store.requests.length > 0
@@ -45,8 +45,8 @@ export function Allowlist() {
       return true
     }
 
-    return newHostsDetected
-  }, [allowlist, hasRecording, newHostsDetected])
+    return !isLoading && newHostsDetected
+  }, [allowlist, hasRecording, newHostsDetected, isLoading])
 
   useEffect(() => {
     if (shouldResetAllowList) {
