@@ -29,7 +29,7 @@ export function Stage({ index, target, duration }: StageProps) {
       return
     }
 
-    updateStage(index, { duration, target, [key]: value })
+    updateStage(index, { target, duration, [key]: value })
   }
 
   const handleDelete = () => {
