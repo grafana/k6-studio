@@ -45,7 +45,7 @@ export function VariablesEditor() {
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Value (as string)</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
