@@ -50,9 +50,13 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
           />
         </>
       )}
-      <Button onClick={onSave} disabled={!isDirty}>
+      <ButtonWithTooltip
+        onClick={onSave}
+        disabled={!isDirty}
+        tooltip={!isDirty ? 'Changes saved' : ''}
+      >
         Save
-      </Button>
+      </ButtonWithTooltip>
     </>
   )
 }
