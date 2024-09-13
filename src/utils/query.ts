@@ -5,6 +5,7 @@ export const queryClient = new QueryClient({
     queries: {
       // No need to retry file read/write operations
       retry: false,
+      refetchOnWindowFocus: false,
     },
   },
 })
