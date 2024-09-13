@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Button, Dialog, Flex, ScrollArea } from '@radix-ui/themes'
+import { Box, Button, Dialog, Flex, ScrollArea } from '@radix-ui/themes'
 
 type SyntaxErrorDialogProps = {
   error?: Error
@@ -21,8 +21,13 @@ export function SyntaxErrorDialog({
           errors.
         </Dialog.Description>
 
-        <Flex>
-          <ScrollArea scrollbars="vertical">
+        <Box mb="4">
+          <ScrollArea
+            scrollbars="vertical"
+            css={css`
+              max-height: 50vh;
+            `}
+          >
             <pre
               css={css`
                 font-size: 13px;
@@ -31,7 +36,7 @@ export function SyntaxErrorDialog({
               {error && error.message}
             </pre>
           </ScrollArea>
-        </Flex>
+        </Box>
 
         <Flex gap="3" justify="end">
           <Dialog.Close>
