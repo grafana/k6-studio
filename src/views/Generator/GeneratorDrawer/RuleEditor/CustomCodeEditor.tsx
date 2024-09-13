@@ -1,4 +1,4 @@
-import { Container, Flex, Select, Text } from '@radix-ui/themes'
+import { Box, Flex, Select, Text } from '@radix-ui/themes'
 import * as Label from '@radix-ui/react-label'
 
 import { CustomCodeRule } from '@/types/rules'
@@ -14,7 +14,7 @@ export function CustomCodeEditor({
   onChangeRule,
 }: CustomCodeEditorProps) {
   return (
-    <Container align="left" size="1" p="2" height="100%" maxHeight="100%">
+    <Box p="2" height="100%" maxHeight="100%">
       <Flex gap="2">
         <FilterField
           filter={rule.filter}
@@ -53,6 +53,6 @@ export function CustomCodeEditor({
           }}
         />
       </div>
-    </Container>
+    </Box>
   )
 }
