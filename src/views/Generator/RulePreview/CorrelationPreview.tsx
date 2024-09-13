@@ -1,4 +1,4 @@
-import { Box, Callout, Code, Flex, Heading, ScrollArea } from '@radix-ui/themes'
+import { Box, Callout, Code, Heading, ScrollArea } from '@radix-ui/themes'
 import { TestRule, CorrelationRule, CorrelationStateMap } from '@/types/rules'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import { applyRule } from '@/rules/rules'
@@ -23,7 +23,7 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
   return (
     <Allotment defaultSizes={[1, 2]} vertical>
       <Allotment.Pane minSize={200}>
-        <Flex height="100%">
+        <Box height="100%">
           {!result && (
             <Box p="2">
               <Callout.Root color="amber" role="alert" variant="surface">
@@ -31,52 +31,51 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
               </Callout.Root>
             </Box>
           )}
-          <ScrollArea scrollbars="vertical">
-            <Box
-              css={css`
-                flex-grow: 1;
-              `}
-            >
-              {result && (
-                <>
-                  <Heading size="2" m="2">
-                    Requests matched
-                  </Heading>
-                  <Box>
-                    <WebLogView
-                      requests={result.responsesExtracted}
-                      onSelectRequest={setSelectedRequest}
-                    />
-                  </Box>
-                  <Heading size="2" m="2">
-                    Extracted value:{' '}
-                  </Heading>
-                  <Box px="2">
-                    <pre>
-                      <Code>
-                        {JSON.stringify(result.extractedValue, null, 2)}
-                      </Code>
-                    </pre>
-                  </Box>
+          <ScrollArea
+            scrollbars="vertical"
+            css={css`
+              height: 100%;
+            `}
+          >
+            {result && (
+              <>
+                <Heading size="2" m="2">
+                  Requests matched
+                </Heading>
+                <Box>
+                  <WebLogView
+                    requests={result.responsesExtracted}
+                    onSelectRequest={setSelectedRequest}
+                  />
+                </Box>
+                <Heading size="2" m="2">
+                  Extracted value:{' '}
+                </Heading>
+                <Box px="2">
+                  <pre>
+                    <Code>
+                      {JSON.stringify(result.extractedValue, null, 2)}
+                    </Code>
+                  </pre>
+                </Box>
 
-                  {result.requestsReplaced.length > 0 && (
-                    <>
-                      <Heading size="2" m="2">
-                        Value replaced in
-                      </Heading>
-                      <WebLogView
-                        requests={requestsReplacedToProxyData(
-                          result.requestsReplaced
-                        )}
-                        onSelectRequest={console.log}
-                      />
-                    </>
-                  )}
-                </>
-              )}
-            </Box>
+                {result.requestsReplaced.length > 0 && (
+                  <>
+                    <Heading size="2" m="2">
+                      Value replaced in
+                    </Heading>
+                    <WebLogView
+                      requests={requestsReplacedToProxyData(
+                        result.requestsReplaced
+                      )}
+                      onSelectRequest={console.log}
+                    />
+                  </>
+                )}
+              </>
+            )}
           </ScrollArea>
-        </Flex>
+        </Box>
       </Allotment.Pane>
       <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
         <Details
