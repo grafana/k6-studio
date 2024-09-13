@@ -1,8 +1,8 @@
 {
   "name": "k6-studio",
-  "productName": "k6-studio",
+  "productName": "k6 Studio",
   "version": "0.0.0",
-  "description": "k6 studio",
+  "description": "k6 Studio",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -57,7 +57,7 @@
   "author": {
     "name": "Grafana Labs"
   },
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-only",
   "private": true,
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
