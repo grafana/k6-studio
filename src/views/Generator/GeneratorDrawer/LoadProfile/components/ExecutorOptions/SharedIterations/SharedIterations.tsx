@@ -31,6 +31,11 @@ export function SharedIterations() {
             <TextField.Root
               type="number"
               placeholder="20"
+              onKeyDown={(e) => {
+                if (['-', '+', 'e'].includes(e.key)) {
+                  e.preventDefault()
+                }
+              }}
               {...register('vus', {
                 setValueAs: stringAsOptionalNumber,
               })}
@@ -48,6 +53,11 @@ export function SharedIterations() {
             <TextField.Root
               type="number"
               placeholder="200"
+              onKeyDown={(e) => {
+                if (['-', '+', 'e'].includes(e.key)) {
+                  e.preventDefault()
+                }
+              }}
               {...register('iterations', {
                 setValueAs: stringAsOptionalNumber,
               })}
