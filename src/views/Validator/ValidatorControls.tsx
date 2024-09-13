@@ -1,12 +1,6 @@
-import { css } from '@emotion/react'
+import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
-import {
-  Button,
-  DropdownMenu,
-  IconButton,
-  Spinner,
-  Text,
-} from '@radix-ui/themes'
+import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 
 interface ValidatorControlsProps {
   isRunning: boolean
@@ -29,13 +23,13 @@ export function ValidatorControls({
 }: ValidatorControlsProps) {
   return (
     <>
-      {isRunning && <RunningSpinner />}
+      {isRunning && <TextSpinner text="Running" />}
       <Button
         variant={isRunning ? 'outline' : 'solid'}
         disabled={!isScriptSelected}
         onClick={isRunning ? onStopScript : onRunScript}
       >
-        {isRunning ? 'Stop script' : 'Run script'}
+        {isRunning ? 'Stop run' : 'Validate script'}
       </Button>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger disabled={isRunning}>
@@ -54,21 +48,6 @@ export function ValidatorControls({
           )}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-    </>
-  )
-}
-
-function RunningSpinner() {
-  return (
-    <>
-      <Spinner />{' '}
-      <Text
-        css={css`
-          font-size: 14px;
-        `}
-      >
-        Running
-      </Text>
     </>
   )
 }

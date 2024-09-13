@@ -9,7 +9,7 @@ import {
 import { open, copyFile, writeFile, unlink, FileHandle } from 'fs/promises'
 import { readdirSync } from 'fs'
 import path from 'path'
-import eventEmmitter from 'events'
+import eventEmitter from 'events'
 import { Process } from '@puppeteer/browsers'
 import chokidar from 'chokidar'
 
@@ -22,14 +22,19 @@ import {
   RECORDINGS_PATH,
   SCRIPTS_PATH,
 } from './constants/workspace'
-import { sendToast, findOpenPort } from './utils/electron'
+import {
+  sendToast,
+  findOpenPort,
+  getAppIcon,
+  getPlatform,
+} from './utils/electron'
 import invariant from 'tiny-invariant'
 import { INVALID_FILENAME_CHARS } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 
-const proxyEmitter = new eventEmmitter()
+const proxyEmitter = new eventEmitter()
 
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
@@ -47,6 +52,12 @@ if (require('electron-squirrel-startup')) {
 }
 
 const createWindow = async () => {
+  const icon = getAppIcon(process.env.NODE_ENV === 'development')
+  if (getPlatform() === 'mac') {
+    app.dock.setIcon(icon)
+  }
+  app.setName('k6 Studio')
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -54,6 +65,8 @@ const createWindow = async () => {
     minWidth: 800,
     minHeight: 600,
     show: false,
+    icon,
+    title: 'k6 Studio',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
@@ -206,15 +219,29 @@ ipcMain.handle('script:open', async (_, fileName: string) => {
 
 ipcMain.handle(
   'script:run',
-  async (event, scriptPath: string, absolute = false) => {
+  async (
+    event,
+    scriptPath: string,
+    absolute: boolean = false,
+    fromGenerator: boolean = false
+  ) => {
     console.info('script:run event received')
     await waitForProxy()
 
     const browserWindow = browserWindowFromEvent(event)
 
-    const resolvedScriptPath = absolute
-      ? scriptPath
-      : getFilePathFromName(scriptPath)
+    let resolvedScriptPath
+
+    if (fromGenerator) {
+      resolvedScriptPath = path.join(
+        app.getPath('temp'),
+        'k6-studio-generator-script.js'
+      )
+    } else {
+      resolvedScriptPath = absolute
+        ? scriptPath
+        : getFilePathFromName(scriptPath)
+    }
 
     currentk6Process = await runScript(
       browserWindow,
@@ -235,22 +262,35 @@ ipcMain.on('script:stop', (event) => {
   browserWindow.webContents.send('script:stopped')
 })
 
-ipcMain.on('script:save', async (event, script: string) => {
-  console.info('script:save event received')
+ipcMain.handle(
+  'script:save',
+  async (event, script: string, fromGenerator: boolean = false) => {
+    console.info('script:save event received')
 
-  const browserWindow = browserWindowFromEvent(event)
-  const dialogResult = await dialog.showSaveDialog(browserWindow, {
-    message: 'Save test script',
-    defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
-    filters: [{ name: 'JavaScript', extensions: ['js'] }],
-  })
+    // we are validating from the generator so we save the script in a temporary directory
+    if (fromGenerator) {
+      const scriptFromGeneratorPath = path.join(
+        app.getPath('temp'),
+        'k6-studio-generator-script.js'
+      )
+      await writeFile(scriptFromGeneratorPath, script)
+      return
+    }
 
-  if (dialogResult.canceled) {
-    return
+    const browserWindow = browserWindowFromEvent(event)
+    const dialogResult = await dialog.showSaveDialog(browserWindow, {
+      message: 'Save test script',
+      defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
+      filters: [{ name: 'JavaScript', extensions: ['js'] }],
+    })
+
+    if (dialogResult.canceled) {
+      return
+    }
+
+    await writeFile(dialogResult.filePath, script)
   }
-
-  await writeFile(dialogResult.filePath, script)
-})
+)
 
 // HAR
 ipcMain.handle('har:save', async (_, data) => {

@@ -21,12 +21,15 @@ import { Details } from '@/components/WebLogView/Details'
 import { ProxyData } from '@/types'
 import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
 import { RecorderState } from './types'
+import { useToast } from '@/store/ui/useToast'
+import TextSpinner from '@/components/TextSpinner/TextSpinner'
 
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [group, setGroup] = useState<string>('Default')
   const { proxyData, resetProxyData } = useListenProxyData(group)
   const [recorderState, setRecorderState] = useState<RecorderState>('idle')
+  const showToast = useToast()
 
   // Debounce the proxy data to avoid disappearing static asset requests
   // when recording
@@ -53,8 +56,12 @@ export function Recorder() {
       setRecorderState('recording')
     } catch {
       setRecorderState('idle')
+      showToast({
+        title: 'There was an error starting the recording',
+        status: 'error',
+      })
     }
-  }, [resetProxyData])
+  }, [resetProxyData, showToast])
 
   const validateAndSaveHarFile = useCallback(async () => {
     try {
@@ -113,8 +120,14 @@ export function Recorder() {
   }, [autoStart, handleStartRecording])
 
   useEffect(() => {
-    return window.studio.browser.onBrowserClosed(validateAndSaveHarFile)
-  }, [validateAndSaveHarFile])
+    return window.studio.browser.onBrowserClosed(() => {
+      validateAndSaveHarFile()
+      showToast({
+        title: 'Recording stopped',
+        status: 'success',
+      })
+    })
+  }, [validateAndSaveHarFile, showToast])
 
   return (
     <View
@@ -123,7 +136,7 @@ export function Recorder() {
         <>
           {recorderState === 'idle' && (
             <Button
-              loading={isLoading}
+              disabled={isLoading}
               color="red"
               onClick={handleStartRecording}
             >
@@ -131,13 +144,16 @@ export function Recorder() {
             </Button>
           )}
           {recorderState !== 'idle' && (
-            <Button
-              loading={isLoading}
-              color="orange"
-              onClick={handleStopRecording}
-            >
-              <StopIcon /> Stop recording
-            </Button>
+            <>
+              {isLoading && <TextSpinner text="Starting" />}
+              <Button
+                disabled={isLoading}
+                color="orange"
+                onClick={handleStopRecording}
+              >
+                <StopIcon /> Stop recording
+              </Button>
+            </>
           )}
         </>
       }

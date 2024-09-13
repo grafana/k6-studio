@@ -1,11 +1,12 @@
-import { Box, Flex, Text } from '@radix-ui/themes'
+import { Flex, Text, Tooltip } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 
 import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
-import { removeQueryStringFromUrl } from './WebLogView.utils'
+import { removeProtocolFromUrl } from './WebLogView.utils'
 import { css } from '@emotion/react'
+import { useState } from 'react'
 
 interface RowProps {
   data: ProxyData
@@ -14,6 +15,15 @@ interface RowProps {
 }
 
 export function Row({ data, isSelected, onSelectRequest }: RowProps) {
+  const urlWithoutProtocol = removeProtocolFromUrl(data.request.url)
+  const [isEllipsisActive, setIsEllipsisActive] = useState(false)
+
+  const onTextRef = (node: HTMLSpanElement) => {
+    if (!node) return
+    const isOverflowing = node.clientWidth !== node.scrollWidth
+    setIsEllipsisActive(isOverflowing)
+  }
+
   return (
     <Flex
       align="center"
@@ -34,19 +44,19 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
       `}
     >
       <MethodBadge method={data.request.method} />
-      <Box flexGrow="1" asChild>
+      <Tooltip content={urlWithoutProtocol} hidden={!isEllipsisActive}>
         <Text
           truncate
           css={css`
             font-size: 13px;
             line-height: 24px;
           `}
+          ref={onTextRef}
         >
-          {data.request.host}
-          {removeQueryStringFromUrl(data.request.path)}
+          {urlWithoutProtocol}
         </Text>
-      </Box>
-      <Flex minWidth="40px" justify="end" asChild>
+      </Tooltip>
+      <Flex minWidth="40px" justify="end" flexGrow="1" asChild>
         <ResponseStatusBadge status={data.response?.statusCode} />
       </Flex>
     </Flex>

@@ -56,11 +56,18 @@ const script = {
   }> => {
     return ipcRenderer.invoke('script:open', filePath)
   },
-  saveScript: (script: string) => {
-    ipcRenderer.send('script:save', script)
+  saveScript: (
+    script: string,
+    fromGenerator: boolean = false
+  ): Promise<void> => {
+    return ipcRenderer.invoke('script:save', script, fromGenerator)
   },
-  runScript: (scriptPath: string, absolute = false): Promise<void> => {
-    return ipcRenderer.invoke('script:run', scriptPath, absolute)
+  runScript: (
+    scriptPath: string,
+    absolute: boolean = false,
+    fromGenerator: boolean = false
+  ): Promise<void> => {
+    return ipcRenderer.invoke('script:run', scriptPath, absolute, fromGenerator)
   },
   stopScript: () => {
     ipcRenderer.send('script:stop')

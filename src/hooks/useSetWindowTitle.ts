@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-const defaultTitle = 'k6 studio'
+const defaultTitle = 'k6 Studio'
 
 export function useSetWindowTitle(title: string) {
   useEffect(() => {
