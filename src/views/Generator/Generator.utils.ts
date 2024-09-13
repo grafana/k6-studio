@@ -13,7 +13,6 @@ import { GeneratorFileData } from '@/types/generator'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { GroupedProxyData } from '@/types'
-import { HarFile } from '@/types/har'
 
 export async function generateScriptPreview(
   generator: GeneratorFileData,
@@ -47,34 +46,22 @@ export async function exportScript() {
   saveScript(script)
 }
 
-export const saveGenerator = (fileName: string) => {
-  const generatorFile = selectGeneratorData(useGeneratorStore.getState())
-
+export const writeGeneratorToFile = (
+  fileName: string,
+  generatorData: GeneratorFileData
+) => {
   return window.studio.generator.saveGenerator(
-    JSON.stringify(generatorFile, null, 2),
+    JSON.stringify(generatorData, null, 2),
     fileName
   )
 }
 
-export const loadGenerator = async (fileName: string) => {
-  const setGeneratorFile = useGeneratorStore.getState().setGeneratorFile
+export const loadGeneratorFile = async (fileName: string) => {
   const generatorFile = await window.studio.generator.loadGenerator(fileName)
+  return GeneratorFileDataSchema.parse(generatorFile.content)
+}
 
-  if (!generatorFile) return
-
-  const generatorFileData = GeneratorFileDataSchema.parse(generatorFile.content)
-
-  // TODO: we need to better handle errors scenarios
-  let harFile: HarFile | undefined
-  try {
-    harFile = generatorFileData.recordingPath
-      ? await window.studio.har.openFile(generatorFileData.recordingPath)
-      : undefined
-  } catch (error) {
-    console.error(error)
-  }
-
-  const recording = harFile ? harToProxyData(harFile.content) : []
-
-  setGeneratorFile(generatorFileData, recording)
+export const loadHarFile = async (fileName: string) => {
+  const harFile = await window.studio.har.openFile(fileName)
+  return harToProxyData(harFile.content)
 }

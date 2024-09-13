@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
-import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useToast } from '@/store/ui/useToast'
-import { loadGenerator, saveGenerator } from './Generator.utils'
-import { getRoutePath } from '@/routeMap'
+import {
+  loadGeneratorFile,
+  loadHarFile,
+  writeGeneratorToFile,
+} from './Generator.utils'
+import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
+import { GeneratorFileData } from '@/types/generator'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { queryClient } from '@/utils/query'
 
 export function useGeneratorParams() {
   const { fileName, ruleId } = useParams()
@@ -17,51 +22,54 @@ export function useGeneratorParams() {
   }
 }
 
-export function useGeneratorFile() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasError, setHasError] = useState(false)
-  const { fileName } = useGeneratorParams()
+export function useLoadHarFile(fileName?: string) {
+  return useQuery({
+    queryKey: ['har', fileName],
+    enabled: !!fileName,
+    queryFn: () => loadHarFile(fileName!),
+  })
+}
+
+export function useLoadGeneratorFile(fileName: string) {
+  return useQuery({
+    queryKey: ['generator', fileName],
+    queryFn: () => loadGeneratorFile(fileName),
+  })
+}
+
+export function useSaveGeneratorFile(fileName: string) {
   const showToast = useToast()
-  const navigate = useNavigate()
 
-  useSetWindowTitle(fileName)
+  return useMutation({
+    mutationFn: async (generator: GeneratorFileData) => {
+      await writeGeneratorToFile(fileName, generator)
+      queryClient.invalidateQueries({ queryKey: ['generator', fileName] })
+    },
 
-  useEffect(() => {
-    ;(async () => {
-      setIsLoading(true)
-      try {
-        await loadGenerator(fileName)
-      } catch (error) {
-        console.log('Failed to load generator', error)
-        setHasError(true)
-      } finally {
-        setIsLoading(false)
-      }
-    })()
-  }, [fileName, showToast])
+    onSuccess: () => {
+      showToast({
+        title: 'Generator saved',
+        status: 'success',
+      })
+    },
 
-  useEffect(() => {
-    if (!hasError) return
+    onError: (error) => {
+      console.error('Failed to save generator', error)
 
-    showToast({
-      title: 'Failed to load generator',
-      status: 'error',
-    })
-    navigate(getRoutePath('home'))
-  }, [hasError, navigate, showToast])
-
-  const onSave = async () => {
-    try {
-      await saveGenerator(fileName)
-      showToast({ title: 'Generator saved', status: 'success' })
-    } catch (error) {
       showToast({
         title: 'Failed to save generator',
         status: 'error',
+        description: error.message,
       })
-      return
-    }
-  }
+    },
+  })
+}
 
-  return { isLoading, onSave }
+export function useIsGeneratorDirty(fileName: string) {
+  const generatorState = useGeneratorStore(selectGeneratorData)
+  const { data } = useLoadGeneratorFile(fileName)
+
+  // Convert to JSON instead of doing deep equal to remove
+  // `property: undefined` values
+  return JSON.stringify(generatorState) !== JSON.stringify(data)
 }

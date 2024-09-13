@@ -65,6 +65,11 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.requests = recording
         state.recordingPath = recordingPath
         state.allowlist = allowlist
+
+        if (allowlist.length === 0 && recording.length > 0) {
+          state.showAllowlistDialog = true
+        }
+
         state.includeStaticAssets = includeStaticAssets
         // rules
         state.rules = rules
