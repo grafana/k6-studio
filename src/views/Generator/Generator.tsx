@@ -1,5 +1,4 @@
 import { Allotment } from 'allotment'
-import { Button } from '@radix-ui/themes'
 import { Outlet, useBlocker, useNavigate } from 'react-router-dom'
 
 import {
@@ -8,11 +7,8 @@ import {
   selectGeneratorData,
 } from '@/store/generator'
 import { View } from '@/components/Layout/View'
-import { exportScript } from './Generator.utils'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { TestRuleContainer } from './TestRuleContainer'
-import { Allowlist } from './Allowlist'
-import { RecordingSelector } from './RecordingSelector'
 import {
   useGeneratorParams,
   useIsGeneratorDirty,
@@ -20,6 +16,7 @@ import {
   useLoadHarFile,
   useSaveGeneratorFile,
 } from './Generator.hooks'
+import { GeneratorControls } from './GeneraterControls'
 import { useEffect } from 'react'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
@@ -98,16 +95,7 @@ export function Generator() {
     <View
       title="Generator"
       actions={
-        <>
-          <RecordingSelector />
-          <Allowlist />
-          <Button disabled={!isDirty} onClick={handleSaveGenerator}>
-            Save
-          </Button>
-          {hasRecording && (
-            <Button onClick={exportScript}>Export script</Button>
-          )}
-        </>
+        <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }
       loading={isLoading}
     >

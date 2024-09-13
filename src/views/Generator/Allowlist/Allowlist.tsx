@@ -39,7 +39,7 @@ export function Allowlist() {
   return (
     <>
       {requests.length > 0 && (
-        <Button onClick={() => setShowAllowlistDialog(true)}>
+        <Button onClick={() => setShowAllowlistDialog(true)} variant="outline">
           Allowed hosts [{allowlist.length}/{hosts.length}]
         </Button>
       )}
