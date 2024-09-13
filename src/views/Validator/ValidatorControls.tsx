@@ -29,7 +29,7 @@ export function ValidatorControls({
         disabled={!isScriptSelected}
         onClick={isRunning ? onStopScript : onRunScript}
       >
-        {isRunning ? 'Stop script' : 'Run script'}
+        {isRunning ? 'Stop run' : 'Validate script'}
       </Button>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger disabled={isRunning}>
