@@ -74,13 +74,10 @@ export function ValidatorDialog({
               Validator
               <Flex gap="3" justify="end" align="center">
                 <Dialog.Close>
-                  <Button variant="soft" color="gray">
-                    Close
-                  </Button>
+                  <Button variant="outline">Close</Button>
                 </Dialog.Close>
                 <Button
-                  variant="soft"
-                  color="gray"
+                  variant="outline"
                   loading={isRunning}
                   onClick={handleRunScript}
                 >

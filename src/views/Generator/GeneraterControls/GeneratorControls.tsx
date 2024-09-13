@@ -27,8 +27,7 @@ export function GeneratorControls({
       {!!preview && (
         <>
           <ButtonWithTooltip
-            color="gray"
-            variant="soft"
+            variant="outline"
             disabled={error}
             tooltip={tooltip}
             onClick={() => {
@@ -38,8 +37,7 @@ export function GeneratorControls({
             Validate script
           </ButtonWithTooltip>
           <ButtonWithTooltip
-            color="gray"
-            variant="soft"
+            variant="outline"
             disabled={error}
             tooltip={tooltip}
             onClick={exportScript}
@@ -64,12 +62,8 @@ function ButtonWithTooltip({
   tooltip,
   ...props
 }: ButtonProps & { tooltip: string }) {
-  if (!tooltip) {
-    return <Button {...props} />
-  }
-
   return (
-    <Tooltip content={tooltip}>
+    <Tooltip content={tooltip} hidden={!tooltip}>
       <Button {...props} />
     </Tooltip>
   )
