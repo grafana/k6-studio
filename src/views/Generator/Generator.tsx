@@ -12,12 +12,18 @@ import { RecordingSelector } from './RecordingSelector'
 import { useGeneratorFile } from './Generator.hooks'
 import { useState } from 'react'
 import { SyntaxErrorDialog } from './SyntaxErrorDialog'
+import {
+  useOnScriptSaveFailure,
+  useOnScriptSaveSuccess,
+} from '@/hooks/useScriptSave'
 
 export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
   const { isLoading, onSave } = useGeneratorFile()
   const [scriptError, setScriptError] = useState<Error>()
   const [showSyntaxErrorDialog, setShowSyntaxErrorDialog] = useState(false)
+  useOnScriptSaveFailure()
+  useOnScriptSaveSuccess()
 
   async function handleExportScript() {
     try {

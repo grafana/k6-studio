@@ -245,17 +245,22 @@ ipcMain.on('script:save', async (event, script: string) => {
   console.info('script:save event received')
 
   const browserWindow = browserWindowFromEvent(event)
-  const dialogResult = await dialog.showSaveDialog(browserWindow, {
-    message: 'Save test script',
-    defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
-    filters: [{ name: 'JavaScript', extensions: ['js'] }],
-  })
+  try {
+    const dialogResult = await dialog.showSaveDialog(browserWindow, {
+      message: 'Save test script',
+      defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
+      filters: [{ name: 'JavaScript', extensions: ['js'] }],
+    })
 
-  if (dialogResult.canceled) {
-    return
+    if (dialogResult.canceled) {
+      return
+    }
+
+    await writeFile(dialogResult.filePath, script)
+    browserWindow.webContents.send('script:save:success')
+  } catch (error) {
+    browserWindow.webContents.send('script:save:failure', error)
   }
-
-  await writeFile(dialogResult.filePath, script)
 })
 
 // HAR
