@@ -10,10 +10,23 @@ import { TestRuleContainer } from './TestRuleContainer'
 import { Allowlist } from './Allowlist'
 import { RecordingSelector } from './RecordingSelector'
 import { useGeneratorFile } from './Generator.hooks'
+import { useState } from 'react'
+import { SyntaxErrorDialog } from './SyntaxErrorDialog'
 
 export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
   const { isLoading, onSave } = useGeneratorFile()
+  const [scriptError, setScriptError] = useState<Error>()
+  const [showSyntaxErrorDialog, setShowSyntaxErrorDialog] = useState(false)
+
+  async function handleExportScript() {
+    try {
+      await exportScript()
+    } catch (error) {
+      setScriptError(error as Error)
+      setShowSyntaxErrorDialog(true)
+    }
+  }
 
   return (
     <View
@@ -24,12 +37,17 @@ export function Generator() {
           <Allowlist />
           <Button onClick={onSave}>Save</Button>
           {hasRecording && (
-            <Button onClick={exportScript}>Export script</Button>
+            <Button onClick={handleExportScript}>Export script</Button>
           )}
         </>
       }
       loading={isLoading}
     >
+      <SyntaxErrorDialog
+        error={scriptError}
+        open={showSyntaxErrorDialog}
+        onOpenChange={setShowSyntaxErrorDialog}
+      />
       <Allotment defaultSizes={[3, 1]}>
         <Allotment.Pane minSize={400}>
           <Allotment vertical defaultSizes={[1, 1]}>
