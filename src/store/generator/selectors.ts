@@ -8,6 +8,11 @@ export function selectRuleById(state: GeneratorStore, id?: string) {
   return state.rules.find((rule) => rule.id === id)
 }
 
+export function selectIsRulePreviewable(state: GeneratorStore, id?: string) {
+  const rule = selectRuleById(state, id)
+  return rule?.type === 'correlation'
+}
+
 export function selectHasRecording(state: GeneratorStore) {
   return state.requests.length > 0
 }
