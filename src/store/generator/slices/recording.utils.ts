@@ -1,7 +1,6 @@
 import { ProxyData } from '@/types'
 import { uniq } from 'lodash-es'
 
-// TODO: move to slices/recording.utils.ts
 export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
 }
