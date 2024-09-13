@@ -15,7 +15,7 @@ export function Generator() {
   return (
     <View
       title="Generator"
-      actions={<GeneratorControls onSave={onSave} />}
+      actions={<GeneratorControls onSave={onSave} isLoading={isLoading} />}
       loading={isLoading}
     >
       <Allotment defaultSizes={[3, 1]}>

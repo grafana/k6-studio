@@ -7,10 +7,14 @@ import { ValidatorDialog } from './ValidatorDialog'
 import { useState } from 'react'
 
 interface GeneratorControlsProps {
+  isLoading: boolean
   onSave: () => void
 }
 
-export function GeneratorControls({ onSave }: GeneratorControlsProps) {
+export function GeneratorControls({
+  isLoading,
+  onSave,
+}: GeneratorControlsProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { preview, error } = useScriptPreview()
   const tooltip = error ? 'Invalid script. Please check your rules' : ''
@@ -18,7 +22,7 @@ export function GeneratorControls({ onSave }: GeneratorControlsProps) {
   return (
     <>
       <RecordingSelector />
-      <Allowlist />
+      <Allowlist isLoading={isLoading} />
 
       {!!preview && (
         <>
