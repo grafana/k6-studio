@@ -26,7 +26,11 @@ export function ConfirmNavigationDialog({
           </Box>
           <Flex justify="end" gap="3">
             <Dialog.Close>
-              <Button disabled={state === 'saving'} variant="soft" color="gray">
+              <Button
+                disabled={state === 'saving'}
+                variant="outline"
+                color="orange"
+              >
                 Cancel
               </Button>
             </Dialog.Close>

@@ -22,7 +22,7 @@ export function UnsavedChangesDialog({
               width="20px"
               height="20px"
             />
-            Unsaved changes
+            Save before leaving?
           </Flex>
         </Dialog.Title>
         <Box mb="5">
@@ -32,12 +32,16 @@ export function UnsavedChangesDialog({
           </Text>
         </Box>
         <Flex justify="end" gap="2">
-          <Button onClick={onDiscard} color="red">
-            Discard changes
-          </Button>
           <Dialog.Close>
-            <Button color="green">Continue editing</Button>
+            <Button variant="outline" color="orange">
+              Cancel
+            </Button>
           </Dialog.Close>
+
+          <Button onClick={onDiscard} color="orange">
+            {"Don't save"}
+          </Button>
+
           <Button color="orange" onClick={onSave}>
             Save
           </Button>
