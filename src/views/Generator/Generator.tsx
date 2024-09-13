@@ -100,7 +100,7 @@ export function Generator() {
       actions={
         <>
           <RecordingSelector />
-          <Allowlist isLoading={isLoading} />
+          <Allowlist />
           <Button disabled={!isDirty} onClick={handleSaveGenerator}>
             Save
           </Button>
