@@ -406,9 +406,9 @@ ipcMain.handle('ui:get-files', () => {
   }
 })
 
-ipcMain.handle('browser:open:external:issues', () => {
+ipcMain.handle('browser:open:external:issues', (_, url: string) => {
   console.info('browser:open:external:issues event received')
-  shell.openExternal('https://github.com/grafana/k6-studio/issues')
+  shell.openExternal(url)
 })
 
 const browserWindowFromEvent = (

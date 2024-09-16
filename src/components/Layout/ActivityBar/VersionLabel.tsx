@@ -3,7 +3,9 @@ import { Code, Flex, Tooltip, Link, Text } from '@radix-ui/themes'
 export function VersionLabel() {
   const handleReportIssue = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault()
-    window.studio.browser.openIssuesLinkExternal()
+    window.studio.browser.openIssuesLinkExternal(
+      'https://github.com/grafana/k6-studio/issues'
+    )
   }
 
   return (
