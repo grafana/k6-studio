@@ -1,5 +1,5 @@
 import { GeneratorFileData } from '@/types/generator'
-import type { GeneratorStore } from '@/store/generator'
+import { type GeneratorStore } from '@/store/generator'
 import { TestOptions } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'

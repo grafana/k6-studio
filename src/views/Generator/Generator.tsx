@@ -75,7 +75,7 @@ export function Generator() {
         status: 'error',
       })
 
-      navigate(getRoutePath('home'))
+      navigate(getRoutePath('home'), { replace: true })
     }
   }, [generatorError, showToast, navigate])
 

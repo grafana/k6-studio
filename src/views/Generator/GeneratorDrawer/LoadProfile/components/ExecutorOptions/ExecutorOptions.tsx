@@ -2,17 +2,20 @@ import { GeneratorStore } from '@/store/generator'
 
 import { RampingVUs } from './RampingVUs'
 import { SharedIterations } from './SharedIterations/SharedIterations'
+import { exhaustive } from '@/utils/typescript'
 
-export function ExecutorOptions(options: GeneratorStore) {
-  switch (options.executor) {
+export function ExecutorOptions({
+  executor,
+}: {
+  executor: GeneratorStore['executor']
+}) {
+  switch (executor) {
     case 'ramping-vus':
-      return <RampingVUs stages={options.stages} />
+      return <RampingVUs />
     case 'shared-iterations':
-      return (
-        <SharedIterations iterations={options.iterations} vus={options.vus} />
-      )
+      return <SharedIterations />
 
     default:
-      return null
+      return exhaustive(executor)
   }
 }

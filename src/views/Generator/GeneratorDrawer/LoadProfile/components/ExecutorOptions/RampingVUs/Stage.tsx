@@ -1,70 +1,50 @@
-import { ChangeEvent } from 'react'
 import { TrashIcon } from '@radix-ui/react-icons'
 import { IconButton, Table, TextField } from '@radix-ui/themes'
 
-import { useGeneratorStore } from '@/store/generator'
+import { FieldErrors, UseFormRegister } from 'react-hook-form'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
+import { stringAsOptionalNumber } from '@/utils/form'
+import { FieldGroup } from '@/components/Form'
 
 interface StageProps {
   index: number
-  target: string | number | undefined
-  duration: string
+  register: UseFormRegister<LoadProfileExecutorOptions>
+  errors: FieldErrors<LoadProfileExecutorOptions>
+  handleRemove: () => void
 }
 
-export function Stage({ index, target, duration }: StageProps) {
-  const { removeStage, updateStage } = useGeneratorStore()
-
-  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value
-    const key = event.target.name
-
-    if (!key || !['target', 'duration'].includes(key)) {
-      console.error(
-        'onChange requires [name=(target|duration)] to be set on the event target.'
-      )
-
-      return
-    }
-
-    if (key === 'duration' && !isStageDurationAllowedInput(value)) {
-      return
-    }
-
-    updateStage(index, { target, duration, [key]: value })
-  }
-
-  const handleDelete = () => {
-    removeStage(index)
-  }
-
+export function Stage({ index, register, handleRemove, errors }: StageProps) {
   return (
     <>
-      <Table.Cell>
-        <TextField.Root
-          name="target"
-          type="number"
-          min={0}
-          placeholder="Target"
-          value={target}
-          onChange={onChange}
-        />
+      <Table.Cell width="45%">
+        <FieldGroup errors={errors} name={`stages.${index}.target`} mb="0">
+          <TextField.Root
+            type="number"
+            onKeyDown={(e) => {
+              if (['-', '+', 'e'].includes(e.key)) {
+                e.preventDefault()
+              }
+            }}
+            placeholder="Target"
+            {...register(`stages.${index}.target`, {
+              setValueAs: stringAsOptionalNumber,
+            })}
+          />
+        </FieldGroup>
+      </Table.Cell>
+      <Table.Cell width="45%">
+        <FieldGroup errors={errors} name={`stages.${index}.duration`} mb="0">
+          <TextField.Root
+            placeholder="Duration"
+            {...register(`stages.${index}.duration`)}
+          />
+        </FieldGroup>
       </Table.Cell>
       <Table.Cell>
-        <TextField.Root
-          name="duration"
-          placeholder="Duration"
-          value={duration}
-          onChange={onChange}
-        />
-      </Table.Cell>
-      <Table.Cell>
-        <IconButton onClick={handleDelete}>
+        <IconButton onClick={handleRemove}>
           <TrashIcon width="18" height="18" />
         </IconButton>
       </Table.Cell>
     </>
   )
-}
-
-function isStageDurationAllowedInput(input: string) {
-  return /^[hms\d]*$/.test(input)
 }

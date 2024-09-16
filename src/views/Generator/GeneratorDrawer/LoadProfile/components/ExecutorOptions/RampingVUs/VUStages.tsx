@@ -1,15 +1,20 @@
 import { Box, Button, Flex, Table } from '@radix-ui/themes'
 
 import { Stage } from './Stage'
-import { useGeneratorStore } from '@/store/generator'
-import { RampingStage } from '@/types/testOptions'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
+import { useFormContext, useFieldArray } from 'react-hook-form'
 
-interface VUStagesProps {
-  stages: RampingStage[]
-}
+export function VUStages() {
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = useFormContext<LoadProfileExecutorOptions>()
 
-export function VUStages({ stages = [] }: VUStagesProps) {
-  const { addStage } = useGeneratorStore()
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'stages',
+  })
 
   return (
     <Flex direction="column" gap="2">
@@ -23,13 +28,14 @@ export function VUStages({ stages = [] }: VUStagesProps) {
         </Table.Header>
 
         <Table.Body>
-          {stages.map((stage, index) => (
+          {fields.map((stage, index) => (
             <Table.Row key={index}>
               <Stage
-                key={index}
+                key={stage.id}
                 index={index}
-                target={stage.target}
-                duration={stage.duration}
+                register={register}
+                handleRemove={() => remove(index)}
+                errors={errors}
               />
             </Table.Row>
           ))}
@@ -37,7 +43,10 @@ export function VUStages({ stages = [] }: VUStagesProps) {
       </Table.Root>
 
       <Box p="2">
-        <Button variant="ghost" onClick={() => addStage()}>
+        <Button
+          variant="ghost"
+          onClick={() => append({ target: 20, duration: '1m' })}
+        >
           Add new stage
         </Button>
       </Box>
