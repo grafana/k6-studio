@@ -174,8 +174,15 @@ function generateSleep(timing: ThinkTime['timing']): string {
 }
 
 function generateRequestParams(request: ProxyData['request']): string {
+  const headersToExclude = [
+    'Cookie',
+    'User-Agent',
+    'Host',
+    'Content-Length',
+    'Content-Type',
+  ]
   const headers = request.headers
-    .filter(([name]) => name !== 'Cookie')
+    .filter(([name]) => !headersToExclude.includes(name))
     .map(([name, value]) => `'${name}': \`${value}\``)
     .join(',')
   return `
