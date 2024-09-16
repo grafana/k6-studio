@@ -26,11 +26,7 @@ export function VersionLabel() {
         </Code>
 
         <Text align="center" size="1">
-          <Link
-            href="https://github.com/grafana/k6-studio/issues/new"
-            target="_blank"
-            onClick={handleReportIssue}
-          >
+          <Link href="" onClick={handleReportIssue}>
             Report issues
           </Link>
         </Text>
