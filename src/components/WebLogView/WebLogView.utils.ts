@@ -8,6 +8,13 @@ export function removeProtocolFromUrl(url: string) {
   return url.split('://')[1]
 }
 
+export function removeHostFromUrl(url?: string) {
+  if (!url) return ''
+
+  const [, ...path] = url.split('/')
+  return path
+}
+
 export function isGroupedProxyData(
   data: ProxyData[] | GroupedProxyData
 ): data is GroupedProxyData {

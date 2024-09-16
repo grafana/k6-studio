@@ -1,5 +1,4 @@
 import { Method } from '@/types'
-import { css } from '@emotion/react'
 import { Text } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
 
@@ -10,16 +9,7 @@ interface MethodBadgeProps {
 export function MethodBadge({ method }: MethodBadgeProps) {
   const color = methodColor(method)
   return (
-    <Text
-      color={color}
-      css={css`
-        font-size: 13px;
-        line-height: 24px;
-        font-weight: 700;
-        width: 70px;
-        flex-shrink: 0;
-      `}
-    >
+    <Text color={color} size="1" weight="bold">
       {method}
     </Text>
   )

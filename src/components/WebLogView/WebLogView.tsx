@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Flex, Text } from '@radix-ui/themes'
+import { Flex, Text, Table } from '@radix-ui/themes'
 import { isEmpty } from 'lodash-es'
 
 import { GroupedProxyData, ProxyData } from '@/types'
@@ -73,16 +73,26 @@ function RequestList({
   onSelectRequest,
 }: RequestListProps) {
   return (
-    <>
-      {requests.map((data) => (
-        <Row
-          key={data.id}
-          data={data}
-          isSelected={selectedRequestId === data.id}
-          onSelectRequest={onSelectRequest}
-        />
-      ))}
-    </>
+    <Table.Root size="1" layout="fixed">
+      <Table.Header css={{ textWrap: 'nowrap' }}>
+        <Table.Row>
+          <Table.ColumnHeaderCell width="90px">Method</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="65px">Status</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="30%">Host</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="70%">Path</Table.ColumnHeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {requests.map((data) => (
+          <Row
+            key={data.id}
+            data={data}
+            isSelected={selectedRequestId === data.id}
+            onSelectRequest={onSelectRequest}
+          />
+        ))}
+      </Table.Body>
+    </Table.Root>
   )
 }
 
