@@ -406,6 +406,11 @@ ipcMain.handle('ui:get-files', () => {
   }
 })
 
+ipcMain.handle('browser:open:external:issues', () => {
+  console.info('browser:open:external:issues event received')
+  shell.openExternal('https://github.com/grafana/k6-studio/issues')
+})
+
 const browserWindowFromEvent = (
   event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
 ) => {
