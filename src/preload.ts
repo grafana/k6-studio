@@ -39,8 +39,8 @@ const browser = {
   onBrowserClosed: (callback: () => void) => {
     return createListener('browser:closed', callback)
   },
-  openIssuesLinkExternal: (url: string) => {
-    return ipcRenderer.invoke('browser:open:external:issues', url)
+  openExternalLink: (url: string) => {
+    return ipcRenderer.invoke('browser:open:external:link', url)
   },
 } as const
 
