@@ -1,10 +1,11 @@
 import { ScrollArea } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { WebLogView } from '@/components/WebLogView'
 import { ProxyData } from '@/types'
 import { Details } from '@/components/WebLogView/Details'
+import { useShallowCompareEffect } from 'react-use'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -13,7 +14,8 @@ interface RequestListProps {
 export function RequestList({ requests }: RequestListProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
 
-  useEffect(() => {
+  // Preserve the selected request when modifiying rules
+  useShallowCompareEffect(() => {
     setSelectedRequest(null)
   }, [requests])
 
