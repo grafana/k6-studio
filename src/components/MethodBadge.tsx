@@ -9,7 +9,7 @@ interface MethodBadgeProps {
 export function MethodBadge({ method }: MethodBadgeProps) {
   const color = methodColor(method)
   return (
-    <Text color={color} size="1" weight="bold">
+    <Text color={color} size="1" weight="bold" css={{ marginTop: '1px' }}>
       {method}
     </Text>
   )

@@ -76,10 +76,10 @@ function RequestList({
     <Table.Root size="1" layout="fixed">
       <Table.Header css={{ textWrap: 'nowrap' }}>
         <Table.Row>
-          <Table.ColumnHeaderCell width="90px">Method</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="65px">Status</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="30%">Host</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="70%">Path</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="70px">Method</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="60px">Status</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="20%">Host</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="80%">Path</Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
