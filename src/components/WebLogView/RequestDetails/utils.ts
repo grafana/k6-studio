@@ -1,6 +1,7 @@
 import { ProxyData } from '@/types'
 import { safeAtob, stringify } from '@/utils/format'
 import { getContentType } from '@/utils/headers'
+import { jsonrepair } from 'jsonrepair'
 
 export function parseParams(data: ProxyData) {
   const hasParams = data.request.query.length || data.request.content
@@ -17,7 +18,9 @@ export function parseParams(data: ProxyData) {
     }
 
     return stringify(
-      JSON.parse(parsePythonByteString(safeAtob(data.request.content ?? '')))
+      JSON.parse(
+        jsonrepair(parsePythonByteString(safeAtob(data.request.content ?? '')))
+      )
     )
   } catch (e) {
     console.error('Failed to parse query parameters', e)

@@ -1,19 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
-import { uniq } from 'lodash-es'
-
 import { Button } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
-import { ProxyData } from '@/types'
 import { AllowlistDialog } from './AllowlistDialog'
-import { usePrevious } from 'react-use'
+import { extractUniqueHosts } from '@/store/generator/slices/recording.utils'
 
 export function Allowlist() {
   const requests = useGeneratorStore((store) => store.requests)
-  const hasRecording = useGeneratorStore(
-    (store) => !!store.recordingPath && store.requests.length > 0
-  )
+
   const allowlist = useGeneratorStore((store) => store.allowlist)
   const setAllowlist = useGeneratorStore((store) => store.setAllowlist)
+
+  const showAllowlistDialog = useGeneratorStore(
+    (store) => store.showAllowlistDialog
+  )
+  const setShowAllowlistDialog = useGeneratorStore(
+    (store) => store.setShowAllowlistDialog
+  )
 
   const includeStaticAssets = useGeneratorStore(
     (store) => store.includeStaticAssets
@@ -22,43 +23,7 @@ export function Allowlist() {
     (store) => store.setIncludeStaticAssets
   )
 
-  const [showAllowlistDialog, setShowAllowlistDialog] = useState(false)
-
-  const previousRequests = usePrevious(requests)
   const hosts = extractUniqueHosts(requests)
-
-  const shouldResetAllowList = useMemo(() => {
-    // Reset allowlist if selected recording doesn't have previously selected hosts
-    return !allowlist.every((host) => hosts.includes(host))
-  }, [hosts, allowlist])
-
-  const newHostsDetected = useMemo(() => {
-    if (!previousRequests) {
-      return false
-    }
-    const previousHosts = extractUniqueHosts(previousRequests)
-    return previousHosts && hosts.length > previousHosts.length
-  }, [hosts, previousRequests])
-
-  const shouldShowAllowlistDialog = useMemo(() => {
-    if (hasRecording && allowlist.length === 0) {
-      return true
-    }
-
-    return newHostsDetected
-  }, [allowlist, hasRecording, newHostsDetected])
-
-  useEffect(() => {
-    if (shouldResetAllowList) {
-      setAllowlist([])
-    }
-  }, [setAllowlist, shouldResetAllowList])
-
-  useEffect(() => {
-    if (shouldShowAllowlistDialog) {
-      setShowAllowlistDialog(true)
-    }
-  }, [shouldShowAllowlistDialog])
 
   const handleSave = ({
     allowlist,
@@ -74,7 +39,7 @@ export function Allowlist() {
   return (
     <>
       {requests.length > 0 && (
-        <Button onClick={() => setShowAllowlistDialog(true)}>
+        <Button onClick={() => setShowAllowlistDialog(true)} variant="outline">
           Allowed hosts [{allowlist.length}/{hosts.length}]
         </Button>
       )}
@@ -92,8 +57,4 @@ export function Allowlist() {
       )}
     </>
   )
-}
-
-const extractUniqueHosts = (requests: ProxyData[]) => {
-  return uniq(requests.map((request) => request.request.host).filter(Boolean))
 }

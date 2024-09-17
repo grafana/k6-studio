@@ -1,34 +1,27 @@
-import { css } from '@emotion/react'
-import { Box, Button, Tabs } from '@radix-ui/themes'
+import { Button } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Allotment } from 'allotment'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
-import { K6Check, K6Log, ProxyData } from '@/types'
-import { LogsSection } from './LogsSection'
 import { ValidatorControls } from './ValidatorControls'
 import { View } from '@/components/Layout/View'
-import { RequestsSection } from '@/views/Recorder/RequestsSection'
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { getRoutePath } from '@/routeMap'
-import { Details } from '@/components/WebLogView/Details'
 import { useScriptPath } from './Validator.hooks'
+import { ValidatorContent } from './ValidatorContent'
+import { useRunLogs } from '@/hooks/useRunLogs'
 import { useToast } from '@/store/ui/useToast'
-import { ChecksSection } from './ChecksSection'
-
-type ValidatorTabValue = 'logs' | 'checks' | 'script'
+import { useRunChecks } from '@/hooks/useRunChecks'
 
 export function Validator() {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
   const [script, setScript] = useState('')
   const { scriptPath, isExternal } = useScriptPath()
-  const [isRunning, setIsRunning] = useState(false)
-  const [logs, setLogs] = useState<K6Log[]>([])
-  const [checks, setChecks] = useState<K6Check[]>([])
-  const [selectedTab, setSelectedTab] = useState<ValidatorTabValue>('script')
+
+  const { checks, resetChecks } = useRunChecks()
+  const { logs, resetLogs } = useRunLogs()
+
   const navigate = useNavigate()
   const showToast = useToast()
 
@@ -73,7 +66,8 @@ export function Validator() {
     }
 
     resetProxyData()
-    setLogs([])
+    resetLogs()
+    resetChecks()
     window.studio.script.runScript(scriptPath, isExternal)
     setIsRunning(true)
   }
@@ -84,7 +78,6 @@ export function Validator() {
     showToast({
       title: 'Script execution stopped',
       description: 'The script execution was stopped by the user',
-      status: 'error',
     })
   }
 
@@ -106,28 +99,15 @@ export function Validator() {
         description: 'The script finished running with errors',
         status: 'error',
       })
-      setSelectedTab('logs')
     })
   }, [showToast])
 
   useEffect(() => {
-    return window.studio.script.onScriptLog((log) => {
-      setLogs((prev) => [...prev, log])
-    })
-  }, [])
-
-  useEffect(() => {
-    return window.studio.script.onScriptCheck((checks) => {
-      setChecks(checks)
-    })
-  }, [])
-
-  useEffect(() => {
-    // Reset requests and logs when script changes
+    // Reset requests, logs, and checks when script changes
     resetProxyData()
-    setLogs([])
-    setSelectedRequest(null)
-  }, [script, resetProxyData])
+    resetLogs()
+    resetChecks()
+  }, [script, resetProxyData, resetLogs, resetChecks])
 
   return (
     <View
@@ -145,93 +125,20 @@ export function Validator() {
       }
       loading={isLoading}
     >
-      <Allotment defaultSizes={[3, 2]}>
-        <Allotment.Pane minSize={300}>
-          <Allotment vertical defaultSizes={[1, 1]}>
-            <Allotment.Pane>
-              <RequestsSection
-                proxyData={proxyData}
-                autoScroll={isRunning}
-                selectedRequestId={selectedRequest?.id}
-                noRequestsMessage={
-                  !scriptPath ? (
-                    <Button onClick={handleSelectExternalScript}>
-                      Open script
-                    </Button>
-                  ) : (
-                    'Once you start the script, requests will appear here'
-                  )
-                }
-                onSelectRequest={setSelectedRequest}
-              />
-            </Allotment.Pane>
-            <Allotment.Pane minSize={300}>
-              <Box height="100%">
-                <Tabs.Root
-                  value={selectedTab}
-                  onValueChange={(value) =>
-                    setSelectedTab(value as ValidatorTabValue)
-                  }
-                  css={css`
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                  `}
-                >
-                  <Tabs.List
-                    css={css`
-                      flex-shrink: 0;
-                    `}
-                  >
-                    <Tabs.Trigger value="logs">
-                      Logs ({logs.length})
-                    </Tabs.Trigger>
-                    <Tabs.Trigger value="checks">
-                      Checks ({checks.length})
-                    </Tabs.Trigger>
-                    <Tabs.Trigger value="script">Script</Tabs.Trigger>
-                  </Tabs.List>
-
-                  <Tabs.Content
-                    value="logs"
-                    css={css`
-                      flex: 1;
-                      min-height: 0;
-                    `}
-                  >
-                    <LogsSection logs={logs} autoScroll={isRunning} />
-                  </Tabs.Content>
-                  <Tabs.Content
-                    value="checks"
-                    css={css`
-                      flex: 1;
-                      min-height: 0;
-                    `}
-                  >
-                    <ChecksSection checks={checks} isRunning={isRunning} />
-                  </Tabs.Content>
-                  <Tabs.Content
-                    value="script"
-                    css={css`
-                      flex: 1;
-                    `}
-                  >
-                    <ReadOnlyEditor language="javascript" value={script} />
-                  </Tabs.Content>
-                </Tabs.Root>
-              </Box>
-            </Allotment.Pane>
-          </Allotment>
-        </Allotment.Pane>
-        {selectedRequest !== null && (
-          <Allotment.Pane minSize={300}>
-            <Details
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
-          </Allotment.Pane>
-        )}
-      </Allotment>
+      <ValidatorContent
+        script={script}
+        proxyData={proxyData}
+        isRunning={isRunning}
+        logs={logs}
+        checks={checks}
+        noRequestsMessage={
+          !scriptPath ? (
+            <Button onClick={handleSelectExternalScript}>Open script</Button>
+          ) : (
+            'Once you start the script, requests will appear here'
+          )
+        }
+      />
     </View>
   )
 }

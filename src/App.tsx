@@ -7,17 +7,21 @@ import { AppRoutes } from './AppRoutes'
 import { Toasts } from './components/Toast/Toasts'
 import { ElectronToastListener } from './components/EletronToastListener'
 import { DevTools } from './components/DevTools'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from './utils/query'
 
 export function App() {
   const theme = useTheme()
 
   return (
-    <Theme accentColor="orange" appearance={theme}>
-      <Global styles={globalStyles} />
-      <Toasts />
-      <ElectronToastListener />
-      <AppRoutes />
-      <DevTools />
-    </Theme>
+    <QueryClientProvider client={queryClient}>
+      <Theme accentColor="orange" appearance={theme}>
+        <Global styles={globalStyles} />
+        <Toasts />
+        <ElectronToastListener />
+        <AppRoutes />
+        <DevTools />
+      </Theme>
+    </QueryClientProvider>
   )
 }

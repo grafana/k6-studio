@@ -4,15 +4,20 @@ export const SleepTypeSchema = z.enum(['groups', 'requests', 'iterations'])
 
 export const FixedTimingSchema = z.object({
   type: z.literal('fixed'),
-  value: z.number().nullable(),
+  value: z.number().nonnegative().nullable(),
 })
 
 export const RangeTimingSchema = z.object({
   type: z.literal('range'),
-  value: z.object({
-    min: z.number().nullable(),
-    max: z.number().nullable(),
-  }),
+  value: z
+    .object({
+      min: z.number().nonnegative(),
+      max: z.number().nonnegative(),
+    })
+    .refine(({ min, max }) => max > min, {
+      message: 'Max must be greater than min',
+      path: ['max'],
+    }),
 })
 
 export const TimingSchema = z.discriminatedUnion('type', [
@@ -31,14 +36,21 @@ export const CommonOptionsSchema = z.object({
 
 export const SharedIterationsOptionsSchema = CommonOptionsSchema.extend({
   executor: z.literal('shared-iterations'),
-  vus: z.union([z.number(), z.literal('')]).optional(),
-  iterations: z.number().optional(),
+  vus: z.number().nonnegative().int().optional(),
+  iterations: z.number().nonnegative().int().optional(),
 })
 
 export const RampingStageSchema = z.object({
   id: z.string().optional(),
-  target: z.union([z.string(), z.number()]).optional(),
-  duration: z.string(),
+  target: z.number().nonnegative().int(),
+  duration: z
+    .string()
+    .regex(
+      /^(\d+([hms]))$|^(\d+h)(\d+m)(\d+s)$|^(\d+h)(\d+m)$|^(\d+m)(\d+s)$/,
+      {
+        message: 'Must be in format 1m30s',
+      }
+    ),
 })
 
 export const RampingVUsOptionsSchema = CommonOptionsSchema.extend({
