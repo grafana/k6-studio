@@ -12,10 +12,13 @@ import {
 import { RulePreview } from '../RulePreview/RulePreview'
 import { useGeneratorParams } from '../Generator.hooks'
 import { RequestList } from './RequestList'
+import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { CrossCircledIcon } from '@radix-ui/react-icons'
 
 export function GeneratorSidebar() {
   const [tab, setTab] = useState('requests')
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
+  const { hasError } = useScriptPreview()
 
   const hasRecording = useGeneratorStore(selectHasRecording)
   const { ruleId } = useGeneratorParams()
@@ -41,7 +44,24 @@ export function GeneratorSidebar() {
           <Tabs.Trigger value="requests">
             Requests ({filteredRequests.length})
           </Tabs.Trigger>
-          <Tabs.Trigger value="script" disabled={!hasRecording}>
+          <Tabs.Trigger
+            value="script"
+            disabled={!hasRecording}
+            css={
+              hasError &&
+              css`
+                color: var(--red-9);
+              `
+            }
+          >
+            {hasError && (
+              <CrossCircledIcon
+                css={css`
+                  margin-right: 5px;
+                `}
+                color="var(--red-9)"
+              />
+            )}
             Script preview
           </Tabs.Trigger>
           {hasPreview && (
