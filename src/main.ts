@@ -66,7 +66,7 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'k6 Studio',
+    title: 'k6 Studio (experimental)',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',

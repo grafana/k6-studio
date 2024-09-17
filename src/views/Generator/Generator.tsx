@@ -32,6 +32,7 @@ export function Generator() {
   const navigate = useNavigate()
 
   const { fileName } = useGeneratorParams()
+  const fileNameWithoutLeadingGenerator = fileName.replace(/^Generator - /, '')
 
   const {
     data: generatorFileData,
@@ -93,7 +94,7 @@ export function Generator() {
 
   return (
     <View
-      title="Generator"
+      title={`Generator - ${fileNameWithoutLeadingGenerator}`}
       actions={
         <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }

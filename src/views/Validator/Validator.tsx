@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { ValidatorControls } from './ValidatorControls'
 import { View } from '@/components/Layout/View'
 import { getRoutePath } from '@/routeMap'
@@ -26,7 +25,6 @@ export function Validator() {
   const showToast = useToast()
 
   const { proxyData, resetProxyData } = useListenProxyData()
-  useSetWindowTitle(scriptPath || 'Validator')
 
   const handleSelectExternalScript = useCallback(async () => {
     const { path = '', content = '' } =
@@ -111,7 +109,7 @@ export function Validator() {
 
   return (
     <View
-      title="Validator"
+      title={scriptPath ? `Validator - ${scriptPath}` : 'Validator'}
       actions={
         <ValidatorControls
           isRunning={isRunning}

@@ -32,7 +32,9 @@ export function RecordingSelector() {
 
   return (
     <Flex align="center" gap="2">
-      <Text size="2">{displayedValue}</Text>
+      <Text size="2" wrap="nowrap">
+        {displayedValue}
+      </Text>
       <Popover.Root>
         <Popover.Trigger>
           <IconButton variant="outline">
