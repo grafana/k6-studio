@@ -406,8 +406,8 @@ ipcMain.handle('ui:get-files', () => {
   }
 })
 
-ipcMain.handle('browser:open:external:issues', (_, url: string) => {
-  console.info('browser:open:external:issues event received')
+ipcMain.handle('browser:open:external:link', (_, url: string) => {
+  console.info('browser:open:external:link event received')
   shell.openExternal(url)
 })
 
