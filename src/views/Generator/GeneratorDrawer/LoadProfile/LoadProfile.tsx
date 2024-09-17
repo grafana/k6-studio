@@ -1,4 +1,4 @@
-import { Container, Flex, Heading } from '@radix-ui/themes'
+import { Container, Flex } from '@radix-ui/themes'
 
 import { useGeneratorStore } from '@/store/generator'
 import { ExecutorOptions } from './components/ExecutorOptions'
@@ -10,13 +10,8 @@ export function LoadProfile() {
   return (
     <Container align="left" size="1">
       <Flex direction="column" gap="4">
-        <Flex direction="column">
-          <Heading color="gray" mb="2" size="5">
-            General
-          </Heading>
-          <Flex gap="3">
-            <Executor value={state.executor} />
-          </Flex>
+        <Flex gap="3">
+          <Executor value={state.executor} />
         </Flex>
         <ExecutorOptions {...state} />
       </Flex>
