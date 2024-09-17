@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Flex, Text, Table } from '@radix-ui/themes'
+import { Flex, Text, Table, Box } from '@radix-ui/themes'
 import { isEmpty } from 'lodash-es'
 
 import { GroupedProxyData, ProxyData } from '@/types'
@@ -38,7 +38,7 @@ export function WebLogView({
     }
 
     return (
-      <>
+      <Box mb="2">
         {groups.map(([group, data]) => (
           <Group name={group} length={data.length} key={group}>
             <RequestList
@@ -48,7 +48,7 @@ export function WebLogView({
             />
           </Group>
         ))}
-      </>
+      </Box>
     )
   }
 
