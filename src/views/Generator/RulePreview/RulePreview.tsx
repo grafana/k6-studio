@@ -19,7 +19,7 @@ export function RulePreview() {
     case 'parameterization':
     case 'verification':
     case 'recording-verification':
-      return <div>Not implemented</div>
+      return null
 
     default:
       return exhaustive(rule)

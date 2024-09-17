@@ -1,36 +1,105 @@
 import { Allotment } from 'allotment'
-import { Button } from '@radix-ui/themes'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useBlocker, useNavigate } from 'react-router-dom'
 
-import { useGeneratorStore, selectHasRecording } from '@/store/generator'
+import {
+  useGeneratorStore,
+  selectHasRecording,
+  selectGeneratorData,
+} from '@/store/generator'
 import { View } from '@/components/Layout/View'
-import { exportScript } from './Generator.utils'
 import { GeneratorSidebar } from './GeneratorSidebar'
 import { TestRuleContainer } from './TestRuleContainer'
-import { Allowlist } from './Allowlist'
-import { RecordingSelector } from './RecordingSelector'
-import { useGeneratorFile } from './Generator.hooks'
+import {
+  useGeneratorParams,
+  useIsGeneratorDirty,
+  useLoadGeneratorFile,
+  useLoadHarFile,
+  useSaveGeneratorFile,
+} from './Generator.hooks'
+import { GeneratorControls } from './GeneraterControls'
+import { useEffect } from 'react'
+import { useToast } from '@/store/ui/useToast'
+import { getRoutePath } from '@/routeMap'
+import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 
 export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const { isLoading, onSave } = useGeneratorFile()
+
+  const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
+  const generatorState = useGeneratorStore(selectGeneratorData)
+
+  const showToast = useToast()
+  const navigate = useNavigate()
+
+  const { fileName } = useGeneratorParams()
+
+  const {
+    data: generatorFileData,
+    isLoading: isLoadingGenerator,
+    error: generatorError,
+  } = useLoadGeneratorFile(fileName)
+
+  const {
+    data: recording,
+    isLoading: isLoadingRecording,
+    error: harError,
+  } = useLoadHarFile(generatorFileData?.recordingPath)
+
+  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(fileName)
+
+  const isLoading = isLoadingGenerator || isLoadingRecording
+
+  const isDirty = useIsGeneratorDirty(fileName)
+
+  const blocker = useBlocker(({ nextLocation, historyAction }) => {
+    const isNavigationInsideGenerator = nextLocation.pathname.includes(
+      encodeURI(getRoutePath('generator', { fileName }))
+    )
+
+    // Don't show on 'REPLACE' because after navigating
+    // to generator it redirects to load profile tab
+    return (
+      isDirty && !isNavigationInsideGenerator && historyAction !== 'REPLACE'
+    )
+  })
+
+  useEffect(() => {
+    if (!generatorFileData) return
+    setGeneratorFile(generatorFileData, recording)
+  }, [setGeneratorFile, generatorFileData, recording])
+
+  useEffect(() => {
+    if (generatorError) {
+      showToast({
+        title: 'Failed to load generator',
+        status: 'error',
+      })
+
+      navigate(getRoutePath('home'), { replace: true })
+    }
+  }, [generatorError, showToast, navigate])
+
+  useEffect(() => {
+    if (harError) {
+      showToast({
+        title: 'Failed to har file',
+        status: 'error',
+        description: 'Select another recording from top menu',
+      })
+    }
+  }, [harError, showToast])
+
+  const handleSaveGenerator = () => saveGenerator(generatorState)
 
   return (
     <View
       title="Generator"
       actions={
-        <>
-          <RecordingSelector />
-          <Allowlist />
-          <Button onClick={onSave}>Save</Button>
-          {hasRecording && (
-            <Button onClick={exportScript}>Export script</Button>
-          )}
-        </>
+        <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }
       loading={isLoading}
     >
-      <Allotment defaultSizes={[3, 1]}>
+      <Allotment defaultSizes={[3, 2]}>
         <Allotment.Pane minSize={400}>
           <Allotment vertical defaultSizes={[1, 1]}>
             <Allotment.Pane minSize={300}>
@@ -41,10 +110,18 @@ export function Generator() {
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>
-        <Allotment.Pane minSize={300} visible={hasRecording}>
+        <Allotment.Pane minSize={400} visible={hasRecording}>
           <GeneratorSidebar />
         </Allotment.Pane>
       </Allotment>
+      <UnsavedChangesDialog
+        open={blocker.state === 'blocked'}
+        onSave={() => {
+          handleSaveGenerator().then(() => blocker.proceed?.())
+        }}
+        onDiscard={() => blocker.proceed?.()}
+        onCancel={() => blocker.reset?.()}
+      />
     </View>
   )
 }

@@ -1,10 +1,15 @@
 import { ProxyData } from '@/types'
 import { ImmerStateCreator } from '@/utils/typescript'
+import {
+  shouldResetAllowList,
+  shouldShowAllowListDialog,
+} from './recording.utils'
 
 interface State {
   requests: ProxyData[]
   recordingPath: string
   allowlist: string[]
+  showAllowlistDialog: boolean
   includeStaticAssets: boolean
 }
 
@@ -13,6 +18,7 @@ interface Actions {
   resetRecording: () => void
   setAllowlist: (value: string[]) => void
   setIncludeStaticAssets: (value: boolean) => void
+  setShowAllowlistDialog: (value: boolean) => void
 }
 
 export type RecordingSliceStore = State & Actions
@@ -24,11 +30,25 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   recordingPath: '',
   allowlist: [],
   includeStaticAssets: false,
+  showAllowlistDialog: false,
 
   setRecording: (requests: ProxyData[], path: string) =>
     set((state) => {
+      if (shouldResetAllowList({ requests, allowList: state.allowlist })) {
+        state.allowlist = []
+      }
+
+      if (
+        shouldShowAllowListDialog({
+          previousRequests: state.requests,
+          requests,
+          allowList: state.allowlist,
+        })
+      ) {
+        state.showAllowlistDialog = true
+      }
+
       state.requests = requests
-      state.allowlist = []
       state.recordingPath = path
     }),
   resetRecording: () =>
@@ -44,5 +64,10 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   setIncludeStaticAssets: (value) =>
     set((state) => {
       state.includeStaticAssets = value
+    }),
+
+  setShowAllowlistDialog: (value) =>
+    set((state) => {
+      state.showAllowlistDialog = value
     }),
 })

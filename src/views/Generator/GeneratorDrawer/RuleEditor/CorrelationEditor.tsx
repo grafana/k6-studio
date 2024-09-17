@@ -1,65 +1,37 @@
 import { Box, Flex, Heading, Switch, Text } from '@radix-ui/themes'
 
-import { CorrelationRule, Filter, Selector } from '@/types/rules'
+import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
+import { useFormContext } from 'react-hook-form'
 
-interface CorrelationEditorProps {
-  rule: CorrelationRule
-  onChangeRule: (rule: CorrelationRule) => void
-}
-
-export function CorrelationEditor({
-  rule,
-  onChangeRule,
-}: CorrelationEditorProps) {
-  const { replacer } = rule
-  const handleFilterChange = (
-    filter: Filter,
-    type: 'extractor' | 'replacer'
-  ) => {
-    onChangeRule({ ...rule, [type]: { ...rule[type], filter } })
-  }
-
-  const handleSelectorChange = (
-    selector: Selector,
-    type: 'extractor' | 'replacer'
-  ) => {
-    onChangeRule({ ...rule, [type]: { ...rule[type], selector } })
-  }
+export function CorrelationEditor() {
+  const { setValue, watch } = useFormContext<TestRule>()
+  const replacer = watch('replacer')
 
   const toggleCustomReplacer = () => {
     if (replacer) {
-      onChangeRule({ ...rule, replacer: undefined })
+      setValue('replacer', undefined)
     } else {
-      onChangeRule({
-        ...rule,
-        replacer: {
-          filter: { path: '' },
-          selector: { from: 'body', type: 'begin-end', begin: '', end: '' },
-        },
+      setValue('replacer', {
+        filter: { path: '' },
+        selector: { from: 'body', type: 'begin-end', begin: '', end: '' },
       })
     }
   }
 
   return (
-    <Flex wrap="wrap">
-      <Box p="2" width="50%">
+    <Flex gap="3">
+      <Box width="50%">
         <Heading size="4" weight="medium" mb="2">
           Extractor
         </Heading>
-        <FilterField
-          filter={rule.extractor.filter}
-          onChange={(filter) => handleFilterChange(filter, 'extractor')}
-        />
-        <SelectorField
-          selector={rule.extractor.selector}
-          onChange={(selector) => handleSelectorChange(selector, 'extractor')}
-        />
+        <FilterField path="extractor.filter" />
+        <SelectorField type="extractor" />
       </Box>
 
-      <Box width="50%" p="2" pr="3">
+      <Box width="50%">
         <Label mb="2">
           <Heading size="4" weight="medium">
             Replacer
@@ -75,16 +47,8 @@ export function CorrelationEditor({
         )}
         {replacer && (
           <>
-            <FilterField
-              filter={replacer.filter}
-              onChange={(filter) => handleFilterChange(filter, 'replacer')}
-            />
-            <SelectorField
-              selector={replacer.selector}
-              onChange={(selector) =>
-                handleSelectorChange(selector, 'replacer')
-              }
-            />
+            <FilterField path="replacer.filter" />
+            <SelectorField type="replacer" />
           </>
         )}
       </Box>

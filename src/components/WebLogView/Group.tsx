@@ -73,7 +73,7 @@ export function Group({ name, length, children, onRename }: GroupProps) {
   const isEditing = canEdit && editValue !== null
 
   return (
-    <Box pb="2">
+    <Box>
       <CollapsibleSection
         defaultOpen
         noTrigger={isEditing}

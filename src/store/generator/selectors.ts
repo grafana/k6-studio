@@ -1,11 +1,16 @@
 import { GeneratorFileData } from '@/types/generator'
-import type { GeneratorStore } from '@/store/generator'
+import { type GeneratorStore } from '@/store/generator'
 import { TestOptions } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 export function selectRuleById(state: GeneratorStore, id?: string) {
   return state.rules.find((rule) => rule.id === id)
+}
+
+export function selectIsRulePreviewable(state: GeneratorStore, id?: string) {
+  const rule = selectRuleById(state, id)
+  return rule?.type === 'correlation'
 }
 
 export function selectHasRecording(state: GeneratorStore) {

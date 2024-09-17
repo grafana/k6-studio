@@ -1,13 +1,9 @@
-import { Box, Flex, Select, TextField } from '@radix-ui/themes'
-import * as Label from '@radix-ui/react-label'
+import { Box, Flex, TextField } from '@radix-ui/themes'
 
-import type { Selector } from '@/types/rules'
+import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
-
-interface SelectorFieldProps {
-  selector: Selector
-  onChange: (selector: Selector) => void
-}
+import { useFormContext } from 'react-hook-form'
+import { ControlledSelect, FieldGroup } from '@/components/Form'
 
 const fromOptions: Array<{
   value: Selector['from']
@@ -18,36 +14,44 @@ const fromOptions: Array<{
   { value: 'url', label: 'URL' },
 ]
 
-const typeLabels: Record<Selector['type'], string> = {
-  'begin-end': 'Begin-End',
-  regex: 'Regex',
-  json: 'JSON',
+const typeOptions = {
+  beginEnd: { value: 'begin-end', label: 'Begin-End' },
+  regex: { value: 'regex', label: 'Regex' },
+  json: { value: 'json', label: 'JSON' },
+} as const
+
+const allowedTypes: Record<
+  Selector['from'],
+  Array<{ value: Selector['type']; label: string }>
+> = {
+  headers: [typeOptions.beginEnd, typeOptions.regex],
+  body: [typeOptions.beginEnd, typeOptions.regex, typeOptions.json],
+  url: [typeOptions.beginEnd, typeOptions.regex],
 }
 
-const allowedTypes: Record<Selector['from'], Selector['type'][]> = {
-  headers: ['begin-end', 'regex'],
-  body: ['begin-end', 'regex', 'json'],
-  url: ['begin-end', 'regex'],
-}
+export function SelectorField({ type }: { type: 'extractor' | 'replacer' }) {
+  const {
+    watch,
+    control,
+    setValue,
+    formState: { errors },
+  } = useFormContext<TestRule>()
+  const field = `${type}.selector` as const
+  const selector = watch(field)
 
-export function SelectorField({ selector, onChange }: SelectorFieldProps) {
-  // value is always a string in Radix Select
   const handleFromChange = (value: Selector['from']) => {
-    const type = allowedTypes[value].includes(selector.type)
-      ? selector.type
-      : allowedTypes[value]?.[0]
+    // When "from" changes reset type to the first allowed type if the current type is not allowed
+    if (!allowedTypes[value].find(({ value }) => value === selector.type)) {
+      handleTypeChange('begin-end')
+    }
 
-    onChange({
-      ...selector,
-      from: value,
-      type,
-    } as Selector)
+    setValue(`${field}.from`, value)
   }
 
   const handleTypeChange = (value: Selector['type']) => {
     switch (value) {
       case 'begin-end':
-        onChange({
+        setValue(field, {
           type: value,
           begin: '',
           end: '',
@@ -55,14 +59,14 @@ export function SelectorField({ selector, onChange }: SelectorFieldProps) {
         })
         break
       case 'regex':
-        onChange({
+        setValue(field, {
           type: value,
           regex: '',
           from: selector.from,
         })
         break
       case 'json':
-        onChange({
+        setValue(field, {
           type: value,
           from: 'body',
           path: '',
@@ -75,106 +79,71 @@ export function SelectorField({ selector, onChange }: SelectorFieldProps) {
 
   return (
     <>
-      <Flex gap="2" wrap="wrap" mb="2">
+      <Flex gap="2" wrap="wrap">
         <Box flexGrow="1">
-          <Label.Root>Target</Label.Root>
-          <Select.Root value={selector.from} onValueChange={handleFromChange}>
-            <Select.Trigger css={{ width: '100%' }} />
-            <Select.Content>
-              {fromOptions.map(({ label, value }) => (
-                <Select.Item key={value} value={value}>
-                  {label}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
+          <FieldGroup label="Target" name={`${field}.from`} errors={errors}>
+            <ControlledSelect
+              control={control}
+              name={`${field}.from`}
+              options={fromOptions}
+              onChange={handleFromChange}
+            />
+          </FieldGroup>
         </Box>
 
         <Box flexGrow="1">
-          <Label.Root>Type</Label.Root>
-          <Select.Root value={selector.type} onValueChange={handleTypeChange}>
-            <Select.Trigger css={{ width: '100%' }} />
-            <Select.Content>
-              {allowedTypes[selector.from].map((type) => (
-                <Select.Item key={type} value={type}>
-                  {typeLabels[type]}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
+          <FieldGroup label="Type" name={`${field}.type`} errors={errors}>
+            <ControlledSelect
+              control={control}
+              name={`${field}.type`}
+              options={allowedTypes[selector.from]}
+              onChange={handleTypeChange}
+            />
+          </FieldGroup>
         </Box>
       </Flex>
-      <SelectorContent selector={selector} onChange={onChange} />
+      <SelectorContent selector={selector} type={type} />
     </>
   )
 }
 
 function SelectorContent({
   selector,
-  onChange,
+  type,
 }: {
   selector: Selector
-  onChange: (selector: Selector) => void
+  type: 'extractor' | 'replacer'
 }) {
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<TestRule>()
+
+  const field = `${type}.selector` as const
+
   switch (selector.type) {
     case 'json':
       return (
-        <>
-          <Label.Root>JSON path</Label.Root>
-          <TextField.Root
-            value={selector.path}
-            css={{ marginBottom: 'var(--space-2)' }}
-            onChange={(event) =>
-              onChange({
-                ...selector,
-                path: event.target.value,
-              })
-            }
-          />
-        </>
+        <FieldGroup name={`${field}.path`} errors={errors} label="JSON path">
+          <TextField.Root {...register(`${field}.path`)} />
+        </FieldGroup>
       )
     case 'begin-end':
       return (
         <>
-          <Label.Root>Begin</Label.Root>
-          <TextField.Root
-            value={selector.begin}
-            css={{ marginBottom: 'var(--space-2)' }}
-            onChange={(event) =>
-              onChange({
-                ...selector,
-                begin: event.target.value,
-              })
-            }
-          />
-          <Label.Root>End</Label.Root>
-          <TextField.Root
-            value={selector.end}
-            css={{ marginBottom: 'var(--space-2)' }}
-            onChange={(event) =>
-              onChange({
-                ...selector,
-                end: event.target.value,
-              })
-            }
-          />
+          <FieldGroup name={`${field}.begin`} errors={errors} label="Begin">
+            <TextField.Root {...register(`${field}.begin`)} />
+          </FieldGroup>
+          <FieldGroup name={`${field}.end`} errors={errors} label="End">
+            <TextField.Root {...register(`${field}.end`)} />
+          </FieldGroup>
         </>
       )
     case 'regex':
       return (
-        <>
-          <Label.Root>Regex</Label.Root>
-          <TextField.Root
-            value={selector.regex}
-            css={{ marginBottom: 'var(--space-2)' }}
-            onChange={(event) =>
-              onChange({
-                ...selector,
-                regex: event.target.value,
-              })
-            }
-          />
-        </>
+        <FieldGroup name={`${field}.regex`} errors={errors} label="Regex">
+          <TextField.Root {...register(`${field}.regex`)} />
+        </FieldGroup>
       )
     default:
       return exhaustive(selector)

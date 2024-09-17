@@ -61,8 +61,8 @@ export function RequestsSection({
         />
       </Flex>
 
-      <ScrollArea scrollbars="vertical">
-        <div ref={ref}>
+      <ScrollArea scrollbars="both">
+        <div ref={ref} css={{ minWidth: '500px' }}>
           <WebLogView
             requests={groupedProxyData}
             activeGroup={activeGroup}
