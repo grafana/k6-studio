@@ -1,6 +1,13 @@
-import { Code, Flex, Tooltip } from '@radix-ui/themes'
+import { Code, Flex, Tooltip, Link, Text } from '@radix-ui/themes'
 
 export function VersionLabel() {
+  const handleReportIssue = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault()
+    window.studio.browser.openExternalLink(
+      'https://github.com/grafana/k6-studio/issues'
+    )
+  }
+
   return (
     <Tooltip
       content={
@@ -19,6 +26,12 @@ export function VersionLabel() {
         <Code size="1" variant="ghost" color="gray">
           alpha
         </Code>
+
+        <Text align="center" size="1">
+          <Link href="" onClick={handleReportIssue}>
+            Report issues
+          </Link>
+        </Text>
       </Flex>
     </Tooltip>
   )
