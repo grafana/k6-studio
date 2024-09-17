@@ -165,7 +165,7 @@ export function generateSingleRequestSnippet(
 function generateSleep(timing: ThinkTime['timing']): string {
   switch (timing.type) {
     case 'fixed':
-      return `sleep(${timing.value})`
+      return timing.value !== null ? `sleep(${timing.value})` : ''
     case 'range':
       return `sleep(Math.random() * (${timing.value.max} - ${timing.value.min}) + ${timing.value.min})`
     default:
@@ -174,8 +174,15 @@ function generateSleep(timing: ThinkTime['timing']): string {
 }
 
 function generateRequestParams(request: ProxyData['request']): string {
+  const headersToExclude = [
+    'Cookie',
+    'User-Agent',
+    'Host',
+    'Content-Length',
+    'Content-Type',
+  ]
   const headers = request.headers
-    .filter(([name]) => name !== 'Cookie')
+    .filter(([name]) => !headersToExclude.includes(name))
     .map(([name, value]) => `'${name}': \`${value}\``)
     .join(',')
   return `

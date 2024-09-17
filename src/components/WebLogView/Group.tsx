@@ -12,7 +12,7 @@ export function Group({
   children: React.ReactNode
 }) {
   return (
-    <Box pb="2">
+    <Box>
       <CollapsibleSection content={<Box>{children}</Box>} defaultOpen>
         <span
           css={css`

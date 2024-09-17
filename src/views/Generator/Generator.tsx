@@ -75,7 +75,7 @@ export function Generator() {
         status: 'error',
       })
 
-      navigate(getRoutePath('home'))
+      navigate(getRoutePath('home'), { replace: true })
     }
   }, [generatorError, showToast, navigate])
 
@@ -99,7 +99,7 @@ export function Generator() {
       }
       loading={isLoading}
     >
-      <Allotment defaultSizes={[3, 1]}>
+      <Allotment defaultSizes={[3, 2]}>
         <Allotment.Pane minSize={400}>
           <Allotment vertical defaultSizes={[1, 1]}>
             <Allotment.Pane minSize={300}>
@@ -110,7 +110,7 @@ export function Generator() {
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>
-        <Allotment.Pane minSize={300} visible={hasRecording}>
+        <Allotment.Pane minSize={400} visible={hasRecording}>
           <GeneratorSidebar />
         </Allotment.Pane>
       </Allotment>

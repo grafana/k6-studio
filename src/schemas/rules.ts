@@ -35,7 +35,17 @@ export const BeginEndSelectorSchema = z.object({
 export const RegexSelectorSchema = z.object({
   type: z.literal('regex'),
   from: z.enum(['headers', 'body', 'url']),
-  regex: z.string(),
+  regex: z.string().refine(
+    (value) => {
+      try {
+        new RegExp(value)
+        return true
+      } catch {
+        return false
+      }
+    },
+    { message: 'Invalid regular expression' }
+  ),
 })
 
 export const JsonSelectorSchema = z.object({

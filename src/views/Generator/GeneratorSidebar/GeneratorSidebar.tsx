@@ -6,6 +6,7 @@ import { ScriptPreview } from './ScriptPreview'
 import {
   selectFilteredRequests,
   selectHasRecording,
+  selectIsRulePreviewable,
   useGeneratorStore,
 } from '@/store/generator'
 import { RulePreview } from '../RulePreview/RulePreview'
@@ -18,9 +19,12 @@ export function GeneratorSidebar() {
 
   const hasRecording = useGeneratorStore(selectHasRecording)
   const { ruleId } = useGeneratorParams()
+  const hasPreview = useGeneratorStore((state) =>
+    selectIsRulePreviewable(state, ruleId)
+  )
 
   useEffect(() => {
-    if (ruleId === undefined) {
+    if (!hasPreview) {
       setTab((currentTab) =>
         currentTab === 'rule-preview' ? 'requests' : currentTab
       )
@@ -28,7 +32,7 @@ export function GeneratorSidebar() {
     }
 
     setTab('rule-preview')
-  }, [ruleId])
+  }, [hasPreview])
 
   return (
     <Flex direction="column" height="100%" minHeight="0" asChild>
@@ -40,11 +44,11 @@ export function GeneratorSidebar() {
           <Tabs.Trigger value="script" disabled={!hasRecording}>
             Script preview
           </Tabs.Trigger>
-          {ruleId !== undefined && (
+          {hasPreview && (
             <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
           )}
         </Tabs.List>
-        {ruleId !== undefined && (
+        {hasPreview && (
           <Tabs.Content
             value="rule-preview"
             css={css`
