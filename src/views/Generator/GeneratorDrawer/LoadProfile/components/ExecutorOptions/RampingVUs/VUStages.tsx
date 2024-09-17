@@ -18,7 +18,7 @@ export function VUStages({ stages = [] }: VUStagesProps) {
           <Table.Row>
             <Table.ColumnHeaderCell>Target VUs</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Duration</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell width="0"></Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
@@ -33,14 +33,17 @@ export function VUStages({ stages = [] }: VUStagesProps) {
               />
             </Table.Row>
           ))}
+          <Table.Row>
+            <Table.RowHeaderCell colSpan={3} justify="center">
+              <Box>
+                <Button variant="ghost" onClick={() => addStage()}>
+                  Add new stage
+                </Button>
+              </Box>
+            </Table.RowHeaderCell>
+          </Table.Row>
         </Table.Body>
       </Table.Root>
-
-      <Box p="2">
-        <Button variant="ghost" onClick={() => addStage()}>
-          Add new stage
-        </Button>
-      </Box>
     </Flex>
   )
 }
