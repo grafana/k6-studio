@@ -44,8 +44,8 @@ export function CorrelationEditor({
   }
 
   return (
-    <Flex wrap="wrap">
-      <Box p="2" width="50%">
+    <Flex wrap="wrap" gap="3">
+      <Box flexGrow="1" flexShrink="1" flexBasis="0">
         <Heading size="4" weight="medium" mb="2">
           Extractor
         </Heading>
@@ -59,7 +59,7 @@ export function CorrelationEditor({
         />
       </Box>
 
-      <Box width="50%" p="2" pr="3">
+      <Box flexGrow="1" flexShrink="1" flexBasis="0">
         <Label mb="2">
           <Heading size="4" weight="medium">
             Replacer

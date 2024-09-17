@@ -46,7 +46,7 @@ export function ThinkTime() {
   }
 
   return (
-    <Container align="left" size="1" p="1">
+    <Container align="left" size="1">
       <Flex gap="3" direction="column">
         <Flex direction="column" gap="2">
           <Label.Root>Configure timing</Label.Root>

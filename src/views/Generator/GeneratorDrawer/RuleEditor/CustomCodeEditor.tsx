@@ -14,7 +14,7 @@ export function CustomCodeEditor({
   onChangeRule,
 }: CustomCodeEditorProps) {
   return (
-    <Box p="2" height="100%" maxHeight="100%">
+    <Box height="100%" maxHeight="100%">
       <Flex gap="2">
         <FilterField
           filter={rule.filter}

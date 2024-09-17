@@ -8,7 +8,7 @@ export function LoadProfile() {
   const state = useGeneratorStore()
 
   return (
-    <Container align="left" size="1" p="2">
+    <Container align="left" size="1">
       <Flex direction="column" gap="4">
         <Flex direction="column">
           <Heading color="gray" mb="2" size="5">

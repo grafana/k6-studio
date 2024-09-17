@@ -1,4 +1,4 @@
-import { Flex, ScrollArea, TabNav } from '@radix-ui/themes'
+import { Box, Flex, ScrollArea, TabNav } from '@radix-ui/themes'
 import { Link, Outlet, useMatch } from 'react-router-dom'
 
 import { useGeneratorParams } from '../Generator.hooks'
@@ -44,7 +44,9 @@ export function GeneratorDrawer() {
         />
       </TabNav.Root>
       <ScrollArea style={{ height: '100%' }}>
-        <Outlet />
+        <Box p="3">
+          <Outlet />
+        </Box>
       </ScrollArea>
     </Flex>
   )

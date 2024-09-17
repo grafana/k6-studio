@@ -1,6 +1,6 @@
 import { ChangeEvent } from 'react'
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
-import { Box, Button, IconButton, Table, TextField } from '@radix-ui/themes'
+import { Button, IconButton, Table, TextField } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 
 export function VariablesEditor() {
@@ -39,7 +39,7 @@ export function VariablesEditor() {
   }
 
   return (
-    <Box p="2">
+    <>
       {variables.length !== 0 && (
         <Table.Root size="1" variant="surface">
           <Table.Header>
@@ -77,9 +77,9 @@ export function VariablesEditor() {
           </Table.Body>
         </Table.Root>
       )}
-      <Button m="4" variant="ghost" onClick={handleAddVariable}>
+      <Button m="2" variant="ghost" onClick={handleAddVariable}>
         <PlusIcon width="18" height="18" /> Add variable
       </Button>
-    </Box>
+    </>
   )
 }
