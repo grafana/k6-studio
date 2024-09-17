@@ -1,14 +1,10 @@
+import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { Tooltip, Table, Text } from '@radix-ui/themes'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useRef } from 'react'
 
 export function TableCellWithTooltip({ children }: { children: ReactNode }) {
-  const [isEllipsisActive, setIsEllipsisActive] = useState(false)
-
-  const onTextRef = (node: HTMLTableDataCellElement) => {
-    if (!node) return
-    const isOverflowing = node.clientWidth !== node.scrollWidth
-    setIsEllipsisActive(isOverflowing)
-  }
+  const cellRef = useRef<HTMLTableCellElement>(null)
+  const isEllipsisActive = useOverflowCheck(cellRef)
 
   return (
     <Tooltip content={children} hidden={!isEllipsisActive} avoidCollisions>
@@ -18,7 +14,7 @@ export function TableCellWithTooltip({ children }: { children: ReactNode }) {
           overflow: 'hidden',
           whiteSpace: 'nowrap',
         }}
-        ref={onTextRef}
+        ref={cellRef}
       >
         <Text size="1">{children}</Text>
       </Table.Cell>
