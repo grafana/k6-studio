@@ -20,11 +20,16 @@ export function ScriptPreview() {
           </Callout.Text>
         </Callout.Root>
 
-        <Box>
+        <Box
+          mt="4"
+          css={css`
+            border-top: 1px solid var(--gray-7);
+          `}
+        >
           <ScrollArea
             scrollbars="vertical"
             css={css`
-              height: calc(100vh - 170px);
+              height: calc(100vh - 190px);
             `}
           >
             <pre
