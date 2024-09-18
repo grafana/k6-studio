@@ -9,6 +9,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import { OverwriteFileWarning } from './OverwriteFileWarning'
 import { ScriptNameForm } from './ScriptNameForm'
+import { useLocalStorage } from 'react-use'
 
 export function ExportScriptDialog({
   open,
@@ -25,13 +26,17 @@ export function ExportScriptDialog({
       scriptName: 'my-script',
     },
   })
+  const [alwaysOverwriteScript, setAlwaysOverwriteScript] = useLocalStorage(
+    'alwaysOverwriteScript',
+    false
+  )
   const { setValue } = formMethods
 
   const onSubmit = async (data: ExportScriptDialogData) => {
     const { scriptName, overwriteFile } = data
     const fileName = `${scriptName}.js`
     const fileExists = await scriptExists(fileName)
-    if (fileExists && !overwriteFile) {
+    if (fileExists && !overwriteFile && !alwaysOverwriteScript) {
       setValue('overwriteFile', true)
       return
     }
@@ -56,7 +61,9 @@ export function ExportScriptDialog({
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSubmit)}>
             {showOverwriteWarning ? (
-              <OverwriteFileWarning />
+              <OverwriteFileWarning
+                setAlwaysOverwriteScript={setAlwaysOverwriteScript}
+              />
             ) : (
               <ScriptNameForm />
             )}
