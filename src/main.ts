@@ -277,8 +277,20 @@ ipcMain.handle(
   async (event, script: string, fileName: string = 'script.js') => {
     console.info('script:save event received')
 
-    const filePath = `${SCRIPTS_PATH}/${fileName}`
-    await writeFile(filePath, script)
+    const browserWindow = browserWindowFromEvent(event)
+    try {
+      const filePath = `${SCRIPTS_PATH}/${fileName}`
+      await writeFile(filePath, script)
+      sendToast(browserWindow.webContents, {
+        title: 'Script exported successfully',
+        status: 'success',
+      })
+    } catch (error) {
+      sendToast(browserWindow.webContents, {
+        title: 'There was an error exporting the script',
+        status: 'error',
+      })
+    }
   }
 )
 

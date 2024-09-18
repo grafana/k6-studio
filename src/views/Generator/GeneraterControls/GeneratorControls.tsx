@@ -17,9 +17,9 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const { preview, error } = useScriptPreview()
+  const { preview, hasError } = useScriptPreview()
   const { fileName } = useGeneratorParams()
-  const tooltip = error ? 'Invalid script. Please check your rules' : ''
+  const tooltip = hasError ? 'Invalid script. Please check your rules' : ''
 
   return (
     <>
@@ -30,7 +30,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         <>
           <ButtonWithTooltip
             variant="outline"
-            disabled={error}
+            disabled={hasError}
             tooltip={tooltip}
             onClick={() => {
               setIsValidatorDialogOpen(true)
@@ -40,7 +40,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
           </ButtonWithTooltip>
           <ButtonWithTooltip
             variant="outline"
-            disabled={error}
+            disabled={hasError}
             tooltip={tooltip}
             onClick={() => setIsExportScriptDialogOpen(true)}
           >
