@@ -89,7 +89,7 @@ export function RuleEditor() {
             <IconButton
               variant="ghost"
               title="close"
-              m="2"
+              m="3"
               onClick={handleClose}
             >
               <Cross2Icon />

@@ -20,17 +20,20 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
     [rules, requests, rule]
   )
 
+  if (!result) {
+    return (
+      <Box p="2">
+        <Callout.Root color="amber" role="alert" variant="surface">
+          <Callout.Text wrap="balance">No requests matched</Callout.Text>
+        </Callout.Root>
+      </Box>
+    )
+  }
+
   return (
     <Allotment defaultSizes={[1, 2]} vertical>
       <Allotment.Pane minSize={200}>
         <Box height="100%">
-          {!result && (
-            <Box p="2">
-              <Callout.Root color="amber" role="alert" variant="surface">
-                <Callout.Text wrap="balance">No requests matched</Callout.Text>
-              </Callout.Root>
-            </Box>
-          )}
           <ScrollArea
             scrollbars="vertical"
             css={css`
