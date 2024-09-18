@@ -33,5 +33,5 @@ export function useListenProxyData(group?: string) {
     })
   }, [])
 
-  return { proxyData, setProxyData, resetProxyData }
+  return { proxyData, resetProxyData }
 }

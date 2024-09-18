@@ -1,22 +1,50 @@
 import { css } from '@emotion/react'
 import { Box, Flex, IconButton, TextField } from '@radix-ui/themes'
-import { CollapsibleSection } from '../CollapsibleSection'
-import { CheckIcon, Cross1Icon, Pencil1Icon } from '@radix-ui/react-icons'
-import { useState, KeyboardEvent, ChangeEvent } from 'react'
-import { useGeneratorStore } from '@/store/generator'
+import {
+  CheckIcon,
+  Cross1Icon,
+  CrossCircledIcon,
+  Pencil1Icon,
+} from '@radix-ui/react-icons'
+import { useState, KeyboardEvent, useRef } from 'react'
+import { Group as GroupType } from '@/types'
+import { useForm } from 'react-hook-form'
+import { FieldError } from '../Form'
+import { mergeRefs } from '@/utils/react'
+import { ErrorMessage } from '@hookform/error-message'
+import { Collapsible } from '../Collapsible'
+import { useOnClickOutside } from '@/utils/dom'
 
 interface GroupProps {
-  name: string
+  group: GroupType
+  groups?: GroupType[]
   length: number
   children: React.ReactNode
-  onRename?: (oldName: string, newName: string) => void
+  onRename?: (group: GroupType) => void
 }
 
-export function Group({ name, length, children, onRename }: GroupProps) {
-  const requests = useGeneratorStore((state) => state.requests)
+export function Group({
+  group,
+  groups = [],
+  length,
+  children,
+  onRename,
+}: GroupProps) {
+  const headerRef = useRef<HTMLDivElement | null>(null)
 
-  const [error, setError] = useState<string | null>(null)
-  const [editValue, setEditValue] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+
+  const {
+    formState: { errors, isValid },
+    reset,
+    register,
+    handleSubmit,
+  } = useForm({
+    defaultValues: {
+      name: group.name,
+    },
+    mode: 'onChange',
+  })
 
   const handleInputMount = (el: HTMLInputElement | null) => {
     if (document.activeElement !== el) {
@@ -27,103 +55,123 @@ export function Group({ name, length, children, onRename }: GroupProps) {
 
   const handleKeyDown = (ev: KeyboardEvent<HTMLInputElement>) => {
     if (ev.key === 'Escape') {
-      setError(null)
-      setEditValue(null)
+      handleReset()
 
       return
     }
-
-    if (ev.key === 'Enter') {
-      handleSave()
-
-      return
-    }
-  }
-
-  const handleNameChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    const value = ev.target.value
-
-    if (value !== name && requests.some((request) => request.group === value)) {
-      setError('A group with this name already exists.')
-    }
-
-    setEditValue(ev.target.value)
   }
 
   const handleEdit = () => {
-    setEditValue(name)
+    setIsEditing(true)
   }
 
-  const reset = () => {
-    setError(null)
-    setEditValue(null)
+  const handleReset = () => {
+    setIsEditing(false)
+
+    reset({
+      name: group.name,
+    })
   }
 
-  const handleSave = () => {
-    if (onRename === undefined || editValue === null || error !== null) {
-      return
+  useOnClickOutside({
+    ref: headerRef,
+    handler: handleReset,
+    enabled: isEditing,
+  })
+
+  const submit = ({ name }: { name: string }) => {
+    onRename?.({
+      ...group,
+      name,
+    })
+
+    setIsEditing(false)
+  }
+
+  const isValidName = (value: string) => {
+    if (value.trim() === '') {
+      return false
     }
 
-    onRename(name, editValue)
+    if (groups.some((g) => g.id !== group.id && g.name === value)) {
+      return 'A group with this name already exists.'
+    }
 
-    reset()
+    return true
   }
 
   const canEdit = onRename !== undefined
-  const isEditing = canEdit && editValue !== null
+
+  const { ref: formRef, ...nameProps } = register('name', {
+    validate: isValidName,
+  })
 
   return (
     <Box>
-      <CollapsibleSection
-        defaultOpen
-        noTrigger={isEditing}
-        content={<Box>{children}</Box>}
-        actions={
-          canEdit && (
+      <Collapsible.Root defaultOpen>
+        <Collapsible.Header ref={headerRef}>
+          {isEditing && (
+            <Collapsible.Heading>
+              <form css={{ width: '100%' }} onSubmit={handleSubmit(submit)}>
+                <TextField.Root
+                  ref={mergeRefs(formRef, handleInputMount)}
+                  size="1"
+                  css={css`
+                    width: 100%;
+                  `}
+                  onKeyDown={handleKeyDown}
+                  {...nameProps}
+                >
+                  <TextField.Slot side="right">
+                    <ErrorMessage errors={errors} name="name" as={FieldError} />
+                  </TextField.Slot>
+                  <TextField.Slot side="right">
+                    {errors?.name !== undefined && (
+                      <CrossCircledIcon color="red" />
+                    )}
+                  </TextField.Slot>
+                </TextField.Root>
+              </form>
+            </Collapsible.Heading>
+          )}
+          {!isEditing && (
+            <Collapsible.Trigger>
+              <Collapsible.Heading>
+                <span
+                  css={css`
+                    display: flex;
+                    align-items: center;
+                    min-height: 24px;
+                    font-size: 13px;
+                    font-weight: 500;
+                  `}
+                >
+                  {group.name} ({length})
+                </span>
+              </Collapsible.Heading>
+            </Collapsible.Trigger>
+          )}
+          {canEdit && (
             <EditActions
               isEditing={isEditing}
-              hasError={error !== null}
+              isValid={isValid}
               onEdit={handleEdit}
-              onCancel={reset}
-              onSave={handleSave}
+              onCancel={handleReset}
+              onSave={handleSubmit(submit)}
             />
-          )
-        }
-      >
-        {isEditing && (
-          <TextField.Root
-            ref={handleInputMount}
-            size="1"
-            value={editValue}
-            color={error !== null ? 'red' : undefined}
-            css={css`
-              width: 100%;
-            `}
-            onKeyDown={handleKeyDown}
-            onChange={handleNameChange}
-          />
-        )}
-        {!isEditing && (
-          <span
-            css={css`
-              display: flex;
-              align-items: center;
-              min-height: 24px;
-              font-size: 13px;
-              font-weight: 500;
-            `}
-          >
-            {name} ({length})
-          </span>
-        )}
-      </CollapsibleSection>
+          )}
+        </Collapsible.Header>
+        <Collapsible.Content>
+          <Box>{children}</Box>
+        </Collapsible.Content>
+      </Collapsible.Root>
     </Box>
   )
 }
 
 interface EditActionsProps {
   isEditing: boolean
-  hasError: boolean
+  isValid: boolean
   onEdit: () => void
   onCancel: () => void
   onSave: () => void
@@ -131,16 +179,16 @@ interface EditActionsProps {
 
 function EditActions({
   isEditing,
-  hasError,
+  isValid,
   onEdit,
   onCancel,
   onSave,
 }: EditActionsProps) {
   return (
-    <Flex align="center" gap="1">
+    <Flex pr="2" align="center" gap="1">
       {isEditing && (
         <IconButton
-          disabled={hasError}
+          disabled={!isValid}
           variant="ghost"
           color="green"
           style={{ margin: 0 }}
