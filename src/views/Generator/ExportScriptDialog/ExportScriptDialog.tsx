@@ -33,12 +33,11 @@ export function ExportScriptDialog({
     'alwaysOverwriteScript',
     false
   )
+  const { setValue } = formMethods
 
   useEffect(() => {
     setValue('scriptName', 'my-script')
-  }, [generatorFileName])
-
-  const { setValue } = formMethods
+  }, [generatorFileName, setValue])
 
   const onSubmit = async (data: ExportScriptDialogData) => {
     const { scriptName, overwriteFile } = data
