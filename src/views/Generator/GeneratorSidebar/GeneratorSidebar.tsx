@@ -10,7 +10,6 @@ import {
   useGeneratorStore,
 } from '@/store/generator'
 import { RulePreview } from '../RulePreview/RulePreview'
-import { useGeneratorParams } from '../Generator.hooks'
 import { RequestList } from './RequestList'
 
 export function GeneratorSidebar() {
@@ -18,10 +17,7 @@ export function GeneratorSidebar() {
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
 
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const { ruleId } = useGeneratorParams()
-  const hasPreview = useGeneratorStore((state) =>
-    selectIsRulePreviewable(state, ruleId)
-  )
+  const hasPreview = useGeneratorStore(selectIsRulePreviewable)
 
   useEffect(() => {
     if (!hasPreview) {

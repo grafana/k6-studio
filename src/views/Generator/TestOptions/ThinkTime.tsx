@@ -1,10 +1,10 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
-import { Box, Callout, Flex, TextField } from '@radix-ui/themes'
-import { useGeneratorStore } from '@/store/generator'
-import { ThinkTimeSchema } from '@/schemas/testOptions'
+import { useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useCallback, useEffect } from 'react'
+import { Box, Flex, TextField } from '@radix-ui/themes'
+
+import { selectIsGroupedRecording, useGeneratorStore } from '@/store/generator'
+import { ThinkTimeSchema } from '@/schemas/testOptions'
 import type { ThinkTime } from '@/types/testOptions'
 import { stringAsNullableNumber, stringAsOptionalNumber } from '@/utils/form'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
@@ -23,6 +23,7 @@ const SLEEP_TYPE_OPTIONS = [
 export function ThinkTime() {
   const sleepType = useGeneratorStore((store) => store.sleepType)
   const timing = useGeneratorStore((store) => store.timing)
+  const isGroupedRecording = useGeneratorStore(selectIsGroupedRecording)
   const setSleepType = useGeneratorStore((store) => store.setSleepType)
   const setTiming = useGeneratorStore((store) => store.setTiming)
 
@@ -68,7 +69,7 @@ export function ThinkTime() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <FieldGroup name="timing.type" label="Configure timing" errors={errors}>
+      <FieldGroup name="timing.type" label="Type" errors={errors}>
         <ControlledSelect
           name="timing.type"
           control={control}
@@ -78,16 +79,19 @@ export function ThinkTime() {
       </FieldGroup>
 
       {data.timing.type === 'fixed' && (
-        <FieldGroup name="timing.value" label="Time in seconds" errors={errors}>
+        <FieldGroup name="timing.value" label="Duration" errors={errors}>
           <TextField.Root
             size="2"
+            min="0"
             placeholder="seconds"
             type="number"
             id="timing.value"
             {...register('timing.value', {
               setValueAs: stringAsNullableNumber,
             })}
-          />
+          >
+            <TextField.Slot side="right">s</TextField.Slot>
+          </TextField.Root>
         </FieldGroup>
       )}
 
@@ -96,64 +100,55 @@ export function ThinkTime() {
           <Box width="50%">
             <FieldGroup
               name="timing.value.min"
-              label="Minimum time in seconds"
+              label="Min duration"
               errors={errors}
             >
               <TextField.Root
                 size="2"
+                min={0}
                 placeholder="min"
                 type="number"
                 id="timing.value.min"
                 {...register('timing.value.min', {
                   setValueAs: stringAsOptionalNumber,
                 })}
-              />
+              >
+                <TextField.Slot side="right">s</TextField.Slot>
+              </TextField.Root>
             </FieldGroup>
           </Box>
           <Box width="50%">
             <FieldGroup
               name="timing.value.max"
-              label="Maximum time in seconds"
+              label="Max duration"
               errors={errors}
             >
               <TextField.Root
                 size="2"
+                min={0}
                 placeholder="max"
                 type="number"
                 id="timing.value.max"
                 {...register('timing.value.max', {
                   setValueAs: stringAsOptionalNumber,
                 })}
-              />
+              >
+                <TextField.Slot side="right">s</TextField.Slot>
+              </TextField.Root>
             </FieldGroup>
           </Box>
         </Flex>
       )}
 
-      <FieldGroup
-        name="sleepType"
-        label="Choose where to apply timing"
-        errors={errors}
-      >
+      <FieldGroup name="sleepType" label="Position" errors={errors}>
         <ControlledSelect
           name="sleepType"
           control={control}
-          options={SLEEP_TYPE_OPTIONS}
+          options={SLEEP_TYPE_OPTIONS.filter(({ value }) =>
+            isGroupedRecording ? value !== 'requests' : true
+          )}
         />
       </FieldGroup>
-
-      {data.sleepType === 'requests' && (
-        <Callout.Root color="amber" role="alert" variant="surface">
-          <Callout.Icon>
-            <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text wrap="balance">
-            It is advisable not to use this option if you have included groups,
-            as it may cause unexpected delays between requests, even within a
-            group.
-          </Callout.Text>
-        </Callout.Root>
-      )}
     </form>
   )
 }
