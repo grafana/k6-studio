@@ -56,7 +56,7 @@ export function ActivityBar() {
           <NavIconButton
             to={getRoutePath('recorder')}
             icon={<RecorderIcon />}
-            tooltip="New recording"
+            tooltip="Test recorder"
             active={Boolean(recorderMatch)}
           />
           <NavIconButton
