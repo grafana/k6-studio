@@ -8,8 +8,14 @@ import {
   Text,
   TextField,
 } from '@radix-ui/themes'
-import { useState } from 'react'
 import { scriptExists } from './Generator.utils'
+import { useForm } from 'react-hook-form'
+import {
+  ExportScriptDialogData,
+  ExportScriptDialogSchema,
+} from '@/schemas/exportScript'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { FieldGroup } from '@/components/Form'
 
 export function ExportScriptDialog({
   open,
@@ -20,29 +26,38 @@ export function ExportScriptDialog({
   onExport: (scriptName: string) => void
   onOpenChange: (open: boolean) => void
 }) {
-  const [scriptName, setScriptName] = useState('')
-  const [showOverwriteWarning, setShowOverwriteWarning] = useState(false)
+  const {
+    register,
+    getValues,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<ExportScriptDialogData>({
+    resolver: zodResolver(ExportScriptDialogSchema),
+    defaultValues: {
+      scriptName: 'my-script',
+    },
+  })
 
-  async function handleExportScript(overwriteFile: boolean = false) {
+  function handleCancelOverwrite() {
+    setValue('overwriteFile', false)
+  }
+
+  const onSubmit = async (data: ExportScriptDialogData) => {
+    const { scriptName, overwriteFile } = data
     const fileName = `${scriptName}.js`
     const fileExists = await scriptExists(fileName)
     if (fileExists && !overwriteFile) {
-      setShowOverwriteWarning(true)
+      setValue('overwriteFile', true)
       return
     }
 
-    setShowOverwriteWarning(false)
+    setValue('overwriteFile', false)
     onExport(fileName)
     onOpenChange(false)
   }
 
-  function handleCancelOverwrite() {
-    setShowOverwriteWarning(false)
-  }
-
-  function handleScriptNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setScriptName(e.target.value.trim())
-  }
+  const { overwriteFile: showOverwriteWarning } = getValues()
 
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
@@ -50,58 +65,64 @@ export function ExportScriptDialog({
         <AlertDialog.Title>
           <Flex align="center" gap="2">
             <FileTextIcon color="orange" width="20px" height="20px" />
-            Export scrpt
+            Export script
           </Flex>
         </AlertDialog.Title>
-        {showOverwriteWarning && (
-          <>
-            <Box mb="5">
-              <Text>
-                A script named <Code>{scriptName}</Code> already exists. Do you
-                you want to overwrite it?
-              </Text>
-            </Box>
-            <Flex justify="end" gap="2">
-              <Button
-                variant="outline"
-                color="orange"
-                onClick={handleCancelOverwrite}
-              >
-                No
-              </Button>
 
-              <Button color="orange" onClick={() => handleExportScript(true)}>
-                Yes
-              </Button>
-            </Flex>
-          </>
-        )}
-
-        {!showOverwriteWarning && (
-          <>
-            <Box mb="5">
-              <Text size="2">Script name</Text>
-
-              <TextField.Root
-                placeholder="my-script"
-                value={scriptName}
-                onChange={handleScriptNameChange}
-              />
-            </Box>
-
-            <Flex justify="end" gap="2">
-              <AlertDialog.Cancel>
-                <Button variant="outline" color="orange">
-                  Cancel
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {showOverwriteWarning && (
+            <>
+              <Box mb="5">
+                <Text>
+                  A script named <Code>{getValues('scriptName')}</Code> already
+                  exists. Do you you want to overwrite it?
+                </Text>
+              </Box>
+              <Flex justify="end" gap="2">
+                <Button
+                  variant="outline"
+                  color="orange"
+                  onClick={handleCancelOverwrite}
+                >
+                  No
                 </Button>
-              </AlertDialog.Cancel>
 
-              <Button color="orange" onClick={() => handleExportScript()}>
-                Export
-              </Button>
-            </Flex>
-          </>
-        )}
+                <Button color="orange" type="submit">
+                  Yes
+                </Button>
+              </Flex>
+            </>
+          )}
+
+          {!showOverwriteWarning && (
+            <>
+              <Box mb="5">
+                <FieldGroup
+                  name="scriptName"
+                  label="Script name"
+                  errors={errors}
+                >
+                  <TextField.Root
+                    placeholder="my-script"
+                    {...register('scriptName')}
+                  />
+                </FieldGroup>
+              </Box>
+
+              <Flex justify="end" gap="2">
+                <AlertDialog.Cancel>
+                  <Button variant="outline" color="orange">
+                    Cancel
+                  </Button>
+                </AlertDialog.Cancel>
+
+                <Button color="orange" type="submit">
+                  Export
+                </Button>
+              </Flex>
+            </>
+          )}
+        </form>
       </AlertDialog.Content>
     </AlertDialog.Root>
   )
