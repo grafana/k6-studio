@@ -27,7 +27,13 @@ export function NewRuleMenu() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <Button aria-label="Add rule" variant="ghost" size="1" color="gray">
+        <Button
+          aria-label="Add rule"
+          variant="ghost"
+          size="1"
+          color="gray"
+          mr="2"
+        >
           <PlusCircledIcon />
           Add rule
         </Button>

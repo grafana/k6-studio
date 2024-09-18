@@ -16,7 +16,7 @@ interface StageProps {
 export function Stage({ index, register, handleRemove, errors }: StageProps) {
   return (
     <>
-      <Table.Cell width="45%">
+      <Table.Cell>
         <FieldGroup errors={errors} name={`stages.${index}.target`} mb="0">
           <TextField.Root
             type="number"
@@ -32,7 +32,7 @@ export function Stage({ index, register, handleRemove, errors }: StageProps) {
           />
         </FieldGroup>
       </Table.Cell>
-      <Table.Cell width="45%">
+      <Table.Cell>
         <FieldGroup errors={errors} name={`stages.${index}.duration`} mb="0">
           <TextField.Root
             placeholder="Duration"

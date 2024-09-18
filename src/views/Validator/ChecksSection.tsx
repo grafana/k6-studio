@@ -25,7 +25,13 @@ export function ChecksSection({ checks, isRunning }: ChecksSectionProps) {
           <CollapsibleSection
             content={
               <>
-                <Table.Root size="1" variant="surface">
+                <Table.Root
+                  size="1"
+                  variant="ghost"
+                  css={css`
+                    border-radius: 0;
+                  `}
+                >
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeaderCell></Table.ColumnHeaderCell>

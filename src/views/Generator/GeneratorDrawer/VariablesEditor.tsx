@@ -52,56 +52,58 @@ export function VariablesEditor() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {watchVariables.length !== 0 && (
-        <Table.Root size="1" variant="surface">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Value (as string)</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
+      <Table.Root size="1" variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell width="30%">Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell width="0"></Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
 
-          <Table.Body>
-            {fields.map((field, index) => (
-              <Table.Row key={field.id}>
-                <Table.Cell width="45%">
-                  <FieldGroup
-                    errors={errors}
-                    name={`variables.${index}.name`}
-                    mb="0"
-                  >
-                    <TextField.Root
-                      placeholder="name"
-                      {...register(`variables.${index}.name`)}
-                    />
-                  </FieldGroup>
-                </Table.Cell>
-                <Table.Cell width="45%">
-                  <FieldGroup
-                    errors={errors}
-                    name={`variables.${index}.value`}
-                    mb="0"
-                  >
-                    <TextField.Root
-                      placeholder="value"
-                      {...register(`variables.${index}.value`)}
-                    />
-                  </FieldGroup>
-                </Table.Cell>
-                <Table.Cell>
-                  <IconButton onClick={() => remove(index)}>
-                    <TrashIcon width="18" height="18" />
-                  </IconButton>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-      )}
-      <Button m="4" variant="ghost" onClick={handleAddVariable}>
-        <PlusIcon width="18" height="18" /> Add variable
-      </Button>
+        <Table.Body>
+          {fields.map((field, index) => (
+            <Table.Row key={field.id}>
+              <Table.Cell maxWidth="400px">
+                <FieldGroup
+                  errors={errors}
+                  name={`variables.${index}.name`}
+                  mb="0"
+                >
+                  <TextField.Root
+                    placeholder="name"
+                    {...register(`variables.${index}.name`)}
+                  />
+                </FieldGroup>
+              </Table.Cell>
+              <Table.Cell>
+                <FieldGroup
+                  errors={errors}
+                  name={`variables.${index}.value`}
+                  mb="0"
+                >
+                  <TextField.Root
+                    placeholder="value"
+                    {...register(`variables.${index}.value`)}
+                  />
+                </FieldGroup>
+              </Table.Cell>
+              <Table.Cell>
+                <IconButton onClick={() => remove(index)}>
+                  <TrashIcon width="18" height="18" />
+                </IconButton>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+          <Table.Row>
+            <Table.RowHeaderCell colSpan={3} justify="center">
+              <Button variant="ghost" onClick={handleAddVariable}>
+                <PlusIcon width="18" height="18" /> Add variable
+              </Button>
+            </Table.RowHeaderCell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
     </form>
   )
 }

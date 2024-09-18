@@ -23,15 +23,14 @@ export function CorrelationEditor() {
 
   return (
     <Flex gap="3">
-      <Box width="50%">
+      <Box flexGrow="1" flexShrink="1" flexBasis="0">
         <Heading size="4" weight="medium" mb="2">
           Extractor
         </Heading>
         <FilterField path="extractor.filter" />
         <SelectorField type="extractor" />
       </Box>
-
-      <Box width="50%">
+      <Box flexGrow="1" flexShrink="1" flexBasis="0">
         <Label mb="2">
           <Heading size="4" weight="medium">
             Replacer
