@@ -137,15 +137,9 @@ export function Recorder() {
     blocker.proceed?.()
   }
 
-  function handleSetGroup(name: string) {
+  function handleSetGroup(group: Group) {
     setGroups((groups) => {
-      return [
-        ...groups,
-        {
-          id: crypto.randomUUID(),
-          name,
-        },
-      ]
+      return [...groups, group]
     })
   }
 
@@ -206,7 +200,11 @@ export function Recorder() {
         <Allotment.Pane minSize={200}>
           <Flex direction="column" height="100%">
             <Flex justify="between" wrap="wrap" gap="2" p="2" flexShrink="0">
-              <GroupForm value={group?.name} onChange={handleSetGroup} />
+              <GroupForm
+                currentGroup={group}
+                proxyData={proxyData}
+                onChange={handleSetGroup}
+              />
 
               <DebugControls />
             </Flex>

@@ -8,6 +8,9 @@ import type { TestRule } from '@/types/rules'
 import { TestRuleActions } from './TestRuleActions'
 import { TestRuleTypeBadge } from './TestRuleTypeBadge'
 import { TestRuleInlineContent } from './TestRuleInlineContent'
+import { useNavigate } from 'react-router-dom'
+import { useGeneratorParams } from '../../Generator.hooks'
+import { getRoutePath } from '@/routeMap'
 
 interface TestRuleItemProps {
   rule: TestRule
@@ -34,6 +37,19 @@ export function TestRuleItem({ rule, isSelected }: TestRuleItemProps) {
   } = useSortable({
     id: rule.id,
   })
+
+  const navigate = useNavigate()
+  const { fileName } = useGeneratorParams()
+
+  const handleEdit = () => {
+    navigate(
+      getRoutePath('rule', {
+        fileName: encodeURIComponent(fileName),
+        ruleId: rule.id,
+      })
+    )
+  }
+
   const insertPosition =
     over?.id === rule.id
       ? index > activeIndex
@@ -47,6 +63,7 @@ export function TestRuleItem({ rule, isSelected }: TestRuleItemProps) {
       gap="2"
       align="center"
       p="2"
+      onClick={handleEdit}
       css={css`
         position: relative;
         transition: ${transition};

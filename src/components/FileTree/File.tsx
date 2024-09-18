@@ -2,6 +2,9 @@ import { css } from '@emotion/react'
 import { NavLink } from 'react-router-dom'
 
 import { FileContextMenu } from './FileContextMenu'
+import { useRef } from 'react'
+import { Tooltip } from '@radix-ui/themes'
+import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 
 interface FileProps {
   fileName: string
@@ -9,52 +12,51 @@ interface FileProps {
   isSelected: boolean
 }
 
+const fileStyle = css`
+  display: block;
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
+  color: var(--gray-11);
+  font-size: 12px;
+  line-height: 22px;
+`
+
 export function File({ fileName, viewPath, isSelected }: FileProps) {
-  const fileNameWithoutExtension = fileName.replace(/\.[^/.]+$/, '')
+  const linkRef = useRef<HTMLAnchorElement>(null)
+  const hasEllipsis = useOverflowCheck(linkRef)
+  const displayName = fileName.replace(/\.[^/.]+$/, '')
 
   return (
     <FileContextMenu path={fileName} isSelected={isSelected}>
-      <NavLink
-        css={css`
-          display: block;
-          padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
-          color: var(--gray-11);
-          font-size: 12px;
-          font-weight: ${isSelected ? 700 : 400};
-          line-height: 22px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          text-decoration: none;
+      <Tooltip content={displayName} hidden={!hasEllipsis}>
+        <NavLink
+          ref={linkRef}
+          css={[
+            fileStyle,
+            css`
+              font-weight: ${isSelected ? 700 : 400};
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              text-decoration: none;
 
-          &:hover {
-            background-color: var(--gray-4);
-          }
+              &:hover {
+                background-color: var(--gray-4);
+              }
 
-          &.active {
-            color: var(--accent-9);
-          }
-        `}
-        to={`${viewPath}/${encodeURIComponent(fileName)}`}
-      >
-        {fileNameWithoutExtension}
-      </NavLink>
+              &.active {
+                color: var(--accent-9);
+              }
+            `,
+          ]}
+          to={`${viewPath}/${encodeURIComponent(fileName)}`}
+        >
+          {displayName}
+        </NavLink>
+      </Tooltip>
     </FileContextMenu>
   )
 }
 
 export function NoFileMessage({ message }: { message: string }) {
-  return (
-    <span
-      css={css`
-        display: block;
-        padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
-        color: var(--gray-11);
-        font-size: 12px;
-        line-height: 22px;
-      `}
-    >
-      {message}
-    </span>
-  )
+  return <span css={fileStyle}>{message}</span>
 }
