@@ -290,9 +290,15 @@ ipcMain.handle(
       }
 
       await writeFile(dialogResult.filePath, script)
-      browserWindow.webContents.send('script:save:success')
+      sendToast(browserWindow.webContents, {
+        title: 'Script exported successfully',
+        status: 'success',
+      })
     } catch (error) {
-      browserWindow.webContents.send('script:save:failure', error)
+      sendToast(browserWindow.webContents, {
+        title: 'There was an error exporting the script',
+        status: 'error',
+      })
     }
   }
 )

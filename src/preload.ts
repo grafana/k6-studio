@@ -90,12 +90,6 @@ const script = {
   onScriptCheck: (callback: (data: K6Check[]) => void) => {
     return createListener('script:check', callback)
   },
-  onScriptSaveSuccess: (callback: () => void) => {
-    return createListener('script:save:success', callback)
-  },
-  onScriptSaveFailure: (callback: (error: Error) => void) => {
-    return createListener('script:save:failure', callback)
-  },
 } as const
 
 const har = {

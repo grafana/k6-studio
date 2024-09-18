@@ -21,10 +21,6 @@ import { useEffect } from 'react'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
-import {
-  useOnScriptSaveFailure,
-  useOnScriptSaveSuccess,
-} from '@/hooks/useScriptSave'
 
 export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
@@ -36,9 +32,6 @@ export function Generator() {
   const navigate = useNavigate()
 
   const { fileName } = useGeneratorParams()
-
-  useOnScriptSaveFailure()
-  useOnScriptSaveSuccess()
 
   const {
     data: generatorFileData,
