@@ -3,7 +3,8 @@ import { z } from 'zod'
 export const VariableSchema = z.object({
   name: z
     .string()
-    .nonempty({ message: 'Required' })
+    .min(1, { message: 'Required' })
+    .regex(/^[a-zA-Z0-9_]*$/, { message: 'Invalid name' })
     // Don't allow native object properties, like __proto__, valueOf, etc.
     .refine((val) => !(val in {}), { message: 'Invalid name' }),
   value: z.string(),
