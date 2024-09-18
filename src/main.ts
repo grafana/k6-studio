@@ -60,6 +60,9 @@ const createWindow = async () => {
   }
   app.setName('k6 Studio')
 
+  // clean leftover proxies if any, this might happen on windows
+  await cleanUpProxies()
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -478,20 +481,16 @@ function getFilePathFromName(name: string) {
 
 const stopProxyProcess = () => {
   if (currentProxyProcess) {
+    // NOTE: this might not kill the second spawned process on windows
     currentProxyProcess.kill()
     currentProxyProcess = null
     proxyReady = false
   }
+}
 
-  // if there are proxy processes left, clean them up
-  find('name', 'k6-studio-proxy', true).then(
-    (list) => {
-      list.forEach((proc) => {
-        kill(proc.pid)
-      })
-    },
-    () => {
-      console.log('error trying to find proxy processes')
-    }
-  )
+const cleanUpProxies = async () => {
+  const processList = await find('name', 'k6-studio-proxy', false)
+  processList.forEach((proc) => {
+    kill(proc.pid)
+  })
 }
