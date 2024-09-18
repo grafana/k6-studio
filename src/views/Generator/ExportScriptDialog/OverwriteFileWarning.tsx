@@ -20,6 +20,7 @@ export function OverwriteFileWarning({
 
   function handleCancelOverwrite() {
     setValue('overwriteFile', false)
+    setAlwaysOverwriteScript(false)
   }
 
   return (

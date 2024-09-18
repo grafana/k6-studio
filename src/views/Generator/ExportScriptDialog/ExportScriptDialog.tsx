@@ -64,7 +64,13 @@ export function ExportScriptDialog({
 
   return (
     <AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
-      <AlertDialog.Content size="3" maxWidth="450px">
+      <AlertDialog.Content
+        size="3"
+        maxWidth="450px"
+        onEscapeKeyDown={(event) => {
+          event.preventDefault()
+        }}
+      >
         <AlertDialog.Title>
           <Flex align="center" gap="2">
             <FileTextIcon color="orange" width="20px" height="20px" />
