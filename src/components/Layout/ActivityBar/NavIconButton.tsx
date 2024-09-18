@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 
 interface NavIconButtonProps {
   to?: string
-  state?: Record<string, unknown>
   icon: ReactNode
   tooltip: string
   active: boolean
@@ -13,7 +12,6 @@ interface NavIconButtonProps {
 
 export function NavIconButton({
   to,
-  state,
   icon,
   tooltip,
   active,
@@ -27,13 +25,7 @@ export function NavIconButton({
         asChild={onClick === undefined}
         onClick={onClick}
       >
-        {to ? (
-          <Link to={to} state={state}>
-            {icon}
-          </Link>
-        ) : (
-          icon
-        )}
+        {to ? <Link to={to}>{icon}</Link> : icon}
       </IconButton>
     </Tooltip>
   )

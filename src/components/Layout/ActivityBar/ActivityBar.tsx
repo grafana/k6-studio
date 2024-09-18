@@ -55,7 +55,6 @@ export function ActivityBar() {
           />
           <NavIconButton
             to={getRoutePath('recorder')}
-            state={{ autoStart: true }}
             icon={<RecorderIcon />}
             tooltip="New recording"
             active={Boolean(recorderMatch)}
