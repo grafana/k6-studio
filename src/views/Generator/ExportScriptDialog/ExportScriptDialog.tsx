@@ -53,10 +53,17 @@ export function ExportScriptDialog({
     onOpenChange(false)
   }
 
+  function handleOpenChange(open: boolean) {
+    onOpenChange(open)
+    if (!open) {
+      setValue('overwriteFile', false)
+    }
+  }
+
   const { overwriteFile: showOverwriteWarning } = formMethods.watch()
 
   return (
-    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
+    <AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
       <AlertDialog.Content size="3" maxWidth="450px">
         <AlertDialog.Title>
           <Flex align="center" gap="2">
