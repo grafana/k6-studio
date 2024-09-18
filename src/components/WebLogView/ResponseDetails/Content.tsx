@@ -55,7 +55,9 @@ export function Content({ data }: { data: ProxyData }) {
       <ScrollArea style={{ height: '100%' }}>
         <Box px="4" height="100%">
           {selectedTab === 'preview' && <Preview {...contentProps} />}
-          {selectedTab === 'raw' && <Raw content={rawContent ?? ''} />}
+          {selectedTab === 'raw' && (
+            <Raw content={rawContent ?? ''} format={format} />
+          )}
           {selectedTab === 'content' && <OriginalContent {...contentProps} />}
         </Box>
       </ScrollArea>
