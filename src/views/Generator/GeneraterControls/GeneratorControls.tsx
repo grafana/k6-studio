@@ -5,6 +5,7 @@ import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { exportScript } from '../Generator.utils'
 import { ValidatorDialog } from './ValidatorDialog'
 import { useState } from 'react'
+import { ExportScriptDialog } from '../ExportScriptDialog'
 
 interface GeneratorControlsProps {
   onSave: () => void
@@ -12,7 +13,9 @@ interface GeneratorControlsProps {
 }
 
 export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
+  const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
+    useState(false)
   const { preview, error } = useScriptPreview()
   const tooltip = error ? 'Invalid script. Please check your rules' : ''
 
@@ -28,7 +31,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
             disabled={error}
             tooltip={tooltip}
             onClick={() => {
-              setIsDialogOpen(true)
+              setIsValidatorDialogOpen(true)
             }}
           >
             Validate script
@@ -37,16 +40,21 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
             variant="outline"
             disabled={error}
             tooltip={tooltip}
-            onClick={exportScript}
+            onClick={() => setIsExportScriptDialogOpen(true)}
           >
             Export script
           </ButtonWithTooltip>
           <ValidatorDialog
             script={preview}
-            open={isDialogOpen}
+            open={isValidatorDialogOpen}
             onOpenChange={(open) => {
-              setIsDialogOpen(open)
+              setIsValidatorDialogOpen(open)
             }}
+          />
+          <ExportScriptDialog
+            onExport={exportScript}
+            open={isExportScriptDialogOpen}
+            onOpenChange={setIsExportScriptDialogOpen}
           />
         </>
       )}
