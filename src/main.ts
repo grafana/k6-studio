@@ -33,6 +33,7 @@ import { INVALID_FILENAME_CHARS } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
+import kill from 'tree-kill'
 
 const proxyEmitter = new eventEmitter()
 
@@ -477,6 +478,11 @@ function getFilePathFromName(name: string) {
 const stopProxyProcess = () => {
   if (currentProxyProcess) {
     currentProxyProcess.kill()
+
+    // we also make this call to make sure that it gets killed on windows
+    if (currentProxyProcess.pid) {
+      kill(currentProxyProcess.pid)
+    }
     currentProxyProcess = null
     proxyReady = false
   }
