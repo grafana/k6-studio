@@ -27,7 +27,7 @@ export function OverwriteFileWarning({
     <>
       <AlertDialog.Description size="2" mb="4">
         A script named <Code>{getValues('scriptName')}</Code> already exists. Do
-        you you want to overwrite it?
+        you want to overwrite it?
       </AlertDialog.Description>
 
       <Flex gap="2" my="4">
