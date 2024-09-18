@@ -59,11 +59,11 @@ const script = {
   }> => {
     return ipcRenderer.invoke('script:open', filePath)
   },
-  saveScript: (
-    script: string,
-    fromGenerator: boolean = false
-  ): Promise<void> => {
-    return ipcRenderer.invoke('script:save', script, fromGenerator)
+  saveScriptFromGenerator: (script: string): Promise<void> => {
+    return ipcRenderer.invoke('script:save:generator', script)
+  },
+  saveScript: (script: string, fileName: string): Promise<void> => {
+    return ipcRenderer.invoke('script:save', script, fileName)
   },
   runScript: (
     scriptPath: string,
