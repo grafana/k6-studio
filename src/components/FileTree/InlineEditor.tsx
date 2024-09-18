@@ -18,6 +18,7 @@ export function InlineEditor({
   const [localValue, setValue] = useState(value)
 
   useEffect(() => {
+    // Workaround to get focus and select to work with dinamically mounted component
     setTimeout(() => {
       inputRef.current?.focus()
       inputRef.current?.select()
