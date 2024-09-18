@@ -13,8 +13,8 @@ interface GeneratorControlsProps {
 
 export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const { preview, error } = useScriptPreview()
-  const tooltip = error ? 'Invalid script. Please check your rules' : ''
+  const { preview, hasError } = useScriptPreview()
+  const tooltip = hasError ? 'Invalid script. Please check your rules' : ''
 
   return (
     <>
@@ -25,7 +25,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         <>
           <ButtonWithTooltip
             variant="outline"
-            disabled={error}
+            disabled={hasError}
             tooltip={tooltip}
             onClick={() => {
               setIsDialogOpen(true)
@@ -35,7 +35,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
           </ButtonWithTooltip>
           <ButtonWithTooltip
             variant="outline"
-            disabled={error}
+            disabled={hasError}
             tooltip={tooltip}
             onClick={exportScript}
           >
