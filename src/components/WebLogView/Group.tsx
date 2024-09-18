@@ -1,12 +1,12 @@
 import { css } from '@emotion/react'
-import { Box, Flex, IconButton, TextField } from '@radix-ui/themes'
+import { Box, IconButton, TextField } from '@radix-ui/themes'
 import {
   CheckIcon,
   Cross1Icon,
   CrossCircledIcon,
   Pencil1Icon,
 } from '@radix-ui/react-icons'
-import { useState, KeyboardEvent, useRef } from 'react'
+import { useState, KeyboardEvent, MouseEvent, useRef } from 'react'
 import { Group as GroupType } from '@/types'
 import { useForm } from 'react-hook-form'
 import { FieldError } from '../Form'
@@ -14,6 +14,7 @@ import { mergeRefs } from '@/utils/react'
 import { ErrorMessage } from '@hookform/error-message'
 import { Collapsible } from '../Collapsible'
 import { useOnClickOutside } from '@/utils/dom'
+import styled from '@emotion/styled'
 
 interface GroupProps {
   group: GroupType
@@ -61,8 +62,12 @@ export function Group({
     }
   }
 
-  const handleEdit = () => {
-    setIsEditing(true)
+  const handleEdit = (ev?: MouseEvent<HTMLElement>) => {
+    ev?.preventDefault()
+
+    if (canEdit) {
+      setIsEditing(true)
+    }
   }
 
   const handleReset = () => {
@@ -73,12 +78,6 @@ export function Group({
     })
   }
 
-  useOnClickOutside({
-    ref: headerRef,
-    handler: handleReset,
-    enabled: isEditing,
-  })
-
   const submit = ({ name }: { name: string }) => {
     onRename?.({
       ...group,
@@ -87,6 +86,12 @@ export function Group({
 
     setIsEditing(false)
   }
+
+  useOnClickOutside({
+    ref: headerRef,
+    handler: handleSubmit(submit),
+    enabled: isEditing,
+  })
 
   const isValidName = (value: string) => {
     if (value.trim() === '') {
@@ -112,12 +117,12 @@ export function Group({
         <Collapsible.Header ref={headerRef}>
           {isEditing && (
             <Collapsible.Heading>
-              <form css={{ width: '100%' }} onSubmit={handleSubmit(submit)}>
+              <InlineForm onSubmit={handleSubmit(submit)}>
                 <TextField.Root
                   ref={mergeRefs(formRef, handleInputMount)}
                   size="1"
                   css={css`
-                    width: 100%;
+                    flex: 1 1 0;
                   `}
                   onKeyDown={handleKeyDown}
                   {...nameProps}
@@ -131,7 +136,24 @@ export function Group({
                     )}
                   </TextField.Slot>
                 </TextField.Root>
-              </form>
+                <IconButton
+                  type="submit"
+                  disabled={!isValid}
+                  variant="ghost"
+                  color="green"
+                  style={{ margin: 0 }}
+                >
+                  <CheckIcon />
+                </IconButton>
+                <IconButton
+                  variant="ghost"
+                  color="red"
+                  style={{ margin: 0 }}
+                  onClick={handleReset}
+                >
+                  <Cross1Icon />
+                </IconButton>
+              </InlineForm>
             </Collapsible.Heading>
           )}
           {!isEditing && (
@@ -148,17 +170,18 @@ export function Group({
                 >
                   {group.name} ({length})
                 </span>
+                {canEdit && (
+                  <IconButton
+                    variant="ghost"
+                    color="gray"
+                    style={{ margin: 0 }}
+                    onClick={handleEdit}
+                  >
+                    <Pencil1Icon />
+                  </IconButton>
+                )}
               </Collapsible.Heading>
             </Collapsible.Trigger>
-          )}
-          {canEdit && (
-            <EditActions
-              isEditing={isEditing}
-              isValid={isValid}
-              onEdit={handleEdit}
-              onCancel={handleReset}
-              onSave={handleSubmit(submit)}
-            />
           )}
         </Collapsible.Header>
         <Collapsible.Content>
@@ -169,54 +192,10 @@ export function Group({
   )
 }
 
-interface EditActionsProps {
-  isEditing: boolean
-  isValid: boolean
-  onEdit: () => void
-  onCancel: () => void
-  onSave: () => void
-}
-
-function EditActions({
-  isEditing,
-  isValid,
-  onEdit,
-  onCancel,
-  onSave,
-}: EditActionsProps) {
-  return (
-    <Flex pr="2" align="center" gap="1">
-      {isEditing && (
-        <IconButton
-          disabled={!isValid}
-          variant="ghost"
-          color="green"
-          style={{ margin: 0 }}
-          onClick={onSave}
-        >
-          <CheckIcon />
-        </IconButton>
-      )}
-      {isEditing && (
-        <IconButton
-          variant="ghost"
-          color="red"
-          style={{ margin: 0 }}
-          onClick={onCancel}
-        >
-          <Cross1Icon />
-        </IconButton>
-      )}
-      {!isEditing && (
-        <IconButton
-          variant="ghost"
-          color="gray"
-          style={{ margin: 0 }}
-          onClick={onEdit}
-        >
-          <Pencil1Icon />
-        </IconButton>
-      )}
-    </Flex>
-  )
-}
+const InlineForm = styled.form`
+  display: flex;
+  flex: 1 1 0;
+  width: 100%;
+  gap: var(--space-1);
+  align-items: center;
+`

@@ -2,7 +2,7 @@ import { useEffect, type RefObject } from 'react'
 
 interface UseOnClickOutsideOptions {
   ref: RefObject<HTMLElement | null>
-  handler: (event: MouseEvent) => void
+  handler: () => void
   enabled?: boolean
 }
 export function useOnClickOutside({
@@ -27,7 +27,7 @@ export function useOnClickOutside({
       }
 
       if (ref.current && !ref.current.contains(ev.target)) {
-        handler(ev)
+        handler()
       }
     }
 
