@@ -1,13 +1,30 @@
 import { css } from '@emotion/react'
-import { Box, Flex, Text } from '@radix-ui/themes'
-import { Link } from 'react-router-dom'
+import { Box, Flex, Grid, Text } from '@radix-ui/themes'
+import { useMatch } from 'react-router-dom'
 
 import K6Logo from '@/assets/logo.svg'
 import { getRoutePath } from '@/routeMap'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { VersionLabel } from './VersionLabel'
+import {
+  GeneratorIcon,
+  HomeIcon,
+  RecorderIcon,
+  ValidatorIcon,
+} from '@/components/icons'
+import { useCreateGenerator } from '@/hooks/useCreateGenerator'
+import { NavIconButton } from './NavIconButton'
 
 export function ActivityBar() {
+  const createNewGenerator = useCreateGenerator()
+  const homeMatch = useMatch(getRoutePath('home'))
+  const recorderMatch = useMatch(getRoutePath('recorder'))
+  const validatorMatch = useMatch(getRoutePath('validator'))
+  const generatorMatch = useMatch({
+    path: getRoutePath('generator'),
+    end: false,
+  })
+
   return (
     <Flex direction="column" align="center" asChild position="relative">
       <Box
@@ -18,12 +35,9 @@ export function ActivityBar() {
         overflow="hidden"
       >
         <Flex direction="column" align="center">
-          <Link to={getRoutePath('home')} aria-label="Home">
-            <img src={K6Logo} alt="k6 Logo" width="32" height="32" />
-          </Link>
+          <img src={K6Logo} alt="k6 Logo" width="32" height="32" />
           <Text
             weight="bold"
-            mt="-2"
             css={css`
               font-size: 10px;
               cursor: default;
@@ -32,6 +46,33 @@ export function ActivityBar() {
             Studio
           </Text>
         </Flex>
+        <Grid gap="5" mt="6">
+          <NavIconButton
+            to={getRoutePath('home')}
+            icon={<HomeIcon />}
+            tooltip="Home"
+            active={Boolean(homeMatch)}
+          />
+          <NavIconButton
+            to={getRoutePath('recorder')}
+            state={{ autoStart: true }}
+            icon={<RecorderIcon />}
+            tooltip="New recording"
+            active={Boolean(recorderMatch)}
+          />
+          <NavIconButton
+            onClick={createNewGenerator}
+            icon={<GeneratorIcon />}
+            tooltip="New test generator"
+            active={Boolean(generatorMatch)}
+          />
+          <NavIconButton
+            to={getRoutePath('validator', {})}
+            icon={<ValidatorIcon />}
+            tooltip="Test validator"
+            active={Boolean(validatorMatch)}
+          />
+        </Grid>
 
         <Box mt="auto">
           <ThemeSwitcher />

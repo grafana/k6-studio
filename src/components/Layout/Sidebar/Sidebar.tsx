@@ -1,11 +1,9 @@
-import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
-import { Link } from 'react-router-dom'
-import { PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
+import { Box, Flex, IconButton, ScrollArea } from '@radix-ui/themes'
+import { PinLeftIcon } from '@radix-ui/react-icons'
+import { css } from '@emotion/react'
 
 import { FileTree } from '@/components/FileTree'
 import { useFolderContent } from './Sidebar.hooks'
-import { getRoutePath } from '@/routeMap'
-import { css } from '@emotion/react'
 
 interface SidebarProps {
   isExpanded: boolean
@@ -31,36 +29,19 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
             noFilesMessage="No recordings found"
             viewPath="/recording-previewer"
             actions={
-              <>
-                <Tooltip content="New recording" side="right">
-                  <IconButton
-                    asChild
-                    aria-label="New recording"
-                    variant="ghost"
-                    size="1"
-                  >
-                    <Link
-                      to={getRoutePath('recorder')}
-                      state={{ autoStart: true }}
-                    >
-                      <PlusIcon />
-                    </Link>
-                  </IconButton>
-                </Tooltip>
-                {isExpanded && (
-                  <IconButton
-                    size="1"
-                    css={css`
-                      margin-left: auto;
-                    `}
-                    variant="ghost"
-                    color="gray"
-                    onClick={onCollapseSidebar}
-                  >
-                    <PinLeftIcon />
-                  </IconButton>
-                )}
-              </>
+              isExpanded && (
+                <IconButton
+                  size="1"
+                  css={css`
+                    margin-left: auto;
+                  `}
+                  variant="ghost"
+                  color="gray"
+                  onClick={onCollapseSidebar}
+                >
+                  <PinLeftIcon />
+                </IconButton>
+              )
             }
           />
           <FileTree
