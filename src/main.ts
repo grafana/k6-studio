@@ -34,6 +34,7 @@ import { generateFileNameWithTimestamp } from './utils/file'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import kill from 'tree-kill'
+import find from 'find-process'
 
 const proxyEmitter = new eventEmitter()
 
@@ -478,12 +479,19 @@ function getFilePathFromName(name: string) {
 const stopProxyProcess = () => {
   if (currentProxyProcess) {
     currentProxyProcess.kill()
-
-    // we also make this call to make sure that it gets killed on windows
-    if (currentProxyProcess.pid) {
-      kill(currentProxyProcess.pid)
-    }
     currentProxyProcess = null
     proxyReady = false
   }
+
+  // if there are proxy processes left, clean them up
+  find('name', 'k6-studio-proxy', true).then(
+    (list) => {
+      list.forEach((proc) => {
+        kill(proc.pid)
+      })
+    },
+    () => {
+      console.log('error trying to find proxy processes')
+    }
+  )
 }
