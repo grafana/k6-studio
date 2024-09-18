@@ -10,13 +10,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { OverwriteFileWarning } from './OverwriteFileWarning'
 import { ScriptNameForm } from './ScriptNameForm'
 import { useLocalStorage } from 'react-use'
+import { useEffect } from 'react'
 
 export function ExportScriptDialog({
   open,
+  generatorFileName,
   onExport,
   onOpenChange,
 }: {
   open: boolean
+  generatorFileName: string
   onExport: (scriptName: string) => void
   onOpenChange: (open: boolean) => void
 }) {
@@ -30,6 +33,11 @@ export function ExportScriptDialog({
     'alwaysOverwriteScript',
     false
   )
+
+  useEffect(() => {
+    setValue('scriptName', 'my-script')
+  }, [generatorFileName])
+
   const { setValue } = formMethods
 
   const onSubmit = async (data: ExportScriptDialogData) => {

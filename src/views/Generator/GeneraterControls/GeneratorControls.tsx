@@ -6,6 +6,7 @@ import { exportScript } from '../Generator.utils'
 import { ValidatorDialog } from './ValidatorDialog'
 import { useState } from 'react'
 import { ExportScriptDialog } from '../ExportScriptDialog'
+import { useGeneratorParams } from '../Generator.hooks'
 
 interface GeneratorControlsProps {
   onSave: () => void
@@ -17,6 +18,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
   const { preview, error } = useScriptPreview()
+  const { fileName } = useGeneratorParams()
   const tooltip = error ? 'Invalid script. Please check your rules' : ''
 
   return (
@@ -53,6 +55,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
           />
           <ExportScriptDialog
             onExport={exportScript}
+            generatorFileName={fileName}
             open={isExportScriptDialogOpen}
             onOpenChange={setIsExportScriptDialogOpen}
           />
