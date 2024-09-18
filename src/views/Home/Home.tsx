@@ -1,7 +1,5 @@
 import { Button, Flex, Grid, Text } from '@radix-ui/themes'
-import { NavigationCard } from './NavigationCard'
-import { createNewGeneratorFile } from '@/utils/generator'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
 import { css } from '@emotion/react'
 import {
@@ -9,31 +7,13 @@ import {
   DiscIcon,
   PlusCircledIcon,
 } from '@radix-ui/react-icons'
-import { generateFileNameWithTimestamp } from '@/utils/file'
+
+import { NavigationCard } from './NavigationCard'
+import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
+import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 
 export function Home() {
-  const navigate = useNavigate()
-
-  async function handleCreateTestGenerator() {
-    const newGenerator = createNewGeneratorFile()
-    const fileName = await window.studio.generator.saveGenerator(
-      JSON.stringify(newGenerator, null, 2),
-      generateFileNameWithTimestamp('json', 'Generator')
-    )
-
-    navigate(
-      getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
-    )
-  }
-
-  function handleNavigateToRecorder() {
-    navigate(getRoutePath('recorder'))
-  }
-
-  // TODO: offer to select a script to validate
-  function handleNavigateToValidator() {
-    navigate(getRoutePath('validator', {}))
-  }
+  const createNewGenerator = useCreateGenerator()
 
   return (
     <Flex direction="column" align="center" justify="center" height="100%">
@@ -53,29 +33,37 @@ export function Home() {
       </Text>
       <Grid gap="8" columns="3" maxWidth="720px">
         <NavigationCard
+          icon={<RecorderIcon width="52px" height="52px" />}
           title="Recorder"
           description="Use our built-in proxy to record a user flow"
         >
-          <Button variant="ghost" onClick={handleNavigateToRecorder}>
-            <DiscIcon />
-            Record flow
+          <Button variant="ghost" asChild>
+            <Link to={getRoutePath('recorder')}>
+              <DiscIcon />
+              Record flow
+            </Link>
           </Button>
         </NavigationCard>
         <NavigationCard
+          icon={<GeneratorIcon width="52px" height="52px" />}
           title="Generator"
           description="Transform a recorded flow into a k6 test script"
         >
-          <Button variant="ghost" onClick={handleCreateTestGenerator}>
+          <Button variant="ghost" onClick={createNewGenerator}>
             <PlusCircledIcon />
             Generate test
           </Button>
         </NavigationCard>
         <NavigationCard
+          icon={<ValidatorIcon width="52px" height="52px" />}
           title="Validator"
           description="Debug and validate your k6 script"
         >
-          <Button variant="ghost" onClick={handleNavigateToValidator}>
-            <CheckCircledIcon /> Validate script
+          <Button variant="ghost" asChild>
+            <Link to={getRoutePath('validator', {})}>
+              <CheckCircledIcon />
+              Validate script
+            </Link>
           </Button>
         </NavigationCard>
       </Grid>
