@@ -21,7 +21,6 @@ export function Filter({
   }
 
   useKeyPressEvent('Escape', clearFilter)
-  console.log('value: ', value)
 
   return (
     <TextField.Root
