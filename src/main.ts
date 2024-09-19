@@ -419,6 +419,8 @@ ipcMain.handle(
     const browserWindow = BrowserWindow.fromWebContents(e.sender)
 
     try {
+      invariant(!INVALID_FILENAME_CHARS.test(newFileName), 'Invalid file name')
+
       const oldPath = getFilePathFromName(oldFileName)
       const newPath = getFilePathFromName(newFileName)
 
