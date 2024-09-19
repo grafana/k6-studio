@@ -1,7 +1,7 @@
 import { StaticAssetsFilter } from '@/components/StaticAssetsFilter'
 import { WebLogView } from '@/components/WebLogView'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
-import { ProxyData } from '@/types'
+import { Group, ProxyData } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 import { css } from '@emotion/react'
 import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
@@ -10,11 +10,13 @@ import { ClearRequestsButton } from './ClearRequestsButton'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
+  groups?: Group[]
   selectedRequestId?: string
   autoScroll?: boolean
   activeGroup?: string
   noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
+  onRenameGroup?: (group: Group) => void
   resetProxyData?: () => void
 }
 
@@ -23,8 +25,10 @@ export function RequestsSection({
   selectedRequestId,
   noRequestsMessage,
   autoScroll = false,
+  groups,
   activeGroup,
   onSelectRequest,
+  onRenameGroup,
   resetProxyData,
 }: RequestsSectionProps) {
   const [filteredProxyData, setFilterdedProxyData] = useState<ProxyData[]>([])
@@ -62,11 +66,13 @@ export function RequestsSection({
       <ScrollArea scrollbars="both">
         <div ref={ref} css={{ minWidth: '500px' }}>
           <WebLogView
-            requests={groupedProxyData}
+            requests={filteredProxyData}
+            groups={groups}
             activeGroup={activeGroup}
             noRequestsMessage={noRequestsMessage}
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
+            onRenameGroup={onRenameGroup}
           />
         </div>
       </ScrollArea>

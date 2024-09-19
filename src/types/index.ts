@@ -72,6 +72,11 @@ export interface K6Check {
   fails: number
 }
 
+export interface Group {
+  id: string
+  name: string
+}
+
 export type GroupedProxyData = Record<string, ProxyData[]>
 
 export interface RequestSnippetSchema {

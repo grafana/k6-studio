@@ -2,7 +2,7 @@ import { Allotment } from 'allotment'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import invariant from 'tiny-invariant'
 
 import { generateFileNameWithTimestamp } from '@/utils/file'
@@ -42,6 +42,17 @@ export function RecordingPreviewer() {
       setProxyData([])
     }
   }, [fileName, navigate])
+
+  const groups = useMemo(() => {
+    const names = new Set(proxyData.map((data) => data.group ?? 'Default'))
+
+    return Array.from(names).map((name) => {
+      return {
+        id: name,
+        name,
+      }
+    })
+  }, [proxyData])
 
   const handleDeleteRecording = async () => {
     await window.studio.ui.deleteFile(fileName)
@@ -102,6 +113,7 @@ export function RecordingPreviewer() {
       <Allotment defaultSizes={[1, 1]}>
         <Allotment.Pane>
           <RequestsSection
+            groups={groups}
             proxyData={proxyData}
             noRequestsMessage="The recording is empty"
             selectedRequestId={selectedRequest?.id}
