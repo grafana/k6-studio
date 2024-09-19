@@ -75,6 +75,8 @@ export function RuleEditor({ rule }: RuleEditorProps) {
   // Reset form when switching rules
   useEffect(() => {
     reset(rule)
+    // TODO: fix infinite loop when including all dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rule.id])
 
   return (
