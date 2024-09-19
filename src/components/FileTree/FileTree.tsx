@@ -5,6 +5,7 @@ import { ReactNode, useState } from 'react'
 
 import { FileList } from './FileList'
 import { css } from '@emotion/react'
+import { useDebounce } from 'react-use'
 
 interface FileTreeProps {
   label: string
@@ -16,12 +17,16 @@ interface FileTreeProps {
 
 export function FileTree({
   label,
-  files,
+  files: filesRaw,
   viewPath,
   noFilesMessage = 'No files found',
   actions,
 }: FileTreeProps) {
   const [open, setOpen] = useState(true)
+
+  // Debounce to avoid flickering in of files when renaming
+  const [files, setFiles] = useState<string[]>([])
+  useDebounce(() => setFiles(filesRaw), 50, [filesRaw])
 
   return (
     <Collapsible.Root open={open} onOpenChange={setOpen}>
@@ -53,7 +58,6 @@ export function FileTree({
 
         {actions}
       </Flex>
-
       <Collapsible.Content>
         <FileList
           files={files}
