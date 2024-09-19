@@ -1,5 +1,5 @@
 import { Interpolation, Theme } from '@emotion/react'
-import { Reset } from '@radix-ui/themes'
+import { Box, Reset } from '@radix-ui/themes'
 import { useRef, useState, useEffect } from 'react'
 import { useClickAway, useKeyPressEvent } from 'react-use'
 
@@ -42,13 +42,17 @@ export function InlineEditor({
   })
 
   return (
-    <Reset>
-      <input
-        value={localValue}
-        onChange={(e) => setValue(e.target.value)}
-        css={style}
-        ref={inputRef}
-      />
-    </Reset>
+    <Box css={style}>
+      <Reset>
+        <input
+          value={localValue}
+          onChange={(e) => setValue(e.target.value)}
+          css={{
+            outline: '1px solid var(--focus-8)',
+          }}
+          ref={inputRef}
+        />
+      </Reset>
+    </Box>
   )
 }
