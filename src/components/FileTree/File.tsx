@@ -7,6 +7,7 @@ import { Tooltip } from '@radix-ui/themes'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useBoolean } from 'react-use'
 import { InlineEditor } from './InlineEditor'
+import { getFileNameWithoutExtension } from '@/utils/file'
 
 interface FileProps {
   fileName: string
@@ -53,7 +54,7 @@ function EditableFile({
 }: FileProps & { editMode: boolean; setEditMode: (value: boolean) => void }) {
   const linkRef = useRef<HTMLAnchorElement>(null)
   const [displayName, setDisplayName] = useState(
-    fileName.replace(/\.[^/.]+$/, '')
+    getFileNameWithoutExtension(fileName)
   )
 
   const hasEllipsis = useOverflowCheck(linkRef)
