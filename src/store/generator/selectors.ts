@@ -24,12 +24,6 @@ export function selectHasRecording(state: GeneratorStore) {
   return state.requests.length > 0
 }
 
-export function selectIsGroupedRecording(state: GeneratorStore) {
-  const requests = selectFilteredRequests(state)
-
-  return requests.some((request) => request.group)
-}
-
 export function selectFilteredRequests(state: GeneratorStore) {
   const allowedRequests = state.requests.filter((request) => {
     return state.allowlist.includes(request.request.host)

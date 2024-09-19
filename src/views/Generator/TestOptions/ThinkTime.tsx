@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Flex, TextField } from '@radix-ui/themes'
 
-import { selectIsGroupedRecording, useGeneratorStore } from '@/store/generator'
+import { useGeneratorStore } from '@/store/generator'
 import { ThinkTimeSchema } from '@/schemas/testOptions'
 import type { ThinkTime } from '@/types/testOptions'
 import { stringAsNullableNumber, stringAsOptionalNumber } from '@/utils/form'
@@ -16,14 +16,12 @@ const TYPE_OPTIONS = [
 
 const SLEEP_TYPE_OPTIONS = [
   { value: 'groups', label: 'Between groups' },
-  { value: 'requests', label: 'Between requests' },
   { value: 'iterations', label: 'End of iteration' },
 ]
 
 export function ThinkTime() {
   const sleepType = useGeneratorStore((store) => store.sleepType)
   const timing = useGeneratorStore((store) => store.timing)
-  const isGroupedRecording = useGeneratorStore(selectIsGroupedRecording)
   const setSleepType = useGeneratorStore((store) => store.setSleepType)
   const setTiming = useGeneratorStore((store) => store.setTiming)
 
@@ -144,9 +142,7 @@ export function ThinkTime() {
         <ControlledSelect
           name="sleepType"
           control={control}
-          options={SLEEP_TYPE_OPTIONS.filter(({ value }) =>
-            isGroupedRecording ? value !== 'requests' : true
-          )}
+          options={SLEEP_TYPE_OPTIONS}
         />
       </FieldGroup>
     </form>
