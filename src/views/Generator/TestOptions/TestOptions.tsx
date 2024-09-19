@@ -1,5 +1,5 @@
 import { GearIcon } from '@radix-ui/react-icons'
-import { Button, Popover, Tabs } from '@radix-ui/themes'
+import { Button, Popover, ScrollArea, Tabs } from '@radix-ui/themes'
 import { css } from '@emotion/react'
 
 import { LoadProfile } from './LoadProfile'
@@ -32,15 +32,22 @@ export function TestOptions() {
             <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
             <Tabs.Trigger value="testData">Test data</Tabs.Trigger>
           </Tabs.List>
-          <Tabs.Content value="loadProfile">
-            <LoadProfile />
-          </Tabs.Content>
-          <Tabs.Content value="thinkTime">
-            <ThinkTime />
-          </Tabs.Content>
-          <Tabs.Content value="testData">
-            <VariablesEditor />
-          </Tabs.Content>
+          <ScrollArea
+            scrollbars="vertical"
+            css={css`
+              max-height: 60vh;
+            `}
+          >
+            <Tabs.Content value="loadProfile">
+              <LoadProfile />
+            </Tabs.Content>
+            <Tabs.Content value="thinkTime">
+              <ThinkTime />
+            </Tabs.Content>
+            <Tabs.Content value="testData">
+              <VariablesEditor />
+            </Tabs.Content>
+          </ScrollArea>
         </Tabs.Root>
       </Popover.Content>
     </Popover.Root>
