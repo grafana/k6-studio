@@ -80,7 +80,6 @@ export function Generator() {
   }, [generatorError, showToast, navigate])
 
   useEffect(() => {
-    console.log(harError)
     if (harError) {
       showToast({
         title: 'Failed to har file',
