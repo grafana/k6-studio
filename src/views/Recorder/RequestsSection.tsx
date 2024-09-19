@@ -5,8 +5,10 @@ import { ProxyData } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 import { css } from '@emotion/react'
 import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
-import { useState, ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { ClearRequestsButton } from './ClearRequestsButton'
+import { Filter } from '@/components/WebLogView/Filter'
+import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
@@ -27,8 +29,15 @@ export function RequestsSection({
   onSelectRequest,
   resetProxyData,
 }: RequestsSectionProps) {
-  const [filteredProxyData, setFilterdedProxyData] = useState<ProxyData[]>([])
-  const groupedProxyData = groupProxyData(filteredProxyData)
+  const {
+    filter,
+    setFilter,
+    includeStaticAssets,
+    setIncludeStaticAssets,
+    staticAssetCount,
+    filteredRequests,
+  } = useFilterRequests(proxyData)
+  const groupedProxyData = groupProxyData(filteredRequests)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
 
   return (
@@ -43,7 +52,7 @@ export function RequestsSection({
               padding: var(--space-2);
             `}
           >
-            Requests ({filteredProxyData.length})
+            Requests ({filteredRequests.length})
           </Heading>
           {resetProxyData && (
             <ClearRequestsButton
@@ -53,10 +62,15 @@ export function RequestsSection({
           )}
         </Flex>
 
-        <StaticAssetsFilter
-          proxyData={proxyData}
-          setFilteredProxyData={setFilterdedProxyData}
-        />
+        <Flex gap="2" align="center">
+          <StaticAssetsFilter
+            includeStaticAssets={includeStaticAssets}
+            setIncludeStaticAssets={setIncludeStaticAssets}
+            staticAssetCount={staticAssetCount}
+          />
+
+          <Filter filter={filter} setFilter={setFilter} />
+        </Flex>
       </Flex>
 
       <ScrollArea scrollbars="both">
@@ -64,7 +78,11 @@ export function RequestsSection({
           <WebLogView
             requests={groupedProxyData}
             activeGroup={activeGroup}
-            noRequestsMessage={noRequestsMessage}
+            noRequestsMessage={
+              filter !== ''
+                ? 'No requests matched the filter'
+                : noRequestsMessage
+            }
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
           />
