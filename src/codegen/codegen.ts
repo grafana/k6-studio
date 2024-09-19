@@ -185,13 +185,19 @@ function generateRequestParams(request: ProxyData['request']): string {
     .filter(([name]) => !headersToExclude.includes(name))
     .map(([name, value]) => `'${name}': \`${value}\``)
     .join(',')
+
+  const cookies = request.cookies
+    .filter(([, value]) => value.startsWith('correlation_vars['))
+    .map(([name, value]) => `'${name}': {value: \`${value}\`, replace: true}`)
+    .join(',\n')
+
   return `
     {
       headers: {
         ${headers}
       },
       cookies: {
-        ${request.cookies.map(([name, value]) => `'${name}': {value: \`${value}\`, replace: true}`).join(',\n')}
+        ${cookies}
       }
     }
   `
