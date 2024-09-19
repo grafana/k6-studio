@@ -1,14 +1,15 @@
 import { Allotment } from 'allotment'
 import { Box, Tabs } from '@radix-ui/themes'
 import { css } from '@emotion/react'
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { Details } from '@/components/WebLogView/Details'
-import { K6Check, K6Log, ProxyData } from '@/types'
+import { Group, K6Check, K6Log, ProxyData } from '@/types'
 import { LogsSection } from './LogsSection'
 import { ChecksSection } from './ChecksSection'
+import { uniqBy } from 'lodash-es'
 
 interface ValidatorContentProps {
   script: string
@@ -31,6 +32,18 @@ export function ValidatorContent({
 }: ValidatorContentProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [selectedTab, setSelectedTab] = useState<ValidatorTabValue>('script')
+
+  const groups: Group[] = useMemo(
+    () =>
+      uniqBy(
+        proxyData.map((data) => ({
+          name: data.group ?? 'Default',
+          id: data.group ?? 'default',
+        })),
+        'name'
+      ),
+    [proxyData]
+  )
 
   useEffect(() => {
     setSelectedRequest(null)
@@ -61,6 +74,7 @@ export function ValidatorContent({
               noRequestsMessage={noRequestsMessage}
               onSelectRequest={setSelectedRequest}
               showNoRequestsMessage={proxyData.length === 0}
+              groups={groups}
             />
           </Allotment.Pane>
           <Allotment.Pane minSize={250}>
