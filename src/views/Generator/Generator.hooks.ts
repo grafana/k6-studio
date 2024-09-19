@@ -37,6 +37,15 @@ export function useLoadGeneratorFile(fileName: string) {
   })
 }
 
+export function useUpdateValueInGeneratorFile(fileName: string) {
+  return useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
+      const generator = await loadGeneratorFile(fileName)
+      await writeGeneratorToFile(fileName, { ...generator, [key]: value })
+    },
+  })
+}
+
 export function useSaveGeneratorFile(fileName: string) {
   const showToast = useToast()
 
@@ -69,7 +78,14 @@ export function useIsGeneratorDirty(fileName: string) {
   const generatorState = useGeneratorStore(selectGeneratorData)
   const { data } = useLoadGeneratorFile(fileName)
 
+  // Comparing data without `scriptName`, which is saved to disk in the background
+  // and should not be considered as a change
+  const { scriptName: _, ...generatorStateData } = generatorState
+  const { scriptName: __, ...generatorFileData } = data || {}
+
   // Convert to JSON instead of doing deep equal to remove
   // `property: undefined` values
-  return JSON.stringify(generatorState) !== JSON.stringify(data)
+  return (
+    JSON.stringify(generatorStateData) !== JSON.stringify(generatorFileData)
+  )
 }
