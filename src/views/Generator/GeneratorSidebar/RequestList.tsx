@@ -34,6 +34,7 @@ export function RequestList({ requests }: RequestListProps) {
               outline: 'none',
               boxShadow: '0 1px 0 var(--gray-a5)',
             }}
+            size="2"
           />
           <WebLogView
             requests={filteredRequests}

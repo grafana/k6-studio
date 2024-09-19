@@ -1,5 +1,5 @@
 import { FieldGroup } from '@/components/Form'
-import { ProxyData } from '@/types'
+import { Group, ProxyData } from '@/types'
 import { Button, Flex, TextField } from '@radix-ui/themes'
 import { useCallback } from 'react'
 import { useForm, UseFormHandleSubmit } from 'react-hook-form'
@@ -7,13 +7,13 @@ import { useForm, UseFormHandleSubmit } from 'react-hook-form'
 type FormValues<T> = T extends UseFormHandleSubmit<infer V> ? V : never
 
 interface GroupFormProps {
-  currentGroup: string
+  currentGroup: Group | undefined
   proxyData: ProxyData[]
-  onChange: (value: string) => void
+  onChange: (group: Group) => void
 }
 
 export function GroupForm({
-  currentGroup = '',
+  currentGroup,
   proxyData,
   onChange,
 }: GroupFormProps) {
@@ -31,7 +31,11 @@ export function GroupForm({
 
   const submit = useCallback(
     (e: FormValues<typeof handleSubmit>) => {
-      onChange(e.name)
+      onChange({
+        id: crypto.randomUUID(),
+        name: e.name,
+      })
+
       setValue('name', '')
     },
     [setValue, onChange]
@@ -43,7 +47,8 @@ export function GroupForm({
     }
 
     const exists =
-      name === currentGroup || proxyData.some((data) => data.group === name)
+      name === currentGroup?.name ||
+      proxyData.some((data) => data.group === name)
 
     if (exists) {
       return 'Group already exists.'

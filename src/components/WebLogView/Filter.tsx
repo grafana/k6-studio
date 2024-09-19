@@ -8,10 +8,9 @@ export function Filter({
   filter,
   setFilter,
   ...inputProps
-}: {
+}: RootProps & {
   filter: string
   setFilter: (filter: string) => void
-  inputProps?: RootProps
 }) {
   const [value, setValue] = useState(filter)
   // const debouncedSetFilter = debounce(setFilter, 300)
@@ -36,13 +35,13 @@ export function Filter({
       <TextField.Slot>
         <MagnifyingGlassIcon />
       </TextField.Slot>
-      <TextField.Slot css={{ width: '24px' }}>
-        {value !== '' && (
+      {value !== '' && (
+        <TextField.Slot>
           <IconButton variant="ghost" size="1" onClick={clearFilter}>
             <Cross2Icon />
           </IconButton>
-        )}
-      </TextField.Slot>
+        </TextField.Slot>
+      )}
     </TextField.Root>
   )
 }

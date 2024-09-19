@@ -33,6 +33,8 @@ import { INVALID_FILENAME_CHARS } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
+import kill from 'tree-kill'
+import find from 'find-process'
 
 const proxyEmitter = new eventEmitter()
 
@@ -58,6 +60,9 @@ const createWindow = async () => {
   }
   app.setName('k6 Studio')
 
+  // clean leftover proxies if any, this might happen on windows
+  await cleanUpProxies()
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -66,7 +71,7 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'k6 Studio',
+    title: 'k6 Studio (experimental)',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
@@ -487,8 +492,16 @@ function getFilePathFromName(name: string) {
 
 const stopProxyProcess = () => {
   if (currentProxyProcess) {
+    // NOTE: this might not kill the second spawned process on windows
     currentProxyProcess.kill()
     currentProxyProcess = null
     proxyReady = false
   }
+}
+
+const cleanUpProxies = async () => {
+  const processList = await find('name', 'k6-studio-proxy', false)
+  processList.forEach((proc) => {
+    kill(proc.pid)
+  })
 }
