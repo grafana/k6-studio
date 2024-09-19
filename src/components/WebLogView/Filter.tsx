@@ -13,8 +13,7 @@ export function Filter({
   setFilter: (filter: string) => void
 }) {
   const [value, setValue] = useState(filter)
-  // const debouncedSetFilter = debounce(setFilter, 300)
-  useDebounce(() => setFilter(value), 200, [value])
+  useDebounce(() => setFilter(value), 300, [value])
 
   const clearFilter = () => {
     setValue('')
