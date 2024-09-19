@@ -236,7 +236,7 @@ if (import.meta.vitest) {
         'content-type': \`application/json\`
       },
       cookies: {
-        'security': {value: \`none\`, replace: true}
+        
       }
     }
   `
@@ -256,7 +256,7 @@ if (import.meta.vitest) {
         'content-type': \`application/json\`
       },
       cookies: {
-        'security': {value: \`none\`, replace: true}
+        
       }
     }
   `
