@@ -13,7 +13,6 @@ import { ProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
-import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 
 export function RecordingPreviewer() {
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
@@ -24,7 +23,6 @@ export function RecordingPreviewer() {
   const { state } = useLocation()
   const isDiscardable = Boolean(state?.discardable)
   invariant(fileName, 'fileName is required')
-  useSetWindowTitle(fileName)
 
   useEffect(() => {
     ;(async () => {

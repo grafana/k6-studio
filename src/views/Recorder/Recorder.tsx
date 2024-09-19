@@ -8,7 +8,6 @@ import { GroupForm } from './GroupForm'
 import { DebugControls } from './DebugControls'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
-import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import {
   startRecording,
@@ -53,7 +52,6 @@ export function Recorder() {
   )
 
   const autoStart = Boolean(state?.autoStart)
-  useSetWindowTitle('Recorder')
 
   const isLoading = recorderState === 'starting' || recorderState === 'saving'
 
