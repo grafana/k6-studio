@@ -15,8 +15,7 @@ export function TestRuleContainer() {
         justify="between"
         align="center"
         top="0"
-        px="6"
-        py="3"
+        pr="2"
         gap="1"
         css={css`
           background-color: var(--color-background);
@@ -28,6 +27,7 @@ export function TestRuleContainer() {
             font-size: 15px;
             line-height: 24px;
             font-weight: 500;
+            padding: var(--space-2);
           `}
         >
           Test rules ({rules.length})

@@ -25,7 +25,7 @@ import TextSpinner from '@/components/TextSpinner/TextSpinner'
 
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-  const [group, setGroup] = useState<string>('Default')
+  const [group, setGroup] = useState('Default')
   const { proxyData, resetProxyData } = useListenProxyData(group)
   const [recorderState, setRecorderState] = useState<RecorderState>('idle')
   const showToast = useToast()
@@ -160,7 +160,11 @@ export function Recorder() {
         <Allotment.Pane minSize={200}>
           <Flex direction="column" height="100%">
             <Flex justify="between" wrap="wrap" gap="2" p="2" flexShrink="0">
-              <GroupForm onChange={setGroup} value={group} />
+              <GroupForm
+                currentGroup={group}
+                proxyData={proxyData}
+                onChange={setGroup}
+              />
 
               <DebugControls />
             </Flex>

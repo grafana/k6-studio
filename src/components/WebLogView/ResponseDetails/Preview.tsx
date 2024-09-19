@@ -52,9 +52,9 @@ export function Preview({ content, contentType, format }: PreviewProps) {
     return (
       <ReactJson
         shouldCollapse={(field) => field.name !== 'root'}
-        style={reactJsonStyles}
         src={JSON.parse(content)}
-        theme={theme === 'dark' ? 'brewer' : 'rjv-default'}
+        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
+        style={theme === 'dark' ? reactJsonDarkStyles : reactJsonLightStyles}
       />
     )
   }
@@ -70,4 +70,15 @@ const mediaStyles = {
 
 const reactJsonStyles = {
   fontSize: 12,
+  height: '100%',
+}
+
+const reactJsonDarkStyles = {
+  ...reactJsonStyles,
+  background: '#1e1e1e',
+}
+
+const reactJsonLightStyles = {
+  ...reactJsonStyles,
+  background: '#fff',
 }

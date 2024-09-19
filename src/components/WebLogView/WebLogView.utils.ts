@@ -12,7 +12,7 @@ export function removeHostFromUrl(url?: string) {
   if (!url) return ''
 
   const [, ...path] = url.split('/')
-  return path
+  return path.join('/')
 }
 
 export function isGroupedProxyData(

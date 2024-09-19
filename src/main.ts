@@ -278,17 +278,28 @@ ipcMain.handle(
     }
 
     const browserWindow = browserWindowFromEvent(event)
-    const dialogResult = await dialog.showSaveDialog(browserWindow, {
-      message: 'Save test script',
-      defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
-      filters: [{ name: 'JavaScript', extensions: ['js'] }],
-    })
+    try {
+      const dialogResult = await dialog.showSaveDialog(browserWindow, {
+        message: 'Save test script',
+        defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
+        filters: [{ name: 'JavaScript', extensions: ['js'] }],
+      })
 
-    if (dialogResult.canceled) {
-      return
+      if (dialogResult.canceled) {
+        return
+      }
+
+      await writeFile(dialogResult.filePath, script)
+      sendToast(browserWindow.webContents, {
+        title: 'Script exported successfully',
+        status: 'success',
+      })
+    } catch (error) {
+      sendToast(browserWindow.webContents, {
+        title: 'There was an error exporting the script',
+        status: 'error',
+      })
     }
-
-    await writeFile(dialogResult.filePath, script)
   }
 )
 

@@ -14,7 +14,7 @@ const routes = {
   validator: '/validator/:fileName?',
 
   // Generator
-  generator: '/generator/:fileName/',
+  generator: '/generator/:fileName',
   rule: '/generator/:fileName/rule/:ruleId',
   loadProfile: '/generator/:fileName/loadProfile',
   thinkTime: '/generator/:fileName/thinkTime',

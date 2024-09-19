@@ -1,37 +1,75 @@
+import { FieldGroup } from '@/components/Form'
+import { ProxyData } from '@/types'
 import { Button, Flex, TextField } from '@radix-ui/themes'
-import { FormEvent, useState } from 'react'
+import { useCallback } from 'react'
+import { useForm, UseFormHandleSubmit } from 'react-hook-form'
+
+type FormValues<T> = T extends UseFormHandleSubmit<infer V> ? V : never
+
+interface GroupFormProps {
+  currentGroup: string
+  proxyData: ProxyData[]
+  onChange: (value: string) => void
+}
 
 export function GroupForm({
+  currentGroup = '',
+  proxyData,
   onChange,
-  value: savedValue,
-}: {
-  onChange: (value: string) => void
-  value?: string
-}) {
-  const [value, setValue] = useState(savedValue || '')
+}: GroupFormProps) {
+  const {
+    formState: { errors, isValid },
+    setValue,
+    register,
+    handleSubmit,
+  } = useForm({
+    defaultValues: {
+      name: '',
+    },
+    mode: 'onChange',
+  })
 
-  function handleSumbmit(e: FormEvent) {
-    e.preventDefault()
+  const submit = useCallback(
+    (e: FormValues<typeof handleSubmit>) => {
+      onChange(e.name)
+      setValue('name', '')
+    },
+    [setValue, onChange]
+  )
 
-    if (value.trim() === '') {
-      return
+  const isValidGroupName = (name: string) => {
+    if (name.trim().length === 0) {
+      return false
     }
 
-    onChange(value)
+    const exists =
+      name === currentGroup || proxyData.some((data) => data.group === name)
+
+    if (exists) {
+      return 'Group already exists.'
+    }
+
+    return undefined
   }
 
   return (
     <Flex direction="column" width="200px" asChild>
-      <form onSubmit={handleSumbmit}>
-        <TextField.Root
-          id="group"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          mb="2"
-          placeholder="Group"
-        />
+      <form onSubmit={handleSubmit(submit)}>
+        <FieldGroup name="name" errors={errors}>
+          <TextField.Root
+            id="name"
+            placeholder="Group name"
+            {...register('name', {
+              validate(values) {
+                return isValidGroupName(values)
+              },
+            })}
+          />
+        </FieldGroup>
 
-        <Button disabled={value === savedValue}>Set group</Button>
+        <Button type="submit" disabled={!isValid}>
+          Set group
+        </Button>
       </form>
     </Flex>
   )
