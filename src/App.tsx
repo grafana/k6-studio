@@ -13,6 +13,11 @@ import { queryClient } from './utils/query'
 export function App() {
   const theme = useTheme()
 
+  setTimeout(() => {
+    console.log('REPLACE ME')
+    window.studio.app.closeSplashscreen()
+  }, 1000)
+
   return (
     <QueryClientProvider client={queryClient}>
       <Theme accentColor="orange" appearance={theme}>

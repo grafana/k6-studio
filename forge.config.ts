@@ -17,6 +17,7 @@ const config: ForgeConfig = {
       './resources/json_output.py',
       './resources/group_snippet.js',
       './resources/checks_snippet.js',
+      './resources/splashscreen.html',
       './resources/' + getPlatform() + '/' + getArch(),
     ],
     osxSign: {

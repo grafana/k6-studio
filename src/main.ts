@@ -54,10 +54,37 @@ export let proxyPort = 6000
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
 let watcher: FSWatcher
+let splashscreenWindow: BrowserWindow
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit()
+}
+
+const createSplashWindow = async () => {
+  splashscreenWindow = new BrowserWindow({
+    width: 500,
+    height: 300,
+    // transparent: true,
+    frame: false,
+    alwaysOnTop: true,
+  })
+
+  let splashscreenFile: string
+
+  // if we are in dev server we take resources directly, otherwise look in the app resources folder.
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    splashscreenFile = path.join(
+      app.getAppPath(),
+      'resources',
+      'splashscreen.html'
+    )
+  } else {
+    splashscreenFile = path.join(process.resourcesPath, 'splashscreen.html')
+  }
+
+  splashscreenWindow.loadFile(splashscreenFile)
+  splashscreenWindow.center()
 }
 
 const createWindow = async () => {
@@ -97,13 +124,6 @@ const createWindow = async () => {
     )
   }
 
-  // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
-  mainWindow.once('ready-to-show', () => {
-    // maximize will also show the window so mainWindow.show() is unneeded
-    mainWindow.maximize()
-    mainWindow.focus()
-  })
-
   // Open the DevTools.
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools({ mode: 'detach' })
@@ -113,6 +133,7 @@ const createWindow = async () => {
 }
 
 app.whenReady().then(async () => {
+  await createSplashWindow()
   const mainWindow = await createWindow()
   setupProjectStructure()
 
@@ -461,6 +482,16 @@ ipcMain.handle(
 ipcMain.handle('browser:open:external:link', (_, url: string) => {
   console.info('browser:open:external:link event received')
   shell.openExternal(url)
+})
+
+ipcMain.on('splashscreen:close', (event) => {
+  console.info('splashscreen:close event received')
+
+  const browserWindow = browserWindowFromEvent(event)
+
+  splashscreenWindow.close()
+  browserWindow.show()
+  browserWindow.focus()
 })
 
 const browserWindowFromEvent = (

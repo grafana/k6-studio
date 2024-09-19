@@ -138,6 +138,12 @@ const generator = {
   },
 } as const
 
+const app = {
+  closeSplashscreen: () => {
+    ipcRenderer.send('splashscreen:close')
+  },
+} as const
+
 const studio = {
   proxy,
   browser,
@@ -145,6 +151,7 @@ const studio = {
   har,
   ui,
   generator,
+  app,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)
