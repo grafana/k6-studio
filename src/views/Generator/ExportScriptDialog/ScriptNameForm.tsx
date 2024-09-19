@@ -1,8 +1,25 @@
 import { FieldGroup } from '@/components/Form'
-import { Box, TextField, Flex, AlertDialog, Button } from '@radix-ui/themes'
+import {
+  Box,
+  TextField,
+  Flex,
+  AlertDialog,
+  Button,
+  Checkbox,
+  Text,
+} from '@radix-ui/themes'
+import { Dispatch } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-export function ScriptNameForm() {
+type ScriptNameFormProps = {
+  setAlwaysOverwriteScript: Dispatch<boolean>
+  alwaysOverwriteScript: boolean
+}
+
+export function ScriptNameForm({
+  setAlwaysOverwriteScript,
+  alwaysOverwriteScript,
+}: ScriptNameFormProps) {
   const {
     register,
     formState: { errors },
@@ -15,11 +32,21 @@ export function ScriptNameForm() {
         you&apos;ve named your script, click Export to save it.
       </AlertDialog.Description>
 
-      <Box mb="5">
+      <Box>
         <FieldGroup name="scriptName" label="Script name" errors={errors}>
           <TextField.Root placeholder="my-script" {...register('scriptName')} />
         </FieldGroup>
       </Box>
+
+      <Flex gap="2" my="4">
+        <Text size="2" as="label">
+          <Checkbox
+            checked={alwaysOverwriteScript}
+            onCheckedChange={(checked) => setAlwaysOverwriteScript(!!checked)}
+          />{' '}
+          Automatically overwrite existing script
+        </Text>
+      </Flex>
 
       <Flex justify="end" gap="2">
         <AlertDialog.Cancel>

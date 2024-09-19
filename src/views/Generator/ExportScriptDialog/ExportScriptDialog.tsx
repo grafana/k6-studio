@@ -81,11 +81,12 @@ export function ExportScriptDialog({
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSubmit)}>
             {showOverwriteWarning ? (
-              <OverwriteFileWarning
+              <OverwriteFileWarning />
+            ) : (
+              <ScriptNameForm
+                alwaysOverwriteScript={!!alwaysOverwriteScript}
                 setAlwaysOverwriteScript={setAlwaysOverwriteScript}
               />
-            ) : (
-              <ScriptNameForm />
             )}
           </form>
         </FormProvider>

@@ -1,26 +1,11 @@
-import {
-  Code,
-  Flex,
-  Button,
-  AlertDialog,
-  Checkbox,
-  Text,
-} from '@radix-ui/themes'
-import { Dispatch } from 'react'
+import { Code, Flex, Button, AlertDialog } from '@radix-ui/themes'
 import { useFormContext } from 'react-hook-form'
 
-type OverwriteFileWarningProps = {
-  setAlwaysOverwriteScript: Dispatch<boolean>
-}
-
-export function OverwriteFileWarning({
-  setAlwaysOverwriteScript,
-}: OverwriteFileWarningProps) {
+export function OverwriteFileWarning() {
   const { getValues, setValue } = useFormContext()
 
   function handleCancelOverwrite() {
     setValue('overwriteFile', false)
-    setAlwaysOverwriteScript(false)
   }
 
   return (
@@ -29,15 +14,6 @@ export function OverwriteFileWarning({
         A script named <Code>{getValues('scriptName')}</Code> already exists. Do
         you want to overwrite it?
       </AlertDialog.Description>
-
-      <Flex gap="2" my="4">
-        <Text size="2" as="label">
-          <Checkbox
-            onCheckedChange={(checked) => setAlwaysOverwriteScript(!!checked)}
-          />{' '}
-          Always overwrite without asking
-        </Text>
-      </Flex>
 
       <Flex justify="end" gap="2">
         <Button
