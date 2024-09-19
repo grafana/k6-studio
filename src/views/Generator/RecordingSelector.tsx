@@ -47,7 +47,7 @@ export function RecordingSelector() {
             </DropdownMenu.RadioItem>
           ))}
         </DropdownMenu.RadioGroup>
-        <DropdownMenu.Separator />
+        {recordings.length > 0 && <DropdownMenu.Separator />}
         <DropdownMenu.Item onSelect={handleImport}>
           Import HAR file
         </DropdownMenu.Item>
