@@ -7,6 +7,7 @@ import { css } from '@emotion/react'
 import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { useState, ReactNode } from 'react'
 import { ClearRequestsButton } from './ClearRequestsButton'
+import { NoRequestsMessage } from '@/components/NoRequestsMessage'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
@@ -15,6 +16,7 @@ interface RequestsSectionProps {
   autoScroll?: boolean
   activeGroup?: string
   noRequestsMessage?: ReactNode
+  showNoRequestsMessage: boolean
   onSelectRequest: (data: ProxyData | null) => void
   onRenameGroup?: (group: Group) => void
   resetProxyData?: () => void
@@ -30,10 +32,15 @@ export function RequestsSection({
   onSelectRequest,
   onRenameGroup,
   resetProxyData,
+  showNoRequestsMessage,
 }: RequestsSectionProps) {
   const [filteredProxyData, setFilterdedProxyData] = useState<ProxyData[]>([])
   const groupedProxyData = groupProxyData(filteredProxyData)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
+
+  if (showNoRequestsMessage) {
+    return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
+  }
 
   return (
     <Flex direction="column" minHeight="0" height="100%">
@@ -69,7 +76,6 @@ export function RequestsSection({
             requests={filteredProxyData}
             groups={groups}
             activeGroup={activeGroup}
-            noRequestsMessage={noRequestsMessage}
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
             onRenameGroup={onRenameGroup}

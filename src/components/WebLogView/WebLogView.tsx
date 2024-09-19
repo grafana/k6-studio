@@ -1,19 +1,14 @@
-import { css } from '@emotion/react'
-import { Flex, Text, Table, Box } from '@radix-ui/themes'
-import { isEmpty } from 'lodash-es'
+import { Table, Box } from '@radix-ui/themes'
 
 import { Group as GroupType, ProxyData } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
-import grotIllustration from '@/assets/grot.svg'
-import { ReactNode } from 'react'
 
 interface WebLogViewProps {
   requests: ProxyData[]
   groups?: GroupType[]
   activeGroup?: string
   selectedRequestId?: string
-  noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
   onRenameGroup?: (group: GroupType) => void
 }
@@ -22,14 +17,9 @@ export function WebLogView({
   requests,
   groups,
   selectedRequestId,
-  noRequestsMessage,
   onSelectRequest,
   onRenameGroup,
 }: WebLogViewProps) {
-  if (isEmpty(requests)) {
-    return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
-  }
-
   if (groups !== undefined) {
     const grouped = groups.map((group) => {
       return {
@@ -100,33 +90,5 @@ function RequestList({
         ))}
       </Table.Body>
     </Table.Root>
-  )
-}
-
-interface NoRequestsMessageProps {
-  noRequestsMessage?: ReactNode
-}
-
-function NoRequestsMessage({
-  noRequestsMessage = 'Your requests will appear here.',
-}: NoRequestsMessageProps) {
-  return (
-    <Flex direction="column" align="center" gap="4" pt="8">
-      <img
-        src={grotIllustration}
-        role="presentation"
-        css={css`
-          width: 50%;
-          max-width: 300px;
-        `}
-      />
-      {typeof noRequestsMessage === 'string' ? (
-        <Text color="gray" size="1">
-          {noRequestsMessage}
-        </Text>
-      ) : (
-        noRequestsMessage
-      )}
-    </Flex>
   )
 }

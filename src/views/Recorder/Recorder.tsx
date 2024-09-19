@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
-import { Button, Flex } from '@radix-ui/themes'
-import { DiscIcon, StopIcon } from '@radix-ui/react-icons'
+import { Box, Button, Flex } from '@radix-ui/themes'
+import { DiscIcon, PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
 import { Allotment } from 'allotment'
 
-import { GroupForm } from './GroupForm'
-import { DebugControls } from './DebugControls'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
@@ -23,17 +21,17 @@ import { RecorderState } from './types'
 import { useToast } from '@/store/ui/useToast'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 
+const INITIAL_GROUPS: Group[] = [
+  {
+    id: crypto.randomUUID(),
+    name: 'Default',
+  },
+]
+
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
 
-  const [groups, setGroups] = useState<Group[]>(() => {
-    return [
-      {
-        id: crypto.randomUUID(),
-        name: 'Default',
-      },
-    ]
-  })
+  const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
 
@@ -135,18 +133,29 @@ export function Recorder() {
     blocker.proceed?.()
   }
 
-  function handleSetGroup(group: Group) {
-    setGroups((groups) => {
-      return [...groups, group]
-    })
-  }
-
   function handleRenameGroup(newGroup: Group) {
     setGroups((groups) => {
       return groups.map((group) =>
         group.id === newGroup.id ? newGroup : group
       )
     })
+  }
+
+  function handleCreateGroup(name: string) {
+    setGroups((groups) => {
+      return [
+        ...groups,
+        {
+          id: crypto.randomUUID(),
+          name,
+        },
+      ]
+    })
+  }
+
+  function handleResetRecording() {
+    resetProxyData()
+    setGroups(INITIAL_GROUPS)
   }
 
   useEffect(() => {
@@ -197,28 +206,32 @@ export function Recorder() {
       <Allotment defaultSizes={[1, 1]}>
         <Allotment.Pane minSize={200}>
           <Flex direction="column" height="100%">
-            <Flex justify="between" wrap="wrap" gap="2" p="2" flexShrink="0">
-              <GroupForm
-                currentGroup={group}
-                proxyData={proxyData}
-                onChange={handleSetGroup}
-              />
-
-              <DebugControls />
-            </Flex>
-            <div css={{ flexGrow: 1, minHeight: 0 }}>
+            <div css={{ flexGrow: 0, minHeight: 0 }}>
               <RequestsSection
                 proxyData={debouncedProxyData}
-                noRequestsMessage="Your requests will appear here"
+                noRequestsMessage="Once you start the recording, requests will appear here"
+                showNoRequestsMessage={recorderState === 'idle'}
                 selectedRequestId={selectedRequest?.id}
                 autoScroll
                 groups={groups}
                 activeGroup={group?.id}
                 onSelectRequest={setSelectedRequest}
                 onRenameGroup={handleRenameGroup}
-                resetProxyData={resetProxyData}
+                resetProxyData={handleResetRecording}
               />
             </div>
+            {recorderState !== 'idle' && (
+              <Box width="200px" p="2">
+                <Button
+                  size="2"
+                  variant="outline"
+                  onClick={() => handleCreateGroup(`Group ${groups.length}`)}
+                >
+                  <PlusCircledIcon />
+                  Create group
+                </Button>
+              </Box>
+            )}
           </Flex>
         </Allotment.Pane>
         {selectedRequest !== null && (

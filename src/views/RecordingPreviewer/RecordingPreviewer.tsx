@@ -114,6 +114,7 @@ export function RecordingPreviewer() {
             groups={groups}
             proxyData={proxyData}
             noRequestsMessage="The recording is empty"
+            showNoRequestsMessage={proxyData.length === 0}
             selectedRequestId={selectedRequest?.id}
             onSelectRequest={setSelectedRequest}
           />

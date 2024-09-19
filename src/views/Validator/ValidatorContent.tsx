@@ -60,6 +60,7 @@ export function ValidatorContent({
               selectedRequestId={selectedRequest?.id}
               noRequestsMessage={noRequestsMessage}
               onSelectRequest={setSelectedRequest}
+              showNoRequestsMessage={proxyData.length === 0}
             />
           </Allotment.Pane>
           <Allotment.Pane minSize={250}>

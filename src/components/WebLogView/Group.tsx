@@ -15,6 +15,7 @@ import { ErrorMessage } from '@hookform/error-message'
 import { Collapsible } from '../Collapsible'
 import { useOnClickOutside } from '@/utils/dom'
 import styled from '@emotion/styled'
+import { useEffectOnce } from 'react-use'
 
 interface GroupProps {
   group: GroupType
@@ -34,6 +35,7 @@ export function Group({
   const headerRef = useRef<HTMLDivElement | null>(null)
 
   const [isEditing, setIsEditing] = useState(false)
+  const canEdit = onRename !== undefined
 
   const {
     formState: { errors, isValid },
@@ -61,6 +63,12 @@ export function Group({
       return
     }
   }
+
+  useEffectOnce(() => {
+    if (canEdit && group.name !== 'Default') {
+      setIsEditing(true)
+    }
+  })
 
   const handleEdit = (ev?: MouseEvent<HTMLElement>) => {
     ev?.preventDefault()
@@ -104,8 +112,6 @@ export function Group({
 
     return true
   }
-
-  const canEdit = onRename !== undefined
 
   const { ref: formRef, ...nameProps } = register('name', {
     validate: isValidName,
