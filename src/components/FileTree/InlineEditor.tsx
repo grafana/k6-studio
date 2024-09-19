@@ -18,11 +18,10 @@ export function InlineEditor({
   const [localValue, setValue] = useState(value)
 
   useEffect(() => {
-    // Workaround to get focus and select to work with dinamically mounted component
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       inputRef.current?.focus()
       inputRef.current?.select()
-    }, 1)
+    })
   }, [])
 
   useClickAway(inputRef, () => {
