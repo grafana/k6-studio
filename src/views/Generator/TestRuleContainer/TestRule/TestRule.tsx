@@ -92,6 +92,8 @@ export function TestRuleItem({
           css={css`
             cursor: grab;
           `}
+          width={16}
+          height={16}
           aria-hidden
         />
       </IconButton>
