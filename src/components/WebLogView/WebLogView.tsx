@@ -10,7 +10,7 @@ interface WebLogViewProps {
   activeGroup?: string
   selectedRequestId?: string
   onSelectRequest: (data: ProxyData | null) => void
-  onRenameGroup?: (group: GroupType) => void
+  onUpdateGroup?: (group: GroupType) => void
 }
 
 export function WebLogView({
@@ -18,7 +18,7 @@ export function WebLogView({
   groups,
   selectedRequestId,
   onSelectRequest,
-  onRenameGroup,
+  onUpdateGroup,
 }: WebLogViewProps) {
   if (groups !== undefined) {
     const grouped = groups.map((group) => {
@@ -36,7 +36,7 @@ export function WebLogView({
             group={item.group}
             groups={groups}
             length={item.requests.length}
-            onRename={onRenameGroup}
+            onUpdate={onUpdateGroup}
           >
             <RequestList
               requests={item.requests}

@@ -75,6 +75,7 @@ export interface K6Check {
 export interface Group {
   id: string
   name: string
+  isEditing?: boolean
 }
 
 export type GroupedProxyData = Record<string, ProxyData[]>

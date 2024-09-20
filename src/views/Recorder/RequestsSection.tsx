@@ -18,7 +18,7 @@ interface RequestsSectionProps {
   noRequestsMessage?: ReactNode
   showNoRequestsMessage: boolean
   onSelectRequest: (data: ProxyData | null) => void
-  onRenameGroup?: (group: Group) => void
+  onUpdateGroup?: (group: Group) => void
   resetProxyData?: () => void
 }
 
@@ -30,7 +30,7 @@ export function RequestsSection({
   groups,
   activeGroup,
   onSelectRequest,
-  onRenameGroup,
+  onUpdateGroup,
   resetProxyData,
   showNoRequestsMessage,
 }: RequestsSectionProps) {
@@ -78,7 +78,7 @@ export function RequestsSection({
             activeGroup={activeGroup}
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
-            onRenameGroup={onRenameGroup}
+            onUpdateGroup={onUpdateGroup}
           />
         </div>
       </ScrollArea>

@@ -133,7 +133,7 @@ export function Recorder() {
     blocker.proceed?.()
   }
 
-  function handleRenameGroup(newGroup: Group) {
+  function handleUpdateGroup(newGroup: Group) {
     setGroups((groups) => {
       return groups.map((group) =>
         group.id === newGroup.id ? newGroup : group
@@ -142,15 +142,7 @@ export function Recorder() {
   }
 
   function handleCreateGroup(name: string) {
-    setGroups((groups) => {
-      return [
-        ...groups,
-        {
-          id: crypto.randomUUID(),
-          name,
-        },
-      ]
-    })
+    setGroups((groups) => createGroupOrEditLast(groups, proxyData, name))
   }
 
   function handleResetRecording() {
@@ -216,7 +208,7 @@ export function Recorder() {
                 groups={groups}
                 activeGroup={group?.id}
                 onSelectRequest={setSelectedRequest}
-                onRenameGroup={handleRenameGroup}
+                onUpdateGroup={handleUpdateGroup}
                 resetProxyData={handleResetRecording}
               />
             </div>
@@ -252,4 +244,38 @@ export function Recorder() {
       />
     </View>
   )
+}
+
+// Don't create a new group if the last one is empty,
+// instead switch to editing it's name
+function createGroupOrEditLast(
+  groups: Group[],
+  proxyData: ProxyData[],
+  name: string
+) {
+  const lastGroup = groups[groups.length - 1]
+  const isLastGroupEmpty =
+    lastGroup && proxyData.every((data) => data.group !== lastGroup.id)
+
+  if (isLastGroupEmpty) {
+    return groups.map((group) => {
+      if (lastGroup?.id === group.id) {
+        return {
+          ...group,
+          isEditing: true,
+        }
+      }
+
+      return group
+    })
+  }
+
+  return [
+    ...groups,
+    {
+      id: crypto.randomUUID(),
+      name,
+      isEditing: true,
+    },
+  ]
 }
