@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/useTheme'
 import { MoonIcon, SunIcon } from '@radix-ui/react-icons'
-import { IconButton } from '@radix-ui/themes'
+import { IconButton, Tooltip } from '@radix-ui/themes'
 
 export function ThemeSwitcher() {
   const theme = useTheme()
@@ -10,8 +10,15 @@ export function ThemeSwitcher() {
   }
 
   return (
-    <IconButton onClick={handleClick} variant="ghost" aria-label="Change theme">
-      {theme === 'light' ? <SunIcon /> : <MoonIcon />}
-    </IconButton>
+    <Tooltip content="Change theme" side="right">
+      <IconButton
+        onClick={handleClick}
+        variant="ghost"
+        color="gray"
+        aria-label="Change theme"
+      >
+        {theme === 'light' ? <SunIcon /> : <MoonIcon />}
+      </IconButton>
+    </Tooltip>
   )
 }

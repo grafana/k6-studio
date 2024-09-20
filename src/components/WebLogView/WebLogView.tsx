@@ -1,48 +1,56 @@
+import { ReactNode } from 'react'
 import { css } from '@emotion/react'
-import { Flex, Text, Table, Box } from '@radix-ui/themes'
+import { Flex, Text, Box } from '@radix-ui/themes'
 import { isEmpty } from 'lodash-es'
 
-import { GroupedProxyData, ProxyData } from '@/types'
-import { isGroupedProxyData } from './WebLogView.utils'
+import { Group as GroupType, ProxyData } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
 import grotIllustration from '@/assets/grot.svg'
-import { ReactNode } from 'react'
+import { Table } from '@/components/Table'
 
 interface WebLogViewProps {
-  requests: ProxyData[] | GroupedProxyData
+  requests: ProxyData[]
+  groups?: GroupType[]
   activeGroup?: string
   selectedRequestId?: string
   noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
+  onRenameGroup?: (group: GroupType) => void
 }
 
 export function WebLogView({
   requests,
-  activeGroup,
+  groups,
   selectedRequestId,
   noRequestsMessage,
   onSelectRequest,
+  onRenameGroup,
 }: WebLogViewProps) {
   if (isEmpty(requests)) {
     return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
   }
 
-  if (isGroupedProxyData(requests)) {
-    const groups = Object.entries(requests)
-    if (
-      activeGroup &&
-      (!requests[activeGroup] || requests[activeGroup].length === 0)
-    ) {
-      groups.push([activeGroup, []])
-    }
+  if (groups !== undefined) {
+    const grouped = groups.map((group) => {
+      return {
+        group,
+        requests: requests.filter((data) => data.group === group.id),
+      }
+    })
 
     return (
       <Box mb="2">
-        {groups.map(([group, data]) => (
-          <Group name={group} length={data.length} key={group}>
+        {grouped.map((item) => (
+          <Group
+            key={item.group.id}
+            group={item.group}
+            groups={groups}
+            length={item.requests.length}
+            onRename={onRenameGroup}
+          >
             <RequestList
-              requests={data}
+              requests={item.requests}
               selectedRequestId={selectedRequestId}
               onSelectRequest={onSelectRequest}
             />

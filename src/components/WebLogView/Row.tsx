@@ -19,7 +19,12 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
   )
 
   return (
-    <Table.Row onClick={() => onSelectRequest(data)}>
+    <Table.Row
+      onClick={() => onSelectRequest(data)}
+      css={{
+        backgroundColor: isSelected ? 'var(--accent-2)' : 'transparent',
+      }}
+    >
       <Table.Cell
         css={{
           cursor: 'var(--cursor-button)',

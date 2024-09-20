@@ -1,12 +1,13 @@
 import { useCallback, useEffect } from 'react'
-import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
-import { Button, IconButton, Table, TextField } from '@radix-ui/themes'
+import { TrashIcon } from '@radix-ui/react-icons'
+import { Button, IconButton, TextField } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { TestData } from '@/types/testData'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TestDataSchema } from '@/schemas/testData'
 import { FieldGroup } from '@/components/Form'
+import { Table } from '@/components/Table'
 
 export function VariablesEditor() {
   const variables = useGeneratorStore((store) => store.variables)
@@ -98,7 +99,7 @@ export function VariablesEditor() {
           <Table.Row>
             <Table.RowHeaderCell colSpan={3} justify="center">
               <Button variant="ghost" onClick={handleAddVariable}>
-                <PlusIcon width="18" height="18" /> Add variable
+                Add variable
               </Button>
             </Table.RowHeaderCell>
           </Table.Row>

@@ -13,12 +13,11 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '@/utils/query'
 
 export function useGeneratorParams() {
-  const { fileName, ruleId } = useParams()
+  const { fileName } = useParams()
   invariant(fileName, 'fileName is required')
 
   return {
     fileName,
-    ruleId,
   }
 }
 

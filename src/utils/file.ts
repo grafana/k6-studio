@@ -10,3 +10,7 @@ export function generateFileNameWithTimestamp(
       .split('.')[0] ?? ''
   return `${prefix ? `${prefix} - ` : ''}${timestamp}.${extension}`
 }
+
+export function getFileNameWithoutExtension(fileName: string) {
+  return fileName.replace(/\.[^/.]+$/, '')
+}

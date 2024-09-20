@@ -6,12 +6,14 @@ import { useNavigate } from 'react-router-dom'
 interface FileContextMenuProps {
   path: string
   isSelected: boolean
+  handleRename: () => void
 }
 
 export function FileContextMenu({
   path,
   children,
   isSelected,
+  handleRename,
 }: PropsWithChildren<FileContextMenuProps>) {
   const navigate = useNavigate()
 
@@ -29,6 +31,7 @@ export function FileContextMenu({
     <ContextMenu.Root>
       <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
       <ContextMenu.Content size="1">
+        <ContextMenu.Item onClick={handleRename}>Rename</ContextMenu.Item>
         <ContextMenu.Item onClick={handleOpenFolder}>
           Open containing folder
         </ContextMenu.Item>

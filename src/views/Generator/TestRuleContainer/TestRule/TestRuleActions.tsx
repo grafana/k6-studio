@@ -1,32 +1,26 @@
-import { useNavigate } from 'react-router-dom'
-
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton } from '@radix-ui/themes'
-import { useGeneratorStore } from '@/store/generator'
-import { useGeneratorParams } from '../../Generator.hooks'
-import { getRoutePath } from '@/routeMap'
 import { css } from '@emotion/react'
+
+import { useGeneratorStore } from '@/store/generator'
 
 interface TestRuleActionsProps {
   ruleId: string
 }
 
 export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
-  const { fileName } = useGeneratorParams()
-  const navigate = useNavigate()
-  const { cloneRule, deleteRule } = useGeneratorStore()
+  const cloneRule = useGeneratorStore((state) => state.cloneRule)
+  const deleteRule = useGeneratorStore((state) => state.deleteRule)
+  const setSelectedRuleId = useGeneratorStore(
+    (state) => state.setSelectedRuleId
+  )
 
   const handleEdit = () => {
-    navigate(
-      getRoutePath('rule', { fileName: encodeURIComponent(fileName), ruleId })
-    )
+    setSelectedRuleId(ruleId)
   }
 
   const handleDelete = () => {
     deleteRule(ruleId)
-    navigate(
-      getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
-    )
   }
 
   const handleCopy = () => {

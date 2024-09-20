@@ -1,6 +1,7 @@
-import { Flex, Table } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 
 import { Cookie } from '@/types'
+import { Table } from '@/components/Table'
 
 export function Cookies({ cookies = [] }: { cookies?: Cookie[] }) {
   if (!cookies.length) {

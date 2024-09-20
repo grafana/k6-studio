@@ -1,17 +1,14 @@
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect } from 'react'
+import { FormProvider, useForm, useFormContext } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Callout, IconButton } from '@radix-ui/themes'
+import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
 
-import { selectRuleById, useGeneratorStore } from '@/store/generator'
+import { useGeneratorStore } from '@/store/generator'
 import { exhaustive } from '@/utils/typescript'
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
-import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
-import { useGeneratorParams } from '../../Generator.hooks'
-import { getRoutePath } from '@/routeMap'
-import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { TestRule } from '@/types/rules'
-import { useCallback, useEffect } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { TestRuleSchema } from '@/schemas/rules'
 
 export function RuleEditorSwitch() {
@@ -39,13 +36,16 @@ export function RuleEditorSwitch() {
   }
 }
 
-export function RuleEditor() {
-  const { fileName } = useGeneratorParams()
-  const navigate = useNavigate()
+interface RuleEditorProps {
+  rule: TestRule
+}
 
-  const { ruleId } = useGeneratorParams()
+export function RuleEditor({ rule }: RuleEditorProps) {
+  const setSelectedRuleId = useGeneratorStore(
+    (state) => state.setSelectedRuleId
+  )
+
   const updateRule = useGeneratorStore((state) => state.updateRule)
-  const rule = useGeneratorStore((state) => selectRuleById(state, ruleId))
 
   const formMethods = useForm<TestRule>({
     resolver: zodResolver(TestRuleSchema),
@@ -56,9 +56,7 @@ export function RuleEditor() {
   const { watch, handleSubmit, reset } = formMethods
 
   const handleClose = () => {
-    navigate(
-      getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
-    )
+    setSelectedRuleId(null)
   }
 
   const onSubmit = useCallback(
@@ -79,7 +77,7 @@ export function RuleEditor() {
     reset(rule)
     // TODO: fix infinite loop when including all dependencies
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ruleId])
+  }, [rule.id])
 
   return (
     <FormProvider {...formMethods}>

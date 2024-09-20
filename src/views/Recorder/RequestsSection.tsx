@@ -1,20 +1,24 @@
 import { StaticAssetsFilter } from '@/components/StaticAssetsFilter'
 import { WebLogView } from '@/components/WebLogView'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
-import { ProxyData } from '@/types'
+import { Group, ProxyData } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 import { css } from '@emotion/react'
-import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
-import { useState, ReactNode } from 'react'
+import { Box, Flex, Heading, ScrollArea } from '@radix-ui/themes'
+import { ReactNode } from 'react'
 import { ClearRequestsButton } from './ClearRequestsButton'
+import { Filter } from '@/components/WebLogView/Filter'
+import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
+  groups?: Group[]
   selectedRequestId?: string
   autoScroll?: boolean
   activeGroup?: string
   noRequestsMessage?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
+  onRenameGroup?: (group: Group) => void
   resetProxyData?: () => void
 }
 
@@ -23,12 +27,21 @@ export function RequestsSection({
   selectedRequestId,
   noRequestsMessage,
   autoScroll = false,
+  groups,
   activeGroup,
   onSelectRequest,
+  onRenameGroup,
   resetProxyData,
 }: RequestsSectionProps) {
-  const [filteredProxyData, setFilterdedProxyData] = useState<ProxyData[]>([])
-  const groupedProxyData = groupProxyData(filteredProxyData)
+  const {
+    filter,
+    setFilter,
+    includeStaticAssets,
+    setIncludeStaticAssets,
+    staticAssetCount,
+    filteredRequests,
+  } = useFilterRequests(proxyData)
+  const groupedProxyData = groupProxyData(filteredRequests)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
 
   return (
@@ -43,7 +56,7 @@ export function RequestsSection({
               padding: var(--space-2);
             `}
           >
-            Requests ({filteredProxyData.length})
+            Requests ({filteredRequests.length})
           </Heading>
           {resetProxyData && (
             <ClearRequestsButton
@@ -53,20 +66,33 @@ export function RequestsSection({
           )}
         </Flex>
 
-        <StaticAssetsFilter
-          proxyData={proxyData}
-          setFilteredProxyData={setFilterdedProxyData}
-        />
+        <Flex gap="2" align="center">
+          <StaticAssetsFilter
+            includeStaticAssets={includeStaticAssets}
+            setIncludeStaticAssets={setIncludeStaticAssets}
+            staticAssetCount={staticAssetCount}
+          />
+
+          <Box width="200px">
+            <Filter filter={filter} setFilter={setFilter} />
+          </Box>
+        </Flex>
       </Flex>
 
       <ScrollArea scrollbars="both">
         <div ref={ref} css={{ minWidth: '500px' }}>
           <WebLogView
-            requests={groupedProxyData}
+            requests={filteredRequests}
+            groups={groups}
             activeGroup={activeGroup}
-            noRequestsMessage={noRequestsMessage}
+            noRequestsMessage={
+              filter !== ''
+                ? 'No requests matched the filter'
+                : noRequestsMessage
+            }
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
+            onRenameGroup={onRenameGroup}
           />
         </div>
       </ScrollArea>

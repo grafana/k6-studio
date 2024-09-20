@@ -10,7 +10,6 @@ import {
   useGeneratorStore,
 } from '@/store/generator'
 import { RulePreview } from '../RulePreview/RulePreview'
-import { useGeneratorParams } from '../Generator.hooks'
 import { RequestList } from './RequestList'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { CrossCircledIcon } from '@radix-ui/react-icons'
@@ -21,10 +20,7 @@ export function GeneratorSidebar() {
   const { hasError } = useScriptPreview()
 
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const { ruleId } = useGeneratorParams()
-  const hasPreview = useGeneratorStore((state) =>
-    selectIsRulePreviewable(state, ruleId)
-  )
+  const hasPreview = useGeneratorStore(selectIsRulePreviewable)
 
   useEffect(() => {
     if (!hasPreview) {
@@ -62,7 +58,7 @@ export function GeneratorSidebar() {
                 color="var(--red-9)"
               />
             )}
-            Script preview
+            Script
           </Tabs.Trigger>
           {hasPreview && (
             <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>

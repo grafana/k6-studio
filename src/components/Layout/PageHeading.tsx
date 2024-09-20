@@ -20,9 +20,11 @@ export function PageHeading({
         `}
       >
         <Flex maxWidth="50%" flexGrow="1">
-          <Heading size="3">{text}</Heading>
+          <Heading size="3" truncate>
+            {text}
+          </Heading>
         </Flex>
-        <Flex flexGrow="1" justify="end" align="center" gap="2">
+        <Flex flexGrow="1" justify="end" align="center" gap="2" wrap="wrap">
           {children}
         </Flex>
       </Flex>

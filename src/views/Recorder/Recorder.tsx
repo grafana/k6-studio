@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
 import { Button, Flex } from '@radix-ui/themes'
 import { DiscIcon, StopIcon } from '@radix-ui/react-icons'
@@ -8,7 +8,6 @@ import { GroupForm } from './GroupForm'
 import { DebugControls } from './DebugControls'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
-import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import {
   startRecording,
@@ -18,7 +17,7 @@ import {
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
-import { ProxyData } from '@/types'
+import { Group, ProxyData } from '@/types'
 import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
 import { RecorderState } from './types'
 import { useToast } from '@/store/ui/useToast'
@@ -26,8 +25,19 @@ import TextSpinner from '@/components/TextSpinner/TextSpinner'
 
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-  const [group, setGroup] = useState('Default')
-  const { proxyData, resetProxyData } = useListenProxyData(group)
+
+  const [groups, setGroups] = useState<Group[]>(() => {
+    return [
+      {
+        id: crypto.randomUUID(),
+        name: 'Default',
+      },
+    ]
+  })
+
+  const group = useMemo(() => groups[groups.length - 1], [groups])
+
+  const { proxyData, resetProxyData } = useListenProxyData(group?.id)
   const [recorderState, setRecorderState] = useState<RecorderState>('idle')
   const showToast = useToast()
 
@@ -42,7 +52,6 @@ export function Recorder() {
   )
 
   const autoStart = Boolean(state?.autoStart)
-  useSetWindowTitle('Recorder')
 
   const isLoading = recorderState === 'starting' || recorderState === 'saving'
 
@@ -71,7 +80,20 @@ export function Recorder() {
         return null
       }
 
-      const har = proxyDataToHar(proxyData)
+      // Temporary solution to avoid having to update `proxyDataToHar`.
+      const grouped = proxyData.map((data) => {
+        const group = groups.find((g) => g.id === data.group) ?? {
+          id: 'default',
+          name: 'Default',
+        }
+
+        return {
+          ...data,
+          group: group.name,
+        }
+      })
+
+      const har = proxyDataToHar(grouped)
       const fileName = await window.studio.har.saveFile(
         JSON.stringify(har, null, 4)
       )
@@ -80,7 +102,7 @@ export function Recorder() {
     } finally {
       setRecorderState('idle')
     }
-  }, [proxyData])
+  }, [groups, proxyData])
 
   async function handleStopRecording() {
     stopRecording()
@@ -113,6 +135,20 @@ export function Recorder() {
     blocker.proceed?.()
   }
 
+  function handleSetGroup(group: Group) {
+    setGroups((groups) => {
+      return [...groups, group]
+    })
+  }
+
+  function handleRenameGroup(newGroup: Group) {
+    setGroups((groups) => {
+      return groups.map((group) =>
+        group.id === newGroup.id ? newGroup : group
+      )
+    })
+  }
+
   useEffect(() => {
     if (autoStart) {
       handleStartRecording()
@@ -135,11 +171,7 @@ export function Recorder() {
       actions={
         <>
           {recorderState === 'idle' && (
-            <Button
-              disabled={isLoading}
-              color="red"
-              onClick={handleStartRecording}
-            >
+            <Button disabled={isLoading} onClick={handleStartRecording}>
               <DiscIcon /> Start recording
             </Button>
           )}
@@ -148,7 +180,7 @@ export function Recorder() {
               {isLoading && <TextSpinner text="Starting" />}
               <Button
                 disabled={isLoading}
-                color="orange"
+                color="red"
                 onClick={handleStopRecording}
               >
                 <StopIcon /> Stop recording
@@ -165,7 +197,7 @@ export function Recorder() {
               <GroupForm
                 currentGroup={group}
                 proxyData={proxyData}
-                onChange={setGroup}
+                onChange={handleSetGroup}
               />
 
               <DebugControls />
@@ -176,8 +208,10 @@ export function Recorder() {
                 noRequestsMessage="Your requests will appear here"
                 selectedRequestId={selectedRequest?.id}
                 autoScroll
-                activeGroup={group}
+                groups={groups}
+                activeGroup={group?.id}
                 onSelectRequest={setSelectedRequest}
+                onRenameGroup={handleRenameGroup}
                 resetProxyData={resetProxyData}
               />
             </div>

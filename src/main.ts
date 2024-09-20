@@ -6,12 +6,19 @@ import {
   nativeTheme,
   shell,
 } from 'electron'
-import { open, copyFile, writeFile, unlink, FileHandle } from 'fs/promises'
-import { readdirSync } from 'fs'
+import {
+  open,
+  copyFile,
+  writeFile,
+  unlink,
+  FileHandle,
+  rename,
+} from 'fs/promises'
+import { readdirSync, existsSync } from 'fs'
 import path from 'path'
 import eventEmitter from 'events'
 import { Process } from '@puppeteer/browsers'
-import chokidar from 'chokidar'
+import { watch, FSWatcher } from 'chokidar'
 
 import { launchProxy, type ProxyProcess } from './proxy'
 import { launchBrowser } from './browser'
@@ -33,6 +40,8 @@ import { INVALID_FILENAME_CHARS } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
+import kill from 'tree-kill'
+import find from 'find-process'
 
 const proxyEmitter = new eventEmitter()
 
@@ -44,7 +53,7 @@ export let proxyPort = 6000
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
-let watcher: chokidar.FSWatcher
+let watcher: FSWatcher
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -58,6 +67,9 @@ const createWindow = async () => {
   }
   app.setName('k6 Studio')
 
+  // clean leftover proxies if any, this might happen on windows
+  await cleanUpProxies()
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -66,7 +78,7 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'k6 Studio',
+    title: 'k6 Studio (experimental)',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
@@ -104,7 +116,7 @@ app.whenReady().then(async () => {
   const mainWindow = await createWindow()
   setupProjectStructure()
 
-  watcher = chokidar.watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
+  watcher = watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
     ignoreInitial: true,
   })
 
@@ -408,6 +420,35 @@ ipcMain.handle('ui:get-files', () => {
   }
 })
 
+ipcMain.handle(
+  'ui:rename-file',
+  async (e, oldFileName: string, newFileName: string) => {
+    const browserWindow = BrowserWindow.fromWebContents(e.sender)
+
+    try {
+      invariant(!INVALID_FILENAME_CHARS.test(newFileName), 'Invalid file name')
+
+      const oldPath = getFilePathFromName(oldFileName)
+      const newPath = getFilePathFromName(newFileName)
+
+      if (existsSync(newPath)) {
+        throw new Error('File already exists')
+      }
+
+      await rename(oldPath, newPath)
+    } catch (e) {
+      browserWindow &&
+        sendToast(browserWindow.webContents, {
+          title: 'Failed to rename file',
+          description: e instanceof Error ? e.message : undefined,
+          status: 'error',
+        })
+
+      throw e
+    }
+  }
+)
+
 ipcMain.handle('browser:open:external:link', (_, url: string) => {
   console.info('browser:open:external:link event received')
   shell.openExternal(url)
@@ -478,8 +519,16 @@ function getFilePathFromName(name: string) {
 
 const stopProxyProcess = () => {
   if (currentProxyProcess) {
+    // NOTE: this might not kill the second spawned process on windows
     currentProxyProcess.kill()
     currentProxyProcess = null
     proxyReady = false
   }
+}
+
+const cleanUpProxies = async () => {
+  const processList = await find('name', 'k6-studio-proxy', false)
+  processList.forEach((proc) => {
+    kill(proc.pid)
+  })
 }

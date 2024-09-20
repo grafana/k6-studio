@@ -2,7 +2,7 @@ import { Allotment } from 'allotment'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import invariant from 'tiny-invariant'
 
 import { generateFileNameWithTimestamp } from '@/utils/file'
@@ -13,7 +13,6 @@ import { ProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
-import { useSetWindowTitle } from '@/hooks/useSetWindowTitle'
 
 export function RecordingPreviewer() {
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
@@ -24,7 +23,6 @@ export function RecordingPreviewer() {
   const { state } = useLocation()
   const isDiscardable = Boolean(state?.discardable)
   invariant(fileName, 'fileName is required')
-  useSetWindowTitle(fileName)
 
   useEffect(() => {
     ;(async () => {
@@ -42,6 +40,17 @@ export function RecordingPreviewer() {
       setProxyData([])
     }
   }, [fileName, navigate])
+
+  const groups = useMemo(() => {
+    const names = new Set(proxyData.map((data) => data.group ?? 'Default'))
+
+    return Array.from(names).map((name) => {
+      return {
+        id: name,
+        name,
+      }
+    })
+  }, [proxyData])
 
   const handleDeleteRecording = async () => {
     await window.studio.ui.deleteFile(fileName)
@@ -78,19 +87,28 @@ export function RecordingPreviewer() {
               Discard and start over
             </Button>
           )}
+
+          {!isDiscardable && (
+            <Button
+              onClick={handleDiscard}
+              variant="outline"
+              asChild
+              css={{ cursor: 'default' }}
+            >
+              <Link to={getRoutePath('recorder')}>New recording</Link>
+            </Button>
+          )}
+
           <Button onClick={handleCreateTestGenerator}>
             Create test generator
           </Button>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton variant="soft" aria-label="Actions">
+              <IconButton variant="ghost" aria-label="Actions" color="gray">
                 <DotsVerticalIcon />
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item asChild>
-                <Link to={getRoutePath('recorder')}>New recording</Link>
-              </DropdownMenu.Item>
               <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
                 Delete
               </DropdownMenu.Item>
@@ -102,6 +120,7 @@ export function RecordingPreviewer() {
       <Allotment defaultSizes={[1, 1]}>
         <Allotment.Pane>
           <RequestsSection
+            groups={groups}
             proxyData={proxyData}
             noRequestsMessage="The recording is empty"
             selectedRequestId={selectedRequest?.id}

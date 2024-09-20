@@ -124,6 +124,9 @@ const ui = {
   onToast: (callback: (toast: AddToastPayload) => void) => {
     return createListener('ui:toast', callback)
   },
+  renameFile: (oldPath: string, newPath: string): Promise<void> => {
+    return ipcRenderer.invoke('ui:rename-file', oldPath, newPath)
+  },
 } as const
 
 const generator = {
