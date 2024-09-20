@@ -5,6 +5,7 @@ import { SortableRuleList } from './SortableRuleList'
 import { css } from '@emotion/react'
 import { TestOptions } from '../TestOptions'
 import grotIllustration from '@/assets/grot.svg'
+import { Allowlist } from '../Allowlist'
 
 export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)
@@ -36,6 +37,7 @@ export function TestRuleContainer() {
         </Heading>
         <NewRuleMenu />
         <TestOptions />
+        <Allowlist />
       </Flex>
 
       <SortableRuleList rules={rules} onSwapRules={swapRules} />

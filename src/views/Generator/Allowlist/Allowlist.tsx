@@ -2,6 +2,7 @@ import { Button } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { AllowlistDialog } from './AllowlistDialog'
 import { extractUniqueHosts } from '@/store/generator/slices/recording.utils'
+import { GlobeIcon } from '@radix-ui/react-icons'
 
 export function Allowlist() {
   const requests = useGeneratorStore((store) => store.requests)
@@ -39,7 +40,13 @@ export function Allowlist() {
   return (
     <>
       {requests.length > 0 && (
-        <Button onClick={() => setShowAllowlistDialog(true)} variant="outline">
+        <Button
+          size="1"
+          variant="ghost"
+          color="gray"
+          onClick={() => setShowAllowlistDialog(true)}
+        >
+          <GlobeIcon />
           Allowed hosts [{allowlist.length}/{hosts.length}]
         </Button>
       )}
