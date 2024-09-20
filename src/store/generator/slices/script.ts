@@ -13,7 +13,7 @@ export type ScriptDataStore = State & Actions
 export const createScriptDataSlice: ImmerStateCreator<ScriptDataStore> = (
   set
 ) => ({
-  scriptName: 'my-script',
+  scriptName: 'my-script.js',
 
   setScriptName: (scriptName: string) =>
     set((state) => {

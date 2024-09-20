@@ -34,7 +34,10 @@ export function ScriptNameForm({
 
       <Box>
         <FieldGroup name="scriptName" label="Script name" errors={errors}>
-          <TextField.Root placeholder="my-script" {...register('scriptName')} />
+          <TextField.Root
+            placeholder="my-script.js"
+            {...register('scriptName')}
+          />
         </FieldGroup>
       </Box>
 

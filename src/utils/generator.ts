@@ -25,7 +25,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     rules: [createEmptyRule('verification')],
     allowlist: [],
     includeStaticAssets: false,
-    scriptName: 'my-script',
+    scriptName: 'my-script.js',
   }
 }
 
