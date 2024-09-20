@@ -217,7 +217,8 @@ export function Recorder() {
               <Box width="200px" p="2">
                 <Button
                   size="2"
-                  variant="outline"
+                  variant="ghost"
+                  ml="2"
                   onClick={() => handleCreateGroup(`Group ${groups.length}`)}
                 >
                   <PlusCircledIcon />
