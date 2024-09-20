@@ -1,4 +1,4 @@
-import { Button, Flex, Select, Text } from '@radix-ui/themes'
+import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
 import { PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
@@ -45,9 +45,12 @@ export function RecordingSelector() {
 
   return (
     <Flex gap="2" align="center">
-      <Text size="2">Recording</Text>
+      <Text size="2" weight="medium" as="label" htmlFor="recording-selector">
+        Recording
+      </Text>
       <Select.Root value={recordingPath} onValueChange={handleOpen}>
         <Select.Trigger
+          id="recording-selector"
           placeholder="Select recording"
           css={css`
             max-width: 200px;
@@ -61,10 +64,11 @@ export function RecordingSelector() {
           ))}
         </Select.Content>
       </Select.Root>
-      <Button variant="ghost" color="gray" onClick={handleImport}>
-        <PlusIcon />
-        Import
-      </Button>
+      <Tooltip content="Import recording">
+        <IconButton variant="soft" color="gray" onClick={handleImport}>
+          <PlusIcon />
+        </IconButton>
+      </Tooltip>
     </Flex>
   )
 }
