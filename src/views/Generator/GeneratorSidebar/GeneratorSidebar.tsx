@@ -58,7 +58,7 @@ export function GeneratorSidebar() {
                 color="var(--red-9)"
               />
             )}
-            Script preview
+            Script
           </Tabs.Trigger>
           {hasPreview && (
             <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>

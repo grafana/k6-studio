@@ -1,9 +1,12 @@
-import { Box, Flex, IconButton, ScrollArea } from '@radix-ui/themes'
-import { PinLeftIcon } from '@radix-ui/react-icons'
+import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
+import { PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
 import { FileTree } from '@/components/FileTree'
 import { useFolderContent } from './Sidebar.hooks'
+import { Link } from 'react-router-dom'
+import { getRoutePath } from '@/routeMap'
+import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 
 interface SidebarProps {
   isExpanded: boolean
@@ -12,6 +15,7 @@ interface SidebarProps {
 
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const { recordings, generators, scripts } = useFolderContent()
+  const createNewGenerator = useCreateGenerator()
 
   return (
     <Box
@@ -29,19 +33,36 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
             noFilesMessage="No recordings found"
             viewPath="/recording-previewer"
             actions={
-              isExpanded && (
-                <IconButton
-                  size="1"
-                  css={css`
-                    margin-left: auto;
-                  `}
-                  variant="ghost"
-                  color="gray"
-                  onClick={onCollapseSidebar}
-                >
-                  <PinLeftIcon />
-                </IconButton>
-              )
+              <>
+                <Tooltip content="New recording" side="right">
+                  <IconButton
+                    asChild
+                    aria-label="New recording"
+                    variant="ghost"
+                    size="1"
+                  >
+                    <Link
+                      to={getRoutePath('recorder')}
+                      state={{ autoStart: true }}
+                    >
+                      <PlusIcon />
+                    </Link>
+                  </IconButton>
+                </Tooltip>
+                {isExpanded && (
+                  <IconButton
+                    size="1"
+                    css={css`
+                      margin-left: auto;
+                    `}
+                    variant="ghost"
+                    color="gray"
+                    onClick={onCollapseSidebar}
+                  >
+                    <PinLeftIcon />
+                  </IconButton>
+                )}
+              </>
             }
           />
           <FileTree
@@ -49,6 +70,20 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
             files={generators}
             noFilesMessage="No generators found"
             viewPath="/generator"
+            actions={
+              <Tooltip content="New generator" side="right">
+                <IconButton
+                  asChild
+                  aria-label="New generator"
+                  variant="ghost"
+                  size="1"
+                  onClick={createNewGenerator}
+                  css={{ cursor: 'pointer' }}
+                >
+                  <PlusIcon />
+                </IconButton>
+              </Tooltip>
+            }
           />
           <FileTree
             label="Scripts"

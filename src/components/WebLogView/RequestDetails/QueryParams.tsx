@@ -1,6 +1,7 @@
-import { Flex, Table } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 
 import { Request } from '@/types'
+import { Table } from '@/components/Table'
 
 export function QueryParams({ request }: { request: Request }) {
   if (request.query.length === 0) {

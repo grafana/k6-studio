@@ -1,8 +1,9 @@
-import { Table, Box } from '@radix-ui/themes'
+import { Box } from '@radix-ui/themes'
 
 import { Group as GroupType, ProxyData } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
+import { Table } from '@/components/Table'
 import { NoRequestsMessage } from '../NoRequestsMessage'
 
 interface WebLogViewProps {

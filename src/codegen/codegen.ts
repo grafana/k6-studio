@@ -4,6 +4,7 @@ import {
   RequestSnippetSchema,
   Request,
   Header,
+  Cookie,
 } from '@/types'
 import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { applyRule } from '@/rules/rules'
@@ -185,13 +186,19 @@ function generateRequestParams(request: ProxyData['request']): string {
     .filter(([name]) => !headersToExclude.includes(name))
     .map(([name, value]) => `'${name}': \`${value}\``)
     .join(',')
+
+  const cookies = request.cookies
+    .filter(([, value]) => value.includes('${correlation_vars['))
+    .map(([name, value]) => `'${name}': {value: \`${value}\`, replace: true}`)
+    .join(',\n')
+
   return `
     {
       headers: {
         ${headers}
       },
       cookies: {
-        ${request.cookies.map(([name, value]) => `'${name}': {value: \`${value}\`, replace: true}`).join(',\n')}
+        ${cookies}
       }
     }
   `
@@ -202,12 +209,15 @@ if (import.meta.vitest) {
   // @ts-expect-error we have commonjs set as module option
   const { it, expect } = import.meta.vitest
 
-  const generateRequest = (headers: Header[]): Request => {
+  const generateRequest = (
+    headers: Header[],
+    cookies: Cookie[] = [['security', 'none']]
+  ): Request => {
     return {
       method: 'POST',
       url: 'http://test.k6.io/api/v1/foo',
       headers,
-      cookies: [['security', 'none']],
+      cookies: cookies,
       query: [],
       scheme: 'http',
       host: 'localhost:3000',
@@ -230,7 +240,7 @@ if (import.meta.vitest) {
         'content-type': \`application/json\`
       },
       cookies: {
-        'security': {value: \`none\`, replace: true}
+        
       }
     }
   `
@@ -250,7 +260,30 @@ if (import.meta.vitest) {
         'content-type': \`application/json\`
       },
       cookies: {
-        'security': {value: \`none\`, replace: true}
+        
+      }
+    }
+  `
+    expect(generateRequestParams(request)).toBe(expectedResult)
+  })
+
+  it('generate request params with cookies with correlation', () => {
+    const headers: Header[] = [
+      ['content-type', 'application/json'],
+      ['Cookie', "security=${correlation_vars['correlation_0']}"],
+    ]
+    const cookies: Cookie[] = [
+      ['security', "${correlation_vars['correlation_0']}"],
+    ]
+    const request = generateRequest(headers, cookies)
+
+    const expectedResult = `
+    {
+      headers: {
+        'content-type': \`application/json\`
+      },
+      cookies: {
+        'security': {value: \`\${correlation_vars['correlation_0']}\`, replace: true}
       }
     }
   `

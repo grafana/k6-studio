@@ -79,19 +79,28 @@ export function RecordingPreviewer() {
               Discard and start over
             </Button>
           )}
+
+          {!isDiscardable && (
+            <Button
+              onClick={handleDiscard}
+              variant="outline"
+              asChild
+              css={{ cursor: 'default' }}
+            >
+              <Link to={getRoutePath('recorder')}>New recording</Link>
+            </Button>
+          )}
+
           <Button onClick={handleCreateTestGenerator}>
             Create test generator
           </Button>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton variant="soft" aria-label="Actions">
+              <IconButton variant="ghost" aria-label="Actions" color="gray">
                 <DotsVerticalIcon />
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              <DropdownMenu.Item asChild>
-                <Link to={getRoutePath('recorder')}>New recording</Link>
-              </DropdownMenu.Item>
               <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
                 Delete
               </DropdownMenu.Item>

@@ -1,10 +1,9 @@
+import { useState } from 'react'
 import { Button, ButtonProps, Tooltip } from '@radix-ui/themes'
-import { RecordingSelector } from '../RecordingSelector'
-import { Allowlist } from '../Allowlist'
+
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { exportScript } from '../Generator.utils'
 import { ValidatorDialog } from './ValidatorDialog'
-import { useState } from 'react'
 
 interface GeneratorControlsProps {
   onSave: () => void
@@ -18,9 +17,6 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
 
   return (
     <>
-      <RecordingSelector />
-      <Allowlist />
-
       {!!preview && (
         <>
           <ButtonWithTooltip
