@@ -2,14 +2,19 @@ import { PlusCircledIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
 
-import { useGeneratorStore } from '@/store/generator'
+import { selectHasVerificationRule, useGeneratorStore } from '@/store/generator'
 import { TestRule } from '@/types/rules'
 import { createEmptyRule } from '@/utils/rules'
 
 export function NewRuleMenu(props: ComponentProps<typeof Button>) {
   const addRule = useGeneratorStore((store) => store.addRule)
+  const hasVerificationRule = useGeneratorStore(selectHasVerificationRule)
 
   const createRule = (type: TestRule['type']) => {
+    if (hasVerificationRule && type === 'verification') {
+      return
+    }
+
     const newRule = createEmptyRule(type)
     addRule(newRule)
   }
@@ -28,14 +33,22 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
             createRule('correlation')
           }}
         >
-          Correlation rule
+          Correlation
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => {
             createRule('customCode')
           }}
         >
-          Custom code rule
+          Custom code
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          disabled={hasVerificationRule}
+          onClick={() => {
+            createRule('verification')
+          }}
+        >
+          Verification (limited)
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>

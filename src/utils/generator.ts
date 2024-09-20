@@ -22,7 +22,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     testData: {
       variables: [],
     },
-    rules: [createEmptyRule('recording-verification')],
+    rules: [createEmptyRule('verification')],
     allowlist: [],
     includeStaticAssets: false,
   }

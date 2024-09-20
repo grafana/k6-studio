@@ -1,4 +1,9 @@
-import { CorrelationRule, CustomCodeRule, TestRule } from '@/types/rules'
+import {
+  CorrelationRule,
+  CustomCodeRule,
+  TestRule,
+  VerificationRule,
+} from '@/types/rules'
 import { TestRuleFilter } from './TestRuleFilter'
 import { Badge, Tooltip } from '@radix-ui/themes'
 import { exhaustive } from '@/utils/typescript'
@@ -7,6 +12,7 @@ import {
   BorderLeftIcon,
   BorderRightIcon,
   EyeOpenIcon,
+  DiscIcon,
 } from '@radix-ui/react-icons'
 
 interface TestRuleInlineContentProps {
@@ -20,13 +26,27 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
     case 'customCode':
       return <CustomCodeContent rule={rule} />
     case 'parameterization':
+      return null
     case 'verification':
-      return null
-    case 'recording-verification':
-      return null
+      return <VerificationContent rule={rule} />
     default:
       return exhaustive(rule)
   }
+}
+
+function VerificationContent({ rule }: { rule: VerificationRule }) {
+  return (
+    <>
+      <TestRuleFilter filter={rule.filter} />{' '}
+      <Tooltip
+        content={`Checks will be added for status to be the same as the recording.`}
+      >
+        <Badge color="gray">
+          <DiscIcon /> Recording
+        </Badge>
+      </Tooltip>
+    </>
+  )
 }
 
 function CorrelationContent({ rule }: { rule: CorrelationRule }) {
