@@ -12,15 +12,19 @@ export function parseParams(data: ProxyData) {
 
   try {
     const contentType = getContentType(data.request?.headers ?? [])
+    const contentDecoded = safeAtob(data.request.content ?? '')
 
     if (contentType === 'application/x-www-form-urlencoded') {
-      return safeAtob(data.request.content ?? '')
+      if (isJsonString(contentDecoded)) {
+        return contentDecoded
+      }
+
+      // k6 returns form data as key=value pair string
+      return queryStringToJSONString(contentDecoded)
     }
 
     return stringify(
-      JSON.parse(
-        jsonrepair(parsePythonByteString(safeAtob(data.request.content ?? '')))
-      )
+      JSON.parse(jsonrepair(parsePythonByteString(contentDecoded)))
     )
   } catch (e) {
     console.error('Failed to parse query parameters', e)
@@ -31,4 +35,17 @@ export function parseParams(data: ProxyData) {
 // Python byte strings are prefixed with b' and suffixed with '
 function parsePythonByteString(byteString: string) {
   return byteString.replace(/^b'(.*)'$/, '$1')
+}
+
+function queryStringToJSONString(str: string) {
+  return JSON.stringify(Object.fromEntries(new URLSearchParams(str)))
+}
+
+function isJsonString(str: string) {
+  try {
+    JSON.parse(str)
+    return true
+  } catch {
+    return false
+  }
 }
