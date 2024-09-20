@@ -30,11 +30,11 @@ export async function generateScriptPreview(
   return prettifiedScript
 }
 
-export function saveScript(script: string) {
-  window.studio.script.saveScript(script)
+export function saveScript(script: string, fileName: string) {
+  window.studio.script.saveScript(script, fileName)
 }
 
-export async function exportScript() {
+export async function exportScript(fileName: string) {
   const generator = selectGeneratorData(useGeneratorStore.getState())
   const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
@@ -43,7 +43,13 @@ export async function exportScript() {
     groupProxyData(filteredRequests)
   )
 
-  saveScript(script)
+  saveScript(script, fileName)
+}
+
+export const scriptExists = async (fileName: string) => {
+  return window.studio.ui
+    .getFiles()
+    .then((files) => files.scripts.includes(fileName))
 }
 
 export const writeGeneratorToFile = (

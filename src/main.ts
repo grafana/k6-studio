@@ -274,34 +274,25 @@ ipcMain.on('script:stop', (event) => {
   browserWindow.webContents.send('script:stopped')
 })
 
+ipcMain.handle('script:save:generator', async (event, script: string) => {
+  console.info('script:save:generator event received')
+  // we are validating from the generator so we save the script in a temporary directory
+  const scriptFromGeneratorPath = path.join(
+    app.getPath('temp'),
+    'k6-studio-generator-script.js'
+  )
+  await writeFile(scriptFromGeneratorPath, script)
+})
+
 ipcMain.handle(
   'script:save',
-  async (event, script: string, fromGenerator: boolean = false) => {
+  async (event, script: string, fileName: string = 'script.js') => {
     console.info('script:save event received')
-
-    // we are validating from the generator so we save the script in a temporary directory
-    if (fromGenerator) {
-      const scriptFromGeneratorPath = path.join(
-        app.getPath('temp'),
-        'k6-studio-generator-script.js'
-      )
-      await writeFile(scriptFromGeneratorPath, script)
-      return
-    }
 
     const browserWindow = browserWindowFromEvent(event)
     try {
-      const dialogResult = await dialog.showSaveDialog(browserWindow, {
-        message: 'Save test script',
-        defaultPath: path.join(SCRIPTS_PATH, 'script.js'),
-        filters: [{ name: 'JavaScript', extensions: ['js'] }],
-      })
-
-      if (dialogResult.canceled) {
-        return
-      }
-
-      await writeFile(dialogResult.filePath, script)
+      const filePath = `${SCRIPTS_PATH}/${fileName}`
+      await writeFile(filePath, script)
       sendToast(browserWindow.webContents, {
         title: 'Script exported successfully',
         status: 'success',

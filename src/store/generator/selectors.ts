@@ -44,6 +44,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     rules,
     allowlist,
     includeStaticAssets,
+    scriptName,
   } = state
 
   return {
@@ -60,6 +61,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     rules,
     allowlist,
     includeStaticAssets,
+    scriptName,
   }
 }
 

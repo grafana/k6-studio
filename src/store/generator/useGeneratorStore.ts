@@ -14,12 +14,14 @@ import {
 import { exhaustive } from '@/utils/typescript'
 import { GeneratorFileData } from '@/types/generator'
 import { ProxyData } from '@/types'
+import { createScriptDataSlice, ScriptDataStore } from './slices/script'
 
 export interface GeneratorStore
   extends RecordingSliceStore,
     RulesSliceStore,
     TestDataStore,
-    TestOptionsStore {
+    TestOptionsStore,
+    ScriptDataStore {
   setGeneratorFile: (
     generatorFile: GeneratorFileData,
     recording?: ProxyData[]
@@ -32,6 +34,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
     ...createRulesSlice(set, ...rest),
     ...createTestDataSlice(set, ...rest),
     ...createTestOptionsSlice(set, ...rest),
+    ...createScriptDataSlice(set, ...rest),
     setGeneratorFile: (
       {
         options: { thinkTime, loadProfile },
@@ -40,6 +43,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         rules,
         allowlist,
         includeStaticAssets,
+        scriptName,
       },
       recording = []
     ) =>
@@ -71,6 +75,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         }
 
         state.includeStaticAssets = includeStaticAssets
+        state.scriptName = scriptName
         // rules
         state.rules = rules
       }),

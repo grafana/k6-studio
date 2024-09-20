@@ -46,7 +46,7 @@ export function ValidatorDialog({
     resetState()
     setIsRunning(true)
 
-    await window.studio.script.saveScript(script, true)
+    await window.studio.script.saveScriptFromGenerator(script)
     await window.studio.script.runScript(
       'k6-studio-generator-script.js',
       false,

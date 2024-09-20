@@ -10,6 +10,7 @@ import {
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { exportScript } from '../Generator.utils'
 import { ValidatorDialog } from './ValidatorDialog'
+import { ExportScriptDialog } from '../ExportScriptDialog'
 import { CheckCircledIcon, DotsVerticalIcon } from '@radix-ui/react-icons'
 import { useGeneratorParams } from '../Generator.hooks'
 import { useNavigate } from 'react-router-dom'
@@ -21,8 +22,10 @@ interface GeneratorControlsProps {
 }
 
 export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
+  const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
+  const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
+    useState(false)
   const { fileName } = useGeneratorParams()
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { preview, hasError } = useScriptPreview()
   const navigate = useNavigate()
   const tooltip = hasError ? 'Invalid script. Please check your rules' : ''
@@ -43,7 +46,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
             disabled={hasError}
             tooltip={tooltip}
             onClick={() => {
-              setIsDialogOpen(true)
+              setIsValidatorDialogOpen(true)
             }}
           >
             <CheckCircledIcon />
@@ -51,10 +54,15 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
           </ButtonWithTooltip>
           <ValidatorDialog
             script={preview}
-            open={isDialogOpen}
+            open={isValidatorDialogOpen}
             onOpenChange={(open) => {
-              setIsDialogOpen(open)
+              setIsValidatorDialogOpen(open)
             }}
+          />
+          <ExportScriptDialog
+            onExport={exportScript}
+            open={isExportScriptDialogOpen}
+            onOpenChange={setIsExportScriptDialogOpen}
           />
         </>
       )}
@@ -72,7 +80,10 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item onSelect={exportScript} disabled={hasError}>
+          <DropdownMenu.Item
+            onSelect={() => setIsExportScriptDialogOpen(true)}
+            disabled={hasError}
+          >
             Export script
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
