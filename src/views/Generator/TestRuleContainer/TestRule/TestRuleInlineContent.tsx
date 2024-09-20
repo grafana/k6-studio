@@ -7,6 +7,7 @@ import {
   BorderLeftIcon,
   BorderRightIcon,
   EyeOpenIcon,
+  DiscIcon,
 } from '@radix-ui/react-icons'
 
 interface TestRuleInlineContentProps {
@@ -21,10 +22,26 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
       return <CustomCodeContent rule={rule} />
     case 'parameterization':
     case 'verification':
-      return null
+      return <VerificationContent rule={rule} />
     default:
       return exhaustive(rule)
   }
+}
+
+// @ts-expect-error verification rule needs to be expanded
+function VerificationContent({ rule }: { rule: VerificationRule }) {
+  console.debug(rule)
+  return (
+    <>
+      <Tooltip
+        content={`Checks will be added for status to be the same as the recording.`}
+      >
+        <Badge color="gray">
+          <DiscIcon /> Recording
+        </Badge>
+      </Tooltip>
+    </>
+  )
 }
 
 function CorrelationContent({ rule }: { rule: CorrelationRule }) {

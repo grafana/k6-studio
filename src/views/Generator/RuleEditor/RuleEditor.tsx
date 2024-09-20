@@ -21,13 +21,23 @@ export function RuleEditorSwitch() {
     case 'customCode':
       return <CustomCodeEditor />
     case 'parameterization':
-    case 'verification':
       return (
         <Callout.Root>
           <Callout.Icon>
             <InfoCircledIcon />
           </Callout.Icon>
           <Callout.Text>Not implemented yet</Callout.Text>
+        </Callout.Root>
+      )
+    case 'verification':
+      return (
+        <Callout.Root>
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          <Callout.Text>
+            Verification rule configuration is coming soon
+          </Callout.Text>
         </Callout.Root>
       )
     default:
