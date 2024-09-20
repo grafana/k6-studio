@@ -17,6 +17,7 @@ import {
   useUpdateValueInGeneratorFile,
 } from '../Generator.hooks'
 import { useToast } from '@/store/ui/useToast'
+import { getScriptNameWithExtension } from './ExportScriptDialog.utils'
 
 export function ExportScriptDialog({
   open,
@@ -54,16 +55,16 @@ export function ExportScriptDialog({
 
   const onSubmit = async (data: ExportScriptDialogData) => {
     try {
-      const { scriptName: name, overwriteFile } = data
-      const fileName = `${name}.js`
+      const { scriptName: userInput, overwriteFile } = data
+      const fileName = getScriptNameWithExtension(userInput)
       const fileExists = await scriptExists(fileName)
       if (fileExists && !overwriteFile && !alwaysOverwriteScript) {
         setValue('overwriteFile', true)
         return
       }
 
-      await updateGeneratorFile({ key: 'scriptName', value: name })
-      setScriptName(name)
+      await updateGeneratorFile({ key: 'scriptName', value: fileName })
+      setScriptName(fileName)
       onExport(fileName)
       onOpenChange(false)
     } catch (error) {
