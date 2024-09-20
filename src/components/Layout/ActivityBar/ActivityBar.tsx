@@ -53,11 +53,13 @@ export function ActivityBar() {
           />
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <Tooltip content="Actions" side="right">
-                <IconButton variant="ghost" color="gray">
-                  <PlusIcon />
-                </IconButton>
-              </Tooltip>
+              <div>
+                <Tooltip content="Actions" side="right">
+                  <IconButton variant="ghost" color="gray">
+                    <PlusIcon />
+                  </IconButton>
+                </Tooltip>
+              </div>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content side="right">
               <DropdownMenu.Item asChild>
