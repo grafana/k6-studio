@@ -5,7 +5,6 @@ import { Box, ScrollArea } from '@radix-ui/themes'
 
 import {
   useGeneratorStore,
-  selectHasRecording,
   selectGeneratorData,
   selectSelectedRule,
 } from '@/store/generator'
@@ -26,7 +25,6 @@ import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { RuleEditor } from './RuleEditor'
 
 export function Generator() {
-  const hasRecording = useGeneratorStore(selectHasRecording)
   const selectedRule = useGeneratorStore(selectSelectedRule)
 
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
@@ -113,7 +111,7 @@ export function Generator() {
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>
-        <Allotment.Pane minSize={400} visible={hasRecording}>
+        <Allotment.Pane minSize={400}>
           <GeneratorSidebar />
         </Allotment.Pane>
       </Allotment>

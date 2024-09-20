@@ -1,4 +1,4 @@
-import { Flex, ScrollArea } from '@radix-ui/themes'
+import { Box, Flex, ScrollArea } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { useState } from 'react'
 import { css } from '@emotion/react'
@@ -10,7 +10,6 @@ import { Details } from '@/components/WebLogView/Details'
 import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { RecordingSelector } from '../RecordingSelector'
-import { Allowlist } from '../Allowlist'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -27,10 +26,9 @@ export function RequestList({ requests }: RequestListProps) {
 
   return (
     <Flex direction="column" height="100%">
-      <Flex justify="between" align="center" p="2" wrap="wrap" gap="2">
+      <Box py="2" px="4">
         <RecordingSelector />
-        <Allowlist />
-      </Flex>
+      </Box>
       <div
         css={css`
           flex-grow: 1;

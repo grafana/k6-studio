@@ -6,6 +6,7 @@ import {
   Grid,
   IconButton,
   Text,
+  Tooltip,
 } from '@radix-ui/themes'
 import { Link, useMatch } from 'react-router-dom'
 
@@ -52,9 +53,11 @@ export function ActivityBar() {
           />
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton variant="ghost" color="gray">
-                <PlusIcon />
-              </IconButton>
+              <Tooltip content="Actions" side="right">
+                <IconButton variant="ghost" color="gray">
+                  <PlusIcon />
+                </IconButton>
+              </Tooltip>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content side="right">
               <DropdownMenu.Item asChild>
