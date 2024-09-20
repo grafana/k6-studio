@@ -85,3 +85,7 @@ function selectLoadProfile({
       return exhaustive(executor)
   }
 }
+
+export function selectHasVerificationRule(state: GeneratorStore) {
+  return state.rules.some((rule) => rule.type === 'verification')
+}

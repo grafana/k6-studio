@@ -13,7 +13,6 @@ import {
   BorderRightIcon,
   EyeOpenIcon,
   DiscIcon,
-  ExclamationTriangleIcon,
 } from '@radix-ui/react-icons'
 
 interface TestRuleInlineContentProps {
@@ -44,13 +43,6 @@ function VerificationContent({ rule }: { rule: VerificationRule }) {
       >
         <Badge color="gray">
           <DiscIcon /> Recording
-        </Badge>
-      </Tooltip>
-      <Tooltip
-        content={`Only have a single Verification rule per generator, this is still a work in progress.`}
-      >
-        <Badge color="orange">
-          <ExclamationTriangleIcon />
         </Badge>
       </Tooltip>
     </>
