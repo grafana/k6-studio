@@ -114,7 +114,7 @@ const createWindow = async () => {
 
 app.whenReady().then(async () => {
   const mainWindow = await createWindow()
-  setupProjectStructure()
+  await setupProjectStructure()
 
   watcher = watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
     ignoreInitial: true,
