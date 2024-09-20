@@ -22,15 +22,13 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
       return <CustomCodeContent rule={rule} />
     case 'parameterization':
     case 'verification':
-      return <VerificationContent rule={rule} />
+      return <VerificationContent />
     default:
       return exhaustive(rule)
   }
 }
 
-// @ts-expect-error verification rule needs to be expanded
-function VerificationContent({ rule }: { rule: VerificationRule }) {
-  console.debug(rule)
+function VerificationContent() {
   return (
     <>
       <Tooltip
