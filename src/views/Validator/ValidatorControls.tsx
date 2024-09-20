@@ -33,7 +33,7 @@ export function ValidatorControls({
       </Button>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger disabled={isRunning}>
-          <IconButton variant="soft" aria-label="Actions">
+          <IconButton variant="ghost" color="gray" aria-label="Actions">
             <DotsVerticalIcon />
           </IconButton>
         </DropdownMenu.Trigger>
