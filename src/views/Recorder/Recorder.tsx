@@ -105,21 +105,6 @@ export function Recorder() {
 
   async function handleStopRecording() {
     stopRecording()
-
-    const fileName = await validateAndSaveHarFile()
-
-    if (fileName === null) {
-      return
-    }
-
-    navigate(
-      getRoutePath('recordingPreviewer', {
-        fileName: encodeURIComponent(fileName),
-      }),
-      {
-        state: { discardable: true },
-      }
-    )
   }
 
   function handleCancelNavigation() {
@@ -158,12 +143,26 @@ export function Recorder() {
   }, [autoStart, handleStartRecording])
 
   useEffect(() => {
-    return window.studio.browser.onBrowserClosed(() => {
-      validateAndSaveHarFile()
+    return window.studio.browser.onBrowserClosed(async () => {
+      const fileName = await validateAndSaveHarFile()
+
+      if (fileName === null) {
+        return
+      }
+
       showToast({
         title: 'Recording stopped',
         status: 'success',
       })
+
+      navigate(
+        getRoutePath('recordingPreviewer', {
+          fileName: encodeURIComponent(fileName),
+        }),
+        {
+          state: { discardable: true },
+        }
+      )
     })
   }, [validateAndSaveHarFile, showToast])
 
