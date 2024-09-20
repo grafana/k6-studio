@@ -13,7 +13,6 @@ import {
   JsonSelectorSchema,
   ParameterizationRuleSchema,
   RecordedValueSchema,
-  RecordingVerificationRuleSchema,
   RegexSelectorSchema,
   RuleBaseSchema,
   SelectorSchema,
@@ -55,7 +54,4 @@ export type ParameterizationRule = z.infer<typeof ParameterizationRuleSchema>
 export type CorrelationRule = z.infer<typeof CorrelationRuleSchema>
 export type VerificationRule = z.infer<typeof VerificationRuleSchema>
 export type CustomCodeRule = z.infer<typeof CustomCodeRuleSchema>
-export type RecordingVerificationRule = z.infer<
-  typeof RecordingVerificationRuleSchema
->
 export type TestRule = z.infer<typeof TestRuleSchema>

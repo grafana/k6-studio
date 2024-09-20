@@ -22,8 +22,6 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
     case 'parameterization':
     case 'verification':
       return null
-    case 'recording-verification':
-      return null
     default:
       return exhaustive(rule)
   }

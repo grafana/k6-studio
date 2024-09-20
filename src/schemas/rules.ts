@@ -111,17 +111,13 @@ export const CorrelationRuleSchema = RuleBaseSchema.extend({
 export const VerificationRuleSchema = RuleBaseSchema.extend({
   type: z.literal('verification'),
   filter: FilterSchema,
-  selector: VerificationRuleSelectorSchema,
+  selector: VerificationRuleSelectorSchema.optional(),
   value: z.discriminatedUnion('type', [
     VariableValueSchema,
     ArrayValueSchema,
     CustomCodeValueSchema,
     RecordedValueSchema,
   ]),
-})
-
-export const RecordingVerificationRuleSchema = RuleBaseSchema.extend({
-  type: z.literal('recording-verification'),
 })
 
 export const CustomCodeRuleSchema = RuleBaseSchema.extend({
@@ -136,5 +132,4 @@ export const TestRuleSchema = z.discriminatedUnion('type', [
   CorrelationRuleSchema,
   VerificationRuleSchema,
   CustomCodeRuleSchema,
-  RecordingVerificationRuleSchema,
 ])

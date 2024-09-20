@@ -16,7 +16,6 @@ export function RulePreview() {
     case 'customCode':
     case 'parameterization':
     case 'verification':
-    case 'recording-verification':
       return null
 
     default:

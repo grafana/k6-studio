@@ -203,8 +203,12 @@ describe('Code generation', () => {
     it('should generate checks', () => {
       const rules: TestRule[] = [
         {
-          type: 'recording-verification',
+          type: 'verification',
           id: '1',
+          filter: { path: '' },
+          value: {
+            type: 'recordedValue',
+          },
         },
       ]
       const correlationStateMap: CorrelationStateMap = {}
@@ -221,7 +225,7 @@ describe('Code generation', () => {
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/foo\`
         resp = http.request('POST', url, null, params)
-        check(resp,{'RecordingVerificationRule:statusmatchesrecording':(r)=>r.status===200,})
+        check(resp,{'statusmatches200':(r)=>r.status===200,})
 
       `
 

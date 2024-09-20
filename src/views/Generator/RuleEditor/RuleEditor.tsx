@@ -22,7 +22,6 @@ export function RuleEditorSwitch() {
       return <CustomCodeEditor />
     case 'parameterization':
     case 'verification':
-    case 'recording-verification':
       return (
         <Callout.Root>
           <Callout.Icon>
