@@ -92,7 +92,7 @@ export function RecordingPreviewer() {
           </Button>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <IconButton variant="soft" aria-label="Actions">
+              <IconButton variant="ghost" aria-label="Actions" color="gray">
                 <DotsVerticalIcon />
               </IconButton>
             </DropdownMenu.Trigger>
