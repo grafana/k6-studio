@@ -171,11 +171,7 @@ export function Recorder() {
       actions={
         <>
           {recorderState === 'idle' && (
-            <Button
-              disabled={isLoading}
-              color="red"
-              onClick={handleStartRecording}
-            >
+            <Button disabled={isLoading} onClick={handleStartRecording}>
               <DiscIcon /> Start recording
             </Button>
           )}
@@ -184,7 +180,7 @@ export function Recorder() {
               {isLoading && <TextSpinner text="Starting" />}
               <Button
                 disabled={isLoading}
-                color="orange"
+                color="red"
                 onClick={handleStopRecording}
               >
                 <StopIcon /> Stop recording
