@@ -9,6 +9,7 @@ import { ReactNode } from 'react'
 import { ClearRequestsButton } from './ClearRequestsButton'
 import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
+import { NoRequestsMessage } from '@/components/NoRequestsMessage'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
@@ -17,8 +18,9 @@ interface RequestsSectionProps {
   autoScroll?: boolean
   activeGroup?: string
   noRequestsMessage?: ReactNode
+  showNoRequestsMessage: boolean
   onSelectRequest: (data: ProxyData | null) => void
-  onRenameGroup?: (group: Group) => void
+  onUpdateGroup?: (group: Group) => void
   resetProxyData?: () => void
 }
 
@@ -30,8 +32,9 @@ export function RequestsSection({
   groups,
   activeGroup,
   onSelectRequest,
-  onRenameGroup,
+  onUpdateGroup,
   resetProxyData,
+  showNoRequestsMessage,
 }: RequestsSectionProps) {
   const {
     filter,
@@ -43,6 +46,10 @@ export function RequestsSection({
   } = useFilterRequests(proxyData)
   const groupedProxyData = groupProxyData(filteredRequests)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
+
+  if (showNoRequestsMessage) {
+    return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
+  }
 
   return (
     <Flex direction="column" minHeight="0" height="100%">
@@ -85,14 +92,12 @@ export function RequestsSection({
             requests={filteredRequests}
             groups={groups}
             activeGroup={activeGroup}
-            noRequestsMessage={
-              filter !== ''
-                ? 'No requests matched the filter'
-                : noRequestsMessage
-            }
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
-            onRenameGroup={onRenameGroup}
+            onUpdateGroup={onUpdateGroup}
+            noRequestsMessage={
+              filter !== '' ? 'No requests matched the filter.' : undefined
+            }
           />
         </div>
       </ScrollArea>

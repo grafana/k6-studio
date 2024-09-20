@@ -6,22 +6,22 @@ import {
   CrossCircledIcon,
   Pencil1Icon,
 } from '@radix-ui/react-icons'
-import { useState, KeyboardEvent, MouseEvent, useRef } from 'react'
+import { KeyboardEvent, MouseEvent, useRef } from 'react'
 import { Group as GroupType } from '@/types'
 import { useForm } from 'react-hook-form'
 import { FieldError } from '../Form'
 import { mergeRefs } from '@/utils/react'
 import { ErrorMessage } from '@hookform/error-message'
 import { Collapsible } from '../Collapsible'
-import { useOnClickOutside } from '@/utils/dom'
 import styled from '@emotion/styled'
+import { useClickAway } from 'react-use'
 
 interface GroupProps {
   group: GroupType
   groups?: GroupType[]
   length: number
   children: React.ReactNode
-  onRename?: (group: GroupType) => void
+  onUpdate?: (group: GroupType) => void
 }
 
 export function Group({
@@ -29,11 +29,10 @@ export function Group({
   groups = [],
   length,
   children,
-  onRename,
+  onUpdate,
 }: GroupProps) {
   const headerRef = useRef<HTMLDivElement | null>(null)
-
-  const [isEditing, setIsEditing] = useState(false)
+  const canEdit = onUpdate !== undefined
 
   const {
     formState: { errors, isValid },
@@ -46,6 +45,13 @@ export function Group({
     },
     mode: 'onChange',
   })
+
+  const setIsEditing = (value: boolean) => {
+    onUpdate?.({
+      ...group,
+      isEditing: value,
+    })
+  }
 
   const handleInputMount = (el: HTMLInputElement | null) => {
     if (document.activeElement !== el) {
@@ -79,18 +85,17 @@ export function Group({
   }
 
   const submit = ({ name }: { name: string }) => {
-    onRename?.({
+    onUpdate?.({
       ...group,
       name,
+      isEditing: false,
     })
-
-    setIsEditing(false)
   }
 
-  useOnClickOutside({
-    ref: headerRef,
-    handler: handleSubmit(submit),
-    enabled: isEditing,
+  useClickAway(headerRef, () => {
+    if (!group.isEditing) return
+
+    handleSubmit(submit)()
   })
 
   const isValidName = (value: string) => {
@@ -105,8 +110,6 @@ export function Group({
     return true
   }
 
-  const canEdit = onRename !== undefined
-
   const { ref: formRef, ...nameProps } = register('name', {
     validate: isValidName,
   })
@@ -115,7 +118,7 @@ export function Group({
     <Box>
       <Collapsible.Root defaultOpen>
         <Collapsible.Header ref={headerRef}>
-          {isEditing && (
+          {group.isEditing && (
             <Collapsible.Heading>
               <InlineForm onSubmit={handleSubmit(submit)}>
                 <TextField.Root
@@ -156,7 +159,7 @@ export function Group({
               </InlineForm>
             </Collapsible.Heading>
           )}
-          {!isEditing && (
+          {!group.isEditing && (
             <Collapsible.Trigger>
               <Collapsible.Heading>
                 <span
