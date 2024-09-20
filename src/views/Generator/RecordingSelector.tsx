@@ -1,57 +1,70 @@
-import { Button, DropdownMenu } from '@radix-ui/themes'
+import { Button, Flex, Select, Text } from '@radix-ui/themes'
+import { PlusIcon } from '@radix-ui/react-icons'
+import { css } from '@emotion/react'
 
 import { useGeneratorStore } from '@/store/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { useStudioUIStore } from '@/store/ui'
-import { CaretDownIcon } from '@radix-ui/react-icons'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { useToast } from '@/store/ui/useToast'
 
 export function RecordingSelector() {
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
   const setRecording = useGeneratorStore((store) => store.setRecording)
   const recordings = useStudioUIStore((store) => store.recordings)
+  const showToast = useToast()
 
   const handleOpen = async (filePath: string) => {
-    const harFile = await window.studio.har.openFile(filePath)
+    try {
+      const harFile = await window.studio.har.openFile(filePath)
 
-    const proxyData = harToProxyData(harFile.content)
-    setRecording(proxyData, harFile.name)
+      const proxyData = harToProxyData(harFile.content)
+      setRecording(proxyData, harFile.name)
+    } catch (error) {
+      showToast({
+        title: 'Failed to open recording',
+        status: 'error',
+      })
+    }
   }
 
   const handleImport = async () => {
-    const filePath = await window.studio.har.importFile()
+    try {
+      const filePath = await window.studio.har.importFile()
 
-    if (!filePath) return
+      if (!filePath) return
 
-    await handleOpen(filePath)
+      await handleOpen(filePath)
+    } catch (error) {
+      showToast({
+        title: 'Failed to import recording',
+        status: 'error',
+      })
+    }
   }
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <Button variant="ghost" mr="2">
-          {recordingPath
-            ? getFileNameWithoutExtension(recordingPath)
-            : 'Select recording'}
-          <CaretDownIcon />
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.RadioGroup
-          value={recordingPath}
-          onValueChange={handleOpen}
-        >
+    <Flex gap="2" align="center">
+      <Text size="2">Recording</Text>
+      <Select.Root value={recordingPath} onValueChange={handleOpen}>
+        <Select.Trigger
+          placeholder="Select recording"
+          css={css`
+            max-width: 200px;
+          `}
+        />
+        <Select.Content>
           {recordings.map((harFileName) => (
-            <DropdownMenu.RadioItem value={harFileName} key={harFileName}>
+            <Select.Item value={harFileName} key={harFileName}>
               {getFileNameWithoutExtension(harFileName)}
-            </DropdownMenu.RadioItem>
+            </Select.Item>
           ))}
-        </DropdownMenu.RadioGroup>
-        {recordings.length > 0 && <DropdownMenu.Separator />}
-        <DropdownMenu.Item onSelect={handleImport}>
-          Import HAR file
-        </DropdownMenu.Item>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
+        </Select.Content>
+      </Select.Root>
+      <Button variant="ghost" color="gray" onClick={handleImport}>
+        <PlusIcon />
+        Import
+      </Button>
+    </Flex>
   )
 }
