@@ -2,6 +2,7 @@ import { ReadOnlyEditor } from '../../Monaco/ReadOnlyEditor'
 import ReactJson from '@microlink/react-json-view'
 import { Font } from './Font'
 import { useTheme } from '@/hooks/useTheme'
+import { k6StudioLightBackground } from '@/components/Monaco/themes/k6StudioLight'
 
 interface PreviewProps {
   content: string
@@ -80,5 +81,5 @@ const reactJsonDarkStyles = {
 
 const reactJsonLightStyles = {
   ...reactJsonStyles,
-  background: '#fff',
+  background: k6StudioLightBackground,
 }

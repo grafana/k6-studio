@@ -1,29 +1,26 @@
 import { css } from '@emotion/react'
-import { Box, Flex, Grid, Text } from '@radix-ui/themes'
-import { useMatch } from 'react-router-dom'
+import {
+  Box,
+  DropdownMenu,
+  Flex,
+  Grid,
+  IconButton,
+  Text,
+} from '@radix-ui/themes'
+import { Link, useMatch } from 'react-router-dom'
 
 import K6Logo from '@/assets/logo.svg'
 import { getRoutePath } from '@/routeMap'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { VersionLabel } from './VersionLabel'
-import {
-  GeneratorIcon,
-  HomeIcon,
-  RecorderIcon,
-  ValidatorIcon,
-} from '@/components/icons'
+import { HomeIcon } from '@/components/icons'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { NavIconButton } from './NavIconButton'
+import { PlusIcon } from '@/components/icons/PlusIcon'
 
 export function ActivityBar() {
   const createNewGenerator = useCreateGenerator()
   const homeMatch = useMatch(getRoutePath('home'))
-  const recorderMatch = useMatch(getRoutePath('recorder'))
-  const validatorMatch = useMatch(getRoutePath('validator'))
-  const generatorMatch = useMatch({
-    path: getRoutePath('generator'),
-    end: false,
-  })
 
   return (
     <Flex direction="column" align="center" asChild position="relative">
@@ -53,24 +50,26 @@ export function ActivityBar() {
             tooltip="Home"
             active={Boolean(homeMatch)}
           />
-          <NavIconButton
-            to={getRoutePath('recorder')}
-            icon={<RecorderIcon />}
-            tooltip="Test recorder"
-            active={Boolean(recorderMatch)}
-          />
-          <NavIconButton
-            onClick={createNewGenerator}
-            icon={<GeneratorIcon />}
-            tooltip="New test generator"
-            active={Boolean(generatorMatch)}
-          />
-          <NavIconButton
-            to={getRoutePath('validator', {})}
-            icon={<ValidatorIcon />}
-            tooltip="Test validator"
-            active={Boolean(validatorMatch)}
-          />
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <IconButton variant="ghost" color="gray">
+                <PlusIcon />
+              </IconButton>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content side="right">
+              <DropdownMenu.Item asChild>
+                <Link to={getRoutePath('recorder')} state={{ autoStart: true }}>
+                  Record flow
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onSelect={createNewGenerator}>
+                Generate test
+              </DropdownMenu.Item>
+              <DropdownMenu.Item asChild>
+                <Link to={getRoutePath('validator', {})}>Validate script</Link>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
         </Grid>
 
         <Flex direction="column" align="center" gap="3" mt="auto">

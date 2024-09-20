@@ -31,7 +31,7 @@ export function ReactMonacoEditor(props: EditorProps) {
     <Editor
       {...props}
       options={{ ...defaultOptions, ...props.options }}
-      theme={theme === 'dark' ? 'vs-dark' : 'vs'}
+      theme={theme === 'dark' ? 'vs-dark' : 'k6-studio-light'}
     />
   )
 }

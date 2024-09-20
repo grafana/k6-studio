@@ -9,6 +9,7 @@ import { Details } from '@/components/WebLogView/Details'
 import { K6Check, K6Log, ProxyData } from '@/types'
 import { LogsSection } from './LogsSection'
 import { ChecksSection } from './ChecksSection'
+import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 
 interface ValidatorContentProps {
   script: string
@@ -31,6 +32,7 @@ export function ValidatorContent({
 }: ValidatorContentProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [selectedTab, setSelectedTab] = useState<ValidatorTabValue>('script')
+  const groups = useProxyDataGroups(proxyData)
 
   useEffect(() => {
     setSelectedRequest(null)
@@ -60,6 +62,8 @@ export function ValidatorContent({
               selectedRequestId={selectedRequest?.id}
               noRequestsMessage={noRequestsMessage}
               onSelectRequest={setSelectedRequest}
+              showNoRequestsMessage={proxyData.length === 0}
+              groups={groups}
             />
           </Allotment.Pane>
           <Allotment.Pane minSize={250}>

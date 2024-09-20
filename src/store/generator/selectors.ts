@@ -21,7 +21,7 @@ export function selectIsRulePreviewable(state: GeneratorStore) {
 }
 
 export function selectHasRecording(state: GeneratorStore) {
-  return state.requests.length > 0
+  return selectFilteredRequests(state).length > 0
 }
 
 export function selectFilteredRequests(state: GeneratorStore) {
