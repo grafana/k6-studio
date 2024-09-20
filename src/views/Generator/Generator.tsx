@@ -1,10 +1,13 @@
 import { Allotment } from 'allotment'
-import { Outlet, useBlocker, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useBlocker, useNavigate } from 'react-router-dom'
+import { Box, ScrollArea } from '@radix-ui/themes'
 
 import {
   useGeneratorStore,
   selectHasRecording,
   selectGeneratorData,
+  selectSelectedRule,
 } from '@/store/generator'
 import { View } from '@/components/Layout/View'
 import { GeneratorSidebar } from './GeneratorSidebar'
@@ -17,16 +20,16 @@ import {
   useSaveGeneratorFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneraterControls'
-import { useEffect } from 'react'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
+import { RuleEditor } from './RuleEditor'
 
 export function Generator() {
   const hasRecording = useGeneratorStore(selectHasRecording)
+  const selectedRule = useGeneratorStore(selectSelectedRule)
 
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
-  const generatorState = useGeneratorStore(selectGeneratorData)
 
   const showToast = useToast()
   const navigate = useNavigate()
@@ -52,17 +55,7 @@ export function Generator() {
 
   const isDirty = useIsGeneratorDirty(fileName)
 
-  const blocker = useBlocker(({ nextLocation, historyAction }) => {
-    const isNavigationInsideGenerator = nextLocation.pathname.includes(
-      encodeURI(getRoutePath('generator', { fileName }))
-    )
-
-    // Don't show on 'REPLACE' because after navigating
-    // to generator it redirects to load profile tab
-    return (
-      isDirty && !isNavigationInsideGenerator && historyAction !== 'REPLACE'
-    )
-  })
+  const blocker = useBlocker(() => isDirty)
 
   useEffect(() => {
     if (!generatorFileData) return
@@ -90,7 +83,10 @@ export function Generator() {
     }
   }, [harError, showToast])
 
-  const handleSaveGenerator = () => saveGenerator(generatorState)
+  const handleSaveGenerator = () => {
+    const generator = selectGeneratorData(useGeneratorStore.getState())
+    return saveGenerator(generator)
+  }
 
   return (
     <View
@@ -106,8 +102,14 @@ export function Generator() {
             <Allotment.Pane minSize={300}>
               <TestRuleContainer />
             </Allotment.Pane>
-            <Allotment.Pane minSize={300}>
-              <Outlet />
+            <Allotment.Pane minSize={300} visible={selectedRule !== undefined}>
+              {selectedRule !== undefined && (
+                <ScrollArea>
+                  <Box p="3">
+                    <RuleEditor rule={selectedRule} />
+                  </Box>
+                </ScrollArea>
+              )}
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>

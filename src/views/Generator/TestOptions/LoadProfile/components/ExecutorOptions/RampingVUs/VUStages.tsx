@@ -48,7 +48,7 @@ export function VUStages() {
                   variant="ghost"
                   onClick={() => append({ target: 20, duration: '1m' })}
                 >
-                  Add new stage
+                  Add stage
                 </Button>
               </Box>
             </Table.RowHeaderCell>

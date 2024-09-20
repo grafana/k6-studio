@@ -20,6 +20,7 @@ export function Stage({ index, register, handleRemove, errors }: StageProps) {
         <FieldGroup errors={errors} name={`stages.${index}.target`} mb="0">
           <TextField.Root
             type="number"
+            min={0}
             onKeyDown={(e) => {
               if (['-', '+', 'e'].includes(e.key)) {
                 e.preventDefault()

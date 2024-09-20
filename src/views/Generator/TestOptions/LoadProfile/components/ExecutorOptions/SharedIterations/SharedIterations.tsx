@@ -30,6 +30,7 @@ export function SharedIterations() {
           >
             <TextField.Root
               type="number"
+              min={0}
               placeholder="20"
               onKeyDown={(e) => {
                 if (['-', '+', 'e'].includes(e.key)) {
@@ -52,6 +53,7 @@ export function SharedIterations() {
           >
             <TextField.Root
               type="number"
+              min={0}
               placeholder="200"
               onKeyDown={(e) => {
                 if (['-', '+', 'e'].includes(e.key)) {

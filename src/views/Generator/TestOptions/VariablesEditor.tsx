@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { PlusIcon, TrashIcon } from '@radix-ui/react-icons'
+import { TrashIcon } from '@radix-ui/react-icons'
 import { Button, IconButton, Table, TextField } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -98,7 +98,7 @@ export function VariablesEditor() {
           <Table.Row>
             <Table.RowHeaderCell colSpan={3} justify="center">
               <Button variant="ghost" onClick={handleAddVariable}>
-                <PlusIcon width="18" height="18" /> Add variable
+                Add variable
               </Button>
             </Table.RowHeaderCell>
           </Table.Row>

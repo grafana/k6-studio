@@ -5,6 +5,7 @@ import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, ScrollArea, Table } from '@radix-ui/themes'
 import { groupChecksByPath } from './ChecksSection.utils'
 import { CheckRow } from './CheckRow'
+import { useMemo } from 'react'
 
 interface ChecksSectionProps {
   checks: K6Check[]
@@ -12,16 +13,22 @@ interface ChecksSectionProps {
 }
 
 export function ChecksSection({ checks, isRunning }: ChecksSectionProps) {
+  const nonEmptyGroupChecks = useMemo(
+    () =>
+      Object.entries(groupChecksByPath(checks)).filter(
+        ([, checks]) => checks.length > 0
+      ),
+    [checks]
+  )
+
   if (!checks.length || isRunning) {
     return <NoChecksMessage />
   }
 
-  const groupedChecks = groupChecksByPath(checks)
-
   return (
     <ScrollArea scrollbars="vertical">
       <Box pb="2">
-        {Object.entries(groupedChecks).map(([key, checks]) => (
+        {nonEmptyGroupChecks.map(([key, checks]) => (
           <CollapsibleSection
             content={
               <>

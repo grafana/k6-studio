@@ -3,6 +3,7 @@ import { ImmerStateCreator } from '@/utils/typescript'
 
 interface State {
   rules: TestRule[]
+  selectedRuleId: string | null
 }
 
 interface Actions {
@@ -11,15 +12,18 @@ interface Actions {
   cloneRule: (id: string) => void
   deleteRule: (id: string) => void
   swapRules: (idA: string, idB: string) => void
+  setSelectedRuleId: (id: string | null) => void
 }
 
 export type RulesSliceStore = State & Actions
 
 export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
   rules: [],
+  selectedRuleId: null,
   addRule: (rule) =>
     set((state) => {
       state.rules.push(rule)
+      state.selectedRuleId = rule.id
     }),
   updateRule: (rule) =>
     set((state) => {
@@ -37,6 +41,10 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
     }),
   deleteRule: (id) =>
     set((state) => {
+      if (state.selectedRuleId === id) {
+        state.selectedRuleId = null
+      }
+
       state.rules = state.rules.filter((rule) => rule.id !== id)
     }),
   swapRules: (idA, idB) =>
@@ -48,5 +56,9 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
         state.rules[indexA] = state.rules[indexB]
         state.rules[indexB] = ruleA
       }
+    }),
+  setSelectedRuleId: (id) =>
+    set((state) => {
+      state.selectedRuleId = id
     }),
 })

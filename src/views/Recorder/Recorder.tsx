@@ -212,7 +212,7 @@ export function Recorder() {
                 resetProxyData={handleResetRecording}
               />
             </div>
-            {recorderState !== 'idle' && (
+            {recorderState === 'recording' && proxyData.length > 0 && (
               <Box width="200px" p="2">
                 <Button
                   size="2"

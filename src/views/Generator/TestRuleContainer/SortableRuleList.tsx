@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Flex } from '@radix-ui/themes'
 import {
   DndContext,
@@ -22,8 +23,7 @@ import {
 
 import { TestRuleItem } from './TestRule'
 import { TestRule } from '@/types/rules'
-import { useState } from 'react'
-import { useGeneratorParams } from '../Generator.hooks'
+import { useGeneratorStore } from '@/store/generator'
 
 interface SortableRuleListProps {
   rules: TestRule[]
@@ -35,7 +35,10 @@ export function SortableRuleList({
   onSwapRules,
 }: SortableRuleListProps) {
   const [active, setActive] = useState<TestRule | null>(null)
-  const { ruleId } = useGeneratorParams()
+  const selectedRuleId = useGeneratorStore((state) => state.selectedRuleId)
+  const setSelectedRuleId = useGeneratorStore(
+    (state) => state.setSelectedRuleId
+  )
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -68,13 +71,19 @@ export function SortableRuleList({
           {rules.map((rule) => (
             <TestRuleItem
               rule={rule}
-              isSelected={rule.id === ruleId}
+              isSelected={rule.id === selectedRuleId}
+              onSelect={() => {
+                setSelectedRuleId(rule.id)
+              }}
               key={rule.id}
             />
           ))}
           <DragOverlay modifiers={[restrictToFirstScrollableAncestor]}>
             {active ? (
-              <TestRuleItem rule={active} isSelected={active.id === ruleId} />
+              <TestRuleItem
+                rule={active}
+                isSelected={active.id === selectedRuleId}
+              />
             ) : null}
           </DragOverlay>
         </SortableContext>
