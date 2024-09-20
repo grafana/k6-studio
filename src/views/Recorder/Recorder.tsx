@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
-import { Box, Button, Flex } from '@radix-ui/themes'
+import { Box, Button, Flex, Text } from '@radix-ui/themes'
 import { DiscIcon, PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
 import { Allotment } from 'allotment'
 
@@ -198,7 +198,16 @@ export function Recorder() {
             <div css={{ flexGrow: 0, minHeight: 0 }}>
               <RequestsSection
                 proxyData={debouncedProxyData}
-                noRequestsMessage="Once you start the recording, requests will appear here"
+                noRequestsMessage={
+                  <>
+                    <Text color="gray" size="1">
+                      Once you start the recording, requests will appear here
+                    </Text>
+                    <Button disabled={isLoading} onClick={handleStartRecording}>
+                      <DiscIcon /> Start recording
+                    </Button>
+                  </>
+                }
                 showNoRequestsMessage={recorderState === 'idle'}
                 selectedRequestId={selectedRequest?.id}
                 autoScroll
