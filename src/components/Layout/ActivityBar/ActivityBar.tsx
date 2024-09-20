@@ -73,10 +73,10 @@ export function ActivityBar() {
           />
         </Grid>
 
-        <Box mt="auto">
+        <Flex direction="column" align="center" gap="3" mt="auto">
           <ThemeSwitcher />
-        </Box>
-        <VersionLabel />
+          <VersionLabel />
+        </Flex>
       </Box>
     </Flex>
   )
