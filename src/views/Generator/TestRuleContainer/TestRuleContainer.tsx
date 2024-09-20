@@ -39,7 +39,13 @@ export function TestRuleContainer() {
       </Flex>
 
       <SortableRuleList rules={rules} onSwapRules={swapRules} />
-      <Flex py="3" px="6" align="center" direction="column" gap="3">
+      <Flex
+        py="3"
+        px="6"
+        align={rules.length === 0 ? 'center' : 'start'}
+        direction="column"
+        gap="3"
+      >
         {rules.length === 0 ? (
           <>
             <img
