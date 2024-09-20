@@ -104,7 +104,7 @@ export function Generator() {
             </Allotment.Pane>
             <Allotment.Pane minSize={300} visible={selectedRule !== undefined}>
               {selectedRule !== undefined && (
-                <ScrollArea>
+                <ScrollArea scrollbars="vertical">
                   <Box p="3">
                     <RuleEditor rule={selectedRule} />
                   </Box>
