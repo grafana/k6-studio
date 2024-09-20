@@ -10,6 +10,10 @@ export function NewRuleMenu() {
   const hasVerificationRule = useGeneratorStore(selectHasVerificationRule)
 
   const createRule = (type: TestRule['type']) => {
+    if (hasVerificationRule && type === 'verification') {
+      return
+    }
+
     const newRule = createEmptyRule(type)
     addRule(newRule)
   }
