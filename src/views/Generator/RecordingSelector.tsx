@@ -65,7 +65,7 @@ export function RecordingSelector() {
         </Select.Content>
       </Select.Root>
       <Tooltip content="Import recording">
-        <IconButton variant="soft" color="gray" onClick={handleImport}>
+        <IconButton variant="ghost" color="gray" onClick={handleImport}>
           <PlusIcon />
         </IconButton>
       </Tooltip>
