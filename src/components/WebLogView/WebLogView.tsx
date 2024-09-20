@@ -1,12 +1,13 @@
+import { ReactNode } from 'react'
 import { css } from '@emotion/react'
-import { Flex, Text, Table, Box } from '@radix-ui/themes'
+import { Flex, Text, Box } from '@radix-ui/themes'
 import { isEmpty } from 'lodash-es'
 
 import { Group as GroupType, ProxyData } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
 import grotIllustration from '@/assets/grot.svg'
-import { ReactNode } from 'react'
+import { Table } from '@/components/Table'
 
 interface WebLogViewProps {
   requests: ProxyData[]

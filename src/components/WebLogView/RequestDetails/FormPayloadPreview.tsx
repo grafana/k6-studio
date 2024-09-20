@@ -1,5 +1,5 @@
 import { safeJsonParse } from '@/utils/json'
-import { Table } from '@radix-ui/themes'
+import { Table } from '@/components/Table'
 
 export function FormPayloadPreview({
   payloadJsonString,
