@@ -1,4 +1,9 @@
-import { CorrelationRule, CustomCodeRule, TestRule } from '@/types/rules'
+import {
+  CorrelationRule,
+  CustomCodeRule,
+  TestRule,
+  VerificationRule,
+} from '@/types/rules'
 import { TestRuleFilter } from './TestRuleFilter'
 import { Badge, Tooltip } from '@radix-ui/themes'
 import { exhaustive } from '@/utils/typescript'
@@ -8,6 +13,7 @@ import {
   BorderRightIcon,
   EyeOpenIcon,
   DiscIcon,
+  ExclamationTriangleIcon,
 } from '@radix-ui/react-icons'
 
 interface TestRuleInlineContentProps {
@@ -21,21 +27,30 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
     case 'customCode':
       return <CustomCodeContent rule={rule} />
     case 'parameterization':
+      return null
     case 'verification':
-      return <VerificationContent />
+      return <VerificationContent rule={rule} />
     default:
       return exhaustive(rule)
   }
 }
 
-function VerificationContent() {
+function VerificationContent({ rule }: { rule: VerificationRule }) {
   return (
     <>
+      <TestRuleFilter filter={rule.filter} />{' '}
       <Tooltip
         content={`Checks will be added for status to be the same as the recording.`}
       >
         <Badge color="gray">
           <DiscIcon /> Recording
+        </Badge>
+      </Tooltip>
+      <Tooltip
+        content={`Only have a single Verification rule per generator, this is still a work in progress.`}
+      >
+        <Badge color="orange">
+          <ExclamationTriangleIcon />
         </Badge>
       </Tooltip>
     </>

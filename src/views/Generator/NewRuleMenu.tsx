@@ -27,14 +27,21 @@ export function NewRuleMenu() {
             createRule('correlation')
           }}
         >
-          Correlation rule
+          Correlation
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => {
             createRule('customCode')
           }}
         >
-          Custom code rule
+          Custom code
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            createRule('verification')
+          }}
+        >
+          Verification (limited)
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
