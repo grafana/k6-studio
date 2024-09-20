@@ -2,7 +2,7 @@ import { Allotment } from 'allotment'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import invariant from 'tiny-invariant'
 
 import { generateFileNameWithTimestamp } from '@/utils/file'
@@ -13,6 +13,7 @@ import { ProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
+import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 
 export function RecordingPreviewer() {
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
@@ -41,16 +42,7 @@ export function RecordingPreviewer() {
     }
   }, [fileName, navigate])
 
-  const groups = useMemo(() => {
-    const names = new Set(proxyData.map((data) => data.group ?? 'Default'))
-
-    return Array.from(names).map((name) => {
-      return {
-        id: name,
-        name,
-      }
-    })
-  }, [proxyData])
+  const groups = useProxyDataGroups(proxyData)
 
   const handleDeleteRecording = async () => {
     await window.studio.ui.deleteFile(fileName)

@@ -20,11 +20,12 @@ import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
 import { RecorderState } from './types'
 import { useToast } from '@/store/ui/useToast'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
+import { DEFAULT_GROUP_NAME } from '@/constants'
 
 const INITIAL_GROUPS: Group[] = [
   {
     id: crypto.randomUUID(),
-    name: 'Default',
+    name: DEFAULT_GROUP_NAME,
   },
 ]
 
@@ -81,8 +82,8 @@ export function Recorder() {
       // Temporary solution to avoid having to update `proxyDataToHar`.
       const grouped = proxyData.map((data) => {
         const group = groups.find((g) => g.id === data.group) ?? {
-          id: 'default',
-          name: 'Default',
+          id: DEFAULT_GROUP_NAME,
+          name: DEFAULT_GROUP_NAME,
         }
 
         return {

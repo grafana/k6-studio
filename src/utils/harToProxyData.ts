@@ -1,3 +1,4 @@
+import { DEFAULT_GROUP_NAME } from '@/constants'
 import { Method, ProxyData, Request, Response } from '@/types'
 import { HarWithOptionalResponse } from '@/types/har'
 import type { Entry } from 'har-format'
@@ -7,7 +8,7 @@ export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
     id: self.crypto.randomUUID(),
     request: parseRequest(entry.request),
     response: entry.response ? parseResponse(entry.response) : undefined,
-    group: entry.pageref || 'default',
+    group: entry.pageref || DEFAULT_GROUP_NAME,
   }))
 }
 
