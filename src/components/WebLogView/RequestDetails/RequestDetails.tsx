@@ -5,6 +5,7 @@ import { Cookies } from '../Cookies'
 import { Headers } from './Headers'
 import { Payload } from './Payload'
 import { QueryParams } from './QueryParams'
+import { Box } from '@radix-ui/themes'
 
 export function RequestDetails({ data }: { data: ProxyData }) {
   return (
@@ -19,7 +20,9 @@ export function RequestDetails({ data }: { data: ProxyData }) {
       </Tabs.List>
 
       <Tabs.Content value="headers">
-        <Headers data={data} />
+        <Box p="2" height="100%">
+          <Headers data={data} />
+        </Box>
       </Tabs.Content>
 
       <Tabs.Content value="payload">
