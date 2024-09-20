@@ -53,7 +53,7 @@ export function RecordingSelector() {
             max-width: 200px;
           `}
         />
-        <Select.Content>
+        <Select.Content position="popper">
           {recordings.map((harFileName) => (
             <Select.Item value={harFileName} key={harFileName}>
               {getFileNameWithoutExtension(harFileName)}
