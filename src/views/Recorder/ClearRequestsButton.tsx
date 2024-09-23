@@ -1,3 +1,4 @@
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { AlertDialog, Button, Flex } from '@radix-ui/themes'
 
 export function ClearRequestsButton({
@@ -10,9 +11,15 @@ export function ClearRequestsButton({
   return (
     <AlertDialog.Root>
       <AlertDialog.Trigger>
-        <Button color="red" size="1" variant="surface" disabled={disabled}>
+        <ButtonWithTooltip
+          color="red"
+          size="1"
+          variant="surface"
+          disabled={disabled}
+          tooltip="Remove all requests from the recording."
+        >
           Clear
-        </Button>
+        </ButtonWithTooltip>
       </AlertDialog.Trigger>
       <AlertDialog.Content size="2" maxWidth="450px">
         <AlertDialog.Title size="3">Clear requests</AlertDialog.Title>
