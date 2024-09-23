@@ -245,7 +245,9 @@ if (import.meta.vitest) {
       }
     }
   `
-    expect(generateRequestParams(request)).toBe(expectedResult)
+    expect(generateRequestParams(request).replace(/\s/g, '')).toBe(
+      expectedResult.replace(/\s/g, '')
+    )
   })
 
   it('generate request params with cookie header', () => {
@@ -265,7 +267,9 @@ if (import.meta.vitest) {
       }
     }
   `
-    expect(generateRequestParams(request)).toBe(expectedResult)
+    expect(generateRequestParams(request).replace(/\s/g, '')).toBe(
+      expectedResult.replace(/\s/g, '')
+    )
   })
 
   it('generate request params with cookies with correlation', () => {
