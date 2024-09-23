@@ -38,7 +38,10 @@ export function ValidatorControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <Tooltip content="Validate a k6 script created outside of k6 Studio">
+          <Tooltip
+            content="Validate a k6 script created outside of k6 Studio"
+            side="left"
+          >
             <DropdownMenu.Item onClick={onSelectScript}>
               Open external script
             </DropdownMenu.Item>

@@ -28,7 +28,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <Tooltip content="Extract and reuse dynamic data.">
+        <Tooltip content="Extract and reuse dynamic data." side="right">
           <DropdownMenu.Item
             onClick={() => {
               createRule('correlation')
@@ -37,7 +37,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
             Correlation
           </DropdownMenu.Item>
         </Tooltip>
-        <Tooltip content="Insert custom code snippet.">
+        <Tooltip content="Insert custom code snippet." side="right">
           <DropdownMenu.Item
             onClick={() => {
               createRule('customCode')
