@@ -3,12 +3,17 @@ import { css } from '@emotion/react'
 
 import { Selector } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
+import { useOverflowCheck } from '@/hooks/useOverflowCheck'
+import { useRef } from 'react'
 
 interface TestRuleSelectorProps {
   selector: Selector
 }
 
 export function TestRuleSelector({ selector }: TestRuleSelectorProps) {
+  const ref = useRef<HTMLDivElement>(null)
+  const hasEllipsis = useOverflowCheck(ref)
+
   return (
     <Tooltip
       content={
@@ -16,8 +21,10 @@ export function TestRuleSelector({ selector }: TestRuleSelectorProps) {
           <SelectorContent selector={selector} /> from {selector.from}
         </>
       }
+      hidden={!hasEllipsis}
     >
       <Badge
+        ref={ref}
         color="gray"
         css={css`
           flex-shrink: 1;

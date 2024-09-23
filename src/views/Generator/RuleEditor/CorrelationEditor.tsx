@@ -39,9 +39,9 @@ export function CorrelationEditor() {
         </Label>
         {!replacer && (
           <Text size="2">
-            By default correlation rule will replace all occurrences of the
-            extracted value in the requests, you can enable this option to fine
-            tune your selection
+            By default, the correlation rule will replace all occurrences of the
+            extracted value in the requests. Enable this option to fine tune
+            your selection.
           </Text>
         )}
         {replacer && (

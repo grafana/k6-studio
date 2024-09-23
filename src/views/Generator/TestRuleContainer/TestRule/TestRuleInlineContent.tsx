@@ -38,9 +38,7 @@ function VerificationContent({ rule }: { rule: VerificationRule }) {
   return (
     <>
       <TestRuleFilter filter={rule.filter} />{' '}
-      <Tooltip
-        content={`Checks will be added for status to be the same as the recording.`}
-      >
+      <Tooltip content="Checks that all request statuses match the recording.">
         <Badge color="gray">
           <DiscIcon /> Recording
         </Badge>
@@ -74,12 +72,12 @@ function CustomCodeContent({ rule }: { rule: CustomCodeRule }) {
           {rule.placement}
         </Badge>
       </Tooltip>
-      <Badge color="gray">
-        Snippet
-        <Tooltip content={<code>{rule.snippet}</code>}>
+      <Tooltip content={<code>{rule.snippet}</code>}>
+        <Badge color="gray">
+          Snippet
           <EyeOpenIcon width={15} height={15} />
-        </Tooltip>
-      </Badge>
+        </Badge>
+      </Tooltip>
     </>
   )
 }
