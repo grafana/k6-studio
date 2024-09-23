@@ -5,7 +5,10 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import invariant from 'tiny-invariant'
 
-import { generateFileNameWithTimestamp } from '@/utils/file'
+import {
+  generateFileNameWithTimestamp,
+  getFileNameWithoutExtension,
+} from '@/utils/file'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { createNewGeneratorFile } from '@/utils/generator'
@@ -70,7 +73,8 @@ export function RecordingPreviewer() {
 
   return (
     <View
-      title={`Recording - ${fileName}`}
+      title="Recording"
+      subTitle={getFileNameWithoutExtension(fileName)}
       loading={isLoading}
       actions={
         <>

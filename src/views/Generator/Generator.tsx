@@ -23,6 +23,7 @@ import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { RuleEditor } from './RuleEditor'
+import { getFileNameWithoutExtension } from '@/utils/file'
 
 export function Generator() {
   const selectedRule = useGeneratorStore(selectSelectedRule)
@@ -33,7 +34,6 @@ export function Generator() {
   const navigate = useNavigate()
 
   const { fileName } = useGeneratorParams()
-  const fileNameWithoutLeadingGenerator = fileName.replace(/^Generator - /, '')
 
   const {
     data: generatorFileData,
@@ -77,9 +77,9 @@ export function Generator() {
   useEffect(() => {
     if (harError) {
       showToast({
-        title: 'Failed to har file',
+        title: 'Failed to load recording',
         status: 'error',
-        description: 'Select another recording from top menu',
+        description: 'Select another recording in the sidebar',
       })
     }
   }, [harError, showToast])
@@ -91,7 +91,8 @@ export function Generator() {
 
   return (
     <View
-      title={`Generator - ${fileNameWithoutLeadingGenerator}`}
+      title="Generator"
+      subTitle={getFileNameWithoutExtension(fileName)}
       actions={
         <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }
