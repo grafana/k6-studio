@@ -31,21 +31,21 @@ The goal is to provide **a seamless experience** for generating k6 test scripts,
 
 k6 Studio is composed of three main components:
 
-## Recorder
+### Recorder
 
 The recorder is designed to generate a HAR recording of the user flow you want to test. When you start a recording, a new browser window opens, and every request is collected to generate the HAR file. You can also create groups during the recording to better organize your test script.
 > The recorder uses a proxy to catch requests from the specific browser window, which is powered by [mitmproxy](https://github.com/mitmproxy/mitmproxy).
 
 > ⚠️ At this stage we require Chrome to be installed for the recording functionality
 
-## Generator
+### Generator
 
 The generator helps you create a k6 test script without having to write a single line of JavaScript.
 You can choose a HAR recording to automatically generate a valid k6 script, and then apply rules to fine-tune your script. For example, you can use a correlation rule to extract and replace a variable across your script, or even add custom JavaScript after each request.
 
 You can also configure test options, such as the load profile for your test, see a preview of the script after all the rules are applied, and validate or export the script.
 
-## Validator
+### Validator
 
 The validator can help you test a k6 script by executing a single VU and single iteration test run to make sure that your script is working as intended.
 You can view the selected k6 script, all the requests and responses sent with the ability to inspect them in detail, the k6 logs, and also any k6 checks that are in your script.
