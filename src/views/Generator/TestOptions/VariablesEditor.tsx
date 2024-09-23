@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { TrashIcon } from '@radix-ui/react-icons'
-import { Button, IconButton, TextField } from '@radix-ui/themes'
+import { Button, IconButton, TextField, Text } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { TestData } from '@/types/testData'
@@ -53,6 +53,9 @@ export function VariablesEditor() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <Text size="2" as="p" mb="2">
+        Add variables to be used in your test script.
+      </Text>
       <Table.Root size="1" variant="surface">
         <Table.Header>
           <Table.Row>

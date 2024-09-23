@@ -49,13 +49,15 @@ export function RecordingSelector() {
         Recording
       </Text>
       <Select.Root value={recordingPath} onValueChange={handleOpen}>
-        <Select.Trigger
-          id="recording-selector"
-          placeholder="Select recording"
-          css={css`
-            max-width: 200px;
-          `}
-        />
+        <Tooltip content="Switch between different recordings.">
+          <Select.Trigger
+            id="recording-selector"
+            placeholder="Select recording"
+            css={css`
+              max-width: 200px;
+            `}
+          />
+        </Tooltip>
         <Select.Content position="popper">
           {recordings.map((harFileName) => (
             <Select.Item value={harFileName} key={harFileName}>

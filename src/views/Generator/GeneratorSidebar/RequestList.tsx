@@ -45,8 +45,9 @@ export function RequestList({ requests }: RequestListProps) {
                 setFilter={setFilter}
                 css={{
                   borderRadius: 0,
-                  outline: 'none',
-                  boxShadow: '0 1px 0 var(--gray-a5)',
+                  outlineOffset: '-2px',
+                  boxShadow: 'none',
+                  borderTop: '1px solid var(--gray-a5)',
                 }}
                 size="2"
               />

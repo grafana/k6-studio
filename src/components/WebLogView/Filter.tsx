@@ -37,7 +37,7 @@ export function Filter({
     <TextField.Root
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      placeholder="Filter requests"
+      placeholder="Filter by URL, method, or status code"
       size="1"
       ref={inputRef}
       {...inputProps}

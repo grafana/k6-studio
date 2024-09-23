@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Flex, TextField } from '@radix-ui/themes'
+import { Box, Flex, TextField, Text } from '@radix-ui/themes'
 
 import { useGeneratorStore } from '@/store/generator'
 import { ThinkTimeSchema } from '@/schemas/testOptions'
@@ -67,6 +67,10 @@ export function ThinkTime() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <Text size="2" as="p" mb="2">
+        Add a delay between requests to simulate user think time. Use a fixed
+        time for static wait periods, or a range to randomize it.
+      </Text>
       <FieldGroup name="timing.type" label="Type" errors={errors}>
         <ControlledSelect
           name="timing.type"
