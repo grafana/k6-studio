@@ -28,7 +28,7 @@ export function ValidatorEmptyState({
   return (
     <>
       <Text color="gray" size="1">
-        Start the validation run to inspect requests, logs, and checks
+        Validate the script to inspect requests, logs, and checks
       </Text>
       <Button disabled={isRunning} onClick={onRunScript}>
         <Spinner loading={isRunning}>
