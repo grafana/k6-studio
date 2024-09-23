@@ -27,6 +27,7 @@
 With **k6 Studio**, you can quickly record a user flow in a browser, generate and inspect a HAR recording, customize your test script using predefined or custom rules, and test and debug your script to ensure it's working as expected.
 
 The goal is to provide **a seamless experience** for generating k6 test scripts, making it easier for anyone to create performance tests in an interactive interface.
+## How it works
 
 k6 Studio is composed of three main components:
 
