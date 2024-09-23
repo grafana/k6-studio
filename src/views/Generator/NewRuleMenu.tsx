@@ -18,6 +18,9 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
     const newRule = createEmptyRule(type)
     addRule(newRule)
   }
+  const verificationRuleTooltip = hasVerificationRule
+    ? 'Currently, you can have only one verification rule.'
+    : 'Verify reponse statuses match the recording.'
 
   return (
     <DropdownMenu.Root>
@@ -46,14 +49,17 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
             Custom code
           </DropdownMenu.Item>
         </Tooltip>
-        <DropdownMenu.Item
-          disabled={hasVerificationRule}
-          onClick={() => {
-            createRule('verification')
-          }}
-        >
-          Verification (limited)
-        </DropdownMenu.Item>
+
+        <Tooltip content={verificationRuleTooltip} side="right">
+          <DropdownMenu.Item
+            disabled={hasVerificationRule}
+            onClick={() => {
+              createRule('verification')
+            }}
+          >
+            Verification (limited)
+          </DropdownMenu.Item>
+        </Tooltip>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )
