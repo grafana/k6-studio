@@ -35,7 +35,7 @@ The goal is to provide **a seamless experience** for generating k6 test scripts,
 
 ## Installation
 
-k6 Studio is available for Mac and Windows. You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
+k6 Studio is available for Mac and Windows (Linux support coming soon). You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
 
 > ⚠️ [Google Chrome](https://www.google.com/chrome/browser-tools/) needs to be installed on your machine for the recording functionality to work.
 
