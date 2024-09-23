@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://k6.io/">
+  <a href="https://grafana.com/products/cloud/k6/">
     <img src="assets/logo.svg" alt="k6" width="210" height="210" /><br>
     <img src="assets/grafana-labs.svg" alt="Grafana Labs" width="210" /><br>
   </a>
