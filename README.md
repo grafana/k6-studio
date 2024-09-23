@@ -17,6 +17,12 @@
 <img src="assets/github-hr.png" alt="---" />
 <br/>
 
+--- 
+
+***Note: This application is currently in the experimental stage. Expect bugs, incomplete features, and breaking changes as development progresses. Use at your own risk, and please report any issues or feedback to help us improve.***
+
+---
+
 **k6 Studio** is a free desktop application for Mac and Windows designed to help you generate k6 test scripts.
 
 With k6 Studio, you can quickly record a user flow in a browser, generate and inspect a HAR recording, customize your test script using predefined or custom rules, and test and debug your script to ensure it's working as expected.
