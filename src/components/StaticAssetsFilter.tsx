@@ -1,4 +1,4 @@
-import { Switch, Text } from '@radix-ui/themes'
+import { Switch, Text, Tooltip } from '@radix-ui/themes'
 
 import { Label } from '@/components/Label'
 
@@ -17,7 +17,9 @@ export function StaticAssetsFilter({
 
   return (
     <Label>
-      <Text size="2">Show static assets ({staticAssetCount})</Text>
+      <Tooltip content="Static files are usually not tested so they are hidden by default. You can enable requests to those resources with this toggle.">
+        <Text size="2">Show static assets ({staticAssetCount})</Text>
+      </Tooltip>
       <Switch
         onCheckedChange={setIncludeStaticAssets}
         checked={includeStaticAssets}
