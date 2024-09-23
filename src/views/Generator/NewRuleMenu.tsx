@@ -1,5 +1,5 @@
 import { PlusCircledIcon } from '@radix-ui/react-icons'
-import { Button, DropdownMenu } from '@radix-ui/themes'
+import { Button, DropdownMenu, Tooltip } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
 
 import { selectHasVerificationRule, useGeneratorStore } from '@/store/generator'
@@ -28,20 +28,24 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item
-          onClick={() => {
-            createRule('correlation')
-          }}
-        >
-          Correlation
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={() => {
-            createRule('customCode')
-          }}
-        >
-          Custom code
-        </DropdownMenu.Item>
+        <Tooltip content="Extract and reuse dynamic data.">
+          <DropdownMenu.Item
+            onClick={() => {
+              createRule('correlation')
+            }}
+          >
+            Correlation
+          </DropdownMenu.Item>
+        </Tooltip>
+        <Tooltip content="Insert custom code snippet.">
+          <DropdownMenu.Item
+            onClick={() => {
+              createRule('customCode')
+            }}
+          >
+            Custom code
+          </DropdownMenu.Item>
+        </Tooltip>
         <DropdownMenu.Item
           disabled={hasVerificationRule}
           onClick={() => {

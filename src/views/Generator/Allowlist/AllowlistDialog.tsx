@@ -13,6 +13,7 @@ import {
   ScrollArea,
   TextField,
   Text,
+  Tooltip,
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
 import { useMemo, useState } from 'react'
@@ -71,7 +72,7 @@ export function AllowlistDialog({
       <Dialog.Content maxWidth="450px" size="2">
         <Dialog.Title>Allowed hosts</Dialog.Title>
         <Dialog.Description size="2" mb="4">
-          Select hosts that you want to include in the test generator
+          Select which hosts you want to include in your test
         </Dialog.Description>
 
         <Flex mb="3" justify="between" gap="1">
@@ -141,7 +142,9 @@ export function AllowlistDialog({
               checked={isStaticAssetsChecked}
               disabled={staticAssetCount === 0}
             />
-            <Text size="2">Include static assets ({staticAssetCount})</Text>
+            <Tooltip content="Static assets are excluded from your test by default.">
+              <Text size="2">Include static assets ({staticAssetCount})</Text>
+            </Tooltip>
           </Label>
           <Flex gap="3" justify="end">
             <Dialog.Close>
