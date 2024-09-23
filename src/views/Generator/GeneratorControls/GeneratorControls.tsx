@@ -3,9 +3,9 @@ import { DropdownMenu, IconButton } from '@radix-ui/themes'
 
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { exportScript } from '../Generator.utils'
-import { ValidatorDialog } from './ValidatorDialog'
+import { ValidatorDialog } from '../ValidatorDialog'
 import { ExportScriptDialog } from '../ExportScriptDialog'
-import { CheckCircledIcon, DotsVerticalIcon } from '@radix-ui/react-icons'
+import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { useGeneratorParams } from '../Generator.hooks'
 import { useNavigate } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
@@ -22,8 +22,8 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
     useState(false)
   const { fileName } = useGeneratorParams()
   const { preview, hasError } = useScriptPreview()
+  const isScriptExportable = !hasError && !!preview
   const navigate = useNavigate()
-  const tooltip = hasError ? 'Invalid script. Please check your rules' : ''
 
   const handleDeleteGenerator = async () => {
     await window.studio.ui.deleteFile(fileName)
@@ -33,40 +33,12 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
 
   return (
     <>
-      {!!preview && (
-        <>
-          <ButtonWithTooltip
-            variant="ghost"
-            color="gray"
-            disabled={hasError}
-            tooltip={tooltip}
-            onClick={() => {
-              setIsValidatorDialogOpen(true)
-            }}
-          >
-            <CheckCircledIcon />
-            Validate script
-          </ButtonWithTooltip>
-          <ValidatorDialog
-            script={preview}
-            open={isValidatorDialogOpen}
-            onOpenChange={(open) => {
-              setIsValidatorDialogOpen(open)
-            }}
-          />
-          <ExportScriptDialog
-            onExport={exportScript}
-            open={isExportScriptDialogOpen}
-            onOpenChange={setIsExportScriptDialogOpen}
-          />
-        </>
-      )}
       <ButtonWithTooltip
         onClick={onSave}
         disabled={!isDirty}
         tooltip={!isDirty ? 'Changes saved' : ''}
       >
-        Save
+        Save generator
       </ButtonWithTooltip>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
@@ -76,8 +48,14 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item
+            onSelect={() => setIsValidatorDialogOpen(true)}
+            disabled={!isScriptExportable}
+          >
+            Validate script
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
             onSelect={() => setIsExportScriptDialogOpen(true)}
-            disabled={hasError}
+            disabled={!isScriptExportable}
           >
             Export script
           </DropdownMenu.Item>
@@ -87,6 +65,20 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
+      {isScriptExportable && (
+        <>
+          <ValidatorDialog
+            script={preview}
+            open={isValidatorDialogOpen}
+            onOpenChange={setIsValidatorDialogOpen}
+          />
+          <ExportScriptDialog
+            onExport={exportScript}
+            open={isExportScriptDialogOpen}
+            onOpenChange={setIsExportScriptDialogOpen}
+          />
+        </>
+      )}
     </>
   )
 }

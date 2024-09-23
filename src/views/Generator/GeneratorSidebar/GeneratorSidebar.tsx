@@ -68,7 +68,7 @@ export function GeneratorSidebar() {
           <Tabs.Content
             value="rule-preview"
             css={css`
-              height: 100%;
+              flex-grow: 1;
             `}
           >
             <RulePreview />
@@ -77,7 +77,7 @@ export function GeneratorSidebar() {
         <Tabs.Content
           value="requests"
           css={css`
-            height: 100%;
+            flex-grow: 1;
           `}
         >
           <RequestList requests={filteredRequests} />
@@ -85,7 +85,7 @@ export function GeneratorSidebar() {
         <Tabs.Content
           value="script"
           css={css`
-            height: 100%;
+            flex-grow: 1;
           `}
         >
           <ScriptPreview />

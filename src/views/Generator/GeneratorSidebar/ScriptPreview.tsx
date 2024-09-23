@@ -1,49 +1,64 @@
+import { Button, Flex } from '@radix-ui/themes'
+import { useState } from 'react'
+
 import { CodeEditor } from '@/components/Monaco/CodeEditor'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { css } from '@emotion/react'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Box, Callout, ScrollArea } from '@radix-ui/themes'
+import { ScriptPreviewError } from './ScriptPreviewError'
+import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
+import { ValidatorDialog } from '../ValidatorDialog'
+import { ExportScriptDialog } from '../ExportScriptDialog'
+import { exportScript } from '../Generator.utils'
 
 export function ScriptPreview() {
+  const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
+  const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
+    useState(false)
   const { preview, error } = useScriptPreview()
+  const isScriptExportable = !error && !!preview
 
-  if (error) {
-    return (
-      <Box p="2">
-        <Callout.Root color="amber" role="alert" variant="surface" size="1">
-          <Callout.Icon>
-            <ExclamationTriangleIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            Failed to generate script preview. Please make sure your custom code
-            snippets do not contain syntax errors.
-          </Callout.Text>
-        </Callout.Root>
-
-        <Box
-          mt="4"
-          css={css`
-            border-top: 1px solid var(--gray-7);
-          `}
+  return (
+    <Flex direction="column" height="100%">
+      <Flex p="2" gap="2" justify="end">
+        <Button
+          onClick={() => {
+            setIsValidatorDialogOpen(true)
+          }}
+          disabled={!isScriptExportable}
+          variant="soft"
         >
-          <ScrollArea
-            scrollbars="vertical"
-            css={css`
-              height: calc(100vh - 190px);
-            `}
-          >
-            <pre
-              css={css`
-                font-size: 13px;
-              `}
-            >
-              {error.message}
-            </pre>
-          </ScrollArea>
-        </Box>
-      </Box>
-    )
-  }
-
-  return <CodeEditor readOnly value={preview} />
+          <CheckCircledIcon />
+          Validate
+        </Button>
+        <Button
+          onClick={() => {
+            setIsExportScriptDialogOpen(true)
+          }}
+          disabled={!isScriptExportable}
+          variant="soft"
+        >
+          <DownloadIcon />
+          Export
+        </Button>
+      </Flex>
+      {error ? (
+        <ScriptPreviewError error={error} />
+      ) : (
+        <CodeEditor readOnly value={preview} />
+      )}
+      {isScriptExportable && (
+        <>
+          <ValidatorDialog
+            script={preview}
+            open={isValidatorDialogOpen}
+            onOpenChange={setIsValidatorDialogOpen}
+          />
+          <ExportScriptDialog
+            onExport={exportScript}
+            open={isExportScriptDialogOpen}
+            onOpenChange={setIsExportScriptDialogOpen}
+          />
+        </>
+      )}
+    </Flex>
+  )
 }
