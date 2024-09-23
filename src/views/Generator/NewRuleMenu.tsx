@@ -19,7 +19,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
     addRule(newRule)
   }
   const verificationRuleTooltip = hasVerificationRule
-    ? 'Currently, you can have only one verification rule.'
+    ? 'Currently, only one verification rule per test is supported.'
     : 'Verify reponse statuses match the recording.'
 
   return (
