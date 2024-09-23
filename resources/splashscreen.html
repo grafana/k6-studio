@@ -14,7 +14,8 @@
         height: calc(100vh - 40px);
       }
 
-      #splashscreen img {
+      #splashscreen picture {
+        display: flex;
         flex-grow: 1;
       }
 
@@ -35,20 +36,33 @@
         width: 8px;
         aspect-ratio: 1;
         border-radius: 50%;
-        animation: l5 1s infinite linear alternate;
+        animation: loader 1s infinite linear alternate;
       }
 
-      @keyframes l5 {
-        0%  {box-shadow: 20px 0 #000, -20px 0 #0002;background: #000 }
-        33% {box-shadow: 20px 0 #000, -20px 0 #0002;background: #0002}
-        66% {box-shadow: 20px 0 #0002,-20px 0 #000; background: #0002}
-        100%{box-shadow: 20px 0 #0002,-20px 0 #000; background: #000 }
+      @keyframes loader {
+        0%  {box-shadow: 20px 0 #F8B36D, -20px 0 #F57427;background: #F8B36D }
+        33% {box-shadow: 20px 0 #F8B36D, -20px 0 #F57427;background: #F57427}
+        66% {box-shadow: 20px 0 #F57427,-20px 0 #F8B36D; background: #F57427}
+        100%{box-shadow: 20px 0 #F57427,-20px 0 #F8B36D; background: #F8B36D }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #111110;
+        }
+
+        #splashscreen-message p {
+          color: #fff;
+        }
       }
     </style>
   </head>
   <body>
       <div id="splashscreen">
-        <img src="../src/assets/logo-splashscreen.svg" alt="k6 Studio" width="100px" />
+        <picture>
+          <source srcset="../src/assets/logo-splashscreen-dark.svg" media="(prefers-color-scheme: dark)">
+          <img src="../src/assets/logo-splashscreen.svg" alt="k6 Studio" width="100px" />
+        </picture>
         <div id="splashscreen-message">
           <p>Initialising the app and making magic happen</p>
           <div class="loader"></div>
