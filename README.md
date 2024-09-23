@@ -57,6 +57,8 @@ If you have any issues with k6 Studio, would like to report a bug, or suggest ne
 
 k6 Studio is distributed under the [AGPL-3.0 license](https://github.com/grafana/k6-studio/blob/master/LICENSE).
 
+---
+
 ## Development
 
 ### Requirements
@@ -68,14 +70,4 @@ k6 Studio is distributed under the [AGPL-3.0 license](https://github.com/grafana
 ```
 npm install
 npm start
-```
-
-### Troubleshooting
-
-Currently, any code change will trigger a hot reload, causing the proxy service to possibly leak while starting a new one.
-If you encounter issues with the proxy, you can kill the service by running:
-
-```
-ps aux | grep k6-studio-proxy
-kill -9 <id>
 ```
