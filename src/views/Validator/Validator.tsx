@@ -10,6 +10,7 @@ import { ValidatorContent } from './ValidatorContent'
 import { useRunLogs } from '@/hooks/useRunLogs'
 import { useToast } from '@/store/ui/useToast'
 import { useRunChecks } from '@/hooks/useRunChecks'
+import { getFileNameWithoutExtension } from '@/utils/file'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
 
 export function Validator() {
@@ -109,7 +110,8 @@ export function Validator() {
 
   return (
     <View
-      title={scriptPath ? `Validator - ${scriptPath}` : 'Validator'}
+      title="Validator"
+      subTitle={getFileNameWithoutExtension(scriptPath)}
       actions={
         <ValidatorControls
           isRunning={isRunning}
