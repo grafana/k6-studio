@@ -53,7 +53,10 @@ export function Generator() {
 
   const isDirty = useIsGeneratorDirty(fileName)
 
-  const blocker = useBlocker(() => isDirty)
+  const blocker = useBlocker(({ historyAction }) => {
+    // Don't block navigation when redirecting home from invalid generator
+    return isDirty && historyAction !== 'REPLACE'
+  })
 
   useEffect(() => {
     if (!generatorFileData) return
