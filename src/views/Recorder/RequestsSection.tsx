@@ -80,7 +80,7 @@ export function RequestsSection({
             staticAssetCount={staticAssetCount}
           />
 
-          <Box width="200px">
+          <Box width="240px">
             <Filter filter={filter} setFilter={setFilter} />
           </Box>
         </Flex>

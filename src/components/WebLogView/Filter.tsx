@@ -1,5 +1,5 @@
 import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
-import { IconButton, TextField, Tooltip } from '@radix-ui/themes'
+import { IconButton, TextField } from '@radix-ui/themes'
 import { RootProps } from '@radix-ui/themes/dist/cjs/components/text-field'
 import { useEffect, useRef, useState } from 'react'
 import { useDebounce, useKeyPressEvent } from 'react-use'
@@ -34,26 +34,24 @@ export function Filter({
   }, [keyPressEvent])
 
   return (
-    <Tooltip content="Filter by URL, method, or status code">
-      <TextField.Root
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Filter requests"
-        size="1"
-        ref={inputRef}
-        {...inputProps}
-      >
+    <TextField.Root
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      placeholder="Filter by URL, method, or status code"
+      size="1"
+      ref={inputRef}
+      {...inputProps}
+    >
+      <TextField.Slot>
+        <MagnifyingGlassIcon />
+      </TextField.Slot>
+      {value !== '' && (
         <TextField.Slot>
-          <MagnifyingGlassIcon />
+          <IconButton variant="ghost" size="1" onClick={clearFilter}>
+            <Cross2Icon />
+          </IconButton>
         </TextField.Slot>
-        {value !== '' && (
-          <TextField.Slot>
-            <IconButton variant="ghost" size="1" onClick={clearFilter}>
-              <Cross2Icon />
-            </IconButton>
-          </TextField.Slot>
-        )}
-      </TextField.Root>
-    </Tooltip>
+      )}
+    </TextField.Root>
   )
 }
