@@ -10,6 +10,7 @@ import { Details } from '@/components/WebLogView/Details'
 import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { RecordingSelector } from '../RecordingSelector'
+import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -18,6 +19,8 @@ interface RequestListProps {
 export function RequestList({ requests }: RequestListProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const { filter, setFilter, filteredRequests } = useFilterRequests(requests)
+
+  const groups = useProxyDataGroups(requests)
 
   // Preserve the selected request when modifying rules
   useShallowCompareEffect(() => {
@@ -51,6 +54,7 @@ export function RequestList({ requests }: RequestListProps) {
                 requests={filteredRequests}
                 selectedRequestId={selectedRequest?.id}
                 onSelectRequest={setSelectedRequest}
+                groups={groups}
               />
             </ScrollArea>
           </Allotment.Pane>
