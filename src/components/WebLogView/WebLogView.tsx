@@ -4,14 +4,12 @@ import { Group as GroupType, ProxyData } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
 import { Table } from '@/components/Table'
-import { NoRequestsMessage } from '../NoRequestsMessage'
 
 interface WebLogViewProps {
   requests: ProxyData[]
   groups?: GroupType[]
   activeGroup?: string
   selectedRequestId?: string
-  noRequestsMessage?: string
   onSelectRequest: (data: ProxyData | null) => void
   onUpdateGroup?: (group: GroupType) => void
 }
@@ -22,12 +20,7 @@ export function WebLogView({
   selectedRequestId,
   onSelectRequest,
   onUpdateGroup,
-  noRequestsMessage,
 }: WebLogViewProps) {
-  if (requests.length === 0) {
-    return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
-  }
-
   if (groups !== undefined) {
     const grouped = groups.map((group) => {
       return {

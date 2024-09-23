@@ -51,7 +51,6 @@ export function RequestList({ requests }: RequestListProps) {
                 requests={filteredRequests}
                 selectedRequestId={selectedRequest?.id}
                 onSelectRequest={setSelectedRequest}
-                noRequestsMessage="No requests matched the filter."
               />
             </ScrollArea>
           </Allotment.Pane>
