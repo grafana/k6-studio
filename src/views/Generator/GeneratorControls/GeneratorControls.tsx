@@ -1,11 +1,5 @@
 import { useState } from 'react'
-import {
-  Button,
-  ButtonProps,
-  DropdownMenu,
-  IconButton,
-  Tooltip,
-} from '@radix-ui/themes'
+import { DropdownMenu, IconButton } from '@radix-ui/themes'
 
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { exportScript } from '../Generator.utils'
@@ -15,6 +9,7 @@ import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { useGeneratorParams } from '../Generator.hooks'
 import { useNavigate } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 
 interface GeneratorControlsProps {
   onSave: () => void
@@ -85,16 +80,5 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         </>
       )}
     </>
-  )
-}
-
-function ButtonWithTooltip({
-  tooltip,
-  ...props
-}: ButtonProps & { tooltip: string }) {
-  return (
-    <Tooltip content={tooltip} hidden={!tooltip}>
-      <Button {...props} />
-    </Tooltip>
   )
 }

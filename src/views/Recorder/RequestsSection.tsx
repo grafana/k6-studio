@@ -95,9 +95,6 @@ export function RequestsSection({
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
             onUpdateGroup={onUpdateGroup}
-            noRequestsMessage={
-              filter !== '' ? 'No requests matched the filter.' : undefined
-            }
           />
         </div>
       </ScrollArea>

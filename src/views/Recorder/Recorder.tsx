@@ -21,6 +21,7 @@ import { RecorderState } from './types'
 import { useToast } from '@/store/ui/useToast'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -217,17 +218,18 @@ export function Recorder() {
                 resetProxyData={handleResetRecording}
               />
             </div>
-            {recorderState === 'recording' && proxyData.length > 0 && (
+            {recorderState === 'recording' && (
               <Box width="200px" p="2">
-                <Button
+                <ButtonWithTooltip
                   size="2"
                   variant="ghost"
                   ml="2"
                   onClick={() => handleCreateGroup(`Group ${groups.length}`)}
+                  tooltip="Groups are used to organize specific steps in your recording. After you create a group, any further requests will be added to it."
                 >
                   <PlusCircledIcon />
                   Create group
-                </Button>
+                </ButtonWithTooltip>
               </Box>
             )}
           </Flex>
