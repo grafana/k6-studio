@@ -17,7 +17,7 @@ export function StaticAssetsFilter({
 
   return (
     <Label>
-      <Tooltip content="Static files are usually not tested so they are hidden by default. You can enable requests to those resources with this toggle.">
+      <Tooltip content="Static assets are excluded from your test by default.">
         <Text size="2">Show static assets ({staticAssetCount})</Text>
       </Tooltip>
       <Switch

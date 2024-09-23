@@ -16,7 +16,7 @@ export function ClearRequestsButton({
           size="1"
           variant="surface"
           disabled={disabled}
-          tooltip="Remove all requests from the recording, this is useful for getting rid of the browser automatic requests that are fired on start up."
+          tooltip="Remove all requests from the recording."
         >
           Clear
         </ButtonWithTooltip>
