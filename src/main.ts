@@ -88,6 +88,12 @@ const createSplashWindow = async () => {
   }
 
   splashscreenWindow.loadFile(splashscreenFile)
+
+  // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
+  splashscreenWindow.once('ready-to-show', () => {
+    splashscreenWindow.show()
+  })
+
   return splashscreenWindow
 }
 
@@ -138,7 +144,6 @@ const createWindow = async () => {
 
 app.whenReady().then(async () => {
   const splashscreenWindow = await createSplashWindow()
-  splashscreenWindow.show()
 
   const mainWindow = await createWindow()
   await setupProjectStructure()
