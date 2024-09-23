@@ -6,7 +6,6 @@ interface NavIconButtonProps {
   to?: string
   icon: ReactNode
   tooltip: string
-  active: boolean
   onClick?: () => void
 }
 
@@ -14,14 +13,13 @@ export function NavIconButton({
   to,
   icon,
   tooltip,
-  active,
   onClick,
 }: NavIconButtonProps) {
   return (
     <Tooltip content={tooltip} side="right">
       <IconButton
         variant="ghost"
-        color={active ? 'orange' : 'gray'}
+        color="gray"
         asChild={onClick === undefined}
         onClick={onClick}
       >

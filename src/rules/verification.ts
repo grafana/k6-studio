@@ -1,6 +1,6 @@
 import { RequestSnippetSchema } from '@/types'
 
-export function applyRecordingVerificationRule(
+export function applyVerificationRule(
   requestSnippetSchema: RequestSnippetSchema
 ): RequestSnippetSchema {
   const response = requestSnippetSchema.data.response
@@ -11,7 +11,7 @@ export function applyRecordingVerificationRule(
 
   const verificationSnippet = `
 check(resp, {
-    'Recording Verification Rule: status matches recording': (r) => r.status === ${response.statusCode},
+    'status matches ${response.statusCode}': (r) => r.status === ${response.statusCode},
   })
 `
   return {

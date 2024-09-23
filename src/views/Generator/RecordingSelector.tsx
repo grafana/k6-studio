@@ -1,87 +1,76 @@
-import { Button, Flex, IconButton, Popover, Text } from '@radix-ui/themes'
-import { Link } from 'react-router-dom'
+import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
+import { PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
-import { CaretDownIcon } from '@radix-ui/react-icons'
 
 import { useGeneratorStore } from '@/store/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { useStudioUIStore } from '@/store/ui'
-import { getRoutePath } from '@/routeMap'
+import { getFileNameWithoutExtension } from '@/utils/file'
+import { useToast } from '@/store/ui/useToast'
 
-// TODO: Improve accessibility and UX in general
 export function RecordingSelector() {
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
   const setRecording = useGeneratorStore((store) => store.setRecording)
-  const displayedValue = recordingPath || 'Select recording'
   const recordings = useStudioUIStore((store) => store.recordings)
+  const showToast = useToast()
 
   const handleOpen = async (filePath: string) => {
-    const harFile = await window.studio.har.openFile(filePath)
+    try {
+      const harFile = await window.studio.har.openFile(filePath)
 
-    const proxyData = harToProxyData(harFile.content)
-    setRecording(proxyData, harFile.name)
+      const proxyData = harToProxyData(harFile.content)
+      setRecording(proxyData, harFile.name)
+    } catch (error) {
+      showToast({
+        title: 'Failed to open recording',
+        status: 'error',
+      })
+    }
   }
 
   const handleImport = async () => {
-    const filePath = await window.studio.har.importFile()
+    try {
+      const filePath = await window.studio.har.importFile()
 
-    if (!filePath) return
+      if (!filePath) return
 
-    await handleOpen(filePath)
+      await handleOpen(filePath)
+    } catch (error) {
+      showToast({
+        title: 'Failed to import recording',
+        status: 'error',
+      })
+    }
   }
 
   return (
-    <Flex align="center" gap="2">
-      <Text size="2" wrap="nowrap">
-        {displayedValue}
+    <Flex gap="2" align="center">
+      <Text size="2" weight="medium" as="label" htmlFor="recording-selector">
+        Recording
       </Text>
-      <Popover.Root>
-        <Popover.Trigger>
-          <IconButton variant="outline">
-            <CaretDownIcon />
-          </IconButton>
-        </Popover.Trigger>
-        <Popover.Content size="1" align="end">
-          <Flex direction="column" gap="2">
-            {recordings.length === 0 ? (
-              <Text size="2">You don{"'"}t have saved recordings</Text>
-            ) : (
-              <>
-                {recordings.map((harFileName) => (
-                  <Popover.Close key={harFileName}>
-                    <Button
-                      variant="ghost"
-                      color={recordingPath === harFileName ? 'orange' : 'gray'}
-                      css={css`
-                        justify-content: start;
-                      `}
-                      onClick={() => handleOpen(harFileName)}
-                    >
-                      {harFileName}
-                    </Button>
-                  </Popover.Close>
-                ))}
-              </>
-            )}
-
-            <Flex gap="2">
-              <Popover.Close>
-                <Button variant="outline" asChild>
-                  <Link
-                    to={getRoutePath('recorder')}
-                    state={{ autoStart: true }}
-                  >
-                    Start recording
-                  </Link>
-                </Button>
-              </Popover.Close>
-              <Popover.Close>
-                <Button onClick={() => handleImport()}>Import HAR</Button>
-              </Popover.Close>
-            </Flex>
-          </Flex>
-        </Popover.Content>
-      </Popover.Root>
+      <Select.Root value={recordingPath} onValueChange={handleOpen}>
+        <Tooltip content="Switch between different recordings.">
+          <Select.Trigger
+            id="recording-selector"
+            placeholder="Select recording"
+            css={css`
+              max-width: 200px;
+            `}
+          />
+        </Tooltip>
+        <Select.Content position="popper">
+          {recordings.map((harFileName) => (
+            <Select.Item value={harFileName} key={harFileName}>
+              {getFileNameWithoutExtension(harFileName)}
+            </Select.Item>
+          ))}
+        </Select.Content>
+      </Select.Root>
+      <Tooltip content="Import recording">
+        <IconButton variant="ghost" color="gray" onClick={handleImport}>
+          <PlusIcon />
+        </IconButton>
+      </Tooltip>
     </Flex>
   )
 }

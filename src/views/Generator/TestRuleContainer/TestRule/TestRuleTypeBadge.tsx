@@ -36,8 +36,6 @@ function getLabel(rule: TestRule) {
       return 'Parameterization'
     case 'verification':
       return 'Verification'
-    case 'recording-verification':
-      return 'Recording Verification'
     default:
       return exhaustive(rule)
   }

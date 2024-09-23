@@ -1,5 +1,5 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Box, Button, Dialog, Flex, Text } from '@radix-ui/themes'
+import { Cross2Icon } from '@radix-ui/react-icons'
+import { Box, Button, Dialog, Flex, IconButton, Text } from '@radix-ui/themes'
 
 export function UnsavedChangesDialog({
   open,
@@ -14,31 +14,25 @@ export function UnsavedChangesDialog({
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onCancel}>
-      <Dialog.Content size="3" maxWidth="450px">
-        <Dialog.Title>
-          <Flex align="center" gap="2">
-            <ExclamationTriangleIcon
-              color="orange"
-              width="20px"
-              height="20px"
-            />
-            Save before leaving?
-          </Flex>
-        </Dialog.Title>
+      <Dialog.Content size="3" maxWidth="450px" css={{ position: 'relative' }}>
+        <Dialog.Title>Save before leaving?</Dialog.Title>
+
+        <Box position="absolute" right="10px" top="10px">
+          <Dialog.Close>
+            <IconButton color="gray" variant="ghost">
+              <Cross2Icon />
+            </IconButton>
+          </Dialog.Close>
+        </Box>
         <Box mb="5">
           <Text>
             You have unsaved changes in the generator which will be lost upon
             navigation.
           </Text>
         </Box>
-        <Flex justify="end" gap="2">
-          <Dialog.Close>
-            <Button variant="outline" color="orange">
-              Cancel
-            </Button>
-          </Dialog.Close>
 
-          <Button onClick={onDiscard} color="orange">
+        <Flex justify="end" gap="2">
+          <Button onClick={onDiscard} color="orange" variant="outline">
             {"Don't save"}
           </Button>
 

@@ -10,7 +10,6 @@ import {
   useGeneratorStore,
 } from '@/store/generator'
 import { RulePreview } from '../RulePreview/RulePreview'
-import { useGeneratorParams } from '../Generator.hooks'
 import { RequestList } from './RequestList'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { CrossCircledIcon } from '@radix-ui/react-icons'
@@ -21,10 +20,7 @@ export function GeneratorSidebar() {
   const { hasError } = useScriptPreview()
 
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const { ruleId } = useGeneratorParams()
-  const hasPreview = useGeneratorStore((state) =>
-    selectIsRulePreviewable(state, ruleId)
-  )
+  const hasPreview = useGeneratorStore(selectIsRulePreviewable)
 
   useEffect(() => {
     if (!hasPreview) {
@@ -62,7 +58,7 @@ export function GeneratorSidebar() {
                 color="var(--red-9)"
               />
             )}
-            Script preview
+            Script
           </Tabs.Trigger>
           {hasPreview && (
             <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
@@ -72,7 +68,7 @@ export function GeneratorSidebar() {
           <Tabs.Content
             value="rule-preview"
             css={css`
-              height: 100%;
+              flex-grow: 1;
             `}
           >
             <RulePreview />
@@ -81,7 +77,7 @@ export function GeneratorSidebar() {
         <Tabs.Content
           value="requests"
           css={css`
-            height: 100%;
+            flex-grow: 1;
           `}
         >
           <RequestList requests={filteredRequests} />
@@ -89,7 +85,7 @@ export function GeneratorSidebar() {
         <Tabs.Content
           value="script"
           css={css`
-            height: 100%;
+            flex-grow: 1;
           `}
         >
           <ScriptPreview />

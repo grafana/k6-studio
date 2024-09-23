@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Switch, Text } from '@radix-ui/themes'
+import { Box, Grid, Heading, Switch, Text } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
@@ -22,26 +22,26 @@ export function CorrelationEditor() {
   }
 
   return (
-    <Flex gap="3">
-      <Box flexGrow="1" flexShrink="1" flexBasis="0">
-        <Heading size="4" weight="medium" mb="2">
+    <Grid columns="1fr 1fr" gap="3">
+      <Box>
+        <Heading size="2" weight="medium" mb="2">
           Extractor
         </Heading>
         <FilterField path="extractor.filter" />
         <SelectorField type="extractor" />
       </Box>
-      <Box flexGrow="1" flexShrink="1" flexBasis="0">
+      <Box>
         <Label mb="2">
-          <Heading size="4" weight="medium">
+          <Heading size="2" weight="medium">
             Replacer
           </Heading>
           <Switch onCheckedChange={toggleCustomReplacer} checked={!!replacer} />
         </Label>
         {!replacer && (
           <Text size="2">
-            By default correlation rule will replace all occurrences of the
-            extracted value in the requests, you can enable this option to fine
-            tune your selection
+            By default, the correlation rule will replace all occurrences of the
+            extracted value in the requests. Enable this option to fine tune
+            your selection.
           </Text>
         )}
         {replacer && (
@@ -51,6 +51,6 @@ export function CorrelationEditor() {
           </>
         )}
       </Box>
-    </Flex>
+    </Grid>
   )
 }

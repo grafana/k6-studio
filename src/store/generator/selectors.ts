@@ -8,13 +8,20 @@ export function selectRuleById(state: GeneratorStore, id?: string) {
   return state.rules.find((rule) => rule.id === id)
 }
 
-export function selectIsRulePreviewable(state: GeneratorStore, id?: string) {
-  const rule = selectRuleById(state, id)
+export function selectSelectedRule(state: GeneratorStore) {
+  if (!state.selectedRuleId) {
+    return
+  }
+  return selectRuleById(state, state.selectedRuleId)
+}
+
+export function selectIsRulePreviewable(state: GeneratorStore) {
+  const rule = selectSelectedRule(state)
   return rule?.type === 'correlation'
 }
 
 export function selectHasRecording(state: GeneratorStore) {
-  return state.requests.length > 0
+  return selectFilteredRequests(state).length > 0
 }
 
 export function selectFilteredRequests(state: GeneratorStore) {
@@ -37,6 +44,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     rules,
     allowlist,
     includeStaticAssets,
+    scriptName,
   } = state
 
   return {
@@ -53,6 +61,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     rules,
     allowlist,
     includeStaticAssets,
+    scriptName,
   }
 }
 
@@ -77,4 +86,8 @@ function selectLoadProfile({
     default:
       return exhaustive(executor)
   }
+}
+
+export function selectHasVerificationRule(state: GeneratorStore) {
+  return state.rules.some((rule) => rule.type === 'verification')
 }

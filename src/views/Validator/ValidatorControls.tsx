@@ -1,6 +1,6 @@
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
-import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
+import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 
 interface ValidatorControlsProps {
   isRunning: boolean
@@ -33,14 +33,19 @@ export function ValidatorControls({
       </Button>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger disabled={isRunning}>
-          <IconButton variant="soft" aria-label="Actions">
+          <IconButton variant="ghost" color="gray" aria-label="Actions">
             <DotsVerticalIcon />
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item onClick={onSelectScript}>
-            Open external script
-          </DropdownMenu.Item>
+          <Tooltip
+            content="Validate a k6 script created outside of k6 Studio"
+            side="left"
+          >
+            <DropdownMenu.Item onClick={onSelectScript}>
+              Open external script
+            </DropdownMenu.Item>
+          </Tooltip>
           {isScriptSelected && !isExternal && (
             <DropdownMenu.Item color="red" onClick={onDeleteScript}>
               Delete

@@ -1,10 +1,12 @@
 import { Allotment } from 'allotment'
-import { Outlet, useBlocker, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useBlocker, useNavigate } from 'react-router-dom'
+import { Box, ScrollArea } from '@radix-ui/themes'
 
 import {
   useGeneratorStore,
-  selectHasRecording,
   selectGeneratorData,
+  selectSelectedRule,
 } from '@/store/generator'
 import { View } from '@/components/Layout/View'
 import { GeneratorSidebar } from './GeneratorSidebar'
@@ -16,23 +18,22 @@ import {
   useLoadHarFile,
   useSaveGeneratorFile,
 } from './Generator.hooks'
-import { GeneratorControls } from './GeneraterControls'
-import { useEffect } from 'react'
+import { GeneratorControls } from './GeneratorControls'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
+import { RuleEditor } from './RuleEditor'
+import { getFileNameWithoutExtension } from '@/utils/file'
 
 export function Generator() {
-  const hasRecording = useGeneratorStore(selectHasRecording)
+  const selectedRule = useGeneratorStore(selectSelectedRule)
 
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
-  const generatorState = useGeneratorStore(selectGeneratorData)
 
   const showToast = useToast()
   const navigate = useNavigate()
 
   const { fileName } = useGeneratorParams()
-  const fileNameWithoutLeadingGenerator = fileName.replace(/^Generator - /, '')
 
   const {
     data: generatorFileData,
@@ -52,16 +53,9 @@ export function Generator() {
 
   const isDirty = useIsGeneratorDirty(fileName)
 
-  const blocker = useBlocker(({ nextLocation, historyAction }) => {
-    const isNavigationInsideGenerator = nextLocation.pathname.includes(
-      encodeURI(getRoutePath('generator', { fileName }))
-    )
-
-    // Don't show on 'REPLACE' because after navigating
-    // to generator it redirects to load profile tab
-    return (
-      isDirty && !isNavigationInsideGenerator && historyAction !== 'REPLACE'
-    )
+  const blocker = useBlocker(({ historyAction }) => {
+    // Don't block navigation when redirecting home from invalid generator
+    return isDirty && historyAction !== 'REPLACE'
   })
 
   useEffect(() => {
@@ -83,18 +77,22 @@ export function Generator() {
   useEffect(() => {
     if (harError) {
       showToast({
-        title: 'Failed to har file',
+        title: 'Failed to load recording',
         status: 'error',
-        description: 'Select another recording from top menu',
+        description: 'Select another recording in the sidebar',
       })
     }
   }, [harError, showToast])
 
-  const handleSaveGenerator = () => saveGenerator(generatorState)
+  const handleSaveGenerator = () => {
+    const generator = selectGeneratorData(useGeneratorStore.getState())
+    return saveGenerator(generator)
+  }
 
   return (
     <View
-      title={`Generator - ${fileNameWithoutLeadingGenerator}`}
+      title="Generator"
+      subTitle={getFileNameWithoutExtension(fileName)}
       actions={
         <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }
@@ -106,12 +104,18 @@ export function Generator() {
             <Allotment.Pane minSize={300}>
               <TestRuleContainer />
             </Allotment.Pane>
-            <Allotment.Pane minSize={300}>
-              <Outlet />
+            <Allotment.Pane minSize={300} visible={selectedRule !== undefined}>
+              {selectedRule !== undefined && (
+                <ScrollArea scrollbars="vertical">
+                  <Box p="3">
+                    <RuleEditor rule={selectedRule} />
+                  </Box>
+                </ScrollArea>
+              )}
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>
-        <Allotment.Pane minSize={400} visible={hasRecording}>
+        <Allotment.Pane minSize={400}>
           <GeneratorSidebar />
         </Allotment.Pane>
       </Allotment>

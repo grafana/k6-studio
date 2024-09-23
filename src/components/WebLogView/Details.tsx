@@ -71,13 +71,21 @@ function PaneContent({
   return (
     <Flex direction="column" height="100%">
       <Box
-        p="2"
+        py="2"
+        px="4"
         css={css`
-          background-color: var(--accent-3);
+          background-color: var(--gray-2);
           flex-shrink: 0;
         `}
       >
-        <Heading size="2">{heading}</Heading>
+        <Heading
+          size="2"
+          css={css`
+            font-weight: 500;
+          `}
+        >
+          {heading}
+        </Heading>
       </Box>
       {children}
     </Flex>

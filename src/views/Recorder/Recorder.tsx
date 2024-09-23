@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
-import { Button, Flex } from '@radix-ui/themes'
-import { DiscIcon, StopIcon } from '@radix-ui/react-icons'
+import { Box, Button, Flex, Text } from '@radix-ui/themes'
+import { DiscIcon, PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
 import { Allotment } from 'allotment'
 
-import { GroupForm } from './GroupForm'
-import { DebugControls } from './DebugControls'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
@@ -22,18 +20,20 @@ import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
 import { RecorderState } from './types'
 import { useToast } from '@/store/ui/useToast'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
+import { DEFAULT_GROUP_NAME } from '@/constants'
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+
+const INITIAL_GROUPS: Group[] = [
+  {
+    id: crypto.randomUUID(),
+    name: DEFAULT_GROUP_NAME,
+  },
+]
 
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
 
-  const [groups, setGroups] = useState<Group[]>(() => {
-    return [
-      {
-        id: crypto.randomUUID(),
-        name: 'Default',
-      },
-    ]
-  })
+  const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
 
@@ -83,8 +83,8 @@ export function Recorder() {
       // Temporary solution to avoid having to update `proxyDataToHar`.
       const grouped = proxyData.map((data) => {
         const group = groups.find((g) => g.id === data.group) ?? {
-          id: 'default',
-          name: 'Default',
+          id: DEFAULT_GROUP_NAME,
+          name: DEFAULT_GROUP_NAME,
         }
 
         return {
@@ -106,21 +106,6 @@ export function Recorder() {
 
   async function handleStopRecording() {
     stopRecording()
-
-    const fileName = await validateAndSaveHarFile()
-
-    if (fileName === null) {
-      return
-    }
-
-    navigate(
-      getRoutePath('recordingPreviewer', {
-        fileName: encodeURIComponent(fileName),
-      }),
-      {
-        state: { discardable: true },
-      }
-    )
   }
 
   function handleCancelNavigation() {
@@ -135,18 +120,21 @@ export function Recorder() {
     blocker.proceed?.()
   }
 
-  function handleSetGroup(group: Group) {
-    setGroups((groups) => {
-      return [...groups, group]
-    })
-  }
-
-  function handleRenameGroup(newGroup: Group) {
+  function handleUpdateGroup(newGroup: Group) {
     setGroups((groups) => {
       return groups.map((group) =>
         group.id === newGroup.id ? newGroup : group
       )
     })
+  }
+
+  function handleCreateGroup(name: string) {
+    setGroups((groups) => createGroupOrEditLast(groups, proxyData, name))
+  }
+
+  function handleResetRecording() {
+    resetProxyData()
+    setGroups(INITIAL_GROUPS)
   }
 
   useEffect(() => {
@@ -156,12 +144,26 @@ export function Recorder() {
   }, [autoStart, handleStartRecording])
 
   useEffect(() => {
-    return window.studio.browser.onBrowserClosed(() => {
-      validateAndSaveHarFile()
+    return window.studio.browser.onBrowserClosed(async () => {
+      const fileName = await validateAndSaveHarFile()
+
+      if (fileName === null) {
+        return
+      }
+
       showToast({
         title: 'Recording stopped',
         status: 'success',
       })
+
+      navigate(
+        getRoutePath('recordingPreviewer', {
+          fileName: encodeURIComponent(fileName),
+        }),
+        {
+          state: { discardable: true },
+        }
+      )
     })
   }, [validateAndSaveHarFile, showToast])
 
@@ -171,11 +173,7 @@ export function Recorder() {
       actions={
         <>
           {recorderState === 'idle' && (
-            <Button
-              disabled={isLoading}
-              color="red"
-              onClick={handleStartRecording}
-            >
+            <Button disabled={isLoading} onClick={handleStartRecording}>
               <DiscIcon /> Start recording
             </Button>
           )}
@@ -184,7 +182,7 @@ export function Recorder() {
               {isLoading && <TextSpinner text="Starting" />}
               <Button
                 disabled={isLoading}
-                color="orange"
+                color="red"
                 onClick={handleStopRecording}
               >
                 <StopIcon /> Stop recording
@@ -197,28 +195,43 @@ export function Recorder() {
       <Allotment defaultSizes={[1, 1]}>
         <Allotment.Pane minSize={200}>
           <Flex direction="column" height="100%">
-            <Flex justify="between" wrap="wrap" gap="2" p="2" flexShrink="0">
-              <GroupForm
-                currentGroup={group}
-                proxyData={proxyData}
-                onChange={handleSetGroup}
-              />
-
-              <DebugControls />
-            </Flex>
-            <div css={{ flexGrow: 1, minHeight: 0 }}>
+            <div css={{ flexGrow: 0, minHeight: 0 }}>
               <RequestsSection
                 proxyData={debouncedProxyData}
-                noRequestsMessage="Your requests will appear here"
+                noRequestsMessage={
+                  <>
+                    <Text color="gray" size="1">
+                      Once you start the recording, requests will appear here
+                    </Text>
+                    <Button disabled={isLoading} onClick={handleStartRecording}>
+                      <DiscIcon /> Start recording
+                    </Button>
+                  </>
+                }
+                showNoRequestsMessage={recorderState === 'idle'}
                 selectedRequestId={selectedRequest?.id}
                 autoScroll
                 groups={groups}
                 activeGroup={group?.id}
                 onSelectRequest={setSelectedRequest}
-                onRenameGroup={handleRenameGroup}
-                resetProxyData={resetProxyData}
+                onUpdateGroup={handleUpdateGroup}
+                resetProxyData={handleResetRecording}
               />
             </div>
+            {recorderState === 'recording' && (
+              <Box width="200px" p="2">
+                <ButtonWithTooltip
+                  size="2"
+                  variant="ghost"
+                  ml="2"
+                  onClick={() => handleCreateGroup(`Group ${groups.length}`)}
+                  tooltip="Groups are used to organize specific steps in your recording. After you create a group, any further requests will be added to it."
+                >
+                  <PlusCircledIcon />
+                  Create group
+                </ButtonWithTooltip>
+              </Box>
+            )}
           </Flex>
         </Allotment.Pane>
         {selectedRequest !== null && (
@@ -239,4 +252,38 @@ export function Recorder() {
       />
     </View>
   )
+}
+
+// Don't create a new group if the last one is empty,
+// instead switch to editing it's name
+function createGroupOrEditLast(
+  groups: Group[],
+  proxyData: ProxyData[],
+  name: string
+) {
+  const lastGroup = groups[groups.length - 1]
+  const isLastGroupEmpty =
+    lastGroup && proxyData.every((data) => data.group !== lastGroup.id)
+
+  if (isLastGroupEmpty) {
+    return groups.map((group) => {
+      if (lastGroup?.id === group.id) {
+        return {
+          ...group,
+          isEditing: true,
+        }
+      }
+
+      return group
+    })
+  }
+
+  return [
+    ...groups,
+    {
+      id: crypto.randomUUID(),
+      name,
+      isEditing: true,
+    },
+  ]
 }

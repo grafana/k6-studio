@@ -1,38 +1,40 @@
-import { Code, Flex, Tooltip, Link, Text } from '@radix-ui/themes'
+import { ChatBubbleIcon } from '@radix-ui/react-icons'
+import { Code, Flex, Tooltip, IconButton } from '@radix-ui/themes'
 
 export function VersionLabel() {
-  const handleReportIssue = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault()
+  const handleReportIssue = () => {
     window.studio.browser.openExternalLink(
       'https://github.com/grafana/k6-studio/issues'
     )
   }
 
   return (
-    <Tooltip
-      content={
-        <>
-          This is an alpha version of k6 Studio.
-          <br />
-          Please report any issues you encounter.
-        </>
-      }
-    >
-      <Flex direction="column" gap="1" align="center">
-        <Code size="1" variant="ghost" color="gray">
-          v{__APP_VERSION__}
-        </Code>
-
-        <Code size="1" variant="ghost" color="gray">
-          alpha
-        </Code>
-
-        <Text align="center" size="1">
-          <Link href="" onClick={handleReportIssue}>
-            Report issues
-          </Link>
-        </Text>
-      </Flex>
-    </Tooltip>
+    <>
+      <Tooltip content="Report an issue" side="right">
+        <IconButton
+          are-label="Report an issue"
+          color="gray"
+          variant="ghost"
+          onClick={handleReportIssue}
+        >
+          <ChatBubbleIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip
+        content={
+          <>
+            This is an experimental version of k6 Studio.
+            <br />
+            Please report any issues you encounter.
+          </>
+        }
+      >
+        <Flex direction="column" gap="1" align="center">
+          <Code size="1" variant="ghost" color="gray">
+            v{__APP_VERSION__.split('-').join('')}
+          </Code>
+        </Flex>
+      </Tooltip>
+    </>
   )
 }

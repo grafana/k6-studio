@@ -1,4 +1,4 @@
-import { Box, Flex } from '@radix-ui/themes'
+import { Box, Grid } from '@radix-ui/themes'
 
 import { FilterField } from './FilterField'
 import { CodeEditor } from '@/components/Monaco/CodeEditor'
@@ -17,20 +17,16 @@ export function CustomCodeEditor() {
   } = useFormContext()
   return (
     <Box>
-      <Flex gap="2">
-        <Box width="50%">
-          <FilterField path="filter" />
-        </Box>
-        <Box width="50%">
-          <FieldGroup name="placement" errors={errors} label="Placement">
-            <ControlledSelect
-              name="placement"
-              control={control}
-              options={PLACEMENT_OPTIONS}
-            />
-          </FieldGroup>
-        </Box>
-      </Flex>
+      <Grid gap="2" columns="1fr 1fr">
+        <FilterField path="filter" />
+        <FieldGroup name="placement" errors={errors} label="Placement">
+          <ControlledSelect
+            name="placement"
+            control={control}
+            options={PLACEMENT_OPTIONS}
+          />
+        </FieldGroup>
+      </Grid>
 
       <FieldGroup name="snippet" errors={errors} label="Snippet">
         <Controller

@@ -1,4 +1,3 @@
-import { Button } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -11,6 +10,8 @@ import { ValidatorContent } from './ValidatorContent'
 import { useRunLogs } from '@/hooks/useRunLogs'
 import { useToast } from '@/store/ui/useToast'
 import { useRunChecks } from '@/hooks/useRunChecks'
+import { getFileNameWithoutExtension } from '@/utils/file'
+import { ValidatorEmptyState } from './ValidatorEmptyState'
 
 export function Validator() {
   const [isLoading, setIsLoading] = useState(false)
@@ -109,7 +110,8 @@ export function Validator() {
 
   return (
     <View
-      title={scriptPath ? `Validator - ${scriptPath}` : 'Validator'}
+      title="Validator"
+      subTitle={getFileNameWithoutExtension(scriptPath)}
       actions={
         <ValidatorControls
           isRunning={isRunning}
@@ -130,11 +132,12 @@ export function Validator() {
         logs={logs}
         checks={checks}
         noRequestsMessage={
-          !scriptPath ? (
-            <Button onClick={handleSelectExternalScript}>Open script</Button>
-          ) : (
-            'Once you start the script, requests will appear here'
-          )
+          <ValidatorEmptyState
+            isRunning={isRunning}
+            isScriptSelected={Boolean(scriptPath)}
+            onRunScript={handleRunScript}
+            onSelectScript={handleSelectExternalScript}
+          />
         }
       />
     </View>

@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text, TextField } from '@radix-ui/themes'
+import { Box, Flex, Text, TextField } from '@radix-ui/themes'
 
 import { useFormContext } from 'react-hook-form'
 import { stringAsOptionalNumber } from '@/utils/form'
@@ -12,9 +12,6 @@ export function SharedIterations() {
 
   return (
     <Flex direction="column" gap="2">
-      <Heading color="gray" mb="1" size="3">
-        Shared Iterations
-      </Heading>
       <Text size="2">
         A fixed number of iterations are {'"shared"'} between a number of VUs,
         and the test ends once all iterations are executed.
@@ -30,6 +27,7 @@ export function SharedIterations() {
           >
             <TextField.Root
               type="number"
+              min={0}
               placeholder="20"
               onKeyDown={(e) => {
                 if (['-', '+', 'e'].includes(e.key)) {
@@ -52,6 +50,7 @@ export function SharedIterations() {
           >
             <TextField.Root
               type="number"
+              min={0}
               placeholder="200"
               onKeyDown={(e) => {
                 if (['-', '+', 'e'].includes(e.key)) {
