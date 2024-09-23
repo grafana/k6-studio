@@ -12,7 +12,8 @@ export function useProxyDataGroups(proxyData: ProxyData[]) {
     return Array.from(names).map((name) => {
       return {
         id: name,
-        name,
+        // External scripts without groups will have have group=""
+        name: name === '' ? DEFAULT_GROUP_NAME : name,
       }
     })
   }, [proxyData])
