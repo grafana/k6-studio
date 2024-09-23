@@ -18,7 +18,7 @@ import {
   useLoadHarFile,
   useSaveGeneratorFile,
 } from './Generator.hooks'
-import { GeneratorControls } from './GeneraterControls'
+import { GeneratorControls } from './GeneratorControls'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'

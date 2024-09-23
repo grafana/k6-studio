@@ -9,7 +9,7 @@ import {
 
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { exportScript } from '../Generator.utils'
-import { ValidatorDialog } from './ValidatorDialog'
+import { ValidatorDialog } from '../ValidatorDialog'
 import { ExportScriptDialog } from '../ExportScriptDialog'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { useGeneratorParams } from '../Generator.hooks'
