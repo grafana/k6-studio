@@ -35,6 +35,8 @@ k6 Studio is composed of three main components:
 The recorder is designed to generate a HAR recording of the user flow you want to test. When you start a recording, a new browser window opens, and every request is collected to generate the HAR file. You can also create groups during the recording to better organize your test script.
 > The recorder uses a proxy to catch requests from the specific browser window, which is powered by [mitmproxy](https://github.com/mitmproxy/mitmproxy).
 
+> ⚠️ At this stage we require Chrome to be installed for the recording functionality
+
 ## Generator
 
 The generator helps you create a k6 test script without having to write a single line of JavaScript.
