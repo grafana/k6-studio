@@ -62,12 +62,12 @@ if (require('electron-squirrel-startup')) {
 }
 
 const createSplashWindow = async () => {
-  splashscreenWindow = new BrowserWindow({
-    width: 500,
-    height: 300,
-    // transparent: true,
+  const splashscreenWindow = new BrowserWindow({
+    width: 700,
+    height: 355,
     frame: false,
-    alwaysOnTop: true,
+    show: true,
+    // alwaysOnTop: true,
   })
 
   let splashscreenFile: string
@@ -83,8 +83,14 @@ const createSplashWindow = async () => {
     splashscreenFile = path.join(process.resourcesPath, 'splashscreen.html')
   }
 
+  // Open the DevTools.
+  if (process.env.NODE_ENV === 'development') {
+    splashscreenWindow.webContents.openDevTools({ mode: 'detach' })
+  }
+
   splashscreenWindow.loadFile(splashscreenFile)
-  splashscreenWindow.center()
+
+  return splashscreenWindow
 }
 
 const createWindow = async () => {
