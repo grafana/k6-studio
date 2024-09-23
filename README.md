@@ -5,8 +5,7 @@
   </a>
 </p>
 
-<h3 align="center">Like unit testing, for performance</h3>
-<p align="center">Modern performance testing for developers and testers in the DevOps era.</p>
+<p align="center">Desktop application for Mac and Windows designed to help you generate k6 test scripts</p>
 
 <p align="center">
     <a href="https://github.com/grafana/k6-studio/releases">Download</a> ·
@@ -19,13 +18,13 @@
 
 --- 
 
-***Note: This application is currently in the experimental stage. Expect bugs, incomplete features, and breaking changes as development progresses. Use at your own risk, and please report any issues or feedback to help us improve.***
+<p align="center">⚠️</p>
+
+***This application is currently in the experimental stage. Expect bugs, incomplete features, and breaking changes as development progresses. Use at your own risk, and please report any issues or feedback to help us improve.***
 
 ---
 
-**k6 Studio** is a free desktop application for Mac and Windows designed to help you generate k6 test scripts.
-
-With k6 Studio, you can quickly record a user flow in a browser, generate and inspect a HAR recording, customize your test script using predefined or custom rules, and test and debug your script to ensure it's working as expected.
+With **k6 Studio**, you can quickly record a user flow in a browser, generate and inspect a HAR recording, customize your test script using predefined or custom rules, and test and debug your script to ensure it's working as expected.
 
 The goal is to provide **a seamless experience** for generating k6 test scripts, making it easier for anyone to create performance tests in an interactive interface.
 
@@ -34,7 +33,7 @@ k6 Studio is composed of three main components:
 ## Recorder
 
 The recorder is designed to generate a HAR recording of the user flow you want to test. When you start a recording, a new browser window opens, and every request is collected to generate the HAR file. You can also create groups during the recording to better organize your test script.
-The recorder uses a proxy to catch requests from the specific browser window, which is powered by [mitmproxy](https://github.com/mitmproxy/mitmproxy).
+> The recorder uses a proxy to catch requests from the specific browser window, which is powered by [mitmproxy](https://github.com/mitmproxy/mitmproxy).
 
 ## Generator
 
