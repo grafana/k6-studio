@@ -19,7 +19,7 @@ export function FilterField({
     <FieldGroup
       name={fieldName}
       label="Filter"
-      hint="Only requests with this string in their path will be affected."
+      hint="Only requests with this string in their path will be affected. Regex supported."
       errors={errors}
     >
       <TextField.Root
