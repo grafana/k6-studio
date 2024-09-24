@@ -71,7 +71,7 @@ export function ThinkTime() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Text size="2" as="p" mb="2">
-        Simulate delays that real users have to make you test script more
+        Simulate delays that real users have to make your test script more
         realistic.
       </Text>
       <Grid columns="1fr 1fr" gap="2">
