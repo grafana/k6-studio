@@ -132,4 +132,11 @@ export const REQUIRED_IMPORTS: ImportModule[] = [
     },
   },
   { path: 'k6/http', default: { name: 'http' } },
+  {
+    path: 'https://jslib.k6.io/formdata/0.0.2/index.js',
+    imports: {
+      type: 'named',
+      imports: [{ name: 'FormData' }],
+    },
+  },
 ]

@@ -84,6 +84,7 @@ export function generateVUCode(
     let match
     let regex
     let url
+    let formData
     const correlation_vars = {}
     `,
     groupSnippets,
@@ -137,6 +138,7 @@ export function generateSingleRequestSnippet(
   // use backticks to allow insert correlation variables later
   const url = `\`${request.url}\``
   let content = 'null'
+  let formData = ''
 
   try {
     if (request.content) {
@@ -148,6 +150,20 @@ export function generateSingleRequestSnippet(
         getContentTypeWithCharsetHeader(request.headers) ?? ''
       if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
         content = `JSON.parse(\`${request.content}\`)`
+      }
+
+      if (contentTypeHeader.includes('multipart/form-data')) {
+        formData += 'formData = new FormData()'
+      }
+
+      if (request.url.includes('register')) {
+        console.log('*********8')
+        console.log('*********8')
+        console.log(request.url)
+        console.log(contentTypeHeader)
+        console.log(request.content)
+        let x = new FormData(content)
+        console.log(x)
       }
     }
   } catch (error) {
