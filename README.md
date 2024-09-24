@@ -6,7 +6,12 @@
       <img src="assets/logo.svg" alt="k6 Studio" width="210" height="210" />
     </picture>
     <br>
-    <img src="assets/grafana-labs.svg" alt="Grafana Labs" width="210" /><br>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/grafana-labs-dark-theme.svg">
+      <source media="(prefers-color-scheme: light)" srcset="assets/grafana-labs.svg">
+      <img src="assets/grafana-labs.svg" alt="Grafana Labs" width="210" />
+    </picture>
+    <br>
   </a>
 </p>
 
