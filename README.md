@@ -70,6 +70,15 @@ k6 Studio is distributed under the [AGPL-3.0 license](https://github.com/grafana
 
 ---
 
+## Troubleshooting
+
+### `localhost` requests not being recorded
+
+The proxy doesn't capture traffic when sent directly to `localhost`. To fix that, you can assign a hostname to it and make requests through that name.
+To do that, modify the `hosts` file on your system, for example, `127.0.0.1 myapp`, and then you will be able to make requests in the browser at `myapp:8000/path`.
+
+---
+
 ## Development
 
 ### Requirements
