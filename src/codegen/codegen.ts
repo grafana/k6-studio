@@ -149,6 +149,10 @@ export function generateSingleRequestSnippet(
       if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
         content = `JSON.parse(\`${request.content}\`)`
       }
+
+      if (contentTypeHeader.includes('multipart/form-data')) {
+        content = `'${request.content.replace(/(?:\r\n|\r|\n)/g, '\\r\\n')}'`
+      }
     }
   } catch (error) {
     console.error('Failed to serialize request content', error)

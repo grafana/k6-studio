@@ -35,6 +35,7 @@ export const runScript = async (
   const proxyEnv = {
     HTTP_PROXY: `http://localhost:${proxyPort}`,
     HTTPS_PROXY: `http://localhost:${proxyPort}`,
+    NO_PROXY: 'jslib.k6.io',
   }
 
   let k6Path: string
