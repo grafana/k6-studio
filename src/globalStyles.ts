@@ -16,4 +16,8 @@ export const globalStyles = css`
   .rt-ScrollAreaViewport > * {
     width: auto;
   }
+
+  .rt-ScrollAreaScrollbar {
+    z-index: 2;
+  }
 `
