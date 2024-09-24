@@ -54,6 +54,7 @@ export let proxyPort = 6000
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
 let watcher: FSWatcher
+let splashscreenWindow: BrowserWindow
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -61,7 +62,7 @@ if (require('electron-squirrel-startup')) {
 }
 
 const createSplashWindow = async () => {
-  const splashscreenWindow = new BrowserWindow({
+  splashscreenWindow = new BrowserWindow({
     width: 700,
     height: 355,
     frame: false,
@@ -143,7 +144,7 @@ const createWindow = async () => {
 }
 
 app.whenReady().then(async () => {
-  const splashscreenWindow = await createSplashWindow()
+  await createSplashWindow()
 
   const mainWindow = await createWindow()
   await setupProjectStructure()
@@ -159,10 +160,6 @@ app.whenReady().then(async () => {
   watcher.on('unlink', (filePath) => {
     mainWindow.webContents.send('ui:remove-file', path.basename(filePath))
   })
-
-  splashscreenWindow.close()
-  mainWindow.show()
-  mainWindow.focus()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -484,6 +481,18 @@ ipcMain.handle(
     }
   }
 )
+
+ipcMain.on('splashscreen:close', (event) => {
+  console.info('splashscreen:close event received')
+
+  const browserWindow = browserWindowFromEvent(event)
+
+  if (splashscreenWindow && !splashscreenWindow.isDestroyed()) {
+    splashscreenWindow.close()
+    browserWindow.show()
+    browserWindow.focus()
+  }
+})
 
 ipcMain.handle('browser:open:external:link', (_, url: string) => {
   console.info('browser:open:external:link event received')
