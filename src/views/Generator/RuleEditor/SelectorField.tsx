@@ -131,10 +131,20 @@ function SelectorContent({
     case 'begin-end':
       return (
         <>
-          <FieldGroup name={`${field}.begin`} errors={errors} label="Begin">
+          <FieldGroup
+            name={`${field}.begin`}
+            errors={errors}
+            label="Begin"
+            hint="The string immediately before the value to be extracted."
+          >
             <TextField.Root {...register(`${field}.begin`)} />
           </FieldGroup>
-          <FieldGroup name={`${field}.end`} errors={errors} label="End">
+          <FieldGroup
+            name={`${field}.end`}
+            errors={errors}
+            label="End"
+            hint="The string immediately after the value to be extracted"
+          >
             <TextField.Root {...register(`${field}.end`)} />
           </FieldGroup>
         </>

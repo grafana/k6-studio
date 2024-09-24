@@ -74,8 +74,8 @@ function CustomCodeContent({ rule }: { rule: CustomCodeRule }) {
       </Tooltip>
       <Tooltip content={<code>{rule.snippet}</code>}>
         <Badge color="gray">
+          <EyeOpenIcon />
           Snippet
-          <EyeOpenIcon width={15} height={15} />
         </Badge>
       </Tooltip>
     </>
