@@ -6,7 +6,12 @@
       <img src="assets/logo.svg" alt="k6 Studio" width="210" height="210" />
     </picture>
     <br>
-    <img src="assets/grafana-labs.svg" alt="Grafana Labs" width="210" /><br>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/grafana-labs-dark-theme.svg">
+      <source media="(prefers-color-scheme: light)" srcset="assets/grafana-labs.svg">
+      <img src="assets/grafana-labs.svg" alt="Grafana Labs" width="210" />
+    </picture>
+    <br>
   </a>
 </p>
 
@@ -17,10 +22,6 @@
     <a href="https://github.com/grafana/k6-studio/issues">Report issues</a>
 </p>
 
-<br/>
-<img src="assets/github-hr.png" alt="---" />
-<br/>
-
 --- 
 
 <p align="center">⚠️</p>
@@ -28,6 +29,10 @@
 ***This application is currently in the experimental stage. Expect bugs, incomplete features, and breaking changes as development progresses. Use at your own risk, and please report any issues or feedback to help us improve.***
 
 ---
+
+<p align="center">
+  <img src="assets/k6-studio-screenshot.png" alt="k6 Studio" width="600" />
+</p>
 
 With **k6 Studio**, you can quickly record a user flow in a browser, generate and inspect a HAR recording, customize your test script using predefined or custom rules, and test and debug your script to ensure it's working as expected.
 
