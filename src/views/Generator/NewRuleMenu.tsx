@@ -25,7 +25,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <Button variant="ghost" size="1" color="gray" mr="2" {...props}>
+        <Button variant="ghost" size="1" color="gray" {...props}>
           <PlusCircledIcon />
           Add rule
         </Button>

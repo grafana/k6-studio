@@ -35,9 +35,11 @@ export function TestRuleContainer() {
         >
           Test rules ({rules.length})
         </Heading>
-        <NewRuleMenu />
-        <TestOptions />
-        <Allowlist />
+        <Flex gap="3">
+          <NewRuleMenu />
+          <TestOptions />
+          <Allowlist />
+        </Flex>
       </Flex>
 
       <SortableRuleList rules={rules} onSwapRules={swapRules} />
