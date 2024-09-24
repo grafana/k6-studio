@@ -14,6 +14,10 @@ export function parseParams(data: ProxyData) {
     const contentType = getContentType(data.request?.headers ?? [])
     const contentDecoded = safeAtob(data.request.content ?? '')
 
+    if (contentType === 'multipart/form-data') {
+      return contentDecoded
+    }
+
     if (contentType === 'application/x-www-form-urlencoded') {
       if (isJsonString(contentDecoded)) {
         return contentDecoded

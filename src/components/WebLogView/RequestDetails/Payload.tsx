@@ -6,6 +6,7 @@ import { ReadOnlyEditor } from '../../Monaco/ReadOnlyEditor'
 import { parseParams } from './utils'
 import { getContentType } from '@/utils/headers'
 import { FormPayloadPreview } from './FormPayloadPreview'
+import { Raw } from '../ResponseDetails/Raw'
 
 export function Payload({ data }: { data: ProxyData }) {
   const content = parseParams(data)
@@ -17,6 +18,10 @@ export function Payload({ data }: { data: ProxyData }) {
         No payload
       </Flex>
     )
+  }
+
+  if (contentType === 'multipart/form-data') {
+    return <Raw content={content} format="text" />
   }
 
   if (contentType === 'application/x-www-form-urlencoded') {
