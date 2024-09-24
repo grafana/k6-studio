@@ -1,21 +1,23 @@
 import { useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Flex, TextField, Text } from '@radix-ui/themes'
+import { Box, Flex, TextField, Text, Grid } from '@radix-ui/themes'
 
-import { useGeneratorStore } from '@/store/generator'
+import { selectHasGroups, useGeneratorStore } from '@/store/generator'
 import { ThinkTimeSchema } from '@/schemas/testOptions'
 import type { ThinkTime } from '@/types/testOptions'
 import { stringAsNullableNumber, stringAsOptionalNumber } from '@/utils/form'
-import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { FieldGroup } from '@/components/Form'
+import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 
 const TYPE_OPTIONS = [
   { value: 'fixed', label: 'Fixed' },
-  { value: 'range', label: 'Range' },
+  { value: 'range', label: 'Random' },
 ]
 
 const SLEEP_TYPE_OPTIONS = [
   { value: 'groups', label: 'Between groups' },
+  { value: 'requests', label: 'Between requests' },
   { value: 'iterations', label: 'End of iteration' },
 ]
 
@@ -24,6 +26,7 @@ export function ThinkTime() {
   const timing = useGeneratorStore((store) => store.timing)
   const setSleepType = useGeneratorStore((store) => store.setSleepType)
   const setTiming = useGeneratorStore((store) => store.setTiming)
+  const hasGroups = useGeneratorStore(selectHasGroups)
 
   const {
     register,
@@ -68,24 +71,38 @@ export function ThinkTime() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Text size="2" as="p" mb="2">
-        Add a delay between requests to simulate user think time. Use a fixed
-        time for static wait periods, or a range to randomize it.
+        Simulate delays that real users have to make you test script more
+        realistic.
       </Text>
-      <FieldGroup name="timing.type" label="Type" errors={errors}>
-        <ControlledSelect
-          name="timing.type"
-          control={control}
-          options={TYPE_OPTIONS}
-          onChange={handleTypeChange}
-        />
-      </FieldGroup>
+      <Grid columns="1fr 1fr" gap="2">
+        <FieldGroup name="timing.type" label="Delay type" errors={errors}>
+          <ControlledRadioGroup
+            name="timing.type"
+            control={control}
+            options={TYPE_OPTIONS}
+            onChange={handleTypeChange}
+          />
+        </FieldGroup>
+
+        <FieldGroup name="sleepType" label="Placement" errors={errors}>
+          <ControlledRadioGroup
+            name="sleepType"
+            control={control}
+            options={SLEEP_TYPE_OPTIONS.filter(({ value }) => {
+              if (value === 'groups') return hasGroups
+              if (value === 'requests') return !hasGroups
+              return true
+            })}
+          />
+        </FieldGroup>
+      </Grid>
 
       {data.timing.type === 'fixed' && (
         <FieldGroup name="timing.value" label="Duration" errors={errors}>
           <TextField.Root
             size="2"
             min="0"
-            placeholder="seconds"
+            placeholder="e.g. 1"
             type="number"
             id="timing.value"
             {...register('timing.value', {
@@ -108,7 +125,7 @@ export function ThinkTime() {
               <TextField.Root
                 size="2"
                 min={0}
-                placeholder="min"
+                placeholder="e.g. 1"
                 type="number"
                 id="timing.value.min"
                 {...register('timing.value.min', {
@@ -128,7 +145,7 @@ export function ThinkTime() {
               <TextField.Root
                 size="2"
                 min={0}
-                placeholder="max"
+                placeholder="e.g. 3"
                 type="number"
                 id="timing.value.max"
                 {...register('timing.value.max', {
@@ -141,14 +158,6 @@ export function ThinkTime() {
           </Box>
         </Flex>
       )}
-
-      <FieldGroup name="sleepType" label="Position" errors={errors}>
-        <ControlledSelect
-          name="sleepType"
-          control={control}
-          options={SLEEP_TYPE_OPTIONS}
-        />
-      </FieldGroup>
     </form>
   )
 }

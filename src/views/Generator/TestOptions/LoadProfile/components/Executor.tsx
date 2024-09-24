@@ -1,4 +1,5 @@
-import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { FieldGroup } from '@/components/Form'
+import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { useFormContext } from 'react-hook-form'
 
@@ -23,11 +24,10 @@ export function Executor() {
 
   return (
     <FieldGroup label="Executor" errors={errors} name="executor">
-      <ControlledSelect
+      <ControlledRadioGroup
         name="executor"
         control={control}
         options={options}
-        selectProps={{ size: '2' }}
       />
     </FieldGroup>
   )

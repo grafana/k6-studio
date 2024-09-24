@@ -16,7 +16,12 @@ export function FilterField({
   const fieldName = `${path}.path` as const
 
   return (
-    <FieldGroup name={fieldName} label="Filter" errors={errors}>
+    <FieldGroup
+      name={fieldName}
+      label="Filter"
+      hint="Only requests with this string in their path will be affected."
+      errors={errors}
+    >
       <TextField.Root
         placeholder="Filter by path"
         css={{ marginBottom: 'var(--space-2)' }}

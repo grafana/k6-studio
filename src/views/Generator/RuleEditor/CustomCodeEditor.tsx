@@ -6,8 +6,8 @@ import { Controller, useFormContext } from 'react-hook-form'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
 
 const PLACEMENT_OPTIONS = [
-  { value: 'before', label: 'Before request' },
-  { value: 'after', label: 'After request' },
+  { value: 'before', label: 'Before matched requests' },
+  { value: 'after', label: 'After matched requests' },
 ]
 
 export function CustomCodeEditor() {

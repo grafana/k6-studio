@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Callout, IconButton } from '@radix-ui/themes'
+import { Box, Callout, IconButton, Tooltip } from '@radix-ui/themes'
 import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
 
 import { useGeneratorStore } from '@/store/generator'
@@ -93,14 +93,16 @@ export function RuleEditor({ rule }: RuleEditorProps) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box position="relative">
           <Box position="absolute" right="-15px" top="-15px">
-            <IconButton
-              variant="ghost"
-              title="close"
-              m="3"
-              onClick={handleClose}
-            >
-              <Cross2Icon />
-            </IconButton>
+            <Tooltip content="Close">
+              <IconButton
+                variant="ghost"
+                title="close"
+                m="3"
+                onClick={handleClose}
+              >
+                <Cross2Icon />
+              </IconButton>
+            </Tooltip>
           </Box>
           <RuleEditorSwitch />
         </Box>

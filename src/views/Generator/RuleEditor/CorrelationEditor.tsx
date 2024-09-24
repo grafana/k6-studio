@@ -27,6 +27,9 @@ export function CorrelationEditor() {
         <Heading size="2" weight="medium" mb="2">
           Extractor
         </Heading>
+        <Text size="2" as="p" mb="2" color="gray">
+          Extraction value for correlation.
+        </Text>
         <FilterField path="extractor.filter" />
         <SelectorField type="extractor" />
       </Box>
@@ -35,15 +38,24 @@ export function CorrelationEditor() {
           <Heading size="2" weight="medium">
             Replacer
           </Heading>
-          <Switch onCheckedChange={toggleCustomReplacer} checked={!!replacer} />
+          <Switch
+            onCheckedChange={toggleCustomReplacer}
+            checked={!!replacer}
+            size="1"
+          />
         </Label>
+        <Text size="2" as="p" mb="2" color="gray">
+          Replace matched values with the extracted value.{' '}
+        </Text>
+
         {!replacer && (
-          <Text size="2">
+          <Text size="2" as="p" mb="2" color="gray">
             By default, the correlation rule will replace all occurrences of the
             extracted value in the requests. Enable this option to fine tune
             your selection.
           </Text>
         )}
+
         {replacer && (
           <>
             <FilterField path="replacer.filter" />

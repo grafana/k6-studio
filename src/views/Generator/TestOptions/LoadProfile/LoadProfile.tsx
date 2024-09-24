@@ -6,6 +6,7 @@ import { LoadProfileExecutorOptionsSchema } from '@/schemas/testOptions'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useEffect } from 'react'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
+import { Text } from '@radix-ui/themes'
 
 export function LoadProfile() {
   const executor = useGeneratorStore((store) => store.executor)
@@ -58,6 +59,10 @@ export function LoadProfile() {
 
   return (
     <FormProvider {...formMethods}>
+      <Text size="2" as="p" mb="2">
+        Control how k6 schedules VUs and iterations to model your desired load
+        profile.
+      </Text>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
         <Executor />
         <ExecutorOptions executor={data.executor} />
