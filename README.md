@@ -22,10 +22,6 @@
     <a href="https://github.com/grafana/k6-studio/issues">Report issues</a>
 </p>
 
-<br/>
-<img src="assets/github-hr.png" alt="---" />
-<br/>
-
 --- 
 
 <p align="center">⚠️</p>
