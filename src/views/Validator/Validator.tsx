@@ -111,7 +111,7 @@ export function Validator() {
   return (
     <View
       title="Validator"
-      subTitle={getFileNameWithoutExtension(scriptPath)}
+      subTitle={getFileNameWithoutExtension(scriptPath ?? '')}
       actions={
         <ValidatorControls
           isRunning={isRunning}
