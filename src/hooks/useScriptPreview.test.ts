@@ -1,0 +1,89 @@
+import { useScriptPreview } from './useScriptPreview'
+import {
+  useGeneratorStore,
+  selectFilteredRequests,
+  selectGeneratorData,
+} from '@/store/generator'
+import { groupProxyData } from '@/utils/groups'
+import { generateScriptPreview } from '@/views/Generator/Generator.utils'
+import { beforeEach, describe, expect, it, vi, Mock } from 'vitest'
+import { renderHook, waitFor } from '@testing-library/react'
+import { ProxyData } from '@/types'
+import { Dictionary } from 'lodash'
+
+vi.mock('lodash-es', () => ({
+  debounce: vi.fn((fn) => fn),
+}))
+vi.mock('@/store/generator', () => ({
+  useGeneratorStore: {
+    getState: vi.fn(),
+    subscribe: vi.fn(),
+  },
+  selectFilteredRequests: vi.fn(),
+  selectGeneratorData: vi.fn(),
+}))
+vi.mock('@/utils/groups', () => ({
+  groupProxyData: vi.fn(),
+}))
+vi.mock('@/views/Generator/Generator.utils', () => ({
+  generateScriptPreview: vi.fn(),
+}))
+
+describe('useScriptPreview', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should initialize with an empty preview and no error', () => {
+    ;(useGeneratorStore.getState as Mock).mockReturnValue({})
+    const { result } = renderHook(() => useScriptPreview())
+
+    expect(result.current.preview).toBe('')
+    expect(result.current.error).toBeUndefined()
+    expect(result.current.hasError).toBe(false)
+  })
+
+  it('should update the preview when the store state changes', async () => {
+    const mockState = {}
+    const mockGeneratorData = {}
+    const mockRequests: ProxyData[] = []
+    const mockGroupedRequests: Dictionary<ProxyData[]> = {}
+    const mockScript = 'mock script'
+
+    ;(useGeneratorStore.getState as Mock).mockReturnValue(mockState)
+    ;(selectGeneratorData as Mock).mockReturnValue(mockGeneratorData)
+    ;(selectFilteredRequests as Mock).mockReturnValue(mockRequests)
+    ;(groupProxyData as Mock).mockReturnValue(mockGroupedRequests)
+    ;(generateScriptPreview as Mock).mockResolvedValue(mockScript)
+
+    const { result } = renderHook(() => useScriptPreview())
+
+    await waitFor(() => {
+      expect(result.current.preview).toBe(mockScript)
+      expect(result.current.error).toBeUndefined()
+      expect(result.current.hasError).toBe(false)
+    })
+  })
+
+  it('should set an error when generateScriptPreview throws an error', async () => {
+    const mockState = {}
+    const mockGeneratorData = {}
+    const mockRequests: ProxyData[] = []
+    const mockGroupedRequests: Dictionary<ProxyData[]> = {}
+    const mockError = new Error('mock error')
+
+    ;(useGeneratorStore.getState as Mock).mockReturnValue(mockState)
+    ;(selectGeneratorData as Mock).mockReturnValue(mockGeneratorData)
+    ;(selectFilteredRequests as Mock).mockReturnValue(mockRequests)
+    ;(groupProxyData as Mock).mockReturnValue(mockGroupedRequests)
+    ;(generateScriptPreview as Mock).mockRejectedValue(mockError)
+
+    const { result } = renderHook(() => useScriptPreview())
+
+    await waitFor(() => {
+      expect(result.current.preview).toBe('')
+      expect(result.current.error).toBe(mockError)
+      expect(result.current.hasError).toBe(true)
+    })
+  })
+})
