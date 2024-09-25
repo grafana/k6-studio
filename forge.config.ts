@@ -42,7 +42,12 @@ const config: ForgeConfig = {
       },
     }),
     new MakerZIP({}, ['darwin']),
-    new MakerDMG({}, ['darwin']),
+    new MakerDMG(
+      {
+        icon: './resources/icons/logo.icns',
+      },
+      ['darwin']
+    ),
     new MakerRpm({}),
     new MakerRpm({}),
     new MakerDeb({ options: { icon: './src/assets/icons/logo.png' } }),
