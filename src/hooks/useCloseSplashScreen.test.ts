@@ -2,7 +2,6 @@ import { renderHook } from '@testing-library/react'
 import { useCloseSplashScreen } from './useCloseSplashScreen'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Mock the closeSplashscreen method
 const closeSplashscreen = vi.fn()
 
 beforeAll(() => {
