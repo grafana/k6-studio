@@ -72,6 +72,7 @@ describe('useScriptPreview', () => {
     const mockGroupedRequests: Dictionary<ProxyData[]> = {}
     const mockError = new Error('mock error')
 
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
     ;(useGeneratorStore.getState as Mock).mockReturnValue(mockState)
     ;(selectGeneratorData as Mock).mockReturnValue(mockGeneratorData)
     ;(selectFilteredRequests as Mock).mockReturnValue(mockRequests)
