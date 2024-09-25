@@ -3,6 +3,7 @@
   "productName": "k6 Studio",
   "version": "0.1.1",
   "description": "k6 Studio",
+  "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
