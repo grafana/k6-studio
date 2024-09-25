@@ -495,7 +495,7 @@ ipcMain.on('splashscreen:close', (event) => {
 
   if (splashscreenWindow && !splashscreenWindow.isDestroyed()) {
     splashscreenWindow.close()
-    browserWindow.show()
+    browserWindow.maximize()
     browserWindow.focus()
   }
 })
