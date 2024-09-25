@@ -4,7 +4,6 @@ import { ProxyData } from '@/types'
 
 import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
-import { removeHostFromUrl, removeProtocolFromUrl } from './WebLogView.utils'
 import { TableCellWithTooltip } from '../TableCellWithTooltip'
 
 interface RowProps {
@@ -14,10 +13,6 @@ interface RowProps {
 }
 
 export function Row({ data, isSelected, onSelectRequest }: RowProps) {
-  const pathAndQuery = removeHostFromUrl(
-    removeProtocolFromUrl(data.request.url)
-  )
-
   return (
     <Table.Row
       onClick={() => onSelectRequest(data)}
@@ -48,7 +43,7 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
         <ResponseStatusBadge status={data.response?.statusCode} />
       </Table.Cell>
       <TableCellWithTooltip>{data.request.host}</TableCellWithTooltip>
-      <TableCellWithTooltip>/{pathAndQuery}</TableCellWithTooltip>
+      <TableCellWithTooltip>{data.request.path}</TableCellWithTooltip>
     </Table.Row>
   )
 }
