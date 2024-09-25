@@ -4,6 +4,8 @@ import { Group as GroupType, ProxyData } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
 import { Table } from '@/components/Table'
+import { useMemo } from 'react'
+import { useDeepCompareEffect } from 'react-use'
 
 interface WebLogViewProps {
   requests: ProxyData[]
@@ -21,6 +23,20 @@ export function WebLogView({
   onSelectRequest,
   onUpdateGroup,
 }: WebLogViewProps) {
+  const selectedRequest = useMemo(
+    () => requests.find((data) => data.id === selectedRequestId),
+    [requests, selectedRequestId]
+  )
+
+  // Sync selectedRequest when requests change to show updates in correlation preview
+  useDeepCompareEffect(() => {
+    if (!selectedRequest) {
+      return
+    }
+
+    onSelectRequest(selectedRequest)
+  }, [selectedRequest, onSelectRequest])
+
   if (groups !== undefined) {
     const grouped = groups.map((group) => {
       return {

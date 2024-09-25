@@ -49,6 +49,7 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
                   <WebLogView
                     requests={result.responsesExtracted}
                     onSelectRequest={setSelectedRequest}
+                    selectedRequestId={selectedRequest?.id}
                   />
                 </Box>
                 <Heading size="2" m="2">
@@ -71,7 +72,8 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
                       requests={requestsReplacedToProxyData(
                         result.requestsReplaced
                       )}
-                      onSelectRequest={console.log}
+                      onSelectRequest={setSelectedRequest}
+                      selectedRequestId={selectedRequest?.id}
                     />
                   </>
                 )}
