@@ -19,7 +19,7 @@
 
 ## Related PR(s)/Issue(s)
 
-<!-- - <https://github.com/grafana/...> -->
+<!-- - <https://github.com/grafana/k6-studio/issues/...> -->
 
 <!-- Does it resolve an issue? -->
 
