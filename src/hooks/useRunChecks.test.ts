@@ -1,3 +1,4 @@
+import { createK6Check } from '@/test/factories/k6Check'
 import { useRunChecks } from './useRunChecks'
 import { K6Check } from '@/types'
 import { renderHook } from '@testing-library/react'
@@ -6,22 +7,12 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const onScriptCheck = vi.fn()
 
-function createCheck(check: Partial<K6Check>): K6Check {
-  return {
-    id: '1',
-    name: 'Check',
-    path: 'path',
-    passes: 1,
-    fails: 0,
-    ...check,
-  }
-}
-
 beforeAll(() => {
   window.studio = {
     ...window.studio,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     script: {
-      ...window.studio.script,
       onScriptCheck,
     },
   }
@@ -50,8 +41,8 @@ describe('useRunChecks', () => {
 
   it('should update checks when onScriptCheck is called', () => {
     const mockChecks: K6Check[] = [
-      createCheck({ id: '1', name: 'Check 1' }),
-      createCheck({ id: '2', name: 'Check 2' }),
+      createK6Check({ id: '1', name: 'Check 1' }),
+      createK6Check({ id: '2', name: 'Check 2' }),
     ]
     onScriptCheck.mockImplementation((callback) => {
       callback(mockChecks)
