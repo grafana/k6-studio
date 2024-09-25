@@ -151,7 +151,7 @@ export function generateSingleRequestSnippet(
       }
 
       if (contentTypeHeader.includes('multipart/form-data')) {
-        content = `'${request.content.replace(/(?:\r\n|\r|\n)/g, '\\r\\n')}'`
+        content = `\`${request.content.replace(/(?:\r\n|\r|\n)/g, '\\r\\n')}\``
       }
     }
   } catch (error) {
