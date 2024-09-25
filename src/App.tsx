@@ -9,9 +9,11 @@ import { ElectronToastListener } from './components/EletronToastListener'
 import { DevTools } from './components/DevTools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './utils/query'
+import { useCloseSplashScreen } from './hooks/useCloseSplashScreen'
 
 export function App() {
   const theme = useTheme()
+  useCloseSplashScreen()
 
   return (
     <QueryClientProvider client={queryClient}>
