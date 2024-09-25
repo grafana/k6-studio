@@ -1,7 +1,7 @@
 {
   "name": "k6-studio",
   "productName": "k6 Studio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "k6 Studio",
   "main": ".vite/build/main.js",
   "scripts": {
