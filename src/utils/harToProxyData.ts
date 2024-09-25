@@ -47,7 +47,7 @@ function parseRequest(request: Entry['request']): Request {
     timestampEnd: 0,
     scheme: url.protocol.replace(':', ''),
     host: url.hostname,
-    path: url.pathname,
+    path: url.pathname + url.search,
     contentLength: content.length,
   }
 }

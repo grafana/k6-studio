@@ -3,14 +3,15 @@ import { getContentType } from './headers'
 
 export function isNonStaticAssetResponse(data: ProxyData) {
   const contentType = getContentType(data?.response?.headers ?? [])
+  const pathWithoutQuery = data.request.path.split('?')[0] ?? '/'
 
   if (!contentType) {
-    return !isURLStaticAsset(data.request.path)
+    return !isURLStaticAsset(pathWithoutQuery)
   }
 
   return (
     NON_STATIC_ASSET_MIME_TYPES.includes(contentType) &&
-    !isURLStaticAsset(data.request.path)
+    !isURLStaticAsset(pathWithoutQuery)
   )
 }
 
