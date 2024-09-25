@@ -40,6 +40,7 @@ const config: ForgeConfig = {
         certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
         certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
       },
+      iconUrl: 'file://' + __dirname + '/resources/icons/logo.ico',
     }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG(
