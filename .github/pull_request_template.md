@@ -12,6 +12,8 @@
 
 - [ ] I have performed a self-review of my code.
 - [ ] I have added tests for my changes.
+- [ ] I have run linter locally (`npm run lint`) and all checks pass.
+- [ ] I have run tests locally (`npm test`) and all tests pass.
 - [ ] I have commented on my code, particularly in hard-to-understand areas.
 <!-- - [ ] Any other relevant item -->
 
