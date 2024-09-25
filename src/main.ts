@@ -14,6 +14,7 @@ import {
   FileHandle,
   rename,
 } from 'fs/promises'
+import { updateElectronApp } from 'update-electron-app'
 import { readdirSync, existsSync } from 'fs'
 import path from 'path'
 import eventEmitter from 'events'
@@ -42,6 +43,11 @@ import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import kill from 'tree-kill'
 import find from 'find-process'
+
+// handle auto updates
+if (process.env.NODE_ENV !== 'development') {
+  updateElectronApp()
+}
 
 const proxyEmitter = new eventEmitter()
 
