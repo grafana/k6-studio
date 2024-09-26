@@ -165,7 +165,7 @@ export function Recorder() {
         }
       )
     })
-  }, [validateAndSaveHarFile, showToast])
+  }, [validateAndSaveHarFile, showToast, navigate])
 
   return (
     <View
