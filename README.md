@@ -38,6 +38,12 @@ With **k6 Studio**, you can quickly record a user flow in a browser, generate an
 
 The goal is to provide **a seamless experience** for generating k6 test scripts, making it easier for anyone to create performance tests in an interactive interface.
 
+---
+
+## Demo
+
+https://github.com/user-attachments/assets/46ccd340-804f-4aa5-b3a4-acec9f6a2dcd
+
 ## Installation
 
 k6 Studio is available for Mac and Windows (Linux support coming soon). You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
@@ -81,6 +87,9 @@ k6 Studio is distributed under the [AGPL-3.0 license](https://github.com/grafana
 
 The proxy doesn't capture traffic when sent directly to `localhost`. To fix that, you can assign a hostname to it and make requests through that name.
 To do that, modify the `hosts` file on your system, for example, `127.0.0.1 myapp`, and then you will be able to make requests in the browser at `myapp:8000/path`.
+
+### "Proxy failed to start" error
+If you're on a Mac, make sure you're not running the k6 Studio application from the Downloads folder. If that's the case, close the app, move the application file to the Applications folder, and start the app again.
 
 ---
 
