@@ -40,9 +40,16 @@ const config: ForgeConfig = {
         certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
         certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
       },
+      iconUrl:
+        'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
     new MakerZIP({}, ['darwin']),
-    new MakerDMG({}, ['darwin']),
+    new MakerDMG(
+      {
+        icon: './resources/icons/logo.icns',
+      },
+      ['darwin']
+    ),
     new MakerRpm({}),
     new MakerRpm({}),
     new MakerDeb({ options: { icon: './src/assets/icons/logo.png' } }),
