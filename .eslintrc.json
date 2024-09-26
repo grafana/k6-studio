@@ -21,6 +21,9 @@
   "ignorePatterns": ["resources/group_snippet.js"],
   "plugins": ["import", "unused-imports", "@tanstack/query"],
   "settings": {
+    "react": {
+      "version": "detect"
+    },
     "import/resolver": {
       "typescript": {}
     }
