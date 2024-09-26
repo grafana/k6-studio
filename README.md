@@ -40,7 +40,7 @@ The goal is to provide **a seamless experience** for generating k6 test scripts,
 
 ---
 
-## Introduction
+## Demo
 
 https://github.com/user-attachments/assets/46ccd340-804f-4aa5-b3a4-acec9f6a2dcd
 
