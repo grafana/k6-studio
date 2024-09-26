@@ -48,7 +48,7 @@ export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
                 <RequestDetails data={selectedRequest} />
               </PaneContent>
             </Allotment.Pane>
-            <Allotment.Pane minSize={200}>
+            <Allotment.Pane minSize={200} visible={!!selectedRequest.response}>
               <PaneContent heading="Response">
                 <ResponseDetails data={selectedRequest} />
               </PaneContent>

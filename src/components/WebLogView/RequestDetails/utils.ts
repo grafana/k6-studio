@@ -6,7 +6,7 @@ import { jsonrepair } from 'jsonrepair'
 export function parseParams(data: ProxyData) {
   const hasParams = data.request.query.length || data.request.content
 
-  if (data.request.method === 'OPTIONS' || !data.response || !hasParams) {
+  if (data.request.method === 'OPTIONS' || !hasParams) {
     return
   }
 
