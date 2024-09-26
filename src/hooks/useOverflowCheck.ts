@@ -14,13 +14,14 @@ export function useOverflowCheck(ref: React.RefObject<HTMLElement>) {
     checkOverflow()
 
     const resizeObserver = new ResizeObserver(checkOverflow)
-    if (ref.current) {
-      resizeObserver.observe(ref.current)
+    const currentRef = ref.current
+    if (currentRef) {
+      resizeObserver.observe(currentRef)
     }
 
     return () => {
-      if (ref.current) {
-        resizeObserver.unobserve(ref.current)
+      if (currentRef) {
+        resizeObserver.unobserve(currentRef)
       }
     }
   }, [ref])
