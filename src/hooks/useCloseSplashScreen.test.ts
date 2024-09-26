@@ -5,19 +5,18 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 const closeSplashscreen = vi.fn()
 
 beforeAll(() => {
-  window.studio = {
-    ...window.studio,
+  vi.stubGlobal('studio', {
     app: {
       closeSplashscreen,
     },
-  }
-})
-
-beforeEach(() => {
-  vi.clearAllMocks()
+  })
 })
 
 describe('useCloseSplashScreen', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should call closeSplashscreen on mount', () => {
     renderHook(() => useCloseSplashScreen())
 

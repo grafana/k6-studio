@@ -4,9 +4,10 @@ import { createNewGeneratorFile } from '@/utils/generator'
 import { generateFileNameWithTimestamp } from '@/utils/file'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
-import { beforeEach, describe, expect, it, vi, Mock } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { act } from 'react'
+import { createGeneratorData } from '@/test/factories/generator'
 
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),
@@ -29,26 +30,25 @@ describe('useCreateGenerator', () => {
   const showToast = vi.fn()
 
   beforeEach(() => {
-    ;(useNavigate as Mock).mockReturnValue(navigate)
-    ;(useToast as Mock).mockReturnValue(showToast)
+    vi.mocked(useNavigate).mockReturnValue(navigate)
+    vi.mocked(useToast).mockReturnValue(showToast)
     vi.clearAllMocks()
   })
 
   it('should navigate to the correct path on successful generator creation', async () => {
-    const newGenerator = { id: 'test' }
+    const newGenerator = createGeneratorData()
     const fileName = 'test-file.json'
     const routePath = '/generator/test-file.json'
 
-    ;(createNewGeneratorFile as Mock).mockReturnValue(newGenerator)
-    ;(generateFileNameWithTimestamp as Mock).mockReturnValue(fileName)
-    ;(getRoutePath as Mock).mockReturnValue(routePath)
-    window.studio = {
-      ...window.studio,
+    vi.mocked(createNewGeneratorFile).mockReturnValue(newGenerator)
+    vi.mocked(generateFileNameWithTimestamp).mockReturnValue(fileName)
+    vi.mocked(getRoutePath).mockReturnValue(routePath)
+    vi.stubGlobal('studio', {
       generator: {
         saveGenerator: vi.fn().mockResolvedValue(fileName),
         loadGenerator: vi.fn(),
       },
-    }
+    })
 
     const { result } = renderHook(() => useCreateGenerator())
 
@@ -70,13 +70,12 @@ describe('useCreateGenerator', () => {
 
   it('should show a toast message on failure', async () => {
     const error = new Error('Test error')
-    window.studio = {
-      ...window.studio,
+    vi.stubGlobal('studio', {
       generator: {
         saveGenerator: vi.fn().mockRejectedValue(error),
         loadGenerator: vi.fn(),
       },
-    }
+    })
 
     const { result } = renderHook(() => useCreateGenerator())
 

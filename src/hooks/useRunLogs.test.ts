@@ -6,22 +6,19 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const onScriptLog = vi.fn()
 
-beforeAll(() => {
-  window.studio = {
-    ...window.studio,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    script: {
-      onScriptLog,
-    },
-  }
-})
-
-beforeEach(() => {
-  vi.clearAllMocks()
-})
-
 describe('useRunLogs', () => {
+  beforeAll(() => {
+    vi.stubGlobal('studio', {
+      script: {
+        onScriptLog,
+      },
+    })
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should initialize with an empty array of logs', () => {
     const { result } = renderHook(() => useRunLogs())
 

@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react'
 import React, { useRef } from 'react'
 import { useAutoScroll } from './useAutoScroll'
-import { describe, expect, it, vi, Mock, afterAll } from 'vitest'
+import { describe, expect, it, vi, afterAll } from 'vitest'
 
 vi.mock('react', async () => {
   const actual = await vi.importActual<typeof React>('react')
@@ -19,7 +19,7 @@ describe('useAutoScroll', () => {
   it('should call scrollIntoView when items change and enabled is true', () => {
     const scrollIntoViewMock = vi.fn()
     const bottomRef = { current: { scrollIntoView: scrollIntoViewMock } }
-    ;(useRef as Mock).mockImplementation(() => bottomRef)
+    vi.mocked(useRef).mockImplementation(() => bottomRef)
 
     const { rerender } = renderHook(
       ({ items }: { items: number[] }) => useAutoScroll(items, true),
@@ -39,7 +39,7 @@ describe('useAutoScroll', () => {
   it('should not call scrollIntoView when enabled is false', () => {
     const scrollIntoViewMock = vi.fn()
     const bottomRef = { current: { scrollIntoView: scrollIntoViewMock } }
-    ;(useRef as Mock).mockImplementation(() => bottomRef)
+    vi.mocked(useRef).mockImplementation(() => bottomRef)
 
     const { rerender } = renderHook(
       ({ items, enabled }: { items: number[]; enabled: boolean }) =>
