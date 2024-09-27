@@ -18,8 +18,8 @@ const config: ForgeConfig = {
       './resources/group_snippet.js',
       './resources/checks_snippet.js',
       './resources/splashscreen.html',
-      './src/assets/logo-splashscreen-dark.svg',
-      './src/assets/logo-splashscreen.svg',
+      './resources/logo-splashscreen-dark.svg',
+      './resources/logo-splashscreen.svg',
       './resources/' + getPlatform() + '/' + getArch(),
     ],
     osxSign: {
