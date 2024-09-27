@@ -2,6 +2,11 @@ import { describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useListenProxyData } from './useListenProxyData'
 import { ProxyData } from '@/types'
+import {
+  createProxyData,
+  createProxyDataWithoutResponse,
+  createResponse,
+} from '@/test/factories/proxyData'
 
 type Callback = (data: ProxyData) => void
 
@@ -106,52 +111,13 @@ describe('useListenProxyData', () => {
   })
 })
 
-const request: ProxyData['request'] = {
+const proxyDataWithResponse = createProxyData()
+const proxyDataWithoutResponse = createProxyDataWithoutResponse()
+const responseWith304StatusCode = createResponse({
+  statusCode: 304,
+  content: '',
   headers: [],
-  cookies: [],
-  query: [],
-  scheme: 'http',
-  host: 'example.com',
-  method: 'GET',
-  path: '/api/v1/users',
-  content: null,
-  timestampStart: 0,
-  timestampEnd: 0,
-  contentLength: 0,
-  httpVersion: '1.1',
-  url: 'http://example.com',
-}
-
-const response: ProxyData['response'] = {
-  statusCode: 200,
-  headers: [['content-type', 'application/json']],
-  cookies: [],
-  reason: 'OK',
-  content: '{"hello":"world"}',
-  path: '/api/v1/users',
-  httpVersion: '1.1',
-  timestampStart: 0,
-  contentLength: 0,
-}
-
-const proxyDataWithoutResponse: ProxyData = {
-  id: '1',
-  request,
-}
-
-const proxyDataWithResponse: ProxyData = {
-  id: '1',
-  request,
-  response,
-}
-
-const proxyDataWith304Response: ProxyData = {
-  ...proxyDataWithResponse,
-  request,
-  response: {
-    ...response,
-    statusCode: 304,
-    content: '',
-    headers: [],
-  },
-}
+})
+const proxyDataWith304Response = createProxyData({
+  response: responseWith304StatusCode,
+})
