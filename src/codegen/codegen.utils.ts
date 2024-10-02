@@ -25,7 +25,7 @@ export function stringify(value: unknown): string {
 
 function isRedirect(response: ProxyData['response']) {
   if (!response) return false
-  return response.statusCode >= 300 && response.statusCode < 400
+  return [301, 302].includes(response.statusCode)
 }
 
 function findNextUrl(response: ProxyData['response']) {
