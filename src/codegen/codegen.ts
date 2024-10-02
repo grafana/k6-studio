@@ -17,6 +17,7 @@ import { generateOptions } from './options'
 import { getContentTypeWithCharsetHeader } from '@/utils/headers'
 import { REQUIRED_IMPORTS } from '@/constants/imports'
 import { generateImportStatement } from './imports'
+import { mergeRedirects } from './codegen.utils'
 
 interface GenerateScriptParams {
   recording: GroupedProxyData
@@ -65,8 +66,9 @@ export function generateVUCode(
 
   const groupSnippets = groups
     .map(([groupName, recording]) => {
+      const mergedRecording = mergeRedirects(recording)
       const requestSnippets = generateRequestSnippets(
-        recording,
+        mergedRecording,
         rules,
         correlationStateMap,
         sequentialIdGenerator,
