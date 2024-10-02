@@ -28,7 +28,7 @@ function isRedirect(response: ProxyData['response']) {
   return [301, 302].includes(response.statusCode)
 }
 
-function findNextUrl(response: ProxyData['response']) {
+function getRedirectLocation(response: ProxyData['response']) {
   if (!response || !isRedirect(response)) return undefined
   return getLocationHeader(response.headers)
 }
@@ -60,7 +60,7 @@ export function mergeRedirects(recording: ProxyData[]) {
     }
 
     let finalResponse: ProxyData['response'] = response
-    let nextUrl = findNextUrl(response)
+    let nextUrl = getRedirectLocation(response)
 
     // Find the final response by following the redirect chain
     while (nextUrl) {
@@ -68,7 +68,7 @@ export function mergeRedirects(recording: ProxyData[]) {
       if (nextRequest) {
         processed.add(nextRequest.id)
         finalResponse = nextRequest.response
-        nextUrl = findNextUrl(finalResponse)
+        nextUrl = getRedirectLocation(finalResponse)
       } else {
         break
       }
