@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { stringify } from './codegen.utils'
+import { mergeRedirects, stringify } from './codegen.utils'
+import {
+  createRequest,
+  createResponse,
+  createProxyData,
+} from '@/test/factories/proxyData'
 
 describe('Code generation - utils', () => {
   describe('stringify', () => {
@@ -86,6 +91,52 @@ describe('Code generation - utils', () => {
       expect(stringify(obj).replace(/\s/g, '')).toBe(
         expectedResult.replace(/\s/g, '')
       )
+    })
+  })
+
+  describe('mergeRedirects', () => {
+    const createRedirectMock = (id: string, from: string, to: string) => {
+      const request = createRequest({ url: from })
+      const response = createResponse({
+        statusCode: 301,
+        headers: [['location', to]],
+      })
+      return createProxyData({ id, request, response })
+    }
+
+    it('should return only the first request and last response', () => {
+      const first = createRedirectMock(
+        '1',
+        'http://first.com',
+        'http://second.com'
+      )
+      const last = createProxyData({
+        id: '4',
+        request: createRequest({ url: 'http://last.com' }),
+        response: createResponse({ content: "I'm the last one" }),
+      })
+
+      const recording = [
+        first,
+        createRedirectMock('2', 'http://second.com', 'http://third.com'),
+        createRedirectMock('3', 'http://third.com', 'http://last.com'),
+        last,
+      ]
+
+      expect(mergeRedirects(recording)).toEqual([
+        { ...first, response: last.response },
+      ])
+    })
+
+    it('should not change the request if a redirect is not found', () => {
+      const redirect = createRedirectMock(
+        '1',
+        'http://first.com',
+        'http://not-present-in-recording.com'
+      )
+      const recording = [redirect, createProxyData({ id: '2' })]
+
+      expect(mergeRedirects(recording)).toEqual(recording)
     })
   })
 })
