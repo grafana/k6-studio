@@ -28,9 +28,31 @@ function isRedirect(response: ProxyData['response']) {
   return [301, 302].includes(response.statusCode)
 }
 
-function getRedirectLocation(response: ProxyData['response']) {
+function isValidUrl(url: string) {
+  try {
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function getRedirectUrl(
+  request: ProxyData['request'],
+  response: ProxyData['response']
+) {
   if (!response || !isRedirect(response)) return undefined
-  return getLocationHeader(response.headers)
+  const location = getLocationHeader(response.headers)
+
+  if (!location) return undefined
+  if (isValidUrl(location)) return location
+
+  return buildLocationUrl(request, location)
+}
+
+function buildLocationUrl(request: ProxyData['request'], location: string) {
+  const { protocol, host } = new URL(request.url)
+  return `${protocol}//${host}${location}`
 }
 
 export function mergeRedirects(recording: ProxyData[]) {
@@ -38,7 +60,7 @@ export function mergeRedirects(recording: ProxyData[]) {
   const processed = new Set()
 
   for (const item of recording) {
-    const { response, id } = item
+    const { response, request, id } = item
 
     // Skip requests that have been processed
     if (processed.has(id)) {
@@ -60,7 +82,7 @@ export function mergeRedirects(recording: ProxyData[]) {
     }
 
     let finalResponse: ProxyData['response'] = response
-    let nextUrl = getRedirectLocation(response)
+    let nextUrl = getRedirectUrl(request, response)
 
     // Find the final response by following the redirect chain
     while (nextUrl) {
@@ -68,7 +90,7 @@ export function mergeRedirects(recording: ProxyData[]) {
       if (nextRequest) {
         processed.add(nextRequest.id)
         finalResponse = nextRequest.response
-        nextUrl = getRedirectLocation(finalResponse)
+        nextUrl = getRedirectUrl(request, finalResponse)
       } else {
         break
       }

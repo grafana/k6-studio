@@ -104,7 +104,7 @@ describe('Code generation - utils', () => {
       return createProxyData({ id, request, response })
     }
 
-    it('should return only the first request and last response', () => {
+    it('should resolve redirect chains with absolute URLs', () => {
       const first = createRedirectMock(
         '1',
         'http://first.com',
@@ -120,6 +120,26 @@ describe('Code generation - utils', () => {
         first,
         createRedirectMock('2', 'http://second.com', 'http://third.com'),
         createRedirectMock('3', 'http://third.com', 'http://last.com'),
+        last,
+      ]
+
+      expect(mergeRedirects(recording)).toEqual([
+        { ...first, response: last.response },
+      ])
+    })
+
+    it('should resolve redirect chains with relative path', () => {
+      const first = createRedirectMock('1', 'http://domain.com', '/second')
+      const last = createProxyData({
+        id: '4',
+        request: createRequest({ url: 'http://domain.com/last' }),
+        response: createResponse({ content: "I'm the last one" }),
+      })
+
+      const recording = [
+        first,
+        createRedirectMock('2', 'http://domain.com/second', '/third'),
+        createRedirectMock('3', 'http://domain.com/third', '/last'),
         last,
       ]
 
