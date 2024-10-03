@@ -86,7 +86,10 @@ export function mergeRedirects(recording: ProxyData[]) {
 
     // Find the final response by following the redirect chain
     while (nextUrl) {
-      const nextRequest = recording.find((req) => req.request.url === nextUrl)
+      // Find request that corresponds to the next URL in the chain and that haven't been processed yet
+      const nextRequest = recording.find(
+        (req) => req.request.url === nextUrl && !processed.has(req.id)
+      )
       if (nextRequest) {
         processed.add(nextRequest.id)
         finalResponse = nextRequest.response

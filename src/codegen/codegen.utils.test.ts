@@ -166,6 +166,33 @@ describe('Code generation - utils', () => {
       ])
     })
 
+    it("should resolve redirects to the same URL that don't belong to the redirect chain", () => {
+      // request to "b.com" is made more than once
+      // ensures that the redirect chain is not resolved with the wrong request
+      const requestB = createProxyData({
+        id: '1',
+        request: createRequest({ url: 'http://b.com' }),
+        response: createResponse({ content: "I don't come from a redirect" }),
+      })
+      const redirectFromAToB = createRedirectMock(
+        '2',
+        'http://a.com',
+        'http://b.com'
+      )
+      const requestBFromRedirect = createProxyData({
+        id: '3',
+        request: createRequest({ url: 'http://b.com' }),
+        response: createResponse({ content: "I'm redirected from a.com" }),
+      })
+
+      const recording = [requestB, redirectFromAToB, requestBFromRedirect]
+
+      expect(mergeRedirects(recording)).toEqual([
+        requestB,
+        { ...redirectFromAToB, response: requestBFromRedirect.response },
+      ])
+    })
+
     it('should not change the request if a redirect is not found', () => {
       const redirect = createRedirectMock(
         '1',
