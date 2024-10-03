@@ -148,6 +148,24 @@ describe('Code generation - utils', () => {
       ])
     })
 
+    it('should resolve redirect chains that are out of order', () => {
+      const from = createRedirectMock('1', 'http://a.com', 'http://b.com')
+      const nonRedirect = createProxyData({ id: '2' })
+      const to = createProxyData({
+        id: '3',
+        request: createRequest({ url: 'http://b.com' }),
+        response: createResponse({ content: "I'm the final response" }),
+      })
+
+      // "from" and "to" are not in order
+      const recording = [from, nonRedirect, to]
+
+      expect(mergeRedirects(recording)).toEqual([
+        { ...from, response: to.response },
+        nonRedirect,
+      ])
+    })
+
     it('should not change the request if a redirect is not found', () => {
       const redirect = createRedirectMock(
         '1',
