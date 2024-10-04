@@ -40,3 +40,12 @@ export function upsertHeader(
     [key, value],
   ]
 }
+
+/**
+ * Returns the value of the location header
+ * @example
+ * application/json
+ */
+export function getLocationHeader(headers: Header[]) {
+  return getHeaderValues(headers, 'location')[0]
+}
