@@ -511,8 +511,8 @@ ipcMain.handle('browser:open:external:link', (_, url: string) => {
   shell.openExternal(url)
 })
 
-ipcMain.handle('application:open-log', () => {
-  console.info('application:open-log event received')
+ipcMain.handle('app:open-log', () => {
+  console.info('app:open-log event received')
   openLogFolder()
 })
 

@@ -143,7 +143,7 @@ const app = {
     ipcRenderer.send('splashscreen:close')
   },
   openApplicationLog: () => {
-    ipcRenderer.invoke('application:open-log')
+    ipcRenderer.invoke('app:open-log')
   },
 } as const
 
