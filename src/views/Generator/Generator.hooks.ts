@@ -11,6 +11,7 @@ import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '@/utils/query'
+import log from 'electron-log/renderer'
 
 export function useGeneratorParams() {
   const { fileName } = useParams()
@@ -69,6 +70,7 @@ export function useSaveGeneratorFile(fileName: string) {
         status: 'error',
         description: error.message,
       })
+      log.error(error)
     },
   })
 }

@@ -43,6 +43,8 @@ import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import kill from 'tree-kill'
 import find from 'find-process'
+import { initializeLogger } from './logger'
+import log from 'electron-log/main'
 
 // handle auto updates
 if (process.env.NODE_ENV !== 'development') {
@@ -66,6 +68,8 @@ let splashscreenWindow: BrowserWindow
 if (require('electron-squirrel-startup')) {
   app.quit()
 }
+
+initializeLogger()
 
 const createSplashWindow = async () => {
   splashscreenWindow = new BrowserWindow({
@@ -338,9 +342,10 @@ ipcMain.handle(
       })
     } catch (error) {
       sendToast(browserWindow.webContents, {
-        title: 'There was an error exporting the script',
+        title: 'Failed to export the script',
         status: 'error',
       })
+      log.error(error)
     }
   }
 )
@@ -476,6 +481,7 @@ ipcMain.handle(
 
       await rename(oldPath, newPath)
     } catch (e) {
+      log.error(e)
       browserWindow &&
         sendToast(browserWindow.webContents, {
           title: 'Failed to rename file',

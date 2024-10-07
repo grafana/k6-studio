@@ -7,6 +7,7 @@ import { readFile } from 'fs/promises'
 import { ProxyData } from './types'
 import readline from 'readline/promises'
 import { safeJsonParse } from './utils/json'
+import log from 'electron-log/main'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
@@ -75,6 +76,7 @@ export const launchProxy = (
 
   proxy.stderr.on('data', (data) => {
     console.error(`stderr: ${data}`)
+    log.error(data.toString())
   })
 
   proxy.on('close', (code) => {

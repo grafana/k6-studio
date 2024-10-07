@@ -18,6 +18,7 @@ import {
 } from '../Generator.hooks'
 import { useToast } from '@/store/ui/useToast'
 import { getScriptNameWithExtension } from './ExportScriptDialog.utils'
+import log from 'electron-log/renderer'
 
 export function ExportScriptDialog({
   open,
@@ -72,6 +73,7 @@ export function ExportScriptDialog({
         status: 'error',
         title: 'Failed to update script name',
       })
+      log.error(error)
     }
   }
 

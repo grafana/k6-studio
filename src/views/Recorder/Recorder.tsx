@@ -22,6 +22,7 @@ import { useToast } from '@/store/ui/useToast'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+import log from 'electron-log/renderer'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -63,12 +64,13 @@ export function Recorder() {
       await startRecording()
 
       setRecorderState('recording')
-    } catch {
+    } catch (error) {
       setRecorderState('idle')
       showToast({
-        title: 'There was an error starting the recording',
+        title: 'Failed to start recording',
         status: 'error',
       })
+      log.error(error)
     }
   }, [resetProxyData, showToast])
 
