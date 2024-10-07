@@ -4,15 +4,15 @@ import path from 'node:path'
 
 export function initializeLogger() {
   // allow logs to be triggered from the renderer process
-  // @see https://github.com/megahertz/electron-log/blob/master/docs/initialize.md
+  // https://github.com/megahertz/electron-log/blob/master/docs/initialize.md
   log.initialize()
 
   // log electron core events
-  // @see https://github.com/megahertz/electron-log/blob/master/docs/events.md
+  // https://github.com/megahertz/electron-log/blob/master/docs/events.md
   log.eventLogger.startLogging()
 
   // log uncaught exceptions
-  // @see https://github.com/megahertz/electron-log/blob/master/docs/errors.md
+  // https://github.com/megahertz/electron-log/blob/master/docs/errors.md
   log.errorHandler.startCatching()
 
   log.transports.file.fileName = 'k6-studio.log'
