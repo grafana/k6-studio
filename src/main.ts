@@ -43,7 +43,7 @@ import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import kill from 'tree-kill'
 import find from 'find-process'
-import { initializeLogger } from './logger'
+import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
 
 // handle auto updates
@@ -509,6 +509,11 @@ ipcMain.on('splashscreen:close', (event) => {
 ipcMain.handle('browser:open:external:link', (_, url: string) => {
   console.info('browser:open:external:link event received')
   shell.openExternal(url)
+})
+
+ipcMain.handle('application:open-log', () => {
+  console.info('application:open-log event received')
+  openLogFolder()
 })
 
 const browserWindowFromEvent = (

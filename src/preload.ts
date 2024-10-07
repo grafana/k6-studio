@@ -142,6 +142,9 @@ const app = {
   closeSplashscreen: () => {
     ipcRenderer.send('splashscreen:close')
   },
+  openApplicationLog: () => {
+    ipcRenderer.invoke('application:open-log')
+  },
 } as const
 
 const studio = {

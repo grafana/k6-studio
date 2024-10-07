@@ -1,4 +1,6 @@
 import log from 'electron-log/main'
+import { spawn } from 'node:child_process'
+import path from 'node:path'
 
 export function initializeLogger() {
   // allow logs to be triggered from the renderer process
@@ -17,4 +19,11 @@ export function initializeLogger() {
   if (process.env.NODE_ENV === 'development') {
     log.transports.file.fileName = 'k6-studio-dev.log'
   }
+}
+
+export function openLogFolder() {
+  const logFile = log.transports.file.getFile().path
+  const logPath = path.dirname(logFile)
+  const executable = process.platform === 'darwin' ? 'open' : 'explorer'
+  spawn(executable, [logPath])
 }

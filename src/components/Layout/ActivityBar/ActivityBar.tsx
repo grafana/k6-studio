@@ -7,6 +7,7 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { VersionLabel } from './VersionLabel'
 import { HomeIcon } from '@/components/icons'
 import { NavIconButton } from './NavIconButton'
+import { ApplicationLogButton } from './ApplicationLogButton'
 
 export function ActivityBar() {
   return (
@@ -40,6 +41,7 @@ export function ActivityBar() {
 
         <Flex direction="column" align="center" gap="3" mt="auto">
           <ThemeSwitcher />
+          <ApplicationLogButton />
           <VersionLabel />
         </Flex>
       </Box>
