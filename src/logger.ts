@@ -24,6 +24,8 @@ export function initializeLogger() {
 export function openLogFolder() {
   const logFile = log.transports.file.getFile().path
   const logPath = path.dirname(logFile)
+
+  // supports only Mac and Windows at this time
   const executable = process.platform === 'darwin' ? 'open' : 'explorer'
   spawn(executable, [logPath])
 }
