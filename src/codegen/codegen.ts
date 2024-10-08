@@ -1,11 +1,4 @@
-import {
-  GroupedProxyData,
-  ProxyData,
-  RequestSnippetSchema,
-  Request,
-  Header,
-  Cookie,
-} from '@/types'
+import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
 import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { applyRule } from '@/rules/rules'
 import { generateSequentialInt } from '@/rules/utils'
@@ -181,7 +174,7 @@ function generateSleep(timing: ThinkTime['timing']): string {
   }
 }
 
-function generateRequestParams(request: ProxyData['request']): string {
+export function generateRequestParams(request: ProxyData['request']): string {
   const headersToExclude = ['Cookie', 'User-Agent', 'Host', 'Content-Length']
   const headers = request.headers
     .filter(([name]) => !headersToExclude.includes(name))
@@ -203,97 +196,6 @@ function generateRequestParams(request: ProxyData['request']): string {
       }
     }
   `
-}
-
-// @ts-expect-error we have commonjs set as module option
-if (import.meta.vitest) {
-  // @ts-expect-error we have commonjs set as module option
-  const { it, expect } = import.meta.vitest
-
-  const generateRequest = (
-    headers: Header[],
-    cookies: Cookie[] = [['security', 'none']]
-  ): Request => {
-    return {
-      method: 'POST',
-      url: 'http://test.k6.io/api/v1/foo',
-      headers,
-      cookies: cookies,
-      query: [],
-      scheme: 'http',
-      host: 'localhost:3000',
-      content: '',
-      path: '/api/v1/foo',
-      timestampStart: 0,
-      timestampEnd: 0,
-      contentLength: 0,
-      httpVersion: '1.1',
-    }
-  }
-
-  it('generate request params', () => {
-    const headers: Header[] = [['content-type', 'application/json']]
-    const request = generateRequest(headers)
-
-    const expectedResult = `
-    {
-      headers: {
-        'content-type': \`application/json\`
-      },
-      cookies: {
-
-      }
-    }
-  `
-    expect(generateRequestParams(request).replace(/\s/g, '')).toBe(
-      expectedResult.replace(/\s/g, '')
-    )
-  })
-
-  it('generate request params with cookie header', () => {
-    const headers: Header[] = [
-      ['content-type', 'application/json'],
-      ['Cookie', 'hello=world'],
-    ]
-    const request = generateRequest(headers)
-
-    const expectedResult = `
-    {
-      headers: {
-        'content-type': \`application/json\`
-      },
-      cookies: {
-
-      }
-    }
-  `
-    expect(generateRequestParams(request).replace(/\s/g, '')).toBe(
-      expectedResult.replace(/\s/g, '')
-    )
-  })
-
-  it('generate request params with cookies with correlation', () => {
-    const headers: Header[] = [
-      ['content-type', 'application/json'],
-      ['Cookie', "security=${correlation_vars['correlation_0']}"],
-    ]
-    const cookies: Cookie[] = [
-      ['security', "${correlation_vars['correlation_0']}"],
-    ]
-    const request = generateRequest(headers, cookies)
-
-    const expectedResult = `
-    {
-      headers: {
-        'content-type': \`application/json\`
-      },
-      cookies: {
-        'security': {value: \`\${correlation_vars['correlation_0']}\`, replace: true}
-      }
-    }
-  `
-    expect(generateRequestParams(request)).toBe(expectedResult)
-  })
 }
 
 const generateScriptHeader = () => {

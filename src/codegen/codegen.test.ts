@@ -4,13 +4,16 @@ import {
   generateRequestSnippets,
   generateVariableDeclarations,
   generateGroupSnippet,
+  generateRequestParams,
 } from './codegen'
 import { CorrelationStateMap, TestRule } from '@/types/rules'
 import { generateSequentialInt } from '@/rules/utils'
-import { ProxyData } from '@/types'
+import { Cookie, Header, ProxyData, Request } from '@/types'
 import { correlationRecording } from '@/test/fixtures/correlationRecording'
 import { checksRecording } from '@/test/fixtures/checksRecording'
 import { ThinkTime } from '@/types/testOptions'
+import { createProxyData, createRequest } from '@/test/factories/proxyData'
+import { jsonRule } from '@/test/fixtures/parameterizationRules'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
 
@@ -247,6 +250,45 @@ describe('Code generation', () => {
         ).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
+
+    it('should replace paremeterization values', () => {
+      const recording = createProxyData({
+        request: createRequest({
+          method: 'POST',
+          url: 'http://test.k6.io/api/v1/users',
+          content: JSON.stringify({ user_id: '333' }),
+          headers: [['content-type', 'application/json']],
+        }),
+      })
+
+      const rules: TestRule[] = [jsonRule]
+
+      const correlationStateMap: CorrelationStateMap = {}
+      const sequentialIdGenerator = generateSequentialInt()
+      const thinkTime: ThinkTime = {
+        sleepType: 'iterations',
+        timing: {
+          type: 'fixed',
+          value: 1,
+        },
+      }
+
+      const expectedResult = `
+        params = { headers: { 'content-type': \`application/json\` }, cookies: {} }
+        url = http.url\`http://test.k6.io/api/v1/users\`
+        resp = http.request('POST', url, \`${JSON.stringify({ user_id: 'TEST_ID' })}\`, params)
+      `
+
+      expect(
+        generateRequestSnippets(
+          [recording],
+          rules,
+          correlationStateMap,
+          sequentialIdGenerator,
+          thinkTime
+        ).replace(/\s/g, '')
+      ).toBe(expectedResult.replace(/\s/g, ''))
+    })
   })
 
   describe('generateGroupSnippet', () => {
@@ -265,6 +307,93 @@ describe('Code generation', () => {
           },
         }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
+    })
+  })
+
+  describe('generateRequestParams', () => {
+    const generateRequest = (
+      headers: Header[],
+      cookies: Cookie[] = [['security', 'none']]
+    ): Request => {
+      return {
+        method: 'POST',
+        url: 'http://test.k6.io/api/v1/foo',
+        headers,
+        cookies: cookies,
+        query: [],
+        scheme: 'http',
+        host: 'localhost:3000',
+        content: '',
+        path: '/api/v1/foo',
+        timestampStart: 0,
+        timestampEnd: 0,
+        contentLength: 0,
+        httpVersion: '1.1',
+      }
+    }
+
+    it('generate request params', () => {
+      const headers: Header[] = [['content-type', 'application/json']]
+      const request = generateRequest(headers)
+
+      const expectedResult = `
+    {
+      headers: {
+        'content-type': \`application/json\`
+      },
+      cookies: {
+
+      }
+    }
+  `
+      expect(generateRequestParams(request).replace(/\s/g, '')).toBe(
+        expectedResult.replace(/\s/g, '')
+      )
+    })
+
+    it('generate request params with cookie header', () => {
+      const headers: Header[] = [
+        ['content-type', 'application/json'],
+        ['Cookie', 'hello=world'],
+      ]
+      const request = generateRequest(headers)
+
+      const expectedResult = `
+    {
+      headers: {
+        'content-type': \`application/json\`
+      },
+      cookies: {
+
+      }
+    }
+  `
+      expect(generateRequestParams(request).replace(/\s/g, '')).toBe(
+        expectedResult.replace(/\s/g, '')
+      )
+    })
+
+    it('generate request params with cookies with correlation', () => {
+      const headers: Header[] = [
+        ['content-type', 'application/json'],
+        ['Cookie', "security=${correlation_vars['correlation_0']}"],
+      ]
+      const cookies: Cookie[] = [
+        ['security', "${correlation_vars['correlation_0']}"],
+      ]
+      const request = generateRequest(headers, cookies)
+
+      const expectedResult = `
+    {
+      headers: {
+        'content-type': \`application/json\`
+      },
+      cookies: {
+        'security': {value: \`\${correlation_vars['correlation_0']}\`, replace: true}
+      }
+    }
+  `
+      expect(generateRequestParams(request)).toBe(expectedResult)
     })
   })
 })

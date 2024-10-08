@@ -1,8 +1,98 @@
 import { get, set } from 'lodash-es'
 import { safeJsonParse } from '@/utils/json'
 import { Header, Request, Cookie } from '@/types'
-import { BeginEndSelector, JsonSelector, RegexSelector } from '@/types/rules'
+import {
+  BeginEndSelector,
+  JsonSelector,
+  RegexSelector,
+  Selector,
+} from '@/types/rules'
 import { isJsonReqResp } from './utils'
+import { exhaustive } from '@/utils/typescript'
+
+export function replaceRequestValues({
+  selector,
+  value,
+  request,
+}: {
+  selector: Selector
+  request: Request
+  value: string
+}) {
+  switch (selector.type) {
+    case 'begin-end':
+      return replaceBeginEnd(selector, request, value)
+    case 'regex':
+      return replaceRegex(selector, request, value)
+    case 'json':
+      return replaceJsonBody(selector, request, value)
+    default:
+      return exhaustive(selector)
+  }
+}
+
+const replaceBeginEnd = (
+  selector: BeginEndSelector,
+  request: Request,
+  variableName: string
+) => {
+  switch (selector.from) {
+    case 'body':
+      return replaceBeginEndBody(selector, request, variableName)
+    case 'headers':
+      return replaceBeginEndHeaders(selector, request, variableName)
+    case 'url':
+      return replaceBeginEndUrl(selector, request, variableName)
+    default:
+      return exhaustive(selector.from)
+  }
+}
+
+const replaceRegex = (
+  selector: RegexSelector,
+  request: Request,
+  variableName: string
+) => {
+  switch (selector.from) {
+    case 'body':
+      return replaceRegexBody(selector, request, variableName)
+    case 'headers':
+      return replaceRegexHeaders(selector, request, variableName)
+    case 'url':
+      return replaceRegexUrl(selector, request, variableName)
+    default:
+      return exhaustive(selector.from)
+  }
+}
+
+export function replaceTextMatches(
+  request: Request,
+  extractedValue: string,
+  variableName: string
+): Request {
+  const content = replaceContent(request.content, extractedValue, variableName)
+  const url = replaceUrl(request.url, extractedValue, variableName)
+  const path = request.path.replaceAll(extractedValue, `\${${variableName}}`)
+  const headers: Header[] = replaceHeaders(
+    request.headers,
+    extractedValue,
+    variableName
+  )
+  const cookies: Cookie[] = replaceCookies(
+    request.cookies,
+    extractedValue,
+    variableName
+  )
+
+  return {
+    ...request,
+    content,
+    url,
+    path,
+    headers,
+    cookies,
+  }
+}
 
 export const matchBeginEnd = (value: string, begin: string, end: string) => {
   // matches only the first occurrence
@@ -39,26 +129,22 @@ export const setJsonObjectFromPath = (
 export const replaceContent = (
   content: string | null,
   value: string,
-  variableName: string
+  newValue: string
 ) => {
-  return content?.replaceAll(value, `\${${variableName}}`) ?? null
+  return content?.replaceAll(value, newValue) ?? null
 }
 
-export const replaceUrl = (
-  url: string,
-  value: string,
-  variableName: string
-) => {
-  return url.replaceAll(value, `\${${variableName}}`)
+export const replaceUrl = (url: string, value: string, newValue: string) => {
+  return url.replaceAll(value, newValue)
 }
 
 export const replaceHeaders = (
   headers: Header[],
   value: string,
-  variableName: string
+  newValue: string
 ): Header[] => {
   return headers.map(([key, headerValue]) => {
-    const replacedValue = headerValue.replaceAll(value, `\${${variableName}}`)
+    const replacedValue = headerValue.replaceAll(value, newValue)
     return [key, replacedValue]
   })
 }
@@ -66,10 +152,10 @@ export const replaceHeaders = (
 export const replaceCookies = (
   cookies: Cookie[],
   value: string,
-  variableName: string
+  newValue: string
 ): Cookie[] => {
   return cookies.map(([key, cookieValue]) => {
-    const replacedValue = cookieValue.replaceAll(value, `\${${variableName}}`)
+    const replacedValue = cookieValue.replaceAll(value, newValue)
     return [key, replacedValue]
   })
 }
@@ -173,7 +259,7 @@ export const replaceRegexUrl = (
 export const replaceJsonBody = (
   selector: JsonSelector,
   request: Request,
-  variableName: string
+  value: string
 ) => {
   if (!isJsonReqResp(request) || !request.content) {
     return request
@@ -184,11 +270,7 @@ export const replaceJsonBody = (
   const valueToReplace = getJsonObjectFromPath(request.content, selector.path)
   if (!valueToReplace) return request
 
-  const content = setJsonObjectFromPath(
-    request.content,
-    selector.path,
-    `\${${variableName}}`
-  )
+  const content = setJsonObjectFromPath(request.content, selector.path, value)
   return { ...request, content }
 }
 
@@ -256,7 +338,7 @@ if (import.meta.vitest) {
 
   it('replace content', () => {
     const request = generateRequest('<div>hello</div>')
-    expect(replaceContent(request.content, 'hello', 'correl_0')).toBe(
+    expect(replaceContent(request.content, 'hello', '${correl_0}')).toBe(
       '<div>${correl_0}</div>'
     )
     expect(replaceContent(request.content, 'world', 'correl_0')).toBe(
@@ -267,16 +349,16 @@ if (import.meta.vitest) {
   it('replace headers', () => {
     const request = generateRequest('')
     expect(
-      replaceHeaders(request.headers, 'application', 'correl_0')[0]
+      replaceHeaders(request.headers, 'application', '${correl_0}')[0]
     ).toStrictEqual(['content-type', '${correl_0}/json'])
     expect(
-      replaceHeaders(request.headers, 'protobuf', 'correl_0')[0]
+      replaceHeaders(request.headers, 'protobuf', '${correl_0}')[0]
     ).toStrictEqual(['content-type', 'application/json'])
   })
 
   it('replace url', () => {
     const request = generateRequest('')
-    expect(replaceUrl(request.url, 'api', 'correl_0')).toBe(
+    expect(replaceUrl(request.url, 'api', '${correl_0}')).toBe(
       'http://test.k6.io/${correl_0}/v1/foo'
     )
     expect(replaceUrl(request.url, 'jumanji', 'correl_0')).toBe(
@@ -286,10 +368,9 @@ if (import.meta.vitest) {
 
   it('replace cookies', () => {
     const request = generateRequest('')
-    expect(replaceCookies(request.cookies, 'on', 'correl_0')[0]).toStrictEqual([
-      'security',
-      'n${correl_0}e',
-    ])
+    expect(
+      replaceCookies(request.cookies, 'on', '${correl_0}')[0]
+    ).toStrictEqual(['security', 'n${correl_0}e'])
     expect(
       replaceCookies(request.cookies, 'notincookie', 'correl_0')[0]
     ).toStrictEqual(['security', 'none'])
@@ -306,7 +387,7 @@ if (import.meta.vitest) {
       replaceBeginEndBody(
         selector,
         generateRequest('<div>hello</div>'),
-        'correl_0'
+        '${correl_0}'
       ).content
     ).toBe('<div>${correl_0}</div>')
     expect(
@@ -330,7 +411,7 @@ if (import.meta.vitest) {
       end: 'world',
     }
     expect(
-      replaceBeginEndHeaders(selectorMatch, request, 'correl_0').headers[0]
+      replaceBeginEndHeaders(selectorMatch, request, '${correl_0}').headers[0]
     ).toStrictEqual(['content-type', 'application${correl_0}json'])
     expect(
       replaceBeginEndHeaders(selectorNotMatch, request, 'correl_0').headers[0]
@@ -351,7 +432,7 @@ if (import.meta.vitest) {
       begin: 'supercali',
       end: 'fragilisti',
     }
-    expect(replaceBeginEndUrl(selectorMatch, request, 'correl_0').url).toBe(
+    expect(replaceBeginEndUrl(selectorMatch, request, '${correl_0}').url).toBe(
       'http://test.k6.io/${correl_0}/v1/foo'
     )
     expect(replaceBeginEndUrl(selectorNotMatch, request, 'correl_0').url).toBe(
@@ -369,7 +450,7 @@ if (import.meta.vitest) {
       replaceRegexBody(
         selector,
         generateRequest('<div>hello</div>'),
-        'correl_0'
+        '${correl_0}'
       ).content
     ).toBe('<div>${correl_0}</div>')
     expect(
@@ -391,7 +472,7 @@ if (import.meta.vitest) {
       regex: 'hello(.*?)world',
     }
     expect(
-      replaceRegexHeaders(selectorMatch, request, 'correl_0').headers[0]
+      replaceRegexHeaders(selectorMatch, request, '${correl_0}').headers[0]
     ).toStrictEqual(['content-type', 'application${correl_0}json'])
     expect(
       replaceRegexHeaders(selectorNotMatch, request, 'correl_0').headers[0]
@@ -410,7 +491,7 @@ if (import.meta.vitest) {
       from: 'url',
       regex: 'supercali(.*?)fragilisti',
     }
-    expect(replaceRegexUrl(selectorMatch, request, 'correl_0').url).toBe(
+    expect(replaceRegexUrl(selectorMatch, request, '${correl_0}').url).toBe(
       'http://test.k6.io/${correl_0}/v1/foo'
     )
     expect(replaceRegexUrl(selectorNotMatch, request, 'correl_0').url).toBe(
@@ -438,21 +519,21 @@ if (import.meta.vitest) {
       replaceJsonBody(
         selectorMatch,
         generateRequest('{"hello":"world"}'),
-        'correl_0'
+        '${correl_0}'
       ).content
     ).toBe('{"hello":"${correl_0}"}')
     expect(
       replaceJsonBody(
         selectorNotMatch,
         generateRequest('{"hello":"world"}'),
-        'correl_0'
+        '${correl_0}'
       ).content
     ).toBe('{"hello":"world"}')
     expect(
       replaceJsonBody(
         selectorMatchArray,
         generateRequest('[{"hello":"world"}]'),
-        'correl_0'
+        '${correl_0}'
       ).content
     ).toBe('[{"hello":"${correl_0}"}]')
   })
