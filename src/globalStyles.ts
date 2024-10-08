@@ -20,4 +20,9 @@ export const globalStyles = css`
   .rt-ScrollAreaScrollbar {
     z-index: 2;
   }
+
+  /* Allow to truncate text in Select options */
+  .rt-SelectItem > span:not(.rt-SelectItemIndicator) {
+    width: 100%;
+  }
 `

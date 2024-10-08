@@ -10,6 +10,7 @@ import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
 import { TestRule } from '@/types/rules'
 import { TestRuleSchema } from '@/schemas/rules'
+import { ParameterizationEditor } from './ParameterizationEditor'
 
 export function RuleEditorSwitch() {
   const { watch } = useFormContext<TestRule>()
@@ -21,14 +22,16 @@ export function RuleEditorSwitch() {
     case 'customCode':
       return <CustomCodeEditor />
     case 'parameterization':
-      return (
-        <Callout.Root>
-          <Callout.Icon>
-            <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>Not implemented yet</Callout.Text>
-        </Callout.Root>
-      )
+      return <ParameterizationEditor />
+
+    // return (
+    // <Callout.Root>
+    // <Callout.Icon>
+    // <InfoCircledIcon />
+    // </Callout.Icon>
+    // <Callout.Text>Not implemented yet</Callout.Text>
+    // </Callout.Root>
+    // )
     case 'verification':
       return (
         <Callout.Root>

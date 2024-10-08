@@ -78,7 +78,8 @@ export const VerificationRuleSelectorSchema = z.discriminatedUnion('type', [
   BeginEndSelectorSchema,
   RegexSelectorSchema,
   JsonSelectorSchema,
-  StatusCodeSelectorSchema,
+  // TODO: verify if save to disable
+  // StatusCodeSelectorSchema,
 ])
 
 export const CorrelationExtractorSchema = z.object({
