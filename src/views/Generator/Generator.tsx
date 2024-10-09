@@ -24,6 +24,7 @@ import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { RuleEditor } from './RuleEditor'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import log from 'electron-log/renderer'
 
 export function Generator() {
   const selectedRule = useGeneratorStore(selectSelectedRule)
@@ -69,7 +70,7 @@ export function Generator() {
         title: 'Failed to load generator',
         status: 'error',
       })
-
+      log.error(generatorError)
       navigate(getRoutePath('home'), { replace: true })
     }
   }, [generatorError, showToast, navigate])
@@ -81,6 +82,7 @@ export function Generator() {
         status: 'error',
         description: 'Select another recording in the sidebar',
       })
+      log.error(harError)
     }
   }, [harError, showToast])
 

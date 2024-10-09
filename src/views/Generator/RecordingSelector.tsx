@@ -7,6 +7,7 @@ import { harToProxyData } from '@/utils/harToProxyData'
 import { useStudioUIStore } from '@/store/ui'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { useToast } from '@/store/ui/useToast'
+import log from 'electron-log/renderer'
 
 export function RecordingSelector() {
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
@@ -25,6 +26,7 @@ export function RecordingSelector() {
         title: 'Failed to open recording',
         status: 'error',
       })
+      log.error(error)
     }
   }
 
@@ -40,6 +42,7 @@ export function RecordingSelector() {
         title: 'Failed to import recording',
         status: 'error',
       })
+      log.error(error)
     }
   }
 

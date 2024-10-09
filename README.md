@@ -91,6 +91,15 @@ To do that, modify the `hosts` file on your system, for example, `127.0.0.1 myap
 ### "Proxy failed to start" error
 If you're on a Mac, make sure you're not running the k6 Studio application from the Downloads folder. If that's the case, close the app, move the application file to the Applications folder, and start the app again.
 
+### Application logs
+
+Application logs are saved in the following directory:
+
+- on Mac: `~/Library/Logs/k6 Studio/k6-studio.log`
+- on Windows: `%USERPROFILE%\AppData\Roaming\k6 Studio\logs\k6-studio.log`
+
+When opening an issue, please include a tail of your log file.
+
 ---
 
 ## Development

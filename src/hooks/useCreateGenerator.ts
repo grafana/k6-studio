@@ -5,6 +5,7 @@ import { generateFileNameWithTimestamp } from '@/utils/file'
 import { createNewGeneratorFile } from '@/utils/generator'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
+import log from 'electron-log/renderer'
 
 export function useCreateGenerator() {
   const navigate = useNavigate()
@@ -26,6 +27,7 @@ export function useCreateGenerator() {
         status: 'error',
         title: 'Failed to create generator',
       })
+      log.error(error)
     }
   }, [navigate, showToast])
 

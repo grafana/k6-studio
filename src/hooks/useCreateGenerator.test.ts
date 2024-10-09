@@ -24,6 +24,11 @@ vi.mock('@/routeMap', () => ({
 vi.mock('@/store/ui/useToast', () => ({
   useToast: vi.fn(),
 }))
+vi.mock('electron-log/renderer', () => ({
+  default: {
+    error: vi.fn(),
+  },
+}))
 
 describe('useCreateGenerator', () => {
   const navigate = vi.fn()
