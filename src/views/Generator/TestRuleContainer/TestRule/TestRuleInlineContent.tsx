@@ -3,6 +3,7 @@ import {
   CustomCodeRule,
   TestRule,
   VerificationRule,
+  ParameterizationRule,
 } from '@/types/rules'
 import { TestRuleFilter } from './TestRuleFilter'
 import { Badge, Tooltip } from '@radix-ui/themes'
@@ -26,7 +27,7 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
     case 'customCode':
       return <CustomCodeContent rule={rule} />
     case 'parameterization':
-      return null
+      return <ParameterizationContent rule={rule} />
     case 'verification':
       return <VerificationContent rule={rule} />
     default:
@@ -51,7 +52,16 @@ function CorrelationContent({ rule }: { rule: CorrelationRule }) {
   return (
     <>
       <TestRuleFilter filter={rule.extractor.filter} />
-      <TestRuleSelector selector={rule.extractor.selector} />
+      <TestRuleSelector rule={rule} />
+    </>
+  )
+}
+
+function ParameterizationContent({ rule }: { rule: ParameterizationRule }) {
+  return (
+    <>
+      <TestRuleFilter filter={rule.filter} />
+      <TestRuleSelector rule={rule} />
     </>
   )
 }
