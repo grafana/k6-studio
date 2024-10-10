@@ -13,11 +13,13 @@ import { RecordingPreviewer } from '@/views/RecordingPreviewer'
 import { Generator } from '@/views/Generator/Generator'
 import { Validator } from '@/views/Validator'
 import { routeMap } from './routeMap'
+import { Settings } from './views/Settings/Settings'
 
 const router = createHashRouter(
   createRoutesFromChildren(
     <Route path={routeMap.home} element={<Layout />}>
       <Route index element={<Home />} />
+      <Route path={routeMap.settings} element={<Settings />} />
       <Route path={routeMap.recorder} element={<Recorder />} />
       <Route
         path={routeMap.recordingPreviewer}

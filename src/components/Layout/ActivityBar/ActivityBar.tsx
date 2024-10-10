@@ -8,6 +8,7 @@ import { VersionLabel } from './VersionLabel'
 import { HomeIcon } from '@/components/icons'
 import { NavIconButton } from './NavIconButton'
 import { ApplicationLogButton } from './ApplicationLogButton'
+import { SettingsButton } from './SettingsButton'
 
 export function ActivityBar() {
   return (
@@ -41,6 +42,7 @@ export function ActivityBar() {
 
         <Flex direction="column" align="center" gap="3" mt="auto">
           <ThemeSwitcher />
+          <SettingsButton />
           <ApplicationLogButton />
           <VersionLabel />
         </Flex>
