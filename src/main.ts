@@ -45,6 +45,8 @@ import kill from 'tree-kill'
 import find from 'find-process'
 import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
+import { AppSettings } from './schemas/appSettings'
+import { getSettings, saveSettings } from './settings'
 
 // handle auto updates
 if (process.env.NODE_ENV !== 'development') {
@@ -57,7 +59,7 @@ const proxyEmitter = new eventEmitter()
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
 let proxyReady = false
-export let proxyPort = 6000
+export let appSettings: AppSettings
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
@@ -157,6 +159,7 @@ const createWindow = async () => {
 }
 
 app.whenReady().then(async () => {
+  appSettings = await getSettings()
   await createSplashWindow()
   await setupProjectStructure()
   await createWindow()
@@ -188,11 +191,11 @@ app.on('before-quit', async () => {
 })
 
 // Proxy
-ipcMain.handle('proxy:start', async (event, port?: number) => {
+ipcMain.handle('proxy:start', async (event) => {
   console.info('proxy:start event received')
 
   const browserWindow = browserWindowFromEvent(event)
-  currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow, port)
+  currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 })
 
 ipcMain.on('proxy:stop', async () => {
@@ -292,7 +295,7 @@ ipcMain.handle(
     currentk6Process = await runScript(
       browserWindow,
       resolvedScriptPath,
-      proxyPort
+      appSettings.proxy.port
     )
   }
 )
@@ -506,6 +509,29 @@ ipcMain.handle('app:open-log', () => {
   openLogFolder()
 })
 
+ipcMain.handle('settings:get', async () => {
+  console.info('settings:get event received')
+  return await getSettings()
+})
+
+ipcMain.handle('settings:save', async (event, data: AppSettings) => {
+  console.info('settings:save event received')
+  const diff = await saveSettings(data)
+  const browserWindow = browserWindowFromEvent(event)
+  applySettings(diff, browserWindow)
+})
+
+async function applySettings(
+  diff: Partial<AppSettings>,
+  browserWindow: BrowserWindow
+) {
+  if (diff.proxy) {
+    stopProxyProcess()
+    currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
+    appSettings.proxy = diff.proxy
+  }
+}
+
 const browserWindowFromEvent = (
   event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
 ) => {
@@ -518,19 +544,15 @@ const browserWindowFromEvent = (
   return browserWindow
 }
 
-const launchProxyAndAttachEmitter = async (
-  browserWindow: BrowserWindow,
-  port: number = proxyPort
-) => {
-  // confirm that the port is still open and if not get the next open one
-  const availableOpenport = await findOpenPort(port)
-  console.log(`proxy open port found: ${availableOpenport}`)
+const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
+  const { port, findPort } = appSettings.proxy
 
-  if (availableOpenport !== proxyPort) {
-    proxyPort = availableOpenport
-  }
+  const proxyPort = findPort ? await findOpenPort(port) : port
+  appSettings.proxy.port = proxyPort
 
-  return launchProxy(browserWindow, proxyPort, {
+  console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
+
+  return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
       proxyReady = true
       proxyEmitter.emit('ready')
