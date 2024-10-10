@@ -127,6 +127,7 @@ const createWindow = async () => {
     show: false,
     icon,
     title: 'k6 Studio (experimental)',
+    backgroundColor: nativeTheme.themeSource === 'light' ? '#fff' : '#111110',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
@@ -150,26 +151,15 @@ const createWindow = async () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
+  mainWindow.once('ready-to-show', () => configureWatcher(mainWindow))
+
   return mainWindow
 }
 
 app.whenReady().then(async () => {
   await createSplashWindow()
-
-  const mainWindow = await createWindow()
   await setupProjectStructure()
-
-  watcher = watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
-    ignoreInitial: true,
-  })
-
-  watcher.on('add', (filePath) => {
-    mainWindow.webContents.send('ui:add-file', path.basename(filePath))
-  })
-
-  watcher.on('unlink', (filePath) => {
-    mainWindow.webContents.send('ui:remove-file', path.basename(filePath))
-  })
+  await createWindow()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -185,7 +175,8 @@ app.on('activate', async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
+    const mainWindow = await createWindow()
+    showWindow(mainWindow)
   }
 })
 
@@ -501,8 +492,7 @@ ipcMain.on('splashscreen:close', (event) => {
 
   if (splashscreenWindow && !splashscreenWindow.isDestroyed()) {
     splashscreenWindow.close()
-    browserWindow.maximize()
-    browserWindow.focus()
+    showWindow(browserWindow)
   }
 })
 
@@ -558,6 +548,25 @@ const launchProxyAndAttachEmitter = async (
         status: 'error',
       })
     },
+  })
+}
+
+function showWindow(browserWindow: BrowserWindow) {
+  browserWindow.maximize()
+  browserWindow.focus()
+}
+
+function configureWatcher(browserWindow: BrowserWindow) {
+  watcher = watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
+    ignoreInitial: true,
+  })
+
+  watcher.on('add', (filePath) => {
+    browserWindow.webContents.send('ui:add-file', path.basename(filePath))
+  })
+
+  watcher.on('unlink', (filePath) => {
+    browserWindow.webContents.send('ui:remove-file', path.basename(filePath))
   })
 }
 
