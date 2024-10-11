@@ -28,8 +28,11 @@ const proxy = {
   onProxyData: (callback: (data: ProxyData) => void) => {
     return createListener('proxy:data', callback)
   },
-  onStatusChange: (callback: (status: ProxyStatus) => void) => {
-    return createListener('proxy:status', callback)
+  getProxyStatus: () => {
+    return ipcRenderer.invoke('proxy:status:get')
+  },
+  onProxyStatusChange: (callback: (status: ProxyStatus) => void) => {
+    return createListener('proxy:status:change', callback)
   },
 } as const
 

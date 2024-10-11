@@ -24,7 +24,13 @@ export const ProxySettings = () => {
   const { proxy } = watch()
 
   useEffect(() => {
-    return window.studio.proxy.onStatusChange((status) =>
+    async function fetchProxyStatus() {
+      const status = await window.studio.proxy.getProxyStatus()
+      setProxyStatus(status)
+    }
+    fetchProxyStatus()
+
+    return window.studio.proxy.onProxyStatusChange((status) =>
       setProxyStatus(status)
     )
   }, [])
@@ -40,7 +46,7 @@ export const ProxySettings = () => {
           padding: var(--space-2);
         `}
       >
-        Proxy
+        Proxy settings
       </Heading>
 
       <Box mx="2">

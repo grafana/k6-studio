@@ -54,8 +54,6 @@ if (process.env.NODE_ENV !== 'development') {
   updateElectronApp()
 }
 
-const proxyEmitter = new eventEmitter()
-
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
@@ -71,6 +69,9 @@ let splashscreenWindow: BrowserWindow
 if (require('electron-squirrel-startup')) {
   app.quit()
 }
+
+const proxyEmitter = new eventEmitter()
+proxyEmitter.on('status:get', (status: ProxyStatus) => status)
 
 initializeLogger()
 
@@ -155,9 +156,9 @@ const createWindow = async () => {
   }
 
   mainWindow.once('ready-to-show', () => configureWatcher(mainWindow))
-  proxyEmitter.on('status', (statusName: ProxyStatus) => {
+  proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
     proxyStatus = statusName
-    mainWindow.webContents.send('proxy:status', statusName)
+    mainWindow.webContents.send('proxy:status:change', statusName)
   })
 
   return mainWindow
@@ -526,6 +527,11 @@ ipcMain.handle('settings:save', async (event, data: AppSettings) => {
   applySettings(diff, browserWindow)
 })
 
+ipcMain.handle('proxy:status:get', async () => {
+  console.info('proxy:status:get event received')
+  return proxyStatus
+})
+
 async function applySettings(
   diff: Partial<AppSettings>,
   browserWindow: BrowserWindow
@@ -533,7 +539,7 @@ async function applySettings(
   if (diff.proxy) {
     stopProxyProcess()
     appSettings.proxy = diff.proxy
-    proxyEmitter.emit('status', 'restarting')
+    proxyEmitter.emit('status:change', 'restarting')
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
   }
 }
@@ -560,7 +566,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
   return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
-      proxyEmitter.emit('status', 'online')
+      proxyEmitter.emit('status:change', 'online')
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
@@ -568,7 +574,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
         // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
-      proxyEmitter.emit('status', 'starting')
+      proxyEmitter.emit('status:change', 'starting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       sendToast(browserWindow.webContents, {
