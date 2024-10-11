@@ -522,9 +522,23 @@ ipcMain.handle('settings:get', async () => {
 
 ipcMain.handle('settings:save', async (event, data: AppSettings) => {
   console.info('settings:save event received')
-  const diff = await saveSettings(data)
+
   const browserWindow = browserWindowFromEvent(event)
-  applySettings(diff, browserWindow)
+  try {
+    const diff = await saveSettings(data)
+    applySettings(diff, browserWindow)
+
+    sendToast(browserWindow.webContents, {
+      title: 'Settings saved successfully',
+      status: 'success',
+    })
+  } catch (error) {
+    log.error(error)
+    sendToast(browserWindow.webContents, {
+      title: 'Failed to save settings',
+      status: 'error',
+    })
+  }
 })
 
 ipcMain.handle('proxy:status:get', async () => {
