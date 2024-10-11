@@ -7,10 +7,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 
 export const Settings = () => {
   const navigate = useNavigate()
   const [settings, setSettings] = useState<AppSettings>()
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     async function fetchSettings() {
@@ -26,8 +28,22 @@ export const Settings = () => {
     values: settings,
   })
 
+  const {
+    formState: { isDirty },
+    handleSubmit,
+    reset,
+  } = formMethods
+
   const onSubmit = async (data: AppSettings) => {
-    window.studio.settings.saveSettings(data)
+    try {
+      setSubmitting(true)
+      await window.studio.settings.saveSettings(data)
+      reset(data)
+    } catch (error) {
+      console.error('Error saving settings', error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleCancelClick = () => {
@@ -42,7 +58,14 @@ export const Settings = () => {
           <Button onClick={handleCancelClick} variant="outline">
             Cancel
           </Button>
-          <Button onClick={formMethods.handleSubmit(onSubmit)}>Save</Button>
+          <ButtonWithTooltip
+            loading={submitting}
+            disabled={!isDirty}
+            tooltip={!isDirty ? 'Changes saved' : ''}
+            onClick={handleSubmit(onSubmit)}
+          >
+            Save settings
+          </ButtonWithTooltip>
         </>
       }
     >
