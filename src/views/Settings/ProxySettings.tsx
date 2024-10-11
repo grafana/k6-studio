@@ -6,6 +6,7 @@ import { css } from '@emotion/react'
 import { Flex, Text, Box, Heading, TextField, Checkbox } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { UpstreamProxySettings } from './UpstreamProxySettings'
 
 const modeOptions = [
   { value: 'regular', label: 'Regular' },
@@ -89,64 +90,7 @@ export const ProxySettings = () => {
           />
         </FieldGroup>
 
-        {proxy && proxy.mode === 'upstream' && (
-          <>
-            <FieldGroup
-              name="proxy.upstream.url"
-              label="Server URL"
-              errors={errors}
-            >
-              <TextField.Root
-                placeholder="http://example.com:6000"
-                {...register('proxy.upstream.url')}
-              />
-            </FieldGroup>
-
-            <Flex gap="2" my="4">
-              <Controller
-                control={control}
-                name="proxy.upstream.requireAuth"
-                render={({ field }) => (
-                  <Text size="2" as="label">
-                    <Checkbox
-                      {...register('proxy.upstream.requireAuth')}
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />{' '}
-                    Require authentication
-                  </Text>
-                )}
-              />
-            </Flex>
-
-            {proxy && proxy.upstream.requireAuth && (
-              <>
-                <FieldGroup
-                  name="proxy.upstream.username"
-                  label="Username"
-                  errors={errors}
-                >
-                  <TextField.Root
-                    placeholder="username"
-                    {...register('proxy.upstream.username')}
-                  />
-                </FieldGroup>
-
-                <FieldGroup
-                  name="proxy.upstream.password"
-                  label="Password"
-                  errors={errors}
-                >
-                  <TextField.Root
-                    placeholder="password"
-                    type="password"
-                    {...register('proxy.upstream.password')}
-                  />
-                </FieldGroup>
-              </>
-            )}
-          </>
-        )}
+        {proxy && proxy.mode === 'upstream' && <UpstreamProxySettings />}
 
         <Flex gap="2" mt="5">
           <Text size="2">
