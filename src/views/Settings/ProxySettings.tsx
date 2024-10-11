@@ -71,7 +71,12 @@ export const ProxySettings = () => {
           </FieldGroup>
         )}
 
-        <FieldGroup name="proxy.port" label="Port number" errors={errors}>
+        <FieldGroup
+          name="proxy.port"
+          label="Port number"
+          errors={errors}
+          hint="The port number k6 Studio proxy should listen to on this machine (between 1 and 65535)"
+        >
           <TextField.Root
             placeholder="6000"
             type="number"
