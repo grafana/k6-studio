@@ -3,6 +3,7 @@ import { ProxyData, K6Log, FolderContent, K6Check } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
+import { AppSettings } from './schemas/appSettings'
 
 // Create listener and return clean up function to be used in useEffect
 function createListener<T>(channel: string, callback: (data: T) => void) {
@@ -147,6 +148,15 @@ const app = {
   },
 } as const
 
+const settings = {
+  getSettings: () => {
+    return ipcRenderer.invoke('settings:get')
+  },
+  saveSettings: (settings: AppSettings): Promise<AppSettings> => {
+    return ipcRenderer.invoke('settings:save', settings)
+  },
+}
+
 const studio = {
   proxy,
   browser,
@@ -155,6 +165,7 @@ const studio = {
   ui,
   generator,
   app,
+  settings,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)
