@@ -1,8 +1,10 @@
 import { FieldGroup, ControlledSelect } from '@/components/Form'
 import { AppSettings } from '@/schemas/appSettings'
+import { ProxyStatus } from '@/types'
 import { stringAsNumber } from '@/utils/form'
 import { css } from '@emotion/react'
 import { Flex, Text, Box, Heading, TextField, Checkbox } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 const modeOptions = [
@@ -17,8 +19,15 @@ export const ProxySettings = () => {
     register,
     watch,
   } = useFormContext<AppSettings>()
+  const [proxyStatus, setProxyStatus] = useState<ProxyStatus>()
 
   const { proxy } = watch()
+
+  useEffect(() => {
+    return window.studio.proxy.onStatusChange((status) =>
+      setProxyStatus(status)
+    )
+  }, [])
 
   return (
     <Flex gap="2" direction="column" px="2">
@@ -80,6 +89,10 @@ export const ProxySettings = () => {
               </Text>
             )}
           />
+        </Flex>
+
+        <Flex gap="2">
+          <Text size="2">Proxy status: {proxyStatus}</Text>
         </Flex>
       </Box>
     </Flex>

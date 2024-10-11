@@ -47,6 +47,7 @@ import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
 import { AppSettings } from './schemas/appSettings'
 import { getSettings, saveSettings } from './settings'
+import { ProxyStatus } from './types'
 
 // handle auto updates
 if (process.env.NODE_ENV !== 'development') {
@@ -58,7 +59,7 @@ const proxyEmitter = new eventEmitter()
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
-let proxyReady = false
+let proxyStatus: ProxyStatus = 'starting'
 export let appSettings: AppSettings
 
 let currentBrowserProcess: Process | null
@@ -154,6 +155,10 @@ const createWindow = async () => {
   }
 
   mainWindow.once('ready-to-show', () => configureWatcher(mainWindow))
+  proxyEmitter.on('status', (statusName: ProxyStatus) => {
+    proxyStatus = statusName
+    mainWindow.webContents.send('proxy:status', statusName)
+  })
 
   return mainWindow
 }
@@ -204,7 +209,7 @@ ipcMain.on('proxy:stop', async () => {
 })
 
 const waitForProxy = async (): Promise<void> => {
-  if (proxyReady) {
+  if (proxyStatus === 'online') {
     return Promise.resolve()
   }
 
@@ -527,8 +532,9 @@ async function applySettings(
 ) {
   if (diff.proxy) {
     stopProxyProcess()
-    currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
     appSettings.proxy = diff.proxy
+    proxyEmitter.emit('status', 'restarting')
+    currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
   }
 }
 
@@ -554,15 +560,15 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
   return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
-      proxyReady = true
+      proxyEmitter.emit('status', 'online')
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
-      if (appShuttingDown) {
-        // we don't have to restart the proxy if the app is shutting down
+      if (appShuttingDown || proxyStatus === 'restarting') {
+        // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
-      proxyReady = false
+      proxyEmitter.emit('status', 'starting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       sendToast(browserWindow.webContents, {
@@ -615,7 +621,6 @@ const stopProxyProcess = () => {
     // NOTE: this might not kill the second spawned process on windows
     currentProxyProcess.kill()
     currentProxyProcess = null
-    proxyReady = false
   }
 }
 
