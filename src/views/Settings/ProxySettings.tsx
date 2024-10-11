@@ -120,6 +120,7 @@ function ProxyStatusIndicator({ status }: { status?: ProxyStatus }) {
       size="2"
       css={css`
         background-color: ${backgroundColor};
+        border-radius: 4px;
         color: #fff;
         padding: var(--space-1) var(--space-2);
       `}
