@@ -92,4 +92,4 @@ export interface FolderContent {
   scripts: string[]
 }
 
-export type ProxyStatus = 'online' | 'offline' | 'starting' | 'restarting'
+export type ProxyStatus = 'online' | 'offline' | 'restarting'

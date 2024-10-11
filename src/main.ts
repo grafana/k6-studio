@@ -57,7 +57,7 @@ if (process.env.NODE_ENV !== 'development') {
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
-let proxyStatus: ProxyStatus = 'starting'
+let proxyStatus: ProxyStatus = 'offline'
 export let appSettings: AppSettings
 
 let currentBrowserProcess: Process | null
@@ -588,7 +588,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
         // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
-      proxyEmitter.emit('status:change', 'starting')
+      proxyEmitter.emit('status:change', 'restarting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       sendToast(browserWindow.webContents, {

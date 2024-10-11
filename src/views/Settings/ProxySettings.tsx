@@ -98,9 +98,33 @@ export const ProxySettings = () => {
         </Flex>
 
         <Flex gap="2">
-          <Text size="2">Proxy status: {proxyStatus}</Text>
+          <Text size="2">
+            Proxy status: <ProxyStatusIndicator status={proxyStatus} />
+          </Text>
         </Flex>
       </Box>
     </Flex>
+  )
+}
+
+function ProxyStatusIndicator({ status }: { status?: ProxyStatus }) {
+  const statusColorMap: Record<ProxyStatus, string> = {
+    ['online']: 'var(--green-9)',
+    ['offline']: 'var(--gray-9)',
+    ['restarting']: 'var(--blue-9)',
+  }
+  const backgroundColor = status ? statusColorMap[status] : '#fff'
+
+  return (
+    <Text
+      size="2"
+      css={css`
+        background-color: ${backgroundColor};
+        color: #fff;
+        padding: var(--space-1) var(--space-2);
+      `}
+    >
+      {status}
+    </Text>
   )
 }
