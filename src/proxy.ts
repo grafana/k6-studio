@@ -57,6 +57,11 @@ export const launchProxy = (
     getProxyMode(proxySettings),
   ]
 
+  if (proxyRequiresAuth(proxySettings)) {
+    const { username, password } = proxySettings.upstream
+    proxyArgs.push('--upstream-auth', `${username}:${password}`)
+  }
+
   const proxy = spawn(proxyPath, proxyArgs)
 
   // we use a reader to read entire lines from stdout instead of buffered data
@@ -97,14 +102,18 @@ export const launchProxy = (
   return proxy
 }
 
-export const getProxyMode = (proxySettings: ProxySettings) => {
+const getProxyMode = (proxySettings: ProxySettings) => {
   const { mode, upstream } = proxySettings
 
   if (mode === 'upstream') {
-    return `upstream:${upstream}`
+    return `upstream:${upstream.url}`
   }
 
   return 'regular'
+}
+
+const proxyRequiresAuth = (proxySettings: ProxySettings) => {
+  return proxySettings.mode === 'upstream' && proxySettings.upstream.requireAuth
 }
 
 export const getCertificatesPath = () => {

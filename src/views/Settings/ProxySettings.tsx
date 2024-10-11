@@ -50,27 +50,6 @@ export const ProxySettings = () => {
       </Heading>
 
       <Box mx="2">
-        <FieldGroup label="Proxy mode" name="proxy.mode" errors={errors}>
-          <ControlledSelect
-            control={control}
-            name="proxy.mode"
-            options={modeOptions}
-          />
-        </FieldGroup>
-
-        {proxy && proxy.mode === 'upstream' && (
-          <FieldGroup
-            name="proxy.upstream"
-            label="Upstream server"
-            errors={errors}
-          >
-            <TextField.Root
-              placeholder="http://example.com:6000"
-              {...register('proxy.upstream')}
-            />
-          </FieldGroup>
-        )}
-
         <FieldGroup
           name="proxy.port"
           label="Port number"
@@ -102,7 +81,74 @@ export const ProxySettings = () => {
           />
         </Flex>
 
-        <Flex gap="2">
+        <FieldGroup label="Proxy mode" name="proxy.mode" errors={errors}>
+          <ControlledSelect
+            control={control}
+            name="proxy.mode"
+            options={modeOptions}
+          />
+        </FieldGroup>
+
+        {proxy && proxy.mode === 'upstream' && (
+          <>
+            <FieldGroup
+              name="proxy.upstream.url"
+              label="Server URL"
+              errors={errors}
+            >
+              <TextField.Root
+                placeholder="http://example.com:6000"
+                {...register('proxy.upstream.url')}
+              />
+            </FieldGroup>
+
+            <Flex gap="2" my="4">
+              <Controller
+                control={control}
+                name="proxy.upstream.requireAuth"
+                render={({ field }) => (
+                  <Text size="2" as="label">
+                    <Checkbox
+                      {...register('proxy.upstream.requireAuth')}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />{' '}
+                    Require authentication
+                  </Text>
+                )}
+              />
+            </Flex>
+
+            {proxy && proxy.upstream.requireAuth && (
+              <>
+                <FieldGroup
+                  name="proxy.upstream.username"
+                  label="Username"
+                  errors={errors}
+                >
+                  <TextField.Root
+                    placeholder="username"
+                    {...register('proxy.upstream.username')}
+                  />
+                </FieldGroup>
+
+                <FieldGroup
+                  name="proxy.upstream.password"
+                  label="Password"
+                  errors={errors}
+                >
+                  <TextField.Root
+                    placeholder="password"
+                    type="password"
+                    {...register('proxy.upstream.password')}
+                  />
+                </FieldGroup>
+              </>
+            )}
+          </>
+        )}
+
+        <Flex gap="2" mt="5">
           <Text size="2">
             Proxy status: <ProxyStatusIndicator status={proxyStatus} />
           </Text>

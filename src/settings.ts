@@ -8,7 +8,12 @@ const defaultSettings: AppSettings = {
     mode: 'regular',
     port: 6000,
     findPort: true,
-    upstream: 'http://example.com:8080',
+    upstream: {
+      url: 'http://example.com:8080',
+      requireAuth: false,
+      username: '',
+      password: '',
+    },
   },
 }
 
