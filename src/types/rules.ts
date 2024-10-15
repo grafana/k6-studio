@@ -27,7 +27,10 @@ export interface CorrelationState {
   extractedValue?: string
   count: number
   responsesExtracted: ProxyData[]
-  requestsReplaced: [Request, Request][] // original, modified
+  requestsReplaced: {
+    original: Request
+    replaced: Request
+  }[]
   generatedUniqueId: number | undefined
   sequentialIdGenerator: Generator<number>
 }
@@ -44,8 +47,10 @@ export type CorrelationRuleInstance = BaseRuleInstance<CorrelationRule> & {
 }
 
 export interface ParameterizationState {
-  // TODO: maybe an object? { orignal, replaced }
-  requestsReplaced: [Request, Request][] // original, modified
+  requestsReplaced: {
+    original: Request
+    replaced: Request
+  }[]
 }
 
 export type ParameterizationRuleInstance =

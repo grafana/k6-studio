@@ -60,10 +60,13 @@ export function createCorrelationRuleInstance(
 
         // Keep track of modified requests to display in preview
         if (!isEqual(requestSnippetSchema, snippetSchemaReturnValue)) {
-          state.requestsReplaced.push([
-            requestSnippetSchema.data.request,
-            snippetSchemaReturnValue.data.request,
-          ])
+          state.requestsReplaced = [
+            ...state.requestsReplaced,
+            {
+              original: requestSnippetSchema.data.request,
+              replaced: snippetSchemaReturnValue.data.request,
+            },
+          ]
         }
       }
 
@@ -89,7 +92,10 @@ export function createCorrelationRuleInstance(
 
         state.extractedValue ??= extractedValue
         state.generatedUniqueId = generatedUniqueId
-        state.responsesExtracted.push(requestSnippetSchema.data)
+        state.responsesExtracted = [
+          ...state.responsesExtracted,
+          requestSnippetSchema.data,
+        ]
         state.count += 1
 
         return {

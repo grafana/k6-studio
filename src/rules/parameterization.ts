@@ -41,7 +41,10 @@ export function createParameterizationRuleInstance(
       if (!isEqual(requestSnippet, updatedRequestSnippet)) {
         state.requestsReplaced = [
           ...state.requestsReplaced,
-          [requestSnippet.data.request, updatedRequestSnippet.data.request],
+          {
+            original: requestSnippet.data.request,
+            replaced: updatedRequestSnippet.data.request,
+          },
         ]
       }
 
