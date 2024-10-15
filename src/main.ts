@@ -534,12 +534,14 @@ ipcMain.handle('settings:save', async (event, data: AppSettings) => {
       title: 'Settings saved successfully',
       status: 'success',
     })
+    return true
   } catch (error) {
     log.error(error)
     sendToast(browserWindow.webContents, {
       title: 'Failed to save settings',
       status: 'error',
     })
+    return false
   }
 })
 

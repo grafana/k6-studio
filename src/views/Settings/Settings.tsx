@@ -38,8 +38,8 @@ export const Settings = () => {
   const onSubmit = async (data: AppSettings) => {
     try {
       setSubmitting(true)
-      await window.studio.settings.saveSettings(data)
-      reset(data)
+      const isSuccess = await window.studio.settings.saveSettings(data)
+      isSuccess && reset(data)
     } catch (error) {
       console.error('Error saving settings', error)
     } finally {
