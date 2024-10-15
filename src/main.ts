@@ -160,6 +160,9 @@ const createWindow = async () => {
     proxyStatus = statusName
     mainWindow.webContents.send('proxy:status:change', statusName)
   })
+  mainWindow.on('closed', () =>
+    proxyEmitter.removeAllListeners('status:change')
+  )
 
   return mainWindow
 }
