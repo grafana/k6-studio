@@ -209,7 +209,8 @@ export const replaceBeginEndUrl = (
   if (!valueToReplace) return request
 
   const url = replaceUrl(request.url, valueToReplace, variableName)
-  return { ...request, url }
+  const path = replaceUrl(request.path, valueToReplace, variableName)
+  return { ...request, url, path }
 }
 
 export const replaceRegexBody = (
@@ -432,9 +433,11 @@ if (import.meta.vitest) {
       begin: 'supercali',
       end: 'fragilisti',
     }
-    expect(replaceBeginEndUrl(selectorMatch, request, '${correl_0}').url).toBe(
-      'http://test.k6.io/${correl_0}/v1/foo'
-    )
+    const match = replaceBeginEndUrl(selectorMatch, request, '${correl_0}')
+
+    expect(match.url).toBe('http://test.k6.io/${correl_0}/v1/foo')
+    expect(match.path).toBe('/${correl_0}/v1/foo')
+
     expect(replaceBeginEndUrl(selectorNotMatch, request, 'correl_0').url).toBe(
       'http://test.k6.io/api/v1/foo'
     )
