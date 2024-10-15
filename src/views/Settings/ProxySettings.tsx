@@ -70,7 +70,17 @@ export const ProxySettings = () => {
         />
       </Flex>
 
-      <FieldGroup label="Proxy mode" name="proxy.mode" errors={errors}>
+      <FieldGroup
+        label="Proxy mode"
+        name="proxy.mode"
+        errors={errors}
+        hint={
+          <>
+            Regular: requests are performed from this computer. <br />
+            Upstream: requests are forwarded to the upstream server.
+          </>
+        }
+      >
         <ControlledSelect
           control={control}
           name="proxy.mode"
