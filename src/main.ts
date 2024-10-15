@@ -556,6 +556,9 @@ async function applySettings(
     proxyEmitter.emit('status:change', 'restarting')
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
   }
+  if (diff.recorder) {
+    appSettings.recorder = diff.recorder
+  }
 }
 
 const browserWindowFromEvent = (

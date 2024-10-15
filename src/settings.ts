@@ -2,8 +2,10 @@ import { app } from 'electron'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
 import { AppSettings } from './schemas/appSettings'
+import { version } from '../package.json'
 
 const defaultSettings: AppSettings = {
+  appVersion: version,
   proxy: {
     mode: 'regular',
     port: 6000,
@@ -14,6 +16,10 @@ const defaultSettings: AppSettings = {
       username: '',
       password: '',
     },
+  },
+  recorder: {
+    detectBrowserPath: true,
+    browserPath: '',
   },
 }
 
@@ -69,7 +75,7 @@ export async function saveSettings(newSettings: AppSettings) {
  * @returns the difference between the old and new settings
  */
 function getSettingsDiff(oldSettings: AppSettings, newSettings: AppSettings) {
-  const diff: Partial<AppSettings> = {}
+  const diff: Record<string, unknown> = {}
 
   for (const key in newSettings) {
     const typedKey = key as keyof AppSettings

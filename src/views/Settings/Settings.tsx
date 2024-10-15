@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+import { RecorderSettings } from './RecorderSettings'
 
 export const Settings = () => {
   const navigate = useNavigate()
@@ -70,6 +71,7 @@ export const Settings = () => {
       }
     >
       <FormProvider {...formMethods}>
+        <RecorderSettings />
         <ProxySettings />
       </FormProvider>
     </View>

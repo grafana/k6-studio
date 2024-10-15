@@ -15,11 +15,21 @@ const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
 }
 
+function getBrowserPath() {
+  const { recorder } = appSettings
+
+  if (recorder.detectBrowserPath) {
+    return computeSystemExecutablePath({
+      browser: Browser.CHROME,
+      channel: ChromeReleaseChannel.STABLE,
+    })
+  }
+
+  return recorder.browserPath as string
+}
+
 export const launchBrowser = async (browserWindow: BrowserWindow) => {
-  const path = computeSystemExecutablePath({
-    browser: Browser.CHROME,
-    channel: ChromeReleaseChannel.STABLE,
-  })
+  const path = getBrowserPath()
   console.info(`browser path: ${path}`)
 
   const userDataDir = await createUserDataDir()

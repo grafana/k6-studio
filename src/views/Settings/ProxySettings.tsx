@@ -3,10 +3,11 @@ import { AppSettings } from '@/schemas/appSettings'
 import { ProxyStatus } from '@/types'
 import { stringAsNumber } from '@/utils/form'
 import { css } from '@emotion/react'
-import { Flex, Text, Box, Heading, TextField, Checkbox } from '@radix-ui/themes'
+import { Flex, Text, TextField, Checkbox } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { UpstreamProxySettings } from './UpstreamProxySettings'
+import { SettingsSection } from './SettingsSection'
 
 const modeOptions = [
   { value: 'regular', label: 'Regular' },
@@ -37,68 +38,54 @@ export const ProxySettings = () => {
   }, [])
 
   return (
-    <Flex gap="2" direction="column" px="2">
-      <Heading
-        size="2"
-        css={css`
-          font-size: 15px;
-          line-height: 24px;
-          font-weight: 500;
-          padding: var(--space-2);
-        `}
+    <SettingsSection title="Proxy">
+      <FieldGroup
+        name="proxy.port"
+        label="Port number"
+        errors={errors}
+        hint="The port number k6 Studio proxy should listen to in this computer (between 1 and 65535)"
       >
-        Proxy settings
-      </Heading>
+        <TextField.Root
+          placeholder="6000"
+          type="number"
+          min={1}
+          {...register('proxy.port', { setValueAs: stringAsNumber })}
+        />
+      </FieldGroup>
 
-      <Box mx="2">
-        <FieldGroup
-          name="proxy.port"
-          label="Port number"
-          errors={errors}
-          hint="The port number k6 Studio proxy should listen to on this machine (between 1 and 65535)"
-        >
-          <TextField.Root
-            placeholder="6000"
-            type="number"
-            min={1}
-            {...register('proxy.port', { setValueAs: stringAsNumber })}
-          />
-        </FieldGroup>
+      <Flex gap="2" my="4">
+        <Controller
+          control={control}
+          name="proxy.findPort"
+          render={({ field }) => (
+            <Text size="2" as="label">
+              <Checkbox
+                {...register('proxy.findPort')}
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />{' '}
+              Allow k6 Studio to find an available port if this port is in use
+            </Text>
+          )}
+        />
+      </Flex>
 
-        <Flex gap="2" my="4">
-          <Controller
-            control={control}
-            name="proxy.findPort"
-            render={({ field }) => (
-              <Text size="2" as="label">
-                <Checkbox
-                  {...register('proxy.findPort')}
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />{' '}
-                Allow k6 Studio to find an available port if this port is in use
-              </Text>
-            )}
-          />
-        </Flex>
+      <FieldGroup label="Proxy mode" name="proxy.mode" errors={errors}>
+        <ControlledSelect
+          control={control}
+          name="proxy.mode"
+          options={modeOptions}
+        />
+      </FieldGroup>
 
-        <FieldGroup label="Proxy mode" name="proxy.mode" errors={errors}>
-          <ControlledSelect
-            control={control}
-            name="proxy.mode"
-            options={modeOptions}
-          />
-        </FieldGroup>
+      {proxy && proxy.mode === 'upstream' && <UpstreamProxySettings />}
 
-        {proxy && proxy.mode === 'upstream' && <UpstreamProxySettings />}
-
-        <Flex gap="2" mt="5">
-          <Text size="2">
-            Proxy status: <ProxyStatusIndicator status={proxyStatus} />
-          </Text>
-        </Flex>
-      </Box>
-    </Flex>
+      <Flex gap="2" mt="5">
+        <Text size="2">
+          Proxy status: <ProxyStatusIndicator status={proxyStatus} />
+        </Text>
+      </Flex>
+    </SettingsSection>
   )
 }
 

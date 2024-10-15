@@ -45,8 +45,26 @@ export const ProxySettingsSchema = z
     }
   })
 
+export const RecorderSettingsSchema = z
+  .object({
+    detectBrowserPath: z.boolean(),
+    browserPath: z.string().optional(),
+  })
+  .superRefine(({ detectBrowserPath, browserPath }, ctx) => {
+    // browserPath is required when detectBrowserPath is false
+    if (!detectBrowserPath && !browserPath) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Browser path is required',
+        path: ['browserPath'],
+      })
+    }
+  })
+
 export const AppSettingsSchema = z.object({
+  appVersion: z.string(),
   proxy: ProxySettingsSchema,
+  recorder: RecorderSettingsSchema,
 })
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>
