@@ -51,8 +51,8 @@ export function ErrorElement() {
             max-width: 560px;
           `}
         >
-          We apologize for the inconvenience. Please help us improve our service
-          by reporting this issue on{' '}
+          We apologize for the inconvenience. Please help us improve our
+          application by reporting this issue on{' '}
           <RadixLink href="" onClick={handleCreateIssue}>
             GitHub
           </RadixLink>{' '}
