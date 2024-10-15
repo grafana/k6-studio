@@ -54,6 +54,8 @@ if (process.env.NODE_ENV !== 'development') {
   updateElectronApp()
 }
 
+const proxyEmitter = new eventEmitter()
+
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
@@ -69,9 +71,6 @@ let splashscreenWindow: BrowserWindow
 if (require('electron-squirrel-startup')) {
   app.quit()
 }
-
-const proxyEmitter = new eventEmitter()
-proxyEmitter.on('status:get', (status: ProxyStatus) => status)
 
 initializeLogger()
 
