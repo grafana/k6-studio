@@ -6,6 +6,8 @@ import {
   createRoutesFromChildren,
   RouterProvider,
 } from 'react-router-dom'
+import log from 'electron-log/renderer'
+
 import { Layout } from '@/components/Layout/Layout'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
@@ -42,7 +44,7 @@ export function AppRoutes() {
 function NoRouteFound() {
   const location = useLocation()
 
-  console.error(`No route found for ${location.pathname}`)
+  log.error(`No route found for ${location.pathname}`)
 
   return <Navigate to={routeMap.home} replace />
 }
