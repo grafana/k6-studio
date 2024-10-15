@@ -1,27 +1,51 @@
 import { RequestSnippetSchema } from '@/types'
-import { ParameterizationRule } from '@/types/rules'
+import {
+  ParameterizationRule,
+  ParameterizationRuleInstance,
+  ParameterizationState,
+} from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { replaceRequestValues } from './shared'
 import { matchFilter } from './utils'
+import { isEqual } from 'lodash-es'
 
-// TODO: might need to store changes somewhere to show in the UI as diff
-export function applyParameterizationRule(
-  requestSnippet: RequestSnippetSchema,
+export function createParameterizationRuleInstance(
   rule: ParameterizationRule
-): RequestSnippetSchema {
-  if (!matchFilter(requestSnippet, rule)) {
-    return requestSnippet
+): ParameterizationRuleInstance {
+  const state: ParameterizationState = {
+    requestsReplaced: [],
   }
 
   return {
-    ...requestSnippet,
-    data: {
-      ...requestSnippet.data,
-      request: replaceRequestValues({
-        selector: rule.selector,
-        request: requestSnippet.data.request,
-        value: getRuleValue(rule),
-      }),
+    state,
+    rule,
+    type: rule.type,
+    apply: (requestSnippet: RequestSnippetSchema) => {
+      if (!matchFilter(requestSnippet, rule)) {
+        return requestSnippet
+      }
+
+      const updatedRequestSnippet = {
+        ...requestSnippet,
+        data: {
+          ...requestSnippet.data,
+          request: replaceRequestValues({
+            selector: rule.selector,
+            request: requestSnippet.data.request,
+            value: getRuleValue(rule),
+          }),
+        },
+      }
+
+      // Save the original and updated request snippets for preview
+      if (!isEqual(requestSnippet, updatedRequestSnippet)) {
+        state.requestsReplaced = [
+          ...state.requestsReplaced,
+          [requestSnippet.data.request, updatedRequestSnippet.data.request],
+        ]
+      }
+
+      return updatedRequestSnippet
     },
   }
 }

@@ -1,7 +1,6 @@
 import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
-import { CorrelationStateMap, TestRule } from '@/types/rules'
-import { applyRule } from '@/rules/rules'
-import { generateSequentialInt } from '@/rules/utils'
+import { TestRule } from '@/types/rules'
+import { applyRules } from '@/rules/rules'
 import { GeneratorFileData } from '@/types/generator'
 import { Variable } from '@/types/testData'
 import { ThinkTime } from '@/types/testOptions'
@@ -54,8 +53,6 @@ export function generateVUCode(
   thinkTime: ThinkTime
 ): string {
   const groups = Object.entries(recording)
-  const correlationStateMap: CorrelationStateMap = {}
-  const sequentialIdGenerator = generateSequentialInt()
 
   const groupSnippets = groups
     .map(([groupName, recording]) => {
@@ -63,8 +60,6 @@ export function generateVUCode(
       const requestSnippets = generateRequestSnippets(
         mergedRecording,
         rules,
-        correlationStateMap,
-        sequentialIdGenerator,
         thinkTime
       )
 
@@ -89,17 +84,10 @@ export function generateVUCode(
 export function generateRequestSnippets(
   recording: ProxyData[],
   rules: TestRule[],
-  correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>,
   thinkTime: ThinkTime
 ): string {
-  return recording.reduce((acc, data) => {
-    const requestSnippetSchema = rules.reduce<RequestSnippetSchema>(
-      (acc, rule) =>
-        applyRule(acc, rule, correlationStateMap, sequentialIdGenerator),
-      { data, before: [], after: [] }
-    )
-
+  const { requestSnippetSchemas } = applyRules(recording, rules)
+  return requestSnippetSchemas.reduce((acc, requestSnippetSchema) => {
     const requestSnippet = generateSingleRequestSnippet(requestSnippetSchema)
 
     return `${acc}

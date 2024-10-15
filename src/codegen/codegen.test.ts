@@ -6,8 +6,7 @@ import {
   generateGroupSnippet,
   generateRequestParams,
 } from './codegen'
-import { CorrelationStateMap, TestRule } from '@/types/rules'
-import { generateSequentialInt } from '@/rules/utils'
+import { TestRule } from '@/types/rules'
 import { Cookie, Header, ProxyData, Request } from '@/types'
 import { correlationRecording } from '@/test/fixtures/correlationRecording'
 import { checksRecording } from '@/test/fixtures/checksRecording'
@@ -16,6 +15,14 @@ import { createProxyData, createRequest } from '@/test/factories/proxyData'
 import { jsonRule } from '@/test/fixtures/parameterizationRules'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
+
+const thinkTime: ThinkTime = {
+  sleepType: 'iterations',
+  timing: {
+    type: 'fixed',
+    value: 1,
+  },
+}
 
 describe('Code generation', () => {
   beforeAll(() => {
@@ -128,15 +135,6 @@ describe('Code generation', () => {
       ]
 
       const rules: TestRule[] = []
-      const correlationStateMap: CorrelationStateMap = {}
-      const sequentialIdGenerator = generateSequentialInt()
-      const thinkTime: ThinkTime = {
-        sleepType: 'iterations',
-        timing: {
-          type: 'fixed',
-          value: 1,
-        },
-      }
 
       const expectedResult = `
         params = { headers: {}, cookies: {} }
@@ -145,13 +143,7 @@ describe('Code generation', () => {
       `
 
       expect(
-        generateRequestSnippets(
-          recording,
-          rules,
-          correlationStateMap,
-          sequentialIdGenerator,
-          thinkTime
-        ).replace(/\s/g, '')
+        generateRequestSnippets(recording, rules, thinkTime).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
 
@@ -170,15 +162,6 @@ describe('Code generation', () => {
           },
         },
       ]
-      const correlationStateMap: CorrelationStateMap = {}
-      const sequentialIdGenerator = generateSequentialInt()
-      const thinkTime: ThinkTime = {
-        sleepType: 'iterations',
-        timing: {
-          type: 'fixed',
-          value: 1,
-        },
-      }
 
       const expectedResult = `
         params = { headers: {}, cookies: {} }
@@ -201,13 +184,10 @@ describe('Code generation', () => {
       `
 
       expect(
-        generateRequestSnippets(
-          correlationRecording,
-          rules,
-          correlationStateMap,
-          sequentialIdGenerator,
-          thinkTime
-        ).replace(/\s/g, '')
+        generateRequestSnippets(correlationRecording, rules, thinkTime).replace(
+          /\s/g,
+          ''
+        )
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
 
@@ -222,15 +202,6 @@ describe('Code generation', () => {
           },
         },
       ]
-      const correlationStateMap: CorrelationStateMap = {}
-      const sequentialIdGenerator = generateSequentialInt()
-      const thinkTime: ThinkTime = {
-        sleepType: 'iterations',
-        timing: {
-          type: 'fixed',
-          value: 1,
-        },
-      }
 
       const expectedResult = `
         params = { headers: {}, cookies: {} }
@@ -241,13 +212,10 @@ describe('Code generation', () => {
       `
 
       expect(
-        generateRequestSnippets(
-          checksRecording,
-          rules,
-          correlationStateMap,
-          sequentialIdGenerator,
-          thinkTime
-        ).replace(/\s/g, '')
+        generateRequestSnippets(checksRecording, rules, thinkTime).replace(
+          /\s/g,
+          ''
+        )
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
 
@@ -263,16 +231,6 @@ describe('Code generation', () => {
 
       const rules: TestRule[] = [jsonRule]
 
-      const correlationStateMap: CorrelationStateMap = {}
-      const sequentialIdGenerator = generateSequentialInt()
-      const thinkTime: ThinkTime = {
-        sleepType: 'iterations',
-        timing: {
-          type: 'fixed',
-          value: 1,
-        },
-      }
-
       const expectedResult = `
         params = { headers: { 'content-type': \`application/json\` }, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/users\`
@@ -280,13 +238,10 @@ describe('Code generation', () => {
       `
 
       expect(
-        generateRequestSnippets(
-          [recording],
-          rules,
-          correlationStateMap,
-          sequentialIdGenerator,
-          thinkTime
-        ).replace(/\s/g, '')
+        generateRequestSnippets([recording], rules, thinkTime).replace(
+          /\s/g,
+          ''
+        )
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
   })

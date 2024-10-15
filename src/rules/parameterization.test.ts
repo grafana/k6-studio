@@ -1,7 +1,7 @@
 import { createProxyData, createRequest } from '@/test/factories/proxyData'
 import { ParameterizationRule } from '@/types/rules'
 import { describe, expect, it } from 'vitest'
-import { applyParameterizationRule } from './parameterization'
+import { createParameterizationRuleInstance } from './parameterization'
 import { ProxyData } from '@/types'
 import {
   headerRule,
@@ -20,7 +20,8 @@ describe('applyParameterization', () => {
       })
     )
 
-    const updatedRequest = applyParameterizationRule(requestSnippet, jsonRule)
+    const updatedRequest =
+      createParameterizationRuleInstance(jsonRule).apply(requestSnippet)
 
     expect(updatedRequest.data.request.content).toBe('{"user_id":"TEST_ID"}')
   })
@@ -34,7 +35,8 @@ describe('applyParameterization', () => {
       })
     )
 
-    const updatedRequest = applyParameterizationRule(requestSnippet, urlRule)
+    const updatedRequest =
+      createParameterizationRuleInstance(urlRule).apply(requestSnippet)
 
     expect(updatedRequest.data.request.url).toBe(
       'http://example.com/api/v1/users?user_id=TEST_ID&foo=bar'
@@ -49,8 +51,8 @@ describe('applyParameterization', () => {
         }),
       })
     )
-
-    const updatedRequest = applyParameterizationRule(requestSnippet, headerRule)
+    const updatedRequest =
+      createParameterizationRuleInstance(headerRule).apply(requestSnippet)
 
     expect(updatedRequest.data.request.headers).toStrictEqual([
       ['authorization', 'token TEST_TOKEN'],
@@ -75,10 +77,8 @@ describe('applyParameterization', () => {
       },
     }
 
-    const updatedRequest = applyParameterizationRule(
-      requestSnippet,
-      variableRule
-    )
+    const updatedRequest =
+      createParameterizationRuleInstance(variableRule).apply(requestSnippet)
 
     expect(updatedRequest.data.request.content).toBe(
       '{"user_id":"${VARS[\'test_variable\']}"}'
@@ -96,14 +96,18 @@ describe('applyParameterization', () => {
       })
     )
 
-    const updatedRequest = applyParameterizationRule(requestSnippet, {
+    const notMatchingRule = {
       ...jsonRule,
       filter: { path: '/api/v1/users/123' },
-    })
+    }
+
+    const updatedRequest =
+      createParameterizationRuleInstance(notMatchingRule).apply(requestSnippet)
 
     expect(updatedRequest.data.request.content).toBe('{"user_id":"123"}')
   })
 
+  it('saves replaced requests')
   it('supports custom code')
   it('supports array variables')
 })

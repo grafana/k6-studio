@@ -21,7 +21,6 @@ export function ControlledSelect<T extends FieldValues, O extends Option>({
   contentProps = {},
   onChange,
 }: ControlledSelectProps<T, O>) {
-  console.log('contentProps', contentProps)
   return (
     <Controller
       name={name}
