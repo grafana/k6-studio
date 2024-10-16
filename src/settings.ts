@@ -2,10 +2,9 @@ import { app } from 'electron'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
 import { AppSettings } from './schemas/appSettings'
-import { version } from '../package.json'
 
 const defaultSettings: AppSettings = {
-  appVersion: version,
+  version: '1.0',
   proxy: {
     mode: 'regular',
     port: 6000,

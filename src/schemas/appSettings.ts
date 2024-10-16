@@ -62,7 +62,7 @@ export const RecorderSettingsSchema = z
   })
 
 export const AppSettingsSchema = z.object({
-  appVersion: z.string(),
+  version: z.string(),
   proxy: ProxySettingsSchema,
   recorder: RecorderSettingsSchema,
 })
