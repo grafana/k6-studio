@@ -17,7 +17,7 @@ const modeOptions = [
   },
   {
     value: 'upstream',
-    label: 'Upstream (requests are forwarded to the upstream server)',
+    label: 'Upstream (requests are forwarded to an upstream server)',
   },
 ]
 
@@ -78,7 +78,13 @@ export const ProxySettings = () => {
         />
       </Flex>
 
-      <FieldGroup label="Proxy mode" name="proxy.mode" errors={errors}>
+      <FieldGroup
+        label="Proxy mode"
+        name="proxy.mode"
+        errors={errors}
+        hint="How k6 Studio proxy should handle requests"
+        hintType="text"
+      >
         <ControlledRadioGroup
           control={control}
           name="proxy.mode"
