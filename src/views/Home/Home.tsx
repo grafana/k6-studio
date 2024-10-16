@@ -20,7 +20,13 @@ export function Home() {
     <Flex direction="column" height="100%">
       <ExperimentalBanner />
       <Flex direction="column" align="center" justify="center" height="100%">
-        <Heading size="8" mb="3">
+        <Heading
+          size="8"
+          mb="1"
+          css={css`
+            font-weight: 400;
+          `}
+        >
           Discover what you can do with k6 Studio
         </Heading>
         <Text

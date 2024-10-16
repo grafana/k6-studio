@@ -6,6 +6,8 @@ import {
   createRoutesFromChildren,
   RouterProvider,
 } from 'react-router-dom'
+import log from 'electron-log/renderer'
+
 import { Layout } from '@/components/Layout/Layout'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
@@ -14,10 +16,15 @@ import { Generator } from '@/views/Generator/Generator'
 import { Validator } from '@/views/Validator'
 import { routeMap } from './routeMap'
 import { Settings } from './views/Settings/Settings'
+import { ErrorElement } from './ErrorElement'
 
 const router = createHashRouter(
   createRoutesFromChildren(
-    <Route path={routeMap.home} element={<Layout />}>
+    <Route
+      path={routeMap.home}
+      element={<Layout />}
+      errorElement={<ErrorElement />}
+    >
       <Route index element={<Home />} />
       <Route path={routeMap.settings} element={<Settings />} />
       <Route path={routeMap.recorder} element={<Recorder />} />
@@ -38,7 +45,8 @@ export function AppRoutes() {
 
 function NoRouteFound() {
   const location = useLocation()
-  console.error(`No route found for ${location.pathname}`)
+
+  log.error(`No route found for ${location.pathname}`)
 
   return <Navigate to={routeMap.home} replace />
 }
