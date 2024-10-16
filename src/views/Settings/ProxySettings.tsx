@@ -1,4 +1,4 @@
-import { FieldGroup, ControlledSelect } from '@/components/Form'
+import { FieldGroup } from '@/components/Form'
 import { AppSettings } from '@/schemas/appSettings'
 import { ProxyStatus } from '@/types'
 import { stringAsNumber } from '@/utils/form'
@@ -8,10 +8,17 @@ import { useEffect, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { UpstreamProxySettings } from './UpstreamProxySettings'
 import { SettingsSection } from './SettingsSection'
+import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 
 const modeOptions = [
-  { value: 'regular', label: 'Regular' },
-  { value: 'upstream', label: 'Upstream' },
+  {
+    value: 'regular',
+    label: 'Regular (requests are performed from this computer)',
+  },
+  {
+    value: 'upstream',
+    label: 'Upstream (requests are forwarded to the upstream server)',
+  },
 ]
 
 export const ProxySettings = () => {
@@ -43,7 +50,8 @@ export const ProxySettings = () => {
         name="proxy.port"
         label="Port number"
         errors={errors}
-        hint="The port number k6 Studio proxy should listen to in this computer (between 1 and 65535)"
+        hint="What port number k6 Studio proxy should listen to in this computer (between 1 and 65535)"
+        hintType="text"
       >
         <TextField.Root
           placeholder="6000"
@@ -70,18 +78,8 @@ export const ProxySettings = () => {
         />
       </Flex>
 
-      <FieldGroup
-        label="Proxy mode"
-        name="proxy.mode"
-        errors={errors}
-        hint={
-          <>
-            Regular: requests are performed from this computer. <br />
-            Upstream: requests are forwarded to the upstream server.
-          </>
-        }
-      >
-        <ControlledSelect
+      <FieldGroup label="Proxy mode" name="proxy.mode" errors={errors}>
+        <ControlledRadioGroup
           control={control}
           name="proxy.mode"
           options={modeOptions}

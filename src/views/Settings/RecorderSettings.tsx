@@ -40,6 +40,7 @@ export const RecorderSettings = () => {
             label="Browser Path"
             errors={errors}
             hint="The location of the browser executable (k6 Studio currently supports Chrome)"
+            hintType="text"
           >
             <TextField.Root type="text" {...register('recorder.browserPath')} />
           </FieldGroup>

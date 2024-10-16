@@ -15,7 +15,13 @@ export function UpstreamProxySettings() {
 
   return (
     <>
-      <FieldGroup name="proxy.upstream.url" label="Server URL" errors={errors}>
+      <FieldGroup
+        name="proxy.upstream.url"
+        label="Server URL"
+        errors={errors}
+        hint="Where k6 Studio should forward requests to"
+        hintType="text"
+      >
         <TextField.Root
           placeholder="http://example.com:6000"
           {...register('proxy.upstream.url')}
@@ -45,6 +51,8 @@ export function UpstreamProxySettings() {
             name="proxy.upstream.username"
             label="Username"
             errors={errors}
+            hint="Username required to authenticate with the upstream server"
+            hintType="text"
           >
             <TextField.Root
               placeholder="username"
@@ -56,6 +64,8 @@ export function UpstreamProxySettings() {
             name="proxy.upstream.password"
             label="Password"
             errors={errors}
+            hint="Password required to authenticate with the upstream server"
+            hintType="text"
           >
             <TextField.Root
               placeholder="password"
