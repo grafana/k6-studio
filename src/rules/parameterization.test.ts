@@ -107,7 +107,29 @@ describe('applyParameterization', () => {
     expect(updatedRequest.data.request.content).toBe('{"user_id":"123"}')
   })
 
-  it('saves replaced requests')
+  it('saves replaced requests', () => {
+    const requestSnippet = createRequestSnippet(
+      createProxyData({
+        request: createRequest({
+          headers: [['content-Type', 'application/json']],
+          content: JSON.stringify({ user_id: '123' }),
+        }),
+      })
+    )
+
+    const ruleInstance = createParameterizationRuleInstance(jsonRule)
+
+    ruleInstance.apply(requestSnippet)
+
+    expect(ruleInstance.state.requestsReplaced[0]?.original).toStrictEqual(
+      requestSnippet.data.request
+    )
+
+    expect(ruleInstance.state.requestsReplaced[0]?.replaced).toStrictEqual({
+      ...requestSnippet.data.request,
+      content: '{"user_id":"TEST_ID"}',
+    })
+  })
   it('supports custom code')
   it('supports array variables')
 })
