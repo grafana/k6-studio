@@ -116,7 +116,7 @@ export const removeWebsocketRequests = (recording: ProxyData[]) => {
   })
 }
 
-export const recordingCleanup = (recording: ProxyData[]) => {
+export const cleanupRecording = (recording: ProxyData[]) => {
   let cleanedRecording = mergeRedirects(recording)
   cleanedRecording = removeWebsocketRequests(cleanedRecording)
   return cleanedRecording
