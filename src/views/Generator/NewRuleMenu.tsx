@@ -40,6 +40,15 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
             Correlation
           </DropdownMenu.Item>
         </Tooltip>
+        <Tooltip content="Parameterize request data." side="right">
+          <DropdownMenu.Item
+            onClick={() => {
+              createRule('parameterization')
+            }}
+          >
+            Parameterization
+          </DropdownMenu.Item>
+        </Tooltip>
         <Tooltip content="Insert custom code snippet." side="right">
           <DropdownMenu.Item
             onClick={() => {
