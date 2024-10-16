@@ -1,5 +1,5 @@
 import { View } from '@/components/Layout/View'
-import { Button } from '@radix-ui/themes'
+import { Button, ScrollArea } from '@radix-ui/themes'
 import { ProxySettings } from './ProxySettings'
 import { FormProvider, useForm } from 'react-hook-form'
 import { AppSettings, AppSettingsSchema } from '@/schemas/appSettings'
@@ -70,10 +70,12 @@ export const Settings = () => {
         </>
       }
     >
-      <FormProvider {...formMethods}>
-        <RecorderSettings />
-        <ProxySettings />
-      </FormProvider>
+      <ScrollArea>
+        <FormProvider {...formMethods}>
+          <RecorderSettings />
+          <ProxySettings />
+        </FormProvider>
+      </ScrollArea>
     </View>
   )
 }
