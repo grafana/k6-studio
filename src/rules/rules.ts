@@ -41,22 +41,3 @@ export function createRuleInstance<T extends TestRule>(rule: T) {
       return exhaustive(rule)
   }
 }
-
-// TODO: need to make this return exact instance of passed rule
-export function previewRuleChanges<T extends TestRule>({
-  rules,
-  rule,
-  recording,
-}: {
-  rules: T[]
-  rule: T
-  recording: ProxyData[]
-}) {
-  const preceedingRules = rules.slice(0, rules.indexOf(rule))
-  const { requestSnippetSchemas } = applyRules(recording, preceedingRules)
-
-  const ruleInstance = createRuleInstance(rule)
-  requestSnippetSchemas.forEach(ruleInstance.apply)
-
-  return ruleInstance
-}
