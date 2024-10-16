@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Request, ProxyData } from '@/types'
+import { Request, ProxyData, RequestSnippetSchema } from '@/types'
 import {
   ArrayValueSchema,
   BeginEndSelectorSchema,
@@ -23,15 +23,49 @@ import {
   VerificationRuleSelectorSchema,
 } from '@/schemas/rules'
 
-interface CorrelationState {
+export interface CorrelationState {
   extractedValue?: string
   count: number
   responsesExtracted: ProxyData[]
-  requestsReplaced: [Request, Request][] // original, modified
+  requestsReplaced: {
+    original: Request
+    replaced: Request
+  }[]
   generatedUniqueId: number | undefined
+  sequentialIdGenerator: Generator<number>
 }
 
-export type CorrelationStateMap = Record<string, CorrelationState>
+export interface BaseRuleInstance<T extends TestRule> {
+  apply: (request: RequestSnippetSchema) => RequestSnippetSchema
+  rule: T
+  // Needed for discriminated union, nested rule.type doesn't work
+  type: T['type']
+}
+
+export type CorrelationRuleInstance = BaseRuleInstance<CorrelationRule> & {
+  state: CorrelationState
+}
+
+export interface ParameterizationState {
+  requestsReplaced: {
+    original: Request
+    replaced: Request
+  }[]
+}
+
+export type ParameterizationRuleInstance =
+  BaseRuleInstance<ParameterizationRule> & {
+    state: ParameterizationState
+  }
+
+export type VerificationRuleInstance = BaseRuleInstance<VerificationRule>
+export type CustomCodeRuleInstance = BaseRuleInstance<CustomCodeRule>
+
+export type RuleInstance =
+  | CorrelationRuleInstance
+  | ParameterizationRuleInstance
+  | VerificationRuleInstance
+  | CustomCodeRuleInstance
 
 export type VariableValue = z.infer<typeof VariableValueSchema>
 export type ArrayValue = z.infer<typeof ArrayValueSchema>
