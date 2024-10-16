@@ -103,7 +103,7 @@ export function createCorrelationRuleInstance(
           after: [
             ...requestSnippetSchema['after'],
             correlationExtractionSnippet,
-          ], // ! we know that we have the values because we are in the if condition but might need better types
+          ],
         }
       }
 

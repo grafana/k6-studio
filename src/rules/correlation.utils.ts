@@ -6,7 +6,6 @@ export function replaceCorrelatedValues({
   rule,
   extractedValue,
   uniqueId,
-
   request,
 }: {
   rule: CorrelationRule
