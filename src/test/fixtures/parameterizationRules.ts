@@ -36,10 +36,9 @@ export const headerRule: ParameterizationRule = {
   id: '3',
   filter: { path: '' },
   selector: {
-    type: 'begin-end',
+    type: 'regex',
     from: 'headers',
-    begin: 'token ',
-    end: '$',
+    regex: 'token (.+)$',
   },
   value: {
     type: 'string',
