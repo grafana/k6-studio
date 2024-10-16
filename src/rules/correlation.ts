@@ -6,7 +6,7 @@ import {
   RegexSelector,
   JsonSelector,
 } from '@/types/rules'
-import { cloneDeep, isEqual } from 'lodash-es'
+import { cloneDeep, escapeRegExp, isEqual } from 'lodash-es'
 import {
   canonicalHeaderKey,
   matchFilter,
@@ -218,9 +218,12 @@ const getCorrelationBeginEndSnippet = (
   matchStatement: string,
   uniqueId: number
 ) => {
+  const begin = escapeRegExp(selector.begin)
+  const end = escapeRegExp(selector.end)
+
   // TODO: replace regex with findBetween from k6-utils once we have imports
   return `
-    regex = new RegExp('${selector.begin}(.*?)${selector.end}')
+    regex = new RegExp('${begin}(.*?)${end}')
     match = ${matchStatement}
     ${getCorrelationVariableSnippet(uniqueId)}`
 }

@@ -2,6 +2,7 @@ import { TestRule } from '@/types/rules'
 import { RequestSnippetSchema, Response, Request } from '@/types'
 import { exhaustive } from '@/utils/typescript'
 import { getHeaderValues } from '@/utils/headers'
+import { escapeRegExp } from 'lodash-es'
 
 /**
  * Converts a header key to its canonical form.
@@ -36,13 +37,14 @@ export function matchFilter(
         const {
           extractor: { filter },
         } = rule
-        return new RegExp(filter.path).test(request.url)
+
+        return new RegExp(escapeRegExp(filter.path)).test(request.url)
       }
       case 'customCode':
       case 'parameterization':
       case 'verification': {
         const { filter } = rule
-        return new RegExp(filter.path).test(request.url)
+        return new RegExp(escapeRegExp(filter.path)).test(request.url)
       }
       default:
         return exhaustive(rule)

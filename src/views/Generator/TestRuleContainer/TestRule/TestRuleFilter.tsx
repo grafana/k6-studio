@@ -17,6 +17,7 @@ export function TestRuleFilter({ filter }: TestRuleFilterProps) {
         variant="solid"
         css={css`
           flex-shrink: 1;
+          max-width: 25%;
         `}
       >
         <MagnifyingGlassIcon

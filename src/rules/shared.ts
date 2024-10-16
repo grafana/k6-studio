@@ -1,4 +1,4 @@
-import { get, set } from 'lodash-es'
+import { escapeRegExp, get, set } from 'lodash-es'
 import { safeJsonParse } from '@/utils/json'
 import { Header, Request, Cookie } from '@/types'
 import { BeginEndSelector, JsonSelector, RegexSelector } from '@/types/rules'
@@ -6,7 +6,7 @@ import { isJsonReqResp } from './utils'
 
 export const matchBeginEnd = (value: string, begin: string, end: string) => {
   // matches only the first occurrence
-  const regex = new RegExp(`${begin}(.*?)${end}`)
+  const regex = new RegExp(`${escapeRegExp(begin)}(.*?)${escapeRegExp(end)}`)
   const match = value.match(regex)
   if (match) {
     return match[1]
