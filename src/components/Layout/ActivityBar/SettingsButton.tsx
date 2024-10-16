@@ -9,7 +9,7 @@ export function SettingsButton() {
   return (
     <Tooltip content="Settings" side="right">
       <IconButton
-        are-label="Settings"
+        area-label="Settings"
         color="gray"
         variant="ghost"
         onClick={() => navigate(getRoutePath('settings'))}
