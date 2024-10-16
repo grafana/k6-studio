@@ -1,26 +1,31 @@
 import { Box, Callout, Code, Heading, ScrollArea } from '@radix-ui/themes'
-import { TestRule, CorrelationRule, CorrelationStateMap } from '@/types/rules'
+import { CorrelationRule } from '@/types/rules'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
-import { applyRule } from '@/rules/rules'
-import { ProxyData, RequestSnippetSchema, Request } from '@/types'
-import { generateSequentialInt } from '@/rules/utils'
+import { ProxyData, Request } from '@/types'
 import { useMemo, useState } from 'react'
 import { WebLogView } from '@/components/WebLogView'
 import { Allotment } from 'allotment'
 import { Details } from '@/components/WebLogView/Details'
 import { css } from '@emotion/react'
+import { applyRules } from '@/rules/rules'
+import { createCorrelationRuleInstance } from '@/rules/correlation'
 
 export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 
-  const result = useMemo(
-    () => applyRules(rules, requests, rule.id),
-    [rules, requests, rule]
-  )
+  const result = useMemo(() => {
+    const preceedingRules = rules.slice(0, rules.indexOf(rule))
+    const { requestSnippetSchemas } = applyRules(requests, preceedingRules)
 
-  if (!result) {
+    const ruleInstance = createCorrelationRuleInstance(rule)
+    requestSnippetSchemas.forEach(ruleInstance.apply)
+
+    return ruleInstance.state
+  }, [rules, requests, rule])
+
+  if (!result.extractedValue) {
     return (
       <Box p="2">
         <Callout.Root color="amber" role="alert" variant="surface">
@@ -40,7 +45,7 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
               height: 100%;
             `}
           >
-            {result && (
+            {result.extractedValue && (
               <>
                 <Heading size="2" m="2">
                   Requests matched
@@ -92,36 +97,12 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
   )
 }
 
-function applyRules(
-  rules: TestRule[],
-  requests: ProxyData[],
-  selectedRuleId: string
-) {
-  const sequentialIdGenerator = generateSequentialInt()
-  const correlationStateMap: CorrelationStateMap = {}
-
-  requests.forEach((request) => {
-    rules.forEach((rule) => {
-      const snippetSchema: RequestSnippetSchema = {
-        data: request,
-        before: [],
-        after: [],
-      }
-
-      applyRule(snippetSchema, rule, correlationStateMap, sequentialIdGenerator)
-    })
-  })
-
-  // Only interested in the selected rule
-  return correlationStateMap[selectedRuleId]
-}
-
-function requestsReplacedToProxyData(
-  requests: [Request, Request][]
+export function requestsReplacedToProxyData(
+  requests: { replaced: Request }[]
 ): ProxyData[] {
   console.log('request', requests)
-  return requests.map(([, modified], i) => ({
-    request: modified,
+  return requests.map(({ replaced }, i) => ({
+    request: replaced,
     id: i.toString(),
   }))
 }
