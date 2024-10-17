@@ -23,7 +23,10 @@ export const correlationRecording: ProxyData[] = [
       path: '/api/v1/foo',
       reason: 'OK',
       httpVersion: '1.1',
-      headers: [['Content-Type', 'application/json']],
+      headers: [
+        ['Content-Type', 'application/json'],
+        ['project', 'project_id=555'],
+      ],
       cookies: [],
       content: JSON.stringify({ user_id: '444' }),
       contentLength: 0,
@@ -35,7 +38,7 @@ export const correlationRecording: ProxyData[] = [
     id: '2',
     request: {
       method: 'POST',
-      url: 'http://test.k6.io/api/v1/login',
+      url: 'http://test.k6.io/api/v1/login?project_id=555',
       headers: [],
       cookies: [],
       query: [],

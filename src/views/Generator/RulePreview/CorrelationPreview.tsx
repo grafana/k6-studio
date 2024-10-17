@@ -8,24 +8,28 @@ import { Allotment } from 'allotment'
 import { Details } from '@/components/WebLogView/Details'
 import { css } from '@emotion/react'
 import { applyRules } from '@/rules/rules'
-import { createCorrelationRuleInstance } from '@/rules/correlation'
 
 export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 
-  const result = useMemo(() => {
-    const preceedingRules = rules.slice(0, rules.indexOf(rule))
-    const { requestSnippetSchemas } = applyRules(requests, preceedingRules)
+  const preview = useMemo(() => {
+    const preceedingAndSelectedRule = rules.slice(0, rules.indexOf(rule) + 1)
+    const { ruleInstances } = applyRules(requests, preceedingAndSelectedRule)
 
-    const ruleInstance = createCorrelationRuleInstance(rule)
-    requestSnippetSchemas.forEach(ruleInstance.apply)
+    const selectedRuleInstance = ruleInstances.find(
+      (ruleInstance) => ruleInstance.rule.id === rule.id
+    )
 
-    return ruleInstance.state
+    if (!selectedRuleInstance || selectedRuleInstance.type !== 'correlation') {
+      return null
+    }
+
+    return selectedRuleInstance.state
   }, [rules, requests, rule])
 
-  if (!result.extractedValue) {
+  if (!preview?.extractedValue) {
     return (
       <Box p="2">
         <Callout.Root color="amber" role="alert" variant="surface">
@@ -45,14 +49,14 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
               height: 100%;
             `}
           >
-            {result.extractedValue && (
+            {preview.extractedValue && (
               <>
                 <Heading size="2" m="2">
                   Requests matched
                 </Heading>
                 <Box>
                   <WebLogView
-                    requests={result.responsesExtracted}
+                    requests={preview.responsesExtracted}
                     onSelectRequest={setSelectedRequest}
                     selectedRequestId={selectedRequest?.id}
                   />
@@ -63,19 +67,19 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
                 <Box px="2">
                   <pre>
                     <Code>
-                      {JSON.stringify(result.extractedValue, null, 2)}
+                      {JSON.stringify(preview.extractedValue, null, 2)}
                     </Code>
                   </pre>
                 </Box>
 
-                {result.requestsReplaced.length > 0 && (
+                {preview.requestsReplaced.length > 0 && (
                   <>
                     <Heading size="2" m="2">
                       Value replaced in
                     </Heading>
                     <WebLogView
                       requests={requestsReplacedToProxyData(
-                        result.requestsReplaced
+                        preview.requestsReplaced
                       )}
                       onSelectRequest={setSelectedRequest}
                       selectedRequestId={selectedRequest?.id}

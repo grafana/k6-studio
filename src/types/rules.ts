@@ -32,7 +32,6 @@ export interface CorrelationState {
     replaced: Request
   }[]
   generatedUniqueId: number | undefined
-  sequentialIdGenerator: Generator<number>
 }
 
 export interface BaseRuleInstance<T extends TestRule> {
