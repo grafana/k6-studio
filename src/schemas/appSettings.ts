@@ -1,58 +1,78 @@
 import { z } from 'zod'
 
+export const RegularProxySettingsSchema = z.object({
+  mode: z.literal('regular'),
+  port: z
+    .number({ message: 'Port number is required' })
+    .int()
+    .min(1)
+    .max(65535, { message: 'Port number must be between 1 and 65535' }),
+  automaticallyFindPort: z.boolean(),
+})
+
+export const UpstreamProxySettingsSchema = RegularProxySettingsSchema.extend({
+  mode: z.literal('upstream'),
+  url: z.string().url({ message: 'Invalid URL' }).or(z.literal('')),
+  requireAuth: z.boolean(),
+  username: z.string().optional(),
+  password: z.string().optional(),
+})
+
 export const ProxySettingsSchema = z
-  .object({
-    mode: z.enum(['regular', 'upstream']),
-    port: z
-      .number({ message: 'Port number is required' })
-      .int()
-      .min(1)
-      .max(65535, { message: 'Port number must be between 1 and 65535' }),
-    automaticallyFindPort: z.boolean(),
-    upstream: z.object({
-      url: z.string().url({ message: 'Invalid URL' }).or(z.literal('')),
-      requireAuth: z.boolean(),
-      username: z.string().optional(),
-      password: z.string().optional(),
-    }),
-  })
-  .superRefine(({ mode, upstream }, ctx) => {
-    // upstream.url is required when mode is 'upstream'
-    if (mode === 'upstream' && !upstream.url) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Upstream server is required',
-        path: ['upstream.url'],
-      })
-    }
+  .discriminatedUnion('mode', [
+    RegularProxySettingsSchema,
+    UpstreamProxySettingsSchema,
+  ])
+  .superRefine((data, ctx) => {
+    if (data.mode === 'upstream') {
+      const { url, requireAuth, username, password } = data
 
-    // upstream.username is required when upstream.requireAuth is true
-    if (mode === 'upstream' && upstream.requireAuth && !upstream.username) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Username is required',
-        path: ['upstream.username'],
-      })
-    }
+      // url is required when mode is 'upstream'
+      if (!url) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Upstream server is required',
+          path: ['url'],
+        })
+      }
 
-    // upstream.password is required when upstream.requireAuth is true
-    if (mode === 'upstream' && upstream.requireAuth && !upstream.password) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Password is required',
-        path: ['upstream.password'],
-      })
+      // username is required when requireAuth is true
+      if (requireAuth && !username) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Username is required',
+          path: ['username'],
+        })
+      }
+
+      // password is required when requireAuth is true
+      if (requireAuth && !password) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Password is required',
+          path: ['password'],
+        })
+      }
     }
   })
+
+const RecorderDetectBrowserPathSchema = z.object({
+  detectBrowserPath: z.literal(true),
+})
+
+const RecorderBrowserPathSchema = RecorderDetectBrowserPathSchema.extend({
+  detectBrowserPath: z.literal(false),
+  browserPath: z.string().optional(),
+})
 
 export const RecorderSettingsSchema = z
-  .object({
-    detectBrowserPath: z.boolean(),
-    browserPath: z.string().optional(),
-  })
-  .superRefine(({ detectBrowserPath, browserPath }, ctx) => {
+  .discriminatedUnion('detectBrowserPath', [
+    RecorderDetectBrowserPathSchema,
+    RecorderBrowserPathSchema,
+  ])
+  .superRefine((data, ctx) => {
     // browserPath is required when detectBrowserPath is false
-    if (!detectBrowserPath && !browserPath) {
+    if (!data.detectBrowserPath && !data.browserPath) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Browser path is required',

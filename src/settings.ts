@@ -9,16 +9,9 @@ const defaultSettings: AppSettings = {
     mode: 'regular',
     port: 6000,
     automaticallyFindPort: true,
-    upstream: {
-      url: 'http://example.com:8080',
-      requireAuth: false,
-      username: '',
-      password: '',
-    },
   },
   recorder: {
     detectBrowserPath: true,
-    browserPath: '',
   },
 }
 
@@ -61,6 +54,7 @@ export async function getSettings() {
  * @returns The settings that have changed
  */
 export async function saveSettings(newSettings: AppSettings) {
+  console.log(newSettings)
   const currentSettings = await getSettings()
   const diff = getSettingsDiff(currentSettings, newSettings)
   await writeFile(filePath, JSON.stringify(newSettings))

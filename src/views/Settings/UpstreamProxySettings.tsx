@@ -16,7 +16,7 @@ export function UpstreamProxySettings() {
   return (
     <>
       <FieldGroup
-        name="proxy.upstream.url"
+        name="proxy.url"
         label="Server URL"
         errors={errors}
         hint="Where k6 Studio should forward requests to"
@@ -24,18 +24,18 @@ export function UpstreamProxySettings() {
       >
         <TextField.Root
           placeholder="http://example.com:6000"
-          {...register('proxy.upstream.url')}
+          {...register('proxy.url')}
         />
       </FieldGroup>
 
       <Flex gap="2" my="4">
         <Controller
           control={control}
-          name="proxy.upstream.requireAuth"
+          name="proxy.requireAuth"
           render={({ field }) => (
             <Text size="2" as="label">
               <Checkbox
-                {...register('proxy.upstream.requireAuth')}
+                {...register('proxy.requireAuth')}
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}
@@ -45,10 +45,10 @@ export function UpstreamProxySettings() {
         />
       </Flex>
 
-      {proxy && proxy.upstream.requireAuth && (
+      {proxy && proxy.mode === 'upstream' && proxy.requireAuth && (
         <>
           <FieldGroup
-            name="proxy.upstream.username"
+            name="proxy.username"
             label="Username"
             errors={errors}
             hint="Username required to authenticate with the upstream server"
@@ -56,12 +56,12 @@ export function UpstreamProxySettings() {
           >
             <TextField.Root
               placeholder="username"
-              {...register('proxy.upstream.username')}
+              {...register('proxy.username')}
             />
           </FieldGroup>
 
           <FieldGroup
-            name="proxy.upstream.password"
+            name="proxy.password"
             label="Password"
             errors={errors}
             hint="Password required to authenticate with the upstream server"
@@ -70,7 +70,7 @@ export function UpstreamProxySettings() {
             <TextField.Root
               placeholder="password"
               type="password"
-              {...register('proxy.upstream.password')}
+              {...register('proxy.password')}
             />
           </FieldGroup>
         </>
