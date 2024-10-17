@@ -19,7 +19,6 @@ export function ParameterizationPreview({
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 
-  // TODO: extract duplicate code from CorrelationPreview and ParameterizationPreview
   const result = useMemo(() => {
     const preceedingRules = rules.slice(0, rules.indexOf(rule))
     const { requestSnippetSchemas } = applyRules(requests, preceedingRules)

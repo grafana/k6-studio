@@ -1,4 +1,4 @@
-import { Badge, Code, Tooltip } from '@radix-ui/themes'
+import { Badge, Strong, Tooltip } from '@radix-ui/themes'
 import { css } from '@emotion/react'
 
 import { CorrelationRule, ParameterizationRule, Selector } from '@/types/rules'
@@ -11,20 +11,12 @@ interface TestRuleSelectorProps {
   rule: CorrelationRule | ParameterizationRule
 }
 
-// TODO: split file
 export function TestRuleSelector({ rule }: TestRuleSelectorProps) {
   const ref = useRef<HTMLDivElement>(null)
   const hasEllipsis = useOverflowCheck(ref)
 
   return (
-    <Tooltip
-      content={
-        <>
-          <SelectorContent rule={rule} />
-        </>
-      }
-      hidden={!hasEllipsis}
-    >
+    <Tooltip content={<SelectorContent rule={rule} />} hidden={!hasEllipsis}>
       <Badge
         ref={ref}
         color="gray"
@@ -57,35 +49,10 @@ function SelectorContent({
   }
 }
 
-function SelectorLabel({ selector }: { selector: Selector }) {
-  switch (selector.type) {
-    case 'json':
-      return (
-        <>
-          <Code>{selector.path}</Code>
-        </>
-      )
-    case 'begin-end':
-      return (
-        <>
-          between <Code>{selector.begin}</Code> and <Code>{selector.end}</Code>
-        </>
-      )
-    case 'regex':
-      return (
-        <>
-          <Code>(.*) {selector.regex}</Code>
-        </>
-      )
-    default:
-      return exhaustive(selector)
-  }
-}
-
 function CorrelationSelectorContetent({ rule }: { rule: CorrelationRule }) {
   return (
     <>
-      <SelectorLabel selector={rule.extractor.selector} /> from{' '}
+      Correlate <SelectorLabel selector={rule.extractor.selector} /> from{' '}
       {rule.extractor.selector.from}
     </>
   )
@@ -98,26 +65,48 @@ function ParameterizationSelectorContent({
 }) {
   return (
     <>
-      replace <SelectorLabel selector={rule.selector} /> in {rule.selector.from}{' '}
+      Replace <SelectorLabel selector={rule.selector} /> in {rule.selector.from}{' '}
       with <ParameterizationValue rule={rule} />
     </>
   )
 }
 
+function SelectorLabel({ selector }: { selector: Selector }) {
+  switch (selector.type) {
+    case 'json':
+      return (
+        <Strong>
+          {'{  }'} {stringFallback(selector.path)}
+        </Strong>
+      )
+    case 'begin-end':
+      return (
+        <>
+          between <Strong>{stringFallback(selector.begin)}</Strong> and{' '}
+          <Strong>{stringFallback(selector.end)}</Strong>
+        </>
+      )
+    case 'regex':
+      return (
+        <>
+          <Strong>(.*) {stringFallback(selector.regex)}</Strong>
+        </>
+      )
+    default:
+      return exhaustive(selector)
+  }
+}
+
 function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
   switch (rule.value.type) {
     case 'string':
-      return (
-        <Code color="orange">
-          {rule.value.value === '' ? '-' : rule.value.value}
-        </Code>
-      )
+      return <Strong>{stringFallback(rule.value.value)}</Strong>
     case 'variable':
       return (
-        <Code color="orange" css={{ whiteSpace: 'nowrap' }}>
+        <Strong css={{ whiteSpace: 'nowrap' }}>
           <Link1Icon css={{ verticalAlign: 'middle', display: 'inline' }} />{' '}
           {rule.value.variableName}
-        </Code>
+        </Strong>
       )
     case 'array':
     case 'customCode':
@@ -125,4 +114,8 @@ function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
     default:
       return exhaustive(rule.value)
   }
+}
+
+function stringFallback(value: string, fallback = '_') {
+  return value === '' ? fallback : value
 }
