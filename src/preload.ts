@@ -1,8 +1,9 @@
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
-import { ProxyData, K6Log, FolderContent, K6Check } from './types'
+import { ProxyData, K6Log, FolderContent, K6Check, ProxyStatus } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
+import { AppSettings } from './types/settings'
 
 // Create listener and return clean up function to be used in useEffect
 function createListener<T>(channel: string, callback: (data: T) => void) {
@@ -26,6 +27,12 @@ const proxy = {
   },
   onProxyData: (callback: (data: ProxyData) => void) => {
     return createListener('proxy:data', callback)
+  },
+  getProxyStatus: () => {
+    return ipcRenderer.invoke('proxy:status:get')
+  },
+  onProxyStatusChange: (callback: (status: ProxyStatus) => void) => {
+    return createListener('proxy:status:change', callback)
   },
 } as const
 
@@ -147,6 +154,18 @@ const app = {
   },
 } as const
 
+const settings = {
+  getSettings: () => {
+    return ipcRenderer.invoke('settings:get')
+  },
+  saveSettings: (settings: AppSettings): Promise<AppSettings> => {
+    return ipcRenderer.invoke('settings:save', settings)
+  },
+  selectBrowserExecutable: (): Promise<Electron.OpenDialogReturnValue> => {
+    return ipcRenderer.invoke('settings:select-browser-executable')
+  },
+}
+
 const studio = {
   proxy,
   browser,
@@ -155,6 +174,7 @@ const studio = {
   ui,
   generator,
   app,
+  settings,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

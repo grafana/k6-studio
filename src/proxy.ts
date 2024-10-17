@@ -8,6 +8,7 @@ import { ProxyData } from './types'
 import readline from 'readline/promises'
 import { safeJsonParse } from './utils/json'
 import log from 'electron-log/main'
+import { ProxySettings } from './types/settings'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
@@ -18,7 +19,7 @@ interface options {
 
 export const launchProxy = (
   browserWindow: BrowserWindow,
-  port?: number,
+  proxySettings: ProxySettings,
   { onReady, onFailure }: options = {}
 ): ProxyProcess => {
   let proxyScript: string
@@ -50,9 +51,16 @@ export const launchProxy = (
     proxyScript,
     '--set',
     `confdir=${certificatesPath}`,
+    '--listen-port',
+    `${proxySettings.port}`,
     '--mode',
-    `regular@${port}`,
+    getProxyMode(proxySettings),
   ]
+
+  if (proxySettings.mode === 'upstream' && proxySettings.requiresAuth) {
+    const { username, password } = proxySettings
+    proxyArgs.push('--upstream-auth', `${username}:${password}`)
+  }
 
   const proxy = spawn(proxyPath, proxyArgs)
 
@@ -92,6 +100,14 @@ export const launchProxy = (
   })
 
   return proxy
+}
+
+const getProxyMode = (proxySettings: ProxySettings) => {
+  if (proxySettings.mode === 'upstream') {
+    return `upstream:${proxySettings.url}`
+  }
+
+  return 'regular'
 }
 
 export const getCertificatesPath = () => {
