@@ -31,11 +31,12 @@ export function UpstreamProxySettings() {
       <Flex gap="2" my="4">
         <Controller
           control={control}
-          name="proxy.requireAuth"
+          defaultValue={false}
+          name="proxy.requiresAuth"
           render={({ field }) => (
             <Text size="2" as="label">
               <Checkbox
-                {...register('proxy.requireAuth')}
+                {...register('proxy.requiresAuth')}
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}
@@ -45,7 +46,7 @@ export function UpstreamProxySettings() {
         />
       </Flex>
 
-      {proxy && proxy.mode === 'upstream' && proxy.requireAuth && (
+      {proxy && proxy.mode === 'upstream' && proxy.requiresAuth && (
         <>
           <FieldGroup
             name="proxy.username"

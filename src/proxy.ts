@@ -57,7 +57,7 @@ export const launchProxy = (
     getProxyMode(proxySettings),
   ]
 
-  if (proxySettings.mode === 'upstream' && proxySettings.requireAuth) {
+  if (proxySettings.mode === 'upstream' && proxySettings.requiresAuth) {
     const { username, password } = proxySettings
     proxyArgs.push('--upstream-auth', `${username}:${password}`)
   }

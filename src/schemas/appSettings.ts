@@ -13,7 +13,7 @@ export const RegularProxySettingsSchema = z.object({
 export const UpstreamProxySettingsSchema = RegularProxySettingsSchema.extend({
   mode: z.literal('upstream'),
   url: z.string().url({ message: 'Invalid URL' }).or(z.literal('')),
-  requireAuth: z.boolean(),
+  requiresAuth: z.boolean(),
   username: z.string().optional(),
   password: z.string().optional(),
 })
@@ -25,7 +25,7 @@ export const ProxySettingsSchema = z
   ])
   .superRefine((data, ctx) => {
     if (data.mode === 'upstream') {
-      const { url, requireAuth, username, password } = data
+      const { url, requiresAuth, username, password } = data
 
       // url is required when mode is 'upstream'
       if (!url) {
@@ -36,8 +36,8 @@ export const ProxySettingsSchema = z
         })
       }
 
-      // username is required when requireAuth is true
-      if (requireAuth && !username) {
+      // username is required when requiresAuth is true
+      if (requiresAuth && !username) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Username is required',
@@ -45,8 +45,8 @@ export const ProxySettingsSchema = z
         })
       }
 
-      // password is required when requireAuth is true
-      if (requireAuth && !password) {
+      // password is required when requiresAuth is true
+      if (requiresAuth && !password) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Password is required',
