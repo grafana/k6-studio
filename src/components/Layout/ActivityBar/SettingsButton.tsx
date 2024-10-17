@@ -1,21 +1,25 @@
-import { getRoutePath } from '@/routeMap'
+import { SettingsDialog } from '@/components/Settings/SettingsDialog'
 import { GearIcon } from '@radix-ui/react-icons'
 import { Tooltip, IconButton } from '@radix-ui/themes'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 export function SettingsButton() {
-  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
 
   return (
-    <Tooltip content="Settings" side="right">
-      <IconButton
-        area-label="Settings"
-        color="gray"
-        variant="ghost"
-        onClick={() => navigate(getRoutePath('settings'))}
-      >
-        <GearIcon />
-      </IconButton>
-    </Tooltip>
+    <>
+      <Tooltip content="Settings" side="right">
+        <IconButton
+          area-label="Settings"
+          color="gray"
+          variant="ghost"
+          onClick={() => setOpen(true)}
+        >
+          <GearIcon />
+        </IconButton>
+      </Tooltip>
+
+      <SettingsDialog open={open} onOpenChange={setOpen} />
+    </>
   )
 }

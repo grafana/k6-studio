@@ -3,7 +3,6 @@ import { generatePath } from 'react-router-dom'
 const routes = {
   home: '/',
   recorder: '/recorder',
-  settings: '/settings',
   recordingPreviewer: '/recording-previewer/:fileName',
   validator: '/validator/:fileName?',
   generator: '/generator/:fileName',
@@ -28,5 +27,4 @@ export const routeMap = {
   recordingPreviewer: getRoutePath('recordingPreviewer'),
   generator: getRoutePath('generator'),
   validator: getRoutePath('validator'),
-  settings: getRoutePath('settings'),
 }
