@@ -20,7 +20,7 @@ export const RecorderSettings = () => {
     const result = await window.studio.settings.selectBrowserExecutable()
     const { canceled, filePaths } = result
     if (canceled || !filePaths.length) return
-    setValue('recorder.browserPath', filePaths[0])
+    setValue('recorder.browserPath', filePaths[0], { shouldDirty: true })
     clearErrors('recorder.browserPath')
   }
 
