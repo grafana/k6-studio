@@ -104,7 +104,6 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
 export function requestsReplacedToProxyData(
   requests: { replaced: Request }[]
 ): ProxyData[] {
-  console.log('request', requests)
   return requests.map(({ replaced }, i) => ({
     request: replaced,
     id: i.toString(),
