@@ -2,7 +2,7 @@ import { Select } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import { Control, Controller, FieldValues, Path } from 'react-hook-form'
 
-type Option = { label: ReactNode; value: string }
+type Option = { label: ReactNode; value: string; disabled?: boolean }
 
 interface ControlledSelectProps<T extends FieldValues, O extends Option> {
   name: Path<T>
@@ -38,7 +38,11 @@ export function ControlledSelect<T extends FieldValues, O extends Option>({
           />
           <Select.Content {...contentProps}>
             {options.map((option) => (
-              <Select.Item key={option.value} value={option.value}>
+              <Select.Item
+                key={option.value}
+                value={option.value}
+                disabled={option.disabled}
+              >
                 {option.label}
               </Select.Item>
             ))}
