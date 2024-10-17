@@ -1,10 +1,11 @@
 import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
 import {
-  CorrelationStateMap,
   CorrelationRule,
   BeginEndSelector,
   RegexSelector,
   JsonSelector,
+  CorrelationState,
+  CorrelationRuleInstance,
 } from '@/types/rules'
 import { cloneDeep, escapeRegExp, isEqual } from 'lodash-es'
 import {
@@ -17,39 +18,69 @@ import { exhaustive } from '@/utils/typescript'
 import { replaceCorrelatedValues } from './correlation.utils'
 import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
 
-export function applyCorrelationRule(
-  requestSnippetSchema: RequestSnippetSchema,
+export function createCorrelationRuleInstance(
   rule: CorrelationRule,
-  correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>
-): RequestSnippetSchema {
+  idGenerator: Generator<number>
+): CorrelationRuleInstance {
+  const state: CorrelationState = {
+    extractedValue: undefined,
+    count: 0,
+    responsesExtracted: [],
+    requestsReplaced: [],
+    generatedUniqueId: undefined,
+  }
+
+  function setState(newState: Partial<CorrelationState>) {
+    Object.assign(state, newState)
+  }
+
+  return {
+    rule,
+    state,
+    type: rule.type,
+    apply: (requestSnippetSchema: RequestSnippetSchema) =>
+      applyRule({ requestSnippetSchema, state, rule, idGenerator, setState }),
+  }
+}
+
+function applyRule({
+  requestSnippetSchema,
+  state,
+  rule,
+  idGenerator,
+  setState,
+}: {
+  requestSnippetSchema: RequestSnippetSchema
+  state: CorrelationState
+  rule: CorrelationRule
+  idGenerator: Generator<number>
+  setState: (newState: Partial<CorrelationState>) => void
+}) {
   // this is the modified schema that we return to the accumulator
   const snippetSchemaReturnValue = cloneDeep(requestSnippetSchema)
 
-  // if we have an extracted value we try to apply it to the request
-  // note: this comes before the extractor to avoid applying an extracted value on the same request/response pair
-  const correlationState = correlationStateMap[rule.id]
-  let uniqueId: number | undefined
-
-  if (correlationState?.extractedValue) {
-    const { extractedValue } = correlationState
+  if (state.extractedValue) {
     // we populate uniqueId since it doesn't have to be regenerated
     // this will be passed to the tryCorrelationExtraction function
-    uniqueId = correlationState.generatedUniqueId
 
     snippetSchemaReturnValue.data.request = replaceCorrelatedValues({
       rule,
-      extractedValue,
-      uniqueId: uniqueId ?? 0,
+      extractedValue: state.extractedValue,
+      uniqueId: state.generatedUniqueId ?? 0,
       request: requestSnippetSchema.data.request,
     })
 
     // Keep track of modified requests to display in preview
     if (!isEqual(requestSnippetSchema, snippetSchemaReturnValue)) {
-      correlationState.requestsReplaced.push([
-        requestSnippetSchema.data.request,
-        snippetSchemaReturnValue.data.request,
-      ])
+      setState({
+        requestsReplaced: [
+          ...state.requestsReplaced,
+          {
+            original: requestSnippetSchema.data.request,
+            replaced: snippetSchemaReturnValue.data.request,
+          },
+        ],
+      })
     }
   }
 
@@ -59,33 +90,30 @@ export function applyCorrelationRule(
   }
 
   // try to extract the value
-  const { extractedValue, correlationExtractionSnippet, generatedUniqueId } =
+  const { extractedValue, generatedUniqueId, correlationExtractionSnippet } =
     tryCorrelationExtraction(
       rule,
       requestSnippetSchema.data,
-      uniqueId,
-      sequentialIdGenerator
+      state.generatedUniqueId,
+      idGenerator
     )
 
   if (extractedValue && correlationExtractionSnippet) {
-    if (correlationState) {
-      // we only increment the count and we keep the first extracted value
-      correlationState.count += 1
-      // note: if the correlation extracts from URL we will need to showcase the request
-      correlationState.responsesExtracted.push(requestSnippetSchema.data)
-    } else {
-      correlationStateMap[rule.id] = {
-        extractedValue,
-        count: 1,
-        responsesExtracted: [requestSnippetSchema.data],
-        requestsReplaced: [],
-        generatedUniqueId,
-      }
+    setState({
+      // Keep first extracted value
+      extractedValue: state.extractedValue ?? extractedValue,
+      generatedUniqueId: generatedUniqueId,
+      responsesExtracted: [
+        ...state.responsesExtracted,
+        requestSnippetSchema.data,
+      ],
 
-      return {
-        ...requestSnippetSchema,
-        after: [...requestSnippetSchema['after'], correlationExtractionSnippet], // ! we know that we have the values because we are in the if condition but might need better types
-      }
+      count: state.count + 1,
+    })
+
+    return {
+      ...snippetSchemaReturnValue,
+      after: [...requestSnippetSchema['after'], correlationExtractionSnippet],
     }
   }
 

@@ -1,26 +1,35 @@
 import { Box, Callout, Code, Heading, ScrollArea } from '@radix-ui/themes'
-import { TestRule, CorrelationRule, CorrelationStateMap } from '@/types/rules'
+import { CorrelationRule } from '@/types/rules'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
-import { applyRule } from '@/rules/rules'
-import { ProxyData, RequestSnippetSchema, Request } from '@/types'
-import { generateSequentialInt } from '@/rules/utils'
+import { ProxyData, Request } from '@/types'
 import { useMemo, useState } from 'react'
 import { WebLogView } from '@/components/WebLogView'
 import { Allotment } from 'allotment'
 import { Details } from '@/components/WebLogView/Details'
 import { css } from '@emotion/react'
+import { applyRules } from '@/rules/rules'
 
 export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 
-  const result = useMemo(
-    () => applyRules(rules, requests, rule.id),
-    [rules, requests, rule]
-  )
+  const preview = useMemo(() => {
+    const preceedingAndSelectedRule = rules.slice(0, rules.indexOf(rule) + 1)
+    const { ruleInstances } = applyRules(requests, preceedingAndSelectedRule)
 
-  if (!result) {
+    const selectedRuleInstance = ruleInstances.find(
+      (ruleInstance) => ruleInstance.rule.id === rule.id
+    )
+
+    if (!selectedRuleInstance || selectedRuleInstance.type !== 'correlation') {
+      return null
+    }
+
+    return selectedRuleInstance.state
+  }, [rules, requests, rule])
+
+  if (!preview?.extractedValue) {
     return (
       <Box p="2">
         <Callout.Root color="amber" role="alert" variant="surface">
@@ -40,14 +49,14 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
               height: 100%;
             `}
           >
-            {result && (
+            {preview.extractedValue && (
               <>
                 <Heading size="2" m="2">
                   Requests matched
                 </Heading>
                 <Box>
                   <WebLogView
-                    requests={result.responsesExtracted}
+                    requests={preview.responsesExtracted}
                     onSelectRequest={setSelectedRequest}
                     selectedRequestId={selectedRequest?.id}
                   />
@@ -58,19 +67,19 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
                 <Box px="2">
                   <pre>
                     <Code>
-                      {JSON.stringify(result.extractedValue, null, 2)}
+                      {JSON.stringify(preview.extractedValue, null, 2)}
                     </Code>
                   </pre>
                 </Box>
 
-                {result.requestsReplaced.length > 0 && (
+                {preview.requestsReplaced.length > 0 && (
                   <>
                     <Heading size="2" m="2">
                       Value replaced in
                     </Heading>
                     <WebLogView
                       requests={requestsReplacedToProxyData(
-                        result.requestsReplaced
+                        preview.requestsReplaced
                       )}
                       onSelectRequest={setSelectedRequest}
                       selectedRequestId={selectedRequest?.id}
@@ -92,36 +101,11 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
   )
 }
 
-function applyRules(
-  rules: TestRule[],
-  requests: ProxyData[],
-  selectedRuleId: string
-) {
-  const sequentialIdGenerator = generateSequentialInt()
-  const correlationStateMap: CorrelationStateMap = {}
-
-  requests.forEach((request) => {
-    rules.forEach((rule) => {
-      const snippetSchema: RequestSnippetSchema = {
-        data: request,
-        before: [],
-        after: [],
-      }
-
-      applyRule(snippetSchema, rule, correlationStateMap, sequentialIdGenerator)
-    })
-  })
-
-  // Only interested in the selected rule
-  return correlationStateMap[selectedRuleId]
-}
-
-function requestsReplacedToProxyData(
-  requests: [Request, Request][]
+export function requestsReplacedToProxyData(
+  requests: { replaced: Request }[]
 ): ProxyData[] {
-  console.log('request', requests)
-  return requests.map(([, modified], i) => ({
-    request: modified,
+  return requests.map(({ replaced }, i) => ({
+    request: replaced,
     id: i.toString(),
   }))
 }

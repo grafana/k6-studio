@@ -1,30 +1,43 @@
-/* eslint-disable  @typescript-eslint/no-non-null-assertion */
-import { RequestSnippetSchema } from '@/types'
-import { CorrelationStateMap, TestRule } from '@/types/rules'
+import { TestRule } from '@/types/rules'
 import { exhaustive } from '../utils/typescript'
-import { applyCustomCodeRule } from './customCode'
-import { applyCorrelationRule } from './correlation'
-import { applyVerificationRule } from './verification'
+import { createCustomCodeRuleInstance } from './customCode'
+import { createCorrelationRuleInstance } from './correlation'
+import { createVerificationRuleInstance } from './verification'
+import { createParameterizationRuleInstance } from './parameterization'
+import { ProxyData, RequestSnippetSchema } from '@/types'
+import { generateSequentialInt } from './utils'
 
-export function applyRule(
-  requestSnippetSchema: RequestSnippetSchema,
-  rule: TestRule,
-  correlationStateMap: CorrelationStateMap,
-  sequentialIdGenerator: Generator<number>
-): RequestSnippetSchema {
+export function applyRules(recording: ProxyData[], rules: TestRule[]) {
+  const idGenerator = generateSequentialInt()
+  const ruleInstances = rules.map((rule) =>
+    createRuleInstance(rule, idGenerator)
+  )
+
+  const requestSnippetSchemas = recording.map((data) =>
+    ruleInstances.reduce<RequestSnippetSchema>((acc, rule) => rule.apply(acc), {
+      data,
+      before: [],
+      after: [],
+    })
+  )
+
+  return { requestSnippetSchemas, ruleInstances }
+}
+
+export function createRuleInstance<T extends TestRule>(
+  rule: T,
+  idGenerator: Generator<number>
+) {
   switch (rule.type) {
-    case 'customCode':
-      return applyCustomCodeRule(requestSnippetSchema, rule)
     case 'correlation':
-      return applyCorrelationRule(
-        requestSnippetSchema,
-        rule,
-        correlationStateMap,
-        sequentialIdGenerator
-      )
+      return createCorrelationRuleInstance(rule, idGenerator)
     case 'parameterization':
+      return createParameterizationRuleInstance(rule)
     case 'verification':
-      return applyVerificationRule(requestSnippetSchema)
+      return createVerificationRuleInstance(rule)
+    case 'customCode':
+      return createCustomCodeRuleInstance(rule)
+
     default:
       return exhaustive(rule)
   }
