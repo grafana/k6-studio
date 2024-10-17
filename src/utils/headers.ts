@@ -49,3 +49,7 @@ export function upsertHeader(
 export function getLocationHeader(headers: Header[]) {
   return getHeaderValues(headers, 'location')[0]
 }
+
+export function getUpgradeHeader(headers: Header[]) {
+  return getHeaderValues(headers, 'upgrade')[0]
+}

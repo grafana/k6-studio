@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { mergeRedirects, stringify } from './codegen.utils'
+import {
+  mergeRedirects,
+  stringify,
+  removeWebsocketRequests,
+} from './codegen.utils'
 import {
   createRequest,
   createResponse,
@@ -202,6 +206,19 @@ describe('Code generation - utils', () => {
       const recording = [redirect, createProxyData({ id: '2' })]
 
       expect(mergeRedirects(recording)).toEqual(recording)
+    })
+  })
+
+  describe('removeWebsocketRequests', () => {
+    it('remove websocket requests', () => {
+      const websocketRequest = createProxyData({
+        request: createRequest({ headers: [['upgrade', 'websocket']] }),
+      })
+      const normalRequest = createProxyData()
+
+      const recording = [websocketRequest, normalRequest]
+
+      expect(removeWebsocketRequests(recording)).toEqual([{ ...normalRequest }])
     })
   })
 })
