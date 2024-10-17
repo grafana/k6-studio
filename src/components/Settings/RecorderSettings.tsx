@@ -1,6 +1,6 @@
 import { FieldGroup } from '@/components/Form'
 import { AppSettings } from '@/types/settings'
-import { Flex, Text, TextField, Checkbox } from '@radix-ui/themes'
+import { Flex, Text, TextField, Checkbox, Button } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
 import { SettingsSection } from './SettingsSection'
 
@@ -10,9 +10,19 @@ export const RecorderSettings = () => {
     control,
     register,
     watch,
+    setValue,
+    clearErrors,
   } = useFormContext<AppSettings>()
 
   const { recorder } = watch()
+
+  const handleSelectFile = async () => {
+    const result = await window.studio.settings.selectBrowserExecutable()
+    const { canceled, filePaths } = result
+    if (canceled || !filePaths.length) return
+    setValue('recorder.browserPath', filePaths[0])
+    clearErrors('recorder.browserPath')
+  }
 
   return (
     <SettingsSection title="Recorder">
@@ -34,8 +44,9 @@ export const RecorderSettings = () => {
       </Flex>
 
       {recorder && !recorder.detectBrowserPath && (
-        <>
+        <Flex>
           <FieldGroup
+            flexGrow="1"
             name="recorder.browserPath"
             label="Browser Path"
             errors={errors}
@@ -44,7 +55,19 @@ export const RecorderSettings = () => {
           >
             <TextField.Root type="text" {...register('recorder.browserPath')} />
           </FieldGroup>
-        </>
+
+          <Button
+            ml="2"
+            onClick={handleSelectFile}
+            style={{
+              display: 'flex',
+              alignSelf: 'center',
+              marginTop: errors.recorder ? 12 : 36,
+            }}
+          >
+            Select executable
+          </Button>
+        </Flex>
       )}
     </SettingsSection>
   )

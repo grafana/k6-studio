@@ -1,4 +1,4 @@
-import { app } from 'electron'
+import { app, dialog } from 'electron'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
 import { AppSettings } from './types/settings'
@@ -81,4 +81,13 @@ function getSettingsDiff(oldSettings: AppSettings, newSettings: AppSettings) {
   }
 
   return diff
+}
+
+export async function selectBrowserExecutable() {
+  const extensions = process.platform === 'darwin' ? ['app'] : ['exe']
+  return dialog.showOpenDialog({
+    title: 'Select browser executable',
+    properties: ['openFile'],
+    filters: [{ name: 'Executables', extensions }],
+  })
 }

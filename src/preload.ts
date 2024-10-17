@@ -161,6 +161,9 @@ const settings = {
   saveSettings: (settings: AppSettings): Promise<AppSettings> => {
     return ipcRenderer.invoke('settings:save', settings)
   },
+  selectBrowserExecutable: (): Promise<Electron.OpenDialogReturnValue> => {
+    return ipcRenderer.invoke('settings:select-browser-executable')
+  },
 }
 
 const studio = {
