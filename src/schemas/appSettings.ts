@@ -8,7 +8,7 @@ export const ProxySettingsSchema = z
       .int()
       .min(1)
       .max(65535, { message: 'Port number must be between 1 and 65535' }),
-    findPort: z.boolean(),
+    automaticallyFindPort: z.boolean(),
     upstream: z.object({
       url: z.string().url({ message: 'Invalid URL' }).or(z.literal('')),
       requireAuth: z.boolean(),
@@ -66,6 +66,3 @@ export const AppSettingsSchema = z.object({
   proxy: ProxySettingsSchema,
   recorder: RecorderSettingsSchema,
 })
-
-export type AppSettings = z.infer<typeof AppSettingsSchema>
-export type ProxySettings = z.infer<typeof ProxySettingsSchema>

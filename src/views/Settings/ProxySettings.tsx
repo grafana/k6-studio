@@ -1,5 +1,4 @@
 import { FieldGroup } from '@/components/Form'
-import { AppSettings } from '@/schemas/appSettings'
 import { ProxyStatus } from '@/types'
 import { stringAsNumber } from '@/utils/form'
 import { css } from '@emotion/react'
@@ -9,6 +8,7 @@ import { Controller, useFormContext } from 'react-hook-form'
 import { UpstreamProxySettings } from './UpstreamProxySettings'
 import { SettingsSection } from './SettingsSection'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
+import { AppSettings } from '@/types/settings'
 
 const modeOptions = [
   {
@@ -64,11 +64,11 @@ export const ProxySettings = () => {
       <Flex gap="2" my="4">
         <Controller
           control={control}
-          name="proxy.findPort"
+          name="proxy.automaticallyFindPort"
           render={({ field }) => (
             <Text size="2" as="label">
               <Checkbox
-                {...register('proxy.findPort')}
+                {...register('proxy.automaticallyFindPort')}
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}

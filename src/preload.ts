@@ -3,7 +3,7 @@ import { ProxyData, K6Log, FolderContent, K6Check, ProxyStatus } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
-import { AppSettings } from './schemas/appSettings'
+import { AppSettings } from './types/settings'
 
 // Create listener and return clean up function to be used in useEffect
 function createListener<T>(channel: string, callback: (data: T) => void) {

@@ -1,14 +1,14 @@
 import { app } from 'electron'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
-import { AppSettings } from './schemas/appSettings'
+import { AppSettings } from './types/settings'
 
 const defaultSettings: AppSettings = {
   version: '1.0',
   proxy: {
     mode: 'regular',
     port: 6000,
-    findPort: true,
+    automaticallyFindPort: true,
     upstream: {
       url: 'http://example.com:8080',
       requireAuth: false,

@@ -1,5 +1,5 @@
 import { FieldGroup } from '@/components/Form'
-import { AppSettings } from '@/schemas/appSettings'
+import { AppSettings } from '@/types/settings'
 import { Flex, Text, TextField, Checkbox } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
 import { SettingsSection } from './SettingsSection'

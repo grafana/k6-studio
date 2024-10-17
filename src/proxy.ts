@@ -8,7 +8,7 @@ import { ProxyData } from './types'
 import readline from 'readline/promises'
 import { safeJsonParse } from './utils/json'
 import log from 'electron-log/main'
-import { ProxySettings } from './schemas/appSettings'
+import { ProxySettings } from './types/settings'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 

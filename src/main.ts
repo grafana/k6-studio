@@ -45,7 +45,7 @@ import kill from 'tree-kill'
 import find from 'find-process'
 import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
-import { AppSettings } from './schemas/appSettings'
+import { AppSettings } from './types/settings'
 import { getSettings, saveSettings } from './settings'
 import { ProxyStatus } from './types'
 
@@ -527,8 +527,8 @@ ipcMain.handle('settings:save', async (event, data: AppSettings) => {
 
   const browserWindow = browserWindowFromEvent(event)
   try {
-    const diff = await saveSettings(data)
-    applySettings(diff, browserWindow)
+    const modifiedSettings = await saveSettings(data)
+    applySettings(modifiedSettings, browserWindow)
 
     sendToast(browserWindow.webContents, {
       title: 'Settings saved successfully',
@@ -551,17 +551,17 @@ ipcMain.handle('proxy:status:get', async () => {
 })
 
 async function applySettings(
-  diff: Partial<AppSettings>,
+  modifiedSettings: Partial<AppSettings>,
   browserWindow: BrowserWindow
 ) {
-  if (diff.proxy) {
+  if (modifiedSettings.proxy) {
     stopProxyProcess()
-    appSettings.proxy = diff.proxy
+    appSettings.proxy = modifiedSettings.proxy
     proxyEmitter.emit('status:change', 'restarting')
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
   }
-  if (diff.recorder) {
-    appSettings.recorder = diff.recorder
+  if (modifiedSettings.recorder) {
+    appSettings.recorder = modifiedSettings.recorder
   }
 }
 
@@ -578,9 +578,9 @@ const browserWindowFromEvent = (
 }
 
 const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
-  const { port, findPort } = appSettings.proxy
+  const { port, automaticallyFindPort } = appSettings.proxy
 
-  const proxyPort = findPort ? await findOpenPort(port) : port
+  const proxyPort = automaticallyFindPort ? await findOpenPort(port) : port
   appSettings.proxy.port = proxyPort
 
   console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
