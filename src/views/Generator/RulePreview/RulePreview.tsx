@@ -1,6 +1,7 @@
 import { CorrelationPreview } from './CorrelationPreview'
 import { exhaustive } from '@/utils/typescript'
 import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
+import { ParameterizationPreview } from './ParameterizationPreview'
 
 export function RulePreview() {
   const rule = useGeneratorStore(selectSelectedRule)
@@ -13,8 +14,10 @@ export function RulePreview() {
     case 'correlation':
       return <CorrelationPreview rule={rule} />
 
-    case 'customCode':
     case 'parameterization':
+      return <ParameterizationPreview rule={rule} />
+
+    case 'customCode':
     case 'verification':
       return null
 

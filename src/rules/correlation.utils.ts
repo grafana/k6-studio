@@ -1,24 +1,12 @@
-import { BeginEndSelector, CorrelationRule, RegexSelector } from '@/types/rules'
-import { Header, Request, Cookie } from '@/types'
-import { exhaustive } from '@/utils/typescript'
-import {
-  replaceContent,
-  replaceBeginEndBody,
-  replaceBeginEndHeaders,
-  replaceUrl,
-  replaceHeaders,
-  replaceBeginEndUrl,
-  replaceCookies,
-  replaceRegexBody,
-  replaceRegexHeaders,
-  replaceRegexUrl,
-  replaceJsonBody,
-} from './shared'
+import { CorrelationRule } from '@/types/rules'
+import { Request } from '@/types'
+import { replaceRequestValues, replaceTextMatches } from './shared'
 
 export function replaceCorrelatedValues({
   rule,
   extractedValue,
   uniqueId,
+
   request,
 }: {
   rule: CorrelationRule
@@ -26,98 +14,15 @@ export function replaceCorrelatedValues({
   uniqueId: number
   request: Request
 }) {
+  const varName = `\${correlation_vars['correlation_${uniqueId}']}`
   // Default behaviour replaces all occurences of the string
   if (!rule.replacer) {
-    return replaceTextMatches(
-      request,
-      extractedValue,
-      `correlation_vars['correlation_${uniqueId}']`
-    )
+    return replaceTextMatches(request, extractedValue, varName)
   }
 
-  switch (rule.replacer.selector.type) {
-    case 'begin-end':
-      return replaceBeginEnd(
-        rule.replacer.selector,
-        request,
-        `correlation_vars['correlation_${uniqueId}']`
-      )
-    case 'regex':
-      return replaceRegex(
-        rule.replacer.selector,
-        request,
-        `correlation_vars['correlation_${uniqueId}']`
-      )
-    case 'json':
-      return replaceJsonBody(
-        rule.replacer.selector,
-        request,
-        `correlation_vars['correlation_${uniqueId}']`
-      )
-    default:
-      return exhaustive(rule.replacer.selector)
-  }
-}
-
-const replaceBeginEnd = (
-  selector: BeginEndSelector,
-  request: Request,
-  variableName: string
-) => {
-  switch (selector.from) {
-    case 'body':
-      return replaceBeginEndBody(selector, request, variableName)
-    case 'headers':
-      return replaceBeginEndHeaders(selector, request, variableName)
-    case 'url':
-      return replaceBeginEndUrl(selector, request, variableName)
-    default:
-      return exhaustive(selector.from)
-  }
-}
-
-const replaceRegex = (
-  selector: RegexSelector,
-  request: Request,
-  variableName: string
-) => {
-  switch (selector.from) {
-    case 'body':
-      return replaceRegexBody(selector, request, variableName)
-    case 'headers':
-      return replaceRegexHeaders(selector, request, variableName)
-    case 'url':
-      return replaceRegexUrl(selector, request, variableName)
-    default:
-      return exhaustive(selector.from)
-  }
-}
-
-export function replaceTextMatches(
-  request: Request,
-  extractedValue: string,
-  variableName: string
-): Request {
-  const content = replaceContent(request.content, extractedValue, variableName)
-  const url = replaceUrl(request.url, extractedValue, variableName)
-  const path = request.path.replaceAll(extractedValue, `\${${variableName}}`)
-  const headers: Header[] = replaceHeaders(
-    request.headers,
-    extractedValue,
-    variableName
-  )
-  const cookies: Cookie[] = replaceCookies(
-    request.cookies,
-    extractedValue,
-    variableName
-  )
-
-  return {
-    ...request,
-    content,
-    url,
-    path,
-    headers,
-    cookies,
-  }
+  return replaceRequestValues({
+    selector: rule.replacer.selector,
+    request,
+    value: varName,
+  })
 }

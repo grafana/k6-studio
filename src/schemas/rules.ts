@@ -21,6 +21,11 @@ export const RecordedValueSchema = z.object({
   type: z.literal('recordedValue'),
 })
 
+export const StringValueSchema = z.object({
+  type: z.literal('string'),
+  value: z.string(),
+})
+
 export const FilterSchema = z.object({
   path: z.string(),
 })
@@ -73,7 +78,8 @@ export const VerificationRuleSelectorSchema = z.discriminatedUnion('type', [
   BeginEndSelectorSchema,
   RegexSelectorSchema,
   JsonSelectorSchema,
-  StatusCodeSelectorSchema,
+  // TODO: verify if save to disable
+  // StatusCodeSelectorSchema,
 ])
 
 export const CorrelationExtractorSchema = z.object({
@@ -99,6 +105,7 @@ export const ParameterizationRuleSchema = RuleBaseSchema.extend({
     VariableValueSchema,
     ArrayValueSchema,
     CustomCodeValueSchema,
+    StringValueSchema,
   ]),
 })
 

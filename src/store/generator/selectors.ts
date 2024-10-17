@@ -17,7 +17,7 @@ export function selectSelectedRule(state: GeneratorStore) {
 
 export function selectIsRulePreviewable(state: GeneratorStore) {
   const rule = selectSelectedRule(state)
-  return rule?.type === 'correlation'
+  return ['correlation', 'parameterization'].includes(rule?.type ?? '')
 }
 
 export function selectHasRecording(state: GeneratorStore) {

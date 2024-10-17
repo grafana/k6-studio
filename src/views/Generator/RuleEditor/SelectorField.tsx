@@ -29,15 +29,22 @@ const allowedTypes: Record<
   url: [typeOptions.beginEnd, typeOptions.regex],
 }
 
-export function SelectorField({ type }: { type: 'extractor' | 'replacer' }) {
+export function SelectorField({
+  field,
+}: {
+  field: 'extractor.selector' | 'replacer.selector' | 'selector'
+}) {
   const {
     watch,
     control,
     setValue,
     formState: { errors },
   } = useFormContext<TestRule>()
-  const field = `${type}.selector` as const
   const selector = watch(field)
+
+  if (!selector) {
+    return null
+  }
 
   const handleFromChange = (value: Selector['from']) => {
     // When "from" changes reset type to the first allowed type if the current type is not allowed
@@ -102,24 +109,22 @@ export function SelectorField({ type }: { type: 'extractor' | 'replacer' }) {
           </FieldGroup>
         </Box>
       </Flex>
-      <SelectorContent selector={selector} type={type} />
+      <SelectorContent selector={selector} field={field} />
     </>
   )
 }
 
 function SelectorContent({
   selector,
-  type,
+  field,
 }: {
   selector: Selector
-  type: 'extractor' | 'replacer'
+  field: 'extractor.selector' | 'replacer.selector' | 'selector'
 }) {
   const {
     register,
     formState: { errors },
   } = useFormContext<TestRule>()
-
-  const field = `${type}.selector` as const
 
   switch (selector.type) {
     case 'json':

@@ -1,21 +1,28 @@
 import { RequestSnippetSchema } from '@/types'
+import { VerificationRule, VerificationRuleInstance } from '@/types/rules'
 
-export function applyVerificationRule(
-  requestSnippetSchema: RequestSnippetSchema
-): RequestSnippetSchema {
-  const response = requestSnippetSchema.data.response
+export function createVerificationRuleInstance(
+  rule: VerificationRule
+): VerificationRuleInstance {
+  return {
+    rule,
+    type: rule.type,
+    apply: (requestSnippetSchema: RequestSnippetSchema) => {
+      const response = requestSnippetSchema.data.response
 
-  if (!response) {
-    return requestSnippetSchema
-  }
+      if (!response) {
+        return requestSnippetSchema
+      }
 
-  const verificationSnippet = `
+      const verificationSnippet = `
 check(resp, {
     'status matches ${response.statusCode}': (r) => r.status === ${response.statusCode},
   })
 `
-  return {
-    ...requestSnippetSchema,
-    after: [...requestSnippetSchema['after'], verificationSnippet],
+      return {
+        ...requestSnippetSchema,
+        after: [...requestSnippetSchema['after'], verificationSnippet],
+      }
+    },
   }
 }
