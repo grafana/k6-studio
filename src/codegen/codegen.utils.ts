@@ -1,3 +1,4 @@
+import { flow } from 'lodash-es'
 import { ProxyData } from '@/types'
 import { getLocationHeader, getUpgradeHeader } from '@/utils/headers'
 
@@ -116,8 +117,4 @@ export const removeWebsocketRequests = (recording: ProxyData[]) => {
   })
 }
 
-export const cleanupRecording = (recording: ProxyData[]) => {
-  let cleanedRecording = mergeRedirects(recording)
-  cleanedRecording = removeWebsocketRequests(cleanedRecording)
-  return cleanedRecording
-}
+export const cleanupRecording = flow([mergeRedirects, removeWebsocketRequests])
