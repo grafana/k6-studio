@@ -8,7 +8,6 @@ import { useMemo, useState } from 'react'
 import { requestsReplacedToProxyData } from './CorrelationPreview'
 import { Details } from '@/components/WebLogView/Details'
 import { Allotment } from 'allotment'
-import { createParameterizationRuleInstance } from '@/rules/parameterization'
 
 export function ParameterizationPreview({
   rule,
@@ -20,16 +19,24 @@ export function ParameterizationPreview({
   const rules = useGeneratorStore((state) => state.rules)
 
   const result = useMemo(() => {
-    const preceedingRules = rules.slice(0, rules.indexOf(rule))
-    const { requestSnippetSchemas } = applyRules(requests, preceedingRules)
+    const preceedingAndSelectedRule = rules.slice(0, rules.indexOf(rule) + 1)
+    const { ruleInstances } = applyRules(requests, preceedingAndSelectedRule)
 
-    const ruleInstance = createParameterizationRuleInstance(rule)
-    requestSnippetSchemas.forEach(ruleInstance.apply)
+    const selectedRuleInstance = ruleInstances.find(
+      (ruleInstance) => ruleInstance.rule.id === rule.id
+    )
 
-    return ruleInstance.state
+    if (
+      !selectedRuleInstance ||
+      selectedRuleInstance.type !== 'parameterization'
+    ) {
+      return null
+    }
+
+    return selectedRuleInstance.state
   }, [rules, requests, rule])
 
-  if (result.requestsReplaced.length === 0) {
+  if (result?.requestsReplaced.length === 0) {
     return (
       <Box p="2">
         <Callout.Root color="amber" role="alert" variant="surface">
@@ -44,7 +51,7 @@ export function ParameterizationPreview({
       <Allotment.Pane minSize={200}>
         <Box height="100%">
           <ScrollArea scrollbars="vertical" css={{ height: '100%' }}>
-            {result.requestsReplaced.length > 0 && (
+            {result && result.requestsReplaced.length > 0 && (
               <>
                 <Heading size="2" m="2">
                   Requests matched

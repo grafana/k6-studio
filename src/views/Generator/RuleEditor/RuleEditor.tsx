@@ -24,14 +24,6 @@ export function RuleEditorSwitch() {
     case 'parameterization':
       return <ParameterizationEditor />
 
-    // return (
-    // <Callout.Root>
-    // <Callout.Icon>
-    // <InfoCircledIcon />
-    // </Callout.Icon>
-    // <Callout.Text>Not implemented yet</Callout.Text>
-    // </Callout.Root>
-    // )
     case 'verification':
       return (
         <Callout.Root>
