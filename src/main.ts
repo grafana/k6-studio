@@ -224,13 +224,13 @@ const waitForProxy = async (): Promise<void> => {
 }
 
 // Browser
-ipcMain.handle('browser:start', async (event) => {
+ipcMain.handle('browser:start', async (event, url?: string) => {
   console.info('browser:start event received')
 
   await waitForProxy()
 
   const browserWindow = browserWindowFromEvent(event)
-  currentBrowserProcess = await launchBrowser(browserWindow)
+  currentBrowserProcess = await launchBrowser(browserWindow, url)
   console.info('browser started')
 })
 

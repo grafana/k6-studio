@@ -69,7 +69,7 @@ export function RecordingPreviewer() {
 
   const handleDiscard = async () => {
     await window.studio.ui.deleteFile(fileName)
-    navigate(getRoutePath('recorder'), { state: { autoStart: true } })
+    navigate(getRoutePath('recorder'))
   }
 
   return (
@@ -81,7 +81,7 @@ export function RecordingPreviewer() {
         <>
           {isDiscardable && (
             <Button onClick={handleDiscard} variant="outline" color="red">
-              Discard and start over
+              Discard
             </Button>
           )}
 

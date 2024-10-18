@@ -76,11 +76,11 @@ function getRequestSignature(request: Request) {
 }
 
 // TODO: add error and timeout handling
-export async function startRecording() {
+export async function startRecording(url?: string) {
   // Kill previous browser window
   window.studio.browser.stopBrowser()
 
-  return window.studio.browser.launchBrowser()
+  return window.studio.browser.launchBrowser(url)
 }
 
 export function stopRecording() {
