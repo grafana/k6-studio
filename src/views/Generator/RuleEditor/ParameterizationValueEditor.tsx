@@ -89,8 +89,11 @@ function VariableSelect() {
 
   const {
     control,
+    watch,
     formState: { errors },
   } = useFormContext<ParameterizationRule>()
+
+  const variableName = watch('value.variableName')
 
   return (
     <FieldGroup name="value.variableName" errors={errors} label="Variable">
@@ -99,7 +102,9 @@ function VariableSelect() {
         control={control}
         name="value.variableName"
         selectProps={{
-          defaultOpen: true,
+          // Automatically open the select when switching to variable type
+          // in new parameterization rule
+          defaultOpen: !variableName,
         }}
         contentProps={{
           css: { maxWidth: 'var(--radix-select-trigger-width)' },
