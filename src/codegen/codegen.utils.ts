@@ -1,5 +1,6 @@
+import { flow } from 'lodash-es'
 import { ProxyData } from '@/types'
-import { getLocationHeader } from '@/utils/headers'
+import { getLocationHeader, getUpgradeHeader } from '@/utils/headers'
 
 // TODO: find a well-maintained library for this
 export function stringify(value: unknown): string {
@@ -109,3 +110,11 @@ export function mergeRedirects(recording: ProxyData[]) {
 
   return result
 }
+
+export const removeWebsocketRequests = (recording: ProxyData[]) => {
+  return recording.filter((data) => {
+    return getUpgradeHeader(data.request.headers) !== 'websocket'
+  })
+}
+
+export const cleanupRecording = flow([mergeRedirects, removeWebsocketRequests])
