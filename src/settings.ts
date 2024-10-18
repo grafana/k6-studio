@@ -13,6 +13,13 @@ const defaultSettings: AppSettings = {
   recorder: {
     detectBrowserPath: true,
   },
+  windowState: {
+    width: 1200,
+    height: 800,
+    x: 0,
+    y: 0,
+    isMaximized: true,
+  },
 }
 
 const fileName =
@@ -42,7 +49,11 @@ export async function getSettings() {
   const fileHandle = await open(filePath, 'r')
   try {
     const settings = await fileHandle?.readFile({ encoding: 'utf-8' })
-    return JSON.parse(settings) as AppSettings
+    const currentSettings = JSON.parse(settings) as AppSettings
+    return {
+      ...defaultSettings,
+      ...currentSettings,
+    }
   } finally {
     await fileHandle?.close()
   }
@@ -54,7 +65,6 @@ export async function getSettings() {
  * @returns The settings that have changed
  */
 export async function saveSettings(newSettings: AppSettings) {
-  console.log(newSettings)
   const currentSettings = await getSettings()
   const diff = getSettingsDiff(currentSettings, newSettings)
   await writeFile(filePath, JSON.stringify(newSettings))

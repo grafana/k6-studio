@@ -81,8 +81,17 @@ export const RecorderSettingsSchema = z
     }
   })
 
+const WindowStateSchema = z.object({
+  x: z.number().int(),
+  y: z.number().int(),
+  width: z.number().int(),
+  height: z.number().int(),
+  isMaximized: z.boolean(),
+})
+
 export const AppSettingsSchema = z.object({
   version: z.string(),
   proxy: ProxySettingsSchema,
   recorder: RecorderSettingsSchema,
+  windowState: WindowStateSchema,
 })
