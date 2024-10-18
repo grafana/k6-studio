@@ -9,17 +9,27 @@ import { getCertificateSPKI } from './proxy'
 import { mkdtemp } from 'fs/promises'
 import path from 'path'
 import os from 'os'
-import { proxyPort } from './main'
+import { appSettings } from './main'
 
 const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
 }
 
+function getBrowserPath() {
+  const { recorder } = appSettings
+
+  if (recorder.detectBrowserPath) {
+    return computeSystemExecutablePath({
+      browser: Browser.CHROME,
+      channel: ChromeReleaseChannel.STABLE,
+    })
+  }
+
+  return recorder.browserPath as string
+}
+
 export const launchBrowser = async (browserWindow: BrowserWindow) => {
-  const path = computeSystemExecutablePath({
-    browser: Browser.CHROME,
-    channel: ChromeReleaseChannel.STABLE,
-  })
+  const path = getBrowserPath()
   console.info(`browser path: ${path}`)
 
   const userDataDir = await createUserDataDir()
@@ -54,7 +64,7 @@ export const launchBrowser = async (browserWindow: BrowserWindow) => {
       '--disable-background-networking',
       '--disable-component-update',
       '--disable-search-engine-choice-screen',
-      `--proxy-server=http://localhost:${proxyPort}`,
+      `--proxy-server=http://localhost:${appSettings.proxy.port}`,
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
       disableChromeOptimizations,
     ],

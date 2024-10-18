@@ -91,3 +91,5 @@ export interface FolderContent {
   generators: string[]
   scripts: string[]
 }
+
+export type ProxyStatus = 'online' | 'offline' | 'restarting'
