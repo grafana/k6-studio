@@ -121,10 +121,14 @@ const createWindow = async () => {
   // clean leftover proxies if any, this might happen on windows
   await cleanUpProxies()
 
+  const { width, height, x, y } = appSettings.windowState
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    x,
+    y,
+    width,
+    height,
     minWidth: 800,
     minHeight: 600,
     show: false,
@@ -162,6 +166,9 @@ const createWindow = async () => {
   mainWindow.on('closed', () =>
     proxyEmitter.removeAllListeners('status:change')
   )
+
+  mainWindow.on('move', () => trackWindowState(mainWindow))
+  mainWindow.on('resize', () => trackWindowState(mainWindow))
 
   return mainWindow
 }
@@ -611,8 +618,27 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 }
 
 function showWindow(browserWindow: BrowserWindow) {
-  browserWindow.maximize()
+  const { isMaximized } = appSettings.windowState
+  if (isMaximized) {
+    browserWindow.maximize()
+  } else {
+    browserWindow.show()
+  }
   browserWindow.focus()
+}
+
+function trackWindowState(browserWindow: BrowserWindow) {
+  const [width, height] = browserWindow.getSize() as [number, number]
+  const [x, y] = browserWindow.getPosition() as [number, number]
+  const isMaximized = browserWindow.isMaximized()
+  appSettings.windowState = {
+    width,
+    height,
+    x,
+    y,
+    isMaximized,
+  }
+  saveSettings(appSettings)
 }
 
 function configureWatcher(browserWindow: BrowserWindow) {
