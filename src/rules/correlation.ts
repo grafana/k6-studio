@@ -19,97 +19,105 @@ import { replaceCorrelatedValues } from './correlation.utils'
 import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
 
 export function createCorrelationRuleInstance(
-  rule: CorrelationRule
+  rule: CorrelationRule,
+  idGenerator: Generator<number>
 ): CorrelationRuleInstance {
-  const sequentialIdGenerator = generateSequentialInt()
-
   const state: CorrelationState = {
     extractedValue: undefined,
     count: 0,
     responsesExtracted: [],
     requestsReplaced: [],
     generatedUniqueId: undefined,
-    sequentialIdGenerator,
+  }
+
+  function setState(newState: Partial<CorrelationState>) {
+    Object.assign(state, newState)
   }
 
   return {
     rule,
     state,
     type: rule.type,
-    apply: (
-      requestSnippetSchema: RequestSnippetSchema
-    ): RequestSnippetSchema => {
-      // this is the modified schema that we return to the accumulator
-      const snippetSchemaReturnValue = cloneDeep(requestSnippetSchema)
-
-      // if we have an extracted value we try to apply it to the request
-      // note: this comes before the extractor to avoid applying an extracted value on the same request/response pair
-      let uniqueId: number | undefined
-
-      if (state.extractedValue) {
-        // we populate uniqueId since it doesn't have to be regenerated
-        // this will be passed to the tryCorrelationExtraction function
-        uniqueId = state.generatedUniqueId
-
-        snippetSchemaReturnValue.data.request = replaceCorrelatedValues({
-          rule,
-          extractedValue: state.extractedValue,
-          uniqueId: uniqueId ?? 0,
-          request: requestSnippetSchema.data.request,
-        })
-
-        // Keep track of modified requests to display in preview
-        if (!isEqual(requestSnippetSchema, snippetSchemaReturnValue)) {
-          state.requestsReplaced = [
-            ...state.requestsReplaced,
-            {
-              original: requestSnippetSchema.data.request,
-              replaced: snippetSchemaReturnValue.data.request,
-            },
-          ]
-        }
-      }
-
-      // Skip extraction if filter doesn't match
-      if (!matchFilter(requestSnippetSchema, rule)) {
-        return snippetSchemaReturnValue
-      }
-
-      // try to extract the value
-      const {
-        extractedValue,
-        generatedUniqueId,
-        correlationExtractionSnippet,
-      } = tryCorrelationExtraction(
-        rule,
-        requestSnippetSchema.data,
-        uniqueId,
-        sequentialIdGenerator
-      )
-
-      if (extractedValue && correlationExtractionSnippet) {
-        // Keep first extracted value
-
-        state.extractedValue ??= extractedValue
-        state.generatedUniqueId = generatedUniqueId
-        state.responsesExtracted = [
-          ...state.responsesExtracted,
-          requestSnippetSchema.data,
-        ]
-        state.count += 1
-
-        return {
-          ...snippetSchemaReturnValue,
-          after: [
-            ...requestSnippetSchema['after'],
-            correlationExtractionSnippet,
-          ],
-        }
-      }
-
-      return snippetSchemaReturnValue
-    },
+    apply: (requestSnippetSchema: RequestSnippetSchema) =>
+      applyRule({ requestSnippetSchema, state, rule, idGenerator, setState }),
   }
+}
+
+function applyRule({
+  requestSnippetSchema,
+  state,
+  rule,
+  idGenerator,
+  setState,
+}: {
+  requestSnippetSchema: RequestSnippetSchema
+  state: CorrelationState
+  rule: CorrelationRule
+  idGenerator: Generator<number>
+  setState: (newState: Partial<CorrelationState>) => void
+}) {
+  // this is the modified schema that we return to the accumulator
+  const snippetSchemaReturnValue = cloneDeep(requestSnippetSchema)
+
+  if (state.extractedValue) {
+    // we populate uniqueId since it doesn't have to be regenerated
+    // this will be passed to the tryCorrelationExtraction function
+
+    snippetSchemaReturnValue.data.request = replaceCorrelatedValues({
+      rule,
+      extractedValue: state.extractedValue,
+      uniqueId: state.generatedUniqueId ?? 0,
+      request: requestSnippetSchema.data.request,
+    })
+
+    // Keep track of modified requests to display in preview
+    if (!isEqual(requestSnippetSchema, snippetSchemaReturnValue)) {
+      setState({
+        requestsReplaced: [
+          ...state.requestsReplaced,
+          {
+            original: requestSnippetSchema.data.request,
+            replaced: snippetSchemaReturnValue.data.request,
+          },
+        ],
+      })
+    }
+  }
+
+  // Skip extraction if filter doesn't match
+  if (!matchFilter(requestSnippetSchema, rule)) {
+    return snippetSchemaReturnValue
+  }
+
+  // try to extract the value
+  const { extractedValue, generatedUniqueId, correlationExtractionSnippet } =
+    tryCorrelationExtraction(
+      rule,
+      requestSnippetSchema.data,
+      state.generatedUniqueId,
+      idGenerator
+    )
+
+  if (extractedValue && correlationExtractionSnippet) {
+    setState({
+      // Keep first extracted value
+      extractedValue: state.extractedValue ?? extractedValue,
+      generatedUniqueId: generatedUniqueId,
+      responsesExtracted: [
+        ...state.responsesExtracted,
+        requestSnippetSchema.data,
+      ],
+
+      count: state.count + 1,
+    })
+
+    return {
+      ...snippetSchemaReturnValue,
+      after: [...requestSnippetSchema['after'], correlationExtractionSnippet],
+    }
+  }
+
+  return snippetSchemaReturnValue
 }
 
 const noCorrelationResult = {

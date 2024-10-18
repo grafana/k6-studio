@@ -13,6 +13,7 @@ import { checksRecording } from '@/test/fixtures/checksRecording'
 import { ThinkTime } from '@/types/testOptions'
 import { createProxyData, createRequest } from '@/test/factories/proxyData'
 import { jsonRule } from '@/test/fixtures/parameterizationRules'
+import { prettify } from '@/utils/prettify'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
 
@@ -147,7 +148,7 @@ describe('Code generation', () => {
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
 
-    it('should replace correlated values', () => {
+    it('should replace correlated values', async () => {
       const rules: TestRule[] = [
         {
           type: 'correlation',
@@ -161,34 +162,64 @@ describe('Code generation', () => {
             },
           },
         },
+        {
+          type: 'correlation',
+          id: '1',
+          extractor: {
+            filter: { path: '' },
+            selector: {
+              type: 'regex',
+              from: 'headers',
+              regex: 'project_id=(.*)$',
+            },
+          },
+        },
       ]
 
-      const expectedResult = `
-        params = { headers: {}, cookies: {} }
+      const expectedResult = await prettify(`
+        params = {
+          headers: {}, cookies: {}
+        }
+
         url = http.url\`http://test.k6.io/api/v1/foo\`
         resp = http.request('POST', url, null, params)
 
-        params = { headers: {}, cookies: {} }
-        url = http.url\`http://test.k6.io/api/v1/login\`
-        resp = http.request('POST', url, null, params)
-        correlation_vars['correlation_0'] = resp.json().user_id
+        regex = new RegExp("project_id=(.*)$");
+        match = resp.headers["Project"].match(regex);
+        if (match) {
+          correlation_vars["correlation_0"] = match[1];
+        }
 
-        params = { headers: {}, cookies: {} }
-        url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars['correlation_0']}\`
+        params = {
+          headers: {}, cookies: {}
+        }
+
+        url = http.url\`http://test.k6.io/api/v1/login?project_id=\${correlation_vars['correlation_0']}\`
+        resp = http.request('POST', url, null, params)
+
+        correlation_vars['correlation_1'] = resp.json().user_id
+
+        params = {
+          headers: {}, cookies: {}
+        }
+
+        url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars['correlation_1']}\`
         resp = http.request('GET', url, null, params)
 
-        params = { headers: {}, cookies: {} }
-        url = http.url\`http://test.k6.io/api/v1/users\`
-        resp = http.request('POST', url, \`${JSON.stringify({ user_id: "${correlation_vars['correlation_0']}" })}\`, params)
+        params = {
+          headers: {}, cookies: {}
+        }
 
-      `
+        url = http.url\`http://test.k6.io/api/v1/users\`
+        resp = http.request('POST', url, \`${JSON.stringify({ user_id: "${correlation_vars['correlation_1']}" })}\`, params)
+
+      `)
 
       expect(
-        generateRequestSnippets(correlationRecording, rules, thinkTime).replace(
-          /\s/g,
-          ''
+        await prettify(
+          generateRequestSnippets(correlationRecording, rules, thinkTime)
         )
-      ).toBe(expectedResult.replace(/\s/g, ''))
+      ).toBe(expectedResult)
     })
 
     it('should generate checks', () => {

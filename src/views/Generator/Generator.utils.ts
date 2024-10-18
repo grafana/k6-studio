@@ -1,8 +1,4 @@
 import { generateScript } from '@/codegen'
-import { format } from 'prettier/standalone'
-import * as prettierPluginBabel from 'prettier/plugins/babel'
-// eslint-disable-next-line import/namespace
-import * as prettierPluginEStree from 'prettier/plugins/estree'
 import { groupProxyData } from '@/utils/groups'
 import {
   selectFilteredRequests,
@@ -13,6 +9,7 @@ import { GeneratorFileData } from '@/types/generator'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { GroupedProxyData } from '@/types'
+import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(
   generator: GeneratorFileData,
@@ -22,12 +19,8 @@ export async function generateScriptPreview(
     generator,
     recording,
   })
-  const prettifiedScript = await format(script, {
-    parser: 'babel',
-    plugins: [prettierPluginBabel, prettierPluginEStree],
-  })
 
-  return prettifiedScript
+  return prettify(script)
 }
 
 export function saveScript(script: string, fileName: string) {
