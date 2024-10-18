@@ -628,8 +628,7 @@ function showWindow(browserWindow: BrowserWindow) {
 }
 
 function trackWindowState(browserWindow: BrowserWindow) {
-  const [width, height] = browserWindow.getSize() as [number, number]
-  const [x, y] = browserWindow.getPosition() as [number, number]
+  const { width, height, x, y } = browserWindow.getBounds()
   const isMaximized = browserWindow.isMaximized()
   appSettings.windowState = {
     width,
@@ -638,7 +637,11 @@ function trackWindowState(browserWindow: BrowserWindow) {
     y,
     isMaximized,
   }
-  saveSettings(appSettings)
+  try {
+    saveSettings(appSettings)
+  } catch (error) {
+    log.error(error)
+  }
 }
 
 function configureWatcher(browserWindow: BrowserWindow) {
