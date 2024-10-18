@@ -18,7 +18,7 @@ export function ParameterizationPreview({
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 
-  const result = useMemo(() => {
+  const preview = useMemo(() => {
     const preceedingAndSelectedRule = rules.slice(0, rules.indexOf(rule) + 1)
     const { ruleInstances } = applyRules(requests, preceedingAndSelectedRule)
 
@@ -36,7 +36,7 @@ export function ParameterizationPreview({
     return selectedRuleInstance.state
   }, [rules, requests, rule])
 
-  if (result?.requestsReplaced.length === 0) {
+  if (preview?.requestsReplaced.length === 0) {
     return (
       <Box p="2">
         <Callout.Root color="amber" role="alert" variant="surface">
@@ -51,14 +51,14 @@ export function ParameterizationPreview({
       <Allotment.Pane minSize={200}>
         <Box height="100%">
           <ScrollArea scrollbars="vertical" css={{ height: '100%' }}>
-            {result && result.requestsReplaced.length > 0 && (
+            {preview && preview.requestsReplaced.length > 0 && (
               <>
                 <Heading size="2" m="2">
                   Requests matched
                 </Heading>
                 <WebLogView
                   requests={requestsReplacedToProxyData(
-                    result.requestsReplaced
+                    preview.requestsReplaced
                   )}
                   onSelectRequest={setSelectedRequest}
                   selectedRequestId={selectedRequest?.id}
