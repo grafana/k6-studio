@@ -67,8 +67,8 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
       >
         <FieldGroup
           name="url"
-          label="Target URL"
-          hint="Provide the URL of the service you want to test"
+          label="Starting URL"
+          hint="Enter the URL of the website or service you want to test"
           hintType="text"
           errors={errors}
           width="460px"
