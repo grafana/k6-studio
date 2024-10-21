@@ -59,7 +59,6 @@ export function Recorder() {
       try {
         resetProxyData()
         setRecorderState('starting')
-        console.log('url', url)
         await startRecording(url)
 
         setRecorderState('recording')
