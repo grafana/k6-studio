@@ -45,6 +45,7 @@ import kill from 'tree-kill'
 import find from 'find-process'
 import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
+import { sendReport } from './telemetry'
 
 // handle auto updates
 if (process.env.NODE_ENV !== 'development') {
@@ -157,6 +158,7 @@ const createWindow = async () => {
 }
 
 app.whenReady().then(async () => {
+  await sendReport()
   await createSplashWindow()
   await setupProjectStructure()
   await createWindow()
