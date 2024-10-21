@@ -49,7 +49,7 @@ export async function getSettings() {
   const fileHandle = await open(filePath, 'r')
   try {
     const settings = await fileHandle?.readFile({ encoding: 'utf-8' })
-    const currentSettings = JSON.parse(settings) as AppSettings
+    const currentSettings = AppSettingsSchema.parse(JSON.parse(settings))
     return {
       ...defaultSettings,
       ...currentSettings,
