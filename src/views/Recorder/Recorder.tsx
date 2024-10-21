@@ -23,6 +23,7 @@ import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import log from 'electron-log/renderer'
+import { NoRequestsMessage } from '@/components/NoRequestsMessage'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -200,17 +201,26 @@ export function Recorder() {
             <div css={{ flexGrow: 0, minHeight: 0 }}>
               <RequestsSection
                 proxyData={debouncedProxyData}
-                noRequestsMessage={
-                  <>
-                    <Text color="gray" size="1">
-                      Once you start the recording, requests will appear here
-                    </Text>
-                    <Button disabled={isLoading} onClick={handleStartRecording}>
-                      <DiscIcon /> Start recording
-                    </Button>
-                  </>
+                noDataElement={
+                  recorderState === 'idle' && (
+                    <NoRequestsMessage
+                      message={
+                        <>
+                          <Text color="gray" size="1">
+                            Once you start the recording, requests will appear
+                            here
+                          </Text>
+                          <Button
+                            disabled={isLoading}
+                            onClick={handleStartRecording}
+                          >
+                            <DiscIcon /> Start recording
+                          </Button>
+                        </>
+                      }
+                    />
+                  )
                 }
-                showNoRequestsMessage={recorderState === 'idle'}
                 selectedRequestId={selectedRequest?.id}
                 autoScroll
                 groups={groups}
