@@ -11,6 +11,7 @@ type FieldGroupProps = BoxProps & {
   name: string
   label?: React.ReactNode
   hint?: React.ReactNode
+  hintType?: 'tooltip' | 'text'
 }
 
 export function FieldGroup({
@@ -19,6 +20,7 @@ export function FieldGroup({
   name,
   errors,
   hint,
+  hintType = 'tooltip',
   ...props
 }: FieldGroupProps) {
   return (
@@ -29,12 +31,17 @@ export function FieldGroup({
             <Text size="2" weight="medium">
               {label}
             </Text>
-            {hint && (
+            {hint && hintType === 'tooltip' && (
               <Tooltip content={hint}>
                 <InfoCircledIcon />
               </Tooltip>
             )}
           </Flex>
+          {hint && hintType === 'text' && (
+            <Text size="1" mb="2" as="p">
+              {hint}
+            </Text>
+          )}
         </Label.Root>
       )}
       <Box>{children}</Box>

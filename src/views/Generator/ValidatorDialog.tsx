@@ -6,6 +6,7 @@ import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunLogs } from '@/hooks/useRunLogs'
 import { ValidatorContent } from '@/views/Validator/ValidatorContent'
 import { useRunChecks } from '@/hooks/useRunChecks'
+import { NoRequestsMessage } from '@/components/NoRequestsMessage'
 
 interface ValidatorDialogProps {
   script: string
@@ -100,7 +101,9 @@ export function ValidatorDialog({
               proxyData={proxyData}
               logs={logs}
               checks={checks}
-              noRequestsMessage="Requests will appear here"
+              noDataElement={
+                <NoRequestsMessage message="Requests will appear here" />
+              }
               isRunning={isRunning}
             />
           </Box>

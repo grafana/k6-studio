@@ -46,6 +46,9 @@ import find from 'find-process'
 import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
 import { sendReport } from './telemetry'
+import { AppSettings } from './types/settings'
+import { getSettings, saveSettings, selectBrowserExecutable } from './settings'
+import { ProxyStatus } from './types'
 
 // handle auto updates
 if (process.env.NODE_ENV !== 'development') {
@@ -57,8 +60,8 @@ const proxyEmitter = new eventEmitter()
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
-let proxyReady = false
-export let proxyPort = 6000
+let proxyStatus: ProxyStatus = 'offline'
+export let appSettings: AppSettings
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
@@ -119,10 +122,14 @@ const createWindow = async () => {
   // clean leftover proxies if any, this might happen on windows
   await cleanUpProxies()
 
+  const { width, height, x, y } = appSettings.windowState
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    x,
+    y,
+    width,
+    height,
     minWidth: 800,
     minHeight: 600,
     show: false,
@@ -153,11 +160,22 @@ const createWindow = async () => {
   }
 
   mainWindow.once('ready-to-show', () => configureWatcher(mainWindow))
+  proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
+    proxyStatus = statusName
+    mainWindow.webContents.send('proxy:status:change', statusName)
+  })
+  mainWindow.on('closed', () =>
+    proxyEmitter.removeAllListeners('status:change')
+  )
+
+  mainWindow.on('move', () => trackWindowState(mainWindow))
+  mainWindow.on('resize', () => trackWindowState(mainWindow))
 
   return mainWindow
 }
 
 app.whenReady().then(async () => {
+  appSettings = await getSettings()
   await sendReport()
   await createSplashWindow()
   await setupProjectStructure()
@@ -190,11 +208,11 @@ app.on('before-quit', async () => {
 })
 
 // Proxy
-ipcMain.handle('proxy:start', async (event, port?: number) => {
+ipcMain.handle('proxy:start', async (event) => {
   console.info('proxy:start event received')
 
   const browserWindow = browserWindowFromEvent(event)
-  currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow, port)
+  currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 })
 
 ipcMain.on('proxy:stop', async () => {
@@ -203,7 +221,7 @@ ipcMain.on('proxy:stop', async () => {
 })
 
 const waitForProxy = async (): Promise<void> => {
-  if (proxyReady) {
+  if (proxyStatus === 'online') {
     return Promise.resolve()
   }
 
@@ -294,7 +312,7 @@ ipcMain.handle(
     currentk6Process = await runScript(
       browserWindow,
       resolvedScriptPath,
-      proxyPort
+      appSettings.proxy.port
     )
   }
 )
@@ -508,6 +526,58 @@ ipcMain.handle('app:open-log', () => {
   openLogFolder()
 })
 
+ipcMain.handle('settings:get', async () => {
+  console.info('settings:get event received')
+  return await getSettings()
+})
+
+ipcMain.handle('settings:save', async (event, data: AppSettings) => {
+  console.info('settings:save event received')
+
+  const browserWindow = browserWindowFromEvent(event)
+  try {
+    const modifiedSettings = await saveSettings(data)
+    applySettings(modifiedSettings, browserWindow)
+
+    sendToast(browserWindow.webContents, {
+      title: 'Settings saved successfully',
+      status: 'success',
+    })
+    return true
+  } catch (error) {
+    log.error(error)
+    sendToast(browserWindow.webContents, {
+      title: 'Failed to save settings',
+      status: 'error',
+    })
+    return false
+  }
+})
+
+ipcMain.handle('settings:select-browser-executable', async () => {
+  return selectBrowserExecutable()
+})
+
+ipcMain.handle('proxy:status:get', async () => {
+  console.info('proxy:status:get event received')
+  return proxyStatus
+})
+
+async function applySettings(
+  modifiedSettings: Partial<AppSettings>,
+  browserWindow: BrowserWindow
+) {
+  if (modifiedSettings.proxy) {
+    stopProxyProcess()
+    appSettings.proxy = modifiedSettings.proxy
+    proxyEmitter.emit('status:change', 'restarting')
+    currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
+  }
+  if (modifiedSettings.recorder) {
+    appSettings.recorder = modifiedSettings.recorder
+  }
+}
+
 const browserWindowFromEvent = (
   event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
 ) => {
@@ -520,29 +590,25 @@ const browserWindowFromEvent = (
   return browserWindow
 }
 
-const launchProxyAndAttachEmitter = async (
-  browserWindow: BrowserWindow,
-  port: number = proxyPort
-) => {
-  // confirm that the port is still open and if not get the next open one
-  const availableOpenport = await findOpenPort(port)
-  console.log(`proxy open port found: ${availableOpenport}`)
+const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
+  const { port, automaticallyFindPort } = appSettings.proxy
 
-  if (availableOpenport !== proxyPort) {
-    proxyPort = availableOpenport
-  }
+  const proxyPort = automaticallyFindPort ? await findOpenPort(port) : port
+  appSettings.proxy.port = proxyPort
 
-  return launchProxy(browserWindow, proxyPort, {
+  console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
+
+  return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
-      proxyReady = true
+      proxyEmitter.emit('status:change', 'online')
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
-      if (appShuttingDown) {
-        // we don't have to restart the proxy if the app is shutting down
+      if (appShuttingDown || proxyStatus === 'restarting') {
+        // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
-      proxyReady = false
+      proxyEmitter.emit('status:change', 'restarting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       sendToast(browserWindow.webContents, {
@@ -554,8 +620,30 @@ const launchProxyAndAttachEmitter = async (
 }
 
 function showWindow(browserWindow: BrowserWindow) {
-  browserWindow.maximize()
+  const { isMaximized } = appSettings.windowState
+  if (isMaximized) {
+    browserWindow.maximize()
+  } else {
+    browserWindow.show()
+  }
   browserWindow.focus()
+}
+
+function trackWindowState(browserWindow: BrowserWindow) {
+  const { width, height, x, y } = browserWindow.getBounds()
+  const isMaximized = browserWindow.isMaximized()
+  appSettings.windowState = {
+    width,
+    height,
+    x,
+    y,
+    isMaximized,
+  }
+  try {
+    saveSettings(appSettings)
+  } catch (error) {
+    log.error(error)
+  }
 }
 
 function configureWatcher(browserWindow: BrowserWindow) {
@@ -595,7 +683,6 @@ const stopProxyProcess = () => {
     // NOTE: this might not kill the second spawned process on windows
     currentProxyProcess.kill()
     currentProxyProcess = null
-    proxyReady = false
   }
 }
 

@@ -9,7 +9,6 @@ import { ReactNode } from 'react'
 import { ClearRequestsButton } from './ClearRequestsButton'
 import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
-import { NoRequestsMessage } from '@/components/NoRequestsMessage'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
@@ -17,8 +16,7 @@ interface RequestsSectionProps {
   selectedRequestId?: string
   autoScroll?: boolean
   activeGroup?: string
-  noRequestsMessage?: ReactNode
-  showNoRequestsMessage: boolean
+  noDataElement?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
   onUpdateGroup?: (group: Group) => void
   resetProxyData?: () => void
@@ -27,14 +25,13 @@ interface RequestsSectionProps {
 export function RequestsSection({
   proxyData,
   selectedRequestId,
-  noRequestsMessage,
+  noDataElement,
   autoScroll = false,
   groups,
   activeGroup,
   onSelectRequest,
   onUpdateGroup,
   resetProxyData,
-  showNoRequestsMessage,
 }: RequestsSectionProps) {
   const {
     filter,
@@ -47,8 +44,8 @@ export function RequestsSection({
   const groupedProxyData = groupProxyData(filteredRequests)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
 
-  if (showNoRequestsMessage) {
-    return <NoRequestsMessage noRequestsMessage={noRequestsMessage} />
+  if (filteredRequests.length === 0 && noDataElement) {
+    return noDataElement
   }
 
   return (
