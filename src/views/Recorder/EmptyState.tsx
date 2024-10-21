@@ -47,7 +47,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
   }, [])
 
   return (
-    <Flex direction="column" align="center" gap="2">
+    <Flex direction="column" align="center" gap="2" pt="90px">
       <Heading
         size="8"
         css={css`

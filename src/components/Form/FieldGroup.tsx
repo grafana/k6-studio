@@ -38,7 +38,7 @@ export function FieldGroup({
             )}
           </Flex>
           {hint && hintType === 'text' && (
-            <Text size="1" mb="2" as="p">
+            <Text size="1" mb="2" as="p" color="gray">
               {hint}
             </Text>
           )}
