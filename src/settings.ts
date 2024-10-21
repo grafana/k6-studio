@@ -21,6 +21,9 @@ const defaultSettings: AppSettings = {
     y: 0,
     isMaximized: true,
   },
+  telemetry: {
+    enabled: true,
+  },
 }
 
 const fileName =
