@@ -176,7 +176,7 @@ const createWindow = async () => {
 
 app.whenReady().then(async () => {
   appSettings = await getSettings()
-  await sendReport()
+  await sendReport(appSettings.telemetry)
   await createSplashWindow()
   await setupProjectStructure()
   await createWindow()

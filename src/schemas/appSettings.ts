@@ -65,7 +65,7 @@ const RecorderBrowserPathSchema = RecorderDetectBrowserPathSchema.extend({
   browserPath: z.string().optional(),
 })
 
-const TelemetrySettingsSchema = z.object({
+export const TelemetrySettingsSchema = z.object({
   enabled: z.boolean(),
 })
 

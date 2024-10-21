@@ -4,12 +4,11 @@ import { getPlatform, getArch } from './utils/electron'
 import { writeFile, readFile } from 'fs/promises'
 import path from 'path'
 import { existsSync } from 'fs'
+import { TelemetrySettings } from './types/settings'
 
 const URL = 'https://stats.grafana.org/k6-studio-usage-report'
 const filename = '.installation_id'
 const filePath = path.join(app.getPath('userData'), filename)
-
-// TODO: check settings to disable telemetry
 
 export const getOrSetInstallationId = async () => {
   if (!existsSync(filePath)) {
@@ -21,7 +20,11 @@ export const getOrSetInstallationId = async () => {
   return await readFile(filePath, { encoding: 'utf-8' })
 }
 
-export const sendReport = async () => {
+export const sendReport = async (telemetrySettings: TelemetrySettings) => {
+  if (!telemetrySettings.enabled) {
+    return
+  }
+
   if (process.env.NODE_ENV === 'development' || existsSync(filePath)) {
     // if we sent the report for this installation, do nothing
     return
