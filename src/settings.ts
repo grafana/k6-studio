@@ -96,6 +96,6 @@ export async function selectUpstreamCertificate() {
   return dialog.showOpenDialog({
     title: 'Select certificate',
     properties: ['openFile'],
-    filters: [{ name: 'PEM certificate', extensions: ['pem'] }],
+    filters: [{ name: 'PEM certificate', extensions: ['pem', 'cer', 'p12'] }],
   })
 }

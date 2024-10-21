@@ -92,7 +92,7 @@ export function UpstreamProxySettings() {
         label="Certificate path (optional)"
         onSelectFile={handleSelectFile}
         buttonText="Select file"
-        hint="The location of the certificate file (PEM format) used to establish a trusted connection with the upstream server"
+        hint="The location of the certificate file used to establish a trusted connection with the upstream server"
       />
     </>
   )
