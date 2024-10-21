@@ -164,6 +164,9 @@ const settings = {
   selectBrowserExecutable: (): Promise<Electron.OpenDialogReturnValue> => {
     return ipcRenderer.invoke('settings:select-browser-executable')
   },
+  selectUpstreamCertificate: (): Promise<Electron.OpenDialogReturnValue> => {
+    return ipcRenderer.invoke('settings:select-upstream-certificate')
+  },
 }
 
 const studio = {

@@ -16,6 +16,7 @@ export const UpstreamProxySettingsSchema = RegularProxySettingsSchema.extend({
   requiresAuth: z.boolean(),
   username: z.string().optional(),
   password: z.string().optional(),
+  certificatePath: z.string().optional(),
 })
 
 export const ProxySettingsSchema = z
