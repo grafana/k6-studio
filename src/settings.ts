@@ -44,12 +44,12 @@ async function initSettings() {
  * Retrieve  the current settings from the settings file
  * @returns The current settings as JSON
  */
-export async function getSettings() {
+export async function getSettings(): Promise<AppSettings> {
   await initSettings()
   const fileHandle = await open(filePath, 'r')
   try {
     const settings = await fileHandle?.readFile({ encoding: 'utf-8' })
-    const currentSettings = AppSettingsSchema.parse(JSON.parse(settings))
+    const currentSettings = JSON.parse(settings)
     return {
       ...defaultSettings,
       ...currentSettings,
