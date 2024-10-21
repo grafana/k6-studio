@@ -4,11 +4,11 @@ import { ReactNode } from 'react'
 import grotIllustration from '@/assets/grot.svg'
 
 interface NoRequestsMessageProps {
-  noRequestsMessage?: ReactNode
+  message?: ReactNode
 }
 
 export function NoRequestsMessage({
-  noRequestsMessage = 'Your requests will appear here.',
+  message = 'Your requests will appear here.',
 }: NoRequestsMessageProps) {
   return (
     <Flex direction="column" align="center" gap="4" pt="8">
@@ -20,12 +20,12 @@ export function NoRequestsMessage({
           max-width: 300px;
         `}
       />
-      {typeof noRequestsMessage === 'string' ? (
+      {typeof message === 'string' ? (
         <Text color="gray" size="1">
-          {noRequestsMessage}
+          {message}
         </Text>
       ) : (
-        noRequestsMessage
+        message
       )}
     </Flex>
   )

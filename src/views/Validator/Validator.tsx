@@ -12,6 +12,7 @@ import { useToast } from '@/store/ui/useToast'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
+import { NoRequestsMessage } from '@/components/NoRequestsMessage'
 
 export function Validator() {
   const [isLoading, setIsLoading] = useState(false)
@@ -131,12 +132,16 @@ export function Validator() {
         isRunning={isRunning}
         logs={logs}
         checks={checks}
-        noRequestsMessage={
-          <ValidatorEmptyState
-            isRunning={isRunning}
-            isScriptSelected={Boolean(scriptPath)}
-            onRunScript={handleRunScript}
-            onSelectScript={handleSelectExternalScript}
+        noDataElement={
+          <NoRequestsMessage
+            message={
+              <ValidatorEmptyState
+                isRunning={isRunning}
+                isScriptSelected={Boolean(scriptPath)}
+                onRunScript={handleRunScript}
+                onSelectScript={handleSelectExternalScript}
+              />
+            }
           />
         }
       />

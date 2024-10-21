@@ -14,7 +14,7 @@ import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 interface ValidatorContentProps {
   script: string
   proxyData: ProxyData[]
-  noRequestsMessage: ReactNode
+  noDataElement: ReactNode
   isRunning: boolean
   logs: K6Log[]
   checks: K6Check[]
@@ -28,7 +28,7 @@ export function ValidatorContent({
   isRunning,
   logs,
   checks,
-  noRequestsMessage,
+  noDataElement,
 }: ValidatorContentProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [selectedTab, setSelectedTab] = useState<ValidatorTabValue>('script')
@@ -60,9 +60,8 @@ export function ValidatorContent({
               proxyData={proxyData}
               autoScroll={isRunning}
               selectedRequestId={selectedRequest?.id}
-              noRequestsMessage={noRequestsMessage}
+              noDataElement={noDataElement}
               onSelectRequest={setSelectedRequest}
-              showNoRequestsMessage={proxyData.length === 0}
               groups={groups}
             />
           </Allotment.Pane>

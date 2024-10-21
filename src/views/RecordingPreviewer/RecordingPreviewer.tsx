@@ -17,6 +17,7 @@ import { harToProxyData } from '@/utils/harToProxyData'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
+import { NoRequestsMessage } from '@/components/NoRequestsMessage'
 
 export function RecordingPreviewer() {
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
@@ -118,8 +119,9 @@ export function RecordingPreviewer() {
           <RequestsSection
             groups={groups}
             proxyData={proxyData}
-            noRequestsMessage="The recording is empty"
-            showNoRequestsMessage={proxyData.length === 0}
+            noDataElement={
+              <NoRequestsMessage message="The recording is empty" />
+            }
             selectedRequestId={selectedRequest?.id}
             onSelectRequest={setSelectedRequest}
           />
