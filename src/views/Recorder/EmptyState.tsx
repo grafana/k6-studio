@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { DiscIcon } from '@radix-ui/react-icons'
@@ -20,8 +19,6 @@ const RecorderEmptyStateSchema = z.object({
 type RecorderEmptyStateFields = z.infer<typeof RecorderEmptyStateSchema>
 
 export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null)
-
   const {
     register,
     handleSubmit,
@@ -34,17 +31,9 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     shouldFocusError: false,
   })
 
-  const { ref, ...inputProps } = register('url')
-
   const onSubmit = ({ url }: RecorderEmptyStateFields) => {
     onStart(url)
   }
-
-  useEffect(() => {
-    window.requestAnimationFrame(() => {
-      inputRef.current?.focus()
-    })
-  }, [])
 
   return (
     <Flex direction="column" align="center" gap="2" pt="90px">
@@ -74,12 +63,9 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
           width="460px"
         >
           <TextField.Root
-            ref={(e) => {
-              ref(e)
-              inputRef.current = e
-            }}
-            {...inputProps}
+            {...register('url')}
             placeholder="e.g. test.k6.io"
+            autoFocus
             css={css`
               flex-grow: 1;
               border-bottom-right-radius: 0;
