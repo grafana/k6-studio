@@ -30,8 +30,8 @@ export function CorrelationEditor() {
         <Text size="2" as="p" mb="2" color="gray">
           Extraction value for correlation.
         </Text>
-        <FilterField path="extractor.filter" />
-        <SelectorField type="extractor" />
+        <FilterField field="extractor.filter" />
+        <SelectorField field="extractor.selector" />
       </Box>
       <Box>
         <Label mb="2">
@@ -58,8 +58,8 @@ export function CorrelationEditor() {
 
         {replacer && (
           <>
-            <FilterField path="replacer.filter" />
-            <SelectorField type="replacer" />
+            <FilterField field="replacer.filter" />
+            <SelectorField field="replacer.selector" />
           </>
         )}
       </Box>

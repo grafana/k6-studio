@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Flex, IconButton } from '@radix-ui/themes'
+import { Flex, Grid, IconButton } from '@radix-ui/themes'
 import { DragHandleDots2Icon } from '@radix-ui/react-icons'
 
 import type { TestRule } from '@/types/rules'
@@ -48,7 +48,7 @@ export function TestRuleItem({
       : undefined
 
   return (
-    <Flex
+    <Grid
       ref={setNodeRef}
       gap="2"
       align="center"
@@ -61,6 +61,8 @@ export function TestRuleItem({
         border-bottom: 1px solid var(--gray-3);
         background-color: ${isSelected ? 'var(--accent-2)' : 'unset'};
         opacity: ${isDragging ? 0.5 : 1};
+        grid-column: 1 / -1;
+        grid-template-columns: subgrid;
 
         &:first-of-type {
           border-top: 1px solid var(--gray-3);
@@ -98,8 +100,10 @@ export function TestRuleItem({
         />
       </IconButton>
       <TestRuleTypeBadge rule={rule} />
-      <TestRuleInlineContent rule={rule} />
+      <Flex gap="2" overflow="hidden">
+        <TestRuleInlineContent rule={rule} />
+      </Flex>
       <TestRuleActions ruleId={rule.id} />
-    </Flex>
+    </Grid>
   )
 }

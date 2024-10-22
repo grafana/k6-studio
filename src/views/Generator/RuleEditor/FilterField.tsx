@@ -5,15 +5,15 @@ import { useFormContext } from 'react-hook-form'
 import { FieldGroup } from '@/components/Form'
 
 export function FilterField({
-  path: path,
+  field,
 }: {
-  path: 'filter' | 'extractor.filter' | 'replacer.filter'
+  field: 'filter' | 'extractor.filter' | 'replacer.filter'
 }) {
   const {
     register,
     formState: { errors },
   } = useFormContext<TestRule>()
-  const fieldName = `${path}.path` as const
+  const fieldName = `${field}.path` as const
 
   return (
     <FieldGroup

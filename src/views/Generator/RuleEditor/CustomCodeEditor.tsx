@@ -18,7 +18,7 @@ export function CustomCodeEditor() {
   return (
     <Box>
       <Grid gap="2" columns="1fr 1fr">
-        <FilterField path="filter" />
+        <FilterField field="filter" />
         <FieldGroup name="placement" errors={errors} label="Placement">
           <ControlledSelect
             name="placement"

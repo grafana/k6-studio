@@ -24,7 +24,7 @@ export function applyRules(recording: ProxyData[], rules: TestRule[]) {
   return { requestSnippetSchemas, ruleInstances }
 }
 
-export function createRuleInstance<T extends TestRule>(
+function createRuleInstance<T extends TestRule>(
   rule: T,
   idGenerator: Generator<number>
 ) {

@@ -1,8 +1,22 @@
 import { useCallback, useEffect } from 'react'
 import { TrashIcon } from '@radix-ui/react-icons'
-import { Button, IconButton, TextField, Text, Code } from '@radix-ui/themes'
+import {
+  Button,
+  IconButton,
+  TextField,
+  Text,
+  Code,
+  Tooltip,
+} from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
-import { useForm, useFieldArray } from 'react-hook-form'
+import {
+  useForm,
+  useFieldArray,
+  FieldArrayWithId,
+  UseFormRegister,
+  FieldErrors,
+  UseFieldArrayRemove,
+} from 'react-hook-form'
 import { TestData } from '@/types/testData'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TestDataSchema } from '@/schemas/testData'
@@ -69,37 +83,14 @@ export function VariablesEditor() {
 
         <Table.Body>
           {fields.map((field, index) => (
-            <Table.Row key={field.id}>
-              <Table.Cell maxWidth="400px">
-                <FieldGroup
-                  errors={errors}
-                  name={`variables.${index}.name`}
-                  mb="0"
-                >
-                  <TextField.Root
-                    placeholder="name"
-                    {...register(`variables.${index}.name`)}
-                  />
-                </FieldGroup>
-              </Table.Cell>
-              <Table.Cell>
-                <FieldGroup
-                  errors={errors}
-                  name={`variables.${index}.value`}
-                  mb="0"
-                >
-                  <TextField.Root
-                    placeholder="value"
-                    {...register(`variables.${index}.value`)}
-                  />
-                </FieldGroup>
-              </Table.Cell>
-              <Table.Cell>
-                <IconButton onClick={() => remove(index)}>
-                  <TrashIcon width="18" height="18" />
-                </IconButton>
-              </Table.Cell>
-            </Table.Row>
+            <VariableRow
+              key={field.id}
+              field={field}
+              index={index}
+              register={register}
+              errors={errors}
+              remove={remove}
+            />
           ))}
           <Table.Row>
             <Table.RowHeaderCell colSpan={3} justify="center">
@@ -111,5 +102,57 @@ export function VariablesEditor() {
         </Table.Body>
       </Table.Root>
     </form>
+  )
+}
+
+function VariableRow({
+  field,
+  index,
+  errors,
+  register,
+  remove,
+}: {
+  field: FieldArrayWithId<TestData, 'variables', 'id'>
+  index: number
+  register: UseFormRegister<TestData>
+  errors: FieldErrors<TestData>
+  remove: UseFieldArrayRemove
+}) {
+  const isVariableInUse = useGeneratorStore((state) =>
+    state.rules.some(
+      (rule) =>
+        rule.type === 'parameterization' &&
+        rule.value.type === 'variable' &&
+        rule.value.variableName === field.name
+    )
+  )
+
+  return (
+    <Table.Row key={field.id}>
+      <Table.Cell maxWidth="400px">
+        <FieldGroup errors={errors} name={`variables.${index}.name`} mb="0">
+          <TextField.Root
+            placeholder="name"
+            disabled={isVariableInUse}
+            {...register(`variables.${index}.name`)}
+          />
+        </FieldGroup>
+      </Table.Cell>
+      <Table.Cell>
+        <FieldGroup errors={errors} name={`variables.${index}.value`} mb="0">
+          <TextField.Root
+            placeholder="value"
+            {...register(`variables.${index}.value`)}
+          />
+        </FieldGroup>
+      </Table.Cell>
+      <Table.Cell>
+        <Tooltip content="Variable is in use by rule" hidden={!isVariableInUse}>
+          <IconButton disabled={isVariableInUse} onClick={() => remove(index)}>
+            <TrashIcon width="18" height="18" />
+          </IconButton>
+        </Tooltip>
+      </Table.Cell>
+    </Table.Row>
   )
 }

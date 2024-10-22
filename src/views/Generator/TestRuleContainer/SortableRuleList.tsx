@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Flex } from '@radix-ui/themes'
+import { Flex, Grid } from '@radix-ui/themes'
 import {
   DndContext,
   closestCenter,
@@ -58,6 +58,8 @@ export function SortableRuleList({
     setActive(rules.find((rule) => rule.id === event.active.id) || null)
   }
 
+  const gridColumns = 'auto auto 1fr auto'
+
   return (
     <Flex direction="column">
       <DndContext
@@ -68,22 +70,26 @@ export function SortableRuleList({
         modifiers={[restrictToVerticalAxis]}
       >
         <SortableContext items={rules} strategy={verticalListSortingStrategy}>
-          {rules.map((rule) => (
-            <TestRuleItem
-              rule={rule}
-              isSelected={rule.id === selectedRuleId}
-              onSelect={() => {
-                setSelectedRuleId(rule.id)
-              }}
-              key={rule.id}
-            />
-          ))}
+          <Grid columns={gridColumns}>
+            {rules.map((rule) => (
+              <TestRuleItem
+                rule={rule}
+                isSelected={rule.id === selectedRuleId}
+                onSelect={() => {
+                  setSelectedRuleId(rule.id)
+                }}
+                key={rule.id}
+              />
+            ))}
+          </Grid>
           <DragOverlay modifiers={[restrictToFirstScrollableAncestor]}>
             {active ? (
-              <TestRuleItem
-                rule={active}
-                isSelected={active.id === selectedRuleId}
-              />
+              <Grid columns={gridColumns}>
+                <TestRuleItem
+                  rule={active}
+                  isSelected={active.id === selectedRuleId}
+                />
+              </Grid>
             ) : null}
           </DragOverlay>
         </SortableContext>

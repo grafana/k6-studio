@@ -35,7 +35,7 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
           begin: '',
           end: '',
         },
-        value: { type: 'variable', variableName: '' },
+        value: { type: 'string', value: '' },
       }
     case 'verification':
       return {
