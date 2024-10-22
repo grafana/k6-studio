@@ -30,6 +30,8 @@ export const sendReport = async (telemetrySettings: TelemetrySettings) => {
     return
   }
 
+  // Update the Telemetry section in README when changing what data is being sent
+  // https://github.com/grafana/k6-studio/blob/main/README.md#telemetry
   const id = await getOrSetInstallationId()
   const data = {
     usageStatsId: id,
