@@ -41,10 +41,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
                     variant="ghost"
                     size="1"
                   >
-                    <Link
-                      to={getRoutePath('recorder')}
-                      state={{ autoStart: true }}
-                    >
+                    <Link to={getRoutePath('recorder')}>
                       <PlusIcon />
                     </Link>
                   </IconButton>

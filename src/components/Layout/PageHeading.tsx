@@ -23,8 +23,8 @@ export function PageHeading({
         align="center"
         p="2"
         css={css`
-          background-color: var(--gray-2);
           border-bottom: 1px solid var(--gray-4);
+          min-height: 49px;
         `}
       >
         <Flex maxWidth="50%" flexGrow="1" gap="1" align="center">

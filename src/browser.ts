@@ -28,7 +28,10 @@ function getBrowserPath() {
   return recorder.browserPath as string
 }
 
-export const launchBrowser = async (browserWindow: BrowserWindow) => {
+export const launchBrowser = async (
+  browserWindow: BrowserWindow,
+  url?: string
+) => {
   const path = getBrowserPath()
   console.info(`browser path: ${path}`)
 
@@ -67,6 +70,7 @@ export const launchBrowser = async (browserWindow: BrowserWindow) => {
       `--proxy-server=http://localhost:${appSettings.proxy.port}`,
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
       disableChromeOptimizations,
+      url ?? '',
     ],
     onExit: sendBrowserClosedEvent,
   })

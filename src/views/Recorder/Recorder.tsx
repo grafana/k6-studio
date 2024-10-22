@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
-import { Box, Button, Flex, Text } from '@radix-ui/themes'
-import { DiscIcon, PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
+import { useBlocker, useNavigate } from 'react-router-dom'
+import { Box, Button, Flex } from '@radix-ui/themes'
+import { PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
 import { Allotment } from 'allotment'
+import log from 'electron-log/renderer'
 
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
@@ -22,8 +23,7 @@ import { useToast } from '@/store/ui/useToast'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import log from 'electron-log/renderer'
-import { NoRequestsMessage } from '@/components/NoRequestsMessage'
+import { EmptyState } from './EmptyState'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -48,32 +48,31 @@ export function Recorder() {
   const debouncedProxyData = useDebouncedProxyData(proxyData)
 
   const navigate = useNavigate()
-  const { state } = useLocation()
   const blocker = useBlocker(
     recorderState === 'starting' || recorderState === 'recording'
   )
 
-  const autoStart = Boolean(state?.autoStart)
-
   const isLoading = recorderState === 'starting' || recorderState === 'saving'
 
-  const handleStartRecording = useCallback(async () => {
-    try {
-      resetProxyData()
-      setRecorderState('starting')
+  const handleStartRecording = useCallback(
+    async (url?: string) => {
+      try {
+        resetProxyData()
+        setRecorderState('starting')
+        await startRecording(url)
 
-      await startRecording()
-
-      setRecorderState('recording')
-    } catch (error) {
-      setRecorderState('idle')
-      showToast({
-        title: 'Failed to start recording',
-        status: 'error',
-      })
-      log.error(error)
-    }
-  }, [resetProxyData, showToast])
+        setRecorderState('recording')
+      } catch (error) {
+        setRecorderState('idle')
+        showToast({
+          title: 'Failed to start recording',
+          status: 'error',
+        })
+        log.error(error)
+      }
+    },
+    [resetProxyData, showToast]
+  )
 
   const validateAndSaveHarFile = useCallback(async () => {
     try {
@@ -141,12 +140,6 @@ export function Recorder() {
   }
 
   useEffect(() => {
-    if (autoStart) {
-      handleStartRecording()
-    }
-  }, [autoStart, handleStartRecording])
-
-  useEffect(() => {
     return window.studio.browser.onBrowserClosed(async () => {
       const fileName = await validateAndSaveHarFile()
 
@@ -174,25 +167,18 @@ export function Recorder() {
     <View
       title="Recorder"
       actions={
-        <>
-          {recorderState === 'idle' && (
-            <Button disabled={isLoading} onClick={handleStartRecording}>
-              <DiscIcon /> Start recording
+        recorderState !== 'idle' && (
+          <>
+            {isLoading && <TextSpinner text="Starting" />}
+            <Button
+              disabled={isLoading}
+              color="red"
+              onClick={handleStopRecording}
+            >
+              <StopIcon /> Stop recording
             </Button>
-          )}
-          {recorderState !== 'idle' && (
-            <>
-              {isLoading && <TextSpinner text="Starting" />}
-              <Button
-                disabled={isLoading}
-                color="red"
-                onClick={handleStopRecording}
-              >
-                <StopIcon /> Stop recording
-              </Button>
-            </>
-          )}
-        </>
+          </>
+        )
       }
     >
       <Allotment defaultSizes={[1, 1]}>
@@ -203,21 +189,9 @@ export function Recorder() {
                 proxyData={debouncedProxyData}
                 noDataElement={
                   recorderState === 'idle' && (
-                    <NoRequestsMessage
-                      message={
-                        <>
-                          <Text color="gray" size="1">
-                            Once you start the recording, requests will appear
-                            here
-                          </Text>
-                          <Button
-                            disabled={isLoading}
-                            onClick={handleStartRecording}
-                          >
-                            <DiscIcon /> Start recording
-                          </Button>
-                        </>
-                      }
+                    <EmptyState
+                      isLoading={isLoading}
+                      onStart={handleStartRecording}
                     />
                   )
                 }

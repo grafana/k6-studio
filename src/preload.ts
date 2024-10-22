@@ -37,8 +37,8 @@ const proxy = {
 } as const
 
 const browser = {
-  launchBrowser: (): Promise<void> => {
-    return ipcRenderer.invoke('browser:start')
+  launchBrowser: (url?: string): Promise<void> => {
+    return ipcRenderer.invoke('browser:start', url)
   },
   stopBrowser: () => {
     ipcRenderer.send('browser:stop')
