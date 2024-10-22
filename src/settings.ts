@@ -103,3 +103,11 @@ export async function selectBrowserExecutable() {
     filters: [{ name: 'Executables', extensions }],
   })
 }
+
+export async function selectUpstreamCertificate() {
+  return dialog.showOpenDialog({
+    title: 'Select certificate',
+    properties: ['openFile'],
+    filters: [{ name: 'Proxy certificate', extensions: ['pem', 'cer', 'p12'] }],
+  })
+}

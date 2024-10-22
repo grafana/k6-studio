@@ -46,7 +46,12 @@ import find from 'find-process'
 import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
 import { AppSettings } from './types/settings'
-import { getSettings, saveSettings, selectBrowserExecutable } from './settings'
+import {
+  getSettings,
+  saveSettings,
+  selectBrowserExecutable,
+  selectUpstreamCertificate,
+} from './settings'
 import { ProxyStatus } from './types'
 
 // handle auto updates
@@ -554,6 +559,10 @@ ipcMain.handle('settings:save', async (event, data: AppSettings) => {
 
 ipcMain.handle('settings:select-browser-executable', async () => {
   return selectBrowserExecutable()
+})
+
+ipcMain.handle('settings:select-upstream-certificate', async () => {
+  return selectUpstreamCertificate()
 })
 
 ipcMain.handle('proxy:status:get', async () => {

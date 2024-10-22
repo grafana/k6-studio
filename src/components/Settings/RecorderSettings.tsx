@@ -1,8 +1,8 @@
-import { FieldGroup } from '@/components/Form'
 import { AppSettings } from '@/types/settings'
-import { Flex, Text, TextField, Checkbox, Button } from '@radix-ui/themes'
+import { Flex, Text, Checkbox } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
 import { SettingsSection } from './SettingsSection'
+import { FileUploadInput } from '../Form'
 
 export const RecorderSettings = () => {
   const {
@@ -44,30 +44,14 @@ export const RecorderSettings = () => {
       </Flex>
 
       {recorder && !recorder.detectBrowserPath && (
-        <Flex>
-          <FieldGroup
-            flexGrow="1"
-            name="recorder.browserPath"
-            label="Browser Path"
-            errors={errors}
-            hint="The location of the browser executable (k6 Studio currently supports Chrome)"
-            hintType="text"
-          >
-            <TextField.Root type="text" {...register('recorder.browserPath')} />
-          </FieldGroup>
-
-          <Button
-            ml="2"
-            onClick={handleSelectFile}
-            style={{
-              display: 'flex',
-              alignSelf: 'center',
-              marginTop: errors.recorder ? 12 : 36,
-            }}
-          >
-            Select executable
-          </Button>
-        </Flex>
+        <FileUploadInput
+          label="Browser Path"
+          errors={errors}
+          name="recorder.browserPath"
+          onSelectFile={handleSelectFile}
+          buttonText="Select executable"
+          hint="The location of the browser executable (k6 Studio currently supports Chrome)"
+        />
       )}
     </SettingsSection>
   )

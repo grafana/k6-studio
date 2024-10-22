@@ -1,4 +1,4 @@
-import { FieldGroup } from '@/components/Form'
+import { FieldGroup, FileUploadInput } from '@/components/Form'
 import { AppSettings } from '@/types/settings'
 import { TextField, Flex, Checkbox, Text } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
@@ -9,9 +9,19 @@ export function UpstreamProxySettings() {
     control,
     register,
     formState: { errors },
+    setValue,
+    clearErrors,
   } = useFormContext<AppSettings>()
 
   const { proxy } = watch()
+
+  const handleSelectFile = async () => {
+    const result = await window.studio.settings.selectUpstreamCertificate()
+    const { canceled, filePaths } = result
+    if (canceled || !filePaths.length) return
+    setValue('proxy.certificatePath', filePaths[0], { shouldDirty: true })
+    clearErrors('proxy.certificatePath')
+  }
 
   return (
     <>
@@ -76,6 +86,14 @@ export function UpstreamProxySettings() {
           </FieldGroup>
         </>
       )}
+
+      <FileUploadInput
+        name="proxy.certificatePath"
+        label="Certificate path (optional)"
+        onSelectFile={handleSelectFile}
+        buttonText="Select file"
+        hint="The location of the certificate file used to establish a trusted connection with the upstream server"
+      />
     </>
   )
 }

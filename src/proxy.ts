@@ -62,6 +62,13 @@ export const launchProxy = (
     proxyArgs.push('--upstream-auth', `${username}:${password}`)
   }
 
+  if (proxySettings.mode === 'upstream' && proxySettings.certificatePath) {
+    proxyArgs.push(
+      '--set',
+      `ssl_verify_upstream_trusted_ca=${proxySettings.certificatePath}`
+    )
+  }
+
   const proxy = spawn(proxyPath, proxyArgs)
 
   // we use a reader to read entire lines from stdout instead of buffered data

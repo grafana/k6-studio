@@ -50,10 +50,6 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     }
   }
 
-  const handleCancelClick = () => {
-    reset(settings)
-  }
-
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content
@@ -72,9 +68,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
           <Flex gap="3" justify="end">
             <Dialog.Close>
-              <Button variant="outline" onClick={handleCancelClick}>
-                Cancel
-              </Button>
+              <Button variant="outline">Cancel</Button>
             </Dialog.Close>
             <Dialog.Close>
               <ButtonWithTooltip
