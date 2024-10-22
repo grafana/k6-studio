@@ -4,10 +4,15 @@ import { describe, expect, it } from 'vitest'
 import { createParameterizationRuleInstance } from './parameterization'
 import { ProxyData } from '@/types'
 import {
+  customCodeRule,
   headerRule,
   jsonRule,
   urlRule,
 } from '@/test/fixtures/parameterizationRules'
+import { prettify } from '@/utils/prettify'
+import { generateSequentialInt } from './utils'
+
+const idGenerator = generateSequentialInt()
 
 describe('applyParameterization', () => {
   it('replaces string value', () => {
@@ -20,8 +25,10 @@ describe('applyParameterization', () => {
       })
     )
 
-    const updatedRequest =
-      createParameterizationRuleInstance(jsonRule).apply(requestSnippet)
+    const updatedRequest = createParameterizationRuleInstance(
+      jsonRule,
+      idGenerator
+    ).apply(requestSnippet)
 
     expect(updatedRequest.data.request.content).toBe('{"user_id":"TEST_ID"}')
   })
@@ -35,8 +42,10 @@ describe('applyParameterization', () => {
       })
     )
 
-    const updatedRequest =
-      createParameterizationRuleInstance(urlRule).apply(requestSnippet)
+    const updatedRequest = createParameterizationRuleInstance(
+      urlRule,
+      idGenerator
+    ).apply(requestSnippet)
 
     expect(updatedRequest.data.request.url).toBe(
       'http://example.com/api/v1/users?user_id=TEST_ID&foo=bar'
@@ -51,8 +60,10 @@ describe('applyParameterization', () => {
         }),
       })
     )
-    const updatedRequest =
-      createParameterizationRuleInstance(headerRule).apply(requestSnippet)
+    const updatedRequest = createParameterizationRuleInstance(
+      headerRule,
+      idGenerator
+    ).apply(requestSnippet)
 
     expect(updatedRequest.data.request.headers).toStrictEqual([
       ['authorization', 'token TEST_TOKEN'],
@@ -77,8 +88,10 @@ describe('applyParameterization', () => {
       },
     }
 
-    const updatedRequest =
-      createParameterizationRuleInstance(variableRule).apply(requestSnippet)
+    const updatedRequest = createParameterizationRuleInstance(
+      variableRule,
+      idGenerator
+    ).apply(requestSnippet)
 
     expect(updatedRequest.data.request.content).toBe(
       '{"user_id":"${VARS[\'test_variable\']}"}'
@@ -101,8 +114,10 @@ describe('applyParameterization', () => {
       filter: { path: '/api/v1/users/123' },
     }
 
-    const updatedRequest =
-      createParameterizationRuleInstance(notMatchingRule).apply(requestSnippet)
+    const updatedRequest = createParameterizationRuleInstance(
+      notMatchingRule,
+      idGenerator
+    ).apply(requestSnippet)
 
     expect(updatedRequest.data.request.content).toBe('{"user_id":"123"}')
   })
@@ -117,7 +132,10 @@ describe('applyParameterization', () => {
       })
     )
 
-    const ruleInstance = createParameterizationRuleInstance(jsonRule)
+    const ruleInstance = createParameterizationRuleInstance(
+      jsonRule,
+      idGenerator
+    )
 
     ruleInstance.apply(requestSnippet)
 
@@ -130,7 +148,32 @@ describe('applyParameterization', () => {
       content: '{"user_id":"TEST_ID"}',
     })
   })
-  it('supports custom code')
+
+  it('supports custom code', async () => {
+    const requestSnippet = createRequestSnippet(
+      createProxyData({
+        request: createRequest({
+          url: 'http://example.com/api/v1/project_id=123',
+        }),
+      })
+    )
+
+    const updatedRequest = createParameterizationRuleInstance(
+      customCodeRule,
+      idGenerator
+    ).apply(requestSnippet)
+
+    expect(await prettify(updatedRequest.before[0] ?? '')).toBe(
+      await prettify(
+        `function getParameterizationValue0() { ${customCodeRule.value.code} }`
+      )
+    )
+
+    expect(updatedRequest.data.request.url).toBe(
+      'http://example.com/api/v1/project_id=${getParameterizationValue0()}'
+    )
+  })
+
   it('supports array variables')
 })
 

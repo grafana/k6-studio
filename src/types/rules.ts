@@ -50,6 +50,7 @@ export interface ParameterizationState {
     original: Request
     replaced: Request
   }[]
+  uniqueId: number
 }
 
 export type ParameterizationRuleInstance =
