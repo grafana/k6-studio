@@ -5,7 +5,6 @@ import { useFormContext } from 'react-hook-form'
 import { useGeneratorStore } from '@/store/generator'
 import { useMemo } from 'react'
 import { exhaustive } from '@/utils/typescript'
-import { useShallow } from 'zustand/react/shallow'
 
 export function ParamaterizationValueEditor() {
   const {
@@ -14,7 +13,7 @@ export function ParamaterizationValueEditor() {
   } = useFormContext<ParameterizationRule>()
 
   const variablesExist = useGeneratorStore(
-    useShallow((state) => state.variables.length > 0)
+    (state) => state.variables.length > 0
   )
 
   const variablesLabel = variablesExist

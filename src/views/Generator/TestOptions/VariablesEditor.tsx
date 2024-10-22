@@ -22,7 +22,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { TestDataSchema } from '@/schemas/testData'
 import { FieldGroup } from '@/components/Form'
 import { Table } from '@/components/Table'
-import { useShallow } from 'zustand/react/shallow'
 
 export function VariablesEditor() {
   const variables = useGeneratorStore((store) => store.variables)
@@ -119,14 +118,12 @@ function VariableRow({
   errors: FieldErrors<TestData>
   remove: UseFieldArrayRemove
 }) {
-  const isVariableInUse = useGeneratorStore(
-    useShallow((state) =>
-      state.rules.some(
-        (rule) =>
-          rule.type === 'parameterization' &&
-          rule.value.type === 'variable' &&
-          rule.value.variableName === field.name
-      )
+  const isVariableInUse = useGeneratorStore((state) =>
+    state.rules.some(
+      (rule) =>
+        rule.type === 'parameterization' &&
+        rule.value.type === 'variable' &&
+        rule.value.variableName === field.name
     )
   )
 
