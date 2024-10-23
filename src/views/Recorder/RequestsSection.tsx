@@ -44,7 +44,12 @@ export function RequestsSection({
   const groupedProxyData = groupProxyData(filteredRequests)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
 
-  if (filteredRequests.length === 0 && noDataElement) {
+  const showNoDataState =
+    filter === '' &&
+    filteredRequests.length === 0 &&
+    noDataElement !== undefined
+
+  if (showNoDataState) {
     return noDataElement
   }
 
@@ -82,7 +87,6 @@ export function RequestsSection({
           </Box>
         </Flex>
       </Flex>
-
       <ScrollArea scrollbars="both">
         <div ref={ref} css={{ minWidth: '500px' }}>
           <WebLogView
