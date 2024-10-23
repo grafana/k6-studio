@@ -312,7 +312,8 @@ ipcMain.handle(
     currentk6Process = await runScript(
       browserWindow,
       resolvedScriptPath,
-      appSettings.proxy.port
+      appSettings.proxy.port,
+      appSettings.usageReport.enabled
     )
   }
 )
@@ -575,6 +576,9 @@ async function applySettings(
   }
   if (modifiedSettings.recorder) {
     appSettings.recorder = modifiedSettings.recorder
+  }
+  if (modifiedSettings.usageReport) {
+    appSettings.usageReport = modifiedSettings.usageReport
   }
 }
 
