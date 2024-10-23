@@ -160,8 +160,8 @@ export function Group({
             </Collapsible.Heading>
           )}
           {!group.isEditing && (
-            <Collapsible.Trigger>
-              <Collapsible.Heading>
+            <Collapsible.Heading>
+              <Collapsible.Trigger>
                 <span
                   css={css`
                     display: flex;
@@ -173,18 +173,18 @@ export function Group({
                 >
                   {group.name} ({length})
                 </span>
-                {canEdit && (
-                  <IconButton
-                    variant="ghost"
-                    color="gray"
-                    style={{ margin: 0 }}
-                    onClick={handleEdit}
-                  >
-                    <Pencil1Icon />
-                  </IconButton>
-                )}
-              </Collapsible.Heading>
-            </Collapsible.Trigger>
+              </Collapsible.Trigger>
+              {canEdit && (
+                <IconButton
+                  variant="ghost"
+                  color="gray"
+                  style={{ margin: 0 }}
+                  onClick={handleEdit}
+                >
+                  <Pencil1Icon />
+                </IconButton>
+              )}
+            </Collapsible.Heading>
           )}
         </Collapsible.Header>
         <Collapsible.Content>

@@ -34,6 +34,4 @@ setMonacoEnv()
 
 // Proxy
 
-window.studio.proxy.onProxyData((data: ProxyData) => {
-  console.log(data)
-})
+window.studio.proxy.onProxyData((_data: ProxyData) => {})
