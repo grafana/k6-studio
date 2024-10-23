@@ -11,6 +11,9 @@ import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { RecordingSelector } from '../RecordingSelector'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
+import { useStudioUIStore } from '@/store/ui'
+import { useGeneratorStore } from '@/store/generator'
+import { EmptyMessage } from '@/components/EmptyMessage'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -21,6 +24,13 @@ export function RequestList({ requests }: RequestListProps) {
   const { filter, setFilter, filteredRequests } = useFilterRequests(requests)
 
   const groups = useProxyDataGroups(requests)
+
+  const recordings = useStudioUIStore((state) => state.recordings)
+  const recordingPath = useGeneratorStore((state) => state.recordingPath)
+
+  const recording = recordings.find((recording) => recording === recordingPath)
+
+  const isRecordingMissing = recording === undefined && recordingPath !== ''
 
   // Preserve the selected request when modifying rules
   useShallowCompareEffect(() => {
@@ -40,23 +50,32 @@ export function RequestList({ requests }: RequestListProps) {
         <Allotment vertical defaultSizes={[1, 2]}>
           <Allotment.Pane minSize={200}>
             <ScrollArea scrollbars="vertical">
-              <Filter
-                filter={filter}
-                setFilter={setFilter}
-                css={{
-                  borderRadius: 0,
-                  outlineOffset: '-2px',
-                  boxShadow: 'none',
-                  borderTop: '1px solid var(--gray-a5)',
-                }}
-                size="2"
-              />
-              <WebLogView
-                requests={filteredRequests}
-                selectedRequestId={selectedRequest?.id}
-                onSelectRequest={setSelectedRequest}
-                groups={groups}
-              />
+              {isRecordingMissing && (
+                <Flex direction="column" justify="center" align="center">
+                  <EmptyMessage message="The selected recording is missing" />
+                </Flex>
+              )}
+              {!isRecordingMissing && (
+                <>
+                  <Filter
+                    filter={filter}
+                    setFilter={setFilter}
+                    css={{
+                      borderRadius: 0,
+                      outlineOffset: '-2px',
+                      boxShadow: 'none',
+                      borderTop: '1px solid var(--gray-a5)',
+                    }}
+                    size="2"
+                  />
+                  <WebLogView
+                    requests={filteredRequests}
+                    selectedRequestId={selectedRequest?.id}
+                    onSelectRequest={setSelectedRequest}
+                    groups={groups}
+                  />
+                </>
+              )}
             </ScrollArea>
           </Allotment.Pane>
           <Allotment.Pane minSize={300} visible={selectedRequest !== null}>

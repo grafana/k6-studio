@@ -1,5 +1,5 @@
 import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
-import { PlusIcon } from '@radix-ui/react-icons'
+import { ExclamationTriangleIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
 import { useGeneratorStore } from '@/store/generator'
@@ -10,10 +10,18 @@ import { useToast } from '@/store/ui/useToast'
 import log from 'electron-log/renderer'
 
 export function RecordingSelector() {
-  const recordingPath = useGeneratorStore((store) => store.recordingPath)
-  const setRecording = useGeneratorStore((store) => store.setRecording)
   const recordings = useStudioUIStore((store) => store.recordings)
+  const recordingPath = useGeneratorStore((store) => store.recordingPath)
+
+  const setRecording = useGeneratorStore((store) => store.setRecording)
   const showToast = useToast()
+
+  const selectedRecording = recordings.find(
+    (recording) => recording === recordingPath
+  )
+
+  const isRecordingMissing =
+    selectedRecording === undefined && recordingPath !== ''
 
   const handleOpen = async (filePath: string) => {
     try {
@@ -57,11 +65,26 @@ export function RecordingSelector() {
             id="recording-selector"
             placeholder="Select recording"
             css={css`
-              max-width: 200px;
+              width: 250px;
             `}
-          />
+          >
+            <Flex as="span" align="center" gap="1">
+              {isRecordingMissing && (
+                <ExclamationTriangleIcon
+                  color="orange"
+                  css={{ minWidth: 16 }}
+                />
+              )}
+              {getFileNameWithoutExtension(recordingPath)}
+            </Flex>
+          </Select.Trigger>
         </Tooltip>
         <Select.Content position="popper">
+          {isRecordingMissing && (
+            <Select.Item value={recordingPath} disabled>
+              {getFileNameWithoutExtension(recordingPath)}
+            </Select.Item>
+          )}
           {recordings.map((harFileName) => (
             <Select.Item value={harFileName} key={harFileName}>
               {getFileNameWithoutExtension(harFileName)}

@@ -3,13 +3,11 @@ import { Flex, Text } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import grotIllustration from '@/assets/grot.svg'
 
-interface NoRequestsMessageProps {
-  message?: ReactNode
+interface EmptyMessageProps {
+  message: ReactNode
 }
 
-export function NoRequestsMessage({
-  message = 'Your requests will appear here.',
-}: NoRequestsMessageProps) {
+export function EmptyMessage({ message }: EmptyMessageProps) {
   return (
     <Flex direction="column" align="center" gap="4" pt="8">
       <img
