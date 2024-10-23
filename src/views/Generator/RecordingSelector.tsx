@@ -10,10 +10,15 @@ import { useToast } from '@/store/ui/useToast'
 import log from 'electron-log/renderer'
 
 export function RecordingSelector() {
-  const recordingPath = useGeneratorStore((store) => store.recordingPath)
-  const setRecording = useGeneratorStore((store) => store.setRecording)
   const recordings = useStudioUIStore((store) => store.recordings)
+  const recordingPath = useGeneratorStore((store) => store.recordingPath)
+
+  const setRecording = useGeneratorStore((store) => store.setRecording)
   const showToast = useToast()
+
+  const selectedRecording = recordings.find(
+    (recording) => recording === recordingPath
+  )
 
   const handleOpen = async (filePath: string) => {
     try {
@@ -57,11 +62,17 @@ export function RecordingSelector() {
             id="recording-selector"
             placeholder="Select recording"
             css={css`
+              min-width: 200px;
               max-width: 200px;
             `}
           />
         </Tooltip>
         <Select.Content position="popper">
+          {selectedRecording === undefined && recordingPath !== '' && (
+            <Select.Item value={recordingPath} disabled>
+              {getFileNameWithoutExtension(recordingPath)}
+            </Select.Item>
+          )}
           {recordings.map((harFileName) => (
             <Select.Item value={harFileName} key={harFileName}>
               {getFileNameWithoutExtension(harFileName)}

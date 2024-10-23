@@ -12,7 +12,7 @@ import { useToast } from '@/store/ui/useToast'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
-import { NoRequestsMessage } from '@/components/NoRequestsMessage'
+import { EmptyMessage } from '@/components/EmptyMessage'
 
 export function Validator() {
   const [isLoading, setIsLoading] = useState(false)
@@ -133,7 +133,7 @@ export function Validator() {
         logs={logs}
         checks={checks}
         noDataElement={
-          <NoRequestsMessage
+          <EmptyMessage
             message={
               <ValidatorEmptyState
                 isRunning={isRunning}
