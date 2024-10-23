@@ -7,11 +7,75 @@ import { Tooltip } from '@radix-ui/themes'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useBoolean } from 'react-use'
 import { InlineEditor } from './InlineEditor'
-import { getFileNameWithoutExtension } from '@/utils/file'
+import { getViewPath } from '@/utils/file'
+import { useStudioUIStore } from '@/store/ui'
+import { FileItem } from './types'
+
+interface MatchSegment {
+  match: boolean
+  text: string
+}
+
+function splitByMatches(text: string, matches: Array<[number, number]>) {
+  const segments: MatchSegment[] = []
+
+  let previousEnd = 0
+
+  for (const [matchStart, matchEnd] of matches) {
+    segments.push({
+      match: false,
+      text: text.slice(previousEnd, matchStart),
+    })
+
+    segments.push({
+      match: true,
+      text: text.slice(matchStart, matchEnd + 1),
+    })
+
+    previousEnd = matchEnd + 1
+  }
+
+  segments.push({
+    match: false,
+    text: text.slice(previousEnd),
+  })
+
+  return segments
+}
+
+interface HighlightedTextProps {
+  text: string
+  matches: Array<[number, number]> | undefined
+}
+
+function HighlightedText({ text, matches }: HighlightedTextProps) {
+  const segments = splitByMatches(text, matches ?? [])
+
+  return (
+    <>
+      {segments.map((segment, index) => {
+        if (segment.match) {
+          return (
+            <mark
+              key={index}
+              css={css`
+                background-color: transparent;
+                font-weight: 700;
+              `}
+            >
+              {segment.text}
+            </mark>
+          )
+        }
+
+        return segment.text
+      })}
+    </>
+  )
+}
 
 interface FileProps {
-  fileName: string
-  viewPath: string
+  file: FileItem
   isSelected: boolean
 }
 
@@ -23,19 +87,18 @@ const fileStyle = css`
   line-height: 22px;
 `
 
-export function File({ fileName, viewPath, isSelected }: FileProps) {
+export function File({ file, isSelected }: FileProps) {
   const [editMode, setEditMode] = useBoolean(false)
 
   return (
     <FileContextMenu
-      path={fileName}
+      path={file.fileName}
       isSelected={isSelected}
       handleRename={() => setEditMode(true)}
     >
       <div>
         <EditableFile
-          fileName={fileName}
-          viewPath={viewPath}
+          file={file}
           isSelected={isSelected}
           editMode={editMode}
           setEditMode={setEditMode}
@@ -46,28 +109,38 @@ export function File({ fileName, viewPath, isSelected }: FileProps) {
 }
 
 function EditableFile({
-  fileName,
-  viewPath,
+  file,
   isSelected,
   editMode,
   setEditMode,
 }: FileProps & { editMode: boolean; setEditMode: (value: boolean) => void }) {
   const linkRef = useRef<HTMLAnchorElement>(null)
-  const [displayName, setDisplayName] = useState(
-    getFileNameWithoutExtension(fileName)
-  )
+  const [displayName, setDisplayName] = useState(file.displayName)
+
+  const addFile = useStudioUIStore((state) => state.addFile)
+  const removeFile = useStudioUIStore((state) => state.removeFile)
+
+  const navigate = useNavigate()
 
   const hasEllipsis = useOverflowCheck(linkRef)
-  const navigate = useNavigate()
-  const fileExtension = fileName.split('.').pop()
+  const fileExtension = file.fileName.split('.').pop()
 
   const handleSave = async (newValue: string) => {
-    await window.studio.ui.renameFile(fileName, `${newValue}.${fileExtension}`)
+    const newFileName = `${newValue}.${fileExtension}`
+
+    await window.studio.ui.renameFile(file.fileName, newFileName)
+
+    // There's a slight delay between the add and remove callbacks being triggered,
+    // causing the UI to flicker because it thinks the renamed file is actually
+    // a new file. To prevent this, we optimistically update the file list.
+    removeFile(file.fileName)
+    addFile(newFileName)
+
     setDisplayName(newValue)
     setEditMode(false)
 
     if (isSelected) {
-      navigate(`${viewPath}/${newValue}.${fileExtension}`)
+      navigate(getViewPath(file.type, newFileName))
     }
   }
 
@@ -104,9 +177,9 @@ function EditableFile({
             }
           `,
         ]}
-        to={`${viewPath}/${encodeURIComponent(fileName)}`}
+        to={file.viewPath}
       >
-        {displayName}
+        <HighlightedText text={file.displayName} matches={file.matches} />
       </NavLink>
     </Tooltip>
   )

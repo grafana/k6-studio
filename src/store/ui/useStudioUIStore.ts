@@ -1,4 +1,10 @@
 import { FolderContent } from '@/types'
+import {
+  fileFromFileName,
+  isGenerator,
+  isRecording,
+  isScript,
+} from '@/utils/file'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
@@ -17,37 +23,39 @@ export type StudioUIStore = State & Actions
 
 export const useStudioUIStore = create<StudioUIStore>()(
   immer((set) => ({
-    recordings: [],
-    generators: [],
-    scripts: [],
+    recordings: new Map(),
+    generators: new Map(),
+    scripts: new Map(),
     devToggles: {},
 
     addFile: (path) =>
       set((state) => {
-        if (path.endsWith('.har')) {
-          state.recordings.push(path)
+        const file = fileFromFileName(path)
+
+        if (file.type === 'recording') {
+          state.recordings.set(path, file)
         }
 
-        if (path.endsWith('.json')) {
-          state.generators.push(path)
+        if (file.type === 'generator') {
+          state.generators.set(path, file)
         }
 
-        if (path.endsWith('.js')) {
-          state.scripts.push(path)
+        if (file.type === 'script') {
+          state.scripts.set(path, file)
         }
       }),
     removeFile: (path) =>
       set((state) => {
-        if (path.endsWith('.har')) {
-          state.recordings = state.recordings.filter((file) => file !== path)
+        if (isRecording(path)) {
+          state.recordings.delete(path)
         }
 
-        if (path.endsWith('.json')) {
-          state.generators = state.generators.filter((file) => file !== path)
+        if (isGenerator(path)) {
+          state.generators.delete(path)
         }
 
-        if (path.endsWith('.js')) {
-          state.scripts = state.scripts.filter((file) => file !== path)
+        if (isScript(path)) {
+          state.scripts.delete(path)
         }
       }),
     setFolderContent: ({ recordings, generators, scripts }) =>

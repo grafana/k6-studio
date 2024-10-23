@@ -1,9 +1,8 @@
-import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
-import { IconButton, TextField } from '@radix-ui/themes'
 import { RootProps } from '@radix-ui/themes/dist/cjs/components/text-field'
-import { useEffect, useRef, useState } from 'react'
-import { useDebounce, useKeyPressEvent } from 'react-use'
+import { useEffect, useRef } from 'react'
+import { useKeyPressEvent } from 'react-use'
 import useKeyboardJs from 'react-use/lib/useKeyboardJs'
+import { SearchField, SearchFieldHandle } from '../SearchField'
 
 export function Filter({
   filter,
@@ -13,16 +12,11 @@ export function Filter({
   filter: string
   setFilter: (filter: string) => void
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [value, setValue] = useState(filter)
-  useDebounce(() => setFilter(value), 300, [value])
+  const inputRef = useRef<SearchFieldHandle>(null)
 
-  const clearFilter = () => {
-    setValue('')
-    setFilter('')
-  }
-
-  useKeyPressEvent('Escape', clearFilter)
+  useKeyPressEvent('Escape', () => {
+    inputRef.current?.clear()
+  })
 
   // Focus input on cmd+f/ctrl+f
   const [, keyPressEvent] = useKeyboardJs(['command + f', 'ctrl + f'])
@@ -34,24 +28,13 @@ export function Filter({
   }, [keyPressEvent])
 
   return (
-    <TextField.Root
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
+    <SearchField
+      {...inputProps}
+      ref={inputRef}
+      filter={filter}
       placeholder="Filter by URL, method, or status code"
       size="1"
-      ref={inputRef}
-      {...inputProps}
-    >
-      <TextField.Slot>
-        <MagnifyingGlassIcon />
-      </TextField.Slot>
-      {value !== '' && (
-        <TextField.Slot>
-          <IconButton variant="ghost" size="1" onClick={clearFilter}>
-            <Cross2Icon />
-          </IconButton>
-        </TextField.Slot>
-      )}
-    </TextField.Root>
+      onChange={setFilter}
+    />
   )
 }

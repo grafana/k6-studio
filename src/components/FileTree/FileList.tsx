@@ -1,15 +1,15 @@
 import { css } from '@emotion/react'
 import { File, NoFileMessage } from './File'
 import { useParams } from 'react-router-dom'
+import { FileItem } from './types'
 
 interface FileListProps {
-  files: string[]
-  viewPath: string
+  files: FileItem[]
   noFilesMessage: string
   onOpenFile?: (path: string) => void
 }
 
-export function FileList({ files, noFilesMessage, viewPath }: FileListProps) {
+export function FileList({ files, noFilesMessage }: FileListProps) {
   const { fileName: currentFile } = useParams()
 
   if (files.length === 0) {
@@ -25,12 +25,8 @@ export function FileList({ files, noFilesMessage, viewPath }: FileListProps) {
       `}
     >
       {files.map((file) => (
-        <li key={file}>
-          <File
-            fileName={file}
-            isSelected={file === currentFile}
-            viewPath={viewPath}
-          />
+        <li key={file.fileName}>
+          <File file={file} isSelected={file.fileName === currentFile} />
         </li>
       ))}
     </ul>

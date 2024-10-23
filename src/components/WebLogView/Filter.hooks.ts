@@ -1,10 +1,12 @@
 import { ProxyData } from '@/types'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { useState, useMemo } from 'react'
-import { useLocalStorage } from 'react-use'
+import { useDebounce, useLocalStorage } from 'react-use'
 
 export function useFilterRequests(requests: ProxyData[]) {
   const [filter, setFilter] = useState('')
+  const [debouncedFilter, setDebouncedFilter] = useState(filter)
+
   const [includeStaticAssets, setIncludeStaticAssets] = useLocalStorage(
     'includeStaticAssets',
     false
@@ -15,21 +17,33 @@ export function useFilterRequests(requests: ProxyData[]) {
     [requests]
   )
 
-  const filteredRequests = useMemo(() => {
-    const assetsFiltered = includeStaticAssets
-      ? requests
-      : requestWithoutStaticAssets
-    const lowerCaseFilter = filter.toLowerCase().trim()
-    if (lowerCaseFilter === '') return assetsFiltered
+  const assetsToFilter = includeStaticAssets
+    ? requests
+    : requestWithoutStaticAssets
 
-    return assetsFiltered.filter((data) => {
+  useDebounce(
+    () => {
+      setDebouncedFilter(filter)
+    },
+    300,
+    [filter]
+  )
+
+  const filteredRequests = useMemo(() => {
+    const lowerCaseFilter = debouncedFilter.toLowerCase().trim()
+
+    if (lowerCaseFilter === '') {
+      return assetsToFilter
+    }
+
+    return assetsToFilter.filter((data) => {
       return (
         data.request.url.toLowerCase().includes(lowerCaseFilter) ||
         data.request.method.toLowerCase().includes(lowerCaseFilter) ||
         data.response?.statusCode.toString().includes(lowerCaseFilter)
       )
     })
-  }, [requests, filter, requestWithoutStaticAssets, includeStaticAssets])
+  }, [debouncedFilter, assetsToFilter])
 
   const staticAssetCount = useMemo(
     () => requests.length - requestWithoutStaticAssets.length,

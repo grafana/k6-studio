@@ -10,14 +10,14 @@ import { useToast } from '@/store/ui/useToast'
 import log from 'electron-log/renderer'
 
 export function RecordingSelector() {
-  const recordings = useStudioUIStore((store) => store.recordings)
+  const recordings = useStudioUIStore((store) => [...store.recordings.values()])
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
   const setRecording = useGeneratorStore((store) => store.setRecording)
   const showToast = useToast()
 
   const selectedRecording = recordings.find(
-    (recording) => recording === recordingPath
+    (recording) => recording.fileName === recordingPath
   )
 
   const isRecordingMissing =
@@ -85,9 +85,9 @@ export function RecordingSelector() {
               {getFileNameWithoutExtension(recordingPath)}
             </Select.Item>
           )}
-          {recordings.map((harFileName) => (
-            <Select.Item value={harFileName} key={harFileName}>
-              {getFileNameWithoutExtension(harFileName)}
+          {recordings.map((recording) => (
+            <Select.Item value={recording.fileName} key={recording.fileName}>
+              {recording.displayName}
             </Select.Item>
           ))}
         </Select.Content>
