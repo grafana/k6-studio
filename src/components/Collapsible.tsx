@@ -72,18 +72,18 @@ function Trigger({
   ...props
 }: RadixCollapsible.CollapsibleTriggerProps) {
   return (
-    <RadixCollapsible.Trigger
-      {...props}
-      asChild
-      css={css`
-        flex: 1 1 0;
-        cursor: var(--cursor-button);
-      `}
-    >
-      <Reset>
+    <Reset>
+      <RadixCollapsible.Trigger
+        {...props}
+        asChild
+        css={css`
+          flex: 1 1 0;
+          cursor: var(--cursor-button);
+        `}
+      >
         <button type="button">{children}</button>
-      </Reset>
-    </RadixCollapsible.Trigger>
+      </RadixCollapsible.Trigger>
+    </Reset>
   )
 }
 
