@@ -26,8 +26,8 @@ export const UsageReportSettings = () => {
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}
-              I consent to the anonymous collection and use of data to improve
-              k6 Studio.{' '}
+              Please send my anonymous usage data to Grafana to aid in
+              development of k6 Studio.{' '}
               <Link href="" onClick={handleLinkClick}>
                 Learn more.
               </Link>
