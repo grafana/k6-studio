@@ -1,5 +1,5 @@
 import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
-import { PlusIcon } from '@radix-ui/react-icons'
+import { ExclamationTriangleIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
 import { useGeneratorStore } from '@/store/generator'
@@ -19,6 +19,9 @@ export function RecordingSelector() {
   const selectedRecording = recordings.find(
     (recording) => recording === recordingPath
   )
+
+  const isRecordingMissing =
+    selectedRecording === undefined && recordingPath !== ''
 
   const handleOpen = async (filePath: string) => {
     try {
@@ -62,13 +65,22 @@ export function RecordingSelector() {
             id="recording-selector"
             placeholder="Select recording"
             css={css`
-              min-width: 200px;
-              max-width: 200px;
+              width: 250px;
             `}
-          />
+          >
+            <Flex as="span" align="center" gap="1">
+              {isRecordingMissing && (
+                <ExclamationTriangleIcon
+                  color="orange"
+                  css={{ minWidth: 16 }}
+                />
+              )}
+              {getFileNameWithoutExtension(recordingPath)}
+            </Flex>
+          </Select.Trigger>
         </Tooltip>
         <Select.Content position="popper">
-          {selectedRecording === undefined && recordingPath !== '' && (
+          {isRecordingMissing && (
             <Select.Item value={recordingPath} disabled>
               {getFileNameWithoutExtension(recordingPath)}
             </Select.Item>
