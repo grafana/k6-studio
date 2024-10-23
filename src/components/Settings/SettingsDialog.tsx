@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { RecorderSettings } from './RecorderSettings'
 import { AppSettings } from '@/types/settings'
-import { TelemetrySettings } from './TelemetrySettings'
+import { UsageReportSettings } from './UsageReportSettings'
 
 type SettingsDialogProps = {
   open: boolean
@@ -68,7 +68,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             <ScrollArea>
               <RecorderSettings />
               <ProxySettings />
-              <TelemetrySettings />
+              <UsageReportSettings />
             </ScrollArea>
           </Box>
 

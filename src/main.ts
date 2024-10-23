@@ -45,7 +45,7 @@ import kill from 'tree-kill'
 import find from 'find-process'
 import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
-import { sendReport } from './telemetry'
+import { sendReport } from './usageReport'
 import { AppSettings } from './types/settings'
 import { getSettings, saveSettings, selectBrowserExecutable } from './settings'
 import { ProxyStatus } from './types'
@@ -176,7 +176,7 @@ const createWindow = async () => {
 
 app.whenReady().then(async () => {
   appSettings = await getSettings()
-  await sendReport(appSettings.telemetry)
+  await sendReport(appSettings.usageReport)
   await createSplashWindow()
   await setupProjectStructure()
   await createWindow()

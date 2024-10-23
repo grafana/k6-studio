@@ -4,7 +4,7 @@ import { getPlatform, getArch } from './utils/electron'
 import { writeFile, readFile } from 'fs/promises'
 import path from 'path'
 import { existsSync } from 'fs'
-import { TelemetrySettings } from './types/settings'
+import { UsageReportSettings } from './types/settings'
 
 const URL = 'https://stats.grafana.org/k6-studio-usage-report'
 const filename = '.installation_id'
@@ -20,8 +20,8 @@ export const getOrSetInstallationId = async () => {
   return await readFile(filePath, { encoding: 'utf-8' })
 }
 
-export const sendReport = async (telemetrySettings: TelemetrySettings) => {
-  if (!telemetrySettings.enabled) {
+export const sendReport = async (usageReportSettings: UsageReportSettings) => {
+  if (!usageReportSettings.enabled) {
     return
   }
 
@@ -30,8 +30,8 @@ export const sendReport = async (telemetrySettings: TelemetrySettings) => {
     return
   }
 
-  // Update the Telemetry section in README when changing what data is being sent
-  // https://github.com/grafana/k6-studio/blob/main/README.md#telemetry
+  // Update the Usage Report section in README when changing what data is being sent
+  // https://github.com/grafana/k6-studio/blob/main/README.md#usage-report
   const id = await getOrSetInstallationId()
   const data = {
     usageStatsId: id,

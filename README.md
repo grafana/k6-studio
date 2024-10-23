@@ -100,7 +100,7 @@ Application logs are saved in the following directory:
 
 When opening an issue, please include a tail of your log file.
 
-## Telemetry
+## Usage Report
 
 By default, k6 Studio sends an anonymous usage report so that we can track relevant information to be able to build the product making better data-driven decisions. Prioritizing the features that benefit the most and reducing the impact of changes.
 

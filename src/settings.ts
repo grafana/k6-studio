@@ -21,7 +21,7 @@ const defaultSettings: AppSettings = {
     y: 0,
     isMaximized: true,
   },
-  telemetry: {
+  usageReport: {
     enabled: true,
   },
 }

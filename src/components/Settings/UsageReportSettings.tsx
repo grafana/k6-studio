@@ -3,31 +3,31 @@ import { Controller, useFormContext } from 'react-hook-form'
 import { SettingsSection } from './SettingsSection'
 import { AppSettings } from '@/types/settings'
 
-export const TelemetrySettings = () => {
+export const UsageReportSettings = () => {
   const { control, register } = useFormContext<AppSettings>()
 
   const handleLinkClick = () => {
     window.studio.browser.openExternalLink(
-      'https://github.com/grafana/k6-studio/blob/main/README.md#telemetry'
+      'https://github.com/grafana/k6-studio/blob/main/README.md#usage-report'
     )
   }
 
   return (
-    <SettingsSection title="Telemetry">
+    <SettingsSection title="Usage Report">
       <Flex gap="2">
         <Controller
           control={control}
-          name="telemetry.enabled"
+          name="usageReport.enabled"
           render={({ field }) => (
             <Text size="2" as="label">
               <Checkbox
-                {...register('telemetry.enabled')}
+                {...register('usageReport.enabled')}
                 defaultChecked
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}
-              I consent to the anonymous collection and use of telemetry data to
-              improve k6 Studio.{' '}
+              I consent to the anonymous collection and use of data to improve
+              k6 Studio.{' '}
               <Link href="" onClick={handleLinkClick}>
                 Learn more.
               </Link>
