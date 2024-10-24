@@ -65,6 +65,8 @@ const proxyEmitter = new eventEmitter()
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
 let proxyStatus: ProxyStatus = 'offline'
+const PROXY_RETRY_LIMIT = 5
+let proxyRetryCount = 0
 export let appSettings: AppSettings
 
 let currentBrowserProcess: Process | null
@@ -615,6 +617,22 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
         // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
+
+      if (proxyRetryCount === PROXY_RETRY_LIMIT && !automaticallyFindPort) {
+        proxyRetryCount = 0
+        proxyEmitter.emit('status:change', 'offline')
+
+        sendToast(browserWindow.webContents, {
+          title: `Port ${proxyPort} is already in use`,
+          description:
+            'Please select a different port or enable automatic port selection',
+          status: 'error',
+        })
+
+        return
+      }
+
+      proxyRetryCount++
       proxyEmitter.emit('status:change', 'restarting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
