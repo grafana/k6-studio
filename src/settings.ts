@@ -21,6 +21,9 @@ const defaultSettings: AppSettings = {
     y: 0,
     isMaximized: true,
   },
+  usageReport: {
+    enabled: true,
+  },
 }
 
 const fileName =

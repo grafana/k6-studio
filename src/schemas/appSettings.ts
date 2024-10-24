@@ -66,6 +66,10 @@ const RecorderBrowserPathSchema = RecorderDetectBrowserPathSchema.extend({
   browserPath: z.string().optional(),
 })
 
+export const UsageReportSettingsSchema = z.object({
+  enabled: z.boolean(),
+})
+
 export const RecorderSettingsSchema = z
   .discriminatedUnion('detectBrowserPath', [
     RecorderDetectBrowserPathSchema,
@@ -95,4 +99,5 @@ export const AppSettingsSchema = z.object({
   proxy: ProxySettingsSchema,
   recorder: RecorderSettingsSchema,
   windowState: WindowStateSchema,
+  usageReport: UsageReportSettingsSchema,
 })

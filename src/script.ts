@@ -23,7 +23,8 @@ export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
 export const runScript = async (
   browserWindow: BrowserWindow,
   scriptPath: string,
-  proxyPort: number
+  proxyPort: number,
+  enableUsageReport: boolean
 ) => {
   const modifiedScript = await enhanceScript(scriptPath)
   const modifiedScriptPath = path.join(
@@ -57,21 +58,23 @@ export const runScript = async (
   // add .exe on windows
   k6Path += getPlatform() === 'win' ? '.exe' : ''
 
-  const k6 = spawn(
-    k6Path,
-    [
-      'run',
-      modifiedScriptPath,
-      '--vus=1',
-      '--iterations=1',
-      '--insecure-skip-tls-verify',
-      '--log-format=json',
-      '--quiet',
-    ],
-    {
-      env: { ...process.env, ...proxyEnv },
-    }
-  )
+  const k6Args = [
+    'run',
+    modifiedScriptPath,
+    '--vus=1',
+    '--iterations=1',
+    '--insecure-skip-tls-verify',
+    '--log-format=json',
+    '--quiet',
+  ]
+
+  if (!enableUsageReport) {
+    k6Args.push('--no-usage-report')
+  }
+
+  const k6 = spawn(k6Path, k6Args, {
+    env: { ...process.env, ...proxyEnv },
+  })
 
   // we use a reader to read entire lines from stderr instead of buffered data
   const stderrReader = readline.createInterface(k6.stderr)

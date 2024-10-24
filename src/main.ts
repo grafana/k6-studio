@@ -45,6 +45,7 @@ import kill from 'tree-kill'
 import find from 'find-process'
 import { initializeLogger, openLogFolder } from './logger'
 import log from 'electron-log/main'
+import { sendReport } from './usageReport'
 import { AppSettings } from './types/settings'
 import {
   getSettings,
@@ -180,6 +181,7 @@ const createWindow = async () => {
 
 app.whenReady().then(async () => {
   appSettings = await getSettings()
+  await sendReport(appSettings.usageReport)
   await createSplashWindow()
   await setupProjectStructure()
   await createWindow()
@@ -315,7 +317,8 @@ ipcMain.handle(
     currentk6Process = await runScript(
       browserWindow,
       resolvedScriptPath,
-      appSettings.proxy.port
+      appSettings.proxy.port,
+      appSettings.usageReport.enabled
     )
   }
 )
@@ -582,6 +585,9 @@ async function applySettings(
   }
   if (modifiedSettings.recorder) {
     appSettings.recorder = modifiedSettings.recorder
+  }
+  if (modifiedSettings.usageReport) {
+    appSettings.usageReport = modifiedSettings.usageReport
   }
 }
 
