@@ -54,9 +54,9 @@ function ProxyStatusIcon({ status }: { status: ProxyStatus }) {
     case 'online':
       return <Link1Icon color="gray" />
     case 'offline':
-      return <LinkNone1Icon color="gray" />
-    case 'restarting':
       return <LinkBreak1Icon color="gray" />
+    case 'restarting':
+      return <LinkNone1Icon color="gray" />
     default:
       return exhaustive(status)
   }
