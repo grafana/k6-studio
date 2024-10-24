@@ -577,7 +577,7 @@ async function applySettings(
   browserWindow: BrowserWindow
 ) {
   if (modifiedSettings.proxy) {
-    stopProxyProcess()
+    await stopProxyProcess()
     appSettings.proxy = modifiedSettings.proxy
     proxyEmitter.emit('status:change', 'restarting')
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
@@ -703,11 +703,15 @@ function getFilePathFromName(name: string) {
   }
 }
 
-const stopProxyProcess = () => {
+const stopProxyProcess = async () => {
   if (currentProxyProcess) {
-    // NOTE: this might not kill the second spawned process on windows
     currentProxyProcess.kill()
     currentProxyProcess = null
+
+    // kill remaining proxies if any, this might happen on windows
+    if (getPlatform() === 'win') {
+      await cleanUpProxies()
+    }
   }
 }
 
