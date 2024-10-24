@@ -1,24 +1,20 @@
 import { Menu, shell } from 'electron'
+import { getPlatform } from './utils/electron'
 
 const isDevEnv = process.env.NODE_ENV === 'development'
+const isMac = getPlatform() === 'mac'
 
 // Custom application menu
 // https://www.electronjs.org/docs/latest/api/menu
 const template: Electron.MenuItemConstructorOptions[] = [
-  { role: 'appMenu' },
+  ...getAppMenu(),
   { role: 'fileMenu' },
   { role: 'editMenu' },
   {
     // { role: 'viewMenu' }
     label: 'View',
     submenu: [
-      ...(isDevEnv
-        ? ([
-            { role: 'reload' },
-            { role: 'forceReload' },
-            { role: 'toggleDevTools' },
-          ] as Electron.MenuItemConstructorOptions[])
-        : []),
+      ...getDevToolsMenu(),
       { type: 'separator' },
       { role: 'resetZoom' },
       { role: 'zoomIn' },
@@ -42,6 +38,16 @@ const template: Electron.MenuItemConstructorOptions[] = [
     ],
   },
 ]
+
+function getAppMenu(): Electron.MenuItemConstructorOptions[] {
+  return isMac ? [{ role: 'appMenu' }] : []
+}
+
+function getDevToolsMenu(): Electron.MenuItemConstructorOptions[] {
+  return isDevEnv
+    ? [{ role: 'reload' }, { role: 'forceReload' }, { role: 'toggleDevTools' }]
+    : []
+}
 
 export function configureApplicationMenu() {
   const menu = Menu.buildFromTemplate(template)
