@@ -1,10 +1,10 @@
-import { v4 as uuidv4 } from 'uuid'
 import { app } from 'electron'
 import { getPlatform, getArch } from './utils/electron'
 import { writeFile, readFile } from 'fs/promises'
 import path from 'path'
 import { existsSync } from 'fs'
 import { UsageReportSettings } from './types/settings'
+import log from 'electron-log/main'
 
 const URL = 'https://stats.grafana.org/k6-studio-usage-report'
 const filename = '.installation_id'
@@ -12,7 +12,7 @@ const filePath = path.join(app.getPath('userData'), filename)
 
 export const getOrSetInstallationId = async () => {
   if (!existsSync(filePath)) {
-    const id = uuidv4()
+    const id = self.crypto.randomUUID()
     await writeFile(filePath, id)
     return id
   }
@@ -50,6 +50,6 @@ export const sendReport = async (usageReportSettings: UsageReportSettings) => {
       },
     })
   } catch (e) {
-    console.log('Error sending report', e)
+    log.error(e)
   }
 }

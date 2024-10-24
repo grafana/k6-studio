@@ -22,12 +22,11 @@ export const UsageReportSettings = () => {
             <Text size="2" as="label">
               <Checkbox
                 {...register('usageReport.enabled')}
-                defaultChecked
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}
-              Please send my anonymous usage data to Grafana to aid in
-              development of k6 Studio.{' '}
+              Send my anonymous usage data to Grafana to aid in development of
+              k6 Studio.{' '}
               <Link href="" onClick={handleLinkClick}>
                 Learn more.
               </Link>
