@@ -1,9 +1,6 @@
 import { FieldGroup } from '@/components/Form'
-import { ProxyStatus } from '@/types'
 import { stringAsNumber } from '@/utils/form'
-import { css } from '@emotion/react'
 import { Flex, Text, TextField, Checkbox } from '@radix-ui/themes'
-import { useEffect, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { UpstreamProxySettings } from './UpstreamProxySettings'
 import { SettingsSection } from './SettingsSection'
@@ -28,21 +25,7 @@ export const ProxySettings = () => {
     register,
     watch,
   } = useFormContext<AppSettings>()
-  const [proxyStatus, setProxyStatus] = useState<ProxyStatus>()
-
   const { proxy } = watch()
-
-  useEffect(() => {
-    async function fetchProxyStatus() {
-      const status = await window.studio.proxy.getProxyStatus()
-      setProxyStatus(status)
-    }
-    fetchProxyStatus()
-
-    return window.studio.proxy.onProxyStatusChange((status) =>
-      setProxyStatus(status)
-    )
-  }, [])
 
   return (
     <SettingsSection title="Proxy">
@@ -93,35 +76,6 @@ export const ProxySettings = () => {
       </FieldGroup>
 
       {proxy && proxy.mode === 'upstream' && <UpstreamProxySettings />}
-
-      <Flex gap="2" mt="5">
-        <Text size="2">
-          Proxy status: <ProxyStatusIndicator status={proxyStatus} />
-        </Text>
-      </Flex>
     </SettingsSection>
-  )
-}
-
-function ProxyStatusIndicator({ status }: { status?: ProxyStatus }) {
-  const statusColorMap: Record<ProxyStatus, string> = {
-    ['online']: 'var(--green-9)',
-    ['offline']: 'var(--gray-9)',
-    ['restarting']: 'var(--blue-9)',
-  }
-  const backgroundColor = status ? statusColorMap[status] : '#fff'
-
-  return (
-    <Text
-      size="2"
-      css={css`
-        background-color: ${backgroundColor};
-        border-radius: 4px;
-        color: #fff;
-        padding: var(--space-1) var(--space-2);
-      `}
-    >
-      {status}
-    </Text>
   )
 }
