@@ -7,7 +7,7 @@ import {
   CorrelationState,
   CorrelationRuleInstance,
 } from '@/types/rules'
-import { cloneDeep, escapeRegExp, isEqual } from 'lodash-es'
+import { cloneDeep, escapeRegExp } from 'lodash-es'
 import {
   canonicalHeaderKey,
   matchFilter,
@@ -68,21 +68,25 @@ function applyRule({
     // we populate uniqueId since it doesn't have to be regenerated
     // this will be passed to the tryCorrelationExtraction function
 
-    snippetSchemaReturnValue.data.request = replaceCorrelatedValues({
+    const replacedRequest = replaceCorrelatedValues({
       rule,
       extractedValue: state.extractedValue,
       uniqueId: state.generatedUniqueId ?? 0,
       request: requestSnippetSchema.data.request,
     })
 
+    if (replacedRequest) {
+      snippetSchemaReturnValue.data.request = replacedRequest
+    }
+
     // Keep track of modified requests to display in preview
-    if (!isEqual(requestSnippetSchema, snippetSchemaReturnValue)) {
+    if (replacedRequest) {
       setState({
         requestsReplaced: [
           ...state.requestsReplaced,
           {
             original: requestSnippetSchema.data.request,
-            replaced: snippetSchemaReturnValue.data.request,
+            replaced: replacedRequest,
           },
         ],
       })

@@ -10,7 +10,7 @@ import { getContentTypeWithCharsetHeader } from '@/utils/headers'
 import { REQUIRED_IMPORTS } from '@/constants/imports'
 import { generateImportStatement } from './imports'
 import { cleanupRecording } from './codegen.utils'
-import { groupBy } from 'lodash-es'
+import { groupProxyData } from '@/utils/groups'
 
 interface GenerateScriptParams {
   recording: ProxyData[]
@@ -62,7 +62,7 @@ export function generateVUCode(
   )
 
   // Group requests after applying rules to correlate requests between different groups
-  const groups = Object.entries(groupBy(requestSnippets, (item) => item.group))
+  const groups = Object.entries(groupProxyData(requestSnippets))
 
   const groupSnippets = groups
     .map(([groupName, requestSnippetSchemas]) => {

@@ -50,6 +50,8 @@ export interface ParameterizationState {
     original: Request
     replaced: Request
   }[]
+  uniqueId: number
+  snippedInjected: boolean
 }
 
 export type ParameterizationRuleInstance =

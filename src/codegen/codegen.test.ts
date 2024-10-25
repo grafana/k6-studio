@@ -13,7 +13,11 @@ import { correlationRecording } from '@/test/fixtures/correlationRecording'
 import { checksRecording } from '@/test/fixtures/checksRecording'
 import { ThinkTime } from '@/types/testOptions'
 import { createProxyData, createRequest } from '@/test/factories/proxyData'
-import { jsonRule } from '@/test/fixtures/parameterizationRules'
+import {
+  customCodeReplaceCsrf,
+  customCodeReplaceProjectId,
+  jsonRule,
+} from '@/test/fixtures/parameterizationRules'
 import { prettify } from '@/utils/prettify'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
@@ -266,31 +270,91 @@ describe('Code generation', () => {
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
 
-    it('should replace paremeterization values', () => {
-      const recording = createProxyData({
-        request: createRequest({
-          method: 'POST',
-          url: 'http://test.k6.io/api/v1/users',
-          content: JSON.stringify({ user_id: '333' }),
-          headers: [['content-type', 'application/json']],
+    it('should replace paremeterization values', async () => {
+      const recording = [
+        createProxyData({
+          id: '1',
+          request: createRequest({
+            method: 'POST',
+            url: 'http://test.k6.io/api/v1/users',
+            content: JSON.stringify({ user_id: '333' }),
+            headers: [['content-type', 'application/json']],
+          }),
         }),
-      })
 
-      const rules: TestRule[] = [jsonRule]
+        createProxyData({
+          id: '2',
+          request: createRequest({
+            url: 'http://example.com/api/v1/users?project_id=123&csrf=321',
+          }),
+        }),
 
-      const expectedResult = `
-        params = { headers: { 'content-type': \`application/json\` }, cookies: {} }
-        url = http.url\`http://test.k6.io/api/v1/users\`
-        resp = http.request('POST', url, \`${JSON.stringify({ user_id: 'TEST_ID' })}\`, params)
-      `
+        createProxyData({
+          id: '3',
+          request: createRequest({
+            url: 'http://example.com/api/v1/users?project_id=123',
+          }),
+        }),
+      ]
 
-      expect(
-        generateRequestSnippets(
-          [recording],
-          rules,
-          thinkTime
-        )[0]?.snippet.replace(/\s/g, '')
-      ).toBe(expectedResult.replace(/\s/g, ''))
+      const rules: TestRule[] = [
+        jsonRule,
+        customCodeReplaceProjectId,
+        customCodeReplaceCsrf,
+      ]
+
+      const expectedResult = await prettify(`
+        let params
+        let resp
+        let match
+        let regex
+        let url
+        const correlation_vars = {}
+
+        group('Default group', function () {
+          params = {
+            headers: {
+              'content-type': \`application/json\`
+            },
+            cookies: {}
+          }
+
+          url = http.url\`http://test.k6.io/api/v1/users\`
+          resp = http.request('POST', url, \`${JSON.stringify({ user_id: 'TEST_ID' })}\`, params)
+
+          params = {
+            headers: {},
+            cookies: {},
+          }
+
+          function getParameterizationValue1() {
+            const randomInteger = Math.floor(Math.random() * 100000)
+            return randomInteger
+          }
+          function getParameterizationValue2() {
+            return '123456'
+          }
+
+          url = http.url\`http://example.com/api/v1/users?project_id=\${getParameterizationValue1()}&csrf=\${getParameterizationValue2()}\`
+          resp = http.request('GET', url, null, params)
+
+
+          params = {
+            headers: {},
+            cookies: {},
+          }
+
+          url = http.url\`http://example.com/api/v1/users?project_id=\${getParameterizationValue1()}\`
+          resp = http.request('GET', url, null, params)
+        })
+
+        sleep(1)
+
+      `)
+
+      expect(await prettify(generateVUCode(recording, rules, thinkTime))).toBe(
+        expectedResult
+      )
     })
   })
 

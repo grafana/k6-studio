@@ -7,10 +7,21 @@ import { createParameterizationRuleInstance } from './parameterization'
 import { ProxyData, RequestSnippetSchema } from '@/types'
 import { generateSequentialInt } from './utils'
 
+function createSequentialIdPool() {
+  const currentId: Record<TestRule['type'], Generator<number>> = {
+    correlation: generateSequentialInt(),
+    parameterization: generateSequentialInt(),
+    verification: generateSequentialInt(),
+    customCode: generateSequentialInt(),
+  }
+
+  return (type: TestRule['type']) => currentId[type]
+}
+
 export function applyRules(recording: ProxyData[], rules: TestRule[]) {
-  const idGenerator = generateSequentialInt()
+  const idGenerator = createSequentialIdPool()
   const ruleInstances = rules.map((rule) =>
-    createRuleInstance(rule, idGenerator)
+    createRuleInstance(rule, idGenerator(rule.type))
   )
 
   const requestSnippetSchemas = recording.map((data) =>
@@ -32,7 +43,7 @@ function createRuleInstance<T extends TestRule>(
     case 'correlation':
       return createCorrelationRuleInstance(rule, idGenerator)
     case 'parameterization':
-      return createParameterizationRuleInstance(rule)
+      return createParameterizationRuleInstance(rule, idGenerator)
     case 'verification':
       return createVerificationRuleInstance(rule)
     case 'customCode':
