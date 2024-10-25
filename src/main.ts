@@ -66,6 +66,8 @@ const proxyEmitter = new eventEmitter()
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
 let proxyStatus: ProxyStatus = 'offline'
+const PROXY_RETRY_LIMIT = 5
+let proxyRetryCount = 0
 export let appSettings: AppSettings
 
 let currentBrowserProcess: Process | null
@@ -578,7 +580,7 @@ async function applySettings(
   browserWindow: BrowserWindow
 ) {
   if (modifiedSettings.proxy) {
-    stopProxyProcess()
+    await stopProxyProcess()
     appSettings.proxy = modifiedSettings.proxy
     proxyEmitter.emit('status:change', 'restarting')
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
@@ -621,6 +623,22 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
         // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
+
+      if (proxyRetryCount === PROXY_RETRY_LIMIT && !automaticallyFindPort) {
+        proxyRetryCount = 0
+        proxyEmitter.emit('status:change', 'offline')
+
+        sendToast(browserWindow.webContents, {
+          title: `Port ${proxyPort} is already in use`,
+          description:
+            'Please select a different port or enable automatic port selection',
+          status: 'error',
+        })
+
+        return
+      }
+
+      proxyRetryCount++
       proxyEmitter.emit('status:change', 'restarting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
@@ -691,11 +709,15 @@ function getFilePathFromName(name: string) {
   }
 }
 
-const stopProxyProcess = () => {
+const stopProxyProcess = async () => {
   if (currentProxyProcess) {
-    // NOTE: this might not kill the second spawned process on windows
     currentProxyProcess.kill()
     currentProxyProcess = null
+
+    // kill remaining proxies if any, this might happen on windows
+    if (getPlatform() === 'win') {
+      await cleanUpProxies()
+    }
   }
 }
 
