@@ -1,5 +1,4 @@
 import { generateScript } from '@/codegen'
-import { groupProxyData } from '@/utils/groups'
 import {
   selectFilteredRequests,
   selectGeneratorData,
@@ -8,12 +7,12 @@ import {
 import { GeneratorFileData } from '@/types/generator'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
-import { GroupedProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(
   generator: GeneratorFileData,
-  recording: GroupedProxyData
+  recording: ProxyData[]
 ) {
   const script = generateScript({
     generator,
@@ -31,10 +30,7 @@ export async function exportScript(fileName: string) {
   const generator = selectGeneratorData(useGeneratorStore.getState())
   const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
-  const script = await generateScriptPreview(
-    generator,
-    groupProxyData(filteredRequests)
-  )
+  const script = await generateScriptPreview(generator, filteredRequests)
 
   saveScript(script, fileName)
 }
