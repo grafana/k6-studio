@@ -54,6 +54,7 @@ import {
   selectUpstreamCertificate,
 } from './settings'
 import { ProxyStatus } from './types'
+import { configureApplicationMenu } from './menu'
 
 // handle auto updates
 if (process.env.NODE_ENV !== 'development') {
@@ -166,7 +167,10 @@ const createWindow = async () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  mainWindow.once('ready-to-show', () => configureWatcher(mainWindow))
+  mainWindow.once('ready-to-show', () => {
+    configureApplicationMenu()
+    configureWatcher(mainWindow)
+  })
   proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
     proxyStatus = statusName
     mainWindow.webContents.send('proxy:status:change', statusName)
