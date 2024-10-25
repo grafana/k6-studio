@@ -61,7 +61,7 @@ export function generateVUCode(
     thinkTime
   )
 
-  // Group requests after appying rules to correlate requests between different groups
+  // Group requests after applying rules to correlate requests between different groups
   const groups = Object.entries(groupBy(requestSnippets, (item) => item.group))
 
   const groupSnippets = groups
