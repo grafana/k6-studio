@@ -11,7 +11,6 @@ const template: Electron.MenuItemConstructorOptions[] = [
   { role: 'fileMenu' },
   { role: 'editMenu' },
   {
-    // { role: 'viewMenu' }
     label: 'View',
     submenu: [
       ...getDevToolsMenu(),
