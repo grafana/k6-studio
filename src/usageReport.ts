@@ -12,7 +12,7 @@ const filePath = path.join(app.getPath('userData'), filename)
 
 export const getOrSetInstallationId = async () => {
   if (!existsSync(filePath)) {
-    const id = self.crypto.randomUUID()
+    const id = crypto.randomUUID()
     await writeFile(filePath, id)
     return id
   }
