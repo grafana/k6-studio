@@ -5,6 +5,7 @@ import {
   generateVariableDeclarations,
   generateGroupSnippet,
   generateRequestParams,
+  generateVUCode,
 } from './codegen'
 import { TestRule } from '@/types/rules'
 import { Cookie, Header, ProxyData, Request } from '@/types'
@@ -62,7 +63,7 @@ describe('Code generation', () => {
 
       expect(
         generateScript({
-          recording: {},
+          recording: [],
           generator: {
             version: '0',
             recordingPath: 'test',
@@ -144,7 +145,11 @@ describe('Code generation', () => {
       `
 
       expect(
-        generateRequestSnippets(recording, rules, thinkTime).replace(/\s/g, '')
+        generateRequestSnippets(
+          recording,
+          rules,
+          thinkTime
+        )[0]?.snippet.replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
 
@@ -177,48 +182,58 @@ describe('Code generation', () => {
       ]
 
       const expectedResult = await prettify(`
-        params = {
-          headers: {}, cookies: {}
-        }
+        let params
+        let resp
+        let match
+        let regex
+        let url
+        const correlation_vars = {}
 
-        url = http.url\`http://test.k6.io/api/v1/foo\`
-        resp = http.request('POST', url, null, params)
+        group('one', function () {
+          params = {
+            headers: {}, cookies: {}
+          }
 
-        regex = new RegExp("project_id=(.*)$");
-        match = resp.headers["Project"].match(regex);
-        if (match) {
-          correlation_vars["correlation_0"] = match[1];
-        }
+          url = http.url\`http://test.k6.io/api/v1/foo\`
+          resp = http.request('POST', url, null, params)
 
-        params = {
-          headers: {}, cookies: {}
-        }
+          regex = new RegExp("project_id=(.*)$");
+          match = resp.headers["Project"].match(regex);
+          if (match) {
+            correlation_vars["correlation_0"] = match[1];
+          }
 
-        url = http.url\`http://test.k6.io/api/v1/login?project_id=\${correlation_vars['correlation_0']}\`
-        resp = http.request('POST', url, null, params)
+          params = {
+            headers: {}, cookies: {}
+          }
 
-        correlation_vars['correlation_1'] = resp.json().user_id
+          url = http.url\`http://test.k6.io/api/v1/login?project_id=\${correlation_vars['correlation_0']}\`
+          resp = http.request('POST', url, null, params)
 
-        params = {
-          headers: {}, cookies: {}
-        }
+          correlation_vars['correlation_1'] = resp.json().user_id
+        })
 
-        url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars['correlation_1']}\`
-        resp = http.request('GET', url, null, params)
+        group('two', function () {
+          params = {
+            headers: {}, cookies: {}
+          }
 
-        params = {
-          headers: {}, cookies: {}
-        }
+          url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars['correlation_1']}\`
+          resp = http.request('GET', url, null, params)
 
-        url = http.url\`http://test.k6.io/api/v1/users\`
-        resp = http.request('POST', url, \`${JSON.stringify({ user_id: "${correlation_vars['correlation_1']}" })}\`, params)
+          params = {
+            headers: {}, cookies: {}
+          }
 
+          url = http.url\`http://test.k6.io/api/v1/users\`
+          resp = http.request('POST', url, \`${JSON.stringify({ user_id: "${correlation_vars['correlation_1']}" })}\`, params)
+        })
+
+        sleep(1)
       `)
 
       expect(
-        await prettify(
-          generateRequestSnippets(correlationRecording, rules, thinkTime)
-        )
+        await prettify(generateVUCode(correlationRecording, rules, thinkTime))
       ).toBe(expectedResult)
     })
 
@@ -243,10 +258,11 @@ describe('Code generation', () => {
       `
 
       expect(
-        generateRequestSnippets(checksRecording, rules, thinkTime).replace(
-          /\s/g,
-          ''
-        )
+        generateRequestSnippets(
+          checksRecording,
+          rules,
+          thinkTime
+        )[0]?.snippet.replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
 
@@ -269,10 +285,11 @@ describe('Code generation', () => {
       `
 
       expect(
-        generateRequestSnippets([recording], rules, thinkTime).replace(
-          /\s/g,
-          ''
-        )
+        generateRequestSnippets(
+          [recording],
+          rules,
+          thinkTime
+        )[0]?.snippet.replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
   })

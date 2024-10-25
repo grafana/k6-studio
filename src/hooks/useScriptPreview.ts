@@ -7,7 +7,6 @@ import {
   useGeneratorStore,
   GeneratorStore,
 } from '@/store/generator'
-import { groupProxyData } from '@/utils/groups'
 import { generateScriptPreview } from '@/views/Generator/Generator.utils'
 
 export function useScriptPreview() {
@@ -21,9 +20,8 @@ export function useScriptPreview() {
         setError(undefined)
         const generator = selectGeneratorData(state)
         const requests = selectFilteredRequests(state)
-        const groupedRequests = groupProxyData(requests)
 
-        const script = await generateScriptPreview(generator, groupedRequests)
+        const script = await generateScriptPreview(generator, requests)
         setPreview(script)
       } catch (e) {
         console.error(e)

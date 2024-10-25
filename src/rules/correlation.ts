@@ -17,6 +17,11 @@ import {
 import { exhaustive } from '@/utils/typescript'
 import { replaceCorrelatedValues } from './correlation.utils'
 import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
+import {
+  createProxyData,
+  createRequest,
+  createResponse,
+} from '@/test/factories/proxyData'
 
 export function createCorrelationRuleInstance(
   rule: CorrelationRule,
@@ -99,9 +104,16 @@ function applyRule({
     )
 
   if (extractedValue && correlationExtractionSnippet) {
+    // Skip extraction and bump count if value is already extracted
+    if (state.extractedValue) {
+      setState({
+        count: state.count + 1,
+      })
+      return snippetSchemaReturnValue
+    }
+
     setState({
-      // Keep first extracted value
-      extractedValue: state.extractedValue ?? extractedValue,
+      extractedValue: extractedValue,
       generatedUniqueId: generatedUniqueId,
       responsesExtracted: [
         ...state.responsesExtracted,
@@ -738,5 +750,52 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     expect(
       extractCorrelationRegexUrl(selector, request, 1, sequentialIdGenerator)
     ).toStrictEqual(expectedResult)
+  })
+
+  it('extracts only first correlation match', () => {
+    const recording = [
+      createProxyData({
+        response: createResponse({
+          content: JSON.stringify({ user_id: '444' }),
+        }),
+      }),
+      createProxyData({
+        request: createRequest({
+          url: 'http://test.k6.io/api/v1/login?user_id=444',
+        }),
+        response: createResponse({
+          content: JSON.stringify({ user_id: '444' }),
+        }),
+      }),
+    ]
+    const sequentialIdGenerator = generateSequentialInt()
+
+    const rule: CorrelationRule = {
+      type: 'correlation',
+      id: '1',
+      extractor: {
+        filter: { path: '' },
+        selector: {
+          type: 'json',
+          from: 'body',
+          path: 'user_id',
+        },
+      },
+    }
+
+    const ruleInstance = createCorrelationRuleInstance(
+      rule,
+      sequentialIdGenerator
+    )
+
+    const requestSnippets = recording.map((data) =>
+      ruleInstance.apply({ data, before: [], after: [] })
+    )
+
+    expect(requestSnippets[0]?.after[0]?.replace(/\s/g, '')).toBe(
+      `correlation_vars['correlation_0']=resp.json().user_id`
+    )
+
+    expect(requestSnippets[1]?.after).toEqual([])
   })
 }
