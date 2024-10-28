@@ -860,4 +860,53 @@ correlation_vars['correlation_1'] = resp.json().user_id`
       'http://test.k6.io/api/v1/login?user_id=444'
     )
   })
+
+  it('applies only replacer filter when replacer selector is empty', () => {
+    const recording = [
+      createProxyData({
+        response: createResponse({
+          content: JSON.stringify({ user_id: '444' }),
+        }),
+      }),
+      createProxyData({
+        request: createRequest({
+          url: 'http://test.k6.io/api/v1/login?user_id=444',
+        }),
+        response: createResponse({
+          content: JSON.stringify({ user_id: '444' }),
+        }),
+      }),
+    ]
+    const sequentialIdGenerator = generateSequentialInt()
+
+    const rule: CorrelationRule = {
+      type: 'correlation',
+      id: '1',
+      extractor: {
+        filter: { path: '' },
+        selector: {
+          type: 'json',
+          from: 'body',
+          path: 'user_id',
+        },
+      },
+
+      replacer: {
+        filter: { path: '/login' },
+      },
+    }
+
+    const ruleInstance = createCorrelationRuleInstance(
+      rule,
+      sequentialIdGenerator
+    )
+
+    const requestSnippets = recording.map((data) =>
+      ruleInstance.apply({ data, before: [], after: [] })
+    )
+
+    expect(requestSnippets[1]?.data.request.url).toEqual(
+      "http://test.k6.io/api/v1/login?user_id=${correlation_vars['correlation_0']}"
+    )
+  })
 }

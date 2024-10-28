@@ -15,6 +15,9 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
             end: '',
           },
         },
+        replacer: {
+          filter: { path: '' },
+        },
       }
     case 'customCode':
       return {
