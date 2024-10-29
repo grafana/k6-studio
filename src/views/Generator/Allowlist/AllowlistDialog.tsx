@@ -3,7 +3,6 @@ import { ProxyData } from '@/types'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import {
-  Box,
   Button,
   Checkbox,
   CheckboxGroup,
@@ -14,7 +13,6 @@ import {
   Text,
   Tooltip,
   Card,
-  Callout,
   Inset,
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
