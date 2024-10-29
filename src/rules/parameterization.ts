@@ -1,4 +1,4 @@
-import { RequestSnippetSchema } from '@/types'
+import { RequestSnippetSchema, Request } from '@/types'
 import {
   ParameterizationRule,
   ParameterizationRuleInstance,
@@ -7,13 +7,25 @@ import {
 import { exhaustive } from '@/utils/typescript'
 import { replaceRequestValues } from './shared'
 import { matchFilter } from './utils'
-import { isEqual } from 'lodash-es'
 
 export function createParameterizationRuleInstance(
-  rule: ParameterizationRule
+  rule: ParameterizationRule,
+  idGenerator: Generator<number>
 ): ParameterizationRuleInstance {
   const state: ParameterizationState = {
     requestsReplaced: [],
+    uniqueId: idGenerator.next().value,
+    snippedInjected: false,
+  }
+
+  function addReplacedRequests(original: Request, replaced: Request) {
+    state.requestsReplaced = [
+      ...state.requestsReplaced,
+      {
+        original,
+        replaced,
+      },
+    ]
   }
 
   return {
@@ -25,35 +37,48 @@ export function createParameterizationRuleInstance(
         return requestSnippet
       }
 
-      const updatedRequestSnippet = {
+      const updatedRequest = replaceRequestValues({
+        selector: rule.selector,
+        request: requestSnippet.data.request,
+        value: getRuleValue(rule, state.uniqueId),
+      })
+
+      // Rule didn't match, return original request
+      if (updatedRequest === undefined) {
+        return requestSnippet
+      }
+
+      // Save original and replaced requests for preview
+      addReplacedRequests(requestSnippet.data.request, updatedRequest)
+
+      const updatedRequestSnippet: RequestSnippetSchema = {
         ...requestSnippet,
         data: {
           ...requestSnippet.data,
-          request: replaceRequestValues({
-            selector: rule.selector,
-            request: requestSnippet.data.request,
-            value: getRuleValue(rule),
-          }),
+          request: updatedRequest ?? requestSnippet.data.request,
         },
       }
 
-      // Save the original and updated request snippets for preview
-      if (!isEqual(requestSnippet, updatedRequestSnippet)) {
-        state.requestsReplaced = [
-          ...state.requestsReplaced,
-          {
-            original: requestSnippet.data.request,
-            replaced: updatedRequestSnippet.data.request,
-          },
-        ]
+      if (!ruleNeedsSnippetInjection(rule) || state.snippedInjected) {
+        return updatedRequestSnippet
       }
 
+      const beforeSnippet = getBeforeSnippet(rule, state.uniqueId)
+
+      if (beforeSnippet) {
+        state.snippedInjected = true
+
+        return {
+          ...updatedRequestSnippet,
+          before: [...updatedRequestSnippet.before, beforeSnippet],
+        }
+      }
       return updatedRequestSnippet
     },
   }
 }
 
-function getRuleValue(rule: ParameterizationRule) {
+function getRuleValue(rule: ParameterizationRule, id: number) {
   const { value } = rule
 
   switch (value.type) {
@@ -63,11 +88,33 @@ function getRuleValue(rule: ParameterizationRule) {
     case 'variable':
       return `\${VARS['${value.variableName}']}`
 
-    case 'array':
     case 'customCode':
+      return `\${getParameterizationValue${id}()}`
+
+    case 'array':
       throw new Error('Not implemented')
 
     default:
       return exhaustive(value)
   }
+}
+
+function getBeforeSnippet(rule: ParameterizationRule, id: number) {
+  switch (rule.value.type) {
+    case 'customCode':
+      return getCustomCodeSnippet(rule.value.code, id)
+
+    default:
+      return
+  }
+}
+
+function getCustomCodeSnippet(code: string, id: number) {
+  return `function getParameterizationValue${id}() {
+  ${code}
+}`
+}
+
+function ruleNeedsSnippetInjection(rule: ParameterizationRule) {
+  return rule.value.type === 'customCode'
 }

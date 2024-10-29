@@ -12,9 +12,7 @@ export const ArrayValueSchema = z.object({
 
 export const CustomCodeValueSchema = z.object({
   type: z.literal('customCode'),
-  getValue: z
-    .function()
-    .returns(z.union([z.string(), z.number(), z.null(), z.void()])),
+  code: z.string(),
 })
 
 export const RecordedValueSchema = z.object({

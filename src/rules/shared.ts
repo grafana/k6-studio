@@ -18,7 +18,7 @@ export function replaceRequestValues({
   selector: Selector
   request: Request
   value: string
-}) {
+}): Request | undefined {
   switch (selector.type) {
     case 'begin-end':
       return replaceBeginEnd(selector, request, value)
@@ -170,7 +170,7 @@ export const replaceBeginEndBody = (
     selector.begin,
     selector.end
   )
-  if (!valueToReplace) return request
+  if (!valueToReplace) return
 
   const content = replaceContent(request.content, valueToReplace, variableName)
   return { ...request, content }
@@ -193,7 +193,7 @@ export const replaceBeginEndHeaders = (
     }
   }
 
-  return request
+  return
 }
 
 export const replaceBeginEndUrl = (
@@ -206,7 +206,7 @@ export const replaceBeginEndUrl = (
     selector.begin,
     selector.end
   )
-  if (!valueToReplace) return request
+  if (!valueToReplace) return
 
   const url = replaceUrl(request.url, valueToReplace, variableName)
   const path = replaceUrl(request.path, valueToReplace, variableName)
@@ -219,7 +219,7 @@ export const replaceRegexBody = (
   variableName: string
 ) => {
   const valueToReplace = matchRegex(request.content ?? '', selector.regex)
-  if (!valueToReplace) return request
+  if (!valueToReplace) return
 
   const content = replaceContent(request.content, valueToReplace, variableName)
   return { ...request, content }
@@ -242,7 +242,7 @@ export const replaceRegexHeaders = (
     }
   }
 
-  return request
+  return
 }
 
 export const replaceRegexUrl = (
@@ -251,7 +251,7 @@ export const replaceRegexUrl = (
   variableName: string
 ) => {
   const valueToReplace = matchRegex(request.url, selector.regex)
-  if (!valueToReplace) return request
+  if (!valueToReplace) return
 
   const url = replaceUrl(request.url, valueToReplace, variableName)
   return { ...request, url }
@@ -263,13 +263,13 @@ export const replaceJsonBody = (
   value: string
 ) => {
   if (!isJsonReqResp(request) || !request.content) {
-    return request
+    return
   }
 
   // since we are using lodash and its `set` function creates missing paths we will first check that the path really
   // exists before setting it
   const valueToReplace = getJsonObjectFromPath(request.content, selector.path)
-  if (!valueToReplace) return request
+  if (!valueToReplace) return
 
   const content = setJsonObjectFromPath(request.content, selector.path, value)
   return { ...request, content }
@@ -389,12 +389,11 @@ if (import.meta.vitest) {
         selector,
         generateRequest('<div>hello</div>'),
         '${correl_0}'
-      ).content
+      )?.content
     ).toBe('<div>${correl_0}</div>')
     expect(
       replaceBeginEndBody(selector, generateRequest('<a>hello</a>'), 'correl_0')
-        .content
-    ).toBe('<a>hello</a>')
+    ).toBeUndefined()
   })
 
   it('replace begin end headers', () => {
@@ -412,11 +411,11 @@ if (import.meta.vitest) {
       end: 'world',
     }
     expect(
-      replaceBeginEndHeaders(selectorMatch, request, '${correl_0}').headers[0]
+      replaceBeginEndHeaders(selectorMatch, request, '${correl_0}')?.headers[0]
     ).toStrictEqual(['content-type', 'application${correl_0}json'])
     expect(
-      replaceBeginEndHeaders(selectorNotMatch, request, 'correl_0').headers[0]
-    ).toStrictEqual(['content-type', 'application/json'])
+      replaceBeginEndHeaders(selectorNotMatch, request, 'correl_0')
+    ).toBeUndefined()
   })
 
   it('replace begin end url', () => {
@@ -435,12 +434,12 @@ if (import.meta.vitest) {
     }
     const match = replaceBeginEndUrl(selectorMatch, request, '${correl_0}')
 
-    expect(match.url).toBe('http://test.k6.io/${correl_0}/v1/foo')
-    expect(match.path).toBe('/${correl_0}/v1/foo')
+    expect(match?.url).toBe('http://test.k6.io/${correl_0}/v1/foo')
+    expect(match?.path).toBe('/${correl_0}/v1/foo')
 
-    expect(replaceBeginEndUrl(selectorNotMatch, request, 'correl_0').url).toBe(
-      'http://test.k6.io/api/v1/foo'
-    )
+    expect(
+      replaceBeginEndUrl(selectorNotMatch, request, 'correl_0')
+    ).toBeUndefined()
   })
 
   it('replace regex body', () => {
@@ -454,12 +453,11 @@ if (import.meta.vitest) {
         selector,
         generateRequest('<div>hello</div>'),
         '${correl_0}'
-      ).content
+      )?.content
     ).toBe('<div>${correl_0}</div>')
     expect(
       replaceRegexBody(selector, generateRequest('<a>hello</a>'), 'correl_0')
-        .content
-    ).toBe('<a>hello</a>')
+    ).toBeUndefined()
   })
 
   it('replace regex headers', () => {
@@ -475,11 +473,11 @@ if (import.meta.vitest) {
       regex: 'hello(.*?)world',
     }
     expect(
-      replaceRegexHeaders(selectorMatch, request, '${correl_0}').headers[0]
+      replaceRegexHeaders(selectorMatch, request, '${correl_0}')?.headers[0]
     ).toStrictEqual(['content-type', 'application${correl_0}json'])
     expect(
-      replaceRegexHeaders(selectorNotMatch, request, 'correl_0').headers[0]
-    ).toStrictEqual(['content-type', 'application/json'])
+      replaceRegexHeaders(selectorNotMatch, request, 'correl_0')
+    ).toBeUndefined()
   })
 
   it('replace regex url', () => {
@@ -494,12 +492,12 @@ if (import.meta.vitest) {
       from: 'url',
       regex: 'supercali(.*?)fragilisti',
     }
-    expect(replaceRegexUrl(selectorMatch, request, '${correl_0}').url).toBe(
+    expect(replaceRegexUrl(selectorMatch, request, '${correl_0}')?.url).toBe(
       'http://test.k6.io/${correl_0}/v1/foo'
     )
-    expect(replaceRegexUrl(selectorNotMatch, request, 'correl_0').url).toBe(
-      'http://test.k6.io/api/v1/foo'
-    )
+    expect(
+      replaceRegexUrl(selectorNotMatch, request, 'correl_0')
+    ).toBeUndefined()
   })
 
   it('replace json body', () => {
@@ -523,21 +521,21 @@ if (import.meta.vitest) {
         selectorMatch,
         generateRequest('{"hello":"world"}'),
         '${correl_0}'
-      ).content
+      )?.content
     ).toBe('{"hello":"${correl_0}"}')
     expect(
       replaceJsonBody(
         selectorNotMatch,
         generateRequest('{"hello":"world"}'),
         '${correl_0}'
-      ).content
-    ).toBe('{"hello":"world"}')
+      )
+    ).toBeUndefined()
     expect(
       replaceJsonBody(
         selectorMatchArray,
         generateRequest('[{"hello":"world"}]'),
         '${correl_0}'
-      ).content
+      )?.content
     ).toBe('[{"hello":"${correl_0}"}]')
   })
 }
