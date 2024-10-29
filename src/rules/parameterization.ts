@@ -33,7 +33,7 @@ export function createParameterizationRuleInstance(
     rule,
     type: rule.type,
     apply: (requestSnippet: RequestSnippetSchema) => {
-      if (!matchFilter(requestSnippet, rule)) {
+      if (!matchFilter(requestSnippet, rule.filter)) {
         return requestSnippet
       }
 

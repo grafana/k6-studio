@@ -10,13 +10,17 @@ export function CorrelationEditor() {
   const { setValue, watch } = useFormContext<TestRule>()
   const replacer = watch('replacer')
 
-  const toggleCustomReplacer = () => {
-    if (replacer) {
-      setValue('replacer', undefined)
+  const isCustomReplacerSelector = !!replacer?.selector
+
+  const toggleCustomReplacerSelector = () => {
+    if (isCustomReplacerSelector) {
+      setValue('replacer.selector', undefined)
     } else {
-      setValue('replacer', {
-        filter: { path: '' },
-        selector: { from: 'body', type: 'begin-end', begin: '', end: '' },
+      setValue('replacer.selector', {
+        from: 'body',
+        type: 'begin-end',
+        begin: '',
+        end: '',
       })
     }
   }
@@ -34,34 +38,34 @@ export function CorrelationEditor() {
         <SelectorField field="extractor.selector" />
       </Box>
       <Box>
-        <Label mb="2">
-          <Heading size="2" weight="medium">
-            Replacer
-          </Heading>
-          <Switch
-            onCheckedChange={toggleCustomReplacer}
-            checked={!!replacer}
-            size="1"
-          />
-        </Label>
+        <Heading size="2" weight="medium" mb="2">
+          Replacer
+        </Heading>
         <Text size="2" as="p" mb="2" color="gray">
           Replace matched values with the extracted value.{' '}
         </Text>
 
-        {!replacer && (
-          <Text size="2" as="p" mb="2" color="gray">
-            By default, the correlation rule will replace all occurrences of the
-            extracted value in the requests. Enable this option to fine tune
-            your selection.
-          </Text>
-        )}
+        <>
+          <FilterField field="replacer.filter" />
+          <Label mb="2">
+            <Text size="2">Customize selector</Text>
 
-        {replacer && (
-          <>
-            <FilterField field="replacer.filter" />
-            <SelectorField field="replacer.selector" />
-          </>
-        )}
+            <Switch
+              onCheckedChange={toggleCustomReplacerSelector}
+              checked={isCustomReplacerSelector}
+              size="1"
+            />
+          </Label>
+
+          {!isCustomReplacerSelector && (
+            <Text size="2" as="p" mb="2" color="gray">
+              By default, the correlation rule will replace all occurrences of
+              the extracted value in the requests. Enable this option to fine
+              tune your selection.
+            </Text>
+          )}
+          <SelectorField field="replacer.selector" />
+        </>
       </Box>
     </Grid>
   )

@@ -1,6 +1,5 @@
-import { TestRule } from '@/types/rules'
+import { Filter } from '@/types/rules'
 import { RequestSnippetSchema, Response, Request } from '@/types'
-import { exhaustive } from '@/utils/typescript'
 import { getHeaderValues } from '@/utils/headers'
 import { escapeRegExp } from 'lodash-es'
 
@@ -29,26 +28,10 @@ export function* generateSequentialInt(): Generator<number> {
 
 export function matchFilter(
   { data: { request } }: RequestSnippetSchema,
-  rule: TestRule
+  filter: Filter
 ) {
   try {
-    switch (rule.type) {
-      case 'correlation': {
-        const {
-          extractor: { filter },
-        } = rule
-
-        return new RegExp(escapeRegExp(filter.path)).test(request.url)
-      }
-      case 'customCode':
-      case 'parameterization':
-      case 'verification': {
-        const { filter } = rule
-        return new RegExp(escapeRegExp(filter.path)).test(request.url)
-      }
-      default:
-        return exhaustive(rule)
-    }
+    return new RegExp(escapeRegExp(filter.path)).test(request.url)
   } catch (e) {
     console.error(e)
     return false

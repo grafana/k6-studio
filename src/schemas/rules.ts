@@ -86,7 +86,7 @@ export const CorrelationExtractorSchema = z.object({
 
 export const CorrelationReplacerSchema = z.object({
   filter: FilterSchema,
-  selector: SelectorSchema,
+  selector: SelectorSchema.optional(),
 })
 
 export const RuleBaseSchema = z.object({
