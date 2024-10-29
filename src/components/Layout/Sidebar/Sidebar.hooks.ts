@@ -1,8 +1,9 @@
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
 import { fileFromFileName } from '@/utils/file'
+import Fuse, { FuseResult, IFuseOptions } from 'fuse.js'
 import { orderBy } from 'lodash-es'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 function orderByFileName(files: Map<string, StudioFile>) {
   return orderBy([...files.values()], (s) => s.fileName)
@@ -14,7 +15,7 @@ function toFileMap(files: string[]) {
   )
 }
 
-export function useFolderContent() {
+function useFolderContent() {
   const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
   const generators = useStudioUIStore((s) => orderByFileName(s.generators))
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
@@ -52,4 +53,47 @@ export function useFolderContent() {
     generators,
     scripts,
   }
+}
+
+function withMatches<T>(result: FuseResult<T>) {
+  return {
+    ...result.item,
+    matches: result.matches?.flatMap((match) => match.indices) ?? [],
+  }
+}
+
+export function useFiles(searchTerm: string) {
+  const files = useFolderContent()
+
+  const searchIndex = useMemo(() => {
+    const options: IFuseOptions<StudioFile> = {
+      includeMatches: true,
+
+      // Though not perfect, these settings seem
+      // to yield pretty good results. It should allow
+      // single character typos anywhere in the string.
+      ignoreLocation: true,
+      distance: 1,
+
+      keys: ['displayName'],
+    }
+
+    return {
+      recordings: new Fuse(files.recordings, options),
+      generators: new Fuse(files.generators, options),
+      scripts: new Fuse(files.scripts, options),
+    }
+  }, [files])
+
+  return useMemo(() => {
+    if (searchTerm.match(/^\s*$/)) {
+      return files
+    }
+
+    return {
+      recordings: searchIndex.recordings.search(searchTerm).map(withMatches),
+      generators: searchIndex.generators.search(searchTerm).map(withMatches),
+      scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
+    }
+  }, [files, searchIndex, searchTerm])
 }

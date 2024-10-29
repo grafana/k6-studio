@@ -16,6 +16,12 @@ interface MatchSegment {
   text: string
 }
 
+function longestMatchOnly(
+  matches: Array<[number, number]>
+): Array<[number, number]> {
+  return matches.sort((a, b) => b[1] - b[0] - (a[1] - a[0])).slice(0, 1)
+}
+
 function splitByMatches(text: string, matches: Array<[number, number]>) {
   const segments: MatchSegment[] = []
 
@@ -49,7 +55,7 @@ interface HighlightedTextProps {
 }
 
 function HighlightedText({ text, matches }: HighlightedTextProps) {
-  const segments = splitByMatches(text, matches ?? [])
+  const segments = splitByMatches(text, longestMatchOnly(matches ?? []))
 
   return (
     <>
