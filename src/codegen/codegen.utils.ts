@@ -117,4 +117,6 @@ export const removeWebsocketRequests = (recording: ProxyData[]) => {
   })
 }
 
-export const cleanupRecording = flow([mergeRedirects, removeWebsocketRequests])
+export function cleanupRecording(recording: ProxyData[]) {
+  return flow(removeWebsocketRequests, mergeRedirects)(recording)
+}

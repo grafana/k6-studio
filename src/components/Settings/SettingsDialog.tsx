@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import { Box, Button, Dialog, Flex, ScrollArea } from '@radix-ui/themes'
 import { ProxySettings } from './ProxySettings'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -7,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { RecorderSettings } from './RecorderSettings'
 import { AppSettings } from '@/types/settings'
+import { UsageReportSettings } from './UsageReportSettings'
 
 type SettingsDialogProps = {
   open: boolean
@@ -53,16 +55,23 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content
-        maxWidth="100%"
-        width="800px"
-        style={{ overflow: 'hidden' }}
+        maxWidth="800px"
+        maxHeight="640px"
+        width="calc(100vw - 100px)"
+        height="calc(100vh - 100px)"
+        css={css`
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        `}
       >
         <Dialog.Title>Settings</Dialog.Title>
         <FormProvider {...formMethods}>
-          <Box style={{ height: 600, paddingBottom: 'var(--space-4)' }}>
+          <Box pb="4" minHeight="0">
             <ScrollArea>
               <RecorderSettings />
               <ProxySettings />
+              <UsageReportSettings />
             </ScrollArea>
           </Box>
 

@@ -3,6 +3,7 @@ import { ProxyData } from '@/types'
 export const correlationRecording: ProxyData[] = [
   {
     id: '1',
+    group: 'one',
     request: {
       method: 'POST',
       url: 'http://test.k6.io/api/v1/foo',
@@ -36,6 +37,7 @@ export const correlationRecording: ProxyData[] = [
 
   {
     id: '2',
+    group: 'one',
     request: {
       method: 'POST',
       url: 'http://test.k6.io/api/v1/login?project_id=555',
@@ -65,6 +67,7 @@ export const correlationRecording: ProxyData[] = [
   },
   {
     id: '3',
+    group: 'two',
     request: {
       method: 'GET',
       url: 'http://test.k6.io/api/v1/users/333',
@@ -83,6 +86,7 @@ export const correlationRecording: ProxyData[] = [
   },
   {
     id: '4',
+    group: 'two',
     request: {
       method: 'POST',
       url: 'http://test.k6.io/api/v1/users',

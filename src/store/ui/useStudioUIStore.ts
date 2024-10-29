@@ -1,4 +1,4 @@
-import { FolderContent } from '@/types'
+import { FolderContent, ProxyStatus } from '@/types'
 import {
   fileFromFileName,
   isGenerator,
@@ -10,12 +10,14 @@ import { immer } from 'zustand/middleware/immer'
 
 interface State extends FolderContent {
   devToggles: Record<string, boolean>
+  proxyStatus: ProxyStatus
 }
 
 interface Actions {
   addFile: (path: string) => void
   removeFile: (path: string) => void
   setFolderContent: (content: FolderContent) => void
+  setProxyStatus: (status: ProxyStatus) => void
   toggleDevToggle: (key: string) => void
 }
 
@@ -27,6 +29,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
     generators: new Map(),
     scripts: new Map(),
     devToggles: {},
+    proxyStatus: 'offline',
 
     addFile: (path) =>
       set((state) => {
@@ -63,6 +66,10 @@ export const useStudioUIStore = create<StudioUIStore>()(
         state.recordings = recordings
         state.generators = generators
         state.scripts = scripts
+      }),
+    setProxyStatus: (status) =>
+      set((state) => {
+        state.proxyStatus = status
       }),
     toggleDevToggle: (key) =>
       set((state) => {

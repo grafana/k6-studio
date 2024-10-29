@@ -1,4 +1,4 @@
-import { GroupedProxyData, ProxyData, RequestSnippetSchema } from '@/types'
+import { ProxyData, RequestSnippetSchema } from '@/types'
 import { TestRule } from '@/types/rules'
 import { applyRules } from '@/rules/rules'
 import { GeneratorFileData } from '@/types/generator'
@@ -10,9 +10,10 @@ import { getContentTypeWithCharsetHeader } from '@/utils/headers'
 import { REQUIRED_IMPORTS } from '@/constants/imports'
 import { generateImportStatement } from './imports'
 import { cleanupRecording } from './codegen.utils'
+import { groupBy } from 'lodash-es'
 
 interface GenerateScriptParams {
-  recording: GroupedProxyData
+  recording: ProxyData[]
   generator: GeneratorFileData
 }
 
@@ -48,24 +49,30 @@ export function generateVariableDeclarations(variables: Variable[]): string {
 }
 
 export function generateVUCode(
-  recording: GroupedProxyData,
+  recording: ProxyData[],
   rules: TestRule[],
   thinkTime: ThinkTime
 ): string {
-  const groups = Object.entries(recording)
+  const cleanedRecording = cleanupRecording(recording)
+
+  const requestSnippets = generateRequestSnippets(
+    cleanedRecording,
+    rules,
+    thinkTime
+  )
+
+  // Group requests after applying rules to correlate requests between different groups
+  const groups = Object.entries(groupBy(requestSnippets, (item) => item.group))
 
   const groupSnippets = groups
-    .map(([groupName, recording]) => {
-      const cleanedRecording = cleanupRecording(recording)
-      const requestSnippets = generateRequestSnippets(
-        cleanedRecording,
-        rules,
-        thinkTime
-      )
+    .map(([groupName, requestSnippetSchemas]) => {
+      const requestSnippet = requestSnippetSchemas
+        .map(({ snippet }) => snippet)
+        .join('\n')
 
-      return generateGroupSnippet(groupName, requestSnippets, thinkTime)
+      return generateGroupSnippet(groupName, requestSnippet, thinkTime)
     })
-    .join(`\n`)
+    .join('\n')
 
   return [
     `
@@ -81,19 +88,34 @@ export function generateVUCode(
   ].join('\n')
 }
 
+type GenerateRequestSnippetReturnValue = Array<{
+  snippet: string
+  group?: string
+}>
+
 export function generateRequestSnippets(
   recording: ProxyData[],
   rules: TestRule[],
   thinkTime: ThinkTime
-): string {
+): GenerateRequestSnippetReturnValue {
   const { requestSnippetSchemas } = applyRules(recording, rules)
-  return requestSnippetSchemas.reduce((acc, requestSnippetSchema) => {
-    const requestSnippet = generateSingleRequestSnippet(requestSnippetSchema)
+  return requestSnippetSchemas.reduce<GenerateRequestSnippetReturnValue>(
+    (acc, requestSnippetSchema) => {
+      const requestSnippet = generateSingleRequestSnippet(requestSnippetSchema)
 
-    return `${acc}
-      ${requestSnippet}
-      ${thinkTime.sleepType === 'requests' ? `${generateSleep(thinkTime.timing)}` : ''}`
-  }, '')
+      return [
+        ...acc,
+        {
+          group: requestSnippetSchema.data.group,
+          snippet: `
+            ${requestSnippet}
+            ${thinkTime.sleepType === 'requests' ? `${generateSleep(thinkTime.timing)}` : ''}
+          `,
+        },
+      ]
+    },
+    []
+  )
 }
 
 export function generateGroupSnippet(
