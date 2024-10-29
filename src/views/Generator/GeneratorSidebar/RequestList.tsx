@@ -21,7 +21,9 @@ interface RequestListProps {
 
 export function RequestList({ requests }: RequestListProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-  const { filter, setFilter, filteredRequests } = useFilterRequests(requests)
+  const { filter, setFilter, filteredRequests } = useFilterRequests({
+    proxyData: requests,
+  })
 
   const groups = useProxyDataGroups(requests)
 

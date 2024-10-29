@@ -1,27 +1,23 @@
 import { GearIcon } from '@radix-ui/react-icons'
-import { Button, Popover, ScrollArea, Tabs } from '@radix-ui/themes'
+import { Box, Button, Inset, ScrollArea, Tabs } from '@radix-ui/themes'
 import { css } from '@emotion/react'
 
 import { LoadProfile } from './LoadProfile'
 import { ThinkTime } from './ThinkTime'
 import { VariablesEditor } from './VariablesEditor'
+import { PopoverDialog } from '@/components/PopoverDialogs'
 
 export function TestOptions() {
   return (
-    <Popover.Root>
-      <Popover.Trigger>
+    <PopoverDialog
+      trigger={
         <Button variant="ghost" size="1" color="gray">
           <GearIcon />
           Test options
         </Button>
-      </Popover.Trigger>
-      <Popover.Content
-        width="400px"
-        size="1"
-        side="bottom"
-        align="end"
-        avoidCollisions
-      >
+      }
+    >
+      <Inset>
         <Tabs.Root defaultValue="loadProfile">
           <Tabs.List
             css={css`
@@ -38,18 +34,20 @@ export function TestOptions() {
               max-height: 60vh;
             `}
           >
-            <Tabs.Content value="loadProfile">
-              <LoadProfile />
-            </Tabs.Content>
-            <Tabs.Content value="thinkTime">
-              <ThinkTime />
-            </Tabs.Content>
-            <Tabs.Content value="testData">
-              <VariablesEditor />
-            </Tabs.Content>
+            <Box p="3" pt="0" css={{ '.rt-TabsContent': { outline: 'none' } }}>
+              <Tabs.Content value="loadProfile">
+                <LoadProfile />
+              </Tabs.Content>
+              <Tabs.Content value="thinkTime">
+                <ThinkTime />
+              </Tabs.Content>
+              <Tabs.Content value="testData">
+                <VariablesEditor />
+              </Tabs.Content>
+            </Box>
           </ScrollArea>
         </Tabs.Root>
-      </Popover.Content>
-    </Popover.Root>
+      </Inset>
+    </PopoverDialog>
   )
 }

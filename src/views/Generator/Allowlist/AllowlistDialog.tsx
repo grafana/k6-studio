@@ -3,166 +3,152 @@ import { ProxyData } from '@/types'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import {
-  Box,
   Button,
   Checkbox,
   CheckboxGroup,
-  Dialog,
   Flex,
   IconButton,
   ScrollArea,
   TextField,
   Text,
   Tooltip,
+  Card,
+  Inset,
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
 import { useMemo, useState } from 'react'
 
 export function AllowlistDialog({
-  open,
-  onOpenChange,
   hosts,
   allowlist,
-  onSave,
   requests,
   includeStaticAssets,
+  setAllowlist,
+  setIncludeStaticAssets,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
   hosts: string[]
   allowlist: string[]
   includeStaticAssets: boolean
   requests: ProxyData[]
-  onSave: (data: { allowlist: string[]; includeStaticAssets: boolean }) => void
+  setAllowlist: (allowlist: string[]) => void
+  setIncludeStaticAssets: (includeStaticAssets: boolean) => void
 }) {
   const [filter, setFilter] = useState('')
-  const [selectedHosts, setSelectedHosts] = useState(allowlist)
-  const [isStaticAssetsChecked, setIsStaticAssetsChecked] =
-    useState(includeStaticAssets)
 
-  const filteredHosts = hosts.filter((host) => host.includes(filter))
-
-  function handleSelectAll() {
-    setSelectedHosts(filteredHosts)
-  }
-
-  function handleSelectNone() {
-    setSelectedHosts([])
-  }
-
-  function handleSave() {
-    onSave({
-      allowlist: selectedHosts,
-      includeStaticAssets: isStaticAssetsChecked && staticAssetCount > 0,
-    })
-  }
+  const filteredHosts = useMemo(
+    () => hosts.filter((host) => host.includes(filter)),
+    [hosts, filter]
+  )
 
   const staticAssetCount = useMemo(() => {
     const allowedRequests = requests.filter((request) => {
-      return selectedHosts.includes(request.request.host)
+      return allowlist.includes(request.request.host)
     })
 
     return allowedRequests.filter(
       (request) => !isNonStaticAssetResponse(request)
     ).length
-  }, [requests, selectedHosts])
+  }, [requests, allowlist])
+
+  function handleSelectAll() {
+    setAllowlist(filteredHosts)
+  }
+
+  function handleSelectNone() {
+    setAllowlist([])
+  }
+
+  function handleChangeHosts(hosts: string[]) {
+    setAllowlist(hosts)
+  }
+
+  function handleCheckStaticAssets(checked: boolean) {
+    setIncludeStaticAssets(checked && staticAssetCount > 0)
+  }
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content maxWidth="450px" size="2">
-        <Dialog.Title>Allowed hosts</Dialog.Title>
-        <Dialog.Description size="2" mb="4">
-          Select which hosts you want to include in your test
-        </Dialog.Description>
-
-        <Flex mb="3" justify="between" gap="1">
-          <Flex flexGrow="1" asChild>
-            <TextField.Root
-              placeholder="Filter"
-              size="1"
-              onChange={(e) => setFilter(e.target.value)}
-              value={filter}
-            >
+    <>
+      <Text size="2" as="p" mb="2">
+        Select which hosts you want to include in your test
+      </Text>
+      <Flex mb="3" justify="between" gap="1">
+        <Flex flexGrow="1" asChild>
+          <TextField.Root
+            placeholder="Filter"
+            size="1"
+            onChange={(e) => setFilter(e.target.value)}
+            value={filter}
+          >
+            <TextField.Slot>
+              <MagnifyingGlassIcon height="16" width="16" />
+            </TextField.Slot>
+            {filter !== '' && (
               <TextField.Slot>
-                <MagnifyingGlassIcon height="16" width="16" />
+                <IconButton
+                  size="1"
+                  variant="ghost"
+                  onClick={() => setFilter('')}
+                >
+                  <Cross2Icon height="12" width="12" />
+                </IconButton>
               </TextField.Slot>
-              {filter !== '' && (
-                <TextField.Slot>
-                  <IconButton
-                    size="1"
-                    variant="ghost"
-                    onClick={() => setFilter('')}
-                  >
-                    <Cross2Icon height="12" width="12" />
-                  </IconButton>
-                </TextField.Slot>
-              )}
-            </TextField.Root>
-          </Flex>
-          <Flex gap="1">
-            <Button
-              size="1"
-              onClick={handleSelectAll}
-              disabled={isEqual(filteredHosts, selectedHosts)}
-            >
-              Select all
-            </Button>
-            <Button
-              size="1"
-              onClick={handleSelectNone}
-              color="amber"
-              disabled={selectedHosts.length === 0}
-            >
-              Select none
-            </Button>
-          </Flex>
+            )}
+          </TextField.Root>
         </Flex>
+        <Flex gap="1">
+          <Button
+            size="1"
+            onClick={handleSelectAll}
+            disabled={isEqual(filteredHosts, allowlist)}
+          >
+            Select all
+          </Button>
+          <Button
+            size="1"
+            onClick={handleSelectNone}
+            color="amber"
+            disabled={allowlist.length === 0}
+          >
+            Select none
+          </Button>
+        </Flex>
+      </Flex>
 
-        <Box height="210px" asChild pr="3" mb="4">
-          <ScrollArea>
-            <CheckboxGroup.Root
-              value={selectedHosts}
-              onValueChange={(e) => setSelectedHosts(e)}
-            >
-              {filteredHosts.map((host) => (
-                <CheckboxGroup.Item value={host} key={host}>
-                  {host}
-                </CheckboxGroup.Item>
-              ))}
-            </CheckboxGroup.Root>
-          </ScrollArea>
-        </Box>
-
-        <Flex justify="between" align="center">
-          <Label>
-            <Checkbox
-              onCheckedChange={() =>
-                setIsStaticAssetsChecked((value) => !value)
-              }
-              checked={isStaticAssetsChecked}
-              disabled={staticAssetCount === 0}
-            />
-            <Tooltip content="Static assets are excluded from your test by default.">
-              <Text size="2">Include static assets ({staticAssetCount})</Text>
-            </Tooltip>
-          </Label>
-          <Flex gap="3" justify="end">
-            <Dialog.Close>
-              <Button variant="soft" color="gray">
-                Cancel
-              </Button>
-            </Dialog.Close>
-            <Dialog.Close>
-              <Button
-                disabled={selectedHosts.length === 0}
-                onClick={handleSave}
+      <Card size="1" mb="2">
+        <Inset css={{ height: '210px' }}>
+          <ScrollArea scrollbars="vertical" type="always">
+            <Flex p="2" pr="4" asChild overflow="hidden">
+              <CheckboxGroup.Root
+                size="2"
+                value={allowlist}
+                onValueChange={handleChangeHosts}
               >
-                Save
-              </Button>
-            </Dialog.Close>
-          </Flex>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
+                {filteredHosts.map((host) => (
+                  <Text as="label" size="2" key={host}>
+                    <Flex gap="2">
+                      <CheckboxGroup.Item value={host} />{' '}
+                      <Text truncate>{host}</Text>
+                    </Flex>
+                  </Text>
+                ))}
+              </CheckboxGroup.Root>
+            </Flex>
+          </ScrollArea>
+        </Inset>
+      </Card>
+
+      <Flex justify="between" align="center">
+        <Label>
+          <Checkbox
+            onCheckedChange={handleCheckStaticAssets}
+            checked={includeStaticAssets}
+            disabled={staticAssetCount === 0}
+          />
+          <Tooltip content="Static assets are excluded from your test by default.">
+            <Text size="2">Include static assets ({staticAssetCount})</Text>
+          </Tooltip>
+        </Label>
+      </Flex>
+    </>
   )
 }
