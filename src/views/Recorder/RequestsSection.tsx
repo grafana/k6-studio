@@ -9,6 +9,7 @@ import { ReactNode } from 'react'
 import { ClearRequestsButton } from './ClearRequestsButton'
 import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
+import { useLocalStorage } from 'react-use'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
@@ -33,14 +34,14 @@ export function RequestsSection({
   onUpdateGroup,
   resetProxyData,
 }: RequestsSectionProps) {
-  const {
-    filter,
-    setFilter,
-    includeStaticAssets,
-    setIncludeStaticAssets,
-    staticAssetCount,
-    filteredRequests,
-  } = useFilterRequests(proxyData)
+  const [includeStaticAssets, setIncludeStaticAssets] = useLocalStorage(
+    'includeStaticAssets',
+    false
+  )
+
+  const { filter, setFilter, staticAssetCount, filteredRequests } =
+    useFilterRequests({ proxyData, includeStaticAssets })
+
   const groupedProxyData = groupProxyData(filteredRequests)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
 
