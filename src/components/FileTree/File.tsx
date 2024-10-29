@@ -10,75 +10,7 @@ import { InlineEditor } from './InlineEditor'
 import { getViewPath } from '@/utils/file'
 import { useStudioUIStore } from '@/store/ui'
 import { FileItem } from './types'
-
-interface MatchSegment {
-  match: boolean
-  text: string
-}
-
-function longestMatchOnly(
-  matches: Array<[number, number]>
-): Array<[number, number]> {
-  return matches.sort((a, b) => b[1] - b[0] - (a[1] - a[0])).slice(0, 1)
-}
-
-function splitByMatches(text: string, matches: Array<[number, number]>) {
-  const segments: MatchSegment[] = []
-
-  let previousEnd = 0
-
-  for (const [matchStart, matchEnd] of matches) {
-    segments.push({
-      match: false,
-      text: text.slice(previousEnd, matchStart),
-    })
-
-    segments.push({
-      match: true,
-      text: text.slice(matchStart, matchEnd + 1),
-    })
-
-    previousEnd = matchEnd + 1
-  }
-
-  segments.push({
-    match: false,
-    text: text.slice(previousEnd),
-  })
-
-  return segments
-}
-
-interface HighlightedTextProps {
-  text: string
-  matches: Array<[number, number]> | undefined
-}
-
-function HighlightedText({ text, matches }: HighlightedTextProps) {
-  const segments = splitByMatches(text, longestMatchOnly(matches ?? []))
-
-  return (
-    <>
-      {segments.map((segment, index) => {
-        if (segment.match) {
-          return (
-            <mark
-              key={index}
-              css={css`
-                background-color: transparent;
-                font-weight: 700;
-              `}
-            >
-              {segment.text}
-            </mark>
-          )
-        }
-
-        return segment.text
-      })}
-    </>
-  )
-}
+import { HighlightedText } from '../HighlightedText'
 
 interface FileProps {
   file: FileItem
@@ -88,9 +20,9 @@ interface FileProps {
 const fileStyle = css`
   display: block;
   padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
-  color: var(--gray-11);
   font-size: 12px;
   line-height: 22px;
+  color: var(--gray-11);
 `
 
 export function File({ file, isSelected }: FileProps) {
