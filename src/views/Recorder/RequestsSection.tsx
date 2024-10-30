@@ -45,10 +45,7 @@ export function RequestsSection({
   const groupedProxyData = groupProxyData(filteredRequests)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
 
-  const showNoDataState =
-    filter === '' &&
-    filteredRequests.length === 0 &&
-    noDataElement !== undefined
+  const showNoDataState = proxyData.length === 0 && noDataElement !== undefined
 
   if (showNoDataState) {
     return noDataElement
