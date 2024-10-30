@@ -27,7 +27,7 @@ export function UnsavedChangesDialog({
         <Box mb="5">
           <Text>
             You have unsaved changes in the generator which will be lost upon
-            navigation.
+            leaving.
           </Text>
         </Box>
 

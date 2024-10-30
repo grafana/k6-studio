@@ -158,6 +158,15 @@ const app = {
   openApplicationLog: () => {
     ipcRenderer.invoke('app:open-log')
   },
+  onApplicationClose: (callback: () => void) => {
+    return createListener('app:close', callback)
+  },
+  closeApplication: () => {
+    ipcRenderer.invoke('app:close')
+  },
+  changeRoute: (route: string) => {
+    return ipcRenderer.invoke('app:change-route', route)
+  },
 } as const
 
 const settings = {
