@@ -94,6 +94,7 @@ export function RuleEditor({ rule }: RuleEditorProps) {
                 title="close"
                 m="3"
                 onClick={handleClose}
+                type="button"
               >
                 <Cross2Icon />
               </IconButton>
