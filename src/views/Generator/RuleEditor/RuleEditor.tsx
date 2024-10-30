@@ -10,7 +10,7 @@ import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
 import { TestRule } from '@/types/rules'
 import { TestRuleSchema } from '@/schemas/rules'
-import { ParameterizationEditor } from './ParameterizationEditor'
+import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
 
 export function RuleEditorSwitch() {
   const { watch } = useFormContext<TestRule>()

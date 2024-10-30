@@ -1,7 +1,7 @@
 import { Box, Grid, Heading, Text } from '@radix-ui/themes'
-import { FilterField } from './FilterField'
-import { SelectorField } from './SelectorField'
-import { ParamaterizationValueEditor } from './ParameterizationValueEditor'
+import { ValueEditor } from './ValueEditor'
+import { FilterField } from '../FilterField'
+import { SelectorField } from '../SelectorField'
 
 export function ParameterizationEditor() {
   return (
@@ -19,7 +19,7 @@ export function ParameterizationEditor() {
           <SelectorField field="selector" />
         </Box>
         <Box>
-          <ParamaterizationValueEditor />
+          <ValueEditor />
         </Box>
       </Grid>
     </>
