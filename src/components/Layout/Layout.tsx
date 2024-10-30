@@ -1,20 +1,25 @@
 import { Box, IconButton } from '@radix-ui/themes'
 import { css } from '@emotion/react'
 import { Allotment } from 'allotment'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 
 import { Sidebar } from './Sidebar'
 import { ActivityBar } from './ActivityBar'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PinRightIcon } from '@radix-ui/react-icons'
 
 export function Layout() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const location = useLocation()
 
   const handleVisibleChange = (index: number, visible: boolean) => {
     if (index !== 1) return
     setIsSidebarExpanded(visible)
   }
+
+  useEffect(() => {
+    window.studio.app.changeRoute(location.pathname)
+  }, [location])
 
   return (
     <Box
