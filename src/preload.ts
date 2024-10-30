@@ -1,9 +1,15 @@
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
-import { ProxyData, K6Log, FolderContent, K6Check, ProxyStatus } from './types'
+import { ProxyData, K6Log, K6Check, ProxyStatus } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
+
+interface GetFilesResponse {
+  recordings: string[]
+  generators: string[]
+  scripts: string[]
+}
 
 // Create listener and return clean up function to be used in useEffect
 function createListener<T>(channel: string, callback: (data: T) => void) {
@@ -121,7 +127,7 @@ const ui = {
   deleteFile: (fileName: string): Promise<void> => {
     return ipcRenderer.invoke('ui:delete-file', fileName)
   },
-  getFiles: (): Promise<FolderContent> => ipcRenderer.invoke('ui:get-files'),
+  getFiles: (): Promise<GetFilesResponse> => ipcRenderer.invoke('ui:get-files'),
   onAddFile: (callback: (fileName: string) => void) => {
     return createListener('ui:add-file', callback)
   },
@@ -131,8 +137,8 @@ const ui = {
   onToast: (callback: (toast: AddToastPayload) => void) => {
     return createListener('ui:toast', callback)
   },
-  renameFile: (oldPath: string, newPath: string): Promise<void> => {
-    return ipcRenderer.invoke('ui:rename-file', oldPath, newPath)
+  renameFile: (oldFileName: string, newFileName: string): Promise<string> => {
+    return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName)
   },
 } as const
 

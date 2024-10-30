@@ -3,10 +3,12 @@ import { PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
 import { FileTree } from '@/components/FileTree'
-import { useFolderContent } from './Sidebar.hooks'
+import { useFiles } from './Sidebar.hooks'
 import { Link } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
+import { SearchField } from '@/components/SearchField'
+import { useState } from 'react'
 
 interface SidebarProps {
   isExpanded: boolean
@@ -14,7 +16,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
-  const { recordings, generators, scripts } = useFolderContent()
+  const [searchTerm, setSearchTerm] = useState('')
+  const { recordings, generators, scripts } = useFiles(searchTerm)
+
   const createNewGenerator = useCreateGenerator()
 
   return (
@@ -25,13 +29,34 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
       overflow="hidden"
       position="relative"
     >
+      <Flex align="center" m="2" gap="2">
+        <SearchField
+          css={css`
+            flex: 1 1 0;
+          `}
+          filter={searchTerm}
+          placeholder="Find files..."
+          size="1"
+          onChange={setSearchTerm}
+        />
+
+        {isExpanded && (
+          <IconButton
+            size="1"
+            variant="ghost"
+            color="gray"
+            onClick={onCollapseSidebar}
+          >
+            <PinLeftIcon />
+          </IconButton>
+        )}
+      </Flex>
       <ScrollArea scrollbars="vertical">
-        <Flex direction="column" gap="2" pt="3">
+        <Flex direction="column" gap="2">
           <FileTree
             label="Recordings"
             files={recordings}
             noFilesMessage="No recordings found"
-            viewPath="/recording-previewer"
             actions={
               <>
                 <Tooltip content="New recording" side="right">
@@ -46,19 +71,6 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
                     </Link>
                   </IconButton>
                 </Tooltip>
-                {isExpanded && (
-                  <IconButton
-                    size="1"
-                    css={css`
-                      margin-left: auto;
-                    `}
-                    variant="ghost"
-                    color="gray"
-                    onClick={onCollapseSidebar}
-                  >
-                    <PinLeftIcon />
-                  </IconButton>
-                )}
               </>
             }
           />
@@ -66,7 +78,6 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
             label="Test generators"
             files={generators}
             noFilesMessage="No generators found"
-            viewPath="/generator"
             actions={
               <Tooltip content="New generator" side="right">
                 <IconButton
@@ -86,7 +97,6 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
             label="Scripts"
             files={scripts}
             noFilesMessage="No scripts found"
-            viewPath="/validator"
           />
         </Flex>
       </ScrollArea>

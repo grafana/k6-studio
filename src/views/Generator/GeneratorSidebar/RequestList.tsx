@@ -30,7 +30,7 @@ export function RequestList({ requests }: RequestListProps) {
   const recordings = useStudioUIStore((state) => state.recordings)
   const recordingPath = useGeneratorStore((state) => state.recordingPath)
 
-  const recording = recordings.find((recording) => recording === recordingPath)
+  const recording = recordings.get(recordingPath)
 
   const isRecordingMissing = recording === undefined && recordingPath !== ''
 
