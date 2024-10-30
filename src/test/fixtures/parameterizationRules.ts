@@ -1,6 +1,6 @@
 import { ParameterizationRule } from '@/types/rules'
 
-export const jsonRule: ParameterizationRule = {
+export const jsonRule = {
   type: 'parameterization',
   id: '1',
   filter: { path: '' },
@@ -13,9 +13,9 @@ export const jsonRule: ParameterizationRule = {
     type: 'string',
     value: 'TEST_ID',
   },
-}
+} satisfies ParameterizationRule
 
-export const urlRule: ParameterizationRule = {
+export const urlRule = {
   type: 'parameterization',
   id: '2',
   filter: { path: '' },
@@ -29,9 +29,9 @@ export const urlRule: ParameterizationRule = {
     type: 'string',
     value: 'TEST_ID',
   },
-}
+} satisfies ParameterizationRule
 
-export const headerRule: ParameterizationRule = {
+export const headerRule = {
   type: 'parameterization',
   id: '3',
   filter: { path: '' },
@@ -44,4 +44,39 @@ export const headerRule: ParameterizationRule = {
     type: 'string',
     value: 'TEST_TOKEN',
   },
-}
+} satisfies ParameterizationRule
+
+export const customCodeReplaceProjectId = {
+  type: 'parameterization',
+  id: '4',
+  filter: { path: '' },
+  selector: {
+    type: 'regex',
+    from: 'url',
+    regex: 'project_id=(\\d+)',
+  },
+  value: {
+    type: 'customCode',
+    code: `
+      const randomInteger = Math.floor(Math.random() * 100000);
+      return randomInteger;
+    `,
+  },
+} satisfies ParameterizationRule
+
+export const customCodeReplaceCsrf = {
+  type: 'parameterization',
+  id: '4',
+  filter: { path: '' },
+  selector: {
+    type: 'regex',
+    from: 'url',
+    regex: 'csrf=(\\d+)',
+  },
+  value: {
+    type: 'customCode',
+    code: `
+      return '123456'
+    `,
+  },
+} satisfies ParameterizationRule

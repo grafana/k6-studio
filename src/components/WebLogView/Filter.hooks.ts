@@ -1,24 +1,25 @@
 import { ProxyData } from '@/types'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { useState, useMemo } from 'react'
-import { useDebounce, useLocalStorage } from 'react-use'
+import { useDebounce } from 'react-use'
 
-export function useFilterRequests(requests: ProxyData[]) {
+export function useFilterRequests({
+  proxyData,
+  includeStaticAssets = true,
+}: {
+  proxyData: ProxyData[]
+  includeStaticAssets?: boolean
+}) {
   const [filter, setFilter] = useState('')
   const [debouncedFilter, setDebouncedFilter] = useState(filter)
 
-  const [includeStaticAssets, setIncludeStaticAssets] = useLocalStorage(
-    'includeStaticAssets',
-    false
-  )
-
   const requestWithoutStaticAssets = useMemo(
-    () => requests.filter(isNonStaticAssetResponse),
-    [requests]
+    () => proxyData.filter(isNonStaticAssetResponse),
+    [proxyData]
   )
 
   const assetsToFilter = includeStaticAssets
-    ? requests
+    ? proxyData
     : requestWithoutStaticAssets
 
   useDebounce(
@@ -45,17 +46,12 @@ export function useFilterRequests(requests: ProxyData[]) {
     })
   }, [debouncedFilter, assetsToFilter])
 
-  const staticAssetCount = useMemo(
-    () => requests.length - requestWithoutStaticAssets.length,
-    [requests.length, requestWithoutStaticAssets.length]
-  )
+  const staticAssetCount = proxyData.length - requestWithoutStaticAssets.length
 
   return {
     filter,
     setFilter,
     filteredRequests,
-    includeStaticAssets,
-    setIncludeStaticAssets,
     staticAssetCount,
   }
 }
