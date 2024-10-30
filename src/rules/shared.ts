@@ -254,7 +254,8 @@ export const replaceRegexUrl = (
   if (!valueToReplace) return
 
   const url = replaceUrl(request.url, valueToReplace, variableName)
-  return { ...request, url }
+  const path = replaceUrl(request.path, valueToReplace, variableName)
+  return { ...request, url, path }
 }
 
 export const replaceJsonBody = (
