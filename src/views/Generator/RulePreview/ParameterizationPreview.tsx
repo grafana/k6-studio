@@ -54,7 +54,7 @@ export function ParameterizationPreview({
             {preview && preview.requestsReplaced.length > 0 && (
               <>
                 <Heading size="2" m="2">
-                  Requests matched
+                  Requests replaced
                 </Heading>
                 <WebLogView
                   requests={requestsReplacedToProxyData(
