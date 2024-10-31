@@ -3,7 +3,7 @@ import { useSetWindowTitle } from './useSetWindowTitle'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('useSetWindowTitle', () => {
-  const defaultTitle = 'k6 Studio (experimental)'
+  const defaultTitle = 'k6 Studio (public preview)'
 
   beforeEach(() => {
     document.title = defaultTitle
