@@ -19,7 +19,13 @@ export function Home() {
   return (
     <Flex direction="column" height="100%">
       <ExperimentalBanner />
-      <Flex direction="column" align="center" justify="center" height="100%">
+      <Flex
+        direction="column"
+        align="center"
+        justify="center"
+        height="100%"
+        p="4"
+      >
         <Heading
           size="8"
           mb="1"
