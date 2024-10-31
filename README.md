@@ -27,7 +27,7 @@
 
 <p align="center">⚠️</p>
 
-***This application is currently in the public preview stage. Expect bugs, incomplete features, and breaking changes as development progresses. Use at your own risk, and please report any issues or feedback to help us improve.***
+***This application is currently in the public preview stage. Bugs and breaking changes might occur prior to general availability. Please report any issues or feedback to help us improve.***
 
 ---
 
