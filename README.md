@@ -19,6 +19,7 @@
 
 <p align="center">
     <a href="https://github.com/grafana/k6-studio/releases">Download</a> ·
+    <a href="https://grafana.com/docs/k6-studio/set-up/install/">Documentation</a> ·
     <a href="https://github.com/grafana/k6-studio/issues">Report issues</a>
 </p>
 
