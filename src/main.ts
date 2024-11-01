@@ -69,6 +69,8 @@ let currentProxyProcess: ProxyProcess | null
 let proxyStatus: ProxyStatus = 'offline'
 const PROXY_RETRY_LIMIT = 5
 let proxyRetryCount = 0
+let currentClientRoute = '/'
+let wasAppClosedByClient = false
 export let appSettings: AppSettings
 
 let currentBrowserProcess: Process | null
@@ -142,7 +144,7 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'k6 Studio (experimental)',
+    title: 'k6 Studio (public preview)',
     backgroundColor: nativeTheme.themeSource === 'light' ? '#fff' : '#111110',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -170,6 +172,7 @@ const createWindow = async () => {
   mainWindow.once('ready-to-show', () => {
     configureApplicationMenu()
     configureWatcher(mainWindow)
+    wasAppClosedByClient = false
   })
   proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
     proxyStatus = statusName
@@ -181,6 +184,12 @@ const createWindow = async () => {
 
   mainWindow.on('move', () => trackWindowState(mainWindow))
   mainWindow.on('resize', () => trackWindowState(mainWindow))
+  mainWindow.on('close', (event) => {
+    mainWindow.webContents.send('app:close')
+    if (currentClientRoute.startsWith('/generator') && !wasAppClosedByClient) {
+      event.preventDefault()
+    }
+  })
 
   return mainWindow
 }
@@ -216,6 +225,22 @@ app.on('before-quit', async () => {
   appShuttingDown = true
   await watcher.close()
   stopProxyProcess()
+})
+
+ipcMain.handle('app:change-route', async (_, route: string) => {
+  currentClientRoute = route
+})
+
+ipcMain.handle('app:close', (event) => {
+  console.log('app:close event received')
+
+  wasAppClosedByClient = true
+  if (appShuttingDown) {
+    app.quit()
+    return
+  }
+  const browserWindow = browserWindowFromEvent(event)
+  browserWindow.close()
 })
 
 // Proxy

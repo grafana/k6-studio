@@ -24,6 +24,7 @@ import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { EmptyState } from './EmptyState'
+import { EmptyMessage } from '@/components/EmptyMessage'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -60,8 +61,6 @@ export function Recorder() {
         resetProxyData()
         setRecorderState('starting')
         await startRecording(url)
-
-        setRecorderState('recording')
       } catch (error) {
         setRecorderState('idle')
         showToast({
@@ -73,6 +72,14 @@ export function Recorder() {
     },
     [resetProxyData, showToast]
   )
+
+  // Set the state to 'recording' when the first data arrives.
+  // This allows us to show loading indicator while browser loads.
+  useEffect(() => {
+    if (recorderState === 'starting' && proxyData.length > 0) {
+      setRecorderState('recording')
+    }
+  }, [recorderState, proxyData.length])
 
   const validateAndSaveHarFile = useCallback(async () => {
     try {
@@ -163,6 +170,16 @@ export function Recorder() {
     })
   }, [validateAndSaveHarFile, showToast, navigate])
 
+  const noDataElement = useMemo(() => {
+    if (recorderState === 'idle') {
+      return <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
+    }
+
+    if (recorderState === 'starting') {
+      return <EmptyMessage message="Requests will appear here" />
+    }
+  }, [recorderState, isLoading, handleStartRecording])
+
   return (
     <View
       title="Recorder"
@@ -187,14 +204,7 @@ export function Recorder() {
             <div css={{ flexGrow: 0, minHeight: 0 }}>
               <RequestsSection
                 proxyData={debouncedProxyData}
-                noDataElement={
-                  recorderState === 'idle' && (
-                    <EmptyState
-                      isLoading={isLoading}
-                      onStart={handleStartRecording}
-                    />
-                  )
-                }
+                noDataElement={noDataElement}
                 selectedRequestId={selectedRequest?.id}
                 autoScroll
                 groups={groups}

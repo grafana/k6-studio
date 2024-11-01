@@ -8,7 +8,7 @@ export const UsageReportSettings = () => {
 
   const handleLinkClick = () => {
     window.studio.browser.openExternalLink(
-      'https://github.com/grafana/k6-studio/blob/main/README.md#usage-report'
+      'https://grafana.com/docs/k6-studio/set-up/usage-collection/'
     )
   }
 

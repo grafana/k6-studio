@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
 
-import { Flex, Tabs } from '@radix-ui/themes'
+import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
 import {
   selectFilteredRequests,
@@ -36,34 +36,36 @@ export function GeneratorSidebar() {
   return (
     <Flex direction="column" height="100%" minHeight="0" asChild>
       <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
-        <Tabs.List>
-          <Tabs.Trigger value="requests">
-            Requests ({filteredRequests.length})
-          </Tabs.Trigger>
-          <Tabs.Trigger
-            value="script"
-            disabled={!hasRecording}
-            css={
-              hasError &&
-              css`
-                color: var(--red-9);
-              `
-            }
-          >
-            {hasError && (
-              <CrossCircledIcon
-                css={css`
-                  margin-right: 5px;
-                `}
-                color="var(--red-9)"
-              />
+        <Box flexShrink="0">
+          <Tabs.List>
+            <Tabs.Trigger value="requests">
+              Requests ({filteredRequests.length})
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="script"
+              disabled={!hasRecording}
+              css={
+                hasError &&
+                css`
+                  color: var(--red-9);
+                `
+              }
+            >
+              {hasError && (
+                <CrossCircledIcon
+                  css={css`
+                    margin-right: 5px;
+                  `}
+                  color="var(--red-9)"
+                />
+              )}
+              Script
+            </Tabs.Trigger>
+            {hasPreview && (
+              <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
             )}
-            Script
-          </Tabs.Trigger>
-          {hasPreview && (
-            <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
-          )}
-        </Tabs.List>
+          </Tabs.List>
+        </Box>
         {hasPreview && (
           <Tabs.Content
             value="rule-preview"

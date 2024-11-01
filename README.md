@@ -19,6 +19,7 @@
 
 <p align="center">
     <a href="https://github.com/grafana/k6-studio/releases">Download</a> ·
+    <a href="https://grafana.com/docs/k6-studio/set-up/install/">Documentation</a> ·
     <a href="https://github.com/grafana/k6-studio/issues">Report issues</a>
 </p>
 
@@ -26,7 +27,7 @@
 
 <p align="center">⚠️</p>
 
-***This application is currently in the experimental stage. Expect bugs, incomplete features, and breaking changes as development progresses. Use at your own risk, and please report any issues or feedback to help us improve.***
+***This application is currently in the public preview stage. Bugs and breaking changes might occur prior to general availability. Please report any issues or feedback to help us improve.***
 
 ---
 
@@ -100,16 +101,11 @@ Application logs are saved in the following directory:
 
 When opening an issue, please include a tail of your log file.
 
-## Usage Report
+## Usage collection
 
 By default, k6 Studio sends an anonymous usage report so that we can track relevant information to be able to build the product making better data-driven decisions. Prioritizing the features that benefit the most and reducing the impact of changes.
 
-The usage report does not contain any information about you or what you are testing. The contents are the following:
-
-- The running program’s operating system (`mac` or `win`)
-- The running program’s architecture (`arm64` or `x86_64`)
-- The k6 Studio version (e.g. `0.4.0`)
-- Timestamp of when the data was collected (e.g. `2024-10-22T16:02:56.261Z`)
+For more information visit the [documentation](https://grafana.com/docs/k6-studio/set-up/usage-collection/).
 
 ---
 

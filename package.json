@@ -1,7 +1,7 @@
 {
   "name": "k6-studio",
   "productName": "k6 Studio",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "k6 Studio",
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
@@ -83,6 +83,7 @@
     "electron-log": "^5.2.0",
     "electron-squirrel-startup": "^1.0.1",
     "find-process": "^1.4.7",
+    "fuse.js": "^7.0.0",
     "immer": "^10.1.1",
     "jsonrepair": "^3.8.0",
     "keyboardjs": "^2.7.0",

@@ -2,7 +2,7 @@ import { css, keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as RadixCollapsible from '@radix-ui/react-collapsible'
 import { CaretRightIcon } from '@radix-ui/react-icons'
-import { Reset } from '@radix-ui/themes'
+import { Flex, Reset } from '@radix-ui/themes'
 
 const slideDown = keyframes`
   from {
@@ -61,7 +61,6 @@ function Heading({ children }: { children: React.ReactNode }) {
         flex: 1 1 0;
       `}
     >
-      <Caret />
       {children}
     </div>
   )
@@ -72,18 +71,14 @@ function Trigger({
   ...props
 }: RadixCollapsible.CollapsibleTriggerProps) {
   return (
-    <RadixCollapsible.Trigger
-      {...props}
-      asChild
-      css={css`
-        flex: 1 1 0;
-        cursor: var(--cursor-button);
-      `}
-    >
-      <Reset>
-        <button type="button">{children}</button>
-      </Reset>
-    </RadixCollapsible.Trigger>
+    <Reset>
+      <RadixCollapsible.Trigger {...props}>
+        <Flex gap="1" align="center">
+          <Caret />
+          {children}
+        </Flex>
+      </RadixCollapsible.Trigger>
+    </Reset>
   )
 }
 

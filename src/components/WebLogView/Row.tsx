@@ -17,7 +17,10 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
     <Table.Row
       onClick={() => onSelectRequest(data)}
       css={{
-        backgroundColor: isSelected ? 'var(--accent-2)' : 'transparent',
+        backgroundColor: isSelected ? 'var(--accent-3)' : 'transparent',
+        '&:hover': {
+          backgroundColor: isSelected ? 'var(--accent-3)' : 'var(--accent-2)',
+        },
       }}
     >
       <Table.Cell

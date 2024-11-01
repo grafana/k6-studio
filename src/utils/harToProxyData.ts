@@ -1,7 +1,7 @@
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { Method, ProxyData, Request, Response } from '@/types'
 import { HarWithOptionalResponse } from '@/types/har'
-import type { Entry } from 'har-format'
+import type { Content, Entry } from 'har-format'
 
 export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
   return har.log.entries.map((entry) => ({
@@ -53,14 +53,13 @@ function parseRequest(request: Entry['request']): Request {
 }
 
 function parseResponse(response: Entry['response']): Response {
-  const content = response.content?.text ? atob(response.content.text) : ''
   return {
     statusCode: response.status,
     reason: response.statusText,
     httpVersion: response.httpVersion,
     headers: response.headers.map((h) => [h.name, h.value]),
     cookies: response.cookies.map((c) => [c.name, c.value]),
-    content,
+    content: parseContent(response.content),
     contentLength: response.content?.size ?? 0,
     timestampStart: 0,
     path: '',
@@ -69,4 +68,13 @@ function parseResponse(response: Entry['response']): Response {
 
 function isoToUnixTimestamp(isoString: string): number {
   return new Date(isoString).getTime() / 1000
+}
+
+function parseContent(content: Content): string {
+  if (!content.text) return ''
+
+  if (content.encoding === 'base64') {
+    return atob(content.text)
+  }
+  return content.text
 }
