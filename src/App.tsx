@@ -1,15 +1,14 @@
 import { Theme } from '@radix-ui/themes'
 import { Global } from '@emotion/react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { enableMapSet } from 'immer'
 
 import { useTheme } from './hooks/useTheme'
 import { globalStyles } from './globalStyles'
 import { AppRoutes } from './AppRoutes'
 import { Toasts } from './components/Toast/Toasts'
-import { DevTools } from './components/DevTools'
-import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './utils/query'
 import { useCloseSplashScreen } from './hooks/useCloseSplashScreen'
-import { enableMapSet } from 'immer'
 
 enableMapSet()
 
@@ -23,7 +22,6 @@ export function App() {
         <Global styles={globalStyles} />
         <Toasts />
         <AppRoutes />
-        <DevTools />
       </Theme>
     </QueryClientProvider>
   )
