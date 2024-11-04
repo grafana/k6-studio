@@ -9,7 +9,6 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
 interface State extends FolderContent {
-  devToggles: Record<string, boolean>
   proxyStatus: ProxyStatus
 }
 
@@ -18,7 +17,6 @@ interface Actions {
   removeFile: (path: string) => void
   setFolderContent: (content: FolderContent) => void
   setProxyStatus: (status: ProxyStatus) => void
-  toggleDevToggle: (key: string) => void
 }
 
 export type StudioUIStore = State & Actions
@@ -28,7 +26,6 @@ export const useStudioUIStore = create<StudioUIStore>()(
     recordings: new Map(),
     generators: new Map(),
     scripts: new Map(),
-    devToggles: {},
     proxyStatus: 'offline',
 
     addFile: (path) =>
@@ -70,10 +67,6 @@ export const useStudioUIStore = create<StudioUIStore>()(
     setProxyStatus: (status) =>
       set((state) => {
         state.proxyStatus = status
-      }),
-    toggleDevToggle: (key) =>
-      set((state) => {
-        state.devToggles[key] = !state.devToggles[key]
       }),
   }))
 )
