@@ -122,7 +122,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
               </Tabs.List>
             </Box>
 
-            <Box minHeight="0" maxHeight="480px" flexGrow="1">
+            <Box minHeight="0" maxHeight="460px" mb="4" flexGrow="1">
               <ScrollArea>
                 {tabs.map((tab) => (
                   <Tabs.Content key={tab.value} value={tab.value}>

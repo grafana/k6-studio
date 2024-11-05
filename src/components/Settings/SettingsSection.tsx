@@ -6,7 +6,7 @@ type SettingsSectionProps = {
 
 export function SettingsSection({ children }: SettingsSectionProps) {
   return (
-    <Flex gap="2" direction="column" pt="4">
+    <Flex gap="2" direction="column" pt="4" p="1">
       <Box>{children}</Box>
     </Flex>
   )
