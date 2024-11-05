@@ -56,8 +56,11 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     try {
       setSubmitting(true)
       const isSuccess = await window.studio.settings.saveSettings(data)
-      isSuccess && reset(data)
-      onOpenChange(false)
+      if (isSuccess) {
+        reset(data)
+        setSettings(data)
+        onOpenChange(false)
+      }
     } catch (error) {
       console.error('Error saving settings', error)
     } finally {
@@ -73,8 +76,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     setSelectedTab(tabsWithError[0] || 'proxy')
   }
 
+  const handleOpenChange = () => {
+    reset(settings)
+    onOpenChange(!open)
+  }
+
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Content
         maxWidth="800px"
         maxHeight="640px"
