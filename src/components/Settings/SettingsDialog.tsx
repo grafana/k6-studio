@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Button, Dialog, Flex, Tabs } from '@radix-ui/themes'
+import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { ProxySettings } from './ProxySettings'
 import { FormProvider, useForm } from 'react-hook-form'
 import { AppSettingsSchema } from '@/schemas/appSettings'
@@ -99,44 +99,55 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
           <Tabs.Root
             value={selectedTab}
             onValueChange={(value) => setSelectedTab(value)}
+            css={css`
+              height: 100%;
+              display: flex;
+              flex-direction: column;
+            `}
           >
-            <Tabs.List>
-              {tabs.map((tab) => (
-                <Tabs.Trigger key={tab.value} value={tab.value}>
-                  {tab.label}
-                  {errors[tab.value as keyof typeof errors] && (
-                    <ExclamationTriangleIcon
-                      css={css`
-                        margin-left: var(--space-1);
-                      `}
-                    />
-                  )}
-                </Tabs.Trigger>
-              ))}
-            </Tabs.List>
+            <Box flexShrink="0">
+              <Tabs.List>
+                {tabs.map((tab) => (
+                  <Tabs.Trigger key={tab.value} value={tab.value}>
+                    {tab.label}
+                    {errors[tab.value as keyof typeof errors] && (
+                      <ExclamationTriangleIcon
+                        css={css`
+                          margin-left: var(--space-1);
+                        `}
+                      />
+                    )}
+                  </Tabs.Trigger>
+                ))}
+              </Tabs.List>
+            </Box>
 
-            {tabs.map((tab) => (
-              <Tabs.Content key={tab.value} value={tab.value}>
-                <tab.component />
-              </Tabs.Content>
-            ))}
+            <Box minHeight="0" maxHeight="480px" flexGrow="1">
+              <ScrollArea>
+                {tabs.map((tab) => (
+                  <Tabs.Content key={tab.value} value={tab.value}>
+                    <tab.component />
+                  </Tabs.Content>
+                ))}
+              </ScrollArea>
+            </Box>
+
+            <Flex gap="3" justify="end">
+              <Dialog.Close>
+                <Button variant="outline">Cancel</Button>
+              </Dialog.Close>
+              <Dialog.Close>
+                <ButtonWithTooltip
+                  loading={submitting}
+                  disabled={!isDirty}
+                  tooltip={!isDirty ? 'Changes saved' : ''}
+                  onClick={handleSubmit(onSubmit, onInvalid)}
+                >
+                  Save changes
+                </ButtonWithTooltip>
+              </Dialog.Close>
+            </Flex>
           </Tabs.Root>
-
-          <Flex gap="3" justify="end" align="end" flexGrow="1">
-            <Dialog.Close>
-              <Button variant="outline">Cancel</Button>
-            </Dialog.Close>
-            <Dialog.Close>
-              <ButtonWithTooltip
-                loading={submitting}
-                disabled={!isDirty}
-                tooltip={!isDirty ? 'Changes saved' : ''}
-                onClick={handleSubmit(onSubmit, onInvalid)}
-              >
-                Save changes
-              </ButtonWithTooltip>
-            </Dialog.Close>
-          </Flex>
         </FormProvider>
       </Dialog.Content>
     </Dialog.Root>
