@@ -1,27 +1,13 @@
-import { css } from '@emotion/react'
-import { Flex, Heading, Box } from '@radix-ui/themes'
+import { Flex, ScrollArea } from '@radix-ui/themes'
 
 type SettingsSectionProps = {
-  title: string
   children: React.ReactNode
 }
 
-export function SettingsSection({ title, children }: SettingsSectionProps) {
+export function SettingsSection({ children }: SettingsSectionProps) {
   return (
-    <Flex gap="2" direction="column" p="1">
-      <Heading
-        size="2"
-        my="4"
-        css={css`
-          font-size: 18px;
-          line-height: 24px;
-          font-weight: 500;
-        `}
-      >
-        {title}
-      </Heading>
-
-      <Box>{children}</Box>
+    <Flex gap="2" direction="column" pt="4" height="460px">
+      <ScrollArea>{children}</ScrollArea>
     </Flex>
   )
 }

@@ -28,7 +28,7 @@ export const ProxySettings = () => {
   const { proxy } = watch()
 
   return (
-    <SettingsSection title="Proxy">
+    <SettingsSection>
       <FieldGroup
         name="proxy.port"
         label="Port number"

@@ -25,7 +25,7 @@ export const RecorderSettings = () => {
   }
 
   return (
-    <SettingsSection title="Recorder">
+    <SettingsSection>
       <Flex gap="2" mb="4">
         <Controller
           control={control}
