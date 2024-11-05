@@ -1,23 +1,36 @@
 import { css } from '@emotion/react'
-import { Box, Button, Dialog, Flex, ScrollArea } from '@radix-ui/themes'
+import { Button, Dialog, Flex, Tabs } from '@radix-ui/themes'
 import { ProxySettings } from './ProxySettings'
 import { FormProvider, useForm } from 'react-hook-form'
 import { AppSettingsSchema } from '@/schemas/appSettings'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { RecorderSettings } from './RecorderSettings'
 import { AppSettings } from '@/types/settings'
 import { UsageReportSettings } from './UsageReportSettings'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { ButtonWithTooltip } from '../ButtonWithTooltip'
+import { findIndex, sortBy } from 'lodash-es'
 
 type SettingsDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
+const tabs = [
+  { label: 'Proxy', value: 'proxy', component: ProxySettings },
+  { label: 'Recorder', value: 'recorder', component: RecorderSettings },
+  {
+    label: 'Usage Collection',
+    value: 'usageReport',
+    component: UsageReportSettings,
+  },
+]
+
 export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const [settings, setSettings] = useState<AppSettings>()
   const [submitting, setSubmitting] = useState(false)
+  const [selectedTab, setSelectedTab] = useState('proxy')
 
   useEffect(() => {
     async function fetchSettings() {
@@ -29,14 +42,14 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
   const formMethods = useForm<AppSettings>({
     resolver: zodResolver(AppSettingsSchema),
-    shouldFocusError: false,
+    shouldFocusError: true,
     values: settings,
   })
 
   const {
-    formState: { isDirty },
     handleSubmit,
     reset,
+    formState: { isDirty, errors },
   } = formMethods
 
   const onSubmit = async (data: AppSettings) => {
@@ -50,6 +63,14 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const onInvalid = (errors: Record<string, unknown>) => {
+    // Sort tabs by the order they appear in the UI
+    const tabsWithError = sortBy(Object.keys(errors), (key) =>
+      findIndex(tabs, { value: key })
+    )
+    setSelectedTab(tabsWithError[0] || 'proxy')
   }
 
   return (
@@ -67,15 +88,33 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
       >
         <Dialog.Title>Settings</Dialog.Title>
         <FormProvider {...formMethods}>
-          <Box pb="4" minHeight="0">
-            <ScrollArea>
-              <RecorderSettings />
-              <ProxySettings />
-              <UsageReportSettings />
-            </ScrollArea>
-          </Box>
+          <Tabs.Root
+            value={selectedTab}
+            onValueChange={(value) => setSelectedTab(value)}
+          >
+            <Tabs.List>
+              {tabs.map((tab) => (
+                <Tabs.Trigger key={tab.value} value={tab.value}>
+                  {tab.label}
+                  {errors[tab.value as keyof typeof errors] && (
+                    <ExclamationTriangleIcon
+                      css={css`
+                        margin-left: var(--space-1);
+                      `}
+                    />
+                  )}
+                </Tabs.Trigger>
+              ))}
+            </Tabs.List>
 
-          <Flex gap="3" justify="end">
+            {tabs.map((tab) => (
+              <Tabs.Content key={tab.value} value={tab.value}>
+                <tab.component />
+              </Tabs.Content>
+            ))}
+          </Tabs.Root>
+
+          <Flex gap="3" justify="end" align="end" flexGrow="1">
             <Dialog.Close>
               <Button variant="outline">Cancel</Button>
             </Dialog.Close>
@@ -84,7 +123,7 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 loading={submitting}
                 disabled={!isDirty}
                 tooltip={!isDirty ? 'Changes saved' : ''}
-                onClick={handleSubmit(onSubmit)}
+                onClick={handleSubmit(onSubmit, onInvalid)}
               >
                 Save changes
               </ButtonWithTooltip>
