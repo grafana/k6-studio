@@ -21,7 +21,7 @@ const tabs = [
   { label: 'Proxy', value: 'proxy', component: ProxySettings },
   { label: 'Recorder', value: 'recorder', component: RecorderSettings },
   {
-    label: 'Usage Collection',
+    label: 'Usage collection',
     value: 'usageReport',
     component: UsageReportSettings,
   },
