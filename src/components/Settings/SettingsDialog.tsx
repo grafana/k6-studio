@@ -1,23 +1,36 @@
 import { css } from '@emotion/react'
-import { Box, Button, Dialog, Flex, ScrollArea } from '@radix-ui/themes'
+import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { ProxySettings } from './ProxySettings'
 import { FormProvider, useForm } from 'react-hook-form'
 import { AppSettingsSchema } from '@/schemas/appSettings'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState } from 'react'
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { RecorderSettings } from './RecorderSettings'
 import { AppSettings } from '@/types/settings'
 import { UsageReportSettings } from './UsageReportSettings'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { ButtonWithTooltip } from '../ButtonWithTooltip'
+import { findIndex, sortBy } from 'lodash-es'
 
 type SettingsDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
+const tabs = [
+  { label: 'Proxy', value: 'proxy', component: ProxySettings },
+  { label: 'Recorder', value: 'recorder', component: RecorderSettings },
+  {
+    label: 'Usage collection',
+    value: 'usageReport',
+    component: UsageReportSettings,
+  },
+]
+
 export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const [settings, setSettings] = useState<AppSettings>()
   const [submitting, setSubmitting] = useState(false)
+  const [selectedTab, setSelectedTab] = useState('proxy')
 
   useEffect(() => {
     async function fetchSettings() {
@@ -29,22 +42,26 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
   const formMethods = useForm<AppSettings>({
     resolver: zodResolver(AppSettingsSchema),
-    shouldFocusError: false,
+    shouldFocusError: true,
     values: settings,
   })
 
   const {
-    formState: { isDirty },
     handleSubmit,
     reset,
+    formState: { isDirty, errors },
   } = formMethods
 
   const onSubmit = async (data: AppSettings) => {
     try {
       setSubmitting(true)
       const isSuccess = await window.studio.settings.saveSettings(data)
-      isSuccess && reset(data)
-      onOpenChange(false)
+      if (isSuccess) {
+        onOpenChange(false)
+        reset(data)
+        setSettings(data)
+        setSelectedTab('proxy')
+      }
     } catch (error) {
       console.error('Error saving settings', error)
     } finally {
@@ -52,8 +69,22 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     }
   }
 
+  const onInvalid = (errors: Record<string, unknown>) => {
+    // Sort tabs by the order they appear in the UI
+    const tabsWithError = sortBy(Object.keys(errors), (key) =>
+      findIndex(tabs, { value: key })
+    )
+    setSelectedTab(tabsWithError[0] || 'proxy')
+  }
+
+  const handleOpenChange = () => {
+    reset(settings)
+    setSelectedTab('proxy')
+    onOpenChange(!open)
+  }
+
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Content
         maxWidth="800px"
         maxHeight="640px"
@@ -67,29 +98,58 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
       >
         <Dialog.Title>Settings</Dialog.Title>
         <FormProvider {...formMethods}>
-          <Box pb="4" minHeight="0">
-            <ScrollArea>
-              <RecorderSettings />
-              <ProxySettings />
-              <UsageReportSettings />
-            </ScrollArea>
-          </Box>
+          <Tabs.Root
+            value={selectedTab}
+            onValueChange={(value) => setSelectedTab(value)}
+            css={css`
+              height: 100%;
+              display: flex;
+              flex-direction: column;
+            `}
+          >
+            <Box flexShrink="0">
+              <Tabs.List>
+                {tabs.map((tab) => (
+                  <Tabs.Trigger key={tab.value} value={tab.value}>
+                    {tab.label}
+                    {errors[tab.value as keyof typeof errors] && (
+                      <ExclamationTriangleIcon
+                        css={css`
+                          margin-left: var(--space-1);
+                        `}
+                      />
+                    )}
+                  </Tabs.Trigger>
+                ))}
+              </Tabs.List>
+            </Box>
 
-          <Flex gap="3" justify="end">
-            <Dialog.Close>
-              <Button variant="outline">Cancel</Button>
-            </Dialog.Close>
-            <Dialog.Close>
-              <ButtonWithTooltip
-                loading={submitting}
-                disabled={!isDirty}
-                tooltip={!isDirty ? 'Changes saved' : ''}
-                onClick={handleSubmit(onSubmit)}
-              >
-                Save changes
-              </ButtonWithTooltip>
-            </Dialog.Close>
-          </Flex>
+            <Box minHeight="0" maxHeight="460px" mb="4" flexGrow="1">
+              <ScrollArea>
+                {tabs.map((tab) => (
+                  <Tabs.Content key={tab.value} value={tab.value}>
+                    <tab.component />
+                  </Tabs.Content>
+                ))}
+              </ScrollArea>
+            </Box>
+
+            <Flex gap="3" justify="end">
+              <Dialog.Close>
+                <Button variant="outline">Cancel</Button>
+              </Dialog.Close>
+              <Dialog.Close>
+                <ButtonWithTooltip
+                  loading={submitting}
+                  disabled={!isDirty}
+                  tooltip={!isDirty ? 'Changes saved' : ''}
+                  onClick={handleSubmit(onSubmit, onInvalid)}
+                >
+                  Save changes
+                </ButtonWithTooltip>
+              </Dialog.Close>
+            </Flex>
+          </Tabs.Root>
         </FormProvider>
       </Dialog.Content>
     </Dialog.Root>
