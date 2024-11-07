@@ -671,8 +671,10 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
       proxyEmitter.emit('status:change', 'restarting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
+      const errorMessage = `Proxy failed to start on port ${proxyPort}, restarting...`
+      log.error(errorMessage)
       sendToast(browserWindow.webContents, {
-        title: 'Proxy failed to start, restarting...',
+        title: errorMessage,
         status: 'error',
       })
     },
