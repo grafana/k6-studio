@@ -8,6 +8,7 @@ type FileUploadInputProps = {
   buttonText: string
   hint?: string
   errors?: FieldErrors
+  disabled?: boolean
   onSelectFile: () => void
 }
 
@@ -17,6 +18,7 @@ export const FileUploadInput = ({
   hint,
   label,
   errors,
+  disabled,
   buttonText,
 }: FileUploadInputProps) => {
   return (
@@ -34,6 +36,7 @@ export const FileUploadInput = ({
           >
             <TextField.Root
               type="text"
+              disabled={disabled}
               onChange={field.onChange}
               name={field.name}
               value={field.value}
@@ -44,6 +47,7 @@ export const FileUploadInput = ({
 
       <Button
         ml="2"
+        disabled={disabled}
         onClick={onSelectFile}
         style={{
           marginTop: 48,

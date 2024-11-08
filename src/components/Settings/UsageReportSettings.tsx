@@ -13,7 +13,7 @@ export const UsageReportSettings = () => {
   }
 
   return (
-    <SettingsSection title="Usage Report">
+    <SettingsSection>
       <Flex gap="2">
         <Controller
           control={control}

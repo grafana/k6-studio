@@ -86,10 +86,14 @@ export const launchProxy = (
     const proxyData = safeJsonParse<ProxyData>(data)
     if (proxyData) {
       browserWindow.webContents.send('proxy:data', proxyData)
+    } else {
+      // the proxy outputs some errors to stdout
+      // example: [Errno 48] HTTP(S) proxy failed to listen on *:6001
+      log.error(data)
     }
   })
 
-  proxy.stderr.on('data', (data) => {
+  proxy.stderr.on('data', (data: Buffer) => {
     console.error(`stderr: ${data}`)
     log.error(data.toString())
   })
