@@ -24,10 +24,7 @@ export function CustomCode() {
                 valueWithFallback(field.value),
                 ruleIndex
               )}
-              onChange={(value = '') => {
-                console.log('change', value)
-                field.onChange(value)
-              }}
+              onChange={field.onChange}
               editableRange={getEditableRanges(valueWithFallback(field.value))}
               options={{ wordWrap: 'on' }}
             />
