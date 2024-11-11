@@ -1,6 +1,7 @@
 import { FieldGroup } from '@/components/Form'
-import { CodeEditor } from '@/components/Monaco/CodeEditor'
 import { ConstrainedCodeEditor } from '@/components/Monaco/ConstrainerCodeEditor'
+import { getCustomCodeSnippet } from '@/rules/parameterization'
+import { selectSelectedRuleIndex, useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
 import { Controller, useFormContext } from 'react-hook-form'
 
@@ -9,6 +10,8 @@ export function CustomCode() {
     control,
     formState: { errors },
   } = useFormContext<ParameterizationRule>()
+  const ruleIndex = useGeneratorStore(selectSelectedRuleIndex)
+
   return (
     <FieldGroup name="snippet" errors={errors} label="Snippet">
       <Controller
@@ -17,11 +20,16 @@ export function CustomCode() {
         render={({ field }) => (
           <div css={{ height: 200 }}>
             <ConstrainedCodeEditor
-              value={wrapValue(field.value) ?? ''}
+              value={getCustomCodeSnippet(
+                valueWithFallback(field.value),
+                ruleIndex
+              )}
               onChange={(value = '') => {
+                console.log('change', value)
                 field.onChange(value)
               }}
-              range={getEditableRanges(field.value)}
+              editableRange={getEditableRanges(valueWithFallback(field.value))}
+              options={{ wordWrap: 'on' }}
             />
           </div>
         )}
@@ -30,23 +38,19 @@ export function CustomCode() {
   )
 }
 
-function wrapValue(value?: string) {
-  return `function getParameterizationValue0() {
-${value ?? ''}
-}`
+function valueWithFallback(value?: string) {
+  return (
+    value ?? '  // Enter your code here, make sure to add a return statement'
+  )
 }
 
 function getEditableRanges(value?: string) {
   const lines = (value ?? '').split('\n')
   const lastLine = lines[lines.length - 1] ?? '1'
-  const startLine = 2 // function definition on first line
+  const startLine = 2 // Skip the first line with the function declaration
   const startColumn = 1
   const endLine = lines.length + 1
   const endColumn = lastLine.length + 1
 
-  return {
-    range: [startLine, startColumn, endLine, endColumn],
-    allowMultiline: true,
-    label: 'range',
-  }
+  return [startLine, startColumn, endLine, endColumn]
 }
