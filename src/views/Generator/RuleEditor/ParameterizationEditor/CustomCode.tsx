@@ -13,7 +13,7 @@ export function CustomCode() {
   const ruleIndex = useGeneratorStore(selectSelectedRuleIndex)
 
   return (
-    <FieldGroup name="snippet" errors={errors} label="Snippet">
+    <FieldGroup name="value.code" errors={errors} label="Snippet">
       <Controller
         name="value.code"
         control={control}
