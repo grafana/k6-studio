@@ -10,6 +10,7 @@ import { NavIconButton } from './NavIconButton'
 import { ApplicationLogButton } from './ApplicationLogButton'
 import { SettingsButton } from './SettingsButton'
 import { ProxyStatusIndicator } from './ProxyStatusIndicator'
+import { HelpButton } from './HelpButton'
 
 export function ActivityBar() {
   return (
@@ -46,6 +47,7 @@ export function ActivityBar() {
           <ProxyStatusIndicator />
           <SettingsButton />
           <ApplicationLogButton />
+          <HelpButton />
           <VersionLabel />
         </Flex>
       </Box>
