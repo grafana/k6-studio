@@ -170,6 +170,9 @@ const log = {
   openLogFolder: () => {
     ipcRenderer.invoke('log:open')
   },
+  getLogContent: () => {
+    return ipcRenderer.invoke('log:read')
+  },
   onLogChange: (callback: (content: string) => void) => {
     return createListener('log:change', callback)
   },
