@@ -17,7 +17,11 @@ export function HelpButton() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <IconButton area-label="Documentation" color="gray" variant="ghost">
+        <IconButton
+          area-label="Documentation and feedback"
+          color="gray"
+          variant="ghost"
+        >
           <InfoCircledIcon />
         </IconButton>
       </DropdownMenu.Trigger>
