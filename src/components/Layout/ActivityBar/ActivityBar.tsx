@@ -3,7 +3,6 @@ import { Box, Flex, Grid, Text } from '@radix-ui/themes'
 
 import K6Logo from '@/assets/logo.svg'
 import { getRoutePath } from '@/routeMap'
-import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { VersionLabel } from './VersionLabel'
 import { HomeIcon } from '@/components/icons'
 import { NavIconButton } from './NavIconButton'
@@ -11,6 +10,7 @@ import { ApplicationLogButton } from './ApplicationLogButton'
 import { SettingsButton } from './SettingsButton'
 import { ProxyStatusIndicator } from './ProxyStatusIndicator'
 import { HelpButton } from './HelpButton'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 
 export function ActivityBar() {
   return (

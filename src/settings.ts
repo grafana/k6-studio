@@ -24,6 +24,9 @@ const defaultSettings: AppSettings = {
   usageReport: {
     enabled: true,
   },
+  appearance: {
+    theme: 'system',
+  },
 }
 
 const fileName =
