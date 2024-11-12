@@ -94,10 +94,15 @@ const WindowStateSchema = z.object({
   isMaximized: z.boolean(),
 })
 
+const AppearanceSchema = z.object({
+  theme: z.union([z.literal('light'), z.literal('dark'), z.literal('system')]),
+})
+
 export const AppSettingsSchema = z.object({
   version: z.string(),
   proxy: ProxySettingsSchema,
   recorder: RecorderSettingsSchema,
   windowState: WindowStateSchema,
   usageReport: UsageReportSettingsSchema,
+  appearance: AppearanceSchema,
 })

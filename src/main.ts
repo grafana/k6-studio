@@ -196,6 +196,8 @@ const createWindow = async () => {
 
 app.whenReady().then(async () => {
   appSettings = await getSettings()
+  nativeTheme.themeSource = appSettings.appearance.theme
+
   await sendReport(appSettings.usageReport)
   await createSplashWindow()
   await setupProjectStructure()
@@ -619,6 +621,10 @@ async function applySettings(
   }
   if (modifiedSettings.usageReport) {
     appSettings.usageReport = modifiedSettings.usageReport
+  }
+  if (modifiedSettings.appearance) {
+    appSettings.appearance = modifiedSettings.appearance
+    nativeTheme.themeSource = appSettings.appearance.theme
   }
 }
 
