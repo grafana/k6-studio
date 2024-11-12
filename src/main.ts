@@ -560,8 +560,8 @@ ipcMain.handle('browser:open:external:link', (_, url: string) => {
   shell.openExternal(url)
 })
 
-ipcMain.handle('app:open-log', () => {
-  console.info('app:open-log event received')
+ipcMain.handle('log:open', () => {
+  console.info('log:open event received')
   openLogFolder()
 })
 
