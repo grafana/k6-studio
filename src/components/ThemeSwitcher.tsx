@@ -4,8 +4,7 @@ import { IconButton, Tooltip } from '@radix-ui/themes'
 
 export function ThemeSwitcher() {
   const theme = useTheme()
-  // @ts-expect-error we have commonjs set as module option
-  const isDev = import.meta.env.DEV
+  const isDev = process.env.NODE_ENV === 'development'
 
   if (!isDev) {
     return null
