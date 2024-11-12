@@ -1,9 +1,10 @@
 import { Controller, useFormContext } from 'react-hook-form'
+import { Flex, RadioCards, Text } from '@radix-ui/themes'
+import { GearIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons'
+
+import { AppSettings } from '@/types/settings'
 import { FieldGroup } from '../Form'
 import { SettingsSection } from './SettingsSection'
-import { AppSettings } from '@/types/settings'
-import { Flex, RadioCards, Text } from '@radix-ui/themes'
-import { CodeIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons'
 
 export function AppearanceSettings() {
   const {
@@ -43,7 +44,7 @@ export function AppearanceSettings() {
               </RadioCards.Item>
               <RadioCards.Item value="system">
                 <Flex width="100%" align="center" gap="2">
-                  <CodeIcon />
+                  <GearIcon />
                   <Text>System</Text>
                 </Flex>
               </RadioCards.Item>
