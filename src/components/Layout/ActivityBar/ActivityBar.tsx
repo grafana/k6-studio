@@ -6,7 +6,6 @@ import { getRoutePath } from '@/routeMap'
 import { VersionLabel } from './VersionLabel'
 import { HomeIcon } from '@/components/icons'
 import { NavIconButton } from './NavIconButton'
-import { ApplicationLogButton } from './ApplicationLogButton'
 import { SettingsButton } from './SettingsButton'
 import { ProxyStatusIndicator } from './ProxyStatusIndicator'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
@@ -45,7 +44,6 @@ export function ActivityBar() {
           <ThemeSwitcher />
           <ProxyStatusIndicator />
           <SettingsButton />
-          <ApplicationLogButton />
           <VersionLabel />
         </Flex>
       </Box>
