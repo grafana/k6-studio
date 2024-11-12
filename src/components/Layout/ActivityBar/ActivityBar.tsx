@@ -9,6 +9,7 @@ import { NavIconButton } from './NavIconButton'
 import { ApplicationLogButton } from './ApplicationLogButton'
 import { SettingsButton } from './SettingsButton'
 import { ProxyStatusIndicator } from './ProxyStatusIndicator'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 
 export function ActivityBar() {
   return (
@@ -41,6 +42,7 @@ export function ActivityBar() {
         </Grid>
 
         <Flex direction="column" align="center" gap="3" mt="auto">
+          <ThemeSwitcher />
           <ProxyStatusIndicator />
           <SettingsButton />
           <ApplicationLogButton />
