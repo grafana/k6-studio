@@ -13,6 +13,7 @@ import { AppSettings } from '@/types/settings'
 import { UsageReportSettings } from './UsageReportSettings'
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
 import { AppearanceSettings } from './AppearanceSettings'
+import { LogsSettings } from './LogsSettings'
 
 type SettingsDialogProps = {
   open: boolean
@@ -31,6 +32,11 @@ const tabs = [
     label: 'Appearance',
     value: 'appearance',
     component: AppearanceSettings,
+  },
+  {
+    label: 'Logs',
+    value: 'logs',
+    component: LogsSettings,
   },
 ]
 
