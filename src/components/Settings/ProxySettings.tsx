@@ -44,7 +44,7 @@ export const ProxySettings = () => {
         />
       </FieldGroup>
 
-      <Flex gap="2" my="4">
+      <Flex mt="2" mb="4">
         <Controller
           control={control}
           name="proxy.automaticallyFindPort"
