@@ -15,6 +15,7 @@ export function LogsSettings() {
     editor.revealLine(lineCount)
   }, [editor, logContent])
 
+  // retrieve the current content of the log file
   useEffect(() => {
     async function fetchLogContent() {
       const content = await window.studio.log.getLogContent()
@@ -25,6 +26,7 @@ export function LogsSettings() {
     fetchLogContent()
   }, [scrollToLastLine])
 
+  // subscribe to log changes
   useEffect(() => {
     return window.studio.log.onLogChange((content: string) => {
       setLogContent(content)
@@ -54,12 +56,13 @@ export function LogsSettings() {
         </Button>
       </Flex>
 
-      <ReadOnlyEditor
-        language="log"
-        height="380px"
-        value={logContent}
-        onMount={handleEditorMount}
-      />
+      <Flex flexGrow="1">
+        <ReadOnlyEditor
+          language="log"
+          value={logContent}
+          onMount={handleEditorMount}
+        />
+      </Flex>
     </SettingsSection>
   )
 }
