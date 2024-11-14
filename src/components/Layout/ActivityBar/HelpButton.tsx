@@ -1,4 +1,4 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { QuestionMarkCircledIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton } from '@radix-ui/themes'
 
 export function HelpButton() {
@@ -22,7 +22,7 @@ export function HelpButton() {
           color="gray"
           variant="ghost"
         >
-          <InfoCircledIcon />
+          <QuestionMarkCircledIcon />
         </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content side="right">
