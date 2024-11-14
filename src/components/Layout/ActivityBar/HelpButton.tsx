@@ -1,5 +1,5 @@
 import { QuestionMarkCircledIcon } from '@radix-ui/react-icons'
-import { DropdownMenu, IconButton } from '@radix-ui/themes'
+import { DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 
 export function HelpButton() {
   const handleOpenDocs = () => {
@@ -16,15 +16,17 @@ export function HelpButton() {
 
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <IconButton
-          area-label="Documentation and feedback"
-          color="gray"
-          variant="ghost"
-        >
-          <QuestionMarkCircledIcon />
-        </IconButton>
-      </DropdownMenu.Trigger>
+      <Tooltip content="Help & feedback" side="right">
+        <DropdownMenu.Trigger>
+          <IconButton
+            area-label="Help and feedback"
+            color="gray"
+            variant="ghost"
+          >
+            <QuestionMarkCircledIcon />
+          </IconButton>
+        </DropdownMenu.Trigger>
+      </Tooltip>
       <DropdownMenu.Content side="right">
         <DropdownMenu.Item onClick={handleOpenDocs}>
           Documentation
