@@ -8,6 +8,7 @@ import { HomeIcon } from '@/components/icons'
 import { NavIconButton } from './NavIconButton'
 import { SettingsButton } from './SettingsButton'
 import { ProxyStatusIndicator } from './ProxyStatusIndicator'
+import { HelpButton } from './HelpButton'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 
 export function ActivityBar() {
@@ -44,6 +45,7 @@ export function ActivityBar() {
           <ThemeSwitcher />
           <ProxyStatusIndicator />
           <SettingsButton />
+          <HelpButton />
           <VersionLabel />
         </Flex>
       </Box>

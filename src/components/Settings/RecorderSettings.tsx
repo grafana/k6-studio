@@ -52,7 +52,7 @@ export const RecorderSettings = () => {
       </Flex>
 
       <FileUploadInput
-        label="Browser Path"
+        label="Browser path"
         errors={errors}
         name="recorder.browserPath"
         onSelectFile={handleSelectFile}
