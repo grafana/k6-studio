@@ -155,9 +155,6 @@ const app = {
   closeSplashscreen: () => {
     ipcRenderer.send('splashscreen:close')
   },
-  openApplicationLog: () => {
-    ipcRenderer.invoke('app:open-log')
-  },
   onApplicationClose: (callback: () => void) => {
     return createListener('app:close', callback)
   },
@@ -166,6 +163,18 @@ const app = {
   },
   changeRoute: (route: string) => {
     return ipcRenderer.invoke('app:change-route', route)
+  },
+} as const
+
+const log = {
+  openLogFolder: () => {
+    ipcRenderer.invoke('log:open')
+  },
+  getLogContent: (): Promise<string> => {
+    return ipcRenderer.invoke('log:read')
+  },
+  onLogChange: (callback: (content: string) => void) => {
+    return createListener('log:change', callback)
   },
 } as const
 
@@ -192,6 +201,7 @@ const studio = {
   ui,
   generator,
   app,
+  log,
   settings,
 } as const
 

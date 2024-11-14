@@ -13,6 +13,7 @@ import { AppSettings } from '@/types/settings'
 import { UsageReportSettings } from './UsageReportSettings'
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
 import { AppearanceSettings } from './AppearanceSettings'
+import { LogsSettings } from './LogsSettings'
 
 type SettingsDialogProps = {
   open: boolean
@@ -31,6 +32,11 @@ const tabs = [
     label: 'Appearance',
     value: 'appearance',
     component: AppearanceSettings,
+  },
+  {
+    label: 'Logs',
+    value: 'logs',
+    component: LogsSettings,
   },
 ]
 
@@ -134,7 +140,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             <Box minHeight="0" maxHeight="460px" mb="4" flexGrow="1">
               <ScrollArea>
                 {tabs.map((tab) => (
-                  <Tabs.Content key={tab.value} value={tab.value}>
+                  <Tabs.Content
+                    key={tab.value}
+                    value={tab.value}
+                    css={css`
+                      height: 100%;
+                    `}
+                  >
                     <tab.component />
                   </Tabs.Content>
                 ))}

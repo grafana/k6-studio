@@ -1,5 +1,6 @@
 import { Menu, shell } from 'electron'
 import { getPlatform } from './utils/electron'
+import { openLogFolder } from './logger'
 
 const isDevEnv = process.env.NODE_ENV === 'development'
 const isMac = getPlatform() === 'mac'
@@ -39,6 +40,10 @@ const template: Electron.MenuItemConstructorOptions[] = [
             'https://github.com/grafana/k6-studio/issues'
           )
         },
+      },
+      {
+        label: 'Application logs',
+        click: () => openLogFolder(),
       },
     ],
   },
