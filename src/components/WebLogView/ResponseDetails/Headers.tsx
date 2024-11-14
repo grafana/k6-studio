@@ -8,7 +8,7 @@ export function Headers({ data }: { data: ProxyData }) {
     <DataList.Root size="1" trim="both">
       <Strong>General</Strong>
       <DataList.Item>
-        <DataList.Label>Status Code</DataList.Label>
+        <DataList.Label>Status code</DataList.Label>
         <DataList.Value>{data.response?.statusCode}</DataList.Value>
       </DataList.Item>
 

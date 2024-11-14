@@ -27,6 +27,12 @@ const template: Electron.MenuItemConstructorOptions[] = [
     role: 'help',
     submenu: [
       {
+        label: 'Documentation',
+        click: async () => {
+          await shell.openExternal('https://grafana.com/docs/k6-studio/')
+        },
+      },
+      {
         label: 'Report an issue',
         click: async () => {
           await shell.openExternal(
