@@ -14,6 +14,10 @@ export function HelpButton() {
     )
   }
 
+  const handleOpenApplicationLogs = () => {
+    window.studio.log.openLogFolder()
+  }
+
   return (
     <DropdownMenu.Root>
       <Tooltip content="Help & feedback" side="right">
@@ -33,6 +37,9 @@ export function HelpButton() {
         </DropdownMenu.Item>
         <DropdownMenu.Item onClick={handleReportIssue}>
           Report an issue
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onClick={handleOpenApplicationLogs}>
+          Application logs
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
