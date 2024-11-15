@@ -17,7 +17,7 @@ const handleCreateIssue = () => {
 }
 
 const handleOpenLogs = () => {
-  window.studio.app.openApplicationLog()
+  window.studio.log.openLogFolder()
 }
 
 const handleRestart = () => {

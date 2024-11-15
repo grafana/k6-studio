@@ -1,16 +1,19 @@
 import { css } from '@emotion/react'
-import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
-import { ProxySettings } from './ProxySettings'
-import { FormProvider, useForm } from 'react-hook-form'
-import { AppSettingsSchema } from '@/schemas/appSettings'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { findIndex, sortBy } from 'lodash-es'
 import { useEffect, useState } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
+
+import { ProxySettings } from './ProxySettings'
+import { AppSettingsSchema } from '@/schemas/appSettings'
 import { RecorderSettings } from './RecorderSettings'
 import { AppSettings } from '@/types/settings'
 import { UsageReportSettings } from './UsageReportSettings'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
-import { findIndex, sortBy } from 'lodash-es'
+import { AppearanceSettings } from './AppearanceSettings'
+import { LogsSettings } from './LogsSettings'
 
 type SettingsDialogProps = {
   open: boolean
@@ -24,6 +27,16 @@ const tabs = [
     label: 'Usage collection',
     value: 'usageReport',
     component: UsageReportSettings,
+  },
+  {
+    label: 'Appearance',
+    value: 'appearance',
+    component: AppearanceSettings,
+  },
+  {
+    label: 'Logs',
+    value: 'logs',
+    component: LogsSettings,
   },
 ]
 
@@ -127,7 +140,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
             <Box minHeight="0" maxHeight="460px" mb="4" flexGrow="1">
               <ScrollArea>
                 {tabs.map((tab) => (
-                  <Tabs.Content key={tab.value} value={tab.value}>
+                  <Tabs.Content
+                    key={tab.value}
+                    value={tab.value}
+                    css={css`
+                      height: 100%;
+                    `}
+                  >
                     <tab.component />
                   </Tabs.Content>
                 ))}

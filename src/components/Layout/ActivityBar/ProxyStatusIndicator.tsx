@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Link1Icon, LinkBreak1Icon, LinkNone1Icon } from '@radix-ui/react-icons'
-import { Box, Tooltip } from '@radix-ui/themes'
+import { Box, Flex, Tooltip } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
@@ -31,20 +31,20 @@ export function ProxyStatusIndicator() {
 
   return (
     <Tooltip content={`Proxy status: ${status}`} side="right">
-      <Box position="relative">
+      <Flex position="relative">
         <ProxyStatusIcon status={status} />
         <Box
           position="absolute"
           width="6px"
           height="6px"
-          bottom="1"
+          bottom="0"
           right="0"
           css={css`
             background-color: ${COLOR_MAP[status]};
             border-radius: 50%;
           `}
         />
-      </Box>
+      </Flex>
     </Tooltip>
   )
 }

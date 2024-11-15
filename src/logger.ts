@@ -1,6 +1,11 @@
 import log from 'electron-log/main'
 import { spawn } from 'node:child_process'
 import path from 'node:path'
+import { FSWatcher, watch } from 'chokidar'
+import { BrowserWindow } from 'electron'
+import fs from 'fs/promises'
+
+let watcher: FSWatcher
 
 export function initializeLogger() {
   // allow logs to be triggered from the renderer process
@@ -19,6 +24,10 @@ export function initializeLogger() {
   if (process.env.NODE_ENV === 'development') {
     log.transports.file.fileName = 'k6-studio-dev.log'
   }
+
+  // initialize chokidar watcher to watch log file
+  watcher = watch(log.transports.file.getFile().path)
+  watcher.on('change', onLogChange)
 }
 
 export function openLogFolder() {
@@ -28,4 +37,15 @@ export function openLogFolder() {
   // supports only Mac and Windows at this time
   const executable = process.platform === 'darwin' ? 'open' : 'explorer'
   spawn(executable, [logPath])
+}
+
+export async function getLogContent() {
+  const path = log.transports.file.getFile().path
+  return await fs.readFile(path, 'utf8')
+}
+
+async function onLogChange() {
+  const content = await getLogContent()
+  const mainWindow = BrowserWindow.getAllWindows()[0]
+  mainWindow?.webContents.send('log:change', content)
 }

@@ -1,4 +1,4 @@
-import { Box, Flex } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 
 type SettingsSectionProps = {
   children: React.ReactNode
@@ -6,8 +6,8 @@ type SettingsSectionProps = {
 
 export function SettingsSection({ children }: SettingsSectionProps) {
   return (
-    <Flex gap="2" direction="column" pt="4" p="1">
-      <Box>{children}</Box>
+    <Flex direction="column" pt="4" p="1" height="100%">
+      {children}
     </Flex>
   )
 }

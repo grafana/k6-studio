@@ -11,7 +11,7 @@ export function Headers({ data }: { data: ProxyData }) {
       </DataList.Item>
 
       <DataList.Item>
-        <DataList.Label>Request Method</DataList.Label>
+        <DataList.Label>Request method</DataList.Label>
         <DataList.Value>{data.request.method}</DataList.Value>
       </DataList.Item>
 
