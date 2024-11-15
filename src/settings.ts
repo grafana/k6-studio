@@ -3,6 +3,9 @@ import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
 import { AppSettings } from './types/settings'
 import { AppSettingsSchema } from './schemas/appSettings'
+import { existsSync, readFileSync } from 'fs'
+import { safeJsonParse } from './utils/json'
+import log from 'electron-log/main'
 
 const defaultSettings: AppSettings = {
   version: '1.0',
@@ -36,14 +39,11 @@ const fileName =
 const filePath = path.join(app.getPath('userData'), fileName)
 
 /**
- * Initializes the settings file if it doesn't exist.
+ * Initializes the settings file if it doesn't exist or is invalid
  */
-async function initSettings() {
-  try {
-    const fileHandle = await open(filePath, 'r')
-    await fileHandle.close()
-  } catch {
-    await writeFile(filePath, JSON.stringify(defaultSettings))
+export async function initSettings() {
+  if (!existsSync(filePath) || !isSettingsJsonObject()) {
+    return writeFile(filePath, JSON.stringify(defaultSettings))
   }
 }
 
@@ -52,7 +52,6 @@ async function initSettings() {
  * @returns The current settings as JSON
  */
 export async function getSettings() {
-  await initSettings()
   const fileHandle = await open(filePath, 'r')
   try {
     const settings = await fileHandle?.readFile({ encoding: 'utf-8' })
@@ -62,6 +61,11 @@ export async function getSettings() {
       ...currentSettings,
     }
     return AppSettingsSchema.parse(allSettings)
+  } catch (error) {
+    log.error('Failed to parse settings file', error)
+    // if the file is invalid during runtime,
+    // return a valid settings object so the app can keep running
+    return defaultSettings
   } finally {
     await fileHandle?.close()
   }
@@ -99,6 +103,15 @@ function getSettingsDiff(oldSettings: AppSettings, newSettings: AppSettings) {
   }
 
   return diff
+}
+
+/***
+ * Ensures the file is in JSON format (including not being empty)
+ * @returns whether or not the file is a JSON object
+ */
+function isSettingsJsonObject() {
+  const settings = readFileSync(filePath, 'utf-8')
+  return safeJsonParse(settings.toString()) !== undefined
 }
 
 export async function selectBrowserExecutable() {

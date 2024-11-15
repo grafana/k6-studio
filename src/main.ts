@@ -49,6 +49,7 @@ import { sendReport } from './usageReport'
 import { AppSettings } from './types/settings'
 import {
   getSettings,
+  initSettings,
   saveSettings,
   selectBrowserExecutable,
   selectUpstreamCertificate,
@@ -195,6 +196,7 @@ const createWindow = async () => {
 }
 
 app.whenReady().then(async () => {
+  await initSettings()
   appSettings = await getSettings()
   nativeTheme.themeSource = appSettings.appearance.theme
 
