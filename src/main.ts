@@ -582,7 +582,9 @@ ipcMain.handle('settings:save', async (event, data: AppSettings) => {
 
   const browserWindow = browserWindowFromEvent(event)
   try {
-    const modifiedSettings = await saveSettings(data)
+    // don't pass fields that are not submitted by the form
+    const { windowState: _, ...settings } = data
+    const modifiedSettings = await saveSettings(settings)
     applySettings(modifiedSettings, browserWindow)
 
     sendToast(browserWindow.webContents, {
