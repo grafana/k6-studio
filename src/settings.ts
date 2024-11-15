@@ -73,14 +73,14 @@ export async function getSettings() {
 
 /**
  * Write the new settings to the settings file
- * @param newSettings
+ * @param settings
  * @returns The settings that have changed
  */
-export async function saveSettings(newSettings: AppSettings) {
+export async function saveSettings(settings: Partial<AppSettings>) {
   const currentSettings = await getSettings()
-  const diff = getSettingsDiff(currentSettings, newSettings)
+  const newSettings = { ...currentSettings, ...settings }
   await writeFile(filePath, JSON.stringify(newSettings))
-  return diff
+  return getSettingsDiff(currentSettings, settings)
 }
 
 /**
@@ -89,7 +89,10 @@ export async function saveSettings(newSettings: AppSettings) {
  * @param newSettings
  * @returns the difference between the old and new settings
  */
-function getSettingsDiff(oldSettings: AppSettings, newSettings: AppSettings) {
+function getSettingsDiff(
+  oldSettings: AppSettings,
+  newSettings: Partial<AppSettings>
+) {
   const diff: Record<string, unknown> = {}
 
   for (const key in newSettings) {
