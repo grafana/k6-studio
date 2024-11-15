@@ -2,7 +2,10 @@ import * as monacoTypes from 'monaco-editor'
 import { ReactMonacoEditor } from './ReactMonacoEditor'
 // Locally added types
 // eslint-disable-next-line import/no-named-as-default
-import constrainedEditor, { RestrictionObject } from 'constrained-editor-plugin'
+import constrainedEditor, {
+  ConstrainedEditorInstance,
+  RestrictionObject,
+} from 'constrained-editor-plugin'
 import { useEffect, useState } from 'react'
 import { EditorProps } from '@monaco-editor/react'
 
@@ -19,25 +22,17 @@ export function ConstrainedCodeEditor({
   editableRange,
   options,
 }: CodeEditorProps) {
-  const [editor, setEditor] =
-    useState<monacoTypes.editor.IStandaloneCodeEditor>()
-  const [monaco, setMonaco] = useState<typeof monacoTypes>()
+  const [model, setModel] = useState<monacoTypes.editor.ITextModel | null>()
+  const [constrainedInstance, setConstrainedInstance] =
+    useState<ConstrainedEditorInstance>()
 
-  // Add editable range to editor
   useEffect(() => {
-    if (!editor || !monaco) {
+    if (!model || !constrainedInstance) {
       return
     }
 
-    const model = editor.getModel()
-    if (!model) {
-      return
-    }
-
-    const instance = constrainedEditor(monaco)
-    instance.initializeIn(editor)
-
-    const constraindModel = instance.addRestrictionsTo(model, [
+    // Add editable range to editor
+    const constrainedModel = constrainedInstance.addRestrictionsTo(model, [
       {
         range: editableRange,
         label: 'editableRange', // Used for reading value onDidChangeContentInEditableRange
@@ -45,30 +40,27 @@ export function ConstrainedCodeEditor({
       },
     ])
 
-    constraindModel.onDidChangeContentInEditableRange(
+    // Listen to changes in the editable range
+    constrainedModel.onDidChangeContentInEditableRange(
       (currentlyChangedContent) =>
         onChange?.(currentlyChangedContent.editableRange ?? '')
     )
 
-    return () => constraindModel.disposeRestrictions()
-  }, [editor, monaco, onChange, editableRange])
-
-  // Update value in editor when it changes externally, e.g. switching between rules
-  useEffect(() => {
-    if (!editor) return
-    const position = editor.getPosition()
-    editor.setValue(value)
-    if (position) {
-      editor.setPosition(position)
-    }
-  }, [editor, value])
+    // Cleanup
+    return constrainedModel.disposeRestrictions
+  }, [model, constrainedInstance, editableRange, onChange])
 
   const handleEditorMount = (
     editor: monacoTypes.editor.IStandaloneCodeEditor,
     monaco: typeof monacoTypes
   ) => {
-    setEditor(editor)
-    setMonaco(monaco)
+    const instance = constrainedEditor(monaco)
+    instance.initializeIn(editor)
+
+    const model = editor.getModel()
+    setModel(model)
+
+    setConstrainedInstance(instance)
   }
 
   return (
