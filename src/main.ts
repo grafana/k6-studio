@@ -49,6 +49,7 @@ import { sendReport } from './usageReport'
 import { AppSettings } from './types/settings'
 import {
   getSettings,
+  initSettings,
   saveSettings,
   selectBrowserExecutable,
   selectUpstreamCertificate,
@@ -182,8 +183,8 @@ const createWindow = async () => {
     proxyEmitter.removeAllListeners('status:change')
   )
 
-  mainWindow.on('move', () => trackWindowState(mainWindow))
-  mainWindow.on('resize', () => trackWindowState(mainWindow))
+  mainWindow.on('moved', () => trackWindowState(mainWindow))
+  mainWindow.on('resized', () => trackWindowState(mainWindow))
   mainWindow.on('close', (event) => {
     mainWindow.webContents.send('app:close')
     if (currentClientRoute.startsWith('/generator') && !wasAppClosedByClient) {
@@ -195,6 +196,7 @@ const createWindow = async () => {
 }
 
 app.whenReady().then(async () => {
+  await initSettings()
   appSettings = await getSettings()
   nativeTheme.themeSource = appSettings.appearance.theme
 
