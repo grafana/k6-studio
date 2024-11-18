@@ -95,3 +95,14 @@ export function selectHasVerificationRule(state: GeneratorStore) {
 export function selectHasGroups(state: GeneratorStore) {
   return state.requests.some((request) => request.group)
 }
+
+export function selectSelectedRuleIndex(state: GeneratorStore) {
+  const selectedRule = selectSelectedRule(state)
+  if (!selectedRule) {
+    return 0
+  }
+
+  return state.rules
+    .filter((rule) => rule.type === selectedRule.type)
+    .findIndex((rule) => rule.id === state.selectedRuleId)
+}

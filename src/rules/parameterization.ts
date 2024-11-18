@@ -109,9 +109,9 @@ function getBeforeSnippet(rule: ParameterizationRule, id: number) {
   }
 }
 
-function getCustomCodeSnippet(code: string, id: number) {
+export function getCustomCodeSnippet(code: string, id: number) {
   return `function getParameterizationValue${id}() {
-  ${code}
+${code}
 }`
 }
 
