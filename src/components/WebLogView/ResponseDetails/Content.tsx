@@ -1,15 +1,24 @@
 import { useState } from 'react'
-import { Box, Flex, ScrollArea, SegmentedControl } from '@radix-ui/themes'
+import {
+  Box,
+  Flex,
+  ScrollArea,
+  SegmentedControl,
+  Switch,
+  Text,
+} from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 import { Preview } from './Preview'
 import { Raw } from './Raw'
 import { parseContent, toFormat } from './ResponseDetails.utils'
-import { OriginalContent } from './OriginalContent'
+import { Label } from '@/components/Label'
+import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 
 export function Content({ data }: { data: ProxyData }) {
   const [selectedTab, setSelectedTab] = useState('preview')
+  const [isWordWrapChecked, setIsWordWrapChecked] = useState(false)
 
   const contentType = getContentType(data.response?.headers ?? [])
   const format = toFormat(contentType)
@@ -34,7 +43,19 @@ export function Content({ data }: { data: ProxyData }) {
   return (
     <Flex direction="column" gap="4" height="100%" py="4">
       {!isMedia(format) && (
-        <Flex gap="2" justify="end" px="4">
+        <Flex gap="2" justify="between" px="4">
+          <Label flexGrow="1">
+            {selectedTab === 'content' && (
+              <>
+                <Text size="2">Word-wrap</Text>
+                <Switch
+                  size="1"
+                  checked={isWordWrapChecked}
+                  onCheckedChange={setIsWordWrapChecked}
+                />
+              </>
+            )}{' '}
+          </Label>
           <SegmentedControl.Root
             defaultValue="preview"
             radius="small"
@@ -58,7 +79,13 @@ export function Content({ data }: { data: ProxyData }) {
           {selectedTab === 'raw' && (
             <Raw content={rawContent ?? ''} format={format} />
           )}
-          {selectedTab === 'content' && <OriginalContent {...contentProps} />}
+          {selectedTab === 'content' && (
+            <ReadOnlyEditor
+              language={format}
+              value={content}
+              options={{ wordWrap: isWordWrapChecked ? 'on' : 'off' }}
+            />
+          )}
         </Box>
       </ScrollArea>
     </Flex>
