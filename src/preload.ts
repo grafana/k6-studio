@@ -179,7 +179,7 @@ const log = {
 } as const
 
 const settings = {
-  getSettings: () => {
+  getSettings: (): Promise<AppSettings> => {
     return ipcRenderer.invoke('settings:get')
   },
   saveSettings: (settings: AppSettings): Promise<AppSettings> => {

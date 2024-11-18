@@ -9,13 +9,16 @@ import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
 import { ValidatorDialog } from '../ValidatorDialog'
 import { ExportScriptDialog } from '../ExportScriptDialog'
 import { exportScript } from '../Generator.utils'
+import { useEditorWordWrapSetting } from '@/hooks/useEditorWordWrapSetting'
 
 export function ScriptPreview() {
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const [isWordWrapChecked, setIsWordWrapChecked] = useState(false)
   const { preview, error } = useScriptPreview()
+  const { wordWrap, setWordWrap } = useEditorWordWrapSetting(
+    'wordWrapScriptPreview'
+  )
   const isScriptExportable = !error && !!preview
 
   return (
@@ -25,8 +28,8 @@ export function ScriptPreview() {
           <Text size="2">Word-wrap</Text>
           <Switch
             size="1"
-            checked={isWordWrapChecked}
-            onCheckedChange={setIsWordWrapChecked}
+            checked={wordWrap === 'on'}
+            onCheckedChange={setWordWrap}
           />
         </Label>
         <Button
@@ -56,7 +59,7 @@ export function ScriptPreview() {
         <CodeEditor
           options={{
             readOnly: true,
-            wordWrap: isWordWrapChecked ? 'on' : 'off',
+            wordWrap,
           }}
           value={preview}
         />

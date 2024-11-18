@@ -15,10 +15,13 @@ import { Raw } from './Raw'
 import { parseContent, toFormat } from './ResponseDetails.utils'
 import { Label } from '@/components/Label'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { useEditorWordWrapSetting } from '@/hooks/useEditorWordWrapSetting'
 
 export function Content({ data }: { data: ProxyData }) {
   const [selectedTab, setSelectedTab] = useState('preview')
-  const [isWordWrapChecked, setIsWordWrapChecked] = useState(false)
+  const { wordWrap, setWordWrap } = useEditorWordWrapSetting(
+    'wordWrapResponseContent'
+  )
 
   const contentType = getContentType(data.response?.headers ?? [])
   const format = toFormat(contentType)
@@ -50,8 +53,8 @@ export function Content({ data }: { data: ProxyData }) {
                 <Text size="2">Word-wrap</Text>
                 <Switch
                   size="1"
-                  checked={isWordWrapChecked}
-                  onCheckedChange={setIsWordWrapChecked}
+                  checked={wordWrap === 'on'}
+                  onCheckedChange={setWordWrap}
                 />
               </>
             )}{' '}
@@ -83,7 +86,7 @@ export function Content({ data }: { data: ProxyData }) {
             <ReadOnlyEditor
               language={format}
               value={content}
-              options={{ wordWrap: isWordWrapChecked ? 'on' : 'off' }}
+              options={{ wordWrap }}
             />
           )}
         </Box>
