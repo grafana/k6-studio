@@ -30,6 +30,10 @@ const defaultSettings: AppSettings = {
   appearance: {
     theme: 'system',
   },
+  editor: {
+    wordWrapScriptPreview: 'off',
+    wordWrapResponseContent: 'off',
+  },
 }
 
 const fileName =
@@ -81,6 +85,15 @@ export async function saveSettings(settings: Partial<AppSettings>) {
   const newSettings = { ...currentSettings, ...settings }
   await writeFile(filePath, JSON.stringify(newSettings))
   return getSettingsDiff(currentSettings, settings)
+}
+
+/**
+ * Save a specific setting by key
+ * @param key
+ * @param object
+ */
+export function saveSettingsByKey(key: keyof AppSettings, object: unknown) {
+  return saveSettings({ [key]: object })
 }
 
 /**

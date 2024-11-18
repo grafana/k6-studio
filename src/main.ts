@@ -51,6 +51,7 @@ import {
   getSettings,
   initSettings,
   saveSettings,
+  saveSettingsByKey,
   selectBrowserExecutable,
   selectUpstreamCertificate,
 } from './settings'
@@ -601,6 +602,21 @@ ipcMain.handle('settings:save', async (event, data: AppSettings) => {
     return false
   }
 })
+
+ipcMain.handle(
+  'settings:save-by-key',
+  async (_, key: keyof AppSettings, object: unknown) => {
+    console.info('settings:save-by-key event received')
+
+    try {
+      await saveSettingsByKey(key, object)
+      return true
+    } catch (error) {
+      log.error(error)
+      return false
+    }
+  }
+)
 
 ipcMain.handle('settings:select-browser-executable', async () => {
   return selectBrowserExecutable()
