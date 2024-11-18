@@ -1,4 +1,5 @@
-import { Button, Flex } from '@radix-ui/themes'
+import { Button, Flex, Switch, Text } from '@radix-ui/themes'
+import { Label } from '@/components/Label'
 import { useState } from 'react'
 
 import { CodeEditor } from '@/components/Monaco/CodeEditor'
@@ -13,12 +14,21 @@ export function ScriptPreview() {
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
+  const [isWordWrapChecked, setIsWordWrapChecked] = useState(false)
   const { preview, error } = useScriptPreview()
   const isScriptExportable = !error && !!preview
 
   return (
     <Flex direction="column" height="100%">
-      <Flex p="2" gap="2" justify="end">
+      <Flex p="2" gap="2" justify="between">
+        <Label flexGrow="1">
+          <Text size="2">Word-wrap</Text>
+          <Switch
+            size="1"
+            checked={isWordWrapChecked}
+            onCheckedChange={setIsWordWrapChecked}
+          />
+        </Label>
         <Button
           onClick={() => {
             setIsValidatorDialogOpen(true)
@@ -43,7 +53,13 @@ export function ScriptPreview() {
       {error ? (
         <ScriptPreviewError error={error} />
       ) : (
-        <CodeEditor readOnly value={preview} />
+        <CodeEditor
+          options={{
+            readOnly: true,
+            wordWrap: isWordWrapChecked ? 'on' : 'off',
+          }}
+          value={preview}
+        />
       )}
       {isScriptExportable && (
         <>
