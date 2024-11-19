@@ -1,10 +1,9 @@
-// import { useEditorstateSetting } from '@/hooks/useEditorstateSetting'
-
 import { Flex, Switch, Text } from '@radix-ui/themes'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { k6StudioLightBackground } from './themes/k6StudioLight'
 import { Label } from '../Label'
 import { useTheme } from '@/hooks/useTheme'
+import { useLocalStorage } from 'react-use'
 
 export type ToolbarState = {
   wordWrap: 'on' | 'off'
@@ -15,11 +14,18 @@ type EditorToolbarProps = {
 }
 
 export const EditorToolbar = ({ getState }: EditorToolbarProps) => {
-  const [state, setState] = useState<ToolbarState>({ wordWrap: 'off' })
+  const [state, setState] = useLocalStorage<ToolbarState>(
+    'editorToolbarState',
+    {
+      wordWrap: 'off',
+    }
+  )
   const theme = useTheme()
 
   useEffect(() => {
-    getState(state)
+    if (state) {
+      getState(state)
+    }
   }, [state, getState])
 
   return (
@@ -34,7 +40,7 @@ export const EditorToolbar = ({ getState }: EditorToolbarProps) => {
         <Text size="2">Word-wrap</Text>
         <Switch
           size="1"
-          checked={state.wordWrap === 'on'}
+          checked={state?.wordWrap === 'on'}
           onCheckedChange={(checked) =>
             setState({ wordWrap: checked ? 'on' : 'off' })
           }
