@@ -1,27 +1,15 @@
 import { useState } from 'react'
-import {
-  Box,
-  Flex,
-  ScrollArea,
-  SegmentedControl,
-  Switch,
-  Text,
-} from '@radix-ui/themes'
+import { Box, Flex, ScrollArea, SegmentedControl } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 import { Preview } from './Preview'
 import { Raw } from './Raw'
 import { parseContent, toFormat } from './ResponseDetails.utils'
-import { Label } from '@/components/Label'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
-import { useEditorWordWrapSetting } from '@/hooks/useEditorWordWrapSetting'
 
 export function Content({ data }: { data: ProxyData }) {
   const [selectedTab, setSelectedTab] = useState('preview')
-  const { wordWrap, setWordWrap } = useEditorWordWrapSetting(
-    'wordWrapResponseContent'
-  )
 
   const contentType = getContentType(data.response?.headers ?? [])
   const format = toFormat(contentType)
@@ -46,19 +34,7 @@ export function Content({ data }: { data: ProxyData }) {
   return (
     <Flex direction="column" gap="4" height="100%" py="4">
       {!isMedia(format) && (
-        <Flex gap="2" justify="between" px="4">
-          <Label flexGrow="1">
-            {selectedTab === 'content' && (
-              <>
-                <Text size="2">Word-wrap</Text>
-                <Switch
-                  size="1"
-                  checked={wordWrap === 'on'}
-                  onCheckedChange={setWordWrap}
-                />
-              </>
-            )}{' '}
-          </Label>
+        <Flex gap="2" justify="end" px="4">
           <SegmentedControl.Root
             defaultValue="preview"
             radius="small"
@@ -77,17 +53,13 @@ export function Content({ data }: { data: ProxyData }) {
         </Flex>
       )}
       <ScrollArea style={{ height: '100%' }}>
-        <Box px="4" height="100%">
+        <Box px="4" height="calc(100% - 40px)">
           {selectedTab === 'preview' && <Preview {...contentProps} />}
           {selectedTab === 'raw' && (
             <Raw content={rawContent ?? ''} format={format} />
           )}
           {selectedTab === 'content' && (
-            <ReadOnlyEditor
-              language={format}
-              value={content}
-              options={{ wordWrap }}
-            />
+            <ReadOnlyEditor language={format} value={content} />
           )}
         </Box>
       </ScrollArea>

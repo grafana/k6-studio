@@ -103,6 +103,7 @@ export function ValidatorContent({
                   value="script"
                   css={css`
                     flex: 1;
+                    min-height: 0;
                   `}
                 >
                   <ReadOnlyEditor language="javascript" value={script} />

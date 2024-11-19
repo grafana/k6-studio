@@ -6,11 +6,15 @@ import { ReactMonacoEditor } from './ReactMonacoEditor'
 
 interface CodeEditorProps {
   value: string
-  options?: monaco.editor.IStandaloneEditorConstructionOptions
+  readOnly?: boolean
   onChange?: OnChange
 }
 
-export function CodeEditor({ value, onChange, options }: CodeEditorProps) {
+export function CodeEditor({
+  value,
+  onChange,
+  readOnly = false,
+}: CodeEditorProps) {
   const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>()
 
   useEffect(() => {
@@ -28,8 +32,9 @@ export function CodeEditor({ value, onChange, options }: CodeEditorProps) {
 
   return (
     <ReactMonacoEditor
+      showToolbar
       defaultLanguage="javascript"
-      options={options}
+      options={{ readOnly }}
       defaultValue={value}
       onChange={onChange}
       onMount={handleEditorMount}

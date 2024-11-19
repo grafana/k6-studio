@@ -1,6 +1,8 @@
 import { useTheme } from '@/hooks/useTheme'
 import { Editor, EditorProps, loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
+import { EditorToolbar, ToolbarState } from './EditorToolbar'
+import { useState } from 'react'
 
 loader.config({ monaco })
 
@@ -24,14 +26,33 @@ const defaultOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
   },
 }
 
-export function ReactMonacoEditor(props: EditorProps) {
+interface ReactMonacoEditorProps extends EditorProps {
+  showToolbar?: boolean
+}
+
+export function ReactMonacoEditor({
+  showToolbar,
+  ...props
+}: ReactMonacoEditorProps) {
   const theme = useTheme()
+  const [toolbarState, setToolbarState] = useState<ToolbarState>({
+    wordWrap: 'off',
+  })
 
   return (
-    <Editor
-      {...props}
-      options={{ ...defaultOptions, ...props.options }}
-      theme={theme === 'dark' ? 'vs-dark' : 'k6-studio-light'}
-    />
+    <>
+      {showToolbar && (
+        <EditorToolbar getState={(state) => setToolbarState(state)} />
+      )}
+      <Editor
+        {...props}
+        options={{
+          ...defaultOptions,
+          ...props.options,
+          wordWrap: toolbarState.wordWrap,
+        }}
+        theme={theme === 'dark' ? 'vs-dark' : 'k6-studio-light'}
+      />
+    </>
   )
 }
