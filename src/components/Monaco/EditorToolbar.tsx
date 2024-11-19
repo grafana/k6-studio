@@ -37,7 +37,7 @@ export const EditorToolbar = ({ getState }: EditorToolbarProps) => {
       }}
     >
       <Label flexGrow="1">
-        <Text size="2">Word-wrap</Text>
+        <Text size="2">Word wrap</Text>
         <Switch
           size="1"
           checked={state?.wordWrap === 'on'}
