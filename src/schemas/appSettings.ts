@@ -98,12 +98,6 @@ const AppearanceSchema = z.object({
   theme: z.union([z.literal('light'), z.literal('dark'), z.literal('system')]),
 })
 
-const WordWrapSchema = z.union([z.literal('on'), z.literal('off')])
-export const EditorSettingsSchema = z.object({
-  wordWrapScriptPreview: WordWrapSchema,
-  wordWrapResponseContent: WordWrapSchema,
-})
-
 export const AppSettingsSchema = z.object({
   version: z.string(),
   proxy: ProxySettingsSchema,
@@ -111,5 +105,4 @@ export const AppSettingsSchema = z.object({
   windowState: WindowStateSchema,
   usageReport: UsageReportSettingsSchema,
   appearance: AppearanceSchema,
-  editor: EditorSettingsSchema,
 })
