@@ -18,6 +18,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # get k6 binaries macos
+      - name: get latest k6 binary macos
+        if: startsWith(matrix.platform, 'macos-')
+        run: |
+          K6_PATH_AMD=k6-${{ vars.K6_VERSION }}-macos-amd64
+K6_PATH_ARM=k6-${{ vars.K6_VERSION }}-macos-arm64
+
+          # download binaries
+          curl -LO https://github.com/grafana/k6/releases/download/${{ vars.K6_VERSION }}/$K6_PATH_AMD.zip
+          curl -LO https://github.com/grafana/k6/releases/download/${{ vars.K6_VERSION }}/$K6_PATH_ARM.zip
+
+          # unzip & smoke test
+          unzip $K6_PATH_AMD.zip
+          unzip $K6_PATH_ARM.zip
+          $K6_PATH_AMD/k6 version
+          $K6_PATH_ARM/k6 version
+
+          # move to resource folder
+          mv $K6_PATH_AMD/k6 resources/mac/x86_64
+          mv $K6_PATH_ARM/k6 resources/mac/arm64
+
+      # get k6 binaries windows
+      - name: get latest k6 binary windows
+        if: startsWith(matrix.platform, 'windows-')
+        run: |
+          $K6_PATH_AMD="k6-${{ vars.K6_VERSION }}-windows-amd64"
+
+          # download binaries
+          Invoke-WebRequest -Uri "https://github.com/grafana/k6/releases/download/${{ vars.K6_VERSION }}/$K6_PATH_AMD.zip" -OutFile "k6-windows-amd64.zip"
+
+          # unzip & smoke test
+          Expand-Archive -Path "k6-windows-amd64.zip" -DestinationPath "."
+          & $K6_PATH_AMD\k6.exe version
+
+          # move to resource folder
+          Move-Item -Path "$K6_PATH_AMD\k6.exe" -Destination resources\win\x86_64
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
