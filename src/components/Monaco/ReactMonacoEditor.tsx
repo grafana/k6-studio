@@ -45,12 +45,14 @@ export function ReactMonacoEditor({
   const shouldEnableWordWrapButton = () => {
     const lineCount = editor?.getModel()?.getLineCount()
     if (!lineCount) return false
+
     for (let i = 1; i <= lineCount; i++) {
       const lineContent = editor?.getModel()?.getLineContent(i)
       if (lineContent && lineContent.length >= 10000) {
         return false
       }
     }
+
     return true
   }
 
