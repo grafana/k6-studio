@@ -6,6 +6,7 @@
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
   "scripts": {
+    "preinstall": "node install-k6.js",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
