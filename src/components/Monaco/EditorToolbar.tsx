@@ -34,7 +34,7 @@ export const EditorToolbar = ({ getState }: EditorToolbarProps) => {
       justify="end"
       style={{
         backgroundColor: theme === 'dark' ? '#1e1e1e' : k6StudioLightBackground,
-        borderBottom: `1px solid ${theme === 'dark' ? '#4d4b4b' : '#e5e5e5'}`,
+        borderBottom: `1px solid ${theme === 'dark' ? 'var(--gray-6)' : 'var(--gray-4)'}`,
       }}
     >
       <Tooltip content="Word wrap">
