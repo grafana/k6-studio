@@ -1,10 +1,10 @@
-const { exec } = require('child_process');
-const { existsSync } = require('fs');
+const { exec } = require('child_process')
+const { existsSync } = require('fs')
 
-const K6_VERSION = "v0.55.0"
+const K6_VERSION = 'v0.55.0'
 const K6_PATH_MAC_AMD = `k6-${K6_VERSION}-macos-amd64`
 const K6_PATH_MAC_ARM = `k6-${K6_VERSION}-macos-arm64`
-const K6_PATH_WIN_AMD = "k6-${K6_VERSION}-windows-amd64"
+const K6_PATH_WIN_AMD = `k6-${K6_VERSION}-windows-amd64`
 
 const existsK6 = (os, arch) => {
   return existsSync(`resources/${os}/${arch}/k6`)
@@ -33,8 +33,7 @@ rmdir ${K6_PATH_MAC_AMD}
 rmdir ${K6_PATH_MAC_ARM}
 `
 
-    executeCommand(command)
-
+  executeCommand(command, {})
 }
 
 const getWindowsK6Binary = () => {
@@ -44,31 +43,29 @@ Invoke-WebRequest -Uri "https://github.com/grafana/k6/releases/download/${K6_VER
 
 # unzip & smoke test
 Expand-Archive -Path "k6-windows-amd64.zip" -DestinationPath "."
-& ${K6_PATH_WIN_AMD}\k6.exe version
+${K6_PATH_WIN_AMD}\\k6.exe version
 
 # move to resource folder
-Move-Item -Path "${K6_PATH_WIN_AMD}\k6.exe" -Destination resources\win\x86_64
+Move-Item -Path "${K6_PATH_WIN_AMD}\\k6.exe" -Destination resources\\win\\x86_64
 `
 
-    executeCommand(command)
-
+  executeCommand(command, { shell: 'powershell.exe' })
 }
 
-
-const executeCommand = (command) => {
-  exec(command, (error, stdout, stderr) => {
+const executeCommand = (command, options) => {
+  exec(command, options, (error, stdout, stderr) => {
     if (error) {
-      console.error(`Error: ${error.message}`);
-      return;
+      console.error(`Error: ${error.message}`)
+      return
     }
 
     if (stderr) {
-      console.error(`stderr: ${stderr}`);
-      return;
+      console.error(`stderr: ${stderr}`)
+      return
     }
 
-    console.log(`stdout: ${stdout}`);
-  });
+    console.log(`stdout: ${stdout}`)
+  })
 }
 
 switch (process.platform) {
@@ -92,4 +89,3 @@ switch (process.platform) {
   default:
     console.log(`unsupported platform found: ${process.platform}`)
 }
-
