@@ -53,7 +53,7 @@ export function Content({ data }: { data: ProxyData }) {
         </Flex>
       )}
       <ScrollArea style={{ height: '100%' }}>
-        <Box px="4" height="calc(100% - 40px)">
+        <Box px="4" height="100%">
           {selectedTab === 'preview' && <Preview {...contentProps} />}
           {selectedTab === 'raw' && (
             <Raw content={rawContent ?? ''} format={format} />

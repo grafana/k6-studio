@@ -3,6 +3,7 @@ import { Editor, EditorProps, loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { useState } from 'react'
+import { Flex } from '@radix-ui/themes'
 
 loader.config({ monaco })
 
@@ -40,7 +41,7 @@ export function ReactMonacoEditor({
   })
 
   return (
-    <>
+    <Flex height="100%" width="100%" direction="column">
       {showToolbar && (
         <EditorToolbar getState={(state) => setToolbarState(state)} />
       )}
@@ -53,6 +54,6 @@ export function ReactMonacoEditor({
         }}
         theme={theme === 'dark' ? 'vs-dark' : 'k6-studio-light'}
       />
-    </>
+    </Flex>
   )
 }
