@@ -11,9 +11,10 @@ export type ToolbarState = {
 
 type EditorToolbarProps = {
   getState: (values: ToolbarState) => void
+  actions: { wordWrap: boolean }
 }
 
-export const EditorToolbar = ({ getState }: EditorToolbarProps) => {
+export const EditorToolbar = ({ getState, actions }: EditorToolbarProps) => {
   const [state, setState] = useLocalStorage<ToolbarState>(
     'editorToolbarState',
     {
@@ -40,6 +41,7 @@ export const EditorToolbar = ({ getState }: EditorToolbarProps) => {
       <Tooltip content="Word wrap">
         <IconButton
           size="1"
+          disabled={!actions.wordWrap}
           onClick={() =>
             setState({ wordWrap: state?.wordWrap === 'on' ? 'off' : 'on' })
           }

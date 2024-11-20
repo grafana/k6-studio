@@ -8,7 +8,6 @@ import { Flex } from '@radix-ui/themes'
 loader.config({ monaco })
 
 const defaultOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
-  wordWrap: 'off',
   tabSize: 2,
   codeLens: false,
   contextmenu: false,
@@ -36,14 +35,32 @@ export function ReactMonacoEditor({
   ...props
 }: ReactMonacoEditorProps) {
   const theme = useTheme()
+  const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>()
   const [toolbarState, setToolbarState] = useState<ToolbarState>({
     wordWrap: 'off',
   })
 
+  // Monaco automatically applies word wrap if the content length of a line is >= 10000 characters
+  // In this case, we disable the word wrap button so the internal state is respected
+  const shouldEnableWordWrapButton = () => {
+    const lineCount = editor?.getModel()?.getLineCount()
+    if (!lineCount) return false
+    for (let i = 1; i <= lineCount; i++) {
+      const lineContent = editor?.getModel()?.getLineContent(i)
+      if (lineContent && lineContent.length >= 10000) {
+        return false
+      }
+    }
+    return true
+  }
+
   return (
     <Flex height="100%" width="100%" direction="column">
       {showToolbar && (
-        <EditorToolbar getState={(state) => setToolbarState(state)} />
+        <EditorToolbar
+          getState={(state) => setToolbarState(state)}
+          actions={{ wordWrap: shouldEnableWordWrapButton() }}
+        />
       )}
       <Editor
         {...props}
@@ -52,6 +69,7 @@ export function ReactMonacoEditor({
           ...props.options,
           wordWrap: toolbarState.wordWrap,
         }}
+        onMount={(editor) => setEditor(editor)}
         theme={theme === 'dark' ? 'vs-dark' : 'k6-studio-light'}
       />
     </Flex>
