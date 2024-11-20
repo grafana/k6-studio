@@ -1,9 +1,9 @@
-import { Flex, Switch, Text } from '@radix-ui/themes'
+import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { useEffect } from 'react'
 import { k6StudioLightBackground } from './themes/k6StudioLight'
-import { Label } from '../Label'
 import { useTheme } from '@/hooks/useTheme'
 import { useLocalStorage } from 'react-use'
+import { WordWrapIcon } from '../icons'
 
 export type ToolbarState = {
   wordWrap: 'on' | 'off'
@@ -31,21 +31,24 @@ export const EditorToolbar = ({ getState }: EditorToolbarProps) => {
   return (
     <Flex
       p="2"
+      justify="end"
       style={{
         backgroundColor: theme === 'dark' ? '#1e1e1e' : k6StudioLightBackground,
         borderBottom: `1px solid ${theme === 'dark' ? '#4d4b4b' : '#e5e5e5'}`,
       }}
     >
-      <Label flexGrow="1">
-        <Text size="2">Word wrap</Text>
-        <Switch
+      <Tooltip content="Word wrap">
+        <IconButton
           size="1"
-          checked={state?.wordWrap === 'on'}
-          onCheckedChange={(checked) =>
-            setState({ wordWrap: checked ? 'on' : 'off' })
+          onClick={() =>
+            setState({ wordWrap: state?.wordWrap === 'on' ? 'off' : 'on' })
           }
-        />
-      </Label>
+          variant={state?.wordWrap === 'on' ? 'solid' : 'surface'}
+          aria-label="Word wrap"
+        >
+          <WordWrapIcon width="14px" />
+        </IconButton>
+      </Tooltip>
     </Flex>
   )
 }
