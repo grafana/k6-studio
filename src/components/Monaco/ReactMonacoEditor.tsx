@@ -41,7 +41,7 @@ export function ReactMonacoEditor({
   })
 
   // Monaco automatically applies word wrap if the content length of a line is >= 10000 characters
-  // In this case, we disable the word wrap button so the internal state is respected
+  // In this case, we disable the word wrap button so Monaco's internal state is respected
   const shouldEnableWordWrapButton = () => {
     const lineCount = editor?.getModel()?.getLineCount()
     if (!lineCount) return false
