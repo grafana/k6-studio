@@ -1,4 +1,4 @@
-const { exec } = require('child_process')
+const { execSync } = require('child_process')
 const { existsSync } = require('fs')
 
 const K6_VERSION = 'v0.55.0'
@@ -33,7 +33,7 @@ rmdir ${K6_PATH_MAC_AMD}
 rmdir ${K6_PATH_MAC_ARM}
 `
 
-  executeCommand(command, {})
+  execSync(command)
 }
 
 const getWindowsK6Binary = () => {
@@ -47,31 +47,19 @@ ${K6_PATH_WIN_AMD}\\k6.exe version
 
 # move to resource folder
 Move-Item -Path "${K6_PATH_WIN_AMD}\\k6.exe" -Destination resources\\win\\x86_64
+
+# clean up
+del k6-windows-amd64.zip
+Remove-Item -Path "${K6_PATH_WIN_AMD}" -Recurse
 `
 
-  executeCommand(command, { shell: 'powershell.exe' })
-}
-
-const executeCommand = (command, options) => {
-  exec(command, options, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error: ${error.message}`)
-      return
-    }
-
-    if (stderr) {
-      console.error(`stderr: ${stderr}`)
-      return
-    }
-
-    console.log(`stdout: ${stdout}`)
-  })
+  execSync(command, { shell: 'powershell.exe' })
 }
 
 switch (process.platform) {
   case 'darwin':
     // we check only for one arch since we include both binaries
-    if (!existsK6('mac', 'arm64')) {
+    if (!existsSync('resources/mac/arm64/k6')) {
       console.log('k6 binary not found')
       console.log('downloading k6... this might take some time...')
       getMacOSK6Binary()
@@ -79,7 +67,7 @@ switch (process.platform) {
     }
     break
   case 'win32':
-    if (!existsK6('win', 'x86_64')) {
+    if (!existsSync('resources/win/x86_64/k6.exe')) {
       console.log('k6 binary not found')
       console.log('downloading k6... this might take some time...')
       getWindowsK6Binary()
