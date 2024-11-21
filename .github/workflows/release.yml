@@ -23,7 +23,7 @@ jobs:
         if: startsWith(matrix.platform, 'macos-')
         run: |
           K6_PATH_AMD=k6-${{ vars.K6_VERSION }}-macos-amd64
-K6_PATH_ARM=k6-${{ vars.K6_VERSION }}-macos-arm64
+          K6_PATH_ARM=k6-${{ vars.K6_VERSION }}-macos-arm64
 
           # download binaries
           curl -LO https://github.com/grafana/k6/releases/download/${{ vars.K6_VERSION }}/$K6_PATH_AMD.zip
