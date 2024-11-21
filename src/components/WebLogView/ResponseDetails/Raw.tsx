@@ -10,11 +10,7 @@ interface RawProps {
 export function Raw({ content, format }: RawProps) {
   return (
     <Text size="1" wrap="pretty" css={style}>
-      <ReadOnlyEditor
-        language={format}
-        value={content}
-        options={{ wordWrap: 'on' }}
-      />
+      <ReadOnlyEditor language={format} value={content} />
     </Text>
   )
 }

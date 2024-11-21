@@ -6,7 +6,7 @@ import { getContentType } from '@/utils/headers'
 import { Preview } from './Preview'
 import { Raw } from './Raw'
 import { parseContent, toFormat } from './ResponseDetails.utils'
-import { OriginalContent } from './OriginalContent'
+import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 
 export function Content({ data }: { data: ProxyData }) {
   const [selectedTab, setSelectedTab] = useState('preview')
@@ -58,7 +58,9 @@ export function Content({ data }: { data: ProxyData }) {
           {selectedTab === 'raw' && (
             <Raw content={rawContent ?? ''} format={format} />
           )}
-          {selectedTab === 'content' && <OriginalContent {...contentProps} />}
+          {selectedTab === 'content' && (
+            <ReadOnlyEditor language={format} value={content} />
+          )}
         </Box>
       </ScrollArea>
     </Flex>

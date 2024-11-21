@@ -11,5 +11,7 @@ const options: editor.IStandaloneEditorConstructionOptions = {
 }
 
 export function ReadOnlyEditor(props: ComponentProps<typeof Editor>) {
-  return <ReactMonacoEditor height="100%" options={options} {...props} />
+  return (
+    <ReactMonacoEditor height="100%" options={options} {...props} showToolbar />
+  )
 }

@@ -32,6 +32,7 @@ export function CodeEditor({
 
   return (
     <ReactMonacoEditor
+      showToolbar
       defaultLanguage="javascript"
       options={{ readOnly }}
       defaultValue={value}
