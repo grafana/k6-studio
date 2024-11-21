@@ -18,7 +18,7 @@ module.exports = {
     'prettier',
   ],
   parser: '@typescript-eslint/parser',
-  ignorePatterns: ['resources/group_snippet.js'],
+  ignorePatterns: ['resources/group_snippet.js', 'install-k6.js'],
   plugins: [
     'import',
     'unused-imports',
