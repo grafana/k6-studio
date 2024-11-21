@@ -1,5 +1,5 @@
 import { useTheme } from '@/hooks/useTheme'
-import { Editor, EditorProps, loader } from '@monaco-editor/react'
+import { Editor, EditorProps, loader, Monaco } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { useMemo, useState } from 'react'
@@ -56,6 +56,17 @@ export function ReactMonacoEditor({
     return true
   }, [editor])
 
+  const handleEditorMount = (
+    editor: monaco.editor.IStandaloneCodeEditor,
+    monaco: Monaco
+  ) => {
+    setEditor(editor)
+
+    if (props.onMount) {
+      props.onMount(editor, monaco)
+    }
+  }
+
   return (
     <Flex height="100%" width="100%" direction="column">
       {showToolbar && (
@@ -71,7 +82,7 @@ export function ReactMonacoEditor({
           ...props.options,
           wordWrap: toolbarState.wordWrap,
         }}
-        onMount={(editor) => setEditor(editor)}
+        onMount={handleEditorMount}
         theme={theme === 'dark' ? 'vs-dark' : 'k6-studio-light'}
       />
     </Flex>
