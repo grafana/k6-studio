@@ -6,10 +6,6 @@ const K6_PATH_MAC_AMD = `k6-${K6_VERSION}-macos-amd64`
 const K6_PATH_MAC_ARM = `k6-${K6_VERSION}-macos-arm64`
 const K6_PATH_WIN_AMD = `k6-${K6_VERSION}-windows-amd64`
 
-const existsK6 = (os, arch) => {
-  return existsSync(`resources/${os}/${arch}/k6`)
-}
-
 const getMacOSK6Binary = () => {
   const command = `
 # download binaries
