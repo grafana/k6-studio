@@ -2,7 +2,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { Editor, EditorProps, loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import { EditorToolbar, ToolbarState } from './EditorToolbar'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Flex } from '@radix-ui/themes'
 
 loader.config({ monaco })
@@ -42,7 +42,7 @@ export function ReactMonacoEditor({
 
   // Monaco automatically applies word wrap if the content length of a line is >= 10000 characters
   // In this case, we disable the word wrap button so Monaco's internal state is respected
-  const shouldEnableWordWrapButton = () => {
+  const shouldEnableWordWrapButton = useMemo(() => {
     const lineCount = editor?.getModel()?.getLineCount()
     if (!lineCount) return false
 
@@ -54,14 +54,14 @@ export function ReactMonacoEditor({
     }
 
     return true
-  }
+  }, [editor])
 
   return (
     <Flex height="100%" width="100%" direction="column">
       {showToolbar && (
         <EditorToolbar
           getState={(state) => setToolbarState(state)}
-          actions={{ wordWrap: shouldEnableWordWrapButton() }}
+          actions={{ wordWrap: shouldEnableWordWrapButton }}
         />
       )}
       <Editor
