@@ -4,6 +4,7 @@ import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { useFormContext } from 'react-hook-form'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { HeaderSelect } from './HeaderSelect'
 
 const fromOptions: Array<{
   value: Selector['from']
@@ -18,13 +19,14 @@ const typeOptions = {
   beginEnd: { value: 'begin-end', label: 'Begin-End' },
   regex: { value: 'regex', label: 'Regex' },
   json: { value: 'json', label: 'JSON' },
+  headerName: { value: 'header-name', label: 'Name' },
 } as const
 
 const allowedTypes: Record<
   Selector['from'],
   Array<{ value: Selector['type']; label: string }>
 > = {
-  headers: [typeOptions.beginEnd, typeOptions.regex],
+  headers: [typeOptions.beginEnd, typeOptions.regex, typeOptions.headerName],
   body: [typeOptions.beginEnd, typeOptions.regex, typeOptions.json],
   url: [typeOptions.beginEnd, typeOptions.regex],
 }
@@ -79,6 +81,14 @@ export function SelectorField({
           path: '',
         })
         break
+      case 'header-name':
+        setValue(field, {
+          type: value,
+          name: '',
+          from: 'headers',
+        })
+        break
+
       default:
         return exhaustive(value)
     }
@@ -160,6 +170,8 @@ function SelectorContent({
           <TextField.Root {...register(`${field}.regex`)} />
         </FieldGroup>
       )
+    case 'header-name':
+      return <HeaderSelect field={field} />
     default:
       return exhaustive(selector)
   }

@@ -92,6 +92,9 @@ function SelectorLabel({ selector }: { selector: Selector }) {
           <Strong>(.*) {stringFallback(selector.regex)}</Strong>
         </>
       )
+    case 'header-name':
+      // TODO: icon?
+      return <Strong>{stringFallback(selector.name)}</Strong>
     default:
       return exhaustive(selector)
   }

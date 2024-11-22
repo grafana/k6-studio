@@ -9,7 +9,7 @@ export function createCustomCodeRuleInstance(
     rule,
     type: rule.type,
     apply: (requestSnippetSchema: RequestSnippetSchema) => {
-      if (!matchFilter(requestSnippetSchema, rule.filter)) {
+      if (!matchFilter(requestSnippetSchema.data.request, rule.filter)) {
         return requestSnippetSchema
       }
 

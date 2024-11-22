@@ -3,11 +3,12 @@ import { safeJsonParse } from '@/utils/json'
 import { Header, Request, Cookie } from '@/types'
 import {
   BeginEndSelector,
+  HeaderNameSelector,
   JsonSelector,
   RegexSelector,
   Selector,
 } from '@/types/rules'
-import { isJsonReqResp } from './utils'
+import { canonicalHeaderKey, isJsonReqResp } from './utils'
 import { exhaustive } from '@/utils/typescript'
 
 export function replaceRequestValues({
@@ -26,6 +27,8 @@ export function replaceRequestValues({
       return replaceRegex(selector, request, value)
     case 'json':
       return replaceJsonBody(selector, request, value)
+    case 'header-name':
+      return replaceHeaderByName(request, selector, value)
     default:
       return exhaustive(selector)
   }
@@ -276,6 +279,30 @@ export const replaceJsonBody = (
   return { ...request, content }
 }
 
+const replaceHeaderByName = (
+  request: Request,
+  selector: HeaderNameSelector,
+  value: string
+): Request | undefined => {
+  const headerExists = request.headers.find(
+    ([key]) => canonicalHeaderKey(key) === canonicalHeaderKey(selector.name)
+  )
+  console.log('headerExists', headerExists)
+
+  if (!headerExists) {
+    return
+  }
+
+  const replacedHeaders = request.headers.map(
+    ([key, originalValue]): Header =>
+      canonicalHeaderKey(key) === canonicalHeaderKey(selector.name)
+        ? [key, value]
+        : [key, originalValue]
+  )
+
+  return { ...request, headers: replacedHeaders }
+}
+
 // @ts-expect-error we have commonjs set as module option
 if (import.meta.vitest) {
   // @ts-expect-error we have commonjs set as module option
@@ -285,7 +312,10 @@ if (import.meta.vitest) {
     return {
       method: 'POST',
       url: 'http://test.k6.io/api/v1/foo',
-      headers: [['content-type', 'application/json']],
+      headers: [
+        ['content-type', 'application/json'],
+        ['content-length', '1000'],
+      ],
       cookies: [['security', 'none']],
       query: [],
       scheme: 'http',
@@ -538,5 +568,32 @@ if (import.meta.vitest) {
         '${correl_0}'
       )?.content
     ).toBe('[{"hello":"${correl_0}"}]')
+  })
+
+  it('replaces header name matches', () => {
+    const request = generateRequest('')
+
+    const selectorMatch: HeaderNameSelector = {
+      type: 'header-name',
+      from: 'headers',
+      name: 'Content-Type',
+    }
+
+    const selectorNotMatch: HeaderNameSelector = {
+      type: 'header-name',
+      from: 'headers',
+      name: 'not-existing',
+    }
+
+    expect(
+      replaceHeaderByName(request, selectorMatch, 'TEST_VALUE')?.headers
+    ).toEqual([
+      ['content-type', 'TEST_VALUE'],
+      ['content-length', '1000'],
+    ])
+
+    expect(
+      replaceHeaderByName(request, selectorNotMatch, 'TEST_VALUE')
+    ).toBeUndefined()
   })
 }

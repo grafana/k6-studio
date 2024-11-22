@@ -1,5 +1,5 @@
 import { Filter } from '@/types/rules'
-import { RequestSnippetSchema, Response, Request } from '@/types'
+import { Response, Request } from '@/types'
 import { getHeaderValues } from '@/utils/headers'
 import { escapeRegExp } from 'lodash-es'
 
@@ -18,7 +18,7 @@ export function canonicalHeaderKey(headerKey: string) {
 /**
  * Generates sequential integers to be used for generated variables distinction for the final script.
  */
-export function* generateSequentialInt(): Generator<number> {
+export function* generateSequentialInt(): Generator<number, number, number> {
   let num = 0
   while (true) {
     yield num
@@ -26,10 +26,7 @@ export function* generateSequentialInt(): Generator<number> {
   }
 }
 
-export function matchFilter(
-  { data: { request } }: RequestSnippetSchema,
-  filter: Filter
-) {
+export function matchFilter(request: Request, filter: Filter) {
   try {
     return new RegExp(escapeRegExp(filter.path)).test(request.url)
   } catch (e) {

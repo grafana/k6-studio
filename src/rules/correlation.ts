@@ -6,8 +6,9 @@ import {
   JsonSelector,
   CorrelationState,
   CorrelationRuleInstance,
+  HeaderNameSelector,
 } from '@/types/rules'
-import { cloneDeep, escapeRegExp } from 'lodash-es'
+import { cloneDeep, escapeRegExp, isEqual } from 'lodash-es'
 import {
   canonicalHeaderKey,
   matchFilter,
@@ -23,9 +24,11 @@ import {
   createResponse,
 } from '@/test/factories/proxyData'
 
+type IdGenerator = Generator<number, number, number>
+
 export function createCorrelationRuleInstance(
   rule: CorrelationRule,
-  idGenerator: Generator<number>
+  idGenerator: IdGenerator
 ): CorrelationRuleInstance {
   const state: CorrelationState = {
     extractedValue: undefined,
@@ -68,7 +71,7 @@ function applyRule({
     // Skip replacement if replacer filter doesn't match
     if (
       rule.replacer &&
-      !matchFilter(requestSnippetSchema, rule.replacer?.filter)
+      !matchFilter(requestSnippetSchema.data.request, rule.replacer?.filter)
     ) {
       return snippetSchemaReturnValue
     }
@@ -81,7 +84,10 @@ function applyRule({
     })
 
     // Keep track of modified requests to display in preview
-    if (replacedRequest) {
+    if (
+      replacedRequest &&
+      !isEqual(replacedRequest, requestSnippetSchema.data.request)
+    ) {
       snippetSchemaReturnValue.data.request = replacedRequest
 
       setState({
@@ -97,7 +103,7 @@ function applyRule({
   }
 
   // Skip extraction if filter doesn't match
-  if (!matchFilter(requestSnippetSchema, rule.extractor.filter)) {
+  if (!matchFilter(requestSnippetSchema.data.request, rule.extractor.filter)) {
     return snippetSchemaReturnValue
   }
 
@@ -149,7 +155,7 @@ const tryCorrelationExtraction = (
   rule: CorrelationRule,
   proxyData: ProxyData,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   // correlation works on responses so if we have no response we should return early except in case the selector is checking
   // the url, in that case the value is extracted from a request so it's fine to not have a response
@@ -183,6 +189,14 @@ const tryCorrelationExtraction = (
         uniqueId,
         sequentialIdGenerator
       )
+
+    case 'header-name':
+      return extractCorrelationHeaderByName(
+        rule.extractor.selector,
+        proxyData.response,
+        uniqueId,
+        sequentialIdGenerator
+      )
     default:
       return exhaustive(rule.extractor.selector)
   }
@@ -192,7 +206,7 @@ const extractCorrelationBeginEnd = (
   selector: BeginEndSelector,
   proxyData: ProxyData,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   switch (selector.from) {
     case 'body':
@@ -225,7 +239,7 @@ const extractCorrelationRegex = (
   selector: RegexSelector,
   proxyData: ProxyData,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   switch (selector.from) {
     case 'body':
@@ -290,7 +304,7 @@ const extractCorrelationBeginEndBody = (
   selector: BeginEndSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -325,7 +339,7 @@ const extractCorrelationBeginEndHeaders = (
   selector: BeginEndSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -356,11 +370,44 @@ const extractCorrelationBeginEndHeaders = (
   return noCorrelationResult
 }
 
+const extractCorrelationHeaderByName = (
+  selector: HeaderNameSelector,
+  response: Response | undefined,
+  uniqueId: number | undefined,
+  sequentialIdGenerator: IdGenerator
+) => {
+  if (!response) {
+    throw new Error('no response to extract from')
+  }
+
+  const header = response.headers.find(
+    ([key]) => canonicalHeaderKey(key) === canonicalHeaderKey(selector.name)
+  )
+
+  if (!header) {
+    return noCorrelationResult
+  }
+
+  const generatedUniqueId = uniqueId ?? sequentialIdGenerator.next().value
+
+  const correlationExtractionSnippet = `
+    match = resp.headers["${canonicalHeaderKey(selector.name)}"]
+    if (match) {
+      correlation_vars['correlation_${generatedUniqueId}'] = match
+    }`
+
+  return {
+    extractedValue: header[1],
+    correlationExtractionSnippet,
+    generatedUniqueId,
+  }
+}
+
 const extractCorrelationBeginEndUrl = (
   selector: BeginEndSelector,
   request: Request,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   const extractedValue = matchBeginEnd(
     request.url,
@@ -391,7 +438,7 @@ const extractCorrelationRegexBody = (
   selector: RegexSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -422,7 +469,7 @@ const extractCorrelationRegexHeaders = (
   selector: RegexSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -458,7 +505,7 @@ const extractCorrelationRegexUrl = (
   selector: RegexSelector,
   request: Request,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   const extractedValue = matchRegex(request.url, selector.regex)
 
@@ -485,7 +532,7 @@ const extractCorrelationJsonBody = (
   selector: JsonSelector,
   response: Response | undefined,
   uniqueId: number | undefined,
-  sequentialIdGenerator: Generator<number>
+  sequentialIdGenerator: IdGenerator
 ) => {
   if (!response) {
     throw new Error('no response to extract from')
@@ -756,6 +803,38 @@ correlation_vars['correlation_1'] = resp.json().user_id`
 
     expect(
       extractCorrelationRegexUrl(selector, request, 1, sequentialIdGenerator)
+    ).toStrictEqual(expectedResult)
+  })
+
+  it('extracts correlation header name', () => {
+    const sequentialIdGenerator = generateSequentialInt()
+    const response: Response = generateResponse('')
+
+    const selector: HeaderNameSelector = {
+      type: 'header-name',
+      from: 'headers',
+      name: 'Content-Type',
+    }
+
+    const correlationExtractionSnippet = `
+    match = resp.headers["${canonicalHeaderKey('Content-type')}"]
+    if (match) {
+      correlation_vars['correlation_1'] = match
+    }`
+
+    const expectedResult = {
+      extractedValue: 'application/json',
+      correlationExtractionSnippet,
+      generatedUniqueId: 1,
+    }
+
+    expect(
+      extractCorrelationHeaderByName(
+        selector,
+        response,
+        1,
+        sequentialIdGenerator
+      )
     ).toStrictEqual(expectedResult)
   })
 
