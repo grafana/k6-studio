@@ -806,7 +806,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     ).toStrictEqual(expectedResult)
   })
 
-  it('extracts correlation header name', () => {
+  it('extracts correlation header by name', () => {
     const sequentialIdGenerator = generateSequentialInt()
     const response: Response = generateResponse('')
 

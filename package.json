@@ -1,11 +1,12 @@
 {
   "name": "k6-studio",
   "productName": "k6 Studio",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "k6 Studio",
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
   "scripts": {
+    "preinstall": "node install-k6.js",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",

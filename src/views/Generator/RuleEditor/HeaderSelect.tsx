@@ -1,46 +1,10 @@
-import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { FieldGroup } from '@/components/Form'
 import { useFormContext } from 'react-hook-form'
-import { Filter, TestRule } from '@/types/rules'
+import { TestRule } from '@/types/rules'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
-import { matchFilter } from '@/rules/utils'
 import { ControlledReactSelect } from '@/components/Form/ControlledReactSelect'
-import { ProxyData, Request, Response } from '@/types'
 import { useMemo } from 'react'
-import { sortBy } from 'lodash-es'
-
-function useUniqueHeaderNames(
-  requests: ProxyData[],
-  extractFrom: 'request' | 'response'
-) {
-  const responseHeaders = requests.flatMap(
-    (request) => request?.[extractFrom]?.headers ?? []
-  )
-  return Array.from(new Set(responseHeaders.map((header) => header[0])))
-}
-
-function useHeaderOptions(
-  recording: ProxyData[],
-  extractFrom: 'request' | 'response',
-  filter: Filter
-) {
-  return useMemo(() => {
-    const filteredRequests = recording.filter((entry) =>
-      matchFilter(entry.request, filter)
-    )
-
-    const responseHeaders = filteredRequests.flatMap(
-      (request) => request?.[extractFrom]?.headers ?? []
-    )
-    const uniqueHeaderNames = Array.from(
-      new Set(responseHeaders.map((header) => header[0]))
-    )
-
-    return uniqueHeaderNames.sort().map((headerName) => ({
-      value: headerName,
-      label: headerName,
-    }))
-  }, [recording, extractFrom, filter])
-}
+import { useHeaderOptions } from './HeaderSelect.hooks'
 
 export function HeaderSelect({
   field,

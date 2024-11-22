@@ -7,7 +7,6 @@ export function StyledReactSelect<Option>(
   props: ComponentProps<typeof Select<Option>>
 ) {
   const styles = useMemo(() => getStylesConfig<Option>(), [])
-  console.log('props', props)
 
   return (
     <div css={{ fontSize: 'var(--font-size-2)' }}>

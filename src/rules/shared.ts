@@ -287,7 +287,6 @@ const replaceHeaderByName = (
   const headerExists = request.headers.find(
     ([key]) => canonicalHeaderKey(key) === canonicalHeaderKey(selector.name)
   )
-  console.log('headerExists', headerExists)
 
   if (!headerExists) {
     return
