@@ -403,8 +403,8 @@ ipcMain.handle(
 )
 
 // HAR
-ipcMain.handle('har:save', async (_, data) => {
-  const fileName = generateFileNameWithTimestamp('har')
+ipcMain.handle('har:save', async (_, data: string, prefix?: string) => {
+  const fileName = generateFileNameWithTimestamp('har', prefix)
   await writeFile(path.join(RECORDINGS_PATH, fileName), data)
   return fileName
 })

@@ -106,8 +106,8 @@ const script = {
 } as const
 
 const har = {
-  saveFile: (data: string): Promise<string> => {
-    return ipcRenderer.invoke('har:save', data)
+  saveFile: (data: string, prefix?: string): Promise<string> => {
+    return ipcRenderer.invoke('har:save', data, prefix)
   },
   openFile: (filePath: string): Promise<HarFile> => {
     return ipcRenderer.invoke('har:open', filePath)

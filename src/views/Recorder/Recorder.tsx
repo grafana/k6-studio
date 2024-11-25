@@ -9,6 +9,7 @@ import { View } from '@/components/Layout/View'
 import { RequestsSection } from './RequestsSection'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import {
+  getHostNameFromURL,
   startRecording,
   stopRecording,
   useDebouncedProxyData,
@@ -35,7 +36,7 @@ const INITIAL_GROUPS: Group[] = [
 
 export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-
+  const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
@@ -57,6 +58,7 @@ export function Recorder() {
 
   const handleStartRecording = useCallback(
     async (url?: string) => {
+      setStartUrl(url)
       try {
         resetProxyData()
         setRecorderState('starting')
@@ -103,15 +105,17 @@ export function Recorder() {
       })
 
       const har = proxyDataToHar(grouped)
+      const prefix = startUrl && getHostNameFromURL(startUrl)
       const fileName = await window.studio.har.saveFile(
-        JSON.stringify(har, null, 4)
+        JSON.stringify(har, null, 4),
+        prefix
       )
 
       return fileName
     } finally {
       setRecorderState('idle')
     }
-  }, [groups, proxyData])
+  }, [groups, proxyData, startUrl])
 
   async function handleStopRecording() {
     stopRecording()
