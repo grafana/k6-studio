@@ -5,11 +5,15 @@ import { Outlet, useLocation } from 'react-router-dom'
 
 import { Sidebar } from './Sidebar'
 import { ActivityBar } from './ActivityBar'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { PinRightIcon } from '@radix-ui/react-icons'
+import { useLocalStorage } from 'react-use'
 
 export function Layout() {
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(
+    'isSidebarExpanded',
+    true
+  )
   const location = useLocation()
 
   const handleVisibleChange = (index: number, visible: boolean) => {

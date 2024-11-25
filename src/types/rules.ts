@@ -10,6 +10,7 @@ import {
   CustomCodeSelectorSchema,
   CustomCodeValueSchema,
   FilterSchema,
+  HeaderNameSelectorSchema,
   JsonSelectorSchema,
   ParameterizationRuleSchema,
   RecordedValueSchema,
@@ -78,6 +79,7 @@ export type RegexSelector = z.infer<typeof RegexSelectorSchema>
 export type JsonSelector = z.infer<typeof JsonSelectorSchema>
 export type StatusCodeSelector = z.infer<typeof StatusCodeSelectorSchema>
 export type CustomCodeSelector = z.infer<typeof CustomCodeSelectorSchema>
+export type HeaderNameSelector = z.infer<typeof HeaderNameSelectorSchema>
 export type Selector = z.infer<typeof SelectorSchema>
 export type VerificationRuleSelector = z.infer<
   typeof VerificationRuleSelectorSchema

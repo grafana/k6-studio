@@ -1,6 +1,9 @@
 import { flow } from 'lodash-es'
 import { ProxyData } from '@/types'
 import { getLocationHeader, getUpgradeHeader } from '@/utils/headers'
+import { canonicalHeaderKey } from '@/rules/utils'
+
+const HEADERS_TO_EXCLUDE = ['Cookie', 'User-Agent', 'Host', 'Content-Length']
 
 // TODO: find a well-maintained library for this
 export function stringify(value: unknown): string {
@@ -119,4 +122,8 @@ export const removeWebsocketRequests = (recording: ProxyData[]) => {
 
 export function cleanupRecording(recording: ProxyData[]) {
   return flow(removeWebsocketRequests, mergeRedirects)(recording)
+}
+
+export function shouldIncludeHeaderInScript(key: string) {
+  return !HEADERS_TO_EXCLUDE.includes(canonicalHeaderKey(key))
 }

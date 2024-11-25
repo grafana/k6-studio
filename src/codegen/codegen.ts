@@ -9,7 +9,7 @@ import { generateOptions } from './options'
 import { getContentTypeWithCharsetHeader } from '@/utils/headers'
 import { REQUIRED_IMPORTS } from '@/constants/imports'
 import { generateImportStatement } from './imports'
-import { cleanupRecording } from './codegen.utils'
+import { cleanupRecording, shouldIncludeHeaderInScript } from './codegen.utils'
 import { groupProxyData } from '@/utils/groups'
 
 interface GenerateScriptParams {
@@ -186,9 +186,8 @@ function generateSleep(timing: ThinkTime['timing']): string {
 }
 
 export function generateRequestParams(request: ProxyData['request']): string {
-  const headersToExclude = ['Cookie', 'User-Agent', 'Host', 'Content-Length']
   const headers = request.headers
-    .filter(([name]) => !headersToExclude.includes(name))
+    .filter(([name]) => shouldIncludeHeaderInScript(name))
     .map(([name, value]) => `'${name}': \`${value}\``)
     .join(',')
 

@@ -35,6 +35,12 @@ export const BeginEndSelectorSchema = z.object({
   end: z.string(),
 })
 
+export const HeaderNameSelectorSchema = z.object({
+  type: z.literal('header-name'),
+  from: z.enum(['headers']),
+  name: z.string(),
+})
+
 export const RegexSelectorSchema = z.object({
   type: z.literal('regex'),
   from: z.enum(['headers', 'body', 'url']),
@@ -70,6 +76,7 @@ export const SelectorSchema = z.discriminatedUnion('type', [
   BeginEndSelectorSchema,
   RegexSelectorSchema,
   JsonSelectorSchema,
+  HeaderNameSelectorSchema,
 ])
 
 export const VerificationRuleSelectorSchema = z.discriminatedUnion('type', [

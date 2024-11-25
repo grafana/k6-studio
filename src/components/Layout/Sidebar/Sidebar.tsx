@@ -11,7 +11,7 @@ import { SearchField } from '@/components/SearchField'
 import { useState } from 'react'
 
 interface SidebarProps {
-  isExpanded: boolean
+  isExpanded?: boolean
   onCollapseSidebar: () => void
 }
 
