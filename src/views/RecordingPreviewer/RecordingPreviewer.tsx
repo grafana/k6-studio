@@ -86,12 +86,7 @@ export function RecordingPreviewer() {
           )}
 
           {!isDiscardable && (
-            <Button
-              onClick={handleDiscard}
-              variant="outline"
-              asChild
-              css={{ cursor: 'default' }}
-            >
+            <Button variant="outline" asChild css={{ cursor: 'default' }}>
               <Link to={getRoutePath('recorder')}>New recording</Link>
             </Button>
           )}
