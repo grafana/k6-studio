@@ -69,6 +69,8 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
+undefinedFunction()
+
 const proxyEmitter = new eventEmitter()
 
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
