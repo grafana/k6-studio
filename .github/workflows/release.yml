@@ -68,7 +68,10 @@ jobs:
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
           # sentry integration
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          # sentry vite plugin integration during build
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ env.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ env.SENTRY_PROJECT }}
         run: npm run publish
 
       - name: cleanup macos certificates
