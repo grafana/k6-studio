@@ -1,6 +1,6 @@
 import { Box } from '@radix-ui/themes'
 
-import { Group as GroupType, ProxyData } from '@/types'
+import { Group as GroupType, ProxyDataWithMatches } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
 import { Table } from '@/components/Table'
@@ -8,11 +8,11 @@ import { useMemo } from 'react'
 import { useDeepCompareEffect } from 'react-use'
 
 interface WebLogViewProps {
-  requests: ProxyData[]
+  requests: ProxyDataWithMatches[]
   groups?: GroupType[]
   activeGroup?: string
   selectedRequestId?: string
-  onSelectRequest: (data: ProxyData | null) => void
+  onSelectRequest: (data: ProxyDataWithMatches | null) => void
   onUpdateGroup?: (group: GroupType) => void
 }
 
@@ -76,9 +76,9 @@ export function WebLogView({
 }
 
 interface RequestListProps {
-  requests: ProxyData[]
+  requests: ProxyDataWithMatches[]
   selectedRequestId?: string
-  onSelectRequest: (data: ProxyData) => void
+  onSelectRequest: (data: ProxyDataWithMatches) => void
 }
 
 function RequestList({

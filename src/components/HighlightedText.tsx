@@ -1,4 +1,6 @@
+import { SearchMatch } from '@/types/fuse'
 import { css } from '@emotion/react'
+import { useMemo } from 'react'
 
 interface MatchSegment {
   match: boolean
@@ -40,11 +42,21 @@ function splitByMatches(text: string, matches: Array<[number, number]>) {
 
 interface HighlightedTextProps {
   text: string
-  matches: Array<[number, number]> | undefined
+  matches: SearchMatch[] | undefined
 }
 
 export function HighlightedText({ text, matches }: HighlightedTextProps) {
-  const segments = splitByMatches(text, longestMatchOnly(matches ?? []))
+  const segments = useMemo(() => {
+    // When searching multiple properties we need to filter matches by value we are highlighting
+    const filteredMatches = (matches || []).filter(
+      (match) => match.value === text
+    )
+
+    return splitByMatches(
+      text,
+      longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
+    )
+  }, [text, matches])
 
   return (
     <>
@@ -54,8 +66,8 @@ export function HighlightedText({ text, matches }: HighlightedTextProps) {
             <mark
               key={index}
               css={css`
-                color: var(--gray-11);
-                background-color: var(--gray-6);
+                color: var(--accent-12);
+                background-color: var(--accent-5);
                 font-weight: 700;
               `}
             >

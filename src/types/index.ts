@@ -1,3 +1,5 @@
+import { SearchMatch } from './fuse'
+
 // TODO: modify json_output.py to use CamelCase instead of snake_case
 export type Method =
   | 'GET'
@@ -102,3 +104,7 @@ export interface FolderContent {
 }
 
 export type ProxyStatus = 'online' | 'offline' | 'restarting'
+
+export type ProxyDataWithMatches = ProxyData & {
+  matches?: SearchMatch[]
+}

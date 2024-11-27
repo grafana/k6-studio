@@ -1,13 +1,14 @@
 import { Box, Table } from '@radix-ui/themes'
 
-import { ProxyData } from '@/types'
+import { ProxyData, ProxyDataWithMatches } from '@/types'
 
 import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
 import { TableCellWithTooltip } from '../TableCellWithTooltip'
+import { HighlightedText } from '../HighlightedText'
 
 interface RowProps {
-  data: ProxyData
+  data: ProxyDataWithMatches
   isSelected?: boolean
   onSelectRequest: (data: ProxyData) => void
 }
@@ -39,14 +40,25 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
             marginRight: 'var(--space-2)',
           }}
         />
-        <MethodBadge method={data.request.method} />
+        <MethodBadge method={data.request.method}>
+          <HighlightedText text={data.request.method} matches={data.matches} />
+        </MethodBadge>
       </Table.Cell>
 
       <Table.Cell>
-        <ResponseStatusBadge status={data.response?.statusCode} />
+        <ResponseStatusBadge status={data.response?.statusCode}>
+          <HighlightedText
+            text={data.response?.statusCode.toString() ?? '-'}
+            matches={data.matches}
+          />
+        </ResponseStatusBadge>
       </Table.Cell>
-      <TableCellWithTooltip>{data.request.host}</TableCellWithTooltip>
-      <TableCellWithTooltip>{data.request.path}</TableCellWithTooltip>
+      <TableCellWithTooltip>
+        <HighlightedText text={data.request.host} matches={data.matches} />
+      </TableCellWithTooltip>
+      <TableCellWithTooltip>
+        <HighlightedText text={data.request.path} matches={data.matches} />
+      </TableCellWithTooltip>
     </Table.Row>
   )
 }
