@@ -56,10 +56,17 @@ import {
 } from './settings'
 import { ProxyStatus } from './types'
 import { configureApplicationMenu } from './menu'
+import * as Sentry from '@sentry/electron/main'
 
-// handle auto updates
 if (process.env.NODE_ENV !== 'development') {
+  // handle auto updates
   updateElectronApp()
+
+  // initialize Sentry
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    integrations: [Sentry.electronMinidumpIntegration()],
+  })
 }
 
 const proxyEmitter = new eventEmitter()
