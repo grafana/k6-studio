@@ -4,7 +4,7 @@ import { Group as GroupType, ProxyDataWithMatches } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
 import { Table } from '@/components/Table'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { useDeepCompareEffect } from 'react-use'
 
 interface WebLogViewProps {
@@ -16,7 +16,8 @@ interface WebLogViewProps {
   onUpdateGroup?: (group: GroupType) => void
 }
 
-export function WebLogView({
+// Memo improves performance when filtering
+export const WebLogView = memo(function WebLogView({
   requests,
   groups,
   selectedRequestId,
@@ -73,7 +74,7 @@ export function WebLogView({
       onSelectRequest={onSelectRequest}
     />
   )
-}
+})
 
 interface RequestListProps {
   requests: ProxyDataWithMatches[]
