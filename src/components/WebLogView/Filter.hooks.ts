@@ -36,7 +36,7 @@ export function useFilterRequests({
     return new Fuse(assetsToFilter, {
       includeMatches: true,
       shouldSort: false,
-      threshold: 0.3,
+      threshold: 0.2,
 
       keys: [
         'request.path',
