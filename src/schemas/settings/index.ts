@@ -8,7 +8,7 @@ const AnySettingSchema = z.discriminatedUnion('version', [
   v2.AppSettingsSchema,
 ])
 
-function migrate(settings: z.infer<typeof AnySettingSchema>) {
+export function migrate(settings: z.infer<typeof AnySettingSchema>) {
   switch (settings.version) {
     case '1.0':
       return migrate(v1.migrate(settings))

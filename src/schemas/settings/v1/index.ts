@@ -121,3 +121,5 @@ export function migrate(
     appearance: settings.appearance,
   }
 }
+
+export type AppSettings = z.infer<typeof AppSettingsSchema>
