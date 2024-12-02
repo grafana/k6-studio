@@ -1,16 +1,17 @@
 import { Method } from '@/types'
 import { Text } from '@radix-ui/themes'
-import { ComponentProps } from 'react'
+import { ComponentProps, ReactNode } from 'react'
 
 interface MethodBadgeProps {
   method: Method
+  children: ReactNode
 }
 
-export function MethodBadge({ method }: MethodBadgeProps) {
+export function MethodBadge({ method, children }: MethodBadgeProps) {
   const color = methodColor(method)
   return (
     <Text color={color} size="1" weight="bold" css={{ marginTop: '1px' }}>
-      {method}
+      {children}
     </Text>
   )
 }

@@ -1,7 +1,8 @@
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
 import { fileFromFileName } from '@/utils/file'
-import Fuse, { FuseResult, IFuseOptions } from 'fuse.js'
+import { withMatches } from '@/utils/fuse'
+import Fuse, { IFuseOptions } from 'fuse.js'
 import { orderBy } from 'lodash-es'
 import { useEffect, useMemo } from 'react'
 
@@ -52,13 +53,6 @@ function useFolderContent() {
     recordings,
     generators,
     scripts,
-  }
-}
-
-function withMatches<T>(result: FuseResult<T>) {
-  return {
-    ...result.item,
-    matches: result.matches?.flatMap((match) => match.indices) ?? [],
   }
 }
 

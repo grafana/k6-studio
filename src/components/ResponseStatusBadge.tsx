@@ -1,15 +1,16 @@
 import { Text } from '@radix-ui/themes'
-import { ComponentProps } from 'react'
+import { ComponentProps, ReactNode } from 'react'
 
 type Props = ComponentProps<typeof Text> & {
   status?: number
+  children: ReactNode
 }
 
-export function ResponseStatusBadge({ status, ...props }: Props) {
+export function ResponseStatusBadge({ status, children, ...props }: Props) {
   const color = statusColor(status)
   return (
     <Text align="right" color={color} size="1" weight="bold" {...props}>
-      {status ?? '-'}
+      {children}
     </Text>
   )
 }
