@@ -33,6 +33,7 @@ export function createResponse(
     path: '/api/v1/users',
     httpVersion: '1.1',
     timestampStart: 0,
+    timestampEnd: 0,
     contentLength: 0,
     ...response,
   }

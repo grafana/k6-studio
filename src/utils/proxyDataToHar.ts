@@ -3,6 +3,7 @@ import type { Entry, Page } from 'har-format'
 import { getContentTypeWithCharsetHeader } from './headers'
 import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
 import { groupProxyData } from './groups'
+import { safeAtob } from './format'
 
 export function proxyDataToHar(data: ProxyData[]): HarWithOptionalResponse {
   const groups = groupProxyData(data)
@@ -37,19 +38,33 @@ function createPages(groups: GroupedProxyData): Page[] {
 
 function createEntries(groups: GroupedProxyData): EntryWithOptionalResponse[] {
   return Object.entries(groups).flatMap(([group, data]) =>
-    data.map((proxyData) => ({
-      startedDateTime: timeStampToISO(proxyData.request.timestampStart),
-      request: createRequest(proxyData.request),
-      response: proxyData.response && createResponse(proxyData.response),
-      pageref: group,
-      cache: {},
-      // TODO: add actual values
-      timings: {
-        wait: 0,
-        receive: 0,
-      },
-      time: 0,
-    }))
+    data.map<EntryWithOptionalResponse>((proxyData) => {
+      const responseStart =
+        proxyData.response?.timestampStart ?? proxyData.request.timestampEnd
+
+      const responseEnd =
+        proxyData.response?.timestampEnd ?? proxyData.request.timestampEnd
+
+      const timings = {
+        send: proxyData.request.timestampEnd - proxyData.request.timestampStart,
+        wait: responseStart - proxyData.request.timestampEnd,
+        receive: responseEnd - responseStart,
+      }
+
+      return {
+        startedDateTime: timeStampToISO(proxyData.request.timestampStart),
+
+        time: timings.send + timings.wait + timings.receive,
+
+        timings,
+
+        request: createRequest(proxyData.request),
+        response: proxyData.response && createResponse(proxyData.response),
+
+        pageref: group,
+        cache: {},
+      }
+    })
   )
 }
 
@@ -94,7 +109,7 @@ function createPostData(request: Request): Entry['request']['postData'] {
   }
   const contentTypeHeader =
     getContentTypeWithCharsetHeader(request.headers) ?? ''
-  const content = atob(request.content ?? '')
+  const content = safeAtob(request.content ?? '')
 
   // Extract params for urlencoded form
   if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
@@ -111,7 +126,7 @@ function createPostData(request: Request): Entry['request']['postData'] {
 
   return {
     mimeType: getContentTypeWithCharsetHeader(request.headers) ?? '',
-    text: atob(request.content ?? ''),
+    text: safeAtob(request.content ?? ''),
   }
 }
 

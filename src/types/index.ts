@@ -42,6 +42,7 @@ export interface Response {
   content: string
   path: string
   timestampStart: number
+  timestampEnd: number
   httpVersion: string
   contentLength: number
 }

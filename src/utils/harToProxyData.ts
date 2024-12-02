@@ -1,18 +1,32 @@
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { Method, ProxyData, Request, Response } from '@/types'
-import { HarWithOptionalResponse } from '@/types/har'
-import type { Content, Entry } from 'har-format'
+import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
+import type { Content } from 'har-format'
 
 export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
   return har.log.entries.map((entry) => ({
     id: self.crypto.randomUUID(),
-    request: parseRequest(entry.request),
-    response: entry.response ? parseResponse(entry.response) : undefined,
+    request: parseRequest(entry),
+    response: parseResponse(entry),
     group: entry.pageref || DEFAULT_GROUP_NAME,
   }))
 }
 
-function parseRequest(request: Entry['request']): Request {
+function sumTimings(timings: Array<number | undefined>, offset = 0): number {
+  return timings.reduce<number>((acc, t) => {
+    if (t === undefined || t === -1) {
+      return acc
+    }
+
+    return acc + t
+  }, offset)
+}
+
+function parseRequest({
+  startedDateTime,
+  timings,
+  request,
+}: EntryWithOptionalResponse): Request {
   let content = request.postData?.text ?? ''
   const postDataParams = request.postData?.params
 
@@ -30,6 +44,15 @@ function parseRequest(request: Entry['request']): Request {
 
   const url = new URL(request.url)
 
+  const timestampStart = startedDateTime
+    ? isoToUnixTimestamp(startedDateTime)
+    : 0
+
+  const timestampEnd = sumTimings(
+    [timings.blocked, timings.dns, timings.connect, timings.send],
+    timestampStart
+  )
+
   return {
     method: request.method as Method,
     url: request.url,
@@ -38,13 +61,8 @@ function parseRequest(request: Entry['request']): Request {
     query: request.queryString.map((q) => [q.name, q.value]),
     cookies: request.cookies.map((c) => [c.name, c.value]),
     content,
-    // TODO: add actual values
-    // @ts-expect-error incomplete type
-    timestampStart: request.startedDateTime
-      ? // @ts-expect-error incomplete type
-        isoToUnixTimestamp(request.startedDateTime)
-      : 0,
-    timestampEnd: 0,
+    timestampStart,
+    timestampEnd,
     scheme: url.protocol.replace(':', ''),
     host: url.hostname,
     path: url.pathname + url.search,
@@ -52,7 +70,24 @@ function parseRequest(request: Entry['request']): Request {
   }
 }
 
-function parseResponse(response: Entry['response']): Response {
+function parseResponse({
+  startedDateTime,
+  timings,
+  response,
+}: EntryWithOptionalResponse): Response | undefined {
+  if (response === undefined) {
+    return undefined
+  }
+
+  const startedTimestamp = startedDateTime
+    ? isoToUnixTimestamp(startedDateTime)
+    : 0
+
+  const timestampStart = sumTimings(
+    [timings.blocked, timings.dns, timings.connect, timings.send],
+    startedTimestamp
+  )
+
   return {
     statusCode: response.status,
     reason: response.statusText,
@@ -61,7 +96,8 @@ function parseResponse(response: Entry['response']): Response {
     cookies: response.cookies.map((c) => [c.name, c.value]),
     content: parseContent(response.content),
     contentLength: response.content?.size ?? 0,
-    timestampStart: 0,
+    timestampStart,
+    timestampEnd: timestampStart + sumTimings([timings.wait, timings.receive]),
     path: '',
   }
 }

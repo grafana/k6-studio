@@ -28,6 +28,7 @@ export const checksRecording: ProxyData[] = [
       content: JSON.stringify({ user_id: '444' }),
       contentLength: 0,
       timestampStart: 0,
+      timestampEnd: 0,
     },
   },
 ]

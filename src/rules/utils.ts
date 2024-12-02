@@ -73,6 +73,7 @@ if (import.meta.vitest) {
       content: content,
       contentLength: 0,
       timestampStart: 0,
+      timestampEnd: 0,
     }
   }
 

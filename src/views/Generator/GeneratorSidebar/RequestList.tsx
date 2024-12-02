@@ -1,6 +1,6 @@
 import { Box, Flex, ScrollArea } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { css } from '@emotion/react'
 import { useShallowCompareEffect } from 'react-use'
 
@@ -14,16 +14,24 @@ import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { atom, useAtom } from 'jotai'
+
+export const selectedRequestAtom = atom<string | null>(null)
 
 interface RequestListProps {
   requests: ProxyData[]
 }
 
 export function RequestList({ requests }: RequestListProps) {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const [selectedRequestId, setSelectedRequestId] = useAtom(selectedRequestAtom)
+
   const { filter, setFilter, filteredRequests } = useFilterRequests({
     proxyData: requests,
   })
+
+  const selectedRequest = useMemo(() => {
+    return filteredRequests.find((req) => req.id === selectedRequestId) ?? null
+  }, [selectedRequestId, filteredRequests])
 
   const groups = useProxyDataGroups(requests)
 
@@ -34,9 +42,13 @@ export function RequestList({ requests }: RequestListProps) {
 
   const isRecordingMissing = recording === undefined && recordingPath !== ''
 
+  const handleRequestSelected = (request: ProxyData | null) => {
+    setSelectedRequestId(request?.id ?? null)
+  }
+
   // Preserve the selected request when modifying rules
   useShallowCompareEffect(() => {
-    setSelectedRequest(null)
+    handleRequestSelected(null)
   }, [requests])
 
   return (
@@ -73,7 +85,7 @@ export function RequestList({ requests }: RequestListProps) {
                   <WebLogView
                     requests={filteredRequests}
                     selectedRequestId={selectedRequest?.id}
-                    onSelectRequest={setSelectedRequest}
+                    onSelectRequest={handleRequestSelected}
                     groups={groups}
                   />
                 </>
@@ -83,7 +95,7 @@ export function RequestList({ requests }: RequestListProps) {
           <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
             <Details
               selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
+              onSelectRequest={handleRequestSelected}
             />
           </Allotment.Pane>
         </Allotment>
