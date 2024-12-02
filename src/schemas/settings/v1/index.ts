@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import * as v2 from '../v2'
 
 export const RegularProxySettingsSchema = z.object({
   mode: z.literal('regular'),
@@ -86,7 +87,7 @@ export const RecorderSettingsSchema = z
     }
   })
 
-const WindowStateSchema = z.object({
+export const WindowStateSchema = z.object({
   x: z.number().int(),
   y: z.number().int(),
   width: z.number().int(),
@@ -94,7 +95,7 @@ const WindowStateSchema = z.object({
   isMaximized: z.boolean(),
 })
 
-const AppearanceSchema = z.object({
+export const AppearanceSchema = z.object({
   theme: z.union([z.literal('light'), z.literal('dark'), z.literal('system')]),
 })
 
@@ -106,3 +107,17 @@ export const AppSettingsSchema = z.object({
   usageReport: UsageReportSettingsSchema,
   appearance: AppearanceSchema,
 })
+
+// Migrate settings to the next version
+export function migrate(
+  settings: z.infer<typeof AppSettingsSchema>
+): v2.AppSettings {
+  return {
+    version: '2.0',
+    proxy: settings.proxy,
+    recorder: settings.recorder,
+    windowState: settings.windowState,
+    usageReport: settings.usageReport,
+    appearance: settings.appearance,
+  }
+}

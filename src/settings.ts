@@ -8,7 +8,7 @@ import { safeJsonParse } from './utils/json'
 import log from 'electron-log/main'
 
 const defaultSettings: AppSettings = {
-  version: '1.0',
+  version: '2.0',
   proxy: {
     mode: 'regular',
     port: 6000,
