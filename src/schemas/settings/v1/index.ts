@@ -99,7 +99,7 @@ const AppearanceSchema = z.object({
 })
 
 export const AppSettingsSchema = z.object({
-  version: z.string(),
+  version: z.literal('1.0'),
   proxy: ProxySettingsSchema,
   recorder: RecorderSettingsSchema,
   windowState: WindowStateSchema,

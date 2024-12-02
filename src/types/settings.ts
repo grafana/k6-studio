@@ -3,7 +3,7 @@ import {
   ProxySettingsSchema,
   RecorderSettingsSchema,
   UsageReportSettingsSchema,
-} from '@/schemas/appSettings'
+} from '@/schemas/settings/v1'
 import { z } from 'zod'
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>
