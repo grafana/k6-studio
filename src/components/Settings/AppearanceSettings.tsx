@@ -15,14 +15,14 @@ export function AppearanceSettings() {
   return (
     <SettingsSection>
       <FieldGroup
-        name="appearance.theme"
+        name="general.appearance.theme"
         label="Theme"
         errors={errors}
         hint="Select whether the app should use a light theme, dark theme, or match your system settings."
         hintType="text"
       >
         <Controller
-          name="appearance.theme"
+          name="general.appearance.theme"
           control={control}
           render={({ field }) => (
             <RadioCards.Root

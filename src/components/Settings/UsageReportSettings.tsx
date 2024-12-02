@@ -17,11 +17,11 @@ export const UsageReportSettings = () => {
       <Flex gap="2">
         <Controller
           control={control}
-          name="usageReport.enabled"
+          name="general.usageReport.enabled"
           render={({ field }) => (
             <Text size="2" as="label">
               <Checkbox
-                {...register('usageReport.enabled')}
+                {...register('general.usageReport.enabled')}
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}

@@ -20,8 +20,10 @@ export const AppSettingsSchema = z.object({
   proxy: ProxySettingsSchema,
   recorder: RecorderSettingsSchema,
   windowState: WindowStateSchema,
-  usageReport: UsageReportSettingsSchema,
-  appearance: AppearanceSchema,
+  general: z.object({
+    usageReport: UsageReportSettingsSchema,
+    appearance: AppearanceSchema,
+  }),
 })
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>
