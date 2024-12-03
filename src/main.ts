@@ -198,9 +198,9 @@ const createWindow = async () => {
 app.whenReady().then(async () => {
   await initSettings()
   appSettings = await getSettings()
-  nativeTheme.themeSource = appSettings.general.appearance.theme
+  nativeTheme.themeSource = appSettings.appearance.theme
 
-  await sendReport(appSettings.general.usageReport)
+  await sendReport(appSettings.usageReport)
   await createSplashWindow()
   await setupProjectStructure()
   await createWindow()
@@ -353,7 +353,7 @@ ipcMain.handle(
       browserWindow,
       resolvedScriptPath,
       appSettings.proxy.port,
-      appSettings.general.usageReport.enabled
+      appSettings.usageReport.enabled
     )
   }
 )
@@ -628,12 +628,12 @@ async function applySettings(
   if (modifiedSettings.recorder) {
     appSettings.recorder = modifiedSettings.recorder
   }
-  if (modifiedSettings.general?.usageReport) {
-    appSettings.general.usageReport = modifiedSettings.general.usageReport
+  if (modifiedSettings.usageReport) {
+    appSettings.usageReport = modifiedSettings.usageReport
   }
-  if (modifiedSettings.general?.appearance) {
-    appSettings.general.appearance = modifiedSettings.general.appearance
-    nativeTheme.themeSource = appSettings.general.appearance.theme
+  if (modifiedSettings.appearance) {
+    appSettings.appearance = modifiedSettings.appearance
+    nativeTheme.themeSource = appSettings.appearance.theme
   }
 }
 

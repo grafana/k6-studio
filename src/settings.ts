@@ -24,13 +24,11 @@ const defaultSettings: AppSettings = {
     y: 0,
     isMaximized: true,
   },
-  general: {
-    usageReport: {
-      enabled: true,
-    },
-    appearance: {
-      theme: 'system',
-    },
+  usageReport: {
+    enabled: true,
+  },
+  appearance: {
+    theme: 'system',
   },
 }
 
