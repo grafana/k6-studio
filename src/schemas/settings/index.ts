@@ -20,3 +20,11 @@ export function migrate(settings: z.infer<typeof AnySettingSchema>) {
 }
 
 export const AppSettingsSchema = AnySettingSchema.transform(migrate)
+
+export {
+  AppearanceSchema,
+  ProxySettingsSchema,
+  RecorderSettingsSchema,
+  UsageReportSettingsSchema,
+  WindowStateSchema,
+} from './v2'

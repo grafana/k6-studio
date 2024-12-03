@@ -22,6 +22,6 @@ case '2.0':
 }
 ```
 
-5. Update `src/types/settings.ts` to use types from the new version.
+5. Export types from the new version in `/schemas/settings/index.ts`.
 6. Update the default settings in `src/settings.ts` according to the new schema.
 7. Make changes to the remaining implementation to use the new schema.
