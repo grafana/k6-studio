@@ -1,4 +1,4 @@
-import { Box, Grid, Heading, Switch, Text } from '@radix-ui/themes'
+import { Box, Flex, Heading, Switch, Text } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
@@ -26,9 +26,9 @@ export function CorrelationEditor() {
   }
 
   return (
-    <Grid columns="1fr 1fr" gap="3">
+    <Flex direction="column" gap="3">
       <Box>
-        <Heading size="2" weight="medium" mb="2">
+        <Heading size="3" weight="medium" mb="2">
           Extractor
         </Heading>
         <Text size="2" as="p" mb="2" color="gray">
@@ -38,7 +38,7 @@ export function CorrelationEditor() {
         <SelectorField field="extractor.selector" />
       </Box>
       <Box>
-        <Heading size="2" weight="medium" mb="2">
+        <Heading size="3" weight="medium" mb="2">
           Replacer
         </Heading>
         <Text size="2" as="p" mb="2" color="gray">
@@ -67,6 +67,6 @@ export function CorrelationEditor() {
           <SelectorField field="replacer.selector" />
         </>
       </Box>
-    </Grid>
+    </Flex>
   )
 }

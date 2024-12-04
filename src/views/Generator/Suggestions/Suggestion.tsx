@@ -10,7 +10,7 @@ import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
 import * as Accordion from '@radix-ui/react-accordion'
 import { ChevronRightIcon } from '@radix-ui/react-icons'
-import { Flex, Reset } from '@radix-ui/themes'
+import { Flex, Reset, Tooltip } from '@radix-ui/themes'
 import { ArrowLeftRight } from 'lucide-react'
 import { ReactNode } from 'react'
 import { RequestLink } from './RequestLink'
@@ -201,6 +201,9 @@ export function Suggestion({
                 flex: 1 1 0;
                 padding: var(--space-2);
                 cursor: pointer;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
               `}
             >
               <span>
@@ -215,11 +218,11 @@ export function Suggestion({
               <span>
                 <span>
                   <strong>
-                    {formatExtractedValue(correlation.from.value)}
-                  </strong>{' '}
-                  from{' '}
-                  <strong>
-                    {formatSelector(correlation.from.value.selector)}
+                    <Tooltip
+                      content={formatExtractedValue(correlation.from.value)}
+                    >
+                      {formatSelector(correlation.from.value.selector)}
+                    </Tooltip>
                   </strong>{' '}
                   in{' '}
                 </span>

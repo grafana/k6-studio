@@ -13,6 +13,7 @@ import { RulePreview } from '../RulePreview/RulePreview'
 import { RequestList } from './RequestList'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { CrossCircledIcon } from '@radix-ui/react-icons'
+import { RecordingSelector } from '../RecordingSelector'
 
 export function GeneratorSidebar() {
   const [tab, setTab] = useState('requests')
@@ -36,8 +37,12 @@ export function GeneratorSidebar() {
   return (
     <Flex direction="column" height="100%" minHeight="0" asChild>
       <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
-        <Box flexShrink="0">
-          <Tabs.List>
+        <Tabs.List
+          css={css`
+            justify-content: space-between;
+          `}
+        >
+          <Flex>
             <Tabs.Trigger value="requests">
               Requests ({filteredRequests.length})
             </Tabs.Trigger>
@@ -64,8 +69,17 @@ export function GeneratorSidebar() {
             {hasPreview && (
               <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
             )}
-          </Tabs.List>
-        </Box>
+          </Flex>
+
+          <Box
+            px="4"
+            css={css`
+              align-self: center;
+            `}
+          >
+            <RecordingSelector />
+          </Box>
+        </Tabs.List>
         {hasPreview && (
           <Tabs.Content
             value="rule-preview"

@@ -65,7 +65,7 @@ export function RecordingSelector() {
             id="recording-selector"
             placeholder="Select recording"
             css={css`
-              width: 250px;
+              width: 300px;
             `}
           >
             <Flex as="span" align="center" gap="1">

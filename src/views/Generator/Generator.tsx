@@ -1,7 +1,6 @@
 import { Allotment } from 'allotment'
 import { useEffect, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
-import { Box, ScrollArea } from '@radix-ui/themes'
 
 import {
   useGeneratorStore,
@@ -22,7 +21,6 @@ import { GeneratorControls } from './GeneratorControls'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
-import { RuleEditor } from './RuleEditor'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import log from 'electron-log/renderer'
 
@@ -139,20 +137,7 @@ export function Generator() {
           <GeneratorSidebar />
         </Allotment.Pane>
         <Allotment.Pane minSize={400}>
-          <Allotment vertical defaultSizes={[1, 1]}>
-            <Allotment.Pane minSize={300}>
-              <TestRuleContainer />
-            </Allotment.Pane>
-            <Allotment.Pane minSize={300} visible={selectedRule !== undefined}>
-              {selectedRule !== undefined && (
-                <ScrollArea scrollbars="vertical">
-                  <Box p="3">
-                    <RuleEditor rule={selectedRule} />
-                  </Box>
-                </ScrollArea>
-              )}
-            </Allotment.Pane>
-          </Allotment>
+          <TestRuleContainer selectedRule={selectedRule} />
         </Allotment.Pane>
       </Allotment>
       <UnsavedChangesDialog
