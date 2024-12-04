@@ -1,12 +1,5 @@
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
-import {
-  Flex,
-  Heading,
-  Link,
-  ScrollArea,
-  Text,
-  Tooltip,
-} from '@radix-ui/themes'
+import { Flex, Heading, ScrollArea, Text } from '@radix-ui/themes'
 import { NewRuleMenu } from '../NewRuleMenu'
 import { SortableRuleList } from './SortableRuleList'
 import { css } from '@emotion/react'
@@ -16,119 +9,8 @@ import { Allowlist } from '../Allowlist'
 import { correlate } from '@/correlation/correlateArchiveData'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import type { Har } from 'har-format'
-import { MouseEvent, ReactNode, useMemo } from 'react'
-import type { Patch, Selector } from '@/correlation/types'
-import { ProxyData } from '@/types'
-import { useSetAtom } from 'jotai'
-import { selectedRequestAtom } from '../GeneratorSidebar/RequestList'
-
-function truncateString(str: string, length: number) {
-  if (str.length <= length) {
-    return str
-  }
-
-  return str.slice(0, length) + '...'
-}
-
-function formatJsonPath(path: Array<string | number>) {
-  return path.reduce((acc, part) => {
-    if (typeof part === 'string') {
-      return `${acc}.${part}`
-    }
-
-    return `${acc}[${part}]`
-  }, '$')
-}
-
-function toFromText(selector: Selector): ReactNode {
-  switch (selector.type) {
-    case 'json':
-      return <code>{formatJsonPath(selector.path)}</code>
-
-    case 'css':
-      return selector.rule
-
-    case 'param':
-      return `${selector.name}`
-
-    default:
-      return ''
-  }
-}
-
-function toToText(patch: Patch) {
-  switch (patch.type) {
-    case 'path':
-      return (
-        <>
-          <strong>
-            <code>{patch.selector.value}</code>
-          </strong>{' '}
-          in path
-        </>
-      )
-
-    case 'body':
-      return (
-        <>
-          <strong>{toFromText(patch.selector)}</strong> in body
-        </>
-      )
-  }
-}
-
-function RequestLink({ request }: { request: ProxyData }) {
-  const setSelectedRequestId = useSetAtom(selectedRequestAtom)
-
-  function handleClick(ev: MouseEvent<HTMLElement>) {
-    ev.preventDefault()
-
-    setSelectedRequestId(request.id)
-  }
-
-  const text = `${request.request.method} ${request.request.path}`
-
-  return (
-    <Tooltip content={text}>
-      <Link href="#" onClick={handleClick}>
-        {truncateString(text, 20)}
-      </Link>
-    </Tooltip>
-  )
-}
-
-interface PatchProperties {
-  requests: ProxyData[]
-  patch: Patch
-}
-
-function Patch({ requests, patch }: PatchProperties) {
-  const sourceRequest = requests[patch.from.target]
-  const targetRequest = requests[patch.target]
-
-  if (sourceRequest === undefined || targetRequest === undefined) {
-    return null
-  }
-
-  return (
-    <div
-      css={css`
-        font-size: 12px;
-        padding: var(--space-2);
-        background-color: var(--color-background);
-        border-bottom: 1px solid var(--gray-3);
-
-        &:first-of-type {
-          border-top: 1px solid var(--gray-3);
-        }
-      `}
-    >
-      Replace {toToText(patch)} of <RequestLink request={targetRequest} /> with{' '}
-      <strong>{toFromText(patch.from.variable.selector)}</strong> from{' '}
-      <RequestLink request={sourceRequest} />
-    </div>
-  )
-}
+import { useMemo } from 'react'
+import { SuggestionList } from '../Suggestions/SuggestionList'
 
 export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)
@@ -136,7 +18,7 @@ export function TestRuleContainer() {
 
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
 
-  const patches = useMemo(() => {
+  const correlations = useMemo(() => {
     if (!filteredRequests) {
       return []
     }
@@ -201,9 +83,7 @@ export function TestRuleContainer() {
         )}
       </Flex>
 
-      {patches.map((patch, index) => {
-        return <Patch key={index} requests={filteredRequests} patch={patch} />
-      })}
+      <SuggestionList requests={filteredRequests} suggestions={correlations} />
     </ScrollArea>
   )
 }
