@@ -1,7 +1,7 @@
 import { Allotment } from 'allotment'
 import { PropsWithChildren, useEffect } from 'react'
 import { css } from '@emotion/react'
-import { Box, Flex, Heading, IconButton } from '@radix-ui/themes'
+import { Box, Flex, Heading, IconButton, Tabs } from '@radix-ui/themes'
 import { Cross2Icon } from '@radix-ui/react-icons'
 
 import { ProxyData } from '@/types'
@@ -9,11 +9,18 @@ import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
 
 interface DetailsProps {
+  type?: 'accordion' | 'panels'
+  orientation?: 'horizontal' | 'vertical'
   selectedRequest: ProxyData | null
   onSelectRequest: (data: ProxyData | null) => void
 }
 
-export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
+export function Details({
+  type = 'panels',
+  orientation = 'vertical',
+  selectedRequest,
+  onSelectRequest,
+}: DetailsProps) {
   useEffect(() => {
     return () => {
       onSelectRequest(null)
@@ -41,19 +48,46 @@ export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
         </IconButton>
       </Box>
       {selectedRequest !== null && (
-        <Box height="100%">
-          <Allotment defaultSizes={[1, 1]} vertical>
-            <Allotment.Pane minSize={200}>
-              <PaneContent heading="Request">
+        <Box height="100%" width="100%">
+          {type === 'accordion' && (
+            <Tabs.Root defaultValue="request">
+              <Tabs.List
+                css={css`
+                  background-color: var(--gray-2);
+                  flex-shrink: 0;
+                `}
+              >
+                <Tabs.Trigger value="request">Request</Tabs.Trigger>
+                <Tabs.Trigger value="response">Response</Tabs.Trigger>
+              </Tabs.List>
+              <Tabs.Content value="request">
                 <RequestDetails data={selectedRequest} />
-              </PaneContent>
-            </Allotment.Pane>
-            <Allotment.Pane minSize={200} visible={!!selectedRequest.response}>
-              <PaneContent heading="Response">
+              </Tabs.Content>
+              <Tabs.Content value="response">
                 <ResponseDetails data={selectedRequest} />
-              </PaneContent>
-            </Allotment.Pane>
-          </Allotment>
+              </Tabs.Content>
+            </Tabs.Root>
+          )}
+          {type === 'panels' && (
+            <Allotment
+              defaultSizes={[1, 1]}
+              vertical={orientation === 'vertical'}
+            >
+              <Allotment.Pane minSize={200}>
+                <PaneContent heading="Request">
+                  <RequestDetails data={selectedRequest} />
+                </PaneContent>
+              </Allotment.Pane>
+              <Allotment.Pane
+                minSize={200}
+                visible={!!selectedRequest.response}
+              >
+                <PaneContent heading="Response">
+                  <ResponseDetails data={selectedRequest} />
+                </PaneContent>
+              </Allotment.Pane>
+            </Allotment>
+          )}
         </Box>
       )}
     </>

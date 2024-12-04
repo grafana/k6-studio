@@ -201,9 +201,6 @@ export function Suggestion({
                 flex: 1 1 0;
                 padding: var(--space-2);
                 cursor: pointer;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
               `}
             >
               <span>
@@ -217,7 +214,6 @@ export function Suggestion({
               </span>
               <span>
                 <span>
-                  The value{' '}
                   <strong>
                     {formatExtractedValue(correlation.from.value)}
                   </strong>{' '}

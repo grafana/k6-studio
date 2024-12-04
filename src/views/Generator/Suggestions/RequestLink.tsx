@@ -3,6 +3,7 @@ import { Link, Tooltip } from '@radix-ui/themes'
 import { useSetAtom } from 'jotai'
 import { MouseEvent } from 'react'
 import { selectedRequestAtom } from '../GeneratorSidebar/RequestList'
+import { css } from '@emotion/react'
 
 function truncateString(str: string, length: number) {
   if (str.length <= length) {
@@ -29,7 +30,13 @@ export function RequestLink({ request }: RequestLinkProps) {
 
   return (
     <Tooltip content={text}>
-      <Link href="#" onClick={handleClick}>
+      <Link
+        href="#"
+        css={css`
+          white-space: nowrap;
+        `}
+        onClick={handleClick}
+      >
         {truncateString(text, 40)}
       </Link>
     </Tooltip>

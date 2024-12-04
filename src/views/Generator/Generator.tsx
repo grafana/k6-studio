@@ -136,6 +136,9 @@ export function Generator() {
     >
       <Allotment defaultSizes={[3, 2]}>
         <Allotment.Pane minSize={400}>
+          <GeneratorSidebar />
+        </Allotment.Pane>
+        <Allotment.Pane minSize={400}>
           <Allotment vertical defaultSizes={[1, 1]}>
             <Allotment.Pane minSize={300}>
               <TestRuleContainer />
@@ -150,9 +153,6 @@ export function Generator() {
               )}
             </Allotment.Pane>
           </Allotment>
-        </Allotment.Pane>
-        <Allotment.Pane minSize={400}>
-          <GeneratorSidebar />
         </Allotment.Pane>
       </Allotment>
       <UnsavedChangesDialog
