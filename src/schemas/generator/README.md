@@ -14,10 +14,10 @@ For when a new migration is needed:
 4. Update `/schemas/generators/index.ts` to use the new version:
 
 ```ts
-function migrate(settings: z.infer<typeof AnySettingSchema>) {
+function migrate(generator: z.infer<typeof AnyGeneratorSchema>) {
 
 case '1.0':
-  return migrate(v1.migrate(settings))
+  return migrate(v1.migrate(generator))
 
 }
 ```
