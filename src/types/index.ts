@@ -105,6 +105,6 @@ export interface FolderContent {
 
 export type ProxyStatus = 'online' | 'offline' | 'restarting'
 
-export type ProxyDataWithMatches = ProxyData & {
+export interface ProxyDataWithMatches extends ProxyData {
   matches?: SearchMatch[]
 }
