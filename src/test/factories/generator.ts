@@ -39,6 +39,7 @@ export function createGeneratorState(
     addRule: vi.fn(),
     cloneRule: vi.fn(),
     deleteRule: vi.fn(),
+    toggleEnableRule: vi.fn(),
     rules: [],
     swapRules: vi.fn(),
     updateRule: vi.fn(),
