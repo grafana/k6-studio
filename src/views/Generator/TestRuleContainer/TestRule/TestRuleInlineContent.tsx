@@ -48,10 +48,22 @@ function VerificationContent({ rule }: { rule: VerificationRule }) {
   )
 }
 
+function EnabledStatus({ enabled }: { enabled: boolean }) {
+  const status = enabled ? 'enabled' : 'disabled'
+  return (
+    <>
+      <Tooltip content={`This rule is ${status}`}>
+        <Badge color={enabled ? 'green' : 'gray'}>{status}</Badge>
+      </Tooltip>
+    </>
+  )
+}
+
 function CorrelationContent({ rule }: { rule: CorrelationRule }) {
   return (
     <>
       <TestRuleFilter filter={rule.extractor.filter} />
+      <EnabledStatus enabled={rule.enabled} />
       <TestRuleSelector rule={rule} />
     </>
   )
@@ -61,6 +73,7 @@ function ParameterizationContent({ rule }: { rule: ParameterizationRule }) {
   return (
     <>
       <TestRuleFilter filter={rule.filter} />
+      <EnabledStatus enabled={rule.enabled} />
       <TestRuleSelector rule={rule} />
     </>
   )
@@ -70,6 +83,7 @@ function CustomCodeContent({ rule }: { rule: CustomCodeRule }) {
   return (
     <>
       <TestRuleFilter filter={rule.filter} />{' '}
+      <EnabledStatus enabled={rule.enabled} />
       <Tooltip
         content={`${rule.placement === 'after' ? 'After' : 'Before'} matched requests`}
       >
