@@ -103,7 +103,7 @@ export function TestRuleItem({
       <Flex gap="2" overflow="hidden">
         <TestRuleInlineContent rule={rule} />
       </Flex>
-      <TestRuleActions ruleId={rule.id} />
+      <TestRuleActions ruleId={rule.id} enabled={rule.enabled} />
     </Grid>
   )
 }
