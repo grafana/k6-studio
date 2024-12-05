@@ -8,11 +8,12 @@ import {
 import { Selector } from './types'
 import { analyze } from './analysis'
 import { exhaustive } from '@/utils/typescript'
+import { formatJsonPath } from '@/utils/json'
 
 function toSelectorId(selector: Selector) {
   switch (selector.type) {
     case 'json':
-      return `json:${selector.path.join('.')}`
+      return `json:${formatJsonPath(selector.path)}`
 
     case 'css':
       return `css:${selector.rule}`
