@@ -34,13 +34,14 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
 }
 
 export function getDefineKeys(names: string[]) {
-  const define: { [name: string]: VitePluginRuntimeKeys } = {}
+  const define: { [name: string]: K6StudioRuntimeKeys } = {}
 
   return names.reduce((acc, name) => {
     const NAME = name.toUpperCase()
-    const keys: VitePluginRuntimeKeys = {
+    const keys: K6StudioRuntimeKeys = {
       VITE_DEV_SERVER_URL: `${NAME}_VITE_DEV_SERVER_URL`,
       VITE_NAME: `${NAME}_VITE_NAME`,
+      SENTRY_DSN: 'SENTRY_DSN',
     }
 
     return { ...acc, [name]: keys }
@@ -55,13 +56,14 @@ export function getBuildDefine(env: ConfigEnv<'build'>) {
   const defineKeys = getDefineKeys(names)
   const define = Object.entries(defineKeys).reduce(
     (acc, [name, keys]) => {
-      const { VITE_DEV_SERVER_URL, VITE_NAME } = keys
+      const { VITE_DEV_SERVER_URL, VITE_NAME, SENTRY_DSN } = keys
       const def = {
         [VITE_DEV_SERVER_URL]:
           command === 'serve'
             ? JSON.stringify(process.env[VITE_DEV_SERVER_URL])
             : undefined,
         [VITE_NAME]: JSON.stringify(name),
+        [SENTRY_DSN]: JSON.stringify(process.env.SENTRY_DSN),
       }
       return { ...acc, ...def }
     },
