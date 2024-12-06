@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 import { ProxySettings } from './ProxySettings'
-import { AppSettingsSchema } from '@/schemas/appSettings'
+import { AppSettingsSchema } from '@/schemas/settings'
 import { RecorderSettings } from './RecorderSettings'
 import { AppSettings } from '@/types/settings'
 import { UsageReportSettings } from './UsageReportSettings'
