@@ -1,4 +1,5 @@
 import { ProxyData } from '@/types'
+import { safeAtob } from '@/utils/format'
 import { withMatches } from '@/utils/fuse'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import Fuse from 'fuse.js'
@@ -36,25 +37,67 @@ export function useFilterRequests({
     return new Fuse(assetsToFilter, {
       includeMatches: true,
       shouldSort: false,
-      threshold: 0.2,
+      useExtendedSearch: true,
 
       keys: [
         'request.path',
         'request.host',
         'request.method',
         'response.statusCode',
+        {
+          name: 'response.content',
+          getFn: (data) => {
+            if (!data.response) {
+              return ''
+            }
+
+            return safeAtob(data.response.content)
+          },
+        },
+        {
+          name: 'request.headers.value',
+          getFn: (data) => data.request.headers.map(([, value]) => value),
+        },
+        {
+          name: 'request.headers.key',
+          getFn: (data) => data.request.headers.map(([key]) => key),
+        },
+        {
+          name: 'response.headers.value',
+          getFn: (data) => {
+            if (!data.response) {
+              return ''
+            }
+
+            return data.response.headers.map(([, value]) => value)
+          },
+        },
+        {
+          name: 'response.headers.key',
+          getFn: (data) => {
+            if (!data.response) {
+              return ''
+            }
+
+            return data.response.headers.map(([key]) => key)
+          },
+        },
       ],
     })
   }, [assetsToFilter])
 
+  // TODO: skip single char queries
   const filteredRequests = useMemo(() => {
-    if (debouncedFilter.match(/^\s*$/)) {
+    if (debouncedFilter.match(/^\s*$/) || debouncedFilter.length < 2) {
       return assetsToFilter
     }
 
-    return searchIndex.search(debouncedFilter).map(withMatches)
+    const rez = searchIndex.search(`'"${debouncedFilter}"`)
+    console.log('rez', rez)
+    return rez.map(withMatches)
   }, [searchIndex, assetsToFilter, debouncedFilter])
 
+  console.log('filteredRequests', filteredRequests)
   const staticAssetCount = proxyData.length - requestWithoutStaticAssets.length
 
   return {

@@ -54,7 +54,8 @@ export function HighlightedText({ text, matches }: HighlightedTextProps) {
 
     return splitByMatches(
       text,
-      longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
+      // longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
+      filteredMatches.flatMap((match) => match.indices)
     )
   }, [text, matches])
 

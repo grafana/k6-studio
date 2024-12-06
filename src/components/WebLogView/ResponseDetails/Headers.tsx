@@ -1,3 +1,4 @@
+import { HighlightedText } from '@/components/HighlightedText'
 import { ProxyData } from '@/types'
 import { DataList, Strong } from '@radix-ui/themes'
 
@@ -14,8 +15,12 @@ export function Headers({ data }: { data: ProxyData }) {
 
       {headers.map(([key, value], index) => (
         <DataList.Item key={`${key}_${index}`}>
-          <DataList.Label>{key}</DataList.Label>
-          <DataList.Value>{value}</DataList.Value>
+          <DataList.Label>
+            <HighlightedText text={key} matches={data.matches} />
+          </DataList.Label>
+          <DataList.Value>
+            <HighlightedText text={value} matches={data.matches} />
+          </DataList.Value>
         </DataList.Item>
       ))}
     </DataList.Root>

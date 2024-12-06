@@ -6,6 +6,7 @@ import { Group } from './Group'
 import { Table } from '@/components/Table'
 import { memo, useMemo } from 'react'
 import { useDeepCompareEffect } from 'react-use'
+import { SearchResults } from './SearchResults'
 
 interface WebLogViewProps {
   requests: ProxyDataWithMatches[]
@@ -99,12 +100,15 @@ function RequestList({
       </Table.Header>
       <Table.Body>
         {requests.map((data) => (
-          <Row
-            key={data.id}
-            data={data}
-            isSelected={selectedRequestId === data.id}
-            onSelectRequest={onSelectRequest}
-          />
+          <>
+            <Row
+              key={data.id}
+              data={data}
+              isSelected={selectedRequestId === data.id}
+              onSelectRequest={onSelectRequest}
+            />
+            <SearchResults data={data} />
+          </>
         ))}
       </Table.Body>
     </Table.Root>
