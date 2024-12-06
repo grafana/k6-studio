@@ -1,4 +1,4 @@
-import { Box, Table, Text } from '@radix-ui/themes'
+import { Box, Table } from '@radix-ui/themes'
 
 import { ProxyData, ProxyDataWithMatches } from '@/types'
 
@@ -6,7 +6,7 @@ import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
 import { TableCellWithTooltip } from '../TableCellWithTooltip'
 import { HighlightedText } from '../HighlightedText'
-import { isNonStaticAssetResponse } from '@/utils/staticAssets'
+import { getRequestType } from './WebLogView.utils'
 
 interface RowProps {
   data: ProxyDataWithMatches
@@ -54,11 +54,7 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
           />
         </ResponseStatusBadge>
       </Table.Cell>
-      <Table.Cell>
-        <Text size="1">
-          {isNonStaticAssetResponse(data) ? 'Dynamic' : 'Static'}
-        </Text>
-      </Table.Cell>
+      <TableCellWithTooltip>{getRequestType(data)}</TableCellWithTooltip>
       <TableCellWithTooltip>
         <HighlightedText text={data.request.host} matches={data.matches} />
       </TableCellWithTooltip>
