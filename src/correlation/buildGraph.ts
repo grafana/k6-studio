@@ -1,41 +1,10 @@
 import { Graph } from '@/utils/graph/graph'
-import { NodeRef, ResolvedEdge } from '@/utils/graph/types'
-
-// TODO: Use an optimized queue implementation.
-class Queue<T> {
-  private items: T[]
-
-  constructor(items: Iterable<T> = []) {
-    this.items = Array.from(items)
-  }
-
-  get length() {
-    return this.items.length
-  }
-
-  enqueue(item: T[] | T) {
-    if (Array.isArray(item)) {
-      this.items.push(...item)
-
-      return
-    }
-
-    this.items.push(item)
-  }
-
-  dequeue() {
-    return this.items.shift()
-  }
-
-  clear() {
-    this.items = []
-  }
-}
+import { ResolvedEdge } from '@/utils/graph/types'
 
 interface RangeLike {
   id: string
-  start: number
-  end: number
+  started: number
+  ended: number
 }
 
 export function buildGraph<T extends RangeLike>(nodes: Iterable<T>) {
@@ -48,122 +17,77 @@ export function buildGraph<T extends RangeLike>(nodes: Iterable<T>) {
   return graph
 }
 
-function isStartedInside<T extends RangeLike>(
+function isStartInside<T extends RangeLike>(
   node: T,
   { from, to }: ResolvedEdge<T, null>
 ) {
-  return node.start > from.value.end && node.start <= to.value.start
+  return node.started > from.value.ended && node.started <= to.value.ended
 }
 
-function isEndedInside<T extends RangeLike>(
+function isEndInside<T extends RangeLike>(
   node: T,
   { from, to }: ResolvedEdge<T, null>
 ) {
-  return node.end >= from.value.end && node.end < to.value.start
+  return node.ended >= from.value.ended && node.ended < to.value.started
 }
 
 export function insertNode<T extends RangeLike>(
   graph: Graph<T, null>,
   node: T
 ) {
-  let queue = new Queue(graph.sinks())
-  let visited = new Set<string>()
+  // We begin by adding two dummy nodes to the graph that will make sure that
+  // every node can be inserted at some edge. It's easier to do it this way
+  // than to have to handle the edge cases of leaf nodes which won't have any
+  // edges to insert into.
+  const start = graph.addNode('$$start', {
+    id: '$$start',
+    started: Number.MIN_SAFE_INTEGER,
+    ended: Number.MIN_SAFE_INTEGER,
+  } as T)
 
-  let current = queue.dequeue()
+  const end = graph.addNode('$$end', {
+    id: '$$end',
+    started: Number.MAX_SAFE_INTEGER,
+    ended: Number.MAX_SAFE_INTEGER,
+  } as T)
 
-  const startNodes = new Map<string, NodeRef<T>>()
+  for (const source of graph.sources()) {
+    if (source.id === start.id || source.id === end.id) {
+      continue
+    }
+
+    graph.setEdge(start.id, source.id, null)
+  }
+
+  for (const sink of graph.sinks()) {
+    if (sink.id === start.id || sink.id === end.id) {
+      continue
+    }
+
+    graph.setEdge(sink.id, end.id, null)
+  }
 
   const added: Array<{ from: string; to: string }> = []
   const removed: Array<{ from: string; to: string }> = []
 
-  while (current !== undefined) {
-    if (visited.has(current.id)) {
-      current = queue.dequeue()
+  for (const edge of graph.ancestors(
+    end,
+    (edge) => !isStartInside(node, edge)
+  )) {
+    const endInside = isEndInside(node, edge)
+    const startInside = isStartInside(node, edge)
 
-      continue
+    if (startInside && endInside) {
+      removed.push({ from: edge.from.id, to: edge.to.id })
     }
 
-    visited.add(current.id)
-
-    if (graph.isSource(current)) {
-      if (node.end < current.value.start) {
-        added.push({ from: node.id, to: current.id })
-      }
-
-      if (node.start > current.value.end) {
-        added.push({ from: current.id, to: node.id })
-
-        startNodes.set(current.id, current)
-      }
-
-      current = queue.dequeue()
-
-      continue
+    if (startInside) {
+      added.push({ from: edge.from.id, to: node.id })
     }
 
-    if (graph.isSink(current) && node.start > current.value.end) {
-      added.push({ from: current.id, to: node.id })
-
-      current = queue.dequeue()
-
-      continue
+    if (endInside) {
+      added.push({ from: node.id, to: edge.to.id })
     }
-
-    for (const incoming of graph.incoming(current)) {
-      const resolved = graph.resolveEdge(incoming)
-
-      if (isStartedInside(node, resolved)) {
-        added.push({ from: resolved.from.id, to: node.id })
-
-        startNodes.set(resolved.from.id, resolved.from)
-
-        continue
-      }
-
-      queue.enqueue(resolved.from)
-    }
-
-    current = queue.dequeue()
-  }
-
-  queue = new Queue(startNodes.values())
-  visited = new Set<string>()
-
-  current = queue.dequeue()
-
-  while (current !== undefined) {
-    if (visited.has(current.id)) {
-      current = queue.dequeue()
-
-      continue
-    }
-
-    visited.add(current.id)
-
-    for (const outgoing of graph.outgoing(current)) {
-      const resolved = graph.resolveEdge(outgoing)
-
-      if (isEndedInside(node, resolved)) {
-        added.push({
-          from: node.id,
-          to: resolved.to.id,
-        })
-
-        // If it's a start node, we need to split the edge.
-        if (startNodes.has(resolved.from.id)) {
-          removed.push({
-            from: resolved.from.id,
-            to: resolved.to.id,
-          })
-        }
-
-        continue
-      }
-
-      queue.enqueue(resolved.to)
-    }
-
-    current = queue.dequeue()
   }
 
   graph.addNode(node.id, node)
@@ -177,6 +101,20 @@ export function insertNode<T extends RangeLike>(
   }
 
   // NOTE: Uncomment this to help with debugging. It will log links to a visual representation
-  // of the graph at each iteration of this function.
-  // console.log(graph.toGraphVizLink())
+  // of the graph at the end of the function.
+  // console.log(
+  //   graph.toGraphVizLink({
+  //     nodeLabel: (node) => {
+  //       if (node.id === start.id || node.id === end.id) {
+  //         return node.id
+  //       }
+
+  //       return `${node.id}: ${node.started}-${node.ended}`
+  //     },
+  //   })
+  // )
+
+  // Clean up the start and end nodes, removing the edges.
+  graph.removeNode(start)
+  graph.removeNode(end)
 }

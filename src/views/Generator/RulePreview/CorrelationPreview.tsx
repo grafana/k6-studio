@@ -93,6 +93,7 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
       </Allotment.Pane>
       <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
         <Details
+          type="tabs"
           selectedRequest={selectedRequest}
           onSelectRequest={setSelectedRequest}
         />

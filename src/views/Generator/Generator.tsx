@@ -23,6 +23,8 @@ import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import log from 'electron-log/renderer'
+import { Box, ScrollArea } from '@radix-ui/themes'
+import { RuleEditor } from './RuleEditor'
 
 export function Generator() {
   const selectedRule = useGeneratorStore(selectSelectedRule)
@@ -137,7 +139,20 @@ export function Generator() {
           <GeneratorSidebar />
         </Allotment.Pane>
         <Allotment.Pane minSize={400}>
-          <TestRuleContainer selectedRule={selectedRule} />
+          <Allotment vertical defaultSizes={[1, 1]}>
+            <Allotment.Pane minSize={300}>
+              <TestRuleContainer />
+            </Allotment.Pane>
+            <Allotment.Pane minSize={300} visible={selectedRule !== undefined}>
+              {selectedRule !== undefined && (
+                <ScrollArea scrollbars="vertical">
+                  <Box p="3">
+                    <RuleEditor rule={selectedRule} />
+                  </Box>
+                </ScrollArea>
+              )}
+            </Allotment.Pane>
+          </Allotment>
         </Allotment.Pane>
       </Allotment>
       <UnsavedChangesDialog

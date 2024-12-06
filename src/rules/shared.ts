@@ -75,7 +75,7 @@ export function replaceTextMatches(
 ): Request {
   const content = replaceContent(request.content, extractedValue, variableName)
   const url = replaceUrl(request.url, extractedValue, variableName)
-  const path = request.path.replaceAll(extractedValue, `\${${variableName}}`)
+  const path = request.path.replaceAll(extractedValue, variableName)
   const headers: Header[] = replaceHeaders(
     request.headers,
     extractedValue,

@@ -9,6 +9,39 @@ import {
   NodeRef,
 } from './types'
 
+export const abort = Symbol('abort')
+
+// TODO: Use an optimized queue implementation.
+class Queue<T> {
+  private items: T[]
+
+  constructor(items: Iterable<T> = []) {
+    this.items = Array.from(items)
+  }
+
+  get length() {
+    return this.items.length
+  }
+
+  enqueue(item: T[] | T) {
+    if (Array.isArray(item)) {
+      this.items.push(...item)
+
+      return
+    }
+
+    this.items.push(item)
+  }
+
+  dequeue() {
+    return this.items.shift()
+  }
+
+  clear() {
+    this.items = []
+  }
+}
+
 type CommonStyle = 'dashed' | 'dotted' | 'solid' | 'invis' | 'bold'
 
 type NodeStyle =
@@ -117,10 +150,13 @@ export class Graph<N, E> {
     return this.edgeMap.size
   }
 
-  addNode(id: NodeId, node: N): N {
+  addNode(id: NodeId, node: N): NodeRef<N> {
     this.setNode(id, node)
 
-    return node
+    return {
+      id,
+      value: node,
+    }
   }
 
   setNode(id: NodeId, node: N): void {
@@ -292,23 +328,99 @@ export class Graph<N, E> {
     yield* this.incoming(node)
   }
 
-  *descendants(node: Identifiable): Iterable<NodeRef<N>> {
-    for (const edge of this.outgoing(node)) {
-      const node = this.resolveNode(edge.to)
+  /**
+   * Performs a breadth-first search down the graph (same direction as edges) starting
+   * from the given node or nodes. It will continue to search the graph until the given
+   * predicate returns false or the special value 'abort' which will abort the search
+   * without visiting nodes in other branches.
+   */
+  *descendants(
+    start: Identifiable[] | Identifiable,
+    predicate: (node: ResolvedEdge<N, E>) => boolean | typeof abort = () => true
+  ): Iterable<ResolvedEdge<N, E>> {
+    const startNodes = (Array.isArray(start) ? start : [start]).map((node) =>
+      this.resolveNode(node)
+    )
 
-      yield node
+    const queue = new Queue(startNodes)
+    const visited = new Set<NodeId>()
 
-      yield* this.descendants(node)
+    let current = queue.dequeue()
+
+    while (current !== undefined) {
+      if (visited.has(current.id)) {
+        current = queue.dequeue()
+
+        continue
+      }
+
+      visited.add(current.id)
+
+      for (const outgoing of this.outgoing(current)) {
+        const resolved = this.resolveEdge(outgoing)
+
+        yield resolved
+
+        const shouldContinue = predicate(resolved)
+
+        if (shouldContinue === abort) {
+          return
+        }
+
+        if (shouldContinue) {
+          queue.enqueue(resolved.from)
+        }
+      }
+
+      current = queue.dequeue()
     }
   }
 
-  *ancestors(node: Identifiable): Iterable<NodeRef<N>> {
-    for (const edge of this.incoming(node)) {
-      const node = this.resolveNode(edge.from)
+  /**
+   * Performs a breadth-first search up the graph (reverse direction of edges) starting
+   * from the given node or nodes. It will continue to search the graph until the given
+   * predicate returns false or the special value 'abort' which will abort the search
+   * without visiting nodes in other branches.
+   */
+  *ancestors(
+    start: Identifiable[] | Identifiable,
+    predicate: (node: ResolvedEdge<N, E>) => boolean | typeof abort = () => true
+  ): Iterable<ResolvedEdge<N, E>> {
+    const startNodes = (Array.isArray(start) ? start : [start]).map((node) =>
+      this.resolveNode(node)
+    )
 
-      yield node
+    const queue = new Queue(startNodes)
+    const visited = new Set<NodeId>()
 
-      yield* this.ancestors(node)
+    let current = queue.dequeue()
+
+    while (current !== undefined) {
+      if (visited.has(current.id)) {
+        current = queue.dequeue()
+
+        continue
+      }
+
+      visited.add(current.id)
+
+      for (const incoming of this.incoming(current)) {
+        const resolved = this.resolveEdge(incoming)
+
+        yield resolved
+
+        const shouldContinue = predicate(resolved)
+
+        if (shouldContinue === abort) {
+          return
+        }
+
+        if (shouldContinue) {
+          queue.enqueue(resolved.from)
+        }
+      }
+
+      current = queue.dequeue()
     }
   }
 

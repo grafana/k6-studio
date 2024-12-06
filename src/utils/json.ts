@@ -6,3 +6,13 @@ export function safeJsonParse<T extends object>(value: string) {
     return undefined
   }
 }
+
+export function formatJsonPath([first, ...rest]: Array<string | number>) {
+  return rest.reduce<string>((acc, part) => {
+    if (typeof part === 'string') {
+      return `${acc}.${part}`
+    }
+
+    return `${acc}[${part}]`
+  }, String(first))
+}

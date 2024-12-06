@@ -9,7 +9,7 @@ import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
 
 interface DetailsProps {
-  type?: 'accordion' | 'panels'
+  type?: 'tabs' | 'panels'
   orientation?: 'horizontal' | 'vertical'
   selectedRequest: ProxyData | null
   onSelectRequest: (data: ProxyData | null) => void
@@ -49,7 +49,7 @@ export function Details({
       </Box>
       {selectedRequest !== null && (
         <Box height="100%" width="100%">
-          {type === 'accordion' && (
+          {type === 'tabs' && (
             <Tabs.Root defaultValue="request">
               <Tabs.List
                 css={css`

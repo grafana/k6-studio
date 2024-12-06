@@ -10,20 +10,11 @@ import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
 import * as Accordion from '@radix-ui/react-accordion'
 import { ChevronRightIcon } from '@radix-ui/react-icons'
-import { Flex, Reset, Tooltip } from '@radix-ui/themes'
-import { ArrowLeftRight } from 'lucide-react'
+import { Flex, IconButton, Reset, Tooltip } from '@radix-ui/themes'
+import { CheckIcon, TextSearch, XIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 import { RequestLink } from './RequestLink'
-
-function formatJsonPath(path: Array<string | number>) {
-  return path.reduce((acc, part) => {
-    if (typeof part === 'string') {
-      return `${acc}.${part}`
-    }
-
-    return `${acc}[${part}]`
-  }, '$')
-}
+import { formatJsonPath } from '@/utils/json'
 
 function formatSelector(selector: Selector): ReactNode {
   switch (selector.type) {
@@ -48,7 +39,7 @@ function SelectorUsage({ selector }: SelectorUsageProps) {
     case 'json':
       return (
         <>
-          Used at{' '}
+          Used by property{' '}
           <strong>
             <code>{formatJsonPath(selector.path)}</code>
           </strong>{' '}
@@ -127,14 +118,13 @@ function Usage({ request, usage }: UsageProps) {
   return (
     <Flex
       p="2"
-      pl="4"
       gap="2"
       align="center"
       css={css`
         flex: 1 1 0;
       `}
     >
-      <ArrowLeftRight size={12} />
+      <TextSearch strokeWidth={2} size={14} />
       <div>
         <SelectorUsage selector={usage.value.selector} /> of{' '}
         <RequestLink request={request} />
@@ -146,13 +136,15 @@ function Usage({ request, usage }: UsageProps) {
 interface SuggestionProps {
   requests: ProxyData[]
   suggestion: GroupedCorrelation
+  onApply: (suggestion: GroupedCorrelation) => void
 }
 
-export function Suggestion({
-  requests,
-  suggestion: correlation,
-}: SuggestionProps) {
-  const sourceRequest = requests[correlation.from.index]
+export function Suggestion({ requests, suggestion, onApply }: SuggestionProps) {
+  const sourceRequest = requests[suggestion.from.index]
+
+  function handleApply() {
+    onApply(suggestion)
+  }
 
   if (sourceRequest === undefined) {
     return null
@@ -160,17 +152,18 @@ export function Suggestion({
 
   return (
     <Accordion.AccordionItem
-      value={correlation.id}
+      value={suggestion.id}
       css={css`
         font-size: 12px;
         background-color: var(--color-background);
       `}
     >
       <Accordion.Header asChild>
-        <div
+        <Flex
+          align="center"
+          gap="3"
+          pr="4"
           css={css`
-            display: flex;
-
             border-bottom: 1px solid var(--gray-3);
 
             &:first-of-type {
@@ -182,12 +175,12 @@ export function Suggestion({
               background-color: var(--gray-5);
             }
 
-            & svg {
+            & svg.chevron {
               transition: transform 200ms;
               transform: rotate(0deg);
             }
 
-            &[data-state='open'] svg {
+            &[data-state='open'] svg.chevron {
               transform: rotate(90deg);
             }
           `}
@@ -206,39 +199,63 @@ export function Suggestion({
                 white-space: nowrap;
               `}
             >
-              <span>
+              <Flex as="span" align="center">
                 <ChevronRightIcon
+                  className="chevron"
                   css={css`
                     [data-state='open'] {
                       transform: rotate(90deg);
                     }
                   `}
                 />
-              </span>
-              <span>
-                <span>
-                  <strong>
-                    <Tooltip
-                      content={formatExtractedValue(correlation.from.value)}
-                    >
-                      {formatSelector(correlation.from.value.selector)}
-                    </Tooltip>
-                  </strong>{' '}
-                  in{' '}
-                </span>
-                <RequestLink request={sourceRequest} />
-                <span> is used in {correlation.usages.length} requests.</span>
+              </Flex>
+              <span
+                css={css`
+                  display: inline-block;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                `}
+              >
+                <strong>
+                  <Tooltip
+                    content={formatExtractedValue(suggestion.from.value)}
+                  >
+                    {formatSelector(suggestion.from.value.selector)}
+                  </Tooltip>
+                </strong>{' '}
+                in <RequestLink request={sourceRequest} />
+                is used in {suggestion.usages.length} requests.
               </span>
             </Accordion.Trigger>
           </Reset>
-        </div>
+          <Flex align="center" gap="2">
+            <IconButton
+              variant="solid"
+              size="1"
+              color="green"
+              onClick={handleApply}
+            >
+              <CheckIcon size={12} />
+            </IconButton>
+            <IconButton
+              variant="solid"
+              size="1"
+              color="red"
+              onClick={handleApply}
+            >
+              <XIcon size={12} />
+            </IconButton>
+          </Flex>
+        </Flex>
       </Accordion.Header>
       <Accordion.Content
         css={css`
           background-color: var(--gray-2);
+          padding-left: var(--space-5);
         `}
       >
-        {correlation.usages.map((usage, index) => {
+        {suggestion.usages.map((usage, index) => {
           return (
             <Usage key={index} request={requests[usage.index]} usage={usage} />
           )

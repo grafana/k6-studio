@@ -24,7 +24,7 @@ import {
   createResponse,
 } from '@/test/factories/proxyData'
 
-type IdGenerator = Generator<number, number, number>
+type IdGenerator = Generator<number>
 
 export function createCorrelationRuleInstance(
   rule: CorrelationRule,

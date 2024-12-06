@@ -90,7 +90,7 @@ export function RequestList({ requests }: RequestListProps) {
           </Allotment.Pane>
           <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
             <Details
-              type="accordion"
+              type="tabs"
               selectedRequest={selectedRequest}
               onSelectRequest={handleRequestSelected}
             />
