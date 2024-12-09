@@ -20,9 +20,9 @@ function createSequentialIdPool() {
 
 export function applyRules(recording: ProxyData[], rules: TestRule[]) {
   const idGenerator = createSequentialIdPool()
-  const ruleInstances = rules.map((rule) =>
-    createRuleInstance(rule, idGenerator(rule.type))
-  )
+  const ruleInstances = rules
+    .filter((rule) => rule.enabled)
+    .map((rule) => createRuleInstance(rule, idGenerator(rule.type)))
 
   const requestSnippetSchemas = recording.map((data) =>
     ruleInstances.reduce<RequestSnippetSchema>((acc, rule) => rule.apply(acc), {

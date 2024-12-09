@@ -40,6 +40,17 @@ export function RuleEditorSwitch() {
   }
 }
 
+function RuleDisabledWarning() {
+  return (
+    <Callout.Root mb="4">
+      <Callout.Icon>
+        <InfoCircledIcon />
+      </Callout.Icon>
+      <Callout.Text>This rule is currently disabled.</Callout.Text>
+    </Callout.Root>
+  )
+}
+
 interface RuleEditorProps {
   rule: TestRule
 }
@@ -100,6 +111,7 @@ export function RuleEditor({ rule }: RuleEditorProps) {
               </IconButton>
             </Tooltip>
           </Box>
+          {!rule.enabled && <RuleDisabledWarning />}
           <RuleEditorSwitch />
         </Box>
       </form>
