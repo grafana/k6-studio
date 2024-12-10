@@ -1,4 +1,4 @@
-import { Button, Strong, Text } from '@radix-ui/themes'
+import { Button, Flex, Strong, Text } from '@radix-ui/themes'
 import { Header, ProxyDataWithMatches } from '@/types'
 import { Table } from '@/components/Table'
 import { SearchMatch } from '@/types/fuse'
@@ -50,6 +50,7 @@ export function SearchResults({ data }: { data: ProxyDataWithMatches }) {
       }))
     })
   }, [matches])
+  console.log('results', results)
 
   const visibleResults = useMemo(
     () => (showAll ? results : results.slice(0, resultsInPreview)),
@@ -66,15 +67,15 @@ export function SearchResults({ data }: { data: ProxyDataWithMatches }) {
     <Table.Row>
       <Table.Cell colSpan={4}>
         {visibleResults.map((result, excerptIndex) => (
-          <Text key={excerptIndex} size="1" as="p" truncate>
-            <Strong>{excerptIndex + 1}</Strong>:{' '}
+          <Flex key={excerptIndex}>
+            {/* <Strong>{excerptIndex + 1}</Strong>:{' '}  */}
             {result.match.key?.includes('content') && (
               <ContentResult segment={result.segment} />
             )}
             {result.match.key?.includes('headers') && (
               <HeaderResult result={result} data={data} />
             )}
-          </Text>
+          </Flex>
         ))}
         {shouldShowShowMore && (
           <Button size="1" variant="outline" onClick={toggleShowAll} my="2">
@@ -108,15 +109,15 @@ function HeaderResult({
         <Strong>{findHeaderByKey(headers, result.match.value)}: </Strong>
       )}
 
-      <span
+      <Flex
         css={{
           fontWeight: isHeaderKeyMatch ? 'bold' : 'normal',
         }}
       >
         <ContentResult segment={result.segment} />
-      </span>
+      </Flex>
       {isHeaderKeyMatch && (
-        <span>: {findHeaderByValue(headers, result.match.value)}</span>
+        <Text truncate>: {findHeaderByValue(headers, result.match.value)}</Text>
       )}
     </>
   )
@@ -125,9 +126,18 @@ function HeaderResult({
 function ContentResult({ segment }: { segment: Segment }) {
   return (
     <>
-      <span>{segment.beforeMatch}</span>
-      <mark>{segment.match}</mark>
-      <span>{segment.afterMatch}</span>
+      {/* Show ellipsis on the left side: wrapped ltr inside rtl is needed */}
+      {/* to prevent swapping sides of punctuation marks */}
+      {segment.beforeMatch.length > 0 && (
+        <Text css={{ maxWidth: '20%', flexShrink: 1 }} dir="rtl" truncate>
+          <Text dir="ltr">{segment.beforeMatch}</Text>
+        </Text>
+      )}
+
+      <mark css={{ flexShrink: 0, whiteSpace: 'nowrap' }}>{segment.match}</mark>
+      <Text css={{ flexGrow: 1 }} truncate>
+        {segment.afterMatch}
+      </Text>
     </>
   )
 }
@@ -135,7 +145,7 @@ function ContentResult({ segment }: { segment: Segment }) {
 type Segment = ReturnType<typeof getSegments>
 
 function getSegments(text: string, index: SearchMatch['indices'][number]) {
-  const lengthBeforeMatch = 20
+  const lengthBeforeMatch = 800
   // Avoid adding long response bodies into dom
   const lengthAfterMatch = 800
   const [start, end] = index
@@ -147,7 +157,7 @@ function getSegments(text: string, index: SearchMatch['indices'][number]) {
   const afterMatch = text.slice(end + 1, end + lengthAfterMatch)
 
   return {
-    beforeMatch: `${startOffset !== 0 ? '...' : ''}${beforeMatch}`,
+    beforeMatch,
     match,
     afterMatch,
   }
