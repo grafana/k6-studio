@@ -20,3 +20,7 @@ export function migrate(generator: z.infer<typeof AnyGeneratorSchema>) {
 }
 
 export const GeneratorFileDataSchema = AnyGeneratorSchema.transform(migrate)
+
+export * from './v1/rules'
+export * from './v1/testData'
+export * from './v1/testOptions'
