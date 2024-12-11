@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
@@ -14,9 +14,12 @@ import { RequestList } from './RequestList'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { CrossCircledIcon } from '@radix-ui/react-icons'
 import { RecordingSelector } from '../RecordingSelector'
+import { useAtom } from 'jotai'
+import { currentTab, GeneratorTab } from '../atoms'
 
 export function GeneratorSidebar() {
-  const [tab, setTab] = useState('requests')
+  const [tab, setTab] = useAtom(currentTab)
+
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const { hasError } = useScriptPreview()
 
@@ -28,15 +31,19 @@ export function GeneratorSidebar() {
       setTab((currentTab) =>
         currentTab === 'rule-preview' ? 'requests' : currentTab
       )
+
       return
     }
 
     setTab('rule-preview')
-  }, [hasPreview])
+  }, [hasPreview, setTab])
 
   return (
     <Flex direction="column" height="100%" minHeight="0" asChild>
-      <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
+      <Tabs.Root
+        value={tab}
+        onValueChange={(value) => setTab(value as GeneratorTab)}
+      >
         <Tabs.List
           css={css`
             justify-content: space-between;

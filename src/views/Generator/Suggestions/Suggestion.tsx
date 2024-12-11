@@ -231,7 +231,7 @@ export function Suggestion({ requests, suggestion, onApply }: SuggestionProps) {
           </Reset>
           <Flex align="center" gap="2">
             <IconButton
-              variant="solid"
+              variant="ghost"
               size="1"
               color="green"
               onClick={handleApply}
@@ -239,7 +239,7 @@ export function Suggestion({ requests, suggestion, onApply }: SuggestionProps) {
               <CheckIcon size={12} />
             </IconButton>
             <IconButton
-              variant="solid"
+              variant="ghost"
               size="1"
               color="red"
               onClick={handleApply}

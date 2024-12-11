@@ -2,7 +2,6 @@ import { Flex, ScrollArea } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { useMemo } from 'react'
 import { css } from '@emotion/react'
-import { useShallowCompareEffect } from 'react-use'
 
 import { WebLogView } from '@/components/WebLogView'
 import { ProxyData } from '@/types'
@@ -46,9 +45,9 @@ export function RequestList({ requests }: RequestListProps) {
   }
 
   // Preserve the selected request when modifying rules
-  useShallowCompareEffect(() => {
-    handleRequestSelected(null)
-  }, [requests])
+  // useShallowCompareEffect(() => {
+  //   handleRequestSelected(null)
+  // }, [requests])
 
   return (
     <Flex direction="column" height="100%">

@@ -4,6 +4,7 @@ import { useSetAtom } from 'jotai'
 import { MouseEvent } from 'react'
 import { selectedRequestAtom } from '../GeneratorSidebar/RequestList'
 import { css } from '@emotion/react'
+import { currentTab } from '../atoms'
 
 function truncateString(str: string, length: number) {
   if (str.length <= length) {
@@ -19,10 +20,12 @@ interface RequestLinkProps {
 
 export function RequestLink({ request }: RequestLinkProps) {
   const setSelectedRequestId = useSetAtom(selectedRequestAtom)
+  const setCurrentTab = useSetAtom(currentTab)
 
   function handleClick(ev: MouseEvent<HTMLElement>) {
     ev.preventDefault()
 
+    setCurrentTab('requests')
     setSelectedRequestId(request.id)
   }
 
