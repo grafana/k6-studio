@@ -1,7 +1,7 @@
 import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { pluginExposeRenderer } from './vite.base.config'
+import { pluginExposeRenderer } from './vite.base.config.mjs'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { version } from './package.json'
 
