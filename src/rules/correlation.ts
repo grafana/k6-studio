@@ -859,6 +859,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     const rule: CorrelationRule = {
       type: 'correlation',
       id: '1',
+      enabled: true,
       extractor: {
         filter: { path: '' },
         selector: {
@@ -906,6 +907,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     const rule: CorrelationRule = {
       type: 'correlation',
       id: '1',
+      enabled: true,
       extractor: {
         filter: { path: '' },
         selector: {
@@ -960,6 +962,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     const rule: CorrelationRule = {
       type: 'correlation',
       id: '1',
+      enabled: true,
       extractor: {
         filter: { path: '' },
         selector: {
