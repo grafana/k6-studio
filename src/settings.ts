@@ -2,13 +2,13 @@ import { app, dialog } from 'electron'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
 import { AppSettings } from './types/settings'
-import { AppSettingsSchema } from './schemas/appSettings'
+import { AppSettingsSchema } from './schemas/settings'
 import { existsSync, readFileSync } from 'fs'
 import { safeJsonParse } from './utils/json'
 import log from 'electron-log/main'
 
 const defaultSettings: AppSettings = {
-  version: '1.0',
+  version: '2.0',
   proxy: {
     mode: 'regular',
     port: 6000,

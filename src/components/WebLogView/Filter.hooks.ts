@@ -1,5 +1,7 @@
 import { ProxyData } from '@/types'
+import { withMatches } from '@/utils/fuse'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
+import Fuse from 'fuse.js'
 import { useState, useMemo } from 'react'
 import { useDebounce } from 'react-use'
 
@@ -30,21 +32,28 @@ export function useFilterRequests({
     [filter]
   )
 
-  const filteredRequests = useMemo(() => {
-    const lowerCaseFilter = debouncedFilter.toLowerCase().trim()
+  const searchIndex = useMemo(() => {
+    return new Fuse(assetsToFilter, {
+      includeMatches: true,
+      shouldSort: false,
+      threshold: 0.2,
 
-    if (lowerCaseFilter === '') {
+      keys: [
+        'request.path',
+        'request.host',
+        'request.method',
+        'response.statusCode',
+      ],
+    })
+  }, [assetsToFilter])
+
+  const filteredRequests = useMemo(() => {
+    if (debouncedFilter.match(/^\s*$/)) {
       return assetsToFilter
     }
 
-    return assetsToFilter.filter((data) => {
-      return (
-        data.request.url.toLowerCase().includes(lowerCaseFilter) ||
-        data.request.method.toLowerCase().includes(lowerCaseFilter) ||
-        data.response?.statusCode.toString().includes(lowerCaseFilter)
-      )
-    })
-  }, [debouncedFilter, assetsToFilter])
+    return searchIndex.search(debouncedFilter).map(withMatches)
+  }, [searchIndex, assetsToFilter, debouncedFilter])
 
   const staticAssetCount = proxyData.length - requestWithoutStaticAssets.length
 
