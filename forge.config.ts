@@ -70,6 +70,10 @@ const config: ForgeConfig = {
           entry: 'src/preload.ts',
           config: 'vite.preload.config.mts',
         },
+        {
+          entry: 'extension/src/background.ts',
+          config: 'vite.extension.config.mts',
+        },
       ],
       renderer: [
         {
