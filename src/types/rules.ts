@@ -22,7 +22,7 @@ import {
   VariableValueSchema,
   VerificationRuleSchema,
   VerificationRuleSelectorSchema,
-} from '@/schemas/rules'
+} from '@/schemas/generator'
 
 export interface CorrelationState {
   extractedValue?: string
