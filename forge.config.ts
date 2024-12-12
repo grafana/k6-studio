@@ -14,6 +14,7 @@ const config: ForgeConfig = {
     icon: './resources/icons/logo',
     asar: true,
     extraResource: [
+      '.vite/build/extension',
       './resources/json_output.py',
       './resources/group_snippet.js',
       './resources/checks_snippet.js',
@@ -69,6 +70,9 @@ const config: ForgeConfig = {
         {
           entry: 'src/preload.ts',
           config: 'vite.preload.config.ts',
+        },
+        {
+          config: 'vite.extension.config.mts',
         },
       ],
       renderer: [

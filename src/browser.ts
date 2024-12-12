@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import {
   computeSystemExecutablePath,
   Browser,
@@ -28,6 +28,15 @@ function getBrowserPath() {
   return recorder.browserPath as string
 }
 
+function getExtensionPath() {
+  // @ts-expect-error - Electron apps are built as CJS.
+  if (import.meta.env.DEV) {
+    return path.join(app.getAppPath(), '.vite/build/extension')
+  }
+
+  return path.join(process.resourcesPath, 'extension')
+}
+
 export const launchBrowser = async (
   browserWindow: BrowserWindow,
   url?: string
@@ -46,6 +55,9 @@ export const launchBrowser = async (
     'OptimizationHints',
   ]
   const disableChromeOptimizations = `--disable-features=${optimizationsToDisable.join(',')}`
+
+  const extensionPath = getExtensionPath()
+  console.info(`extension path: ${extensionPath}`)
 
   const sendBrowserClosedEvent = (): Promise<void> => {
     // we send the browser:stopped event when the browser is closed
@@ -69,6 +81,7 @@ export const launchBrowser = async (
       '--disable-search-engine-choice-screen',
       `--proxy-server=http://localhost:${appSettings.proxy.port}`,
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
+      `--load-extension=${extensionPath}`,
       disableChromeOptimizations,
       url ?? '',
     ],
