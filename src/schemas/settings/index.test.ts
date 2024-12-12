@@ -13,6 +13,7 @@ describe('Settings migration', () => {
       },
       recorder: {
         detectBrowserPath: true,
+        enableBrowserRecorder: true,
       },
       windowState: {
         width: 1200,
