@@ -3,6 +3,7 @@ import { ParameterizationRule } from '@/types/rules'
 export const jsonRule = {
   type: 'parameterization',
   id: '1',
+  enabled: true,
   filter: { path: '' },
   selector: {
     type: 'json',
@@ -18,6 +19,7 @@ export const jsonRule = {
 export const urlRule = {
   type: 'parameterization',
   id: '2',
+  enabled: true,
   filter: { path: '' },
   selector: {
     type: 'begin-end',
@@ -34,6 +36,7 @@ export const urlRule = {
 export const headerRule = {
   type: 'parameterization',
   id: '3',
+  enabled: true,
   filter: { path: '' },
   selector: {
     type: 'regex',
@@ -49,6 +52,7 @@ export const headerRule = {
 export const customCodeReplaceProjectId = {
   type: 'parameterization',
   id: '4',
+  enabled: true,
   filter: { path: '' },
   selector: {
     type: 'regex',
@@ -67,6 +71,7 @@ export const customCodeReplaceProjectId = {
 export const customCodeReplaceCsrf = {
   type: 'parameterization',
   id: '4',
+  enabled: true,
   filter: { path: '' },
   selector: {
     type: 'regex',

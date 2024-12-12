@@ -3,6 +3,7 @@ import { TestRule } from '@/types/rules'
 export const rules: TestRule[] = [
   {
     id: '0',
+    enabled: true,
     type: 'customCode',
     filter: { path: '' },
     snippet: 'console.log("Hello, world!")',
@@ -11,6 +12,7 @@ export const rules: TestRule[] = [
   {
     type: 'correlation',
     id: '1',
+    enabled: true,
     extractor: {
       filter: { path: '' },
       selector: {
@@ -24,6 +26,7 @@ export const rules: TestRule[] = [
   {
     type: 'correlation',
     id: '3',
+    enabled: true,
     extractor: {
       filter: { path: '' },
       selector: {
@@ -36,6 +39,7 @@ export const rules: TestRule[] = [
   {
     type: 'correlation',
     id: '2',
+    enabled: true,
     extractor: {
       filter: { path: '' },
       selector: {
@@ -49,6 +53,7 @@ export const rules: TestRule[] = [
   {
     type: 'correlation',
     id: '4',
+    enabled: true,
     extractor: {
       filter: { path: 'api.k6.io/v3/account/me' },
       selector: {

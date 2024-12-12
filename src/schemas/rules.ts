@@ -98,6 +98,7 @@ export const CorrelationReplacerSchema = z.object({
 
 export const RuleBaseSchema = z.object({
   id: z.string(),
+  enabled: z.boolean().default(true),
 })
 
 export const ParameterizationRuleSchema = RuleBaseSchema.extend({
