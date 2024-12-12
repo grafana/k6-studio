@@ -106,12 +106,15 @@ function HeaderResult({
   return (
     <>
       {isHeaderValueMatch && (
-        <Strong>{findHeaderByKey(headers, result.match.value)}: </Strong>
+        <Strong css={{ flexShrink: 0 }}>
+          {findHeaderByKey(headers, result.match.value)}:&nbsp;
+        </Strong>
       )}
 
       <Flex
         css={{
           fontWeight: isHeaderKeyMatch ? 'bold' : 'normal',
+          overflow: 'hidden',
         }}
       >
         <ContentResult segment={result.segment} />
@@ -129,13 +132,17 @@ function ContentResult({ segment }: { segment: Segment }) {
       {/* Show ellipsis on the left side: wrapped ltr inside rtl is needed */}
       {/* to prevent swapping sides of punctuation marks */}
       {segment.beforeMatch.length > 0 && (
-        <Text css={{ maxWidth: '20%', flexShrink: 1 }} dir="rtl" truncate>
-          <Text dir="ltr">{segment.beforeMatch}</Text>
+        <Text css={{ flexShrink: 1, whiteSpace: 'pre' }} dir="rtl" truncate>
+          <Text dir="ltr" css={{ whiteSpace: 'pre' }}>
+            {segment.beforeMatch}
+            {/* Preserve trailing space, gets removed by rtl */}
+            {stringEndsWithSpace(segment.beforeMatch) && <>&nbsp;</>}
+          </Text>
         </Text>
       )}
 
-      <mark css={{ flexShrink: 0, whiteSpace: 'nowrap' }}>{segment.match}</mark>
-      <Text css={{ flexGrow: 1 }} truncate>
+      <mark css={{ flexShrink: 0, whiteSpace: 'pre' }}>{segment.match}</mark>
+      <Text css={{ flexGrow: 1, whiteSpace: 'pre' }} truncate>
         {segment.afterMatch}
       </Text>
     </>
@@ -157,9 +164,9 @@ function getSegments(text: string, index: SearchMatch['indices'][number]) {
   const afterMatch = text.slice(end + 1, end + lengthAfterMatch)
 
   return {
-    beforeMatch,
+    beforeMatch: beforeMatch.replace(/\n/g, ''),
     match,
-    afterMatch,
+    afterMatch: afterMatch.replace(/\n/g, ''),
   }
 }
 
@@ -183,4 +190,8 @@ function findHeaderByValue(
   }
 
   return headers.find(([headerKey]) => headerKey === key)?.[1]
+}
+
+function stringEndsWithSpace(str: string) {
+  return str[str.length - 1] === ' '
 }
