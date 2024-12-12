@@ -6,6 +6,7 @@ import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
 import { TableCellWithTooltip } from '../TableCellWithTooltip'
 import { HighlightedText } from '../HighlightedText'
+import { getRequestType } from './WebLogView.utils'
 
 interface RowProps {
   data: ProxyDataWithMatches
@@ -53,6 +54,7 @@ export function Row({ data, isSelected, onSelectRequest }: RowProps) {
           />
         </ResponseStatusBadge>
       </Table.Cell>
+      <TableCellWithTooltip>{getRequestType(data)}</TableCellWithTooltip>
       <TableCellWithTooltip>
         <HighlightedText text={data.request.host} matches={data.matches} />
       </TableCellWithTooltip>
