@@ -3,6 +3,7 @@ import { Header, ProxyDataWithMatches } from '@/types'
 import { Table } from '@/components/Table'
 import { SearchMatch } from '@/types/fuse'
 import { useMemo, useState } from 'react'
+import { HighlightMark } from '../HighlightedText'
 
 const PREVIEWABLE_MATCH_KEYS = [
   'request.content',
@@ -65,7 +66,7 @@ export function SearchResults({ data }: { data: ProxyDataWithMatches }) {
 
   return (
     <Table.Row>
-      <Table.Cell colSpan={4}>
+      <Table.Cell colSpan={5}>
         {visibleResults.map((result, excerptIndex) => (
           <Flex key={excerptIndex}>
             {/* <Strong>{excerptIndex + 1}</Strong>:{' '}  */}
@@ -141,7 +142,15 @@ function ContentResult({ segment }: { segment: Segment }) {
         </Text>
       )}
 
-      <mark css={{ flexShrink: 0, whiteSpace: 'pre' }}>{segment.match}</mark>
+      <HighlightMark
+        css={{
+          flexShrink: 0,
+          whiteSpace: 'pre',
+          lineHeight: 'var(--default-line-height)',
+        }}
+      >
+        {segment.match}
+      </HighlightMark>
       <Text css={{ flexGrow: 1, whiteSpace: 'pre' }} truncate>
         {segment.afterMatch}
       </Text>

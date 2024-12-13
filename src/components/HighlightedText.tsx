@@ -1,6 +1,6 @@
 import { SearchMatch } from '@/types/fuse'
-import { css } from '@emotion/react'
-import { useMemo } from 'react'
+import { CSSObject, Interpolation, Theme } from '@emotion/react'
+import { ReactNode, useMemo } from 'react'
 
 interface MatchSegment {
   match: boolean
@@ -63,22 +63,32 @@ export function HighlightedText({ text, matches }: HighlightedTextProps) {
     <>
       {segments.map((segment, index) => {
         if (segment.match) {
-          return (
-            <mark
-              key={index}
-              css={css`
-                color: var(--accent-12);
-                background-color: var(--accent-5);
-                font-weight: 700;
-              `}
-            >
-              {segment.text}
-            </mark>
-          )
+          return <HighlightMark key={index}>{segment.text}</HighlightMark>
         }
 
         return segment.text
       })}
     </>
+  )
+}
+
+export function HighlightMark({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <mark
+      css={{
+        color: 'var(--accent-12)',
+        backgroundColor: 'var(--accent-5)',
+        fontWeight: 700,
+      }}
+      className={className}
+    >
+      {children}
+    </mark>
   )
 }
