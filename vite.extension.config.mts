@@ -1,4 +1,4 @@
-import type { ConfigEnv, UserConfig } from 'vite'
+import type { ConfigEnv, InlineConfig, UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
@@ -10,28 +10,34 @@ export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'renderer'>
   const { root, mode } = forgeEnv
 
-  const viteConfig = {
-    build: {
-      outDir: `.vite/build/extension/`,
-    },
+  const plugins = [
+    react({
+      jsxImportSource: '@emotion/react',
+    }),
+    tsconfigPaths(),
+  ]
+
+  const build = {
+    outDir: `.vite/build/extension`,
+  }
+
+  const viteConfig: InlineConfig = {
+    plugins,
+    build,
   }
 
   return {
     root,
     mode,
     base: './',
-    build: {
-      outDir: `.vite/build/extension/`,
-    },
+    build,
     plugins: [
-      react({
-        jsxImportSource: '@emotion/react',
-      }),
-      tsconfigPaths(),
+      ...plugins,
       webExtension({
         disableAutoLaunch: process.env.STANDALONE_EXTENSION !== 'true',
         htmlViteConfig: viteConfig,
         scriptViteConfig: viteConfig,
+
         manifest: () => {
           return {
             name: 'k6 Studio',
