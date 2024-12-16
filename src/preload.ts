@@ -4,7 +4,7 @@ import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
-import { BrowserEvent } from './schemas/recording/browser'
+import { BrowserEvent } from './schemas/recording'
 
 interface GetFilesResponse {
   recordings: string[]

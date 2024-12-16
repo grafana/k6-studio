@@ -1,4 +1,4 @@
-import { BrowserEvent } from '@/schemas/recording/browser'
+import { BrowserEvent } from '@/schemas/recording'
 import { useEffect, useState } from 'react'
 
 export function useListenBrowserEvent() {

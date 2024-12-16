@@ -1,4 +1,4 @@
-import { BrowserEventSchema } from '@/schemas/recording/browser'
+import { BrowserEventSchema } from '@/schemas/recording'
 import { z } from 'zod'
 
 export const EventsCapturedMessage = z.object({
