@@ -81,7 +81,9 @@ export const launchBrowser = async (
       '--disable-search-engine-choice-screen',
       `--proxy-server=http://localhost:${appSettings.proxy.port}`,
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
-      `--load-extension=${extensionPath}`,
+      appSettings.recorder.enableBrowserRecorder
+        ? `--load-extension=${extensionPath}`
+        : '',
       disableChromeOptimizations,
       url ?? '',
     ],

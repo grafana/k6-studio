@@ -2,7 +2,7 @@ import { AppSettings } from '@/types/settings'
 import { Flex, Text, Checkbox } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
 import { SettingsSection } from './SettingsSection'
-import { FileUploadInput } from '../Form'
+import { FieldGroup, FileUploadInput } from '../Form'
 import { useEffect } from 'react'
 
 export const RecorderSettings = () => {
@@ -60,6 +60,38 @@ export const RecorderSettings = () => {
         hint="The location of the browser executable (k6 Studio currently supports Chrome)"
         disabled={recorder.detectBrowserPath}
       />
+
+      <FieldGroup
+        label="Browser recording"
+        name="recorder.enableBrowserRecorder"
+        errors={errors}
+        hint={
+          <>
+            Enables the <em>experimental</em> browser recording feature. With
+            this feature enabled user interactions in the browser are recorded
+            alongside network requests. The recorded interactions can be
+            exported as a k6 browser script.
+          </>
+        }
+        hintType="text"
+      >
+        <Flex>
+          <Controller
+            control={control}
+            name="recorder.enableBrowserRecorder"
+            render={({ field }) => (
+              <Text size="2" as="label">
+                <Checkbox
+                  {...register('recorder.enableBrowserRecorder')}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />{' '}
+                Enable browser recording (experimental)
+              </Text>
+            )}
+          />
+        </Flex>
+      </FieldGroup>
     </SettingsSection>
   )
 }
