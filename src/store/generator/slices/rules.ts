@@ -11,6 +11,7 @@ interface Actions {
   updateRule: (rule: TestRule) => void
   cloneRule: (id: string) => void
   deleteRule: (id: string) => void
+  toggleEnableRule: (id: string) => void
   swapRules: (idA: string, idB: string) => void
   setSelectedRuleId: (id: string | null) => void
 }
@@ -46,6 +47,13 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
       }
 
       state.rules = state.rules.filter((rule) => rule.id !== id)
+    }),
+  toggleEnableRule: (id) =>
+    set((state) => {
+      const index = state.rules.findIndex((r) => r.id === id)
+      if (state.rules[index]) {
+        state.rules[index].enabled = !state.rules[index].enabled
+      }
     }),
   swapRules: (idA, idB) =>
     set((state) => {
