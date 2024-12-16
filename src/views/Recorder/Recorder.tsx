@@ -26,6 +26,7 @@ import { DEFAULT_GROUP_NAME } from '@/constants'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { EmptyState } from './EmptyState'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -44,6 +45,8 @@ export function Recorder() {
   const { proxyData, resetProxyData } = useListenProxyData(group?.id)
   const [recorderState, setRecorderState] = useState<RecorderState>('idle')
   const showToast = useToast()
+
+  useListenBrowserEvent()
 
   // Debounce the proxy data to avoid disappearing static asset requests
   // when recording
