@@ -3,17 +3,22 @@ import type { Entry, Page } from 'har-format'
 import { getContentTypeWithCharsetHeader } from './headers'
 import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
 import { groupProxyData } from './groups'
+import { BrowserEvent } from '@/schemas/recording'
 
-export function proxyDataToHar(data: ProxyData[]): HarWithOptionalResponse {
+export function proxyDataToHar(
+  data: ProxyData[],
+  browserEvents: BrowserEvent[]
+): HarWithOptionalResponse {
   const groups = groupProxyData(data)
   return {
-    log: createLog(createPages(groups), createEntries(groups)),
+    log: createLog(createPages(groups), createEntries(groups), browserEvents),
   }
 }
 
 function createLog(
   pages: Page[],
-  entries: EntryWithOptionalResponse[]
+  entries: EntryWithOptionalResponse[],
+  browserEvents: BrowserEvent[]
 ): HarWithOptionalResponse['log'] {
   return {
     version: '1.2',
@@ -23,6 +28,7 @@ function createLog(
     },
     pages,
     entries,
+    _browserEvents: browserEvents,
   }
 }
 
