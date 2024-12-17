@@ -113,7 +113,7 @@ const createSplashWindow = async () => {
     splashscreenWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  splashscreenWindow.loadFile(splashscreenFile)
+  await splashscreenWindow.loadFile(splashscreenFile)
 
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
   splashscreenWindow.once('ready-to-show', () => {
@@ -231,7 +231,7 @@ app.on('before-quit', async () => {
   stopProxyProcess()
 })
 
-ipcMain.handle('app:change-route', async (_, route: string) => {
+ipcMain.handle('app:change-route', (_, route: string) => {
   currentClientRoute = route
 })
 
@@ -255,9 +255,9 @@ ipcMain.handle('proxy:start', async (event) => {
   currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 })
 
-ipcMain.on('proxy:stop', async () => {
+ipcMain.on('proxy:stop', () => {
   console.info('proxy:stop event received')
-  stopProxyProcess()
+  return stopProxyProcess()
 })
 
 const waitForProxy = async (): Promise<void> => {
@@ -286,7 +286,7 @@ ipcMain.handle('browser:start', async (event, url?: string) => {
 ipcMain.on('browser:stop', async () => {
   console.info('browser:stop event received')
   if (currentBrowserProcess) {
-    currentBrowserProcess.close()
+    await currentBrowserProcess.close()
     currentBrowserProcess = null
   }
 })
@@ -415,8 +415,12 @@ ipcMain.handle('har:open', async (_, fileName: string): Promise<HarFile> => {
   try {
     fileHandle = await open(path.join(RECORDINGS_PATH, fileName), 'r')
     const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+    // TODO: https://github.com/grafana/k6-studio/issues/277
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const har = await JSON.parse(data)
 
+    // TODO: https://github.com/grafana/k6-studio/issues/277
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return { name: fileName, content: har }
   } finally {
     await fileHandle?.close()
@@ -470,8 +474,12 @@ ipcMain.handle(
       fileHandle = await open(path.join(GENERATORS_PATH, fileName), 'r')
 
       const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+      // TODO: https://github.com/grafana/k6-studio/issues/277
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const generator = await JSON.parse(data)
 
+      // TODO: https://github.com/grafana/k6-studio/issues/277
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       return { name: fileName, content: generator }
     } finally {
       await fileHandle?.close()
@@ -490,7 +498,7 @@ ipcMain.handle('ui:delete-file', async (_, fileName: string) => {
   return unlink(getFilePathFromName(fileName))
 })
 
-ipcMain.on('ui:open-folder', async (_, fileName: string) => {
+ipcMain.on('ui:open-folder', (_, fileName: string) => {
   console.info('ui:open-folder event received')
   shell.showItemInFolder(getFilePathFromName(fileName))
 })
@@ -610,7 +618,7 @@ ipcMain.handle('settings:select-upstream-certificate', async () => {
   return selectUpstreamCertificate()
 })
 
-ipcMain.handle('proxy:status:get', async () => {
+ipcMain.handle('proxy:status:get', () => {
   console.info('proxy:status:get event received')
   return proxyStatus
 })

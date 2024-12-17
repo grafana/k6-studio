@@ -61,7 +61,7 @@ function applyRule({
   requestSnippetSchema: RequestSnippetSchema
   state: CorrelationState
   rule: CorrelationRule
-  idGenerator: Generator<number>
+  idGenerator: IdGenerator
   setState: (newState: Partial<CorrelationState>) => void
 }) {
   // this is the modified schema that we return to the accumulator
@@ -108,6 +108,8 @@ function applyRule({
   }
 
   // try to extract the value
+  // TODO: https://github.com/grafana/k6-studio/issues/277
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { extractedValue, generatedUniqueId, correlationExtractionSnippet } =
     tryCorrelationExtraction(
       rule,
@@ -126,7 +128,9 @@ function applyRule({
     }
 
     setState({
-      extractedValue: extractedValue,
+      // TODO: https://github.com/grafana/k6-studio/issues/277
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      extractedValue,
       generatedUniqueId: generatedUniqueId,
       responsesExtracted: [
         ...state.responsesExtracted,
@@ -542,9 +546,14 @@ const extractCorrelationJsonBody = (
     return noCorrelationResult
   }
 
+  // TODO: https://github.com/grafana/k6-studio/issues/277
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const extractedValue = getJsonObjectFromPath(response.content, selector.path)
 
-  if (!extractedValue || extractedValue.length === 0) {
+  if (
+    !extractedValue ||
+    (Array.isArray(extractedValue) && extractedValue.length === 0)
+  ) {
     return noCorrelationResult
   }
 
@@ -558,6 +567,8 @@ const extractCorrelationJsonBody = (
   const correlationExtractionSnippet = `
 correlation_vars['correlation_${generatedUniqueId}'] = resp.json()${json_path}`
   return {
+    // TODO: https://github.com/grafana/k6-studio/issues/277
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     extractedValue,
     correlationExtractionSnippet,
     generatedUniqueId,

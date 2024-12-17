@@ -116,6 +116,8 @@ export const matchRegex = (value: string, regexString: string) => {
 }
 
 export const getJsonObjectFromPath = (json: string, path: string) => {
+  // TODO: https://github.com/grafana/k6-studio/issues/277
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return get(safeJsonParse(json), path)
 }
 
@@ -272,6 +274,8 @@ export const replaceJsonBody = (
 
   // since we are using lodash and its `set` function creates missing paths we will first check that the path really
   // exists before setting it
+  // TODO: https://github.com/grafana/k6-studio/issues/277
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const valueToReplace = getJsonObjectFromPath(request.content, selector.path)
   if (!valueToReplace) return
 

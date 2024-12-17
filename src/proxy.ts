@@ -94,7 +94,7 @@ export const launchProxy = (
   })
 
   proxy.stderr.on('data', (data: Buffer) => {
-    console.error(`stderr: ${data}`)
+    console.error(`stderr: ${data.toString()}`)
     log.error(data.toString())
   })
 

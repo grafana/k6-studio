@@ -16,7 +16,7 @@ import {
 } from '@/test/factories/generator'
 
 vi.mock('lodash-es', () => ({
-  debounce: vi.fn((fn) => fn),
+  debounce: vi.fn((fn: () => void) => fn),
 }))
 vi.mock('@/store/generator', () => ({
   useGeneratorStore: {
