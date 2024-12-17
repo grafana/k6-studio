@@ -4,6 +4,7 @@ import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
+import { BrowserEvent } from './schemas/recording'
 
 interface GetFilesResponse {
   recordings: string[]
@@ -54,6 +55,9 @@ const browser = {
   },
   openExternalLink: (url: string) => {
     return ipcRenderer.invoke('browser:open:external:link', url)
+  },
+  onBrowserEvent: (callback: (event: BrowserEvent[]) => void) => {
+    return createListener('browser:event', callback)
   },
 } as const
 
