@@ -104,3 +104,6 @@ resources/win/x86_64/k6
 .vscode
 .idea
 *.sublime-workspace
+
+# Sentry Config File
+.env.sentry-build-plugin
