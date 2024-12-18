@@ -10,11 +10,10 @@ import { css } from '@emotion/react'
 import GrotCrashed from '@/assets/grot-crashed.svg'
 import { ArrowLeftIcon } from '@radix-ui/react-icons'
 
-const handleCreateIssue = () => {
+const handleCreateIssue = () =>
   window.studio.browser.openExternalLink(
     'https://github.com/grafana/k6-studio/issues'
   )
-}
 
 const handleOpenLogs = () => {
   window.studio.log.openLogFolder()

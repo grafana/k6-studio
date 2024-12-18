@@ -46,11 +46,10 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const [selectedTab, setSelectedTab] = useState('proxy')
 
   useEffect(() => {
-    async function fetchSettings() {
+    ;(async function fetchSettings() {
       const data = await window.studio.settings.getSettings()
       setSettings(data)
-    }
-    fetchSettings()
+    })()
   }, [])
 
   const formMethods = useForm<AppSettings>({

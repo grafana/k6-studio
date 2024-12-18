@@ -161,16 +161,16 @@ const app = {
     return createListener('app:close', callback)
   },
   closeApplication: () => {
-    ipcRenderer.invoke('app:close')
+    ipcRenderer.send('app:close')
   },
   changeRoute: (route: string) => {
-    return ipcRenderer.invoke('app:change-route', route)
+    return ipcRenderer.send('app:change-route', route)
   },
 } as const
 
 const log = {
   openLogFolder: () => {
-    ipcRenderer.invoke('log:open')
+    ipcRenderer.send('log:open')
   },
   getLogContent: (): Promise<string> => {
     return ipcRenderer.invoke('log:read')

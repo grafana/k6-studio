@@ -18,11 +18,10 @@ export function ProxyStatusIndicator() {
   const setProxyStatus = useStudioUIStore((state) => state.setProxyStatus)
 
   useEffect(() => {
-    async function fetchProxyStatus() {
+    ;(async function fetchProxyStatus() {
       const status = await window.studio.proxy.getProxyStatus()
       setProxyStatus(status)
-    }
-    fetchProxyStatus()
+    })()
 
     return window.studio.proxy.onProxyStatusChange((status) =>
       setProxyStatus(status)

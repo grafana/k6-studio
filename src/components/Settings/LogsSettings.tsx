@@ -17,13 +17,11 @@ export function LogsSettings() {
 
   // retrieve the current content of the log file
   useEffect(() => {
-    async function fetchLogContent() {
+    ;(async function fetchLogContent() {
       const content = await window.studio.log.getLogContent()
       setLogContent(content)
       scrollToLastLine()
-    }
-
-    fetchLogContent()
+    })()
   }, [scrollToLastLine])
 
   // subscribe to log changes

@@ -158,9 +158,9 @@ const createWindow = async () => {
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
+    await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
-    mainWindow.loadFile(
+    await mainWindow.loadFile(
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
     )
   }
@@ -195,16 +195,21 @@ const createWindow = async () => {
   return mainWindow
 }
 
-app.whenReady().then(async () => {
-  await initSettings()
-  appSettings = await getSettings()
-  nativeTheme.themeSource = appSettings.appearance.theme
+app.whenReady().then(
+  async () => {
+    await initSettings()
+    appSettings = await getSettings()
+    nativeTheme.themeSource = appSettings.appearance.theme
 
-  await sendReport(appSettings.usageReport)
-  await createSplashWindow()
-  await setupProjectStructure()
-  await createWindow()
-})
+    await sendReport(appSettings.usageReport)
+    await createSplashWindow()
+    await setupProjectStructure()
+    await createWindow()
+  },
+  (error) => {
+    log.error(error)
+  }
+)
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -228,14 +233,14 @@ app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
   appShuttingDown = true
   await watcher.close()
-  stopProxyProcess()
+  return stopProxyProcess()
 })
 
-ipcMain.handle('app:change-route', (_, route: string) => {
+ipcMain.on('app:change-route', (_, route: string) => {
   currentClientRoute = route
 })
 
-ipcMain.handle('app:close', (event) => {
+ipcMain.on('app:close', (event) => {
   console.log('app:close event received')
 
   wasAppClosedByClient = true
@@ -567,10 +572,10 @@ ipcMain.on('splashscreen:close', (event) => {
 
 ipcMain.handle('browser:open:external:link', (_, url: string) => {
   console.info('browser:open:external:link event received')
-  shell.openExternal(url)
+  return shell.openExternal(url)
 })
 
-ipcMain.handle('log:open', () => {
+ipcMain.on('log:open', () => {
   console.info('log:open event received')
   openLogFolder()
 })
@@ -593,7 +598,7 @@ ipcMain.handle('settings:save', async (event, data: AppSettings) => {
     // don't pass fields that are not submitted by the form
     const { windowState: _, ...settings } = data
     const modifiedSettings = await saveSettings(settings)
-    applySettings(modifiedSettings, browserWindow)
+    await applySettings(modifiedSettings, browserWindow)
 
     sendToast(browserWindow.webContents, {
       title: 'Settings saved successfully',
@@ -714,7 +719,7 @@ function showWindow(browserWindow: BrowserWindow) {
   browserWindow.focus()
 }
 
-function trackWindowState(browserWindow: BrowserWindow) {
+async function trackWindowState(browserWindow: BrowserWindow) {
   const { width, height, x, y } = browserWindow.getBounds()
   const isMaximized = browserWindow.isMaximized()
   appSettings.windowState = {
@@ -725,7 +730,7 @@ function trackWindowState(browserWindow: BrowserWindow) {
     isMaximized,
   }
   try {
-    saveSettings(appSettings)
+    await saveSettings(appSettings)
   } catch (error) {
     log.error(error)
   }
