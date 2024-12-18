@@ -2,7 +2,8 @@ import { useLocation, useParams } from 'react-router-dom'
 
 export function useScriptPath() {
   const { fileName } = useParams()
-  const { state } = useLocation()
+  // TODO(router): useLocation is not type-safe. Refactor this route to avoid using it.
+  const { state } = useLocation() as { state: { externalScriptPath: string } }
 
   return {
     scriptPath: fileName || state?.externalScriptPath,

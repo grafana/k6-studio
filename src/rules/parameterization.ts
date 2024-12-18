@@ -10,7 +10,7 @@ import { matchFilter } from './utils'
 
 export function createParameterizationRuleInstance(
   rule: ParameterizationRule,
-  idGenerator: Generator<number>
+  idGenerator: Generator<number, number, number>
 ): ParameterizationRuleInstance {
   const state: ParameterizationState = {
     requestsReplaced: [],

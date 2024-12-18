@@ -2,17 +2,15 @@ import { QuestionMarkCircledIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 
 export function HelpButton() {
-  const handleOpenDocs = () => {
+  const handleOpenDocs = () =>
     window.studio.browser.openExternalLink(
       'https://grafana.com/docs/k6-studio/'
     )
-  }
 
-  const handleReportIssue = () => {
+  const handleReportIssue = () =>
     window.studio.browser.openExternalLink(
       'https://github.com/grafana/k6-studio/issues'
     )
-  }
 
   const handleOpenApplicationLogs = () => {
     window.studio.log.openLogFolder()
