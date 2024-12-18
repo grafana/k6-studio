@@ -43,14 +43,14 @@ export function LogsSettings() {
   return (
     <SettingsSection>
       <Flex mb="4" justify="between" align="center">
-        <Flex>
+        <Flex align="center">
           <Spinner mr="2" />
-          <Text size="2">
-            k6 Studio logs in this screen are updated in real-time.
+          <Text size="2" color="gray">
+            Application logs are updated in real-time.
           </Text>
         </Flex>
         <Button onClick={handleOpenLogClick} variant="outline">
-          Open log location
+          Open logs folder
         </Button>
       </Flex>
 
