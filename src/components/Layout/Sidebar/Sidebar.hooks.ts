@@ -26,13 +26,14 @@ function useFolderContent() {
   const setFolderContent = useStudioUIStore((s) => s.setFolderContent)
 
   useEffect(() => {
-    window.studio.ui.getFiles().then((files) => {
+    ;(async () => {
+      const files = await window.studio.ui.getFiles()
       setFolderContent({
         recordings: toFileMap(files.recordings),
         generators: toFileMap(files.generators),
         scripts: toFileMap(files.scripts),
       })
-    })
+    })()
   }, [setFolderContent])
 
   useEffect(

@@ -25,7 +25,11 @@ export function RecordingPreviewer() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const { fileName } = useParams()
   const navigate = useNavigate()
+  // TODO: https://github.com/grafana/k6-studio/issues/277
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { state } = useLocation()
+  // TODO: https://github.com/grafana/k6-studio/issues/277
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
   invariant(fileName, 'fileName is required')
 

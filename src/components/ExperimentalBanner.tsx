@@ -1,11 +1,10 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Flex, Text, Link } from '@radix-ui/themes'
 
-const handleLinkClick = () => {
+const handleLinkClick = () =>
   window.studio.browser.openExternalLink(
     'https://github.com/grafana/k6-studio/issues'
   )
-}
 
 export function ExperimentalBanner() {
   return (

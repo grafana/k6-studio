@@ -1,3 +1,5 @@
+// TODO: https://github.com/grafana/k6-studio/issues/277
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, K6Check, ProxyStatus } from './types'
 import { HarFile } from './types/har'
@@ -35,7 +37,7 @@ const proxy = {
   onProxyData: (callback: (data: ProxyData) => void) => {
     return createListener('proxy:data', callback)
   },
-  getProxyStatus: () => {
+  getProxyStatus: (): Promise<ProxyStatus> => {
     return ipcRenderer.invoke('proxy:status:get')
   },
   onProxyStatusChange: (callback: (status: ProxyStatus) => void) => {
@@ -163,16 +165,16 @@ const app = {
     return createListener('app:close', callback)
   },
   closeApplication: () => {
-    ipcRenderer.invoke('app:close')
+    ipcRenderer.send('app:close')
   },
   changeRoute: (route: string) => {
-    return ipcRenderer.invoke('app:change-route', route)
+    return ipcRenderer.send('app:change-route', route)
   },
 } as const
 
 const log = {
   openLogFolder: () => {
-    ipcRenderer.invoke('log:open')
+    ipcRenderer.send('log:open')
   },
   getLogContent: (): Promise<string> => {
     return ipcRenderer.invoke('log:read')
