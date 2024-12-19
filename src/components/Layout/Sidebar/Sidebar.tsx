@@ -28,78 +28,81 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
       maxWidth="100%"
       overflow="hidden"
       position="relative"
+      asChild
     >
-      <Flex align="center" m="2" gap="2">
-        <SearchField
-          css={css`
-            flex: 1 1 0;
-          `}
-          filter={searchTerm}
-          placeholder="Find files..."
-          size="1"
-          onChange={setSearchTerm}
-        />
-
-        {isExpanded && (
-          <IconButton
+      <Flex direction="column">
+        <Flex align="center" m="2" gap="2">
+          <SearchField
+            css={css`
+              flex: 1 1 0;
+            `}
+            filter={searchTerm}
+            placeholder="Find files..."
             size="1"
-            variant="ghost"
-            color="gray"
-            onClick={onCollapseSidebar}
-          >
-            <PinLeftIcon />
-          </IconButton>
-        )}
-      </Flex>
-      <ScrollArea scrollbars="vertical">
-        <Flex direction="column" gap="2">
-          <FileTree
-            label="Recordings"
-            files={recordings}
-            noFilesMessage="No recordings found"
-            actions={
-              <>
-                <Tooltip content="New recording" side="right">
+            onChange={setSearchTerm}
+          />
+
+          {isExpanded && (
+            <IconButton
+              size="1"
+              variant="ghost"
+              color="gray"
+              onClick={onCollapseSidebar}
+            >
+              <PinLeftIcon />
+            </IconButton>
+          )}
+        </Flex>
+        <ScrollArea scrollbars="vertical">
+          <Flex direction="column" gap="2" pb="2">
+            <FileTree
+              label="Recordings"
+              files={recordings}
+              noFilesMessage="No recordings found"
+              actions={
+                <>
+                  <Tooltip content="New recording" side="right">
+                    <IconButton
+                      asChild
+                      aria-label="New recording"
+                      variant="ghost"
+                      size="1"
+                    >
+                      <Link to={getRoutePath('recorder')}>
+                        <PlusIcon />
+                      </Link>
+                    </IconButton>
+                  </Tooltip>
+                </>
+              }
+            />
+            <FileTree
+              label="Test generators"
+              files={generators}
+              noFilesMessage="No generators found"
+              actions={
+                <Tooltip content="New generator" side="right">
                   <IconButton
                     asChild
-                    aria-label="New recording"
+                    aria-label="New generator"
                     variant="ghost"
                     size="1"
+                    onClick={createNewGenerator}
+                    css={{ cursor: 'pointer' }}
                   >
-                    <Link to={getRoutePath('recorder')}>
-                      <PlusIcon />
-                    </Link>
+                    <PlusIcon />
                   </IconButton>
                 </Tooltip>
-              </>
-            }
-          />
-          <FileTree
-            label="Test generators"
-            files={generators}
-            noFilesMessage="No generators found"
-            actions={
-              <Tooltip content="New generator" side="right">
-                <IconButton
-                  asChild
-                  aria-label="New generator"
-                  variant="ghost"
-                  size="1"
-                  onClick={createNewGenerator}
-                  css={{ cursor: 'pointer' }}
-                >
-                  <PlusIcon />
-                </IconButton>
-              </Tooltip>
-            }
-          />
-          <FileTree
-            label="Scripts"
-            files={scripts}
-            noFilesMessage="No scripts found"
-          />
-        </Flex>
-      </ScrollArea>
+              }
+            />
+            <FileTree
+              label="Scripts"
+              files={scripts}
+              noFilesMessage="No scripts found"
+            />
+          </Flex>
+        </ScrollArea>
+      </Flex>
     </Box>
   )
 }
