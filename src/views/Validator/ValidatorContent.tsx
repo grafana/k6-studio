@@ -10,6 +10,7 @@ import { K6Check, K6Log, ProxyData } from '@/types'
 import { LogsSection } from './LogsSection'
 import { ChecksSection } from './ChecksSection'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
+import { useInspectRequest } from '@/components/WebLogView/Details.hooks'
 
 interface ValidatorContentProps {
   script: string
@@ -30,20 +31,20 @@ export function ValidatorContent({
   checks,
   noDataElement,
 }: ValidatorContentProps) {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const { selectedRequest, clearSelectedRequest } = useInspectRequest()
   const [selectedTab, setSelectedTab] = useState<ValidatorTabValue>('script')
   const groups = useProxyDataGroups(proxyData)
 
   useEffect(() => {
-    setSelectedRequest(null)
-  }, [script])
+    clearSelectedRequest()
+  }, [script, clearSelectedRequest])
 
   // Clear selected request when starting a new run
   useEffect(() => {
     if (isRunning) {
-      setSelectedRequest(null)
+      clearSelectedRequest()
     }
-  }, [isRunning])
+  }, [isRunning, clearSelectedRequest])
 
   useEffect(() => {
     return window.studio.script.onScriptFailed(() => {
@@ -59,9 +60,7 @@ export function ValidatorContent({
             <RequestsSection
               proxyData={proxyData}
               autoScroll={isRunning}
-              selectedRequestId={selectedRequest?.id}
               noDataElement={noDataElement}
-              onSelectRequest={setSelectedRequest}
               groups={groups}
             />
           </Allotment.Pane>
@@ -121,14 +120,9 @@ export function ValidatorContent({
           </Allotment.Pane>
         </Allotment>
       </Allotment.Pane>
-      {selectedRequest !== null && (
-        <Allotment.Pane minSize={300}>
-          <Details
-            selectedRequest={selectedRequest}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
-      )}
+      <Allotment.Pane minSize={300} visible={!!selectedRequest}>
+        <Details />
+      </Allotment.Pane>
     </Allotment>
   )
 }

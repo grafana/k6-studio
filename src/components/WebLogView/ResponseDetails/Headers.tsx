@@ -1,8 +1,8 @@
 import { HighlightedText } from '@/components/HighlightedText'
-import { ProxyData } from '@/types'
+import { ProxyDataWithMatches } from '@/types'
 import { DataList, Strong } from '@radix-ui/themes'
 
-export function Headers({ data }: { data: ProxyData }) {
+export function Headers({ data }: { data: ProxyDataWithMatches }) {
   const headers = data.response?.headers ?? []
 
   return (

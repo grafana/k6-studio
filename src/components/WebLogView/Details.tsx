@@ -4,21 +4,15 @@ import { css } from '@emotion/react'
 import { Box, Flex, Heading, IconButton } from '@radix-ui/themes'
 import { Cross2Icon } from '@radix-ui/react-icons'
 
-import { ProxyData } from '@/types'
 import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
+import { useInspectRequest } from './Details.hooks'
 
-interface DetailsProps {
-  selectedRequest: ProxyData | null
-  onSelectRequest: (data: ProxyData | null) => void
-}
+export function Details() {
+  const { clearSelectedRequest, selectedRequest } = useInspectRequest()
 
-export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
-  useEffect(() => {
-    return () => {
-      onSelectRequest(null)
-    }
-  }, [onSelectRequest])
+  // Clear selected request upon navigating away
+  useEffect(() => clearSelectedRequest, [clearSelectedRequest])
 
   return (
     <>
@@ -32,15 +26,11 @@ export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
           z-index: 1;
         `}
       >
-        <IconButton
-          size="1"
-          variant="ghost"
-          onClick={() => onSelectRequest(null)}
-        >
+        <IconButton size="1" variant="ghost" onClick={clearSelectedRequest}>
           <Cross2Icon />
         </IconButton>
       </Box>
-      {selectedRequest !== null && (
+      {selectedRequest && (
         <Box height="100%">
           <Allotment defaultSizes={[1, 1]} vertical>
             <Allotment.Pane minSize={200}>

@@ -4,16 +4,13 @@ import { Group as GroupType, ProxyDataWithMatches } from '@/types'
 import { Row } from './Row'
 import { Group } from './Group'
 import { Table } from '@/components/Table'
-import { memo, useMemo } from 'react'
-import { useDeepCompareEffect } from 'react-use'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { SearchResults } from './SearchResults'
+import { useInspectRequest } from './Details.hooks'
 
 interface WebLogViewProps {
   requests: ProxyDataWithMatches[]
   groups?: GroupType[]
-  activeGroup?: string
-  selectedRequestId?: string
-  onSelectRequest: (data: ProxyDataWithMatches | null) => void
   onUpdateGroup?: (group: GroupType) => void
 }
 
@@ -21,23 +18,21 @@ interface WebLogViewProps {
 export const WebLogView = memo(function WebLogView({
   requests,
   groups,
-  selectedRequestId,
-  onSelectRequest,
   onUpdateGroup,
 }: WebLogViewProps) {
+  const [selectedRequestId, setSelectedRequestId] = useState<string>()
+  const { setSelectedRequest } = useInspectRequest()
+
   const selectedRequest = useMemo(
-    () => requests.find((data) => data.id === selectedRequestId),
+    () => requests.find((r) => r.id === selectedRequestId),
     [requests, selectedRequestId]
   )
 
-  // Sync selectedRequest when requests change to show updates in correlation preview
-  useDeepCompareEffect(() => {
-    if (!selectedRequest) {
-      return
+  useEffect(() => {
+    if (selectedRequest) {
+      setSelectedRequest(selectedRequest)
     }
-
-    onSelectRequest(selectedRequest)
-  }, [selectedRequest, onSelectRequest])
+  }, [selectedRequest, setSelectedRequest])
 
   if (groups !== undefined) {
     const grouped = groups.map((group) => {
@@ -59,8 +54,7 @@ export const WebLogView = memo(function WebLogView({
           >
             <RequestList
               requests={item.requests}
-              selectedRequestId={selectedRequestId}
-              onSelectRequest={onSelectRequest}
+              onSelectRequestId={setSelectedRequestId}
             />
           </Group>
         ))}
@@ -69,25 +63,17 @@ export const WebLogView = memo(function WebLogView({
   }
 
   return (
-    <RequestList
-      requests={requests}
-      selectedRequestId={selectedRequestId}
-      onSelectRequest={onSelectRequest}
-    />
+    <RequestList requests={requests} onSelectRequestId={setSelectedRequestId} />
   )
 })
 
 interface RequestListProps {
   requests: ProxyDataWithMatches[]
   selectedRequestId?: string
-  onSelectRequest: (data: ProxyDataWithMatches) => void
+  onSelectRequestId: (id?: string) => void
 }
 
-function RequestList({
-  requests,
-  selectedRequestId,
-  onSelectRequest,
-}: RequestListProps) {
+function RequestList({ requests, onSelectRequestId }: RequestListProps) {
   return (
     <Table.Root size="1" layout="fixed">
       <Table.Header css={{ textWrap: 'nowrap' }}>
@@ -101,15 +87,11 @@ function RequestList({
       </Table.Header>
       <Table.Body>
         {requests.map((data) => (
-          <>
-            <Row
-              key={data.id}
-              data={data}
-              isSelected={selectedRequestId === data.id}
-              onSelectRequest={onSelectRequest}
-            />
-            <SearchResults data={data} />
-          </>
+          <Row
+            key={data.id}
+            data={data}
+            onSelectRequestId={onSelectRequestId}
+          />
         ))}
       </Table.Body>
     </Table.Root>

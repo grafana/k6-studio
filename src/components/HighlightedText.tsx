@@ -1,5 +1,4 @@
 import { SearchMatch } from '@/types/fuse'
-import { CSSObject, Interpolation, Theme } from '@emotion/react'
 import { ReactNode, useMemo } from 'react'
 
 interface MatchSegment {
@@ -60,7 +59,7 @@ export function HighlightedText({ text, matches }: HighlightedTextProps) {
   }, [text, matches])
 
   return (
-    <>
+    <span>
       {segments.map((segment, index) => {
         if (segment.match) {
           return <HighlightMark key={index}>{segment.text}</HighlightMark>
@@ -68,7 +67,7 @@ export function HighlightedText({ text, matches }: HighlightedTextProps) {
 
         return segment.text
       })}
-    </>
+    </span>
   )
 }
 

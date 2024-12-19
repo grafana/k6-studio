@@ -1,20 +1,20 @@
 import { WebLogView } from '@/components/WebLogView'
 import { applyRules } from '@/rules/rules'
 import { useGeneratorStore, selectFilteredRequests } from '@/store/generator'
-import { ProxyData } from '@/types'
 import { ParameterizationRule } from '@/types/rules'
 import { Box, Callout, Heading, ScrollArea } from '@radix-ui/themes'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { requestsReplacedToProxyData } from './CorrelationPreview'
 import { Details } from '@/components/WebLogView/Details'
 import { Allotment } from 'allotment'
+import { useInspectRequest } from '@/components/WebLogView/Details.hooks'
 
 export function ParameterizationPreview({
   rule,
 }: {
   rule: ParameterizationRule
 }) {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const { selectedRequest } = useInspectRequest()
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 
@@ -60,19 +60,14 @@ export function ParameterizationPreview({
                   requests={requestsReplacedToProxyData(
                     preview.requestsReplaced
                   )}
-                  onSelectRequest={setSelectedRequest}
-                  selectedRequestId={selectedRequest?.id}
                 />
               </>
             )}
           </ScrollArea>
         </Box>
       </Allotment.Pane>
-      <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-        <Details
-          selectedRequest={selectedRequest}
-          onSelectRequest={setSelectedRequest}
-        />
+      <Allotment.Pane minSize={300} visible={!!selectedRequest}>
+        <Details />
       </Allotment.Pane>
     </Allotment>
   )

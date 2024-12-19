@@ -2,15 +2,16 @@ import { Box, Callout, Code, Heading, ScrollArea } from '@radix-ui/themes'
 import { CorrelationRule } from '@/types/rules'
 import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import { ProxyData, Request } from '@/types'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { WebLogView } from '@/components/WebLogView'
 import { Allotment } from 'allotment'
 import { Details } from '@/components/WebLogView/Details'
 import { css } from '@emotion/react'
 import { applyRules } from '@/rules/rules'
+import { useInspectRequest } from '@/components/WebLogView/Details.hooks'
 
 export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const { selectedRequest } = useInspectRequest()
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 
@@ -55,11 +56,7 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
                   Requests matched
                 </Heading>
                 <Box>
-                  <WebLogView
-                    requests={preview.responsesExtracted}
-                    onSelectRequest={setSelectedRequest}
-                    selectedRequestId={selectedRequest?.id}
-                  />
+                  <WebLogView requests={preview.responsesExtracted} />
                 </Box>
                 <Heading size="2" m="2">
                   Extracted value:{' '}
@@ -77,12 +74,11 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
                     <Heading size="2" m="2">
                       Value replaced in
                     </Heading>
+                    {/* TODO: give requests different IDs to work with inspector */}
                     <WebLogView
                       requests={requestsReplacedToProxyData(
                         preview.requestsReplaced
                       )}
-                      onSelectRequest={setSelectedRequest}
-                      selectedRequestId={selectedRequest?.id}
                     />
                   </>
                 )}
@@ -92,10 +88,7 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
         </Box>
       </Allotment.Pane>
       <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-        <Details
-          selectedRequest={selectedRequest}
-          onSelectRequest={setSelectedRequest}
-        />
+        <Details />
       </Allotment.Pane>
     </Allotment>
   )
@@ -106,6 +99,6 @@ export function requestsReplacedToProxyData(
 ): ProxyData[] {
   return requests.map(({ replaced }, i) => ({
     request: replaced,
-    id: i.toString(),
+    id: `correl_${replaced.id ?? i}`,
   }))
 }

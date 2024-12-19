@@ -1,8 +1,6 @@
 import { Box, Flex, ScrollArea } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
-import { useState } from 'react'
 import { css } from '@emotion/react'
-import { useShallowCompareEffect } from 'react-use'
 
 import { WebLogView } from '@/components/WebLogView'
 import { ProxyData } from '@/types'
@@ -14,13 +12,14 @@ import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { useInspectRequest } from '@/components/WebLogView/Details.hooks'
 
 interface RequestListProps {
   requests: ProxyData[]
 }
 
 export function RequestList({ requests }: RequestListProps) {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const { selectedRequest } = useInspectRequest()
   const { filter, setFilter, filteredRequests } = useFilterRequests({
     proxyData: requests,
   })
@@ -33,11 +32,6 @@ export function RequestList({ requests }: RequestListProps) {
   const recording = recordings.get(recordingPath)
 
   const isRecordingMissing = recording === undefined && recordingPath !== ''
-
-  // Preserve the selected request when modifying rules
-  useShallowCompareEffect(() => {
-    setSelectedRequest(null)
-  }, [requests])
 
   return (
     <Flex direction="column" height="100%">
@@ -70,21 +64,13 @@ export function RequestList({ requests }: RequestListProps) {
                     }}
                     size="2"
                   />
-                  <WebLogView
-                    requests={filteredRequests}
-                    selectedRequestId={selectedRequest?.id}
-                    onSelectRequest={setSelectedRequest}
-                    groups={groups}
-                  />
+                  <WebLogView requests={filteredRequests} groups={groups} />
                 </>
               )}
             </ScrollArea>
           </Allotment.Pane>
-          <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-            <Details
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
+          <Allotment.Pane minSize={300} visible={!!selectedRequest}>
+            <Details />
           </Allotment.Pane>
         </Allotment>
       </div>

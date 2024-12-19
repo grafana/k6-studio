@@ -18,11 +18,12 @@ import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { useInspectRequest } from '@/components/WebLogView/Details.hooks'
 
 export function RecordingPreviewer() {
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const { selectedRequest } = useInspectRequest()
   const { fileName } = useParams()
   const navigate = useNavigate()
   const { state } = useLocation()
@@ -115,16 +116,11 @@ export function RecordingPreviewer() {
             groups={groups}
             proxyData={proxyData}
             noDataElement={<EmptyMessage message="The recording is empty" />}
-            selectedRequestId={selectedRequest?.id}
-            onSelectRequest={setSelectedRequest}
           />
         </Allotment.Pane>
-        {selectedRequest !== null && (
-          <Allotment.Pane minSize={300}>
-            <Details
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
+        {selectedRequest && (
+          <Allotment.Pane minSize={300} visible={!!selectedRequest}>
+            <Details />
           </Allotment.Pane>
         )}
       </Allotment>

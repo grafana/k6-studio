@@ -26,6 +26,7 @@ import { DEFAULT_GROUP_NAME } from '@/constants'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { EmptyState } from './EmptyState'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { useInspectRequest } from '@/components/WebLogView/Details.hooks'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -35,7 +36,7 @@ const INITIAL_GROUPS: Group[] = [
 ]
 
 export function Recorder() {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const { selectedRequest } = useInspectRequest()
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
 
@@ -209,11 +210,8 @@ export function Recorder() {
               <RequestsSection
                 proxyData={debouncedProxyData}
                 noDataElement={noDataElement}
-                selectedRequestId={selectedRequest?.id}
                 autoScroll
                 groups={groups}
-                activeGroup={group?.id}
-                onSelectRequest={setSelectedRequest}
                 onUpdateGroup={handleUpdateGroup}
                 resetProxyData={handleResetRecording}
               />
@@ -236,10 +234,7 @@ export function Recorder() {
         </Allotment.Pane>
         {selectedRequest !== null && (
           <Allotment.Pane minSize={300}>
-            <Details
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
+            <Details />
           </Allotment.Pane>
         )}
       </Allotment>

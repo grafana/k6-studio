@@ -24,7 +24,13 @@ interface Result {
 // - HTML matches
 // - Header matches (including cookies)
 // TODO: better name for excerpt?
-export function SearchResults({ data }: { data: ProxyDataWithMatches }) {
+export function SearchResults({
+  data,
+  onSetSelectedRequestId,
+}: {
+  data: ProxyDataWithMatches
+  onSetSelectedRequestId: (id: string) => void
+}) {
   const resultsInPreview = 10
   const [showAll, setShowAll] = useState(false)
   const toggleShowAll = () => setShowAll((prev) => !prev)
@@ -51,12 +57,55 @@ export function SearchResults({ data }: { data: ProxyDataWithMatches }) {
       }))
     })
   }, [matches])
-  console.log('results', results)
 
   const visibleResults = useMemo(
     () => (showAll ? results : results.slice(0, resultsInPreview)),
     [results, showAll]
   )
+
+  // TODO: consider 2 separate calls:
+  // 1. setSelectedRequest from parent weblogview component
+  // 2. setDetails tab from global zustand hook, consumed by Details component
+  // 3. could also include search term for later to set in monaco
+  function handleResultClick(result: Result, data: ProxyDataWithMatches) {
+    onSetSelectedRequestId(data.id)
+
+    // if (result.match.key?.includes('response.content')) {
+    // show({ responseTab: 'content', request: data })
+    // return
+    // }
+
+    // if (result.match.key?.includes('request.content')) {
+    // show({ requestTab: 'payload', request: data })
+    // return
+    // }
+
+    // if (
+    // result.match.key?.includes('response.headers') &&
+    // result.match.value?.includes('Cookie')
+    // ) {
+    // show({ responseTab: 'cookies', request: data })
+    // return
+    // }
+
+    // if (
+    // result.match.key?.includes('request.headers') &&
+    // result.match.value?.includes('Cookie')
+    // ) {
+    // show({ requestTab: 'cookies', request: data })
+    // return
+    // }
+
+    // if (result.match.key?.includes('request.headers')) {
+    // show({ requestTab: 'headers', request: data })
+    // return
+    // }
+
+    // if (result.match.key?.includes('response.headers')) {
+    // show({ responseTab: 'headers', request: data })
+    // return
+    // }
+  }
 
   if (results.length === 0) {
     return null
@@ -68,7 +117,13 @@ export function SearchResults({ data }: { data: ProxyDataWithMatches }) {
     <Table.Row>
       <Table.Cell colSpan={5}>
         {visibleResults.map((result, excerptIndex) => (
-          <Flex key={excerptIndex}>
+          <Flex
+            key={excerptIndex}
+            css={{ fontSize: 'var(--font-size-1)' }}
+            onClick={() => {
+              handleResultClick(result, data)
+            }}
+          >
             {/* <Strong>{excerptIndex + 1}</Strong>:{' '}  */}
             {result.match.key?.includes('content') && (
               <ContentResult segment={result.segment} />

@@ -6,10 +6,23 @@ import { Headers } from './Headers'
 import { Payload } from './Payload'
 import { QueryParams } from './QueryParams'
 import { Box } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 
-export function RequestDetails({ data }: { data: ProxyData }) {
+interface RequestDetailsProps {
+  data: ProxyData
+  tab?: string
+}
+
+export function RequestDetails({ data, tab }: RequestDetailsProps) {
+  const [selectedTab, setSelectedTab] = useState(tab ?? 'headers')
+
+  // Allow changing the tab using props
+  useEffect(() => {
+    tab && setSelectedTab(tab)
+  }, [tab])
+
   return (
-    <Tabs.Root defaultValue="headers">
+    <Tabs.Root value={selectedTab} onValueChange={setSelectedTab}>
       <Tabs.List>
         <Tabs.Trigger value="headers">Headers</Tabs.Trigger>
         <Tabs.Trigger value="payload">Payload</Tabs.Trigger>
