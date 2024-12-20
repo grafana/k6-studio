@@ -10,7 +10,6 @@ import { useDeepCompareEffect } from 'react-use'
 interface WebLogViewProps {
   requests: ProxyDataWithMatches[]
   groups?: GroupType[]
-  activeGroup?: string
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches | null) => void
   onUpdateGroup?: (group: GroupType) => void

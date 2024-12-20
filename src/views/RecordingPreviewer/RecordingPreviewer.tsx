@@ -1,4 +1,3 @@
-import { Allotment } from 'allotment'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
@@ -10,19 +9,23 @@ import {
   getFileNameWithoutExtension,
 } from '@/utils/file'
 import { View } from '@/components/Layout/View'
-import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { createNewGeneratorFile } from '@/utils/generator'
 import { ProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { getRoutePath } from '@/routeMap'
-import { Details } from '@/components/WebLogView/Details'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { EmptyMessage } from '@/components/EmptyMessage'
+import { RequestLog } from '../Recorder/RequestLog'
+import { useSettings } from '@/components/Settings/Settings.hooks'
+import { RecordingInspector } from '../Recorder/RecordingInspector'
+import { BrowserEvent } from '@/schemas/recording'
 
 export function RecordingPreviewer() {
+  const { data: settings } = useSettings()
+
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
+
+  const [isLoading, setIsLoading] = useState(true)
   const { fileName } = useParams()
   const navigate = useNavigate()
   // TODO: https://github.com/grafana/k6-studio/issues/277
@@ -43,10 +46,12 @@ export function RecordingPreviewer() {
       invariant(har, 'Failed to open file')
 
       setProxyData(harToProxyData(har.content))
+      setBrowserEvents(har.content.log._browserEvents ?? [])
     })()
 
     return () => {
       setProxyData([])
+      setBrowserEvents([])
     }
   }, [fileName, navigate])
 
@@ -113,25 +118,17 @@ export function RecordingPreviewer() {
         </>
       }
     >
-      <Allotment defaultSizes={[1, 1]}>
-        <Allotment.Pane>
-          <RequestsSection
-            groups={groups}
-            proxyData={proxyData}
-            noDataElement={<EmptyMessage message="The recording is empty" />}
-            selectedRequestId={selectedRequest?.id}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
-        {selectedRequest !== null && (
-          <Allotment.Pane minSize={300}>
-            <Details
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
-          </Allotment.Pane>
-        )}
-      </Allotment>
+      {!isLoading && settings?.recorder.enableBrowserRecorder && (
+        <RecordingInspector
+          groups={groups}
+          requests={proxyData}
+          browserEvents={browserEvents}
+        />
+      )}
+
+      {!isLoading && !settings?.recorder.enableBrowserRecorder && (
+        <RequestLog groups={groups} requests={proxyData} />
+      )}
     </View>
   )
 }

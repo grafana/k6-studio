@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
-import { Box, Button, Flex } from '@radix-ui/themes'
-import { PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
-import { Allotment } from 'allotment'
+import { Button } from '@radix-ui/themes'
+import { StopIcon } from '@radix-ui/react-icons'
 import log from 'electron-log/renderer'
 
 import { View } from '@/components/Layout/View'
-import { RequestsSection } from './RequestsSection'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import {
   getHostNameFromURL,
@@ -16,17 +14,17 @@ import {
 } from './Recorder.utils'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { getRoutePath } from '@/routeMap'
-import { Details } from '@/components/WebLogView/Details'
 import { Group, ProxyData } from '@/types'
 import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
 import { RecorderState } from './types'
 import { useToast } from '@/store/ui/useToast'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { EmptyState } from './EmptyState'
-import { EmptyMessage } from '@/components/EmptyMessage'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
+import { RequestLog } from './RequestLog'
+import { useSettings } from '@/components/Settings/Settings.hooks'
+import { RecordingInspector } from './RecordingInspector'
+import { EmptyState } from './EmptyState'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -36,7 +34,8 @@ const INITIAL_GROUPS: Group[] = [
 ]
 
 export function Recorder() {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const { data: settings } = useSettings()
+
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
 
@@ -46,7 +45,7 @@ export function Recorder() {
   const [recorderState, setRecorderState] = useState<RecorderState>('idle')
   const showToast = useToast()
 
-  useListenBrowserEvent()
+  const browserEvents = useListenBrowserEvent()
 
   // Debounce the proxy data to avoid disappearing static asset requests
   // when recording
@@ -107,7 +106,7 @@ export function Recorder() {
         }
       })
 
-      const har = proxyDataToHar(grouped)
+      const har = proxyDataToHar(grouped, browserEvents)
       const prefix = startUrl && getHostNameFromURL(startUrl)
       const fileName = await window.studio.har.saveFile(
         JSON.stringify(har, null, 4),
@@ -118,7 +117,7 @@ export function Recorder() {
     } finally {
       setRecorderState('idle')
     }
-  }, [groups, proxyData, startUrl])
+  }, [groups, proxyData, startUrl, browserEvents])
 
   function handleStopRecording() {
     stopRecording()
@@ -177,16 +176,6 @@ export function Recorder() {
     })
   }, [validateAndSaveHarFile, showToast, navigate])
 
-  const noDataElement = useMemo(() => {
-    if (recorderState === 'idle') {
-      return <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
-    }
-
-    if (recorderState === 'starting') {
-      return <EmptyMessage message="Requests will appear here" />
-    }
-  }, [recorderState, isLoading, handleStartRecording])
-
   return (
     <View
       title="Recorder"
@@ -205,47 +194,33 @@ export function Recorder() {
         )
       }
     >
-      <Allotment defaultSizes={[1, 1]}>
-        <Allotment.Pane minSize={200}>
-          <Flex direction="column" height="100%">
-            <div css={{ flexGrow: 0, minHeight: 0 }}>
-              <RequestsSection
-                proxyData={debouncedProxyData}
-                noDataElement={noDataElement}
-                selectedRequestId={selectedRequest?.id}
-                autoScroll
-                groups={groups}
-                activeGroup={group?.id}
-                onSelectRequest={setSelectedRequest}
-                onUpdateGroup={handleUpdateGroup}
-                resetProxyData={handleResetRecording}
-              />
-            </div>
-            {recorderState === 'recording' && (
-              <Box width="200px" p="2">
-                <ButtonWithTooltip
-                  size="2"
-                  variant="ghost"
-                  ml="2"
-                  onClick={() => handleCreateGroup(`Group ${groups.length}`)}
-                  tooltip="Groups are used to organize specific steps in your recording. After you create a group, any further requests will be added to it."
-                >
-                  <PlusCircledIcon />
-                  Create group
-                </ButtonWithTooltip>
-              </Box>
-            )}
-          </Flex>
-        </Allotment.Pane>
-        {selectedRequest !== null && (
-          <Allotment.Pane minSize={300}>
-            <Details
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
-          </Allotment.Pane>
+      {recorderState === 'idle' && (
+        <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
+      )}
+
+      {recorderState !== 'idle' && settings?.recorder.enableBrowserRecorder && (
+        <RecordingInspector
+          recorderState={recorderState}
+          groups={groups}
+          requests={debouncedProxyData}
+          browserEvents={browserEvents}
+          onCreateGroup={handleCreateGroup}
+          onUpdateGroup={handleUpdateGroup}
+          onResetRecording={handleResetRecording}
+        />
+      )}
+
+      {recorderState !== 'idle' &&
+        !settings?.recorder.enableBrowserRecorder && (
+          <RequestLog
+            recorderState={recorderState}
+            groups={groups}
+            requests={debouncedProxyData}
+            onUpdateGroup={handleUpdateGroup}
+            onResetRecording={handleResetRecording}
+            onCreateGroup={handleCreateGroup}
+          />
         )}
-      </Allotment>
 
       <ConfirmNavigationDialog
         open={blocker.state === 'blocked'}
