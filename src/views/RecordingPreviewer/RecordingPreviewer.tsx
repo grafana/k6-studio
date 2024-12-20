@@ -18,12 +18,15 @@ import { RequestLog } from '../Recorder/RequestLog'
 import { useSettings } from '@/components/Settings/Settings.hooks'
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 import { BrowserEvent } from '@/schemas/recording'
+import { useToast } from '@/store/ui/useToast'
 
 export function RecordingPreviewer() {
   const { data: settings } = useSettings()
 
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
+
+  const showToast = useToast()
 
   const [isLoading, setIsLoading] = useState(true)
   const { fileName } = useParams()
@@ -81,6 +84,27 @@ export function RecordingPreviewer() {
     navigate(getRoutePath('recorder'))
   }
 
+  const handleExportBrowserScript = () => {
+    const script = `console.log("hello!")`
+    const fileName = generateFileNameWithTimestamp('js', 'BrowserTest')
+
+    window.studio.script
+      .saveScript(script, fileName)
+      .then(() => {
+        navigate(
+          getRoutePath('validator', {
+            fileName: encodeURIComponent(fileName),
+          })
+        )
+      })
+      .catch(() => {
+        showToast({
+          title: 'Failed to export browser script',
+          status: 'error',
+        })
+      })
+  }
+
   return (
     <View
       title="Recording"
@@ -110,6 +134,17 @@ export function RecordingPreviewer() {
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
+              {settings?.recorder.enableBrowserRecorder && (
+                <>
+                  <DropdownMenu.Item
+                    disabled={browserEvents.length === 0}
+                    onClick={handleExportBrowserScript}
+                  >
+                    Export browser script
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Separator />
+                </>
+              )}
               <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
                 Delete
               </DropdownMenu.Item>
