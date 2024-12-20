@@ -6,7 +6,6 @@ import { Allotment } from 'allotment'
 import { RequestsSection } from './RequestsSection'
 import { RecorderState } from './types'
 import { ProxyData, Group } from '@/types'
-import { EmptyState } from './EmptyState'
 import { useMemo, useState } from 'react'
 import { EmptyMessage } from '@/components/EmptyMessage'
 
@@ -15,9 +14,8 @@ interface RequestLogProps {
   requests: ProxyData[]
   groups: Group[]
   onUpdateGroup?: (group: Group) => void
-  onResetRecording?: () => void
   onCreateGroup?: (name: string) => void
-  onStartRecording?: (url?: string) => void
+  onResetRecording?: () => void
 }
 
 export function RequestLog({
@@ -27,25 +25,18 @@ export function RequestLog({
   onUpdateGroup,
   onResetRecording,
   onCreateGroup,
-  onStartRecording,
 }: RequestLogProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-
-  const isLoading = recorderState === 'starting' || recorderState === 'saving'
 
   const noDataElement = useMemo(() => {
     if (recorderState === undefined) {
       return <EmptyMessage message="The recording is empty" />
     }
 
-    if (recorderState === 'idle' && onStartRecording) {
-      return <EmptyState isLoading={isLoading} onStart={onStartRecording} />
-    }
-
     if (recorderState === 'starting') {
       return <EmptyMessage message="Requests will appear here" />
     }
-  }, [recorderState, isLoading, onStartRecording])
+  }, [recorderState])
 
   return (
     <Allotment defaultSizes={[1, 1]}>

@@ -24,6 +24,7 @@ import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { RequestLog } from './RequestLog'
 import { useSettings } from '@/components/Settings/Settings.hooks'
 import { RecordingInspector } from './RecordingInspector'
+import { EmptyState } from './EmptyState'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -193,7 +194,11 @@ export function Recorder() {
         )
       }
     >
-      {settings?.recorder.enableBrowserRecorder && (
+      {recorderState === 'idle' && (
+        <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
+      )}
+
+      {recorderState !== 'idle' && settings?.recorder.enableBrowserRecorder && (
         <RecordingInspector
           recorderState={recorderState}
           groups={groups}
@@ -202,21 +207,20 @@ export function Recorder() {
           onCreateGroup={handleCreateGroup}
           onUpdateGroup={handleUpdateGroup}
           onResetRecording={handleResetRecording}
-          onStartRecording={handleStartRecording}
         />
       )}
 
-      {!settings?.recorder.enableBrowserRecorder && (
-        <RequestLog
-          recorderState={recorderState}
-          groups={groups}
-          requests={debouncedProxyData}
-          onUpdateGroup={handleUpdateGroup}
-          onResetRecording={handleResetRecording}
-          onCreateGroup={handleCreateGroup}
-          onStartRecording={handleStartRecording}
-        />
-      )}
+      {recorderState !== 'idle' &&
+        !settings?.recorder.enableBrowserRecorder && (
+          <RequestLog
+            recorderState={recorderState}
+            groups={groups}
+            requests={debouncedProxyData}
+            onUpdateGroup={handleUpdateGroup}
+            onResetRecording={handleResetRecording}
+            onCreateGroup={handleCreateGroup}
+          />
+        )}
 
       <ConfirmNavigationDialog
         open={blocker.state === 'blocked'}

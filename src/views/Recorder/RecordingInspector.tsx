@@ -14,7 +14,6 @@ interface RecordingInspectorProps {
   onUpdateGroup?: (group: Group) => void
   onCreateGroup?: (name: string) => void
   onResetRecording?: () => void
-  onStartRecording?: (url?: string) => void
 }
 
 const styles = {
@@ -31,7 +30,6 @@ export function RecordingInspector({
   onUpdateGroup,
   onCreateGroup,
   onResetRecording,
-  onStartRecording,
 }: RecordingInspectorProps) {
   return (
     <Tabs.Root
@@ -58,7 +56,6 @@ export function RecordingInspector({
           onCreateGroup={onCreateGroup}
           onUpdateGroup={onUpdateGroup}
           onResetRecording={onResetRecording}
-          onStartRecording={onStartRecording}
         />
       </Tabs.Content>
       <Tabs.Content value="browser-events" css={styles.content}>
