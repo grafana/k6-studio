@@ -19,6 +19,7 @@ interface RecordingInspectorProps {
 const styles = {
   content: css`
     flex: 1 1 0;
+    min-height: 0;
   `,
 }
 

@@ -1,8 +1,8 @@
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
+import { css } from '@emotion/react'
 import { FaceIcon } from '@radix-ui/react-icons'
-import { Flex, ScrollArea, Table } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
+import { Flex, Table } from '@radix-ui/themes'
 
 interface EventIconProps {
   event: BrowserEvent
@@ -43,28 +43,26 @@ interface BrowserEventLogProps {
 export function BrowserEventLog({ events }: BrowserEventLogProps) {
   return (
     <Flex direction="column" minHeight="0" height="100%">
-      <Allotment defaultSizes={[1]}>
-        <Allotment.Pane>
-          <ScrollArea>
-            <Table.Root>
-              <Table.Body>
-                {events.map((event) => {
-                  return (
-                    <Table.Row key={event.eventId}>
-                      <Table.Cell>
-                        <Flex as="span" align="center" gap="2">
-                          <EventIcon event={event} />{' '}
-                          <EventDescription event={event} />
-                        </Flex>
-                      </Table.Cell>
-                    </Table.Row>
-                  )
-                })}
-              </Table.Body>
-            </Table.Root>
-          </ScrollArea>
-        </Allotment.Pane>
-      </Allotment>
+      <Table.Root
+        css={css`
+          height: 100%;
+        `}
+      >
+        <Table.Body>
+          {events.map((event) => {
+            return (
+              <Table.Row key={event.eventId}>
+                <Table.Cell>
+                  <Flex as="span" align="center" gap="2">
+                    <EventIcon event={event} />{' '}
+                    <EventDescription event={event} />
+                  </Flex>
+                </Table.Cell>
+              </Table.Row>
+            )
+          })}
+        </Table.Body>
+      </Table.Root>
     </Flex>
   )
 }
