@@ -10,35 +10,20 @@ import { EmptyState } from './EmptyState'
 import { useMemo, useState } from 'react'
 import { EmptyMessage } from '@/components/EmptyMessage'
 
-interface PreviewRequestLogProps {
-  recorderState?: undefined
+interface RequestLogProps {
+  recorderState?: RecorderState | undefined
   requests: ProxyData[]
   groups: Group[]
-  group?: never
-  onUpdateGroup?: never
-  onResetRecording?: never
-  onCreateGroup?: never
-  onStartRecording?: never
+  onUpdateGroup?: (group: Group) => void
+  onResetRecording?: () => void
+  onCreateGroup?: (name: string) => void
+  onStartRecording?: (url?: string) => void
 }
-
-interface RecorderRequestLogProps {
-  recorderState: RecorderState
-  requests: ProxyData[]
-  groups: Group[]
-  group: Group | undefined
-  onUpdateGroup: (group: Group) => void
-  onResetRecording: () => void
-  onCreateGroup: (name: string) => void
-  onStartRecording: (url?: string) => void
-}
-
-type RequestLogProps = PreviewRequestLogProps | RecorderRequestLogProps
 
 export function RequestLog({
   recorderState,
   requests,
   groups,
-  group,
   onUpdateGroup,
   onResetRecording,
   onCreateGroup,
@@ -53,7 +38,7 @@ export function RequestLog({
       return <EmptyMessage message="The recording is empty" />
     }
 
-    if (recorderState === 'idle') {
+    if (recorderState === 'idle' && onStartRecording) {
       return <EmptyState isLoading={isLoading} onStart={onStartRecording} />
     }
 
@@ -73,7 +58,6 @@ export function RequestLog({
               selectedRequestId={selectedRequest?.id}
               autoScroll={recorderState !== undefined}
               groups={groups}
-              activeGroup={group?.id}
               onSelectRequest={setSelectedRequest}
               onUpdateGroup={onUpdateGroup}
               resetProxyData={onResetRecording}
@@ -85,7 +69,7 @@ export function RequestLog({
                 size="2"
                 variant="ghost"
                 ml="2"
-                onClick={() => onCreateGroup(`Group ${groups.length}`)}
+                onClick={() => onCreateGroup?.(`Group ${groups.length}`)}
                 tooltip="Groups are used to organize specific steps in your recording. After you create a group, any further requests will be added to it."
               >
                 <PlusCircledIcon />

@@ -22,6 +22,8 @@ import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { RequestLog } from './RequestLog'
+import { useSettings } from '@/components/Settings/Settings.hooks'
+import { RecordingInspector } from './RecordingInspector'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -31,6 +33,8 @@ const INITIAL_GROUPS: Group[] = [
 ]
 
 export function Recorder() {
+  const { data: settings } = useSettings()
+
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
 
@@ -189,16 +193,30 @@ export function Recorder() {
         )
       }
     >
-      <RequestLog
-        recorderState={recorderState}
-        requests={debouncedProxyData}
-        groups={groups}
-        group={group}
-        onUpdateGroup={handleUpdateGroup}
-        onResetRecording={handleResetRecording}
-        onCreateGroup={handleCreateGroup}
-        onStartRecording={handleStartRecording}
-      />
+      {settings?.recorder.enableBrowserRecorder && (
+        <RecordingInspector
+          recorderState={recorderState}
+          groups={groups}
+          requests={debouncedProxyData}
+          browserEvents={browserEvents}
+          onCreateGroup={handleCreateGroup}
+          onUpdateGroup={handleUpdateGroup}
+          onResetRecording={handleResetRecording}
+          onStartRecording={handleStartRecording}
+        />
+      )}
+
+      {!settings?.recorder.enableBrowserRecorder && (
+        <RequestLog
+          recorderState={recorderState}
+          groups={groups}
+          requests={debouncedProxyData}
+          onUpdateGroup={handleUpdateGroup}
+          onResetRecording={handleResetRecording}
+          onCreateGroup={handleCreateGroup}
+          onStartRecording={handleStartRecording}
+        />
+      )}
 
       <ConfirmNavigationDialog
         open={blocker.state === 'blocked'}
