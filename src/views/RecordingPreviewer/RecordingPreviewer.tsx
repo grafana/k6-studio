@@ -19,6 +19,7 @@ import { useSettings } from '@/components/Settings/Settings.hooks'
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 import { BrowserEvent } from '@/schemas/recording'
 import { useToast } from '@/store/ui/useToast'
+import { emitScript } from '@/codegen/browser'
 
 export function RecordingPreviewer() {
   const { data: settings } = useSettings()
@@ -85,11 +86,18 @@ export function RecordingPreviewer() {
   }
 
   const handleExportBrowserScript = () => {
-    const script = `console.log("hello!")`
+    const test = {
+      defaultScenario: {
+        type: 'browser' as const,
+        events: browserEvents,
+      },
+      scenarios: {},
+    }
+
     const fileName = generateFileNameWithTimestamp('js', 'BrowserTest')
 
-    window.studio.script
-      .saveScript(script, fileName)
+    emitScript(test)
+      .then((script) => window.studio.script.saveScript(script, fileName))
       .then(() => {
         navigate(
           getRoutePath('validator', {
@@ -99,7 +107,7 @@ export function RecordingPreviewer() {
       })
       .catch(() => {
         showToast({
-          title: 'Failed to export browser script',
+          title: 'Failed to export browser script.',
           status: 'error',
         })
       })
