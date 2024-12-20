@@ -70,7 +70,7 @@ export const launchBrowser = async (
       `--proxy-server=http://localhost:${appSettings.proxy.port}`,
       `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
       disableChromeOptimizations,
-      url ?? 'about:blank',
+      url || 'about:blank',
     ],
     onExit: sendBrowserClosedEvent,
   })
