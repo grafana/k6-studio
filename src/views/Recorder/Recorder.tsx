@@ -212,7 +212,6 @@ export function Recorder() {
                 selectedRequestId={selectedRequest?.id}
                 autoScroll
                 groups={groups}
-                activeGroup={group?.id}
                 onSelectRequest={setSelectedRequest}
                 onUpdateGroup={handleUpdateGroup}
                 resetProxyData={handleResetRecording}
