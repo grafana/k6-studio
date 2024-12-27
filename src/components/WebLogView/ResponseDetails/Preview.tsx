@@ -53,6 +53,8 @@ export function Preview({ content, contentType, format }: PreviewProps) {
     return (
       <ReactJson
         shouldCollapse={(field) => field.name !== 'root'}
+        // TODO: https://github.com/grafana/k6-studio/issues/277
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         src={JSON.parse(content)}
         theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
         style={theme === 'dark' ? reactJsonDarkStyles : reactJsonLightStyles}

@@ -117,7 +117,7 @@ export function Recorder() {
     }
   }, [groups, proxyData, startUrl])
 
-  async function handleStopRecording() {
+  function handleStopRecording() {
     stopRecording()
   }
 

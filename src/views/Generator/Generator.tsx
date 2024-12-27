@@ -58,6 +58,8 @@ export function Generator() {
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting home from invalid generator
+    // TODO(router): Action enum is not exported from react-router-dom
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     return isDirty && historyAction !== 'REPLACE'
   })
 

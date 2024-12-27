@@ -6,11 +6,10 @@ import { AppSettings } from '@/types/settings'
 export const UsageReportSettings = () => {
   const { control, register } = useFormContext<AppSettings>()
 
-  const handleLinkClick = () => {
+  const handleLinkClick = () =>
     window.studio.browser.openExternalLink(
       'https://grafana.com/docs/k6-studio/set-up/usage-collection/'
     )
-  }
 
   return (
     <SettingsSection>

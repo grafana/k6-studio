@@ -113,7 +113,7 @@ const createSplashWindow = async () => {
     splashscreenWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  splashscreenWindow.loadFile(splashscreenFile)
+  await splashscreenWindow.loadFile(splashscreenFile)
 
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
   splashscreenWindow.once('ready-to-show', () => {
@@ -158,9 +158,9 @@ const createWindow = async () => {
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
+    await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
-    mainWindow.loadFile(
+    await mainWindow.loadFile(
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
     )
   }
@@ -195,16 +195,21 @@ const createWindow = async () => {
   return mainWindow
 }
 
-app.whenReady().then(async () => {
-  await initSettings()
-  appSettings = await getSettings()
-  nativeTheme.themeSource = appSettings.appearance.theme
+app.whenReady().then(
+  async () => {
+    await initSettings()
+    appSettings = await getSettings()
+    nativeTheme.themeSource = appSettings.appearance.theme
 
-  await sendReport(appSettings.usageReport)
-  await createSplashWindow()
-  await setupProjectStructure()
-  await createWindow()
-})
+    await sendReport(appSettings.usageReport)
+    await createSplashWindow()
+    await setupProjectStructure()
+    await createWindow()
+  },
+  (error) => {
+    log.error(error)
+  }
+)
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -228,14 +233,14 @@ app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
   appShuttingDown = true
   await watcher.close()
-  stopProxyProcess()
+  return stopProxyProcess()
 })
 
-ipcMain.handle('app:change-route', async (_, route: string) => {
+ipcMain.on('app:change-route', (_, route: string) => {
   currentClientRoute = route
 })
 
-ipcMain.handle('app:close', (event) => {
+ipcMain.on('app:close', (event) => {
   console.log('app:close event received')
 
   wasAppClosedByClient = true
@@ -255,9 +260,9 @@ ipcMain.handle('proxy:start', async (event) => {
   currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 })
 
-ipcMain.on('proxy:stop', async () => {
+ipcMain.on('proxy:stop', () => {
   console.info('proxy:stop event received')
-  stopProxyProcess()
+  return stopProxyProcess()
 })
 
 const waitForProxy = async (): Promise<void> => {
@@ -286,7 +291,7 @@ ipcMain.handle('browser:start', async (event, url?: string) => {
 ipcMain.on('browser:stop', async () => {
   console.info('browser:stop event received')
   if (currentBrowserProcess) {
-    currentBrowserProcess.close()
+    await currentBrowserProcess.close()
     currentBrowserProcess = null
   }
 })
@@ -415,8 +420,12 @@ ipcMain.handle('har:open', async (_, fileName: string): Promise<HarFile> => {
   try {
     fileHandle = await open(path.join(RECORDINGS_PATH, fileName), 'r')
     const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+    // TODO: https://github.com/grafana/k6-studio/issues/277
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const har = await JSON.parse(data)
 
+    // TODO: https://github.com/grafana/k6-studio/issues/277
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return { name: fileName, content: har }
   } finally {
     await fileHandle?.close()
@@ -470,8 +479,12 @@ ipcMain.handle(
       fileHandle = await open(path.join(GENERATORS_PATH, fileName), 'r')
 
       const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+      // TODO: https://github.com/grafana/k6-studio/issues/277
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const generator = await JSON.parse(data)
 
+      // TODO: https://github.com/grafana/k6-studio/issues/277
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       return { name: fileName, content: generator }
     } finally {
       await fileHandle?.close()
@@ -490,7 +503,7 @@ ipcMain.handle('ui:delete-file', async (_, fileName: string) => {
   return unlink(getFilePathFromName(fileName))
 })
 
-ipcMain.on('ui:open-folder', async (_, fileName: string) => {
+ipcMain.on('ui:open-folder', (_, fileName: string) => {
   console.info('ui:open-folder event received')
   shell.showItemInFolder(getFilePathFromName(fileName))
 })
@@ -559,10 +572,10 @@ ipcMain.on('splashscreen:close', (event) => {
 
 ipcMain.handle('browser:open:external:link', (_, url: string) => {
   console.info('browser:open:external:link event received')
-  shell.openExternal(url)
+  return shell.openExternal(url)
 })
 
-ipcMain.handle('log:open', () => {
+ipcMain.on('log:open', () => {
   console.info('log:open event received')
   openLogFolder()
 })
@@ -585,7 +598,7 @@ ipcMain.handle('settings:save', async (event, data: AppSettings) => {
     // don't pass fields that are not submitted by the form
     const { windowState: _, ...settings } = data
     const modifiedSettings = await saveSettings(settings)
-    applySettings(modifiedSettings, browserWindow)
+    await applySettings(modifiedSettings, browserWindow)
 
     sendToast(browserWindow.webContents, {
       title: 'Settings saved successfully',
@@ -610,7 +623,7 @@ ipcMain.handle('settings:select-upstream-certificate', async () => {
   return selectUpstreamCertificate()
 })
 
-ipcMain.handle('proxy:status:get', async () => {
+ipcMain.handle('proxy:status:get', () => {
   console.info('proxy:status:get event received')
   return proxyStatus
 })
@@ -706,7 +719,7 @@ function showWindow(browserWindow: BrowserWindow) {
   browserWindow.focus()
 }
 
-function trackWindowState(browserWindow: BrowserWindow) {
+async function trackWindowState(browserWindow: BrowserWindow) {
   const { width, height, x, y } = browserWindow.getBounds()
   const isMaximized = browserWindow.isMaximized()
   appSettings.windowState = {
@@ -717,7 +730,7 @@ function trackWindowState(browserWindow: BrowserWindow) {
     isMaximized,
   }
   try {
-    saveSettings(appSettings)
+    await saveSettings(appSettings)
   } catch (error) {
     log.error(error)
   }

@@ -52,7 +52,7 @@ export function useSaveGeneratorFile(fileName: string) {
   return useMutation({
     mutationFn: async (generator: GeneratorFileData) => {
       await writeGeneratorToFile(fileName, generator)
-      queryClient.invalidateQueries({ queryKey: ['generator', fileName] })
+      await queryClient.invalidateQueries({ queryKey: ['generator', fileName] })
     },
 
     onSuccess: () => {

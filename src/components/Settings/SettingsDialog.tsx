@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { findIndex, sortBy } from 'lodash-es'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 import { ProxySettings } from './ProxySettings'
@@ -14,6 +14,7 @@ import { UsageReportSettings } from './UsageReportSettings'
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
 import { AppearanceSettings } from './AppearanceSettings'
 import { LogsSettings } from './LogsSettings'
+import { useSaveSettings, useSettings } from './Settings.hooks'
 
 type SettingsDialogProps = {
   open: boolean
@@ -41,17 +42,11 @@ const tabs = [
 ]
 
 export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
-  const [settings, setSettings] = useState<AppSettings>()
-  const [submitting, setSubmitting] = useState(false)
+  const { data: settings } = useSettings()
+  const { mutateAsync: saveSettings, isPending } = useSaveSettings(() => {
+    onOpenChange(false)
+  })
   const [selectedTab, setSelectedTab] = useState('proxy')
-
-  useEffect(() => {
-    async function fetchSettings() {
-      const data = await window.studio.settings.getSettings()
-      setSettings(data)
-    }
-    fetchSettings()
-  }, [])
 
   const formMethods = useForm<AppSettings>({
     resolver: zodResolver(AppSettingsSchema),
@@ -64,23 +59,6 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
     reset,
     formState: { isDirty, errors },
   } = formMethods
-
-  const onSubmit = async (data: AppSettings) => {
-    try {
-      setSubmitting(true)
-      const isSuccess = await window.studio.settings.saveSettings(data)
-      if (isSuccess) {
-        onOpenChange(false)
-        reset(data)
-        setSettings(data)
-        setSelectedTab('proxy')
-      }
-    } catch (error) {
-      console.error('Error saving settings', error)
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   const onInvalid = (errors: Record<string, unknown>) => {
     // Sort tabs by the order they appear in the UI
@@ -159,10 +137,13 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
               </Dialog.Close>
               <Dialog.Close>
                 <ButtonWithTooltip
-                  loading={submitting}
+                  loading={isPending}
                   disabled={!isDirty}
                   tooltip={!isDirty ? 'Changes saved' : ''}
-                  onClick={handleSubmit(onSubmit, onInvalid)}
+                  onClick={handleSubmit(
+                    (data) => saveSettings(data),
+                    onInvalid
+                  )}
                 >
                   Save changes
                 </ButtonWithTooltip>

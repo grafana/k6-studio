@@ -60,7 +60,7 @@ export function Validator() {
     navigate(getRoutePath('home'))
   }
 
-  function handleRunScript() {
+  async function handleRunScript() {
     if (!scriptPath) {
       return
     }
@@ -68,8 +68,8 @@ export function Validator() {
     resetProxyData()
     resetLogs()
     resetChecks()
-    window.studio.script.runScript(scriptPath, isExternal)
     setIsRunning(true)
+    await window.studio.script.runScript(scriptPath, isExternal)
   }
 
   function handleStopScript() {

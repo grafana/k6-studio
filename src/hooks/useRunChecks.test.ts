@@ -41,7 +41,7 @@ describe('useRunChecks', () => {
       createK6Check({ id: '1', name: 'Check 1' }),
       createK6Check({ id: '2', name: 'Check 2' }),
     ]
-    onScriptCheck.mockImplementation((callback) => {
+    onScriptCheck.mockImplementation((callback: (data: K6Check[]) => void) => {
       callback(mockChecks)
       return () => {}
     })
