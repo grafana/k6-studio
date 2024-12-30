@@ -28,6 +28,8 @@ export function parseParams(data: ProxyData) {
     }
 
     return stringify(
+      // TODO: https://github.com/grafana/k6-studio/issues/277
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       JSON.parse(jsonrepair(parsePythonByteString(contentDecoded)))
     )
   } catch (e) {

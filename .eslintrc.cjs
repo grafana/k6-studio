@@ -7,7 +7,7 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:import/recommended',
     'plugin:import/electron',
     'plugin:import/typescript',
@@ -18,7 +18,11 @@ module.exports = {
     'prettier',
   ],
   parser: '@typescript-eslint/parser',
-  ignorePatterns: ['resources/group_snippet.js', 'install-k6.js'],
+  ignorePatterns: [
+    'resources/group_snippet.js',
+    'install-k6.js',
+    '.eslintrc.cjs',
+  ],
   plugins: [
     'import',
     'unused-imports',
@@ -43,11 +47,16 @@ module.exports = {
         argsIgnorePattern: '^_',
       },
     ],
-    // TODO: remove warnings when plugin:@typescript-eslint/recommended-type-checked is enabled
-    '@typescript-eslint/no-unsafe-assignment': 'warn',
-    '@typescript-eslint/no-unsafe-return': 'warn',
-    '@typescript-eslint/no-unsafe-argument': 'warn',
-    '@typescript-eslint/no-unsafe-member-access': 'warn',
+    '@typescript-eslint/no-floating-promises': [
+      'error',
+      {
+        ignoreIIFE: true,
+      },
+    ],
+    '@typescript-eslint/no-misused-promises': [
+      'error',
+      { checksVoidReturn: false },
+    ],
   },
 
   parserOptions: {

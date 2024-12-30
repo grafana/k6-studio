@@ -16,7 +16,6 @@ interface RequestsSectionProps {
   groups?: Group[]
   selectedRequestId?: string
   autoScroll?: boolean
-  activeGroup?: string
   noDataElement?: ReactNode
   onSelectRequest: (data: ProxyData | null) => void
   onUpdateGroup?: (group: Group) => void
@@ -29,7 +28,6 @@ export function RequestsSection({
   noDataElement,
   autoScroll = false,
   groups,
-  activeGroup,
   onSelectRequest,
   onUpdateGroup,
   resetProxyData,
@@ -90,7 +88,6 @@ export function RequestsSection({
           <WebLogView
             requests={filteredRequests}
             groups={groups}
-            activeGroup={activeGroup}
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
             onUpdateGroup={onUpdateGroup}

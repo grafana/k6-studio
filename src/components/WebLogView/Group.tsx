@@ -95,7 +95,7 @@ export function Group({
   useClickAway(headerRef, () => {
     if (!group.isEditing) return
 
-    handleSubmit(submit)()
+    return handleSubmit(submit)()
   })
 
   const isValidName = (value: string) => {

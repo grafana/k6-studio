@@ -8,7 +8,10 @@ import { ProxyData, RequestSnippetSchema } from '@/types'
 import { generateSequentialInt } from './utils'
 
 function createSequentialIdPool() {
-  const currentId: Record<TestRule['type'], Generator<number>> = {
+  const currentId: Record<
+    TestRule['type'],
+    Generator<number, number, number>
+  > = {
     correlation: generateSequentialInt(),
     parameterization: generateSequentialInt(),
     verification: generateSequentialInt(),
@@ -37,7 +40,7 @@ export function applyRules(recording: ProxyData[], rules: TestRule[]) {
 
 function createRuleInstance<T extends TestRule>(
   rule: T,
-  idGenerator: Generator<number>
+  idGenerator: Generator<number, number, number>
 ) {
   switch (rule.type) {
     case 'correlation':

@@ -117,7 +117,7 @@ export function Recorder() {
     }
   }, [groups, proxyData, startUrl])
 
-  async function handleStopRecording() {
+  function handleStopRecording() {
     stopRecording()
   }
 
@@ -212,7 +212,6 @@ export function Recorder() {
                 selectedRequestId={selectedRequest?.id}
                 autoScroll
                 groups={groups}
-                activeGroup={group?.id}
                 onSelectRequest={setSelectedRequest}
                 onUpdateGroup={handleUpdateGroup}
                 resetProxyData={handleResetRecording}

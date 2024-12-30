@@ -24,6 +24,8 @@ export function stringify(value: unknown): string {
     return `{${properties}}`
   }
 
+  // TODO: https://github.com/grafana/k6-studio/issues/277
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   return `${value}`
 }
 

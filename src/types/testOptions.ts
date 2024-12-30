@@ -11,7 +11,7 @@ import {
   RampingStageSchema,
   LoadProfileExecutorOptionsSchema,
   TestOptionsSchema,
-} from '@/schemas/testOptions'
+} from '@/schemas/generator'
 
 export type SleepType = z.infer<typeof SleepTypeSchema>
 export type FixedTiming = z.infer<typeof FixedTimingSchema>

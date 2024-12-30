@@ -6,19 +6,17 @@ export function Font({ url }: { url: string }) {
   const [isReady, setIsReady] = useState(false)
   const [name, setName] = useState('')
 
-  async function addFontFace(url: string) {
-    const name = uniqueId('font-')
-    const font = new FontFace(name, `url(${url})`)
-
-    await font.load()
-    document.fonts.add(font)
-    setIsReady(true)
-    setName(name)
-  }
-
   useEffect(() => {
-    setIsReady(false)
-    addFontFace(url)
+    ;(async function addFontFace(url: string) {
+      setIsReady(false)
+      const name = uniqueId('font-')
+      const font = new FontFace(name, `url(${url})`)
+
+      await font.load()
+      document.fonts.add(font)
+      setIsReady(true)
+      setName(name)
+    })(url)
   }, [url])
 
   if (!isReady) {

@@ -10,7 +10,6 @@ import { useDeepCompareEffect } from 'react-use'
 interface WebLogViewProps {
   requests: ProxyDataWithMatches[]
   groups?: GroupType[]
-  activeGroup?: string
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches | null) => void
   onUpdateGroup?: (group: GroupType) => void
@@ -93,6 +92,7 @@ function RequestList({
         <Table.Row>
           <Table.ColumnHeaderCell width="70px">Method</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="60px">Status</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="80px">Type</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="20%">Host</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="80%">Path</Table.ColumnHeaderCell>
         </Table.Row>

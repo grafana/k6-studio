@@ -9,7 +9,7 @@ import { exhaustive } from '@/utils/typescript'
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
 import { TestRule } from '@/types/rules'
-import { TestRuleSchema } from '@/schemas/rules'
+import { TestRuleSchema } from '@/schemas/generator'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
 
 export function RuleEditorSwitch() {

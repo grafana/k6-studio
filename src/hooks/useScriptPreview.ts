@@ -30,6 +30,8 @@ export function useScriptPreview() {
     }, 100)
 
     // Initial preview generation
+    // TODO: https://github.com/grafana/k6-studio/issues/277
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     updatePreview(useGeneratorStore.getState())
 
     const unsubscribe = useGeneratorStore.subscribe((state) =>
