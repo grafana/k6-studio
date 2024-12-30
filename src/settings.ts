@@ -24,8 +24,9 @@ const defaultSettings: AppSettings = {
     y: 0,
     isMaximized: true,
   },
-  usageReport: {
-    enabled: true,
+  telemetry: {
+    usageReport: true,
+    errorReport: true,
   },
   appearance: {
     theme: 'system',

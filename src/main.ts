@@ -208,7 +208,7 @@ app.whenReady().then(
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
 
-    await sendReport(appSettings.usageReport)
+    await sendReport(appSettings.telemetry.usageReport)
     await createSplashWindow()
     await setupProjectStructure()
     await createWindow()
@@ -365,7 +365,7 @@ ipcMain.handle(
       browserWindow,
       resolvedScriptPath,
       appSettings.proxy.port,
-      appSettings.usageReport.enabled
+      appSettings.telemetry.usageReport
     )
   }
 )
@@ -648,8 +648,8 @@ async function applySettings(
   if (modifiedSettings.recorder) {
     appSettings.recorder = modifiedSettings.recorder
   }
-  if (modifiedSettings.usageReport) {
-    appSettings.usageReport = modifiedSettings.usageReport
+  if (modifiedSettings.telemetry) {
+    appSettings.telemetry = modifiedSettings.telemetry
   }
   if (modifiedSettings.appearance) {
     appSettings.appearance = modifiedSettings.appearance

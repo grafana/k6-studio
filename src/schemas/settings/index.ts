@@ -25,6 +25,6 @@ export {
   AppearanceSchema,
   ProxySettingsSchema,
   RecorderSettingsSchema,
-  UsageReportSettingsSchema,
+  TelemetrySchema,
   WindowStateSchema,
 } from './v2'
