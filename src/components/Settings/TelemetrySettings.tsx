@@ -46,10 +46,7 @@ export const TelemetrySettings = () => {
                 onCheckedChange={field.onChange}
               />{' '}
               Send crash reports and error data to Grafana to help improve k6
-              Studio.{' '}
-              <Link href="" onClick={handleLinkClick}>
-                Learn more.
-              </Link>
+              Studio. <Link href="">Learn more.</Link>
             </Text>
           )}
         />
