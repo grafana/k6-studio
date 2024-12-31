@@ -3,15 +3,19 @@ import {
   AppearanceSchema,
   ProxySettingsSchema,
   RecorderSettingsSchema,
-  UsageReportSettingsSchema,
   WindowStateSchema,
 } from '../v1'
+
+const TelemetrySchema = z.object({
+  usageReport: z.boolean(),
+  errorReport: z.boolean(),
+})
 
 export {
   AppearanceSchema,
   ProxySettingsSchema,
   RecorderSettingsSchema,
-  UsageReportSettingsSchema,
+  TelemetrySchema,
   WindowStateSchema,
 }
 
@@ -20,7 +24,7 @@ export const AppSettingsSchema = z.object({
   proxy: ProxySettingsSchema,
   recorder: RecorderSettingsSchema,
   windowState: WindowStateSchema,
-  usageReport: UsageReportSettingsSchema,
+  telemetry: TelemetrySchema,
   appearance: AppearanceSchema,
 })
 

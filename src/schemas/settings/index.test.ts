@@ -29,6 +29,9 @@ describe('Settings migration', () => {
       },
     }
 
-    expect(migrate(v1Settings).version).toBe('2.0')
+    const migration = migrate(v1Settings)
+
+    expect(migration.version).toBe('2.0')
+    expect(migration.telemetry.usageReport).toBe(v1Settings.usageReport.enabled)
   })
 })

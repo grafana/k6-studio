@@ -10,7 +10,7 @@ import { ProxySettings } from './ProxySettings'
 import { AppSettingsSchema } from '@/schemas/settings'
 import { RecorderSettings } from './RecorderSettings'
 import { AppSettings } from '@/types/settings'
-import { UsageReportSettings } from './UsageReportSettings'
+import { TelemetrySettings } from './TelemetrySettings'
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
 import { AppearanceSettings } from './AppearanceSettings'
 import { LogsSettings } from './LogsSettings'
@@ -25,9 +25,9 @@ const tabs = [
   { label: 'Proxy', value: 'proxy', component: ProxySettings },
   { label: 'Recorder', value: 'recorder', component: RecorderSettings },
   {
-    label: 'Usage collection',
+    label: 'Telemetry',
     value: 'usageReport',
-    component: UsageReportSettings,
+    component: TelemetrySettings,
   },
   {
     label: 'Appearance',
