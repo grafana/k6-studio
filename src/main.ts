@@ -66,6 +66,14 @@ if (process.env.NODE_ENV !== 'development') {
   Sentry.init({
     dsn: SENTRY_DSN,
     integrations: [Sentry.electronMinidumpIntegration()],
+
+    // conditionally send the event based on the user's settings
+    beforeSend: (event) => {
+      if (appSettings.telemetry.errorReport) {
+        return event
+      }
+      return null
+    },
   })
 }
 
