@@ -5,23 +5,23 @@ import { Tabs } from '../Tabs'
 import { Headers } from './Headers'
 import { Content } from './Content'
 import { Cookies } from '../Cookies'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useResponseDetailsTab } from '../Details.hooks'
 
 interface ResponseDetailsProps {
   data: ProxyData
-  tab?: string
 }
 
-export function ResponseDetails({ data, tab }: ResponseDetailsProps) {
-  const [selectedTab, setSelectedTab] = useState(tab ?? 'headers')
+export function ResponseDetails({ data }: ResponseDetailsProps) {
+  const { tab, setTab } = useResponseDetailsTab()
 
-  // Allow changing the tab using props
+  // Reset tab when closing details
   useEffect(() => {
-    tab && setSelectedTab(tab)
-  }, [tab])
+    return () => setTab('headers')
+  }, [setTab])
 
   return (
-    <Tabs.Root value={selectedTab} onValueChange={setSelectedTab}>
+    <Tabs.Root value={tab} onValueChange={setTab}>
       <Tabs.List>
         <Tabs.Trigger value="headers">Headers</Tabs.Trigger>
         <Tabs.Trigger value="content">Content</Tabs.Trigger>

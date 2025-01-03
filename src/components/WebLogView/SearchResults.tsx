@@ -4,6 +4,7 @@ import { Table } from '@/components/Table'
 import { SearchMatch } from '@/types/fuse'
 import { useMemo, useState } from 'react'
 import { HighlightMark } from '../HighlightedText'
+import { useRequestDetailsTab } from './Details.hooks'
 
 const PREVIEWABLE_MATCH_KEYS = [
   'request.content',
@@ -31,6 +32,7 @@ export function SearchResults({
   data: ProxyDataWithMatches
   onSelectRequest: (data: ProxyDataWithMatches) => void
 }) {
+  const { setTab: setRequestTab } = useRequestDetailsTab()
   const resultsInPreview = 10
   const [showAll, setShowAll] = useState(false)
   const toggleShowAll = () => setShowAll((prev) => !prev)
@@ -75,10 +77,10 @@ export function SearchResults({
     // return
     // }
 
-    // if (result.match.key?.includes('request.content')) {
-    // show({ requestTab: 'payload', request: data })
-    // return
-    // }
+    if (result.match.key?.includes('request.content')) {
+      setRequestTab('payload')
+      return
+    }
 
     // if (
     // result.match.key?.includes('response.headers') &&

@@ -5,6 +5,7 @@ import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import Fuse from 'fuse.js'
 import { useState, useMemo } from 'react'
 import { useDebounce } from 'react-use'
+import { parseParams } from './RequestDetails/utils'
 
 export function useFilterRequests({
   proxyData,
@@ -54,6 +55,16 @@ export function useFilterRequests({
             }
 
             return safeAtob(data.response.content)
+          },
+        },
+        {
+          name: 'request.content',
+          getFn: (data) => {
+            if (!data.response) {
+              return ''
+            }
+
+            return parseParams(data) ?? ''
           },
         },
         {

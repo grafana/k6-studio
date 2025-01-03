@@ -7,27 +7,37 @@ import { Payload } from './Payload'
 import { QueryParams } from './QueryParams'
 import { Box } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
+import { useRequestDetailsTab } from '../Details.hooks'
 
 interface RequestDetailsProps {
   data: ProxyDataWithMatches
-  tab?: string
 }
 
-export function RequestDetails({ data, tab }: RequestDetailsProps) {
-  const [selectedTab, setSelectedTab] = useState(tab ?? 'headers')
+export function RequestDetails({ data }: RequestDetailsProps) {
+  const { tab, setTab } = useRequestDetailsTab()
 
-  // Allow changing the tab using props
+  const isQueryParamsAvailable =
+    data.request?.query && data.request.query.length > 0
+
+  // Reset tab when closing details
   useEffect(() => {
-    tab && setSelectedTab(tab)
-  }, [tab])
+    return () => setTab('headers')
+  }, [setTab])
+
+  // Reset to headers tab if query params are not available
+  useEffect(() => {
+    if (tab === 'queryParams' && !isQueryParamsAvailable) {
+      setTab('headers')
+    }
+  }, [tab, isQueryParamsAvailable, setTab])
 
   return (
-    <Tabs.Root value={selectedTab} onValueChange={setSelectedTab}>
+    <Tabs.Root value={tab} onValueChange={setTab}>
       <Tabs.List>
         <Tabs.Trigger value="headers">Headers</Tabs.Trigger>
         <Tabs.Trigger value="payload">Payload</Tabs.Trigger>
         <Tabs.Trigger value="cookies">Cookies</Tabs.Trigger>
-        {data.request?.query && data.request.query.length > 0 && (
+        {isQueryParamsAvailable && (
           <Tabs.Trigger value="queryParams">Query parameters</Tabs.Trigger>
         )}
       </Tabs.List>
