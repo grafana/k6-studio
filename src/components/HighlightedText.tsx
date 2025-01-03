@@ -1,13 +1,12 @@
 import { SearchMatch } from '@/types/fuse'
-import { css } from '@emotion/react'
-import { useMemo } from 'react'
+import { ReactNode, useMemo } from 'react'
 
 interface MatchSegment {
   match: boolean
   text: string
 }
 
-function longestMatchOnly(
+function _longestMatchOnly(
   matches: Array<[number, number]>
 ): Array<[number, number]> {
   return matches.sort((a, b) => b[1] - b[0] - (a[1] - a[0])).slice(0, 1)
@@ -54,30 +53,41 @@ export function HighlightedText({ text, matches }: HighlightedTextProps) {
 
     return splitByMatches(
       text,
-      longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
+      // longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
+      filteredMatches.flatMap((match) => match.indices)
     )
   }, [text, matches])
 
   return (
-    <>
+    <span>
       {segments.map((segment, index) => {
         if (segment.match) {
-          return (
-            <mark
-              key={index}
-              css={css`
-                color: var(--accent-12);
-                background-color: var(--accent-5);
-                font-weight: 700;
-              `}
-            >
-              {segment.text}
-            </mark>
-          )
+          return <HighlightMark key={index}>{segment.text}</HighlightMark>
         }
 
         return segment.text
       })}
-    </>
+    </span>
+  )
+}
+
+export function HighlightMark({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <mark
+      css={{
+        color: 'var(--accent-12)',
+        backgroundColor: 'var(--accent-5)',
+        fontWeight: 700,
+      }}
+      className={className}
+    >
+      {children}
+    </mark>
   )
 }

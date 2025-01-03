@@ -2,8 +2,17 @@ import { Flex } from '@radix-ui/themes'
 
 import { Cookie } from '@/types'
 import { Table } from '@/components/Table'
+import { HighlightedText } from '../HighlightedText'
+import { SearchMatch } from '@/types/fuse'
 
-export function Cookies({ cookies = [] }: { cookies?: Cookie[] }) {
+export function Cookies({
+  cookies = [],
+  matches,
+}: {
+  cookies?: Cookie[]
+  matches?: SearchMatch[]
+}) {
+  console.log('matches', matches)
   if (!cookies.length) {
     return (
       <Flex height="200px" justify="center" align="center">
@@ -24,8 +33,12 @@ export function Cookies({ cookies = [] }: { cookies?: Cookie[] }) {
       <Table.Body>
         {cookies.map(([name, value], index) => (
           <Table.Row key={index}>
-            <Table.Cell>{name}</Table.Cell>
-            <Table.Cell>{value}</Table.Cell>
+            <Table.Cell>
+              <HighlightedText text={name} matches={matches} />
+            </Table.Cell>
+            <Table.Cell>
+              <HighlightedText text={value} matches={matches} />
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table.Body>
