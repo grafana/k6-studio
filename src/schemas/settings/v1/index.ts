@@ -117,10 +117,7 @@ export function migrate(
     proxy: settings.proxy,
     recorder: settings.recorder,
     windowState: settings.windowState,
-    telemetry: {
-      usageReport: settings.usageReport.enabled,
-      errorReport: true,
-    },
+    usageReport: settings.usageReport,
     appearance: settings.appearance,
   }
 }
