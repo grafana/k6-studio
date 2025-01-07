@@ -31,7 +31,7 @@ describe('Settings migration', () => {
 
     const migration = migrate(v1Settings)
 
-    expect(migration.version).toBe('2.0')
+    expect(migration.version).toBe('3.0')
     expect(migration.telemetry.usageReport).toBe(v1Settings.usageReport.enabled)
   })
 })
