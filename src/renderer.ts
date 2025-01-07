@@ -29,8 +29,31 @@
 import { ProxyData } from './types'
 import './index.tsx'
 import { setMonacoEnv } from './components/Monaco/setMonacoEnv'
+import * as Sentry from '@sentry/electron/renderer'
 
 setMonacoEnv()
+
+// Sentry integration
+if (process.env.NODE_ENV !== 'development') {
+  Sentry.init({
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration(),
+    ],
+    tracesSampleRate: 1.0,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+
+    // conditionally send the event based on the user's settings
+    beforeSend: async (event) => {
+      const { telemetry } = await window.studio.settings.getSettings()
+      if (telemetry.errorReport) {
+        return event
+      }
+      return null
+    },
+  })
+}
 
 // Proxy
 
