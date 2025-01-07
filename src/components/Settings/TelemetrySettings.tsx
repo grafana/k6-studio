@@ -14,6 +14,16 @@ export const TelemetrySettings = () => {
   return (
     <SettingsSection>
       <Flex gap="2" mb="4">
+        <Text size="2" as="label">
+          k6 Studio collects anonymous telemetry data to improve performance and
+          user experience.{' '}
+          <Link href="" onClick={handleLinkClick}>
+            Learn more.
+          </Link>
+        </Text>
+      </Flex>
+
+      <Flex gap="2" mb="4">
         <Controller
           control={control}
           name="telemetry.usageReport"
@@ -24,11 +34,7 @@ export const TelemetrySettings = () => {
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}
-              Send my anonymous usage data to Grafana to aid in development of
-              k6 Studio.{' '}
-              <Link href="" onClick={handleLinkClick}>
-                Learn more.
-              </Link>
+              Send usage data to Grafana.
             </Text>
           )}
         />
@@ -45,8 +51,7 @@ export const TelemetrySettings = () => {
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />{' '}
-              Send crash reports and error data to Grafana to help improve k6
-              Studio.
+              Send crash reports and error data to Grafana.
             </Text>
           )}
         />
