@@ -1,18 +1,21 @@
 import { Button, Flex, Strong, Text } from '@radix-ui/themes'
-import { Header, ProxyDataWithMatches } from '@/types'
+import { ProxyDataWithMatches } from '@/types'
 import { Table } from '@/components/Table'
 import { SearchMatch } from '@/types/fuse'
 import { useMemo, useState } from 'react'
 import { HighlightMark } from '../HighlightedText'
-import { useRequestDetailsTab } from './Details.hooks'
+import { useRequestDetailsTab, useResponseDetailsTab } from './Details.hooks'
 
 const PREVIEWABLE_MATCH_KEYS = [
   'request.content',
   'request.headers.key',
   'request.headers.value',
+  'request.cookies',
+  'request.query',
+  'request.headers',
+  'response.cookies',
+  'response.headers',
   'response.content',
-  'response.headers.key',
-  'response.headers.value',
 ]
 
 interface Result {
@@ -33,6 +36,7 @@ export function SearchResults({
   onSelectRequest: (data: ProxyDataWithMatches) => void
 }) {
   const { setTab: setRequestTab } = useRequestDetailsTab()
+  const { setTab: setResponseTab } = useResponseDetailsTab()
   const resultsInPreview = 10
   const [showAll, setShowAll] = useState(false)
   const toggleShowAll = () => setShowAll((prev) => !prev)
@@ -65,48 +69,39 @@ export function SearchResults({
     [results, showAll]
   )
 
-  // TODO: consider 2 separate calls:
-  // 1. setSelectedRequest from parent weblogview component
-  // 2. setDetails tab from global zustand hook, consumed by Details component
-  // 3. could also include search term for later to set in monaco
   function handleResultClick(result: Result, data: ProxyDataWithMatches) {
     onSelectRequest(data)
+    console.log('key', result.match.key)
 
-    // if (result.match.key?.includes('response.content')) {
-    // show({ responseTab: 'content', request: data })
-    // return
-    // }
-
+    // Request match
     if (result.match.key?.includes('request.content')) {
-      setRequestTab('payload')
-      return
+      return setRequestTab('payload')
     }
 
-    // if (
-    // result.match.key?.includes('response.headers') &&
-    // result.match.value?.includes('Cookie')
-    // ) {
-    // show({ responseTab: 'cookies', request: data })
-    // return
-    // }
+    if (result.match.key?.includes('request.headers')) {
+      return setRequestTab('headers')
+    }
 
-    // if (
-    // result.match.key?.includes('request.headers') &&
-    // result.match.value?.includes('Cookie')
-    // ) {
-    // show({ requestTab: 'cookies', request: data })
-    // return
-    // }
+    if (result.match.key?.includes('request.cookies')) {
+      return setRequestTab('cookies')
+    }
 
-    // if (result.match.key?.includes('request.headers')) {
-    // show({ requestTab: 'headers', request: data })
-    // return
-    // }
+    if (result.match.key?.includes('request.query')) {
+      return setRequestTab('queryParams')
+    }
 
-    // if (result.match.key?.includes('response.headers')) {
-    // show({ responseTab: 'headers', request: data })
-    // return
-    // }
+    // Response match
+    if (result.match.key?.includes('response.content')) {
+      return setResponseTab('content')
+    }
+
+    if (result.match.key?.includes('response.headers')) {
+      return setResponseTab('headers')
+    }
+
+    if (result.match.key?.includes('response.cookies')) {
+      return setResponseTab('cookies')
+    }
   }
 
   if (results.length === 0) {
@@ -126,13 +121,10 @@ export function SearchResults({
               handleResultClick(result, data)
             }}
           >
-            {/* <Strong>{excerptIndex + 1}</Strong>:{' '}  */}
-            {result.match.key?.includes('content') && (
-              <ContentResult segment={result.segment} />
-            )}
-            {result.match.key?.includes('headers') && (
-              <HeaderResult result={result} data={data} />
-            )}
+            <Strong css={{ flexShrink: 0 }}>
+              {getMatchType(result.match.key)}:&nbsp;
+            </Strong>
+            <ContentResult segment={result.segment} />
           </Flex>
         ))}
         {shouldShowShowMore && (
@@ -147,41 +139,20 @@ export function SearchResults({
   )
 }
 
-function HeaderResult({
-  result,
-  data,
-}: {
-  result: Result
-  data: ProxyDataWithMatches
-}) {
-  const headers = result.match.key?.includes('request.headers')
-    ? data.request.headers
-    : data.response?.headers
+function getMatchType(key?: string) {
+  if (key?.includes('headers')) {
+    return 'Header'
+  }
 
-  const isHeaderKeyMatch = result.match.key?.includes('headers.key')
-  const isHeaderValueMatch = !isHeaderKeyMatch
+  if (key?.includes('cookies')) {
+    return 'Cookie'
+  }
 
-  return (
-    <>
-      {isHeaderValueMatch && (
-        <Strong css={{ flexShrink: 0 }}>
-          {findHeaderByKey(headers, result.match.value)}:&nbsp;
-        </Strong>
-      )}
+  if (key?.includes('request.query')) {
+    return 'Query'
+  }
 
-      <Flex
-        css={{
-          fontWeight: isHeaderKeyMatch ? 'bold' : 'normal',
-          overflow: 'hidden',
-        }}
-      >
-        <ContentResult segment={result.segment} />
-      </Flex>
-      {isHeaderKeyMatch && (
-        <Text truncate>: {findHeaderByValue(headers, result.match.value)}</Text>
-      )}
-    </>
-  )
+  return 'Body'
 }
 
 function ContentResult({ segment }: { segment: Segment }) {
@@ -234,28 +205,6 @@ function getSegments(text: string, index: SearchMatch['indices'][number]) {
     match,
     afterMatch: afterMatch.replace(/\n/g, ''),
   }
-}
-
-function findHeaderByKey(
-  headers: Header[] | undefined,
-  value: string | undefined
-) {
-  if (!headers || !value) {
-    return
-  }
-
-  return headers.find(([_, headerValue]) => headerValue === value)?.[0]
-}
-
-function findHeaderByValue(
-  headers: Header[] | undefined,
-  key: string | undefined
-) {
-  if (!headers || !key) {
-    return
-  }
-
-  return headers.find(([headerKey]) => headerKey === key)?.[1]
 }
 
 function stringEndsWithSpace(str: string) {

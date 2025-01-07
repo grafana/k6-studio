@@ -7,7 +7,7 @@ interface Store {
 
 export const useRequestDetailsTab = create<Store>((set) => ({
   tab: 'headers',
-  setTab: (tab: string) => set({ tab }),
+  setTab: (tab) => set({ tab }),
 }))
 
 export const useResponseDetailsTab = create<Store>((set) => ({

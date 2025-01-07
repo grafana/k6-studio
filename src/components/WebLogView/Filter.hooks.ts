@@ -35,7 +35,6 @@ export function useFilterRequests({
   )
 
   const searchIndex = useMemo(() => {
-    console.log('assetsToFilter', assetsToFilter)
     return new Fuse(assetsToFilter, {
       includeMatches: true,
       shouldSort: false,
@@ -45,8 +44,12 @@ export function useFilterRequests({
         'request.path',
         'request.host',
         'request.method',
-        'response.statusCode',
         'request.cookies',
+        'request.headers',
+        'request.query',
+        'response.cookies',
+        'response.headers',
+        'response.statusCode',
         {
           name: 'response.content',
           getFn: (data) => {
@@ -67,47 +70,20 @@ export function useFilterRequests({
             return parseParams(data) ?? ''
           },
         },
-        {
-          name: 'request.headers.value',
-          getFn: (data) => data.request.headers.map(([, value]) => value),
-        },
-        {
-          name: 'request.headers.key',
-          getFn: (data) => data.request.headers.map(([key]) => key),
-        },
-        {
-          name: 'response.headers.value',
-          getFn: (data) =>
-            data.response?.headers.map(([, value]) => value) ?? '',
-        },
-        {
-          name: 'response.headers.key',
-          getFn: (data) => data.response?.headers.map(([key]) => key) ?? '',
-        },
-        // TODO: might need to do the same as headers to show nice previews as well as higlights in Details..
-        // TODO: might need to rollback refactor of Details state because it achived nothing
-
-        // {
-        // name: 'request.cookies.value',
-        // getFn: (data) => data.request.cookies.map(([, value]) => value),
-        // },
-        // {
-        // name: 'response.cookies.value',
-        // getFn: (data) =>
-        // data.response?.cookies.map(([, value]) => value) ?? '',
-        // },
       ],
     })
   }, [assetsToFilter])
 
-  // TODO: skip single char queries
   const filteredRequests = useMemo(() => {
+    // skip single char queries
     if (debouncedFilter.match(/^\s*$/) || debouncedFilter.length < 2) {
       return assetsToFilter
     }
 
-    // Use '<query>' to search for exact matches
-    return searchIndex.search(`'"${debouncedFilter}"`).map(withMatches)
+    // Use '<query> to search for exact matches
+    const rez = searchIndex.search(`'"${debouncedFilter}"`)
+    console.log('rez', rez)
+    return rez.map(withMatches)
   }, [searchIndex, assetsToFilter, debouncedFilter])
 
   const staticAssetCount = proxyData.length - requestWithoutStaticAssets.length

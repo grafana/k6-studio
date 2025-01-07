@@ -1,6 +1,6 @@
 import { Box, ScrollArea } from '@radix-ui/themes'
 
-import { ProxyData } from '@/types'
+import { ProxyDataWithMatches } from '@/types'
 import { Tabs } from '../Tabs'
 import { Headers } from './Headers'
 import { Content } from './Content'
@@ -9,7 +9,7 @@ import { useEffect } from 'react'
 import { useResponseDetailsTab } from '../Details.hooks'
 
 interface ResponseDetailsProps {
-  data: ProxyData
+  data: ProxyDataWithMatches
 }
 
 export function ResponseDetails({ data }: ResponseDetailsProps) {
@@ -40,7 +40,7 @@ export function ResponseDetails({ data }: ResponseDetailsProps) {
       </Tabs.Content>
       <Tabs.Content value="cookies">
         <ScrollArea style={{ height: '100%' }}>
-          <Cookies cookies={data.response?.cookies} />
+          <Cookies cookies={data.response?.cookies} matches={data.matches} />
         </ScrollArea>
       </Tabs.Content>
     </Tabs.Root>

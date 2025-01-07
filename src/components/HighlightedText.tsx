@@ -6,7 +6,7 @@ interface MatchSegment {
   text: string
 }
 
-function _longestMatchOnly(
+function longestMatchOnly(
   matches: Array<[number, number]>
 ): Array<[number, number]> {
   return matches.sort((a, b) => b[1] - b[0] - (a[1] - a[0])).slice(0, 1)
@@ -53,8 +53,7 @@ export function HighlightedText({ text, matches }: HighlightedTextProps) {
 
     return splitByMatches(
       text,
-      // longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
-      filteredMatches.flatMap((match) => match.indices)
+      longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
     )
   }, [text, matches])
 

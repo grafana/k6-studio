@@ -6,7 +6,7 @@ import { Headers } from './Headers'
 import { Payload } from './Payload'
 import { QueryParams } from './QueryParams'
 import { Box } from '@radix-ui/themes'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRequestDetailsTab } from '../Details.hooks'
 
 interface RequestDetailsProps {
@@ -57,7 +57,7 @@ export function RequestDetails({ data }: RequestDetailsProps) {
       </Tabs.Content>
 
       <Tabs.Content value="queryParams">
-        <QueryParams request={data.request} />
+        <QueryParams request={data.request} matches={data.matches} />
       </Tabs.Content>
     </Tabs.Root>
   )
