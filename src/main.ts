@@ -48,6 +48,7 @@ import log from 'electron-log/main'
 import { sendReport } from './usageReport'
 import { AppSettings } from './types/settings'
 import {
+  defaultSettings,
   getSettings,
   initSettings,
   saveSettings,
@@ -87,7 +88,7 @@ const PROXY_RETRY_LIMIT = 5
 let proxyRetryCount = 0
 let currentClientRoute = '/'
 let wasAppClosedByClient = false
-export let appSettings: AppSettings
+export let appSettings = defaultSettings
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
