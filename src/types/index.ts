@@ -91,7 +91,7 @@ export interface RequestSnippetSchema {
 export interface StudioFile {
   type: 'recording' | 'generator' | 'script' | 'data'
   displayName: string
-  filePath: string
+  fileName: string
 }
 
 export type StudioFileType = StudioFile['type']

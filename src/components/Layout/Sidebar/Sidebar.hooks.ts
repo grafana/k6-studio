@@ -1,19 +1,17 @@
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
-import { fileFromFileName } from '@/utils/file'
 import { withMatches } from '@/utils/fuse'
 import Fuse, { IFuseOptions } from 'fuse.js'
 import { orderBy } from 'lodash-es'
 import { useEffect, useMemo } from 'react'
 
 function orderByFileName(files: Map<string, StudioFile>) {
+  console.log('TEST:', files.keys(), files.values())
   return orderBy([...files.values()], (s) => s.fileName)
 }
 
-function toFileMap(files: string[]) {
-  return new Map(
-    files.map((fileName) => [fileName, fileFromFileName(fileName)])
-  )
+function toFileMap(files: StudioFile[]) {
+  return new Map(files.map((file) => [file.fileName, file]))
 }
 
 function useFolderContent() {
@@ -22,6 +20,8 @@ function useFolderContent() {
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
   const data = useStudioUIStore((s) => orderByFileName(s.data))
 
+  console.log('TEST', recordings)
+
   const addFile = useStudioUIStore((s) => s.addFile)
   const removeFile = useStudioUIStore((s) => s.removeFile)
   const setFolderContent = useStudioUIStore((s) => s.setFolderContent)
@@ -29,6 +29,7 @@ function useFolderContent() {
   useEffect(() => {
     ;(async () => {
       const files = await window.studio.ui.getFiles()
+      console.log('TEST:', files.recordings, toFileMap(files.recordings))
 
       setFolderContent({
         recordings: toFileMap(files.recordings),
@@ -41,15 +42,15 @@ function useFolderContent() {
 
   useEffect(
     () =>
-      window.studio.ui.onAddFile((path) => {
-        addFile(path)
+      window.studio.ui.onAddFile((file) => {
+        addFile(file)
       }),
     [addFile]
   )
 
   useEffect(() => {
-    window.studio.ui.onRemoveFile((path) => {
-      removeFile(path)
+    window.studio.ui.onRemoveFile((file) => {
+      removeFile(file)
     })
   }, [removeFile])
 

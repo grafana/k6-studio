@@ -71,8 +71,8 @@ function EditableFile({
     // There's a slight delay between the add and remove callbacks being triggered,
     // causing the UI to flicker because it thinks the renamed file is actually
     // a new file. To prevent this, we optimistically update the file list.
-    removeFile(file.fileName)
-    addFile(newFileName)
+    removeFile(file)
+    addFile({ ...file, fileName: newFileName })
 
     setDisplayName(newValue)
     setEditMode(false)
@@ -115,7 +115,7 @@ function EditableFile({
             }
           `,
         ]}
-        to={file.viewPath}
+        to={getViewPath(file.type, file.fileName)}
       >
         <HighlightedText text={file.displayName} matches={file.matches} />
       </NavLink>

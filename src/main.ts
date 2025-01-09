@@ -529,25 +529,24 @@ ipcMain.on('ui:open-folder', (_, fileName: string) => {
 ipcMain.handle('ui:get-files', async () => {
   console.info('ui:get-files event received')
   const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile() && f.name.split('.').pop() === 'har')
-    .map((f) => f.name)
+    .filter((f) => f.isFile() && path.extname(f.name) === '.har')
+    .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
 
   const generators = (await readdir(GENERATORS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile() && f.name.split('.').pop() === 'json')
-    .map((f) => f.name)
+    .filter((f) => f.isFile() && path.extname(f.name) === '.json')
+    .map((f) => getStudioFileFromPath(path.join(GENERATORS_PATH, f.name)))
 
   const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile() && f.name.split('.').pop() === 'js')
-    .map((f) => f.name)
+    .filter((f) => f.isFile() && path.extname(f.name) === '.js')
+    .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
 
   const data = (await readdir(DATA_PATH, { withFileTypes: true }))
     .filter(
       (f) =>
         f.isFile() &&
-        (f.name.split('.').pop() === 'csv' ||
-          f.name.split('.').pop() === 'json')
+        (path.extname(f.name) === '.csv' || path.extname(f.name) === '.json')
     )
-    .map((f) => f.name)
+    .map((f) => getStudioFileFromPath(path.join(DATA_PATH, f.name)))
 
   return {
     recordings,
@@ -803,40 +802,67 @@ function configureWatcher(browserWindow: BrowserWindow) {
   })
 
   watcher.on('add', (filePath) => {
-    browserWindow.webContents.send('ui:add-file', path.basename(filePath))
+    const file = getStudioFileFromPath(filePath)
+
+    if (!file) {
+      return
+    }
+
+    browserWindow.webContents.send('ui:add-file', file)
   })
 
   watcher.on('unlink', (filePath) => {
-    browserWindow.webContents.send('ui:remove-file', path.basename(filePath))
+    const file = getStudioFileFromPath(filePath)
+
+    if (!file) {
+      return
+    }
+
+    browserWindow.webContents.send('ui:remove-file', file)
   })
 }
 
 function getStudioFileFromPath(filePath: string): StudioFile | undefined {
-  let type: StudioFile['type']
+  const file = {
+    displayName: path.parse(filePath).name,
+    fileName: path.basename(filePath),
+  }
 
   if (
     filePath.startsWith(RECORDINGS_PATH) &&
-    path.extname(filePath) === 'har'
+    path.extname(filePath) === '.har'
   ) {
-    type = 'recording'
-  } else if (
-    filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === 'json'
-  ) {
-    type = 'generator'
-  } else if (
-    filePath.startsWith(SCRIPTS_PATH) &&
-    path.extname(filePath) === 'js'
-  ) {
-    type = 'script'
-  } else {
-    throw new Error('Invalid file type')
+    return {
+      type: 'recording',
+      ...file,
+    }
   }
 
-  return {
-    type,
-    displayName: fileName,
-    filePath,
+  if (
+    filePath.startsWith(GENERATORS_PATH) &&
+    path.extname(filePath) === '.json'
+  ) {
+    return {
+      type: 'generator',
+      ...file,
+    }
+  }
+
+  if (filePath.startsWith(SCRIPTS_PATH) && path.extname(filePath) === '.js') {
+    return {
+      type: 'script',
+      ...file,
+    }
+  }
+
+  if (
+    filePath.startsWith(DATA_PATH) &&
+    (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv')
+  ) {
+    return {
+      type: 'data',
+      ...file,
+    }
   }
 }
 

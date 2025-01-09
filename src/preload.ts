@@ -1,17 +1,17 @@
 // TODO: https://github.com/grafana/k6-studio/issues/277
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
-import { ProxyData, K6Log, K6Check, ProxyStatus } from './types'
+import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 
 interface GetFilesResponse {
-  recordings: string[]
-  generators: string[]
-  scripts: string[]
-  data: string[]
+  recordings: StudioFile[]
+  generators: StudioFile[]
+  scripts: StudioFile[]
+  data: StudioFile[]
 }
 
 // Create listener and return clean up function to be used in useEffect
@@ -137,10 +137,10 @@ const ui = {
     return ipcRenderer.invoke('ui:delete-file', fileName)
   },
   getFiles: (): Promise<GetFilesResponse> => ipcRenderer.invoke('ui:get-files'),
-  onAddFile: (callback: (fileName: string) => void) => {
+  onAddFile: (callback: (file: StudioFile) => void) => {
     return createListener('ui:add-file', callback)
   },
-  onRemoveFile: (callback: (fileName: string) => void) => {
+  onRemoveFile: (callback: (file: StudioFile) => void) => {
     return createListener('ui:remove-file', callback)
   },
   onToast: (callback: (toast: AddToastPayload) => void) => {
