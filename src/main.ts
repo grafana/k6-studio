@@ -529,24 +529,24 @@ ipcMain.on('ui:open-folder', (_, fileName: string) => {
 ipcMain.handle('ui:get-files', async () => {
   console.info('ui:get-files event received')
   const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile() && path.extname(f.name) === '.har')
+    .filter((f) => f.isFile())
     .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
+    .filter((f) => typeof f !== 'undefined')
 
   const generators = (await readdir(GENERATORS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile() && path.extname(f.name) === '.json')
+    .filter((f) => f.isFile())
     .map((f) => getStudioFileFromPath(path.join(GENERATORS_PATH, f.name)))
+    .filter((f) => typeof f !== 'undefined')
 
   const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile() && path.extname(f.name) === '.js')
+    .filter((f) => f.isFile())
     .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
+    .filter((f) => typeof f !== 'undefined')
 
   const data = (await readdir(DATA_PATH, { withFileTypes: true }))
-    .filter(
-      (f) =>
-        f.isFile() &&
-        (path.extname(f.name) === '.csv' || path.extname(f.name) === '.json')
-    )
+    .filter((f) => f.isFile())
     .map((f) => getStudioFileFromPath(path.join(DATA_PATH, f.name)))
+    .filter((f) => typeof f !== 'undefined')
 
   return {
     recordings,
