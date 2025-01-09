@@ -6,6 +6,7 @@ import {
   loadGeneratorFile,
   loadHarFile,
   writeGeneratorToFile,
+  isGeneratorDirty,
 } from './Generator.utils'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
@@ -30,10 +31,10 @@ export function useLoadHarFile(fileName?: string) {
   })
 }
 
-export function useLoadGeneratorFile(fileName: string) {
+export function useLoadGeneratorFile(fileName: string, migrate?: boolean) {
   return useQuery({
-    queryKey: ['generator', fileName],
-    queryFn: () => loadGeneratorFile(fileName),
+    queryKey: ['generator', fileName, migrate],
+    queryFn: () => loadGeneratorFile(fileName, migrate),
   })
 }
 
@@ -84,9 +85,5 @@ export function useIsGeneratorDirty(fileName: string) {
   const { scriptName: _, ...generatorStateData } = generatorState
   const { scriptName: __, ...generatorFileData } = data || {}
 
-  // Convert to JSON instead of doing deep equal to remove
-  // `property: undefined` values
-  return (
-    JSON.stringify(generatorStateData) !== JSON.stringify(generatorFileData)
-  )
+  return isGeneratorDirty(generatorStateData, generatorFileData)
 }

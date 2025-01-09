@@ -47,9 +47,30 @@ export const writeGeneratorToFile = (
   )
 }
 
-export const loadGeneratorFile = async (fileName: string) => {
+export const isGeneratorDirty = (
+  generatorStateData: Partial<GeneratorFileData>,
+  generatorFileData: Partial<GeneratorFileData>
+) => {
+  // Convert to JSON instead of doing deep equal to remove
+  // `property: undefined` values
+  return (
+    JSON.stringify(generatorStateData) !== JSON.stringify(generatorFileData)
+  )
+}
+
+export const loadGeneratorFile = async (
+  fileName: string,
+  migrate?: boolean
+) => {
   const generatorFile = await window.studio.generator.loadGenerator(fileName)
-  return GeneratorFileDataSchema.parse(generatorFile.content)
+  const generatorData = GeneratorFileDataSchema.parse(generatorFile.content)
+
+  // write the generator file back to disk with the latest version of the schema
+  if (migrate && isGeneratorDirty(generatorData, generatorFile.content)) {
+    await writeGeneratorToFile(fileName, generatorData)
+  }
+
+  return generatorData
 }
 
 export const loadHarFile = async (fileName: string) => {
