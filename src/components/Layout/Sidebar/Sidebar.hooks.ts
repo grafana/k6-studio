@@ -6,7 +6,6 @@ import { orderBy } from 'lodash-es'
 import { useEffect, useMemo } from 'react'
 
 function orderByFileName(files: Map<string, StudioFile>) {
-  console.log('TEST:', files.keys(), files.values())
   return orderBy([...files.values()], (s) => s.fileName)
 }
 
@@ -20,8 +19,6 @@ function useFolderContent() {
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
   const data = useStudioUIStore((s) => orderByFileName(s.data))
 
-  console.log('TEST', recordings)
-
   const addFile = useStudioUIStore((s) => s.addFile)
   const removeFile = useStudioUIStore((s) => s.removeFile)
   const setFolderContent = useStudioUIStore((s) => s.setFolderContent)
@@ -29,7 +26,6 @@ function useFolderContent() {
   useEffect(() => {
     ;(async () => {
       const files = await window.studio.ui.getFiles()
-      console.log('TEST:', files.recordings, toFileMap(files.recordings))
 
       setFolderContent({
         recordings: toFileMap(files.recordings),
