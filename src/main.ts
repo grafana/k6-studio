@@ -48,6 +48,7 @@ import log from 'electron-log/main'
 import { sendReport } from './usageReport'
 import { AppSettings } from './types/settings'
 import {
+  defaultSettings,
   getSettings,
   initSettings,
   saveSettings,
@@ -66,6 +67,14 @@ if (process.env.NODE_ENV !== 'development') {
   Sentry.init({
     dsn: SENTRY_DSN,
     integrations: [Sentry.electronMinidumpIntegration()],
+
+    // conditionally send the event based on the user's settings
+    beforeSend: (event) => {
+      if (appSettings.telemetry.errorReport) {
+        return event
+      }
+      return null
+    },
   })
 }
 
@@ -79,7 +88,7 @@ const PROXY_RETRY_LIMIT = 5
 let proxyRetryCount = 0
 let currentClientRoute = '/'
 let wasAppClosedByClient = false
-export let appSettings: AppSettings
+export let appSettings = defaultSettings
 
 let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
@@ -208,7 +217,7 @@ app.whenReady().then(
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
 
-    await sendReport(appSettings.usageReport)
+    await sendReport(appSettings.telemetry.usageReport)
     await createSplashWindow()
     await setupProjectStructure()
     await createWindow()
@@ -365,7 +374,7 @@ ipcMain.handle(
       browserWindow,
       resolvedScriptPath,
       appSettings.proxy.port,
-      appSettings.usageReport.enabled
+      appSettings.telemetry.usageReport
     )
   }
 )
@@ -648,8 +657,8 @@ async function applySettings(
   if (modifiedSettings.recorder) {
     appSettings.recorder = modifiedSettings.recorder
   }
-  if (modifiedSettings.usageReport) {
-    appSettings.usageReport = modifiedSettings.usageReport
+  if (modifiedSettings.telemetry) {
+    appSettings.telemetry = modifiedSettings.telemetry
   }
   if (modifiedSettings.appearance) {
     appSettings.appearance = modifiedSettings.appearance
