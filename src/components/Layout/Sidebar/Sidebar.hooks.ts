@@ -20,6 +20,7 @@ function useFolderContent() {
   const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
   const generators = useStudioUIStore((s) => orderByFileName(s.generators))
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
+  const data = useStudioUIStore((s) => orderByFileName(s.data))
 
   const addFile = useStudioUIStore((s) => s.addFile)
   const removeFile = useStudioUIStore((s) => s.removeFile)
@@ -28,10 +29,12 @@ function useFolderContent() {
   useEffect(() => {
     ;(async () => {
       const files = await window.studio.ui.getFiles()
+
       setFolderContent({
         recordings: toFileMap(files.recordings),
         generators: toFileMap(files.generators),
         scripts: toFileMap(files.scripts),
+        data: toFileMap(files.data),
       })
     })()
   }, [setFolderContent])
@@ -54,6 +57,7 @@ function useFolderContent() {
     recordings,
     generators,
     scripts,
+    data,
   }
 }
 
@@ -77,6 +81,7 @@ export function useFiles(searchTerm: string) {
       recordings: new Fuse(files.recordings, options),
       generators: new Fuse(files.generators, options),
       scripts: new Fuse(files.scripts, options),
+      data: new Fuse(files.data, options),
     }
   }, [files])
 
@@ -89,6 +94,7 @@ export function useFiles(searchTerm: string) {
       recordings: searchIndex.recordings.search(searchTerm).map(withMatches),
       generators: searchIndex.generators.search(searchTerm).map(withMatches),
       scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
+      data: searchIndex.data.search(searchTerm).map(withMatches),
     }
   }, [files, searchIndex, searchTerm])
 }

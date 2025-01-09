@@ -11,6 +11,7 @@ interface GetFilesResponse {
   recordings: string[]
   generators: string[]
   scripts: string[]
+  data: string[]
 }
 
 // Create listener and return clean up function to be used in useEffect
@@ -119,6 +120,12 @@ const har = {
   },
 } as const
 
+const data = {
+  importFile: (): Promise<string | undefined> => {
+    return ipcRenderer.invoke('data:import')
+  },
+} as const
+
 const ui = {
   toggleTheme: () => {
     ipcRenderer.send('ui:toggle-theme')
@@ -199,6 +206,7 @@ const studio = {
   proxy,
   browser,
   script,
+  data,
   har,
   ui,
   generator,

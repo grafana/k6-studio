@@ -11,11 +11,12 @@ import {
   copyFile,
   writeFile,
   unlink,
+  readdir,
   FileHandle,
   rename,
+  access,
 } from 'fs/promises'
 import { updateElectronApp } from 'update-electron-app'
-import { readdirSync, existsSync } from 'fs'
 import path from 'path'
 import eventEmitter from 'events'
 import { Process } from '@puppeteer/browsers'
@@ -26,6 +27,7 @@ import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
 import {
+  DATA_PATH,
   GENERATORS_PATH,
   RECORDINGS_PATH,
   SCRIPTS_PATH,
@@ -55,7 +57,7 @@ import {
   selectBrowserExecutable,
   selectUpstreamCertificate,
 } from './settings'
-import { ProxyStatus } from './types'
+import { ProxyStatus, StudioFile } from './types'
 import { configureApplicationMenu } from './menu'
 import * as Sentry from '@sentry/electron/main'
 
@@ -454,7 +456,7 @@ ipcMain.handle('har:import', async (event) => {
   const browserWindow = browserWindowFromEvent(event)
 
   const dialogResult = await dialog.showOpenDialog(browserWindow, {
-    message: 'Open HAR file',
+    message: 'Import HAR file',
     properties: ['openFile'],
     defaultPath: RECORDINGS_PATH,
     filters: [{ name: 'HAR', extensions: ['har'] }],
@@ -524,24 +526,34 @@ ipcMain.on('ui:open-folder', (_, fileName: string) => {
   shell.showItemInFolder(getFilePathFromName(fileName))
 })
 
-ipcMain.handle('ui:get-files', () => {
+ipcMain.handle('ui:get-files', async () => {
   console.info('ui:get-files event received')
-  const recordings = readdirSync(RECORDINGS_PATH, { withFileTypes: true })
+  const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
     .filter((f) => f.isFile() && f.name.split('.').pop() === 'har')
     .map((f) => f.name)
 
-  const generators = readdirSync(GENERATORS_PATH, { withFileTypes: true })
+  const generators = (await readdir(GENERATORS_PATH, { withFileTypes: true }))
     .filter((f) => f.isFile() && f.name.split('.').pop() === 'json')
     .map((f) => f.name)
 
-  const scripts = readdirSync(SCRIPTS_PATH, { withFileTypes: true })
+  const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
     .filter((f) => f.isFile() && f.name.split('.').pop() === 'js')
+    .map((f) => f.name)
+
+  const data = (await readdir(DATA_PATH, { withFileTypes: true }))
+    .filter(
+      (f) =>
+        f.isFile() &&
+        (f.name.split('.').pop() === 'csv' ||
+          f.name.split('.').pop() === 'json')
+    )
     .map((f) => f.name)
 
   return {
     recordings,
     generators,
     scripts,
+    data,
   }
 })
 
@@ -556,8 +568,16 @@ ipcMain.handle(
       const oldPath = getFilePathFromName(oldFileName)
       const newPath = getFilePathFromName(newFileName)
 
-      if (existsSync(newPath)) {
-        throw new Error('File already exists')
+      try {
+        await access(newPath)
+        throw new Error(`File with name ${newFileName} already exists`)
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error as NodeJS.ErrnoException).code !== 'ENOENT'
+        ) {
+          throw error
+        }
       }
 
       await rename(oldPath, newPath)
@@ -574,6 +594,31 @@ ipcMain.handle(
     }
   }
 )
+
+ipcMain.handle('data:import', async (event) => {
+  console.info('data:import event received')
+
+  const browserWindow = browserWindowFromEvent(event)
+
+  const dialogResult = await dialog.showOpenDialog(browserWindow, {
+    message: 'Import data file',
+    properties: ['openFile'],
+    filters: [
+      { name: 'CSV', extensions: ['csv'] },
+      { name: 'JSON', extensions: ['json'] },
+    ],
+  })
+
+  const filePath = dialogResult.filePaths[0]
+
+  if (dialogResult.canceled || !filePath) {
+    return
+  }
+
+  await copyFile(filePath, path.join(DATA_PATH, path.basename(filePath)))
+
+  return path.basename(filePath)
+})
 
 ipcMain.on('splashscreen:close', (event) => {
   console.info('splashscreen:close event received')
@@ -753,7 +798,7 @@ async function trackWindowState(browserWindow: BrowserWindow) {
 }
 
 function configureWatcher(browserWindow: BrowserWindow) {
-  watcher = watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
+  watcher = watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH, DATA_PATH], {
     ignoreInitial: true,
   })
 
@@ -764,6 +809,35 @@ function configureWatcher(browserWindow: BrowserWindow) {
   watcher.on('unlink', (filePath) => {
     browserWindow.webContents.send('ui:remove-file', path.basename(filePath))
   })
+}
+
+function getStudioFileFromPath(filePath: string): StudioFile | undefined {
+  let type: StudioFile['type']
+
+  if (
+    filePath.startsWith(RECORDINGS_PATH) &&
+    path.extname(filePath) === 'har'
+  ) {
+    type = 'recording'
+  } else if (
+    filePath.startsWith(GENERATORS_PATH) &&
+    path.extname(filePath) === 'json'
+  ) {
+    type = 'generator'
+  } else if (
+    filePath.startsWith(SCRIPTS_PATH) &&
+    path.extname(filePath) === 'js'
+  ) {
+    type = 'script'
+  } else {
+    throw new Error('Invalid file type')
+  }
+
+  return {
+    type,
+    displayName: fileName,
+    filePath,
+  }
 }
 
 function getFilePathFromName(name: string) {
