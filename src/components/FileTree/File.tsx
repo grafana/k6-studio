@@ -30,7 +30,7 @@ export function File({ file, isSelected }: FileProps) {
 
   return (
     <FileContextMenu
-      path={file.fileName}
+      file={file}
       isSelected={isSelected}
       handleRename={() => setEditMode(true)}
     >
@@ -66,7 +66,7 @@ function EditableFile({
   const handleSave = async (newValue: string) => {
     const newFileName = `${newValue}.${fileExtension}`
 
-    await window.studio.ui.renameFile(file.fileName, newFileName)
+    await window.studio.ui.renameFile(file.fileName, newFileName, file.type)
 
     // There's a slight delay between the add and remove callbacks being triggered,
     // causing the UI to flicker because it thinks the renamed file is actually

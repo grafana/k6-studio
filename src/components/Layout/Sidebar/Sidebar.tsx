@@ -17,7 +17,7 @@ interface SidebarProps {
 
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const { recordings, generators, scripts } = useFiles(searchTerm)
+  const { recordings, generators, scripts, data } = useFiles(searchTerm)
 
   const createNewGenerator = useCreateGenerator()
 
@@ -99,6 +99,11 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               label="Scripts"
               files={scripts}
               noFilesMessage="No scripts found"
+            />
+            <FileTree
+              label="Data"
+              files={data}
+              noFilesMessage="No data found"
             />
           </Flex>
         </ScrollArea>

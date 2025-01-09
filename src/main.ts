@@ -60,6 +60,7 @@ import {
 import { ProxyStatus, StudioFile } from './types'
 import { configureApplicationMenu } from './menu'
 import * as Sentry from '@sentry/electron/main'
+import { exhaustive } from './utils/typescript'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -335,8 +336,7 @@ ipcMain.handle('script:select', async (event) => {
 })
 
 ipcMain.handle('script:open', async (_, fileName: string) => {
-  console.log(getFilePathFromName(fileName))
-  const fileHandle = await open(getFilePathFromName(fileName), 'r')
+  const fileHandle = await open(path.join(SCRIPTS_PATH, fileName), 'r')
   try {
     const script = await fileHandle?.readFile({ encoding: 'utf-8' })
 
@@ -369,7 +369,7 @@ ipcMain.handle(
     } else {
       resolvedScriptPath = absolute
         ? scriptPath
-        : getFilePathFromName(scriptPath)
+        : path.join(SCRIPTS_PATH, scriptPath)
     }
 
     currentk6Process = await runScript(
@@ -515,15 +515,18 @@ ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
 
-ipcMain.handle('ui:delete-file', async (_, fileName: string) => {
+ipcMain.handle('ui:delete-file', async (_, file: StudioFile) => {
   console.info('ui:delete-file event received')
 
-  return unlink(getFilePathFromName(fileName))
+  const filePath = getFilePath(file)
+  return unlink(filePath)
 })
 
-ipcMain.on('ui:open-folder', (_, fileName: string) => {
+ipcMain.on('ui:open-folder', (_, file: StudioFile) => {
   console.info('ui:open-folder event received')
-  shell.showItemInFolder(getFilePathFromName(fileName))
+
+  const filePath = getFilePath(file)
+  return shell.showItemInFolder(filePath)
 })
 
 ipcMain.handle('ui:get-files', async () => {
@@ -558,14 +561,25 @@ ipcMain.handle('ui:get-files', async () => {
 
 ipcMain.handle(
   'ui:rename-file',
-  async (e, oldFileName: string, newFileName: string) => {
+  async (
+    e,
+    oldFileName: string,
+    newFileName: string,
+    type: StudioFile['type']
+  ) => {
     const browserWindow = BrowserWindow.fromWebContents(e.sender)
 
     try {
       invariant(!INVALID_FILENAME_CHARS.test(newFileName), 'Invalid file name')
 
-      const oldPath = getFilePathFromName(oldFileName)
-      const newPath = getFilePathFromName(newFileName)
+      const oldPath = getFilePath({
+        type,
+        fileName: oldFileName,
+      })
+      const newPath = getFilePath({
+        type,
+        fileName: newFileName,
+      })
 
       try {
         await access(newPath)
@@ -866,21 +880,20 @@ function getStudioFileFromPath(filePath: string): StudioFile | undefined {
   }
 }
 
-function getFilePathFromName(name: string) {
-  invariant(process, 'Only use this function in the main process')
-
-  switch (name.split('.').pop()) {
-    case 'har':
-      return path.join(RECORDINGS_PATH, name)
-
-    case 'json':
-      return path.join(GENERATORS_PATH, name)
-
-    case 'js':
-      return path.join(SCRIPTS_PATH, name)
-
+function getFilePath(
+  file: Partial<StudioFile> & Pick<StudioFile, 'type' | 'fileName'>
+) {
+  switch (file.type) {
+    case 'recording':
+      return path.join(RECORDINGS_PATH, file.fileName)
+    case 'generator':
+      return path.join(GENERATORS_PATH, file.fileName)
+    case 'script':
+      return path.join(SCRIPTS_PATH, file.fileName)
+    case 'data':
+      return path.join(DATA_PATH, file.fileName)
     default:
-      throw new Error('Invalid file type')
+      return exhaustive(file.type)
   }
 }
 

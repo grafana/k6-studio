@@ -56,7 +56,11 @@ export function Validator() {
       return
     }
 
-    await window.studio.ui.deleteFile(scriptPath)
+    await window.studio.ui.deleteFile({
+      type: 'script',
+      fileName: scriptPath,
+      displayName: getFileNameWithoutExtension(scriptPath),
+    })
     navigate(getRoutePath('home'))
   }
 

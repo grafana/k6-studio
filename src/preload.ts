@@ -130,11 +130,11 @@ const ui = {
   toggleTheme: () => {
     ipcRenderer.send('ui:toggle-theme')
   },
-  openContainingFolder: (fileName: string) => {
-    ipcRenderer.send('ui:open-folder', fileName)
+  openContainingFolder: (file: StudioFile) => {
+    ipcRenderer.send('ui:open-folder', file)
   },
-  deleteFile: (fileName: string): Promise<void> => {
-    return ipcRenderer.invoke('ui:delete-file', fileName)
+  deleteFile: (file: StudioFile): Promise<void> => {
+    return ipcRenderer.invoke('ui:delete-file', file)
   },
   getFiles: (): Promise<GetFilesResponse> => ipcRenderer.invoke('ui:get-files'),
   onAddFile: (callback: (file: StudioFile) => void) => {
@@ -146,8 +146,12 @@ const ui = {
   onToast: (callback: (toast: AddToastPayload) => void) => {
     return createListener('ui:toast', callback)
   },
-  renameFile: (oldFileName: string, newFileName: string): Promise<string> => {
-    return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName)
+  renameFile: (
+    oldFileName: string,
+    newFileName: string,
+    type: StudioFile['type']
+  ): Promise<string> => {
+    return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName, type)
   },
 } as const
 
