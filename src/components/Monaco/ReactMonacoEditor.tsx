@@ -89,7 +89,7 @@ export function ReactMonacoEditor({
           wordWrap: toolbarState.wordWrap,
         }}
         onMount={handleEditorMount}
-        theme={theme === 'dark' ? 'vs-dark' : 'k6-studio-light'}
+        theme={theme === 'dark' ? 'k6-studio-dark' : 'k6-studio-light'}
       />
     </Flex>
   )

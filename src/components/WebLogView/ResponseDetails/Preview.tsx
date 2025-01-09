@@ -3,6 +3,7 @@ import ReactJson from '@microlink/react-json-view'
 import { Font } from './Font'
 import { useTheme } from '@/hooks/useTheme'
 import { k6StudioLightBackground } from '@/components/Monaco/themes/k6StudioLight'
+import { k6StudioDarkBackground } from '@/components/Monaco/themes/k6StudioDark'
 
 interface PreviewProps {
   content: string
@@ -78,7 +79,7 @@ const reactJsonStyles = {
 
 const reactJsonDarkStyles = {
   ...reactJsonStyles,
-  background: '#1e1e1e',
+  background: k6StudioDarkBackground,
 }
 
 const reactJsonLightStyles = {
