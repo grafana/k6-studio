@@ -13,9 +13,10 @@ interface RowProps {
   data: ProxyDataWithMatches
   isSelected?: boolean
   onSelectRequest: (data: ProxyDataWithMatches) => void
+  filter?: string
 }
 
-export function Row({ data, onSelectRequest, isSelected }: RowProps) {
+export function Row({ data, onSelectRequest, isSelected, filter }: RowProps) {
   return (
     <>
       <Table.Row
@@ -72,6 +73,7 @@ export function Row({ data, onSelectRequest, isSelected }: RowProps) {
         data={data}
         key={data.id}
         onSelectRequest={onSelectRequest}
+        filter={filter}
       />
     </>
   )

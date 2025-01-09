@@ -75,6 +75,7 @@ export function RequestList({ requests }: RequestListProps) {
                     selectedRequestId={selectedRequest?.id}
                     onSelectRequest={setSelectedRequest}
                     groups={groups}
+                    filter={filter}
                   />
                 </>
               )}

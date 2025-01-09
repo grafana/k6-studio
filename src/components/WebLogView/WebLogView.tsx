@@ -13,6 +13,7 @@ interface WebLogViewProps {
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches | null) => void
   onUpdateGroup?: (group: GroupType) => void
+  filter?: string
 }
 
 // Memo improves performance when filtering
@@ -22,6 +23,7 @@ export const WebLogView = memo(function WebLogView({
   selectedRequestId,
   onSelectRequest,
   onUpdateGroup,
+  filter,
 }: WebLogViewProps) {
   const selectedRequest = useMemo(
     () => requests.find((data) => data.id === selectedRequestId),
@@ -59,6 +61,7 @@ export const WebLogView = memo(function WebLogView({
               requests={item.requests}
               selectedRequestId={selectedRequestId}
               onSelectRequest={onSelectRequest}
+              filter={filter}
             />
           </Group>
         ))}
@@ -71,6 +74,7 @@ export const WebLogView = memo(function WebLogView({
       requests={requests}
       selectedRequestId={selectedRequestId}
       onSelectRequest={onSelectRequest}
+      filter={filter}
     />
   )
 })
@@ -79,12 +83,14 @@ interface RequestListProps {
   requests: ProxyDataWithMatches[]
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches) => void
+  filter?: string
 }
 
 function RequestList({
   requests,
   selectedRequestId,
   onSelectRequest,
+  filter,
 }: RequestListProps) {
   return (
     <Table.Root size="1" layout="fixed">
@@ -104,6 +110,7 @@ function RequestList({
             data={data}
             isSelected={selectedRequestId === data.id}
             onSelectRequest={onSelectRequest}
+            filter={filter}
           />
         ))}
       </Table.Body>

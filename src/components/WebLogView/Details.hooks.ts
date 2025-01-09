@@ -1,16 +1,44 @@
 import { create } from 'zustand'
 
-interface Store {
+interface DetailsTabStore {
   tab: string
   setTab: (tab: string) => void
 }
 
-export const useRequestDetailsTab = create<Store>((set) => ({
+// TODO: remove duplication OR merge into single stores
+export const useRequestDetailsTab = create<DetailsTabStore>((set) => ({
   tab: 'headers',
   setTab: (tab) => set({ tab }),
 }))
 
-export const useResponseDetailsTab = create<Store>((set) => ({
+export const useResponseDetailsTab = create<DetailsTabStore>((set) => ({
   tab: 'headers',
-  setTab: (tab: string) => set({ tab }),
+  setTab: (tab) => set({ tab }),
 }))
+
+// TODO: rename
+interface Store {
+  searchString?: string
+  index: number
+  goToMatch: ({
+    searchString,
+    index,
+  }: {
+    searchString?: string
+    index?: number
+  }) => void
+  reset: () => void
+}
+
+function createStore() {
+  return create<Store>((set) => ({
+    searchString: undefined,
+    index: 0,
+    goToMatch: ({ searchString, index }) =>
+      set({ searchString, index: index ?? 0 }),
+    reset: () => set({ searchString: undefined, index: 0 }),
+  }))
+}
+
+export const useGoToContentMatch = createStore()
+export const useGoToPayloadMatch = createStore()

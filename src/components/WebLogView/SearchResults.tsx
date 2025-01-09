@@ -4,7 +4,12 @@ import { Table } from '@/components/Table'
 import { SearchMatch } from '@/types/fuse'
 import { useMemo, useState } from 'react'
 import { HighlightMark } from '../HighlightedText'
-import { useRequestDetailsTab, useResponseDetailsTab } from './Details.hooks'
+import {
+  useGoToContentMatch,
+  useGoToPayloadMatch,
+  useRequestDetailsTab,
+  useResponseDetailsTab,
+} from './Details.hooks'
 
 const PREVIEWABLE_MATCH_KEYS = [
   'request.content',
@@ -31,14 +36,22 @@ interface Result {
 export function SearchResults({
   data,
   onSelectRequest,
+  filter,
 }: {
   data: ProxyDataWithMatches
   onSelectRequest: (data: ProxyDataWithMatches) => void
+  filter?: string
 }) {
   const { setTab: setRequestTab } = useRequestDetailsTab()
   const { setTab: setResponseTab } = useResponseDetailsTab()
-  const resultsInPreview = 10
+
+  const { goToMatch: goToContentMatch } = useGoToContentMatch()
+  const { goToMatch: goToPayloadMatch } = useGoToPayloadMatch()
+
   const [showAll, setShowAll] = useState(false)
+
+  const resultsInPreview = 10
+
   const toggleShowAll = () => setShowAll((prev) => !prev)
 
   const { matches } = data
@@ -54,12 +67,17 @@ export function SearchResults({
     )
 
     return previewableMatches.flatMap((match) => {
-      const segments = match.indices.map((index) =>
-        getSegments(match.value ?? '', index)
+      const segments = match.indices.map((indices, index) =>
+        // getSegments(match.value ?? '', index)
+        ({
+          segment: getSegments(match.value ?? '', indices),
+          index,
+        })
       )
-      return segments.map((segment) => ({
+      return segments.map(({ segment, index }) => ({
         segment,
         match,
+        index,
       }))
     })
   }, [matches])
@@ -69,13 +87,17 @@ export function SearchResults({
     [results, showAll]
   )
 
-  function handleResultClick(result: Result, data: ProxyDataWithMatches) {
+  function handleResultClick(
+    result: Result,
+    data: ProxyDataWithMatches,
+    searchIndex: number
+  ) {
     onSelectRequest(data)
-    console.log('key', result.match.key)
 
     // Request match
     if (result.match.key?.includes('request.content')) {
-      return setRequestTab('payload')
+      setRequestTab('payload')
+      return goToPayloadMatch({ searchString: filter, index: searchIndex })
     }
 
     if (result.match.key?.includes('request.headers')) {
@@ -92,7 +114,8 @@ export function SearchResults({
 
     // Response match
     if (result.match.key?.includes('response.content')) {
-      return setResponseTab('content')
+      setResponseTab('content')
+      return goToContentMatch({ searchString: filter, index: searchIndex })
     }
 
     if (result.match.key?.includes('response.headers')) {
@@ -118,7 +141,7 @@ export function SearchResults({
             key={excerptIndex}
             css={{ fontSize: 'var(--font-size-1)' }}
             onClick={() => {
-              handleResultClick(result, data)
+              handleResultClick(result, data, result.index)
             }}
           >
             <Strong css={{ flexShrink: 0 }}>

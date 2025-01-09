@@ -91,6 +91,7 @@ export function RequestsSection({
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
             onUpdateGroup={onUpdateGroup}
+            filter={filter}
           />
         </div>
       </ScrollArea>
