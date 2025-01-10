@@ -172,6 +172,10 @@ const createWindow = async () => {
     },
   })
 
+  configureApplicationMenu()
+  configureWatcher(mainWindow)
+  wasAppClosedByClient = false
+
   // Start proxy
   currentProxyProcess = await launchProxyAndAttachEmitter(mainWindow)
 
@@ -189,11 +193,6 @@ const createWindow = async () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  mainWindow.once('ready-to-show', () => {
-    configureApplicationMenu()
-    configureWatcher(mainWindow)
-    wasAppClosedByClient = false
-  })
   proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
     proxyStatus = statusName
     mainWindow.webContents.send('proxy:status:change', statusName)
