@@ -40,7 +40,7 @@ export function Generator() {
     data: generatorFileData,
     isLoading: isLoadingGenerator,
     error: generatorError,
-  } = useLoadGeneratorFile(fileName, true)
+  } = useLoadGeneratorFile(fileName)
 
   const {
     data: recording,
