@@ -21,7 +21,13 @@ interface RequestListProps {
 
 export function RequestList({ requests }: RequestListProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-  const { filter, setFilter, filteredRequests } = useFilterRequests({
+  const {
+    filter,
+    setFilter,
+    filteredRequests,
+    filterAllData,
+    setFilterAllData,
+  } = useFilterRequests({
     proxyData: requests,
   })
 
@@ -69,6 +75,8 @@ export function RequestList({ requests }: RequestListProps) {
                       borderTop: '1px solid var(--gray-a5)',
                     }}
                     size="2"
+                    filterAllData={filterAllData}
+                    setFilterAllData={setFilterAllData}
                   />
                   <WebLogView
                     requests={filteredRequests}
