@@ -55,6 +55,10 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
+window.addEventListener('unhandledrejection', (event) => {
+  Sentry.captureException(event.reason)
+})
+
 // Proxy
 
 window.studio.proxy.onProxyData((_data: ProxyData) => {})
