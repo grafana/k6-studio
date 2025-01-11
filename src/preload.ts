@@ -6,6 +6,7 @@ import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
+import * as Sentry from './sentry'
 
 interface GetFilesResponse {
   recordings: string[]
@@ -208,5 +209,7 @@ const studio = {
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)
+
+Sentry.configureRendererProcess(studio.settings.getSettings)
 
 export type Studio = typeof studio
