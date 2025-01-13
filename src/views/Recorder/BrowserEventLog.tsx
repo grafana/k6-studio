@@ -1,7 +1,7 @@
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
-import { FaceIcon } from '@radix-ui/react-icons'
+import { FaceIcon, GlobeIcon } from '@radix-ui/react-icons'
 import { Flex, Table } from '@radix-ui/themes'
 
 interface EventIconProps {
@@ -13,8 +13,11 @@ function EventIcon({ event }: EventIconProps) {
     case 'dummy':
       return <FaceIcon />
 
+    case 'page-navigation':
+      return <GlobeIcon />
+
     default:
-      return exhaustive(event.type)
+      return exhaustive(event)
   }
 }
 
@@ -31,8 +34,15 @@ function EventDescription({ event }: EventDescriptionProps) {
         </span>
       )
 
+    case 'page-navigation':
+      return (
+        <span>
+          Navigated to <strong>{event.url}.</strong>
+        </span>
+      )
+
     default:
-      return exhaustive(event.type)
+      return exhaustive(event)
   }
 }
 

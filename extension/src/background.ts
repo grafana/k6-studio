@@ -1,5 +1,6 @@
+import { BrowserEvent } from '@/schemas/recording'
 import { MessageEnvelope, MessagePayload } from '@/services/browser/schemas'
-import { browser } from 'webextension-polyfill-ts'
+import { WebNavigation, webNavigation } from 'webextension-polyfill'
 
 let socket: WebSocket | null = null
 let buffer: MessageEnvelope[] = []
@@ -15,6 +16,13 @@ function send(message: MessagePayload) {
   } else {
     buffer.push(envelope)
   }
+}
+
+function captureEvents(events: BrowserEvent[] | BrowserEvent) {
+  send({
+    type: 'events-captured',
+    events: Array.isArray(events) ? events : [events],
+  })
 }
 
 function flush(socket: WebSocket) {
@@ -58,23 +66,29 @@ function connect() {
   }
 }
 
-setInterval(() => {
-  send({
-    type: 'events-captured',
-    events: [
-      {
-        eventId: crypto.randomUUID(),
-        timestamp: Date.now(),
-        type: 'dummy',
-        selector: 'button',
-        message: 'Clicked button',
-      },
-    ],
+function isManualNavigation(transition: WebNavigation.TransitionType) {
+  return (
+    transition === 'typed' ||
+    transition === 'generated' ||
+    transition === 'start_page' ||
+    transition === 'auto_bookmark' ||
+    transition === 'keyword' ||
+    transition === 'keyword_generated'
+  )
+}
+
+webNavigation.onCommitted.addListener((details) => {
+  if (!isManualNavigation(details.transitionType)) {
+    return
+  }
+
+  captureEvents({
+    type: 'page-navigation',
+    eventId: crypto.randomUUID(),
+    timestamp: details.timeStamp,
+    tab: details.tabId.toString(),
+    url: details.url ?? '',
   })
-}, 1000)
+})
 
 connect()
-
-browser.runtime.onInstalled.addListener(() => {
-  console.log('Extension installed...')
-})

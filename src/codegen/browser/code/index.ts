@@ -15,10 +15,10 @@ import {
   literal,
 } from './helpers'
 
-function emitBrowserEvent(event: ir.BrowserEvent) {
+function emitBrowserEvent(_event: ir.BrowserEvent) {
   return new ExpressionBuilder(identifier('console'))
     .member('log')
-    .call([literal({ value: event.message })])
+    .call([literal({ value: 'dummy output' })])
     .asStatement()
 }
 
