@@ -1,7 +1,7 @@
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
-import { FaceIcon, GlobeIcon } from '@radix-ui/react-icons'
+import { GlobeIcon, UpdateIcon } from '@radix-ui/react-icons'
 import { Flex, Table } from '@radix-ui/themes'
 
 interface EventIconProps {
@@ -10,11 +10,11 @@ interface EventIconProps {
 
 function EventIcon({ event }: EventIconProps) {
   switch (event.type) {
-    case 'dummy':
-      return <FaceIcon />
-
     case 'page-navigation':
       return <GlobeIcon />
+
+    case 'page-reload':
+      return <UpdateIcon />
 
     default:
       return exhaustive(event)
@@ -27,19 +27,15 @@ interface EventDescriptionProps {
 
 function EventDescription({ event }: EventDescriptionProps) {
   switch (event.type) {
-    case 'dummy':
-      return (
-        <span>
-          This is a <strong>dummy</strong> event fired at an interval.
-        </span>
-      )
-
     case 'page-navigation':
       return (
         <span>
           Navigated to <strong>{event.url}.</strong>
         </span>
       )
+
+    case 'page-reload':
+      return <span>Reloaded page.</span>
 
     default:
       return exhaustive(event)

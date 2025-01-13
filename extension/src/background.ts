@@ -66,19 +66,46 @@ function connect() {
   }
 }
 
-function isManualNavigation(transition: WebNavigation.TransitionType) {
+function isReload(transition: WebNavigation.TransitionType) {
+  return transition === 'reload'
+}
+
+function isManualNavigation({
+  transitionType,
+  transitionQualifiers,
+}: WebNavigation.OnCommittedDetailsType) {
+  if (
+    transitionType === 'typed' ||
+    transitionType === 'generated' ||
+    transitionType === 'start_page' ||
+    transitionType === 'auto_bookmark' ||
+    transitionType === 'keyword' ||
+    transitionType === 'keyword_generated'
+  ) {
+    return true
+  }
+
+  // If a user navigates back or forward to a page that was navigated to by a link
+  // we treat that as a manual navigation.
   return (
-    transition === 'typed' ||
-    transition === 'generated' ||
-    transition === 'start_page' ||
-    transition === 'auto_bookmark' ||
-    transition === 'keyword' ||
-    transition === 'keyword_generated'
+    transitionQualifiers.includes('forward_back') && transitionType === 'link'
   )
 }
 
 webNavigation.onCommitted.addListener((details) => {
-  if (!isManualNavigation(details.transitionType)) {
+  if (isReload(details.transitionType)) {
+    captureEvents({
+      type: 'page-reload',
+      eventId: crypto.randomUUID(),
+      timestamp: details.timeStamp,
+      tab: details.tabId.toString(),
+      url: details.url ?? '',
+    })
+
+    return
+  }
+
+  if (!isManualNavigation(details)) {
     return
   }
 

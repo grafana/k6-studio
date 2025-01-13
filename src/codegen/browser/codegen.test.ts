@@ -22,10 +22,10 @@ it('should emit a console.log for every dummy event', async ({ expect }) => {
     defaultScenario: {
       type: 'browser',
       events: new Array(5).fill(null).map((_, i) => ({
-        type: 'dummy',
+        type: 'page-navigation',
         eventId: String(i),
-        message: `Event ${i}`,
-        selector: `#event-${i}`,
+        tab: 'tab',
+        url: 'http://example.com?id=' + i,
         timestamp: Date.now(),
       })),
     },

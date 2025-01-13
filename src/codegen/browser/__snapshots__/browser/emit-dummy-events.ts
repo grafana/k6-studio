@@ -8,9 +8,9 @@ export const options = {
 }
 
 export default function () {
-  console.log('Event 0')
-  console.log('Event 1')
-  console.log('Event 2')
-  console.log('Event 3')
-  console.log('Event 4')
+  console.log('dummy output')
+  console.log('dummy output')
+  console.log('dummy output')
+  console.log('dummy output')
+  console.log('dummy output')
 }

@@ -11,16 +11,15 @@ const PageNavigationEventSchema = BrowserEventBaseSchema.extend({
   url: z.string(),
 })
 
-const DummyEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('dummy'),
-  selector: z.string(),
-  message: z.string(),
+const PageReloadEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('page-reload'),
+  tab: z.string(),
+  url: z.string(),
 })
 
 export const BrowserEventSchema = discriminatedUnion('type', [
-  DummyEventSchema,
   PageNavigationEventSchema,
+  PageReloadEventSchema,
 ])
 
-export type DummyEvent = z.infer<typeof DummyEventSchema>
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>
