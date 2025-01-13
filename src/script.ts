@@ -136,7 +136,7 @@ const enhanceScript = async (scriptPath: string) => {
     const modifiedScriptContent = scriptLines.join('\n')
     return modifiedScriptContent
   } else {
-    throw new Error('http import line not found in script')
+    return scriptLines.join('\n')
   }
 }
 
