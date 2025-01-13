@@ -1,16 +1,17 @@
 import { getRoutePath } from '@/routeMap'
+import { StudioFile } from '@/types'
 import { ContextMenu } from '@radix-ui/themes'
 import { PropsWithChildren } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 interface FileContextMenuProps {
-  path: string
+  file: StudioFile
   isSelected: boolean
   handleRename: () => void
 }
 
 export function FileContextMenu({
-  path,
+  file,
   children,
   isSelected,
   handleRename,
@@ -18,10 +19,10 @@ export function FileContextMenu({
   const navigate = useNavigate()
 
   const handleOpenFolder = () => {
-    window.studio.ui.openContainingFolder(path)
+    window.studio.ui.openContainingFolder(file)
   }
   const handleDelete = async () => {
-    await window.studio.ui.deleteFile(path)
+    await window.studio.ui.deleteFile(file)
     if (isSelected) {
       navigate(getRoutePath('home'))
     }

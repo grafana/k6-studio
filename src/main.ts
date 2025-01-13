@@ -11,11 +11,12 @@ import {
   copyFile,
   writeFile,
   unlink,
+  readdir,
   FileHandle,
   rename,
+  access,
 } from 'fs/promises'
 import { updateElectronApp } from 'update-electron-app'
-import { readdirSync, existsSync } from 'fs'
 import path from 'path'
 import eventEmitter from 'events'
 import { Process } from '@puppeteer/browsers'
@@ -26,6 +27,7 @@ import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
 import {
+  DATA_FILES_PATH,
   GENERATORS_PATH,
   RECORDINGS_PATH,
   SCRIPTS_PATH,
@@ -55,9 +57,10 @@ import {
   selectBrowserExecutable,
   selectUpstreamCertificate,
 } from './settings'
-import { ProxyStatus } from './types'
+import { ProxyStatus, StudioFile } from './types'
 import { configureApplicationMenu } from './menu'
 import * as Sentry from '@sentry/electron/main'
+import { exhaustive } from './utils/typescript'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -169,6 +172,10 @@ const createWindow = async () => {
     },
   })
 
+  configureApplicationMenu()
+  configureWatcher(mainWindow)
+  wasAppClosedByClient = false
+
   // Start proxy
   currentProxyProcess = await launchProxyAndAttachEmitter(mainWindow)
 
@@ -186,11 +193,6 @@ const createWindow = async () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  mainWindow.once('ready-to-show', () => {
-    configureApplicationMenu()
-    configureWatcher(mainWindow)
-    wasAppClosedByClient = false
-  })
   proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
     proxyStatus = statusName
     mainWindow.webContents.send('proxy:status:change', statusName)
@@ -333,8 +335,7 @@ ipcMain.handle('script:select', async (event) => {
 })
 
 ipcMain.handle('script:open', async (_, fileName: string) => {
-  console.log(getFilePathFromName(fileName))
-  const fileHandle = await open(getFilePathFromName(fileName), 'r')
+  const fileHandle = await open(path.join(SCRIPTS_PATH, fileName), 'r')
   try {
     const script = await fileHandle?.readFile({ encoding: 'utf-8' })
 
@@ -367,7 +368,7 @@ ipcMain.handle(
     } else {
       resolvedScriptPath = absolute
         ? scriptPath
-        : getFilePathFromName(scriptPath)
+        : path.join(SCRIPTS_PATH, scriptPath)
     }
 
     currentk6Process = await runScript(
@@ -454,7 +455,7 @@ ipcMain.handle('har:import', async (event) => {
   const browserWindow = browserWindowFromEvent(event)
 
   const dialogResult = await dialog.showOpenDialog(browserWindow, {
-    message: 'Open HAR file',
+    message: 'Import HAR file',
     properties: ['openFile'],
     defaultPath: RECORDINGS_PATH,
     filters: [{ name: 'HAR', extensions: ['har'] }],
@@ -513,51 +514,82 @@ ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
 
-ipcMain.handle('ui:delete-file', async (_, fileName: string) => {
+ipcMain.handle('ui:delete-file', async (_, file: StudioFile) => {
   console.info('ui:delete-file event received')
 
-  return unlink(getFilePathFromName(fileName))
+  const filePath = getFilePath(file)
+  return unlink(filePath)
 })
 
-ipcMain.on('ui:open-folder', (_, fileName: string) => {
+ipcMain.on('ui:open-folder', (_, file: StudioFile) => {
   console.info('ui:open-folder event received')
-  shell.showItemInFolder(getFilePathFromName(fileName))
+
+  const filePath = getFilePath(file)
+  return shell.showItemInFolder(filePath)
 })
 
-ipcMain.handle('ui:get-files', () => {
+ipcMain.handle('ui:get-files', async () => {
   console.info('ui:get-files event received')
-  const recordings = readdirSync(RECORDINGS_PATH, { withFileTypes: true })
-    .filter((f) => f.isFile() && f.name.split('.').pop() === 'har')
-    .map((f) => f.name)
+  const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
+    .filter((f) => f.isFile())
+    .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
+    .filter((f) => typeof f !== 'undefined')
 
-  const generators = readdirSync(GENERATORS_PATH, { withFileTypes: true })
-    .filter((f) => f.isFile() && f.name.split('.').pop() === 'json')
-    .map((f) => f.name)
+  const generators = (await readdir(GENERATORS_PATH, { withFileTypes: true }))
+    .filter((f) => f.isFile())
+    .map((f) => getStudioFileFromPath(path.join(GENERATORS_PATH, f.name)))
+    .filter((f) => typeof f !== 'undefined')
 
-  const scripts = readdirSync(SCRIPTS_PATH, { withFileTypes: true })
-    .filter((f) => f.isFile() && f.name.split('.').pop() === 'js')
-    .map((f) => f.name)
+  const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
+    .filter((f) => f.isFile())
+    .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
+    .filter((f) => typeof f !== 'undefined')
+
+  const dataFiles = (await readdir(DATA_FILES_PATH, { withFileTypes: true }))
+    .filter((f) => f.isFile())
+    .map((f) => getStudioFileFromPath(path.join(DATA_FILES_PATH, f.name)))
+    .filter((f) => typeof f !== 'undefined')
 
   return {
     recordings,
     generators,
     scripts,
+    dataFiles,
   }
 })
 
 ipcMain.handle(
   'ui:rename-file',
-  async (e, oldFileName: string, newFileName: string) => {
+  async (
+    e,
+    oldFileName: string,
+    newFileName: string,
+    type: StudioFile['type']
+  ) => {
     const browserWindow = BrowserWindow.fromWebContents(e.sender)
 
     try {
       invariant(!INVALID_FILENAME_CHARS.test(newFileName), 'Invalid file name')
 
-      const oldPath = getFilePathFromName(oldFileName)
-      const newPath = getFilePathFromName(newFileName)
+      const oldPath = getFilePath({
+        type,
+        fileName: oldFileName,
+      })
+      const newPath = getFilePath({
+        type,
+        fileName: newFileName,
+      })
 
-      if (existsSync(newPath)) {
-        throw new Error('File already exists')
+      try {
+        await access(newPath)
+        throw new Error(`File with name ${newFileName} already exists`)
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error as NodeJS.ErrnoException).code !== 'ENOENT'
+        ) {
+          throw error
+        }
       }
 
       await rename(oldPath, newPath)
@@ -574,6 +606,31 @@ ipcMain.handle(
     }
   }
 )
+
+ipcMain.handle('data-file:import', async (event) => {
+  console.info('data-file:import event received')
+
+  const browserWindow = browserWindowFromEvent(event)
+
+  const dialogResult = await dialog.showOpenDialog(browserWindow, {
+    message: 'Import data file',
+    properties: ['openFile'],
+    filters: [
+      { name: 'CSV', extensions: ['csv'] },
+      { name: 'JSON', extensions: ['json'] },
+    ],
+  })
+
+  const filePath = dialogResult.filePaths[0]
+
+  if (dialogResult.canceled || !filePath) {
+    return
+  }
+
+  await copyFile(filePath, path.join(DATA_FILES_PATH, path.basename(filePath)))
+
+  return path.basename(filePath)
+})
 
 ipcMain.on('splashscreen:close', (event) => {
   console.info('splashscreen:close event received')
@@ -753,34 +810,92 @@ async function trackWindowState(browserWindow: BrowserWindow) {
 }
 
 function configureWatcher(browserWindow: BrowserWindow) {
-  watcher = watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH], {
-    ignoreInitial: true,
-  })
+  watcher = watch(
+    [RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH, DATA_FILES_PATH],
+    {
+      ignoreInitial: true,
+    }
+  )
 
   watcher.on('add', (filePath) => {
-    browserWindow.webContents.send('ui:add-file', path.basename(filePath))
+    const file = getStudioFileFromPath(filePath)
+
+    if (!file) {
+      return
+    }
+
+    browserWindow.webContents.send('ui:add-file', file)
   })
 
   watcher.on('unlink', (filePath) => {
-    browserWindow.webContents.send('ui:remove-file', path.basename(filePath))
+    const file = getStudioFileFromPath(filePath)
+
+    if (!file) {
+      return
+    }
+
+    browserWindow.webContents.send('ui:remove-file', file)
   })
 }
 
-function getFilePathFromName(name: string) {
-  invariant(process, 'Only use this function in the main process')
+function getStudioFileFromPath(filePath: string): StudioFile | undefined {
+  const file = {
+    displayName: path.parse(filePath).name,
+    fileName: path.basename(filePath),
+  }
 
-  switch (name.split('.').pop()) {
-    case 'har':
-      return path.join(RECORDINGS_PATH, name)
+  if (
+    filePath.startsWith(RECORDINGS_PATH) &&
+    path.extname(filePath) === '.har'
+  ) {
+    return {
+      type: 'recording',
+      ...file,
+    }
+  }
 
-    case 'json':
-      return path.join(GENERATORS_PATH, name)
+  if (
+    filePath.startsWith(GENERATORS_PATH) &&
+    path.extname(filePath) === '.json'
+  ) {
+    return {
+      type: 'generator',
+      ...file,
+    }
+  }
 
-    case 'js':
-      return path.join(SCRIPTS_PATH, name)
+  if (filePath.startsWith(SCRIPTS_PATH) && path.extname(filePath) === '.js') {
+    return {
+      type: 'script',
+      ...file,
+    }
+  }
 
+  if (
+    filePath.startsWith(DATA_FILES_PATH) &&
+    (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv')
+  ) {
+    return {
+      type: 'data-file',
+      ...file,
+    }
+  }
+}
+
+function getFilePath(
+  file: Partial<StudioFile> & Pick<StudioFile, 'type' | 'fileName'>
+) {
+  switch (file.type) {
+    case 'recording':
+      return path.join(RECORDINGS_PATH, file.fileName)
+    case 'generator':
+      return path.join(GENERATORS_PATH, file.fileName)
+    case 'script':
+      return path.join(SCRIPTS_PATH, file.fileName)
+    case 'data-file':
+      return path.join(DATA_FILES_PATH, file.fileName)
     default:
-      throw new Error('Invalid file type')
+      return exhaustive(file.type)
   }
 }
 
