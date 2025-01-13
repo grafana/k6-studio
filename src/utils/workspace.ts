@@ -1,6 +1,7 @@
 import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import {
+  DATA_FILES_PATH,
   PROJECT_PATH,
   RECORDINGS_PATH,
   GENERATORS_PATH,
@@ -22,5 +23,9 @@ export const setupProjectStructure = async () => {
 
   if (!existsSync(SCRIPTS_PATH)) {
     await mkdir(SCRIPTS_PATH)
+  }
+
+  if (!existsSync(DATA_FILES_PATH)) {
+    await mkdir(DATA_FILES_PATH)
   }
 }

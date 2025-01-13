@@ -9,7 +9,7 @@ If you're simply adding new options to the generator file, a migration may not b
 For when a new migration is needed:
 
 1. Create a directory for the new version (e.g. `/v2`).
-2. Declare the new schema with appropriate changes.
+2. Copy files from the previous schema into this directory and make appropriate changes.
 3. In `/v1/index.ts`, implement a `migrate` function that takes a `v1` schema and returns a `v2` schema.
 4. Update `/schemas/generators/index.ts` to use the new version:
 

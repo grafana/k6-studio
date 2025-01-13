@@ -10,6 +10,7 @@ import { useGeneratorParams } from '../Generator.hooks'
 import { useNavigate } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+import { getFileNameWithoutExtension } from '@/utils/file'
 
 interface GeneratorControlsProps {
   onSave: () => void
@@ -26,7 +27,11 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
   const navigate = useNavigate()
 
   const handleDeleteGenerator = async () => {
-    await window.studio.ui.deleteFile(fileName)
+    await window.studio.ui.deleteFile({
+      type: 'generator',
+      fileName,
+      displayName: getFileNameWithoutExtension(fileName),
+    })
 
     navigate(getRoutePath('home'))
   }

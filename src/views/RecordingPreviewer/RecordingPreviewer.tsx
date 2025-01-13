@@ -62,7 +62,11 @@ export function RecordingPreviewer() {
   const groups = useProxyDataGroups(proxyData)
 
   const handleDeleteRecording = async () => {
-    await window.studio.ui.deleteFile(fileName)
+    await window.studio.ui.deleteFile({
+      type: 'recording',
+      fileName,
+      displayName: getFileNameWithoutExtension(fileName),
+    })
     navigate(getRoutePath('home'))
   }
 
@@ -81,7 +85,11 @@ export function RecordingPreviewer() {
   }
 
   const handleDiscard = async () => {
-    await window.studio.ui.deleteFile(fileName)
+    await window.studio.ui.deleteFile({
+      type: 'recording',
+      fileName,
+      displayName: getFileNameWithoutExtension(fileName),
+    })
     navigate(getRoutePath('recorder'))
   }
 

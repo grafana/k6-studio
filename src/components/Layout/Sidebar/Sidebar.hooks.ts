@@ -1,6 +1,5 @@
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
-import { fileFromFileName } from '@/utils/file'
 import { withMatches } from '@/utils/fuse'
 import Fuse, { IFuseOptions } from 'fuse.js'
 import { orderBy } from 'lodash-es'
@@ -10,16 +9,15 @@ function orderByFileName(files: Map<string, StudioFile>) {
   return orderBy([...files.values()], (s) => s.fileName)
 }
 
-function toFileMap(files: string[]) {
-  return new Map(
-    files.map((fileName) => [fileName, fileFromFileName(fileName)])
-  )
+function toFileMap(files: StudioFile[]) {
+  return new Map(files.map((file) => [file.fileName, file]))
 }
 
 function useFolderContent() {
   const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
   const generators = useStudioUIStore((s) => orderByFileName(s.generators))
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
+  const dataFiles = useStudioUIStore((s) => orderByFileName(s.dataFiles))
 
   const addFile = useStudioUIStore((s) => s.addFile)
   const removeFile = useStudioUIStore((s) => s.removeFile)
@@ -28,25 +26,27 @@ function useFolderContent() {
   useEffect(() => {
     ;(async () => {
       const files = await window.studio.ui.getFiles()
+
       setFolderContent({
         recordings: toFileMap(files.recordings),
         generators: toFileMap(files.generators),
         scripts: toFileMap(files.scripts),
+        dataFiles: toFileMap(files.dataFiles),
       })
     })()
   }, [setFolderContent])
 
   useEffect(
     () =>
-      window.studio.ui.onAddFile((path) => {
-        addFile(path)
+      window.studio.ui.onAddFile((file) => {
+        addFile(file)
       }),
     [addFile]
   )
 
   useEffect(() => {
-    window.studio.ui.onRemoveFile((path) => {
-      removeFile(path)
+    window.studio.ui.onRemoveFile((file) => {
+      removeFile(file)
     })
   }, [removeFile])
 
@@ -54,6 +54,7 @@ function useFolderContent() {
     recordings,
     generators,
     scripts,
+    dataFiles,
   }
 }
 
@@ -77,6 +78,7 @@ export function useFiles(searchTerm: string) {
       recordings: new Fuse(files.recordings, options),
       generators: new Fuse(files.generators, options),
       scripts: new Fuse(files.scripts, options),
+      dataFiles: new Fuse(files.dataFiles, options),
     }
   }, [files])
 
@@ -89,6 +91,7 @@ export function useFiles(searchTerm: string) {
       recordings: searchIndex.recordings.search(searchTerm).map(withMatches),
       generators: searchIndex.generators.search(searchTerm).map(withMatches),
       scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
+      dataFiles: searchIndex.dataFiles.search(searchTerm).map(withMatches),
     }
   }, [files, searchIndex, searchTerm])
 }

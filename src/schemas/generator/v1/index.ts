@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { TestRuleSchema } from '@/schemas/rules'
-import { TestDataSchema } from '@/schemas/testData'
-import { TestOptionsSchema } from '@/schemas/testOptions'
+import { TestRuleSchema } from './rules'
+import { TestDataSchema } from './testData'
+import { TestOptionsSchema } from './testOptions'
 
 export const GeneratorFileDataSchema = z.object({
   version: z.literal('1.0'),

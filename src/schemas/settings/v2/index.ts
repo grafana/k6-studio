@@ -6,6 +6,7 @@ import {
   UsageReportSettingsSchema,
   WindowStateSchema,
 } from '../v1'
+import * as v3 from '../v3'
 
 export {
   AppearanceSchema,
@@ -26,7 +27,19 @@ export const AppSettingsSchema = z.object({
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>
 
-// TODO: Migrate settings to the next version
-export function migrate(settings: z.infer<typeof AppSettingsSchema>) {
-  return { ...settings }
+// Migrate settings to the next version
+export function migrate(
+  settings: z.infer<typeof AppSettingsSchema>
+): v3.AppSettings {
+  return {
+    version: '3.0',
+    proxy: settings.proxy,
+    recorder: settings.recorder,
+    windowState: settings.windowState,
+    telemetry: {
+      usageReport: settings.usageReport.enabled,
+      errorReport: true,
+    },
+    appearance: settings.appearance,
+  }
 }

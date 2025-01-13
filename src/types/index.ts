@@ -89,10 +89,9 @@ export interface RequestSnippetSchema {
 }
 
 export interface StudioFile {
-  type: 'recording' | 'generator' | 'script'
+  type: 'recording' | 'generator' | 'script' | 'data-file'
   displayName: string
   fileName: string
-  viewPath: string
 }
 
 export type StudioFileType = StudioFile['type']
@@ -101,6 +100,7 @@ export interface FolderContent {
   recordings: Map<string, StudioFile>
   generators: Map<string, StudioFile>
   scripts: Map<string, StudioFile>
+  dataFiles: Map<string, StudioFile>
 }
 
 export type ProxyStatus = 'online' | 'offline' | 'restarting'

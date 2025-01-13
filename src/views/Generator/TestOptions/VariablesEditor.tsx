@@ -19,7 +19,7 @@ import {
 } from 'react-hook-form'
 import { TestData } from '@/types/testData'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { TestDataSchema } from '@/schemas/testData'
+import { TestDataSchema } from '@/schemas/generator'
 import { FieldGroup } from '@/components/Form'
 import { Table } from '@/components/Table'
 
