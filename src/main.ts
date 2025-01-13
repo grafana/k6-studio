@@ -27,7 +27,7 @@ import { launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
 import {
-  DATA_PATH,
+  DATA_FILES_PATH,
   GENERATORS_PATH,
   RECORDINGS_PATH,
   SCRIPTS_PATH,
@@ -545,16 +545,16 @@ ipcMain.handle('ui:get-files', async () => {
     .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
     .filter((f) => typeof f !== 'undefined')
 
-  const data = (await readdir(DATA_PATH, { withFileTypes: true }))
+  const dataFiles = (await readdir(DATA_FILES_PATH, { withFileTypes: true }))
     .filter((f) => f.isFile())
-    .map((f) => getStudioFileFromPath(path.join(DATA_PATH, f.name)))
+    .map((f) => getStudioFileFromPath(path.join(DATA_FILES_PATH, f.name)))
     .filter((f) => typeof f !== 'undefined')
 
   return {
     recordings,
     generators,
     scripts,
-    data,
+    dataFiles,
   }
 })
 
@@ -607,8 +607,8 @@ ipcMain.handle(
   }
 )
 
-ipcMain.handle('data:import', async (event) => {
-  console.info('data:import event received')
+ipcMain.handle('data-file:import', async (event) => {
+  console.info('data-file:import event received')
 
   const browserWindow = browserWindowFromEvent(event)
 
@@ -627,7 +627,7 @@ ipcMain.handle('data:import', async (event) => {
     return
   }
 
-  await copyFile(filePath, path.join(DATA_PATH, path.basename(filePath)))
+  await copyFile(filePath, path.join(DATA_FILES_PATH, path.basename(filePath)))
 
   return path.basename(filePath)
 })
@@ -810,9 +810,12 @@ async function trackWindowState(browserWindow: BrowserWindow) {
 }
 
 function configureWatcher(browserWindow: BrowserWindow) {
-  watcher = watch([RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH, DATA_PATH], {
-    ignoreInitial: true,
-  })
+  watcher = watch(
+    [RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH, DATA_FILES_PATH],
+    {
+      ignoreInitial: true,
+    }
+  )
 
   watcher.on('add', (filePath) => {
     const file = getStudioFileFromPath(filePath)
@@ -869,11 +872,11 @@ function getStudioFileFromPath(filePath: string): StudioFile | undefined {
   }
 
   if (
-    filePath.startsWith(DATA_PATH) &&
+    filePath.startsWith(DATA_FILES_PATH) &&
     (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv')
   ) {
     return {
-      type: 'data',
+      type: 'data-file',
       ...file,
     }
   }
@@ -889,8 +892,8 @@ function getFilePath(
       return path.join(GENERATORS_PATH, file.fileName)
     case 'script':
       return path.join(SCRIPTS_PATH, file.fileName)
-    case 'data':
-      return path.join(DATA_PATH, file.fileName)
+    case 'data-file':
+      return path.join(DATA_FILES_PATH, file.fileName)
     default:
       return exhaustive(file.type)
   }

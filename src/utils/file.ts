@@ -33,7 +33,7 @@ export function getViewPath(type: StudioFileType, fileName: string) {
       return getRoutePath('validator', { fileName: encodedFileName })
 
     // TODO: Add data preview
-    case 'data':
+    case 'data-file':
       return getRoutePath('home')
 
     default:

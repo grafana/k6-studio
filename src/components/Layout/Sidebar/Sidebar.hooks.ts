@@ -17,7 +17,7 @@ function useFolderContent() {
   const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
   const generators = useStudioUIStore((s) => orderByFileName(s.generators))
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
-  const data = useStudioUIStore((s) => orderByFileName(s.data))
+  const dataFiles = useStudioUIStore((s) => orderByFileName(s.dataFiles))
 
   const addFile = useStudioUIStore((s) => s.addFile)
   const removeFile = useStudioUIStore((s) => s.removeFile)
@@ -31,7 +31,7 @@ function useFolderContent() {
         recordings: toFileMap(files.recordings),
         generators: toFileMap(files.generators),
         scripts: toFileMap(files.scripts),
-        data: toFileMap(files.data),
+        dataFiles: toFileMap(files.dataFiles),
       })
     })()
   }, [setFolderContent])
@@ -54,7 +54,7 @@ function useFolderContent() {
     recordings,
     generators,
     scripts,
-    data,
+    dataFiles,
   }
 }
 
@@ -78,7 +78,7 @@ export function useFiles(searchTerm: string) {
       recordings: new Fuse(files.recordings, options),
       generators: new Fuse(files.generators, options),
       scripts: new Fuse(files.scripts, options),
-      data: new Fuse(files.data, options),
+      dataFiles: new Fuse(files.dataFiles, options),
     }
   }, [files])
 
@@ -91,7 +91,7 @@ export function useFiles(searchTerm: string) {
       recordings: searchIndex.recordings.search(searchTerm).map(withMatches),
       generators: searchIndex.generators.search(searchTerm).map(withMatches),
       scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
-      data: searchIndex.data.search(searchTerm).map(withMatches),
+      dataFiles: searchIndex.dataFiles.search(searchTerm).map(withMatches),
     }
   }, [files, searchIndex, searchTerm])
 }

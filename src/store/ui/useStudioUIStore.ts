@@ -20,7 +20,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
     recordings: new Map(),
     generators: new Map(),
     scripts: new Map(),
-    data: new Map(),
+    dataFiles: new Map(),
     proxyStatus: 'offline',
 
     addFile: (file) =>
@@ -37,8 +37,8 @@ export const useStudioUIStore = create<StudioUIStore>()(
           state.scripts.set(file.fileName, file)
         }
 
-        if (file.type === 'data') {
-          state.data.set(file.fileName, file)
+        if (file.type === 'data-file') {
+          state.dataFiles.set(file.fileName, file)
         }
       }),
     removeFile: (file) =>
@@ -55,16 +55,16 @@ export const useStudioUIStore = create<StudioUIStore>()(
           state.scripts.delete(file.fileName)
         }
 
-        if (file.type === 'data') {
-          state.data.delete(file.fileName)
+        if (file.type === 'data-file') {
+          state.dataFiles.delete(file.fileName)
         }
       }),
-    setFolderContent: ({ recordings, generators, scripts, data }) =>
+    setFolderContent: ({ recordings, generators, scripts, dataFiles }) =>
       set((state) => {
         state.recordings = recordings
         state.generators = generators
         state.scripts = scripts
-        state.data = data
+        state.dataFiles = dataFiles
       }),
     setProxyStatus: (status) =>
       set((state) => {

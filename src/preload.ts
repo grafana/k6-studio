@@ -11,7 +11,7 @@ interface GetFilesResponse {
   recordings: StudioFile[]
   generators: StudioFile[]
   scripts: StudioFile[]
-  data: StudioFile[]
+  dataFiles: StudioFile[]
 }
 
 // Create listener and return clean up function to be used in useEffect
@@ -122,7 +122,7 @@ const har = {
 
 const data = {
   importFile: (): Promise<string | undefined> => {
-    return ipcRenderer.invoke('data:import')
+    return ipcRenderer.invoke('data-file:import')
   },
 } as const
 
