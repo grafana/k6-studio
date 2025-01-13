@@ -3,7 +3,6 @@ import { getPlatform, getArch } from './utils/electron'
 import { writeFile, readFile } from 'fs/promises'
 import path from 'path'
 import { existsSync } from 'fs'
-import { UsageReportSettings } from './types/settings'
 import log from 'electron-log/main'
 
 const URL = 'https://stats.grafana.org/k6-studio-usage-report'
@@ -20,8 +19,8 @@ export const getOrSetInstallationId = async () => {
   return await readFile(filePath, { encoding: 'utf-8' })
 }
 
-export const sendReport = async (usageReportSettings: UsageReportSettings) => {
-  if (!usageReportSettings.enabled) {
+export const sendReport = async (usageReportEnabled: boolean) => {
+  if (!usageReportEnabled) {
     return
   }
 

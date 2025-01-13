@@ -1,7 +1,7 @@
 // TODO: https://github.com/grafana/k6-studio/issues/277
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
-import { ProxyData, K6Log, K6Check, ProxyStatus } from './types'
+import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
@@ -9,9 +9,10 @@ import { AppSettings } from './types/settings'
 import { BrowserEvent } from './schemas/recording'
 
 interface GetFilesResponse {
-  recordings: string[]
-  generators: string[]
-  scripts: string[]
+  recordings: StudioFile[]
+  generators: StudioFile[]
+  scripts: StudioFile[]
+  dataFiles: StudioFile[]
 }
 
 // Create listener and return clean up function to be used in useEffect
@@ -123,28 +124,38 @@ const har = {
   },
 } as const
 
+const data = {
+  importFile: (): Promise<string | undefined> => {
+    return ipcRenderer.invoke('data-file:import')
+  },
+} as const
+
 const ui = {
   toggleTheme: () => {
     ipcRenderer.send('ui:toggle-theme')
   },
-  openContainingFolder: (fileName: string) => {
-    ipcRenderer.send('ui:open-folder', fileName)
+  openContainingFolder: (file: StudioFile) => {
+    ipcRenderer.send('ui:open-folder', file)
   },
-  deleteFile: (fileName: string): Promise<void> => {
-    return ipcRenderer.invoke('ui:delete-file', fileName)
+  deleteFile: (file: StudioFile): Promise<void> => {
+    return ipcRenderer.invoke('ui:delete-file', file)
   },
   getFiles: (): Promise<GetFilesResponse> => ipcRenderer.invoke('ui:get-files'),
-  onAddFile: (callback: (fileName: string) => void) => {
+  onAddFile: (callback: (file: StudioFile) => void) => {
     return createListener('ui:add-file', callback)
   },
-  onRemoveFile: (callback: (fileName: string) => void) => {
+  onRemoveFile: (callback: (file: StudioFile) => void) => {
     return createListener('ui:remove-file', callback)
   },
   onToast: (callback: (toast: AddToastPayload) => void) => {
     return createListener('ui:toast', callback)
   },
-  renameFile: (oldFileName: string, newFileName: string): Promise<string> => {
-    return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName)
+  renameFile: (
+    oldFileName: string,
+    newFileName: string,
+    type: StudioFile['type']
+  ): Promise<string> => {
+    return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName, type)
   },
 } as const
 
@@ -203,6 +214,7 @@ const studio = {
   proxy,
   browser,
   script,
+  data,
   har,
   ui,
   generator,

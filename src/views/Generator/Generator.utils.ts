@@ -31,12 +31,6 @@ export async function exportScript(fileName: string) {
   await window.studio.script.saveScript(script, fileName)
 }
 
-export const scriptExists = async (fileName: string) => {
-  return window.studio.ui
-    .getFiles()
-    .then((files) => files.scripts.includes(fileName))
-}
-
 export const writeGeneratorToFile = (
   fileName: string,
   generatorData: GeneratorFileData

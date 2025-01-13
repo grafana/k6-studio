@@ -7,8 +7,8 @@ import { existsSync, readFileSync } from 'fs'
 import { safeJsonParse } from './utils/json'
 import log from 'electron-log/main'
 
-const defaultSettings: AppSettings = {
-  version: '2.0',
+export const defaultSettings: AppSettings = {
+  version: '3.0',
   proxy: {
     mode: 'regular',
     port: 6000,
@@ -25,8 +25,9 @@ const defaultSettings: AppSettings = {
     y: 0,
     isMaximized: true,
   },
-  usageReport: {
-    enabled: true,
+  telemetry: {
+    usageReport: true,
+    errorReport: true,
   },
   appearance: {
     theme: 'system',

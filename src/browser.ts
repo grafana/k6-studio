@@ -92,7 +92,7 @@ export const launchBrowser = async (
         ? `--load-extension=${extensionPath}`
         : '',
       disableChromeOptimizations,
-      url ?? '',
+      url?.trim() || 'about:blank',
     ],
     onExit: handleBrowserClose,
   })

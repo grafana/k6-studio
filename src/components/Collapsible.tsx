@@ -37,7 +37,7 @@ const Header = styled.div`
 const CaretIcon = styled(CaretRightIcon)`
   transform: rotate(0deg);
 
-  [data-state='open'] & {
+  button[data-state='open'] & {
     transform: rotate(90deg);
   }
 `
