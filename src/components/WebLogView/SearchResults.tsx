@@ -10,6 +10,13 @@ import {
   useRequestDetailsTab,
   useResponseDetailsTab,
 } from './Details.hooks'
+import {
+  addSegmentsToMatches,
+  getMatchType,
+  highlightResult,
+  Segment,
+  stringEndsWithSpace,
+} from './SearchResults.utils'
 
 const PREVIEWABLE_MATCH_KEYS = [
   'request.content',
@@ -28,11 +35,6 @@ interface Result {
   match: SearchMatch
 }
 
-// TODO:
-// - JSON matches
-// - HTML matches
-// - Header matches (including cookies)
-// TODO: better name for excerpt?
 export function SearchResults({
   data,
   onSelectRequest,
@@ -56,31 +58,19 @@ export function SearchResults({
 
   const { matches } = data
 
-  const results = useMemo(() => {
-    if (!matches) {
-      return []
-    }
+  // Exclude fields that are already displayed in table row
+  const previewableMatches = useMemo(
+    () =>
+      (matches ?? []).filter((match) =>
+        PREVIEWABLE_MATCH_KEYS.includes(match.key ?? '')
+      ),
+    [matches]
+  )
 
-    // Exclude matches that are displayed in table row
-    const previewableMatches = matches.filter((match) =>
-      PREVIEWABLE_MATCH_KEYS.includes(match.key ?? '')
-    )
-
-    return previewableMatches.flatMap((match) => {
-      const segments = match.indices.map((indices, index) =>
-        // getSegments(match.value ?? '', index)
-        ({
-          segment: getSegments(match.value ?? '', indices),
-          index,
-        })
-      )
-      return segments.map(({ segment, index }) => ({
-        segment,
-        match,
-        index,
-      }))
-    })
-  }, [matches])
+  const results = useMemo(
+    () => addSegmentsToMatches(previewableMatches),
+    [previewableMatches]
+  )
 
   const visibleResults = useMemo(
     () => (showAll ? results : results.slice(0, resultsInPreview)),
@@ -94,37 +84,15 @@ export function SearchResults({
   ) {
     onSelectRequest(data)
 
-    // Request match
-    if (result.match.key?.includes('request.content')) {
-      setRequestTab('payload')
-      return goToPayloadMatch({ searchString: filter, index: searchIndex })
-    }
-
-    if (result.match.key?.includes('request.headers')) {
-      return setRequestTab('headers')
-    }
-
-    if (result.match.key?.includes('request.cookies')) {
-      return setRequestTab('cookies')
-    }
-
-    if (result.match.key?.includes('request.query')) {
-      return setRequestTab('queryParams')
-    }
-
-    // Response match
-    if (result.match.key?.includes('response.content')) {
-      setResponseTab('content')
-      return goToContentMatch({ searchString: filter, index: searchIndex })
-    }
-
-    if (result.match.key?.includes('response.headers')) {
-      return setResponseTab('headers')
-    }
-
-    if (result.match.key?.includes('response.cookies')) {
-      return setResponseTab('cookies')
-    }
+    highlightResult({
+      matchKey: result.match.key,
+      setRequestTab,
+      setResponseTab,
+      goToPayloadMatch,
+      goToContentMatch,
+      filter,
+      searchIndex,
+    })
   }
 
   if (results.length === 0) {
@@ -153,7 +121,7 @@ export function SearchResults({
             <Strong css={{ flexShrink: 0 }}>
               {getMatchType(result.match.key)}:&nbsp;
             </Strong>
-            <ContentResult segment={result.segment} />
+            <ResultContent segment={result.segment} />
           </Flex>
         ))}
         {shouldShowShowMore && (
@@ -168,23 +136,7 @@ export function SearchResults({
   )
 }
 
-function getMatchType(key?: string) {
-  if (key?.includes('headers')) {
-    return 'Header'
-  }
-
-  if (key?.includes('cookies')) {
-    return 'Cookie'
-  }
-
-  if (key?.includes('request.query')) {
-    return 'Query'
-  }
-
-  return 'Body'
-}
-
-function ContentResult({ segment }: { segment: Segment }) {
+function ResultContent({ segment }: { segment: Segment }) {
   return (
     <>
       {/* Show ellipsis on the left side: wrapped ltr inside rtl is needed */}
@@ -213,29 +165,4 @@ function ContentResult({ segment }: { segment: Segment }) {
       </Text>
     </>
   )
-}
-
-type Segment = ReturnType<typeof getSegments>
-
-function getSegments(text: string, index: SearchMatch['indices'][number]) {
-  const lengthBeforeMatch = 800
-  // Avoid adding long response bodies into dom
-  const lengthAfterMatch = 800
-  const [start, end] = index
-
-  const startOffset = Math.max(0, start - lengthBeforeMatch)
-  const beforeMatch = text.slice(startOffset, start)
-
-  const match = text.slice(start, end + 1)
-  const afterMatch = text.slice(end + 1, end + lengthAfterMatch)
-
-  return {
-    beforeMatch: beforeMatch.replace(/\n/g, ''),
-    match,
-    afterMatch: afterMatch.replace(/\n/g, ''),
-  }
-}
-
-function stringEndsWithSpace(str: string) {
-  return str[str.length - 1] === ' '
 }
