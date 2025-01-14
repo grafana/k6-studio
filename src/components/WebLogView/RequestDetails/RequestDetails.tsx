@@ -6,7 +6,7 @@ import { Headers } from './Headers'
 import { Payload } from './Payload'
 import { QueryParams } from './QueryParams'
 import { Box } from '@radix-ui/themes'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useRequestDetailsTab } from '../Details.hooks'
 
 interface RequestDetailsProps {
@@ -31,6 +31,11 @@ export function RequestDetails({ data }: RequestDetailsProps) {
     }
   }, [tab, isQueryParamsAvailable, setTab])
 
+  const requestMatches = useMemo(
+    () => data?.matches?.filter((match) => match?.key?.startsWith('request.')),
+    [data.matches]
+  )
+
   return (
     <Tabs.Root value={tab} onValueChange={setTab}>
       <Tabs.List>
@@ -53,11 +58,11 @@ export function RequestDetails({ data }: RequestDetailsProps) {
       </Tabs.Content>
 
       <Tabs.Content value="cookies">
-        <Cookies cookies={data.request?.cookies} matches={data.matches} />
+        <Cookies cookies={data.request?.cookies} matches={requestMatches} />
       </Tabs.Content>
 
       <Tabs.Content value="queryParams">
-        <QueryParams request={data.request} matches={data.matches} />
+        <QueryParams request={data.request} matches={requestMatches} />
       </Tabs.Content>
     </Tabs.Root>
   )

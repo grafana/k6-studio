@@ -5,7 +5,7 @@ import { Tabs } from '../Tabs'
 import { Headers } from './Headers'
 import { Content } from './Content'
 import { Cookies } from '../Cookies'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useResponseDetailsTab } from '../Details.hooks'
 
 interface ResponseDetailsProps {
@@ -19,6 +19,11 @@ export function ResponseDetails({ data }: ResponseDetailsProps) {
   useEffect(() => {
     return () => setTab('headers')
   }, [setTab])
+
+  const responseMatches = useMemo(
+    () => data?.matches?.filter((match) => match?.key?.startsWith('response.')),
+    [data.matches]
+  )
 
   return (
     <Tabs.Root value={tab} onValueChange={setTab}>
@@ -40,7 +45,7 @@ export function ResponseDetails({ data }: ResponseDetailsProps) {
       </Tabs.Content>
       <Tabs.Content value="cookies">
         <ScrollArea style={{ height: '100%' }}>
-          <Cookies cookies={data.response?.cookies} matches={data.matches} />
+          <Cookies cookies={data.response?.cookies} matches={responseMatches} />
         </ScrollArea>
       </Tabs.Content>
     </Tabs.Root>

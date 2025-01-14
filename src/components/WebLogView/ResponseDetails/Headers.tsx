@@ -16,10 +16,18 @@ export function Headers({ data }: { data: ProxyDataWithMatches }) {
       {headers.map(([key, value], index) => (
         <DataList.Item key={`${key}_${index}`}>
           <DataList.Label>
-            <HighlightedText text={key} matches={data.matches} />
+            <HighlightedText
+              text={key}
+              matches={data.matches}
+              highlightAllMatches
+            />
           </DataList.Label>
           <DataList.Value>
-            <HighlightedText text={value} matches={data.matches} />
+            <HighlightedText
+              text={value}
+              matches={data.matches}
+              highlightAllMatches
+            />
           </DataList.Value>
         </DataList.Item>
       ))}

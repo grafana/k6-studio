@@ -12,7 +12,6 @@ export function Cookies({
   cookies?: Cookie[]
   matches?: SearchMatch[]
 }) {
-  console.log('matches', matches)
   if (!cookies.length) {
     return (
       <Flex height="200px" justify="center" align="center">
@@ -34,10 +33,18 @@ export function Cookies({
         {cookies.map(([name, value], index) => (
           <Table.Row key={index}>
             <Table.Cell>
-              <HighlightedText text={name} matches={matches} />
+              <HighlightedText
+                text={name}
+                matches={matches}
+                highlightAllMatches
+              />
             </Table.Cell>
             <Table.Cell>
-              <HighlightedText text={value} matches={matches} />
+              <HighlightedText
+                text={value}
+                matches={matches}
+                highlightAllMatches
+              />
             </Table.Cell>
           </Table.Row>
         ))}

@@ -32,10 +32,18 @@ export function QueryParams({
         {request.query.map(([key, value]) => (
           <Table.Row key={key}>
             <Table.Cell>
-              <HighlightedText text={key} matches={matches} />
+              <HighlightedText
+                text={key}
+                matches={matches}
+                highlightAllMatches
+              />
             </Table.Cell>
             <Table.Cell>
-              <HighlightedText text={value} matches={matches} />
+              <HighlightedText
+                text={value}
+                matches={matches}
+                highlightAllMatches
+              />
             </Table.Cell>
           </Table.Row>
         ))}

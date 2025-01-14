@@ -42,20 +42,27 @@ function splitByMatches(text: string, matches: Array<[number, number]>) {
 interface HighlightedTextProps {
   text: string
   matches: SearchMatch[] | undefined
+  highlightAllMatches?: boolean
 }
 
-export function HighlightedText({ text, matches }: HighlightedTextProps) {
+export function HighlightedText({
+  text,
+  matches,
+  highlightAllMatches,
+}: HighlightedTextProps) {
   const segments = useMemo(() => {
     // When searching multiple properties we need to filter matches by value we are highlighting
     const filteredMatches = (matches || []).filter(
       (match) => match.value === text
     )
 
+    const indices = filteredMatches.flatMap((match) => match.indices)
+
     return splitByMatches(
       text,
-      longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
+      highlightAllMatches ? indices : longestMatchOnly(indices)
     )
-  }, [text, matches])
+  }, [text, matches, highlightAllMatches])
 
   return (
     <span>
