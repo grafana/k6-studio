@@ -6,14 +6,6 @@ export function configureRendererProcess(
 ) {
   if (process.env.NODE_ENV !== 'development') {
     SentryRenderer.init({
-      integrations: [
-        SentryRenderer.browserTracingIntegration(),
-        SentryRenderer.replayIntegration(),
-      ],
-      tracesSampleRate: 1.0,
-      replaysSessionSampleRate: 0.1,
-      replaysOnErrorSampleRate: 1.0,
-
       // conditionally send the event based on the user's settings
       beforeSend: async (event) => {
         const getSettings = getSettingsFn || window.studio.settings.getSettings
