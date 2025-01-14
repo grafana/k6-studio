@@ -139,7 +139,13 @@ export function SearchResults({
         {visibleResults.map((result, excerptIndex) => (
           <Flex
             key={excerptIndex}
-            css={{ fontSize: 'var(--font-size-1)' }}
+            css={{
+              fontSize: 'var(--font-size-1)',
+              cursor: 'var(--cursor-button)',
+              '&:hover': {
+                backgroundColor: 'var(--accent-3)',
+              },
+            }}
             onClick={() => {
               handleResultClick(result, data, result.index)
             }}
