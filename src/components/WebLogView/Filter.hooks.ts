@@ -58,9 +58,7 @@ export function useFilterRequests({
     }
 
     // Use '<query> to search for exact matches
-    const rez = searchIndex.search(`'"${debouncedFilter}"`)
-    console.log('rez', rez)
-    return rez.map(withMatches)
+    return searchIndex.search(`'"${debouncedFilter}"`).map(withMatches)
   }, [searchIndex, assetsToFilter, debouncedFilter])
 
   const staticAssetCount = proxyData.length - requestWithoutStaticAssets.length

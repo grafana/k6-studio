@@ -5,19 +5,17 @@ interface DetailsTabStore {
   setTab: (tab: string) => void
 }
 
-// TODO: remove duplication OR merge into single stores
-export const useRequestDetailsTab = create<DetailsTabStore>((set) => ({
-  tab: 'headers',
-  setTab: (tab) => set({ tab }),
-}))
+function createDetailsTabStore() {
+  return create<DetailsTabStore>((set) => ({
+    tab: 'headers',
+    setTab: (tab) => set({ tab }),
+  }))
+}
 
-export const useResponseDetailsTab = create<DetailsTabStore>((set) => ({
-  tab: 'headers',
-  setTab: (tab) => set({ tab }),
-}))
+export const useRequestDetailsTab = createDetailsTabStore()
+export const useResponseDetailsTab = createDetailsTabStore()
 
-// TODO: rename
-interface Store {
+interface ContentMatchStore {
   searchString?: string
   index: number
   goToMatch: ({
@@ -31,7 +29,7 @@ interface Store {
 }
 
 function createStore() {
-  return create<Store>((set) => ({
+  return create<ContentMatchStore>((set) => ({
     searchString: undefined,
     index: 0,
     goToMatch: ({ searchString, index }) =>
