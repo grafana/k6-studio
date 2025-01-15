@@ -2,7 +2,7 @@ import { exhaustive } from '@/utils/typescript'
 import { Expression, Statement, Scenario } from './ast'
 import { IntermediateContext } from './context'
 
-function subtituteExpression(
+function substituteExpression(
   node: Expression,
   substitutions: Map<string, string>
 ): Expression {
@@ -22,14 +22,14 @@ function subtituteExpression(
     case 'GotoExpression':
       return {
         type: 'GotoExpression',
-        target: subtituteExpression(node.target, substitutions),
-        url: subtituteExpression(node.url, substitutions),
+        target: substituteExpression(node.target, substitutions),
+        url: substituteExpression(node.url, substitutions),
       }
 
     case 'ReloadExpression':
       return {
         type: 'ReloadExpression',
-        target: subtituteExpression(node.target, substitutions),
+        target: substituteExpression(node.target, substitutions),
       }
 
     default:
@@ -47,13 +47,13 @@ function substituteStatement(
         type: 'VariableDeclaration',
         kind: node.kind,
         name: substitutions.get(node.name) ?? node.name,
-        value: subtituteExpression(node.value, substitutions),
+        value: substituteExpression(node.value, substitutions),
       }
 
     case 'ExpressionStatement':
       return {
         type: 'ExpressionStatement',
-        expression: subtituteExpression(node.expression, substitutions),
+        expression: substituteExpression(node.expression, substitutions),
       }
 
     default:
