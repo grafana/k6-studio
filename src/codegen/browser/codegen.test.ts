@@ -20,7 +20,7 @@ it('should emit a console.log for every dummy event', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
       nodes: new Array(5).fill(null).map((_, i) => ({
-        type: 'page' as const,
+        type: 'page',
         nodeId: String(i),
         ports: {},
       })),
