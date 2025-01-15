@@ -7,6 +7,7 @@ import { GeneratorFile } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 import { BrowserEvent } from './schemas/recording'
+import * as Sentry from './sentry'
 
 interface GetFilesResponse {
   recordings: StudioFile[]
@@ -224,5 +225,7 @@ const studio = {
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)
+
+Sentry.configureRendererProcess(studio.settings.getSettings)
 
 export type Studio = typeof studio
