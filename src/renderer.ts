@@ -29,8 +29,11 @@
 import { ProxyData } from './types'
 import './index.tsx'
 import { setMonacoEnv } from './components/Monaco/setMonacoEnv'
+import * as Sentry from './sentry'
 
 setMonacoEnv()
+
+Sentry.configureRendererProcess()
 
 // Proxy
 
