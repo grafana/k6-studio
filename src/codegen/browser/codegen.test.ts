@@ -6,8 +6,7 @@ it('should emit an empty test with browser scenario options', async ({
 }) => {
   const script = await emitScript({
     defaultScenario: {
-      type: 'browser',
-      events: [],
+      nodes: [],
     },
     scenarios: {},
   })
@@ -20,13 +19,10 @@ it('should emit an empty test with browser scenario options', async ({
 it('should emit a console.log for every dummy event', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
-      type: 'browser',
-      events: new Array(5).fill(null).map((_, i) => ({
-        type: 'page-navigation',
-        eventId: String(i),
-        tab: 'tab',
-        url: 'http://example.com?id=' + i,
-        timestamp: Date.now(),
+      nodes: new Array(5).fill(null).map((_, i) => ({
+        type: 'page' as const,
+        nodeId: String(i),
+        ports: {},
       })),
     },
     scenarios: {},
@@ -35,4 +31,29 @@ it('should emit a console.log for every dummy event', async ({ expect }) => {
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/emit-dummy-events.ts'
   )
+})
+
+it('should goto a url', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+          ports: {},
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          ports: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot('__snapshots__/browser/goto-url.ts')
 })

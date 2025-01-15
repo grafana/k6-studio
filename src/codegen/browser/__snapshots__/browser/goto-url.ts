@@ -10,13 +10,7 @@ export const options = {
 };
 
 export default async function () {
-  const page1 = await browser.newPage();
+  const page = await browser.newPage();
 
-  const page2 = await browser.newPage();
-
-  const page3 = await browser.newPage();
-
-  const page4 = await browser.newPage();
-
-  const page5 = await browser.newPage();
+  await page.goto("https://example.com");
 }

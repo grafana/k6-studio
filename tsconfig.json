@@ -21,7 +21,8 @@
     "types": [
       "vite/client",
       "@emotion/react/types/css-prop",
-      "vitest/importMeta"
+      "vitest/importMeta",
+      "k6"
     ]
   }
 }
