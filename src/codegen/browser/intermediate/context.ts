@@ -6,12 +6,19 @@ import { groupBy } from 'lodash-es'
 
 type ScenarioGraph = Graph<model.TestNode, null>
 
+interface ConnectableNode {
+  nodeId: model.NodeId
+  inputs: {
+    previous?: model.NodeRef
+  }
+}
+
 function connectPrevious(
   graph: ScenarioGraph,
-  node: { nodeId: model.NodeId; ports: { previous?: model.NodeRef } }
+  { nodeId, inputs }: ConnectableNode
 ) {
-  if (node.ports.previous) {
-    graph.connect(node.ports.previous.nodeId, node.nodeId, null)
+  if (inputs.previous) {
+    graph.connect(inputs.previous.nodeId, nodeId, null)
   }
 }
 
@@ -32,7 +39,7 @@ function buildScenarioGraph(scenario: model.Scenario) {
 
       case 'goto':
       case 'reload':
-        graph.connect(node.nodeId, node.ports.page.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.page.nodeId, null)
         connectPrevious(graph, node)
         break
 
@@ -116,7 +123,9 @@ export class IntermediateContext {
     this.#expressions.set(node.nodeId, expression)
   }
 
-  reference(node: model.TestNode | model.NodeId): ir.Expression {
+  reference(
+    node: model.TestNode | model.NodeRef | model.NodeId
+  ): ir.Expression {
     const id = typeof node === 'string' ? node : node.nodeId
     const expression = this.#expressions.get(id)
 

@@ -18,7 +18,7 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
 }
 
 const emitGotoNode = (context: IntermediateContext, node: m.GotoNode) => {
-  const page = context.reference(node.ports.page.nodeId)
+  const page = context.reference(node.inputs.page)
 
   context.emit({
     type: 'ExpressionStatement',
@@ -34,7 +34,7 @@ const emitGotoNode = (context: IntermediateContext, node: m.GotoNode) => {
 }
 
 const emitReloadNode = (context: IntermediateContext, node: m.ReloadNode) => {
-  const page = context.reference(node.ports.page.nodeId)
+  const page = context.reference(node.inputs.page)
 
   context.emit({
     type: 'ExpressionStatement',

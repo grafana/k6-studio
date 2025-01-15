@@ -10,13 +10,12 @@ export interface NodeRef {
 
 export interface PageNode extends NodeBase {
   type: 'page'
-  ports: Record<string, never>
 }
 
 export interface GotoNode extends NodeBase {
   type: 'goto'
   url: string
-  ports: {
+  inputs: {
     previous?: NodeRef
     page: NodeRef
   }
@@ -24,7 +23,7 @@ export interface GotoNode extends NodeBase {
 
 export interface ReloadNode extends NodeBase {
   type: 'reload'
-  ports: {
+  inputs: {
     previous?: NodeRef
     page: NodeRef
   }

@@ -17,7 +17,6 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
       page = {
         type: 'page',
         nodeId: pageId,
-        ports: {},
       }
 
       nodes.push(page)
@@ -36,7 +35,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           type: 'goto',
           nodeId: event.eventId,
           url: event.url,
-          ports: {
+          inputs: {
             previous,
             page: getPage(event.tab),
           },
@@ -46,7 +45,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         return {
           type: 'reload',
           nodeId: event.eventId,
-          ports: {
+          inputs: {
             previous,
             page: getPage(event.tab),
           },

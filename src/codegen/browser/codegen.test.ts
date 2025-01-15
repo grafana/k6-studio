@@ -22,7 +22,6 @@ it('should emit a console.log for every dummy event', async ({ expect }) => {
       nodes: new Array(5).fill(null).map((_, i) => ({
         type: 'page',
         nodeId: String(i),
-        ports: {},
       })),
     },
     scenarios: {},
@@ -40,13 +39,12 @@ it('should goto a url', async ({ expect }) => {
         {
           type: 'page',
           nodeId: 'page',
-          ports: {},
         },
         {
           type: 'goto',
           nodeId: 'goto',
           url: 'https://example.com',
-          ports: {
+          inputs: {
             page: { nodeId: 'page' },
           },
         },
