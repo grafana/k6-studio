@@ -58,12 +58,6 @@ module.exports = {
       'error',
       { checksVoidReturn: false },
     ],
-    'import/no-unresolved': [
-      'error',
-      {
-        ignore: ['^k6/'],
-      },
-    ],
   },
 
   parserOptions: {
