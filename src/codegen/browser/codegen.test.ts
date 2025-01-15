@@ -39,3 +39,28 @@ it('should goto a url', async ({ expect }) => {
 
   await expect(script).toMatchFileSnapshot('__snapshots__/browser/goto-url.ts')
 })
+
+it('should reload the page', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'reload',
+          nodeId: 'reload',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/reload-page.ts'
+  )
+})
