@@ -2,7 +2,7 @@ import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
 import { GlobeIcon, UpdateIcon } from '@radix-ui/react-icons'
-import { Flex, Table } from '@radix-ui/themes'
+import { Flex, Table, Tooltip } from '@radix-ui/themes'
 
 interface EventIconProps {
   event: BrowserEvent
@@ -29,13 +29,17 @@ function EventDescription({ event }: EventDescriptionProps) {
   switch (event.type) {
     case 'page-navigation':
       return (
-        <span>
-          Navigated to <strong>{event.url}.</strong>
-        </span>
+        <>
+          Navigated to{' '}
+          <Tooltip content={event.url}>
+            <strong>{event.url}</strong>
+          </Tooltip>
+          .
+        </>
       )
 
     case 'page-reload':
-      return <span>Reloaded page.</span>
+      return <>Reloaded page.</>
 
     default:
       return exhaustive(event)
@@ -50,6 +54,7 @@ export function BrowserEventLog({ events }: BrowserEventLogProps) {
   return (
     <Flex direction="column" minHeight="0" height="100%">
       <Table.Root
+        layout="fixed"
         css={css`
           height: 100%;
         `}
@@ -59,9 +64,18 @@ export function BrowserEventLog({ events }: BrowserEventLogProps) {
             return (
               <Table.Row key={event.eventId}>
                 <Table.Cell>
-                  <Flex as="span" align="center" gap="2">
-                    <EventIcon event={event} />{' '}
-                    <EventDescription event={event} />
+                  <Flex align="center" gap="2">
+                    <EventIcon event={event} />
+                    <div
+                      css={css`
+                        flex: 1 1 0;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                      `}
+                    >
+                      <EventDescription event={event} />
+                    </div>
                   </Flex>
                 </Table.Cell>
               </Table.Row>
