@@ -61,7 +61,7 @@ function emitExecutor(scenario: ir.Scenario, exec?: string) {
 function emitScenarioOptions({ defaultScenario, scenarios }: ir.Test) {
   const withDefaultScenario = defaultScenario
     ? {
-        [defaultScenario.name ?? 'browser']: emitExecutor(defaultScenario),
+        [defaultScenario.name ?? 'default']: emitExecutor(defaultScenario),
       }
     : {}
 
