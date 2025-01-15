@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DropdownMenu, IconButton } from '@radix-ui/themes'
+import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
 
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { exportScript } from '../Generator.utils'
@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { RecordingSelector } from '../RecordingSelector'
 
 interface GeneratorControlsProps {
   onSave: () => void
@@ -38,52 +39,55 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
 
   return (
     <>
-      <ButtonWithTooltip
-        onClick={onSave}
-        disabled={!isDirty}
-        tooltip={!isDirty ? 'Changes saved' : ''}
-      >
-        Save generator
-      </ButtonWithTooltip>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <IconButton variant="ghost" color="gray">
-            <DotsVerticalIcon />
-          </IconButton>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content>
-          <DropdownMenu.Item
-            onSelect={() => setIsValidatorDialogOpen(true)}
-            disabled={!isScriptExportable}
-          >
-            Validate script
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
-            onSelect={() => setIsExportScriptDialogOpen(true)}
-            disabled={!isScriptExportable}
-          >
-            Export script
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item onSelect={handleDeleteGenerator} color="red">
-            Delete generator
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
-      {isScriptExportable && (
-        <>
-          <ValidatorDialog
-            script={preview}
-            open={isValidatorDialogOpen}
-            onOpenChange={setIsValidatorDialogOpen}
-          />
-          <ExportScriptDialog
-            onExport={exportScript}
-            open={isExportScriptDialogOpen}
-            onOpenChange={setIsExportScriptDialogOpen}
-          />
-        </>
-      )}
+      <RecordingSelector />
+      <Flex align="center" justify="between" gap="2">
+        <ButtonWithTooltip
+          onClick={onSave}
+          disabled={!isDirty}
+          tooltip={!isDirty ? 'Changes saved' : ''}
+        >
+          Save generator
+        </ButtonWithTooltip>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <IconButton variant="ghost" color="gray">
+              <DotsVerticalIcon />
+            </IconButton>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Item
+              onSelect={() => setIsValidatorDialogOpen(true)}
+              disabled={!isScriptExportable}
+            >
+              Validate script
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              onSelect={() => setIsExportScriptDialogOpen(true)}
+              disabled={!isScriptExportable}
+            >
+              Export script
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item onSelect={handleDeleteGenerator} color="red">
+              Delete generator
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
+        {isScriptExportable && (
+          <>
+            <ValidatorDialog
+              script={preview}
+              open={isValidatorDialogOpen}
+              onOpenChange={setIsValidatorDialogOpen}
+            />
+            <ExportScriptDialog
+              onExport={exportScript}
+              open={isExportScriptDialogOpen}
+              onOpenChange={setIsExportScriptDialogOpen}
+            />
+          </>
+        )}
+      </Flex>
     </>
   )
 }
