@@ -46,6 +46,7 @@ export default defineConfig((env) => {
             background: {
               service_worker: 'extension/src/background.ts',
             },
+            permissions: ['webNavigation'],
           }
         },
       }),

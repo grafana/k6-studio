@@ -1,5 +1,6 @@
+import { BrowserEvent } from '@/schemas/recording'
 import { MessageEnvelope, MessagePayload } from '@/services/browser/schemas'
-import { browser } from 'webextension-polyfill-ts'
+import { WebNavigation, webNavigation } from 'webextension-polyfill'
 
 let socket: WebSocket | null = null
 let buffer: MessageEnvelope[] = []
@@ -15,6 +16,13 @@ function send(message: MessagePayload) {
   } else {
     buffer.push(envelope)
   }
+}
+
+function captureEvents(events: BrowserEvent[] | BrowserEvent) {
+  send({
+    type: 'events-captured',
+    events: Array.isArray(events) ? events : [events],
+  })
 }
 
 function flush(socket: WebSocket) {
@@ -58,23 +66,56 @@ function connect() {
   }
 }
 
-setInterval(() => {
-  send({
-    type: 'events-captured',
-    events: [
-      {
-        eventId: crypto.randomUUID(),
-        timestamp: Date.now(),
-        type: 'dummy',
-        selector: 'button',
-        message: 'Clicked button',
-      },
-    ],
+function isReload(transition: WebNavigation.TransitionType) {
+  return transition === 'reload'
+}
+
+function isManualNavigation({
+  transitionType,
+  transitionQualifiers,
+}: WebNavigation.OnCommittedDetailsType) {
+  if (
+    transitionType === 'typed' ||
+    transitionType === 'generated' ||
+    transitionType === 'start_page' ||
+    transitionType === 'auto_bookmark' ||
+    transitionType === 'keyword' ||
+    transitionType === 'keyword_generated'
+  ) {
+    return true
+  }
+
+  // If a user navigates back or forward to a page that was navigated to by a link
+  // we treat that as a manual navigation.
+  return (
+    transitionQualifiers.includes('forward_back') && transitionType === 'link'
+  )
+}
+
+webNavigation.onCommitted.addListener((details) => {
+  if (isReload(details.transitionType)) {
+    captureEvents({
+      type: 'page-reload',
+      eventId: crypto.randomUUID(),
+      timestamp: details.timeStamp,
+      tab: details.tabId.toString(),
+      url: details.url ?? '',
+    })
+
+    return
+  }
+
+  if (!isManualNavigation(details)) {
+    return
+  }
+
+  captureEvents({
+    type: 'page-navigation',
+    eventId: crypto.randomUUID(),
+    timestamp: details.timeStamp,
+    tab: details.tabId.toString(),
+    url: details.url ?? '',
   })
-}, 1000)
+})
 
 connect()
-
-browser.runtime.onInstalled.addListener(() => {
-  console.log('Extension installed...')
-})

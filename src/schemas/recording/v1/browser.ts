@@ -1,14 +1,25 @@
-import { z } from 'zod'
+import { discriminatedUnion, z } from 'zod'
 
-const DummyEvent = z.object({
+const BrowserEventBaseSchema = z.object({
   eventId: z.string(),
   timestamp: z.number(),
-  type: z.literal('dummy'),
-  selector: z.string(),
-  message: z.string(),
 })
 
-export const BrowserEventSchema = DummyEvent
+const PageNavigationEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('page-navigation'),
+  tab: z.string(),
+  url: z.string(),
+})
 
-export type DummyEvent = z.infer<typeof DummyEvent>
+const PageReloadEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('page-reload'),
+  tab: z.string(),
+  url: z.string(),
+})
+
+export const BrowserEventSchema = discriminatedUnion('type', [
+  PageNavigationEventSchema,
+  PageReloadEventSchema,
+])
+
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>

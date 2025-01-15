@@ -6,8 +6,7 @@ it('should emit an empty test with browser scenario options', async ({
 }) => {
   const script = await emitScript({
     defaultScenario: {
-      type: 'browser',
-      events: [],
+      nodes: [],
     },
     scenarios: {},
   })
@@ -17,22 +16,51 @@ it('should emit an empty test with browser scenario options', async ({
   )
 })
 
-it('should emit a console.log for every dummy event', async ({ expect }) => {
+it('should goto a url', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
-      type: 'browser',
-      events: new Array(5).fill(null).map((_, i) => ({
-        type: 'dummy',
-        eventId: String(i),
-        message: `Event ${i}`,
-        selector: `#event-${i}`,
-        timestamp: Date.now(),
-      })),
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot('__snapshots__/browser/goto-url.ts')
+})
+
+it('should reload the page', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'reload',
+          nodeId: 'reload',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
     },
     scenarios: {},
   })
 
   await expect(script).toMatchFileSnapshot(
-    '__snapshots__/browser/emit-dummy-events.ts'
+    '__snapshots__/browser/reload-page.ts'
   )
 })
