@@ -70,7 +70,6 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ env.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ env.SENTRY_PROJECT }}
-        # run: npm run publish
         run: |
             # on macos we also build the x64 app separately
             npm run publish -- --arch=x64
