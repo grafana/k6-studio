@@ -65,7 +65,7 @@ export function RecordingSelector() {
             id="recording-selector"
             placeholder="Select recording"
             css={css`
-              width: 200px;
+              width: 300px;
               @media (max-width: 1060px) {
                 width: 125px;
               }
