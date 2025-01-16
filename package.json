@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "format": "prettier --ignore-unknown --write \"./**/*\"",
-    "prepare": "husky"
+    "prepare": "husky && husky install"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
