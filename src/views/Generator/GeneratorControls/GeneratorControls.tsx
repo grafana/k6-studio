@@ -40,7 +40,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
   return (
     <>
       <RecordingSelector />
-      <Flex align="center" justify="between" gap="2">
+      <Flex align="center" justify="between" gap="2" ml="2">
         <ButtonWithTooltip
           onClick={onSave}
           disabled={!isDirty}
