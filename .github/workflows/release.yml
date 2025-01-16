@@ -72,7 +72,13 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ env.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ env.SENTRY_PROJECT }}
-        run: npm run publish
+        run: |
+            # on macos we also build the x64 app separately
+            if [ "${{ runner.os }}" == "macOS" ]; then
+              npm run publish -- --arch=x64
+            fi
+
+            npm run publish
 
       - name: cleanup macos certificates
         if: startsWith(matrix.platform, 'macos-')
