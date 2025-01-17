@@ -9,6 +9,7 @@ import { AppRoutes } from './AppRoutes'
 import { Toasts } from './components/Toast/Toasts'
 import { queryClient } from './utils/query'
 import { useCloseSplashScreen } from './hooks/useCloseSplashScreen'
+import { DevToolsDialog } from './components/DevToolsDialog'
 
 enableMapSet()
 
@@ -22,6 +23,7 @@ export function App() {
         <Global styles={globalStyles} />
         <Toasts />
         <AppRoutes />
+        <DevToolsDialog />
       </Theme>
     </QueryClientProvider>
   )
