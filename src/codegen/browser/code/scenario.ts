@@ -25,6 +25,16 @@ function emitNewPageExpression(
     .done()
 }
 
+function emitNewLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const selector = emitExpression(context, expression.selector)
+
+  return new ExpressionBuilder(page).member('locator').call([selector]).done()
+}
+
 function emitGotoExpression(
   context: ScenarioContext,
   expression: ir.GotoExpression
@@ -51,6 +61,19 @@ function emitReloadExpression(
     .done()
 }
 
+function emitClickExpression(
+  context: ScenarioContext,
+  expression: ir.ClickExpression
+): ts.Expression {
+  const locator = emitExpression(context, expression.locator)
+
+  return new ExpressionBuilder(locator)
+    .member('click')
+    .call([])
+    .await(context)
+    .done()
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -65,11 +88,17 @@ function emitExpression(
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
 
+    case 'NewLocatorExpression':
+      return emitNewLocatorExpression(context, expression)
+
     case 'GotoExpression':
       return emitGotoExpression(context, expression)
 
     case 'ReloadExpression':
       return emitReloadExpression(context, expression)
+
+    case 'ClickExpression':
+      return emitClickExpression(context, expression)
 
     default:
       return exhaustive(expression)

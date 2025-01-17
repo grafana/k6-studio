@@ -1,7 +1,7 @@
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
-import { GlobeIcon, UpdateIcon } from '@radix-ui/react-icons'
+import { GlobeIcon, TargetIcon, UpdateIcon } from '@radix-ui/react-icons'
 import { Flex, Table, Tooltip } from '@radix-ui/themes'
 
 interface EventIconProps {
@@ -15,6 +15,9 @@ function EventIcon({ event }: EventIconProps) {
 
     case 'page-reload':
       return <UpdateIcon />
+
+    case 'click':
+      return <TargetIcon />
 
     default:
       return exhaustive(event)
@@ -40,6 +43,13 @@ function EventDescription({ event }: EventDescriptionProps) {
 
     case 'page-reload':
       return <>Reloaded page.</>
+
+    case 'click':
+      return (
+        <>
+          Clicked on element <strong>{event.selector}</strong>
+        </>
+      )
 
     default:
       return exhaustive(event)

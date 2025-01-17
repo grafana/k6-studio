@@ -12,6 +12,14 @@ export interface PageNode extends NodeBase {
   type: 'page'
 }
 
+export interface LocatorNode extends NodeBase {
+  type: 'locator'
+  selector: string
+  inputs: {
+    page: NodeRef
+  }
+}
+
 export interface GotoNode extends NodeBase {
   type: 'goto'
   url: string
@@ -29,7 +37,20 @@ export interface ReloadNode extends NodeBase {
   }
 }
 
-export type TestNode = PageNode | GotoNode | ReloadNode
+export interface ClickNode extends NodeBase {
+  type: 'click'
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
+  }
+}
+
+export type TestNode =
+  | PageNode
+  | GotoNode
+  | ReloadNode
+  | LocatorNode
+  | ClickNode
 
 export interface Scenario {
   nodes: TestNode[]

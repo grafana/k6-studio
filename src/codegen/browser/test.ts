@@ -1,5 +1,5 @@
 import { BrowserEvent } from '@/schemas/recording'
-import { TestNode, PageNode, NodeRef, Test } from './types'
+import { TestNode, PageNode, NodeRef, Test, LocatorNode } from './types'
 import { exhaustive } from '@/utils/typescript'
 
 interface Recording {
@@ -8,6 +8,8 @@ interface Recording {
 
 function buildBrowserNodeGraph(events: BrowserEvent[]) {
   const pages = new Map<string, PageNode>()
+  const locators = new Map<string, LocatorNode>()
+
   const nodes: TestNode[] = []
 
   function getPage(pageId: string): NodeRef {
@@ -26,6 +28,28 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     return {
       nodeId: page.nodeId,
     }
+  }
+
+  function getLocator(tab: string, selector: string): NodeRef {
+    const page = getPage(tab)
+
+    let locator = locators.get(selector)
+
+    if (locator === undefined) {
+      locator = {
+        type: 'locator',
+        nodeId: `${tab}::${selector}`,
+        selector,
+        inputs: {
+          page,
+        },
+      }
+
+      nodes.push(locator)
+      locators.set(selector, locator)
+    }
+
+    return locator
   }
 
   function toNode(event: BrowserEvent): TestNode {
@@ -48,6 +72,16 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           inputs: {
             previous,
             page: getPage(event.tab),
+          },
+        }
+
+      case 'click':
+        return {
+          type: 'click',
+          nodeId: event.eventId,
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.selector),
           },
         }
 

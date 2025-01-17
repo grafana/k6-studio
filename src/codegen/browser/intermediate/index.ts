@@ -4,6 +4,16 @@ import * as ir from './ast'
 import { IntermediateContext } from './context'
 import { substituteVariables } from './variables'
 
+function isUsedOnce(context: IntermediateContext, node: m.TestNode) {
+  const dependents = context.graph.incoming(node.nodeId)[Symbol.iterator]()
+
+  if (dependents.next().done) {
+    return false
+  }
+
+  return dependents.next().done
+}
+
 function emitPageNode(context: IntermediateContext, node: m.PageNode) {
   const expression: ir.NewPageExpression = {
     type: 'NewPageExpression',
@@ -17,7 +27,7 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
   })
 }
 
-const emitGotoNode = (context: IntermediateContext, node: m.GotoNode) => {
+function emitGotoNode(context: IntermediateContext, node: m.GotoNode) {
   const page = context.reference(node.inputs.page)
 
   context.emit({
@@ -33,7 +43,7 @@ const emitGotoNode = (context: IntermediateContext, node: m.GotoNode) => {
   })
 }
 
-const emitReloadNode = (context: IntermediateContext, node: m.ReloadNode) => {
+function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
   const page = context.reference(node.inputs.page)
 
   context.emit({
@@ -45,16 +55,61 @@ const emitReloadNode = (context: IntermediateContext, node: m.ReloadNode) => {
   })
 }
 
+function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
+  const page = context.reference(node.inputs.page)
+
+  const expression: ir.NewLocatorExpression = {
+    type: 'NewLocatorExpression',
+    selector: {
+      type: 'StringLiteral',
+      value: node.selector,
+    },
+    page,
+  }
+
+  // If the locator is only used once, we can inline it.
+  if (isUsedOnce(context, node)) {
+    context.inline(node, expression)
+
+    return
+  }
+
+  context.declare({
+    kind: 'const',
+    node,
+    name: 'locator',
+    value: expression,
+  })
+}
+
+function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'ClickExpression',
+      locator,
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
       return emitPageNode(context, node)
+
+    case 'locator':
+      return emitLocatorNode(context, node)
 
     case 'goto':
       return emitGotoNode(context, node)
 
     case 'reload':
       return emitReloadNode(context, node)
+
+    case 'click':
+      return emitClickNode(context, node)
 
     default:
       return exhaustive(node)

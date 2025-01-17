@@ -1,6 +1,12 @@
 import { BrowserEvent } from '@/schemas/recording'
 import { MessageEnvelope, MessagePayload } from '@/services/browser/schemas'
-import { WebNavigation, webNavigation } from 'webextension-polyfill'
+import {
+  WebNavigation,
+  webNavigation,
+  runtime,
+  tabs,
+} from 'webextension-polyfill'
+import { BrowserMessageSchema } from './messaging'
 
 let socket: WebSocket | null = null
 let buffer: MessageEnvelope[] = []
@@ -91,6 +97,33 @@ function isManualNavigation({
     transitionQualifiers.includes('forward_back') && transitionType === 'link'
   )
 }
+
+runtime.onMessage.addListener((message, sender) => {
+  const event = BrowserMessageSchema.safeParse(message)
+  if (!event.success) {
+    console.error(
+      'Failed to parse message sent from content script.',
+      event.error
+    )
+
+    return undefined
+  }
+
+  const tabId = sender.tab?.id ?? tabs.TAB_ID_NONE
+
+  switch (event.data.type) {
+    case 'events-captured':
+      captureEvents(
+        event.data.events.map((event) => {
+          return {
+            ...event,
+            tab: tabId.toString(),
+          }
+        })
+      )
+      break
+  }
+})
 
 webNavigation.onCommitted.addListener((details) => {
   if (isReload(details.transitionType)) {

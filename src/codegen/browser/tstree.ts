@@ -2668,4 +2668,3 @@ export interface YieldExpression extends BaseNode {
   type: AST_NODE_TYPES.YieldExpression
 }
 export {}
-//# sourceMappingURL=ast-spec.d.ts.map

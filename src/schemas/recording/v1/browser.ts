@@ -17,9 +17,16 @@ const PageReloadEventSchema = BrowserEventBaseSchema.extend({
   url: z.string(),
 })
 
+const ClickEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('click'),
+  tab: z.string(),
+  selector: z.string(),
+})
+
 export const BrowserEventSchema = discriminatedUnion('type', [
   PageNavigationEventSchema,
   PageReloadEventSchema,
+  ClickEventSchema,
 ])
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>

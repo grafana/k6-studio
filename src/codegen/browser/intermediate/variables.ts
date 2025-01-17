@@ -19,6 +19,13 @@ function substituteExpression(
     case 'NewPageExpression':
       return node
 
+    case 'NewLocatorExpression':
+      return {
+        type: 'NewLocatorExpression',
+        page: substituteExpression(node.page, substitutions),
+        selector: substituteExpression(node.selector, substitutions),
+      }
+
     case 'GotoExpression':
       return {
         type: 'GotoExpression',
@@ -30,6 +37,12 @@ function substituteExpression(
       return {
         type: 'ReloadExpression',
         target: substituteExpression(node.target, substitutions),
+      }
+
+    case 'ClickExpression':
+      return {
+        type: 'ClickExpression',
+        locator: substituteExpression(node.locator, substitutions),
       }
 
     default:

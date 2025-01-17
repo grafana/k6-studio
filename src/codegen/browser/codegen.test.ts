@@ -64,3 +64,78 @@ it('should reload the page', async ({ expect }) => {
     '__snapshots__/browser/reload-page.ts'
   )
 })
+
+it('should emit click event on element', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'button',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/click-element.ts'
+  )
+})
+
+it('should declare a variable for locator when used more than once', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'button',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click2',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/de-duplicate-locator.ts'
+  )
+})
