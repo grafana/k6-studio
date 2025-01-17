@@ -1,5 +1,6 @@
 import { BrowserEvent } from '@/schemas/recording'
 import { runtime } from 'webextension-polyfill'
+import { generateSelector } from './selectors'
 
 function captureEvents(events: BrowserEvent[] | BrowserEvent) {
   runtime
@@ -21,7 +22,7 @@ window.addEventListener(
         type: 'click',
         eventId: crypto.randomUUID(),
         timestamp: Date.now(),
-        selector: ev.target.tagName,
+        selector: generateSelector(ev.target),
         tab: '',
       })
 
