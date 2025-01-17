@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useFeaturesStore } from '@/store/features'
 import { Feature } from '@/types/features'
 
-export function DevToolsDialog() {
+export function DevModeDialog() {
   const [isOpen, setIsOpen] = useState(false)
 
   useKonami({
@@ -44,3 +44,11 @@ export function DevToolsDialog() {
     </Dialog.Root>
   )
 }
+
+function ProdModeDialog() {
+  return null
+}
+
+export const DevToolsDialog =
+  // @ts-expect-error we have commonjs set as module option
+  import.meta.env.MODE === 'development' ? DevModeDialog : ProdModeDialog
