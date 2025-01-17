@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react'
 
-import { useFeature } from '@/store/features'
+import { useFeaturesStore } from '@/store/features'
 import type { Feature as FeatureType } from '@/types/features'
 
 interface FeatureProps {
@@ -11,7 +11,7 @@ export function Feature({
   children,
   feature,
 }: PropsWithChildren<FeatureProps>) {
-  const [isEnabled] = useFeature(feature)
+  const isEnabled = useFeaturesStore((state) => state.features[feature])
 
   if (!isEnabled) {
     return null
