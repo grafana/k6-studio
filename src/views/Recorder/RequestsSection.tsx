@@ -37,8 +37,14 @@ export function RequestsSection({
     false
   )
 
-  const { filter, setFilter, staticAssetCount, filteredRequests } =
-    useFilterRequests({ proxyData, includeStaticAssets })
+  const {
+    filter,
+    setFilter,
+    staticAssetCount,
+    filteredRequests,
+    filterAllData,
+    setFilterAllData,
+  } = useFilterRequests({ proxyData, includeStaticAssets })
 
   const groupedProxyData = groupProxyData(filteredRequests)
   const ref = useAutoScroll(groupedProxyData, autoScroll)
@@ -78,8 +84,13 @@ export function RequestsSection({
             staticAssetCount={staticAssetCount}
           />
 
-          <Box width="240px">
-            <Filter filter={filter} setFilter={setFilter} />
+          <Box width="300px">
+            <Filter
+              filter={filter}
+              setFilter={setFilter}
+              filterAllData={filterAllData}
+              setFilterAllData={setFilterAllData}
+            />
           </Box>
         </Flex>
       </Flex>
@@ -91,6 +102,7 @@ export function RequestsSection({
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
             onUpdateGroup={onUpdateGroup}
+            filter={filter}
           />
         </div>
       </ScrollArea>

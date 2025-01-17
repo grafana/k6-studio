@@ -7,10 +7,18 @@ import { parseParams } from './utils'
 import { getContentType } from '@/utils/headers'
 import { FormPayloadPreview } from './FormPayloadPreview'
 import { Raw } from '../ResponseDetails/Raw'
+import { useGoToPayloadMatch } from '../Details.hooks'
+import { useEffect } from 'react'
 
 export function Payload({ data }: { data: ProxyData }) {
   const content = parseParams(data)
   const contentType = getContentType(data.request?.headers ?? [])
+  const { searchString, index, reset } = useGoToPayloadMatch()
+
+  // Reset payload search on unmount
+  useEffect(() => {
+    return reset
+  }, [reset])
 
   if (!content) {
     return (
@@ -21,12 +29,26 @@ export function Payload({ data }: { data: ProxyData }) {
   }
 
   if (contentType === 'multipart/form-data') {
-    return <Raw content={content} format="text" />
+    return (
+      <Raw
+        content={content}
+        format="text"
+        searchString={searchString}
+        searchIndex={index}
+      />
+    )
   }
 
   if (contentType === 'application/x-www-form-urlencoded') {
     return <FormPayloadPreview payloadJsonString={content} />
   }
 
-  return <ReadOnlyEditor language="javascript" value={content} />
+  return (
+    <ReadOnlyEditor
+      language="javascript"
+      value={content}
+      searchString={searchString}
+      searchIndex={index}
+    />
+  )
 }

@@ -5,12 +5,14 @@ import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 interface RawProps {
   content: string
   format?: string
+  searchString?: string
+  searchIndex?: number
 }
 
-export function Raw({ content, format }: RawProps) {
+export function Raw({ content, format, ...props }: RawProps) {
   return (
     <Text size="1" wrap="pretty" css={style}>
-      <ReadOnlyEditor language={format} value={content} />
+      <ReadOnlyEditor language={format} value={content} {...props} />
     </Text>
   )
 }

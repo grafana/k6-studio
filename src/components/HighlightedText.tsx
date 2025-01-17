@@ -1,6 +1,5 @@
 import { SearchMatch } from '@/types/fuse'
-import { css } from '@emotion/react'
-import { useMemo } from 'react'
+import { ReactNode, useMemo } from 'react'
 
 interface MatchSegment {
   match: boolean
@@ -43,41 +42,58 @@ function splitByMatches(text: string, matches: Array<[number, number]>) {
 interface HighlightedTextProps {
   text: string
   matches: SearchMatch[] | undefined
+  highlightAllMatches?: boolean
 }
 
-export function HighlightedText({ text, matches }: HighlightedTextProps) {
+export function HighlightedText({
+  text,
+  matches,
+  highlightAllMatches,
+}: HighlightedTextProps) {
   const segments = useMemo(() => {
     // When searching multiple properties we need to filter matches by value we are highlighting
     const filteredMatches = (matches || []).filter(
       (match) => match.value === text
     )
 
+    const indices = filteredMatches.flatMap((match) => match.indices)
+
     return splitByMatches(
       text,
-      longestMatchOnly(filteredMatches.flatMap((match) => match.indices))
+      highlightAllMatches ? indices : longestMatchOnly(indices)
     )
-  }, [text, matches])
+  }, [text, matches, highlightAllMatches])
 
   return (
-    <>
+    <span>
       {segments.map((segment, index) => {
         if (segment.match) {
-          return (
-            <mark
-              key={index}
-              css={css`
-                color: var(--accent-12);
-                background-color: var(--accent-5);
-                font-weight: 700;
-              `}
-            >
-              {segment.text}
-            </mark>
-          )
+          return <HighlightMark key={index}>{segment.text}</HighlightMark>
         }
 
         return segment.text
       })}
-    </>
+    </span>
+  )
+}
+
+export function HighlightMark({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <mark
+      css={{
+        color: 'var(--accent-12)',
+        backgroundColor: 'var(--accent-5)',
+        fontWeight: 700,
+      }}
+      className={className}
+    >
+      {children}
+    </mark>
   )
 }

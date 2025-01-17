@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Box, Flex, ScrollArea, SegmentedControl } from '@radix-ui/themes'
 
 import { ProxyData } from '@/types'
@@ -7,15 +7,22 @@ import { Preview } from './Preview'
 import { Raw } from './Raw'
 import { parseContent, toFormat } from './ResponseDetails.utils'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { useGoToContentMatch } from '../Details.hooks'
 
 export function Content({ data }: { data: ProxyData }) {
-  const [selectedTab, setSelectedTab] = useState('preview')
+  const [selectedTab, setSelectedTab] = useState('content')
+  const { searchString, index, reset } = useGoToContentMatch()
 
   const contentType = getContentType(data.response?.headers ?? [])
   const format = toFormat(contentType)
   const content = parseContent(format, data)
   const rawFormat = format === 'json' ? 'json-raw' : format
   const rawContent = parseContent(rawFormat, data)
+
+  // Reset search string on unmount
+  useEffect(() => {
+    return reset
+  }, [reset])
 
   if (!contentType || !content || !format) {
     return (
@@ -36,7 +43,7 @@ export function Content({ data }: { data: ProxyData }) {
       {!isMedia(format) && (
         <Flex gap="2" justify="end" px="4">
           <SegmentedControl.Root
-            defaultValue="preview"
+            defaultValue="content"
             radius="small"
             size="1"
             variant="classic"
@@ -56,10 +63,20 @@ export function Content({ data }: { data: ProxyData }) {
         <Box px="4" height="100%">
           {selectedTab === 'preview' && <Preview {...contentProps} />}
           {selectedTab === 'raw' && (
-            <Raw content={rawContent ?? ''} format={format} />
+            <Raw
+              content={rawContent ?? ''}
+              format={format}
+              searchString={searchString}
+              searchIndex={index}
+            />
           )}
           {selectedTab === 'content' && (
-            <ReadOnlyEditor language={format} value={content} />
+            <ReadOnlyEditor
+              language={format}
+              value={content}
+              searchString={searchString}
+              searchIndex={index}
+            />
           )}
         </Box>
       </ScrollArea>
