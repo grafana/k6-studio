@@ -9,6 +9,7 @@ import { getRoutePath } from '@/routeMap'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { SearchField } from '@/components/SearchField'
 import { useState } from 'react'
+import { Feature } from '@/components/Feature'
 
 interface SidebarProps {
   isExpanded?: boolean
@@ -17,7 +18,7 @@ interface SidebarProps {
 
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const { recordings, generators, scripts } = useFiles(searchTerm)
+  const { recordings, generators, scripts, dataFiles } = useFiles(searchTerm)
 
   const createNewGenerator = useCreateGenerator()
 
@@ -100,6 +101,13 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               files={scripts}
               noFilesMessage="No scripts found"
             />
+            <Feature feature="data-files">
+              <FileTree
+                label="Data files"
+                files={dataFiles}
+                noFilesMessage="No data files found"
+              />
+            </Feature>
           </Flex>
         </ScrollArea>
       </Flex>
