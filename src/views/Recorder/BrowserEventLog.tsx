@@ -1,4 +1,4 @@
-import { BrowserEvent } from '@/schemas/recording'
+import { BrowserEvent, PageNavigationEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
 import { GlobeIcon, TargetIcon, UpdateIcon } from '@radix-ui/react-icons'
@@ -24,6 +24,33 @@ function EventIcon({ event }: EventIconProps) {
   }
 }
 
+interface PageNavigationDescriptionProps {
+  event: PageNavigationEvent
+}
+
+function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
+  const url = (
+    <Tooltip content={event.url}>
+      <strong>{event.url}</strong>
+    </Tooltip>
+  )
+
+  switch (event.source) {
+    case 'interaction':
+    case 'script':
+      return <>Navigated to {url} by interacting with the page.</>
+
+    case 'address-bar':
+      return <>Navigated to {url} using the address bar.</>
+
+    case 'history':
+      return <>Navigated to {url} using the browser history.</>
+
+    default:
+      return exhaustive(event.source)
+  }
+}
+
 interface EventDescriptionProps {
   event: BrowserEvent
 }
@@ -31,15 +58,7 @@ interface EventDescriptionProps {
 function EventDescription({ event }: EventDescriptionProps) {
   switch (event.type) {
     case 'page-navigation':
-      return (
-        <>
-          Navigated to{' '}
-          <Tooltip content={event.url}>
-            <strong>{event.url}</strong>
-          </Tooltip>
-          .
-        </>
-      )
+      return <PageNavigationDescription event={event} />
 
     case 'page-reload':
       return <>Reloaded page.</>

@@ -52,9 +52,13 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     return locator
   }
 
-  function toNode(event: BrowserEvent): TestNode {
+  function toNode(event: BrowserEvent): TestNode | null {
     switch (event.type) {
       case 'page-navigation':
+        if (event.source === 'interaction' || event.source === 'script') {
+          return null
+        }
+
         return {
           type: 'goto',
           nodeId: event.eventId,
@@ -94,6 +98,10 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
 
   for (const event of events) {
     const node = toNode(event)
+
+    if (node === null) {
+      continue
+    }
 
     nodes.push(node)
 
