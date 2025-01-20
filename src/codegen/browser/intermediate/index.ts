@@ -4,16 +4,6 @@ import * as ir from './ast'
 import { IntermediateContext } from './context'
 import { substituteVariables } from './variables'
 
-function isUsedOnce(context: IntermediateContext, node: m.TestNode) {
-  const dependents = context.graph.incoming(node.nodeId)[Symbol.iterator]()
-
-  if (dependents.next().done) {
-    return false
-  }
-
-  return dependents.next().done
-}
-
 function emitPageNode(context: IntermediateContext, node: m.PageNode) {
   const expression: ir.NewPageExpression = {
     type: 'NewPageExpression',
@@ -67,19 +57,10 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
     page,
   }
 
-  // If the locator is only used once, we can inline it.
-  if (isUsedOnce(context, node)) {
-    context.inline(node, expression)
-
-    return
-  }
-
-  context.declare({
-    kind: 'const',
-    node,
-    name: 'locator',
-    value: expression,
-  })
+  // We always inline locator nodes for readability. If we implement better
+  // logic for generating variable names, then we could consider declaring
+  // a variable for it if there are multiple references.
+  context.inline(node, expression)
 }
 
 function emitClickNode(context: IntermediateContext, node: m.ClickNode) {

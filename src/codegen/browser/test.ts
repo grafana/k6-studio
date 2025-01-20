@@ -6,9 +6,16 @@ interface Recording {
   browserEvents: BrowserEvent[]
 }
 
+function toNodeRef(node: TestNode): NodeRef {
+  return {
+    nodeId: node.nodeId,
+  }
+}
+
 function buildBrowserNodeGraph(events: BrowserEvent[]) {
   const pages = new Map<string, PageNode>()
-  const locators = new Map<string, LocatorNode>()
+
+  let previousLocator: LocatorNode | null = null
 
   const nodes: TestNode[] = []
 
@@ -25,31 +32,37 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
       pages.set(pageId, page)
     }
 
-    return {
-      nodeId: page.nodeId,
-    }
+    return toNodeRef(page)
   }
 
   function getLocator(tab: string, selector: string): NodeRef {
     const page = getPage(tab)
 
-    let locator = locators.get(selector)
-
-    if (locator === undefined) {
-      locator = {
+    // Group sequential locators together, so that we reuse the same locator
+    // multiple actions have occurred on the same element, e.g:
+    // ```
+    // const input = page.locator("input")
+    //
+    // await input.focus()
+    // await input.type("Hello")
+    // await input.press("Enter")
+    if (
+      previousLocator?.selector !== selector ||
+      previousLocator?.inputs.page.nodeId !== page.nodeId
+    ) {
+      previousLocator = {
         type: 'locator',
-        nodeId: `${tab}::${selector}`,
+        nodeId: crypto.randomUUID(),
         selector,
         inputs: {
           page,
         },
       }
 
-      nodes.push(locator)
-      locators.set(selector, locator)
+      nodes.push(previousLocator)
     }
 
-    return locator
+    return toNodeRef(previousLocator)
   }
 
   function toNode(event: BrowserEvent): TestNode | null {
