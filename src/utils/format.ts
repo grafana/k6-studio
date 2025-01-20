@@ -13,10 +13,25 @@ export function queryStringToJSON(str: string) {
 
 export function safeAtob(content: string) {
   try {
-    return atob(content)
+    return atobUTF8(content)
   } catch {
     return content
   }
+}
+
+// Decode base64 preserving UTF-8, like arabic characters
+function atobUTF8(base64Str: string) {
+  // decode base64 to binary
+  const binaryStr = atob(base64Str)
+
+  // convert binary string to bytes
+  const bytes = new Uint8Array(binaryStr.length)
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i)
+  }
+
+  // decode bytes as UTF-8
+  return new TextDecoder('utf-8').decode(bytes)
 }
 
 export function safeBtoa(content: string) {
