@@ -33,6 +33,8 @@ export const WebLogView = memo(function WebLogView({
   // Sync selectedRequest when requests change to show updates in correlation preview
   useDeepCompareEffect(() => {
     if (!selectedRequest) {
+      // Close details if selected request no longer displayed
+      onSelectRequest(null)
       return
     }
 
