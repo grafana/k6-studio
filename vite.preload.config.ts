@@ -1,6 +1,7 @@
 import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig, mergeConfig } from 'vite'
 import { getBuildConfig, external, pluginHotRestart } from './vite.base.config'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -21,8 +22,16 @@ export default defineConfig((env) => {
           assetFileNames: '[name].[ext]',
         },
       },
+      sourcemap: true,
     },
-    plugins: [pluginHotRestart('reload')],
+    plugins: [
+      pluginHotRestart('reload'),
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+      }),
+    ],
   }
 
   return mergeConfig(getBuildConfig(forgeEnv), config)
