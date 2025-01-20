@@ -1,6 +1,5 @@
 import { FileTextIcon } from '@radix-ui/react-icons'
 import { AlertDialog, Flex } from '@radix-ui/themes'
-import { scriptExists } from '../Generator.utils'
 import { FormProvider, useForm } from 'react-hook-form'
 import {
   ExportScriptDialogData,
@@ -19,6 +18,7 @@ import {
 import { useToast } from '@/store/ui/useToast'
 import { getScriptNameWithExtension } from './ExportScriptDialog.utils'
 import log from 'electron-log/renderer'
+import { useStudioUIStore } from '@/store/ui'
 
 export function ExportScriptDialog({
   open,
@@ -31,6 +31,7 @@ export function ExportScriptDialog({
 }) {
   const scriptName = useGeneratorStore((store) => store.scriptName)
   const setScriptName = useGeneratorStore((store) => store.setScriptName)
+  const scripts = useStudioUIStore((store) => store.scripts)
   const showToast = useToast()
 
   const formMethods = useForm<ExportScriptDialogData>({
@@ -58,7 +59,7 @@ export function ExportScriptDialog({
     try {
       const { scriptName: userInput, overwriteFile } = data
       const fileName = getScriptNameWithExtension(userInput)
-      const fileExists = await scriptExists(fileName)
+      const fileExists = Array.from(scripts.keys()).includes(fileName)
       if (fileExists && !overwriteFile && !alwaysOverwriteScript) {
         setValue('overwriteFile', true)
         return

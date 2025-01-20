@@ -98,7 +98,9 @@ function RequestList({
         <Table.Row>
           <Table.ColumnHeaderCell width="70px">Method</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="60px">Status</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="80px">Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell minWidth="50px" maxWidth="80px">
+            Type
+          </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="20%">Host</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="80%">Path</Table.ColumnHeaderCell>
         </Table.Row>

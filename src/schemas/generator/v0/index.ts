@@ -21,12 +21,12 @@ export type GeneratorSchema = z.infer<typeof GeneratorFileDataSchema>
 export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
   return {
     version: '1.0',
+    recordingPath: generator.recordingPath,
+    options: generator.options,
+    testData: generator.testData,
+    rules: generator.rules,
     allowlist: generator.allowlist,
     includeStaticAssets: generator.includeStaticAssets,
-    options: generator.options,
-    recordingPath: generator.recordingPath,
-    rules: generator.rules,
     scriptName: generator.scriptName,
-    testData: generator.testData,
   }
 }

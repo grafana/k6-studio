@@ -1,10 +1,4 @@
-import { FolderContent, ProxyStatus } from '@/types'
-import {
-  fileFromFileName,
-  isGenerator,
-  isRecording,
-  isScript,
-} from '@/utils/file'
+import { FolderContent, ProxyStatus, StudioFile } from '@/types'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
@@ -13,8 +7,8 @@ interface State extends FolderContent {
 }
 
 interface Actions {
-  addFile: (path: string) => void
-  removeFile: (path: string) => void
+  addFile: (file: StudioFile) => void
+  removeFile: (file: StudioFile) => void
   setFolderContent: (content: FolderContent) => void
   setProxyStatus: (status: ProxyStatus) => void
 }
@@ -26,43 +20,51 @@ export const useStudioUIStore = create<StudioUIStore>()(
     recordings: new Map(),
     generators: new Map(),
     scripts: new Map(),
+    dataFiles: new Map(),
     proxyStatus: 'offline',
 
-    addFile: (path) =>
+    addFile: (file) =>
       set((state) => {
-        const file = fileFromFileName(path)
-
         if (file.type === 'recording') {
-          state.recordings.set(path, file)
+          state.recordings.set(file.fileName, file)
         }
 
         if (file.type === 'generator') {
-          state.generators.set(path, file)
+          state.generators.set(file.fileName, file)
         }
 
         if (file.type === 'script') {
-          state.scripts.set(path, file)
+          state.scripts.set(file.fileName, file)
+        }
+
+        if (file.type === 'data-file') {
+          state.dataFiles.set(file.fileName, file)
         }
       }),
-    removeFile: (path) =>
+    removeFile: (file) =>
       set((state) => {
-        if (isRecording(path)) {
-          state.recordings.delete(path)
+        if (file.type === 'recording') {
+          state.recordings.delete(file.fileName)
         }
 
-        if (isGenerator(path)) {
-          state.generators.delete(path)
+        if (file.type === 'generator') {
+          state.generators.delete(file.fileName)
         }
 
-        if (isScript(path)) {
-          state.scripts.delete(path)
+        if (file.type === 'script') {
+          state.scripts.delete(file.fileName)
+        }
+
+        if (file.type === 'data-file') {
+          state.dataFiles.delete(file.fileName)
         }
       }),
-    setFolderContent: ({ recordings, generators, scripts }) =>
+    setFolderContent: ({ recordings, generators, scripts, dataFiles }) =>
       set((state) => {
         state.recordings = recordings
         state.generators = generators
         state.scripts = scripts
+        state.dataFiles = dataFiles
       }),
     setProxyStatus: (status) =>
       set((state) => {
