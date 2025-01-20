@@ -1,8 +1,15 @@
 import { HighlightedText } from '@/components/HighlightedText'
-import { ProxyDataWithMatches } from '@/types'
+import { ProxyData } from '@/types'
+import { SearchMatch } from '@/types/fuse'
 import { DataList, Strong } from '@radix-ui/themes'
 
-export function Headers({ data }: { data: ProxyDataWithMatches }) {
+export function Headers({
+  data,
+  matches,
+}: {
+  data: ProxyData
+  matches?: SearchMatch[]
+}) {
   return (
     <DataList.Root size="1" trim="both">
       <Strong>General</Strong>
@@ -19,20 +26,14 @@ export function Headers({ data }: { data: ProxyDataWithMatches }) {
       {data.request.headers.map(([key, value], index) => (
         <DataList.Item key={`${key}_${index}`}>
           <DataList.Label>
-            <HighlightedText
-              text={key}
-              matches={data.matches}
-              highlightAllMatches
-            />
+            <HighlightedText text={key} matches={matches} highlightAllMatches />
           </DataList.Label>
           <DataList.Value>
-            <span>
-              <HighlightedText
-                text={value}
-                matches={data.matches}
-                highlightAllMatches
-              />
-            </span>
+            <HighlightedText
+              text={value}
+              matches={matches}
+              highlightAllMatches
+            />
           </DataList.Value>
         </DataList.Item>
       ))}

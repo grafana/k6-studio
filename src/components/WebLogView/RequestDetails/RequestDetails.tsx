@@ -49,7 +49,7 @@ export function RequestDetails({ data }: RequestDetailsProps) {
 
       <Tabs.Content value="headers">
         <Box p="2" height="100%">
-          <Headers data={data} />
+          <Headers data={data} matches={requestMatches} />
         </Box>
       </Tabs.Content>
 

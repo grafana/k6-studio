@@ -36,7 +36,7 @@ export function ResponseDetails({ data }: ResponseDetailsProps) {
       <Tabs.Content value="headers">
         <ScrollArea style={{ height: '100%' }}>
           <Box p="2" height="100%">
-            <Headers data={data} />
+            <Headers data={data} matches={responseMatches} />
           </Box>
         </ScrollArea>
       </Tabs.Content>
