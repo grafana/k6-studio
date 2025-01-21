@@ -51,7 +51,7 @@ export function RequestList({ requests }: RequestListProps) {
           flex-grow: 1;
         `}
       >
-        <Allotment vertical defaultSizes={[1, 2]}>
+        <Allotment defaultSizes={[1, 1]}>
           <Allotment.Pane minSize={200}>
             <ScrollArea scrollbars="vertical">
               {isRecordingMissing && (

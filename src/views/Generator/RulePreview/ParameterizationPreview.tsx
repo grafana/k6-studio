@@ -47,7 +47,7 @@ export function ParameterizationPreview({
   }
 
   return (
-    <Allotment defaultSizes={[1, 2]} vertical>
+    <Allotment defaultSizes={[1, 1]}>
       <Allotment.Pane minSize={200}>
         <Box height="100%">
           <ScrollArea scrollbars="vertical" css={{ height: '100%' }}>

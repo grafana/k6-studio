@@ -40,7 +40,7 @@ export function CorrelationPreview({ rule }: { rule: CorrelationRule }) {
   }
 
   return (
-    <Allotment defaultSizes={[1, 2]} vertical>
+    <Allotment defaultSizes={[1, 1]}>
       <Allotment.Pane minSize={200}>
         <Box height="100%">
           <ScrollArea
