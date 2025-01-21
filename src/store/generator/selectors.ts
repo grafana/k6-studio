@@ -48,7 +48,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
   } = state
 
   return {
-    version: '1.0',
+    version: '2.0',
     recordingPath,
     options: {
       loadProfile,
@@ -62,6 +62,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     allowlist,
     includeStaticAssets,
     scriptName,
+    thresholds: [],
   }
 }
 

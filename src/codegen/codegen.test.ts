@@ -69,7 +69,7 @@ describe('Code generation', () => {
         generateScript({
           recording: [],
           generator: {
-            version: '1.0',
+            version: '2.0',
             recordingPath: 'test',
             options: {
               loadProfile: {
@@ -92,6 +92,7 @@ describe('Code generation', () => {
             allowlist: [],
             includeStaticAssets: false,
             scriptName: 'my-script.js',
+            thresholds: [],
           },
         }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))

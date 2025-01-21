@@ -4,7 +4,7 @@ import { createEmptyRule } from './rules'
 
 export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
   return {
-    version: '1.0',
+    version: '2.0',
     recordingPath,
     options: {
       loadProfile: {
@@ -26,6 +26,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     allowlist: [],
     includeStaticAssets: false,
     scriptName: 'my-script.js',
+    thresholds: [],
   }
 }
 
