@@ -9,7 +9,7 @@ import {
   selectSelectedRule,
 } from '@/store/generator'
 import { View } from '@/components/Layout/View'
-import { GeneratorSidebar } from './GeneratorSidebar'
+import { GeneratorTabs } from './GeneratorTabs'
 import { TestRuleContainer } from './TestRuleContainer'
 import {
   useGeneratorParams,
@@ -138,9 +138,9 @@ export function Generator() {
     >
       <Allotment vertical defaultSizes={[4, 2]}>
         <Allotment.Pane minSize={400}>
-          <GeneratorSidebar />
+          <GeneratorTabs />
         </Allotment.Pane>
-        <Allotment.Pane minSize={400}>
+        <Allotment.Pane minSize={450}>
           <Allotment defaultSizes={[1, 1]}>
             <Allotment.Pane minSize={300}>
               <TestRuleContainer />

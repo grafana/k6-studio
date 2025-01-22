@@ -1,4 +1,4 @@
-import { Flex, ScrollArea } from '@radix-ui/themes'
+import { Button, Flex, ScrollArea } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { useState } from 'react'
 import { css } from '@emotion/react'
@@ -13,6 +13,7 @@ import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { GlobeIcon } from '@radix-ui/react-icons'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -34,10 +35,16 @@ export function RequestList({ requests }: RequestListProps) {
 
   const recordings = useStudioUIStore((state) => state.recordings)
   const recordingPath = useGeneratorStore((state) => state.recordingPath)
+  const allowlist = useGeneratorStore((store) => store.allowlist)
+
+  const setShowAllowlistDialog = useGeneratorStore(
+    (store) => store.setShowAllowlistDialog
+  )
 
   const recording = recordings.get(recordingPath)
 
   const isRecordingMissing = recording === undefined && recordingPath !== ''
+  const areHostsSelected = allowlist.length > 0
 
   // Preserve the selected request when modifying rules
   useShallowCompareEffect(() => {
@@ -55,11 +62,29 @@ export function RequestList({ requests }: RequestListProps) {
           <Allotment.Pane minSize={200}>
             <ScrollArea scrollbars="vertical">
               {isRecordingMissing && (
-                <Flex direction="column" justify="center" align="center">
-                  <EmptyMessage message="The selected recording is missing" />
+                <Flex justify="center" align="center" height="100%">
+                  <EmptyMessage
+                    message="The selected recording is missing, select another one from the top menu"
+                    pt="0"
+                  />
                 </Flex>
               )}
-              {!isRecordingMissing && (
+              {!areHostsSelected && (
+                <Flex justify="center" align="center" height="100%">
+                  <EmptyMessage
+                    message="Get started by selecting hosts you'd like to work on"
+                    illustration="telescope"
+                    pt="0"
+                    action={
+                      <Button onClick={() => setShowAllowlistDialog(true)}>
+                        <GlobeIcon />
+                        Select hosts
+                      </Button>
+                    }
+                  />
+                </Flex>
+              )}
+              {!isRecordingMissing && areHostsSelected && (
                 <>
                   <Filter
                     filter={filter}

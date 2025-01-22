@@ -13,8 +13,10 @@ import { RulePreview } from '../RulePreview/RulePreview'
 import { RequestList } from './RequestList'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { CrossCircledIcon } from '@radix-ui/react-icons'
+import { TestOptions } from '../TestOptions'
+import { Allowlist } from '../Allowlist'
 
-export function GeneratorSidebar() {
+export function GeneratorTabs() {
   const [tab, setTab] = useState('requests')
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const { hasError } = useScriptPreview()
@@ -38,32 +40,40 @@ export function GeneratorSidebar() {
       <Tabs.Root value={tab} onValueChange={(value) => setTab(value)}>
         <Box flexShrink="0">
           <Tabs.List>
-            <Tabs.Trigger value="requests">
-              Requests ({filteredRequests.length})
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              value="script"
-              disabled={!hasRecording}
-              css={
-                hasError &&
-                css`
-                  color: var(--red-9);
-                `
-              }
-            >
-              {hasError && (
-                <CrossCircledIcon
-                  css={css`
-                    margin-right: 5px;
-                  `}
-                  color="var(--red-9)"
-                />
-              )}
-              Script
-            </Tabs.Trigger>
-            {hasPreview && (
-              <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
-            )}
+            <Flex justify="between" width="100%" align="center">
+              <Flex>
+                <Tabs.Trigger value="requests">
+                  Requests ({filteredRequests.length})
+                </Tabs.Trigger>
+                <Tabs.Trigger
+                  value="script"
+                  disabled={!hasRecording}
+                  css={
+                    hasError &&
+                    css`
+                      color: var(--red-9);
+                    `
+                  }
+                >
+                  {hasError && (
+                    <CrossCircledIcon
+                      css={css`
+                        margin-right: 5px;
+                      `}
+                      color="var(--red-9)"
+                    />
+                  )}
+                  Script
+                </Tabs.Trigger>
+                {hasPreview && (
+                  <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
+                )}
+              </Flex>
+              <Flex pr="2" pl="4" gap="4">
+                <TestOptions />
+                <Allowlist />
+              </Flex>
+            </Flex>
           </Tabs.List>
         </Box>
         {hasPreview && (

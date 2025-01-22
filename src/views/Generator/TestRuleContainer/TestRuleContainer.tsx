@@ -1,15 +1,18 @@
 import { useGeneratorStore } from '@/store/generator'
-import { Flex, Heading, ScrollArea, Text } from '@radix-ui/themes'
+import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { NewRuleMenu } from '../NewRuleMenu'
 import { SortableRuleList } from './SortableRuleList'
 import { css } from '@emotion/react'
-import { TestOptions } from '../TestOptions'
-import grotIllustration from '@/assets/grot.svg'
-import { Allowlist } from '../Allowlist'
+import { EmptyMessage } from '@/components/EmptyMessage'
 
 export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)
   const swapRules = useGeneratorStore((store) => store.swapRules)
+
+  // Show help message if there are no rules or only automatically added verification rule
+  const shouldShowHelpMessage =
+    rules.length === 0 ||
+    (rules.length === 1 && rules?.[0]?.type === 'verification')
 
   return (
     <ScrollArea scrollbars="vertical">
@@ -37,8 +40,6 @@ export function TestRuleContainer() {
         </Heading>
         <Flex gap="3">
           <NewRuleMenu />
-          <TestOptions />
-          <Allowlist />
         </Flex>
       </Flex>
 
@@ -46,23 +47,18 @@ export function TestRuleContainer() {
       <Flex
         py="3"
         px="6"
-        align={rules.length === 0 ? 'center' : 'start'}
+        align={shouldShowHelpMessage ? 'center' : 'start'}
         direction="column"
         gap="3"
       >
-        {rules.length === 0 ? (
-          <>
-            <img
-              src={grotIllustration}
-              css={css`
-                max-height: 200px;
-              `}
-            />
-            <Text size="1" color="gray">
-              Start configuring your test logic by adding a new rule
-            </Text>
-            <NewRuleMenu variant="solid" size="2" />
-          </>
+        {shouldShowHelpMessage ? (
+          <EmptyMessage
+            message="Configure your test logic by adding a new rule"
+            illustration="notepad"
+            pb="2"
+            css={{ img: { maxWidth: '150px' } }}
+            action={<NewRuleMenu variant="solid" size="2" color="orange" />}
+          />
         ) : (
           <NewRuleMenu />
         )}
