@@ -69,7 +69,7 @@ describe('Code generation', () => {
         generateScript({
           recording: [],
           generator: {
-            version: '2.0',
+            version: '1.0',
             recordingPath: 'test',
             options: {
               loadProfile: {

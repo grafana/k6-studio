@@ -27,7 +27,7 @@ export function createGeneratorData(
     testData: {
       variables: [],
     },
-    version: '2.0',
+    version: '1.0',
     thresholds: [],
     ...data,
   }
