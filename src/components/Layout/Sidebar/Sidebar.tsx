@@ -22,6 +22,10 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
 
   const createNewGenerator = useCreateGenerator()
 
+  const handleImportDataFile = () => {
+    return window.studio.data.importFile()
+  }
+
   return (
     <Box
       height="100%"
@@ -106,6 +110,19 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
                 label="Data files"
                 files={dataFiles}
                 noFilesMessage="No data files found"
+                actions={
+                  <Tooltip content="Import data file" side="right">
+                    <IconButton
+                      asChild
+                      aria-label="Import data file"
+                      variant="ghost"
+                      size="1"
+                      onClick={handleImportDataFile}
+                    >
+                      <PlusIcon />
+                    </IconButton>
+                  </Tooltip>
+                }
               />
             </Feature>
           </Flex>
