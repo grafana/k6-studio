@@ -20,6 +20,7 @@ import { RecordingInspector } from '../Recorder/RecordingInspector'
 import { BrowserEvent } from '@/schemas/recording'
 import { useToast } from '@/store/ui/useToast'
 import { emitScript } from '@/codegen/browser'
+import { convertToTest } from '@/codegen/browser/test'
 
 export function RecordingPreviewer() {
   const { data: settings } = useSettings()
@@ -94,13 +95,9 @@ export function RecordingPreviewer() {
   }
 
   const handleExportBrowserScript = () => {
-    const test = {
-      defaultScenario: {
-        type: 'browser' as const,
-        events: browserEvents,
-      },
-      scenarios: {},
-    }
+    const test = convertToTest({
+      browserEvents,
+    })
 
     const fileName = generateFileNameWithTimestamp('js', 'BrowserTest')
 

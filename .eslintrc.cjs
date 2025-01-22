@@ -22,6 +22,7 @@ module.exports = {
     'resources/group_snippet.js',
     'install-k6.js',
     '.eslintrc.cjs',
+    'src/codegen/browser/__snapshots__/**/*.ts',
   ],
   plugins: [
     'import',

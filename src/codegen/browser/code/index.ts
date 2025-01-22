@@ -1,119 +1,94 @@
-import { spaceBetween } from '../formatting/spacing'
+import { spaceAfter, spaceBetween } from '../formatting/spacing'
 import * as ir from '../intermediate/ast'
 import * as ts from '../tstree'
+import { CodeGenContext, Import } from './context'
 import {
   declareConst,
-  constDeclaration,
+  constDeclarator,
   identifier,
   exportNamed,
   program,
-  fromObjectLiteral,
   exportDefault,
   declareFunction,
   block,
-  ExpressionBuilder,
-  literal,
+  importDeclaration,
+  defaultImport,
+  namedImport,
+  string,
 } from './helpers'
+import { emitOptions } from './options'
+import { emitScenarioBody } from './scenario'
 
-function emitBrowserEvent(event: ir.BrowserEvent) {
-  return new ExpressionBuilder(identifier('console'))
-    .member('log')
-    .call([literal({ value: event.message })])
-    .asStatement()
-}
-
-function emitBrowserOptions(_scenario: ir.Scenario) {
-  if (_scenario.type !== 'browser') {
-    return undefined
-  }
-
-  return fromObjectLiteral({
-    browser: fromObjectLiteral({
-      type: 'chromium',
-    }),
+function emitImport(context: Import) {
+  const namedImports = [...context.named].map((name) => {
+    return namedImport({
+      imported: identifier(name),
+    })
   })
-}
 
-function emitSharedIterationsExecutor(
-  options: ts.ObjectExpression | undefined
-) {
-  return fromObjectLiteral({
-    executor: 'shared-iterations',
-    options,
-  })
-}
-
-function emitExecutor(scenario: ir.Scenario) {
-  const options = emitBrowserOptions(scenario)
-
-  return emitSharedIterationsExecutor(options)
-}
-
-function emitScenarioOptions({ defaultScenario, scenarios }: ir.Test) {
-  const withDefaultScenario = defaultScenario
-    ? {
-        [defaultScenario.name ?? 'default']: emitExecutor(defaultScenario),
-      }
-    : {}
-
-  const withNamedScenarios = Object.entries(scenarios).reduce(
-    (acc, [name, scenario]) => {
-      acc[name] = emitExecutor(scenario)
-
-      return acc
-    },
-    withDefaultScenario
-  )
-
-  return fromObjectLiteral(withNamedScenarios)
-}
-
-function emitOptions(test: ir.Test) {
-  return fromObjectLiteral({
-    scenarios: emitScenarioOptions(test),
-  })
-}
-
-function emitScenarioBody(scenario: ir.Scenario) {
-  switch (scenario.type) {
-    case 'browser':
-      return scenario.events.map(emitBrowserEvent)
-
-    case 'http':
-      return []
-  }
-}
-
-export function toTypeScriptAst(test: ir.Test): ts.Program {
-  const options = emitOptions(test)
-
-  const exports = [
-    test.defaultScenario &&
-      exportDefault({
-        declaration: declareFunction({
-          id:
-            test.defaultScenario.name !== undefined
-              ? identifier(test.defaultScenario.name)
-              : undefined,
-          params: [],
-          body: block(emitScenarioBody(test.defaultScenario)),
-        }),
+  const imports = [
+    ...namedImports,
+    context.default !== undefined &&
+      defaultImport({
+        local: identifier(context.default),
       }),
   ]
 
-  return program({
-    body: spaceBetween([
-      exportNamed({
-        declaration: declareConst({
-          declarations: [
-            constDeclaration({
-              id: identifier('options'),
-              init: options,
-            }),
-          ],
-        }),
+  return importDeclaration({
+    source: string(context.from),
+    specifiers: imports.filter((item) => item !== false),
+  })
+}
+
+function emitScenario(
+  context: CodeGenContext,
+  name: string | undefined,
+  scenario: ir.DefaultScenario | ir.Scenario
+) {
+  const scenarioContext = context.scenario()
+  const body = emitScenarioBody(scenarioContext, scenario)
+
+  return declareFunction({
+    async: scenarioContext.async,
+    id: name ? identifier(name) : undefined,
+    params: [],
+    body: block(body),
+  })
+}
+
+export function toTypeScriptAst(test: ir.Test): ts.Program {
+  const context = new CodeGenContext()
+
+  const options = emitOptions(test)
+
+  const defaultScenario =
+    test.defaultScenario &&
+    emitScenario(context, test.defaultScenario.name, test.defaultScenario)
+
+  const scenarios = [
+    defaultScenario &&
+      exportDefault({
+        declaration: defaultScenario,
       }),
-      ...exports.filter((item) => item !== undefined),
-    ]),
+  ]
+
+  const imports = spaceAfter([...context.imports()].map(emitImport))
+
+  const exports = spaceBetween([
+    exportNamed({
+      declaration: declareConst({
+        declarations: [
+          constDeclarator({
+            id: identifier('options'),
+            init: options,
+          }),
+        ],
+      }),
+    }),
+    ...scenarios.filter((item) => item !== undefined),
+  ])
+
+  return program({
+    body: [...imports, ...exports],
   })
 }

@@ -1,16 +1,40 @@
-import { BrowserEvent } from '@/schemas/recording'
+export type NodeId = string
 
-export interface BrowserScenario {
-  type: 'browser'
-  events: BrowserEvent[]
+interface NodeBase {
+  nodeId: NodeId
 }
 
-export interface HttpScenario {
-  type: 'http'
-  requests: []
+export interface NodeRef {
+  nodeId: NodeId
 }
 
-export type Scenario = BrowserScenario | HttpScenario
+export interface PageNode extends NodeBase {
+  type: 'page'
+}
+
+export interface GotoNode extends NodeBase {
+  type: 'goto'
+  url: string
+  inputs: {
+    previous?: NodeRef
+    page: NodeRef
+  }
+}
+
+export interface ReloadNode extends NodeBase {
+  type: 'reload'
+  inputs: {
+    previous?: NodeRef
+    page: NodeRef
+  }
+}
+
+export type TestNode = PageNode | GotoNode | ReloadNode
+
+export interface Scenario {
+  nodes: TestNode[]
+}
+
 export type DefaultScenario = Scenario & {
   name?: string
 }
