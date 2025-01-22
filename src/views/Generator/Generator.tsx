@@ -141,7 +141,7 @@ export function Generator() {
           <GeneratorTabs />
         </Allotment.Pane>
         <Allotment.Pane minSize={450}>
-          <Allotment defaultSizes={[1, 1]}>
+          <Allotment defaultSizes={[3, 2]}>
             <Allotment.Pane minSize={300}>
               <TestRuleContainer />
             </Allotment.Pane>
