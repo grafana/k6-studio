@@ -2,7 +2,7 @@ import { Table } from '@radix-ui/themes'
 
 import { TableCellWithTooltip } from '@/components/TableCellWithTooltip'
 import { TableSkeleton } from '@/components/TableSkeleton'
-import { DataFilePreview } from '@/types/testData'
+import { DataFilePreview, DataRecord } from '@/types/testData'
 
 interface DataFileTableProps {
   preview?: DataFilePreview | null
@@ -33,7 +33,7 @@ export function DataFileTable({ preview, isLoading }: DataFileTableProps) {
           <Table.Row key={i}>
             {preview.props.map((prop) => (
               <TableCellWithTooltip key={prop}>
-                {JSON.stringify(item[prop])}
+                {renderValue(item[prop])}
               </TableCellWithTooltip>
             ))}
           </Table.Row>
@@ -41,4 +41,20 @@ export function DataFileTable({ preview, isLoading }: DataFileTableProps) {
       </Table.Body>
     </Table.Root>
   )
+}
+
+function renderValue(value?: DataRecord[keyof DataRecord]) {
+  if (value === undefined) {
+    return null
+  }
+
+  if (value === null) {
+    return 'null'
+  }
+
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+
+  return value
 }

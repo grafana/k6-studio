@@ -4,7 +4,7 @@ import { VariableSchema, TestDataSchema } from '@/schemas/generator'
 export type Variable = z.infer<typeof VariableSchema>
 export type TestData = z.infer<typeof TestDataSchema>
 
-export type DataFileItem = Record<
+export type DataRecord = Record<
   string,
   string | number | boolean | object | null
 >
@@ -12,6 +12,6 @@ export type DataFileItem = Record<
 export type DataFilePreview = {
   type: 'json' | 'csv'
   props: string[]
-  data: DataFileItem[]
+  data: DataRecord[]
   total: number
 }
