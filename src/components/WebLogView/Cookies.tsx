@@ -1,7 +1,6 @@
-import { Flex } from '@radix-ui/themes'
+import { DataList, Flex } from '@radix-ui/themes'
 
 import { Cookie } from '@/types'
-import { Table } from '@/components/Table'
 import { HighlightedText } from '../HighlightedText'
 import { SearchMatch } from '@/types/fuse'
 
@@ -21,34 +20,25 @@ export function Cookies({
   }
 
   return (
-    <Table.Root size="1" variant="surface">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-
-      <Table.Body>
-        {cookies.map(([name, value], index) => (
-          <Table.Row key={index}>
-            <Table.Cell>
-              <HighlightedText
-                text={name}
-                matches={matches}
-                highlightAllMatches
-              />
-            </Table.Cell>
-            <Table.Cell>
-              <HighlightedText
-                text={value}
-                matches={matches}
-                highlightAllMatches
-              />
-            </Table.Cell>
-          </Table.Row>
-        ))}
-      </Table.Body>
-    </Table.Root>
+    <DataList.Root size="1" trim="both">
+      {cookies.map(([name, value]) => (
+        <DataList.Item key={name}>
+          <DataList.Label>
+            <HighlightedText
+              text={name}
+              matches={matches}
+              highlightAllMatches
+            />
+          </DataList.Label>
+          <DataList.Value>
+            <HighlightedText
+              text={value}
+              matches={matches}
+              highlightAllMatches
+            />
+          </DataList.Value>
+        </DataList.Item>
+      ))}
+    </DataList.Root>
   )
 }

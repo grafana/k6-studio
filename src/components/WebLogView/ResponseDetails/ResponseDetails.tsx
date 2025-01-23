@@ -1,4 +1,4 @@
-import { Box, ScrollArea } from '@radix-ui/themes'
+import { Box } from '@radix-ui/themes'
 
 import { ProxyDataWithMatches } from '@/types'
 import { Tabs } from '../Tabs'
@@ -34,19 +34,17 @@ export function ResponseDetails({ data }: ResponseDetailsProps) {
       </Tabs.List>
 
       <Tabs.Content value="headers">
-        <ScrollArea style={{ height: '100%' }}>
-          <Box p="2" height="100%">
-            <Headers data={data} matches={responseMatches} />
-          </Box>
-        </ScrollArea>
+        <Box p="2" height="100%">
+          <Headers data={data} matches={responseMatches} />
+        </Box>
       </Tabs.Content>
       <Tabs.Content value="content">
         <Content data={data} />
       </Tabs.Content>
       <Tabs.Content value="cookies">
-        <ScrollArea style={{ height: '100%' }}>
+        <Box p="2" height="100%">
           <Cookies cookies={data.response?.cookies} matches={responseMatches} />
-        </ScrollArea>
+        </Box>
       </Tabs.Content>
     </Tabs.Root>
   )
