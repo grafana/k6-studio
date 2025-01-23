@@ -15,6 +15,8 @@ import {
   FileHandle,
   rename,
   access,
+  readFile,
+  stat,
 } from 'fs/promises'
 import { updateElectronApp } from 'update-electron-app'
 import path from 'path'
@@ -39,7 +41,10 @@ import {
   getPlatform,
 } from './utils/electron'
 import invariant from 'tiny-invariant'
-import { INVALID_FILENAME_CHARS } from './constants/files'
+import {
+  FILE_SIZE_PREVIEW_THRESHOLD,
+  INVALID_FILENAME_CHARS,
+} from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
 import { HarFile } from './types/har'
 import { GeneratorFile } from './types/generator'
@@ -61,6 +66,8 @@ import { ProxyStatus, StudioFile } from './types'
 import { configureApplicationMenu } from './menu'
 import * as Sentry from '@sentry/electron/main'
 import { exhaustive } from './utils/typescript'
+import { DataFilePreview } from './types/testData'
+import { parseDataFile } from './utils/dataFile'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -528,6 +535,13 @@ ipcMain.on('ui:open-folder', (_, file: StudioFile) => {
   return shell.showItemInFolder(filePath)
 })
 
+ipcMain.handle('ui:open-file-in-default-app', (_, file: StudioFile) => {
+  console.info('ui:open-file-in-default-app event received')
+
+  const filePath = getFilePath(file)
+  return shell.openPath(filePath)
+})
+
 ipcMain.handle('ui:get-files', async () => {
   console.info('ui:get-files event received')
   const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
@@ -631,6 +645,51 @@ ipcMain.handle('data-file:import', async (event) => {
 
   return path.basename(filePath)
 })
+
+ipcMain.handle(
+  'data-file:load-preview',
+  async (event, fileName: string): Promise<DataFilePreview | null> => {
+    try {
+      const fileType = fileName.split('.').pop()
+      const filePath = path.join(DATA_FILES_PATH, fileName)
+
+      invariant(
+        fileType === 'csv' || fileType === 'json',
+        'Unsupported file type'
+      )
+
+      const { size } = await stat(filePath)
+
+      if (size > FILE_SIZE_PREVIEW_THRESHOLD) {
+        return null
+      }
+
+      const data = await readFile(filePath, {
+        flag: 'r',
+        encoding: 'utf-8',
+      })
+
+      const parsedData = parseDataFile(data, fileType)
+
+      return {
+        type: fileType,
+        data: parsedData.slice(0, 10),
+        props: parsedData[0] ? Object.keys(parsedData[0]) : [],
+        total: parsedData.length,
+      }
+    } catch (error) {
+      console.error(error)
+      const browserWindow = browserWindowFromEvent(event)
+
+      sendToast(browserWindow.webContents, {
+        title: 'Failed to open data file',
+        status: 'error',
+      })
+
+      return null
+    }
+  }
+)
 
 ipcMain.on('splashscreen:close', (event) => {
   console.info('splashscreen:close event received')
