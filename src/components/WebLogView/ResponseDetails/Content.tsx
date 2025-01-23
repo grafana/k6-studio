@@ -24,6 +24,10 @@ export function Content({ data }: { data: ProxyData }) {
     return reset
   }, [reset])
 
+  useEffect(() => {
+    setSelectedTab('content')
+  }, [format])
+
   if (!contentType || !content || !format) {
     return (
       <Flex height="200px" justify="center" align="center">
@@ -38,51 +42,62 @@ export function Content({ data }: { data: ProxyData }) {
     format,
   }
 
+  if (isMedia(format)) {
+    return (
+      <Box height="100%">
+        <Preview {...contentProps} />
+      </Box>
+    )
+  }
+
   return (
-    <Flex direction="column" gap="4" height="100%" py="4">
-      {!isMedia(format) && (
-        <Flex gap="2" justify="end" px="4">
-          <SegmentedControl.Root
-            defaultValue="content"
-            radius="small"
-            size="1"
-            variant="classic"
-            onValueChange={(value) => setSelectedTab(value)}
-          >
-            <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
-            <SegmentedControl.Item value="content">
-              Content
-            </SegmentedControl.Item>
+    <Flex direction="column" gap="2" height="100%">
+      <Flex gap="2" justify="end" px="2">
+        <SegmentedControl.Root
+          value={selectedTab}
+          radius="small"
+          size="1"
+          variant="classic"
+          onValueChange={(value) => setSelectedTab(value)}
+        >
+          <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
+          <SegmentedControl.Item value="content">Content</SegmentedControl.Item>
+          {isPreviewable(format) && (
             <SegmentedControl.Item value="preview">
               Preview
             </SegmentedControl.Item>
-          </SegmentedControl.Root>
-        </Flex>
-      )}
-      <ScrollArea style={{ height: '100%' }}>
-        <Box px="4" height="100%">
-          {selectedTab === 'preview' && <Preview {...contentProps} />}
-          {selectedTab === 'raw' && (
-            <Raw
-              content={rawContent ?? ''}
-              format={format}
-              searchString={searchString}
-              searchIndex={index}
-            />
           )}
-          {selectedTab === 'content' && (
-            <ReadOnlyEditor
-              language={format}
-              value={content}
-              searchString={searchString}
-              searchIndex={index}
-            />
-          )}
-        </Box>
-      </ScrollArea>
+        </SegmentedControl.Root>
+      </Flex>
+      <Box flexGrow="1">
+        <ScrollArea>
+          <Box px="2" height="100%">
+            {selectedTab === 'preview' && <Preview {...contentProps} />}
+            {selectedTab === 'raw' && (
+              <Raw
+                content={rawContent ?? ''}
+                format={format}
+                searchString={searchString}
+                searchIndex={index}
+              />
+            )}
+            {selectedTab === 'content' && (
+              <ReadOnlyEditor
+                language={format}
+                value={content}
+                searchString={searchString}
+                searchIndex={index}
+              />
+            )}
+          </Box>
+        </ScrollArea>
+      </Box>
     </Flex>
   )
 }
 
 const isMedia = (format: string) =>
   ['audio', 'font', 'image', 'video'].includes(format)
+
+const isPreviewable = (format: string) =>
+  !['javascript', 'css'].includes(format)
