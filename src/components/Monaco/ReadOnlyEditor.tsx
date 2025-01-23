@@ -10,7 +10,12 @@ const options: editor.IStandaloneEditorConstructionOptions = {
   domReadOnly: true,
 }
 
-export function ReadOnlyEditor(props: ComponentProps<typeof Editor>) {
+interface Props extends ComponentProps<typeof Editor> {
+  searchString?: string
+  searchIndex?: number
+}
+
+export function ReadOnlyEditor(props: Props) {
   return (
     <ReactMonacoEditor height="100%" options={options} {...props} showToolbar />
   )

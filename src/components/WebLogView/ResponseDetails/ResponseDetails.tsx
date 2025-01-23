@@ -1,14 +1,32 @@
 import { Box, ScrollArea } from '@radix-ui/themes'
 
-import { ProxyData } from '@/types'
+import { ProxyDataWithMatches } from '@/types'
 import { Tabs } from '../Tabs'
 import { Headers } from './Headers'
 import { Content } from './Content'
 import { Cookies } from '../Cookies'
+import { useEffect, useMemo } from 'react'
+import { useResponseDetailsTab } from '../Details.hooks'
 
-export function ResponseDetails({ data }: { data: ProxyData }) {
+interface ResponseDetailsProps {
+  data: ProxyDataWithMatches
+}
+
+export function ResponseDetails({ data }: ResponseDetailsProps) {
+  const { tab, setTab } = useResponseDetailsTab()
+
+  // Reset tab when closing details
+  useEffect(() => {
+    return () => setTab('headers')
+  }, [setTab])
+
+  const responseMatches = useMemo(
+    () => data?.matches?.filter((match) => match?.key?.startsWith('response.')),
+    [data.matches]
+  )
+
   return (
-    <Tabs.Root defaultValue="headers">
+    <Tabs.Root value={tab} onValueChange={setTab}>
       <Tabs.List>
         <Tabs.Trigger value="headers">Headers</Tabs.Trigger>
         <Tabs.Trigger value="content">Content</Tabs.Trigger>
@@ -18,7 +36,7 @@ export function ResponseDetails({ data }: { data: ProxyData }) {
       <Tabs.Content value="headers">
         <ScrollArea style={{ height: '100%' }}>
           <Box p="2" height="100%">
-            <Headers data={data} />
+            <Headers data={data} matches={responseMatches} />
           </Box>
         </ScrollArea>
       </Tabs.Content>
@@ -27,7 +45,7 @@ export function ResponseDetails({ data }: { data: ProxyData }) {
       </Tabs.Content>
       <Tabs.Content value="cookies">
         <ScrollArea style={{ height: '100%' }}>
-          <Cookies cookies={data.response?.cookies} />
+          <Cookies cookies={data.response?.cookies} matches={responseMatches} />
         </ScrollArea>
       </Tabs.Content>
     </Tabs.Root>
