@@ -529,15 +529,11 @@ ipcMain.handle('ui:delete-file', async (_, file: StudioFile) => {
 })
 
 ipcMain.on('ui:open-folder', (_, file: StudioFile) => {
-  console.info('ui:open-folder event received')
-
   const filePath = getFilePath(file)
   return shell.showItemInFolder(filePath)
 })
 
 ipcMain.handle('ui:open-file-in-default-app', (_, file: StudioFile) => {
-  console.info('ui:open-file-in-default-app event received')
-
   const filePath = getFilePath(file)
   return shell.openPath(filePath)
 })
@@ -622,17 +618,12 @@ ipcMain.handle(
 )
 
 ipcMain.handle('data-file:import', async (event) => {
-  console.info('data-file:import event received')
-
   const browserWindow = browserWindowFromEvent(event)
 
   const dialogResult = await dialog.showOpenDialog(browserWindow, {
     message: 'Import data file',
     properties: ['openFile'],
-    filters: [
-      { name: 'CSV', extensions: ['csv'] },
-      { name: 'JSON', extensions: ['json'] },
-    ],
+    filters: [{ name: 'Supported data files', extensions: ['csv', 'json'] }],
   })
 
   const filePath = dialogResult.filePaths[0]
