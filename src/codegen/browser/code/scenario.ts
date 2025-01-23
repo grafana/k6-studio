@@ -1,6 +1,6 @@
 import { exhaustive } from '@/utils/typescript'
 import * as ir from '../intermediate/ast'
-import * as ts from '../tstree'
+import { TSESTree as ts } from '@typescript-eslint/typescript-estree'
 import { ScenarioContext } from './context'
 import {
   identifier,
@@ -9,7 +9,7 @@ import {
   ExpressionBuilder,
   declareConst,
   constDeclarator,
-} from './helpers'
+} from '@/codegen/estree'
 import { spaceBetween } from '../formatting/spacing'
 
 function emitNewPageExpression(

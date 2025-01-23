@@ -1,6 +1,6 @@
 import { spaceAfter, spaceBetween } from '../formatting/spacing'
 import * as ir from '../intermediate/ast'
-import * as ts from '../tstree'
+import { TSESTree as ts } from '@typescript-eslint/typescript-estree'
 import { CodeGenContext, Import } from './context'
 import {
   declareConst,
@@ -15,7 +15,7 @@ import {
   defaultImport,
   namedImport,
   string,
-} from './helpers'
+} from '@/codegen/estree'
 import { emitOptions } from './options'
 import { emitScenarioBody } from './scenario'
 

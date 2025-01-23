@@ -1,7 +1,7 @@
 import { exhaustive } from '@/utils/typescript'
 import * as ir from '../intermediate/ast'
-import * as ts from '../tstree'
-import { fromObjectLiteral } from './helpers'
+import { TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { fromObjectLiteral } from '@/codegen/estree'
 
 function isBrowserScenario(scenario: ir.Scenario) {
   function visit(node: ir.Node): boolean {

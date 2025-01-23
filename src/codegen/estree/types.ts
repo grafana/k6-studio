@@ -1,4 +1,4 @@
-import { Expression, Node, Property } from '../../tstree'
+import { TSESTree as ts } from '@typescript-eslint/typescript-estree'
 
 /**
  * This type makes it easier to create helper functions for creating nodes. It makes
@@ -6,10 +6,15 @@ import { Expression, Node, Property } from '../../tstree'
  * This lets us define sane defaults for rarely used properties.
  */
 export type NodeOptions<
-  T extends Node | Property,
+  T extends ts.Node | ts.Property,
   RequiredProps extends keyof T,
   OmitProps extends keyof T = never,
 > = Partial<Omit<T, RequiredProps | OmitProps | 'type' | 'range' | 'loc'>> &
   Pick<T, RequiredProps>
 
-export type LiteralOrExpression = Expression | string | number | boolean | null
+export type LiteralOrExpression =
+  | ts.Expression
+  | string
+  | number
+  | boolean
+  | null
