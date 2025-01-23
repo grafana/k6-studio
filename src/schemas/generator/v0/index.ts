@@ -28,5 +28,6 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
     allowlist: generator.allowlist,
     includeStaticAssets: generator.includeStaticAssets,
     scriptName: generator.scriptName,
+    thresholds: [],
   }
 }
