@@ -58,7 +58,9 @@ export function RequestDetails({ data }: RequestDetailsProps) {
       </Tabs.Content>
 
       <Tabs.Content value="cookies">
-        <Cookies cookies={data.request?.cookies} matches={requestMatches} />
+        <Box p="2" height="100%">
+          <Cookies cookies={data.request?.cookies} matches={requestMatches} />
+        </Box>
       </Tabs.Content>
 
       <Tabs.Content value="queryParams">
