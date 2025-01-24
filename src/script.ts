@@ -5,12 +5,13 @@ import path from 'path'
 import readline from 'readline/promises'
 import { K6Check, K6Log } from './types'
 import { getArch, getPlatform } from './utils/electron'
-import { parse } from '@typescript-eslint/typescript-estree'
+import { parse, TSESTree as ts } from '@typescript-eslint/typescript-estree'
 import { format } from 'prettier'
-import { getExports } from './codegen/estree/traverse'
+import { getExports, traverse } from './codegen/estree/traverse'
 import { readFile } from 'node:fs/promises'
 // eslint-disable-next-line import/default
 import estree from 'prettier/plugins/estree'
+import { NodeType } from './codegen/estree/nodes'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -151,6 +152,24 @@ const parseScript = (input: string) => {
 //   return scriptLines.join('\n')
 // }
 
+/**
+ * It's theoretically possible that the user has imported the `k6/execution` module with the
+ * same alias as our shim. In that case we need to remove the conflicting import to avoid a
+ * syntax error. If they imported it using a different alias then there's no harm in keeping
+ * it around.
+ */
+function isConflictingExecutionImport(node: ts.Node) {
+  return (
+    node.type === NodeType.ImportDeclaration &&
+    node.source.value === 'k6/execution' &&
+    node.specifiers.some(
+      (specifier) =>
+        specifier.type === NodeType.ImportDefaultSpecifier &&
+        specifier.local.name === 'execution'
+    )
+  )
+}
+
 interface EnhanceScriptOptions {
   script: string
   shims: {
@@ -179,21 +198,30 @@ export const enhanceScript = async (options: EnhanceScriptOptions) => {
   }
 
   // let browserImport: ts.ImportDeclaration | null = null
-  // let httpImport: ts.ImportDeclaration | null = null
+  let httpImport: ts.ImportDeclaration | null = null
 
-  // traverse(script, {
-  //   [NodeType.ImportDeclaration](node) {
-  //     switch (node.source.value) {
-  //       case 'k6/http':
-  //         httpImport = node
-  //         break
+  traverse(script, {
+    [NodeType.ImportDeclaration](node) {
+      switch (node.source.value) {
+        case 'k6/http':
+          httpImport = node
+          break
 
-  //       case 'k6/browser':
-  //         browserImport = node
-  //         break
-  //     }
-  //   },
-  // })
+        // case 'k6/browser':
+        //   browserImport = node
+        //   break
+      }
+    },
+  })
+
+  if (httpImport !== null) {
+    // Insert the group shim right after the http import.
+    script.body = script.body
+      .filter((statement) => !isConflictingExecutionImport(statement))
+      .flatMap((statement) =>
+        statement === httpImport ? [httpImport, ...groupShim.body] : statement
+      )
+  }
 
   const hasHandleSummary = getExports(script).some(
     (e) => e.type === 'named' && e.name === 'handleSummary'
@@ -211,11 +239,8 @@ export const enhanceScript = async (options: EnhanceScriptOptions) => {
         parsers: {
           ts: {
             astFormat: 'estree',
-            parse: (text: string) => {
-              return parse(text, {
-                loc: false,
-                range: false,
-              })
+            parse: () => {
+              return script
             },
             locStart: () => 0,
             locEnd: () => 0,

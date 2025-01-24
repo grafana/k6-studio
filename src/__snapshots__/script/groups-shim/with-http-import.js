@@ -1,0 +1,11 @@
+import http from "k6/http";
+import execution from "k6/execution";
+(function () {
+  console.log("This is the groups shim");
+})();
+export default function () {
+  http.get("http://test.k6.io");
+}
+export function handleSummary() {
+  console.log("This is the handleSummary shim");
+}
