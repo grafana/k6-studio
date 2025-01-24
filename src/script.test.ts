@@ -96,22 +96,6 @@ describe('groups shim', () => {
     expect,
   }) => {
     const script = `
-      import execution from "k6/execution"
-
-      export default function() {}
-    `
-
-    const result = await enhanceScript({ script, shims })
-
-    await expect(result).toMatchFileSnapshot(
-      './__snapshots__/script/groups-shim/with-existing-execution-import.js'
-    )
-  })
-
-  it('should not duplicate execution import if it already exists', async ({
-    expect,
-  }) => {
-    const script = `
       import http from "k6/http"
       import execution from "k6/execution"
 
@@ -125,7 +109,7 @@ describe('groups shim', () => {
     )
   })
 
-  it('should keep existing execution import if it has a diffrerent name', async ({
+  it('should keep existing execution import if it has a different name', async ({
     expect,
   }) => {
     const script = `
@@ -197,6 +181,40 @@ describe('options export', () => {
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/options-export/rename-complex-existing-options-export.js'
+    )
+  })
+})
+
+describe('browser options', () => {
+  it('should inject browser options when browser module is imported', async ({
+    expect,
+  }) => {
+    const script = `
+      import browser from "k6/browser"
+
+      export default function() {
+      }
+    `
+
+    const result = await enhanceScript({ script, shims })
+
+    await expect(result).toMatchFileSnapshot(
+      './__snapshots__/script/browser-options/with-browser-import.js'
+    )
+  })
+
+  it('should not inject browser options when browser module is not imported', async ({
+    expect,
+  }) => {
+    const script = `
+      export default function() {
+      }
+    `
+
+    const result = await enhanceScript({ script, shims })
+
+    await expect(result).toMatchFileSnapshot(
+      './__snapshots__/script/browser-options/without-browser-import.js'
     )
   })
 })

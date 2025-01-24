@@ -177,7 +177,7 @@ export const enhanceScript = async ({
     throw new Error('Failed to parse script content')
   }
 
-  // let browserImport: ts.ImportDeclaration | null = null
+  let browserImport: ts.ImportDeclaration | null = null
   let httpImport: ts.ImportDeclaration | null = null
 
   traverse(scriptAst, {
@@ -185,6 +185,10 @@ export const enhanceScript = async ({
       switch (node.source.value) {
         case 'k6/http':
           httpImport = node
+          break
+
+        case 'k6/browser':
+          browserImport = node
           break
       }
     },
@@ -227,12 +231,24 @@ export const enhanceScript = async ({
     })
   }
 
+  const browserOptions =
+    browserImport !== null
+      ? {
+          options: fromObjectLiteral({
+            browser: fromObjectLiteral({
+              type: 'chromium',
+            }),
+          }),
+        }
+      : null
+
   const options = fromObjectLiteral({
     scenarios: fromObjectLiteral({
       default: fromObjectLiteral({
         executor: 'shared-iterations',
         vus: 1,
         iterations: 1,
+        ...browserOptions,
       }),
     }),
   })
