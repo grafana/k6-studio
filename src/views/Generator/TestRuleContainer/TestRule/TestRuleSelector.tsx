@@ -1,7 +1,11 @@
 import { Badge, Strong, Tooltip } from '@radix-ui/themes'
 import { css } from '@emotion/react'
 
-import { CorrelationRule, ParameterizationRule, Selector } from '@/types/rules'
+import {
+  CorrelationRule,
+  ParameterizationRule,
+  ReplacerSelector,
+} from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useRef } from 'react'
@@ -71,7 +75,7 @@ function ParameterizationSelectorContent({
   )
 }
 
-function SelectorLabel({ selector }: { selector: Selector }) {
+function SelectorLabel({ selector }: { selector: ReplacerSelector }) {
   switch (selector.type) {
     case 'json':
       return (
@@ -94,6 +98,8 @@ function SelectorLabel({ selector }: { selector: Selector }) {
       )
     case 'header-name':
       return <Strong>{stringFallback(selector.name)}</Strong>
+    case 'text':
+      return <Strong>{stringFallback(selector.value)}</Strong>
     default:
       return exhaustive(selector)
   }

@@ -26,6 +26,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     allowlist: [],
     includeStaticAssets: false,
     scriptName: 'my-script.js',
+    thresholds: [],
   }
 }
 

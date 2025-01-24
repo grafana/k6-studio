@@ -2,8 +2,16 @@ import { Flex } from '@radix-ui/themes'
 
 import { Request } from '@/types'
 import { Table } from '@/components/Table'
+import { SearchMatch } from '@/types/fuse'
+import { HighlightedText } from '@/components/HighlightedText'
 
-export function QueryParams({ request }: { request: Request }) {
+export function QueryParams({
+  request,
+  matches,
+}: {
+  request: Request
+  matches?: SearchMatch[]
+}) {
   if (request.query.length === 0) {
     return (
       <Flex height="100%" justify="center" align="center">
@@ -23,8 +31,20 @@ export function QueryParams({ request }: { request: Request }) {
       <Table.Body>
         {request.query.map(([key, value]) => (
           <Table.Row key={key}>
-            <Table.Cell>{key}</Table.Cell>
-            <Table.Cell>{value}</Table.Cell>
+            <Table.Cell>
+              <HighlightedText
+                text={key}
+                matches={matches}
+                highlightAllMatches
+              />
+            </Table.Cell>
+            <Table.Cell>
+              <HighlightedText
+                text={value}
+                matches={matches}
+                highlightAllMatches
+              />
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table.Body>

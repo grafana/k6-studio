@@ -59,6 +59,7 @@ jobs:
       - name: publish macOS
         if: startsWith(matrix.platform, 'macos-')
         env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # notarization
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
@@ -71,9 +72,9 @@ jobs:
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
-            # on macos we also build the x64 app separately
-            npm run publish -- --arch=x64
-            npm run publish
+          # on macos we also build the x64 app separately
+          npm run publish -- --arch=x64
+          npm run publish
 
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')

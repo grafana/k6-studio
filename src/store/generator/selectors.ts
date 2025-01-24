@@ -62,6 +62,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     allowlist,
     includeStaticAssets,
     scriptName,
+    thresholds: [],
   }
 }
 

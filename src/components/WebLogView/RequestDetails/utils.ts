@@ -11,6 +11,10 @@ export function parseParams(data: ProxyData) {
   }
 
   try {
+    if (data.request.content === '') {
+      return
+    }
+
     const contentType = getContentType(data.request?.headers ?? [])
     const contentDecoded = safeAtob(data.request.content ?? '')
 

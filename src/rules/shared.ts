@@ -6,17 +6,18 @@ import {
   HeaderNameSelector,
   JsonSelector,
   RegexSelector,
-  Selector,
+  ReplacerSelector,
 } from '@/types/rules'
 import { canonicalHeaderKey, isJsonReqResp } from './utils'
 import { exhaustive } from '@/utils/typescript'
+import { replaceText } from './selectors/text'
 
 export function replaceRequestValues({
   selector,
   value,
   request,
 }: {
-  selector: Selector
+  selector: ReplacerSelector
   request: Request
   value: string
 }): Request | undefined {
@@ -29,6 +30,8 @@ export function replaceRequestValues({
       return replaceJsonBody(selector, request, value)
     case 'header-name':
       return replaceHeaderByName(request, selector, value)
+    case 'text':
+      return replaceText(request, selector, value)
     default:
       return exhaustive(selector)
   }
@@ -65,35 +68,6 @@ const replaceRegex = (
       return replaceRegexUrl(selector, request, variableName)
     default:
       return exhaustive(selector.from)
-  }
-}
-
-export function replaceTextMatches(
-  request: Request,
-  extractedValue: string,
-  variableName: string
-): Request {
-  const content = replaceContent(request.content, extractedValue, variableName)
-  const url = replaceUrl(request.url, extractedValue, variableName)
-  const path = request.path.replaceAll(extractedValue, `\${${variableName}}`)
-  const headers: Header[] = replaceHeaders(
-    request.headers,
-    extractedValue,
-    variableName
-  )
-  const cookies: Cookie[] = replaceCookies(
-    request.cookies,
-    extractedValue,
-    variableName
-  )
-
-  return {
-    ...request,
-    content,
-    url,
-    path,
-    headers,
-    cookies,
   }
 }
 

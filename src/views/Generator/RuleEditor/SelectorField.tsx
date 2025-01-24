@@ -5,31 +5,7 @@ import { exhaustive } from '@/utils/typescript'
 import { useFormContext } from 'react-hook-form'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
 import { HeaderSelect } from './HeaderSelect'
-
-const fromOptions: Array<{
-  value: Selector['from']
-  label: string
-}> = [
-  { value: 'headers', label: 'Headers' },
-  { value: 'body', label: 'Body' },
-  { value: 'url', label: 'URL' },
-]
-
-const typeOptions = {
-  beginEnd: { value: 'begin-end', label: 'Begin-End' },
-  regex: { value: 'regex', label: 'Regex' },
-  json: { value: 'json', label: 'JSON' },
-  headerName: { value: 'header-name', label: 'Name' },
-} as const
-
-const allowedTypes: Record<
-  Selector['from'],
-  Array<{ value: Selector['type']; label: string }>
-> = {
-  headers: [typeOptions.beginEnd, typeOptions.regex, typeOptions.headerName],
-  body: [typeOptions.beginEnd, typeOptions.regex, typeOptions.json],
-  url: [typeOptions.beginEnd, typeOptions.regex],
-}
+import { allowedSelectorMap, fromOptions } from './SelectorField.constants'
 
 export function SelectorField({
   field,
@@ -48,9 +24,14 @@ export function SelectorField({
     return null
   }
 
+  const allowedSelectors =
+    field === 'extractor.selector'
+      ? allowedSelectorMap.extractor
+      : allowedSelectorMap.replacer
+
   const handleFromChange = (value: Selector['from']) => {
     // When "from" changes reset type to the first allowed type if the current type is not allowed
-    if (!allowedTypes[value].find(({ value }) => value === selector.type)) {
+    if (!allowedSelectors[value].find(({ value }) => value === selector.type)) {
       handleTypeChange('begin-end')
     }
 
@@ -89,6 +70,13 @@ export function SelectorField({
         })
         break
 
+      case 'text':
+        setValue(field, {
+          type: value,
+          from: selector.from,
+          value: '',
+        })
+        break
       default:
         return exhaustive(value)
     }
@@ -113,7 +101,7 @@ export function SelectorField({
             <ControlledSelect
               control={control}
               name={`${field}.type`}
-              options={allowedTypes[selector.from]}
+              options={allowedSelectors[selector.from]}
               onChange={handleTypeChange}
             />
           </FieldGroup>
@@ -172,6 +160,22 @@ function SelectorContent({
       )
     case 'header-name':
       return <HeaderSelect field={field} />
+
+    case 'text':
+      if (field !== 'extractor.selector') {
+        return (
+          <FieldGroup
+            name={`${field}.value`}
+            errors={errors}
+            label="Text"
+            hint="Exact text match to be replaced"
+          >
+            <TextField.Root {...register(`${field}.value`)} />
+          </FieldGroup>
+        )
+      }
+      return null
+
     default:
       return exhaustive(selector)
   }

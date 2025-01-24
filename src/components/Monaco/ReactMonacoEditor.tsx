@@ -4,6 +4,7 @@ import * as monaco from 'monaco-editor'
 import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { useMemo, useState } from 'react'
 import { Flex } from '@radix-ui/themes'
+import { useHighlightSearch } from './ReactMonacoEditor.hooks'
 
 loader.config({ monaco })
 
@@ -28,10 +29,14 @@ const defaultOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
 
 interface ReactMonacoEditorProps extends EditorProps {
   showToolbar?: boolean
+  searchString?: string
+  searchIndex?: number
 }
 
 export function ReactMonacoEditor({
   showToolbar,
+  searchString,
+  searchIndex,
   ...props
 }: ReactMonacoEditorProps) {
   const theme = useTheme()
@@ -39,6 +44,7 @@ export function ReactMonacoEditor({
   const [toolbarState, setToolbarState] = useState<ToolbarState>({
     wordWrap: 'off',
   })
+  useHighlightSearch({ editor, searchString, searchIndex })
 
   // Monaco automatically applies word wrap if the content length of a line is >= 10000 characters
   // In this case, we disable the word wrap button so Monaco's internal state is respected
