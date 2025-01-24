@@ -267,12 +267,13 @@ export const enhanceScript = async ({
   )
 
   return format(script, {
-    parser: 'ts',
+    parser: 'k6',
     plugins: [
       estree,
+      // This is a custom parser plugin that simply returns our modified AST.
       {
         parsers: {
-          ts: {
+          k6: {
             astFormat: 'estree',
             parse: () => {
               return scriptAst
