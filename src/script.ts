@@ -1,10 +1,16 @@
 import { app, dialog, BrowserWindow } from 'electron'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import { readFile, writeFile } from 'fs/promises'
+import { writeFile } from 'fs/promises'
 import path from 'path'
 import readline from 'readline/promises'
 import { K6Check, K6Log } from './types'
 import { getArch, getPlatform } from './utils/electron'
+import { parse } from '@typescript-eslint/typescript-estree'
+import { format } from 'prettier'
+import { getExports } from './codegen/estree/traverse'
+import { readFile } from 'node:fs/promises'
+// eslint-disable-next-line import/default
+import estree from 'prettier/plugins/estree'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -26,7 +32,7 @@ export const runScript = async (
   proxyPort: number,
   enableUsageReport: boolean
 ) => {
-  const modifiedScript = await enhanceScript(scriptPath)
+  const modifiedScript = await enhanceScriptFromPath(scriptPath)
   const modifiedScriptPath = path.join(
     app.getPath('temp'),
     'k6-studio-script.js'
@@ -110,45 +116,136 @@ export const runScript = async (
   return k6
 }
 
-const enhanceScript = async (scriptPath: string) => {
-  const groupSnippet = await getJsSnippet('group_snippet.js')
-  const checksSnippet = await getJsSnippet('checks_snippet.js')
-  const scriptContent = await readFile(scriptPath, { encoding: 'utf-8' })
-  const scriptLines = scriptContent.split('\n')
-  const httpImportIndex = scriptLines.findIndex((line) =>
-    line.includes('k6/http')
-  )
-  const handleSummaryIndex = scriptLines.findIndex(
-    (line) =>
-      // NOTE: if the custom handle summary is commented out we can still insert our snippet
-      // this check should be improved
-      line.includes('export function handleSummary(') && !line.includes('//')
-  )
+const parseScript = (input: string) => {
+  return parse(input, {
+    loc: false,
+    range: false,
+  })
+}
 
-  // NOTE: checks works only if the user doesn't define a custom summary handler
-  // if no custom handleSummary is defined we add our version to retrieve checks
-  if (handleSummaryIndex === -1) {
-    scriptLines.push(checksSnippet)
-  }
+// const groupSnippet = await getJsSnippet('group_snippet.js')
+// const checksSnippet = await getJsSnippet('checks_snippet.js')
+// const scriptContent = await readFile(scriptPath, { encoding: 'utf-8' })
+// const scriptLines = scriptContent.split('\n')
+// const httpImportIndex = scriptLines.findIndex((line) =>
+//   line.includes('k6/http')
+// )
+// const handleSummaryIndex = scriptLines.findIndex(
+//   (line) =>
+//     // NOTE: if the custom handle summary is commented out we can still insert our snippet
+//     // this check should be improved
+//     line.includes('export function handleSummary(') && !line.includes('//')
+// )
 
-  if (httpImportIndex !== -1) {
-    scriptLines.splice(httpImportIndex + 1, 0, groupSnippet)
-    const modifiedScriptContent = scriptLines.join('\n')
-    return modifiedScriptContent
-  } else {
-    return scriptLines.join('\n')
+// // NOTE: checks works only if the user doesn't define a custom summary handler
+// // if no custom handleSummary is defined we add our version to retrieve checks
+// if (handleSummaryIndex === -1) {
+//   scriptLines.push(checksSnippet)
+// }
+
+// if (httpImportIndex !== -1) {
+//   scriptLines.splice(httpImportIndex + 1, 0, groupSnippet)
+//   const modifiedScriptContent = scriptLines.join('\n')
+//   return modifiedScriptContent
+// } else {
+//   return scriptLines.join('\n')
+// }
+
+interface EnhanceScriptOptions {
+  script: string
+  shims: {
+    group: string
+    checks: string
   }
 }
 
-const getJsSnippet = async (snippetName: string) => {
-  let jsSnippetPath: string
+export const enhanceScript = async (options: EnhanceScriptOptions) => {
+  const [groupShim, checksShim, script] = await Promise.all([
+    parseScript(options.shims.group),
+    parseScript(options.shims.checks),
+    parseScript(options.script),
+  ])
 
-  // if we are in dev server we take resources directly, otherwise look in the app resources folder.
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    jsSnippetPath = path.join(app.getAppPath(), 'resources', snippetName)
-  } else {
-    jsSnippetPath = path.join(process.resourcesPath, snippetName)
+  if (groupShim === undefined) {
+    throw new Error('Failed to parse group snippet')
   }
 
-  return readFile(jsSnippetPath, { encoding: 'utf-8' })
+  if (checksShim === undefined) {
+    throw new Error('Failed to parse checks snippet')
+  }
+
+  if (script === undefined) {
+    throw new Error('Failed to parse script content')
+  }
+
+  // let browserImport: ts.ImportDeclaration | null = null
+  // let httpImport: ts.ImportDeclaration | null = null
+
+  // traverse(script, {
+  //   [NodeType.ImportDeclaration](node) {
+  //     switch (node.source.value) {
+  //       case 'k6/http':
+  //         httpImport = node
+  //         break
+
+  //       case 'k6/browser':
+  //         browserImport = node
+  //         break
+  //     }
+  //   },
+  // })
+
+  const hasHandleSummary = getExports(script).some(
+    (e) => e.type === 'named' && e.name === 'handleSummary'
+  )
+
+  if (!hasHandleSummary) {
+    script.body.push(...checksShim.body)
+  }
+
+  return format(options.script, {
+    parser: 'ts',
+    plugins: [
+      estree,
+      {
+        parsers: {
+          ts: {
+            astFormat: 'estree',
+            parse: (text: string) => {
+              return parse(text, {
+                loc: false,
+                range: false,
+              })
+            },
+            locStart: () => 0,
+            locEnd: () => 0,
+          },
+        },
+      },
+    ],
+  })
+}
+
+const getSnippetPath = (snippetName: string) => {
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    return path.join(app.getAppPath(), 'resources', snippetName)
+  }
+
+  return path.join(process.resourcesPath, snippetName)
+}
+
+const enhanceScriptFromPath = async (scriptPath: string) => {
+  const [groupSnippet, checksSnippet, scriptContent] = await Promise.all([
+    readFile(getSnippetPath('group_snippet.js'), { encoding: 'utf-8' }),
+    readFile(getSnippetPath('checks_snippet.js'), { encoding: 'utf-8' }),
+    readFile(scriptPath, { encoding: 'utf-8' }),
+  ])
+
+  return enhanceScript({
+    script: scriptContent,
+    shims: {
+      group: groupSnippet,
+      checks: checksSnippet,
+    },
+  })
 }
