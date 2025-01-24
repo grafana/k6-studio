@@ -2,6 +2,7 @@ import { DEFAULT_GROUP_NAME } from '@/constants'
 import { Method, ProxyData, Request, Response } from '@/types'
 import { HarWithOptionalResponse } from '@/types/har'
 import type { Content, Entry } from 'har-format'
+import { safeAtob } from './format'
 
 export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
   return har.log.entries.map((entry) => ({
@@ -76,7 +77,7 @@ function parseContent(content: Content): string {
   if (!content.text) return ''
 
   if (content.encoding === 'base64') {
-    return atob(content.text)
+    return safeAtob(content.text)
   }
   return content.text
 }

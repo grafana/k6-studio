@@ -1,9 +1,6 @@
-import { ReadOnlyEditor } from '../../Monaco/ReadOnlyEditor'
-import ReactJson from '@microlink/react-json-view'
+import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { JsonPreview } from '@/components/JsonPreview'
 import { Font } from './Font'
-import { useTheme } from '@/hooks/useTheme'
-import { k6StudioLightBackground } from '@/components/Monaco/themes/k6StudioLight'
-import { k6StudioDarkBackground } from '@/components/Monaco/themes/k6StudioDark'
 
 interface PreviewProps {
   content: string
@@ -12,8 +9,6 @@ interface PreviewProps {
 }
 
 export function Preview({ content, contentType, format }: PreviewProps) {
-  const theme = useTheme()
-
   if (format === 'html') {
     return (
       <iframe
@@ -52,14 +47,9 @@ export function Preview({ content, contentType, format }: PreviewProps) {
 
   if (format === 'json') {
     return (
-      <ReactJson
-        shouldCollapse={(field) => field.name !== 'root'}
-        // TODO: https://github.com/grafana/k6-studio/issues/277
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        src={JSON.parse(content)}
-        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
-        style={theme === 'dark' ? reactJsonDarkStyles : reactJsonLightStyles}
-      />
+      // TODO: https://github.com/grafana/k6-studio/issues/277
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      <JsonPreview content={JSON.parse(content)} />
     )
   }
 
@@ -70,19 +60,4 @@ const mediaStyles = {
   display: 'block',
   maxWidth: '100%',
   boxShadow: 'var(--shadow-3)',
-}
-
-const reactJsonStyles = {
-  fontSize: 12,
-  height: '100%',
-}
-
-const reactJsonDarkStyles = {
-  ...reactJsonStyles,
-  background: k6StudioDarkBackground,
-}
-
-const reactJsonLightStyles = {
-  ...reactJsonStyles,
-  background: k6StudioLightBackground,
 }

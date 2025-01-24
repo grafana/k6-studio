@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import { pluginExposeRenderer } from './vite.base.config'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { version } from './package.json'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -17,6 +18,7 @@ export default defineConfig((env) => {
     base: './',
     build: {
       outDir: `.vite/renderer/${name}`,
+      sourcemap: true,
     },
     plugins: [
       react({
@@ -24,6 +26,11 @@ export default defineConfig((env) => {
       }),
       pluginExposeRenderer(name),
       tsconfigPaths(),
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+      }),
     ],
     resolve: {
       preserveSymlinks: true,

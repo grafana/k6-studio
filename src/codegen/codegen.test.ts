@@ -92,6 +92,7 @@ describe('Code generation', () => {
             allowlist: [],
             includeStaticAssets: false,
             scriptName: 'my-script.js',
+            thresholds: [],
           },
         }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))

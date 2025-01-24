@@ -13,6 +13,7 @@ interface WebLogViewProps {
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches | null) => void
   onUpdateGroup?: (group: GroupType) => void
+  filter?: string
 }
 
 // Memo improves performance when filtering
@@ -22,6 +23,7 @@ export const WebLogView = memo(function WebLogView({
   selectedRequestId,
   onSelectRequest,
   onUpdateGroup,
+  filter,
 }: WebLogViewProps) {
   const selectedRequest = useMemo(
     () => requests.find((data) => data.id === selectedRequestId),
@@ -31,6 +33,8 @@ export const WebLogView = memo(function WebLogView({
   // Sync selectedRequest when requests change to show updates in correlation preview
   useDeepCompareEffect(() => {
     if (!selectedRequest) {
+      // Close details if selected request no longer displayed
+      onSelectRequest(null)
       return
     }
 
@@ -59,6 +63,7 @@ export const WebLogView = memo(function WebLogView({
               requests={item.requests}
               selectedRequestId={selectedRequestId}
               onSelectRequest={onSelectRequest}
+              filter={filter}
             />
           </Group>
         ))}
@@ -71,6 +76,7 @@ export const WebLogView = memo(function WebLogView({
       requests={requests}
       selectedRequestId={selectedRequestId}
       onSelectRequest={onSelectRequest}
+      filter={filter}
     />
   )
 })
@@ -79,12 +85,14 @@ interface RequestListProps {
   requests: ProxyDataWithMatches[]
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches) => void
+  filter?: string
 }
 
 function RequestList({
   requests,
   selectedRequestId,
   onSelectRequest,
+  filter,
 }: RequestListProps) {
   return (
     <Table.Root size="1" layout="fixed">
@@ -92,7 +100,7 @@ function RequestList({
         <Table.Row>
           <Table.ColumnHeaderCell width="70px">Method</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="60px">Status</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell width="80px">Type</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell width="50px">Type</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="20%">Host</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="80%">Path</Table.ColumnHeaderCell>
         </Table.Row>
@@ -104,6 +112,7 @@ function RequestList({
             data={data}
             isSelected={selectedRequestId === data.id}
             onSelectRequest={onSelectRequest}
+            filter={filter}
           />
         ))}
       </Table.Body>

@@ -11,10 +11,11 @@ export interface SearchFieldHandle {
 type SearchFieldProps = Omit<RootProps, 'onChange'> & {
   filter: string
   onChange: (filter: string) => void
+  children?: React.ReactNode
 }
 
 export const SearchField = forwardRef<SearchFieldHandle, SearchFieldProps>(
-  function SearchField({ filter, onChange, ...inputProps }, ref) {
+  function SearchField({ filter, onChange, children, ...inputProps }, ref) {
     const inputRef = useRef<HTMLInputElement | null>(null)
 
     const clear = useCallback(() => {
@@ -48,6 +49,7 @@ export const SearchField = forwardRef<SearchFieldHandle, SearchFieldProps>(
             </IconButton>
           </TextField.Slot>
         )}
+        {children}
       </TextField.Root>
     )
   }
