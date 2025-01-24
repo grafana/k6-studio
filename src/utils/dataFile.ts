@@ -17,8 +17,11 @@ export function parseDataFile(
       return [parsedContent] as DataRecord[]
     }
     case 'csv': {
-      return parseCSV<DataRecord>(content, { header: true, delimiter: ',' })
-        .data
+      return parseCSV<DataRecord>(content, {
+        header: true,
+        delimiter: ',',
+        skipEmptyLines: true,
+      }).data
     }
     default:
       return exhaustive(type)

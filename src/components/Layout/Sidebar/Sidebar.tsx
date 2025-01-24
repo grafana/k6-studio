@@ -1,5 +1,5 @@
 import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
-import { PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
+import { FilePlusIcon, PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
 import { FileTree } from '@/components/FileTree'
@@ -119,7 +119,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
                       size="1"
                       onClick={handleImportDataFile}
                     >
-                      <PlusIcon />
+                      <FilePlusIcon />
                     </IconButton>
                   </Tooltip>
                 }
