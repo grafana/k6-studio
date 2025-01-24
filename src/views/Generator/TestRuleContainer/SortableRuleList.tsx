@@ -58,6 +58,10 @@ export function SortableRuleList({
     setActive(rules.find((rule) => rule.id === event.active.id) || null)
   }
 
+  function handleSelectRule(ruleId: string) {
+    setSelectedRuleId(ruleId === selectedRuleId ? null : ruleId)
+  }
+
   const gridColumns = 'auto auto 1fr auto auto'
 
   return (
@@ -76,7 +80,7 @@ export function SortableRuleList({
                 rule={rule}
                 isSelected={rule.id === selectedRuleId}
                 onSelect={() => {
-                  setSelectedRuleId(rule.id)
+                  handleSelectRule(rule.id)
                 }}
                 key={rule.id}
               />
@@ -88,6 +92,7 @@ export function SortableRuleList({
                 <TestRuleItem
                   rule={active}
                   isSelected={active.id === selectedRuleId}
+                  isOverlay
                 />
               </Grid>
             ) : null}

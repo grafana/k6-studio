@@ -15,8 +15,15 @@ import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { CrossCircledIcon } from '@radix-ui/react-icons'
 import { TestOptions } from '../TestOptions'
 import { Allowlist } from '../Allowlist'
+import { ProxyData } from '@/types'
 
-export function GeneratorTabs() {
+export function GeneratorTabs({
+  onSelectRequest,
+  selectedRequest,
+}: {
+  onSelectRequest: (request: ProxyData | null) => void
+  selectedRequest: ProxyData | null
+}) {
   const [tab, setTab] = useState('requests')
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const { hasError } = useScriptPreview()
@@ -81,18 +88,27 @@ export function GeneratorTabs() {
             value="rule-preview"
             css={css`
               flex-grow: 1;
+              min-height: 0;
             `}
           >
-            <RulePreview />
+            <RulePreview
+              selectedRequest={selectedRequest}
+              onSelectRequest={onSelectRequest}
+            />
           </Tabs.Content>
         )}
         <Tabs.Content
           value="requests"
           css={css`
             flex-grow: 1;
+            min-height: 0;
           `}
         >
-          <RequestList requests={filteredRequests} />
+          <RequestList
+            requests={filteredRequests}
+            onSelectRequest={onSelectRequest}
+            selectedRequest={selectedRequest}
+          />
         </Tabs.Content>
         <Tabs.Content
           value="script"

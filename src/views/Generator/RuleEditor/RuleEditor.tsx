@@ -26,7 +26,7 @@ export function RuleEditorSwitch() {
 
     case 'verification':
       return (
-        <Callout.Root>
+        <Callout.Root mr="5">
           <Callout.Icon>
             <InfoCircledIcon />
           </Callout.Icon>
@@ -42,7 +42,7 @@ export function RuleEditorSwitch() {
 
 function RuleDisabledWarning() {
   return (
-    <Callout.Root mb="4">
+    <Callout.Root mb="4" mr="5">
       <Callout.Icon>
         <InfoCircledIcon />
       </Callout.Icon>

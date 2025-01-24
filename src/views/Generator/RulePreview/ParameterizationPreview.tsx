@@ -4,17 +4,18 @@ import { useGeneratorStore, selectFilteredRequests } from '@/store/generator'
 import { ProxyData } from '@/types'
 import { ParameterizationRule } from '@/types/rules'
 import { Box, Callout, Heading, ScrollArea } from '@radix-ui/themes'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { requestsReplacedToProxyData } from './CorrelationPreview'
-import { Details } from '@/components/WebLogView/Details'
-import { Allotment } from 'allotment'
 
 export function ParameterizationPreview({
   rule,
+  selectedRequest,
+  onSelectRequest,
 }: {
   rule: ParameterizationRule
+  selectedRequest: ProxyData | null
+  onSelectRequest: (request: ProxyData | null) => void
 }) {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const requests = useGeneratorStore(selectFilteredRequests)
   const rules = useGeneratorStore((state) => state.rules)
 
@@ -47,33 +48,21 @@ export function ParameterizationPreview({
   }
 
   return (
-    <Allotment defaultSizes={[1, 1]}>
-      <Allotment.Pane minSize={200}>
-        <Box height="100%">
-          <ScrollArea scrollbars="vertical" css={{ height: '100%' }}>
-            {preview && preview.requestsReplaced.length > 0 && (
-              <>
-                <Heading size="2" m="2">
-                  Requests replaced
-                </Heading>
-                <WebLogView
-                  requests={requestsReplacedToProxyData(
-                    preview.requestsReplaced
-                  )}
-                  onSelectRequest={setSelectedRequest}
-                  selectedRequestId={selectedRequest?.id}
-                />
-              </>
-            )}
-          </ScrollArea>
-        </Box>
-      </Allotment.Pane>
-      <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-        <Details
-          selectedRequest={selectedRequest}
-          onSelectRequest={setSelectedRequest}
-        />
-      </Allotment.Pane>
-    </Allotment>
+    <Box height="100%">
+      <ScrollArea scrollbars="vertical">
+        {preview && preview.requestsReplaced.length > 0 && (
+          <>
+            <Heading size="2" m="2">
+              Requests replaced
+            </Heading>
+            <WebLogView
+              requests={requestsReplacedToProxyData(preview.requestsReplaced)}
+              onSelectRequest={onSelectRequest}
+              selectedRequestId={selectedRequest?.id}
+            />
+          </>
+        )}
+      </ScrollArea>
+    </Box>
   )
 }

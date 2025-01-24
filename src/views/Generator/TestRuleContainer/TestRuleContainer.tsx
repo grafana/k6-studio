@@ -29,7 +29,6 @@ export function TestRuleContainer() {
       >
         <Heading
           css={css`
-            flex-grow: 1;
             font-size: 15px;
             line-height: 24px;
             font-weight: 500;
