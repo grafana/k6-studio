@@ -1,9 +1,6 @@
-import http from "k6/http";
-import execution from "k6/execution";
-(function () {
-  console.log("This is the groups shim");
-})();
-import myExec from "k6/execution";
+export const { abc: $c26e2908c2e948ef883369abc050ce2f } = {
+  $c26e2908c2e948ef883369abc050ce2f: { vus: 10, duration: "10s" },
+};
 export default function () {}
 export function handleSummary() {
   console.log("This is the handleSummary shim");

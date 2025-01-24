@@ -12,6 +12,13 @@ import { readFile } from 'node:fs/promises'
 // eslint-disable-next-line import/default
 import estree from 'prettier/plugins/estree'
 import { NodeType } from './codegen/estree/nodes'
+import {
+  constDeclarator,
+  declareConst,
+  exportNamed,
+  fromObjectLiteral,
+  identifier,
+} from './codegen/estree'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -68,8 +75,6 @@ export const runScript = async (
   const k6Args = [
     'run',
     modifiedScriptPath,
-    '--vus=1',
-    '--iterations=1',
     '--insecure-skip-tls-verify',
     '--log-format=json',
     '--quiet',
@@ -124,34 +129,6 @@ const parseScript = (input: string) => {
   })
 }
 
-// const groupSnippet = await getJsSnippet('group_snippet.js')
-// const checksSnippet = await getJsSnippet('checks_snippet.js')
-// const scriptContent = await readFile(scriptPath, { encoding: 'utf-8' })
-// const scriptLines = scriptContent.split('\n')
-// const httpImportIndex = scriptLines.findIndex((line) =>
-//   line.includes('k6/http')
-// )
-// const handleSummaryIndex = scriptLines.findIndex(
-//   (line) =>
-//     // NOTE: if the custom handle summary is commented out we can still insert our snippet
-//     // this check should be improved
-//     line.includes('export function handleSummary(') && !line.includes('//')
-// )
-
-// // NOTE: checks works only if the user doesn't define a custom summary handler
-// // if no custom handleSummary is defined we add our version to retrieve checks
-// if (handleSummaryIndex === -1) {
-//   scriptLines.push(checksSnippet)
-// }
-
-// if (httpImportIndex !== -1) {
-//   scriptLines.splice(httpImportIndex + 1, 0, groupSnippet)
-//   const modifiedScriptContent = scriptLines.join('\n')
-//   return modifiedScriptContent
-// } else {
-//   return scriptLines.join('\n')
-// }
-
 /**
  * It's theoretically possible that the user has imported the `k6/execution` module with the
  * same alias as our shim. In that case we need to remove the conflicting import to avoid a
@@ -178,60 +155,102 @@ interface EnhanceScriptOptions {
   }
 }
 
-export const enhanceScript = async (options: EnhanceScriptOptions) => {
-  const [groupShim, checksShim, script] = await Promise.all([
-    parseScript(options.shims.group),
-    parseScript(options.shims.checks),
-    parseScript(options.script),
+export const enhanceScript = async ({
+  script,
+  shims,
+}: EnhanceScriptOptions) => {
+  const [groupAst, checksAst, scriptAst] = await Promise.all([
+    parseScript(shims.group),
+    parseScript(shims.checks),
+    parseScript(script),
   ])
 
-  if (groupShim === undefined) {
+  if (groupAst === undefined) {
     throw new Error('Failed to parse group snippet')
   }
 
-  if (checksShim === undefined) {
+  if (checksAst === undefined) {
     throw new Error('Failed to parse checks snippet')
   }
 
-  if (script === undefined) {
+  if (scriptAst === undefined) {
     throw new Error('Failed to parse script content')
   }
 
   // let browserImport: ts.ImportDeclaration | null = null
   let httpImport: ts.ImportDeclaration | null = null
 
-  traverse(script, {
+  traverse(scriptAst, {
     [NodeType.ImportDeclaration](node) {
       switch (node.source.value) {
         case 'k6/http':
           httpImport = node
           break
-
-        // case 'k6/browser':
-        //   browserImport = node
-        //   break
       }
     },
   })
 
   if (httpImport !== null) {
     // Insert the group shim right after the http import.
-    script.body = script.body
+    scriptAst.body = scriptAst.body
       .filter((statement) => !isConflictingExecutionImport(statement))
       .flatMap((statement) =>
-        statement === httpImport ? [httpImport, ...groupShim.body] : statement
+        statement === httpImport ? [httpImport, ...groupAst.body] : statement
       )
   }
 
-  const hasHandleSummary = getExports(script).some(
+  const exports = getExports(scriptAst)
+
+  const hasHandleSummary = exports.some(
     (e) => e.type === 'named' && e.name === 'handleSummary'
   )
 
   if (!hasHandleSummary) {
-    script.body.push(...checksShim.body)
+    scriptAst.body.push(...checksAst.body)
   }
 
-  return format(options.script, {
+  // Find any existing options export and replace it with our own.
+  const optionsExport = exports.find(
+    (e) => e.type === 'named' && e.name === 'options'
+  )
+
+  if (optionsExport) {
+    traverse(scriptAst, {
+      [NodeType.Identifier](node) {
+        if (node.name === 'options') {
+          // It's easier to just rename the options export than to
+          // remove the node itself. This is just some UUID that I
+          // generated. Should be pretty unique.
+          node.name = '$c26e2908c2e948ef883369abc050ce2f'
+        }
+      },
+    })
+  }
+
+  const options = fromObjectLiteral({
+    scenarios: fromObjectLiteral({
+      default: fromObjectLiteral({
+        executor: 'shared-iterations',
+        vus: 1,
+        iterations: 1,
+      }),
+    }),
+  })
+
+  scriptAst.body.push(
+    exportNamed({
+      declaration: declareConst({
+        declarations: [
+          constDeclarator({
+            id: identifier('options'),
+            init: options,
+          }),
+        ],
+      }),
+    })
+  )
+
+  return format(script, {
     parser: 'ts',
     plugins: [
       estree,
@@ -240,7 +259,7 @@ export const enhanceScript = async (options: EnhanceScriptOptions) => {
           ts: {
             astFormat: 'estree',
             parse: () => {
-              return script
+              return scriptAst
             },
             locStart: () => 0,
             locEnd: () => 0,

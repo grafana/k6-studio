@@ -1,4 +1,4 @@
-import type { TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import type { TSESTree as ts } from '@typescript-eslint/types'
 
 export function trimBefore(
   newLine: ts.NewLine | undefined

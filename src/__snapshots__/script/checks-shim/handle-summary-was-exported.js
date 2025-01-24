@@ -5,3 +5,8 @@ export function handleSummary() {
 export default function () {
   check(true, { "is true": (value) => value === true });
 }
+export const options = {
+  scenarios: {
+    default: { executor: "shared-iterations", vus: 1, iterations: 1 },
+  },
+};

@@ -1,4 +1,4 @@
-declare module '@typescript-eslint/typescript-estree' {
+declare module '@typescript-eslint/types' {
   namespace TSESTree {
     type NewLine = 'before' | 'after' | 'both'
 

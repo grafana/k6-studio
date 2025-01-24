@@ -9,7 +9,7 @@ import type {
 import { builders } from 'prettier/doc'
 import defaultOptions, { options, printers } from 'prettier/plugins/estree'
 import { format as formatWithPrettier } from 'prettier/standalone'
-import type { TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import type { TSESTree as ts } from '@typescript-eslint/types'
 
 const { hardline } = builders
 const estree = printers.estree

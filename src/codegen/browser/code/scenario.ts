@@ -1,6 +1,6 @@
 import { exhaustive } from '@/utils/typescript'
 import * as ir from '../intermediate/ast'
-import { TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { TSESTree as ts } from '@typescript-eslint/types'
 import { ScenarioContext } from './context'
 import {
   identifier,

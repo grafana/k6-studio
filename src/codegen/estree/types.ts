@@ -1,4 +1,4 @@
-import { TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { TSESTree as ts } from '@typescript-eslint/types'
 
 /**
  * This type makes it easier to create helper functions for creating nodes. It makes

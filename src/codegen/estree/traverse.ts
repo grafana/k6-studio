@@ -1,4 +1,4 @@
-import { TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { TSESTree as ts } from '@typescript-eslint/types'
 import { NodeType } from './nodes'
 import { exhaustive } from '@/utils/typescript'
 
@@ -1346,17 +1346,18 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
 interface DefaultExport {
   type: 'default'
-  node: ts.ExportDefaultDeclaration
+  declaration: ts.ExportDefaultDeclaration
 }
 
 interface NamedExport {
   type: 'named'
   name: string
+  declaration: ts.ExportNamedDeclaration
 }
 
 interface AllExport {
   type: 'all'
-  node: ts.ExportAllDeclaration
+  declaration: ts.ExportAllDeclaration
 }
 
 type Export = DefaultExport | NamedExport | AllExport
@@ -1364,28 +1365,34 @@ type Export = DefaultExport | NamedExport | AllExport
 export function getExports(node: ts.Node): Export[] {
   const exports: Export[] = []
 
-  function traversePattern(pattern: ts.DestructuringPattern | null) {
+  function traversePattern(
+    declaration: ts.ExportNamedDeclaration,
+    pattern: ts.DestructuringPattern | null
+  ) {
     if (pattern === null) {
       return
     }
 
     switch (pattern?.type) {
       case NodeType.ArrayPattern:
-        pattern.elements.map(traversePattern)
+        pattern.elements.map((element) => traversePattern(declaration, element))
         break
 
       case NodeType.ObjectPattern:
-        pattern.properties.map(traverseProperty)
+        pattern.properties.map((property) =>
+          traverseProperty(declaration, property)
+        )
         break
 
       case NodeType.AssignmentPattern:
-        traversePattern(pattern.left)
+        traversePattern(declaration, pattern.left)
         break
 
       case NodeType.Identifier:
         exports.push({
           type: 'named',
           name: pattern.name,
+          declaration,
         })
         break
 
@@ -1395,7 +1402,7 @@ export function getExports(node: ts.Node): Export[] {
         break
 
       case NodeType.RestElement:
-        traversePattern(pattern.argument)
+        traversePattern(declaration, pattern.argument)
         break
 
       default:
@@ -1403,10 +1410,13 @@ export function getExports(node: ts.Node): Export[] {
     }
   }
 
-  function traverseProperty(node: ts.Property | ts.RestElement) {
+  function traverseProperty(
+    declaration: ts.ExportNamedDeclaration,
+    node: ts.Property | ts.RestElement
+  ) {
     switch (node.type) {
       case NodeType.RestElement:
-        traversePattern(node.argument)
+        traversePattern(declaration, node.argument)
         break
 
       case NodeType.Property:
@@ -1414,6 +1424,7 @@ export function getExports(node: ts.Node): Export[] {
           exports.push({
             type: 'named',
             name: node.value.name,
+            declaration,
           })
         }
 
@@ -1423,7 +1434,7 @@ export function getExports(node: ts.Node): Export[] {
           node.value.type === NodeType.AssignmentPattern ||
           node.value.type === NodeType.MemberExpression
         ) {
-          traversePattern(node.value)
+          traversePattern(declaration, node.value)
         }
         break
 
@@ -1432,25 +1443,32 @@ export function getExports(node: ts.Node): Export[] {
     }
   }
 
-  function traverseBindingName(node: ts.BindingName) {
+  function traverseBindingName(
+    declaration: ts.ExportNamedDeclaration,
+    node: ts.BindingName
+  ) {
     switch (node.type) {
       case NodeType.Identifier:
-        exports.push({ type: 'named', name: node.name })
+        exports.push({
+          type: 'named',
+          name: node.name,
+          declaration,
+        })
         break
 
       case NodeType.ArrayPattern:
-        node.elements.map(traversePattern)
+        node.elements.map((element) => traversePattern(declaration, element))
         break
 
       case NodeType.ObjectPattern:
-        node.properties.map(traverseProperty)
+        node.properties.map((element) => traverseProperty(declaration, element))
         break
     }
   }
 
   traverse(node, {
     [NodeType.ExportDefaultDeclaration](node) {
-      exports.push({ type: 'default', node })
+      exports.push({ type: 'default', declaration: node })
     },
     [NodeType.ExportNamedDeclaration](node) {
       const { declaration, specifiers } = node
@@ -1462,12 +1480,13 @@ export function getExports(node: ts.Node): Export[] {
             exports.push({
               type: 'named',
               name: declaration.id?.name ?? '',
+              declaration: node,
             })
             break
 
           case NodeType.VariableDeclaration:
             for (const variable of declaration.declarations) {
-              traverseBindingName(variable.id)
+              traverseBindingName(node, variable.id)
             }
             break
 
@@ -1492,11 +1511,12 @@ export function getExports(node: ts.Node): Export[] {
             specifier.exported.type === NodeType.Identifier
               ? specifier.exported.name
               : specifier.exported.value,
+          declaration: node,
         })
       }
     },
     [NodeType.ExportAllDeclaration](node) {
-      exports.push({ type: 'all', node })
+      exports.push({ type: 'all', declaration: node })
     },
   })
 

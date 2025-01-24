@@ -142,3 +142,61 @@ describe('groups shim', () => {
     )
   })
 })
+
+describe('options export', () => {
+  it('should export options object when no options are exported', async ({
+    expect,
+  }) => {
+    const script = `
+      export default function() {}
+    `
+
+    const result = await enhanceScript({ script, shims })
+
+    await expect(result).toMatchFileSnapshot(
+      './__snapshots__/script/options-export/options-export.js'
+    )
+  })
+
+  it('should rename any existing options export to avoid collision with the inject one', async ({
+    expect,
+  }) => {
+    const script = `
+      export const options = {
+        vus: 10,
+        duration: "10s"
+      }
+
+      export default function() {}
+    `
+
+    const result = await enhanceScript({ script, shims })
+
+    await expect(result).toMatchFileSnapshot(
+      './__snapshots__/script/options-export/rename-existing-options-export.js'
+    )
+  })
+
+  it('should rename options export when exported in a complex way', async ({
+    expect,
+  }) => {
+    const script = `
+      export const {
+        abc: options
+      } = {
+        options: {
+          vus: 10,
+          duration: "10s"
+        }
+      } 
+
+      export default function() {}
+    `
+
+    const result = await enhanceScript({ script, shims })
+
+    await expect(result).toMatchFileSnapshot(
+      './__snapshots__/script/options-export/rename-complex-existing-options-export.js'
+    )
+  })
+})

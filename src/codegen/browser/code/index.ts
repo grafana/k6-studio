@@ -1,6 +1,6 @@
 import { spaceAfter, spaceBetween } from '../formatting/spacing'
 import * as ir from '../intermediate/ast'
-import { TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { TSESTree as ts } from '@typescript-eslint/types'
 import { CodeGenContext, Import } from './context'
 import {
   declareConst,
