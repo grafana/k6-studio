@@ -16,7 +16,6 @@ export function Scroller({
         ...(scrollbars === 'vertical' && { overflowY: 'auto' }),
         ...(scrollbars === 'horizontal' && { overflowX: 'auto' }),
         ...(scrollbars === 'both' && { overflow: 'auto' }),
-        WebkitOverflowScrolling: 'touch',
         scrollbarWidth: 'thin',
         scrollbarColor: 'var(--gray-a8) var(--gray-a3)',
       }}
