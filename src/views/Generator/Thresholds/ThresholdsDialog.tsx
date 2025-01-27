@@ -107,7 +107,7 @@ export function ThresholdsDialog({
                   <Table.ColumnHeaderCell>Statistic</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Condition</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Stop test</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Stop</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell width="0"></Table.ColumnHeaderCell>
                 </Table.Row>
               </Table.Header>

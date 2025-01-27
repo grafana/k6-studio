@@ -1,8 +1,9 @@
 import { FieldGroup, ControlledSelect } from '@/components/Form'
-import { Threshold, ThresholdData } from '@/types/thresholds'
+import { ThresholdData } from '@/types/thresholds'
 import { TrashIcon } from '@radix-ui/react-icons'
-import { Table, TextField, Checkbox, IconButton } from '@radix-ui/themes'
+import { Table, TextField, Checkbox, IconButton, Flex } from '@radix-ui/themes'
 import {
+  Controller,
   FieldArrayWithId,
   UseFieldArrayRemove,
   useFormContext,
@@ -20,7 +21,7 @@ export function ThresholdRow({
   remove,
 }: {
   index: number
-  field: FieldArrayWithId<{ thresholds: Threshold[] }, 'thresholds', 'id'>
+  field: FieldArrayWithId<ThresholdData, 'thresholds', 'id'>
   remove: UseFieldArrayRemove
 }) {
   const {
@@ -94,13 +95,18 @@ export function ThresholdRow({
         </FieldGroup>
       </Table.Cell>
       <Table.Cell align="center" justify="center">
-        <FieldGroup
-          mb="0"
-          errors={errors}
-          name={`thresholds.${index}.stopTest`}
-        >
-          <Checkbox {...register(`thresholds.${index}.stopTest`)} />
-        </FieldGroup>
+        <Flex align="center" justify="center" height="100%">
+          <Controller
+            control={control}
+            name={`thresholds.${index}.stopTest`}
+            render={({ field }) => (
+              <Checkbox
+                onCheckedChange={field.onChange}
+                {...register(`thresholds.${index}.stopTest`)}
+              />
+            )}
+          />
+        </Flex>
       </Table.Cell>
       <Table.Cell>
         <IconButton onClick={() => remove(index)}>
