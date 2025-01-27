@@ -4,7 +4,7 @@ import { PageHeading } from './PageHeading'
 
 interface ViewProps {
   title: string
-  subTitle?: string
+  subTitle?: string | ReactNode
   actions: ReactNode
   loading?: boolean
 }
