@@ -1,4 +1,4 @@
-import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
+import { Box, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { FilePlusIcon, PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
@@ -10,6 +10,7 @@ import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { SearchField } from '@/components/SearchField'
 import { useState } from 'react'
 import { Feature } from '@/components/Feature'
+import { Scroller } from '@/components/Scroller'
 
 interface SidebarProps {
   isExpanded?: boolean
@@ -58,7 +59,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
             </IconButton>
           )}
         </Flex>
-        <ScrollArea scrollbars="vertical">
+        <Scroller scrollbars="vertical">
           <Flex direction="column" gap="2" pb="2">
             <FileTree
               label="Recordings"
@@ -126,7 +127,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               />
             </Feature>
           </Flex>
-        </ScrollArea>
+        </Scroller>
       </Flex>
     </Box>
   )
