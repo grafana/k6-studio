@@ -1,10 +1,4 @@
-import {
-  ImportDeclaration,
-  ExportDefaultDeclaration,
-  ExportNamedDeclarationWithoutSourceWithSingle,
-  ImportDefaultSpecifier,
-  ImportSpecifier,
-} from '../../tstree'
+import { TSESTree as ts } from '@typescript-eslint/types'
 import { baseProps, NodeType } from './nodes'
 import { NodeOptions } from './types'
 
@@ -14,10 +8,10 @@ export function importDeclaration({
   source,
   specifiers,
 }: NodeOptions<
-  ImportDeclaration,
+  ts.ImportDeclaration,
   'source' | 'specifiers',
   'assertions'
->): ImportDeclaration {
+>): ts.ImportDeclaration {
   return {
     ...baseProps,
     type: NodeType.ImportDeclaration,
@@ -31,7 +25,7 @@ export function importDeclaration({
 
 export function defaultImport({
   local,
-}: NodeOptions<ImportDefaultSpecifier, 'local'>): ImportDefaultSpecifier {
+}: NodeOptions<ts.ImportDefaultSpecifier, 'local'>): ts.ImportDefaultSpecifier {
   return {
     ...baseProps,
     type: NodeType.ImportDefaultSpecifier,
@@ -43,7 +37,7 @@ export function namedImport({
   imported,
   local,
   importKind = 'value',
-}: NodeOptions<ImportSpecifier, 'imported'>): ImportSpecifier {
+}: NodeOptions<ts.ImportSpecifier, 'imported'>): ts.ImportSpecifier {
   return {
     ...baseProps,
     type: NodeType.ImportSpecifier,
@@ -58,9 +52,9 @@ export function exportNamed({
   exportKind = 'value',
   declaration,
 }: NodeOptions<
-  ExportNamedDeclarationWithoutSourceWithSingle,
+  ts.ExportNamedDeclarationWithoutSourceWithSingle,
   'declaration'
->): ExportNamedDeclarationWithoutSourceWithSingle {
+>): ts.ExportNamedDeclarationWithoutSourceWithSingle {
   return {
     ...baseProps,
     type: NodeType.ExportNamedDeclaration,
@@ -76,9 +70,9 @@ export function exportNamed({
 export function exportDefault({
   declaration,
 }: NodeOptions<
-  ExportDefaultDeclaration,
+  ts.ExportDefaultDeclaration,
   'declaration'
->): ExportDefaultDeclaration {
+>): ts.ExportDefaultDeclaration {
   return {
     ...baseProps,
     type: NodeType.ExportDefaultDeclaration,

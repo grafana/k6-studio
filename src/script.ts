@@ -1,10 +1,24 @@
 import { app, dialog, BrowserWindow } from 'electron'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import { readFile, writeFile } from 'fs/promises'
+import { writeFile } from 'fs/promises'
 import path from 'path'
 import readline from 'readline/promises'
 import { K6Check, K6Log } from './types'
 import { getArch, getPlatform } from './utils/electron'
+import { parse, TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { format } from 'prettier'
+import { getExports, traverse } from './codegen/estree/traverse'
+import { readFile } from 'node:fs/promises'
+// eslint-disable-next-line import/default
+import estree from 'prettier/plugins/estree'
+import { NodeType } from './codegen/estree/nodes'
+import {
+  constDeclarator,
+  declareConst,
+  exportNamed,
+  fromObjectLiteral,
+  identifier,
+} from './codegen/estree'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -26,7 +40,7 @@ export const runScript = async (
   proxyPort: number,
   enableUsageReport: boolean
 ) => {
-  const modifiedScript = await enhanceScript(scriptPath)
+  const modifiedScript = await enhanceScriptFromPath(scriptPath)
   const modifiedScriptPath = path.join(
     app.getPath('temp'),
     'k6-studio-script.js'
@@ -61,8 +75,6 @@ export const runScript = async (
   const k6Args = [
     'run',
     modifiedScriptPath,
-    '--vus=1',
-    '--iterations=1',
     '--insecure-skip-tls-verify',
     '--log-format=json',
     '--quiet',
@@ -110,45 +122,191 @@ export const runScript = async (
   return k6
 }
 
-const enhanceScript = async (scriptPath: string) => {
-  const groupSnippet = await getJsSnippet('group_snippet.js')
-  const checksSnippet = await getJsSnippet('checks_snippet.js')
-  const scriptContent = await readFile(scriptPath, { encoding: 'utf-8' })
-  const scriptLines = scriptContent.split('\n')
-  const httpImportIndex = scriptLines.findIndex((line) =>
-    line.includes('k6/http')
-  )
-  const handleSummaryIndex = scriptLines.findIndex(
-    (line) =>
-      // NOTE: if the custom handle summary is commented out we can still insert our snippet
-      // this check should be improved
-      line.includes('export function handleSummary(') && !line.includes('//')
-  )
+const parseScript = (input: string) => {
+  return parse(input, {
+    loc: false,
+    range: false,
+  })
+}
 
-  // NOTE: checks works only if the user doesn't define a custom summary handler
-  // if no custom handleSummary is defined we add our version to retrieve checks
-  if (handleSummaryIndex === -1) {
-    scriptLines.push(checksSnippet)
-  }
+/**
+ * It's theoretically possible that the user has imported the `k6/execution` module with the
+ * same alias as our shim. In that case we need to remove the conflicting import to avoid a
+ * syntax error. If they imported it using a different alias then there's no harm in keeping
+ * it around.
+ */
+function isConflictingExecutionImport(node: ts.Node) {
+  return (
+    node.type === NodeType.ImportDeclaration &&
+    node.source.value === 'k6/execution' &&
+    node.specifiers.some(
+      (specifier) =>
+        specifier.type === NodeType.ImportDefaultSpecifier &&
+        specifier.local.name === 'execution'
+    )
+  )
+}
 
-  if (httpImportIndex !== -1) {
-    scriptLines.splice(httpImportIndex + 1, 0, groupSnippet)
-    const modifiedScriptContent = scriptLines.join('\n')
-    return modifiedScriptContent
-  } else {
-    return scriptLines.join('\n')
+interface EnhanceScriptOptions {
+  script: string
+  shims: {
+    group: string
+    checks: string
   }
 }
 
-const getJsSnippet = async (snippetName: string) => {
-  let jsSnippetPath: string
+export const enhanceScript = async ({
+  script,
+  shims,
+}: EnhanceScriptOptions) => {
+  const [groupAst, checksAst, scriptAst] = await Promise.all([
+    parseScript(shims.group),
+    parseScript(shims.checks),
+    parseScript(script),
+  ])
 
-  // if we are in dev server we take resources directly, otherwise look in the app resources folder.
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    jsSnippetPath = path.join(app.getAppPath(), 'resources', snippetName)
-  } else {
-    jsSnippetPath = path.join(process.resourcesPath, snippetName)
+  if (groupAst === undefined) {
+    throw new Error('Failed to parse group snippet')
   }
 
-  return readFile(jsSnippetPath, { encoding: 'utf-8' })
+  if (checksAst === undefined) {
+    throw new Error('Failed to parse checks snippet')
+  }
+
+  if (scriptAst === undefined) {
+    throw new Error('Failed to parse script content')
+  }
+
+  let browserImport: ts.ImportDeclaration | null = null
+  let httpImport: ts.ImportDeclaration | null = null
+
+  traverse(scriptAst, {
+    [NodeType.ImportDeclaration](node) {
+      switch (node.source.value) {
+        case 'k6/http':
+          httpImport = node
+          break
+
+        case 'k6/browser':
+          browserImport = node
+          break
+      }
+    },
+  })
+
+  if (httpImport !== null) {
+    // Insert the group shim right after the http import.
+    scriptAst.body = scriptAst.body
+      .filter((statement) => !isConflictingExecutionImport(statement))
+      .flatMap((statement) =>
+        statement === httpImport ? [httpImport, ...groupAst.body] : statement
+      )
+  }
+
+  const exports = getExports(scriptAst)
+
+  const hasHandleSummary = exports.some(
+    (e) => e.type === 'named' && e.name === 'handleSummary'
+  )
+
+  if (!hasHandleSummary) {
+    scriptAst.body.push(...checksAst.body)
+  }
+
+  // Find any existing options export and replace it with our own.
+  const optionsExport = exports.find(
+    (e) => e.type === 'named' && e.name === 'options'
+  )
+
+  if (optionsExport) {
+    traverse(scriptAst, {
+      [NodeType.Identifier](node) {
+        if (node.name === 'options') {
+          // It's easier to just rename the options export than to
+          // remove the node itself. This is just some UUID that I
+          // generated. Should be pretty unique.
+          node.name = '$c26e2908c2e948ef883369abc050ce2f'
+        }
+      },
+    })
+  }
+
+  const browserOptions =
+    browserImport !== null
+      ? {
+          options: fromObjectLiteral({
+            browser: fromObjectLiteral({
+              type: 'chromium',
+            }),
+          }),
+        }
+      : null
+
+  const options = fromObjectLiteral({
+    scenarios: fromObjectLiteral({
+      default: fromObjectLiteral({
+        executor: 'shared-iterations',
+        vus: 1,
+        iterations: 1,
+        ...browserOptions,
+      }),
+    }),
+  })
+
+  scriptAst.body.push(
+    exportNamed({
+      declaration: declareConst({
+        declarations: [
+          constDeclarator({
+            id: identifier('options'),
+            init: options,
+          }),
+        ],
+      }),
+    })
+  )
+
+  return format(script, {
+    parser: 'k6',
+    plugins: [
+      estree,
+      // This is a custom parser plugin that simply returns our modified AST.
+      {
+        parsers: {
+          k6: {
+            astFormat: 'estree',
+            parse: () => {
+              return scriptAst
+            },
+            locStart: () => 0,
+            locEnd: () => 0,
+          },
+        },
+      },
+    ],
+  })
+}
+
+const getSnippetPath = (snippetName: string) => {
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    return path.join(app.getAppPath(), 'resources', snippetName)
+  }
+
+  return path.join(process.resourcesPath, snippetName)
+}
+
+const enhanceScriptFromPath = async (scriptPath: string) => {
+  const [groupSnippet, checksSnippet, scriptContent] = await Promise.all([
+    readFile(getSnippetPath('group_snippet.js'), { encoding: 'utf-8' }),
+    readFile(getSnippetPath('checks_snippet.js'), { encoding: 'utf-8' }),
+    readFile(scriptPath, { encoding: 'utf-8' }),
+  ])
+
+  return enhanceScript({
+    script: scriptContent,
+    shims: {
+      group: groupSnippet,
+      checks: checksSnippet,
+    },
+  })
 }

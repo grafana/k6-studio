@@ -1,17 +1,21 @@
-import type { NewLine, Node } from '../tstree'
+import type { TSESTree as ts } from '@typescript-eslint/types'
 
-export function trimBefore(newLine: NewLine | undefined): NewLine | undefined {
+export function trimBefore(
+  newLine: ts.NewLine | undefined
+): ts.NewLine | undefined {
   return newLine === 'both' ? 'after' : undefined
 }
 
-export function trimAfter(newLine: NewLine | undefined): NewLine | undefined {
+export function trimAfter(
+  newLine: ts.NewLine | undefined
+): ts.NewLine | undefined {
   return newLine === 'both' ? 'before' : undefined
 }
 
 export function mergeNewLine(
-  newLine: NewLine | undefined,
-  target: NewLine
-): NewLine {
+  newLine: ts.NewLine | undefined,
+  target: ts.NewLine
+): ts.NewLine {
   if (newLine === target) {
     return newLine
   }
@@ -23,7 +27,7 @@ export function mergeNewLine(
   return 'both'
 }
 
-export function spaceBetween<T extends Node>(nodes: T[]) {
+export function spaceBetween<T extends ts.Node>(nodes: T[]) {
   return nodes.map((node, index) => {
     if (index === nodes.length - 1) {
       return node
@@ -33,7 +37,7 @@ export function spaceBetween<T extends Node>(nodes: T[]) {
   })
 }
 
-export function spaceAfter<T extends Node>(nodes: T[]): T[] {
+export function spaceAfter<T extends ts.Node>(nodes: T[]): T[] {
   const last = nodes[nodes.length - 1]
 
   if (last === undefined) {
@@ -46,7 +50,7 @@ export function spaceAfter<T extends Node>(nodes: T[]): T[] {
   ]
 }
 
-export function spaceAround<T extends Node>([first, ...rest]: T[]): T[] {
+export function spaceAround<T extends ts.Node>([first, ...rest]: T[]): T[] {
   if (first === undefined) {
     return []
   }
@@ -66,7 +70,7 @@ export function spaceAround<T extends Node>([first, ...rest]: T[]): T[] {
   ]
 }
 
-export function spaceBefore<T extends Node>([first, ...rest]: T[]): T[] {
+export function spaceBefore<T extends ts.Node>([first, ...rest]: T[]): T[] {
   if (first === undefined) {
     return []
   }
@@ -74,7 +78,7 @@ export function spaceBefore<T extends Node>([first, ...rest]: T[]): T[] {
   return [{ ...first, newLine: mergeNewLine(first.newLine, 'before') }, ...rest]
 }
 
-export function trimSpacing<T extends Node>([first, ...rest]: T[]): T[] {
+export function trimSpacing<T extends ts.Node>([first, ...rest]: T[]): T[] {
   if (first === undefined) {
     return []
   }

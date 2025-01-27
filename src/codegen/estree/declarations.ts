@@ -1,17 +1,14 @@
-import {
-  ConstDeclaration,
-  FunctionDeclaration,
-  LetOrConstOrVarDeclaration,
-  VariableDeclarator,
-  VariableDeclaratorMaybeInit,
-} from '../../tstree'
+import { TSESTree as ts } from '@typescript-eslint/types'
 import { baseProps, NodeType } from './nodes'
 import { NodeOptions } from './types'
 
 export function declareConst({
   declarations,
   declare = false,
-}: NodeOptions<ConstDeclaration, 'declarations'>): LetOrConstOrVarDeclaration {
+}: NodeOptions<
+  ts.ConstDeclaration,
+  'declarations'
+>): ts.LetOrConstOrVarDeclaration {
   return {
     ...baseProps,
     type: NodeType.VariableDeclaration,
@@ -31,7 +28,10 @@ export function declareFunction({
   expression = false,
   returnType,
   typeParameters,
-}: NodeOptions<FunctionDeclaration, 'params' | 'body'>): FunctionDeclaration {
+}: NodeOptions<
+  ts.FunctionDeclaration,
+  'params' | 'body'
+>): ts.FunctionDeclaration {
   return {
     ...baseProps,
     type: NodeType.FunctionDeclaration,
@@ -51,9 +51,9 @@ export function constDeclarator({
   id,
   init,
 }: NodeOptions<
-  VariableDeclarator,
+  ts.VariableDeclarator,
   'id' | 'init'
->): VariableDeclaratorMaybeInit {
+>): ts.VariableDeclaratorMaybeInit {
   return {
     ...baseProps,
     type: NodeType.VariableDeclarator,
