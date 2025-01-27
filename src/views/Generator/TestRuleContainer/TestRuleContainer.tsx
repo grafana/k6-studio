@@ -6,6 +6,8 @@ import { css } from '@emotion/react'
 import { TestOptions } from '../TestOptions'
 import grotIllustration from '@/assets/grot.svg'
 import { Allowlist } from '../Allowlist'
+import { Thresholds } from '../Thresholds/Thresholds'
+import { Feature } from '@/components/Feature'
 
 export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)
@@ -38,6 +40,9 @@ export function TestRuleContainer() {
         <Flex gap="3">
           <NewRuleMenu />
           <TestOptions />
+          <Feature feature="thresholds">
+            <Thresholds />
+          </Feature>
           <Allowlist />
         </Flex>
       </Flex>
