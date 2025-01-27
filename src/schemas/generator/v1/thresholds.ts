@@ -44,6 +44,10 @@ export const ThresholdSchema = z.object({
   url: z.string().optional(),
   statistic: ThresholdStatisticSchema,
   condition: ThresholdConditionSchema,
-  value: z.number(),
+  value: z.number({ message: 'Invalid value' }),
   stopTest: z.boolean().default(false),
+})
+
+export const ThresholdDataSchema = z.object({
+  thresholds: z.array(ThresholdSchema),
 })
