@@ -84,12 +84,12 @@ export const THRESHOLD_METRICS_OPTIONS = ThresholdMetricSchema.options.map(
 )
 
 export const THRESHOLD_CONDITIONS_OPTIONS = [
-  { label: 'Less than', value: '<' },
-  { label: 'Less than or equal to', value: '<=' },
-  { label: 'Greater than', value: '>' },
-  { label: 'Greater than or equal to', value: '>=' },
-  { label: 'Equal to', value: '===' },
-  { label: 'Not equal to', value: '!==' },
+  { label: '<', value: '<' },
+  { label: '<=', value: '<=' },
+  { label: '>', value: '>' },
+  { label: '>=', value: '>=' },
+  { label: '===', value: '===' },
+  { label: '!==', value: '!==' },
 ]
 
 export const getStatisticOptions = (metricName: ThresholdMetric) => {
