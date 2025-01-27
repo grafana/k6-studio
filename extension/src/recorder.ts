@@ -23,6 +23,13 @@ window.addEventListener(
         eventId: crypto.randomUUID(),
         timestamp: Date.now(),
         selector: generateSelector(ev.target),
+        button: ev.button,
+        modifiers: {
+          ctrl: ev.ctrlKey,
+          shift: ev.shiftKey,
+          alt: ev.altKey,
+          meta: ev.metaKey,
+        },
         tab: '',
       })
 

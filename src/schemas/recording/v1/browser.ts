@@ -27,6 +27,13 @@ const ClickEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('click'),
   tab: z.string(),
   selector: z.string(),
+  button: z.number(),
+  modifiers: z.object({
+    ctrl: z.boolean(),
+    shift: z.boolean(),
+    alt: z.boolean(),
+    meta: z.boolean(),
+  }),
 })
 
 export const BrowserEventSchema = discriminatedUnion('type', [
