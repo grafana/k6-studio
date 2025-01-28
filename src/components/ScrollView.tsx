@@ -1,13 +1,10 @@
 import { HTMLProps } from 'react'
 
-interface ScrollerProps {
+interface ScrollViewProps extends HTMLProps<HTMLDivElement> {
   scrollbars?: 'vertical' | 'horizontal' | 'both'
 }
 
-export function Scroller({
-  scrollbars = 'both',
-  ...props
-}: ScrollerProps & HTMLProps<HTMLDivElement>) {
+export function ScrollView({ scrollbars = 'both', ...props }: ScrollViewProps) {
   return (
     <div
       {...props}
