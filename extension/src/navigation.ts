@@ -91,6 +91,8 @@ export function captureNavigationEvents(
   })
 
   webNavigation.onHistoryStateUpdated.addListener((details) => {
+    console.log('onHistoryStateUpdated', details)
+
     if (isHistoryNavigation(details)) {
       onCaptured({
         type: 'page-navigation',

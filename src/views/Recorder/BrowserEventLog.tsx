@@ -64,8 +64,10 @@ function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
 
   switch (event.source) {
     case 'interaction':
-    case 'script':
       return <>Navigated to {url} by interacting with the page.</>
+
+    case 'script':
+      return <>Navigated to {url} by a script.</>
 
     case 'address-bar':
       return <>Navigated to {url} using the address bar.</>
