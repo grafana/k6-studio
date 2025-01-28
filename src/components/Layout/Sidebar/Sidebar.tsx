@@ -1,5 +1,5 @@
 import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
-import { PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
+import { FilePlusIcon, PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
 import { FileTree } from '@/components/FileTree'
@@ -9,6 +9,7 @@ import { getRoutePath } from '@/routeMap'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { SearchField } from '@/components/SearchField'
 import { useState } from 'react'
+import { Feature } from '@/components/Feature'
 
 interface SidebarProps {
   isExpanded?: boolean
@@ -17,9 +18,13 @@ interface SidebarProps {
 
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const { recordings, generators, scripts } = useFiles(searchTerm)
+  const { recordings, generators, scripts, dataFiles } = useFiles(searchTerm)
 
   const createNewGenerator = useCreateGenerator()
+
+  const handleImportDataFile = () => {
+    return window.studio.data.importFile()
+  }
 
   return (
     <Box
@@ -100,6 +105,26 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               files={scripts}
               noFilesMessage="No scripts found"
             />
+            <Feature feature="data-files">
+              <FileTree
+                label="Data files"
+                files={dataFiles}
+                noFilesMessage="No data files found"
+                actions={
+                  <Tooltip content="Import data file" side="right">
+                    <IconButton
+                      asChild
+                      aria-label="Import data file"
+                      variant="ghost"
+                      size="1"
+                      onClick={handleImportDataFile}
+                    >
+                      <FilePlusIcon />
+                    </IconButton>
+                  </Tooltip>
+                }
+              />
+            </Feature>
           </Flex>
         </ScrollArea>
       </Flex>

@@ -16,6 +16,7 @@ import { Generator } from '@/views/Generator/Generator'
 import { Validator } from '@/views/Validator'
 import { routeMap } from './routeMap'
 import { ErrorElement } from './ErrorElement'
+import { DataFile } from './views/DataFile'
 
 const router = createHashRouter(
   createRoutesFromChildren(
@@ -32,6 +33,7 @@ const router = createHashRouter(
       />
       <Route path={routeMap.generator} element={<Generator />} />
       <Route path={routeMap.validator} element={<Validator />} />
+      <Route path={routeMap.dataFilePreviewer} element={<DataFile />} />
       <Route path="*" element={<NoRouteFound />} />
     </Route>
   )

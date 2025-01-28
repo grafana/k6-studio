@@ -28,6 +28,7 @@ export function createGeneratorData(
       variables: [],
     },
     version: '1.0',
+    thresholds: [],
     ...data,
   }
 }
@@ -88,6 +89,11 @@ export function createGeneratorState(
 
     vus: 1,
     setVus: vi.fn(),
+
+    thresholds: [],
+    addThreshold: vi.fn(),
+    updateThreshold: vi.fn(),
+    deleteThreshold: vi.fn(),
 
     ...state,
   }

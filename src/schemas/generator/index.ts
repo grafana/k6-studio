@@ -24,3 +24,4 @@ export const GeneratorFileDataSchema = AnyGeneratorSchema.transform(migrate)
 export * from './v1/rules'
 export * from './v1/testData'
 export * from './v1/testOptions'
+export * from './v1/thresholds'

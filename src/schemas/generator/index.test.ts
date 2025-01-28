@@ -30,6 +30,8 @@ describe('Generator migration', () => {
       scriptName: 'my-script.js',
     }
 
-    expect(migrate(v0Generator).version).toBe('1.0')
+    const migration = migrate(v0Generator)
+    expect(migration.version).toBe('1.0')
+    expect(migration.thresholds).toEqual([])
   })
 })

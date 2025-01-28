@@ -1,4 +1,4 @@
-import { Program } from '../../tstree'
+import { TSESTree as ts } from '@typescript-eslint/types'
 import { baseProps, NodeType } from './nodes'
 import { NodeOptions } from './types'
 
@@ -7,7 +7,7 @@ export function program({
   comments = [],
   sourceType = 'module',
   tokens,
-}: NodeOptions<Program, 'body'>): Program {
+}: NodeOptions<ts.Program, 'body'>): ts.Program {
   return {
     ...baseProps,
     type: NodeType.Program,

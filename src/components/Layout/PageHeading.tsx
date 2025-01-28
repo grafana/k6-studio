@@ -1,18 +1,19 @@
 import { Flex, Heading, Tooltip } from '@radix-ui/themes'
 import { css } from '@emotion/react'
 import { DividerVerticalIcon } from '@radix-ui/react-icons'
-import { useRef } from 'react'
+import { PropsWithChildren, ReactNode, useRef } from 'react'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
+
+interface PageHeadingProps {
+  title: string
+  subTitle?: string | ReactNode
+}
 
 export function PageHeading({
   title,
   subTitle,
   children,
-}: {
-  title: string
-  subTitle?: string
-  children: React.ReactNode
-}) {
+}: PropsWithChildren<PageHeadingProps>) {
   const subTitleRef = useRef<HTMLHeadingElement>(null)
   const hasEllipsis = useOverflowCheck(subTitleRef)
 
@@ -33,15 +34,17 @@ export function PageHeading({
             <>
               <DividerVerticalIcon aria-hidden />
               <Tooltip content={subTitle} hidden={!hasEllipsis}>
-                <Heading
-                  size="2"
-                  weight="medium"
-                  color="gray"
-                  truncate
-                  ref={subTitleRef}
-                >
-                  {subTitle}
-                </Heading>
+                <Flex asChild gap="1" align="center">
+                  <Heading
+                    size="2"
+                    weight="medium"
+                    color="gray"
+                    truncate
+                    ref={subTitleRef}
+                  >
+                    {subTitle}
+                  </Heading>
+                </Flex>
               </Tooltip>
             </>
           )}

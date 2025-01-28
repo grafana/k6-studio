@@ -1,23 +1,11 @@
 import { exhaustive } from '@/utils/typescript'
-import {
-  ArrayExpression,
-  CallExpression,
-  Expression,
-  ExpressionStatement,
-  Identifier,
-  Literal,
-  MemberExpression,
-  ObjectExpression,
-  PrivateIdentifier,
-  PropertyNonComputedName,
-  StringLiteral,
-} from '../../tstree'
+import { TSESTree as ts } from '@typescript-eslint/types'
 import { baseProps, NodeType } from './nodes'
 import { NodeOptions } from './types'
 
-type LiteralOrExpression = Expression | string | number | boolean | null
+type LiteralOrExpression = ts.Expression | string | number | boolean | null
 
-function fromLiteralOrExpression(value: LiteralOrExpression): Expression {
+function fromLiteralOrExpression(value: LiteralOrExpression): ts.Expression {
   switch (typeof value) {
     case 'string':
     case 'number':
@@ -37,7 +25,7 @@ function fromLiteralOrExpression(value: LiteralOrExpression): Expression {
   }
 }
 
-export function string(value: string): StringLiteral {
+export function string(value: string): ts.StringLiteral {
   return {
     ...baseProps,
     type: NodeType.Literal,
@@ -46,7 +34,9 @@ export function string(value: string): StringLiteral {
   }
 }
 
-export function literal({ value }: NodeOptions<Literal, 'value'>): Literal {
+export function literal({
+  value,
+}: NodeOptions<ts.Literal, 'value'>): ts.Literal {
   switch (typeof value) {
     case 'string':
       return string(value)
@@ -103,8 +93,8 @@ export function literal({ value }: NodeOptions<Literal, 'value'>): Literal {
 }
 
 export function identifier(
-  options: NodeOptions<Identifier, 'name'> | string
-): Identifier {
+  options: NodeOptions<ts.Identifier, 'name'> | string
+): ts.Identifier {
   const {
     name,
     optional = false,
@@ -132,9 +122,9 @@ export function property({
   optional = false,
   shorthand = false,
 }: NodeOptions<
-  PropertyNonComputedName,
+  ts.PropertyNonComputedName,
   'key' | 'value'
->): PropertyNonComputedName {
+>): ts.PropertyNonComputedName {
   return {
     ...baseProps,
     type: NodeType.Property,
@@ -156,9 +146,9 @@ export function computedProperty({
   optional = false,
   shorthand = false,
 }: NodeOptions<
-  PropertyNonComputedName,
+  ts.PropertyNonComputedName,
   'key' | 'value'
->): PropertyNonComputedName {
+>): ts.PropertyNonComputedName {
   return {
     ...baseProps,
     type: NodeType.Property,
@@ -174,7 +164,7 @@ export function computedProperty({
 
 export function object({
   properties,
-}: NodeOptions<ObjectExpression, 'properties'>): ObjectExpression {
+}: NodeOptions<ts.ObjectExpression, 'properties'>): ts.ObjectExpression {
   return {
     ...baseProps,
     type: NodeType.ObjectExpression,
@@ -201,7 +191,7 @@ export function fromObjectLiteral(
 
 export function array({
   elements,
-}: NodeOptions<ArrayExpression, 'elements'>): ArrayExpression {
+}: NodeOptions<ts.ArrayExpression, 'elements'>): ts.ArrayExpression {
   return {
     ...baseProps,
     type: NodeType.ArrayExpression,
@@ -219,21 +209,24 @@ interface AwaitedContext {
   awaited(): void
 }
 
-export class ExpressionBuilder<Expr extends Expression> {
+export class ExpressionBuilder<Expr extends ts.Expression> {
   private expression: Expr
 
   constructor(expression: Expr) {
     this.expression = expression
   }
 
-  member(name: Expression | PrivateIdentifier | string, optional = false) {
+  member(
+    name: ts.Expression | ts.PrivateIdentifier | string,
+    optional = false
+  ) {
     const nameExpression = typeof name === 'string' ? identifier(name) : name
 
     if (
       nameExpression.type !== NodeType.Identifier &&
       nameExpression.type !== NodeType.PrivateIdentifier
     ) {
-      return new ExpressionBuilder<MemberExpression>({
+      return new ExpressionBuilder<ts.MemberExpression>({
         ...baseProps,
         type: NodeType.MemberExpression,
         computed: true,
@@ -243,7 +236,7 @@ export class ExpressionBuilder<Expr extends Expression> {
       })
     }
 
-    return new ExpressionBuilder<MemberExpression>({
+    return new ExpressionBuilder<ts.MemberExpression>({
       ...baseProps,
       computed: false,
       type: NodeType.MemberExpression,
@@ -253,7 +246,9 @@ export class ExpressionBuilder<Expr extends Expression> {
     })
   }
 
-  call(options: NodeOptions<CallExpression, never, 'callee'> | Expression[]) {
+  call(
+    options: NodeOptions<ts.CallExpression, never, 'callee'> | ts.Expression[]
+  ) {
     const {
       arguments: args = [],
       optional = false,
@@ -262,7 +257,7 @@ export class ExpressionBuilder<Expr extends Expression> {
       ? { arguments: options, typeArguments: undefined }
       : options
 
-    const expression: CallExpression = {
+    const expression: ts.CallExpression = {
       ...baseProps,
       type: NodeType.CallExpression,
       callee: this.expression,
@@ -288,7 +283,7 @@ export class ExpressionBuilder<Expr extends Expression> {
     return this.expression
   }
 
-  asStatement(): ExpressionStatement {
+  asStatement(): ts.ExpressionStatement {
     return {
       ...baseProps,
       type: NodeType.ExpressionStatement,

@@ -72,11 +72,25 @@ export const StatusCodeSelectorSchema = z.object({
   type: z.literal('status-code'),
 })
 
-export const SelectorSchema = z.discriminatedUnion('type', [
+export const TextSelectorSchema = z.object({
+  type: z.literal('text'),
+  from: z.enum(['headers', 'body', 'url']),
+  value: z.string(),
+})
+
+export const ExtractorSelectorSchema = z.discriminatedUnion('type', [
   BeginEndSelectorSchema,
   RegexSelectorSchema,
   JsonSelectorSchema,
   HeaderNameSelectorSchema,
+])
+
+export const ReplacerSelectorSchema = z.discriminatedUnion('type', [
+  BeginEndSelectorSchema,
+  RegexSelectorSchema,
+  JsonSelectorSchema,
+  HeaderNameSelectorSchema,
+  TextSelectorSchema,
 ])
 
 export const VerificationRuleSelectorSchema = z.discriminatedUnion('type', [
@@ -87,13 +101,13 @@ export const VerificationRuleSelectorSchema = z.discriminatedUnion('type', [
 
 export const CorrelationExtractorSchema = z.object({
   filter: FilterSchema,
-  selector: SelectorSchema,
+  selector: ExtractorSelectorSchema,
   variableName: z.string().optional(),
 })
 
 export const CorrelationReplacerSchema = z.object({
   filter: FilterSchema,
-  selector: SelectorSchema.optional(),
+  selector: ReplacerSelectorSchema.optional(),
 })
 
 export const RuleBaseSchema = z.object({
@@ -104,7 +118,7 @@ export const RuleBaseSchema = z.object({
 export const ParameterizationRuleSchema = RuleBaseSchema.extend({
   type: z.literal('parameterization'),
   filter: FilterSchema,
-  selector: SelectorSchema,
+  selector: ReplacerSelectorSchema,
   value: z.discriminatedUnion('type', [
     VariableValueSchema,
     ArrayValueSchema,

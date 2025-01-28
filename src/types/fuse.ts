@@ -1,4 +1,5 @@
 export interface SearchMatch {
-  indices: Array<[number, number]>
-  value: string
+  indices: Readonly<Array<[number, number]>>
+  value?: string
+  key?: string
 }

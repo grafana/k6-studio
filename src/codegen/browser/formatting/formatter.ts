@@ -9,14 +9,14 @@ import type {
 import { builders } from 'prettier/doc'
 import defaultOptions, { options, printers } from 'prettier/plugins/estree'
 import { format as formatWithPrettier } from 'prettier/standalone'
-import type { Node, Program } from '@/codegen/browser/tstree'
+import type { TSESTree as ts } from '@typescript-eslint/types'
 
 const { hardline } = builders
 const estree = printers.estree
 
 declare module 'prettier/plugins/estree' {
   const printers: {
-    estree: Printer<Node>
+    estree: Printer<ts.Node>
   }
 
   const options: Record<string, SupportOption>
@@ -26,7 +26,7 @@ declare module 'prettier/plugins/estree' {
  * A custom Prettier plugin that checks our custom `newLine` property and
  * adds new lines before, after, or both before and after the node.
  */
-function createPlugin(program: Program): Plugin {
+function createPlugin(program: ts.Program): Plugin {
   return {
     languages: [
       {
@@ -50,7 +50,7 @@ function createPlugin(program: Program): Plugin {
     },
     printers: {
       estree: {
-        print(path: AstPath<Node>, options: ParserOptions<Node>, print) {
+        print(path: AstPath<ts.Node>, options: ParserOptions<ts.Node>, print) {
           const doc = estree.print(path, options, print)
           const node = path.getNode()
 
@@ -75,7 +75,7 @@ function createPlugin(program: Program): Plugin {
   }
 }
 
-async function format(ast: Program): Promise<string> {
+async function format(ast: ts.Program): Promise<string> {
   return await formatWithPrettier('i,', {
     filepath: 'test.js',
     parser: 'estree',
