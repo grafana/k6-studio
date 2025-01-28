@@ -8,6 +8,7 @@ import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 import { BrowserEvent } from './schemas/recording'
 import * as Sentry from './sentry'
+import { DataFilePreview } from './types/testData'
 
 interface GetFilesResponse {
   recordings: StudioFile[]
@@ -129,6 +130,9 @@ const data = {
   importFile: (): Promise<string | undefined> => {
     return ipcRenderer.invoke('data-file:import')
   },
+  loadPreview: (filePath: string): Promise<DataFilePreview | null> => {
+    return ipcRenderer.invoke('data-file:load-preview', filePath)
+  },
 } as const
 
 const ui = {
@@ -137,6 +141,9 @@ const ui = {
   },
   openContainingFolder: (file: StudioFile) => {
     ipcRenderer.send('ui:open-folder', file)
+  },
+  openFileInDefaultApp: (file: StudioFile): Promise<string> => {
+    return ipcRenderer.invoke('ui:open-file-in-default-app', file)
   },
   deleteFile: (file: StudioFile): Promise<void> => {
     return ipcRenderer.invoke('ui:delete-file', file)
