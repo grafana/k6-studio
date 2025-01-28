@@ -65,7 +65,7 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
 
 function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {
   const modifiers: ir.ClickOptionsExpression['modifiers'] = [
-    node.modifiers.ctrl && ('Ctrl' as const),
+    node.modifiers.ctrl && ('Control' as const),
     node.modifiers.shift && ('Shift' as const),
     node.modifiers.alt && ('Alt' as const),
     node.modifiers.meta && ('Meta' as const),

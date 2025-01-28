@@ -32,7 +32,7 @@ export interface ReloadExpression {
 export interface ClickOptionsExpression {
   type: 'ClickOptionsExpression'
   button: 'left' | 'middle' | 'right'
-  modifiers: Array<'Ctrl' | 'Shift' | 'Alt' | 'Meta'>
+  modifiers: Array<'Control' | 'Shift' | 'Alt' | 'Meta'>
 }
 
 export interface ClickExpression {
