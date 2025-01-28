@@ -98,6 +98,20 @@ function emitClickExpression(
     .done()
 }
 
+function emitTypeTextExpression(
+  context: ScenarioContext,
+  expression: ir.TypeTextExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+  const value = emitExpression(context, expression.value)
+
+  return new ExpressionBuilder(target)
+    .member('type')
+    .call([value])
+    .await(context)
+    .done()
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -126,6 +140,9 @@ function emitExpression(
 
     case 'ClickOptionsExpression':
       return emitClickOptionsExpression(context, expression)
+
+    case 'TypeTextExpression':
+      return emitTypeTextExpression(context, expression)
 
     default:
       return exhaustive(expression)

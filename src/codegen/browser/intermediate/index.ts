@@ -96,6 +96,22 @@ function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
   })
 }
 
+function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'TypeTextExpression',
+      target: locator,
+      value: {
+        type: 'StringLiteral',
+        value: node.value,
+      },
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -112,6 +128,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'click':
       return emitClickNode(context, node)
+
+    case 'type-text':
+      return emitTypeTextNode(context, node)
 
     default:
       return exhaustive(node)

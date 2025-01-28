@@ -35,6 +35,12 @@ export interface ClickOptionsExpression {
   modifiers: Array<'Control' | 'Shift' | 'Alt' | 'Meta'>
 }
 
+export interface TypeTextExpression {
+  type: 'TypeTextExpression'
+  target: Expression
+  value: Expression
+}
+
 export interface ClickExpression {
   type: 'ClickExpression'
   locator: Expression
@@ -50,6 +56,7 @@ export type Expression =
   | ReloadExpression
   | ClickExpression
   | ClickOptionsExpression
+  | TypeTextExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

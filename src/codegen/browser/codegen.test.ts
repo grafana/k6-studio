@@ -184,3 +184,37 @@ it('should emit click with modifier keys on element', async ({ expect }) => {
     '__snapshots__/browser/click-element-with-modifier-keys.ts'
   )
 })
+
+it('should emit type text on element', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'input',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'type-text',
+          nodeId: 'type-text',
+          value: 'Hello, World!',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/type-text-on-element.ts'
+  )
+})

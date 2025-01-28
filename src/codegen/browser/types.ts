@@ -52,12 +52,22 @@ export interface ClickNode extends NodeBase {
   }
 }
 
+export interface TypeTextNode extends NodeBase {
+  type: 'type-text'
+  value: string
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
+  }
+}
+
 export type TestNode =
   | PageNode
   | GotoNode
   | ReloadNode
   | LocatorNode
   | ClickNode
+  | TypeTextNode
 
 export interface Scenario {
   nodes: TestNode[]

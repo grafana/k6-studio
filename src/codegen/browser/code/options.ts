@@ -15,6 +15,7 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'NewLocatorExpression':
       case 'ClickExpression':
       case 'ClickOptionsExpression':
+      case 'TypeTextExpression':
         return true
 
       case 'Identifier':

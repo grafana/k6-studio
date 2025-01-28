@@ -107,7 +107,15 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
 
       // TODO: Implement input-change
       case 'input-change':
-        return null
+        return {
+          type: 'type-text',
+          nodeId: event.eventId,
+          value: event.value,
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.selector),
+          },
+        }
 
       default:
         return exhaustive(event)

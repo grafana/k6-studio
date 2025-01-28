@@ -47,6 +47,13 @@ function substituteExpression(
         locator: substituteExpression(node.locator, substitutions),
       }
 
+    case 'TypeTextExpression':
+      return {
+        type: 'TypeTextExpression',
+        target: substituteExpression(node.target, substitutions),
+        value: substituteExpression(node.value, substitutions),
+      }
+
     default:
       return exhaustive(node)
   }
