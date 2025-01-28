@@ -170,6 +170,7 @@ const generator = {
 } as const
 
 const app = {
+  platform: process.platform,
   closeSplashscreen: () => {
     ipcRenderer.send('splashscreen:close')
   },

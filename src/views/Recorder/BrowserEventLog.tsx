@@ -1,8 +1,35 @@
-import { BrowserEvent, PageNavigationEvent } from '@/schemas/recording'
+import {
+  BrowserEvent,
+  ClickEvent,
+  PageNavigationEvent,
+} from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
 import { GlobeIcon, TargetIcon, UpdateIcon } from '@radix-ui/react-icons'
 import { Flex, Table, Tooltip } from '@radix-ui/themes'
+
+function getModifierKeys(modifiers: ClickEvent['modifiers']) {
+  const keys = []
+  const platform = window.studio.app.platform
+
+  if (modifiers.ctrl) {
+    keys.push('⌃ Ctrl')
+  }
+
+  if (modifiers.shift) {
+    keys.push('⇧ Shift')
+  }
+
+  if (modifiers.alt) {
+    keys.push(platform === 'darwin' ? '⌥ Option' : '⌥ Alt')
+  }
+
+  if (modifiers.meta) {
+    keys.push(platform === 'darwin' ? '⌘ Command' : '⊞ Meta')
+  }
+
+  return keys
+}
 
 interface EventIconProps {
   event: BrowserEvent
@@ -51,6 +78,42 @@ function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
   }
 }
 
+function getButtonDescription(event: ClickEvent) {
+  // Technically, buttons could have been remapped by the user but there's no
+  // way of finding out which _semantic_ button, i.e. primary, secondary, etc.,
+  // was clicked. Seems like fringe case though.
+  switch (event.button) {
+    case 0:
+      return 'Clicked'
+
+    case 1:
+      return 'Middle-clicked'
+
+    case 2:
+      return 'Right-clicked'
+
+    default:
+      return `Button ${event.button}`
+  }
+}
+
+interface ClickDescriptionProps {
+  event: ClickEvent
+}
+
+function ClickDescription({ event }: ClickDescriptionProps) {
+  const modifiers = getModifierKeys(event.modifiers)
+  const button = getButtonDescription(event)
+
+  const clickedText = modifiers.concat(button).join(' + ')
+
+  return (
+    <>
+      {clickedText} on element <strong>{event.selector}</strong>
+    </>
+  )
+}
+
 interface EventDescriptionProps {
   event: BrowserEvent
 }
@@ -64,11 +127,7 @@ function EventDescription({ event }: EventDescriptionProps) {
       return <>Reloaded page.</>
 
     case 'click':
-      return (
-        <>
-          Clicked on element <strong>{event.selector}</strong>
-        </>
-      )
+      return <ClickDescription event={event} />
 
     default:
       return exhaustive(event)
