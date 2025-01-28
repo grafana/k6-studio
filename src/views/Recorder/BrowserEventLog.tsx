@@ -5,8 +5,21 @@ import {
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
-import { GlobeIcon, TargetIcon, UpdateIcon } from '@radix-ui/react-icons'
+import {
+  GlobeIcon,
+  InputIcon,
+  TargetIcon,
+  UpdateIcon,
+} from '@radix-ui/react-icons'
 import { Flex, Table, Tooltip } from '@radix-ui/themes'
+
+interface SelectorProps {
+  children: string
+}
+
+function Selector({ children }: SelectorProps) {
+  return <strong>{children}</strong>
+}
 
 function getModifierKeys(modifiers: ClickEvent['modifiers']) {
   const keys = []
@@ -45,6 +58,9 @@ function EventIcon({ event }: EventIconProps) {
 
     case 'click':
       return <TargetIcon />
+
+    case 'input-change':
+      return <InputIcon />
 
     default:
       return exhaustive(event)
@@ -127,6 +143,14 @@ function EventDescription({ event }: EventDescriptionProps) {
 
     case 'click':
       return <ClickDescription event={event} />
+
+    case 'input-change':
+      return (
+        <>
+          Changed input of <Selector>{event.selector}</Selector> to{' '}
+          <code>{event.value}</code>
+        </>
+      )
 
     default:
       return exhaustive(event)

@@ -36,14 +36,23 @@ const ClickEventSchema = BrowserEventBaseSchema.extend({
   }),
 })
 
+const InputChangeEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('input-change'),
+  tab: z.string(),
+  selector: z.string(),
+  value: z.string(),
+})
+
 export const BrowserEventSchema = discriminatedUnion('type', [
   PageNavigationEventSchema,
   PageReloadEventSchema,
   ClickEventSchema,
+  InputChangeEventSchema,
 ])
 
 export type PageNavigationEvent = z.infer<typeof PageNavigationEventSchema>
 export type PageReloadEvent = z.infer<typeof PageReloadEventSchema>
 export type ClickEvent = z.infer<typeof ClickEventSchema>
+export type InputChangeEvent = z.infer<typeof InputChangeEventSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>

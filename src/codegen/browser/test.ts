@@ -105,6 +105,10 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
       }
 
+      // TODO: Implement input-change
+      case 'input-change':
+        return null
+
       default:
         return exhaustive(event)
     }
