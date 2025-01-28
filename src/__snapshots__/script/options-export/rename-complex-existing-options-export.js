@@ -1,6 +1,10 @@
 export const { abc: $c26e2908c2e948ef883369abc050ce2f } = {
-  $c26e2908c2e948ef883369abc050ce2f: { vus: 10, duration: "10s" },
+  $c26e2908c2e948ef883369abc050ce2f: {
+    vus: 10,
+    duration: "10s",
+  },
 };
+
 export default function () {}
 export function handleSummary() {
   console.log("This is the handleSummary shim");

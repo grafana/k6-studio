@@ -1,4 +1,5 @@
 import http from "k6/http";
+
 import execution from "k6/execution";
 (function () {
   console.log("This is the groups shim");
