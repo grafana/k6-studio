@@ -84,6 +84,13 @@ it('should emit click event on element', async ({ expect }) => {
         {
           type: 'click',
           nodeId: 'click',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
           inputs: {
             locator: { nodeId: 'locator' },
           },

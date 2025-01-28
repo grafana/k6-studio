@@ -92,15 +92,18 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'click':
+      case 'click': {
         return {
           type: 'click',
           nodeId: event.eventId,
+          button: event.button,
+          modifiers: event.modifiers,
           inputs: {
             previous,
             locator: getLocator(event.tab, event.selector),
           },
         }
+      }
 
       default:
         return exhaustive(event)

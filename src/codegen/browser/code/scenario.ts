@@ -9,6 +9,8 @@ import {
   ExpressionBuilder,
   declareConst,
   constDeclarator,
+  fromArrayLiteral,
+  fromObjectLiteral,
 } from './helpers'
 import { spaceBetween } from '../formatting/spacing'
 
@@ -61,15 +63,37 @@ function emitReloadExpression(
     .done()
 }
 
+function emitClickOptionsExpression(
+  context: ScenarioContext,
+  expression: ir.ClickOptionsExpression
+): ts.Expression {
+  const button = expression.button !== 'left' && {
+    button: string(expression.button),
+  }
+
+  const modifiers = expression.modifiers.length > 0 && {
+    modifiers: fromArrayLiteral(expression.modifiers.map(string)),
+  }
+
+  return fromObjectLiteral({
+    ...button,
+    ...modifiers,
+  })
+}
+
 function emitClickExpression(
   context: ScenarioContext,
   expression: ir.ClickExpression
 ): ts.Expression {
   const locator = emitExpression(context, expression.locator)
+  const args =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
 
   return new ExpressionBuilder(locator)
     .member('click')
-    .call([])
+    .call(args)
     .await(context)
     .done()
 }
@@ -99,6 +123,9 @@ function emitExpression(
 
     case 'ClickExpression':
       return emitClickExpression(context, expression)
+
+    case 'ClickOptionsExpression':
+      return emitClickOptionsExpression(context, expression)
 
     default:
       return exhaustive(expression)

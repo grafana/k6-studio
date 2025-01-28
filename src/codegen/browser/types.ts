@@ -39,6 +39,13 @@ export interface ReloadNode extends NodeBase {
 
 export interface ClickNode extends NodeBase {
   type: 'click'
+  button: 'left' | 'middle' | 'right'
+  modifiers: {
+    ctrl: boolean
+    shift: boolean
+    alt: boolean
+    meta: boolean
+  }
   inputs: {
     previous?: NodeRef
     locator: NodeRef

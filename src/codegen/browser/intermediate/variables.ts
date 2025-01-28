@@ -7,17 +7,16 @@ function substituteExpression(
   substitutions: Map<string, string>
 ): Expression {
   switch (node.type) {
+    case 'StringLiteral':
+    case 'NewPageExpression':
+    case 'ClickOptionsExpression':
+      return node
+
     case 'Identifier':
       return {
         type: 'Identifier',
         name: substitutions.get(node.name) ?? node.name,
       }
-
-    case 'StringLiteral':
-      return node
-
-    case 'NewPageExpression':
-      return node
 
     case 'NewLocatorExpression':
       return {
@@ -42,6 +41,9 @@ function substituteExpression(
     case 'ClickExpression':
       return {
         type: 'ClickExpression',
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
         locator: substituteExpression(node.locator, substitutions),
       }
 

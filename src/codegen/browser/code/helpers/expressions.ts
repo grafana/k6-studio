@@ -1,5 +1,6 @@
 import { exhaustive } from '@/utils/typescript'
 import {
+  ArrayExpression,
   CallExpression,
   Expression,
   ExpressionStatement,
@@ -195,6 +196,22 @@ export function fromObjectLiteral(
         value: fromLiteralOrExpression(value),
       })
     }),
+  })
+}
+
+export function array({
+  elements,
+}: NodeOptions<ArrayExpression, 'elements'>): ArrayExpression {
+  return {
+    ...baseProps,
+    type: NodeType.ArrayExpression,
+    elements,
+  }
+}
+
+export function fromArrayLiteral(elements: LiteralOrExpression[]) {
+  return array({
+    elements: elements.map(fromLiteralOrExpression),
   })
 }
 

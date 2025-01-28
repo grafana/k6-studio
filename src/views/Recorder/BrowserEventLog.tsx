@@ -79,21 +79,18 @@ function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
 }
 
 function getButtonDescription(event: ClickEvent) {
-  // Technically, buttons could have been remapped by the user but there's no
-  // way of finding out which _semantic_ button, i.e. primary, secondary, etc.,
-  // was clicked. Seems like fringe case though.
   switch (event.button) {
-    case 0:
+    case 'left':
       return 'Clicked'
 
-    case 1:
+    case 'middle':
       return 'Middle-clicked'
 
-    case 2:
+    case 'right':
       return 'Right-clicked'
 
     default:
-      return `Button ${event.button}`
+      return exhaustive(event.button)
   }
 }
 

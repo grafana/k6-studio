@@ -27,7 +27,7 @@ const ClickEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('click'),
   tab: z.string(),
   selector: z.string(),
-  button: z.number(),
+  button: z.union([z.literal('left'), z.literal('middle'), z.literal('right')]),
   modifiers: z.object({
     ctrl: z.boolean(),
     shift: z.boolean(),

@@ -29,9 +29,16 @@ export interface ReloadExpression {
   target: Expression
 }
 
+export interface ClickOptionsExpression {
+  type: 'ClickOptionsExpression'
+  button: 'left' | 'middle' | 'right'
+  modifiers: Array<'Ctrl' | 'Shift' | 'Alt' | 'Meta'>
+}
+
 export interface ClickExpression {
   type: 'ClickExpression'
   locator: Expression
+  options: Expression | null
 }
 
 export type Expression =
@@ -42,6 +49,7 @@ export type Expression =
   | GotoExpression
   | ReloadExpression
   | ClickExpression
+  | ClickOptionsExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

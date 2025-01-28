@@ -63,14 +63,35 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
   context.inline(node, expression)
 }
 
+function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {
+  const modifiers: ir.ClickOptionsExpression['modifiers'] = [
+    node.modifiers.ctrl && ('Ctrl' as const),
+    node.modifiers.shift && ('Shift' as const),
+    node.modifiers.alt && ('Alt' as const),
+    node.modifiers.meta && ('Meta' as const),
+  ].filter((modifier) => modifier !== false)
+
+  if (node.button === 'left' && modifiers.length === 0) {
+    return null
+  }
+
+  return {
+    type: 'ClickOptionsExpression',
+    button: node.button,
+    modifiers,
+  }
+}
+
 function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
   const locator = context.reference(node.inputs.locator)
+  const options = getClickOptions(node)
 
   context.emit({
     type: 'ExpressionStatement',
     expression: {
       type: 'ClickExpression',
       locator,
+      options,
     },
   })
 }
