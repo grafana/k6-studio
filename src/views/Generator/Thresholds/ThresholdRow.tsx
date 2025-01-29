@@ -14,16 +14,17 @@ import {
   THRESHOLD_CONDITIONS_OPTIONS,
   getMetricUnit,
 } from './Thresholds.utils'
+import { useThresholdURLOptions } from './Thresholds.hooks'
+import { css } from '@emotion/react'
+import { useTheme } from '@/hooks/useTheme'
 
-export function ThresholdRow({
-  field,
-  index,
-  remove,
-}: {
+type ThresholdRowProps = {
   index: number
   field: FieldArrayWithId<ThresholdData, 'thresholds', 'id'>
   remove: UseFieldArrayRemove
-}) {
+}
+
+export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
   const {
     register,
     formState: { errors },
@@ -31,7 +32,9 @@ export function ThresholdRow({
     watch,
   } = useFormContext<ThresholdData>()
 
+  const urlOptions = useThresholdURLOptions()
   const threshold = watch('thresholds')[index]
+  const theme = useTheme()
 
   return (
     <Table.Row key={field.id}>
@@ -47,9 +50,21 @@ export function ThresholdRow({
       <Table.Cell>
         <FieldGroup errors={errors} name={`thresholds.${index}.url`} mb="0">
           <ControlledSelect
-            options={[]}
+            options={urlOptions}
             control={control}
             name={`thresholds.${index}.url`}
+            contentProps={{
+              css: css`
+                .rt-SelectItem:where([data-disabled]) {
+                  background-color: ${theme === 'dark'
+                    ? 'var(--gray-6)'
+                    : 'var(--gray-3)'};
+                  color: var(--sand-12);
+                  font-size: var(--font-size-1);
+                  padding: 0 var(--space-2);
+                }
+              `,
+            }}
           />
         </FieldGroup>
       </Table.Cell>
