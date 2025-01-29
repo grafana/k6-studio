@@ -6,10 +6,19 @@ import { LoadProfile } from './LoadProfile'
 import { ThinkTime } from './ThinkTime'
 import { VariablesEditor } from './VariablesEditor'
 import { PopoverDialog } from '@/components/PopoverDialogs'
+import { Feature } from '@/components/Feature'
+import { Thresholds } from '../Thresholds'
+import { useFeaturesStore } from '@/store/features'
 
 export function TestOptions() {
+  const { thresholds: isThresholdsEnabled } = useFeaturesStore(
+    (store) => store.features
+  )
+
   return (
     <PopoverDialog
+      align={isThresholdsEnabled ? 'center' : 'end'}
+      width={isThresholdsEnabled ? '800px' : '400px'}
       trigger={
         <Button variant="ghost" size="1" color="gray">
           <GearIcon />
@@ -25,6 +34,9 @@ export function TestOptions() {
             `}
           >
             <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
+            <Feature feature="thresholds">
+              <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
+            </Feature>
             <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
             <Tabs.Trigger value="testData">Test data</Tabs.Trigger>
           </Tabs.List>
@@ -43,6 +55,9 @@ export function TestOptions() {
               </Tabs.Content>
               <Tabs.Content value="testData">
                 <VariablesEditor />
+              </Tabs.Content>
+              <Tabs.Content value="thresholds">
+                <Thresholds />
               </Tabs.Content>
             </Box>
           </ScrollArea>
