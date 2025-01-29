@@ -58,7 +58,7 @@ export function SortableRuleList({
     setActive(rules.find((rule) => rule.id === event.active.id) || null)
   }
 
-  const gridColumns = 'auto auto 1fr auto'
+  const gridColumns = 'auto auto auto 1fr auto'
 
   return (
     <Flex direction="column">
