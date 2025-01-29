@@ -21,6 +21,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     },
     testData: {
       variables: [],
+      files: [],
     },
     rules: [createEmptyRule('verification')],
     allowlist: [],

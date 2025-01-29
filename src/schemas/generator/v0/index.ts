@@ -23,7 +23,7 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
     version: '1.0',
     recordingPath: generator.recordingPath,
     options: generator.options,
-    testData: generator.testData,
+    testData: { ...generator.testData, files: [] },
     rules: generator.rules,
     allowlist: generator.allowlist,
     includeStaticAssets: generator.includeStaticAssets,

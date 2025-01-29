@@ -87,6 +87,7 @@ describe('Code generation', () => {
             },
             testData: {
               variables: [],
+              files: [],
             },
             rules: [],
             allowlist: [],
