@@ -41,7 +41,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
     setGeneratorFile: (
       {
         options: { thinkTime, loadProfile },
-        testData: { variables },
+        testData: { variables, files },
         recordingPath,
         rules,
         allowlist,
@@ -69,6 +69,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         }
         // data
         state.variables = variables
+        state.files = files
         // recording
         state.requests = recording
         state.recordingPath = recordingPath
