@@ -105,7 +105,6 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
       }
 
-      // TODO: Implement input-change
       case 'input-change':
         return {
           type: 'type-text',
