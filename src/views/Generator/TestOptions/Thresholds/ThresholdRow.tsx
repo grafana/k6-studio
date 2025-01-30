@@ -55,12 +55,11 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             name={`thresholds.${index}.url`}
             contentProps={{
               css: css`
-                .rt-SelectItem:where([data-disabled]) {
+                .rt-SelectLabel {
                   background-color: ${theme === 'dark'
                     ? 'var(--gray-6)'
                     : 'var(--gray-3)'};
                   color: var(--sand-12);
-                  font-size: var(--font-size-1);
                   padding: 0 var(--space-2);
                 }
               `,
