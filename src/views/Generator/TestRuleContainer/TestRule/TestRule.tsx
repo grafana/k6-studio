@@ -100,11 +100,11 @@ export function TestRuleItem({
           aria-hidden
         />
       </IconButton>
-      <TestRuleToggle ruleId={rule.id} isEnabled={rule.enabled} />
       <TestRuleTypeBadge rule={rule} />
       <Flex gap="2" overflow="hidden">
         <TestRuleInlineContent rule={rule} />
       </Flex>
+      <TestRuleToggle ruleId={rule.id} isEnabled={rule.enabled} />
       <TestRuleActions ruleId={rule.id} />
     </Grid>
   )
