@@ -15,16 +15,22 @@ export function TestRuleToggle({ ruleId, isEnabled }: TestRuleToggleProps) {
 
   return (
     <Tooltip content={isEnabled ? 'Disable rule' : 'Enable rule'}>
-      <Switch
-        size="1"
-        aria-label={isEnabled ? 'Disable rule' : 'Enable rule'}
-        checked={isEnabled}
-        onCheckedChange={() => {
-          handleToggleEnabled()
-        }}
-        variant="soft"
-        color="gray"
-      />
+      {/*
+        The extra span is needed because of the following issue
+        https://github.com/radix-ui/themes/issues/440
+      */}
+      <span css={{ lineHeight: 1 }}>
+        <Switch
+          size="1"
+          aria-label={isEnabled ? 'Disable rule' : 'Enable rule'}
+          checked={isEnabled}
+          onCheckedChange={() => {
+            handleToggleEnabled()
+          }}
+          variant="soft"
+          color="gray"
+        />
+      </span>
     </Tooltip>
   )
 }
