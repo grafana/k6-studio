@@ -69,6 +69,8 @@ import { exhaustive } from './utils/typescript'
 import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
 
+import { initAuth } from './auth'
+
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
   updateElectronApp()
@@ -178,6 +180,8 @@ const createWindow = async () => {
       devTools: process.env.NODE_ENV === 'development',
     },
   })
+
+  initAuth(mainWindow)
 
   configureApplicationMenu()
   configureWatcher(mainWindow)

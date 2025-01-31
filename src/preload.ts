@@ -8,6 +8,7 @@ import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 import * as Sentry from './sentry'
 import { DataFilePreview } from './types/testData'
+import { UserProfile } from './schemas/profile'
 
 interface GetFilesResponse {
   recordings: StudioFile[]
@@ -214,7 +215,23 @@ const settings = {
   },
 }
 
+const auth = {
+  getProfile: (): Promise<UserProfile> => {
+    return ipcRenderer.invoke('auth:get-profile')
+  },
+  signIn: (): Promise<UserProfile> => {
+    return ipcRenderer.invoke('auth:sign-in')
+  },
+  signOut: (): Promise<void> => {
+    return ipcRenderer.invoke('auth:sign-out')
+  },
+  onUserCode: (callback: (code: string) => void) => {
+    return createListener('auth:user-code', callback)
+  },
+}
+
 const studio = {
+  auth,
   proxy,
   browser,
   script,

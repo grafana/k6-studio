@@ -11,6 +11,7 @@ import { ProxyStatusIndicator } from './ProxyStatusIndicator'
 import { HelpButton } from './HelpButton'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { useTheme } from '@/hooks/useTheme'
+import { Profile } from './Profile'
 
 export function ActivityBar() {
   const theme = useTheme()
@@ -44,6 +45,7 @@ export function ActivityBar() {
           <ProxyStatusIndicator />
           <SettingsButton />
           <HelpButton />
+          <Profile />
           <VersionLabel />
         </Flex>
       </Box>
