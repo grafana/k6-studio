@@ -29,7 +29,7 @@ export function DataFiles() {
 
   const options = [...availableFiles.values()].map((file) => ({
     label: file.displayName,
-    value: file.displayName,
+    value: file.fileName,
   }))
   const value = watch('files').map(({ name }) => name)
 
