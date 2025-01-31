@@ -1,5 +1,5 @@
 import { ThresholdMetricSchema } from '@/schemas/generator'
-import { ThresholdMetric } from '@/types/thresholds'
+import { ThresholdMetric, ThresholdStatstic } from '@/types/thresholds'
 import { exhaustive } from '@/utils/typescript'
 
 type ThresholdMetricMap = {
@@ -92,7 +92,10 @@ export const THRESHOLD_CONDITIONS_OPTIONS = [
   { label: '!==', value: '!==' },
 ]
 
-export const getStatisticOptions = (metricName: ThresholdMetric) => {
+type StatisticOption = { label: string; value: ThresholdStatstic }
+export const getStatisticOptions = (
+  metricName: ThresholdMetric
+): Array<StatisticOption> => {
   const { type } = metricsMap[metricName]
 
   switch (type) {
