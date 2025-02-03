@@ -101,7 +101,7 @@ describe('Code generation', () => {
   })
 
   describe('generateVariableDeclarations', () => {
-    it('should generate variable declarations', () => {
+    it('should generate variable declarations', async () => {
       const variables = [
         {
           name: 'test',
@@ -109,12 +109,14 @@ describe('Code generation', () => {
         },
       ]
 
-      const expectedResult = `
-        const VARS = {"test": "test",}
-      `
+      const expectedResult = await prettify(`
+        const VARS = {
+          "test": "test",
+        }
+      `)
 
-      expect(generateVariableDeclarations(variables).replace(/\s/g, '')).toBe(
-        expectedResult.replace(/\s/g, '')
+      expect(await prettify(generateVariableDeclarations(variables))).toBe(
+        expectedResult
       )
     })
   })
