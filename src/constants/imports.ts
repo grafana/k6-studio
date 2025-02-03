@@ -117,7 +117,7 @@ export const JSLIB: Record<JSLibName, ImportModule> = {
     default: { name: 'formUrlEncoded' },
   },
   papaparse: {
-    default: { name: 'papaparse' },
+    default: { name: 'Papa' },
     path: 'https://jslib.k6.io/papaparse/5.1.1/index.js',
   },
   ajv: {

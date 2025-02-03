@@ -80,7 +80,7 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
         "${displayName}": new SharedArray("${displayName}", () => {
           ${
             isCsv
-              ? `return papaparse.parse(open('../Data/${name}'), { header: true }).data;`
+              ? `return Papa.parse(open('../Data/${name}'), { header: true }).data;`
               : `return JSON.parse(open('../Data/${name}'));`
           }
         }),
