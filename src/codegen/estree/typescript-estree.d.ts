@@ -7,6 +7,13 @@ declare module '@typescript-eslint/types' {
        * Specifies how newlines should be added around the node.
        */
       newLine?: NewLine
+
+      /**
+       * Needed by Prettier for some literals.
+       */
+      extra?: {
+        raw: string
+      }
     }
   }
 }

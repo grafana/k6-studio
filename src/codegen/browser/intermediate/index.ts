@@ -112,6 +112,41 @@ function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
   })
 }
 
+function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'CheckExpression',
+      locator,
+      checked: {
+        type: 'StringLiteral',
+        value: node.checked ? 'checked' : 'unchecked',
+      },
+    },
+  })
+}
+
+function emitSelectOptionsNode(
+  context: IntermediateContext,
+  node: m.SelectOptionsNode
+) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'SelectOptionsExpression',
+      locator,
+      selected: node.selected.map((value) => ({
+        type: 'StringLiteral',
+        value,
+      })),
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -131,6 +166,12 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'type-text':
       return emitTypeTextNode(context, node)
+
+    case 'check':
+      return emitCheckNode(context, node)
+
+    case 'select-options':
+      return emitSelectOptionsNode(context, node)
 
     default:
       return exhaustive(node)

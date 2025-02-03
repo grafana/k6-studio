@@ -10,6 +10,7 @@ import { builders } from 'prettier/doc'
 import defaultOptions, { options, printers } from 'prettier/plugins/estree'
 import { format as formatWithPrettier } from 'prettier/standalone'
 import type { TSESTree as ts } from '@typescript-eslint/types'
+import tsParser from 'prettier/plugins/typescript'
 
 const { hardline } = builders
 const estree = printers.estree
@@ -75,7 +76,15 @@ function createPlugin(program: ts.Program): Plugin {
   }
 }
 
-async function format(ast: ts.Program): Promise<string> {
+async function format(ast: ts.Program | string): Promise<string> {
+  if (typeof ast === 'string') {
+    return await formatWithPrettier(ast, {
+      filepath: 'test.js',
+      parser: 'typescript',
+      plugins: [defaultOptions, tsParser],
+    })
+  }
+
   return await formatWithPrettier('i,', {
     filepath: 'test.js',
     parser: 'estree',

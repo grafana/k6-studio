@@ -71,35 +71,100 @@ window.addEventListener(
   { capture: true, passive: true }
 )
 
-window.addEventListener(
-  'change',
-  (ev) => {
-    if (
-      ev.target instanceof HTMLInputElement === false &&
-      ev.target instanceof HTMLTextAreaElement === false
-    ) {
-      return
-    }
+function handleSelectChange(target: HTMLSelectElement) {
+  captureEvents({
+    type: 'select',
+    eventId: crypto.randomUUID(),
+    timestamp: Date.now(),
+    selector: generateSelector(target),
+    selected: [...target.selectedOptions].map((option) => option.value),
+    tab: '',
+  })
+}
 
-    if (
-      ev.target.type === 'button' ||
-      ev.target.type === 'submit' ||
-      ev.target.type === 'reset' ||
-      ev.target.type === 'check' ||
-      ev.target.type === 'file' ||
-      ev.target.type === 'image'
-    ) {
+function handleTextAreaChange(target: HTMLTextAreaElement) {
+  captureEvents({
+    type: 'input-change',
+    eventId: crypto.randomUUID(),
+    timestamp: Date.now(),
+    selector: generateSelector(target),
+    value: target.value,
+    tab: '',
+  })
+}
+
+function handleInputChange(target: HTMLInputElement) {
+  if (
+    target.type === 'button' ||
+    target.type === 'submit' ||
+    target.type === 'reset' ||
+    target.type === 'file' ||
+    target.type === 'image'
+  ) {
+    return
+  }
+
+  if (target.type === 'checkbox') {
+    captureEvents({
+      type: 'check',
+      eventId: crypto.randomUUID(),
+      timestamp: Date.now(),
+      selector: generateSelector(target),
+      checked: target.checked,
+      tab: '',
+    })
+
+    return
+  }
+
+  if (target.type === 'radio') {
+    if (!target.checked) {
       return
     }
 
     captureEvents({
-      type: 'input-change',
+      type: 'switch',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
-      selector: generateSelector(ev.target),
-      value: ev.target.value,
+      selector: generateSelector(target),
+      name: target.name,
+      value: target.value,
       tab: '',
     })
+
+    return
+  }
+
+  captureEvents({
+    type: 'input-change',
+    eventId: crypto.randomUUID(),
+    timestamp: Date.now(),
+    selector: generateSelector(target),
+    value: target.value,
+    tab: '',
+  })
+}
+
+window.addEventListener(
+  'change',
+  (ev) => {
+    if (ev.target instanceof HTMLTextAreaElement) {
+      handleTextAreaChange(ev.target)
+
+      return
+    }
+
+    if (ev.target instanceof HTMLSelectElement) {
+      handleSelectChange(ev.target)
+
+      return
+    }
+
+    if (ev.target instanceof HTMLInputElement) {
+      handleInputChange(ev.target)
+
+      return
+    }
   },
   { capture: true, passive: true }
 )

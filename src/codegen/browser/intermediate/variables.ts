@@ -54,6 +54,22 @@ function substituteExpression(
         value: substituteExpression(node.value, substitutions),
       }
 
+    case 'CheckExpression':
+      return {
+        type: 'CheckExpression',
+        checked: substituteExpression(node.checked, substitutions),
+        locator: substituteExpression(node.locator, substitutions),
+      }
+
+    case 'SelectOptionsExpression':
+      return {
+        type: 'SelectOptionsExpression',
+        locator: substituteExpression(node.locator, substitutions),
+        selected: node.selected.map((expression) =>
+          substituteExpression(expression, substitutions)
+        ),
+      }
+
     default:
       return exhaustive(node)
   }

@@ -47,6 +47,9 @@ export function literal({
         type: NodeType.Literal,
         value,
         raw: value.toString(),
+        extra: {
+          raw: value.toString(),
+        },
       }
 
     case 'boolean':
@@ -55,6 +58,9 @@ export function literal({
         type: NodeType.Literal,
         value,
         raw: value ? 'true' : 'false',
+        extra: {
+          raw: value ? 'true' : 'false',
+        },
       }
 
     case 'bigint':
@@ -64,6 +70,9 @@ export function literal({
         value,
         bigint: `${value}n`,
         raw: `${value}n`,
+        extra: {
+          raw: `${value}n`,
+        },
       }
 
     case 'object':
@@ -73,6 +82,9 @@ export function literal({
           type: NodeType.Literal,
           value: null,
           raw: 'null',
+          extra: {
+            raw: 'null',
+          },
         }
       }
 
@@ -246,9 +258,7 @@ export class ExpressionBuilder<Expr extends ts.Expression> {
     })
   }
 
-  call(
-    options: NodeOptions<ts.CallExpression, never, 'callee'> | ts.Expression[]
-  ) {
+  call(options: NodeOptions<ts.CallExpression, 'callee'> | ts.Expression[]) {
     const {
       arguments: args = [],
       optional = false,

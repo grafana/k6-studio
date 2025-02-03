@@ -43,16 +43,44 @@ const InputChangeEventSchema = BrowserEventBaseSchema.extend({
   value: z.string(),
 })
 
+const CheckEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('check'),
+  tab: z.string(),
+  selector: z.string(),
+  checked: z.boolean(),
+})
+
+const SwitchEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('switch'),
+  tab: z.string(),
+  selector: z.string(),
+  name: z.string(),
+  value: z.string(),
+})
+
+const SelectEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('select'),
+  tab: z.string(),
+  selector: z.string(),
+  selected: z.array(z.string()),
+})
+
 export const BrowserEventSchema = discriminatedUnion('type', [
   PageNavigationEventSchema,
   PageReloadEventSchema,
   ClickEventSchema,
   InputChangeEventSchema,
+  CheckEventSchema,
+  SwitchEventSchema,
+  SelectEventSchema,
 ])
 
 export type PageNavigationEvent = z.infer<typeof PageNavigationEventSchema>
 export type PageReloadEvent = z.infer<typeof PageReloadEventSchema>
 export type ClickEvent = z.infer<typeof ClickEventSchema>
 export type InputChangeEvent = z.infer<typeof InputChangeEventSchema>
+export type CheckEventSchema = z.infer<typeof CheckEventSchema>
+export type SwitchEventSchema = z.infer<typeof SwitchEventSchema>
+export type SelectEventSchema = z.infer<typeof SelectEventSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>

@@ -61,6 +61,24 @@ export interface TypeTextNode extends NodeBase {
   }
 }
 
+export interface SelectOptionsNode extends NodeBase {
+  type: 'select-options'
+  selected: string[]
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
+  }
+}
+
+export interface CheckNode extends NodeBase {
+  type: 'check'
+  checked: boolean
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
+  }
+}
+
 export type TestNode =
   | PageNode
   | GotoNode
@@ -68,6 +86,8 @@ export type TestNode =
   | LocatorNode
   | ClickNode
   | TypeTextNode
+  | SelectOptionsNode
+  | CheckNode
 
 export interface Scenario {
   nodes: TestNode[]

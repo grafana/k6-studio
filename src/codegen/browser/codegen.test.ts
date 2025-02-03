@@ -218,3 +218,105 @@ it('should emit type text on element', async ({ expect }) => {
     '__snapshots__/browser/type-text-on-element.ts'
   )
 })
+
+it('should emit check on element', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'input[type="checkbox"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'check',
+          nodeId: 'check',
+          checked: true,
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/check-element.ts'
+  )
+})
+
+it('should emit uncheck on element', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'input[type="checkbox"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'check',
+          nodeId: 'check',
+          checked: false,
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/uncheck-element.ts'
+  )
+})
+
+it('should emit select options on element', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'select',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'select-options',
+          nodeId: 'select-options',
+          selected: ['option1', 'option2'],
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/select-options-on-element.ts'
+  )
+})

@@ -6,12 +6,42 @@ import {
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
 import {
+  CheckCircledIcon,
+  CircleIcon,
+  DropdownMenuIcon,
   GlobeIcon,
   InputIcon,
+  RadiobuttonIcon,
   TargetIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
 import { Flex, Table, Tooltip } from '@radix-ui/themes'
+import { Fragment } from 'react'
+
+function formatOptions(options: string[]) {
+  if (options.length === 1) {
+    return <code>{options[0]}</code>
+  }
+
+  const last = options[options.length - 1]
+
+  if (last === undefined) {
+    return ''
+  }
+
+  return (
+    <>
+      {options.slice(0, -1).map((option, index) => {
+        return (
+          <Fragment key={index}>
+            <code>{option}</code>,{' '}
+          </Fragment>
+        )
+      })}{' '}
+      and <code>{last}</code>
+    </>
+  )
+}
 
 interface SelectorProps {
   children: string
@@ -61,6 +91,15 @@ function EventIcon({ event }: EventIconProps) {
 
     case 'input-change':
       return <InputIcon />
+
+    case 'check':
+      return event.checked ? <CheckCircledIcon /> : <CircleIcon />
+
+    case 'switch':
+      return <RadiobuttonIcon />
+
+    case 'select':
+      return <DropdownMenuIcon />
 
     default:
       return exhaustive(event)
@@ -148,7 +187,31 @@ function EventDescription({ event }: EventDescriptionProps) {
       return (
         <>
           Changed input of <Selector>{event.selector}</Selector> to{' '}
-          <code>{event.value}</code>
+          <code>{event.value}</code>.
+        </>
+      )
+
+    case 'check':
+      return (
+        <>
+          {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
+          <Selector>{event.selector}</Selector>.
+        </>
+      )
+
+    case 'switch':
+      return (
+        <>
+          Switched value of <strong>{event.name}</strong> to{' '}
+          <code>{event.value}</code> from <Selector>{event.selector}</Selector>.
+        </>
+      )
+
+    case 'select':
+      return (
+        <>
+          Selected {formatOptions(event.selected)} from{' '}
+          <Selector>{event.selector}</Selector>.
         </>
       )
 

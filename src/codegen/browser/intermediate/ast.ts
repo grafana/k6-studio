@@ -47,6 +47,18 @@ export interface ClickExpression {
   options: Expression | null
 }
 
+export interface CheckExpression {
+  type: 'CheckExpression'
+  locator: Expression
+  checked: Expression
+}
+
+export interface SelectOptionsExpression {
+  type: 'SelectOptionsExpression'
+  locator: Expression
+  selected: Expression[]
+}
+
 export type Expression =
   | Identifier
   | StringLiteral
@@ -57,6 +69,8 @@ export type Expression =
   | ClickExpression
   | ClickOptionsExpression
   | TypeTextExpression
+  | CheckExpression
+  | SelectOptionsExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'
