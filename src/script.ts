@@ -5,43 +5,25 @@ import path from 'path'
 import readline from 'readline/promises'
 import { K6Check, K6Log } from './types'
 import { getArch, getPlatform } from './utils/electron'
+import { unlink } from 'node:fs/promises'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
-export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
-  const result = await dialog.showOpenDialog(browserWindow, {
-    properties: ['openFile'],
-    filters: [{ name: 'Javascript script', extensions: ['js'] }],
-  })
-
-  if (result.canceled) return
-
-  const [scriptPath] = result.filePaths
-  return scriptPath
-}
-
-export const runScript = async (
-  browserWindow: BrowserWindow,
-  scriptPath: string,
-  proxyPort: number,
-  enableUsageReport: boolean
-) => {
-  const modifiedScript = await enhanceScript(scriptPath)
-  const modifiedScriptPath = path.join(
-    app.getPath('temp'),
-    'k6-studio-script.js'
-  )
-  await writeFile(modifiedScriptPath, modifiedScript)
-
-  const proxyEnv = {
-    HTTP_PROXY: `http://localhost:${proxyPort}`,
-    HTTPS_PROXY: `http://localhost:${proxyPort}`,
-    NO_PROXY: 'jslib.k6.io',
-  }
-
+const spawnK6 = ({
+  args,
+  env = {},
+  onStdOut = () => {},
+  onStdErr = () => {},
+  onClose = () => {},
+}: {
+  args: string[]
+  env?: NodeJS.ProcessEnv
+  onStdOut?: (data: string) => void
+  onStdErr?: (data: string) => void
+  onClose?: (code: number) => void
+}) => {
   let k6Path: string
 
-  // if we are in dev server we take resources directly, otherwise look in the app resources folder.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     k6Path = path.join(
       app.getAppPath(),
@@ -51,69 +33,144 @@ export const runScript = async (
       'k6'
     )
   } else {
-    // only the architecture directory will be in resources on the packaged app
     k6Path = path.join(process.resourcesPath, getArch(), 'k6')
   }
 
   // add .exe on windows
   k6Path += getPlatform() === 'win' ? '.exe' : ''
 
-  const k6Args = [
-    'run',
-    modifiedScriptPath,
-    '--vus=1',
-    '--iterations=1',
-    '--insecure-skip-tls-verify',
-    '--log-format=json',
-    '--quiet',
-  ]
-
-  if (!enableUsageReport) {
-    k6Args.push('--no-usage-report')
-  }
-
-  const k6 = spawn(k6Path, k6Args, {
-    env: { ...process.env, ...proxyEnv },
+  const k6 = spawn(k6Path, args, {
+    env: { ...process.env, ...env },
   })
 
-  // we use a reader to read entire lines from stderr instead of buffered data
   const stderrReader = readline.createInterface(k6.stderr)
   const stdoutReader = readline.createInterface(k6.stdout)
 
-  stdoutReader.on('line', (data) => {
-    console.log(`stdout: ${data}`)
+  stdoutReader.on('line', onStdOut)
+  stderrReader.on('line', onStdErr)
+  k6.on('close', onClose)
 
-    // TODO: https://github.com/grafana/k6-studio/issues/277
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const checkData: K6Check[] = JSON.parse(data)
-    browserWindow.webContents.send('script:check', checkData)
+  return k6
+}
+
+export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
+  const result = await dialog.showOpenDialog(browserWindow, {
+    properties: ['openFile'],
+    filters: [{ name: 'k6 test script', extensions: ['js'] }],
   })
 
-  stderrReader.on('line', (data) => {
-    // TODO: https://github.com/grafana/k6-studio/issues/277
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const logData: K6Log = JSON.parse(data)
-    browserWindow.webContents.send('script:log', logData)
-  })
+  if (result.canceled) return
 
-  k6.on('close', (code) => {
-    console.log(`k6 process exited with code ${code}`)
-    let channel = 'script:failed'
-    if (code === 0) {
-      channel = 'script:finished'
-    } else if (code === 105) {
-      channel = 'script:stopped'
-    }
-    browserWindow.webContents.send(channel)
+  const [scriptPath] = result.filePaths
+  return scriptPath
+}
+
+export const archiveScript = (scriptPath: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const archivePath = path.join(app.getPath('temp'), 'k6-studio-test.tar')
+    const k6Args = ['archive', scriptPath, '-O', archivePath]
+
+    spawnK6({
+      args: k6Args,
+      onClose: (code) => {
+        if (code === 0) {
+          resolve(archivePath)
+        } else {
+          reject(
+            new Error(
+              `Failed to create archive: k6 process exited with code ${code}`
+            )
+          )
+        }
+      },
+    })
+  })
+}
+
+export const runScript = async ({
+  scriptPath,
+  proxyPort,
+  usageReport,
+  browserWindow,
+}: {
+  scriptPath: string
+  proxyPort: number
+  usageReport: boolean
+  browserWindow: BrowserWindow
+}) => {
+  // 1. Read the script content
+  const script = await readFile(scriptPath, { encoding: 'utf-8' })
+
+  // 2. Enhance the script content
+  const modifiedScript = await enhanceScript(script)
+
+  // 3. Save the enhanced script content to a temp file in the same directory as the original script
+  // (k6 will look for modules/data files in the same directory as the script)
+  const dirname = path.dirname(scriptPath)
+  const randomTempFileName = `.${Math.random().toString(36).substring(7)}.js`
+  const tempScriptPath = path.join(dirname, randomTempFileName)
+  await writeFile(tempScriptPath, modifiedScript)
+
+  // 4. Archive the script and its dependencies
+  const archivePath = await archiveScript(tempScriptPath)
+
+  // 5. Delete the temp script file
+  await unlink(tempScriptPath)
+
+  // 6. Run the test
+  const k6 = spawnK6({
+    args: [
+      'run',
+      archivePath,
+      '--vus=1',
+      '--iterations=1',
+      '--insecure-skip-tls-verify',
+      '--log-format=json',
+      '--quiet',
+      ...(usageReport ? [] : ['--no-usage-report']),
+    ],
+    env: {
+      HTTP_PROXY: `http://localhost:${proxyPort}`,
+      HTTPS_PROXY: `http://localhost:${proxyPort}`,
+      NO_PROXY: 'jslib.k6.io',
+    },
+    onStdOut: createChecksHandler(browserWindow),
+    onStdErr: createLogsHandler(browserWindow),
+    onClose: createCloseHandler(browserWindow),
   })
 
   return k6
 }
 
-const enhanceScript = async (scriptPath: string) => {
+const createCloseHandler = (browserWindow: BrowserWindow) => (code: number) => {
+  console.log(`k6 process exited with code ${code}`)
+  let channel = 'script:failed'
+  if (code === 0) {
+    channel = 'script:finished'
+  } else if (code === 105) {
+    channel = 'script:stopped'
+  }
+  browserWindow.webContents.send(channel)
+}
+
+const createChecksHandler =
+  (browserWindow: BrowserWindow) => (data: string) => {
+    // TODO: https://github.com/grafana/k6-studio/issues/277
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const checkData: K6Check[] = JSON.parse(data)
+    browserWindow.webContents.send('script:check', checkData)
+  }
+
+const createLogsHandler = (browserWindow: BrowserWindow) => (data: string) => {
+  // TODO: https://github.com/grafana/k6-studio/issues/277
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const logData: K6Log = JSON.parse(data)
+  browserWindow.webContents.send('script:log', logData)
+}
+
+const enhanceScript = async (scriptContent: string) => {
   const groupSnippet = await getJsSnippet('group_snippet.js')
   const checksSnippet = await getJsSnippet('checks_snippet.js')
-  const scriptContent = await readFile(scriptPath, { encoding: 'utf-8' })
   const scriptLines = scriptContent.split('\n')
   const httpImportIndex = scriptLines.findIndex((line) =>
     line.includes('k6/http')
