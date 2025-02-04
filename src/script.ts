@@ -1,10 +1,16 @@
 import { app, dialog, BrowserWindow } from 'electron'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import { readFile, writeFile } from 'fs/promises'
+import { readFile, writeFile, symlink, unlink } from 'fs/promises'
 import path from 'path'
 import readline from 'readline/promises'
 import { K6Check, K6Log } from './types'
 import { getArch, getPlatform } from './utils/electron'
+import {
+  DATA_FILES_PATH,
+  DATA_FILES_TEMP_PATH,
+  SCRIPTS_TEMP_PATH,
+} from './constants/workspace'
+import { TEMP_SCRIPT_FILENAME } from './constants/files'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -27,10 +33,7 @@ export const runScript = async (
   enableUsageReport: boolean
 ) => {
   const modifiedScript = await enhanceScript(scriptPath)
-  const modifiedScriptPath = path.join(
-    app.getPath('temp'),
-    'k6-studio-script.js'
-  )
+  const modifiedScriptPath = path.join(SCRIPTS_TEMP_PATH, TEMP_SCRIPT_FILENAME)
   await writeFile(modifiedScriptPath, modifiedScript)
 
   const proxyEnv = {
@@ -66,17 +69,16 @@ export const runScript = async (
     '--insecure-skip-tls-verify',
     '--log-format=json',
     '--quiet',
+    ...(!enableUsageReport ? ['--no-usage-report'] : []),
   ]
 
-  if (!enableUsageReport) {
-    k6Args.push('--no-usage-report')
-  }
+  // Create symlink to data folder so it can be accessed by the script
+  await symlink(DATA_FILES_PATH, path.join(app.getPath('temp'), 'Data'), 'dir')
 
   const k6 = spawn(k6Path, k6Args, {
     env: { ...process.env, ...proxyEnv },
   })
 
-  // we use a reader to read entire lines from stderr instead of buffered data
   const stderrReader = readline.createInterface(k6.stderr)
   const stdoutReader = readline.createInterface(k6.stdout)
 
@@ -96,8 +98,12 @@ export const runScript = async (
     browserWindow.webContents.send('script:log', logData)
   })
 
-  k6.on('close', (code) => {
+  k6.on('close', async (code) => {
     console.log(`k6 process exited with code ${code}`)
+
+    // Remove symlink
+    await unlink(DATA_FILES_TEMP_PATH)
+
     let channel = 'script:failed'
     if (code === 0) {
       channel = 'script:finished'
