@@ -7,8 +7,10 @@ import {
   generateRequestParams,
   generateVUCode,
   generateDataFileDeclarations,
+  generateImports,
 } from './codegen'
 import { TestRule } from '@/types/rules'
+import { GeneratorFileData } from '@/types/generator'
 import { Cookie, Header, ProxyData, Request } from '@/types'
 import { correlationRecording } from '@/test/fixtures/correlationRecording'
 import { checksRecording } from '@/test/fixtures/checksRecording'
@@ -98,6 +100,67 @@ describe('Code generation', () => {
           },
         }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
+    })
+  })
+
+  describe('generateImports', () => {
+    const generator: GeneratorFileData = {
+      version: '1.0',
+      recordingPath: 'test',
+      options: {
+        loadProfile: {
+          executor: 'shared-iterations',
+          vus: 1,
+          iterations: 1,
+        },
+        thinkTime: {
+          sleepType: 'iterations',
+          timing: {
+            type: 'fixed',
+            value: 1,
+          },
+        },
+      },
+      testData: {
+        variables: [],
+        files: [],
+      },
+      rules: [],
+      allowlist: [],
+      includeStaticAssets: false,
+      scriptName: 'my-script.js',
+      thresholds: [],
+    }
+
+    it('should generate imports', async () => {
+      const expectedResult = await prettify(`
+        import { group, sleep, check } from 'k6'
+        import http from 'k6/http'
+      `)
+
+      expect(await prettify(generateImports(generator))).toBe(expectedResult)
+    })
+
+    it('should generate imports with data files', async () => {
+      const files = [{ name: 'users.csv' }, { name: 'products.json' }]
+      const expectedResult = await prettify(`
+        import { group, sleep, check } from 'k6'
+        import http from 'k6/http'
+        import { SharedArray } from 'k6/data'
+        import Papa from 'https://jslib.k6.io/papaparse/5.1.1/index.js'
+        `)
+
+      expect(
+        await prettify(
+          generateImports({
+            ...generator,
+            testData: {
+              ...generator.testData,
+              files,
+            },
+          })
+        )
+      ).toBe(expectedResult)
     })
   })
 

@@ -38,7 +38,7 @@ export function generateScript({
 }
 
 export function generateImports(generator: GeneratorFileData): string {
-  const hasDataFiles = generator.testData.files.length > 1
+  const hasDataFiles = generator.testData.files.length > 0
   const hasCsvDataFiles = generator.testData.files.some(({ name }) =>
     name.toLowerCase().endsWith('csv')
   )
