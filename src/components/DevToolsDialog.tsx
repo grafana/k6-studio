@@ -24,7 +24,7 @@ export function DevModeDialog() {
         <Dialog.Description>Control feature toggles</Dialog.Description>
         <Flex direction="column" gap="2" my="4">
           {Object.entries(features).map(([feature, enabled]) => (
-            <Text as="label" size="2" key="feature">
+            <Text as="label" size="2" key={feature}>
               <Flex gap="2">
                 <Switch
                   checked={enabled}
