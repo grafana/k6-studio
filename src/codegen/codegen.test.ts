@@ -195,7 +195,8 @@ describe('Code generation', () => {
           }),
           
           products: new SharedArray("products", () => {
-            return JSON.parse(open("../Data/products.json"));
+            const data = JSON.parse(open("../Data/products.json"));
+            return Array.isArray(data) ? data : [data];
           }),
         };`)
       const t = await prettify(generateDataFileDeclarations(files))
