@@ -6,10 +6,20 @@ import { LoadProfile } from './LoadProfile'
 import { ThinkTime } from './ThinkTime'
 import { VariablesEditor } from './VariablesEditor'
 import { PopoverDialog } from '@/components/PopoverDialogs'
+import { Thresholds } from './Thresholds'
+import { DataFiles } from './DataFiles'
+import { useFeaturesStore } from '@/store/features'
+import { Feature } from '@/components/Feature'
 
 export function TestOptions() {
+  const { thresholds: isThresholdsEnabled } = useFeaturesStore(
+    (store) => store.features
+  )
+
   return (
     <PopoverDialog
+      align={isThresholdsEnabled ? 'center' : 'end'}
+      width={isThresholdsEnabled ? '800px' : '400px'}
       trigger={
         <Button variant="ghost" size="1" color="gray">
           <GearIcon />
@@ -25,8 +35,14 @@ export function TestOptions() {
             `}
           >
             <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
+            <Feature feature="thresholds">
+              <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
+            </Feature>
             <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
-            <Tabs.Trigger value="testData">Test data</Tabs.Trigger>
+            <Tabs.Trigger value="variables">Variables</Tabs.Trigger>
+            <Feature feature="data-files">
+              <Tabs.Trigger value="dataFiles">Data files</Tabs.Trigger>
+            </Feature>
           </Tabs.List>
           <ScrollArea
             scrollbars="vertical"
@@ -41,8 +57,16 @@ export function TestOptions() {
               <Tabs.Content value="thinkTime">
                 <ThinkTime />
               </Tabs.Content>
-              <Tabs.Content value="testData">
+              <Tabs.Content value="variables">
                 <VariablesEditor />
+              </Tabs.Content>
+              <Feature feature="data-files">
+                <Tabs.Content value="dataFiles">
+                  <DataFiles />
+                </Tabs.Content>
+              </Feature>
+              <Tabs.Content value="thresholds">
+                <Thresholds />
               </Tabs.Content>
             </Box>
           </ScrollArea>

@@ -26,6 +26,7 @@ export function createGeneratorData(
     scriptName: 'script.js',
     testData: {
       variables: [],
+      files: [],
     },
     version: '1.0',
     thresholds: [],
@@ -85,7 +86,9 @@ export function createGeneratorState(
     setTiming: vi.fn(),
 
     variables: [],
+    files: [],
     setVariables: vi.fn(),
+    setFiles: vi.fn(),
 
     vus: 1,
     setVus: vi.fn(),

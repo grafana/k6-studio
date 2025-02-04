@@ -33,12 +33,10 @@ export function VariablesEditor() {
     control,
     watch,
     formState: { errors },
-  } = useForm<TestData>({
-    resolver: zodResolver(TestDataSchema),
+  } = useForm<Pick<TestData, 'variables'>>({
+    resolver: zodResolver(TestDataSchema.pick({ variables: true })),
     shouldFocusError: false,
-    defaultValues: {
-      variables,
-    },
+    defaultValues: { variables },
   })
 
   const { fields, append, remove } = useFieldArray({
@@ -49,7 +47,7 @@ export function VariablesEditor() {
   const watchVariables = watch('variables')
 
   const onSubmit = useCallback(
-    (data: TestData) => {
+    (data: Pick<TestData, 'variables'>) => {
       setVariables(data.variables)
     },
     [setVariables]
@@ -112,10 +110,10 @@ function VariableRow({
   register,
   remove,
 }: {
-  field: FieldArrayWithId<TestData, 'variables', 'id'>
+  field: FieldArrayWithId<Pick<TestData, 'variables'>, 'variables', 'id'>
   index: number
-  register: UseFormRegister<TestData>
-  errors: FieldErrors<TestData>
+  register: UseFormRegister<Pick<TestData, 'variables'>>
+  errors: FieldErrors<Pick<TestData, 'variables'>>
   remove: UseFieldArrayRemove
 }) {
   const isVariableInUse = useGeneratorStore((state) =>

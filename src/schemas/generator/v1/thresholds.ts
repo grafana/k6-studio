@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const ThresholdMetric = z.enum([
+export const ThresholdMetricSchema = z.enum([
   'http_req_duration',
   'http_reqs',
   'http_req_failed',
@@ -16,9 +16,16 @@ export const ThresholdMetric = z.enum([
   'iteration_duration',
 ])
 
-export const ThresholdCondition = z.enum(['<', '<=', '>', '>=', '===', '!=='])
+export const ThresholdConditionSchema = z.enum([
+  '<',
+  '<=',
+  '>',
+  '>=',
+  '===',
+  '!==',
+])
 
-export const ThresholdStatistic = z.enum([
+export const ThresholdStatisticSchema = z.enum([
   'count',
   'rate',
   'value',
@@ -33,10 +40,14 @@ export const ThresholdStatistic = z.enum([
 
 export const ThresholdSchema = z.object({
   id: z.string(),
-  metric: ThresholdMetric,
+  metric: ThresholdMetricSchema,
   url: z.string().optional(),
-  statistic: ThresholdStatistic,
-  condition: ThresholdCondition,
-  value: z.number(),
+  statistic: ThresholdStatisticSchema,
+  condition: ThresholdConditionSchema,
+  value: z.number({ message: 'Invalid value' }),
   stopTest: z.boolean().default(false),
+})
+
+export const ThresholdDataSchema = z.object({
+  thresholds: z.array(ThresholdSchema),
 })

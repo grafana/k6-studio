@@ -6,13 +6,11 @@ import { useGeneratorStore } from '@/store/generator'
 
 interface TestRuleActionsProps {
   ruleId: string
-  enabled: boolean
 }
 
-export function TestRuleActions({ ruleId, enabled }: TestRuleActionsProps) {
+export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
   const cloneRule = useGeneratorStore((state) => state.cloneRule)
   const deleteRule = useGeneratorStore((state) => state.deleteRule)
-  const toggleEnableRule = useGeneratorStore((state) => state.toggleEnableRule)
   const setSelectedRuleId = useGeneratorStore(
     (state) => state.setSelectedRuleId
   )
@@ -27,10 +25,6 @@ export function TestRuleActions({ ruleId, enabled }: TestRuleActionsProps) {
 
   const handleCopy = () => {
     cloneRule(ruleId)
-  }
-
-  const handleToggleEnabled = () => {
-    toggleEnableRule(ruleId)
   }
 
   return (
@@ -48,9 +42,6 @@ export function TestRuleActions({ ruleId, enabled }: TestRuleActionsProps) {
         </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item onClick={handleToggleEnabled}>
-          {enabled ? 'Disable' : 'Enable'}
-        </DropdownMenu.Item>
         <DropdownMenu.Item onClick={handleEdit}>Edit</DropdownMenu.Item>
         <DropdownMenu.Item onClick={handleCopy}>Duplicate</DropdownMenu.Item>
         <DropdownMenu.Separator />

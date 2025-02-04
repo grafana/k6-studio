@@ -10,6 +10,14 @@ export const VariableSchema = z.object({
   value: z.string(),
 })
 
+export const DataFileSchema = z.object({
+  name: z
+    .string()
+    .min(1, { message: 'Required' })
+    // Don't allow native object properties, like __proto__, valueOf, etc.
+    .refine((val) => !(val in {}), { message: 'Invalid name' }),
+})
+
 export const TestDataSchema = z.object({
   variables: VariableSchema.array().superRefine((variables, ctx) => {
     const names = variables.map((variable) => variable.name)
@@ -26,4 +34,5 @@ export const TestDataSchema = z.object({
       })
     }
   }),
+  files: DataFileSchema.array().default([]),
 })
