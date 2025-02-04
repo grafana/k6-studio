@@ -17,7 +17,7 @@ export type K6Process = ChildProcessWithoutNullStreams
 export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   const result = await dialog.showOpenDialog(browserWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'Javascript script', extensions: ['js'] }],
+    filters: [{ name: 'k6 test script', extensions: ['js'] }],
   })
 
   if (result.canceled) return
