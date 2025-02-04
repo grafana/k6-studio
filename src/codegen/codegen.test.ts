@@ -6,6 +6,7 @@ import {
   generateGroupSnippet,
   generateRequestParams,
   generateVUCode,
+  generateDataFileDeclarations,
 } from './codegen'
 import { TestRule } from '@/types/rules'
 import { Cookie, Header, ProxyData, Request } from '@/types'
@@ -112,10 +113,32 @@ describe('Code generation', () => {
       const expectedResult = await prettify(`
         const VARS = {
           "test": "test",
-        }
-      `)
+        };`)
 
       expect(await prettify(generateVariableDeclarations(variables))).toBe(
+        expectedResult
+      )
+    })
+  })
+
+  describe('generateDataFileDeclarations', () => {
+    it('should generate file declarations', async () => {
+      const files = [{ name: 'users.csv' }, { name: 'products.json' }]
+
+      const expectedResult = await prettify(`
+        const FILES = {
+          users: new SharedArray("users", () => {
+            return Papa.parse(open("../Data/users.csv"), { header: true }).data;
+          }),
+          
+          products: new SharedArray("products", () => {
+            return JSON.parse(open("../Data/products.json"));
+          }),
+        };`)
+      const t = await prettify(generateDataFileDeclarations(files))
+      console.log(t)
+
+      expect(await prettify(generateDataFileDeclarations(files))).toBe(
         expectedResult
       )
     })

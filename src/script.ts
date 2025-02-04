@@ -73,7 +73,7 @@ export const runScript = async (
   ]
 
   // Create symlink to data folder so it can be accessed by the script
-  await symlink(DATA_FILES_PATH, path.join(app.getPath('temp'), 'Data'), 'dir')
+  await symlink(DATA_FILES_PATH, DATA_FILES_TEMP_PATH, 'dir')
 
   const k6 = spawn(k6Path, k6Args, {
     env: { ...process.env, ...proxyEnv },

@@ -63,7 +63,7 @@ export function generateVariableDeclarations(variables: Variable[]): string {
     .map(({ name, value }) => `"${name}": ${JSON.stringify(value)}`)
     .join(',\n')
 
-  return `const VARS = {\n${variableKeyValuePairs}\n}\n`
+  return `const VARS = {\n${variableKeyValuePairs}\n};`
 }
 
 export function generateDataFileDeclarations(files: DataFile[]): string {
@@ -83,12 +83,11 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
               ? `return Papa.parse(open('../Data/${name}'), { header: true }).data;`
               : `return JSON.parse(open('../Data/${name}'));`
           }
-        }),
-    `
+        })`
     })
-    .join('\n')
+    .join(',\n')
 
-  return `const FILES = {\n${fileKeyValuePairs}\n}\n`
+  return `const FILES = {\n${fileKeyValuePairs}\n};`
 }
 
 export function generateVUCode(
