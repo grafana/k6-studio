@@ -6,7 +6,7 @@ import {
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
 import { GlobeIcon, TargetIcon, UpdateIcon } from '@radix-ui/react-icons'
-import { Flex, Table, Tooltip } from '@radix-ui/themes'
+import { Flex, Kbd, Table, Tooltip } from '@radix-ui/themes'
 
 function getModifierKeys(modifiers: ClickEvent['modifiers']) {
   const keys = []
@@ -108,7 +108,8 @@ function ClickDescription({ event }: ClickDescriptionProps) {
 
   return (
     <>
-      {clickedText} on element <strong>{event.selector}</strong>
+      <Kbd size="2">{clickedText}</Kbd> on element{' '}
+      <strong>{event.selector}</strong>
     </>
   )
 }
