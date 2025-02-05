@@ -86,7 +86,7 @@ describe('Code generation - thresholds', () => {
       "'http_req_failed{url:https://example.com}'": [
         {
           abortOnFail: true,
-          threshold: 'rate===100',
+          threshold: 'rate==100',
         },
       ],
     }
