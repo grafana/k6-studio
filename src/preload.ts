@@ -3,7 +3,7 @@
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
 import { HarFile } from './types/har'
-import { GeneratorFile } from './types/generator'
+import { GeneratorFileData } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 import * as Sentry from './sentry'
@@ -160,10 +160,16 @@ const ui = {
 } as const
 
 const generator = {
-  saveGenerator: (generatorFile: string, fileName: string): Promise<string> => {
-    return ipcRenderer.invoke('generator:save', generatorFile, fileName)
+  createGenerator: (): Promise<string> => {
+    return ipcRenderer.invoke('generator:create')
   },
-  loadGenerator: (fileName: string): Promise<GeneratorFile> => {
+  saveGenerator: (
+    generator: GeneratorFileData,
+    fileName: string
+  ): Promise<void> => {
+    return ipcRenderer.invoke('generator:save', generator, fileName)
+  },
+  loadGenerator: (fileName: string): Promise<GeneratorFileData> => {
     return ipcRenderer.invoke('generator:open', fileName)
   },
 } as const

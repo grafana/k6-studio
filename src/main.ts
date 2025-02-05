@@ -49,7 +49,7 @@ import {
 } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
 import { HarFile } from './types/har'
-import { GeneratorFile } from './types/generator'
+import { GeneratorFileData } from './types/generator'
 import kill from 'tree-kill'
 import find from 'find-process'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
@@ -70,6 +70,7 @@ import * as Sentry from '@sentry/electron/main'
 import { exhaustive } from './utils/typescript'
 import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
+import { createNewGeneratorFile } from './utils/generator'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -428,7 +429,10 @@ ipcMain.handle(
 
 // HAR
 ipcMain.handle('har:save', async (_, data: string, prefix?: string) => {
-  const fileName = generateFileNameWithTimestamp('har', prefix)
+  const fileNameTemplate = generateFileNameWithTimestamp('har', prefix)
+
+  const fileName = await getUniqueFileName(RECORDINGS_PATH, fileNameTemplate)
+
   await writeFile(path.join(RECORDINGS_PATH, fileName), data)
   return fileName
 })
@@ -475,23 +479,35 @@ ipcMain.handle('har:import', async (event) => {
 })
 
 // Generator
+ipcMain.handle('generator:create', async (_, recordingPath: string) => {
+  const generator = createNewGeneratorFile(recordingPath)
+  const fileNameTemplate = generateFileNameWithTimestamp('json', 'Generator')
+
+  const fileName = await getUniqueFileName(GENERATORS_PATH, fileNameTemplate)
+
+  await writeFile(
+    path.join(GENERATORS_PATH, fileName),
+    JSON.stringify(generator, null, 2)
+  )
+
+  return fileName
+})
+
 ipcMain.handle(
   'generator:save',
-  async (_, generatorFile: string, fileName: string) => {
-    console.info('generator:save event received')
-
+  async (_, generator: GeneratorFileData, fileName: string) => {
     invariant(!INVALID_FILENAME_CHARS.test(fileName), 'Invalid file name')
 
-    await writeFile(path.join(GENERATORS_PATH, fileName), generatorFile)
-    return fileName
+    await writeFile(
+      path.join(GENERATORS_PATH, fileName),
+      JSON.stringify(generator, null, 2)
+    )
   }
 )
 
 ipcMain.handle(
   'generator:open',
-  async (_, fileName: string): Promise<GeneratorFile> => {
-    console.info('generator:open event received')
-
+  async (_, fileName: string): Promise<GeneratorFileData> => {
     let fileHandle: FileHandle | undefined
 
     try {
@@ -502,9 +518,7 @@ ipcMain.handle(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const generator = await JSON.parse(data)
 
-      // TODO: https://github.com/grafana/k6-studio/issues/277
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      return { name: fileName, content: generator }
+      return generator
     } finally {
       await fileHandle?.close()
     }
@@ -961,4 +975,28 @@ const cleanUpProxies = async () => {
   processList.forEach((proc) => {
     kill(proc.pid)
   })
+}
+
+const getUniqueFileName = async (
+  directory: string,
+  fileName: string
+): Promise<string> => {
+  let uniqueFileName = fileName
+  let fileExists = await access(path.join(directory, uniqueFileName))
+    .then(() => true)
+    .catch(() => false)
+
+  // Start from 2 as it follows the the OS behavior for duplicate files
+  let counter = 2
+
+  while (fileExists) {
+    const { name, ext } = path.parse(fileName)
+    uniqueFileName = `${name} (${counter})${ext}`
+    fileExists = await access(path.join(directory, uniqueFileName))
+      .then(() => true)
+      .catch(() => false)
+    counter++
+  }
+
+  return uniqueFileName
 }

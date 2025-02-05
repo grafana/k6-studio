@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { generateFileNameWithTimestamp } from '@/utils/file'
-import { createNewGeneratorFile } from '@/utils/generator'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import log from 'electron-log/renderer'
@@ -13,11 +11,7 @@ export function useCreateGenerator() {
 
   const createTestGenerator = useCallback(async () => {
     try {
-      const newGenerator = createNewGeneratorFile()
-      const fileName = await window.studio.generator.saveGenerator(
-        JSON.stringify(newGenerator, null, 2),
-        generateFileNameWithTimestamp('json', 'Generator')
-      )
+      const fileName = await window.studio.generator.createGenerator()
 
       navigate(
         getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
