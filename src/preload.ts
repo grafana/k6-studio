@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
-import { HarFile } from './types/har'
+import { HarFile, HarWithOptionalResponse } from './types/har'
 import { GeneratorFileData } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
@@ -107,7 +107,10 @@ const script = {
 } as const
 
 const har = {
-  saveFile: (data: string, prefix?: string): Promise<string> => {
+  saveFile: (
+    data: HarWithOptionalResponse,
+    prefix: string
+  ): Promise<string> => {
     return ipcRenderer.invoke('har:save', data, prefix)
   },
   openFile: (filePath: string): Promise<HarFile> => {

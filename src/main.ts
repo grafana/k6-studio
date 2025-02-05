@@ -47,8 +47,7 @@ import {
   INVALID_FILENAME_CHARS,
   TEMP_GENERATOR_SCRIPT_FILENAME,
 } from './constants/files'
-import { generateFileNameWithTimestamp } from './utils/file'
-import { HarFile } from './types/har'
+import { HarFile, HarWithOptionalResponse } from './types/har'
 import { GeneratorFileData } from './types/generator'
 import kill from 'tree-kill'
 import find from 'find-process'
@@ -428,14 +427,22 @@ ipcMain.handle(
 )
 
 // HAR
-ipcMain.handle('har:save', async (_, data: string, prefix?: string) => {
-  const fileNameTemplate = generateFileNameWithTimestamp('har', prefix)
+ipcMain.handle(
+  'har:save',
+  async (_, data: HarWithOptionalResponse, prefix: string) => {
+    const fileName = await generateUniqueFileName({
+      directory: RECORDINGS_PATH,
+      ext: '.har',
+      prefix,
+    })
 
-  const fileName = await getUniqueFileName(RECORDINGS_PATH, fileNameTemplate)
-
-  await writeFile(path.join(RECORDINGS_PATH, fileName), data)
-  return fileName
-})
+    await writeFile(
+      path.join(RECORDINGS_PATH, fileName),
+      JSON.stringify(data, null, 4)
+    )
+    return fileName
+  }
+)
 
 ipcMain.handle('har:open', async (_, fileName: string): Promise<HarFile> => {
   console.info('har:open event received')
@@ -481,9 +488,11 @@ ipcMain.handle('har:import', async (event) => {
 // Generator
 ipcMain.handle('generator:create', async (_, recordingPath: string) => {
   const generator = createNewGeneratorFile(recordingPath)
-  const fileNameTemplate = generateFileNameWithTimestamp('json', 'Generator')
-
-  const fileName = await getUniqueFileName(GENERATORS_PATH, fileNameTemplate)
+  const fileName = await generateUniqueFileName({
+    directory: GENERATORS_PATH,
+    ext: '.json',
+    prefix: 'Generator',
+  })
 
   await writeFile(
     path.join(GENERATORS_PATH, fileName),
@@ -977,11 +986,19 @@ const cleanUpProxies = async () => {
   })
 }
 
-const getUniqueFileName = async (
-  directory: string,
-  fileName: string
-): Promise<string> => {
-  let uniqueFileName = fileName
+const generateUniqueFileName = async ({
+  directory,
+  prefix,
+  ext,
+}: {
+  directory: string
+  prefix: string
+  ext: string
+}): Promise<string> => {
+  const timestamp = new Date().toISOString().split('T')[0] ?? ''
+  const template = `${prefix ? `${prefix} - ` : ''}${timestamp}${ext}`
+
+  let uniqueFileName = template
   let fileExists = await access(path.join(directory, uniqueFileName))
     .then(() => true)
     .catch(() => false)
@@ -990,7 +1007,7 @@ const getUniqueFileName = async (
   let counter = 2
 
   while (fileExists) {
-    const { name, ext } = path.parse(fileName)
+    const { name, ext } = path.parse(template)
     uniqueFileName = `${name} (${counter})${ext}`
     fileExists = await access(path.join(directory, uniqueFileName))
       .then(() => true)
