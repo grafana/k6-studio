@@ -78,8 +78,8 @@ export const THRESHOLD_CONDITIONS_OPTIONS = [
   { label: '<=', value: '<=' },
   { label: '>', value: '>' },
   { label: '>=', value: '>=' },
-  { label: '===', value: '===' },
-  { label: '!==', value: '!==' },
+  { label: '==', value: '==' },
+  { label: '!=', value: '!=' },
 ]
 
 type StatisticOption = { label: string; value: ThresholdStatstic }
