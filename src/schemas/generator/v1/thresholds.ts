@@ -6,8 +6,6 @@ export const ThresholdMetricSchema = z.enum([
   'http_req_failed',
   'http_req_connecting',
   'http_req_tls_handshaking',
-  'load_generator_memory_used_percent',
-  'load_generator_cpu_percent',
   'data_sent',
   'data_received',
   'http_req_receiving',

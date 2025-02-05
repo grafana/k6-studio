@@ -5,7 +5,7 @@ import { exhaustive } from '@/utils/typescript'
 type ThresholdMetricMap = {
   label: string
   unit: '' | 'ms' | 'reqs' | 'bytes' | '%'
-  type: 'trend' | 'counter' | 'rate' | 'gauge'
+  type: 'trend' | 'counter' | 'rate'
 }
 
 const metricsMap: Record<ThresholdMetric, ThresholdMetricMap> = {
@@ -33,16 +33,6 @@ const metricsMap: Record<ThresholdMetric, ThresholdMetricMap> = {
     label: 'TLS handshaking',
     unit: 'ms',
     type: 'trend',
-  },
-  load_generator_memory_used_percent: {
-    label: 'Utilization - Memory',
-    unit: '%',
-    type: 'gauge',
-  },
-  load_generator_cpu_percent: {
-    label: 'Utilization - CPU',
-    unit: '%',
-    type: 'gauge',
   },
   data_sent: {
     label: 'Data sent',
@@ -103,8 +93,6 @@ export const getStatisticOptions = (
       return [{ label: 'Count', value: 'count' }]
     case 'rate':
       return [{ label: 'Rate', value: 'rate' }]
-    case 'gauge':
-      return [{ label: 'Value', value: 'value' }]
     case 'trend':
       return [
         { label: '99th percentile', value: 'p(99)' },
