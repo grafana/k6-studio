@@ -19,7 +19,7 @@ export const ThresholdConditionSchema = z.enum([
   '<=',
   '>',
   '>=',
-  '==',
+  '===',
   '!=',
 ])
 
