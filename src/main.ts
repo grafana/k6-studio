@@ -406,11 +406,9 @@ ipcMain.handle('script:run-from-generator', async (event, script: string) => {
 ipcMain.handle(
   'script:save',
   async (event, script: string, fileName: string = 'script.js') => {
-    console.info('script:save event received')
-
     const browserWindow = browserWindowFromEvent(event)
     try {
-      const filePath = `${SCRIPTS_PATH}/${fileName}`
+      const filePath = path.join(SCRIPTS_PATH, fileName)
       await writeFile(filePath, script)
       sendToast(browserWindow.webContents, {
         title: 'Script exported successfully',
