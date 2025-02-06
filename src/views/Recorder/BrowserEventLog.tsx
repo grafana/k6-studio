@@ -15,7 +15,7 @@ import {
   TargetIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
-import { Flex, Table, Tooltip } from '@radix-ui/themes'
+import { Flex, Table, Tooltip, Kbd } from '@radix-ui/themes'
 import { Fragment } from 'react'
 
 function formatOptions(options: string[]) {
@@ -163,7 +163,8 @@ function ClickDescription({ event }: ClickDescriptionProps) {
 
   return (
     <>
-      {clickedText} on element <strong>{event.selector}</strong>
+      <Kbd size="2">{clickedText}</Kbd> on element{' '}
+      <strong>{event.selector}</strong>
     </>
   )
 }

@@ -2,8 +2,6 @@ import { BrowserEvent } from '@/schemas/recording'
 import { runtime } from 'webextension-polyfill'
 import { generateSelector } from './selectors'
 
-// Technically we can't rely on the button index because a user could re-assign
-// the meaning of the button but it's a fringe case.
 function getButton(button: number) {
   switch (button) {
     case 0:

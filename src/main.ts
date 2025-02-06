@@ -33,6 +33,7 @@ import {
   GENERATORS_PATH,
   RECORDINGS_PATH,
   SCRIPTS_PATH,
+  SCRIPTS_TEMP_PATH,
 } from './constants/workspace'
 import {
   sendToast,
@@ -44,6 +45,7 @@ import invariant from 'tiny-invariant'
 import {
   FILE_SIZE_PREVIEW_THRESHOLD,
   INVALID_FILENAME_CHARS,
+  TEMP_GENERATOR_SCRIPT_FILENAME,
 } from './constants/files'
 import { generateFileNameWithTimestamp } from './utils/file'
 import { HarFile } from './types/har'
@@ -354,29 +356,15 @@ ipcMain.handle('script:open', async (_, fileName: string) => {
 
 ipcMain.handle(
   'script:run',
-  async (
-    event,
-    scriptPath: string,
-    absolute: boolean = false,
-    fromGenerator: boolean = false
-  ) => {
+  async (event, scriptPath: string, absolute: boolean = false) => {
     console.info('script:run event received')
     await waitForProxy()
 
     const browserWindow = browserWindowFromEvent(event)
 
-    let resolvedScriptPath
-
-    if (fromGenerator) {
-      resolvedScriptPath = path.join(
-        app.getPath('temp'),
-        'k6-studio-generator-script.js'
-      )
-    } else {
-      resolvedScriptPath = absolute
-        ? scriptPath
-        : path.join(SCRIPTS_PATH, scriptPath)
-    }
+    const resolvedScriptPath = absolute
+      ? scriptPath
+      : path.join(SCRIPTS_PATH, scriptPath)
 
     currentk6Process = await runScript(
       browserWindow,
@@ -398,24 +386,29 @@ ipcMain.on('script:stop', (event) => {
   browserWindow.webContents.send('script:stopped')
 })
 
-ipcMain.handle('script:save:generator', async (event, script: string) => {
-  console.info('script:save:generator event received')
-  // we are validating from the generator so we save the script in a temporary directory
+ipcMain.handle('script:run-from-generator', async (event, script: string) => {
   const scriptFromGeneratorPath = path.join(
-    app.getPath('temp'),
-    'k6-studio-generator-script.js'
+    SCRIPTS_TEMP_PATH,
+    TEMP_GENERATOR_SCRIPT_FILENAME
   )
   await writeFile(scriptFromGeneratorPath, script)
+
+  const browserWindow = browserWindowFromEvent(event)
+
+  currentk6Process = await runScript(
+    browserWindow,
+    scriptFromGeneratorPath,
+    appSettings.proxy.port,
+    appSettings.telemetry.usageReport
+  )
 })
 
 ipcMain.handle(
   'script:save',
   async (event, script: string, fileName: string = 'script.js') => {
-    console.info('script:save event received')
-
     const browserWindow = browserWindowFromEvent(event)
     try {
-      const filePath = `${SCRIPTS_PATH}/${fileName}`
+      const filePath = path.join(SCRIPTS_PATH, fileName)
       await writeFile(filePath, script)
       sendToast(browserWindow.webContents, {
         title: 'Script exported successfully',
