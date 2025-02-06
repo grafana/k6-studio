@@ -1,5 +1,5 @@
 import { ThresholdMetricSchema } from '@/schemas/generator'
-import { ThresholdMetric, ThresholdStatstic } from '@/types/thresholds'
+import { ThresholdMetric, ThresholdStatstic } from '@/types/testOptions'
 import { exhaustive } from '@/utils/typescript'
 
 type ThresholdMetricMap = {

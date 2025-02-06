@@ -1,17 +1,16 @@
-import { TestOptions } from '@/types/testOptions'
+import { TestOptions, Threshold } from '@/types/testOptions'
 import { stringify } from './codegen.utils'
 import { omit } from 'lodash-es'
-import { Threshold } from '@/types/thresholds'
 
-export function generateOptions(
-  { loadProfile }: TestOptions,
-  thresholdData: Threshold[]
-): string {
+export function generateOptions({
+  loadProfile,
+  thresholds,
+}: TestOptions): string {
   const options = omit(loadProfile, ['executor'])
   const data = {
     ...options,
-    ...(thresholdData.length > 0 && {
-      thresholds: generateThresholds(thresholdData),
+    ...(thresholds.length > 0 && {
+      thresholds: generateThresholds(thresholds),
     }),
   }
   return stringify(data)

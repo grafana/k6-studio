@@ -1,4 +1,4 @@
-import { Threshold } from '@/types/thresholds'
+import { Threshold } from '@/types/testOptions'
 
 export function createThreshold(threshold?: Partial<Threshold>): Threshold {
   return {

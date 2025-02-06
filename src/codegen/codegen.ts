@@ -25,7 +25,7 @@ export function generateScript({
     ${generateScriptHeader()}
     ${REQUIRED_IMPORTS.map(generateImportStatement).join('\n')}
 
-    export const options = ${generateOptions(generator.options, generator.thresholds)}
+    export const options = ${generateOptions(generator.options)}
 
     ${generateVariableDeclarations(generator.testData.variables)}
 
