@@ -12,6 +12,12 @@ export interface NewPageExpression {
   type: 'NewPageExpression'
 }
 
+export interface NewLocatorExpression {
+  type: 'NewLocatorExpression'
+  selector: Expression
+  page: Expression
+}
+
 export interface GotoExpression {
   type: 'GotoExpression'
   target: Expression
@@ -23,12 +29,27 @@ export interface ReloadExpression {
   target: Expression
 }
 
+export interface ClickOptionsExpression {
+  type: 'ClickOptionsExpression'
+  button: 'left' | 'middle' | 'right'
+  modifiers: Array<'Control' | 'Shift' | 'Alt' | 'Meta'>
+}
+
+export interface ClickExpression {
+  type: 'ClickExpression'
+  locator: Expression
+  options: Expression | null
+}
+
 export type Expression =
   | Identifier
   | StringLiteral
   | NewPageExpression
+  | NewLocatorExpression
   | GotoExpression
   | ReloadExpression
+  | ClickExpression
+  | ClickOptionsExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

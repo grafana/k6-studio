@@ -9,6 +9,8 @@ import {
   ExpressionBuilder,
   declareConst,
   constDeclarator,
+  fromArrayLiteral,
+  fromObjectLiteral,
 } from '@/codegen/estree'
 import { spaceBetween } from '../formatting/spacing'
 
@@ -23,6 +25,16 @@ function emitNewPageExpression(
     .call([])
     .await(context)
     .done()
+}
+
+function emitNewLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const selector = emitExpression(context, expression.selector)
+
+  return new ExpressionBuilder(page).member('locator').call([selector]).done()
 }
 
 function emitGotoExpression(
@@ -51,6 +63,41 @@ function emitReloadExpression(
     .done()
 }
 
+function emitClickOptionsExpression(
+  context: ScenarioContext,
+  expression: ir.ClickOptionsExpression
+): ts.Expression {
+  const button = expression.button !== 'left' && {
+    button: string(expression.button),
+  }
+
+  const modifiers = expression.modifiers.length > 0 && {
+    modifiers: fromArrayLiteral(expression.modifiers.map(string)),
+  }
+
+  return fromObjectLiteral({
+    ...button,
+    ...modifiers,
+  })
+}
+
+function emitClickExpression(
+  context: ScenarioContext,
+  expression: ir.ClickExpression
+): ts.Expression {
+  const locator = emitExpression(context, expression.locator)
+  const args =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
+  return new ExpressionBuilder(locator)
+    .member('click')
+    .call(args)
+    .await(context)
+    .done()
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -65,11 +112,20 @@ function emitExpression(
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
 
+    case 'NewLocatorExpression':
+      return emitNewLocatorExpression(context, expression)
+
     case 'GotoExpression':
       return emitGotoExpression(context, expression)
 
     case 'ReloadExpression':
       return emitReloadExpression(context, expression)
+
+    case 'ClickExpression':
+      return emitClickExpression(context, expression)
+
+    case 'ClickOptionsExpression':
+      return emitClickOptionsExpression(context, expression)
 
     default:
       return exhaustive(expression)

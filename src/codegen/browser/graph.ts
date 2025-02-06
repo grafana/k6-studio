@@ -84,7 +84,7 @@ class EdgeMap<E> {
     return edges !== undefined && edges.size > 0
   }
 
-  of(from: NodeId) {
+  of(from: NodeId): Iterable<GraphEdge<E>> {
     return this.edges.get(from)?.values() ?? []
   }
 
@@ -170,7 +170,7 @@ export class Graph<T, E> {
   }
 
   incoming(node: GraphNode<T> | NodeId) {
-    return this.#outgoing.of(toNodeId(node))
+    return this.#incoming.of(toNodeId(node))
   }
 
   *sources() {

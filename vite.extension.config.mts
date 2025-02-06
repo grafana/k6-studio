@@ -46,6 +46,12 @@ export default defineConfig((env) => {
             background: {
               service_worker: 'extension/src/background.ts',
             },
+            content_scripts: [
+              {
+                matches: ['<all_urls>'],
+                js: ['extension/src/recorder.ts'],
+              },
+            ],
             permissions: ['webNavigation'],
           }
         },

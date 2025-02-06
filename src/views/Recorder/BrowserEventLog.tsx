@@ -1,8 +1,35 @@
-import { BrowserEvent } from '@/schemas/recording'
+import {
+  BrowserEvent,
+  ClickEvent,
+  PageNavigationEvent,
+} from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
-import { GlobeIcon, UpdateIcon } from '@radix-ui/react-icons'
-import { Flex, Table, Tooltip } from '@radix-ui/themes'
+import { GlobeIcon, TargetIcon, UpdateIcon } from '@radix-ui/react-icons'
+import { Flex, Kbd, Table, Tooltip } from '@radix-ui/themes'
+
+function getModifierKeys(modifiers: ClickEvent['modifiers']) {
+  const keys = []
+  const platform = window.studio.app.platform
+
+  if (modifiers.ctrl) {
+    keys.push('⌃ Ctrl')
+  }
+
+  if (modifiers.shift) {
+    keys.push('⇧ Shift')
+  }
+
+  if (modifiers.alt) {
+    keys.push(platform === 'darwin' ? '⌥ Option' : '⌥ Alt')
+  }
+
+  if (modifiers.meta) {
+    keys.push(platform === 'darwin' ? '⌘ Command' : '⊞ Meta')
+  }
+
+  return keys
+}
 
 interface EventIconProps {
   event: BrowserEvent
@@ -16,9 +43,75 @@ function EventIcon({ event }: EventIconProps) {
     case 'page-reload':
       return <UpdateIcon />
 
+    case 'click':
+      return <TargetIcon />
+
     default:
       return exhaustive(event)
   }
+}
+
+interface PageNavigationDescriptionProps {
+  event: PageNavigationEvent
+}
+
+function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
+  const url = (
+    <Tooltip content={event.url}>
+      <strong>{event.url}</strong>
+    </Tooltip>
+  )
+
+  switch (event.source) {
+    case 'interaction':
+      return <>Navigated to {url} by interacting with the page.</>
+
+    case 'script':
+      return <>Navigated to {url} by a script.</>
+
+    case 'address-bar':
+      return <>Navigated to {url} using the address bar.</>
+
+    case 'history':
+      return <>Navigated to {url} using the browser history.</>
+
+    default:
+      return exhaustive(event.source)
+  }
+}
+
+function getButtonDescription(event: ClickEvent) {
+  switch (event.button) {
+    case 'left':
+      return 'Clicked'
+
+    case 'middle':
+      return 'Middle-clicked'
+
+    case 'right':
+      return 'Right-clicked'
+
+    default:
+      return exhaustive(event.button)
+  }
+}
+
+interface ClickDescriptionProps {
+  event: ClickEvent
+}
+
+function ClickDescription({ event }: ClickDescriptionProps) {
+  const modifiers = getModifierKeys(event.modifiers)
+  const button = getButtonDescription(event)
+
+  const clickedText = modifiers.concat(button).join(' + ')
+
+  return (
+    <>
+      <Kbd size="2">{clickedText}</Kbd> on element{' '}
+      <strong>{event.selector}</strong>
+    </>
+  )
 }
 
 interface EventDescriptionProps {
@@ -28,18 +121,13 @@ interface EventDescriptionProps {
 function EventDescription({ event }: EventDescriptionProps) {
   switch (event.type) {
     case 'page-navigation':
-      return (
-        <>
-          Navigated to{' '}
-          <Tooltip content={event.url}>
-            <strong>{event.url}</strong>
-          </Tooltip>
-          .
-        </>
-      )
+      return <PageNavigationDescription event={event} />
 
     case 'page-reload':
       return <>Reloaded page.</>
+
+    case 'click':
+      return <ClickDescription event={event} />
 
     default:
       return exhaustive(event)

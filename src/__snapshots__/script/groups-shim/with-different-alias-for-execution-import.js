@@ -4,6 +4,7 @@ import execution from "k6/execution";
   console.log("This is the groups shim");
 })();
 import myExec from "k6/execution";
+
 export default function () {}
 export function handleSummary() {
   console.log("This is the handleSummary shim");

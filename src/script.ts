@@ -124,8 +124,8 @@ export const runScript = async (
 
 const parseScript = (input: string) => {
   return parse(input, {
-    loc: false,
-    range: false,
+    loc: true,
+    range: true,
   })
 }
 

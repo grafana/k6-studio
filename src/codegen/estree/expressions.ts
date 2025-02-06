@@ -189,6 +189,22 @@ export function fromObjectLiteral(
   })
 }
 
+export function array({
+  elements,
+}: NodeOptions<ts.ArrayExpression, 'elements'>): ts.ArrayExpression {
+  return {
+    ...baseProps,
+    type: NodeType.ArrayExpression,
+    elements,
+  }
+}
+
+export function fromArrayLiteral(elements: LiteralOrExpression[]) {
+  return array({
+    elements: elements.map(fromLiteralOrExpression),
+  })
+}
+
 interface AwaitedContext {
   awaited(): void
 }

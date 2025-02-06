@@ -37,9 +37,18 @@ function buildScenarioGraph(scenario: model.Scenario) {
       case 'page':
         break
 
+      case 'locator':
+        graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        break
+
       case 'goto':
       case 'reload':
         graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        connectPrevious(graph, node)
+        break
+
+      case 'click':
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
         connectPrevious(graph, node)
         break
 

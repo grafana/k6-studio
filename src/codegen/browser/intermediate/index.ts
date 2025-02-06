@@ -17,7 +17,7 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
   })
 }
 
-const emitGotoNode = (context: IntermediateContext, node: m.GotoNode) => {
+function emitGotoNode(context: IntermediateContext, node: m.GotoNode) {
   const page = context.reference(node.inputs.page)
 
   context.emit({
@@ -33,7 +33,7 @@ const emitGotoNode = (context: IntermediateContext, node: m.GotoNode) => {
   })
 }
 
-const emitReloadNode = (context: IntermediateContext, node: m.ReloadNode) => {
+function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
   const page = context.reference(node.inputs.page)
 
   context.emit({
@@ -45,16 +45,73 @@ const emitReloadNode = (context: IntermediateContext, node: m.ReloadNode) => {
   })
 }
 
+function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
+  const page = context.reference(node.inputs.page)
+
+  const expression: ir.NewLocatorExpression = {
+    type: 'NewLocatorExpression',
+    selector: {
+      type: 'StringLiteral',
+      value: node.selector,
+    },
+    page,
+  }
+
+  // We always inline locator nodes for readability. If we implement better
+  // logic for generating variable names, then we could consider declaring
+  // a variable for it if there are multiple references.
+  context.inline(node, expression)
+}
+
+function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {
+  const modifiers: ir.ClickOptionsExpression['modifiers'] = [
+    node.modifiers.ctrl && ('Control' as const),
+    node.modifiers.shift && ('Shift' as const),
+    node.modifiers.alt && ('Alt' as const),
+    node.modifiers.meta && ('Meta' as const),
+  ].filter((modifier) => modifier !== false)
+
+  if (node.button === 'left' && modifiers.length === 0) {
+    return null
+  }
+
+  return {
+    type: 'ClickOptionsExpression',
+    button: node.button,
+    modifiers,
+  }
+}
+
+function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
+  const locator = context.reference(node.inputs.locator)
+  const options = getClickOptions(node)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'ClickExpression',
+      locator,
+      options,
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
       return emitPageNode(context, node)
+
+    case 'locator':
+      return emitLocatorNode(context, node)
 
     case 'goto':
       return emitGotoNode(context, node)
 
     case 'reload':
       return emitReloadNode(context, node)
+
+    case 'click':
+      return emitClickNode(context, node)
 
     default:
       return exhaustive(node)
