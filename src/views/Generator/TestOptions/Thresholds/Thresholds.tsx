@@ -11,6 +11,7 @@ import { Table } from '@/components/Table'
 
 export function Thresholds() {
   const thresholds = useGeneratorStore((store) => store.thresholds)
+  const setThresholds = useGeneratorStore((store) => store.setThresholds)
 
   const formMethods = useForm<{ thresholds: Threshold[] }>({
     resolver: zodResolver(ThresholdDataSchema),
@@ -41,9 +42,12 @@ export function Thresholds() {
     })
   }
 
-  const onSubmit = useCallback((data: ThresholdData) => {
-    console.log('onSubmit', data)
-  }, [])
+  const onSubmit = useCallback(
+    (data: ThresholdData) => {
+      setThresholds(data.thresholds)
+    },
+    [setThresholds]
+  )
 
   // Submit onChange
   useEffect(() => {

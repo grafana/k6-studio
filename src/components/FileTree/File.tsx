@@ -94,7 +94,7 @@ function EditableFile({
   }
 
   return (
-    <Tooltip content={displayName} hidden={!hasEllipsis}>
+    <Tooltip content={displayName} side="right" hidden={!hasEllipsis}>
       <NavLink
         ref={linkRef}
         css={[

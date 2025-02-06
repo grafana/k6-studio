@@ -1,6 +1,17 @@
 import { ImportModule } from '@/types/imports'
 
-export const K6_EXPORTS: Record<string, ImportModule> = {
+type K6ExportName =
+  | 'k6'
+  | 'k6/crypto'
+  | 'k6/encoding'
+  | 'k6/data'
+  | 'k6/execution'
+  | 'k6/html'
+  | 'k6/http'
+  | 'k6/net/grpc'
+  | 'k6/ws'
+
+export const K6_EXPORTS: Record<K6ExportName, ImportModule> = {
   k6: {
     path: 'k6',
     imports: {
@@ -54,7 +65,18 @@ export const K6_EXPORTS: Record<string, ImportModule> = {
   },
 }
 
-const JSLIB: Record<string, ImportModule> = {
+type JSLibName =
+  | 'k6-utils'
+  | 'k6-summary'
+  | 'jsonpath'
+  | 'formdata'
+  | 'form-urlencoded'
+  | 'papaparse'
+  | 'ajv'
+  | 'httpx'
+  | 'url'
+
+export const JSLIB: Record<JSLibName, ImportModule> = {
   'k6-utils': {
     path: 'https://jslib.k6.io/k6-utils/1.4.0/index.js',
     imports: {
