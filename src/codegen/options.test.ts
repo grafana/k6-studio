@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import { generateOptions, generateThresholds } from './options'
-import { LoadProfileExecutorOptions, TestOptions } from '@/types/testOptions'
-import { Threshold } from '@/types/thresholds'
+import {
+  LoadProfileExecutorOptions,
+  TestOptions,
+  Threshold,
+} from '@/types/testOptions'
 import { createThreshold } from '@/test/factories/threshold'
 
 describe('Code generation - options', () => {
@@ -19,7 +22,10 @@ describe('Code generation - options', () => {
     }`
 
     expect(
-      generateOptions({ loadProfile } as TestOptions, []).replace(/\s/g, '')
+      generateOptions({ loadProfile, thresholds: {} } as TestOptions).replace(
+        /\s/g,
+        ''
+      )
     ).toBe(expectedResult.replace(/\s/g, ''))
   })
 
@@ -44,7 +50,10 @@ describe('Code generation - options', () => {
     }`
 
     expect(
-      generateOptions({ loadProfile } as TestOptions, []).replace(/\s/g, '')
+      generateOptions({ loadProfile, thresholds: {} } as TestOptions).replace(
+        /\s/g,
+        ''
+      )
     ).toBe(expectedResult.replace(/\s/g, ''))
   })
 })
