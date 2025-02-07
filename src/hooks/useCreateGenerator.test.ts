@@ -50,7 +50,7 @@ describe('useCreateGenerator', () => {
       await result.current()
     })
 
-    expect(window.studio.generator.createGenerator).toHaveBeenCalledWith()
+    expect(window.studio.generator.createGenerator).toHaveBeenCalledWith('')
     expect(navigate).toHaveBeenCalledWith(routePath)
   })
 

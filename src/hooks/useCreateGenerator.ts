@@ -9,21 +9,25 @@ export function useCreateGenerator() {
   const navigate = useNavigate()
   const showToast = useToast()
 
-  const createTestGenerator = useCallback(async () => {
-    try {
-      const fileName = await window.studio.generator.createGenerator()
+  const createTestGenerator = useCallback(
+    async (recordingPath = '') => {
+      try {
+        const fileName =
+          await window.studio.generator.createGenerator(recordingPath)
 
-      navigate(
-        getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
-      )
-    } catch (error) {
-      showToast({
-        status: 'error',
-        title: 'Failed to create generator',
-      })
-      log.error(error)
-    }
-  }, [navigate, showToast])
+        navigate(
+          getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
+        )
+      } catch (error) {
+        showToast({
+          status: 'error',
+          title: 'Failed to create generator',
+        })
+        log.error(error)
+      }
+    },
+    [navigate, showToast]
+  )
 
   return createTestGenerator
 }

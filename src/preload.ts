@@ -163,8 +163,8 @@ const ui = {
 } as const
 
 const generator = {
-  createGenerator: (): Promise<string> => {
-    return ipcRenderer.invoke('generator:create')
+  createGenerator: (recordingPath: string): Promise<string> => {
+    return ipcRenderer.invoke('generator:create', recordingPath)
   },
   saveGenerator: (
     generator: GeneratorFileData,

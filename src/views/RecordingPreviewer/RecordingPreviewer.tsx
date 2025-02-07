@@ -50,6 +50,8 @@ export function RecordingPreviewer() {
 
   const groups = useProxyDataGroups(proxyData)
 
+  const handleCreateGenerator = () => createTestGenerator(fileName)
+
   const handleDeleteRecording = async () => {
     await window.studio.ui.deleteFile({
       type: 'recording',
@@ -87,7 +89,7 @@ export function RecordingPreviewer() {
             </Button>
           )}
 
-          <Button onClick={createTestGenerator}>Create test generator</Button>
+          <Button onClick={handleCreateGenerator}>Create test generator</Button>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
               <IconButton variant="ghost" aria-label="Actions" color="gray">
