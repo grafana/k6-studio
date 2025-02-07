@@ -18,6 +18,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
           value: 1,
         },
       },
+      thresholds: [],
     },
     testData: {
       variables: [],
@@ -27,7 +28,6 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
     allowlist: [],
     includeStaticAssets: false,
     scriptName: 'my-script.js',
-    thresholds: [],
   }
 }
 
