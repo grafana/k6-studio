@@ -66,7 +66,7 @@ import {
 import { ProxyStatus, StudioFile } from './types'
 import { configureApplicationMenu } from './menu'
 import * as Sentry from '@sentry/electron/main'
-import { exhaustive } from './utils/typescript'
+import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
 import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
 import { createNewGeneratorFile } from './utils/generator'
@@ -430,16 +430,13 @@ ipcMain.handle(
 ipcMain.handle(
   'har:save',
   async (_, data: HarWithOptionalResponse, prefix: string) => {
-    const fileName = await generateUniqueFileName({
+    const fileName = await createFileWithUniqueName({
+      data: JSON.stringify(data, null, 2),
       directory: RECORDINGS_PATH,
       ext: '.har',
       prefix,
     })
 
-    await writeFile(
-      path.join(RECORDINGS_PATH, fileName),
-      JSON.stringify(data, null, 4)
-    )
     return fileName
   }
 )
@@ -488,16 +485,12 @@ ipcMain.handle('har:import', async (event) => {
 // Generator
 ipcMain.handle('generator:create', async (_, recordingPath: string) => {
   const generator = createNewGeneratorFile(recordingPath)
-  const fileName = await generateUniqueFileName({
+  const fileName = await createFileWithUniqueName({
+    data: JSON.stringify(generator, null, 2),
     directory: GENERATORS_PATH,
     ext: '.json',
     prefix: 'Generator',
   })
-
-  await writeFile(
-    path.join(GENERATORS_PATH, fileName),
-    JSON.stringify(generator, null, 2)
-  )
 
   return fileName
 })
@@ -612,10 +605,7 @@ ipcMain.handle(
         await access(newPath)
         throw new Error(`File with name ${newFileName} already exists`)
       } catch (error) {
-        if (
-          error instanceof Error &&
-          (error as NodeJS.ErrnoException).code !== 'ENOENT'
-        ) {
+        if (isNodeJsErrnoException(error) && error.code !== 'ENOENT') {
           throw error
         }
       }
@@ -986,34 +976,42 @@ const cleanUpProxies = async () => {
   })
 }
 
-const generateUniqueFileName = async ({
+const createFileWithUniqueName = async ({
   directory,
+  data,
   prefix,
   ext,
 }: {
   directory: string
+  data: string
   prefix: string
   ext: string
 }): Promise<string> => {
   const timestamp = new Date().toISOString().split('T')[0] ?? ''
   const template = `${prefix ? `${prefix} - ` : ''}${timestamp}${ext}`
 
-  let uniqueFileName = template
-  let fileExists = await access(path.join(directory, uniqueFileName))
-    .then(() => true)
-    .catch(() => false)
-
   // Start from 2 as it follows the the OS behavior for duplicate files
-  let counter = 2
+  let fileVersion = 2
+  let uniqueFileName = template
+  let fileCreated = false
 
-  while (fileExists) {
-    const { name, ext } = path.parse(template)
-    uniqueFileName = `${name} (${counter})${ext}`
-    fileExists = await access(path.join(directory, uniqueFileName))
-      .then(() => true)
-      .catch(() => false)
-    counter++
-  }
+  do {
+    try {
+      // ax+ flag will throw an error if the file already exists
+      await writeFile(path.join(directory, uniqueFileName), data, {
+        flag: 'ax+',
+      })
+      fileCreated = true
+    } catch (error) {
+      if (isNodeJsErrnoException(error) && error.code !== 'EEXIST') {
+        throw error
+      }
+
+      const { name, ext } = path.parse(template)
+      uniqueFileName = `${name} (${fileVersion})${ext}`
+      fileVersion++
+    }
+  } while (!fileCreated)
 
   return uniqueFileName
 }
