@@ -94,9 +94,7 @@ export function createGeneratorState(
     setVus: vi.fn(),
 
     thresholds: [],
-    addThreshold: vi.fn(),
-    updateThreshold: vi.fn(),
-    deleteThreshold: vi.fn(),
+    setThresholds: vi.fn(),
 
     ...state,
   }

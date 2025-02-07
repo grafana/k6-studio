@@ -6,9 +6,7 @@ interface State {
 }
 
 interface Actions {
-  addThreshold: (threshold: Threshold) => void
-  updateThreshold: (threshold: Threshold) => void
-  deleteThreshold: (id: string) => void
+  setThresholds: (thresholds: Threshold[]) => void
 }
 
 export type ThresholdSliceStore = State & Actions
@@ -17,20 +15,8 @@ export const createThresholdSlice: ImmerStateCreator<ThresholdSliceStore> = (
   set
 ) => ({
   thresholds: [],
-  addThreshold: (threshold) =>
+  setThresholds: (thresholds: Threshold[]) =>
     set((state) => {
-      state.thresholds.push(threshold)
-    }),
-  updateThreshold(threshold) {
-    set((state) => {
-      const index = state.thresholds.findIndex((t) => t.id === threshold.id)
-      if (index !== -1) {
-        state.thresholds[index] = threshold
-      }
-    })
-  },
-  deleteThreshold: (id) =>
-    set((state) => {
-      state.thresholds = state.thresholds.filter((t) => t.id !== id)
+      state.thresholds = thresholds
     }),
 })

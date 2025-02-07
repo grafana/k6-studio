@@ -1,5 +1,5 @@
 import { FieldGroup, ControlledSelect } from '@/components/Form'
-import { ThresholdData } from '@/types/thresholds'
+import { Threshold, ThresholdData } from '@/types/thresholds'
 import { TrashIcon } from '@radix-ui/react-icons'
 import { Table, TextField, Checkbox, IconButton, Flex } from '@radix-ui/themes'
 import {
@@ -17,6 +17,7 @@ import {
 import { useThresholdURLOptions } from './Thresholds.hooks'
 import { css } from '@emotion/react'
 import { useTheme } from '@/hooks/useTheme'
+import { useEffect } from 'react'
 
 type ThresholdRowProps = {
   index: number
@@ -30,11 +31,25 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
     formState: { errors },
     control,
     watch,
+    setValue,
   } = useFormContext<ThresholdData>()
 
   const urlOptions = useThresholdURLOptions()
-  const threshold = watch('thresholds')[index]
+  const threshold = watch('thresholds')[index] as Threshold
   const theme = useTheme()
+
+  // Handle selected statistic when the metric field changes
+  useEffect(() => {
+    const availableStatistics = getStatisticOptions(threshold.metric).map(
+      (option) => option.value
+    )
+    if (!availableStatistics.includes(threshold.statistic)) {
+      const newStatistic = availableStatistics[0]
+      if (newStatistic) {
+        setValue(`thresholds.${index}.statistic`, newStatistic)
+      }
+    }
+  }, [threshold.metric, threshold.statistic, index, setValue])
 
   return (
     <Table.Row key={field.id}>
@@ -115,6 +130,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             name={`thresholds.${index}.stopTest`}
             render={({ field }) => (
               <Checkbox
+                checked={field.value}
                 onCheckedChange={field.onChange}
                 {...register(`thresholds.${index}.stopTest`)}
               />
