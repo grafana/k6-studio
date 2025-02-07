@@ -143,6 +143,7 @@ function emitSelectOptionsNode(
         type: 'StringLiteral',
         value,
       })),
+      multiple: node.multiple,
     },
   })
 }

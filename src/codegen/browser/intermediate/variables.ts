@@ -68,6 +68,7 @@ function substituteExpression(
         selected: node.selected.map((expression) =>
           substituteExpression(expression, substitutions)
         ),
+        multiple: node.multiple,
       }
 
     default:

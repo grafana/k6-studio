@@ -134,7 +134,7 @@ function emitSelectOptionsExpression(
   const locator = emitExpression(context, expression.locator)
 
   const selected =
-    expression.selected[0] !== undefined && expression.selected.length === 1
+    !expression.multiple && expression.selected[0] !== undefined
       ? emitExpression(context, expression.selected[0])
       : fromArrayLiteral(
           expression.selected.map((value) => emitExpression(context, value))

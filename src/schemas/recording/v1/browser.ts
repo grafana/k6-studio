@@ -63,6 +63,7 @@ const SelectEventSchema = BrowserEventBaseSchema.extend({
   tab: z.string(),
   selector: z.string(),
   selected: z.array(z.string()),
+  multiple: z.boolean(),
 })
 
 export const BrowserEventSchema = discriminatedUnion('type', [

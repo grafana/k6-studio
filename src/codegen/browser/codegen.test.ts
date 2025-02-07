@@ -287,7 +287,44 @@ it('should emit uncheck on element', async ({ expect }) => {
   )
 })
 
-it('should emit select options on element', async ({ expect }) => {
+it('should emit select single option on element', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'select',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'select-options',
+          nodeId: 'select-options',
+          selected: ['option1'],
+          multiple: false,
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/select-single-option-on-element.ts'
+  )
+})
+
+it('should emit select with multiple options on element', async ({
+  expect,
+}) => {
   const script = await emitScript({
     defaultScenario: {
       nodes: [
@@ -307,6 +344,7 @@ it('should emit select options on element', async ({ expect }) => {
           type: 'select-options',
           nodeId: 'select-options',
           selected: ['option1', 'option2'],
+          multiple: true,
           inputs: {
             locator: { nodeId: 'locator' },
           },
@@ -317,6 +355,6 @@ it('should emit select options on element', async ({ expect }) => {
   })
 
   await expect(script).toMatchFileSnapshot(
-    '__snapshots__/browser/select-options-on-element.ts'
+    '__snapshots__/browser/select-multiple-options-on-element.ts'
   )
 })

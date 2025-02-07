@@ -143,6 +143,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           type: 'select-options',
           nodeId: event.eventId,
           selected: event.selected,
+          multiple: event.multiple,
           inputs: {
             previous,
             locator: getLocator(event.tab, event.selector),

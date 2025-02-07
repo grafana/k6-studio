@@ -76,6 +76,7 @@ function handleSelectChange(target: HTMLSelectElement) {
     timestamp: Date.now(),
     selector: generateSelector(target),
     selected: [...target.selectedOptions].map((option) => option.value),
+    multiple: target.multiple,
     tab: '',
   })
 }

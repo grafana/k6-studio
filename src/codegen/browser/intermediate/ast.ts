@@ -57,6 +57,7 @@ export interface SelectOptionsExpression {
   type: 'SelectOptionsExpression'
   locator: Expression
   selected: Expression[]
+  multiple: boolean
 }
 
 export type Expression =

@@ -64,6 +64,7 @@ export interface TypeTextNode extends NodeBase {
 export interface SelectOptionsNode extends NodeBase {
   type: 'select-options'
   selected: string[]
+  multiple: boolean
   inputs: {
     previous?: NodeRef
     locator: NodeRef
