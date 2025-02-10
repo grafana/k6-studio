@@ -1,21 +1,11 @@
 import { Flex, FlexProps, Text } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import grotIllustration from '@/assets/grot.svg'
-import grotTelescopeIllustration from '@/assets/grot-telescope.svg'
-import grotNotepadIllustration from '@/assets/grot-notepad.svg'
 
 const illustrations = {
   notFound: {
     src: grotIllustration,
     defaultWidth: 250,
-  },
-  telescope: {
-    src: grotTelescopeIllustration,
-    defaultWidth: 200,
-  },
-  notepad: {
-    src: grotNotepadIllustration,
-    defaultWidth: 150,
   },
 } as const
 

@@ -53,9 +53,7 @@ export function TestRuleContainer() {
         {shouldShowHelpMessage ? (
           <EmptyMessage
             message="Configure your test logic by adding a new rule"
-            illustration="notepad"
             pb="2"
-            css={{ img: { maxWidth: '150px' } }}
             action={<NewRuleMenu variant="solid" size="2" color="orange" />}
           />
         ) : (
