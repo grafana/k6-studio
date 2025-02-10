@@ -8,15 +8,35 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import { useToast } from '@/store/ui/useToast'
 import log from 'electron-log/renderer'
 import { useRecordingFile } from './Generator.hooks'
+import { useEffect } from 'react'
 
 export function RecordingSelector() {
   const recordings = useStudioUIStore((store) => [...store.recordings.values()])
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
   const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
+  const setRecording = useGeneratorStore((store) => store.setRecording)
   const showToast = useToast()
 
-  useRecordingFile(recordingPath)
+  const { data } = useRecordingFile({
+    fileName: recordingPath,
+    onSuccess: (recording) => {
+      setRecording(recording)
+    },
+    onError: () => {
+      showToast({
+        title: 'Failed to load recording',
+        description: 'Select another recording in the sidebar.',
+        status: 'error',
+      })
+    },
+  })
+
+  useEffect(() => {
+    if (data) {
+      setRecording(data)
+    }
+  }, [data, setRecording])
 
   const selectedRecording = recordings.find(
     (recording) => recording.fileName === recordingPath

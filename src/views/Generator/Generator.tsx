@@ -1,6 +1,6 @@
 import { Allotment } from 'allotment'
 import { useEffect, useState } from 'react'
-import { useBlocker } from 'react-router-dom'
+import { useBlocker, useNavigate } from 'react-router-dom'
 import { Box, ScrollArea } from '@radix-ui/themes'
 
 import {
@@ -21,13 +21,28 @@ import { GeneratorControls } from './GeneratorControls'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { RuleEditor } from './RuleEditor'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { useToast } from '@/store/ui/useToast'
+import { getRoutePath } from '@/routeMap'
 
 export function Generator() {
   const selectedRule = useGeneratorStore(selectSelectedRule)
+  const setGenerator = useGeneratorStore((store) => store.setGenerator)
+  const showToast = useToast()
+  const navigate = useNavigate()
 
   const { fileName } = useGeneratorParams()
 
-  const { isLoading } = useGeneratorFile(fileName)
+  const { isLoading } = useGeneratorFile({
+    fileName,
+    onSuccess: setGenerator,
+    onError: () => {
+      showToast({
+        title: 'Failed to load generator',
+        status: 'error',
+      })
+      navigate(getRoutePath('home'), { replace: true })
+    },
+  })
 
   const { mutateAsync: saveGenerator } = useSaveGeneratorFile(fileName)
 

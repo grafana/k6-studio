@@ -15,11 +15,13 @@ import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useRecordingFile } from '../Generator/Generator.hooks'
+import { useToast } from '@/store/ui/useToast'
 
 export function RecordingPreviewer() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const { fileName } = useParams()
   const navigate = useNavigate()
+  const showToast = useToast()
   const createTestGenerator = useCreateGenerator()
   // TODO: https://github.com/grafana/k6-studio/issues/277
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -29,7 +31,16 @@ export function RecordingPreviewer() {
   const isDiscardable = Boolean(state?.discardable)
   invariant(fileName, 'fileName is required')
 
-  const { data: proxyData = [], isLoading } = useRecordingFile(fileName)
+  const { data: proxyData = [], isLoading } = useRecordingFile({
+    fileName,
+    onError: () => {
+      showToast({
+        status: 'error',
+        title: 'Failed to load recording',
+      })
+      navigate(getRoutePath('home'), { replace: true })
+    },
+  })
 
   const groups = useProxyDataGroups(proxyData ?? [])
 
