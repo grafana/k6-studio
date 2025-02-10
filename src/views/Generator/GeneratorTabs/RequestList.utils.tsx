@@ -3,6 +3,7 @@ import { ProxyData } from '@/types'
 import { GlobeIcon } from '@radix-ui/react-icons'
 import { Button } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
+import { RecordingSelector } from '../RecordingSelector'
 
 export function validateRecording({
   allowlist,
@@ -27,21 +28,24 @@ export function validateRecording({
 } | null {
   if (recording === undefined && recordingPath === '') {
     return {
-      message: 'Select a recording from the top menu',
+      message: 'Select a recording from the dropdown',
+      action: <RecordingSelector compact />,
     }
   }
 
   if (recording === undefined && recordingPath !== '') {
     return {
       message:
-        'The selected recording is missing, select another one from the top menu',
+        'The selected recording is missing, select another one from the dropdown',
+      action: <RecordingSelector compact />,
     }
   }
 
   if (requests.length === 0) {
     return {
       message:
-        'The selected recording is empty, select another one from the top menu',
+        'The selected recording is empty, select another one from the dropdown',
+      action: <RecordingSelector compact />,
     }
   }
 
