@@ -82,7 +82,7 @@ export function Thresholds() {
               <Table.ColumnHeaderCell width="35px">
                 Stop Test
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="0"></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="22px"></Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
 
