@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
-import { HarFile } from './types/har'
-import { GeneratorFile } from './types/generator'
+import { HarFile, HarWithOptionalResponse } from './types/har'
+import { GeneratorFileData } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 import * as Sentry from './sentry'
@@ -107,7 +107,10 @@ const script = {
 } as const
 
 const har = {
-  saveFile: (data: string, prefix?: string): Promise<string> => {
+  saveFile: (
+    data: HarWithOptionalResponse,
+    prefix: string
+  ): Promise<string> => {
     return ipcRenderer.invoke('har:save', data, prefix)
   },
   openFile: (filePath: string): Promise<HarFile> => {
@@ -160,10 +163,16 @@ const ui = {
 } as const
 
 const generator = {
-  saveGenerator: (generatorFile: string, fileName: string): Promise<string> => {
-    return ipcRenderer.invoke('generator:save', generatorFile, fileName)
+  createGenerator: (recordingPath: string): Promise<string> => {
+    return ipcRenderer.invoke('generator:create', recordingPath)
   },
-  loadGenerator: (fileName: string): Promise<GeneratorFile> => {
+  saveGenerator: (
+    generator: GeneratorFileData,
+    fileName: string
+  ): Promise<void> => {
+    return ipcRenderer.invoke('generator:save', generator, fileName)
+  },
+  loadGenerator: (fileName: string): Promise<GeneratorFileData> => {
     return ipcRenderer.invoke('generator:open', fileName)
   },
 } as const

@@ -16,6 +16,8 @@ import { ExperimentalBanner } from '@/components/ExperimentalBanner'
 export function Home() {
   const createNewGenerator = useCreateGenerator()
 
+  const handleCreateNewGenerator = () => createNewGenerator()
+
   return (
     <Flex direction="column" height="100%">
       <ExperimentalBanner />
@@ -67,7 +69,7 @@ export function Home() {
             title="Generator"
             description="Transform a recorded flow into a k6 test script"
           >
-            <Button variant="ghost" onClick={createNewGenerator}>
+            <Button variant="ghost" onClick={handleCreateNewGenerator}>
               <PlusCircledIcon />
               Generate test
             </Button>

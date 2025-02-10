@@ -31,19 +31,9 @@ export async function exportScript(fileName: string) {
   await window.studio.script.saveScript(script, fileName)
 }
 
-export const writeGeneratorToFile = (
-  fileName: string,
-  generatorData: GeneratorFileData
-) => {
-  return window.studio.generator.saveGenerator(
-    JSON.stringify(generatorData, null, 2),
-    fileName
-  )
-}
-
 export const loadGeneratorFile = async (fileName: string) => {
-  const generatorFile = await window.studio.generator.loadGenerator(fileName)
-  return GeneratorFileDataSchema.parse(generatorFile.content)
+  const generator = await window.studio.generator.loadGenerator(fileName)
+  return GeneratorFileDataSchema.parse(generator)
 }
 
 export const loadHarFile = async (fileName: string) => {

@@ -6,7 +6,7 @@ import { orderBy } from 'lodash-es'
 import { useEffect, useMemo } from 'react'
 
 function orderByFileName(files: Map<string, StudioFile>) {
-  return orderBy([...files.values()], (s) => s.fileName)
+  return orderBy([...files.values()], (s) => s.displayName)
 }
 
 function toFileMap(files: StudioFile[]) {
