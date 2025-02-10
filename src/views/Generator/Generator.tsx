@@ -1,6 +1,6 @@
 import { Allotment } from 'allotment'
 import { useEffect, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router-dom'
+import { useBlocker } from 'react-router-dom'
 import { Box, ScrollArea } from '@radix-ui/themes'
 
 import {
@@ -14,43 +14,22 @@ import { TestRuleContainer } from './TestRuleContainer'
 import {
   useGeneratorParams,
   useIsGeneratorDirty,
-  useLoadGeneratorFile,
-  useLoadHarFile,
+  useGeneratorFile,
   useSaveGeneratorFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
-import { useToast } from '@/store/ui/useToast'
-import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 import { RuleEditor } from './RuleEditor'
 import { getFileNameWithoutExtension } from '@/utils/file'
-import log from 'electron-log/renderer'
 
 export function Generator() {
   const selectedRule = useGeneratorStore(selectSelectedRule)
 
-  const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
-
-  const showToast = useToast()
-  const navigate = useNavigate()
-
   const { fileName } = useGeneratorParams()
 
-  const {
-    data: generatorFileData,
-    isLoading: isLoadingGenerator,
-    error: generatorError,
-  } = useLoadGeneratorFile(fileName)
-
-  const {
-    data: recording,
-    isLoading: isLoadingRecording,
-    error: harError,
-  } = useLoadHarFile(generatorFileData?.recordingPath)
+  const { isLoading } = useGeneratorFile(fileName)
 
   const { mutateAsync: saveGenerator } = useSaveGeneratorFile(fileName)
-
-  const isLoading = isLoadingGenerator || isLoadingRecording
 
   const isDirty = useIsGeneratorDirty(fileName)
 
@@ -62,33 +41,6 @@ export function Generator() {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     return isDirty && historyAction !== 'REPLACE'
   })
-
-  useEffect(() => {
-    if (!generatorFileData) return
-    setGeneratorFile(generatorFileData, recording)
-  }, [setGeneratorFile, generatorFileData, recording])
-
-  useEffect(() => {
-    if (generatorError) {
-      showToast({
-        title: 'Failed to load generator',
-        status: 'error',
-      })
-      log.error(generatorError)
-      navigate(getRoutePath('home'), { replace: true })
-    }
-  }, [generatorError, showToast, navigate])
-
-  useEffect(() => {
-    if (harError) {
-      showToast({
-        title: 'Failed to load recording',
-        status: 'error',
-        description: 'Select another recording in the sidebar',
-      })
-      log.error(harError)
-    }
-  }, [harError, showToast])
 
   useEffect(() => {
     return window.studio.app.onApplicationClose(() => {

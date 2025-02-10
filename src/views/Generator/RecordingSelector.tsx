@@ -3,18 +3,20 @@ import { ExclamationTriangleIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
 
 import { useGeneratorStore } from '@/store/generator'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { useStudioUIStore } from '@/store/ui'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { useToast } from '@/store/ui/useToast'
 import log from 'electron-log/renderer'
+import { useRecordingFile } from './Generator.hooks'
 
 export function RecordingSelector() {
   const recordings = useStudioUIStore((store) => [...store.recordings.values()])
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
-  const setRecording = useGeneratorStore((store) => store.setRecording)
+  const setRecordingPath = useGeneratorStore((store) => store.setRecordingPath)
   const showToast = useToast()
+
+  useRecordingFile(recordingPath)
 
   const selectedRecording = recordings.find(
     (recording) => recording.fileName === recordingPath
@@ -23,28 +25,13 @@ export function RecordingSelector() {
   const isRecordingMissing =
     selectedRecording === undefined && recordingPath !== ''
 
-  const handleOpen = async (filePath: string) => {
-    try {
-      const harFile = await window.studio.har.openFile(filePath)
-
-      const proxyData = harToProxyData(harFile.content)
-      setRecording(proxyData, harFile.name)
-    } catch (error) {
-      showToast({
-        title: 'Failed to open recording',
-        status: 'error',
-      })
-      log.error(error)
-    }
-  }
-
   const handleImport = async () => {
     try {
       const filePath = await window.studio.har.importFile()
 
       if (!filePath) return
 
-      await handleOpen(filePath)
+      setRecordingPath(filePath)
     } catch (error) {
       showToast({
         title: 'Failed to import recording',
@@ -59,7 +46,7 @@ export function RecordingSelector() {
       <Text size="2" weight="medium" as="label" htmlFor="recording-selector">
         Recording
       </Text>
-      <Select.Root value={recordingPath} onValueChange={handleOpen}>
+      <Select.Root value={recordingPath} onValueChange={setRecordingPath}>
         <Tooltip content="Switch between different recordings.">
           <Select.Trigger
             id="recording-selector"

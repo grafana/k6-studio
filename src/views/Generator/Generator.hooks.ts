@@ -1,13 +1,14 @@
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { useToast } from '@/store/ui/useToast'
-import { loadGeneratorFile, loadHarFile } from './Generator.utils'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '@/utils/query'
 import log from 'electron-log/renderer'
+import { getRoutePath } from '@/routeMap'
+import { harToProxyData } from '@/utils/harToProxyData'
 
 export function useGeneratorParams() {
   const { fileName } = useParams()
@@ -18,25 +19,62 @@ export function useGeneratorParams() {
   }
 }
 
-export function useLoadHarFile(fileName?: string) {
+export function useRecordingFile(fileName?: string) {
+  const showToast = useToast()
+  const setRecording = useGeneratorStore((store) => store.setRecording)
+
   return useQuery({
     queryKey: ['har', fileName],
     enabled: !!fileName,
-    queryFn: () => loadHarFile(fileName!),
+    placeholderData: [],
+    queryFn: async () => {
+      try {
+        if (!fileName) return []
+        const har = await window.studio.har.openFile(fileName)
+        const recording = harToProxyData(har)
+        setRecording(recording)
+        return recording
+      } catch (error) {
+        showToast({
+          title: 'Failed to load recording',
+          status: 'error',
+          description: 'Select another recording in the sidebar',
+        })
+        log.error(error)
+        throw error
+      }
+    },
   })
 }
 
-export function useLoadGeneratorFile(fileName: string) {
+export function useGeneratorFile(fileName: string) {
+  const showToast = useToast()
+  const navigate = useNavigate()
+  const setGenerator = useGeneratorStore((store) => store.setGenerator)
+
   return useQuery({
     queryKey: ['generator', fileName],
-    queryFn: () => loadGeneratorFile(fileName),
+    queryFn: async () => {
+      try {
+        const generator = await window.studio.generator.loadGenerator(fileName)
+        setGenerator(generator)
+        return generator
+      } catch (error) {
+        showToast({
+          title: 'Failed to load generator',
+          status: 'error',
+        })
+        log.error(error)
+        navigate(getRoutePath('home'), { replace: true })
+      }
+    },
   })
 }
 
 export function useUpdateValueInGeneratorFile(fileName: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
-      const generator = await loadGeneratorFile(fileName)
+      const generator = await window.studio.generator.loadGenerator(fileName)
       await window.studio.generator.saveGenerator(
         { ...generator, [key]: value },
         fileName
@@ -76,7 +114,7 @@ export function useSaveGeneratorFile(fileName: string) {
 
 export function useIsGeneratorDirty(fileName: string) {
   const generatorState = useGeneratorStore(selectGeneratorData)
-  const { data } = useLoadGeneratorFile(fileName)
+  const { data } = useGeneratorFile(fileName)
 
   // Comparing data without `scriptName`, which is saved to disk in the background
   // and should not be considered as a change

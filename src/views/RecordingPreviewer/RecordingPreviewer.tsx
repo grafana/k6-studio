@@ -2,23 +2,21 @@ import { Allotment } from 'allotment'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import invariant from 'tiny-invariant'
 
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { View } from '@/components/Layout/View'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { ProxyData } from '@/types'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { getRoutePath } from '@/routeMap'
 import { Details } from '@/components/WebLogView/Details'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
+import { useRecordingFile } from '../Generator/Generator.hooks'
 
 export function RecordingPreviewer() {
-  const [proxyData, setProxyData] = useState<ProxyData[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const { fileName } = useParams()
   const navigate = useNavigate()
@@ -31,24 +29,9 @@ export function RecordingPreviewer() {
   const isDiscardable = Boolean(state?.discardable)
   invariant(fileName, 'fileName is required')
 
-  useEffect(() => {
-    ;(async () => {
-      setIsLoading(true)
-      setProxyData([])
-      const har = await window.studio.har.openFile(fileName)
-      setIsLoading(false)
+  const { data: proxyData = [], isLoading } = useRecordingFile(fileName)
 
-      invariant(har, 'Failed to open file')
-
-      setProxyData(harToProxyData(har.content))
-    })()
-
-    return () => {
-      setProxyData([])
-    }
-  }, [fileName, navigate])
-
-  const groups = useProxyDataGroups(proxyData)
+  const groups = useProxyDataGroups(proxyData ?? [])
 
   const handleCreateGenerator = () => createTestGenerator(fileName)
 

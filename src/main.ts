@@ -12,7 +12,6 @@ import {
   writeFile,
   unlink,
   readdir,
-  FileHandle,
   rename,
   access,
   readFile,
@@ -47,7 +46,7 @@ import {
   INVALID_FILENAME_CHARS,
   TEMP_GENERATOR_SCRIPT_FILENAME,
 } from './constants/files'
-import { HarFile, HarWithOptionalResponse } from './types/har'
+import { HarWithOptionalResponse } from './types/har'
 import { GeneratorFileData } from './types/generator'
 import kill from 'tree-kill'
 import find from 'find-process'
@@ -70,6 +69,7 @@ import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
 import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
 import { createNewGeneratorFile } from './utils/generator'
+import { GeneratorFileDataSchema } from './schemas/generator'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -439,23 +439,18 @@ ipcMain.handle(
   }
 )
 
-ipcMain.handle('har:open', async (_, fileName: string): Promise<HarFile> => {
-  console.info('har:open event received')
-  let fileHandle: FileHandle | undefined
-  try {
-    fileHandle = await open(path.join(RECORDINGS_PATH, fileName), 'r')
-    const data = await fileHandle?.readFile({ encoding: 'utf-8' })
+ipcMain.handle(
+  'har:open',
+  async (_, fileName: string): Promise<HarWithOptionalResponse> => {
+    const data = await readFile(path.join(RECORDINGS_PATH, fileName), {
+      encoding: 'utf-8',
+      flag: 'r',
+    })
     // TODO: https://github.com/grafana/k6-studio/issues/277
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const har = await JSON.parse(data)
-
-    // TODO: https://github.com/grafana/k6-studio/issues/277
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    return { name: fileName, content: har }
-  } finally {
-    await fileHandle?.close()
+    return JSON.parse(data)
   }
-})
+)
 
 ipcMain.handle('har:import', async (event) => {
   console.info('har:import event received')
@@ -508,20 +503,14 @@ ipcMain.handle(
 ipcMain.handle(
   'generator:open',
   async (_, fileName: string): Promise<GeneratorFileData> => {
-    let fileHandle: FileHandle | undefined
+    const data = await readFile(path.join(GENERATORS_PATH, fileName), {
+      encoding: 'utf-8',
+      flag: 'r',
+    })
 
-    try {
-      fileHandle = await open(path.join(GENERATORS_PATH, fileName), 'r')
+    const generator = GeneratorFileDataSchema.parse(JSON.parse(data))
 
-      const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-      // TODO: https://github.com/grafana/k6-studio/issues/277
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const generator = await JSON.parse(data)
-
-      return generator
-    } finally {
-      await fileHandle?.close()
-    }
+    return generator
   }
 )
 

@@ -7,15 +7,10 @@ export interface EntryWithOptionalResponse extends Omit<Entry, 'response'> {
   response?: Response
 }
 
-export interface LogwithOptionalEntries extends Omit<Log, 'entries'> {
+export interface LogWithOptionalEntries extends Omit<Log, 'entries'> {
   entries: EntryWithOptionalResponse[]
 }
 
 export interface HarWithOptionalResponse extends Omit<Har, 'log'> {
-  log: LogwithOptionalEntries
-}
-
-export interface HarFile {
-  name: string
-  content: HarWithOptionalResponse
+  log: LogWithOptionalEntries
 }

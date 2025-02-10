@@ -5,8 +5,6 @@ import {
   useGeneratorStore,
 } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
-import { GeneratorFileDataSchema } from '@/schemas/generator'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { ProxyData } from '@/types'
 import { prettify } from '@/utils/prettify'
 
@@ -29,14 +27,4 @@ export async function exportScript(fileName: string) {
   const script = await generateScriptPreview(generator, filteredRequests)
 
   await window.studio.script.saveScript(script, fileName)
-}
-
-export const loadGeneratorFile = async (fileName: string) => {
-  const generator = await window.studio.generator.loadGenerator(fileName)
-  return GeneratorFileDataSchema.parse(generator)
-}
-
-export const loadHarFile = async (fileName: string) => {
-  const harFile = await window.studio.har.openFile(fileName)
-  return harToProxyData(harFile.content)
 }
