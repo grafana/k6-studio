@@ -141,12 +141,12 @@ const createSplashWindow = async () => {
     splashscreenWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  await splashscreenWindow.loadFile(splashscreenFile)
-
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
   splashscreenWindow.once('ready-to-show', () => {
     splashscreenWindow.show()
   })
+
+  await splashscreenWindow.loadFile(splashscreenFile)
 
   return splashscreenWindow
 }
