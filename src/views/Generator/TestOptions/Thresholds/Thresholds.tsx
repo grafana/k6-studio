@@ -79,7 +79,9 @@ export function Thresholds() {
               <Table.ColumnHeaderCell width="45px">
                 Value
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="20px">Stop</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="35px">
+                Stop Test
+              </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="0"></Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
