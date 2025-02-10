@@ -120,6 +120,7 @@ describe('Code generation', () => {
             value: 1,
           },
         },
+        thresholds: [],
       },
       testData: {
         variables: [],
@@ -129,7 +130,6 @@ describe('Code generation', () => {
       allowlist: [],
       includeStaticAssets: false,
       scriptName: 'my-script.js',
-      thresholds: [],
     }
 
     it('should generate imports', async () => {
@@ -528,7 +528,8 @@ describe('Code generation', () => {
               cookies: {}
             }
   
-            url = http.url\`http://test.k6.io/api/v1/users\`
+            url = http.url\`http://
+            /api/v1/users\`
             resp = http.request('POST', url, \`${JSON.stringify({ user_id: '333' })}\`, params)
   
             params = {
