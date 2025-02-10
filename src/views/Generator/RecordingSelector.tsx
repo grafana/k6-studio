@@ -8,7 +8,6 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import { useToast } from '@/store/ui/useToast'
 import log from 'electron-log/renderer'
 import { useRecordingFile } from './Generator.hooks'
-import { useEffect } from 'react'
 
 export function RecordingSelector() {
   const recordings = useStudioUIStore((store) => [...store.recordings.values()])
@@ -18,7 +17,7 @@ export function RecordingSelector() {
   const setRecording = useGeneratorStore((store) => store.setRecording)
   const showToast = useToast()
 
-  const { data } = useRecordingFile({
+  useRecordingFile({
     fileName: recordingPath,
     onSuccess: (recording) => {
       setRecording(recording)
@@ -31,12 +30,6 @@ export function RecordingSelector() {
       })
     },
   })
-
-  useEffect(() => {
-    if (data) {
-      setRecording(data)
-    }
-  }, [data, setRecording])
 
   const selectedRecording = recordings.find(
     (recording) => recording.fileName === recordingPath
