@@ -31,7 +31,6 @@ export function useRecordingFile({
   return useQuery({
     queryKey: ['har', fileName],
     enabled: !!fileName,
-    placeholderData: [],
     queryFn: async () => {
       try {
         if (!fileName) return []
