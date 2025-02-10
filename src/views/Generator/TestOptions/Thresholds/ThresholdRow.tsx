@@ -68,6 +68,10 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             options={urlOptions}
             control={control}
             name={`thresholds.${index}.url`}
+            tooltipProps={{
+              content:
+                threshold.url === '*' ? 'Across all URLs' : threshold.url,
+            }}
             contentProps={{
               css: css`
                 .rt-SelectLabel {
