@@ -9,6 +9,17 @@ import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { FuseV1Options, FuseVersion } from '@electron/fuses'
 import { getPlatform, getArch } from './src/utils/electron'
 
+let resources = [
+  './resources/' + getPlatform() + '/' + getArch(),
+]
+
+if (getPlatform() === 'mac') {
+  resources = [
+    './resources/mac/arm64',
+    './resources/mac/x86_64',
+  ]
+}
+
 const config: ForgeConfig = {
   packagerConfig: {
     icon: './resources/icons/logo',
@@ -20,7 +31,7 @@ const config: ForgeConfig = {
       './resources/splashscreen.html',
       './resources/logo-splashscreen-dark.svg',
       './resources/logo-splashscreen.svg',
-      './resources/' + getPlatform() + '/' + getArch(),
+      ...resources,
     ],
     osxSign: {
       optionsForFile: () => {
