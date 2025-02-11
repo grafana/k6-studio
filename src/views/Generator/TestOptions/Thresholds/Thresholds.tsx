@@ -2,7 +2,7 @@ import { ThresholdDataSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Text } from '@radix-ui/themes'
+import { Button, Text, Link as RadixLink } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form'
 import { ThresholdRow } from './ThresholdRow'
@@ -27,6 +27,13 @@ export function Thresholds() {
     control,
     name: 'thresholds',
   })
+
+  const handleOpenDocs = (event: React.MouseEvent) => {
+    event.preventDefault()
+    return window.studio.browser.openExternalLink(
+      'https://grafana.com/docs/k6/latest/using-k6/thresholds'
+    )
+  }
 
   function handleAddThreshold(event: React.MouseEvent) {
     event.preventDefault()
@@ -59,9 +66,12 @@ export function Thresholds() {
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Text size="2" as="p" mb="4">
-          Define pass/fail criteria for your test metrics. If the performance of
-          the system under test does not meet the conditions, the test finishes
-          with a failed status.
+          Define pass/fail criteria for your test metrics. Learn more about
+          thresholds in the{' '}
+          <RadixLink href="" onClick={handleOpenDocs}>
+            docs
+          </RadixLink>
+          .
         </Text>
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
