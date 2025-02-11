@@ -25,10 +25,10 @@ export function RecordingSelector() {
 
   const handleOpen = async (filePath: string) => {
     try {
-      const harFile = await window.studio.har.openFile(filePath)
+      const har = await window.studio.har.openFile(filePath)
 
-      const proxyData = harToProxyData(harFile.content)
-      setRecording(proxyData, harFile.name)
+      const proxyData = harToProxyData(har)
+      setRecording(proxyData, filePath)
     } catch (error) {
       showToast({
         title: 'Failed to open recording',
