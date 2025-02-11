@@ -40,7 +40,7 @@ export function RecordingPreviewer() {
 
       invariant(har, 'Failed to open file')
 
-      setProxyData(harToProxyData(har.content))
+      setProxyData(harToProxyData(har))
     })()
 
     return () => {

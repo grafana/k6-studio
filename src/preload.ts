@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
-import { HarFile, HarWithOptionalResponse } from './types/har'
+import { HarWithOptionalResponse } from './types/har'
 import { GeneratorFileData } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
@@ -63,18 +63,10 @@ const browser = {
 } as const
 
 const script = {
-  showScriptSelectDialog: (): Promise<{
-    path: string
-    content: string
-  } | void> => {
+  showScriptSelectDialog: (): Promise<string | void> => {
     return ipcRenderer.invoke('script:select')
   },
-  openScript: (
-    filePath: string
-  ): Promise<{
-    path: string
-    content: string
-  }> => {
+  openScript: (filePath: string): Promise<string> => {
     return ipcRenderer.invoke('script:open', filePath)
   },
   runScriptFromGenerator: (script: string): Promise<void> => {
@@ -113,7 +105,7 @@ const har = {
   ): Promise<string> => {
     return ipcRenderer.invoke('har:save', data, prefix)
   },
-  openFile: (filePath: string): Promise<HarFile> => {
+  openFile: (filePath: string): Promise<HarWithOptionalResponse> => {
     return ipcRenderer.invoke('har:open', filePath)
   },
   importFile: (): Promise<string | undefined> => {
