@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest'
+import { afterAll, beforeAll, describe, it, vi } from 'vitest'
 import { enhanceScript } from './script'
 
 const shims = {
@@ -14,6 +14,22 @@ const shims = {
     }
   `,
 }
+
+beforeAll(() => {
+  vi.mock('electron', () => {
+    return {
+      app: {
+        getPath() {
+          return ''
+        },
+      },
+    }
+  })
+})
+
+afterAll(() => {
+  vi.clearAllMocks()
+})
 
 describe('checks shim', () => {
   it('should inject handleSummary export', async ({ expect }) => {

@@ -1,4 +1,4 @@
-import type { ConfigEnv, InlineConfig, UserConfig } from 'vite'
+import type { BuildOptions, ConfigEnv, InlineConfig, UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
@@ -17,8 +17,9 @@ export default defineConfig((env) => {
     tsconfigPaths(),
   ]
 
-  const build = {
+  const build: BuildOptions = {
     outDir: `.vite/build/extension`,
+    sourcemap: 'inline',
   }
 
   const viteConfig: InlineConfig = {

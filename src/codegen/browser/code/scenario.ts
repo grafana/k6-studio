@@ -64,7 +64,7 @@ function emitReloadExpression(
 }
 
 function emitClickOptionsExpression(
-  context: ScenarioContext,
+  _context: ScenarioContext,
   expression: ir.ClickOptionsExpression
 ): ts.Expression {
   const button = expression.button !== 'left' && {
@@ -98,6 +98,55 @@ function emitClickExpression(
     .done()
 }
 
+function emitTypeTextExpression(
+  context: ScenarioContext,
+  expression: ir.TypeTextExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+  const value = emitExpression(context, expression.value)
+
+  return new ExpressionBuilder(target)
+    .member('type')
+    .call([value])
+    .await(context)
+    .done()
+}
+
+function emitCheckExpression(
+  context: ScenarioContext,
+  expression: ir.CheckExpression
+): ts.Expression {
+  const locator = emitExpression(context, expression.locator)
+
+  const member = expression.checked ? 'check' : 'uncheck'
+
+  return new ExpressionBuilder(locator)
+    .member(member)
+    .call([])
+    .await(context)
+    .done()
+}
+
+function emitSelectOptionsExpression(
+  context: ScenarioContext,
+  expression: ir.SelectOptionsExpression
+): ts.Expression {
+  const locator = emitExpression(context, expression.locator)
+
+  const selected =
+    !expression.multiple && expression.selected[0] !== undefined
+      ? emitExpression(context, expression.selected[0])
+      : fromArrayLiteral(
+          expression.selected.map((value) => emitExpression(context, value))
+        )
+
+  return new ExpressionBuilder(locator)
+    .member('selectOption')
+    .call([selected])
+    .await(context)
+    .done()
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -126,6 +175,15 @@ function emitExpression(
 
     case 'ClickOptionsExpression':
       return emitClickOptionsExpression(context, expression)
+
+    case 'TypeTextExpression':
+      return emitTypeTextExpression(context, expression)
+
+    case 'CheckExpression':
+      return emitCheckExpression(context, expression)
+
+    case 'SelectOptionsExpression':
+      return emitSelectOptionsExpression(context, expression)
 
     default:
       return exhaustive(expression)

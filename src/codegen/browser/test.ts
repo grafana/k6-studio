@@ -105,6 +105,51 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
       }
 
+      case 'input-change':
+        return {
+          type: 'type-text',
+          nodeId: event.eventId,
+          value: event.value,
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.selector),
+          },
+        }
+
+      case 'check':
+        return {
+          type: 'check',
+          nodeId: event.eventId,
+          checked: event.checked,
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.selector),
+          },
+        }
+
+      case 'switch':
+        return {
+          type: 'check',
+          nodeId: event.eventId,
+          checked: true,
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.selector),
+          },
+        }
+
+      case 'select':
+        return {
+          type: 'select-options',
+          nodeId: event.eventId,
+          selected: event.selected,
+          multiple: event.multiple,
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.selector),
+          },
+        }
+
       default:
         return exhaustive(event)
     }

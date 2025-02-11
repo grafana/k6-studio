@@ -52,6 +52,21 @@ function buildScenarioGraph(scenario: model.Scenario) {
         connectPrevious(graph, node)
         break
 
+      case 'type-text':
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        connectPrevious(graph, node)
+        break
+
+      case 'check':
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        connectPrevious(graph, node)
+        break
+
+      case 'select-options':
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        connectPrevious(graph, node)
+        break
+
       default:
         return exhaustive(node)
     }

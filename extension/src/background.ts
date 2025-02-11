@@ -21,6 +21,8 @@ function send(message: MessagePayload) {
 }
 
 function captureEvents(events: BrowserEvent[] | BrowserEvent) {
+  console.log('Captured events...', events)
+
   send({
     type: 'events-captured',
     events: Array.isArray(events) ? events : [events],

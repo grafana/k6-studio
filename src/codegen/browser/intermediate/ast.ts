@@ -35,10 +35,29 @@ export interface ClickOptionsExpression {
   modifiers: Array<'Control' | 'Shift' | 'Alt' | 'Meta'>
 }
 
+export interface TypeTextExpression {
+  type: 'TypeTextExpression'
+  target: Expression
+  value: Expression
+}
+
 export interface ClickExpression {
   type: 'ClickExpression'
   locator: Expression
   options: Expression | null
+}
+
+export interface CheckExpression {
+  type: 'CheckExpression'
+  locator: Expression
+  checked: Expression
+}
+
+export interface SelectOptionsExpression {
+  type: 'SelectOptionsExpression'
+  locator: Expression
+  selected: Expression[]
+  multiple: boolean
 }
 
 export type Expression =
@@ -50,6 +69,9 @@ export type Expression =
   | ReloadExpression
   | ClickExpression
   | ClickOptionsExpression
+  | TypeTextExpression
+  | CheckExpression
+  | SelectOptionsExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

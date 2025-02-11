@@ -246,15 +246,16 @@ export class ExpressionBuilder<Expr extends ts.Expression> {
     })
   }
 
-  call(
-    options: NodeOptions<ts.CallExpression, never, 'callee'> | ts.Expression[]
-  ) {
+  call(options: NodeOptions<ts.CallExpression, 'callee'> | ts.Expression[]) {
     const {
       arguments: args = [],
       optional = false,
       typeArguments,
     } = Array.isArray(options)
-      ? { arguments: options, typeArguments: undefined }
+      ? {
+          arguments: options,
+          typeArguments: undefined,
+        }
       : options
 
     const expression: ts.CallExpression = {
