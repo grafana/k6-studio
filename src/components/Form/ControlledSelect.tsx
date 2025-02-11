@@ -1,4 +1,4 @@
-import { Select } from '@radix-ui/themes'
+import { Select, Tooltip, TooltipProps } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import { Control, Controller, FieldValues, Path } from 'react-hook-form'
 
@@ -14,6 +14,7 @@ interface ControlledSelectProps<
   options: O[]
   selectProps?: Select.RootProps
   contentProps?: Select.ContentProps
+  tooltipProps?: TooltipProps
   onChange?: (value: O extends Option ? O['value'] : string) => void
 }
 
@@ -26,6 +27,7 @@ export function ControlledSelect<
   options,
   selectProps = {},
   contentProps = {},
+  tooltipProps = { content: undefined, hidden: true },
   onChange,
 }: ControlledSelectProps<T, O>) {
   return (
@@ -38,11 +40,13 @@ export function ControlledSelect<
           value={field.value}
           onValueChange={onChange ?? field.onChange}
         >
-          <Select.Trigger
-            onBlur={field.onBlur}
-            id={name}
-            css={{ width: '100%' }}
-          />
+          <Tooltip {...tooltipProps}>
+            <Select.Trigger
+              onBlur={field.onBlur}
+              id={name}
+              css={{ width: '100%' }}
+            />
+          </Tooltip>
           <Select.Content {...contentProps}>
             {options.map((option) =>
               'options' in option ? (
