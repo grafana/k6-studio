@@ -1,21 +1,84 @@
 import { getRoutePath } from '@/routeMap'
 import { StudioFile } from '@/types'
-import { ContextMenu } from '@radix-ui/themes'
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { ContextMenu, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { PropsWithChildren } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 interface FileContextMenuProps {
   file: StudioFile
   isSelected: boolean
-  handleRename: () => void
+  onRename: () => void
 }
 
 export function FileContextMenu({
   file,
   children,
   isSelected,
-  handleRename,
+  onRename,
 }: PropsWithChildren<FileContextMenuProps>) {
+  const items = useFileContextMenuItems({ file, isSelected, onRename })
+
+  return (
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
+
+      <ContextMenu.Content size="1">
+        {items.map((item) => (
+          <ContextMenu.Item
+            key={item.label}
+            onClick={item.onClick}
+            color={item.destructive ? 'red' : undefined}
+          >
+            {item.label}
+          </ContextMenu.Item>
+        ))}
+      </ContextMenu.Content>
+    </ContextMenu.Root>
+  )
+}
+
+export function FileActionsMenu({
+  file,
+  isSelected,
+  onRename,
+}: FileContextMenuProps) {
+  const items = useFileContextMenuItems({ file, isSelected, onRename })
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>
+        <IconButton variant="ghost" aria-label="Actions" color="gray" size="1">
+          <DotsHorizontalIcon />
+        </IconButton>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Content size="1">
+        {items.map((item) => (
+          <DropdownMenu.Item
+            key={item.label}
+            onClick={item.onClick}
+            color={item.destructive ? 'red' : undefined}
+          >
+            {item.label}
+          </DropdownMenu.Item>
+        ))}
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
+  )
+}
+
+interface UseFileContextMenuItemsArgs {
+  file: StudioFile
+  isSelected: boolean
+  onRename: () => void
+}
+
+function useFileContextMenuItems({
+  file,
+  isSelected,
+  onRename,
+}: UseFileContextMenuItemsArgs): FileContextMenuItem[] {
   const navigate = useNavigate()
 
   const handleOpenFolder = () => {
@@ -28,18 +91,15 @@ export function FileContextMenu({
     }
   }
 
-  return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
-      <ContextMenu.Content size="1">
-        <ContextMenu.Item onClick={handleRename}>Rename</ContextMenu.Item>
-        <ContextMenu.Item onClick={handleOpenFolder}>
-          Open containing folder
-        </ContextMenu.Item>
-        <ContextMenu.Item color="red" onClick={handleDelete}>
-          Delete
-        </ContextMenu.Item>
-      </ContextMenu.Content>
-    </ContextMenu.Root>
-  )
+  return [
+    { label: 'Rename', onClick: onRename },
+    { label: 'Open containing folder', onClick: handleOpenFolder },
+    { label: 'Delete', onClick: handleDelete, destructive: true },
+  ]
+}
+
+type FileContextMenuItem = {
+  label: string
+  onClick: () => void
+  destructive?: boolean
 }
