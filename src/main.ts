@@ -7,7 +7,6 @@ import {
   shell,
 } from 'electron'
 import {
-  open,
   copyFile,
   writeFile,
   unlink,
@@ -141,12 +140,12 @@ const createSplashWindow = async () => {
     splashscreenWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  await splashscreenWindow.loadFile(splashscreenFile)
-
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
   splashscreenWindow.once('ready-to-show', () => {
     splashscreenWindow.show()
   })
+
+  await splashscreenWindow.loadFile(splashscreenFile)
 
   return splashscreenWindow
 }
@@ -327,31 +326,18 @@ ipcMain.on('browser:stop', async () => {
 ipcMain.handle('script:select', async (event) => {
   console.info('script:select event received')
   const browserWindow = browserWindowFromEvent(event)
-
   const scriptPath = await showScriptSelectDialog(browserWindow)
-  console.info(`selected script: ${scriptPath}`)
 
-  if (!scriptPath) return
-
-  const fileHandle = await open(scriptPath, 'r')
-  try {
-    const script = await fileHandle?.readFile({ encoding: 'utf-8' })
-
-    return { path: scriptPath, content: script }
-  } finally {
-    await fileHandle?.close()
-  }
+  return scriptPath
 })
 
 ipcMain.handle('script:open', async (_, fileName: string) => {
-  const fileHandle = await open(path.join(SCRIPTS_PATH, fileName), 'r')
-  try {
-    const script = await fileHandle?.readFile({ encoding: 'utf-8' })
+  const script = await readFile(path.join(SCRIPTS_PATH, fileName), {
+    encoding: 'utf-8',
+    flag: 'r',
+  })
 
-    return { name: fileName, content: script }
-  } finally {
-    await fileHandle?.close()
-  }
+  return script
 })
 
 ipcMain.handle(
@@ -442,12 +428,12 @@ ipcMain.handle(
 ipcMain.handle(
   'har:open',
   async (_, fileName: string): Promise<HarWithOptionalResponse> => {
+    console.info('har:open event received')
     const data = await readFile(path.join(RECORDINGS_PATH, fileName), {
       encoding: 'utf-8',
       flag: 'r',
     })
-    // TODO: https://github.com/grafana/k6-studio/issues/277
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     return JSON.parse(data)
   }
 )
@@ -508,9 +494,7 @@ ipcMain.handle(
       flag: 'r',
     })
 
-    const generator = GeneratorFileDataSchema.parse(JSON.parse(data))
-
-    return generator
+    return GeneratorFileDataSchema.parse(JSON.parse(data))
   }
 )
 

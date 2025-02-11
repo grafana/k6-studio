@@ -29,12 +29,16 @@ export function Validator() {
   const { proxyData, resetProxyData } = useListenProxyData()
 
   const handleSelectExternalScript = useCallback(async () => {
-    const { path = '', content = '' } =
-      (await window.studio.script.showScriptSelectDialog()) || {}
+    const externalScriptPath =
+      await window.studio.script.showScriptSelectDialog()
+
+    if (!externalScriptPath) {
+      return
+    }
+
     navigate(getRoutePath('validator', {}), {
-      state: { externalScriptPath: path },
+      state: { externalScriptPath },
     })
-    setScript(content)
   }, [navigate])
 
   useEffect(() => {
@@ -44,10 +48,9 @@ export function Validator() {
 
     ;(async () => {
       setIsLoading(true)
-      const { content = '' } =
-        (await window.studio.script.openScript(scriptPath)) || {}
+      const fileContent = await window.studio.script.openScript(scriptPath)
       setIsLoading(false)
-      setScript(content)
+      setScript(fileContent)
     })()
   }, [scriptPath, isExternal])
 

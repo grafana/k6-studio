@@ -120,6 +120,7 @@ describe('Code generation', () => {
             value: 1,
           },
         },
+        thresholds: [],
       },
       testData: {
         variables: [],
@@ -129,7 +130,6 @@ describe('Code generation', () => {
       allowlist: [],
       includeStaticAssets: false,
       scriptName: 'my-script.js',
-      thresholds: [],
     }
 
     it('should generate imports', async () => {
