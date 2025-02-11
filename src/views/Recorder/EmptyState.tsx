@@ -64,7 +64,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
         >
           <TextField.Root
             {...register('url')}
-            placeholder="e.g. test.k6.io"
+            placeholder="e.g. quickpizza.grafana.com"
             autoFocus
             css={css`
               flex-grow: 1;
