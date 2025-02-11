@@ -9,8 +9,11 @@ import { PopoverDialog } from '@/components/PopoverDialogs'
 import { Thresholds } from './Thresholds'
 import { DataFiles } from './DataFiles'
 import { Feature } from '@/components/Feature'
+import { useState } from 'react'
 
 export function TestOptions() {
+  const [selectedTab, setSelectedTab] = useState('loadProfile')
+
   return (
     <PopoverDialog
       align="center"
@@ -23,7 +26,7 @@ export function TestOptions() {
       }
     >
       <Inset>
-        <Tabs.Root defaultValue="loadProfile">
+        <Tabs.Root value={selectedTab} onValueChange={setSelectedTab}>
           <Tabs.List
             css={css`
               margin-bottom: var(--space-3);
