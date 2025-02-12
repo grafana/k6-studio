@@ -25,7 +25,7 @@ export function FileList({ files, noFilesMessage }: FileListProps) {
       `}
     >
       {files.map((file) => (
-        <li key={file.fileName}>
+        <li key={file.displayName}>
           <File file={file} isSelected={file.fileName === currentFile} />
         </li>
       ))}
