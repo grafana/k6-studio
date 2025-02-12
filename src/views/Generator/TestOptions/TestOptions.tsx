@@ -10,11 +10,13 @@ import { Thresholds } from './Thresholds'
 import { DataFiles } from './DataFiles'
 import { useFeaturesStore } from '@/store/features'
 import { Feature } from '@/components/Feature'
+import { useState } from 'react'
 
 export function TestOptions() {
   const { thresholds: isThresholdsEnabled } = useFeaturesStore(
     (store) => store.features
   )
+  const [selectedTab, setSelectedTab] = useState('loadProfile')
 
   return (
     <PopoverDialog
@@ -28,7 +30,7 @@ export function TestOptions() {
       }
     >
       <Inset>
-        <Tabs.Root defaultValue="loadProfile">
+        <Tabs.Root value={selectedTab} onValueChange={setSelectedTab}>
           <Tabs.List
             css={css`
               margin-bottom: var(--space-3);

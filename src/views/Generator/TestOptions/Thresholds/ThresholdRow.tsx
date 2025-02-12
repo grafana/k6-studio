@@ -1,5 +1,4 @@
 import { FieldGroup, ControlledSelect } from '@/components/Form'
-import { Threshold, ThresholdData } from '@/types/thresholds'
 import { TrashIcon } from '@radix-ui/react-icons'
 import { Table, TextField, Checkbox, IconButton, Flex } from '@radix-ui/themes'
 import {
@@ -18,6 +17,7 @@ import { useThresholdURLOptions } from './Thresholds.hooks'
 import { css } from '@emotion/react'
 import { useTheme } from '@/hooks/useTheme'
 import { useEffect } from 'react'
+import { ThresholdData, Threshold } from '@/types/testOptions'
 
 type ThresholdRowProps = {
   index: number
@@ -68,6 +68,10 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             options={urlOptions}
             control={control}
             name={`thresholds.${index}.url`}
+            tooltipProps={{
+              content:
+                threshold.url === '*' ? 'Across all URLs' : threshold.url,
+            }}
             contentProps={{
               css: css`
                 .rt-SelectLabel {

@@ -20,6 +20,7 @@ export function createGeneratorData(
           value: 1,
         },
       },
+      thresholds: [],
     },
     recordingPath: '',
     rules: [],
@@ -29,7 +30,6 @@ export function createGeneratorData(
       files: [],
     },
     version: '1.0',
-    thresholds: [],
     ...data,
   }
 }

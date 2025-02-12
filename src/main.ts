@@ -7,12 +7,10 @@ import {
   shell,
 } from 'electron'
 import {
-  open,
   copyFile,
   writeFile,
   unlink,
   readdir,
-  FileHandle,
   rename,
   access,
   readFile,
@@ -47,9 +45,8 @@ import {
   INVALID_FILENAME_CHARS,
   TEMP_GENERATOR_SCRIPT_FILENAME,
 } from './constants/files'
-import { generateFileNameWithTimestamp } from './utils/file'
-import { HarFile } from './types/har'
-import { GeneratorFile } from './types/generator'
+import { HarWithOptionalResponse } from './types/har'
+import { GeneratorFileData } from './types/generator'
 import kill from 'tree-kill'
 import find from 'find-process'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
@@ -67,9 +64,11 @@ import {
 import { ProxyStatus, StudioFile } from './types'
 import { configureApplicationMenu } from './menu'
 import * as Sentry from '@sentry/electron/main'
-import { exhaustive } from './utils/typescript'
+import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
 import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
+import { createNewGeneratorFile } from './utils/generator'
+import { GeneratorFileDataSchema } from './schemas/generator'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -141,12 +140,12 @@ const createSplashWindow = async () => {
     splashscreenWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  await splashscreenWindow.loadFile(splashscreenFile)
-
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
   splashscreenWindow.once('ready-to-show', () => {
     splashscreenWindow.show()
   })
+
+  await splashscreenWindow.loadFile(splashscreenFile)
 
   return splashscreenWindow
 }
@@ -327,31 +326,18 @@ ipcMain.on('browser:stop', async () => {
 ipcMain.handle('script:select', async (event) => {
   console.info('script:select event received')
   const browserWindow = browserWindowFromEvent(event)
-
   const scriptPath = await showScriptSelectDialog(browserWindow)
-  console.info(`selected script: ${scriptPath}`)
 
-  if (!scriptPath) return
-
-  const fileHandle = await open(scriptPath, 'r')
-  try {
-    const script = await fileHandle?.readFile({ encoding: 'utf-8' })
-
-    return { path: scriptPath, content: script }
-  } finally {
-    await fileHandle?.close()
-  }
+  return scriptPath
 })
 
 ipcMain.handle('script:open', async (_, fileName: string) => {
-  const fileHandle = await open(path.join(SCRIPTS_PATH, fileName), 'r')
-  try {
-    const script = await fileHandle?.readFile({ encoding: 'utf-8' })
+  const script = await readFile(path.join(SCRIPTS_PATH, fileName), {
+    encoding: 'utf-8',
+    flag: 'r',
+  })
 
-    return { name: fileName, content: script }
-  } finally {
-    await fileHandle?.close()
-  }
+  return script
 })
 
 ipcMain.handle(
@@ -425,29 +411,32 @@ ipcMain.handle(
 )
 
 // HAR
-ipcMain.handle('har:save', async (_, data: string, prefix?: string) => {
-  const fileName = generateFileNameWithTimestamp('har', prefix)
-  await writeFile(path.join(RECORDINGS_PATH, fileName), data)
-  return fileName
-})
+ipcMain.handle(
+  'har:save',
+  async (_, data: HarWithOptionalResponse, prefix: string) => {
+    const fileName = await createFileWithUniqueName({
+      data: JSON.stringify(data, null, 2),
+      directory: RECORDINGS_PATH,
+      ext: '.har',
+      prefix,
+    })
 
-ipcMain.handle('har:open', async (_, fileName: string): Promise<HarFile> => {
-  console.info('har:open event received')
-  let fileHandle: FileHandle | undefined
-  try {
-    fileHandle = await open(path.join(RECORDINGS_PATH, fileName), 'r')
-    const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-    // TODO: https://github.com/grafana/k6-studio/issues/277
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const har = await JSON.parse(data)
-
-    // TODO: https://github.com/grafana/k6-studio/issues/277
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    return { name: fileName, content: har }
-  } finally {
-    await fileHandle?.close()
+    return fileName
   }
-})
+)
+
+ipcMain.handle(
+  'har:open',
+  async (_, fileName: string): Promise<HarWithOptionalResponse> => {
+    console.info('har:open event received')
+    const data = await readFile(path.join(RECORDINGS_PATH, fileName), {
+      encoding: 'utf-8',
+      flag: 'r',
+    })
+
+    return JSON.parse(data)
+  }
+)
 
 ipcMain.handle('har:import', async (event) => {
   console.info('har:import event received')
@@ -473,39 +462,39 @@ ipcMain.handle('har:import', async (event) => {
 })
 
 // Generator
+ipcMain.handle('generator:create', async (_, recordingPath: string) => {
+  const generator = createNewGeneratorFile(recordingPath)
+  const fileName = await createFileWithUniqueName({
+    data: JSON.stringify(generator, null, 2),
+    directory: GENERATORS_PATH,
+    ext: '.json',
+    prefix: 'Generator',
+  })
+
+  return fileName
+})
+
 ipcMain.handle(
   'generator:save',
-  async (_, generatorFile: string, fileName: string) => {
-    console.info('generator:save event received')
-
+  async (_, generator: GeneratorFileData, fileName: string) => {
     invariant(!INVALID_FILENAME_CHARS.test(fileName), 'Invalid file name')
 
-    await writeFile(path.join(GENERATORS_PATH, fileName), generatorFile)
-    return fileName
+    await writeFile(
+      path.join(GENERATORS_PATH, fileName),
+      JSON.stringify(generator, null, 2)
+    )
   }
 )
 
 ipcMain.handle(
   'generator:open',
-  async (_, fileName: string): Promise<GeneratorFile> => {
-    console.info('generator:open event received')
+  async (_, fileName: string): Promise<GeneratorFileData> => {
+    const data = await readFile(path.join(GENERATORS_PATH, fileName), {
+      encoding: 'utf-8',
+      flag: 'r',
+    })
 
-    let fileHandle: FileHandle | undefined
-
-    try {
-      fileHandle = await open(path.join(GENERATORS_PATH, fileName), 'r')
-
-      const data = await fileHandle?.readFile({ encoding: 'utf-8' })
-      // TODO: https://github.com/grafana/k6-studio/issues/277
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const generator = await JSON.parse(data)
-
-      // TODO: https://github.com/grafana/k6-studio/issues/277
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      return { name: fileName, content: generator }
-    } finally {
-      await fileHandle?.close()
-    }
+    return GeneratorFileDataSchema.parse(JSON.parse(data))
   }
 )
 
@@ -587,10 +576,7 @@ ipcMain.handle(
         await access(newPath)
         throw new Error(`File with name ${newFileName} already exists`)
       } catch (error) {
-        if (
-          error instanceof Error &&
-          (error as NodeJS.ErrnoException).code !== 'ENOENT'
-        ) {
+        if (isNodeJsErrnoException(error) && error.code !== 'ENOENT') {
           throw error
         }
       }
@@ -959,4 +945,44 @@ const cleanUpProxies = async () => {
   processList.forEach((proc) => {
     kill(proc.pid)
   })
+}
+
+const createFileWithUniqueName = async ({
+  directory,
+  data,
+  prefix,
+  ext,
+}: {
+  directory: string
+  data: string
+  prefix: string
+  ext: string
+}): Promise<string> => {
+  const timestamp = new Date().toISOString().split('T')[0] ?? ''
+  const template = `${prefix ? `${prefix} - ` : ''}${timestamp}${ext}`
+
+  // Start from 2 as it follows the the OS behavior for duplicate files
+  let fileVersion = 2
+  let uniqueFileName = template
+  let fileCreated = false
+
+  do {
+    try {
+      // ax+ flag will throw an error if the file already exists
+      await writeFile(path.join(directory, uniqueFileName), data, {
+        flag: 'ax+',
+      })
+      fileCreated = true
+    } catch (error) {
+      if (isNodeJsErrnoException(error) && error.code !== 'EEXIST') {
+        throw error
+      }
+
+      const { name, ext } = path.parse(template)
+      uniqueFileName = `${name} (${fileVersion})${ext}`
+      fileVersion++
+    }
+  } while (!fileCreated)
+
+  return uniqueFileName
 }

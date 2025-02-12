@@ -32,6 +32,6 @@ describe('Generator migration', () => {
 
     const migration = migrate(v0Generator)
     expect(migration.version).toBe('1.0')
-    expect(migration.thresholds).toEqual([])
+    expect(migration.options.thresholds).toEqual([])
   })
 })

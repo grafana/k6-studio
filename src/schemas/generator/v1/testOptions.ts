@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ThresholdSchema } from './thresholds'
 
 export const SleepTypeSchema = z.enum(['groups', 'requests', 'iterations'])
 
@@ -66,4 +67,5 @@ export const LoadProfileExecutorOptionsSchema = z.discriminatedUnion(
 export const TestOptionsSchema = z.object({
   loadProfile: LoadProfileExecutorOptionsSchema,
   thinkTime: ThinkTimeSchema,
+  thresholds: z.array(ThresholdSchema).default([]),
 })

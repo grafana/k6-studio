@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
 import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
-import { HarFile } from './types/har'
-import { GeneratorFile } from './types/generator'
+import { HarWithOptionalResponse } from './types/har'
+import { GeneratorFileData } from './types/generator'
 import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 import { BrowserEvent } from './schemas/recording'
@@ -67,18 +67,10 @@ const browser = {
 } as const
 
 const script = {
-  showScriptSelectDialog: (): Promise<{
-    path: string
-    content: string
-  } | void> => {
+  showScriptSelectDialog: (): Promise<string | void> => {
     return ipcRenderer.invoke('script:select')
   },
-  openScript: (
-    filePath: string
-  ): Promise<{
-    path: string
-    content: string
-  }> => {
+  openScript: (filePath: string): Promise<string> => {
     return ipcRenderer.invoke('script:open', filePath)
   },
   runScriptFromGenerator: (script: string): Promise<void> => {
@@ -111,10 +103,13 @@ const script = {
 } as const
 
 const har = {
-  saveFile: (data: string, prefix?: string): Promise<string> => {
+  saveFile: (
+    data: HarWithOptionalResponse,
+    prefix: string
+  ): Promise<string> => {
     return ipcRenderer.invoke('har:save', data, prefix)
   },
-  openFile: (filePath: string): Promise<HarFile> => {
+  openFile: (filePath: string): Promise<HarWithOptionalResponse> => {
     return ipcRenderer.invoke('har:open', filePath)
   },
   importFile: (): Promise<string | undefined> => {
@@ -164,10 +159,16 @@ const ui = {
 } as const
 
 const generator = {
-  saveGenerator: (generatorFile: string, fileName: string): Promise<string> => {
-    return ipcRenderer.invoke('generator:save', generatorFile, fileName)
+  createGenerator: (recordingPath: string): Promise<string> => {
+    return ipcRenderer.invoke('generator:create', recordingPath)
   },
-  loadGenerator: (fileName: string): Promise<GeneratorFile> => {
+  saveGenerator: (
+    generator: GeneratorFileData,
+    fileName: string
+  ): Promise<void> => {
+    return ipcRenderer.invoke('generator:save', generator, fileName)
+  },
+  loadGenerator: (fileName: string): Promise<GeneratorFileData> => {
     return ipcRenderer.invoke('generator:open', fileName)
   },
 } as const

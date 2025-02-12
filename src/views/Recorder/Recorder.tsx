@@ -107,11 +107,8 @@ export function Recorder() {
       })
 
       const har = proxyDataToHar(grouped, browserEvents)
-      const prefix = startUrl && getHostNameFromURL(startUrl)
-      const fileName = await window.studio.har.saveFile(
-        JSON.stringify(har, null, 4),
-        prefix
-      )
+      const prefix = getHostNameFromURL(startUrl) ?? 'Recording'
+      const fileName = await window.studio.har.saveFile(har, prefix)
 
       return fileName
     } finally {

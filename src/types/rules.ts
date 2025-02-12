@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { Request, ProxyData, RequestSnippetSchema } from '@/types'
 import {
-  ArrayValueSchema,
   BeginEndSelectorSchema,
   CorrelationExtractorSchema,
   CorrelationReplacerSchema,
@@ -72,7 +71,6 @@ export type RuleInstance =
   | CustomCodeRuleInstance
 
 export type VariableValue = z.infer<typeof VariableValueSchema>
-export type ArrayValue = z.infer<typeof ArrayValueSchema>
 export type CustomCodeValue = z.infer<typeof CustomCodeValueSchema>
 export type RecordedValue = z.infer<typeof RecordedValueSchema>
 export type Filter = z.infer<typeof FilterSchema>
