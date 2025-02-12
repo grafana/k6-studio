@@ -27,19 +27,6 @@ function isHistoryNavigation({
   )
 }
 
-function isInteractionNavigation({
-  transitionType,
-  transitionQualifiers,
-}: WebNavigation.OnCommittedDetailsType) {
-  if (transitionType === 'form_submit') {
-    return true
-  }
-
-  return (
-    transitionType === 'link' && !transitionQualifiers.includes('forward_back')
-  )
-}
-
 function getNavigationSource(details: WebNavigation.OnCommittedDetailsType) {
   if (isHistoryNavigation(details)) {
     return 'history'
@@ -47,10 +34,6 @@ function getNavigationSource(details: WebNavigation.OnCommittedDetailsType) {
 
   if (isAddressBarNavigation(details)) {
     return 'address-bar'
-  }
-
-  if (isInteractionNavigation(details)) {
-    return 'interaction'
   }
 
   return null
@@ -105,14 +88,5 @@ export function captureNavigationEvents(
 
       return
     }
-
-    onCaptured({
-      type: 'page-navigation',
-      eventId: crypto.randomUUID(),
-      timestamp: details.timeStamp,
-      tab: details.tabId.toString(),
-      url: details.url ?? '',
-      source: 'script',
-    })
   })
 }

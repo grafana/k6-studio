@@ -9,12 +9,7 @@ const PageNavigationEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('page-navigation'),
   tab: z.string(),
   url: z.string(),
-  source: z.union([
-    z.literal('interaction'),
-    z.literal('address-bar'),
-    z.literal('history'),
-    z.literal('script'),
-  ]),
+  source: z.union([z.literal('address-bar'), z.literal('history')]),
 })
 
 const PageReloadEventSchema = BrowserEventBaseSchema.extend({
