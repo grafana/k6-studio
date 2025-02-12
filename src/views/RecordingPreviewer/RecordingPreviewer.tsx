@@ -149,17 +149,6 @@ export function RecordingPreviewer() {
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              {settings?.recorder.enableBrowserRecorder && (
-                <>
-                  <DropdownMenu.Item
-                    disabled={browserEvents.length === 0}
-                    onClick={handleExportBrowserScript}
-                  >
-                    Export browser script
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Separator />
-                </>
-              )}
               <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
                 Delete
               </DropdownMenu.Item>
@@ -173,6 +162,7 @@ export function RecordingPreviewer() {
           groups={groups}
           requests={proxyData}
           browserEvents={browserEvents}
+          onExportBrowserScript={handleExportBrowserScript}
         />
       )}
 

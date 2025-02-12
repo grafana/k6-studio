@@ -15,7 +15,7 @@ import {
   TargetIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
-import { Flex, Table, Tooltip, Kbd } from '@radix-ui/themes'
+import { Flex, Table, Tooltip, Kbd, Button } from '@radix-ui/themes'
 import { Fragment } from 'react'
 
 function formatOptions(options: string[]) {
@@ -223,14 +223,29 @@ function EventDescription({ event }: EventDescriptionProps) {
 
 interface BrowserEventLogProps {
   events: BrowserEvent[]
+  onExportScript?: () => void
 }
 
-export function BrowserEventLog({ events }: BrowserEventLogProps) {
+export function BrowserEventLog({
+  events,
+  onExportScript,
+}: BrowserEventLogProps) {
   return (
     <Flex direction="column" minHeight="0" height="100%">
+      {onExportScript && (
+        <Flex justify="end" align="center" p="1" pr="2">
+          <Flex gap="2" align="center">
+            <Button size="2" variant="outline" onClick={onExportScript}>
+              Export script
+            </Button>
+          </Flex>
+        </Flex>
+      )}
+
       <Table.Root
         layout="fixed"
         css={css`
+          border-top: 1px solid var(--gray-6);
           height: 100%;
         `}
       >
