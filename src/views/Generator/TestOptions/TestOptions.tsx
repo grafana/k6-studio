@@ -17,7 +17,7 @@ export function TestOptions() {
   return (
     <PopoverDialog
       align="center"
-      width="800px"
+      width="780px"
       trigger={
         <Button variant="ghost" size="1" color="gray">
           <GearIcon />
