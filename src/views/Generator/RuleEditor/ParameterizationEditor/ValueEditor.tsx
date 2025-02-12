@@ -63,9 +63,6 @@ function ValueTypeSwitch() {
     case 'customCode':
       return <CustomCode />
 
-    case 'array':
-      return null
-
     default:
       return exhaustive(type)
   }

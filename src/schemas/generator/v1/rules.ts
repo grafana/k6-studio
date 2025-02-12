@@ -5,11 +5,6 @@ export const VariableValueSchema = z.object({
   variableName: z.string(),
 })
 
-export const ArrayValueSchema = z.object({
-  type: z.literal('array'),
-  arrayName: z.string(),
-})
-
 export const CustomCodeValueSchema = z.object({
   type: z.literal('customCode'),
   code: z.string(),
@@ -121,7 +116,6 @@ export const ParameterizationRuleSchema = RuleBaseSchema.extend({
   selector: ReplacerSelectorSchema,
   value: z.discriminatedUnion('type', [
     VariableValueSchema,
-    ArrayValueSchema,
     CustomCodeValueSchema,
     StringValueSchema,
   ]),
@@ -139,7 +133,6 @@ export const VerificationRuleSchema = RuleBaseSchema.extend({
   selector: VerificationRuleSelectorSchema.optional(),
   value: z.discriminatedUnion('type', [
     VariableValueSchema,
-    ArrayValueSchema,
     CustomCodeValueSchema,
     RecordedValueSchema,
   ]),

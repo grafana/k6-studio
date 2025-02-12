@@ -116,7 +116,6 @@ function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
           {rule.value.variableName}
         </Strong>
       )
-    case 'array':
     case 'customCode':
       return null
     default:

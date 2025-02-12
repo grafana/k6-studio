@@ -91,9 +91,6 @@ function getRuleValue(rule: ParameterizationRule, id: number) {
     case 'customCode':
       return `\${getParameterizationValue${id}()}`
 
-    case 'array':
-      throw new Error('Not implemented')
-
     default:
       return exhaustive(value)
   }
