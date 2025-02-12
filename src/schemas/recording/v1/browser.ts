@@ -6,20 +6,20 @@ const BrowserEventBaseSchema = z.object({
 })
 
 const PageNavigationEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('page-navigation'),
+  type: z.literal('navigated-to-page'),
   tab: z.string(),
   url: z.string(),
   source: z.union([z.literal('address-bar'), z.literal('history')]),
 })
 
 const PageReloadEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('page-reload'),
+  type: z.literal('reloaded-page'),
   tab: z.string(),
   url: z.string(),
 })
 
 const ClickEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('click'),
+  type: z.literal('clicked'),
   tab: z.string(),
   selector: z.string(),
   button: z.union([z.literal('left'), z.literal('middle'), z.literal('right')]),
@@ -32,21 +32,21 @@ const ClickEventSchema = BrowserEventBaseSchema.extend({
 })
 
 const InputChangeEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('input-change'),
+  type: z.literal('input-changed'),
   tab: z.string(),
   selector: z.string(),
   value: z.string(),
 })
 
 const CheckEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('check'),
+  type: z.literal('check-changed'),
   tab: z.string(),
   selector: z.string(),
   checked: z.boolean(),
 })
 
 const SwitchEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('switch'),
+  type: z.literal('radio-changed'),
   tab: z.string(),
   selector: z.string(),
   name: z.string(),
@@ -54,7 +54,7 @@ const SwitchEventSchema = BrowserEventBaseSchema.extend({
 })
 
 const SelectEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('select'),
+  type: z.literal('select-changed'),
   tab: z.string(),
   selector: z.string(),
   selected: z.array(z.string()),

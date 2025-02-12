@@ -67,7 +67,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
 
   function toNode(event: BrowserEvent): TestNode | null {
     switch (event.type) {
-      case 'page-navigation':
+      case 'navigated-to-page':
         return {
           type: 'goto',
           nodeId: event.eventId,
@@ -78,7 +78,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'page-reload':
+      case 'reloaded-page':
         return {
           type: 'reload',
           nodeId: event.eventId,
@@ -88,7 +88,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'click': {
+      case 'clicked': {
         return {
           type: 'click',
           nodeId: event.eventId,
@@ -101,7 +101,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
       }
 
-      case 'input-change':
+      case 'input-changed':
         return {
           type: 'type-text',
           nodeId: event.eventId,
@@ -112,7 +112,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'check':
+      case 'check-changed':
         return {
           type: 'check',
           nodeId: event.eventId,
@@ -123,7 +123,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'switch':
+      case 'radio-changed':
         return {
           type: 'check',
           nodeId: event.eventId,
@@ -134,7 +134,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'select':
+      case 'select-changed':
         return {
           type: 'select-options',
           nodeId: event.eventId,

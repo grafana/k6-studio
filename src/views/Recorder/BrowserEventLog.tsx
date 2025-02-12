@@ -81,25 +81,25 @@ interface EventIconProps {
 
 function EventIcon({ event }: EventIconProps) {
   switch (event.type) {
-    case 'page-navigation':
+    case 'navigated-to-page':
       return <GlobeIcon />
 
-    case 'page-reload':
+    case 'reloaded-page':
       return <UpdateIcon />
 
-    case 'click':
+    case 'clicked':
       return <TargetIcon />
 
-    case 'input-change':
+    case 'input-changed':
       return <InputIcon />
 
-    case 'check':
+    case 'check-changed':
       return event.checked ? <CheckCircledIcon /> : <CircleIcon />
 
-    case 'switch':
+    case 'radio-changed':
       return <RadiobuttonIcon />
 
-    case 'select':
+    case 'select-changed':
       return <DropdownMenuIcon />
 
     default:
@@ -170,16 +170,16 @@ interface EventDescriptionProps {
 
 function EventDescription({ event }: EventDescriptionProps) {
   switch (event.type) {
-    case 'page-navigation':
+    case 'navigated-to-page':
       return <PageNavigationDescription event={event} />
 
-    case 'page-reload':
+    case 'reloaded-page':
       return <>Reloaded page.</>
 
-    case 'click':
+    case 'clicked':
       return <ClickDescription event={event} />
 
-    case 'input-change':
+    case 'input-changed':
       return (
         <>
           Changed input of <Selector>{event.selector}</Selector> to{' '}
@@ -187,7 +187,7 @@ function EventDescription({ event }: EventDescriptionProps) {
         </>
       )
 
-    case 'check':
+    case 'check-changed':
       return (
         <>
           {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
@@ -195,7 +195,7 @@ function EventDescription({ event }: EventDescriptionProps) {
         </>
       )
 
-    case 'switch':
+    case 'radio-changed':
       return (
         <>
           Switched value of <strong>{event.name}</strong> to{' '}
@@ -203,7 +203,7 @@ function EventDescription({ event }: EventDescriptionProps) {
         </>
       )
 
-    case 'select':
+    case 'select-changed':
       return (
         <>
           Selected {formatOptions(event.selected)} from{' '}
