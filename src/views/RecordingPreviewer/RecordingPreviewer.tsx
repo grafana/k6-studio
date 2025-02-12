@@ -19,17 +19,6 @@ import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 
-function generateFileNameWithTimestamp(extension: string, prefix?: string) {
-  const timestamp =
-    new Date()
-      .toISOString()
-      .replace(/:/g, '-')
-      .replace(/T/g, '_')
-      .split('.')[0] ?? ''
-
-  return `${prefix ? `${prefix} - ` : ''}${timestamp}.${extension}`
-}
-
 export function RecordingPreviewer() {
   const { data: settings } = useSettings()
 
