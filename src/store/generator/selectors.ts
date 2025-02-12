@@ -42,6 +42,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
   const {
     sleepType,
     timing,
+    thresholds,
     variables,
     files,
     recordingPath,
@@ -49,7 +50,6 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
     allowlist,
     includeStaticAssets,
     scriptName,
-    thresholds,
   } = state
 
   return {
@@ -61,13 +61,13 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
         sleepType,
         timing,
       },
+      thresholds,
     },
     testData: { variables, files },
     rules,
     allowlist,
     includeStaticAssets,
     scriptName,
-    thresholds,
   }
 }
 

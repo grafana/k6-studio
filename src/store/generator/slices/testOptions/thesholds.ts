@@ -1,4 +1,4 @@
-import { Threshold } from '@/types/thresholds'
+import { Threshold } from '@/types/testOptions'
 import { ImmerStateCreator } from '@/utils/typescript'
 
 interface State {
@@ -9,9 +9,9 @@ interface Actions {
   setThresholds: (thresholds: Threshold[]) => void
 }
 
-export type ThresholdSliceStore = State & Actions
+export type ThresholdStore = State & Actions
 
-export const createThresholdSlice: ImmerStateCreator<ThresholdSliceStore> = (
+export const createThresholdSlice: ImmerStateCreator<ThresholdStore> = (
   set
 ) => ({
   thresholds: [],
