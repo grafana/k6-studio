@@ -14,7 +14,7 @@ interface RecordingInspectorProps {
   onUpdateGroup?: (group: Group) => void
   onCreateGroup?: (name: string) => void
   onResetRecording?: () => void
-  onExportBrowserScript?: () => void
+  onExportBrowserScript?: (fileName: string) => void
 }
 
 const styles = {

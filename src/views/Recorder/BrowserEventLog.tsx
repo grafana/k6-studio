@@ -16,7 +16,8 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons'
 import { Flex, Table, Tooltip, Kbd, Button } from '@radix-ui/themes'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
+import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
 
 function formatOptions(options: string[]) {
   if (options.length === 1) {
@@ -223,19 +224,29 @@ function EventDescription({ event }: EventDescriptionProps) {
 
 interface BrowserEventLogProps {
   events: BrowserEvent[]
-  onExportScript?: () => void
+  onExportScript?: (fileName: string) => void
 }
 
 export function BrowserEventLog({
   events,
   onExportScript,
 }: BrowserEventLogProps) {
+  const [showExportDialog, setShowExportDialog] = useState(false)
+
+  function handleExportScriptClick() {
+    setShowExportDialog(true)
+  }
+
   return (
     <Flex direction="column" minHeight="0" height="100%">
       {onExportScript && (
         <Flex justify="end" align="center" p="1" pr="2">
           <Flex gap="2" align="center">
-            <Button size="2" variant="outline" onClick={onExportScript}>
+            <Button
+              size="2"
+              variant="outline"
+              onClick={handleExportScriptClick}
+            >
               Export script
             </Button>
           </Flex>
@@ -273,6 +284,14 @@ export function BrowserEventLog({
           })}
         </Table.Body>
       </Table.Root>
+      {onExportScript && (
+        <ExportScriptDialog
+          open={showExportDialog}
+          initialScriptName="my-browser-script.js"
+          onOpenChange={setShowExportDialog}
+          onExport={onExportScript}
+        />
+      )}
     </Flex>
   )
 }

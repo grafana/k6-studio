@@ -94,12 +94,10 @@ export function RecordingPreviewer() {
     navigate(getRoutePath('recorder'))
   }
 
-  const handleExportBrowserScript = () => {
+  const handleExportBrowserScript = (fileName: string) => {
     const test = convertToTest({
       browserEvents,
     })
-
-    const fileName = generateFileNameWithTimestamp('js', 'BrowserTest')
 
     emitScript(test)
       .then((script) => window.studio.script.saveScript(script, fileName))

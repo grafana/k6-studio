@@ -11,71 +11,60 @@ import { ScriptNameForm } from './ScriptNameForm'
 import { useLocalStorage } from 'react-use'
 import { useGeneratorStore } from '@/store/generator'
 import { useEffect } from 'react'
-import {
-  useGeneratorParams,
-  useUpdateValueInGeneratorFile,
-} from '../Generator.hooks'
-import { useToast } from '@/store/ui/useToast'
 import { getScriptNameWithExtension } from './ExportScriptDialog.utils'
-import log from 'electron-log/renderer'
 import { useStudioUIStore } from '@/store/ui'
+
+interface ExportScriptDialogProps {
+  open: boolean
+  initialScriptName?: string
+  onExport: (scriptName: string) => void
+  onOpenChange: (open: boolean) => void
+}
 
 export function ExportScriptDialog({
   open,
+  initialScriptName,
   onExport,
   onOpenChange,
-}: {
-  open: boolean
-  onExport: (scriptName: string) => void
-  onOpenChange: (open: boolean) => void
-}) {
+}: ExportScriptDialogProps) {
   const scriptName = useGeneratorStore((store) => store.scriptName)
   const setScriptName = useGeneratorStore((store) => store.setScriptName)
   const scripts = useStudioUIStore((store) => store.scripts)
-  const showToast = useToast()
 
   const formMethods = useForm<ExportScriptDialogData>({
     resolver: zodResolver(ExportScriptDialogSchema),
     defaultValues: {
-      scriptName,
+      scriptName: initialScriptName ?? scriptName,
     },
   })
+
   const [alwaysOverwriteScript, setAlwaysOverwriteScript] = useLocalStorage(
     'alwaysOverwriteScript',
     false
   )
   const { setValue } = formMethods
-  const { fileName } = useGeneratorParams()
-  const { mutateAsync: updateGeneratorFile } =
-    useUpdateValueInGeneratorFile(fileName)
 
   useEffect(() => {
-    if (!open) return
-    setValue('scriptName', scriptName)
-    setValue('overwriteFile', false)
-  }, [open, scriptName, setValue])
-
-  const onSubmit = async (data: ExportScriptDialogData) => {
-    try {
-      const { scriptName: userInput, overwriteFile } = data
-      const fileName = getScriptNameWithExtension(userInput)
-      const fileExists = Array.from(scripts.keys()).includes(fileName)
-      if (fileExists && !overwriteFile && !alwaysOverwriteScript) {
-        setValue('overwriteFile', true)
-        return
-      }
-
-      await updateGeneratorFile({ key: 'scriptName', value: fileName })
-      setScriptName(fileName)
-      onExport(fileName)
-      onOpenChange(false)
-    } catch (error) {
-      showToast({
-        status: 'error',
-        title: 'Failed to update script name',
-      })
-      log.error(error)
+    if (!open) {
+      return
     }
+
+    setValue('scriptName', initialScriptName ?? scriptName)
+    setValue('overwriteFile', false)
+  }, [open, initialScriptName, scriptName, setValue])
+
+  const onSubmit = (data: ExportScriptDialogData) => {
+    const { scriptName: userInput, overwriteFile } = data
+    const fileName = getScriptNameWithExtension(userInput)
+    const fileExists = Array.from(scripts.keys()).includes(fileName)
+    if (fileExists && !overwriteFile && !alwaysOverwriteScript) {
+      setValue('overwriteFile', true)
+      return
+    }
+
+    setScriptName(fileName)
+    onExport(fileName)
+    onOpenChange(false)
   }
 
   function handleOpenChange(open: boolean) {
