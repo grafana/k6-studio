@@ -70,14 +70,14 @@ export function RequestLog({
           )}
         </Flex>
       </Allotment.Pane>
-      <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-        {selectedRequest !== null && (
+      {selectedRequest && (
+        <Allotment.Pane minSize={300}>
           <Details
             selectedRequest={selectedRequest}
             onSelectRequest={setSelectedRequest}
           />
-        )}
-      </Allotment.Pane>
+        </Allotment.Pane>
+      )}
     </Allotment>
   )
 }

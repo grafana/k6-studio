@@ -27,19 +27,6 @@ function isHistoryNavigation({
   )
 }
 
-function isInteractionNavigation({
-  transitionType,
-  transitionQualifiers,
-}: WebNavigation.OnCommittedDetailsType) {
-  if (transitionType === 'form_submit') {
-    return true
-  }
-
-  return (
-    transitionType === 'link' && !transitionQualifiers.includes('forward_back')
-  )
-}
-
 function getNavigationSource(details: WebNavigation.OnCommittedDetailsType) {
   if (isHistoryNavigation(details)) {
     return 'history'
@@ -47,10 +34,6 @@ function getNavigationSource(details: WebNavigation.OnCommittedDetailsType) {
 
   if (isAddressBarNavigation(details)) {
     return 'address-bar'
-  }
-
-  if (isInteractionNavigation(details)) {
-    return 'interaction'
   }
 
   return null
@@ -64,7 +47,7 @@ export function captureNavigationEvents(
 
     if (isReload(details)) {
       onCaptured({
-        type: 'page-reload',
+        type: 'reloaded-page',
         eventId: crypto.randomUUID(),
         timestamp: details.timeStamp,
         tab: details.tabId.toString(),
@@ -81,7 +64,7 @@ export function captureNavigationEvents(
     }
 
     onCaptured({
-      type: 'page-navigation',
+      type: 'navigated-to-page',
       eventId: crypto.randomUUID(),
       timestamp: details.timeStamp,
       tab: details.tabId.toString(),
@@ -95,7 +78,7 @@ export function captureNavigationEvents(
 
     if (isHistoryNavigation(details)) {
       onCaptured({
-        type: 'page-navigation',
+        type: 'navigated-to-page',
         eventId: crypto.randomUUID(),
         timestamp: details.timeStamp,
         tab: details.tabId.toString(),
@@ -105,14 +88,5 @@ export function captureNavigationEvents(
 
       return
     }
-
-    onCaptured({
-      type: 'page-navigation',
-      eventId: crypto.randomUUID(),
-      timestamp: details.timeStamp,
-      tab: details.tabId.toString(),
-      url: details.url ?? '',
-      source: 'script',
-    })
   })
 }

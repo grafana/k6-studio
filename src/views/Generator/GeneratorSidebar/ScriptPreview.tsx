@@ -7,14 +7,21 @@ import { ScriptPreviewError } from './ScriptPreviewError'
 import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
 import { ValidatorDialog } from '../ValidatorDialog'
 import { ExportScriptDialog } from '../ExportScriptDialog'
-import { exportScript } from '../Generator.utils'
+import { useGeneratorParams, useScriptExport } from '../Generator.hooks'
+import { useGeneratorStore } from '@/store/generator'
 
 export function ScriptPreview() {
+  const { fileName } = useGeneratorParams()
+
+  const scriptName = useGeneratorStore((store) => store.scriptName)
+
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
   const { preview, error } = useScriptPreview()
   const isScriptExportable = !error && !!preview
+
+  const handleExportScript = useScriptExport(fileName)
 
   return (
     <Flex direction="column" height="100%">
@@ -53,8 +60,9 @@ export function ScriptPreview() {
             onOpenChange={setIsValidatorDialogOpen}
           />
           <ExportScriptDialog
-            onExport={exportScript}
             open={isExportScriptDialogOpen}
+            scriptName={scriptName}
+            onExport={handleExportScript}
             onOpenChange={setIsExportScriptDialogOpen}
           />
         </>
