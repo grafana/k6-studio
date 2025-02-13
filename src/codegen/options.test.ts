@@ -63,23 +63,13 @@ describe('Code generation - thresholds', () => {
     const thresholds: Threshold[] = [
       createThreshold({
         metric: 'http_req_duration',
-        url: '*',
         statistic: 'p(95)',
         condition: '<',
         value: 200,
         stopTest: false,
       }),
       createThreshold({
-        metric: 'http_req_duration',
-        url: 'https://example.com',
-        statistic: 'p(99)',
-        condition: '<',
-        value: 300,
-        stopTest: true,
-      }),
-      createThreshold({
         metric: 'http_req_failed',
-        url: 'https://example.com',
         statistic: 'rate',
         condition: '===',
         value: 100,
@@ -89,10 +79,7 @@ describe('Code generation - thresholds', () => {
 
     const expectedResult = {
       http_req_duration: ['p(95)<200'],
-      "'http_req_duration{url:https://example.com}'": [
-        { threshold: 'p(99)<300', abortOnFail: true },
-      ],
-      "'http_req_failed{url:https://example.com}'": [
+      http_req_failed: [
         {
           abortOnFail: true,
           threshold: 'rate===100',
@@ -107,7 +94,6 @@ describe('Code generation - thresholds', () => {
     const thresholds: Threshold[] = [
       createThreshold({
         metric: 'http_req_duration',
-        url: '*',
         statistic: 'p(95)',
         condition: '<',
         value: 200,
@@ -115,7 +101,6 @@ describe('Code generation - thresholds', () => {
       }),
       createThreshold({
         metric: 'http_req_duration',
-        url: '*',
         statistic: 'p(99)',
         condition: '<',
         value: 300,
