@@ -75,13 +75,13 @@ export function Thresholds() {
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell width="170px">
+              <Table.ColumnHeaderCell width="210px">
                 Metric
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="160px">
                 Statistic
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="140px">
+              <Table.ColumnHeaderCell width="100px">
                 Condition
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell width="145px">
