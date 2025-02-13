@@ -99,6 +99,8 @@ export function useScriptExport(generatorFileName: string) {
 
   return useCallback(
     async (scriptName: string) => {
+      setScriptName(scriptName)
+
       try {
         await exportScript(scriptName)
       } catch (error) {
@@ -112,8 +114,6 @@ export function useScriptExport(generatorFileName: string) {
 
       try {
         await updateGeneratorFile({ key: 'scriptName', value: scriptName })
-
-        setScriptName(scriptName)
       } catch (error) {
         log.error(error)
 
