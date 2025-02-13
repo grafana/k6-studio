@@ -1,15 +1,20 @@
-import { useGeneratorStore } from '@/store/generator'
-import { Flex, Heading, ScrollArea, Text } from '@radix-ui/themes'
+import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
+import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { NewRuleMenu } from '../NewRuleMenu'
 import { SortableRuleList } from './SortableRuleList'
 import { css } from '@emotion/react'
-import { TestOptions } from '../TestOptions'
-import grotIllustration from '@/assets/grot.svg'
-import { Allowlist } from '../Allowlist'
+import { EmptyMessage } from '@/components/EmptyMessage'
+import { RuleEditor } from '../RuleEditor'
 
 export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)
   const swapRules = useGeneratorStore((store) => store.swapRules)
+  const selectedRule = useGeneratorStore(selectSelectedRule)
+
+  // Show help message if there are no rules or only automatically added verification rule
+  const shouldShowHelpMessage =
+    rules.length === 0 ||
+    (rules.length === 1 && rules?.[0]?.type === 'verification')
 
   return (
     <ScrollArea scrollbars="vertical">
@@ -26,7 +31,6 @@ export function TestRuleContainer() {
       >
         <Heading
           css={css`
-            flex-grow: 1;
             font-size: 15px;
             line-height: 24px;
             font-weight: 500;
@@ -37,36 +41,33 @@ export function TestRuleContainer() {
         </Heading>
         <Flex gap="3">
           <NewRuleMenu />
-          <TestOptions />
-          <Allowlist />
         </Flex>
       </Flex>
 
-      <SortableRuleList rules={rules} onSwapRules={swapRules} />
-      <Flex
-        py="3"
-        px="6"
-        align={rules.length === 0 ? 'center' : 'start'}
-        direction="column"
-        gap="3"
-      >
-        {rules.length === 0 ? (
-          <>
-            <img
-              src={grotIllustration}
-              css={css`
-                max-height: 200px;
-              `}
-            />
-            <Text size="1" color="gray">
-              Start configuring your test logic by adding a new rule
-            </Text>
-            <NewRuleMenu variant="solid" size="2" />
-          </>
-        ) : (
-          <NewRuleMenu />
-        )}
-      </Flex>
+      {selectedRule && <RuleEditor rule={selectedRule} />}
+
+      {!selectedRule && (
+        <>
+          <SortableRuleList rules={rules} onSwapRules={swapRules} />
+          <Flex
+            py="3"
+            px="6"
+            align={shouldShowHelpMessage ? 'center' : 'start'}
+            direction="column"
+            gap="3"
+          >
+            {shouldShowHelpMessage ? (
+              <EmptyMessage
+                message="Configure your test logic by adding a new rule"
+                pb="2"
+                action={<NewRuleMenu variant="solid" size="2" color="orange" />}
+              />
+            ) : (
+              <NewRuleMenu />
+            )}
+          </Flex>
+        </>
+      )}
     </ScrollArea>
   )
 }
