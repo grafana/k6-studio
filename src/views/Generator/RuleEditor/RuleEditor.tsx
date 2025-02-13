@@ -1,8 +1,12 @@
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Callout, IconButton, Tooltip } from '@radix-ui/themes'
-import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { Box, Button, Callout, IconButton, Tooltip } from '@radix-ui/themes'
+import {
+  ChevronLeftIcon,
+  Cross2Icon,
+  InfoCircledIcon,
+} from '@radix-ui/react-icons'
 
 import { useGeneratorStore } from '@/store/generator'
 import { exhaustive } from '@/utils/typescript'
@@ -26,7 +30,7 @@ export function RuleEditorSwitch() {
 
     case 'verification':
       return (
-        <Callout.Root mr="5">
+        <Callout.Root mr="5" mb="4">
           <Callout.Icon>
             <InfoCircledIcon />
           </Callout.Icon>
@@ -97,8 +101,13 @@ export function RuleEditor({ rule }: RuleEditorProps) {
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box position="relative">
-          <Box position="absolute" right="-15px" top="-15px">
+        <Box
+          position="relative"
+          p="2"
+          pr="4"
+          css={{ borderTop: '1px solid var(--gray-3)' }}
+        >
+          <Box position="absolute" right="-5px" top="-5px">
             <Tooltip content="Close">
               <IconButton
                 variant="ghost"
@@ -113,6 +122,10 @@ export function RuleEditor({ rule }: RuleEditorProps) {
           </Box>
           {!rule.enabled && <RuleDisabledWarning />}
           <RuleEditorSwitch />
+          <Button onClick={() => setSelectedRuleId(null)} variant="soft">
+            <ChevronLeftIcon />
+            Back to rule list
+          </Button>
         </Box>
       </form>
     </FormProvider>

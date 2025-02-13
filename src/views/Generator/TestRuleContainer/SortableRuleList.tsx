@@ -92,7 +92,6 @@ export function SortableRuleList({
                 <TestRuleItem
                   rule={active}
                   isSelected={active.id === selectedRuleId}
-                  isOverlay
                 />
               </Grid>
             ) : null}
