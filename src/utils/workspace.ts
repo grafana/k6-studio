@@ -6,7 +6,6 @@ import {
   RECORDINGS_PATH,
   GENERATORS_PATH,
   SCRIPTS_PATH,
-  SCRIPTS_TEMP_PATH,
   TEMP_PATH,
 } from '../constants/workspace'
 
@@ -33,9 +32,5 @@ export const setupProjectStructure = async () => {
 
   if (!existsSync(DATA_FILES_PATH)) {
     await mkdir(DATA_FILES_PATH)
-  }
-
-  if (!existsSync(SCRIPTS_TEMP_PATH)) {
-    await mkdir(SCRIPTS_TEMP_PATH)
   }
 }

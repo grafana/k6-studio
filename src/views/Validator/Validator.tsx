@@ -42,13 +42,16 @@ export function Validator() {
   }, [navigate])
 
   useEffect(() => {
-    if (!scriptPath || isExternal) {
+    if (!scriptPath) {
       return
     }
 
     ;(async () => {
       setIsLoading(true)
-      const fileContent = await window.studio.script.openScript(scriptPath)
+      const fileContent = await window.studio.script.openScript(
+        scriptPath,
+        isExternal
+      )
       setIsLoading(false)
       setScript(fileContent)
     })()
