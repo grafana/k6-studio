@@ -25,4 +25,10 @@ export const globalStyles = css`
   .rt-SelectItem > span:not(.rt-SelectItemIndicator) {
     width: 100%;
   }
+
+  /* Make Monaco scroll thumbs rounder */
+  .monaco-scrollable-element > .scrollbar > .slider {
+    border-radius: 3px;
+    background-color: var(--gray-a8);
+  }
 `
