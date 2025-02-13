@@ -18,15 +18,16 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
           value: 1,
         },
       },
+      thresholds: [],
     },
     testData: {
       variables: [],
+      files: [],
     },
     rules: [createEmptyRule('verification')],
     allowlist: [],
     includeStaticAssets: false,
     scriptName: 'my-script.js',
-    thresholds: [],
   }
 }
 

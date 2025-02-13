@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.13.0](https://github.com/grafana/k6-studio/compare/v0.12.0...v0.13.0) (2025-02-13)
+
+
+### Features
+
+* Add switch toggle to enabled/disable rules ([#442](https://github.com/grafana/k6-studio/issues/442)) ([963dd6e](https://github.com/grafana/k6-studio/commit/963dd6ed544244df5820a287c64dddc9835d4bbd))
+* Show actions menu button when hover over file item ([#466](https://github.com/grafana/k6-studio/issues/466)) ([95cf6ff](https://github.com/grafana/k6-studio/commit/95cf6ffe34930bead3e5963bf2b63f3f49523cc6))
+* Simpler default file names ([#453](https://github.com/grafana/k6-studio/issues/453)) ([445202e](https://github.com/grafana/k6-studio/commit/445202e4fbff6e9a4624f6a5b25d819793ea86c3))
+
+
+### Bug Fixes
+
+* empty state url ([#461](https://github.com/grafana/k6-studio/issues/461)) ([04311a6](https://github.com/grafana/k6-studio/commit/04311a6382d4705cd724067c5b6f39f470094c39))
+* Filename tooltip obscures other files ([#449](https://github.com/grafana/k6-studio/issues/449)) ([704be28](https://github.com/grafana/k6-studio/commit/704be28e6792f47b5ea1c3cc84ee8eed2babc590))
+* Generated path is incorrect when saving script on Windows ([#452](https://github.com/grafana/k6-studio/issues/452)) ([24577e9](https://github.com/grafana/k6-studio/commit/24577e96d2b88803c7e52fd25982a8eaff8203fb))
+* intel mac proxy ([#467](https://github.com/grafana/k6-studio/issues/467)) ([a38c757](https://github.com/grafana/k6-studio/commit/a38c757a59272207f2b9814fc3ec299844e76a3f))
+* Security issues reported by NPM audit ([#436](https://github.com/grafana/k6-studio/issues/436)) ([5b1fc2c](https://github.com/grafana/k6-studio/commit/5b1fc2ca02e3467ab50ff23a764d6b3c52bcada7))
+* splashscreen not showing ([#462](https://github.com/grafana/k6-studio/issues/462)) ([aeae586](https://github.com/grafana/k6-studio/commit/aeae586a535355096b5a466958d09b97a68a09da))
+
+
+### Internal Changes
+
+* **Data files:** Generate code for opening data files ([#445](https://github.com/grafana/k6-studio/issues/445)) ([992e516](https://github.com/grafana/k6-studio/commit/992e5166697c34233215bf0e07405495cd86e1de))
+* **Data files:** Select data files in Test options ([#441](https://github.com/grafana/k6-studio/issues/441)) ([c01750a](https://github.com/grafana/k6-studio/commit/c01750abb47b2bd84bdbacf25fde6e8af12a649d))
+* **Data files:** UI for importing data files ([#427](https://github.com/grafana/k6-studio/issues/427)) ([526dd3b](https://github.com/grafana/k6-studio/commit/526dd3bf83631025d08453f10dfa1b8463295350))
+* Parse generator files in main ([#465](https://github.com/grafana/k6-studio/issues/465)) ([cec1a30](https://github.com/grafana/k6-studio/commit/cec1a302f35b20e4e18efc544763e468d98cbd5c))
+* **Thresholds:** Generate code for thresholds ([#451](https://github.com/grafana/k6-studio/issues/451)) ([51d21eb](https://github.com/grafana/k6-studio/commit/51d21ebba38b044d8893e7f4ac09c4f21d05043b))
+* **Thresholds:** polish UI ([#464](https://github.com/grafana/k6-studio/issues/464)) ([f20710c](https://github.com/grafana/k6-studio/commit/f20710c9c38587841b98ac7909bb6f64343708b6))
+* **Thresholds:** Validate and save to Generator file ([#446](https://github.com/grafana/k6-studio/issues/446)) ([fef51d8](https://github.com/grafana/k6-studio/commit/fef51d8e48ddbfd39db5d03d540d68ec72ee6bcd))
+
+
+### Miscellaneous Chores
+
+* Group URLs in Select component ([#443](https://github.com/grafana/k6-studio/issues/443)) ([14f94da](https://github.com/grafana/k6-studio/commit/14f94da52ba84f0847df66a30005c1244032f680))
+* Remove ArrayValueSchema ([#469](https://github.com/grafana/k6-studio/issues/469)) ([1e1aa07](https://github.com/grafana/k6-studio/commit/1e1aa072d5a143137a1d3c7d12296b97c3f03c6c))
+* scaffold Thresholds UI behind feature flag ([#438](https://github.com/grafana/k6-studio/issues/438)) ([c54f7c7](https://github.com/grafana/k6-studio/commit/c54f7c7bdbb056f35de81a51ad81aa028da2e237))
+
+
+### Continuous Integration
+
+* **release:** Increase heap size for publish script ([#433](https://github.com/grafana/k6-studio/issues/433)) ([dbebeed](https://github.com/grafana/k6-studio/commit/dbebeedabb71ae55181362d076bd3345b609ee2f))
+
 ## [0.12.0](https://github.com/grafana/k6-studio/compare/v0.11.0...v0.12.0) (2025-01-23)
 
 

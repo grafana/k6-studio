@@ -6,8 +6,11 @@ import {
   generateGroupSnippet,
   generateRequestParams,
   generateVUCode,
+  generateDataFileDeclarations,
+  generateImports,
 } from './codegen'
 import { TestRule } from '@/types/rules'
+import { GeneratorFileData } from '@/types/generator'
 import { Cookie, Header, ProxyData, Request } from '@/types'
 import { correlationRecording } from '@/test/fixtures/correlationRecording'
 import { checksRecording } from '@/test/fixtures/checksRecording'
@@ -84,23 +87,85 @@ describe('Code generation', () => {
                   value: 1,
                 },
               },
+              thresholds: [],
             },
             testData: {
               variables: [],
+              files: [],
             },
             rules: [],
             allowlist: [],
             includeStaticAssets: false,
             scriptName: 'my-script.js',
-            thresholds: [],
           },
         }).replace(/\s/g, '')
       ).toBe(expectedResult.replace(/\s/g, ''))
     })
   })
 
+  describe('generateImports', () => {
+    const generator: GeneratorFileData = {
+      version: '1.0',
+      recordingPath: 'test',
+      options: {
+        loadProfile: {
+          executor: 'shared-iterations',
+          vus: 1,
+          iterations: 1,
+        },
+        thinkTime: {
+          sleepType: 'iterations',
+          timing: {
+            type: 'fixed',
+            value: 1,
+          },
+        },
+        thresholds: [],
+      },
+      testData: {
+        variables: [],
+        files: [],
+      },
+      rules: [],
+      allowlist: [],
+      includeStaticAssets: false,
+      scriptName: 'my-script.js',
+    }
+
+    it('should generate imports', async () => {
+      const expectedResult = await prettify(`
+        import { group, sleep, check } from 'k6'
+        import http from 'k6/http'
+      `)
+
+      expect(await prettify(generateImports(generator))).toBe(expectedResult)
+    })
+
+    it('should generate imports with data files', async () => {
+      const files = [{ name: 'users.csv' }, { name: 'products.json' }]
+      const expectedResult = await prettify(`
+        import { group, sleep, check } from 'k6'
+        import http from 'k6/http'
+        import { SharedArray } from 'k6/data'
+        import Papa from 'https://jslib.k6.io/papaparse/5.1.1/index.js'
+        `)
+
+      expect(
+        await prettify(
+          generateImports({
+            ...generator,
+            testData: {
+              ...generator.testData,
+              files,
+            },
+          })
+        )
+      ).toBe(expectedResult)
+    })
+  })
+
   describe('generateVariableDeclarations', () => {
-    it('should generate variable declarations', () => {
+    it('should generate variable declarations', async () => {
       const variables = [
         {
           name: 'test',
@@ -108,12 +173,37 @@ describe('Code generation', () => {
         },
       ]
 
-      const expectedResult = `
-        const VARS = {"test": "test",}
-      `
+      const expectedResult = await prettify(`
+        const VARS = {
+          "test": "test",
+        };`)
 
-      expect(generateVariableDeclarations(variables).replace(/\s/g, '')).toBe(
-        expectedResult.replace(/\s/g, '')
+      expect(await prettify(generateVariableDeclarations(variables))).toBe(
+        expectedResult
+      )
+    })
+  })
+
+  describe('generateDataFileDeclarations', () => {
+    it('should generate file declarations', async () => {
+      const files = [{ name: 'users.csv' }, { name: 'products.json' }]
+
+      const expectedResult = await prettify(`
+        const FILES = {
+          users: new SharedArray("users", () => {
+            return Papa.parse(open("../Data/users.csv"), { header: true }).data;
+          }),
+          
+          products: new SharedArray("products", () => {
+            const data = JSON.parse(open("../Data/products.json"));
+            return Array.isArray(data) ? data : [data];
+          }),
+        };`)
+      const t = await prettify(generateDataFileDeclarations(files))
+      console.log(t)
+
+      expect(await prettify(generateDataFileDeclarations(files))).toBe(
+        expectedResult
       )
     })
   })

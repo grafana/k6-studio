@@ -75,7 +75,7 @@ function getRequestSignature(request: Request) {
   return `${request.method} ${request.url}`
 }
 
-export function getHostNameFromURL(url: string) {
+export function getHostNameFromURL(url?: string) {
   // ensure that a URL without protocol is parsed correctly
   const urlWithProtocol = url?.startsWith('http') ? url : `http://${url}`
   try {

@@ -1,24 +1,33 @@
-import { Select } from '@radix-ui/themes'
+import { Select, Tooltip, TooltipProps } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import { Control, Controller, FieldValues, Path } from 'react-hook-form'
 
 type Option = { label: ReactNode; value: string; disabled?: boolean }
+type GroupedOption = { label: string; options: Option[] }
 
-interface ControlledSelectProps<T extends FieldValues, O extends Option> {
+interface ControlledSelectProps<
+  T extends FieldValues,
+  O extends Option | GroupedOption,
+> {
   name: Path<T>
   control: Control<T>
   options: O[]
   selectProps?: Select.RootProps
   contentProps?: Select.ContentProps
-  onChange?: (value: O['value']) => void
+  tooltipProps?: TooltipProps
+  onChange?: (value: O extends Option ? O['value'] : string) => void
 }
 
-export function ControlledSelect<T extends FieldValues, O extends Option>({
+export function ControlledSelect<
+  T extends FieldValues,
+  O extends Option | GroupedOption,
+>({
   name,
   control,
   options,
   selectProps = {},
   contentProps = {},
+  tooltipProps = { content: undefined, hidden: true },
   onChange,
 }: ControlledSelectProps<T, O>) {
   return (
@@ -31,21 +40,38 @@ export function ControlledSelect<T extends FieldValues, O extends Option>({
           value={field.value}
           onValueChange={onChange ?? field.onChange}
         >
-          <Select.Trigger
-            onBlur={field.onBlur}
-            id={name}
-            css={{ width: '100%' }}
-          />
+          <Tooltip {...tooltipProps}>
+            <Select.Trigger
+              onBlur={field.onBlur}
+              id={name}
+              css={{ width: '100%' }}
+            />
+          </Tooltip>
           <Select.Content {...contentProps}>
-            {options.map((option) => (
-              <Select.Item
-                key={option.value}
-                value={option.value}
-                disabled={option.disabled}
-              >
-                {option.label}
-              </Select.Item>
-            ))}
+            {options.map((option) =>
+              'options' in option ? (
+                <Select.Group key={option.label}>
+                  <Select.Label>{option.label}</Select.Label>
+                  {option.options.map((subOption) => (
+                    <Select.Item
+                      key={subOption.value}
+                      value={subOption.value}
+                      disabled={subOption.disabled}
+                    >
+                      {subOption.label}
+                    </Select.Item>
+                  ))}
+                </Select.Group>
+              ) : (
+                <Select.Item
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.disabled}
+                >
+                  {option.label}
+                </Select.Item>
+              )
+            )}
           </Select.Content>
         </Select.Root>
       )}

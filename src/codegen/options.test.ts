@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { generateOptions } from './options'
-import { LoadProfileExecutorOptions, TestOptions } from '@/types/testOptions'
+import { generateOptions, generateThresholds } from './options'
+import {
+  LoadProfileExecutorOptions,
+  TestOptions,
+  Threshold,
+} from '@/types/testOptions'
+import { createThreshold } from '@/test/factories/threshold'
 
 describe('Code generation - options', () => {
   it('should generate load profile for shared-iterations executor', () => {
@@ -17,7 +22,10 @@ describe('Code generation - options', () => {
     }`
 
     expect(
-      generateOptions({ loadProfile } as TestOptions).replace(/\s/g, '')
+      generateOptions({ loadProfile, thresholds: {} } as TestOptions).replace(
+        /\s/g,
+        ''
+      )
     ).toBe(expectedResult.replace(/\s/g, ''))
   })
 
@@ -42,7 +50,86 @@ describe('Code generation - options', () => {
     }`
 
     expect(
-      generateOptions({ loadProfile } as TestOptions).replace(/\s/g, '')
+      generateOptions({ loadProfile, thresholds: {} } as TestOptions).replace(
+        /\s/g,
+        ''
+      )
     ).toBe(expectedResult.replace(/\s/g, ''))
+  })
+})
+
+describe('Code generation - thresholds', () => {
+  it('should generate thresholds correctly', () => {
+    const thresholds: Threshold[] = [
+      createThreshold({
+        metric: 'http_req_duration',
+        url: '*',
+        statistic: 'p(95)',
+        condition: '<',
+        value: 200,
+        stopTest: false,
+      }),
+      createThreshold({
+        metric: 'http_req_duration',
+        url: 'https://example.com',
+        statistic: 'p(99)',
+        condition: '<',
+        value: 300,
+        stopTest: true,
+      }),
+      createThreshold({
+        metric: 'http_req_failed',
+        url: 'https://example.com',
+        statistic: 'rate',
+        condition: '===',
+        value: 100,
+        stopTest: true,
+      }),
+    ]
+
+    const expectedResult = {
+      http_req_duration: ['p(95)<200'],
+      "'http_req_duration{url:https://example.com}'": [
+        { threshold: 'p(99)<300', abortOnFail: true },
+      ],
+      "'http_req_failed{url:https://example.com}'": [
+        {
+          abortOnFail: true,
+          threshold: 'rate===100',
+        },
+      ],
+    }
+
+    expect(generateThresholds(thresholds)).toEqual(expectedResult)
+  })
+
+  it('should handle multiple thresholds for the same metric', () => {
+    const thresholds: Threshold[] = [
+      createThreshold({
+        metric: 'http_req_duration',
+        url: '*',
+        statistic: 'p(95)',
+        condition: '<',
+        value: 200,
+        stopTest: false,
+      }),
+      createThreshold({
+        metric: 'http_req_duration',
+        url: '*',
+        statistic: 'p(99)',
+        condition: '<',
+        value: 300,
+        stopTest: true,
+      }),
+    ]
+
+    const expectedResult = {
+      http_req_duration: [
+        'p(95)<200',
+        { threshold: 'p(99)<300', abortOnFail: true },
+      ],
+    }
+
+    expect(generateThresholds(thresholds)).toEqual(expectedResult)
   })
 })

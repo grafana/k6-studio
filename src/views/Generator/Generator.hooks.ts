@@ -2,11 +2,7 @@ import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { useToast } from '@/store/ui/useToast'
-import {
-  loadGeneratorFile,
-  loadHarFile,
-  writeGeneratorToFile,
-} from './Generator.utils'
+import { loadGeneratorFile, loadHarFile } from './Generator.utils'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -41,7 +37,10 @@ export function useUpdateValueInGeneratorFile(fileName: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
       const generator = await loadGeneratorFile(fileName)
-      await writeGeneratorToFile(fileName, { ...generator, [key]: value })
+      await window.studio.generator.saveGenerator(
+        { ...generator, [key]: value },
+        fileName
+      )
     },
   })
 }
@@ -51,7 +50,7 @@ export function useSaveGeneratorFile(fileName: string) {
 
   return useMutation({
     mutationFn: async (generator: GeneratorFileData) => {
-      await writeGeneratorToFile(fileName, generator)
+      await window.studio.generator.saveGenerator(generator, fileName)
       await queryClient.invalidateQueries({ queryKey: ['generator', fileName] })
     },
 

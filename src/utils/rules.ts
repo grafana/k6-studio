@@ -5,7 +5,7 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
     case 'correlation':
       return {
         type: 'correlation',
-        id: self.crypto.randomUUID(),
+        id: crypto.randomUUID(),
         enabled: true,
         extractor: {
           filter: { path: '' },
@@ -23,7 +23,7 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
     case 'customCode':
       return {
         type: 'customCode',
-        id: self.crypto.randomUUID(),
+        id: crypto.randomUUID(),
         enabled: true,
         filter: { path: '' },
         snippet: '',
@@ -32,7 +32,7 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
     case 'parameterization':
       return {
         type: 'parameterization',
-        id: self.crypto.randomUUID(),
+        id: crypto.randomUUID(),
         enabled: true,
         filter: { path: '' },
         selector: {
@@ -46,7 +46,7 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
     case 'verification':
       return {
         type: 'verification',
-        id: self.crypto.randomUUID(),
+        id: crypto.randomUUID(),
         enabled: true,
         filter: { path: '' },
         selector: {

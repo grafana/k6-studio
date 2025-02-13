@@ -19,8 +19,9 @@ interface SidebarProps {
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, generators, scripts, dataFiles } = useFiles(searchTerm)
-
   const createNewGenerator = useCreateGenerator()
+
+  const handleCreateNewGenerator = () => createNewGenerator()
 
   const handleImportDataFile = () => {
     return window.studio.data.importFile()
@@ -92,7 +93,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
                     aria-label="New generator"
                     variant="ghost"
                     size="1"
-                    onClick={createNewGenerator}
+                    onClick={handleCreateNewGenerator}
                     css={{ cursor: 'pointer' }}
                   >
                     <PlusIcon />

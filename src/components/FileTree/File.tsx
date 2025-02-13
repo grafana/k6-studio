@@ -1,9 +1,9 @@
 import { css } from '@emotion/react'
 import { NavLink, useNavigate } from 'react-router-dom'
 
-import { FileContextMenu } from './FileContextMenu'
+import { FileActionsMenu, FileContextMenu } from './FileContextMenu'
 import { useRef, useState } from 'react'
-import { Tooltip } from '@radix-ui/themes'
+import { Grid, Tooltip } from '@radix-ui/themes'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useBoolean } from 'react-use'
 import { InlineEditor } from './InlineEditor'
@@ -32,16 +32,40 @@ export function File({ file, isSelected }: FileProps) {
     <FileContextMenu
       file={file}
       isSelected={isSelected}
-      handleRename={() => setEditMode(true)}
+      onRename={() => setEditMode(true)}
     >
-      <div>
+      <Grid
+        columns="1fr auto"
+        align="center"
+        pr="4"
+        css={css`
+          & > button {
+            opacity: 0;
+          }
+
+          &:hover > button,
+          & > button:focus,
+          & > button[data-state='open'] {
+            opacity: 1;
+          }
+
+          &:hover {
+            background-color: var(--gray-4);
+          }
+        `}
+      >
         <EditableFile
           file={file}
           isSelected={isSelected}
           editMode={editMode}
           setEditMode={setEditMode}
         />
-      </div>
+        <FileActionsMenu
+          file={file}
+          isSelected={isSelected}
+          onRename={() => setEditMode(true)}
+        />
+      </Grid>
     </FileContextMenu>
   )
 }
@@ -94,20 +118,27 @@ function EditableFile({
   }
 
   return (
-    <Tooltip content={displayName} hidden={!hasEllipsis}>
+    <Tooltip
+      content={displayName}
+      side="right"
+      sideOffset={24}
+      hidden={!hasEllipsis}
+    >
       <NavLink
         ref={linkRef}
         css={[
           fileStyle,
           css`
+            border-radius: 4px;
             font-weight: ${isSelected ? 700 : 400};
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             text-decoration: none;
 
-            &:hover {
-              background-color: var(--gray-4);
+            &:focus-visible {
+              outline: 2px solid var(--focus-8);
+              outline-offset: -1px;
             }
 
             &.active {

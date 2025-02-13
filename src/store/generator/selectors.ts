@@ -17,7 +17,10 @@ export function selectSelectedRule(state: GeneratorStore) {
 
 export function selectIsRulePreviewable(state: GeneratorStore) {
   const rule = selectSelectedRule(state)
-  return ['correlation', 'parameterization'].includes(rule?.type ?? '')
+  return (
+    ['correlation', 'parameterization'].includes(rule?.type ?? '') &&
+    rule?.enabled
+  )
 }
 
 export function selectHasRecording(state: GeneratorStore) {
@@ -39,7 +42,9 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
   const {
     sleepType,
     timing,
+    thresholds,
     variables,
+    files,
     recordingPath,
     rules,
     allowlist,
@@ -56,13 +61,13 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
         sleepType,
         timing,
       },
+      thresholds,
     },
-    testData: { variables },
+    testData: { variables, files },
     rules,
     allowlist,
     includeStaticAssets,
     scriptName,
-    thresholds: [],
   }
 }
 

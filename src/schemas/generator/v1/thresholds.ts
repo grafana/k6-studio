@@ -6,8 +6,6 @@ export const ThresholdMetricSchema = z.enum([
   'http_req_failed',
   'http_req_connecting',
   'http_req_tls_handshaking',
-  'load_generator_memory_used_percent',
-  'load_generator_cpu_percent',
   'data_sent',
   'data_received',
   'http_req_receiving',
@@ -22,7 +20,7 @@ export const ThresholdConditionSchema = z.enum([
   '>',
   '>=',
   '===',
-  '!==',
+  '!=',
 ])
 
 export const ThresholdStatisticSchema = z.enum([
@@ -44,7 +42,9 @@ export const ThresholdSchema = z.object({
   url: z.string().optional(),
   statistic: ThresholdStatisticSchema,
   condition: ThresholdConditionSchema,
-  value: z.number({ message: 'Invalid value' }),
+  value: z
+    .number({ message: 'Invalid value' })
+    .min(0, { message: 'Invalid value' }),
   stopTest: z.boolean().default(false),
 })
 

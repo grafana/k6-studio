@@ -20,15 +20,16 @@ export function createGeneratorData(
           value: 1,
         },
       },
+      thresholds: [],
     },
     recordingPath: '',
     rules: [],
     scriptName: 'script.js',
     testData: {
       variables: [],
+      files: [],
     },
     version: '1.0',
-    thresholds: [],
     ...data,
   }
 }
@@ -85,15 +86,15 @@ export function createGeneratorState(
     setTiming: vi.fn(),
 
     variables: [],
+    files: [],
     setVariables: vi.fn(),
+    setFiles: vi.fn(),
 
     vus: 1,
     setVus: vi.fn(),
 
     thresholds: [],
-    addThreshold: vi.fn(),
-    updateThreshold: vi.fn(),
-    deleteThreshold: vi.fn(),
+    setThresholds: vi.fn(),
 
     ...state,
   }

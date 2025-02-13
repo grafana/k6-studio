@@ -22,12 +22,14 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
   return {
     version: '1.0',
     recordingPath: generator.recordingPath,
-    options: generator.options,
-    testData: generator.testData,
+    options: {
+      ...generator.options,
+      thresholds: [],
+    },
+    testData: { ...generator.testData, files: [] },
     rules: generator.rules,
     allowlist: generator.allowlist,
     includeStaticAssets: generator.includeStaticAssets,
     scriptName: generator.scriptName,
-    thresholds: [],
   }
 }
