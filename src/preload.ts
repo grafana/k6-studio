@@ -149,7 +149,7 @@ const ui = {
     oldFileName: string,
     newFileName: string,
     type: StudioFile['type']
-  ): Promise<string> => {
+  ): Promise<void> => {
     return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName, type)
   },
 } as const

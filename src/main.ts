@@ -7,12 +7,12 @@ import {
   shell,
 } from 'electron'
 import {
+  access,
   copyFile,
   writeFile,
   unlink,
   readdir,
   rename,
-  access,
   readFile,
   stat,
 } from 'fs/promises'
@@ -576,12 +576,14 @@ ipcMain.handle(
         await access(newPath)
         throw new Error(`File with name ${newFileName} already exists`)
       } catch (error) {
-        if (isNodeJsErrnoException(error) && error.code !== 'ENOENT') {
-          throw error
+        // Only rename if the error code is ENOENT (file does not exist)
+        if (isNodeJsErrnoException(error) && error.code === 'ENOENT') {
+          await rename(oldPath, newPath)
+          return
         }
-      }
 
-      await rename(oldPath, newPath)
+        throw error
+      }
     } catch (e) {
       log.error(e)
       browserWindow &&
