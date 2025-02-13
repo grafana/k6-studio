@@ -14,8 +14,9 @@ interface State {
 }
 
 interface Actions {
-  setRecording: (recording: ProxyData[], path: string) => void
+  setRecording: (recording: ProxyData[]) => void
   resetRecording: () => void
+  setRecordingPath: (path: string) => void
   setAllowlist: (value: string[]) => void
   setIncludeStaticAssets: (value: boolean) => void
   setShowAllowlistDialog: (value: boolean) => void
@@ -32,7 +33,7 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   includeStaticAssets: false,
   showAllowlistDialog: false,
 
-  setRecording: (requests: ProxyData[], path: string) =>
+  setRecording: (requests: ProxyData[]) =>
     set((state) => {
       if (shouldResetAllowList({ requests, allowList: state.allowlist })) {
         state.allowlist = []
@@ -49,13 +50,16 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
       }
 
       state.requests = requests
-      state.recordingPath = path
     }),
   resetRecording: () =>
     set((state) => {
       state.requests = []
       state.allowlist = []
       state.recordingPath = ''
+    }),
+  setRecordingPath: (path) =>
+    set((state) => {
+      state.recordingPath = path
     }),
   setAllowlist: (value) =>
     set((state) => {

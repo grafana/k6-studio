@@ -2,12 +2,13 @@ import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { useToast } from '@/store/ui/useToast'
-import { loadGeneratorFile, loadHarFile } from './Generator.utils'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '@/utils/query'
 import log from 'electron-log/renderer'
+import { harToProxyData } from '@/utils/harToProxyData'
+import { ProxyData } from '@/types'
 
 export function useGeneratorParams() {
   const { fileName } = useParams()
@@ -18,25 +19,67 @@ export function useGeneratorParams() {
   }
 }
 
-export function useLoadHarFile(fileName?: string) {
+export function useRecordingFile({
+  fileName,
+  onSuccess,
+  onError,
+}: {
+  fileName?: string
+  onSuccess?: (recording: ProxyData[]) => void
+  onError?: (error: unknown) => void
+}) {
   return useQuery({
     queryKey: ['har', fileName],
     enabled: !!fileName,
-    queryFn: () => loadHarFile(fileName!),
+    queryFn: async () => {
+      try {
+        if (!fileName) return []
+        const har = await window.studio.har.openFile(fileName)
+        const recording = harToProxyData(har)
+        onSuccess?.(recording)
+
+        return recording
+      } catch (error) {
+        onError?.(error)
+        log.error(error)
+
+        throw error
+      }
+    },
   })
 }
 
-export function useLoadGeneratorFile(fileName: string) {
+export function useGeneratorFile({
+  fileName,
+  onSuccess,
+  onError,
+}: {
+  fileName: string
+  onSuccess?: (generator: GeneratorFileData) => void
+  onError?: (error: unknown) => void
+}) {
   return useQuery({
     queryKey: ['generator', fileName],
-    queryFn: () => loadGeneratorFile(fileName),
+    queryFn: async () => {
+      try {
+        const generator = await window.studio.generator.loadGenerator(fileName)
+        onSuccess?.(generator)
+
+        return generator
+      } catch (error) {
+        log.error(error)
+        onError?.(error)
+
+        throw error
+      }
+    },
   })
 }
 
 export function useUpdateValueInGeneratorFile(fileName: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
-      const generator = await loadGeneratorFile(fileName)
+      const generator = await window.studio.generator.loadGenerator(fileName)
       await window.studio.generator.saveGenerator(
         { ...generator, [key]: value },
         fileName
@@ -76,7 +119,7 @@ export function useSaveGeneratorFile(fileName: string) {
 
 export function useIsGeneratorDirty(fileName: string) {
   const generatorState = useGeneratorStore(selectGeneratorData)
-  const { data } = useLoadGeneratorFile(fileName)
+  const { data } = useGeneratorFile({ fileName })
 
   // Comparing data without `scriptName`, which is saved to disk in the background
   // and should not be considered as a change

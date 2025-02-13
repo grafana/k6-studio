@@ -13,7 +13,6 @@ import {
 } from './slices'
 import { exhaustive } from '@/utils/typescript'
 import { GeneratorFileData } from '@/types/generator'
-import { ProxyData } from '@/types'
 import { createScriptDataSlice, ScriptDataStore } from './slices/script'
 
 export interface GeneratorStore
@@ -22,10 +21,7 @@ export interface GeneratorStore
     TestDataStore,
     TestOptionsStore,
     ScriptDataStore {
-  setGeneratorFile: (
-    generatorFile: GeneratorFileData,
-    recording?: ProxyData[]
-  ) => void
+  setGenerator: (generatorFile: GeneratorFileData) => void
 }
 
 export const useGeneratorStore = create<GeneratorStore>()(
@@ -35,18 +31,15 @@ export const useGeneratorStore = create<GeneratorStore>()(
     ...createTestDataSlice(set, ...rest),
     ...createTestOptionsSlice(set, ...rest),
     ...createScriptDataSlice(set, ...rest),
-    setGeneratorFile: (
-      {
-        options: { thinkTime, loadProfile, thresholds },
-        testData: { variables, files },
-        recordingPath,
-        rules,
-        allowlist,
-        includeStaticAssets,
-        scriptName,
-      },
-      recording = []
-    ) =>
+    setGenerator: ({
+      options: { thinkTime, loadProfile, thresholds },
+      testData: { variables, files },
+      recordingPath,
+      rules,
+      allowlist,
+      includeStaticAssets,
+      scriptName,
+    }) =>
       set((state) => {
         // options
         state.sleepType = thinkTime.sleepType
@@ -68,13 +61,8 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.variables = variables
         state.files = files
         // recording
-        state.requests = recording
         state.recordingPath = recordingPath
         state.allowlist = allowlist
-
-        if (allowlist.length === 0 && recording.length > 0) {
-          state.showAllowlistDialog = true
-        }
 
         state.includeStaticAssets = includeStaticAssets
         state.scriptName = scriptName
