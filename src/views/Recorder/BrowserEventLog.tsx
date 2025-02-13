@@ -1,7 +1,7 @@
 import {
   BrowserEvent,
-  ClickEvent,
-  PageNavigationEvent,
+  ClickedEvent,
+  NavigatedToPageEvent,
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
@@ -52,7 +52,7 @@ function Selector({ children }: SelectorProps) {
   return <strong>{children}</strong>
 }
 
-function getModifierKeys(modifiers: ClickEvent['modifiers']) {
+function getModifierKeys(modifiers: ClickedEvent['modifiers']) {
   const keys = []
   const platform = window.studio.app.platform
 
@@ -108,7 +108,7 @@ function EventIcon({ event }: EventIconProps) {
 }
 
 interface PageNavigationDescriptionProps {
-  event: PageNavigationEvent
+  event: NavigatedToPageEvent
 }
 
 function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
@@ -130,7 +130,7 @@ function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
   }
 }
 
-function getButtonDescription(event: ClickEvent) {
+function getButtonDescription(event: ClickedEvent) {
   switch (event.button) {
     case 'left':
       return 'Clicked'
@@ -147,7 +147,7 @@ function getButtonDescription(event: ClickEvent) {
 }
 
 interface ClickDescriptionProps {
-  event: ClickEvent
+  event: ClickedEvent
 }
 
 function ClickDescription({ event }: ClickDescriptionProps) {
