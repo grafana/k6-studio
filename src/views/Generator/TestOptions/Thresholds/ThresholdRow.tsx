@@ -81,6 +81,17 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
                   color: var(--sand-12);
                   padding: 0 var(--space-2);
                 }
+
+                .rt-SelectLabel,
+                .rt-SelectItem {
+                  white-space: nowrap;
+                  max-width: 700px;
+
+                  span {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  }
+                }
               `,
             }}
           />
@@ -90,7 +101,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
         <FieldGroup
           mb="0"
           errors={errors}
-          name={`thresholds.${index}.statisic`}
+          name={`thresholds.${index}.statistic`}
         >
           <ControlledSelect
             control={control}
