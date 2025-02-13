@@ -281,7 +281,7 @@ export function BrowserEventLog({
       {onExportScript && (
         <ExportScriptDialog
           open={showExportDialog}
-          initialScriptName="my-browser-script.js"
+          scriptName="my-browser-script.js"
           onOpenChange={setShowExportDialog}
           onExport={onExportScript}
         />

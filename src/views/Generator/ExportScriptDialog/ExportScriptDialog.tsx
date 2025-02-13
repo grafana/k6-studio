@@ -9,32 +9,29 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { OverwriteFileWarning } from './OverwriteFileWarning'
 import { ScriptNameForm } from './ScriptNameForm'
 import { useLocalStorage } from 'react-use'
-import { useGeneratorStore } from '@/store/generator'
 import { useEffect } from 'react'
 import { getScriptNameWithExtension } from './ExportScriptDialog.utils'
 import { useStudioUIStore } from '@/store/ui'
 
 interface ExportScriptDialogProps {
   open: boolean
-  initialScriptName?: string
+  scriptName: string
   onExport: (scriptName: string) => void
   onOpenChange: (open: boolean) => void
 }
 
 export function ExportScriptDialog({
   open,
-  initialScriptName,
+  scriptName,
   onExport,
   onOpenChange,
 }: ExportScriptDialogProps) {
-  const scriptName = useGeneratorStore((store) => store.scriptName)
-  const setScriptName = useGeneratorStore((store) => store.setScriptName)
   const scripts = useStudioUIStore((store) => store.scripts)
 
   const formMethods = useForm<ExportScriptDialogData>({
     resolver: zodResolver(ExportScriptDialogSchema),
     defaultValues: {
-      scriptName: initialScriptName ?? scriptName,
+      scriptName,
     },
   })
 
@@ -49,9 +46,9 @@ export function ExportScriptDialog({
       return
     }
 
-    setValue('scriptName', initialScriptName ?? scriptName)
+    setValue('scriptName', scriptName)
     setValue('overwriteFile', false)
-  }, [open, initialScriptName, scriptName, setValue])
+  }, [open, scriptName, setValue])
 
   const onSubmit = (data: ExportScriptDialogData) => {
     const { scriptName: userInput, overwriteFile } = data
@@ -62,7 +59,6 @@ export function ExportScriptDialog({
       return
     }
 
-    setScriptName(fileName)
     onExport(fileName)
     onOpenChange(false)
   }
