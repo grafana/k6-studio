@@ -88,9 +88,9 @@ export type PageNavigationEvent = z.infer<typeof PageNavigationEventSchema>
 export type PageReloadEvent = z.infer<typeof PageReloadEventSchema>
 export type ClickEvent = z.infer<typeof ClickEventSchema>
 export type InputChangeEvent = z.infer<typeof InputChangeEventSchema>
-export type CheckEvent = z.infer<typeof CheckEventSchema>
-export type SwitchEvent = z.infer<typeof SwitchEventSchema>
-export type SelectEvent = z.infer<typeof SelectEventSchema>
+export type CheckEventSchema = z.infer<typeof CheckEventSchema>
+export type SwitchEventSchema = z.infer<typeof SwitchEventSchema>
+export type SelectEventSchema = z.infer<typeof SelectEventSchema>
 export type FormSubmittedEvent = z.infer<typeof FormSubmittedEventSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>
