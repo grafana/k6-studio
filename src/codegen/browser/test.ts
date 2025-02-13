@@ -150,6 +150,23 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
+      case 'form-submitted':
+        return {
+          type: 'click',
+          nodeId: event.eventId,
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.submitter),
+          },
+        }
+
       default:
         return exhaustive(event)
     }

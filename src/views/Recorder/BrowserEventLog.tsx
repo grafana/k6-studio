@@ -12,6 +12,7 @@ import {
   GlobeIcon,
   InputIcon,
   RadiobuttonIcon,
+  ReaderIcon,
   TargetIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
@@ -101,6 +102,9 @@ function EventIcon({ event }: EventIconProps) {
     case 'select':
       return <DropdownMenuIcon />
 
+    case 'form-submitted':
+      return <ReaderIcon />
+
     default:
       return exhaustive(event)
   }
@@ -164,7 +168,7 @@ function ClickDescription({ event }: ClickDescriptionProps) {
   return (
     <>
       <Kbd size="2">{clickedText}</Kbd> on element{' '}
-      <strong>{event.selector}</strong>
+      <strong>{event.selector}</strong>.
     </>
   )
 }
@@ -213,6 +217,13 @@ function EventDescription({ event }: EventDescriptionProps) {
         <>
           Selected {formatOptions(event.selected)} from{' '}
           <Selector>{event.selector}</Selector>.
+        </>
+      )
+
+    case 'form-submitted':
+      return (
+        <>
+          Submitted form <Selector>{event.form}</Selector>.
         </>
       )
 
