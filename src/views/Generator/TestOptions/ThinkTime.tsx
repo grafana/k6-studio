@@ -98,20 +98,24 @@ export function ThinkTime() {
       </Grid>
 
       {data.timing.type === 'fixed' && (
-        <FieldGroup name="timing.value" label="Duration" errors={errors}>
-          <TextField.Root
-            size="2"
-            min="0"
-            placeholder="e.g. 1"
-            type="number"
-            id="timing.value"
-            {...register('timing.value', {
-              setValueAs: stringAsNullableNumber,
-            })}
-          >
-            <TextField.Slot side="right">s</TextField.Slot>
-          </TextField.Root>
-        </FieldGroup>
+        <Flex gap="2">
+          <Box width="50%">
+            <FieldGroup name="timing.value" label="Duration" errors={errors}>
+              <TextField.Root
+                size="2"
+                min="0"
+                placeholder="e.g. 1"
+                type="number"
+                id="timing.value"
+                {...register('timing.value', {
+                  setValueAs: stringAsNullableNumber,
+                })}
+              >
+                <TextField.Slot side="right">s</TextField.Slot>
+              </TextField.Root>
+            </FieldGroup>
+          </Box>
+        </Flex>
       )}
 
       {data.timing.type === 'range' && (

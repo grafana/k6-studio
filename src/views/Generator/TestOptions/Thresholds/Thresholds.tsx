@@ -40,7 +40,6 @@ export function Thresholds() {
 
     append({
       id: crypto.randomUUID(),
-      url: '*',
       metric: 'http_req_duration',
       statistic: 'avg',
       condition: '>',
@@ -66,8 +65,8 @@ export function Thresholds() {
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Text size="2" as="p" mb="4">
-          Define pass/fail criteria for your test metrics. Learn more about
-          thresholds in the{' '}
+          Define pass/fail criteria for your test metrics across all URLs. Learn
+          more about thresholds in the{' '}
           <RadixLink href="" onClick={handleOpenDocs}>
             docs
           </RadixLink>
@@ -76,23 +75,22 @@ export function Thresholds() {
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell width="70px">
+              <Table.ColumnHeaderCell width="210px">
                 Metric
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="70px">URL</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="60px">
+              <Table.ColumnHeaderCell width="160px">
                 Statistic
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="40px">
+              <Table.ColumnHeaderCell width="100px">
                 Condition
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="45px">
+              <Table.ColumnHeaderCell width="145px">
                 Value
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="35px">
+              <Table.ColumnHeaderCell width="80px">
                 Stop Test
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell width="22px"></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="59px"></Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
 
