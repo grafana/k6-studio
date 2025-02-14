@@ -52,7 +52,7 @@ window.addEventListener(
     }
 
     captureEvents({
-      type: 'click',
+      type: 'clicked',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
       selector: generateSelector(ev.target),
@@ -71,7 +71,7 @@ window.addEventListener(
 
 function handleSelectChange(target: HTMLSelectElement) {
   captureEvents({
-    type: 'select',
+    type: 'select-changed',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
     selector: generateSelector(target),
@@ -83,7 +83,7 @@ function handleSelectChange(target: HTMLSelectElement) {
 
 function handleTextAreaChange(target: HTMLTextAreaElement) {
   captureEvents({
-    type: 'input-change',
+    type: 'input-changed',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
     selector: generateSelector(target),
@@ -105,7 +105,7 @@ function handleInputChange(target: HTMLInputElement) {
 
   if (target.type === 'checkbox') {
     captureEvents({
-      type: 'check',
+      type: 'check-changed',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
       selector: generateSelector(target),
@@ -122,7 +122,7 @@ function handleInputChange(target: HTMLInputElement) {
     }
 
     captureEvents({
-      type: 'switch',
+      type: 'radio-changed',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
       selector: generateSelector(target),
@@ -135,7 +135,7 @@ function handleInputChange(target: HTMLInputElement) {
   }
 
   captureEvents({
-    type: 'input-change',
+    type: 'input-changed',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
     selector: generateSelector(target),

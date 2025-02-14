@@ -19,17 +19,6 @@ import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 
-function generateFileNameWithTimestamp(extension: string, prefix?: string) {
-  const timestamp =
-    new Date()
-      .toISOString()
-      .replace(/:/g, '-')
-      .replace(/T/g, '_')
-      .split('.')[0] ?? ''
-
-  return `${prefix ? `${prefix} - ` : ''}${timestamp}.${extension}`
-}
-
 export function RecordingPreviewer() {
   const { data: settings } = useSettings()
 
@@ -91,12 +80,10 @@ export function RecordingPreviewer() {
     navigate(getRoutePath('recorder'))
   }
 
-  const handleExportBrowserScript = () => {
+  const handleExportBrowserScript = (fileName: string) => {
     const test = convertToTest({
       browserEvents,
     })
-
-    const fileName = generateFileNameWithTimestamp('js', 'BrowserTest')
 
     emitScript(test)
       .then((script) => window.studio.script.saveScript(script, fileName))
@@ -144,17 +131,6 @@ export function RecordingPreviewer() {
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-              {settings?.recorder.enableBrowserRecorder && (
-                <>
-                  <DropdownMenu.Item
-                    disabled={browserEvents.length === 0}
-                    onClick={handleExportBrowserScript}
-                  >
-                    Export browser script
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Separator />
-                </>
-              )}
               <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
                 Delete
               </DropdownMenu.Item>
@@ -168,6 +144,7 @@ export function RecordingPreviewer() {
           groups={groups}
           requests={proxyData}
           browserEvents={browserEvents}
+          onExportBrowserScript={handleExportBrowserScript}
         />
       )}
 
