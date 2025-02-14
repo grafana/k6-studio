@@ -47,7 +47,6 @@ export function InlineEditor({
         <input
           value={localValue}
           onChange={(e) => setValue(e.target.value)}
-          onBlur={() => onSave(localValue)}
           css={{
             outline: '1px solid var(--focus-8)',
           }}

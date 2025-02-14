@@ -10,7 +10,7 @@ export function useRenameFile(file: StudioFile) {
   return useMutation({
     mutationFn: (newName: string) =>
       window.studio.ui.renameFile(file.fileName, newName, file.type),
-    onMutate: (newName: string) => {
+    onSuccess: (_, newName) => {
       // There's a slight delay between the add and remove callbacks being triggered,
       // causing the UI to flicker because it thinks the renamed file is actually
       // a new file. To prevent this, we optimistically update the file list.
@@ -21,17 +21,6 @@ export function useRenameFile(file: StudioFile) {
       }
       removeFile(file)
       addFile(updatedFile)
-
-      return { updatedFile }
-    },
-    onError: (_, __, context) => {
-      if (!context) {
-        return
-      }
-
-      // Rollback the optimistic update
-      removeFile(context.updatedFile)
-      addFile(file)
     },
   })
 }
