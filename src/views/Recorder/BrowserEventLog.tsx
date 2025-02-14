@@ -1,7 +1,7 @@
 import {
   BrowserEvent,
-  ClickEvent,
-  PageNavigationEvent,
+  ClickedEvent,
+  NavigatedToPageEvent,
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
@@ -16,8 +16,9 @@ import {
   TargetIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
-import { Flex, Table, Tooltip, Kbd } from '@radix-ui/themes'
-import { Fragment } from 'react'
+import { Flex, Table, Tooltip, Kbd, Button } from '@radix-ui/themes'
+import { Fragment, useState } from 'react'
+import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
 
 function formatOptions(options: string[]) {
   if (options.length === 1) {
@@ -52,7 +53,7 @@ function Selector({ children }: SelectorProps) {
   return <strong>{children}</strong>
 }
 
-function getModifierKeys(modifiers: ClickEvent['modifiers']) {
+function getModifierKeys(modifiers: ClickedEvent['modifiers']) {
   const keys = []
   const platform = window.studio.app.platform
 
@@ -81,25 +82,25 @@ interface EventIconProps {
 
 function EventIcon({ event }: EventIconProps) {
   switch (event.type) {
-    case 'page-navigation':
+    case 'navigated-to-page':
       return <GlobeIcon />
 
-    case 'page-reload':
+    case 'reloaded-page':
       return <UpdateIcon />
 
-    case 'click':
+    case 'clicked':
       return <TargetIcon />
 
-    case 'input-change':
+    case 'input-changed':
       return <InputIcon />
 
-    case 'check':
+    case 'check-changed':
       return event.checked ? <CheckCircledIcon /> : <CircleIcon />
 
-    case 'switch':
+    case 'radio-changed':
       return <RadiobuttonIcon />
 
-    case 'select':
+    case 'select-changed':
       return <DropdownMenuIcon />
 
     case 'form-submitted':
@@ -111,7 +112,7 @@ function EventIcon({ event }: EventIconProps) {
 }
 
 interface PageNavigationDescriptionProps {
-  event: PageNavigationEvent
+  event: NavigatedToPageEvent
 }
 
 function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
@@ -122,14 +123,8 @@ function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
   )
 
   switch (event.source) {
-    case 'interaction':
-      return <>Navigated to {url} by interacting with the page.</>
-
-    case 'script':
-      return <>Navigated to {url} by a script.</>
-
     case 'address-bar':
-      return <>Navigated to {url} using the address bar.</>
+      return <>Navigated to {url}.</>
 
     case 'history':
       return <>Navigated to {url} using the browser history.</>
@@ -139,7 +134,7 @@ function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
   }
 }
 
-function getButtonDescription(event: ClickEvent) {
+function getButtonDescription(event: ClickedEvent) {
   switch (event.button) {
     case 'left':
       return 'Clicked'
@@ -156,7 +151,7 @@ function getButtonDescription(event: ClickEvent) {
 }
 
 interface ClickDescriptionProps {
-  event: ClickEvent
+  event: ClickedEvent
 }
 
 function ClickDescription({ event }: ClickDescriptionProps) {
@@ -179,16 +174,16 @@ interface EventDescriptionProps {
 
 function EventDescription({ event }: EventDescriptionProps) {
   switch (event.type) {
-    case 'page-navigation':
+    case 'navigated-to-page':
       return <PageNavigationDescription event={event} />
 
-    case 'page-reload':
+    case 'reloaded-page':
       return <>Reloaded page.</>
 
-    case 'click':
+    case 'clicked':
       return <ClickDescription event={event} />
 
-    case 'input-change':
+    case 'input-changed':
       return (
         <>
           Changed input of <Selector>{event.selector}</Selector> to{' '}
@@ -196,7 +191,7 @@ function EventDescription({ event }: EventDescriptionProps) {
         </>
       )
 
-    case 'check':
+    case 'check-changed':
       return (
         <>
           {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
@@ -204,7 +199,7 @@ function EventDescription({ event }: EventDescriptionProps) {
         </>
       )
 
-    case 'switch':
+    case 'radio-changed':
       return (
         <>
           Switched value of <strong>{event.name}</strong> to{' '}
@@ -212,7 +207,7 @@ function EventDescription({ event }: EventDescriptionProps) {
         </>
       )
 
-    case 'select':
+    case 'select-changed':
       return (
         <>
           Selected {formatOptions(event.selected)} from{' '}
@@ -234,14 +229,39 @@ function EventDescription({ event }: EventDescriptionProps) {
 
 interface BrowserEventLogProps {
   events: BrowserEvent[]
+  onExportScript?: (fileName: string) => void
 }
 
-export function BrowserEventLog({ events }: BrowserEventLogProps) {
+export function BrowserEventLog({
+  events,
+  onExportScript,
+}: BrowserEventLogProps) {
+  const [showExportDialog, setShowExportDialog] = useState(false)
+
+  function handleExportScriptClick() {
+    setShowExportDialog(true)
+  }
+
   return (
     <Flex direction="column" minHeight="0" height="100%">
+      {onExportScript && (
+        <Flex justify="end" align="center" p="1" pr="2">
+          <Flex gap="2" align="center">
+            <Button
+              size="2"
+              variant="outline"
+              onClick={handleExportScriptClick}
+            >
+              Export script
+            </Button>
+          </Flex>
+        </Flex>
+      )}
+
       <Table.Root
         layout="fixed"
         css={css`
+          border-top: 1px solid var(--gray-6);
           height: 100%;
         `}
       >
@@ -269,6 +289,14 @@ export function BrowserEventLog({ events }: BrowserEventLogProps) {
           })}
         </Table.Body>
       </Table.Root>
+      {onExportScript && (
+        <ExportScriptDialog
+          open={showExportDialog}
+          scriptName="my-browser-script.js"
+          onOpenChange={setShowExportDialog}
+          onExport={onExportScript}
+        />
+      )}
     </Flex>
   )
 }
