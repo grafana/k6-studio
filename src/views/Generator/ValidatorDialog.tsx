@@ -59,12 +59,15 @@ export function ValidatorDialog({
   }, [open, handleRunScript])
 
   useEffect(() => {
-    const onScriptExecutionComplete = () => setIsRunning(false)
+    return window.studio.script.onScriptFinished(() => {
+      setIsRunning(false)
+    })
+  }, [])
 
-    return () => {
-      window.studio.script.onScriptFinished(onScriptExecutionComplete)
-      window.studio.script.onScriptFailed(onScriptExecutionComplete)
-    }
+  useEffect(() => {
+    return window.studio.script.onScriptFailed(() => {
+      setIsRunning(false)
+    })
   }, [])
 
   return (
