@@ -23,13 +23,9 @@
     <a href="https://github.com/grafana/k6-studio/issues">Report issues</a>
 </p>
 
----
-
-<p align="center">⚠️</p>
-
-**_This application is currently in the public preview stage. Bugs and breaking changes might occur prior to general availability. Please report any issues or feedback to help us improve._**
-
----
+> [!WARNING]  
+> Grafana k6 Studio is currently in [Public Preview](https://grafana.com/docs/release-life-cycle/#public-preview)
+> Bugs and breaking changes might occur prior to general availability. Please report any issues or feedback to help us improve.
 
 <p align="center">
   <img src="assets/k6-studio-screenshot.png" alt="k6 Studio" width="600" />
@@ -49,7 +45,8 @@ https://github.com/user-attachments/assets/46ccd340-804f-4aa5-b3a4-acec9f6a2dcd
 
 Grafana k6 Studio is available for Mac and Windows (Linux support coming soon). You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
 
-> ⚠️ [Google Chrome](https://www.google.com/chrome/browser-tools/) needs to be installed on your machine for the recording functionality to work.
+> [!IMPORTANT]  
+> Google Chrome](https://www.google.com/chrome/browser-tools/) needs to be installed on your machine for the recording functionality to work.
 
 ## How it works
 
