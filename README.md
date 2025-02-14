@@ -23,11 +23,11 @@
     <a href="https://github.com/grafana/k6-studio/issues">Report issues</a>
 </p>
 
---- 
+---
 
 <p align="center">⚠️</p>
 
-***This application is currently in the public preview stage. Bugs and breaking changes might occur prior to general availability. Please report any issues or feedback to help us improve.***
+**_This application is currently in the public preview stage. Bugs and breaking changes might occur prior to general availability. Please report any issues or feedback to help us improve._**
 
 ---
 
@@ -35,7 +35,7 @@
   <img src="assets/k6-studio-screenshot.png" alt="k6 Studio" width="600" />
 </p>
 
-With **k6 Studio**, you can quickly record a user flow in a browser, generate and inspect a HAR recording, customize your test script using predefined or custom rules, and test and debug your script to ensure it's working as expected.
+With **Grafana k6 Studio**, you can quickly record a user flow in a browser, generate and inspect a HAR recording, customize your test script using predefined or custom rules, and test and debug your script to ensure it's working as expected.
 
 The goal is to provide **a seamless experience** for generating k6 test scripts, making it easier for anyone to create performance tests in an interactive interface.
 
@@ -47,17 +47,18 @@ https://github.com/user-attachments/assets/46ccd340-804f-4aa5-b3a4-acec9f6a2dcd
 
 ## Installation
 
-k6 Studio is available for Mac and Windows (Linux support coming soon). You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
+Grafana k6 Studio is available for Mac and Windows (Linux support coming soon). You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
 
 > ⚠️ [Google Chrome](https://www.google.com/chrome/browser-tools/) needs to be installed on your machine for the recording functionality to work.
 
 ## How it works
 
-k6 Studio is composed of three main components:
+Grafana k6 Studio is composed of three main components:
 
 ### Recorder
 
 The recorder is designed to generate a HAR recording of the user flow you want to test. When you start a recording, a new browser window opens, and every request is collected to generate the HAR file. You can also create groups during the recording to better organize your test script.
+
 > The recorder uses a proxy to catch requests from the specific browser window, which is powered by [mitmproxy](https://github.com/mitmproxy/mitmproxy).
 
 ### Generator
@@ -74,11 +75,11 @@ You can view the selected k6 script, all the requests and responses sent with th
 
 ## Support
 
-If you have any issues with k6 Studio, would like to report a bug, or suggest new features, open a ticket [here](https://github.com/grafana/k6-studio/issues).
+If you have any issues with Grafana k6 Studio, would like to report a bug, or suggest new features, open a ticket [here](https://github.com/grafana/k6-studio/issues).
 
 ## License
 
-k6 Studio is distributed under the [AGPL-3.0 license](https://github.com/grafana/k6-studio/blob/master/LICENSE).
+Grafana k6 Studio is distributed under the [AGPL-3.0 license](https://github.com/grafana/k6-studio/blob/master/LICENSE).
 
 ---
 
@@ -90,7 +91,8 @@ The proxy doesn't capture traffic when sent directly to `localhost`. To fix that
 To do that, modify the `hosts` file on your system, for example, `127.0.0.1 myapp`, and then you will be able to make requests in the browser at `myapp:8000/path`.
 
 ### "Proxy failed to start" error
-If you're on a Mac, make sure you're not running the k6 Studio application from the Downloads folder. If that's the case, close the app, move the application file to the Applications folder, and start the app again.
+
+If you're on a Mac, make sure you're not running the Grafana k6 Studio application from the Downloads folder. If that's the case, close the app, move the application file to the Applications folder, and start the app again.
 
 ### Application logs
 
@@ -103,7 +105,7 @@ When opening an issue, please include a tail of your log file.
 
 ## Usage collection
 
-By default, k6 Studio sends an anonymous usage report so that we can track relevant information to be able to build the product making better data-driven decisions. Prioritizing the features that benefit the most and reducing the impact of changes.
+By default, Grafana k6 Studio sends an anonymous usage report so that we can track relevant information to be able to build the product making better data-driven decisions. Prioritizing the features that benefit the most and reducing the impact of changes.
 
 For more information visit the [documentation](https://grafana.com/docs/k6-studio/set-up/usage-collection/).
 

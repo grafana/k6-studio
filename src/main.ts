@@ -155,7 +155,7 @@ const createWindow = async () => {
   if (getPlatform() === 'mac') {
     app.dock.setIcon(icon)
   }
-  app.setName('k6 Studio')
+  app.setName('Grafana k6 Studio')
 
   // clean leftover proxies if any, this might happen on windows
   await cleanUpProxies()
@@ -172,7 +172,7 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'k6 Studio (public preview)',
+    title: 'Grafana k6 Studio (public preview)',
     backgroundColor: nativeTheme.themeSource === 'light' ? '#fff' : '#111110',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
