@@ -167,3 +167,25 @@ window.addEventListener(
   },
   { capture: true, passive: true }
 )
+
+window.addEventListener('submit', (ev) => {
+  if (ev.target instanceof Element === false) {
+    return
+  }
+
+  // The `submitter` property will be null if the submission was triggered by a script.
+  // In that case, we will assume that there was some other recorded action that caused
+  // that script to run.
+  if (ev.submitter === null) {
+    return
+  }
+
+  captureEvents({
+    type: 'form-submitted',
+    eventId: crypto.randomUUID(),
+    timestamp: Date.now(),
+    form: generateSelector(ev.target),
+    submitter: generateSelector(ev.submitter),
+    tab: '',
+  })
+})
