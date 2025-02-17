@@ -1,15 +1,10 @@
 import { Allotment } from 'allotment'
 import { useEffect, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
-import { Box, ScrollArea } from '@radix-ui/themes'
 
-import {
-  useGeneratorStore,
-  selectGeneratorData,
-  selectSelectedRule,
-} from '@/store/generator'
+import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { View } from '@/components/Layout/View'
-import { GeneratorSidebar } from './GeneratorSidebar'
+import { GeneratorTabs } from './GeneratorTabs'
 import { TestRuleContainer } from './TestRuleContainer'
 import {
   useGeneratorParams,
@@ -22,14 +17,14 @@ import { GeneratorControls } from './GeneratorControls'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
-import { RuleEditor } from './RuleEditor'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import log from 'electron-log/renderer'
+import { ProxyData } from '@/types'
+import { Details } from '@/components/WebLogView/Details'
 
 export function Generator() {
-  const selectedRule = useGeneratorStore(selectSelectedRule)
-
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
+  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
 
   const showToast = useToast()
   const navigate = useNavigate()
@@ -136,25 +131,26 @@ export function Generator() {
       }
       loading={isLoading}
     >
-      <Allotment defaultSizes={[3, 2]}>
-        <Allotment.Pane minSize={400}>
-          <Allotment vertical defaultSizes={[1, 1]}>
-            <Allotment.Pane minSize={300}>
-              <TestRuleContainer />
+      <Allotment defaultSizes={[1, 1]}>
+        <Allotment.Pane minSize={580}>
+          <Allotment vertical>
+            <Allotment.Pane minSize={200}>
+              <GeneratorTabs
+                onSelectRequest={setSelectedRequest}
+                selectedRequest={selectedRequest}
+              />
             </Allotment.Pane>
-            <Allotment.Pane minSize={300} visible={selectedRule !== undefined}>
-              {selectedRule !== undefined && (
-                <ScrollArea scrollbars="vertical">
-                  <Box p="3">
-                    <RuleEditor rule={selectedRule} />
-                  </Box>
-                </ScrollArea>
-              )}
+            <Allotment.Pane minSize={400}>
+              <TestRuleContainer />
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>
-        <Allotment.Pane minSize={400}>
-          <GeneratorSidebar />
+
+        <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
+          <Details
+            selectedRequest={selectedRequest}
+            onSelectRequest={setSelectedRequest}
+          />
         </Allotment.Pane>
       </Allotment>
       <UnsavedChangesDialog

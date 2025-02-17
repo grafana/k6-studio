@@ -9,7 +9,7 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import { useToast } from '@/store/ui/useToast'
 import log from 'electron-log/renderer'
 
-export function RecordingSelector() {
+export function RecordingSelector({ compact = false }: { compact?: boolean }) {
   const recordings = useStudioUIStore((store) => [...store.recordings.values()])
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
@@ -56,16 +56,18 @@ export function RecordingSelector() {
 
   return (
     <Flex gap="2" align="center">
-      <Text size="2" weight="medium" as="label" htmlFor="recording-selector">
-        Recording
-      </Text>
+      {!compact && (
+        <Text size="2" weight="medium" as="label" htmlFor="recording-selector">
+          Recording
+        </Text>
+      )}
       <Select.Root value={recordingPath} onValueChange={handleOpen}>
         <Tooltip content="Switch between different recordings.">
           <Select.Trigger
             id="recording-selector"
             placeholder="Select recording"
             css={css`
-              width: 300px;
+              width: ${compact ? 'auto' : '300px'};
               @media (max-width: 1060px) {
                 width: 125px;
               }
@@ -95,11 +97,13 @@ export function RecordingSelector() {
           ))}
         </Select.Content>
       </Select.Root>
-      <Tooltip content="Import recording">
-        <IconButton variant="ghost" color="gray" onClick={handleImport}>
-          <PlusIcon />
-        </IconButton>
-      </Tooltip>
+      {!compact && (
+        <Tooltip content="Import recording">
+          <IconButton variant="ghost" color="gray" onClick={handleImport}>
+            <PlusIcon />
+          </IconButton>
+        </Tooltip>
+      )}
     </Flex>
   )
 }
