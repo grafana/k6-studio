@@ -21,7 +21,7 @@ export default defineConfig((env) => {
         formats: ['cjs'],
       },
       rollupOptions: {
-        external,
+        external: external.filter((id) => id !== 'openid-client'),
       },
       sourcemap: true,
     },
