@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/grafana/k6-studio/compare/v0.14.0...v0.15.0) (2025-02-17)
+
+
+### Features
+
+* Update generator layout and improve empty state screens ([#428](https://github.com/grafana/k6-studio/issues/428)) ([4db4b32](https://github.com/grafana/k6-studio/commit/4db4b323200a3acdc691ebbca60ee438cd6b82d4))
+
 ## [0.14.0](https://github.com/grafana/k6-studio/compare/v0.13.0...v0.14.0) (2025-02-17)
 
 
