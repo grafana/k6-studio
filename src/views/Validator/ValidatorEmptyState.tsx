@@ -18,7 +18,7 @@ export function ValidatorEmptyState({
     return (
       <>
         <Text color="gray" size="1">
-          Validate a k6 script created outside of k6 Studio
+          Validate a k6 script created outside of Grafana k6 Studio
         </Text>
         <Button onClick={onSelectScript}>Open external script</Button>
       </>

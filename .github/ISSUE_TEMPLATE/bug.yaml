@@ -12,7 +12,7 @@ body:
       value: '## Environment'
   - type: input
     attributes:
-      label: k6 Studio version
+      label: Grafana k6 Studio version
     validations:
       required: true
   - type: input

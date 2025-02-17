@@ -35,7 +35,7 @@ export function Home() {
             font-weight: 400;
           `}
         >
-          Discover what you can do with k6 Studio
+          Discover what you can do with Grafana k6 Studio
         </Heading>
         <Text
           css={css`

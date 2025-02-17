@@ -20,8 +20,8 @@ export function ExperimentalBanner() {
         <Text weight="medium" color="orange" size="2">
           <ExclamationTriangleIcon width="18" height="18" />
           <Text>
-            This is a public preview version of k6 Studio, please report any
-            issues found on{' '}
+            This is a public preview version of Grafana k6 Studio, please report
+            any issues found on{' '}
             <Link href="" onClick={handleLinkClick}>
               GitHub
             </Link>
