@@ -5,6 +5,7 @@ import { SortableRuleList } from './SortableRuleList'
 import { css } from '@emotion/react'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { RuleEditor } from '../RuleEditor'
+import { StickyPanelHeader } from './StickyPanelHeader'
 
 export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)
@@ -18,36 +19,22 @@ export function TestRuleContainer() {
 
   return (
     <ScrollArea scrollbars="vertical">
-      <Flex
-        position="sticky"
-        align="center"
-        top="0"
-        pr="2"
-        gap="2"
-        css={css`
-          background-color: var(--color-background);
-          z-index: 1;
-        `}
-      >
-        <Heading
-          css={css`
-            font-size: 15px;
-            line-height: 24px;
-            font-weight: 500;
-            padding: var(--space-2);
-          `}
-        >
-          Test rules ({rules.length})
-        </Heading>
-        <Flex gap="3">
-          <NewRuleMenu />
-        </Flex>
-      </Flex>
-
       {selectedRule && <RuleEditor rule={selectedRule} />}
 
       {!selectedRule && (
         <>
+          <StickyPanelHeader>
+            <Heading
+              css={css`
+                font-size: 15px;
+                line-height: 24px;
+                font-weight: 500;
+              `}
+            >
+              Test rules ({rules.length})
+            </Heading>
+            <NewRuleMenu />
+          </StickyPanelHeader>
           <SortableRuleList rules={rules} onSwapRules={swapRules} />
           <Flex
             py="3"

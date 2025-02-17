@@ -15,6 +15,7 @@ import { CustomCodeEditor } from './CustomCodeEditor'
 import { TestRule } from '@/types/rules'
 import { TestRuleSchema } from '@/schemas/generator'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
+import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
 
 export function RuleEditorSwitch() {
   const { watch } = useFormContext<TestRule>()
@@ -101,6 +102,17 @@ export function RuleEditor({ rule }: RuleEditorProps) {
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)}>
+        <StickyPanelHeader>
+          <Button
+            onClick={() => setSelectedRuleId(null)}
+            variant="ghost"
+            color="gray"
+            size="1"
+          >
+            <ChevronLeftIcon />
+            Back to rule list
+          </Button>
+        </StickyPanelHeader>
         <Box
           position="relative"
           p="2"
@@ -122,10 +134,6 @@ export function RuleEditor({ rule }: RuleEditorProps) {
           </Box>
           {!rule.enabled && <RuleDisabledWarning />}
           <RuleEditorSwitch />
-          <Button onClick={() => setSelectedRuleId(null)} variant="soft">
-            <ChevronLeftIcon />
-            Back to rule list
-          </Button>
         </Box>
       </form>
     </FormProvider>
