@@ -7,12 +7,27 @@ import {
   pluginHotRestart,
 } from './vite.base.config'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import * as dotenv from 'dotenv'
+
+function getDotEnv() {
+  return Object.fromEntries(
+    Object.entries(dotenv.config().parsed ?? {}).map(([key, value]) => [
+      key,
+      JSON.stringify(value),
+    ])
+  )
+}
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'build'>
   const { forgeConfigSelf } = forgeEnv
-  const define = getBuildDefine(forgeEnv)
+
+  const define = {
+    ...getDotEnv(),
+    ...getBuildDefine(forgeEnv),
+  }
+
   const config: UserConfig = {
     build: {
       lib: {

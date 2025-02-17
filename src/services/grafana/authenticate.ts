@@ -20,14 +20,19 @@ const TokenResponseSchema = z.object({
 // The device code flow is currently not documented in Grafana's openid-configuration,
 // so we need to hard code the metadata here instead of using the discovery endpoint.
 const metadata: ServerMetadata = {
-  issuer: 'https://grafana-dev.com/api/openid',
-  authorization_endpoint: 'https://grafana-dev.com/oauth2/authorize',
-  token_endpoint: 'https://grafana-dev.com/api/oauth2/token',
-  userinfo_endpoint: 'https://grafana-dev.com/api/openid/userinfo',
-  device_authorization_endpoint:
-    'https://grafana-dev.com/api/oauth2/device/codes',
+  issuer: new URL('openid', GRAFANA_API_URL).toString(),
+  authorization_endpoint: new URL(
+    'oauth2/authorize',
+    GRAFANA_API_URL
+  ).toString(),
+  token_endpoint: new URL('oauth2/token', GRAFANA_API_URL).toString(),
+  userinfo_endpoint: new URL('openid/userinfo', GRAFANA_API_URL).toString(),
+  device_authorization_endpoint: new URL(
+    'oauth2/device/codes',
+    GRAFANA_API_URL
+  ).toString(),
 
-  jwks_uri: 'https://grafana-dev.com/api/openid/keys',
+  jwks_uri: new URL('openid/keys', GRAFANA_API_URL).toString(),
   grant_types_supported: ['authorization_code'],
   response_types_supported: ['code'],
   subject_types_supported: ['public'],
@@ -115,13 +120,11 @@ async function fetchAndPatch(
   return fetch(input, init)
 }
 
-const __GRAFANA_CLIENT_ID__ = '79f2ccaf4550fb15f0f2'
-
 export async function authenticate(
   signal: AbortSignal,
   onUserCode: (verificationUrl: string, code: string) => void
 ): Promise<[string, CloudProfile]> {
-  const config = new Configuration(metadata, __GRAFANA_CLIENT_ID__)
+  const config = new Configuration(metadata, GRAFANA_CLIENT_ID)
 
   config[customFetch] = fetchAndPatch
 

@@ -1,8 +1,69 @@
-import { app, BrowserWindow, ipcMain, safeStorage, shell } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  IpcMainEvent,
+  safeStorage,
+  shell,
+} from 'electron'
 import { CloudProfile, UserProfile } from './schemas/profile'
-import { authenticate } from './services/grafana'
+import { authenticate } from './services/grafana/authenticate'
 import path from 'path'
 import { writeFile, readFile, rm } from 'fs/promises'
+import { fetchInstances } from './services/grafana'
+import { fetchPersonalToken } from './services/k6'
+
+interface WaitForDone<T> {
+  status: 'done'
+  data: T
+}
+
+interface WaitForAborted {
+  status: 'aborted'
+}
+
+type WaitForResult<T> = WaitForDone<T> | WaitForAborted
+
+interface WaitForOptions {
+  event: string
+  signal: AbortSignal
+  timeout?: number
+}
+
+async function waitFor<T>({
+  event,
+  signal,
+  timeout = Infinity,
+}: WaitForOptions) {
+  return new Promise<WaitForResult<T>>((resolve, reject) => {
+    const handleMessage = (_: IpcMainEvent, data: T) => {
+      clearTimeout(timeoutId)
+
+      resolve({
+        status: 'done',
+        data,
+      })
+    }
+
+    const timeoutId = setTimeout(() => {
+      ipcMain.removeListener(event, handleMessage)
+
+      reject(new Error(`Timeout waiting for "${event}"`))
+    }, timeout)
+
+    signal.addEventListener('abort', () => {
+      clearTimeout(timeoutId)
+
+      ipcMain.removeListener(event, handleMessage)
+
+      resolve({
+        status: 'aborted',
+      })
+    })
+
+    ipcMain.once(event, handleMessage)
+  })
+}
 
 const fileName =
   process.env.NODE_ENV === 'development'
@@ -43,7 +104,24 @@ export function initAuth(browserWindow: BrowserWindow) {
       }
     )
 
-    const encryptedToken = safeStorage.encryptString(token).toString('base64')
+    const instances = await fetchInstances(token)
+
+    browserWindow.webContents.send('auth:instances-fetched', instances)
+
+    const stackId = await waitFor<string>({
+      event: 'auth:stack-id-selected',
+      signal: pending.signal,
+    })
+
+    if (stackId.status === 'aborted') {
+      return
+    }
+
+    const apiTokenResponse = await fetchPersonalToken(stackId.data, token)
+
+    const encryptedToken = safeStorage
+      .encryptString(apiTokenResponse.api_token)
+      .toString('base64')
 
     await writeFile(
       filePath,
