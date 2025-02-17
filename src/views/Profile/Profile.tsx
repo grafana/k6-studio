@@ -15,6 +15,7 @@ export function Profile() {
         css={css`
           transform: translateY(-25%);
         `}
+        minHeight="350px"
       >
         <ProfileState state={state} onStateChange={setState} />
       </Flex>

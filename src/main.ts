@@ -678,7 +678,7 @@ ipcMain.on('splashscreen:close', (event) => {
 
 ipcMain.handle('browser:open:external:link', (_, url: string) => {
   console.info('browser:open:external:link event received')
-  return shell.openExternal(url)
+  return shell.openExternal(url).catch(() => {})
 })
 
 ipcMain.on('log:open', () => {

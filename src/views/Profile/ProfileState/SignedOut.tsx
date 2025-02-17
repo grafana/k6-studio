@@ -23,7 +23,12 @@ interface SignedOutStateProps {
 
 export function SignedOut({ onSignIn }: SignedOutStateProps) {
   const handleSignInClick = () => {
-    onSignIn({ type: 'signing-in' })
+    onSignIn({
+      type: 'signing-in',
+      state: {
+        type: 'initializing',
+      },
+    })
   }
 
   return (

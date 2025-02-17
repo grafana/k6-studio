@@ -1,3 +1,5 @@
+import { SignInProcessState } from '../GrafanaCloudSignIn/types'
+
 export interface LoadingState {
   type: 'loading'
 }
@@ -16,6 +18,7 @@ export interface SignedInState {
 
 export interface SigningInState {
   type: 'signing-in'
+  state: SignInProcessState
 }
 
 export type SignInState =
