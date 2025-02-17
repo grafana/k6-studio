@@ -1,12 +1,8 @@
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Button, Callout, IconButton, Tooltip } from '@radix-ui/themes'
-import {
-  ChevronLeftIcon,
-  Cross2Icon,
-  InfoCircledIcon,
-} from '@radix-ui/react-icons'
+import { Box, Button, Callout } from '@radix-ui/themes'
+import { ChevronLeftIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 
 import { useGeneratorStore } from '@/store/generator'
 import { exhaustive } from '@/utils/typescript'
@@ -31,7 +27,7 @@ export function RuleEditorSwitch() {
 
     case 'verification':
       return (
-        <Callout.Root mr="5" mb="4">
+        <Callout.Root mb="4">
           <Callout.Icon>
             <InfoCircledIcon />
           </Callout.Icon>
@@ -47,7 +43,7 @@ export function RuleEditorSwitch() {
 
 function RuleDisabledWarning() {
   return (
-    <Callout.Root mb="4" mr="5">
+    <Callout.Root mb="4">
       <Callout.Icon>
         <InfoCircledIcon />
       </Callout.Icon>
@@ -103,35 +99,12 @@ export function RuleEditor({ rule }: RuleEditorProps) {
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <StickyPanelHeader>
-          <Button
-            onClick={() => setSelectedRuleId(null)}
-            variant="ghost"
-            color="gray"
-            size="1"
-          >
+          <Button onClick={handleClose} variant="ghost" color="gray" size="1">
             <ChevronLeftIcon />
             Back to rule list
           </Button>
         </StickyPanelHeader>
-        <Box
-          position="relative"
-          p="2"
-          pr="4"
-          css={{ borderTop: '1px solid var(--gray-3)' }}
-        >
-          <Box position="absolute" right="-5px" top="-5px">
-            <Tooltip content="Close">
-              <IconButton
-                variant="ghost"
-                title="close"
-                m="3"
-                onClick={handleClose}
-                type="button"
-              >
-                <Cross2Icon />
-              </IconButton>
-            </Tooltip>
-          </Box>
+        <Box p="2" pr="4" css={{ borderTop: '1px solid var(--gray-3)' }}>
           {!rule.enabled && <RuleDisabledWarning />}
           <RuleEditorSwitch />
         </Box>
