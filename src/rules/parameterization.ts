@@ -7,6 +7,7 @@ import {
 import { exhaustive } from '@/utils/typescript'
 import { replaceRequestValues } from './shared'
 import { matchFilter } from './utils'
+import { getFileNameWithoutExtension } from '@/utils/file'
 
 export function createParameterizationRuleInstance(
   rule: ParameterizationRule,
@@ -87,6 +88,11 @@ function getRuleValue(rule: ParameterizationRule, id: number) {
 
     case 'variable':
       return `\${VARS['${value.variableName}']}`
+
+    case 'dataFileValue': {
+      const displayName = getFileNameWithoutExtension(value.fileName)
+      return `\${FILE_ITEMS['${displayName}']['${value.propertyName}']}`
+    }
 
     case 'customCode':
       return `\${getParameterizationValue${id}()}`

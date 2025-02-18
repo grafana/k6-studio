@@ -6,6 +6,7 @@ import { useGeneratorStore } from '@/store/generator'
 import { exhaustive } from '@/utils/typescript'
 import { VariableSelect } from './VariableSelect'
 import { CustomCode } from './CustomCode'
+import { FileSelect } from './FileSelect'
 
 export function ValueEditor() {
   const {
@@ -13,17 +14,17 @@ export function ValueEditor() {
     formState: { errors },
   } = useFormContext<ParameterizationRule>()
 
-  const variablesExist = useGeneratorStore(
-    (state) => state.variables.length > 0
-  )
-
-  const variablesLabel = variablesExist
-    ? 'Variables'
-    : 'Variables (add in test options)'
+  const hasVariables = useGeneratorStore((state) => state.variables.length > 0)
+  const hasFiles = useGeneratorStore((state) => state.files.length > 0)
 
   const VALUE_TYPE_OPTIONS = [
     { value: 'string', label: 'Text value' },
-    { value: 'variable', label: variablesLabel, disabled: !variablesExist },
+    { value: 'variable', label: 'Variable', disabled: !hasVariables },
+    {
+      value: 'dataFileValue',
+      label: 'Value from data file',
+      disabled: !hasFiles,
+    },
     { value: 'customCode', label: 'Custom code' },
   ]
 
@@ -59,6 +60,9 @@ function ValueTypeSwitch() {
       )
     case 'variable':
       return <VariableSelect />
+
+    case 'dataFileValue':
+      return <FileSelect />
 
     case 'customCode':
       return <CustomCode />

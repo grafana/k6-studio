@@ -1,13 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { TrashIcon } from '@radix-ui/react-icons'
-import {
-  Button,
-  IconButton,
-  TextField,
-  Text,
-  Code,
-  Tooltip,
-} from '@radix-ui/themes'
+import { Button, IconButton, TextField, Text, Tooltip } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import {
   useForm,
@@ -66,9 +59,7 @@ export function VariablesEditor() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Text size="2" as="p" mb="2">
-        Define custom variables and use them in your custom code rules, for
-        example:
-        <Code>{'VARS["variable_0"]'}</Code>.
+        Define variables and use them in your test rules.
       </Text>
       <Table.Root size="1" variant="surface">
         <Table.Header>
