@@ -80,7 +80,11 @@ export function GeneratorTabs({
                 )}
               </Flex>
               <Flex pr="2" pl="4" gap="4">
-                <Text as="label" size="1">
+                <Text
+                  as="label"
+                  size="1"
+                  color={!rulesEnabled ? 'gray' : undefined}
+                >
                   <Flex gap="2">
                     <Switch
                       size="1"
