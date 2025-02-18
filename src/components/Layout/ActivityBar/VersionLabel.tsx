@@ -5,7 +5,7 @@ export function VersionLabel() {
     <Tooltip
       content={
         <>
-          This is a public preview version of k6 Studio.
+          This is a public preview version of Grafana k6 Studio.
           <br />
           Please report any issues you encounter.
         </>
