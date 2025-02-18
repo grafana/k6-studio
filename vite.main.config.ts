@@ -9,12 +9,14 @@ import {
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import * as dotenv from 'dotenv'
 
-function getDotEnv() {
+function getDotEnv(defaults: Record<string, string>) {
+  const env = {
+    ...defaults,
+    ...dotenv.config().parsed,
+  }
+
   return Object.fromEntries(
-    Object.entries(dotenv.config().parsed ?? {}).map(([key, value]) => [
-      key,
-      JSON.stringify(value),
-    ])
+    Object.entries(env).map(([key, value]) => [key, JSON.stringify(value)])
   )
 }
 
@@ -24,8 +26,12 @@ export default defineConfig((env) => {
   const { forgeConfigSelf } = forgeEnv
 
   const define = {
-    ...getDotEnv(),
     ...getBuildDefine(forgeEnv),
+    ...getDotEnv({
+      GRAFANA_CLIENT_ID: '<tbd>',
+      K6_API_URL: 'https://api.k6.io/v6',
+      GRAFANA_API_URL: 'https://grafana.com/api',
+    }),
   }
 
   const config: UserConfig = {
