@@ -1,3 +1,5 @@
+import { CloudProfile } from '@/schemas/profile'
+
 export interface Stack {
   id: string
   name: string
@@ -55,3 +57,22 @@ export type SignInProcessState =
   | StackLoginRequiredState
   | TimedOutState
   | UnexpectedErrorState
+
+export interface Authenticated {
+  type: 'authenticated'
+  profile: CloudProfile
+}
+
+export interface Denied {
+  type: 'denied'
+}
+
+export interface TimedOut {
+  type: 'timed-out'
+}
+
+export interface Aborted {
+  type: 'aborted'
+}
+
+export type SignInResult = Authenticated | Denied | TimedOut | Aborted

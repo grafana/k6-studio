@@ -17,9 +17,11 @@ import {
   AwaitingAuthorizationState,
   FetchingStacksState,
   SelectingStackState,
+  SignInResult,
   TimedOutState,
 } from './types/auth'
 import log from 'electron-log/main'
+import { ClientError } from 'openid-client'
 
 interface WaitForDone<T> {
   status: 'done'
@@ -82,6 +84,13 @@ const fileName =
 
 const filePath = path.join(app.getPath('userData'), fileName)
 
+function wasAborted(error: unknown): boolean {
+  return (
+    (error instanceof ClientError && error.code == 'OAUTH_ABORT') ||
+    (error instanceof Error && error.name === 'AbortError')
+  )
+}
+
 export function initAuth(browserWindow: BrowserWindow) {
   ipcMain.handle('auth:get-profile', async (): Promise<UserProfile> => {
     try {
@@ -102,7 +111,7 @@ export function initAuth(browserWindow: BrowserWindow) {
 
   let pending: AbortController | null = null
 
-  ipcMain.handle('auth:sign-in', async () => {
+  ipcMain.handle('auth:sign-in', async (): Promise<SignInResult> => {
     try {
       if (pending !== null) {
         pending?.abort()
@@ -130,7 +139,9 @@ export function initAuth(browserWindow: BrowserWindow) {
           type: 'authorization-denied',
         } satisfies AuthorizationDeniedState)
 
-        return
+        return {
+          type: 'denied',
+        }
       }
 
       if (result.type === 'timed-out') {
@@ -138,7 +149,9 @@ export function initAuth(browserWindow: BrowserWindow) {
           type: 'timed-out',
         } satisfies TimedOutState)
 
-        return
+        return {
+          type: 'timed-out',
+        }
       }
 
       browserWindow.webContents.send('auth:state-change', {
@@ -165,7 +178,9 @@ export function initAuth(browserWindow: BrowserWindow) {
       })
 
       if (stack.status === 'aborted') {
-        return
+        return {
+          type: 'aborted',
+        }
       }
 
       const apiTokenResponse = await fetchPersonalToken(
@@ -175,7 +190,9 @@ export function initAuth(browserWindow: BrowserWindow) {
       )
 
       if (signal.aborted) {
-        return
+        return {
+          type: 'aborted',
+        }
       }
 
       const encryptedToken = safeStorage
@@ -190,10 +207,15 @@ export function initAuth(browserWindow: BrowserWindow) {
         })
       )
 
-      return result.profile
+      return {
+        type: 'authenticated',
+        profile: result.profile,
+      }
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        return
+      if (wasAborted(error)) {
+        return {
+          type: 'aborted',
+        }
       }
 
       log.error('Unexpected error occurred during sign-in.', error)

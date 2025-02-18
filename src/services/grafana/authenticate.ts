@@ -4,6 +4,7 @@ import {
   customFetch,
   initiateDeviceAuthorization,
   pollDeviceAuthorizationGrant,
+  ResponseBodyError,
   ServerMetadata,
   TokenEndpointResponse,
 } from 'openid-client'
@@ -79,22 +80,55 @@ async function fetchAndPatch(
       })
     }
 
-    // The device code flow throws a 403 while polling for the token,
-    // but it should return a 400 with `error` set to `authorization_pending`.
-    // We parse the response and modify it to match the expected response.
+    // The API returns 403 when we should poll again or when the token
+    // has expired. It should be returning a 400 with a specific error
+    // so we need to patch the response.
     if (response.status === 403) {
       const data = (await response.json()) as { message: string }
 
-      if (data.message !== 'Authorization pending') {
-        return new Response(JSON.stringify(data), {
-          status: 403,
-          statusText: 'Forbidden',
-          headers: response.headers,
+      // To keep polling we need to return a 400 with `error` set to `authorization_pending`.
+      if (data.message === 'Authorization pending') {
+        const body = {
+          error: 'authorization_pending',
+        }
+
+        return new Response(JSON.stringify(body), {
+          status: 400,
+          statusText: 'Bad Request',
+          headers: {
+            ...response.headers,
+            'Content-Type': 'application/json',
+          },
         })
       }
 
+      // If the token has expired we need to return a 400 with `error` set to `expired_token`.
+      if (data.message === 'Code expired') {
+        const body = {
+          error: 'expired_token',
+        }
+
+        return new Response(JSON.stringify(body), {
+          status: 400,
+          statusText: 'Bad Request',
+          headers: {
+            ...response.headers,
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+
+      // Since we've already read the body, we need to return a new response.
+      return new Response(JSON.stringify(data), {
+        status: 403,
+        statusText: 'Forbidden',
+        headers: response.headers,
+      })
+    }
+
+    if (response.status === 404) {
       const body = {
-        error: 'authorization_pending',
+        error: 'access_denied',
       }
 
       return new Response(JSON.stringify(body), {
@@ -140,8 +174,6 @@ export async function authenticate({
 }: AuthenticateOptions): Promise<AuthenticateResult> {
   const config = new Configuration(metadata, GRAFANA_CLIENT_ID)
 
-  console.log(GRAFANA_API_URL)
-
   config[customFetch] = fetchAndPatch
 
   const initResponse = await initiateDeviceAuthorization(config, {
@@ -176,8 +208,23 @@ export async function authenticate({
       },
     }
   } catch (error) {
-    // TODO: Handle timeouts and denied authorizations.
-    console.log(error)
+    if (
+      error instanceof ResponseBodyError &&
+      error.cause.error === 'access_denied'
+    ) {
+      return {
+        type: 'denied',
+      }
+    }
+
+    if (
+      error instanceof ResponseBodyError &&
+      error.cause.error === 'expired_token'
+    ) {
+      return {
+        type: 'timed-out',
+      }
+    }
 
     throw error
   }

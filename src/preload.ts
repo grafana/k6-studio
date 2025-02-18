@@ -8,8 +8,8 @@ import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 import * as Sentry from './sentry'
 import { DataFilePreview } from './types/testData'
-import { CloudProfile, UserProfile } from './schemas/profile'
-import { SignInProcessState, Stack } from './types/auth'
+import { UserProfile } from './schemas/profile'
+import { SignInProcessState, SignInResult, Stack } from './types/auth'
 
 interface GetFilesResponse {
   recordings: StudioFile[]
@@ -217,7 +217,7 @@ const auth = {
   getProfile: (): Promise<UserProfile> => {
     return ipcRenderer.invoke('auth:get-profile')
   },
-  signIn: (): Promise<CloudProfile> => {
+  signIn: (): Promise<SignInResult> => {
     return ipcRenderer.invoke('auth:sign-in')
   },
   selectStack: (stack: Stack) => {

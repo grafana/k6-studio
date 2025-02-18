@@ -48,7 +48,7 @@ export function SignInProcess({
       return <TimedOut state={state} onRetry={onRetry} />
 
     case 'authorization-denied':
-      return <AuthorizationDenied state={state} />
+      return <AuthorizationDenied state={state} onRetry={onRetry} />
 
     case 'unexpected-error':
       return <UnexpectedError state={state} />
@@ -81,8 +81,12 @@ export function GrafanaCloudSignIn({
 
     window.studio.auth
       .signIn()
-      .then((profile) => {
-        onSignInRef.current(profile)
+      .then((result) => {
+        if (result.type !== 'authenticated') {
+          return
+        }
+
+        onSignInRef.current(result.profile)
       })
       .catch(() => {
         setState({
@@ -111,6 +115,14 @@ export function GrafanaCloudSignIn({
     return window.studio.auth.onStateChange(setState)
   }, [])
 
+  useEffect(() => {
+    return () => {
+      window.studio.auth.abortSignIn().catch(() => {
+        // Ignore errors when aborting the sign-in process.
+      })
+    }
+  }, [])
+
   const handleAbort = () => {
     window.studio.auth.abortSignIn().catch(() => {
       setState({
@@ -122,7 +134,7 @@ export function GrafanaCloudSignIn({
   }
 
   const handleRetry = () => {
-    if (state.type !== 'timed-out') {
+    if (state.type !== 'timed-out' && state.type !== 'authorization-denied') {
       return
     }
 
