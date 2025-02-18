@@ -39,7 +39,7 @@ export function ValidatorControls({
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <Tooltip
-            content="Validate a k6 script created outside of k6 Studio"
+            content="Validate a k6 script created outside of Grafana k6 Studio"
             side="left"
           >
             <DropdownMenu.Item onClick={onSelectScript}>

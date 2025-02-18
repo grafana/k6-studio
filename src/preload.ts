@@ -70,8 +70,11 @@ const script = {
   showScriptSelectDialog: (): Promise<string | void> => {
     return ipcRenderer.invoke('script:select')
   },
-  openScript: (filePath: string): Promise<string> => {
-    return ipcRenderer.invoke('script:open', filePath)
+  openScript: (
+    scriptPath: string,
+    absolute: boolean = false
+  ): Promise<string> => {
+    return ipcRenderer.invoke('script:open', scriptPath, absolute)
   },
   runScriptFromGenerator: (script: string): Promise<void> => {
     return ipcRenderer.invoke('script:run-from-generator', script)
@@ -153,7 +156,7 @@ const ui = {
     oldFileName: string,
     newFileName: string,
     type: StudioFile['type']
-  ): Promise<string> => {
+  ): Promise<void> => {
     return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName, type)
   },
 } as const

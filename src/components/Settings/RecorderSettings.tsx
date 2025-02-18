@@ -57,7 +57,7 @@ export const RecorderSettings = () => {
         name="recorder.browserPath"
         onSelectFile={handleSelectFile}
         buttonText="Select executable"
-        hint="The location of the browser executable (k6 Studio currently supports Chrome)"
+        hint="The location of the browser executable (Grafana k6 Studio currently supports Chrome)"
         disabled={recorder.detectBrowserPath}
       />
 

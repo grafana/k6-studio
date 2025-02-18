@@ -2,15 +2,15 @@ import { css } from '@emotion/react'
 import { NavLink, useNavigate } from 'react-router-dom'
 
 import { FileActionsMenu, FileContextMenu } from './FileContextMenu'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Grid, Tooltip } from '@radix-ui/themes'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useBoolean } from 'react-use'
 import { InlineEditor } from './InlineEditor'
 import { getViewPath } from '@/utils/file'
-import { useStudioUIStore } from '@/store/ui'
 import { FileItem } from './types'
 import { HighlightedText } from '../HighlightedText'
+import { useRenameFile } from './File.hooks'
 
 interface FileProps {
   file: FileItem
@@ -77,10 +77,7 @@ function EditableFile({
   setEditMode,
 }: FileProps & { editMode: boolean; setEditMode: (value: boolean) => void }) {
   const linkRef = useRef<HTMLAnchorElement>(null)
-  const [displayName, setDisplayName] = useState(file.displayName)
-
-  const addFile = useStudioUIStore((state) => state.addFile)
-  const removeFile = useStudioUIStore((state) => state.removeFile)
+  const { mutateAsync: renameFile } = useRenameFile(file)
 
   const navigate = useNavigate()
 
@@ -89,16 +86,7 @@ function EditableFile({
 
   const handleSave = async (newValue: string) => {
     const newFileName = `${newValue}.${fileExtension}`
-
-    await window.studio.ui.renameFile(file.fileName, newFileName, file.type)
-
-    // There's a slight delay between the add and remove callbacks being triggered,
-    // causing the UI to flicker because it thinks the renamed file is actually
-    // a new file. To prevent this, we optimistically update the file list.
-    removeFile(file)
-    addFile({ ...file, fileName: newFileName })
-
-    setDisplayName(newValue)
+    await renameFile(newFileName)
     setEditMode(false)
 
     if (isSelected) {
@@ -109,7 +97,7 @@ function EditableFile({
   if (editMode) {
     return (
       <InlineEditor
-        value={displayName}
+        value={file.displayName}
         onSave={handleSave}
         onCancel={() => setEditMode(false)}
         style={fileStyle}
@@ -119,7 +107,7 @@ function EditableFile({
 
   return (
     <Tooltip
-      content={displayName}
+      content={file.displayName}
       side="right"
       sideOffset={24}
       hidden={!hasEllipsis}

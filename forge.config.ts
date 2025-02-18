@@ -8,6 +8,18 @@ import { VitePlugin } from '@electron-forge/plugin-vite'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { FuseV1Options, FuseVersion } from '@electron/fuses'
 import { getPlatform, getArch } from './src/utils/electron'
+import path from 'path'
+
+function getPlatformSpecificResources() {
+  // on mac we are using a single image to build both architectures so we
+  // will need to include both binaries in the final package for it to work.
+  // Otherwise the x86_64 build will still be having the resources/arm64 only binaries
+  if (getPlatform() === 'mac') {
+    return ['./resources/mac/arm64', './resources/mac/x86_64']
+  }
+
+  return [path.join('./resources/', getPlatform(), getArch())]
+}
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -21,7 +33,7 @@ const config: ForgeConfig = {
       './resources/splashscreen.html',
       './resources/logo-splashscreen-dark.svg',
       './resources/logo-splashscreen.svg',
-      './resources/' + getPlatform() + '/' + getArch(),
+      ...getPlatformSpecificResources(),
     ],
     osxSign: {
       optionsForFile: () => {

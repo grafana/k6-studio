@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Callout, IconButton, Tooltip } from '@radix-ui/themes'
-import { Cross2Icon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { Box, Button, Callout } from '@radix-ui/themes'
+import { ChevronLeftIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 
 import { useGeneratorStore } from '@/store/generator'
 import { exhaustive } from '@/utils/typescript'
@@ -11,6 +11,7 @@ import { CustomCodeEditor } from './CustomCodeEditor'
 import { TestRule } from '@/types/rules'
 import { TestRuleSchema } from '@/schemas/generator'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
+import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
 
 export function RuleEditorSwitch() {
   const { watch } = useFormContext<TestRule>()
@@ -26,7 +27,7 @@ export function RuleEditorSwitch() {
 
     case 'verification':
       return (
-        <Callout.Root>
+        <Callout.Root mb="4">
           <Callout.Icon>
             <InfoCircledIcon />
           </Callout.Icon>
@@ -97,20 +98,13 @@ export function RuleEditor({ rule }: RuleEditorProps) {
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box position="relative">
-          <Box position="absolute" right="-15px" top="-15px">
-            <Tooltip content="Close">
-              <IconButton
-                variant="ghost"
-                title="close"
-                m="3"
-                onClick={handleClose}
-                type="button"
-              >
-                <Cross2Icon />
-              </IconButton>
-            </Tooltip>
-          </Box>
+        <StickyPanelHeader>
+          <Button onClick={handleClose} variant="ghost" color="gray" size="1">
+            <ChevronLeftIcon />
+            Back to rule list
+          </Button>
+        </StickyPanelHeader>
+        <Box p="2" pr="4" css={{ borderTop: '1px solid var(--gray-3)' }}>
           {!rule.enabled && <RuleDisabledWarning />}
           <RuleEditorSwitch />
         </Box>

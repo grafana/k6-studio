@@ -15,8 +15,8 @@ export const TelemetrySettings = () => {
     <SettingsSection>
       <Flex gap="2" mb="4">
         <Text size="2" as="label">
-          k6 Studio collects anonymous telemetry data to improve performance and
-          user experience.{' '}
+          Grafana k6 Studio collects anonymous telemetry data to improve
+          performance and user experience.{' '}
           <Link href="" onClick={handleLinkClick}>
             Learn more.
           </Link>

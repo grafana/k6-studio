@@ -25,10 +25,7 @@ export function generateThresholds(thresholds: Threshold[]) {
   const result: Record<string, Array<string | AbortableThreshold>> = {}
 
   thresholds.forEach((threshold) => {
-    const key =
-      threshold.url !== '*'
-        ? `'${threshold.metric}{url:${threshold.url}}'`
-        : threshold.metric
+    const key = threshold.metric
 
     if (!result[key]) {
       result[key] = []
