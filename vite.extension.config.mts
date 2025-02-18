@@ -1,4 +1,5 @@
 import type { BuildOptions, ConfigEnv, InlineConfig, UserConfig } from 'vite'
+import type { Manifest } from 'webextension-polyfill'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
@@ -39,10 +40,10 @@ export default defineConfig((env) => {
         htmlViteConfig: viteConfig,
         scriptViteConfig: viteConfig,
 
-        manifest: () => {
+        manifest: (): Manifest.WebExtensionManifest => {
           return {
             name: 'k6 Studio',
-            version,
+            version: version.replace(/-.*/, ''),
             manifest_version: 3,
             background: {
               service_worker: 'extension/src/background.ts',
