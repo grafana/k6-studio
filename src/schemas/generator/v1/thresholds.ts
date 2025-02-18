@@ -39,7 +39,6 @@ export const ThresholdStatisticSchema = z.enum([
 export const ThresholdSchema = z.object({
   id: z.string(),
   metric: ThresholdMetricSchema,
-  url: z.string().optional(),
   statistic: ThresholdStatisticSchema,
   condition: ThresholdConditionSchema,
   value: z

@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.14.0](https://github.com/grafana/k6-studio/compare/v0.13.0...v0.14.0) (2025-02-17)
+
+
+### Features
+
+* Add Thresholds support in Test options ([#468](https://github.com/grafana/k6-studio/issues/468)) ([2960535](https://github.com/grafana/k6-studio/commit/2960535c3a52ec4fe462071f91eee5aa86a46880))
+
+
+### Bug Fixes
+
+* Old name is shown when trying to rename file again ([#487](https://github.com/grafana/k6-studio/issues/487)) ([cf9e462](https://github.com/grafana/k6-studio/commit/cf9e462c5dab2aafb084cd9f29d8bf2965d5f4b9))
+* Validator requires admin role on Windows ([#492](https://github.com/grafana/k6-studio/issues/492)) ([7f1cb65](https://github.com/grafana/k6-studio/commit/7f1cb6534d4173191d4010e5cb6ac207279c103d))
+
 ## [0.13.0](https://github.com/grafana/k6-studio/compare/v0.12.0...v0.13.0) (2025-02-13)
 
 

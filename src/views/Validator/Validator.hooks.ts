@@ -6,7 +6,7 @@ export function useScriptPath() {
   const { state } = useLocation() as { state: { externalScriptPath: string } }
 
   return {
-    scriptPath: fileName || state?.externalScriptPath,
+    scriptPath: state?.externalScriptPath ? state.externalScriptPath : fileName,
     isExternal: Boolean(state?.externalScriptPath),
   }
 }

@@ -29,6 +29,8 @@ export function TestRuleToggle({ ruleId, isEnabled }: TestRuleToggleProps) {
           }}
           variant="soft"
           color="gray"
+          // Prevent toggle from opening the rule editor
+          onClick={(e) => e.stopPropagation()}
         />
       </span>
     </Tooltip>

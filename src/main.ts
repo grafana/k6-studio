@@ -7,12 +7,12 @@ import {
   shell,
 } from 'electron'
 import {
+  access,
   copyFile,
   writeFile,
   unlink,
   readdir,
   rename,
-  access,
   readFile,
   stat,
 } from 'fs/promises'
@@ -31,7 +31,8 @@ import {
   GENERATORS_PATH,
   RECORDINGS_PATH,
   SCRIPTS_PATH,
-  SCRIPTS_TEMP_PATH,
+  TEMP_GENERATOR_SCRIPT_PATH,
+  TEMP_SCRIPT_SUFFIX,
 } from './constants/workspace'
 import {
   sendToast,
@@ -43,7 +44,6 @@ import invariant from 'tiny-invariant'
 import {
   FILE_SIZE_PREVIEW_THRESHOLD,
   INVALID_FILENAME_CHARS,
-  TEMP_GENERATOR_SCRIPT_FILENAME,
 } from './constants/files'
 import { HarWithOptionalResponse } from './types/har'
 import { GeneratorFileData } from './types/generator'
@@ -335,14 +335,21 @@ ipcMain.handle('script:select', async (event) => {
   return scriptPath
 })
 
-ipcMain.handle('script:open', async (_, fileName: string) => {
-  const script = await readFile(path.join(SCRIPTS_PATH, fileName), {
-    encoding: 'utf-8',
-    flag: 'r',
-  })
+ipcMain.handle(
+  'script:open',
+  async (_, scriptPath: string, absolute: boolean = false) => {
+    const resolvedScriptPath = absolute
+      ? scriptPath
+      : path.join(SCRIPTS_PATH, scriptPath)
 
-  return script
-})
+    const script = await readFile(resolvedScriptPath, {
+      encoding: 'utf-8',
+      flag: 'r',
+    })
+
+    return script
+  }
+)
 
 ipcMain.handle(
   'script:run',
@@ -356,12 +363,12 @@ ipcMain.handle(
       ? scriptPath
       : path.join(SCRIPTS_PATH, scriptPath)
 
-    currentk6Process = await runScript(
+    currentk6Process = await runScript({
       browserWindow,
-      resolvedScriptPath,
-      appSettings.proxy.port,
-      appSettings.telemetry.usageReport
-    )
+      scriptPath: resolvedScriptPath,
+      proxyPort: appSettings.proxy.port,
+      usageReport: appSettings.telemetry.usageReport,
+    })
   }
 )
 
@@ -377,20 +384,18 @@ ipcMain.on('script:stop', (event) => {
 })
 
 ipcMain.handle('script:run-from-generator', async (event, script: string) => {
-  const scriptFromGeneratorPath = path.join(
-    SCRIPTS_TEMP_PATH,
-    TEMP_GENERATOR_SCRIPT_FILENAME
-  )
-  await writeFile(scriptFromGeneratorPath, script)
+  await writeFile(TEMP_GENERATOR_SCRIPT_PATH, script)
 
   const browserWindow = browserWindowFromEvent(event)
 
-  currentk6Process = await runScript(
+  currentk6Process = await runScript({
     browserWindow,
-    scriptFromGeneratorPath,
-    appSettings.proxy.port,
-    appSettings.telemetry.usageReport
-  )
+    scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
+    proxyPort: appSettings.proxy.port,
+    usageReport: appSettings.telemetry.usageReport,
+  })
+
+  await unlink(TEMP_GENERATOR_SCRIPT_PATH)
 })
 
 ipcMain.handle(
@@ -537,7 +542,7 @@ ipcMain.handle('ui:get-files', async () => {
     .filter((f) => typeof f !== 'undefined')
 
   const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile())
+    .filter((f) => f.isFile() && !f.name.endsWith(TEMP_SCRIPT_SUFFIX))
     .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
     .filter((f) => typeof f !== 'undefined')
 
@@ -580,12 +585,14 @@ ipcMain.handle(
         await access(newPath)
         throw new Error(`File with name ${newFileName} already exists`)
       } catch (error) {
-        if (isNodeJsErrnoException(error) && error.code !== 'ENOENT') {
-          throw error
+        // Only rename if the error code is ENOENT (file does not exist)
+        if (isNodeJsErrnoException(error) && error.code === 'ENOENT') {
+          await rename(oldPath, newPath)
+          return
         }
-      }
 
-      await rename(oldPath, newPath)
+        throw error
+      }
     } catch (e) {
       log.error(e)
       browserWindow &&
@@ -678,7 +685,7 @@ ipcMain.on('splashscreen:close', (event) => {
 
 ipcMain.handle('browser:open:external:link', (_, url: string) => {
   console.info('browser:open:external:link event received')
-  return shell.openExternal(url).catch(() => {})
+  return shell.openExternal(url)
 })
 
 ipcMain.on('log:open', () => {
@@ -853,7 +860,7 @@ function configureWatcher(browserWindow: BrowserWindow) {
   watcher.on('add', (filePath) => {
     const file = getStudioFileFromPath(filePath)
 
-    if (!file) {
+    if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
       return
     }
 
@@ -863,7 +870,7 @@ function configureWatcher(browserWindow: BrowserWindow) {
   watcher.on('unlink', (filePath) => {
     const file = getStudioFileFromPath(filePath)
 
-    if (!file) {
+    if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
       return
     }
 

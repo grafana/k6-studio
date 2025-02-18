@@ -1,30 +1,41 @@
-import { css } from '@emotion/react'
-import { Flex, Text } from '@radix-ui/themes'
+import { Flex, FlexProps, Text } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import grotIllustration from '@/assets/grot.svg'
 
-interface EmptyMessageProps {
+const illustrations = {
+  notFound: {
+    src: grotIllustration,
+    defaultWidth: 250,
+  },
+} as const
+
+type EmptyMessageProps = FlexProps & {
   message: ReactNode
+  illustration?: keyof typeof illustrations
+  action?: ReactNode
 }
 
-export function EmptyMessage({ message }: EmptyMessageProps) {
+export function EmptyMessage({
+  message,
+  action,
+  illustration = 'notFound',
+  ...flexProps
+}: EmptyMessageProps) {
   return (
-    <Flex direction="column" align="center" gap="4" pt="8">
+    <Flex direction="column" align="center" gap="4" pt="8" {...flexProps}>
       <img
-        src={grotIllustration}
+        src={illustrations[illustration].src}
         role="presentation"
-        css={css`
-          width: 50%;
-          max-width: 300px;
-        `}
+        css={{ maxWidth: illustrations[illustration].defaultWidth }}
       />
       {typeof message === 'string' ? (
-        <Text color="gray" size="1">
+        <Text color="gray" size="2">
           {message}
         </Text>
       ) : (
         message
       )}
+      {action}
     </Flex>
   )
 }

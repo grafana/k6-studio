@@ -9,7 +9,6 @@ interface FeaturesStore {
 
 const defaultFeatures: Record<Feature, boolean> = {
   'data-files': false,
-  thresholds: false,
   'cloud-auth': false,
 }
 

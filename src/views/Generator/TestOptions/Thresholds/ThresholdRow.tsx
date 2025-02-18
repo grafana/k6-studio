@@ -13,9 +13,6 @@ import {
   THRESHOLD_CONDITIONS_OPTIONS,
   getMetricUnit,
 } from './Thresholds.utils'
-import { useThresholdURLOptions } from './Thresholds.hooks'
-import { css } from '@emotion/react'
-import { useTheme } from '@/hooks/useTheme'
 import { useEffect } from 'react'
 import { ThresholdData, Threshold } from '@/types/testOptions'
 
@@ -34,9 +31,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
     setValue,
   } = useFormContext<ThresholdData>()
 
-  const urlOptions = useThresholdURLOptions()
   const threshold = watch('thresholds')[index] as Threshold
-  const theme = useTheme()
 
   // Handle selected statistic when the metric field changes
   useEffect(() => {
@@ -63,34 +58,10 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
         </FieldGroup>
       </Table.Cell>
       <Table.Cell>
-        <FieldGroup errors={errors} name={`thresholds.${index}.url`} mb="0">
-          <ControlledSelect
-            options={urlOptions}
-            control={control}
-            name={`thresholds.${index}.url`}
-            tooltipProps={{
-              content:
-                threshold.url === '*' ? 'Across all URLs' : threshold.url,
-            }}
-            contentProps={{
-              css: css`
-                .rt-SelectLabel {
-                  background-color: ${theme === 'dark'
-                    ? 'var(--gray-6)'
-                    : 'var(--gray-3)'};
-                  color: var(--sand-12);
-                  padding: 0 var(--space-2);
-                }
-              `,
-            }}
-          />
-        </FieldGroup>
-      </Table.Cell>
-      <Table.Cell>
         <FieldGroup
           mb="0"
           errors={errors}
-          name={`thresholds.${index}.statisic`}
+          name={`thresholds.${index}.statistic`}
         >
           <ControlledSelect
             control={control}

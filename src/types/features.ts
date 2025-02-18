@@ -1,1 +1,1 @@
-export type Feature = 'data-files' | 'thresholds' | 'cloud-auth'
+export type Feature = 'data-files' | 'cloud-auth'
