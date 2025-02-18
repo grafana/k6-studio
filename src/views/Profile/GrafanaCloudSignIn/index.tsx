@@ -127,7 +127,10 @@ export function GrafanaCloudSignIn({
   }, [handleSignIn])
 
   useEffect(() => {
-    // Keep a reference to the latest onSignIn callback.
+    // We need to keep a reference to the latest `onSignIn` callback
+    // because the sign in process is long-lived. If we don't do it
+    // then we might be acting on an outdated callback when the sign-in
+    // is completed.
     onSignInRef.current = onSignIn
   }, [onSignIn])
 
