@@ -5,7 +5,10 @@ import { useTheme } from '@/hooks/useTheme'
 export function RulesDisabledOverlay() {
   const theme = useTheme()
   const rulesEnabled = useGeneratorStore((store) => store.rulesEnabled)
-  if (rulesEnabled) return null
+
+  if (rulesEnabled) {
+    return null
+  }
 
   return (
     <Flex
