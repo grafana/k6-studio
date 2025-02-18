@@ -1,4 +1,3 @@
-import { CloudProfile } from '@/schemas/profile'
 import {
   Configuration,
   customFetch,
@@ -150,7 +149,7 @@ async function fetchAndPatch(
 interface GrantedResult {
   type: 'granted'
   token: string
-  profile: CloudProfile
+  email: string
 }
 
 interface DeniedResult {
@@ -202,10 +201,7 @@ export async function authenticate({
     return {
       type: 'granted',
       token: parsedData.access_token,
-      profile: {
-        type: 'cloud',
-        email: parsedData.info.email,
-      },
+      email: parsedData.info.email,
     }
   } catch (error) {
     if (

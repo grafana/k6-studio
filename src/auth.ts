@@ -6,20 +6,13 @@ import {
   safeStorage,
   shell,
 } from 'electron'
-import { CloudProfile, UserProfile } from './schemas/profile'
+import { Profile, ProfileSchema, UserInfo } from './schemas/profile'
 import { authenticate } from './services/grafana/authenticate'
 import path from 'path'
 import { writeFile, readFile, rm } from 'fs/promises'
 import { fetchInstances } from './services/grafana'
 import { fetchPersonalToken } from './services/k6'
-import {
-  AuthorizationDeniedState,
-  AwaitingAuthorizationState,
-  FetchingStacksState,
-  SelectingStackState,
-  SignInResult,
-  TimedOutState,
-} from './types/auth'
+import { SignInProcessState, SignInResult, Stack } from './types/auth'
 import log from 'electron-log/main'
 import { ClientError } from 'openid-client'
 
@@ -91,22 +84,29 @@ function wasAborted(error: unknown): boolean {
   )
 }
 
+async function getCurrentProfile() {
+  try {
+    const file = await readFile(filePath, 'utf-8')
+
+    return ProfileSchema.parse(JSON.parse(file))
+  } catch {
+    return null
+  }
+}
+
 export function initAuth(browserWindow: BrowserWindow) {
-  ipcMain.handle('auth:get-profile', async (): Promise<UserProfile> => {
-    try {
-      const file = await readFile(filePath, 'utf-8')
+  function notifyStateChange(state: SignInProcessState) {
+    browserWindow.webContents.send('auth:state-change', state)
+  }
 
-      const { profile } = JSON.parse(file) as {
-        token: string
-        profile: CloudProfile
-      }
+  ipcMain.handle('auth:get-user', async (): Promise<UserInfo | null> => {
+    const profile = await getCurrentProfile()
 
-      return profile
-    } catch {
-      return {
-        type: 'anonymous',
-      }
+    if (profile === null) {
+      return null
     }
+
+    return profile.user
   })
 
   let pending: AbortController | null = null
@@ -127,40 +127,43 @@ export function initAuth(browserWindow: BrowserWindow) {
         onUserCode: async (verificationUrl, code) => {
           await shell.openExternal(verificationUrl)
 
-          browserWindow.webContents.send('auth:state-change', {
+          notifyStateChange({
             type: 'awaiting-authorization',
             code,
-          } satisfies AwaitingAuthorizationState)
+          })
         },
       })
 
       if (result.type === 'denied') {
-        browserWindow.webContents.send('auth:state-change', {
-          type: 'authorization-denied',
-        } satisfies AuthorizationDeniedState)
-
         return {
           type: 'denied',
         }
       }
 
       if (result.type === 'timed-out') {
-        browserWindow.webContents.send('auth:state-change', {
-          type: 'timed-out',
-        } satisfies TimedOutState)
-
         return {
           type: 'timed-out',
         }
       }
 
-      browserWindow.webContents.send('auth:state-change', {
+      const currentProfile = await getCurrentProfile()
+
+      if (
+        currentProfile !== null &&
+        currentProfile?.user.email !== result.email
+      ) {
+        return {
+          type: 'conflict',
+        }
+      }
+
+      notifyStateChange({
         type: 'fetching-stacks',
-      } satisfies FetchingStacksState)
+      })
 
       const instances = await fetchInstances(result.token, signal)
 
-      browserWindow.webContents.send('auth:state-change', {
+      notifyStateChange({
         type: 'selecting-stack',
         stacks: instances.items.map((instance) => {
           return {
@@ -170,9 +173,9 @@ export function initAuth(browserWindow: BrowserWindow) {
             archived: instance.status === 'archived',
           }
         }),
-      } satisfies SelectingStackState)
+      })
 
-      const stack = await waitFor<string>({
+      const stack = await waitFor<Stack>({
         event: 'auth:select-stack',
         signal: signal,
       })
@@ -184,7 +187,7 @@ export function initAuth(browserWindow: BrowserWindow) {
       }
 
       const apiTokenResponse = await fetchPersonalToken(
-        stack.data,
+        stack.data.id,
         result.token,
         signal
       )
@@ -199,17 +202,32 @@ export function initAuth(browserWindow: BrowserWindow) {
         .encryptString(apiTokenResponse.api_token)
         .toString('base64')
 
-      await writeFile(
-        filePath,
-        JSON.stringify({
-          token: encryptedToken,
-          profile: result.profile,
-        })
-      )
+      const newProfile: Profile = {
+        version: '1.0',
+        tokens: {
+          ...currentProfile?.tokens,
+          [stack.data.id]: encryptedToken,
+        },
+        user: {
+          name: null,
+          email: result.email,
+          currentStack: stack.data.id,
+          stacks: {
+            ...currentProfile?.user.stacks,
+            [stack.data.id]: {
+              id: stack.data.id,
+              name: stack.data.name,
+              url: stack.data.url,
+            },
+          },
+        },
+      }
+
+      await writeFile(filePath, JSON.stringify(newProfile, null, 2))
 
       return {
         type: 'authenticated',
-        profile: result.profile,
+        user: newProfile.user,
       }
     } catch (error) {
       if (wasAborted(error)) {
@@ -231,15 +249,35 @@ export function initAuth(browserWindow: BrowserWindow) {
     pending = null
   })
 
-  ipcMain.handle('auth:sign-out', async (): Promise<UserProfile> => {
+  ipcMain.handle('auth:change-stack', async (_event, stackId: string) => {
+    const profile = await getCurrentProfile()
+
+    if (profile === null) {
+      throw new Error('No profile found')
+    }
+
+    if (profile.user.stacks[stackId] === undefined) {
+      throw new Error('Stack not found')
+    }
+
+    const newProfile: Profile = {
+      ...profile,
+      user: {
+        ...profile.user,
+        currentStack: stackId,
+      },
+    }
+
+    await writeFile(filePath, JSON.stringify(newProfile, null, 2))
+
+    return newProfile.user
+  })
+
+  ipcMain.handle('auth:sign-out', async (): Promise<void> => {
     try {
       await rm(filePath)
     } catch {
       // If it's not there, then we're already signed out.
-    }
-
-    return {
-      type: 'anonymous',
     }
   })
 }

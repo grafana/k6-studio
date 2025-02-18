@@ -1,4 +1,4 @@
-import { CloudProfile } from '@/schemas/profile'
+import { UserInfo } from '@/schemas/profile'
 
 export interface Stack {
   id: string
@@ -18,6 +18,10 @@ export interface AwaitingAuthorizationState {
 
 export interface AuthorizationDeniedState {
   type: 'authorization-denied'
+}
+
+export interface SignOutRequiredState {
+  type: 'sign-out-required'
 }
 
 export interface FetchingStacksState {
@@ -51,6 +55,7 @@ export type SignInProcessState =
   | InitializingState
   | AwaitingAuthorizationState
   | AuthorizationDeniedState
+  | SignOutRequiredState
   | FetchingStacksState
   | SelectingStackState
   | FetchingTokenState
@@ -60,11 +65,15 @@ export type SignInProcessState =
 
 export interface Authenticated {
   type: 'authenticated'
-  profile: CloudProfile
+  user: UserInfo
 }
 
 export interface Denied {
   type: 'denied'
+}
+
+export interface Conflict {
+  type: 'conflict'
 }
 
 export interface TimedOut {
@@ -75,4 +84,9 @@ export interface Aborted {
   type: 'aborted'
 }
 
-export type SignInResult = Authenticated | Denied | TimedOut | Aborted
+export type SignInResult =
+  | Authenticated
+  | Denied
+  | Conflict
+  | TimedOut
+  | Aborted

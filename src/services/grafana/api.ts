@@ -45,11 +45,9 @@ export async function fetchInstances(token: string, signal?: AbortSignal) {
     throw new Error("Couldn't fetch profile.")
   }
 
-  const profile = (await profileResponse.json()) as unknown
+  const profile = ProfileResponseSchema.parse(await profileResponse.json())
 
-  const p = ProfileResponseSchema.parse(profile)
-
-  const orgIdIn = p.orgs.map((org) => org.login).join(',')
+  const orgIdIn = profile.orgs.map((org) => org.login).join(',')
 
   const stacksResponse = await fetch(
     `https://grafana-dev.com/api/instances?orgSlugIn=${orgIdIn}`,

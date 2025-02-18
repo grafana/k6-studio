@@ -9,10 +9,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Flex } from '@radix-ui/themes'
 import { GrafanaLogo } from '../GrafanaLogo'
 import { TimedOut } from './TimedOut'
-import { SignInProcessState, Stack } from '@/types/auth'
+import { SignInProcessState, SignInResult, Stack } from '@/types/auth'
 import { AuthorizationDenied } from './AuthorizationDenied'
 import { UnexpectedError } from './UnexpectedError'
-import { CloudProfile } from '@/schemas/profile'
+import { UserInfo } from '@/schemas/profile'
+import { SignOutRequired } from './SignOutRequired'
 
 interface SignInProcessProps {
   state: SignInProcessState
@@ -32,6 +33,12 @@ export function SignInProcess({
     case 'awaiting-authorization':
       return <AwaitingAuthorization state={state} />
 
+    case 'authorization-denied':
+      return <AuthorizationDenied state={state} onRetry={onRetry} />
+
+    case 'sign-out-required':
+      return <SignOutRequired state={state} />
+
     case 'fetching-stacks':
       return <FetchingStacks state={state} />
 
@@ -47,9 +54,6 @@ export function SignInProcess({
     case 'timed-out':
       return <TimedOut state={state} onRetry={onRetry} />
 
-    case 'authorization-denied':
-      return <AuthorizationDenied state={state} onRetry={onRetry} />
-
     case 'unexpected-error':
       return <UnexpectedError state={state} />
 
@@ -59,7 +63,7 @@ export function SignInProcess({
 }
 
 interface GrafanaCloudSignInProps {
-  onSignIn: (profile: CloudProfile) => void
+  onSignIn: (user: UserInfo) => void
   onAbort: () => void
 }
 
@@ -74,6 +78,39 @@ export function GrafanaCloudSignIn({
     type: 'initializing',
   })
 
+  const handleSignIn = useCallback((result: SignInResult) => {
+    switch (result.type) {
+      case 'authenticated':
+        onSignInRef.current(result.user)
+        break
+
+      case 'conflict':
+        setState({
+          type: 'sign-out-required',
+        })
+        break
+
+      case 'timed-out':
+        setState({
+          type: 'timed-out',
+        })
+        break
+
+      case 'denied':
+        setState({
+          type: 'authorization-denied',
+        })
+        break
+
+      case 'aborted':
+        break
+
+      default:
+        exhaustive(result)
+        break
+    }
+  }, [])
+
   const triggerSignIn = useCallback(() => {
     setState({
       type: 'initializing',
@@ -81,19 +118,13 @@ export function GrafanaCloudSignIn({
 
     window.studio.auth
       .signIn()
-      .then((result) => {
-        if (result.type !== 'authenticated') {
-          return
-        }
-
-        onSignInRef.current(result.profile)
-      })
+      .then(handleSignIn)
       .catch(() => {
         setState({
           type: 'unexpected-error',
         })
       })
-  }, [])
+  }, [handleSignIn])
 
   useEffect(() => {
     // Keep a reference to the latest onSignIn callback.

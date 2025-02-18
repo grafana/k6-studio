@@ -1,10 +1,12 @@
-export interface AnonymousProfile {
-  type: 'anonymous'
+import { z } from 'zod'
+import * as v1 from './v1'
+
+const AnyProfileSchema = z.discriminatedUnion('version', [v1.ProfileSchema])
+
+function migrate(profile: v1.Profile) {
+  return profile
 }
 
-export interface CloudProfile {
-  type: 'cloud'
-  email: string
-}
+export const ProfileSchema = AnyProfileSchema.transform(migrate)
 
-export type UserProfile = AnonymousProfile | CloudProfile
+export { Profile, UserInfo } from './v1'

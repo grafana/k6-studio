@@ -1,4 +1,4 @@
-import { CloudProfile } from '@/schemas/profile'
+import { UserInfo } from '@/schemas/profile'
 import { SignInProcessState } from '@/types/auth'
 
 export interface LoadingState {
@@ -11,7 +11,7 @@ export interface SignedOutState {
 
 export interface SignedInState {
   type: 'signed-in'
-  profile: CloudProfile
+  user: UserInfo
 }
 
 export interface SigningInState {
@@ -19,8 +19,14 @@ export interface SigningInState {
   state: SignInProcessState
 }
 
+export interface ConfirmSignOutState {
+  type: 'confirm-sign-out'
+  user: UserInfo
+}
+
 export type SignInState =
   | LoadingState
   | SignedOutState
   | SignedInState
   | SigningInState
+  | ConfirmSignOutState
