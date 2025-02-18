@@ -24,6 +24,10 @@ const defaultOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
   scrollBeyondLastLine: false,
   scrollbar: {
     alwaysConsumeMouseWheel: true,
+    vertical: 'visible',
+    horizontal: 'visible',
+    verticalScrollbarSize: 6,
+    horizontalScrollbarSize: 6,
   },
 }
 
