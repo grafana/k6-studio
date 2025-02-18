@@ -1,4 +1,4 @@
-import { FetchingStacksState } from './types'
+import { FetchingStacksState } from '@/types/auth'
 import { LoadingMessage } from '../LoadingMessage'
 
 interface FetchingStacksProps {

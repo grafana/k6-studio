@@ -1,4 +1,5 @@
-import { SignInProcessState } from '../GrafanaCloudSignIn/types'
+import { CloudProfile } from '@/schemas/profile'
+import { SignInProcessState } from '@/types/auth'
 
 export interface LoadingState {
   type: 'loading'
@@ -10,10 +11,7 @@ export interface SignedOutState {
 
 export interface SignedInState {
   type: 'signed-in'
-  user: {
-    name: string
-    email: string
-  }
+  profile: CloudProfile
 }
 
 export interface SigningInState {

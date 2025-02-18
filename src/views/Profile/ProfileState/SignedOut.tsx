@@ -1,7 +1,7 @@
-import { Avatar } from '../Avatar'
 import { Button, Flex } from '@radix-ui/themes'
 import { SigningInState } from './types'
 import { css } from '@emotion/react'
+import { GrafanaLogo } from '../GrafanaLogo'
 
 function GrafanaIcon() {
   return (
@@ -32,8 +32,8 @@ export function SignedOut({ onSignIn }: SignedOutStateProps) {
   }
 
   return (
-    <Flex direction="column" align="center" gap="4">
-      <Avatar />
+    <Flex direction="column" align="center" gap="5">
+      <GrafanaLogo />
       <Button
         css={css`
           gap: var(--space-2);

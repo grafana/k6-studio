@@ -12,6 +12,14 @@ import path from 'path'
 import { writeFile, readFile, rm } from 'fs/promises'
 import { fetchInstances } from './services/grafana'
 import { fetchPersonalToken } from './services/k6'
+import {
+  AuthorizationDeniedState,
+  AwaitingAuthorizationState,
+  FetchingStacksState,
+  SelectingStackState,
+  TimedOutState,
+} from './types/auth'
+import log from 'electron-log/main'
 
 interface WaitForDone<T> {
   status: 'done'
@@ -30,28 +38,17 @@ interface WaitForOptions {
   timeout?: number
 }
 
-async function waitFor<T>({
-  event,
-  signal,
-  timeout = Infinity,
-}: WaitForOptions) {
+async function waitFor<T>({ event, signal, timeout }: WaitForOptions) {
   return new Promise<WaitForResult<T>>((resolve, reject) => {
-    const handleMessage = (_: IpcMainEvent, data: T) => {
-      clearTimeout(timeoutId)
+    const timeoutId =
+      timeout &&
+      setTimeout(() => {
+        ipcMain.removeListener(event, handleMessage)
 
-      resolve({
-        status: 'done',
-        data,
-      })
-    }
+        reject(new Error(`Timeout waiting for "${event}"`))
+      }, timeout)
 
-    const timeoutId = setTimeout(() => {
-      ipcMain.removeListener(event, handleMessage)
-
-      reject(new Error(`Timeout waiting for "${event}"`))
-    }, timeout)
-
-    signal.addEventListener('abort', () => {
+    const handleAbort = () => {
       clearTimeout(timeoutId)
 
       ipcMain.removeListener(event, handleMessage)
@@ -59,7 +56,20 @@ async function waitFor<T>({
       resolve({
         status: 'aborted',
       })
-    })
+    }
+
+    const handleMessage = (_: IpcMainEvent, data: T) => {
+      clearTimeout(timeoutId)
+
+      signal.removeEventListener('abort', handleAbort)
+
+      resolve({
+        status: 'done',
+        data,
+      })
+    }
+
+    signal.addEventListener('abort', handleAbort)
 
     ipcMain.once(event, handleMessage)
   })
@@ -93,49 +103,110 @@ export function initAuth(browserWindow: BrowserWindow) {
   let pending: AbortController | null = null
 
   ipcMain.handle('auth:sign-in', async () => {
-    pending = new AbortController()
-
-    const [token, profile] = await authenticate(
-      pending.signal,
-      async (verificationUrl, code) => {
-        await shell.openExternal(verificationUrl)
-
-        browserWindow.webContents.send('auth:user-code', code)
+    try {
+      if (pending !== null) {
+        pending?.abort()
+        pending = null
       }
-    )
 
-    const instances = await fetchInstances(token)
+      pending = new AbortController()
 
-    browserWindow.webContents.send('auth:instances-fetched', instances)
+      const signal = pending.signal
 
-    const stackId = await waitFor<string>({
-      event: 'auth:stack-id-selected',
-      signal: pending.signal,
-    })
+      const result = await authenticate({
+        signal,
+        onUserCode: async (verificationUrl, code) => {
+          await shell.openExternal(verificationUrl)
 
-    if (stackId.status === 'aborted') {
-      return
-    }
-
-    const apiTokenResponse = await fetchPersonalToken(stackId.data, token)
-
-    const encryptedToken = safeStorage
-      .encryptString(apiTokenResponse.api_token)
-      .toString('base64')
-
-    await writeFile(
-      filePath,
-      JSON.stringify({
-        token: encryptedToken,
-        profile,
+          browserWindow.webContents.send('auth:state-change', {
+            type: 'awaiting-authorization',
+            code,
+          } satisfies AwaitingAuthorizationState)
+        },
       })
-    )
 
-    return profile
+      if (result.type === 'denied') {
+        browserWindow.webContents.send('auth:state-change', {
+          type: 'authorization-denied',
+        } satisfies AuthorizationDeniedState)
+
+        return
+      }
+
+      if (result.type === 'timed-out') {
+        browserWindow.webContents.send('auth:state-change', {
+          type: 'timed-out',
+        } satisfies TimedOutState)
+
+        return
+      }
+
+      browserWindow.webContents.send('auth:state-change', {
+        type: 'fetching-stacks',
+      } satisfies FetchingStacksState)
+
+      const instances = await fetchInstances(result.token, signal)
+
+      browserWindow.webContents.send('auth:state-change', {
+        type: 'selecting-stack',
+        stacks: instances.items.map((instance) => {
+          return {
+            id: instance.id,
+            name: instance.name,
+            url: instance.url,
+            archived: instance.status === 'archived',
+          }
+        }),
+      } satisfies SelectingStackState)
+
+      const stack = await waitFor<string>({
+        event: 'auth:select-stack',
+        signal: signal,
+      })
+
+      if (stack.status === 'aborted') {
+        return
+      }
+
+      const apiTokenResponse = await fetchPersonalToken(
+        stack.data,
+        result.token,
+        signal
+      )
+
+      if (signal.aborted) {
+        return
+      }
+
+      const encryptedToken = safeStorage
+        .encryptString(apiTokenResponse.api_token)
+        .toString('base64')
+
+      await writeFile(
+        filePath,
+        JSON.stringify({
+          token: encryptedToken,
+          profile: result.profile,
+        })
+      )
+
+      return result.profile
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return
+      }
+
+      log.error('Unexpected error occurred during sign-in.', error)
+
+      throw error
+    } finally {
+      pending = null
+    }
   })
 
   ipcMain.handle('auth:abort', () => {
     pending?.abort()
+    pending = null
   })
 
   ipcMain.handle('auth:sign-out', async (): Promise<UserProfile> => {

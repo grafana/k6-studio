@@ -5,7 +5,7 @@ import { routeMap } from '@/routeMap'
 export function Profile() {
   return (
     <NavIconButton
-      icon={<PersonIcon />}
+      icon={<PersonIcon width="32px" height="32px" />}
       tooltip="Profile"
       to={routeMap.profile}
     />

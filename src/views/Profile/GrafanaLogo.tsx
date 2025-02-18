@@ -7,8 +7,8 @@ export function GrafanaLogo(props: ComponentProps<'svg'>) {
       id="Layer_1"
       x="0px"
       y="0px"
-      width="351px"
-      height="365px"
+      width="100px"
+      height="100px"
       viewBox="0 0 351 365"
       {...props}
     >

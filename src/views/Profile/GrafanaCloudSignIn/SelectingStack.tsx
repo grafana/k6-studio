@@ -1,5 +1,5 @@
 import { Button, Flex, Select } from '@radix-ui/themes'
-import { SelectingStackState, Stack } from './types'
+import { SelectingStackState, Stack } from '@/types/auth'
 import { useState } from 'react'
 import { ExternalLink } from '@/components/ExternalLink'
 import { css } from '@emotion/react'
@@ -28,7 +28,13 @@ export function SelectingStack({ state, onSelect }: SelectingStackProps) {
   }
 
   return (
-    <Flex direction="column" align="stretch" gap="2" width="300px">
+    <Flex
+      direction="column"
+      align="stretch"
+      gap="2"
+      minWidth="300px"
+      maxWidth="300px"
+    >
       <div
         css={css`
           text-align: center;
@@ -53,7 +59,7 @@ export function SelectingStack({ state, onSelect }: SelectingStackProps) {
       {selectedStack?.archived && (
         <AuthenticationMessage>
           This stack is archived and cannot be logged in to.{' '}
-          <ExternalLink href={`https://${selectedStack.host}`}>
+          <ExternalLink href={selectedStack.url}>
             Login to the stack
           </ExternalLink>{' '}
           to unarchive it.

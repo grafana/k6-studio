@@ -1,5 +1,6 @@
 import { SignedInState, SignedOutState, SigningInState } from './types'
 import { GrafanaCloudSignIn } from '../GrafanaCloudSignIn'
+import { CloudProfile } from '@/schemas/profile'
 
 interface SigningInStateProps {
   state: SigningInState
@@ -9,13 +10,10 @@ interface SigningInStateProps {
 }
 
 export function SigningIn({ onStateChange }: SigningInStateProps) {
-  const handleSignIn = () => {
+  const handleSignIn = (profile: CloudProfile) => {
     onStateChange({
       type: 'signed-in',
-      user: {
-        name: 'John Doe',
-        email: 'johnny@doey.com',
-      },
+      profile,
     })
   }
 

@@ -1,5 +1,5 @@
 import { Button, Flex } from '@radix-ui/themes'
-import { TimedOutState } from './types'
+import { TimedOutState } from '@/types/auth'
 import { AuthenticationMessage } from './AuthenticationMessage'
 
 interface TimedOutProps {

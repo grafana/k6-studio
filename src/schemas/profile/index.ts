@@ -4,7 +4,7 @@ export interface AnonymousProfile {
 
 export interface CloudProfile {
   type: 'cloud'
-  username: string
+  email: string
 }
 
 export type UserProfile = AnonymousProfile | CloudProfile

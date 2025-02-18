@@ -20,19 +20,12 @@ const TokenResponseSchema = z.object({
 // The device code flow is currently not documented in Grafana's openid-configuration,
 // so we need to hard code the metadata here instead of using the discovery endpoint.
 const metadata: ServerMetadata = {
-  issuer: new URL('openid', GRAFANA_API_URL).toString(),
-  authorization_endpoint: new URL(
-    'oauth2/authorize',
-    GRAFANA_API_URL
-  ).toString(),
-  token_endpoint: new URL('oauth2/token', GRAFANA_API_URL).toString(),
-  userinfo_endpoint: new URL('openid/userinfo', GRAFANA_API_URL).toString(),
-  device_authorization_endpoint: new URL(
-    'oauth2/device/codes',
-    GRAFANA_API_URL
-  ).toString(),
-
-  jwks_uri: new URL('openid/keys', GRAFANA_API_URL).toString(),
+  issuer: `${GRAFANA_API_URL}/openid`,
+  authorization_endpoint: `${GRAFANA_API_URL}/oauth2/authorize`,
+  token_endpoint: `${GRAFANA_API_URL}/oauth2/token`,
+  userinfo_endpoint: `${GRAFANA_API_URL}/openid/userinfo`,
+  device_authorization_endpoint: `${GRAFANA_API_URL}/oauth2/device/codes`,
+  jwks_uri: `${GRAFANA_API_URL}/openid/keys`,
   grant_types_supported: ['authorization_code'],
   response_types_supported: ['code'],
   subject_types_supported: ['public'],
@@ -120,16 +113,39 @@ async function fetchAndPatch(
   return fetch(input, init)
 }
 
-export async function authenticate(
-  signal: AbortSignal,
+interface GrantedResult {
+  type: 'granted'
+  token: string
+  profile: CloudProfile
+}
+
+interface DeniedResult {
+  type: 'denied'
+}
+
+interface TimedOutResult {
+  type: 'timed-out'
+}
+
+type AuthenticateResult = GrantedResult | DeniedResult | TimedOutResult
+
+interface AuthenticateOptions {
+  signal: AbortSignal
   onUserCode: (verificationUrl: string, code: string) => void
-): Promise<[string, CloudProfile]> {
+}
+
+export async function authenticate({
+  signal,
+  onUserCode,
+}: AuthenticateOptions): Promise<AuthenticateResult> {
   const config = new Configuration(metadata, GRAFANA_CLIENT_ID)
+
+  console.log(GRAFANA_API_URL)
 
   config[customFetch] = fetchAndPatch
 
   const initResponse = await initiateDeviceAuthorization(config, {
-    scope: 'openid email profile',
+    scope: 'openid email profile stacks:read',
   })
 
   onUserCode(
@@ -137,24 +153,32 @@ export async function authenticate(
     initResponse.user_code
   )
 
-  const authResponse = await pollDeviceAuthorizationGrant(
-    config,
-    initResponse,
-    {
-      scope: 'openid email profile',
-    },
-    {
-      signal,
+  try {
+    const authResponse = await pollDeviceAuthorizationGrant(
+      config,
+      initResponse,
+      {
+        scope: 'openid email profile stacks:read',
+      },
+      {
+        signal,
+      }
+    )
+
+    const parsedData = TokenResponseSchema.parse(authResponse)
+
+    return {
+      type: 'granted',
+      token: parsedData.access_token,
+      profile: {
+        type: 'cloud',
+        email: parsedData.info.email,
+      },
     }
-  )
+  } catch (error) {
+    // TODO: Handle timeouts and denied authorizations.
+    console.log(error)
 
-  const parsedData = TokenResponseSchema.parse(authResponse)
-
-  return [
-    parsedData.access_token,
-    {
-      type: 'cloud',
-      username: parsedData.info.email,
-    },
-  ]
+    throw error
+  }
 }

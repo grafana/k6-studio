@@ -1,4 +1,4 @@
-import { Box, Flex, Grid } from '@radix-ui/themes'
+import { Flex, Grid, Separator } from '@radix-ui/themes'
 
 import k6Logo from '@/assets/logo.svg'
 import k6LogoDark from '@/assets/logo-dark.svg'
@@ -12,18 +12,21 @@ import { HelpButton } from './HelpButton'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { useTheme } from '@/hooks/useTheme'
 import { Profile } from './Profile'
+import { css } from '@emotion/react'
 
 export function ActivityBar() {
   const theme = useTheme()
 
   return (
     <Flex direction="column" align="center" asChild position="relative">
-      <Box
+      <Flex
+        direction="column"
         height="100%"
         maxHeight="100%"
         maxWidth="100%"
         py="3"
         overflow="hidden"
+        gap="3"
       >
         <Flex direction="column" align="center">
           <img
@@ -32,7 +35,13 @@ export function ActivityBar() {
             width="32"
           />
         </Flex>
-        <Grid gap="5" mt="4">
+        <Grid
+          css={css`
+            flex: 1 1 0;
+          `}
+          gap="5"
+          mt="4"
+        >
           <NavIconButton
             to={getRoutePath('home')}
             icon={<HomeIcon />}
@@ -40,15 +49,18 @@ export function ActivityBar() {
           />
         </Grid>
 
-        <Flex direction="column" align="center" gap="3" mt="auto">
+        <Flex direction="column" align="center" gap="3">
           <ThemeSwitcher />
           <ProxyStatusIndicator />
           <SettingsButton />
           <HelpButton />
+        </Flex>
+        <Separator orientation="horizontal" />
+        <Flex direction="column" align="center" gap="3">
           <Profile />
           <VersionLabel />
         </Flex>
-      </Box>
+      </Flex>
     </Flex>
   )
 }

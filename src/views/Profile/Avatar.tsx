@@ -1,19 +1,21 @@
 import { css } from '@emotion/react'
 import { PersonIcon } from '@radix-ui/react-icons'
+import { Flex } from '@radix-ui/themes'
 
 export function Avatar() {
   return (
-    <div
+    <Flex
+      align="center"
+      justify="center"
       css={css`
         width: 100px;
         height: 100px;
-        padding: var(--space-6);
         border: 4px solid var(--accent-9);
         color: var(--accent-9);
         border-radius: 50%;
       `}
     >
-      <PersonIcon width="100%" height="100%" />
-    </div>
+      <PersonIcon width="64px" height="64px" />
+    </Flex>
   )
 }

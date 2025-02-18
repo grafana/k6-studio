@@ -1,15 +1,18 @@
 import { exhaustive } from '@/utils/typescript'
-import { SignInProcessState, Stack } from './types'
 import { Initializing } from './Initializing'
 import { AwaitingAuthorization } from './AwaitingAuthorization'
 import { FetchingStacks } from './FetchingStacks'
 import { SelectingStack } from './SelectingStack'
 import { FetchingToken } from './FetchingToken'
 import { StackLoginRequired } from './StackLoginRequired'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Flex } from '@radix-ui/themes'
 import { GrafanaLogo } from '../GrafanaLogo'
 import { TimedOut } from './TimedOut'
+import { SignInProcessState, Stack } from '@/types/auth'
+import { AuthorizationDenied } from './AuthorizationDenied'
+import { UnexpectedError } from './UnexpectedError'
+import { CloudProfile } from '@/schemas/profile'
 
 interface SignInProcessProps {
   state: SignInProcessState
@@ -44,13 +47,19 @@ export function SignInProcess({
     case 'timed-out':
       return <TimedOut state={state} onRetry={onRetry} />
 
+    case 'authorization-denied':
+      return <AuthorizationDenied state={state} />
+
+    case 'unexpected-error':
+      return <UnexpectedError state={state} />
+
     default:
       return exhaustive(state)
   }
 }
 
 interface GrafanaCloudSignInProps {
-  onSignIn: () => void
+  onSignIn: (profile: CloudProfile) => void
   onAbort: () => void
 }
 
@@ -58,108 +67,66 @@ export function GrafanaCloudSignIn({
   onSignIn,
   onAbort,
 }: GrafanaCloudSignInProps) {
+  const onSignInRef = useRef(onSignIn)
+  const inProgressRef = useRef(false)
+
   const [state, setState] = useState<SignInProcessState>({
     type: 'initializing',
   })
 
-  useEffect(() => {
-    setTimeout(() => {
-      setState({
-        type: 'awaiting-authorization',
-        code: '123456',
+  const triggerSignIn = useCallback(() => {
+    setState({
+      type: 'initializing',
+    })
+
+    window.studio.auth
+      .signIn()
+      .then((profile) => {
+        onSignInRef.current(profile)
       })
-    }, 2000)
+      .catch(() => {
+        setState({
+          type: 'unexpected-error',
+        })
+      })
   }, [])
 
   useEffect(() => {
-    if (state.type === 'awaiting-authorization') {
-      setTimeout(() => {
-        setState({
-          type: 'fetching-stacks',
-        })
-      }, 10000)
-    }
-  }, [state])
+    // Keep a reference to the latest onSignIn callback.
+    onSignInRef.current = onSignIn
+  }, [onSignIn])
 
   useEffect(() => {
-    if (state.type === 'fetching-stacks') {
-      setTimeout(() => {
-        setState({
-          type: 'selecting-stack',
-          stacks: [
-            {
-              id: '1',
-              name: 'Main',
-              host: 'grafana.com',
-              archived: false,
-            },
-            {
-              id: '2',
-              name: 'Personal',
-              host: 'grafana.com',
-              archived: false,
-            },
-            {
-              id: '3',
-              name: 'Archived stack',
-              host: 'grafana.com',
-              archived: true,
-            },
-            {
-              id: '4',
-              name: 'Not signed in to.',
-              host: 'grafana.com',
-              archived: false,
-            },
-          ],
-        })
-      }, 2000)
-    }
-  }, [state])
-
-  useEffect(() => {
-    if (state.type === 'fetching-token') {
-      setTimeout(() => {
-        if (state.stack.id === '4') {
-          setState({
-            type: 'stack-login-required',
-            stack: state.stack,
-          })
-        } else {
-          onSignIn()
-        }
-      }, 3000)
-
-      return () => {}
-    }
-  }, [state, onSignIn])
-
-  useEffect(() => {
-    if (state.type === 'timed-out') {
+    // Make sure we're only triggering the sign-in process once.
+    if (inProgressRef.current) {
       return
     }
 
-    const timeout = setTimeout(() => {
-      setState({
-        type: 'timed-out',
-      })
-    }, 60_000)
+    inProgressRef.current = true
 
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [state])
+    triggerSignIn()
+  }, [triggerSignIn])
+
+  useEffect(() => {
+    return window.studio.auth.onStateChange(setState)
+  }, [])
 
   const handleAbort = () => {
+    window.studio.auth.abortSignIn().catch(() => {
+      setState({
+        type: 'unexpected-error',
+      })
+    })
+
     onAbort()
   }
 
   const handleRetry = () => {
-    if (state.type === 'timed-out') {
-      setState({
-        type: 'initializing',
-      })
+    if (state.type !== 'timed-out') {
+      return
     }
+
+    triggerSignIn()
   }
 
   const handleStackSelect = (stack: Stack) => {
@@ -167,6 +134,8 @@ export function GrafanaCloudSignIn({
       type: 'fetching-token',
       stack,
     })
+
+    window.studio.auth.selectStack(stack)
   }
 
   return (

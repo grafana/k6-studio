@@ -1,5 +1,5 @@
 import { Flex } from '@radix-ui/themes'
-import { StackLoginRequiredState } from './types'
+import { StackLoginRequiredState } from '@/types/auth'
 import { ExternalLink } from '@/components/ExternalLink'
 import { AuthenticationMessage } from './AuthenticationMessage'
 import { css } from '@emotion/react'
@@ -17,7 +17,7 @@ export function StackLoginRequired({ state }: StackLoginRequiredProps) {
           css={css`
             white-space: nowrap;
           `}
-          href={`https://${state.stack.host}`}
+          href={state.stack.url}
         >
           {state.stack.name}
         </ExternalLink>{' '}
