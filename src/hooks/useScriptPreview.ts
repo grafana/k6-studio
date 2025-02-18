@@ -18,7 +18,11 @@ export function useScriptPreview() {
     const updatePreview = debounce(async (state: GeneratorStore) => {
       try {
         setError(undefined)
-        const generator = selectGeneratorData(state)
+        const generatorState = selectGeneratorData(state)
+        const generator = state.rulesEnabled
+          ? generatorState
+          : { ...generatorState, rules: [] }
+
         const requests = selectFilteredRequests(state)
 
         const script = await generateScriptPreview(generator, requests)

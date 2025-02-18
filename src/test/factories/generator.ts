@@ -43,8 +43,10 @@ export function createGeneratorState(
     deleteRule: vi.fn(),
     toggleEnableRule: vi.fn(),
     rules: [],
+    rulesEnabled: true,
     swapRules: vi.fn(),
     updateRule: vi.fn(),
+    setEnableRules: vi.fn(),
 
     includeStaticAssets: false,
     setIncludeStaticAssets: vi.fn(),

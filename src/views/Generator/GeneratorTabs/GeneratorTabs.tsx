@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
 
-import { Box, Flex, Tabs } from '@radix-ui/themes'
+import { Box, Flex, Switch, Tabs, Text } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
 import {
   selectFilteredRequests,
@@ -30,6 +30,9 @@ export function GeneratorTabs({
 
   const hasRecording = useGeneratorStore(selectHasRecording)
   const hasPreview = useGeneratorStore(selectIsRulePreviewable)
+
+  const rulesEnabled = useGeneratorStore((state) => state.rulesEnabled)
+  const setEnableRules = useGeneratorStore((state) => state.setEnableRules)
 
   useEffect(() => {
     if (!hasPreview) {
@@ -77,6 +80,16 @@ export function GeneratorTabs({
                 )}
               </Flex>
               <Flex pr="2" pl="4" gap="4">
+                <Text as="label" size="1">
+                  <Flex gap="2">
+                    <Switch
+                      size="1"
+                      checked={rulesEnabled}
+                      onCheckedChange={setEnableRules}
+                    />
+                    Apply rules
+                  </Flex>
+                </Text>
                 <TestOptions />
                 <Allowlist />
               </Flex>

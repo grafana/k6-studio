@@ -10,6 +10,8 @@ import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
+import { applyRules } from '@/rules/rules'
+import { useMemo } from 'react'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -22,6 +24,19 @@ export function RequestList({
   onSelectRequest,
   selectedRequest,
 }: RequestListProps) {
+  const rulesEnabled = useGeneratorStore((state) => state.rulesEnabled)
+  const rules = useGeneratorStore((state) => state.rules)
+
+  const requestsWithRulesApplied = useMemo(() => {
+    if (!rulesEnabled) {
+      return requests
+    }
+
+    return applyRules(requests, rules).requestSnippetSchemas.map(
+      (request) => request.data
+    )
+  }, [requests, rules, rulesEnabled])
+
   const {
     filter,
     setFilter,
@@ -29,7 +44,7 @@ export function RequestList({
     filterAllData,
     setFilterAllData,
   } = useFilterRequests({
-    proxyData: requests,
+    proxyData: requestsWithRulesApplied,
   })
   const allRequests = useGeneratorStore((state) => state.requests)
 

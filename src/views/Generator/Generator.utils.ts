@@ -22,7 +22,13 @@ export async function generateScriptPreview(
 }
 
 export async function exportScript(fileName: string) {
-  const generator = selectGeneratorData(useGeneratorStore.getState())
+  const state = useGeneratorStore.getState()
+  const generatorData = selectGeneratorData(state)
+
+  const generator = state.rulesEnabled
+    ? generatorData
+    : { ...generatorData, rules: [] }
+
   const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
   const script = await generateScriptPreview(generator, filteredRequests)
