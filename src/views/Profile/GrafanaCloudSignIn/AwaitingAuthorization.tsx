@@ -9,7 +9,7 @@ interface AwaitingAuthorizationProps {
 export function AwaitingAuthorization({ state }: AwaitingAuthorizationProps) {
   return (
     <Flex direction="column" align="center" gap="2">
-      {/* <Text align="center">Complete the sign-in in your browser.</Text> */}
+      <Text align="center">Complete the sign-in in your browser.</Text>
       <Callout.Root
         css={css`
           align-self: stretch;
@@ -24,9 +24,6 @@ export function AwaitingAuthorization({ state }: AwaitingAuthorizationProps) {
           </Text>
         </Callout.Text>
       </Callout.Root>
-      <Text align="center">
-        Once you have completed the sign-in, return here to continue.
-      </Text>
     </Flex>
   )
 }
