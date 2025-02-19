@@ -70,6 +70,8 @@ import { parseDataFile } from './utils/dataFile'
 import { createNewGeneratorFile } from './utils/generator'
 import { GeneratorFileDataSchema } from './schemas/generator'
 
+import { initAuth } from './auth'
+
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
   updateElectronApp()
@@ -179,6 +181,8 @@ const createWindow = async () => {
       devTools: process.env.NODE_ENV === 'development',
     },
   })
+
+  initAuth(mainWindow)
 
   configureApplicationMenu()
   configureWatcher(mainWindow)

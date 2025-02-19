@@ -9,6 +9,7 @@ interface FeaturesStore {
 
 const defaultFeatures: Record<Feature, boolean> = {
   'data-files': false,
+  'cloud-auth': false,
 }
 
 export const useFeaturesStore = create<FeaturesStore>()(
