@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.15.0](https://github.com/grafana/k6-studio/compare/v0.14.0...v0.15.0) (2025-02-19)
+
+
+### Features
+
+* Apply rules in request list in generators ([#499](https://github.com/grafana/k6-studio/issues/499)) ([d14fe68](https://github.com/grafana/k6-studio/commit/d14fe686a7c3bc5c8a4377969c1b876079eee2b4))
+* Update generator layout and improve empty state screens ([#428](https://github.com/grafana/k6-studio/issues/428)) ([4db4b32](https://github.com/grafana/k6-studio/commit/4db4b323200a3acdc691ebbca60ee438cd6b82d4))
+
+
+### Miscellaneous Chores
+
+* Add Grafana prefix ([#494](https://github.com/grafana/k6-studio/issues/494)) ([bb0d54a](https://github.com/grafana/k6-studio/commit/bb0d54a5edaa57220c6aa777b7f6eed0b392e08e))
+
 ## [0.14.0](https://github.com/grafana/k6-studio/compare/v0.13.0...v0.14.0) (2025-02-17)
 
 
