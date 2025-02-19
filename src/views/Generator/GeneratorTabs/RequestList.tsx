@@ -1,9 +1,8 @@
-import { Flex, ScrollArea, Switch, Text } from '@radix-ui/themes'
+import { Flex, ScrollArea } from '@radix-ui/themes'
 import { useShallowCompareEffect } from 'react-use'
 
 import { WebLogView } from '@/components/WebLogView'
 import { ProxyData } from '@/types'
-import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useStudioUIStore } from '@/store/ui'
@@ -12,8 +11,7 @@ import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
 import { applyRules } from '@/rules/rules'
 import { useMemo } from 'react'
-import { getFileNameWithoutExtension } from '@/utils/file'
-import { RecorderIcon } from '@/components/icons'
+import { RequestListHeader } from './RequestListHeader'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -28,10 +26,6 @@ export function RequestList({
 }: RequestListProps) {
   const previewOriginalRequests = useGeneratorStore(
     (state) => state.previewOriginalRequests
-  )
-
-  const setPreviewOriginalRequests = useGeneratorStore(
-    (store) => store.setPreviewOriginalRequests
   )
 
   const rules = useGeneratorStore((state) => state.rules)
@@ -87,45 +81,14 @@ export function RequestList({
   return (
     <Flex direction="column" height="100%">
       {!recordingError && (
-        <Flex justify="between" align="center" px="2" py="1" gap="2">
-          <Text color="gray" size="2" truncate>
-            <Flex align="center" gap="1">
-              <Flex flexShrink="0">
-                <RecorderIcon width="22px" />
-              </Flex>
-              <Text truncate>{getFileNameWithoutExtension(recordingPath)}</Text>
-            </Flex>
-          </Text>
-          <Flex justify="end" align="center" gap="4">
-            <Text
-              as="label"
-              size="1"
-              color={previewOriginalRequests ? undefined : 'gray'}
-              css={{ whiteSpace: 'nowrap' }}
-            >
-              <Flex gap="2">
-                <Switch
-                  size="1"
-                  checked={previewOriginalRequests}
-                  onCheckedChange={setPreviewOriginalRequests}
-                />
-                View original requests
-              </Flex>
-            </Text>
-
-            <Filter
-              filter={filter}
-              setFilter={setFilter}
-              css={{
-                width: '300px',
-              }}
-              size="2"
-              filterAllData={filterAllData}
-              setFilterAllData={setFilterAllData}
-            />
-          </Flex>
-        </Flex>
+        <RequestListHeader
+          filter={filter}
+          setFilter={setFilter}
+          filterAllData={filterAllData}
+          setFilterAllData={setFilterAllData}
+        />
       )}
+
       <ScrollArea scrollbars="vertical">
         {recordingError && (
           <EmptyMessage
@@ -136,15 +99,13 @@ export function RequestList({
         )}
 
         {!recordingError && (
-          <>
-            <WebLogView
-              requests={filteredRequests}
-              selectedRequestId={selectedRequest?.id}
-              onSelectRequest={onSelectRequest}
-              groups={groups}
-              filter={filter}
-            />
-          </>
+          <WebLogView
+            requests={filteredRequests}
+            selectedRequestId={selectedRequest?.id}
+            onSelectRequest={onSelectRequest}
+            groups={groups}
+            filter={filter}
+          />
         )}
       </ScrollArea>
     </Flex>
