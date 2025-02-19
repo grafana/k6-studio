@@ -22,7 +22,7 @@ export function ValueEditor() {
     { value: 'variable', label: 'Variable', disabled: !hasVariables },
     {
       value: 'dataFileValue',
-      label: 'Value from data file',
+      label: 'Data file',
       disabled: !hasFiles,
     },
     { value: 'customCode', label: 'Custom code' },

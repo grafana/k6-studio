@@ -32,7 +32,7 @@ export function generateScript({
     ${generateDataFileDeclarations(generator.testData.files)}
 
     export default function() {
-      ${generateVUCode(recording, generator.rules, generator.options.thinkTime, generator.testData.files)}
+      ${generateVUCode(recording, generator.rules, generator.options.thinkTime)}
     }
   `
 }
@@ -89,27 +89,17 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
     })
     .join(',\n')
 
-  return `const FILES = {\n${fileKeyValuePairs}\n};`
-}
+  const getRandomItemFunction = `
+    const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
+  `
 
-export function generateDataFileIterationItemsMap(files: DataFile[]) {
-  const keyValuePairs = files
-    .map(({ name }) => {
-      const displayName = getFileNameWithoutExtension(name)
-
-      return `
-      "${displayName}": FILES["${displayName}"][Math.floor(Math.random() * FILES["${displayName}"].length)]`
-    })
-    .join(',\n')
-
-  return `const FILE_ITEMS = {\n${keyValuePairs}\n};`
+  return `const FILES = {\n${fileKeyValuePairs}\n};${getRandomItemFunction}`
 }
 
 export function generateVUCode(
   recording: ProxyData[],
   rules: TestRule[],
-  thinkTime: ThinkTime,
-  dataFiles: DataFile[]
+  thinkTime: ThinkTime
 ): string {
   const cleanedRecording = cleanupRecording(recording)
 
@@ -139,7 +129,6 @@ export function generateVUCode(
     let match
     let regex
     let url
-    ${generateDataFileIterationItemsMap(dataFiles)}
     const correlation_vars = {}
     `,
     groupSnippets,

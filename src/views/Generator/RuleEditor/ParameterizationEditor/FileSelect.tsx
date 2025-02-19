@@ -58,7 +58,12 @@ export function FileSelect() {
           }}
         />
       </FieldGroup>
-      <FieldGroup name="value.fileName" errors={errors} label="Property">
+      <FieldGroup
+        name="value.fileName"
+        errors={errors}
+        label="Key"
+        hint="Key from a random row in the data file"
+      >
         <ControlledSelect
           options={propsOptions || []}
           control={control}
