@@ -5,6 +5,12 @@ export const VariableValueSchema = z.object({
   variableName: z.string(),
 })
 
+export const DataFileValueSchema = z.object({
+  type: z.literal('dataFileValue'),
+  fileName: z.string(),
+  propertyName: z.string(),
+})
+
 export const CustomCodeValueSchema = z.object({
   type: z.literal('customCode'),
   code: z.string(),
@@ -116,6 +122,7 @@ export const ParameterizationRuleSchema = RuleBaseSchema.extend({
   selector: ReplacerSelectorSchema,
   value: z.discriminatedUnion('type', [
     VariableValueSchema,
+    DataFileValueSchema,
     CustomCodeValueSchema,
     StringValueSchema,
   ]),

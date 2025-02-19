@@ -1,4 +1,4 @@
-import { Code, Flex, Text } from '@radix-ui/themes'
+import { Code, Flex } from '@radix-ui/themes'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
 import { ParameterizationRule } from '@/types/rules'
 import { useFormContext } from 'react-hook-form'
@@ -13,12 +13,12 @@ export function VariableSelect() {
       value: variable.name,
       label: (
         <Flex gap="1" align="center">
-          <Code size="2" truncate>
+          <Code size="2" truncate variant="ghost" color="blue">
             {variable.name}
           </Code>
-          <Text truncate size="1" css={{ flex: '1' }}>
+          <Code truncate size="1" variant="ghost" css={{ flex: '1' }}>
             {variable.value}
-          </Text>
+          </Code>
         </Flex>
       ),
     }))

@@ -89,7 +89,11 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
     })
     .join(',\n')
 
-  return `const FILES = {\n${fileKeyValuePairs}\n};`
+  const getRandomItemFunction = `
+    const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
+  `
+
+  return `const FILES = {\n${fileKeyValuePairs}\n};${getRandomItemFunction}`
 }
 
 export function generateVUCode(
