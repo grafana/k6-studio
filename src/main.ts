@@ -69,6 +69,8 @@ import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
 import { createNewGeneratorFile } from './utils/generator'
 import { GeneratorFileDataSchema } from './schemas/generator'
+import { BrowserServer } from './services/browser/server'
+import * as handlers from './handlers'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -105,6 +107,8 @@ let currentBrowserProcess: Process | null
 let currentk6Process: K6Process | null
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
+
+const browserServer = new BrowserServer()
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -178,6 +182,10 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
     },
+  })
+
+  handlers.initialize({
+    browserServer,
   })
 
   configureApplicationMenu()
@@ -310,7 +318,7 @@ ipcMain.handle('browser:start', async (event, url?: string) => {
   await waitForProxy()
 
   const browserWindow = browserWindowFromEvent(event)
-  currentBrowserProcess = await launchBrowser(browserWindow, url)
+  currentBrowserProcess = await launchBrowser(browserWindow, browserServer, url)
   console.info('browser started')
 })
 

@@ -16,9 +16,18 @@ import {
   TargetIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons'
-import { Flex, Table, Tooltip, Kbd, Button } from '@radix-ui/themes'
-import { Fragment, useState } from 'react'
+import {
+  Flex,
+  Table,
+  Tooltip,
+  Kbd,
+  Button,
+  Strong,
+  Link,
+} from '@radix-ui/themes'
+import { forwardRef, Fragment, MouseEvent, useState } from 'react'
 import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
+import { useIsRecording } from './RecordingContext'
 
 function formatOptions(options: string[]) {
   if (options.length === 1) {
@@ -49,9 +58,81 @@ interface SelectorProps {
   children: string
 }
 
-function Selector({ children }: SelectorProps) {
-  return <strong>{children}</strong>
+function Selector({ children: selector }: SelectorProps) {
+  const isRecording = useIsRecording()
+
+  const handleMouseEnter = () => {
+    if (isRecording) {
+      window.studio.browserRemote.highlightElement(selector)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    if (isRecording) {
+      window.studio.browserRemote.highlightElement(null)
+    }
+  }
+
+  return (
+    <Strong
+      css={css`
+        font-weight: bold;
+        border-radius: var(--radius-2);
+        padding: 0 0.25rem;
+
+        ${isRecording &&
+        css`
+          &:hover {
+            cursor: pointer;
+            background-color: var(--gray-3);
+          }
+        `}
+      `}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {selector}
+    </Strong>
+  )
 }
+
+interface NavigationProps {
+  url: string
+}
+
+const Navigation = forwardRef<HTMLElement, NavigationProps>(function Navigation(
+  { url },
+  ref
+) {
+  const isRecording = useIsRecording()
+
+  const handleClick = (ev: MouseEvent<HTMLAnchorElement>) => {
+    ev.preventDefault()
+
+    window.studio.browserRemote.navigateTo(url)
+  }
+
+  const element = <Strong ref={ref}>{url}</Strong>
+
+  if (!isRecording) {
+    return element
+  }
+
+  return (
+    <Link
+      css={css`
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      `}
+      onClick={handleClick}
+    >
+      {element}
+    </Link>
+  )
+})
 
 function getModifierKeys(modifiers: ClickedEvent['modifiers']) {
   const keys = []
@@ -118,7 +199,7 @@ interface PageNavigationDescriptionProps {
 function PageNavigationDescription({ event }: PageNavigationDescriptionProps) {
   const url = (
     <Tooltip content={event.url}>
-      <strong>{event.url}</strong>
+      <Navigation url={event.url} />
     </Tooltip>
   )
 
@@ -163,7 +244,7 @@ function ClickDescription({ event }: ClickDescriptionProps) {
   return (
     <>
       <Kbd size="2">{clickedText}</Kbd> on element{' '}
-      <strong>{event.selector}</strong>.
+      <Selector>{event.selector}</Selector>.
     </>
   )
 }

@@ -10,7 +10,7 @@ import { mkdtemp } from 'fs/promises'
 import path from 'path'
 import os from 'os'
 import { appSettings } from './main'
-import { launchBrowserServer } from './services/browser/server'
+import { BrowserServer } from './services/browser/server'
 
 const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
@@ -40,6 +40,7 @@ function getExtensionPath() {
 
 export const launchBrowser = async (
   browserWindow: BrowserWindow,
+  browserServer: BrowserServer,
   url?: string
 ) => {
   const path = getBrowserPath()
@@ -60,17 +61,16 @@ export const launchBrowser = async (
   const extensionPath = getExtensionPath()
   console.info(`extension path: ${extensionPath}`)
 
-  const disposeWebSockerServer = appSettings.recorder.enableBrowserRecorder
-    ? launchBrowserServer(browserWindow)
-    : () => {}
+  if (appSettings.recorder.enableBrowserRecorder) {
+    browserServer.start(browserWindow)
+  }
 
-  const handleBrowserClose = (): Promise<void> => {
-    disposeWebSockerServer()
+  const handleBrowserClose = async (): Promise<void> => {
+    await browserServer.stop()
 
     // we send the browser:stopped event when the browser is closed
     // NOTE: on macos pressing the X button does not close the application so it won't be fired
     browserWindow.webContents.send('browser:closed')
-    return Promise.resolve()
   }
 
   return launch({
