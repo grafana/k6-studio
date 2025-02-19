@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Button, Callout } from '@radix-ui/themes'
+import { Box, Button, Callout, Flex, ScrollArea } from '@radix-ui/themes'
 import { ChevronLeftIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 
 import { useGeneratorStore } from '@/store/generator'
@@ -96,19 +96,23 @@ export function RuleEditor({ rule }: RuleEditorProps) {
   }, [rule.id])
 
   return (
-    <FormProvider {...formMethods}>
-      <form onSubmit={handleSubmit(onSubmit)}>
+    <ScrollArea scrollbars="vertical">
+      <FormProvider {...formMethods}>
         <StickyPanelHeader>
-          <Button onClick={handleClose} variant="ghost" color="gray" size="1">
-            <ChevronLeftIcon />
-            Back to rule list
-          </Button>
+          <Flex>
+            <Button onClick={handleClose} variant="ghost" color="gray" size="1">
+              <ChevronLeftIcon />
+              Back to rule list
+            </Button>
+          </Flex>
         </StickyPanelHeader>
-        <Box p="2" pr="4" css={{ borderTop: '1px solid var(--gray-3)' }}>
-          {!rule.enabled && <RuleDisabledWarning />}
-          <RuleEditorSwitch />
-        </Box>
-      </form>
-    </FormProvider>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Box p="2" pr="4">
+            {!rule.enabled && <RuleDisabledWarning />}
+            <RuleEditorSwitch />
+          </Box>
+        </form>
+      </FormProvider>
+    </ScrollArea>
   )
 }

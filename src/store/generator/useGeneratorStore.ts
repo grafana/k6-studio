@@ -80,7 +80,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.scriptName = scriptName
         // rules
         state.rules = rules
-        state.rulesEnabled = true
+        state.previewOriginalRequests = false
       }),
   }))
 )

@@ -4,7 +4,7 @@ import { ImmerStateCreator } from '@/utils/typescript'
 interface State {
   rules: TestRule[]
   selectedRuleId: string | null
-  rulesEnabled: boolean
+  previewOriginalRequests: boolean
 }
 
 interface Actions {
@@ -15,7 +15,7 @@ interface Actions {
   toggleEnableRule: (id: string) => void
   swapRules: (idA: string, idB: string) => void
   setSelectedRuleId: (id: string | null) => void
-  setEnableRules: (apply: boolean) => void
+  setPreviewOriginalRequests: (apply: boolean) => void
 }
 
 export type RulesSliceStore = State & Actions
@@ -23,7 +23,7 @@ export type RulesSliceStore = State & Actions
 export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
   rules: [],
   selectedRuleId: null,
-  rulesEnabled: true,
+  previewOriginalRequests: false,
   addRule: (rule) =>
     set((state) => {
       state.rules.push(rule)
@@ -73,8 +73,8 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
       state.selectedRuleId = id
     }),
 
-  setEnableRules: (enable) =>
+  setPreviewOriginalRequests: (enable) =>
     set((state) => {
-      state.rulesEnabled = enable
+      state.previewOriginalRequests = enable
     }),
 })

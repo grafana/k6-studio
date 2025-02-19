@@ -65,10 +65,6 @@ export function TestRuleItem({
         grid-column: 1 / -1;
         grid-template-columns: subgrid;
 
-        &:first-of-type {
-          border-top: 1px solid var(--gray-3);
-        }
-
         &::before {
           content: '';
           position: absolute;
