@@ -1,3 +1,4 @@
+import { Stack } from '@/types/auth'
 import { z } from 'zod'
 
 const InstanceSchema = z.object({
@@ -30,7 +31,10 @@ const ProfileResponseSchema = z.object({
   ),
 })
 
-export async function fetchInstances(token: string, signal?: AbortSignal) {
+export async function fetchStacks(
+  token: string,
+  signal?: AbortSignal
+): Promise<Stack[]> {
   const profileResponse = await fetch(
     'https://grafana-dev.com/api/oauth2/user',
     {
@@ -49,7 +53,7 @@ export async function fetchInstances(token: string, signal?: AbortSignal) {
 
   const orgIdIn = profile.orgs.map((org) => org.login).join(',')
 
-  const stacksResponse = await fetch(
+  const instancesResponse = await fetch(
     `https://grafana-dev.com/api/instances?orgSlugIn=${orgIdIn}`,
     {
       headers: {
@@ -59,11 +63,24 @@ export async function fetchInstances(token: string, signal?: AbortSignal) {
     }
   )
 
-  if (!stacksResponse.ok) {
+  if (!instancesResponse.ok) {
     throw new Error("Couldn't fetch instances.")
   }
 
-  const data = (await stacksResponse.json()) as unknown
+  const data = (await instancesResponse.json()) as unknown
+  const parsed = InstancesResponseSchema.parse(data)
 
-  return InstancesResponseSchema.parse(data)
+  return parsed.items.flatMap((instance) => {
+    // Just ignore instances that we don't understand the state of.
+    if (instance.status === 'unknown') {
+      return []
+    }
+
+    return {
+      id: instance.id,
+      name: instance.name,
+      url: instance.url,
+      status: instance.status,
+    }
+  })
 }

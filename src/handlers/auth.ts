@@ -8,7 +8,7 @@ import {
 import { authenticate } from '../services/grafana/authenticate'
 import path from 'path'
 import { writeFile, readFile } from 'fs/promises'
-import { fetchInstances } from '../services/grafana'
+import { fetchStacks } from '../services/grafana'
 import { fetchPersonalToken } from '../services/k6'
 import {
   SelectStackResponse,
@@ -109,24 +109,28 @@ export function initialize(browserWindow: BrowserWindow) {
           type: 'fetching-stacks',
         })
 
-        const instances = await fetchInstances(result.token, signal)
+        const stacks = await fetchStacks(result.token, signal)
+
+        // Skip having to select a stack if there's only one available.
+        // We do show the step if the stack is archived, though so that
+        // they get instructions on logging in to it.
+        if (
+          stacks.length === 1 &&
+          stacks[0] &&
+          stacks[0].status !== 'archived'
+        ) {
+          stackResponse = {
+            type: 'select-stack',
+            selected: stacks[0],
+          }
+
+          break
+        }
 
         notifyStateChange({
           type: 'selecting-stack',
           current: stackResponse.current,
-          stacks: instances.items.flatMap((instance) => {
-            // Just ignore instances that we don't understand the state of.
-            if (instance.status === 'unknown') {
-              return []
-            }
-
-            return {
-              id: instance.id,
-              name: instance.name,
-              url: instance.url,
-              status: instance.status,
-            }
-          }),
+          stacks,
         })
 
         stackResponse = await waitFor<SelectStackResponse>({
@@ -136,6 +140,11 @@ export function initialize(browserWindow: BrowserWindow) {
       }
 
       const stack = stackResponse.selected
+
+      notifyStateChange({
+        type: 'fetching-token',
+        stack,
+      })
 
       const apiTokenResponse = await fetchPersonalToken(
         stack.id,
