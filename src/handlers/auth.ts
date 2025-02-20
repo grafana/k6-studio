@@ -1,74 +1,15 @@
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  IpcMainEvent,
-  safeStorage,
-  shell,
-} from 'electron'
-import { Profile, ProfileSchema, UserInfo } from './schemas/profile'
-import { authenticate } from './services/grafana/authenticate'
+import { app, BrowserWindow, ipcMain, safeStorage, shell } from 'electron'
+import { Profile, ProfileSchema, UserInfo } from '../schemas/profile'
+import { authenticate } from '../services/grafana/authenticate'
 import path from 'path'
 import { writeFile, readFile, rm } from 'fs/promises'
-import { fetchInstances } from './services/grafana'
-import { fetchPersonalToken } from './services/k6'
-import { SignInProcessState, SignInResult, Stack } from './types/auth'
+import { fetchInstances } from '../services/grafana'
+import { fetchPersonalToken } from '../services/k6'
+import { SignInProcessState, SignInResult, Stack } from '../types/auth'
 import log from 'electron-log/main'
 import { ClientError } from 'openid-client'
-
-interface WaitForDone<T> {
-  status: 'done'
-  data: T
-}
-
-interface WaitForAborted {
-  status: 'aborted'
-}
-
-type WaitForResult<T> = WaitForDone<T> | WaitForAborted
-
-interface WaitForOptions {
-  event: string
-  signal: AbortSignal
-  timeout?: number
-}
-
-async function waitFor<T>({ event, signal, timeout }: WaitForOptions) {
-  return new Promise<WaitForResult<T>>((resolve, reject) => {
-    const timeoutId =
-      timeout &&
-      setTimeout(() => {
-        ipcMain.removeListener(event, handleMessage)
-
-        reject(new Error(`Timeout waiting for "${event}"`))
-      }, timeout)
-
-    const handleAbort = () => {
-      clearTimeout(timeoutId)
-
-      ipcMain.removeListener(event, handleMessage)
-
-      resolve({
-        status: 'aborted',
-      })
-    }
-
-    const handleMessage = (_: IpcMainEvent, data: T) => {
-      clearTimeout(timeoutId)
-
-      signal.removeEventListener('abort', handleAbort)
-
-      resolve({
-        status: 'done',
-        data,
-      })
-    }
-
-    signal.addEventListener('abort', handleAbort)
-
-    ipcMain.once(event, handleMessage)
-  })
-}
+import { AuthHandler } from './auth.types'
+import { waitFor } from './utils'
 
 const fileName =
   process.env.NODE_ENV === 'development'
@@ -94,12 +35,12 @@ async function getCurrentProfile() {
   }
 }
 
-export function initAuth(browserWindow: BrowserWindow) {
+export function initialize(browserWindow: BrowserWindow) {
   function notifyStateChange(state: SignInProcessState) {
     browserWindow.webContents.send('auth:state-change', state)
   }
 
-  ipcMain.handle('auth:get-user', async (): Promise<UserInfo | null> => {
+  ipcMain.handle(AuthHandler.GetUser, async (): Promise<UserInfo | null> => {
     const profile = await getCurrentProfile()
 
     if (profile === null) {
@@ -111,7 +52,7 @@ export function initAuth(browserWindow: BrowserWindow) {
 
   let pending: AbortController | null = null
 
-  ipcMain.handle('auth:sign-in', async (): Promise<SignInResult> => {
+  ipcMain.handle(AuthHandler.SignIn, async (): Promise<SignInResult> => {
     try {
       if (pending !== null) {
         pending?.abort()
@@ -176,7 +117,7 @@ export function initAuth(browserWindow: BrowserWindow) {
       })
 
       const stack = await waitFor<Stack>({
-        event: 'auth:select-stack',
+        event: AuthHandler.SelectStack,
         signal: signal,
       })
 
@@ -244,12 +185,12 @@ export function initAuth(browserWindow: BrowserWindow) {
     }
   })
 
-  ipcMain.handle('auth:abort', () => {
+  ipcMain.handle(AuthHandler.Abort, () => {
     pending?.abort()
     pending = null
   })
 
-  ipcMain.handle('auth:change-stack', async (_event, stackId: string) => {
+  ipcMain.handle(AuthHandler.ChangeStack, async (_event, stackId: string) => {
     const profile = await getCurrentProfile()
 
     if (profile === null) {
@@ -273,7 +214,7 @@ export function initAuth(browserWindow: BrowserWindow) {
     return newProfile.user
   })
 
-  ipcMain.handle('auth:sign-out', async (): Promise<void> => {
+  ipcMain.handle(AuthHandler.SignOut, async (): Promise<void> => {
     try {
       await rm(filePath)
     } catch {

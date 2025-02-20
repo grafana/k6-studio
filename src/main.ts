@@ -70,7 +70,7 @@ import { parseDataFile } from './utils/dataFile'
 import { createNewGeneratorFile } from './utils/generator'
 import { GeneratorFileDataSchema } from './schemas/generator'
 
-import { initAuth } from './auth'
+import * as handlers from './handlers'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -182,7 +182,9 @@ const createWindow = async () => {
     },
   })
 
-  initAuth(mainWindow)
+  handlers.initialize({
+    browserWindow: mainWindow,
+  })
 
   configureApplicationMenu()
   configureWatcher(mainWindow)
