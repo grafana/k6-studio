@@ -1,5 +1,5 @@
 import { ProxyData, RequestSnippetSchema } from '@/types'
-import { TestRule } from '@/types/rules'
+import { CustomCodeValue, TestRule } from '@/types/rules'
 import { applyRules } from '@/rules/rules'
 import { GeneratorFileData } from '@/types/generator'
 import { DataFile, Variable } from '@/types/testData'
@@ -12,6 +12,7 @@ import { generateImportStatement } from './imports'
 import { cleanupRecording, shouldIncludeHeaderInScript } from './codegen.utils'
 import { groupProxyData } from '@/utils/groups'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { getCustomCodeSnippet } from '@/rules/parameterization'
 
 interface GenerateScriptParams {
   recording: ProxyData[]
@@ -104,6 +105,7 @@ export function generateVUCode(
     rules,
     thinkTime
   )
+  const parameterizationCustomCode = generateParameterizationCustomCode(rules)
 
   // Group requests after applying rules to correlate requests between different groups
   const groups = Object.entries(groupProxyData(requestSnippets))
@@ -127,6 +129,7 @@ export function generateVUCode(
     let url
     const correlation_vars = {}
     `,
+    parameterizationCustomCode,
     groupSnippets,
     thinkTime.sleepType === 'iterations' ? generateSleep(thinkTime.timing) : '',
   ].join('\n')
@@ -250,6 +253,21 @@ export function generateRequestParams(request: ProxyData['request']): string {
       }
     }
   `
+}
+
+export function generateParameterizationCustomCode(rules: TestRule[]): string {
+  return rules
+    .filter((rule) => rule.enabled)
+    .filter((rule) => rule.type === 'parameterization')
+    .map((rule, index) => ({ rule, parameterizationIndex: index }))
+    .filter(({ rule }) => rule.value?.type === 'customCode')
+    .map(({ rule, parameterizationIndex }) =>
+      getCustomCodeSnippet(
+        (rule.value as CustomCodeValue).code,
+        parameterizationIndex
+      )
+    )
+    .join('\n')
 }
 
 function generateScriptHeaderComment() {

@@ -63,16 +63,6 @@ export function createParameterizationRuleInstance(
         return updatedRequestSnippet
       }
 
-      const beforeSnippet = getBeforeSnippet(rule, state.uniqueId)
-
-      if (beforeSnippet) {
-        state.snippedInjected = true
-
-        return {
-          ...updatedRequestSnippet,
-          before: [...updatedRequestSnippet.before, beforeSnippet],
-        }
-      }
       return updatedRequestSnippet
     },
   }
@@ -93,16 +83,6 @@ function getRuleValue(rule: ParameterizationRule, id: number) {
 
     default:
       return exhaustive(value)
-  }
-}
-
-function getBeforeSnippet(rule: ParameterizationRule, id: number) {
-  switch (rule.value.type) {
-    case 'customCode':
-      return getCustomCodeSnippet(rule.value.code, id)
-
-    default:
-      return
   }
 }
 

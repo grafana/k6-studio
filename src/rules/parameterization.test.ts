@@ -9,7 +9,6 @@ import {
   jsonRule,
   urlRule,
 } from '@/test/fixtures/parameterizationRules'
-import { prettify } from '@/utils/prettify'
 import { generateSequentialInt } from './utils'
 
 let idGenerator = generateSequentialInt()
@@ -154,7 +153,7 @@ describe('applyParameterization', () => {
     })
   })
 
-  it('supports custom code', async () => {
+  it('supports custom code', () => {
     const requestSnippet = createRequestSnippet(
       createProxyData({
         request: createRequest({
@@ -167,12 +166,6 @@ describe('applyParameterization', () => {
       customCodeReplaceProjectId,
       idGenerator
     ).apply(requestSnippet)
-
-    expect(await prettify(updatedRequest.before[0] ?? '')).toBe(
-      await prettify(
-        `function getParameterizationValue0() { ${customCodeReplaceProjectId.value.code} }`
-      )
-    )
 
     expect(updatedRequest.data.request.url).toBe(
       'http://example.com/api/v1/project_id=${getParameterizationValue0()}'

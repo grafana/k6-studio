@@ -8,6 +8,7 @@ import {
   generateVUCode,
   generateDataFileDeclarations,
   generateImports,
+  generateParameterizationCustomCode,
 } from './codegen'
 import { TestRule } from '@/types/rules'
 import { GeneratorFileData } from '@/types/generator'
@@ -22,6 +23,8 @@ import {
   jsonRule,
 } from '@/test/fixtures/parameterizationRules'
 import { prettify } from '@/utils/prettify'
+import { createParameterizationRuleInstance } from '@/rules/parameterization'
+import { generateSequentialInt } from '@/rules/utils'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
 
@@ -458,7 +461,14 @@ describe('Code generation', () => {
           let regex
           let url
           const correlation_vars = {}
-  
+
+          function getParameterizationValue1() {
+            const randomInteger = Math.floor(Math.random() * 100000)
+            return randomInteger
+          }
+          function getParameterizationValue2() {
+            return '123456'
+          }
           group('Default group', function () {
             params = {
               headers: {
@@ -473,14 +483,6 @@ describe('Code generation', () => {
             params = {
               headers: {},
               cookies: {},
-            }
-  
-            function getParameterizationValue1() {
-              const randomInteger = Math.floor(Math.random() * 100000)
-              return randomInteger
-            }
-            function getParameterizationValue2() {
-              return '123456'
             }
   
             url = http.url\`http://example.com/api/v1/users?project_id=\${getParameterizationValue1()}&csrf=\${getParameterizationValue2()}\`
@@ -663,6 +665,24 @@ describe('Code generation', () => {
     }
   `
       expect(generateRequestParams(request)).toBe(expectedResult)
+    })
+  })
+
+  describe('generateParameterizationCustomCode', () => {
+    it('should generate custom code correctly', async () => {
+      const idGenerator = generateSequentialInt()
+      const { rule } = createParameterizationRuleInstance(
+        customCodeReplaceProjectId,
+        idGenerator
+      )
+
+      const customCode = generateParameterizationCustomCode([rule])
+
+      expect(await prettify(customCode)).toBe(
+        await prettify(
+          `function getParameterizationValue0() { ${customCodeReplaceProjectId.value.code} }`
+        )
+      )
     })
   })
 })
