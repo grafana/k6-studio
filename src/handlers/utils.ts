@@ -16,17 +16,6 @@ export function createListener<T>(
   }
 }
 
-interface WaitForDone<T> {
-  status: 'done'
-  data: T
-}
-
-interface WaitForAborted {
-  status: 'aborted'
-}
-
-type WaitForResult<T> = WaitForDone<T> | WaitForAborted
-
 interface WaitForOptions {
   event: string
   signal: AbortSignal
@@ -34,7 +23,7 @@ interface WaitForOptions {
 }
 
 export function waitFor<T>({ event, signal, timeout }: WaitForOptions) {
-  return new Promise<WaitForResult<T>>((resolve, reject) => {
+  return new Promise<T>((resolve, reject) => {
     const timeoutId =
       timeout &&
       setTimeout(() => {
@@ -48,9 +37,7 @@ export function waitFor<T>({ event, signal, timeout }: WaitForOptions) {
 
       ipcMain.removeListener(event, handleMessage)
 
-      resolve({
-        status: 'aborted',
-      })
+      reject(signal.reason)
     }
 
     const handleMessage = (_: IpcMainEvent, data: T) => {
@@ -58,10 +45,7 @@ export function waitFor<T>({ event, signal, timeout }: WaitForOptions) {
 
       signal.removeEventListener('abort', handleAbort)
 
-      resolve({
-        status: 'done',
-        data,
-      })
+      resolve(data)
     }
 
     signal.addEventListener('abort', handleAbort)

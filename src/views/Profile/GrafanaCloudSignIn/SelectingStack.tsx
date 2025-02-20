@@ -4,15 +4,21 @@ import { useState } from 'react'
 import { ExternalLink } from '@/components/ExternalLink'
 import { css } from '@emotion/react'
 import { AuthenticationMessage } from './AuthenticationMessage'
+import { LinkButton } from '@/components/LinkButton'
 
 interface SelectingStackProps {
   state: SelectingStackState
   onSelect: (stack: Stack) => void
+  onRefresh: (current: Stack) => void
 }
 
-export function SelectingStack({ state, onSelect }: SelectingStackProps) {
+export function SelectingStack({
+  state,
+  onSelect,
+  onRefresh,
+}: SelectingStackProps) {
   const [selectedStackId, setSelectedStackId] = useState(
-    state.stacks[0]?.id ?? ''
+    state.current?.id ?? state.stacks[0]?.id ?? ''
   )
 
   const selectedStack = state.stacks.find(
@@ -25,6 +31,14 @@ export function SelectingStack({ state, onSelect }: SelectingStackProps) {
     }
 
     onSelect(selectedStack)
+  }
+
+  const handleRefresh = () => {
+    if (!selectedStack) {
+      return
+    }
+
+    onRefresh(selectedStack)
   }
 
   return (
@@ -56,17 +70,38 @@ export function SelectingStack({ state, onSelect }: SelectingStackProps) {
           ))}
         </Select.Content>
       </Select.Root>
-      {selectedStack?.archived && (
-        <AuthenticationMessage>
-          This stack is archived and cannot be logged in to.{' '}
-          <ExternalLink href={selectedStack.url}>
-            Login to the stack
-          </ExternalLink>{' '}
-          to unarchive it.
-        </AuthenticationMessage>
+
+      {selectedStack?.status === 'archived' && (
+        <>
+          <AuthenticationMessage>
+            This stack is archived and you must{' '}
+            <ExternalLink
+              css={css`
+                white-space: nowrap;
+              `}
+              href={selectedStack.url}
+            >
+              log in
+            </ExternalLink>{' '}
+            to it before continuing. Wait a few minutes and{' '}
+            <LinkButton onClick={handleRefresh}>refresh.</LinkButton>
+          </AuthenticationMessage>
+        </>
+      )}
+      {selectedStack?.status === 'restoring' && (
+        <>
+          <AuthenticationMessage>
+            The stack is being restored. Please wait a moment and{' '}
+            <LinkButton onClick={handleRefresh}>refresh.</LinkButton>
+          </AuthenticationMessage>
+        </>
       )}
       <Button
-        disabled={!selectedStack || selectedStack.archived}
+        disabled={
+          selectedStack === undefined ||
+          selectedStack.status === 'archived' ||
+          selectedStack.status === 'restoring'
+        }
         onClick={handleSelect}
       >
         Login

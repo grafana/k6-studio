@@ -1,5 +1,9 @@
 import { UserInfo } from '@/schemas/profile'
-import { SignInResult, Stack, SignInProcessState } from '@/types/auth'
+import {
+  SignInResult,
+  SignInProcessState,
+  SelectStackResponse,
+} from '@/types/auth'
 import { ipcRenderer } from 'electron'
 import { createListener } from './utils'
 import { AuthHandler as AuthHandler } from './auth.types'
@@ -12,8 +16,8 @@ export function signIn(): Promise<SignInResult> {
   return ipcRenderer.invoke(AuthHandler.SignIn) as Promise<SignInResult>
 }
 
-export function selectStack(stack: Stack) {
-  return ipcRenderer.send('auth:select-stack', stack)
+export function selectStack(response: SelectStackResponse) {
+  return ipcRenderer.send('auth:select-stack', response)
 }
 
 export function abortSignIn() {

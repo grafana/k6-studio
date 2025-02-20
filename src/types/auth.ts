@@ -4,7 +4,7 @@ export interface Stack {
   id: string
   name: string
   url: string
-  archived: boolean
+  status: 'active' | 'paused' | 'archived' | 'restoring'
 }
 
 /**
@@ -50,6 +50,7 @@ export interface FetchingStacksState {
  */
 export interface SelectingStackState {
   type: 'selecting-stack'
+  current: Stack | undefined
   stacks: Stack[]
 }
 
@@ -120,3 +121,15 @@ export type SignInResult =
   | Conflict
   | TimedOut
   | Aborted
+
+export interface RefreshStacks {
+  type: 'refresh-stacks'
+  current: Stack | undefined
+}
+
+export interface StackSelected {
+  type: 'select-stack'
+  selected: Stack
+}
+
+export type SelectStackResponse = RefreshStacks | StackSelected

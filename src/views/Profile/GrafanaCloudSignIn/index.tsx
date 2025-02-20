@@ -17,14 +17,16 @@ import { SignOutRequired } from './SignOutRequired'
 
 interface SignInProcessProps {
   state: SignInProcessState
-  onSelect: (stack: Stack) => void
   onRetry: () => void
+  onSelectStack: (stack: Stack) => void
+  onRefreshStacks: (current: Stack) => void
 }
 
 export function SignInProcess({
   state,
-  onSelect,
   onRetry,
+  onSelectStack,
+  onRefreshStacks,
 }: SignInProcessProps) {
   switch (state.type) {
     case 'initializing':
@@ -43,7 +45,13 @@ export function SignInProcess({
       return <FetchingStacks state={state} />
 
     case 'selecting-stack':
-      return <SelectingStack state={state} onSelect={onSelect} />
+      return (
+        <SelectingStack
+          state={state}
+          onSelect={onSelectStack}
+          onRefresh={onRefreshStacks}
+        />
+      )
 
     case 'fetching-token':
       return <FetchingToken state={state} />
@@ -181,7 +189,17 @@ export function GrafanaCloudSignIn({
       stack,
     })
 
-    window.studio.auth.selectStack(stack)
+    window.studio.auth.selectStack({
+      type: 'select-stack',
+      selected: stack,
+    })
+  }
+
+  const handleStackRefresh = (current: Stack) => {
+    window.studio.auth.selectStack({
+      type: 'refresh-stacks',
+      current,
+    })
   }
 
   return (
@@ -190,8 +208,9 @@ export function GrafanaCloudSignIn({
       <Flex direction="column" align="center" gap="3">
         <SignInProcess
           state={state}
-          onSelect={handleStackSelect}
           onRetry={handleRetry}
+          onSelectStack={handleStackSelect}
+          onRefreshStacks={handleStackRefresh}
         />
         <Button variant="ghost" onClick={handleAbort}>
           Cancel

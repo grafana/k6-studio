@@ -5,7 +5,11 @@ import path from 'path'
 import { writeFile, readFile, rm } from 'fs/promises'
 import { fetchInstances } from '../services/grafana'
 import { fetchPersonalToken } from '../services/k6'
-import { SignInProcessState, SignInResult, Stack } from '../types/auth'
+import {
+  SelectStackResponse,
+  SignInProcessState,
+  SignInResult,
+} from '../types/auth'
 import log from 'electron-log/main'
 import { ClientError } from 'openid-client'
 import { AuthHandler } from './auth.types'
@@ -98,37 +102,46 @@ export function initialize(browserWindow: BrowserWindow) {
         }
       }
 
-      notifyStateChange({
-        type: 'fetching-stacks',
-      })
-
-      const instances = await fetchInstances(result.token, signal)
-
-      notifyStateChange({
-        type: 'selecting-stack',
-        stacks: instances.items.map((instance) => {
-          return {
-            id: instance.id,
-            name: instance.name,
-            url: instance.url,
-            archived: instance.status === 'archived',
-          }
-        }),
-      })
-
-      const stack = await waitFor<Stack>({
-        event: AuthHandler.SelectStack,
-        signal: signal,
-      })
-
-      if (stack.status === 'aborted') {
-        return {
-          type: 'aborted',
-        }
+      let stackResponse: SelectStackResponse = {
+        type: 'refresh-stacks',
+        current: undefined,
       }
 
+      while (stackResponse.type === 'refresh-stacks') {
+        notifyStateChange({
+          type: 'fetching-stacks',
+        })
+
+        const instances = await fetchInstances(result.token, signal)
+
+        notifyStateChange({
+          type: 'selecting-stack',
+          current: stackResponse.current,
+          stacks: instances.items.flatMap((instance) => {
+            // Just ignore instances that we don't understand the state of.
+            if (instance.status === 'unknown') {
+              return []
+            }
+
+            return {
+              id: instance.id,
+              name: instance.name,
+              url: instance.url,
+              status: instance.status,
+            }
+          }),
+        })
+
+        stackResponse = await waitFor<SelectStackResponse>({
+          event: AuthHandler.SelectStack,
+          signal: signal,
+        })
+      }
+
+      const stack = stackResponse.selected
+
       const apiTokenResponse = await fetchPersonalToken(
-        stack.data.id,
+        stack.id,
         result.token,
         signal
       )
@@ -147,18 +160,18 @@ export function initialize(browserWindow: BrowserWindow) {
         version: '1.0',
         tokens: {
           ...currentProfile?.tokens,
-          [stack.data.id]: encryptedToken,
+          [stack.id]: encryptedToken,
         },
         user: {
           name: null,
           email: result.email,
-          currentStack: stack.data.id,
+          currentStack: stack.id,
           stacks: {
             ...currentProfile?.user.stacks,
-            [stack.data.id]: {
-              id: stack.data.id,
-              name: stack.data.name,
-              url: stack.data.url,
+            [stack.id]: {
+              id: stack.id,
+              name: stack.name,
+              url: stack.url,
             },
           },
         },
