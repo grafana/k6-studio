@@ -112,7 +112,7 @@ export function initialize(browserWindow: BrowserWindow) {
         const stacks = await fetchStacks(result.token, signal)
 
         // Skip having to select a stack if there's only one available.
-        // We do show the step if the stack is archived, though so that
+        // We do show the step if the stack is archived though, so that
         // they get instructions on logging in to it.
         if (
           stacks.length === 1 &&
