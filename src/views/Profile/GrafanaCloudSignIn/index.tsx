@@ -193,7 +193,7 @@ export function GrafanaCloudSignIn({
   }
 
   return (
-    <Flex direction="column" align="center" gap="4" maxWidth="300px">
+    <Flex direction="column" align="center" gap="4" minWidth="300px">
       <GrafanaLogo width="100px" height="100px" />
       <Flex direction="column" align="center" gap="3">
         <SignInProcess
