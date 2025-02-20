@@ -1,4 +1,4 @@
-import { UserInfo } from '@/schemas/profile'
+import { StackInfo, UserProfiles } from '@/schemas/profile'
 
 export interface Stack {
   id: string
@@ -28,13 +28,6 @@ export interface AwaitingAuthorizationState {
  */
 export interface AuthorizationDeniedState {
   type: 'authorization-denied'
-}
-
-/**
- * Entered when the user is already signed in with a different account.
- */
-export interface SignOutRequiredState {
-  type: 'sign-out-required'
 }
 
 /**
@@ -86,7 +79,6 @@ export type SignInProcessState =
   | InitializingState
   | AwaitingAuthorizationState
   | AuthorizationDeniedState
-  | SignOutRequiredState
   | FetchingStacksState
   | SelectingStackState
   | FetchingTokenState
@@ -96,15 +88,12 @@ export type SignInProcessState =
 
 export interface Authenticated {
   type: 'authenticated'
-  user: UserInfo
+  current: StackInfo
+  profiles: UserProfiles
 }
 
 export interface Denied {
   type: 'denied'
-}
-
-export interface Conflict {
-  type: 'conflict'
 }
 
 export interface TimedOut {
@@ -115,12 +104,7 @@ export interface Aborted {
   type: 'aborted'
 }
 
-export type SignInResult =
-  | Authenticated
-  | Denied
-  | Conflict
-  | TimedOut
-  | Aborted
+export type SignInResult = Authenticated | Denied | TimedOut | Aborted
 
 export interface RefreshStacks {
   type: 'refresh-stacks'

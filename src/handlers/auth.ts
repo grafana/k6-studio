@@ -1,8 +1,13 @@
 import { app, BrowserWindow, ipcMain, safeStorage, shell } from 'electron'
-import { Profile, ProfileSchema, UserInfo } from '../schemas/profile'
+import {
+  UserProfiles,
+  Profile,
+  ProfileSchema,
+  StackInfo,
+} from '../schemas/profile'
 import { authenticate } from '../services/grafana/authenticate'
 import path from 'path'
-import { writeFile, readFile, rm } from 'fs/promises'
+import { writeFile, readFile } from 'fs/promises'
 import { fetchInstances } from '../services/grafana'
 import { fetchPersonalToken } from '../services/k6'
 import {
@@ -12,7 +17,7 @@ import {
 } from '../types/auth'
 import log from 'electron-log/main'
 import { ClientError } from 'openid-client'
-import { AuthHandler } from './auth.types'
+import { AuthHandler, ChangeStackResponse, SignOutResponse } from './auth.types'
 import { waitFor } from './utils'
 
 const fileName =
@@ -29,13 +34,20 @@ function wasAborted(error: unknown): boolean {
   )
 }
 
-async function getCurrentProfile() {
+async function getProfileData(): Promise<Profile> {
   try {
     const file = await readFile(filePath, 'utf-8')
 
     return ProfileSchema.parse(JSON.parse(file))
   } catch {
-    return null
+    return {
+      version: '1.0',
+      tokens: {},
+      profiles: {
+        currentStack: '',
+        stacks: {},
+      },
+    }
   }
 }
 
@@ -44,14 +56,10 @@ export function initialize(browserWindow: BrowserWindow) {
     browserWindow.webContents.send('auth:state-change', state)
   }
 
-  ipcMain.handle(AuthHandler.GetUser, async (): Promise<UserInfo | null> => {
-    const profile = await getCurrentProfile()
+  ipcMain.handle(AuthHandler.GetProfiles, async (): Promise<UserProfiles> => {
+    const profile = await getProfileData()
 
-    if (profile === null) {
-      return null
-    }
-
-    return profile.user
+    return profile.profiles
   })
 
   let pending: AbortController | null = null
@@ -88,17 +96,6 @@ export function initialize(browserWindow: BrowserWindow) {
       if (result.type === 'timed-out') {
         return {
           type: 'timed-out',
-        }
-      }
-
-      const currentProfile = await getCurrentProfile()
-
-      if (
-        currentProfile !== null &&
-        currentProfile?.user.email !== result.email
-      ) {
-        return {
-          type: 'conflict',
         }
       }
 
@@ -156,23 +153,30 @@ export function initialize(browserWindow: BrowserWindow) {
         .encryptString(apiTokenResponse.api_token)
         .toString('base64')
 
-      const newProfile: Profile = {
-        version: '1.0',
-        tokens: {
-          ...currentProfile?.tokens,
-          [stack.id]: encryptedToken,
-        },
+      const profileData = await getProfileData()
+
+      const stackInfo: StackInfo = {
+        id: stack.id,
+        name: stack.name,
+        url: stack.url,
         user: {
           name: null,
           email: result.email,
+        },
+      }
+
+      const newProfile: Profile = {
+        version: '1.0',
+        tokens: {
+          ...profileData.tokens,
+          [stack.id]: encryptedToken,
+        },
+        profiles: {
+          ...profileData.profiles,
           currentStack: stack.id,
           stacks: {
-            ...currentProfile?.user.stacks,
-            [stack.id]: {
-              id: stack.id,
-              name: stack.name,
-              url: stack.url,
-            },
+            ...profileData.profiles.stacks,
+            [stack.id]: stackInfo,
           },
         },
       }
@@ -181,7 +185,8 @@ export function initialize(browserWindow: BrowserWindow) {
 
       return {
         type: 'authenticated',
-        user: newProfile.user,
+        current: stackInfo,
+        profiles: newProfile.profiles,
       }
     } catch (error) {
       if (wasAborted(error)) {
@@ -203,35 +208,56 @@ export function initialize(browserWindow: BrowserWindow) {
     pending = null
   })
 
-  ipcMain.handle(AuthHandler.ChangeStack, async (_event, stackId: string) => {
-    const profile = await getCurrentProfile()
+  ipcMain.handle(
+    AuthHandler.ChangeStack,
+    async (_event, stackId: string): Promise<ChangeStackResponse> => {
+      const profileData = await getProfileData()
 
-    if (profile === null) {
-      throw new Error('No profile found')
+      const stack = profileData.profiles.stacks[stackId]
+
+      if (stack === undefined) {
+        throw new Error(`User has not signed in to stack with id ${stackId}.`)
+      }
+
+      const newProfile: Profile = {
+        ...profileData,
+        profiles: {
+          ...profileData.profiles,
+          currentStack: stack.id,
+        },
+      }
+
+      await writeFile(filePath, JSON.stringify(newProfile, null, 2))
+
+      return {
+        current: stack,
+        profiles: newProfile.profiles,
+      }
     }
+  )
 
-    if (profile.user.stacks[stackId] === undefined) {
-      throw new Error('Stack not found')
+  ipcMain.handle(
+    AuthHandler.SignOut,
+    async (_ev, stack: StackInfo): Promise<SignOutResponse> => {
+      const profileData = await getProfileData()
+
+      delete profileData.tokens[stack.id]
+      delete profileData.profiles.stacks[stack.id]
+
+      if (profileData.profiles.currentStack === stack.id) {
+        const [firstStack] = Object.values(profileData.profiles.stacks)
+
+        profileData.profiles.currentStack = firstStack?.id ?? ''
+      }
+
+      await writeFile(filePath, JSON.stringify(profileData, null, 2))
+
+      return {
+        current:
+          profileData.profiles.stacks[profileData.profiles.currentStack] ??
+          null,
+        profiles: profileData.profiles,
+      }
     }
-
-    const newProfile: Profile = {
-      ...profile,
-      user: {
-        ...profile.user,
-        currentStack: stackId,
-      },
-    }
-
-    await writeFile(filePath, JSON.stringify(newProfile, null, 2))
-
-    return newProfile.user
-  })
-
-  ipcMain.handle(AuthHandler.SignOut, async (): Promise<void> => {
-    try {
-      await rm(filePath)
-    } catch {
-      // If it's not there, then we're already signed out.
-    }
-  })
+  )
 }

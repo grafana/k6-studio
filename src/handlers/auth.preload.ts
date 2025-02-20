@@ -1,4 +1,3 @@
-import { UserInfo } from '@/schemas/profile'
 import {
   SignInResult,
   SignInProcessState,
@@ -6,10 +5,15 @@ import {
 } from '@/types/auth'
 import { ipcRenderer } from 'electron'
 import { createListener } from './utils'
-import { AuthHandler as AuthHandler } from './auth.types'
+import {
+  AuthHandler as AuthHandler,
+  ChangeStackResponse,
+  SignOutResponse,
+} from './auth.types'
+import { StackInfo, UserProfiles } from '@/schemas/profile'
 
-export function getUser() {
-  return ipcRenderer.invoke(AuthHandler.GetUser) as Promise<UserInfo | null>
+export function getProfiles() {
+  return ipcRenderer.invoke(AuthHandler.GetProfiles) as Promise<UserProfiles>
 }
 
 export function signIn(): Promise<SignInResult> {
@@ -24,12 +28,15 @@ export function abortSignIn() {
   return ipcRenderer.invoke('auth:abort') as Promise<void>
 }
 
-export function signOut(): Promise<void> {
-  return ipcRenderer.invoke('auth:sign-out') as Promise<void>
+export function signOut(stack: StackInfo) {
+  return ipcRenderer.invoke('auth:sign-out', stack) as Promise<SignOutResponse>
 }
 
 export function changeStack(stackId: string) {
-  return ipcRenderer.invoke('auth:change-stack', stackId) as Promise<UserInfo>
+  return ipcRenderer.invoke(
+    'auth:change-stack',
+    stackId
+  ) as Promise<ChangeStackResponse>
 }
 
 export function onStateChange(

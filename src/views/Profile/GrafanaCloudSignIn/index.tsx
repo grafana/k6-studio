@@ -12,8 +12,7 @@ import { TimedOut } from './TimedOut'
 import { SignInProcessState, SignInResult, Stack } from '@/types/auth'
 import { AuthorizationDenied } from './AuthorizationDenied'
 import { UnexpectedError } from './UnexpectedError'
-import { UserInfo } from '@/schemas/profile'
-import { SignOutRequired } from './SignOutRequired'
+import { UserProfiles } from '@/schemas/profile'
 
 interface SignInProcessProps {
   state: SignInProcessState
@@ -37,9 +36,6 @@ export function SignInProcess({
 
     case 'authorization-denied':
       return <AuthorizationDenied state={state} onRetry={onRetry} />
-
-    case 'sign-out-required':
-      return <SignOutRequired state={state} />
 
     case 'fetching-stacks':
       return <FetchingStacks state={state} />
@@ -71,7 +67,7 @@ export function SignInProcess({
 }
 
 interface GrafanaCloudSignInProps {
-  onSignIn: (user: UserInfo) => void
+  onSignIn: (profiles: UserProfiles) => void
   onAbort: () => void
 }
 
@@ -89,13 +85,7 @@ export function GrafanaCloudSignIn({
   const handleSignIn = useCallback((result: SignInResult) => {
     switch (result.type) {
       case 'authenticated':
-        onSignInRef.current(result.user)
-        break
-
-      case 'conflict':
-        setState({
-          type: 'sign-out-required',
-        })
+        onSignInRef.current(result.profiles)
         break
 
       case 'timed-out':

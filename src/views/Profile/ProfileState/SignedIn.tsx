@@ -28,12 +28,13 @@ export function SignedIn({ state, onStateChange }: SignedInStateProps) {
   const handleSignOut = () => {
     onStateChange({
       type: 'confirm-sign-out',
-      user: state.user,
+      profiles: state.profiles,
+      stack: state.current,
     })
   }
 
   const handleStackChange = (value: string) => {
-    const stack = state.user.stacks[value]
+    const stack = state.profiles.stacks[value]
 
     if (!stack) {
       return
@@ -41,10 +42,11 @@ export function SignedIn({ state, onStateChange }: SignedInStateProps) {
 
     window.studio.auth
       .changeStack(stack.id)
-      .then((user) => {
+      .then(({ current, profiles }) => {
         onStateChange({
           type: 'signed-in',
-          user,
+          current,
+          profiles,
         })
       })
       .catch(() => {
@@ -61,12 +63,12 @@ export function SignedIn({ state, onStateChange }: SignedInStateProps) {
             Signed in as
           </Text>
           <Heading weight="bold" size="5">
-            {state.user.email}
+            {state.current.user.email}
           </Heading>
         </Flex>
 
         <Select.Root
-          value={state.user.currentStack}
+          value={state.profiles.currentStack}
           onValueChange={handleStackChange}
         >
           <Select.Trigger
@@ -75,7 +77,7 @@ export function SignedIn({ state, onStateChange }: SignedInStateProps) {
             `}
           />
           <Select.Content>
-            {Object.values(state.user.stacks).map((stack) => {
+            {Object.values(state.profiles.stacks).map((stack) => {
               return (
                 <Select.Item
                   key={stack.id}

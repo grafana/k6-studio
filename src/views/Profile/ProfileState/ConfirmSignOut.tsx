@@ -7,20 +7,35 @@ interface ConfirmSignOutProps {
 }
 
 export function ConfirmSignOut({ state, onStateChange }: ConfirmSignOutProps) {
-  const handleSignOut = () => {
-    window.studio.auth.signOut().catch((error) => {
-      console.error('Failed to sign out', error)
-    })
+  const handleSignOut = async () => {
+    try {
+      const { current, profiles } = await window.studio.auth.signOut(
+        state.stack
+      )
 
-    onStateChange({
-      type: 'signed-out',
-    })
+      if (current === null) {
+        onStateChange({
+          type: 'signed-out',
+        })
+
+        return
+      }
+
+      onStateChange({
+        type: 'signed-in',
+        profiles,
+        current,
+      })
+    } catch (error) {
+      console.log('Error signing out', error)
+    }
   }
 
   const handleCancel = () => {
     onStateChange({
       type: 'signed-in',
-      user: state.user,
+      profiles: state.profiles,
+      current: state.stack,
     })
   }
 

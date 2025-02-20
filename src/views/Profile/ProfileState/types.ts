@@ -1,4 +1,4 @@
-import { UserInfo } from '@/schemas/profile'
+import { UserProfiles, StackInfo } from '@/schemas/profile'
 import { SignInProcessState } from '@/types/auth'
 
 export interface LoadingState {
@@ -11,7 +11,8 @@ export interface SignedOutState {
 
 export interface SignedInState {
   type: 'signed-in'
-  user: UserInfo
+  current: StackInfo
+  profiles: UserProfiles
 }
 
 export interface SigningInState {
@@ -21,7 +22,8 @@ export interface SigningInState {
 
 export interface ConfirmSignOutState {
   type: 'confirm-sign-out'
-  user: UserInfo
+  profiles: UserProfiles
+  stack: StackInfo
 }
 
 export type SignInState =

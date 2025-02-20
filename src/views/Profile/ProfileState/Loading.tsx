@@ -8,9 +8,11 @@ interface LoadingStateProps {
 export function Loading({ onLoaded }: LoadingStateProps) {
   useEffect(() => {
     window.studio.auth
-      .getUser()
-      .then((user) => {
-        if (user === null) {
+      .getProfiles()
+      .then((profiles) => {
+        const current = profiles.stacks[profiles.currentStack]
+
+        if (!current) {
           onLoaded({
             type: 'signed-out',
           })
@@ -20,7 +22,8 @@ export function Loading({ onLoaded }: LoadingStateProps) {
 
         onLoaded({
           type: 'signed-in',
-          user,
+          current,
+          profiles,
         })
       })
       .catch((error) => {
