@@ -1,5 +1,5 @@
 import { Badge, Flex } from '@radix-ui/themes'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { View } from '@/components/Layout/View'
@@ -7,12 +7,27 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import { useDataFilePreview } from './DataFile.hooks'
 import { DataFileControls } from './DataFileControls'
 import { DataFileTable } from './DataFileTable'
+import { useEffect } from 'react'
+import { useToast } from '@/store/ui/useToast'
+import { getRoutePath } from '@/routeMap'
 
 export function DataFile() {
   const { fileName } = useParams()
+  const navigate = useNavigate()
+  const showToast = useToast()
   invariant(fileName, 'fileName is required')
 
-  const { data: preview, isLoading } = useDataFilePreview(fileName)
+  const { data: preview, isLoading, isError } = useDataFilePreview(fileName)
+
+  useEffect(() => {
+    if (isError) {
+      showToast({
+        title: 'Failed to load data file',
+        status: 'error',
+      })
+      navigate(getRoutePath('home'))
+    }
+  }, [isError, navigate, showToast])
 
   return (
     <View

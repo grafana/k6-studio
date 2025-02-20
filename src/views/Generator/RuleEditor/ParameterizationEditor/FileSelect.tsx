@@ -62,7 +62,7 @@ export function FileSelect() {
         name="value.fileName"
         errors={errors}
         label="Key"
-        hint="Key from a random row in the data file"
+        hint="Used to retrieve a value from a randomly selected row in the data file"
       >
         <ControlledSelect
           options={propsOptions || []}
