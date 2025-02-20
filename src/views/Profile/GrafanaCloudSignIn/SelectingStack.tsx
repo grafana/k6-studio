@@ -1,10 +1,12 @@
-import { Button, Flex, Select } from '@radix-ui/themes'
+import { Button, Flex } from '@radix-ui/themes'
 import { SelectingStackState, Stack } from '@/types/auth'
 import { useState } from 'react'
 import { ExternalLink } from '@/components/ExternalLink'
 import { css } from '@emotion/react'
 import { AuthenticationMessage } from './AuthenticationMessage'
 import { LinkButton } from '@/components/LinkButton'
+import { StyledReactSelect } from '@/components/StyledReactSelect'
+import { SingleValue } from 'react-select'
 
 interface SelectingStackProps {
   state: SelectingStackState
@@ -17,12 +19,8 @@ export function SelectingStack({
   onSelect,
   onRefresh,
 }: SelectingStackProps) {
-  const [selectedStackId, setSelectedStackId] = useState(
-    state.current?.id ?? state.stacks[0]?.id ?? ''
-  )
-
-  const selectedStack = state.stacks.find(
-    (stack) => stack.id === selectedStackId
+  const [selectedStack, setSelectedStack] = useState(
+    state.current ?? state.stacks[0] ?? null
   )
 
   const handleSelect = () => {
@@ -41,6 +39,10 @@ export function SelectingStack({
     onRefresh(selectedStack)
   }
 
+  const handleValueChange = (value: SingleValue<Stack>) => {
+    setSelectedStack(value)
+  }
+
   return (
     <Flex
       direction="column"
@@ -56,20 +58,20 @@ export function SelectingStack({
       >
         Select a stack...
       </div>
-      <Select.Root value={selectedStackId} onValueChange={setSelectedStackId}>
-        <Select.Trigger
-          css={css`
-            text-align: center;
-          `}
+      <div
+        css={css`
+          position: relative;
+        `}
+      >
+        <StyledReactSelect
+          menuPosition="absolute"
+          value={selectedStack ?? null}
+          options={state.stacks}
+          getOptionValue={(option) => option.id}
+          getOptionLabel={(option) => option.name}
+          onChange={handleValueChange}
         />
-        <Select.Content>
-          {state.stacks.map((stack) => (
-            <Select.Item key={stack.id} value={stack.id}>
-              {stack.name}
-            </Select.Item>
-          ))}
-        </Select.Content>
-      </Select.Root>
+      </div>
 
       {selectedStack?.status === 'archived' && (
         <>
@@ -98,7 +100,7 @@ export function SelectingStack({
       )}
       <Button
         disabled={
-          selectedStack === undefined ||
+          selectedStack === null ||
           selectedStack.status === 'archived' ||
           selectedStack.status === 'restoring'
         }
