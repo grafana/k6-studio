@@ -1,5 +1,5 @@
 import { ProxyData, RequestSnippetSchema } from '@/types'
-import { CustomCodeValue, TestRule } from '@/types/rules'
+import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
 import { applyRules } from '@/rules/rules'
 import { GeneratorFileData } from '@/types/generator'
 import { DataFile, Variable } from '@/types/testData'
@@ -99,13 +99,20 @@ export function generateVUCode(
   thinkTime: ThinkTime
 ): string {
   const cleanedRecording = cleanupRecording(recording)
+  const enabledRules = rules.filter((rule) => rule.enabled)
 
   const requestSnippets = generateRequestSnippets(
     cleanedRecording,
-    rules,
+    enabledRules,
     thinkTime
   )
-  const parameterizationCustomCode = generateParameterizationCustomCode(rules)
+
+  const parameterizationRules = enabledRules.filter(
+    (rule) => rule.type === 'parameterization'
+  )
+  const parameterizationCustomCode = generateParameterizationCustomCode(
+    parameterizationRules
+  )
 
   // Group requests after applying rules to correlate requests between different groups
   const groups = Object.entries(groupProxyData(requestSnippets))
@@ -255,10 +262,10 @@ export function generateRequestParams(request: ProxyData['request']): string {
   `
 }
 
-export function generateParameterizationCustomCode(rules: TestRule[]): string {
+export function generateParameterizationCustomCode(
+  rules: ParameterizationRule[]
+): string {
   return rules
-    .filter((rule) => rule.enabled)
-    .filter((rule) => rule.type === 'parameterization')
     .map((rule, index) => ({ rule, parameterizationIndex: index }))
     .filter(({ rule }) => rule.value?.type === 'customCode')
     .map(({ rule, parameterizationIndex }) =>
