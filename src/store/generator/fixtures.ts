@@ -13,6 +13,7 @@ export const rules: TestRule[] = [
     type: 'correlation',
     id: '1',
     enabled: true,
+    extractionMode: 'single',
     extractor: {
       filter: { path: '' },
       selector: {
@@ -27,6 +28,7 @@ export const rules: TestRule[] = [
     type: 'correlation',
     id: '3',
     enabled: true,
+    extractionMode: 'single',
     extractor: {
       filter: { path: '' },
       selector: {
@@ -40,6 +42,7 @@ export const rules: TestRule[] = [
     type: 'correlation',
     id: '2',
     enabled: true,
+    extractionMode: 'single',
     extractor: {
       filter: { path: '' },
       selector: {
@@ -54,6 +57,7 @@ export const rules: TestRule[] = [
     type: 'correlation',
     id: '4',
     enabled: true,
+    extractionMode: 'single',
     extractor: {
       filter: { path: 'api.k6.io/v3/account/me' },
       selector: {

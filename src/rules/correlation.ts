@@ -67,6 +67,38 @@ function applyRule({
   // this is the modified schema that we return to the accumulator
   const snippetSchemaReturnValue = cloneDeep(requestSnippetSchema)
 
+  // Try to extract if we're in 'multiple' mode or don't have a value yet
+  if (rule.extractionMode === 'multiple' || !state.extractedValue) {
+    // Skip extraction if filter doesn't match
+    if (matchFilter(requestSnippetSchema.data.request, rule.extractor.filter)) {
+      const { extractedValue, generatedUniqueId, correlationExtractionSnippet } =
+        tryCorrelationExtraction(
+          rule,
+          requestSnippetSchema.data,
+          state.generatedUniqueId,
+          idGenerator
+        )
+
+      if (extractedValue && correlationExtractionSnippet) {
+        setState({
+          extractedValue,
+          generatedUniqueId: generatedUniqueId,
+          responsesExtracted: [
+            ...state.responsesExtracted,
+            requestSnippetSchema.data,
+          ],
+          count: state.count + 1,
+        })
+
+        snippetSchemaReturnValue.after = [
+          ...requestSnippetSchema.after,
+          correlationExtractionSnippet,
+        ]
+      }
+    }
+  }
+
+  // Handle replacements if we have an extracted value
   if (state.extractedValue) {
     // Skip replacement if replacer filter doesn't match
     if (
@@ -99,50 +131,6 @@ function applyRule({
           },
         ],
       })
-    }
-  }
-
-  // Skip extraction if filter doesn't match
-  if (!matchFilter(requestSnippetSchema.data.request, rule.extractor.filter)) {
-    return snippetSchemaReturnValue
-  }
-
-  // try to extract the value
-  // TODO: https://github.com/grafana/k6-studio/issues/277
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const { extractedValue, generatedUniqueId, correlationExtractionSnippet } =
-    tryCorrelationExtraction(
-      rule,
-      requestSnippetSchema.data,
-      state.generatedUniqueId,
-      idGenerator
-    )
-
-  if (extractedValue && correlationExtractionSnippet) {
-    // Skip extraction and bump count if value is already extracted
-    if (state.extractedValue) {
-      setState({
-        count: state.count + 1,
-      })
-      return snippetSchemaReturnValue
-    }
-
-    setState({
-      // TODO: https://github.com/grafana/k6-studio/issues/277
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      extractedValue,
-      generatedUniqueId: generatedUniqueId,
-      responsesExtracted: [
-        ...state.responsesExtracted,
-        requestSnippetSchema.data,
-      ],
-
-      count: state.count + 1,
-    })
-
-    return {
-      ...snippetSchemaReturnValue,
-      after: [...requestSnippetSchema['after'], correlationExtractionSnippet],
     }
   }
 
@@ -849,7 +837,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     ).toStrictEqual(expectedResult)
   })
 
-  it('extracts only first correlation match', () => {
+  it('extracts only once in single mode', () => {
     const recording = [
       createProxyData({
         response: createResponse({
@@ -857,11 +845,8 @@ correlation_vars['correlation_1'] = resp.json().user_id`
         }),
       }),
       createProxyData({
-        request: createRequest({
-          url: 'http://test.k6.io/api/v1/login?user_id=444',
-        }),
         response: createResponse({
-          content: JSON.stringify({ user_id: '444' }),
+          content: JSON.stringify({ user_id: '555' }),
         }),
       }),
     ]
@@ -871,6 +856,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
       type: 'correlation',
       id: '1',
       enabled: true,
+      extractionMode: 'single',
       extractor: {
         filter: { path: '' },
         selector: {
@@ -881,20 +867,65 @@ correlation_vars['correlation_1'] = resp.json().user_id`
       },
     }
 
-    const ruleInstance = createCorrelationRuleInstance(
-      rule,
-      sequentialIdGenerator
-    )
-
+    const ruleInstance = createCorrelationRuleInstance(rule, sequentialIdGenerator)
     const requestSnippets = recording.map((data) =>
       ruleInstance.apply({ data, before: [], after: [] })
     )
 
+    // First request should extract
     expect(requestSnippets[0]?.after[0]?.replace(/\s/g, '')).toBe(
       `correlation_vars['correlation_0']=resp.json().user_id`
     )
-
+    // Second request should not extract
     expect(requestSnippets[1]?.after).toEqual([])
+    // Should keep first extracted value
+    expect(ruleInstance.state.extractedValue).toBe('444')
+  })
+
+  it('extracts multiple times in multiple mode', () => {
+    const recording = [
+      createProxyData({
+        response: createResponse({
+          content: JSON.stringify({ user_id: '444' }),
+        }),
+      }),
+      createProxyData({
+        response: createResponse({
+          content: JSON.stringify({ user_id: '555' }),
+        }),
+      }),
+    ]
+    const sequentialIdGenerator = generateSequentialInt()
+
+    const rule: CorrelationRule = {
+      type: 'correlation',
+      id: '1',
+      enabled: true,
+      extractionMode: 'multiple',
+      extractor: {
+        filter: { path: '' },
+        selector: {
+          type: 'json',
+          from: 'body',
+          path: 'user_id',
+        },
+      },
+    }
+
+    const ruleInstance = createCorrelationRuleInstance(rule, sequentialIdGenerator)
+    const requestSnippets = recording.map((data) =>
+      ruleInstance.apply({ data, before: [], after: [] })
+    )
+
+    // Both requests should extract
+    expect(requestSnippets[0]?.after[0]?.replace(/\s/g, '')).toBe(
+      `correlation_vars['correlation_0']=resp.json().user_id`
+    )
+    expect(requestSnippets[1]?.after[0]?.replace(/\s/g, '')).toBe(
+      `correlation_vars['correlation_0']=resp.json().user_id`
+    )
+    // Should have latest extracted value
+    expect(ruleInstance.state.extractedValue).toBe('555')
   })
 
   it('does not apply replacer if filter does not match', () => {
@@ -919,6 +950,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
       type: 'correlation',
       id: '1',
       enabled: true,
+      extractionMode: 'single',
       extractor: {
         filter: { path: '' },
         selector: {
@@ -974,6 +1006,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
       type: 'correlation',
       id: '1',
       enabled: true,
+      extractionMode: 'single',
       extractor: {
         filter: { path: '' },
         selector: {

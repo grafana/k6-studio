@@ -125,6 +125,7 @@ export const CorrelationRuleSchema = RuleBaseSchema.extend({
   type: z.literal('correlation'),
   extractor: CorrelationExtractorSchema,
   replacer: CorrelationReplacerSchema.optional(),
+  extractionMode: z.enum(['single', 'multiple']).default('single'),
 })
 
 export const VerificationRuleSchema = RuleBaseSchema.extend({
