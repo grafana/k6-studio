@@ -7,6 +7,7 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
         type: 'correlation',
         id: crypto.randomUUID(),
         enabled: true,
+        extractionMode: 'multiple',
         extractor: {
           filter: { path: '' },
           selector: {

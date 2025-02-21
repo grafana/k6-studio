@@ -1,4 +1,4 @@
-import { Box, Grid, Heading, Switch, Text } from '@radix-ui/themes'
+import { Box, Grid, Heading, Switch, Text, Select } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
@@ -9,6 +9,7 @@ import { useFormContext } from 'react-hook-form'
 export function CorrelationEditor() {
   const { setValue, watch } = useFormContext<TestRule>()
   const replacer = watch('replacer')
+  const extractionMode = watch('extractionMode')
 
   const isCustomReplacerSelector = !!replacer?.selector
 
@@ -34,6 +35,29 @@ export function CorrelationEditor() {
         <Text size="2" as="p" mb="2" color="gray">
           Extraction value for correlation.
         </Text>
+        <Box mb="3">
+          <Label>Extraction Mode</Label>
+          <Select.Root
+            defaultValue="multiple"
+            value={extractionMode}
+            onValueChange={(value: 'single' | 'multiple') => 
+              setValue('extractionMode', value)
+            }
+          >
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="single">
+                Single (extract once)
+              </Select.Item>
+              <Select.Item value="multiple">
+                Multiple (extract every time)
+              </Select.Item>
+            </Select.Content>
+          </Select.Root>
+          <Text size="1" as="p" mt="1" color="gray">
+            Choose whether to extract the value once or on every matching response.
+          </Text>
+        </Box>
         <FilterField field="extractor.filter" />
         <SelectorField field="extractor.selector" />
       </Box>

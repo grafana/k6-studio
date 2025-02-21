@@ -193,7 +193,7 @@ describe('Code generation', () => {
           users: new SharedArray("users", () => {
             return Papa.parse(open("../Data/users.csv"), { header: true }).data;
           }),
-          
+
           products: new SharedArray("products", () => {
             const data = JSON.parse(open("../Data/products.json"));
             return Array.isArray(data) ? data : [data];
@@ -254,6 +254,7 @@ describe('Code generation', () => {
           type: 'correlation',
           id: '1',
           enabled: true,
+          extractionMode: 'single',
           extractor: {
             filter: { path: '/login' },
             selector: {
@@ -267,6 +268,7 @@ describe('Code generation', () => {
           type: 'correlation',
           id: '1',
           enabled: true,
+          extractionMode: 'single',
           extractor: {
             filter: { path: '' },
             selector: {
@@ -343,39 +345,39 @@ describe('Code generation', () => {
           let regex
           let url
           const correlation_vars = {}
-  
+
           group('one', function () {
             params = {
               headers: {}, cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/foo\`
             resp = http.request('POST', url, null, params)
-   
+
             params = {
               headers: {}, cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/login?project_id=555\`
             resp = http.request('POST', url, null, params)
           })
-  
+
           group('two', function () {
             params = {
               headers: {}, cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/users/333\`
             resp = http.request('GET', url, null, params)
-  
+
             params = {
               headers: {}, cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/users\`
             resp = http.request('POST', url, \`${JSON.stringify({ user_id: '333' })}\`, params)
           })
-  
+
           sleep(1)
         `)
 
@@ -458,7 +460,7 @@ describe('Code generation', () => {
           let regex
           let url
           const correlation_vars = {}
-  
+
           group('Default group', function () {
             params = {
               headers: {
@@ -466,15 +468,15 @@ describe('Code generation', () => {
               },
               cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/users\`
             resp = http.request('POST', url, \`${JSON.stringify({ user_id: 'TEST_ID' })}\`, params)
-  
+
             params = {
               headers: {},
               cookies: {},
             }
-  
+
             function getParameterizationValue1() {
               const randomInteger = Math.floor(Math.random() * 100000)
               return randomInteger
@@ -482,22 +484,22 @@ describe('Code generation', () => {
             function getParameterizationValue2() {
               return '123456'
             }
-  
+
             url = http.url\`http://example.com/api/v1/users?project_id=\${getParameterizationValue1()}&csrf=\${getParameterizationValue2()}\`
             resp = http.request('GET', url, null, params)
-  
-  
+
+
             params = {
               headers: {},
               cookies: {},
             }
-  
+
             url = http.url\`http://example.com/api/v1/users?project_id=\${getParameterizationValue1()}\`
             resp = http.request('GET', url, null, params)
           })
-  
+
           sleep(1)
-  
+
         `)
 
         expect(
@@ -519,7 +521,7 @@ describe('Code generation', () => {
           let regex
           let url
           const correlation_vars = {}
-  
+
           group('Default group', function () {
             params = {
               headers: {
@@ -527,30 +529,30 @@ describe('Code generation', () => {
               },
               cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/users\`
             resp = http.request('POST', url, \`${JSON.stringify({ user_id: '333' })}\`, params)
-  
+
             params = {
               headers: {},
               cookies: {},
             }
-   
+
             url = http.url\`http://example.com/api/v1/users?project_id=123&csrf=321\`
             resp = http.request('GET', url, null, params)
-  
-  
+
+
             params = {
               headers: {},
               cookies: {},
             }
-  
+
             url = http.url\`http://example.com/api/v1/users?project_id=123\`
             resp = http.request('GET', url, null, params)
           })
-  
+
           sleep(1)
-  
+
         `)
 
         expect(

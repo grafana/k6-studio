@@ -123,6 +123,7 @@ export const ParameterizationRuleSchema = RuleBaseSchema.extend({
 
 export const CorrelationRuleSchema = RuleBaseSchema.extend({
   type: z.literal('correlation'),
+  extractionMode: z.enum(['single', 'multiple']).default('multiple'),
   extractor: CorrelationExtractorSchema,
   replacer: CorrelationReplacerSchema.optional(),
 })
