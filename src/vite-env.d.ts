@@ -4,3 +4,4 @@ declare const K6_API_URL: string
 declare const MOCK_PERSONAL_API_TOKEN: string
 declare const GRAFANA_CLIENT_ID: string
 declare const GRAFANA_API_URL: string
+declare const GRAFANA_COM_URL: string

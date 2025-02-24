@@ -37,6 +37,9 @@ export default defineConfig((env) => {
     },
     define: {
       __APP_VERSION__: JSON.stringify(version),
+      GRAFANA_COM_URL: JSON.stringify(
+        process.env.GRAFANA_COM_URL ?? 'https://grafana.com'
+      ),
     },
     clearScreen: false,
   } as UserConfig
