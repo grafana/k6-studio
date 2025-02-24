@@ -1,4 +1,4 @@
-import { Box, Grid, Heading, Switch, Text, Select, RadioGroup, Flex } from '@radix-ui/themes'
+import { Box, Grid, Heading, Switch, Text, RadioGroup, Flex } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
