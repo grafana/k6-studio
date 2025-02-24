@@ -1,12 +1,4 @@
-import {
-  Box,
-  Grid,
-  Heading,
-  Switch,
-  Text,
-  RadioGroup,
-  Flex,
-} from '@radix-ui/themes'
+import { Box, Grid, Heading, Switch, Text } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
@@ -14,15 +6,21 @@ import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
 import { FieldGroup } from '@/components/Form'
+import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
+
+const EXTRACTION_MODE_OPTIONS = [
+  { value: 'single', label: 'First occurence' },
+  { value: 'multiple', label: 'All occurences' },
+]
 
 export function CorrelationEditor() {
   const {
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useFormContext<TestRule>()
   const replacer = watch('replacer')
-  const extractionMode = watch('extractor.extractionMode')
 
   const isCustomReplacerSelector = !!replacer?.selector
 
@@ -55,31 +53,18 @@ export function CorrelationEditor() {
           label="Extraction mode"
           errors={errors}
         >
-          <RadioGroup.Root
-            defaultValue="multiple"
-            value={extractionMode}
-            onValueChange={(value) =>
+          <ControlledRadioGroup
+            name="extractor.extractionMode"
+            control={control}
+            options={EXTRACTION_MODE_OPTIONS}
+            direction="row"
+            onChange={(value) =>
               setValue(
                 'extractor.extractionMode',
                 value as 'single' | 'multiple'
               )
             }
-          >
-            <Flex direction="row" gap="4">
-              <Text as="label" size="2">
-                <Flex gap="2">
-                  <RadioGroup.Item value="single" />
-                  First occurrence
-                </Flex>
-              </Text>
-              <Text as="label" size="2">
-                <Flex gap="2">
-                  <RadioGroup.Item value="multiple" />
-                  All occurrences
-                </Flex>
-              </Text>
-            </Flex>
-          </RadioGroup.Root>
+          />
         </FieldGroup>
       </Box>
       <Box>
