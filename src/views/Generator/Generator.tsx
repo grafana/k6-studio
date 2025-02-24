@@ -140,7 +140,7 @@ export function Generator() {
                 selectedRequest={selectedRequest}
               />
             </Allotment.Pane>
-            <Allotment.Pane minSize={400}>
+            <Allotment.Pane minSize={200}>
               <TestRuleContainer />
             </Allotment.Pane>
           </Allotment>

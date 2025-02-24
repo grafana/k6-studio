@@ -4,14 +4,15 @@ export function StickyPanelHeader({ children }: { children: React.ReactNode }) {
   return (
     <Flex
       position="sticky"
-      align="center"
+      justify="center"
       top="0"
       p="2"
-      gap="3"
-      height="40px"
+      minHeight="40px"
+      direction="column"
       css={{
         backgroundColor: 'var(--color-background)',
         zIndex: 1,
+        borderBottom: '1px solid var(--gray-3)',
       }}
     >
       {children}
