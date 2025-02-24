@@ -102,7 +102,6 @@
     "find-process": "^1.4.7",
     "fuse.js": "^7.0.0",
     "immer": "^10.1.1",
-    "jotai": "^2.12.1",
     "jsonrepair": "^3.8.0",
     "keyboardjs": "^2.7.0",
     "lodash-es": "^4.17.21",

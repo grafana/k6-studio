@@ -1,10 +1,9 @@
-import { getDefaultStore } from 'jotai'
-import { tool } from './atoms'
+import { useInBrowserUIStore } from './store'
 
 export function shouldSkipEvent(event: Event): boolean {
-  const store = getDefaultStore()
+  const store = useInBrowserUIStore.getState()
 
-  if (store.get(tool) !== null) {
+  if (store.tool !== null) {
     return true
   }
 

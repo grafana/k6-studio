@@ -1,14 +1,14 @@
 import { ToolBox } from './ToolBox'
 import { ElementInspector } from './ElementInspector'
 import { RemoteHighlights } from './RemoteHighlights'
-import { useAtom } from 'jotai'
-import * as atoms from './atoms'
+import { useInBrowserUIStore } from './store'
 
 export function InBrowserControls() {
-  const [tool, setTool] = useAtom(atoms.tool)
+  const tool = useInBrowserUIStore((state) => state.tool)
+  const selectTool = useInBrowserUIStore((state) => state.selectTool)
 
   const handleInspectorEscape = () => {
-    setTool(null)
+    selectTool(null)
   }
 
   return (
@@ -17,7 +17,7 @@ export function InBrowserControls() {
         <ElementInspector onEscape={handleInspectorEscape} />
       )}
       <RemoteHighlights enabled={tool === null} />
-      <ToolBox selected={tool} onSelect={setTool} />
+      <ToolBox selected={tool} onSelect={selectTool} />
     </>
   )
 }
