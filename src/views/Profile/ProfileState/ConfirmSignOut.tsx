@@ -41,7 +41,7 @@ export function ConfirmSignOut({ state, onStateChange }: ConfirmSignOutProps) {
 
   return (
     <Flex direction="column" align="center" gap="5">
-      <Heading mb="0">
+      <Heading mb="0" align="center">
         Are you sure you want to sign out from {state.stack.name}?
       </Heading>
       <Flex gap="1" direction="column" width="150px">
