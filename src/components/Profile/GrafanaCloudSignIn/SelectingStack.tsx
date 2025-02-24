@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ExternalLink } from '@/components/ExternalLink'
 import { css } from '@emotion/react'
 import { AuthenticationMessage } from './AuthenticationMessage'
-import { LinkButton } from '@/components/LinkButton'
+import { TextButton } from '@/components/TextButton'
 import { StyledReactSelect } from '@/components/StyledReactSelect'
 import { SingleValue } from 'react-select'
 
@@ -86,7 +86,7 @@ export function SelectingStack({
               log in
             </ExternalLink>{' '}
             to it before continuing. Wait a few minutes and{' '}
-            <LinkButton onClick={handleRefresh}>refresh.</LinkButton>
+            <TextButton onClick={handleRefresh}>refresh.</TextButton>
           </AuthenticationMessage>
         </>
       )}
@@ -94,7 +94,7 @@ export function SelectingStack({
         <>
           <AuthenticationMessage>
             The stack is being restored. Please wait a moment and{' '}
-            <LinkButton onClick={handleRefresh}>refresh.</LinkButton>
+            <TextButton onClick={handleRefresh}>refresh.</TextButton>
           </AuthenticationMessage>
         </>
       )}
