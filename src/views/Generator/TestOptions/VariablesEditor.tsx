@@ -136,7 +136,10 @@ function VariableRow({
         </FieldGroup>
       </Table.Cell>
       <Table.Cell>
-        <Tooltip content="Variable is in use by rule" hidden={!isVariableInUse}>
+        <Tooltip
+          content="Variable is referenced in a rule"
+          hidden={!isVariableInUse}
+        >
           <IconButton disabled={isVariableInUse} onClick={() => remove(index)}>
             <TrashIcon width="18" height="18" />
           </IconButton>
