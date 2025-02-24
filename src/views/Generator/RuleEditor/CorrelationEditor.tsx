@@ -1,13 +1,26 @@
-import { Box, Grid, Heading, Switch, Text, RadioGroup, Flex } from '@radix-ui/themes'
+import {
+  Box,
+  Grid,
+  Heading,
+  Switch,
+  Text,
+  RadioGroup,
+  Flex,
+} from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
+import { FieldGroup } from '@/components/Form'
 
 export function CorrelationEditor() {
-  const { setValue, watch } = useFormContext<TestRule>()
+  const {
+    setValue,
+    watch,
+    formState: { errors },
+  } = useFormContext<TestRule>()
   const replacer = watch('replacer')
   const extractionMode = watch('extractor.extractionMode')
 
@@ -35,33 +48,39 @@ export function CorrelationEditor() {
         <Text size="2" as="p" mb="2" color="gray">
           Extraction value for correlation.
         </Text>
-        <Box mb="3">
-          <Label>Extraction Mode</Label>
+        <FilterField field="extractor.filter" />
+        <SelectorField field="extractor.selector" />
+        <FieldGroup
+          name="extractor.extractionMode,"
+          label="Extraction mode"
+          errors={errors}
+        >
           <RadioGroup.Root
             defaultValue="multiple"
             value={extractionMode}
             onValueChange={(value) =>
-              setValue('extractor.extractionMode', value as 'single' | 'multiple')
+              setValue(
+                'extractor.extractionMode',
+                value as 'single' | 'multiple'
+              )
             }
           >
             <Flex direction="row" gap="4">
               <Text as="label" size="2">
                 <Flex gap="2">
                   <RadioGroup.Item value="single" />
-                  Extract first occurrence
+                  First occurrence
                 </Flex>
               </Text>
               <Text as="label" size="2">
                 <Flex gap="2">
                   <RadioGroup.Item value="multiple" />
-                  Extract all occurrences
+                  All occurrences
                 </Flex>
               </Text>
             </Flex>
           </RadioGroup.Root>
-        </Box>
-        <FilterField field="extractor.filter" />
-        <SelectorField field="extractor.selector" />
+        </FieldGroup>
       </Box>
       <Box>
         <Heading size="2" weight="medium" mb="2">
