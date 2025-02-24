@@ -1,4 +1,4 @@
-import { Box, Grid, Heading, Switch, Text, Select } from '@radix-ui/themes'
+import { Box, Grid, Heading, Switch, Text, Select, RadioGroup, Flex } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
@@ -37,26 +37,28 @@ export function CorrelationEditor() {
         </Text>
         <Box mb="3">
           <Label>Extraction Mode</Label>
-          <Select.Root
+          <RadioGroup.Root
             defaultValue="multiple"
             value={extractionMode}
             onValueChange={(value) =>
               setValue('extractor.extractionMode', value as 'single' | 'multiple')
             }
           >
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="single">
-                Single (extract once)
-              </Select.Item>
-              <Select.Item value="multiple">
-                Multiple (extract every time)
-              </Select.Item>
-            </Select.Content>
-          </Select.Root>
-          <Text size="1" as="p" mt="1" color="gray">
-            Choose whether to extract the value once or on every matching response.
-          </Text>
+            <Flex direction="row" gap="4">
+              <Text as="label" size="2">
+                <Flex gap="2">
+                  <RadioGroup.Item value="single" />
+                  Extract first occurrence
+                </Flex>
+              </Text>
+              <Text as="label" size="2">
+                <Flex gap="2">
+                  <RadioGroup.Item value="multiple" />
+                  Extract all occurrences
+                </Flex>
+              </Text>
+            </Flex>
+          </RadioGroup.Root>
         </Box>
         <FilterField field="extractor.filter" />
         <SelectorField field="extractor.selector" />
