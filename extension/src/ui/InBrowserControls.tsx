@@ -1,6 +1,6 @@
 import { ToolBox } from './ToolBox'
-import { Inspector } from './Inspector'
-import { Highlighter } from './Highlighter'
+import { ElementInspector } from './ElementInspector'
+import { RemoteHighlights } from './RemoteHighlights'
 import { useAtom } from 'jotai'
 import * as atoms from './atoms'
 
@@ -13,8 +13,10 @@ export function InBrowserControls() {
 
   return (
     <>
-      {tool === 'inspect' && <Inspector onEscape={handleInspectorEscape} />}
-      <Highlighter enabled={tool === null} />
+      {tool === 'inspect' && (
+        <ElementInspector onEscape={handleInspectorEscape} />
+      )}
+      <RemoteHighlights enabled={tool === null} />
       <ToolBox selected={tool} onSelect={setTool} />
     </>
   )

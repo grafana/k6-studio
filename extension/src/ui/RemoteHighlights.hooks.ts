@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { useServerMessage } from './hooks'
 import { Bounds } from './types'
-import { ElementHighlight } from './ElementHighlight'
+import { useServerMessage } from './hooks/useServerMessage'
 
-function useHighlights() {
+export function useHighlightedElements() {
   const [bounds, setBounds] = useState<Bounds[]>([])
 
   useServerMessage((message) => {
@@ -34,25 +33,4 @@ function useHighlights() {
   })
 
   return bounds
-}
-
-interface HighlighterProps {
-  enabled?: boolean
-}
-
-export function Highlighter({ enabled }: HighlighterProps) {
-  const bounds = useHighlights()
-
-  if (!enabled) {
-    return null
-  }
-
-  return (
-    <>
-      {enabled &&
-        bounds.map((bound, index) => (
-          <ElementHighlight key={index} bounds={bound} />
-        ))}
-    </>
-  )
 }

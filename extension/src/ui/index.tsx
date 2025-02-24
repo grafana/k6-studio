@@ -25,10 +25,17 @@ function createShadowRoot() {
 function initialize() {
   const root = createShadowRoot()
 
+  /**
+   * The global cache contains any styles that should be applied to the
+   * recorded page, e.g. showing a pointer when using the inspector tool.
+   */
   const globalCache = createCache({
     key: 'ksix-studio',
   })
 
+  /**
+   * The shadow cache contains the styles for the in-browser controls.
+   */
   const shadowCache = createCache({
     key: 'ksix-studio',
     container: root,
