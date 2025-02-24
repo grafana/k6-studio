@@ -9,7 +9,7 @@ import { useFormContext } from 'react-hook-form'
 export function CorrelationEditor() {
   const { setValue, watch } = useFormContext<TestRule>()
   const replacer = watch('replacer')
-  const extractionMode = watch('extractionMode')
+  const extractionMode = watch('extractor.extractionMode')
 
   const isCustomReplacerSelector = !!replacer?.selector
 
@@ -40,8 +40,8 @@ export function CorrelationEditor() {
           <Select.Root
             defaultValue="multiple"
             value={extractionMode}
-            onValueChange={(value: 'single' | 'multiple') => 
-              setValue('extractionMode', value)
+            onValueChange={(value) =>
+              setValue('extractor.extractionMode', value as 'single' | 'multiple')
             }
           >
             <Select.Trigger />

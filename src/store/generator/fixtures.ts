@@ -13,7 +13,6 @@ export const rules: TestRule[] = [
     type: 'correlation',
     id: '1',
     enabled: true,
-    extractionMode: 'single',
     extractor: {
       filter: { path: '' },
       selector: {
@@ -22,13 +21,13 @@ export const rules: TestRule[] = [
         begin: '<meta name=Copyright content="',
         end: '">',
       },
+      extractionMode: 'single',
     },
   },
   {
     type: 'correlation',
     id: '3',
     enabled: true,
-    extractionMode: 'single',
     extractor: {
       filter: { path: '' },
       selector: {
@@ -36,13 +35,13 @@ export const rules: TestRule[] = [
         from: 'url',
         regex: 'grafana.com/(.*?)/',
       },
+      extractionMode: 'single',
     },
   },
   {
     type: 'correlation',
     id: '2',
     enabled: true,
-    extractionMode: 'single',
     extractor: {
       filter: { path: '' },
       selector: {
@@ -51,13 +50,13 @@ export const rules: TestRule[] = [
         begin: 'charset=',
         end: '-8',
       },
+      extractionMode: 'single',
     },
   },
   {
     type: 'correlation',
     id: '4',
     enabled: true,
-    extractionMode: 'single',
     extractor: {
       filter: { path: 'api.k6.io/v3/account/me' },
       selector: {
@@ -65,6 +64,7 @@ export const rules: TestRule[] = [
         from: 'body',
         path: 'organizations[0].id',
       },
+      extractionMode: 'single',
     },
   },
 ]

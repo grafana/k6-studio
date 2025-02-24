@@ -254,7 +254,6 @@ describe('Code generation', () => {
           type: 'correlation',
           id: '1',
           enabled: true,
-          extractionMode: 'single',
           extractor: {
             filter: { path: '/login' },
             selector: {
@@ -262,13 +261,13 @@ describe('Code generation', () => {
               from: 'body',
               path: 'user_id',
             },
+            extractionMode: 'single',
           },
         },
         {
           type: 'correlation',
           id: '1',
           enabled: true,
-          extractionMode: 'single',
           extractor: {
             filter: { path: '' },
             selector: {
@@ -276,6 +275,7 @@ describe('Code generation', () => {
               from: 'headers',
               regex: 'project_id=(.*)$',
             },
+            extractionMode: 'single',
           },
         },
       ]
