@@ -35,18 +35,18 @@ const config: ForgeConfig = {
       './resources/logo-splashscreen.svg',
       ...getPlatformSpecificResources(),
     ],
-    // osxSign: {
-    //   optionsForFile: () => {
-    //     return {
-    //       entitlements: './entitlements.plist',
-    //     }
-    //   },
-    // },
-    // osxNotarize: {
-    //   appleApiKey: process.env.APPLE_API_KEY ?? '',
-    //   appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
-    //   appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
-    // },
+    osxSign: {
+      optionsForFile: () => {
+        return {
+          entitlements: './entitlements.plist',
+        }
+      },
+    },
+    osxNotarize: {
+      appleApiKey: process.env.APPLE_API_KEY ?? '',
+      appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
+      appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
+    },
   },
   rebuildConfig: {},
   makers: [
