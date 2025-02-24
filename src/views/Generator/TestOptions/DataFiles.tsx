@@ -4,7 +4,7 @@ import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { TestData } from '@/types/testData'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CheckboxGroup, Text } from '@radix-ui/themes'
+import { CheckboxGroup, Text, Tooltip } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -30,6 +30,7 @@ export function DataFiles() {
   const options = [...availableFiles.values()].map((file) => ({
     label: file.displayName,
     value: file.fileName,
+    inUse: files.some(({ name }) => name === file.fileName),
   }))
   const value = watch('files').map(({ name }) => name)
 
@@ -72,9 +73,18 @@ export function DataFiles() {
             ref={filesField.ref}
           >
             {options.map((option) => (
-              <CheckboxGroup.Item key={option.value} value={option.value}>
-                {option.label}
-              </CheckboxGroup.Item>
+              <Tooltip
+                content="File is referenced in a rule"
+                key={option.value}
+                hidden={!option.inUse}
+              >
+                <CheckboxGroup.Item
+                  value={option.value}
+                  disabled={option.inUse}
+                >
+                  {option.label}
+                </CheckboxGroup.Item>
+              </Tooltip>
             ))}
           </CheckboxGroup.Root>
         </FieldGroup>

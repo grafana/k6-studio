@@ -10,6 +10,8 @@ import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { SearchField } from '@/components/SearchField'
 import { useState } from 'react'
 import { Feature } from '@/components/Feature'
+import log from 'electron-log/renderer'
+import { useToast } from '@/store/ui/useToast'
 
 interface SidebarProps {
   isExpanded?: boolean
@@ -20,11 +22,20 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, generators, scripts, dataFiles } = useFiles(searchTerm)
   const createNewGenerator = useCreateGenerator()
+  const showToast = useToast()
 
   const handleCreateNewGenerator = () => createNewGenerator()
 
-  const handleImportDataFile = () => {
-    return window.studio.data.importFile()
+  const handleImportDataFile = async () => {
+    try {
+      await window.studio.data.importFile()
+    } catch (error) {
+      showToast({
+        title: 'Failed to import recording',
+        status: 'error',
+      })
+      log.error(error)
+    }
   }
 
   return (

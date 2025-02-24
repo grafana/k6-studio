@@ -41,10 +41,7 @@ import {
   getPlatform,
 } from './utils/electron'
 import invariant from 'tiny-invariant'
-import {
-  FILE_SIZE_PREVIEW_THRESHOLD,
-  INVALID_FILENAME_CHARS,
-} from './constants/files'
+import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
 import { HarWithOptionalResponse } from './types/har'
 import { GeneratorFileData } from './types/generator'
 import kill from 'tree-kill'
@@ -618,6 +615,9 @@ ipcMain.handle('data-file:import', async (event) => {
     return
   }
 
+  const { size } = await stat(filePath)
+  invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
+
   await copyFile(filePath, path.join(DATA_FILES_PATH, path.basename(filePath)))
 
   return path.basename(filePath)
@@ -625,45 +625,27 @@ ipcMain.handle('data-file:import', async (event) => {
 
 ipcMain.handle(
   'data-file:load-preview',
-  async (event, fileName: string): Promise<DataFilePreview | null> => {
-    try {
-      const fileType = fileName.split('.').pop()
-      const filePath = path.join(DATA_FILES_PATH, fileName)
+  async (_, fileName: string): Promise<DataFilePreview | null> => {
+    const fileType = fileName.split('.').pop()
+    const filePath = path.join(DATA_FILES_PATH, fileName)
 
-      invariant(
-        fileType === 'csv' || fileType === 'json',
-        'Unsupported file type'
-      )
+    invariant(
+      fileType === 'csv' || fileType === 'json',
+      'Unsupported file type'
+    )
 
-      const { size } = await stat(filePath)
+    const data = await readFile(filePath, {
+      flag: 'r',
+      encoding: 'utf-8',
+    })
 
-      if (size > FILE_SIZE_PREVIEW_THRESHOLD) {
-        return null
-      }
+    const parsedData = parseDataFile(data, fileType)
 
-      const data = await readFile(filePath, {
-        flag: 'r',
-        encoding: 'utf-8',
-      })
-
-      const parsedData = parseDataFile(data, fileType)
-
-      return {
-        type: fileType,
-        data: parsedData.slice(0, 10),
-        props: parsedData[0] ? Object.keys(parsedData[0]) : [],
-        total: parsedData.length,
-      }
-    } catch (error) {
-      console.error(error)
-      const browserWindow = browserWindowFromEvent(event)
-
-      sendToast(browserWindow.webContents, {
-        title: 'Failed to open data file',
-        status: 'error',
-      })
-
-      return null
+    return {
+      type: fileType,
+      data: parsedData.slice(0, 10),
+      props: parsedData[0] ? Object.keys(parsedData[0]) : [],
+      total: parsedData.length,
     }
   }
 )

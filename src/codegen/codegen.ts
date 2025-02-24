@@ -31,6 +31,7 @@ export function generateScript({
 
     ${generateVariableDeclarations(generator.testData.variables)}
     ${generateDataFileDeclarations(generator.testData.files)}
+    ${generateGetRandomItemFunction(generator.testData.files)}
 
     export default function() {
       ${generateVUCode(recording, generator.rules, generator.options.thinkTime)}
@@ -47,7 +48,7 @@ export function generateImports(generator: GeneratorFileData): string {
     ...REQUIRED_IMPORTS,
     // Import SharedArray for data files
     ...(hasDataFiles ? [K6_EXPORTS['k6/data']] : []),
-    // TODO: replace with k6/experimental/csv once https://github.com/grafana/k6/pull/4295 is released
+    // TODO: replace with k6/experimental/csv once we switch to k6@0.57.0 or higher
     ...(hasCsvDataFiles ? [JSLIB['papaparse']] : []),
   ]
 
@@ -91,6 +92,17 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
     .join(',\n')
 
   return `const FILES = {\n${fileKeyValuePairs}\n};`
+}
+
+export function generateGetRandomItemFunction(files: DataFile[]) {
+  if (files.length === 0) {
+    return ''
+  }
+
+  return `
+    function getRandomItem(array){
+      return array[Math.floor(Math.random() * array.length)]
+    }`
 }
 
 export function generateVUCode(
