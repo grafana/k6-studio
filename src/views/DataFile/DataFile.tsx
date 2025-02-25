@@ -1,4 +1,4 @@
-import { Badge, Flex } from '@radix-ui/themes'
+import { Badge, Grid } from '@radix-ui/themes'
 import { useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
@@ -10,6 +10,7 @@ import { DataFileTable } from './DataFileTable'
 import { useEffect } from 'react'
 import { useToast } from '@/store/ui/useToast'
 import { getRoutePath } from '@/routeMap'
+import { TableSkeleton } from '@/components/TableSkeleton'
 
 export function DataFile() {
   const { fileName } = useParams()
@@ -29,9 +30,13 @@ export function DataFile() {
     }
   }, [isError, navigate, showToast])
 
+  if (!preview) {
+    return null
+  }
+
   return (
     <View
-      title="Data file"
+      title="Data file preview"
       subTitle={
         <>
           {getFileNameWithoutExtension(fileName)}
@@ -45,9 +50,19 @@ export function DataFile() {
       actions={<DataFileControls fileName={fileName} />}
       loading={isLoading}
     >
-      <Flex direction="column" p="2" gap="2" height="100%">
-        <DataFileTable preview={preview} isLoading={isLoading} />
-      </Flex>
+      <Grid
+        rows="auto minmax(0, 1fr)"
+        p="2"
+        gap="2"
+        height="100%"
+        minHeight="0"
+      >
+        {isLoading ? (
+          <TableSkeleton rootProps={{ size: '1' }} columns={8} rows={10} />
+        ) : (
+          <DataFileTable preview={preview} isLoading={isLoading} />
+        )}
+      </Grid>
     </View>
   )
 }

@@ -27,3 +27,19 @@ export function parseDataFile(
       return exhaustive(type)
   }
 }
+
+export function renderDataFileValue(value?: DataRecord[keyof DataRecord]) {
+  if (value === undefined) {
+    return null
+  }
+
+  if (value === null) {
+    return 'null'
+  }
+
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+
+  return value
+}

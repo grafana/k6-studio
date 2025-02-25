@@ -16,6 +16,7 @@ import { CrossCircledIcon } from '@radix-ui/react-icons'
 import { TestOptions } from '../TestOptions'
 import { Allowlist } from '../Allowlist'
 import { ProxyData } from '@/types'
+import { TestData } from '../TestData'
 
 export function GeneratorTabs({
   onSelectRequest,
@@ -78,6 +79,7 @@ export function GeneratorTabs({
               </Flex>
               <Flex pr="2" pl="4" gap="4">
                 <TestOptions />
+                <TestData />
                 <Allowlist />
               </Flex>
             </Flex>

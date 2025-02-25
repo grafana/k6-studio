@@ -1,24 +1,23 @@
-import { GearIcon } from '@radix-ui/react-icons'
+import { ArchiveIcon } from '@radix-ui/react-icons'
 import { Box, Button, Inset, ScrollArea, Tabs } from '@radix-ui/themes'
 import { css } from '@emotion/react'
-
-import { LoadProfile } from './LoadProfile'
-import { ThinkTime } from './ThinkTime'
-import { VariablesEditor } from '../TestData/VariablesEditor'
-import { PopoverDialog } from '@/components/PopoverDialogs'
 import { useState } from 'react'
 
-export function TestOptions() {
-  const [selectedTab, setSelectedTab] = useState('loadProfile')
+import { PopoverDialog } from '@/components/PopoverDialogs'
+import { VariablesEditor } from './VariablesEditor'
+import { DataFiles } from './DataFiles'
+
+export function TestData() {
+  const [selectedTab, setSelectedTab] = useState('variables')
 
   return (
     <PopoverDialog
       align="center"
-      width="780px"
+      width="480px"
       trigger={
         <Button variant="ghost" size="1" color="gray">
-          <GearIcon />
-          Test options
+          <ArchiveIcon />
+          Test data
         </Button>
       }
     >
@@ -29,9 +28,8 @@ export function TestOptions() {
               margin-bottom: var(--space-3);
             `}
           >
-            <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
-            <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
-            <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
+            <Tabs.Trigger value="variables">Variables</Tabs.Trigger>
+            <Tabs.Trigger value="dataFiles">Data files</Tabs.Trigger>
           </Tabs.List>
           <ScrollArea
             scrollbars="vertical"
@@ -40,14 +38,11 @@ export function TestOptions() {
             `}
           >
             <Box p="3" pt="0" css={{ '.rt-TabsContent': { outline: 'none' } }}>
-              <Tabs.Content value="loadProfile">
-                <LoadProfile />
-              </Tabs.Content>
-              <Tabs.Content value="thinkTime">
-                <ThinkTime />
-              </Tabs.Content>
               <Tabs.Content value="variables">
                 <VariablesEditor />
+              </Tabs.Content>
+              <Tabs.Content value="dataFiles">
+                <DataFiles />
               </Tabs.Content>
             </Box>
           </ScrollArea>

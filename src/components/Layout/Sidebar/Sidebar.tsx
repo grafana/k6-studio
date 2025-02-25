@@ -9,7 +9,6 @@ import { getRoutePath } from '@/routeMap'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { SearchField } from '@/components/SearchField'
 import { useState } from 'react'
-import { Feature } from '@/components/Feature'
 import log from 'electron-log/renderer'
 import { useToast } from '@/store/ui/useToast'
 
@@ -117,26 +116,24 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               files={scripts}
               noFilesMessage="No scripts found"
             />
-            <Feature feature="data-files">
-              <FileTree
-                label="Data files"
-                files={dataFiles}
-                noFilesMessage="No data files found"
-                actions={
-                  <Tooltip content="Import data file" side="right">
-                    <IconButton
-                      asChild
-                      aria-label="Import data file"
-                      variant="ghost"
-                      size="1"
-                      onClick={handleImportDataFile}
-                    >
-                      <FilePlusIcon />
-                    </IconButton>
-                  </Tooltip>
-                }
-              />
-            </Feature>
+            <FileTree
+              label="Data files"
+              files={dataFiles}
+              noFilesMessage="No data files found"
+              actions={
+                <Tooltip content="Import data file" side="right">
+                  <IconButton
+                    asChild
+                    aria-label="Import data file"
+                    variant="ghost"
+                    size="1"
+                    onClick={handleImportDataFile}
+                  >
+                    <FilePlusIcon />
+                  </IconButton>
+                </Tooltip>
+              }
+            />
           </Flex>
         </ScrollArea>
       </Flex>
