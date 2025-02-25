@@ -74,29 +74,25 @@ export function SelectingStack({
       </div>
 
       {selectedStack?.status === 'archived' && (
-        <>
-          <AuthenticationMessage>
-            This stack is archived and you must{' '}
-            <ExternalLink
-              css={css`
-                white-space: nowrap;
-              `}
-              href={selectedStack.url}
-            >
-              log in
-            </ExternalLink>{' '}
-            to it before continuing. Wait a few minutes and{' '}
-            <TextButton onClick={handleRefresh}>refresh.</TextButton>
-          </AuthenticationMessage>
-        </>
+        <AuthenticationMessage>
+          This stack is archived and you must{' '}
+          <ExternalLink
+            css={css`
+              white-space: nowrap;
+            `}
+            href={selectedStack.url}
+          >
+            log in
+          </ExternalLink>{' '}
+          to it before continuing. Wait a few minutes and{' '}
+          <TextButton onClick={handleRefresh}>refresh.</TextButton>
+        </AuthenticationMessage>
       )}
       {selectedStack?.status === 'restoring' && (
-        <>
-          <AuthenticationMessage>
-            The stack is being restored. Please wait a moment and{' '}
-            <TextButton onClick={handleRefresh}>refresh.</TextButton>
-          </AuthenticationMessage>
-        </>
+        <AuthenticationMessage>
+          The stack is being restored. Please wait a moment and{' '}
+          <TextButton onClick={handleRefresh}>refresh.</TextButton>
+        </AuthenticationMessage>
       )}
       <Button
         disabled={
