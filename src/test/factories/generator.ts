@@ -21,6 +21,10 @@ export function createGeneratorData(
         },
       },
       thresholds: [],
+      loadZones: {
+        distribution: 'even',
+        loadZones: [],
+      },
     },
     recordingPath: '',
     rules: [],
@@ -97,6 +101,12 @@ export function createGeneratorState(
 
     thresholds: [],
     setThresholds: vi.fn(),
+
+    loadZones: {
+      distribution: 'even',
+      loadZones: [],
+    },
+    setLoadZones: vi.fn(),
 
     ...state,
   }

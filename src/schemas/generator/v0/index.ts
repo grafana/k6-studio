@@ -25,6 +25,7 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
     options: {
       ...generator.options,
       thresholds: [],
+      loadZones: { distribution: 'even', loadZones: [] },
     },
     testData: { ...generator.testData, files: [] },
     rules: generator.rules,
