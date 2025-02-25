@@ -48,6 +48,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
       recording = []
     ) =>
       set((state) => {
+        state.selectedRuleId = null
         // options
         state.sleepType = thinkTime.sleepType
         state.timing = thinkTime.timing
