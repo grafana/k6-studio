@@ -6,5 +6,9 @@ interface FetchingTokenProps {
 }
 
 export function FetchingToken({ state }: FetchingTokenProps) {
-  return <LoadingMessage>Signing in to {state.stack.name}...</LoadingMessage>
+  return (
+    <LoadingMessage>
+      Setting up profile for {state.stack.name}...
+    </LoadingMessage>
+  )
 }

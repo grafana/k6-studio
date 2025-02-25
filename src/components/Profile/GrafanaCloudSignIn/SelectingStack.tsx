@@ -106,7 +106,7 @@ export function SelectingStack({
         }
         onClick={handleSelect}
       >
-        Login
+        Continue
       </Button>
     </Flex>
   )
