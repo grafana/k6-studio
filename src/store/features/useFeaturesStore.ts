@@ -9,6 +9,7 @@ interface FeaturesStore {
 
 const defaultFeatures: Record<Feature, boolean> = {
   'data-files': false,
+  'load-zones': false,
 }
 
 export const useFeaturesStore = create<FeaturesStore>()(
