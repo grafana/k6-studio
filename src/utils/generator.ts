@@ -19,6 +19,10 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
         },
       },
       thresholds: [],
+      loadZones: {
+        distribution: 'even',
+        loadZones: [],
+      },
     },
     testData: {
       variables: [],
