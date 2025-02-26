@@ -1,14 +1,14 @@
 import { ElementHighlight } from './ElementHighlight'
 import { useHighlightedElements } from './RemoteHighlights.hooks'
 
-interface RemoteHighlightsProps {
+interface HighlighterProps {
   enabled?: boolean
 }
 
 /**
  * Highlights elements when hovering over selectors inside k6 Studio.
  */
-export function RemoteHighlights({ enabled }: RemoteHighlightsProps) {
+export function RemoteHighlights({ enabled }: HighlighterProps) {
   const bounds = useHighlightedElements()
 
   if (!enabled) {

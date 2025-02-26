@@ -58,10 +58,10 @@ export function PageNavigationDescription({
 
   switch (event.source) {
     case 'address-bar':
-      return <>Navigated to {url}.</>
+      return <>Navigated to {url}</>
 
     case 'history':
-      return <>Navigated to {url} using the browser history.</>
+      return <>Navigated to {url} using the browser history</>
 
     default:
       return exhaustive(event.source)

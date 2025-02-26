@@ -55,7 +55,7 @@ export function ClickDescription({ event }: ClickDescriptionProps) {
   return (
     <>
       <Kbd size="2">{clickedText}</Kbd> on element{' '}
-      <Selector>{event.selector}</Selector>.
+      <Selector>{event.selector}</Selector>
     </>
   )
 }

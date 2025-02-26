@@ -49,7 +49,7 @@ export function EventDescription({ event }: EventDescriptionProps) {
       return (
         <>
           Changed input of <Selector>{event.selector}</Selector> to{' '}
-          <code>{event.value}</code>.
+          <code>{event.value}</code>
         </>
       )
 
@@ -57,7 +57,7 @@ export function EventDescription({ event }: EventDescriptionProps) {
       return (
         <>
           {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
-          <Selector>{event.selector}</Selector>.
+          <Selector>{event.selector}</Selector>
         </>
       )
 
@@ -73,14 +73,14 @@ export function EventDescription({ event }: EventDescriptionProps) {
       return (
         <>
           Selected {formatOptions(event.selected)} from{' '}
-          <Selector>{event.selector}</Selector>.
+          <Selector>{event.selector}</Selector>
         </>
       )
 
     case 'form-submitted':
       return (
         <>
-          Submitted form <Selector>{event.form}</Selector>.
+          Submitted form <Selector>{event.form}</Selector>
         </>
       )
 
