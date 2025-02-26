@@ -1,7 +1,8 @@
-import { PersonIcon } from '@radix-ui/react-icons'
+import { Cross1Icon, PersonIcon } from '@radix-ui/react-icons'
 import { Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Profile as ProfileContent } from '@/components/Profile'
 import { useState } from 'react'
+import { css } from '@emotion/react'
 
 function ProfileDialog({
   open,
@@ -14,6 +15,18 @@ function ProfileDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content height="80vh" maxHeight="600px">
         <Flex align="center" justify="center" height="100%" width="100%">
+          <Dialog.Close>
+            <IconButton
+              variant="ghost"
+              css={css`
+                position: absolute;
+                top: var(--space-4);
+                right: var(--space-4);
+              `}
+            >
+              <Cross1Icon />
+            </IconButton>
+          </Dialog.Close>
           <ProfileContent />
         </Flex>
       </Dialog.Content>

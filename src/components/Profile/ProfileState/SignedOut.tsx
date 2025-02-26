@@ -35,9 +35,9 @@ function PromotionalText() {
           padding: 0;
         `}
       >
-        <Benefit>Run tests at scale from anywhere in the world.</Benefit>
-        <Benefit>Monitor test results in real-time.</Benefit>
-        <Benefit>Analyze and explore test results.</Benefit>
+        <Benefit>Run tests at scale from anywhere in the world</Benefit>
+        <Benefit>Monitor test results in real-time</Benefit>
+        <Benefit>Analyze and explore test results</Benefit>
       </ul>
     </Text>
   )
