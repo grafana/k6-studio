@@ -56,7 +56,9 @@ export function ActivityBar() {
           <SettingsButton />
           <HelpButton />
         </Flex>
-        <Separator orientation="horizontal" size="2" />
+        <Feature feature="cloud-auth">
+          <Separator orientation="horizontal" size="2" />
+        </Feature>
         <Flex direction="column" align="center" gap="3">
           <Feature feature="cloud-auth">
             <Profile />
