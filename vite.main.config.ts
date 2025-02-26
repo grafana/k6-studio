@@ -30,6 +30,7 @@ export default defineConfig((env) => {
     ...getDotEnv({
       GRAFANA_CLIENT_ID: '<tbd>',
       K6_API_URL: 'https://api.k6.io/v6',
+      MOCK_PERSONAL_API_TOKEN: 'I AM NOT A REAL TOKEN!!!',
       GRAFANA_API_URL: 'https://grafana.com/api',
     }),
   }
