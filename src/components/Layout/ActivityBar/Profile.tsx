@@ -1,5 +1,5 @@
 import { PersonIcon } from '@radix-ui/react-icons'
-import { Dialog, IconButton, Tooltip } from '@radix-ui/themes'
+import { Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Profile as ProfileContent } from '@/components/Profile'
 import { useState } from 'react'
 
@@ -12,8 +12,10 @@ function ProfileDialog({
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content height="80vh">
-        <ProfileContent />
+      <Dialog.Content height="80vh" maxHeight="600px">
+        <Flex align="center" justify="center" height="100%" width="100%">
+          <ProfileContent />
+        </Flex>
       </Dialog.Content>
     </Dialog.Root>
   )
