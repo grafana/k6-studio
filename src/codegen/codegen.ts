@@ -31,7 +31,7 @@ export function generateScript({
 
     ${generateVariableDeclarations(generator.testData.variables)}
     ${generateDataFileDeclarations(generator.testData.files)}
-    ${generateGetRandomItemFunction(generator.testData.files)}
+    ${generateGetUniqueItemFunction(generator.testData.files)}
 
     export default function() {
       ${generateVUCode(recording, generator.rules, generator.options.thinkTime)}
@@ -94,13 +94,13 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
   return `const FILES = {\n${fileKeyValuePairs}\n};`
 }
 
-export function generateGetRandomItemFunction(files: DataFile[]) {
+export function generateGetUniqueItemFunction(files: DataFile[]) {
   if (files.length === 0) {
     return ''
   }
 
   return `
-    function getRandomItem(array){
+    function getUniqueItem(array){
       return array[execution.scenario.iterationInTest % array.length]
     }`
 }

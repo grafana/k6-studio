@@ -81,7 +81,7 @@ function getRuleValue(rule: ParameterizationRule, id: number) {
 
     case 'dataFileValue': {
       const displayName = getFileNameWithoutExtension(value.fileName)
-      return `\${getRandomItem(FILES['${displayName}'])['${value.propertyName}']}`
+      return `\${getUniqueItem(FILES['${displayName}'])['${value.propertyName}']}`
     }
 
     case 'customCode':
