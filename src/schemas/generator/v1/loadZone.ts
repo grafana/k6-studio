@@ -24,7 +24,7 @@ export const AvailableLoadZonesSchema = z.enum([
   'amazon:us:ashburn',
 ])
 
-export const LoadZoneIitemSchema = z.object({
+export const LoadZoneItemSchema = z.object({
   id: z.string(),
   loadZone: AvailableLoadZonesSchema,
   percent: z.number().int().min(1).max(100),
@@ -32,7 +32,7 @@ export const LoadZoneIitemSchema = z.object({
 
 export const LoadZoneSchema = z.object({
   distribution: z.enum(['even', 'manual']),
-  loadZones: z.array(LoadZoneIitemSchema).refine(
+  loadZones: z.array(LoadZoneItemSchema).refine(
     (data) => {
       if (data.length === 0) {
         return true
