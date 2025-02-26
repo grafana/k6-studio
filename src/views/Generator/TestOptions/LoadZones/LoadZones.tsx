@@ -1,8 +1,9 @@
+import { Table } from '@/components/Table'
 import { LoadZoneSchema } from '@/schemas/generator/v1/loadZone'
 import { useGeneratorStore } from '@/store/generator/useGeneratorStore'
 import { LoadZoneData } from '@/types/testOptions'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Table, Text, Link as RadixLink, Button } from '@radix-ui/themes'
+import { Text, Link as RadixLink, Button } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
