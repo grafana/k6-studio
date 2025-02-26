@@ -8,21 +8,37 @@ import { TableCellWithTooltip } from '../TableCellWithTooltip'
 import { HighlightedText } from '../HighlightedText'
 import { getRequestType } from './WebLogView.utils'
 import { SearchResults } from './SearchResults'
+import { useMemo } from 'react'
 
 interface RowProps {
   data: ProxyDataWithMatches
   isSelected?: boolean
   onSelectRequest: (data: ProxyDataWithMatches) => void
   filter?: string
+  highlightedRequestIds?: string[]
 }
 
-export function Row({ data, onSelectRequest, isSelected, filter }: RowProps) {
+export function Row({
+  data,
+  onSelectRequest,
+  isSelected,
+  filter,
+  highlightedRequestIds,
+}: RowProps) {
+  const opacity = useMemo(() => {
+    if (!highlightedRequestIds || highlightedRequestIds.length === 0) {
+      return 1
+    }
+
+    return highlightedRequestIds.includes(data.id) ? 1 : 0.5
+  }, [highlightedRequestIds, data.id])
   return (
     <>
       <Table.Row
         onClick={() => onSelectRequest(data)}
         css={{
           backgroundColor: isSelected ? 'var(--accent-3)' : 'transparent',
+          opacity,
           '&:hover': {
             backgroundColor: isSelected ? 'var(--accent-3)' : 'var(--accent-2)',
           },

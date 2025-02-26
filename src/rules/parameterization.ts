@@ -17,6 +17,8 @@ export function createParameterizationRuleInstance(
     requestsReplaced: [],
     uniqueId: idGenerator.next().value,
     snippedInjected: false,
+
+    matchedRequestIds: [],
   }
 
   function addReplacedRequests(original: Request, replaced: Request) {
@@ -51,6 +53,11 @@ export function createParameterizationRuleInstance(
 
       // Save original and replaced requests for preview
       addReplacedRequests(requestSnippet.data.request, updatedRequest)
+
+      state.matchedRequestIds = [
+        ...state.matchedRequestIds,
+        requestSnippet.data.id,
+      ]
 
       const updatedRequestSnippet: RequestSnippetSchema = {
         ...requestSnippet,

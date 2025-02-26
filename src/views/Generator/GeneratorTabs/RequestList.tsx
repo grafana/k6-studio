@@ -10,13 +10,39 @@ import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
 import { applyRules } from '@/rules/rules'
-import { useMemo } from 'react'
 import { RequestListHeader } from './RequestListHeader'
 
 interface RequestListProps {
   requests: ProxyData[]
   onSelectRequest: (request: ProxyData | null) => void
   selectedRequest: ProxyData | null
+}
+
+// TODO: add memo and extract to hook
+function useApplyRules(requests: ProxyData[]) {
+  const rules = useGeneratorStore((state) => state.rules)
+  const selectedRuleId = useGeneratorStore((state) => state.selectedRuleId)
+
+  const ruleApplicationResult = applyRules(requests, rules)
+
+  const rulesWithState = rules.map((rule) => {
+    const ruleState = ruleApplicationResult.ruleInstances.find(
+      (ruleInstance) => ruleInstance.rule.id === rule.id
+    )?.state
+
+    return {
+      ...rule,
+      state: ruleState,
+    }
+  })
+
+  return {
+    rules: rulesWithState,
+    selectedRule: rulesWithState.find((rule) => rule.id === selectedRuleId),
+    requestsWithRulesApplied: ruleApplicationResult.requestSnippetSchemas.map(
+      (snippet) => snippet.data
+    ),
+  }
 }
 
 export function RequestList({
@@ -28,17 +54,7 @@ export function RequestList({
     (state) => state.previewOriginalRequests
   )
 
-  const rules = useGeneratorStore((state) => state.rules)
-
-  const requestsWithRulesApplied = useMemo(() => {
-    if (previewOriginalRequests) {
-      return requests
-    }
-
-    return applyRules(requests, rules).requestSnippetSchemas.map(
-      (request) => request.data
-    )
-  }, [requests, rules, previewOriginalRequests])
+  const { requestsWithRulesApplied, selectedRule } = useApplyRules(requests)
 
   const {
     filter,
@@ -47,7 +63,7 @@ export function RequestList({
     filterAllData,
     setFilterAllData,
   } = useFilterRequests({
-    proxyData: requestsWithRulesApplied,
+    proxyData: previewOriginalRequests ? requests : requestsWithRulesApplied,
   })
   const allRequests = useGeneratorStore((state) => state.requests)
 
@@ -105,6 +121,7 @@ export function RequestList({
             onSelectRequest={onSelectRequest}
             groups={groups}
             filter={filter}
+            highlightedRequestIds={selectedRule?.state?.matchedRequestIds}
           />
         )}
       </ScrollArea>
