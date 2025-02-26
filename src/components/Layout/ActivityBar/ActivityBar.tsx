@@ -13,7 +13,6 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { useTheme } from '@/hooks/useTheme'
 import { Profile } from './Profile'
 import { css } from '@emotion/react'
-import { Feature } from '@/components/Feature'
 
 export function ActivityBar() {
   const theme = useTheme()
@@ -58,9 +57,9 @@ export function ActivityBar() {
         </Flex>
         <Separator orientation="horizontal" size="2" />
         <Flex direction="column" align="center" gap="3">
-          <Feature feature="cloud-auth">
-            <Profile />
-          </Feature>
+          {/* <Feature feature="cloud-auth"> */}
+          <Profile />
+          {/* </Feature> */}
           <VersionLabel />
         </Flex>
       </Flex>
