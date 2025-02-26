@@ -1,6 +1,9 @@
+import './ui'
+
 import { BrowserEvent } from '@/schemas/recording'
 import { runtime } from 'webextension-polyfill'
 import { generateSelector } from './selectors'
+import { shouldSkipEvent } from './ui/utils'
 
 function getButton(button: number) {
   switch (button) {
@@ -30,6 +33,10 @@ function captureEvents(events: BrowserEvent[] | BrowserEvent) {
 window.addEventListener(
   'click',
   (ev) => {
+    if (shouldSkipEvent(ev)) {
+      return
+    }
+
     if (ev.target instanceof Element === false) {
       return
     }
@@ -147,6 +154,10 @@ function handleInputChange(target: HTMLInputElement) {
 window.addEventListener(
   'change',
   (ev) => {
+    if (shouldSkipEvent(ev)) {
+      return
+    }
+
     if (ev.target instanceof HTMLTextAreaElement) {
       handleTextAreaChange(ev.target)
 
@@ -169,6 +180,10 @@ window.addEventListener(
 )
 
 window.addEventListener('submit', (ev) => {
+  if (shouldSkipEvent(ev)) {
+    return
+  }
+
   if (ev.target instanceof Element === false) {
     return
   }

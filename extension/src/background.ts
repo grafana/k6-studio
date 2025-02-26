@@ -1,14 +1,30 @@
 import { BrowserEvent } from '@/schemas/recording'
-import { MessageEnvelope, MessagePayload } from '@/services/browser/schemas'
-import { runtime, tabs } from 'webextension-polyfill'
+import {
+  ClientMessage,
+  ClientMessageEnvelope,
+  ServerMessageEnvelopeSchema,
+} from '@/services/browser/schemas'
+import { Runtime, runtime, tabs } from 'webextension-polyfill'
 import { BrowserMessageSchema } from './messaging'
 import { captureNavigationEvents } from './navigation'
 
 let socket: WebSocket | null = null
-let buffer: MessageEnvelope[] = []
+let buffer: ClientMessageEnvelope[] = []
 
-function send(message: MessagePayload) {
-  const envelope: MessageEnvelope = {
+let ports: Runtime.Port[] = []
+
+runtime.onConnect.addListener((port) => {
+  if (port.name === 'recorder') {
+    ports.push(port)
+
+    port.onDisconnect.addListener(() => {
+      ports = ports.filter((p) => p !== port)
+    })
+  }
+})
+
+function send(message: ClientMessage) {
+  const envelope: ClientMessageEnvelope = {
     messageId: crypto.randomUUID(),
     payload: message,
   }
@@ -68,10 +84,47 @@ function connect() {
 
     reconnect()
   }
+
+  ws.onmessage = async (message) => {
+    if (typeof message.data !== 'string') {
+      console.error('Received non-string message from server.', message)
+
+      return
+    }
+
+    const envelope = ServerMessageEnvelopeSchema.safeParse(
+      JSON.parse(message.data)
+    )
+
+    if (!envelope.success) {
+      console.error('Failed to parse message from server.', envelope.error)
+
+      return
+    }
+
+    console.log('Received message from server...', envelope.data.payload)
+
+    if (envelope.data.payload.type === 'navigate-to') {
+      const [tab] = await tabs.query({ active: true, currentWindow: true })
+
+      if (tab === undefined) {
+        return
+      }
+
+      await tabs.update(tab.id, { url: envelope.data.payload.url })
+
+      return
+    }
+
+    ports.forEach((port) => {
+      port.postMessage(envelope.data.payload)
+    })
+  }
 }
 
 runtime.onMessage.addListener((message, sender) => {
   const event = BrowserMessageSchema.safeParse(message)
+
   if (!event.success) {
     console.error(
       'Failed to parse message sent from content script.',
