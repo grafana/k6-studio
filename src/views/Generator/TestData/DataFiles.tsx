@@ -2,10 +2,12 @@ import { Table } from '@/components/Table'
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { DataFile } from '@/types/testData'
+import { css } from '@emotion/react'
 import { InfoCircledIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import {
   Button,
   DropdownMenu,
+  Flex,
   IconButton,
   Text,
   Tooltip,
@@ -30,15 +32,19 @@ export function DataFiles() {
   return (
     <>
       <Text size="2" as="p" mb="2">
-        Add data files to make tests more realistic and prevent server-side
-        caching from affecting the results.
+        Configure data files and use them in you test rules.
       </Text>
       <Table.Root size="1" variant="surface">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Data file</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>
-              Access method <InfoCircledIcon />{' '}
+              <Flex align="center" gap="1">
+                Access method
+                <Tooltip content="Defines how the items are accessed during the test">
+                  <InfoCircledIcon />
+                </Tooltip>
+              </Flex>
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell width="0"></Table.ColumnHeaderCell>
           </Table.Row>
@@ -97,9 +103,13 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
   )
 
   return (
-    <Table.Row>
+    <Table.Row
+      css={css`
+        vertical-align: middle;
+      `}
+    >
       <Table.Cell>{file.name}</Table.Cell>
-      <Table.Cell>Random selection</Table.Cell>
+      <Table.Cell>Unique item per iteration</Table.Cell>
       <Table.Cell>
         <Tooltip
           content="Data file is referenced in a rule"

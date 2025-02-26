@@ -101,7 +101,7 @@ export function generateGetRandomItemFunction(files: DataFile[]) {
 
   return `
     function getRandomItem(array){
-      return array[Math.floor(Math.random() * array.length)]
+      return array[execution.scenario.iterationInTest % array.length]
     }`
 }
 

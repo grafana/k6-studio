@@ -13,7 +13,7 @@ interface DataFileTableProps {
 export function DataFileTable({ preview }: DataFileTableProps) {
   return (
     <>
-      <Callout.Root variant="surface" color="gray">
+      <Callout.Root variant="soft" color="indigo">
         <Callout.Icon>
           <InfoCircledIcon />
         </Callout.Icon>
