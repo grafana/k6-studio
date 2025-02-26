@@ -24,27 +24,26 @@ export const AvailableLoadZonesSchema = z.enum([
   'amazon:us:ashburn',
 ])
 
+export const LoadZoneIitemSchema = z.object({
+  id: z.string(),
+  loadZone: AvailableLoadZonesSchema,
+  percent: z.number().int().min(1).max(100),
+})
+
 export const LoadZoneSchema = z.object({
   distribution: z.enum(['even', 'manual']),
-  loadZones: z
-    .array(
-      z.object({
-        loadZone: AvailableLoadZonesSchema,
-        percent: z.number().int().min(1).max(100),
-      })
-    )
-    .refine(
-      (data) => {
-        if (data.length === 0) {
-          return true
-        }
+  loadZones: z.array(LoadZoneIitemSchema).refine(
+    (data) => {
+      if (data.length === 0) {
+        return true
+      }
 
-        const totalPercentage = data.reduce(
-          (sum, { percent }) => sum + percent,
-          0
-        )
-        return totalPercentage === 100
-      },
-      { message: 'The sum of all distribution percentages must be 100' }
-    ),
+      const totalPercentage = data.reduce(
+        (sum, { percent }) => sum + percent,
+        0
+      )
+      return totalPercentage === 100
+    },
+    { message: 'The sum of all distribution percentages must be 100' }
+  ),
 })
