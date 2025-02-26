@@ -21,9 +21,11 @@ export function createGeneratorData(
         },
       },
       thresholds: [],
-      loadZones: {
-        distribution: 'even',
-        loadZones: [],
+      cloud: {
+        loadZones: {
+          distribution: 'even',
+          loadZones: [],
+        },
       },
     },
     recordingPath: '',

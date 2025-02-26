@@ -91,9 +91,11 @@ describe('Code generation', () => {
                 },
               },
               thresholds: [],
-              loadZones: {
-                distribution: 'even',
-                loadZones: [],
+              cloud: {
+                loadZones: {
+                  distribution: 'even',
+                  loadZones: [],
+                },
               },
             },
             testData: {
@@ -128,9 +130,11 @@ describe('Code generation', () => {
           },
         },
         thresholds: [],
-        loadZones: {
-          distribution: 'even',
-          loadZones: [],
+        cloud: {
+          loadZones: {
+            distribution: 'even',
+            loadZones: [],
+          },
         },
       },
       testData: {

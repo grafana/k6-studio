@@ -69,5 +69,9 @@ export const TestOptionsSchema = z.object({
   loadProfile: LoadProfileExecutorOptionsSchema,
   thinkTime: ThinkTimeSchema,
   thresholds: z.array(ThresholdSchema).default([]),
-  loadZones: LoadZoneSchema.default({ distribution: 'even', loadZones: [] }),
+  cloud: z
+    .object({
+      loadZones: LoadZoneSchema,
+    })
+    .default({ loadZones: { distribution: 'even', loadZones: [] } }),
 })

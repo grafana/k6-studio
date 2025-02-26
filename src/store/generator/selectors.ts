@@ -63,7 +63,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
         timing,
       },
       thresholds,
-      loadZones,
+      cloud: { loadZones },
     },
     testData: { variables, files },
     rules,
