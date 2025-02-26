@@ -28,10 +28,10 @@ export default defineConfig((env) => {
   const define = {
     ...getBuildDefine(forgeEnv),
     ...getDotEnv({
-      GRAFANA_CLIENT_ID: '<tbd>',
-      K6_API_URL: 'https://api.k6.io/v6',
+      GRAFANA_CLIENT_ID: '69039f7a39d7e1281861',
+      K6_API_URL: 'https://api.staging.k6.io/v6',
       MOCK_PERSONAL_API_TOKEN: 'I AM NOT A REAL TOKEN!!!',
-      GRAFANA_API_URL: 'https://grafana.com/api',
+      GRAFANA_API_URL: 'https://grafana-dev.com/api',
     }),
   }
 
