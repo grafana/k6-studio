@@ -9,40 +9,13 @@ import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
-import { applyRules } from '@/rules/rules'
 import { RequestListHeader } from './RequestListHeader'
+import { useApplyRules } from '@/store/hooks/useApplyRules'
 
 interface RequestListProps {
   requests: ProxyData[]
   onSelectRequest: (request: ProxyData | null) => void
   selectedRequest: ProxyData | null
-}
-
-// TODO: add memo and extract to hook
-function useApplyRules(requests: ProxyData[]) {
-  const rules = useGeneratorStore((state) => state.rules)
-  const selectedRuleId = useGeneratorStore((state) => state.selectedRuleId)
-
-  const ruleApplicationResult = applyRules(requests, rules)
-
-  const rulesWithState = rules.map((rule) => {
-    const ruleState = ruleApplicationResult.ruleInstances.find(
-      (ruleInstance) => ruleInstance.rule.id === rule.id
-    )?.state
-
-    return {
-      ...rule,
-      state: ruleState,
-    }
-  })
-
-  return {
-    rules: rulesWithState,
-    selectedRule: rulesWithState.find((rule) => rule.id === selectedRuleId),
-    requestsWithRulesApplied: ruleApplicationResult.requestSnippetSchemas.map(
-      (snippet) => snippet.data
-    ),
-  }
 }
 
 export function RequestList({
@@ -54,7 +27,7 @@ export function RequestList({
     (state) => state.previewOriginalRequests
   )
 
-  const { requestsWithRulesApplied, selectedRule } = useApplyRules(requests)
+  const { requestsWithRulesApplied, selectedRuleInstance } = useApplyRules()
 
   const {
     filter,
@@ -121,7 +94,9 @@ export function RequestList({
             onSelectRequest={onSelectRequest}
             groups={groups}
             filter={filter}
-            highlightedRequestIds={selectedRule?.state?.matchedRequestIds}
+            highlightedRequestIds={
+              selectedRuleInstance?.state?.matchedRequestIds
+            }
           />
         )}
       </ScrollArea>

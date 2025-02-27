@@ -1,12 +1,15 @@
-import { Box, Grid, Heading, Switch, Text } from '@radix-ui/themes'
+import { Box, Code, Grid, Heading, Switch, Text } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
+import { useMemo } from 'react'
+import { useApplyRules } from '@/store/hooks/useApplyRules'
 
 export function CorrelationEditor() {
+  const { selectedRuleInstance } = useApplyRules()
   const { setValue, watch } = useFormContext<TestRule>()
   const replacer = watch('replacer')
 
@@ -25,6 +28,14 @@ export function CorrelationEditor() {
     }
   }
 
+  const extractedValue = useMemo(() => {
+    if (selectedRuleInstance?.type !== 'correlation') {
+      return
+    }
+
+    return selectedRuleInstance.state.extractedValue
+  }, [selectedRuleInstance])
+
   return (
     <Grid columns="1fr 1fr" gap="3">
       <Box>
@@ -36,6 +47,12 @@ export function CorrelationEditor() {
         </Text>
         <FilterField field="extractor.filter" />
         <SelectorField field="extractor.selector" />
+        {extractedValue && (
+          <Label>
+            <Text size="2">Extracted value:</Text>
+            <Code>{extractedValue}</Code>
+          </Label>
+        )}
       </Box>
       <Box>
         <Heading size="2" weight="medium" mb="2">

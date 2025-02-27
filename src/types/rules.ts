@@ -63,7 +63,7 @@ export interface ParameterizationState extends BaseRuleState {
     replaced: Request
   }[]
   uniqueId: number
-  snippedInjected: boolean
+  snippetInjected: boolean
 }
 
 export type ParameterizationRuleInstance = BaseRuleInstance<
