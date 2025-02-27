@@ -1,11 +1,10 @@
-import { Code, Flex } from '@radix-ui/themes'
+import { Code } from '@radix-ui/themes'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
 import { ParameterizationRule } from '@/types/rules'
 import { useFormContext } from 'react-hook-form'
 import { useGeneratorStore } from '@/store/generator'
 import { useMemo } from 'react'
 import { useDataFilePreview } from '@/views/DataFile/DataFile.hooks'
-import { renderDataFileValue } from '@/utils/dataFile'
 import { css } from '@emotion/react'
 
 export function FileSelect() {
@@ -39,24 +38,16 @@ export function FileSelect() {
     return preview.props.map((prop) => ({
       value: prop,
       label: (
-        <Flex gap="4" wrap="nowrap">
-          <Code
-            size="2"
-            truncate
-            variant="ghost"
-            css={css`
-              flex-shrink: 0;
-            `}
-          >
-            {prop}
-          </Code>
-          <Code truncate color="gray" variant="ghost">
-            e.g.{' '}
-            {preview.data
-              .map((item) => renderDataFileValue(item[prop]))
-              .join(', ')}
-          </Code>
-        </Flex>
+        <Code
+          size="2"
+          truncate
+          variant="ghost"
+          css={css`
+            flex-shrink: 0;
+          `}
+        >
+          {prop}
+        </Code>
       ),
     }))
   }, [preview])
