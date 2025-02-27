@@ -1,16 +1,15 @@
 import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
 import { FilePlusIcon, PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { FileTree } from '@/components/FileTree'
 import { useFiles } from './Sidebar.hooks'
-import { Link } from 'react-router-dom'
 import { getRoutePath } from '@/routeMap'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { SearchField } from '@/components/SearchField'
-import { useState } from 'react'
-import log from 'electron-log/renderer'
-import { useToast } from '@/store/ui/useToast'
+import { useImportDataFile } from '@/hooks/useImportDataFile'
 
 interface SidebarProps {
   isExpanded?: boolean
@@ -20,22 +19,8 @@ interface SidebarProps {
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, generators, scripts, dataFiles } = useFiles(searchTerm)
-  const createNewGenerator = useCreateGenerator()
-  const showToast = useToast()
-
-  const handleCreateNewGenerator = () => createNewGenerator()
-
-  const handleImportDataFile = async () => {
-    try {
-      await window.studio.data.importFile()
-    } catch (error) {
-      showToast({
-        title: 'Failed to import recording',
-        status: 'error',
-      })
-      log.error(error)
-    }
-  }
+  const handleCreateNewGenerator = useCreateGenerator()
+  const handleImportDataFile = useImportDataFile()
 
   return (
     <Box
@@ -103,7 +88,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
                     aria-label="New generator"
                     variant="ghost"
                     size="1"
-                    onClick={handleCreateNewGenerator}
+                    onClick={() => handleCreateNewGenerator()}
                     css={{ cursor: 'pointer' }}
                   >
                     <PlusIcon />
