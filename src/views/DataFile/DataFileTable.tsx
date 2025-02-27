@@ -1,8 +1,9 @@
-import { Callout, Table } from '@radix-ui/themes'
+import { Callout } from '@radix-ui/themes'
+import { InfoCircledIcon } from '@radix-ui/react-icons'
 
 import { TableCellWithTooltip } from '@/components/TableCellWithTooltip'
+import { Table } from '@/components/Table'
 import { DataFilePreview } from '@/types/testData'
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { renderDataFileValue } from '@/utils/dataFile'
 
 interface DataFileTableProps {
@@ -28,11 +29,13 @@ export function DataFileTable({ preview }: DataFileTableProps) {
           )}
         </Callout.Text>
       </Callout.Root>
-      <Table.Root size="1">
+      <Table.Root size="1" variant="surface">
         <Table.Header>
           <Table.Row>
             {preview.props.map((prop) => (
-              <Table.ColumnHeaderCell key={prop}>{prop}</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell key={prop} uppercase={false}>
+                {prop}
+              </Table.ColumnHeaderCell>
             ))}
           </Table.Row>
         </Table.Header>
