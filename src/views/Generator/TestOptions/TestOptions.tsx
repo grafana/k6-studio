@@ -7,6 +7,7 @@ import { ThinkTime } from './ThinkTime'
 import { VariablesEditor } from './VariablesEditor'
 import { PopoverDialog } from '@/components/PopoverDialogs'
 import { Thresholds } from './Thresholds'
+import { LoadZones } from './LoadZones'
 import { DataFiles } from './DataFiles'
 import { Feature } from '@/components/Feature'
 import { useState } from 'react'
@@ -39,6 +40,9 @@ export function TestOptions() {
             <Feature feature="data-files">
               <Tabs.Trigger value="dataFiles">Data files</Tabs.Trigger>
             </Feature>
+            <Feature feature="load-zones">
+              <Tabs.Trigger value="loadZones">Load Zones</Tabs.Trigger>
+            </Feature>
           </Tabs.List>
           <ScrollArea
             scrollbars="vertical"
@@ -64,6 +68,11 @@ export function TestOptions() {
               <Tabs.Content value="thresholds">
                 <Thresholds />
               </Tabs.Content>
+              <Feature feature="load-zones">
+                <Tabs.Content value="loadZones">
+                  <LoadZones />
+                </Tabs.Content>
+              </Feature>
             </Box>
           </ScrollArea>
         </Tabs.Root>

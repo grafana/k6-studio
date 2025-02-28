@@ -16,6 +16,10 @@ import {
   ThresholdSchema,
   ThresholdStatisticSchema,
 } from '@/schemas/generator'
+import {
+  LoadZoneItemSchema,
+  LoadZoneSchema,
+} from '@/schemas/generator/v1/loadZone'
 
 export type SleepType = z.infer<typeof SleepTypeSchema>
 export type FixedTiming = z.infer<typeof FixedTimingSchema>
@@ -35,4 +39,8 @@ export type Threshold = z.infer<typeof ThresholdSchema>
 export type ThresholdData = z.infer<typeof ThresholdDataSchema>
 export type ThresholdMetric = z.infer<typeof ThresholdMetricSchema>
 export type ThresholdStatstic = z.infer<typeof ThresholdStatisticSchema>
+
+export type LoadZoneData = z.infer<typeof LoadZoneSchema>
+export type LoadZoneItem = z.infer<typeof LoadZoneItemSchema>
+
 export type TestOptions = z.infer<typeof TestOptionsSchema>
