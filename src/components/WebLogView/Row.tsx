@@ -26,7 +26,7 @@ export function Row({
   highlightedRequestIds,
 }: RowProps) {
   const opacity = useMemo(() => {
-    if (!highlightedRequestIds || highlightedRequestIds.length === 0) {
+    if (!highlightedRequestIds) {
       return 1
     }
 
@@ -41,6 +41,10 @@ export function Row({
           opacity,
           '&:hover': {
             backgroundColor: isSelected ? 'var(--accent-3)' : 'var(--accent-2)',
+          },
+          td: {
+            // Match border color with hihglighted rows
+            boxShadow: `inset 0 -1px var(--gray-${opacity === 1 ? 'a5' : 'a7'})`,
           },
         }}
       >
