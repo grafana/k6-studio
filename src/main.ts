@@ -66,6 +66,7 @@ import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
 import { createNewGeneratorFile } from './utils/generator'
 import { GeneratorFileDataSchema } from './schemas/generator'
+import { ChildProcessWithoutNullStreams } from 'child_process'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -98,7 +99,7 @@ let currentClientRoute = '/'
 let wasAppClosedByClient = false
 export let appSettings = defaultSettings
 
-let currentBrowserProcess: Process | null
+let currentBrowserProcess: Process | ChildProcessWithoutNullStreams | null
 let currentk6Process: K6Process | null
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
@@ -313,8 +314,16 @@ ipcMain.handle('browser:start', async (event, url?: string) => {
 
 ipcMain.on('browser:stop', async () => {
   console.info('browser:stop event received')
+
   if (currentBrowserProcess) {
-    await currentBrowserProcess.close()
+    // macOS & windows
+    if ('close' in currentBrowserProcess) {
+      await currentBrowserProcess.close()
+      // linux
+    } else {
+      currentBrowserProcess.kill()
+    }
+
     currentBrowserProcess = null
   }
 })
