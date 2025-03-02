@@ -23,6 +23,7 @@ function getPlatformSpecificResources() {
 
 const config: ForgeConfig = {
   packagerConfig: {
+    name: 'Grafana k6 Studio',
     icon: './resources/icons/logo',
     asar: true,
     extraResource: [
