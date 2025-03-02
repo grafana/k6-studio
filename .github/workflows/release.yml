@@ -10,9 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # linux disabled until we get to work to support it
-        #platform: [macos-latest, ubuntu-20.04, windows-latest]
-        platform: [macos-latest, windows-latest]
+        platform: [macos-latest, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -90,6 +88,20 @@ jobs:
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: npm run publish
+
+      - name: publish Linux
+        if: startsWith(matrix.platform, 'ubuntu-')
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # sentry integration
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          # sentry vite plugin integration during build
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: |
+          npm run publish
 
       - name: cleanup macos certificates
         if: startsWith(matrix.platform, 'macos-')
