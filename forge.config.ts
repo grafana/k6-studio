@@ -66,7 +66,7 @@ const config: ForgeConfig = {
     ),
     new MakerRpm({}),
     new MakerRpm({}),
-    new MakerDeb({ options: { icon: './src/assets/icons/logo.png' } }),
+    new MakerDeb({ options: { icon: './resources/icons/logo.png' } }),
   ],
   plugins: [
     new VitePlugin({
