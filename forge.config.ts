@@ -64,8 +64,7 @@ const config: ForgeConfig = {
       },
       ['darwin']
     ),
-    new MakerRpm({}),
-    new MakerRpm({}),
+    new MakerRpm({ options: { icon: './resources/icons/logo.png' } }),
     new MakerDeb({ options: { icon: './resources/icons/logo.png' } }),
   ],
   plugins: [

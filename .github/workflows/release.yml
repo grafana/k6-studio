@@ -101,6 +101,7 @@ jobs:
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
+          sudo apt install -y rpm
           npm run publish
 
       - name: cleanup macos certificates
