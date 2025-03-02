@@ -5,6 +5,7 @@ const K6_VERSION = 'v0.55.0'
 const K6_PATH_MAC_AMD = `k6-${K6_VERSION}-macos-amd64`
 const K6_PATH_MAC_ARM = `k6-${K6_VERSION}-macos-arm64`
 const K6_PATH_WIN_AMD = `k6-${K6_VERSION}-windows-amd64`
+const K6_PATH_LINUX_AMD = `k6-${K6_VERSION}-linux-amd64`
 
 const getMacOSK6Binary = () => {
   const command = `
@@ -52,6 +53,26 @@ Remove-Item -Path "${K6_PATH_WIN_AMD}" -Recurse
   execSync(command, { shell: 'powershell.exe' })
 }
 
+const getLinuxK6Binary = () => {
+  const command = `
+# download binaries
+curl -LO https://github.com/grafana/k6/releases/download/${K6_VERSION}/${K6_PATH_LINUX_AMD}.tar.gz
+
+# unzip & smoke test
+tar -zxf ${K6_PATH_LINUX_AMD}.tar.gz
+${K6_PATH_LINUX_AMD}/k6 version
+
+# move to resource folder
+mv ${K6_PATH_LINUX_AMD}/k6 resources/linux/x86_64
+
+# cleanup
+rm ${K6_PATH_LINUX_AMD}.tar.gz
+rmdir ${K6_PATH_LINUX_AMD}
+`
+
+  execSync(command)
+}
+
 switch (process.platform) {
   case 'darwin':
     // we check only for one arch since we include both binaries
@@ -67,6 +88,14 @@ switch (process.platform) {
       console.log('k6 binary not found')
       console.log('downloading k6... this might take some time...')
       getWindowsK6Binary()
+      console.log('k6 binary download completed')
+    }
+    break
+  case 'linux':
+    if (!existsSync('resources/linux/x86_64/k6')) {
+      console.log('k6 binary not found')
+      console.log('downloading k6... this might take some time...')
+      getLinuxK6Binary()
       console.log('k6 binary download completed')
     }
     break
