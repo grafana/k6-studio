@@ -10,6 +10,7 @@ import {
   Switch,
   Flex,
   Callout,
+  Tooltip,
 } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import {
@@ -20,7 +21,11 @@ import {
 } from 'react-hook-form'
 import { LoadZoneRow } from './LoadZoneRow'
 import { FieldGroup } from '@/components/Form'
-import { findUnusedLoadZone, getRemainingPercentage } from './LoadZones.utils'
+import {
+  findUnusedLoadZone,
+  getRemainingPercentage,
+  LOAD_ZONES_REGIONS_OPTIONS,
+} from './LoadZones.utils'
 import { Cross1Icon } from '@radix-ui/react-icons'
 
 export function LoadZones() {
@@ -147,9 +152,20 @@ export function LoadZones() {
 
             <Table.Row>
               <Table.RowHeaderCell colSpan={7} justify="center">
-                <Button variant="ghost" onClick={handleAddLoadZone}>
-                  Add new load zone
-                </Button>
+                <Tooltip
+                  content="All available load zones are already in use"
+                  hidden={fields.length !== LOAD_ZONES_REGIONS_OPTIONS.length}
+                >
+                  <Button
+                    variant="ghost"
+                    onClick={handleAddLoadZone}
+                    disabled={
+                      fields.length === LOAD_ZONES_REGIONS_OPTIONS.length
+                    }
+                  >
+                    Add new load zone
+                  </Button>
+                </Tooltip>
               </Table.RowHeaderCell>
             </Table.Row>
           </Table.Body>
