@@ -48,10 +48,15 @@ export function CorrelationEditor() {
         <FilterField field="extractor.filter" />
         <SelectorField field="extractor.selector" />
         {extractedValue && (
-          <Label>
-            <Text size="2">Extracted value:</Text>
+          <Text size="2">
+            <Text color="gray">Extracted value:</Text>{' '}
             <Code>{extractedValue}</Code>
-          </Label>
+          </Text>
+        )}
+        {!extractedValue && (
+          <Text size="2" color="gray">
+            The rule does not match any requests
+          </Text>
         )}
       </Box>
       <Box>
