@@ -29,7 +29,7 @@ export function DataFileTable({ preview }: DataFileTableProps) {
           )}
         </Callout.Text>
       </Callout.Root>
-      <Table.Root size="1" variant="surface" layout="auto">
+      <Table.Root size="1" variant="surface">
         <Table.Header>
           <Table.Row>
             {preview.props.map((prop) => (
