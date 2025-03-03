@@ -19,11 +19,11 @@ export function FilterField({
     <FieldGroup
       name={fieldName}
       label="Filter"
-      hint="Only requests with this string in their path will be affected. Regex supported."
+      hint="Filter requests by URL (regex supported)"
       errors={errors}
     >
       <TextField.Root
-        placeholder="Filter by path"
+        placeholder="Filter by URL"
         css={{ marginBottom: 'var(--space-2)' }}
         id={fieldName}
         {...register(fieldName)}
