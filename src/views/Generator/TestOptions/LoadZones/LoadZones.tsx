@@ -30,9 +30,7 @@ export function LoadZones() {
   const formMethods = useForm<LoadZoneData>({
     resolver: zodResolver(LoadZoneSchema),
     shouldFocusError: false,
-    defaultValues: {
-      ...loadZones,
-    },
+    defaultValues: loadZones,
   })
 
   const {
