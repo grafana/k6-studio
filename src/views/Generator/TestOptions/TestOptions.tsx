@@ -4,11 +4,10 @@ import { css } from '@emotion/react'
 
 import { LoadProfile } from './LoadProfile'
 import { ThinkTime } from './ThinkTime'
-import { VariablesEditor } from './VariablesEditor'
+import { VariablesEditor } from '../TestData/VariablesEditor'
 import { PopoverDialog } from '@/components/PopoverDialogs'
 import { Thresholds } from './Thresholds'
 import { LoadZones } from './LoadZones'
-import { DataFiles } from './DataFiles'
 import { Feature } from '@/components/Feature'
 import { useState } from 'react'
 
@@ -36,10 +35,6 @@ export function TestOptions() {
             <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
             <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
             <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
-            <Tabs.Trigger value="variables">Variables</Tabs.Trigger>
-            <Feature feature="data-files">
-              <Tabs.Trigger value="dataFiles">Data files</Tabs.Trigger>
-            </Feature>
             <Feature feature="load-zones">
               {/* TODO: Load zones should only be available when authenticated to Cloud */}
               <Tabs.Trigger value="loadZones">Load Zones</Tabs.Trigger>
@@ -61,11 +56,6 @@ export function TestOptions() {
               <Tabs.Content value="variables">
                 <VariablesEditor />
               </Tabs.Content>
-              <Feature feature="data-files">
-                <Tabs.Content value="dataFiles">
-                  <DataFiles />
-                </Tabs.Content>
-              </Feature>
               <Tabs.Content value="thresholds">
                 <Thresholds />
               </Tabs.Content>
