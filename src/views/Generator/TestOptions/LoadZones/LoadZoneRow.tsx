@@ -24,7 +24,17 @@ export function LoadZoneRow({ field, index, remove }: LoadZoneRowProps) {
     watch,
   } = useFormContext<LoadZoneData>()
 
-  const { distribution } = watch()
+  const { distribution, loadZones } = watch()
+
+  // Disable load zone options that are already in use
+  const getLoadZoneOptions = () => {
+    return LOAD_ZONES_REGIONS_OPTIONS.map((option) => ({
+      ...option,
+      disabled: loadZones.some(
+        (zone, i) => zone.loadZone === option.value && i !== index
+      ),
+    }))
+  }
 
   return (
     <Table.Row key={field.id}>
@@ -33,7 +43,7 @@ export function LoadZoneRow({ field, index, remove }: LoadZoneRowProps) {
           <ControlledSelect
             control={control}
             name={`loadZones.${index}.loadZone`}
-            options={LOAD_ZONES_REGIONS_OPTIONS}
+            options={getLoadZoneOptions()}
           />
         </FieldGroup>
       </Table.Cell>

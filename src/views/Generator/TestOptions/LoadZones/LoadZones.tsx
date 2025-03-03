@@ -8,6 +8,7 @@ import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFieldArray } from 'react-hook-form'
 import { LoadZoneRow } from './LoadZoneRow'
 import { FieldGroup } from '@/components/Form'
+import { findUnusedLoadZone } from './LoadZones.utils'
 
 export function LoadZones() {
   const loadZones = useGeneratorStore((store) => store.loadZones)
@@ -34,7 +35,7 @@ export function LoadZones() {
     name: 'loadZones',
   })
 
-  const { distribution } = watch()
+  const { distribution, loadZones: usedLoadZones } = watch()
 
   const handleOpenDocs = (event: React.MouseEvent) => {
     event.preventDefault()
@@ -48,7 +49,7 @@ export function LoadZones() {
 
     append({
       id: crypto.randomUUID(),
-      loadZone: 'amazon:us:columbus',
+      loadZone: findUnusedLoadZone(usedLoadZones),
       percent: 0,
     })
   }

@@ -77,9 +77,11 @@ export const LOAD_ZONES_REGIONS_OPTIONS = loadZoneOptionsMap.map(
 export const findUnusedLoadZone = (
   usedLoadZones: LoadZoneData['loadZones']
 ) => {
-  const usedLoadZonesName = usedLoadZones.map((item) => item.loadZone)
+  const usedLoadZonesNames = usedLoadZones.map((item) => item.loadZone)
 
-  return loadZoneOptionsMap.find(
-    (option) => !usedLoadZonesName.includes(option.value)
+  return (
+    loadZoneOptionsMap.find(
+      (option) => !usedLoadZonesNames.includes(option.value)
+    )?.value ?? 'amazon:us:columbus'
   )
 }
