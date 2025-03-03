@@ -5,7 +5,8 @@ import { LoadZoneData } from '@/types/testOptions'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Text, Link as RadixLink, Button } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
+import { FormProvider, useForm, useFieldArray } from 'react-hook-form'
+import { LoadZoneRow } from './LoadZoneRow'
 
 export function LoadZones() {
   const { distribution, loadZones } = useGeneratorStore(
@@ -22,7 +23,12 @@ export function LoadZones() {
     },
   })
 
-  const { handleSubmit, watch } = formMethods
+  const { handleSubmit, watch, control } = formMethods
+
+  const { append, remove, fields } = useFieldArray<LoadZoneData>({
+    control,
+    name: 'loadZones',
+  })
 
   const handleOpenDocs = (event: React.MouseEvent) => {
     event.preventDefault()
@@ -31,8 +37,14 @@ export function LoadZones() {
     )
   }
 
-  function handleAddLoadZone() {
-    // TODO: Implement
+  function handleAddLoadZone(event: React.MouseEvent) {
+    event.preventDefault()
+
+    append({
+      id: crypto.randomUUID(),
+      loadZone: 'amazon:us:columbus',
+      percent: 0,
+    })
   }
 
   const onSubmit = useCallback(
@@ -73,6 +85,15 @@ export function LoadZones() {
           </Table.Header>
 
           <Table.Body>
+            {fields.map((field, index) => (
+              <LoadZoneRow
+                key={field.id}
+                field={field}
+                index={index}
+                remove={remove}
+              />
+            ))}
+
             <Table.Row>
               <Table.RowHeaderCell colSpan={7} justify="center">
                 <Button variant="ghost" onClick={handleAddLoadZone}>
