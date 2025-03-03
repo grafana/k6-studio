@@ -3,12 +3,25 @@ import { LoadZoneSchema } from '@/schemas/generator/v1/loadZone'
 import { useGeneratorStore } from '@/store/generator/useGeneratorStore'
 import { LoadZoneData } from '@/types/testOptions'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Text, Link as RadixLink, Button, Switch, Flex } from '@radix-ui/themes'
+import {
+  Text,
+  Link as RadixLink,
+  Button,
+  Switch,
+  Flex,
+  Callout,
+} from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
-import { FormProvider, useForm, useFieldArray } from 'react-hook-form'
+import {
+  FormProvider,
+  useForm,
+  useFieldArray,
+  useFormContext,
+} from 'react-hook-form'
 import { LoadZoneRow } from './LoadZoneRow'
 import { FieldGroup } from '@/components/Form'
-import { findUnusedLoadZone } from './LoadZones.utils'
+import { findUnusedLoadZone, getRemainingPercentage } from './LoadZones.utils'
+import { Cross1Icon } from '@radix-ui/react-icons'
 
 export function LoadZones() {
   const loadZones = useGeneratorStore((store) => store.loadZones)
@@ -50,7 +63,7 @@ export function LoadZones() {
     append({
       id: crypto.randomUUID(),
       loadZone: findUnusedLoadZone(usedLoadZones),
-      percent: 0,
+      percent: getRemainingPercentage(usedLoadZones),
     })
   }
 
@@ -109,6 +122,8 @@ export function LoadZones() {
           </Text>
         </FieldGroup>
 
+        {errors.loadZones?.root && <LoadZonePercentageError />}
+
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
             <Table.Row>
@@ -143,5 +158,21 @@ export function LoadZones() {
         </Table.Root>
       </form>
     </FormProvider>
+  )
+}
+
+function LoadZonePercentageError() {
+  const {
+    formState: { errors },
+  } = useFormContext<LoadZoneData>()
+
+  return (
+    <Callout.Root variant="soft" color="tomato" mb="3">
+      <Callout.Icon>
+        <Cross1Icon />
+      </Callout.Icon>
+
+      <Callout.Text>{errors.loadZones?.root?.message}</Callout.Text>
+    </Callout.Root>
   )
 }

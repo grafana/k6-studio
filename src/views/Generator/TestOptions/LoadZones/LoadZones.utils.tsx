@@ -85,3 +85,14 @@ export const findUnusedLoadZone = (
     )?.value ?? 'amazon:us:columbus'
   )
 }
+
+export const getRemainingPercentage = (
+  loadZones: LoadZoneData['loadZones']
+) => {
+  const totalPercentage = loadZones.reduce(
+    (sum, { percent }) => sum + percent,
+    0
+  )
+
+  return 100 - totalPercentage
+}
