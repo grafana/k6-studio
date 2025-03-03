@@ -41,6 +41,7 @@ export function TestOptions() {
               <Tabs.Trigger value="dataFiles">Data files</Tabs.Trigger>
             </Feature>
             <Feature feature="load-zones">
+              {/* TODO: Load zones should only be available when authenticated to Cloud */}
               <Tabs.Trigger value="loadZones">Load Zones</Tabs.Trigger>
             </Feature>
           </Tabs.List>

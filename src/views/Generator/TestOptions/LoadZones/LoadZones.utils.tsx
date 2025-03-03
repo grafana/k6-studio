@@ -21,6 +21,7 @@ import {
   ZA,
 } from 'country-flag-icons/react/3x2'
 import { css } from '@emotion/react'
+import { Flex } from '@radix-ui/themes'
 
 type LoadZonesOption = {
   label: ReactNode
@@ -59,7 +60,7 @@ const loadZoneOptionsMap: Array<LoadZonesOption> = [
 export const LOAD_ZONES_REGIONS_OPTIONS = loadZoneOptionsMap.map(
   ({ label, flag: Flag, value }) => ({
     label: (
-      <>
+      <Flex align="center">
         <Flag
           css={css`
             margin-right: var(--space-2);
@@ -67,7 +68,7 @@ export const LOAD_ZONES_REGIONS_OPTIONS = loadZoneOptionsMap.map(
           `}
         />
         {label}
-      </>
+      </Flex>
     ),
 
     value,
