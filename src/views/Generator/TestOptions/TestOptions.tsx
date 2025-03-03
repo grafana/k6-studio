@@ -6,6 +6,9 @@ import { LoadProfile } from './LoadProfile'
 import { ThinkTime } from './ThinkTime'
 import { VariablesEditor } from '../TestData/VariablesEditor'
 import { PopoverDialog } from '@/components/PopoverDialogs'
+import { Thresholds } from './Thresholds'
+import { LoadZones } from './LoadZones'
+import { Feature } from '@/components/Feature'
 import { useState } from 'react'
 
 export function TestOptions() {
@@ -49,6 +52,14 @@ export function TestOptions() {
               <Tabs.Content value="variables">
                 <VariablesEditor />
               </Tabs.Content>
+              <Tabs.Content value="thresholds">
+                <Thresholds />
+              </Tabs.Content>
+              <Feature feature="load-zones">
+                <Tabs.Content value="loadZones">
+                  <LoadZones />
+                </Tabs.Content>
+              </Feature>
             </Box>
           </ScrollArea>
         </Tabs.Root>
