@@ -29,11 +29,15 @@ export function DataFileTable({ preview }: DataFileTableProps) {
           )}
         </Callout.Text>
       </Callout.Root>
-      <Table.Root size="1" variant="surface">
+      <Table.Root size="1" variant="surface" layout="auto">
         <Table.Header>
           <Table.Row>
             {preview.props.map((prop) => (
-              <Table.ColumnHeaderCell key={prop} uppercase={false}>
+              <Table.ColumnHeaderCell
+                key={prop}
+                uppercase={false}
+                maxWidth="300px"
+              >
                 {prop}
               </Table.ColumnHeaderCell>
             ))}
@@ -44,7 +48,7 @@ export function DataFileTable({ preview }: DataFileTableProps) {
           {preview.data.map((item, i) => (
             <Table.Row key={i}>
               {preview.props.map((prop) => (
-                <TableCellWithTooltip key={prop}>
+                <TableCellWithTooltip key={prop} maxWidth="300px">
                   {renderDataFileValue(item[prop])}
                 </TableCellWithTooltip>
               ))}
