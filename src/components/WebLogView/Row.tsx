@@ -30,7 +30,7 @@ export function Row({
       return 1
     }
 
-    return highlightedRequestIds.includes(data.id) ? 1 : 0.5
+    return highlightedRequestIds.includes(data.id) ? 1 : 0.4
   }, [highlightedRequestIds, data.id])
   return (
     <>
@@ -44,7 +44,7 @@ export function Row({
           },
           td: {
             // Match border color with hihglighted rows
-            boxShadow: `inset 0 -1px var(--gray-${opacity === 1 ? 'a5' : 'a7'})`,
+            boxShadow: `inset 0 -1px var(--gray-${opacity === 1 ? 'a5' : 'a8'})`,
           },
         }}
       >
