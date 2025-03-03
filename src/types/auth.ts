@@ -43,7 +43,7 @@ export interface FetchingStacksState {
  */
 export interface SelectingStackState {
   type: 'selecting-stack'
-  current: Stack | undefined
+  current: Stack | null
   stacks: Stack[]
 }
 
@@ -108,7 +108,7 @@ export type SignInResult = Authenticated | Denied | TimedOut | Aborted
 
 export interface RefreshStacks {
   type: 'refresh-stacks'
-  current: Stack | undefined
+  current: Stack | null
 }
 
 export interface StackSelected {

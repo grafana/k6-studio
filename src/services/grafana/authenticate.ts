@@ -146,21 +146,21 @@ async function fetchAndPatch(
   return fetch(input, init)
 }
 
-interface GrantedResult {
+export interface GrantedResult {
   type: 'granted'
   token: string
   email: string
 }
 
-interface DeniedResult {
+export interface DeniedResult {
   type: 'denied'
 }
 
-interface TimedOutResult {
+export interface TimedOutResult {
   type: 'timed-out'
 }
 
-type AuthenticateResult = GrantedResult | DeniedResult | TimedOutResult
+export type AuthenticateResult = GrantedResult | DeniedResult | TimedOutResult
 
 interface AuthenticateOptions {
   signal: AbortSignal

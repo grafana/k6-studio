@@ -9,7 +9,7 @@ import { AppSettings } from './types/settings'
 import * as Sentry from './sentry'
 import { DataFilePreview } from './types/testData'
 import { createListener } from './handlers/utils'
-import * as auth from './handlers/auth.preload'
+import * as auth from './handlers/auth/preload'
 
 interface GetFilesResponse {
   recordings: StudioFile[]

@@ -4,12 +4,12 @@ import {
   SelectStackResponse,
 } from '@/types/auth'
 import { ipcRenderer } from 'electron'
-import { createListener } from './utils'
+import { createListener } from '../utils'
 import {
   AuthHandler as AuthHandler,
   ChangeStackResponse,
   SignOutResponse,
-} from './auth.types'
+} from './types'
 import { StackInfo, UserProfiles } from '@/schemas/profile'
 
 export function getProfiles() {

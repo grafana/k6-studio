@@ -8,6 +8,7 @@ import {
 } from './vite.base.config'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import * as dotenv from 'dotenv'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 function getDotEnv(defaults: Record<string, string>) {
   const env = {
@@ -48,6 +49,7 @@ export default defineConfig((env) => {
       sourcemap: true,
     },
     plugins: [
+      tsconfigPaths(),
       pluginHotRestart('restart'),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,

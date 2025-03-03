@@ -35,15 +35,12 @@ export async function fetchStacks(
   token: string,
   signal?: AbortSignal
 ): Promise<Stack[]> {
-  const profileResponse = await fetch(
-    'https://grafana-dev.com/api/oauth2/user',
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      signal,
-    }
-  )
+  const profileResponse = await fetch(`${GRAFANA_API_URL}/oauth2/user`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    signal,
+  })
 
   if (!profileResponse.ok) {
     throw new Error("Couldn't fetch profile.")
@@ -54,7 +51,7 @@ export async function fetchStacks(
   const orgIdIn = profile.orgs.map((org) => org.login).join(',')
 
   const instancesResponse = await fetch(
-    `https://grafana-dev.com/api/instances?orgSlugIn=${orgIdIn}`,
+    `${GRAFANA_API_URL}/instances?orgSlugIn=${orgIdIn}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -67,7 +64,7 @@ export async function fetchStacks(
     throw new Error("Couldn't fetch instances.")
   }
 
-  const data = (await instancesResponse.json()) as unknown
+  const data: unknown = await instancesResponse.json()
   const parsed = InstancesResponseSchema.parse(data)
 
   return parsed.items.flatMap((instance) => {
