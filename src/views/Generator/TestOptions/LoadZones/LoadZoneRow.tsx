@@ -21,7 +21,10 @@ export function LoadZoneRow({ field, index, remove }: LoadZoneRowProps) {
     register,
     formState: { errors },
     control,
+    watch,
   } = useFormContext<LoadZoneData>()
+
+  const { distribution } = watch()
 
   return (
     <Table.Row key={field.id}>
@@ -39,6 +42,7 @@ export function LoadZoneRow({ field, index, remove }: LoadZoneRowProps) {
           <TextField.Root
             type="number"
             placeholder="value"
+            disabled={distribution === 'even'}
             {...register(`loadZones.${index}.percent`, { valueAsNumber: true })}
           >
             <TextField.Slot side="right">%</TextField.Slot>

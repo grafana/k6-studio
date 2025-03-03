@@ -3,32 +3,38 @@ import { LoadZoneSchema } from '@/schemas/generator/v1/loadZone'
 import { useGeneratorStore } from '@/store/generator/useGeneratorStore'
 import { LoadZoneData } from '@/types/testOptions'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Text, Link as RadixLink, Button } from '@radix-ui/themes'
+import { Text, Link as RadixLink, Button, Switch, Flex } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFieldArray } from 'react-hook-form'
 import { LoadZoneRow } from './LoadZoneRow'
+import { FieldGroup } from '@/components/Form'
 
 export function LoadZones() {
-  const { distribution, loadZones } = useGeneratorStore(
-    (store) => store.loadZones
-  )
+  const loadZones = useGeneratorStore((store) => store.loadZones)
   const setLoadZones = useGeneratorStore((store) => store.setLoadZones)
 
   const formMethods = useForm<LoadZoneData>({
     resolver: zodResolver(LoadZoneSchema),
     shouldFocusError: false,
     defaultValues: {
-      distribution,
-      loadZones,
+      ...loadZones,
     },
   })
 
-  const { handleSubmit, watch, control } = formMethods
+  const {
+    handleSubmit,
+    watch,
+    control,
+    setValue,
+    formState: { errors },
+  } = formMethods
 
   const { append, remove, fields } = useFieldArray<LoadZoneData>({
     control,
     name: 'loadZones',
   })
+
+  const { distribution } = watch()
 
   const handleOpenDocs = (event: React.MouseEvent) => {
     event.preventDefault()
@@ -60,6 +66,20 @@ export function LoadZones() {
     return () => subscription.unsubscribe()
   }, [watch, handleSubmit, onSubmit])
 
+  // evenly distribute load zones if distribution is set to "even"
+  useEffect(() => {
+    if (distribution !== 'even') return
+
+    const basePercent = Math.floor(100 / fields.length)
+    const remainder = 100 % fields.length
+
+    fields.forEach((_, index) => {
+      // ensure only integers are used
+      const percent = index < remainder ? basePercent + 1 : basePercent
+      setValue(`loadZones.${index}.percent`, percent)
+    })
+  }, [distribution, fields, setValue])
+
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -71,6 +91,23 @@ export function LoadZones() {
           </RadixLink>
           .
         </Text>
+
+        <FieldGroup name="distribution" label="Distribution" errors={errors}>
+          <Text size="2">
+            <Flex gap="2" align="center">
+              Even
+              <Switch
+                name="distribution"
+                checked={distribution === 'manual'}
+                onCheckedChange={(checked) => {
+                  setValue('distribution', checked ? 'manual' : 'even')
+                }}
+              />
+              Manual
+            </Flex>
+          </Text>
+        </FieldGroup>
+
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
             <Table.Row>
