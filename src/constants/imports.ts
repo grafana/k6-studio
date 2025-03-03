@@ -154,4 +154,5 @@ export const REQUIRED_IMPORTS: ImportModule[] = [
     },
   },
   { path: 'k6/http', default: { name: 'http' } },
+  { path: 'k6/execution', default: { name: 'execution' } },
 ]

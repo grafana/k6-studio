@@ -5,6 +5,7 @@ import { useFormContext } from 'react-hook-form'
 import { useGeneratorStore } from '@/store/generator'
 import { useMemo } from 'react'
 import { useDataFilePreview } from '@/views/DataFile/DataFile.hooks'
+import { css } from '@emotion/react'
 
 export function FileSelect() {
   const {
@@ -30,10 +31,21 @@ export function FileSelect() {
   }, [files])
 
   const propsOptions = useMemo(() => {
-    return preview?.props.map((prop) => ({
+    if (!preview) {
+      return []
+    }
+
+    return preview.props.map((prop) => ({
       value: prop,
       label: (
-        <Code size="2" truncate variant="ghost">
+        <Code
+          size="2"
+          truncate
+          variant="ghost"
+          css={css`
+            flex-shrink: 0;
+          `}
+        >
           {prop}
         </Code>
       ),
@@ -59,10 +71,9 @@ export function FileSelect() {
         />
       </FieldGroup>
       <FieldGroup
-        name="value.fileName"
+        name="value.propertyName"
         errors={errors}
-        label="Key"
-        hint="Used to retrieve a value from a randomly selected row in the data file"
+        label="Property name"
       >
         <ControlledSelect
           options={propsOptions || []}

@@ -1,8 +1,11 @@
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { Tooltip, Table, Text } from '@radix-ui/themes'
-import { ReactNode, useRef } from 'react'
+import { ComponentProps, useRef } from 'react'
 
-export function TableCellWithTooltip({ children }: { children: ReactNode }) {
+export function TableCellWithTooltip({
+  children,
+  ...props
+}: ComponentProps<typeof Table.Cell>) {
   const cellRef = useRef<HTMLTableCellElement>(null)
   const isEllipsisActive = useOverflowCheck(cellRef)
 
@@ -15,6 +18,7 @@ export function TableCellWithTooltip({ children }: { children: ReactNode }) {
           whiteSpace: 'nowrap',
         }}
         ref={cellRef}
+        {...props}
       >
         <Text size="1">{children}</Text>
       </Table.Cell>

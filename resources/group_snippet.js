@@ -1,4 +1,3 @@
-import execution from 'k6/execution'
 ;(function () {
   // saving the original values
   const httpRequest = http.request

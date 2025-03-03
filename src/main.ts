@@ -625,7 +625,7 @@ ipcMain.handle('data-file:import', async (event) => {
 
 ipcMain.handle(
   'data-file:load-preview',
-  async (_, fileName: string): Promise<DataFilePreview | null> => {
+  async (_, fileName: string): Promise<DataFilePreview> => {
     const fileType = fileName.split('.').pop()
     const filePath = path.join(DATA_FILES_PATH, fileName)
 
@@ -643,7 +643,7 @@ ipcMain.handle(
 
     return {
       type: fileType,
-      data: parsedData.slice(0, 10),
+      data: parsedData.slice(0, 20),
       props: parsedData[0] ? Object.keys(parsedData[0]) : [],
       total: parsedData.length,
     }
