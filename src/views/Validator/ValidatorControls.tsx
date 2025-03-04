@@ -1,3 +1,4 @@
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
@@ -8,6 +9,7 @@ interface ValidatorControlsProps {
   isExternal: boolean
   onDeleteScript: () => void
   onRunScript: () => void
+  onRunInCloud: () => void
   onSelectScript: () => void
   onStopScript: () => void
 }
@@ -18,6 +20,7 @@ export function ValidatorControls({
   isExternal,
   onDeleteScript,
   onRunScript,
+  onRunInCloud,
   onSelectScript,
   onStopScript,
 }: ValidatorControlsProps) {
@@ -32,13 +35,14 @@ export function ValidatorControls({
         </>
       )}
       {!isRunning && (
-        <Button
-          variant={'solid'}
-          disabled={!isScriptSelected}
-          onClick={onRunScript}
-        >
-          Validate script
-        </Button>
+        <>
+          <Button variant="outline" onClick={onRunInCloud}>
+            <GrafanaIcon /> Run in Grafana Cloud
+          </Button>
+          <Button disabled={!isScriptSelected} onClick={onRunScript}>
+            Validate script
+          </Button>
+        </>
       )}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger disabled={isRunning}>
