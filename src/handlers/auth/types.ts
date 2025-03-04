@@ -4,6 +4,7 @@ export enum AuthHandler {
   GetProfiles = 'auth:get-profiles',
   SignIn = 'auth:sign-in',
   SelectStack = 'auth:select-stack',
+  RetryStack = 'auth:retry-stack',
   SignOut = 'auth:sign-out',
   StateChange = 'auth:state-change',
   Abort = 'auth:abort',

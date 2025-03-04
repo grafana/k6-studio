@@ -20,6 +20,12 @@ export function signIn(): Promise<SignInResult> {
   return ipcRenderer.invoke(AuthHandler.SignIn) as Promise<SignInResult>
 }
 
+export function retryStack() {
+  return ipcRenderer.send(AuthHandler.RetryStack, {
+    type: 'retry',
+  })
+}
+
 export function selectStack(response: SelectStackResponse) {
   return ipcRenderer.send('auth:select-stack', response)
 }

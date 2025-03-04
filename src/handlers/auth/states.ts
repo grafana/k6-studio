@@ -1,6 +1,7 @@
 import { fetchStacks } from '@/services/grafana'
 import { authenticate, GrantedResult } from '@/services/grafana/authenticate'
 import {
+  RetryLoginResponse,
   SelectStackResponse,
   SignInProcessState,
   SignInResult,
@@ -220,7 +221,26 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
     )
 
     if (apiTokenResponse.type === 'not-a-member') {
-      return previousState
+      this.emit('state-change', {
+        type: 'stack-login-required',
+        stack,
+      })
+
+      const response = await waitFor<RetryLoginResponse>({
+        event: AuthHandler.RetryStack,
+        signal: this.#signal,
+      })
+
+      if (response.type === 'abort') {
+        return previousState
+      }
+
+      return {
+        type: 'exchanging',
+        grant,
+        stack,
+        previousState,
+      }
     }
 
     const encryptedToken = safeStorage

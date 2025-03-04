@@ -117,3 +117,7 @@ export interface StackSelected {
 }
 
 export type SelectStackResponse = RefreshStacks | StackSelected
+
+export interface RetryLoginResponse {
+  type: 'retry' | 'abort'
+}
