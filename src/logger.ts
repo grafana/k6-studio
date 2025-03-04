@@ -4,6 +4,7 @@ import path from 'node:path'
 import { FSWatcher, watch } from 'chokidar'
 import { BrowserWindow } from 'electron'
 import fs from 'fs/promises'
+import { getPlatform } from './utils/electron'
 
 let watcher: FSWatcher
 
@@ -35,7 +36,9 @@ export function openLogFolder() {
   const logPath = path.dirname(logFile)
 
   // supports only Mac and Windows at this time
-  const executable = process.platform === 'darwin' ? 'open' : 'explorer'
+  const executable = ['mac', 'linux'].includes(getPlatform())
+    ? 'open'
+    : 'explorer'
   spawn(executable, [logPath])
 }
 
