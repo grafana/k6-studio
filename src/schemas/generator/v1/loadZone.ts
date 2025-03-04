@@ -27,7 +27,11 @@ export const AvailableLoadZonesSchema = z.enum([
 export const LoadZoneItemSchema = z.object({
   id: z.string(),
   loadZone: AvailableLoadZonesSchema,
-  percent: z.number().int().min(1, { message: 'Invalid percentage' }).max(100),
+  percent: z
+    .number({ message: 'Invalid percentage' })
+    .int()
+    .min(1, { message: 'Invalid percentage' })
+    .max(100, { message: 'Invalid percentage' }),
 })
 
 export const LoadZoneSchema = z.object({
@@ -38,12 +42,19 @@ export const LoadZoneSchema = z.object({
         return true
       }
 
-      const totalPercentage = data.reduce(
-        (sum, { percent }) => sum + percent,
-        0
-      )
+      const totalPercentage = currentLoadZonePercentage(data)
       return totalPercentage === 100
     },
-    { message: 'The sum of all distribution percentages must be 100' }
+    (data) => {
+      const totalPercentage = currentLoadZonePercentage(data)
+      return {
+        message: `Total percentage must be 100, currently ${totalPercentage}`,
+        path: ['root'],
+      }
+    }
   ),
 })
+
+function currentLoadZonePercentage(data: { percent: number }[]) {
+  return data.reduce((sum, { percent }) => sum + percent, 0)
+}
