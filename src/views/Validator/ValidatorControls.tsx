@@ -23,14 +23,23 @@ export function ValidatorControls({
 }: ValidatorControlsProps) {
   return (
     <>
-      {isRunning && <TextSpinner text="Running" />}
-      <Button
-        variant={isRunning ? 'outline' : 'solid'}
-        disabled={!isScriptSelected}
-        onClick={isRunning ? onStopScript : onRunScript}
-      >
-        {isRunning ? 'Stop run' : 'Validate script'}
-      </Button>
+      {isRunning && (
+        <>
+          <TextSpinner text="Running" />
+          <Button variant="outline" onClick={onStopScript}>
+            Stop run
+          </Button>
+        </>
+      )}
+      {!isRunning && (
+        <Button
+          variant={'solid'}
+          disabled={!isScriptSelected}
+          onClick={onRunScript}
+        >
+          Validate script
+        </Button>
+      )}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger disabled={isRunning}>
           <IconButton variant="ghost" color="gray" aria-label="Actions">
