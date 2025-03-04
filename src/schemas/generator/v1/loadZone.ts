@@ -27,7 +27,7 @@ export const AvailableLoadZonesSchema = z.enum([
 export const LoadZoneItemSchema = z.object({
   id: z.string(),
   loadZone: AvailableLoadZonesSchema,
-  percent: z.number().int().min(1).max(100),
+  percent: z.number().int().min(1, { message: 'Invalid percentage' }).max(100),
 })
 
 export const LoadZoneSchema = z.object({

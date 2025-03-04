@@ -35,6 +35,10 @@ export function TestOptions() {
             <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
             <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
             <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
+            <Feature feature="load-zones">
+              {/* TODO: Load zones should only be available when authenticated to Cloud */}
+              <Tabs.Trigger value="loadZones">Load Zones</Tabs.Trigger>
+            </Feature>
           </Tabs.List>
           <ScrollArea
             scrollbars="vertical"
