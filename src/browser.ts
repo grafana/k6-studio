@@ -10,17 +10,23 @@ import { mkdtemp } from 'fs/promises'
 import path from 'path'
 import os from 'os'
 import { appSettings } from './main'
-import { spawn } from 'child_process'
+import { exec, spawn } from 'child_process'
 import { getPlatform } from './utils/electron'
+import log from 'electron-log/main'
 
 const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
 }
 
-function getBrowserPath() {
+async function getBrowserPath() {
   const { recorder } = appSettings
 
   if (recorder.detectBrowserPath) {
+    if (getPlatform() === 'linux' && process.arch === 'arm64') {
+      // Chrome is not available for arm64, use Chromium instead
+      return await getChromiumPath()
+    }
+
     return computeSystemExecutablePath({
       browser: Browser.CHROME,
       channel: ChromeReleaseChannel.STABLE,
@@ -34,7 +40,7 @@ export const launchBrowser = async (
   browserWindow: BrowserWindow,
   url?: string
 ) => {
-  const path = getBrowserPath()
+  const path = await getBrowserPath()
   console.info(`browser path: ${path}`)
 
   const userDataDir = await createUserDataDir()
@@ -85,5 +91,22 @@ export const launchBrowser = async (
     executablePath: path,
     args: args,
     onExit: sendBrowserClosedEvent,
+  })
+}
+
+function getChromiumPath(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    exec('which chromium', (error, stdout, stderr) => {
+      if (error) {
+        log.error(error)
+        return reject(error)
+      }
+      if (stderr) {
+        log.error(stderr)
+        return reject(stderr)
+      }
+
+      return resolve(stdout.trim())
+    })
   })
 }
