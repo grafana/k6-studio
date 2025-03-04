@@ -51,6 +51,8 @@ export function LoadZoneRow({ field, index, remove }: LoadZoneRowProps) {
         <FieldGroup errors={errors} name={`loadZones.${index}.percent`} mb="0">
           <TextField.Root
             type="number"
+            min="1"
+            max="100"
             placeholder="value"
             disabled={distribution === 'even'}
             {...register(`loadZones.${index}.percent`, { valueAsNumber: true })}
