@@ -30,7 +30,18 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
       },
     },
     testData: { ...generator.testData, files: [] },
-    rules: generator.rules,
+    rules: generator.rules.map((rule): v1.GeneratorSchema['rules'][number] => {
+      if (rule.type === 'verification') {
+        return {
+          ...rule,
+          target: 'status',
+          operator: 'equals',
+          value: { type: 'recordedValue' },
+        }
+      }
+      return rule
+    }),
+
     allowlist: generator.allowlist,
     includeStaticAssets: generator.includeStaticAssets,
     scriptName: generator.scriptName,
