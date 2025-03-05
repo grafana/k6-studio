@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CrossCircledIcon, DiscIcon } from '@radix-ui/react-icons'
+import { DiscIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import {
   Button,
   Callout,
@@ -45,7 +45,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     },
     shouldFocusError: false,
   })
-  const canRecord = proxyStatus === 'online' && isBrowserInstalled
+  const canRecord = proxyStatus === 'online' && isBrowserInstalled === true
 
   const onSubmit = ({ url }: RecorderEmptyStateFields) => {
     if (isLoading || !canRecord) {
@@ -116,12 +116,10 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
             </Button>
           </Flex>
         </FieldGroup>
-        {canRecord && (
-          <WarningMessage
-            isProxyOnline={proxyStatus === 'online'}
-            isBrowserInstalled={isBrowserInstalled}
-          />
-        )}
+        <WarningMessage
+          isProxyOnline={proxyStatus === 'online'}
+          isBrowserInstalled={isBrowserInstalled}
+        />
       </form>
     </Flex>
   )
@@ -129,7 +127,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
 
 interface WarningMessageProps {
   isProxyOnline: boolean
-  isBrowserInstalled: boolean
+  isBrowserInstalled?: boolean
 }
 
 function WarningMessage({
@@ -144,25 +142,11 @@ function WarningMessage({
     setIsSettingsDialogOpen(true)
   }
 
-  if (!isProxyOnline) {
+  if (isBrowserInstalled === false) {
     return (
       <Callout.Root>
         <Callout.Icon>
-          <CrossCircledIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          Proxy is offline. Check proxy configuration in{' '}
-          <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
-        </Callout.Text>
-      </Callout.Root>
-    )
-  }
-
-  if (!isBrowserInstalled) {
-    return (
-      <Callout.Root>
-        <Callout.Icon>
-          <CrossCircledIcon />
+          <ExclamationTriangleIcon />
         </Callout.Icon>
         <Callout.Text>
           <strong>Supported browser not found</strong>
@@ -170,6 +154,22 @@ function WarningMessage({
           Google Chrome needs to be installed on your machine for the recording
           functionality to work. If the browser is installed, specify the path
           in <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
+        </Callout.Text>
+      </Callout.Root>
+    )
+  }
+
+  if (!isProxyOnline) {
+    return (
+      <Callout.Root>
+        <Callout.Icon>
+          <ExclamationTriangleIcon />
+        </Callout.Icon>
+        <Callout.Text>
+          <strong>Proxy is offline</strong>
+          <br />
+          Check proxy configuration in{' '}
+          <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
         </Callout.Text>
       </Callout.Root>
     )
