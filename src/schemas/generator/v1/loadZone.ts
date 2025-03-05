@@ -36,7 +36,7 @@ export const LoadZoneItemSchema = z.object({
 
 export const LoadZoneSchema = z.object({
   distribution: z.enum(['even', 'manual']),
-  loadZones: z.array(LoadZoneItemSchema).refine(
+  zones: z.array(LoadZoneItemSchema).refine(
     (data) => {
       if (data.length === 0) {
         return true

@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest'
 
-import { generateOptions, generateThresholds } from './options'
+import {
+  generateLoadZones,
+  generateOptions,
+  generateThresholds,
+} from './options'
 import {
   LoadProfileExecutorOptions,
   TestOptions,
   Threshold,
 } from '@/types/testOptions'
 import { createThreshold } from '@/test/factories/threshold'
+import { createLoadZone } from '@/test/factories/loadZones'
 
 describe('Code generation - options', () => {
   it('should generate load profile for shared-iterations executor', () => {
@@ -117,4 +122,22 @@ describe('Code generation - thresholds', () => {
 
     expect(generateThresholds(thresholds)).toEqual(expectedResult)
   })
+})
+
+describe('Code generation - load zones', () => {
+  it('should generate load zones correctly', () => {
+    const loadZones = [
+      createLoadZone({ loadZone: 'amazon:us:columbus', percent: 50 }),
+      createLoadZone({ loadZone: 'amazon:br:sao paulo', percent: 50 }),
+    ]
+
+    const expectedResult = {
+      'amazon:us:columbus': { loadZone: 'amazon:us:columbus', percent: 50 },
+      'amazon:br:sao paulo': { loadZone: 'amazon:br:sao paulo', percent: 50 },
+    }
+
+    expect(generateLoadZones(loadZones)).toEqual(expectedResult)
+  })
+
+  it('should not generate load zones if none were added', () => {})
 })

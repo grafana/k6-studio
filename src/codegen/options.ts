@@ -46,16 +46,16 @@ export function generateThresholds(thresholds: Threshold[]) {
 }
 
 export function generateCloudOptions({ loadZones }: TestOptions['cloud']) {
-  if (loadZones.loadZones.length === 0) return {}
+  if (loadZones.zones.length === 0) return {}
 
   return {
     cloud: {
-      distribution: generateLoadZones(loadZones),
+      distribution: generateLoadZones(loadZones.zones),
     },
   }
 }
 
-export function generateLoadZones({ loadZones }: LoadZoneData) {
+export function generateLoadZones(loadZones: LoadZoneData['zones']) {
   const result: Record<string, { loadZone: string; percent: number }> = {}
 
   loadZones.forEach(({ loadZone, percent }) => {
