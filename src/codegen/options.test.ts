@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  generateLoadZones,
+  generateCloudOptions,
   generateOptions,
   generateThresholds,
 } from './options'
 import {
   LoadProfileExecutorOptions,
+  LoadZoneData,
   TestOptions,
   Threshold,
 } from '@/types/testOptions'
@@ -124,20 +125,40 @@ describe('Code generation - thresholds', () => {
   })
 })
 
-describe('Code generation - load zones', () => {
+describe('Code generation - cloud options', () => {
   it('should generate load zones correctly', () => {
-    const loadZones = [
-      createLoadZone({ loadZone: 'amazon:us:columbus', percent: 50 }),
-      createLoadZone({ loadZone: 'amazon:br:sao paulo', percent: 50 }),
-    ]
-
-    const expectedResult = {
-      'amazon:us:columbus': { loadZone: 'amazon:us:columbus', percent: 50 },
-      'amazon:br:sao paulo': { loadZone: 'amazon:br:sao paulo', percent: 50 },
+    const loadZones: LoadZoneData = {
+      distribution: 'even',
+      zones: [
+        createLoadZone({ loadZone: 'amazon:us:columbus', percent: 50 }),
+        createLoadZone({ loadZone: 'amazon:br:sao paulo', percent: 50 }),
+      ],
     }
 
-    expect(generateLoadZones(loadZones)).toEqual(expectedResult)
+    const expectedResult = {
+      cloud: {
+        distribution: {
+          "'amazon:us:columbus'": {
+            loadZone: 'amazon:us:columbus',
+            percent: 50,
+          },
+          "'amazon:br:sao paulo'": {
+            loadZone: 'amazon:br:sao paulo',
+            percent: 50,
+          },
+        },
+      },
+    }
+
+    expect(generateCloudOptions({ loadZones })).toEqual(expectedResult)
   })
 
-  it('should not generate load zones if none were added', () => {})
+  it('should not generate cloud object when load zones are not selected', () => {
+    const loadZones: LoadZoneData = {
+      distribution: 'even',
+      zones: [],
+    }
+
+    expect(generateCloudOptions({ loadZones })).toEqual({})
+  })
 })
