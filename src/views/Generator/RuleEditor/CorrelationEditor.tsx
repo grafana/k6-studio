@@ -5,12 +5,19 @@ import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
-import { useMemo } from 'react'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
+import invariant from 'tiny-invariant'
 
 export function CorrelationEditor() {
   const { selectedRuleInstance } = useApplyRules()
+
+  invariant(
+    selectedRuleInstance?.type === 'correlation',
+    'Selected rule instance is not a correlation rule'
+  )
+
   const { setValue, watch } = useFormContext<TestRule>()
+  const { extractedValue } = selectedRuleInstance.state
   const replacer = watch('replacer')
 
   const isCustomReplacerSelector = !!replacer?.selector
@@ -27,14 +34,6 @@ export function CorrelationEditor() {
       })
     }
   }
-
-  const extractedValue = useMemo(() => {
-    if (selectedRuleInstance?.type !== 'correlation') {
-      return
-    }
-
-    return selectedRuleInstance.state.extractedValue
-  }, [selectedRuleInstance])
 
   return (
     <Grid columns="1fr 1fr" gap="3">
