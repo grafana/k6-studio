@@ -11,6 +11,7 @@ import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
 import { RequestListHeader } from './RequestListHeader'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { RequestRow } from './RequestRow'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -94,9 +95,14 @@ export function RequestList({
             onSelectRequest={onSelectRequest}
             groups={groups}
             filter={filter}
-            highlightedRequestIds={
-              selectedRuleInstance?.state?.matchedRequestIds
-            }
+            RowComponent={(props) => (
+              <RequestRow
+                {...props}
+                highlightedRequestIds={
+                  selectedRuleInstance?.state?.matchedRequestIds
+                }
+              />
+            )}
           />
         )}
       </ScrollArea>

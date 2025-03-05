@@ -1,20 +1,20 @@
 import { Box } from '@radix-ui/themes'
 
 import { Group as GroupType, ProxyDataWithMatches } from '@/types'
-import { Row } from './Row'
+import { Row, RowProps } from './Row'
 import { Group } from './Group'
 import { Table } from '@/components/Table'
-import { memo, useMemo } from 'react'
+import { ComponentType, memo, useMemo } from 'react'
 import { useDeepCompareEffect } from 'react-use'
 
 interface WebLogViewProps {
   requests: ProxyDataWithMatches[]
-  groups?: GroupType[]
+  groups: GroupType[]
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches | null) => void
   onUpdateGroup?: (group: GroupType) => void
   filter?: string
-  highlightedRequestIds?: string[]
+  RowComponent?: RequestListProps['RowComponent']
 }
 
 // Memo improves performance when filtering
@@ -25,7 +25,7 @@ export const WebLogView = memo(function WebLogView({
   onSelectRequest,
   onUpdateGroup,
   filter,
-  highlightedRequestIds,
+  RowComponent = Row,
 }: WebLogViewProps) {
   const selectedRequest = useMemo(
     () => requests.find((data) => data.id === selectedRequestId),
@@ -43,45 +43,36 @@ export const WebLogView = memo(function WebLogView({
     onSelectRequest(selectedRequest)
   }, [selectedRequest, onSelectRequest])
 
-  if (groups !== undefined) {
-    const grouped = groups.map((group) => {
-      return {
-        group,
-        requests: requests.filter((data) => data.group === group.id),
-      }
-    })
-
-    return (
-      <Box mb="2">
-        {grouped.map((item) => (
-          <Group
-            key={item.group.id}
-            group={item.group}
-            groups={groups}
-            length={item.requests.length}
-            onUpdate={onUpdateGroup}
-          >
-            <RequestList
-              requests={item.requests}
-              selectedRequestId={selectedRequestId}
-              onSelectRequest={onSelectRequest}
-              filter={filter}
-              highlightedRequestIds={highlightedRequestIds}
-            />
-          </Group>
-        ))}
-      </Box>
-    )
-  }
-
+  const grouped = useMemo(
+    () =>
+      groups.map((group) => {
+        return {
+          group,
+          requests: requests.filter((data) => data.group === group.id),
+        }
+      }),
+    [requests, groups]
+  )
   return (
-    <RequestList
-      requests={requests}
-      selectedRequestId={selectedRequestId}
-      onSelectRequest={onSelectRequest}
-      filter={filter}
-      highlightedRequestIds={highlightedRequestIds}
-    />
+    <Box mb="2">
+      {grouped.map((item) => (
+        <Group
+          key={item.group.id}
+          group={item.group}
+          groups={groups}
+          length={item.requests.length}
+          onUpdate={onUpdateGroup}
+        >
+          <RequestList
+            requests={item.requests}
+            selectedRequestId={selectedRequestId}
+            onSelectRequest={onSelectRequest}
+            filter={filter}
+            RowComponent={RowComponent}
+          />
+        </Group>
+      ))}
+    </Box>
   )
 })
 
@@ -90,15 +81,15 @@ interface RequestListProps {
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches) => void
   filter?: string
-  highlightedRequestIds?: string[]
+  RowComponent?: ComponentType<RowProps>
 }
 
-function RequestList({
+export function RequestList({
   requests,
   selectedRequestId,
   onSelectRequest,
   filter,
-  highlightedRequestIds,
+  RowComponent = Row,
 }: RequestListProps) {
   return (
     <Table.Root size="1" layout="fixed">
@@ -113,13 +104,12 @@ function RequestList({
       </Table.Header>
       <Table.Body>
         {requests.map((data) => (
-          <Row
+          <RowComponent
             key={data.id}
             data={data}
             isSelected={selectedRequestId === data.id}
             onSelectRequest={onSelectRequest}
             filter={filter}
-            highlightedRequestIds={highlightedRequestIds}
           />
         ))}
       </Table.Body>
