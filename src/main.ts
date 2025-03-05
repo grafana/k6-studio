@@ -86,12 +86,10 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-interface ProxyEvents {
+const proxyEmitter = new eventEmitter<{
   'status:change': [ProxyStatus]
   ready: [void]
-}
-
-const proxyEmitter = new eventEmitter<ProxyEvents>()
+}>()
 
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
