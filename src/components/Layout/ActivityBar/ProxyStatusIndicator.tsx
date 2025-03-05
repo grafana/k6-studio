@@ -9,7 +9,7 @@ import { useProxyStatus } from '@/hooks/useProxyStatus'
 const COLOR_MAP: Record<ProxyStatus, string> = {
   ['online']: 'var(--green-9)',
   ['offline']: 'var(--gray-9)',
-  ['restarting']: 'var(--blue-9)',
+  ['starting']: 'var(--blue-9)',
 }
 
 export function ProxyStatusIndicator() {
@@ -41,7 +41,7 @@ function ProxyStatusIcon({ status }: { status: ProxyStatus }) {
       return <Link1Icon color="gray" />
     case 'offline':
       return <LinkBreak1Icon color="gray" />
-    case 'restarting':
+    case 'starting':
       return <LinkNone1Icon color="gray" />
     default:
       return exhaustive(status)
