@@ -86,7 +86,12 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-const proxyEmitter = new eventEmitter()
+interface ProxyEvents {
+  'status:change': [ProxyStatus]
+  ready: [void]
+}
+
+const proxyEmitter = new eventEmitter<ProxyEvents>()
 
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
@@ -198,9 +203,9 @@ const createWindow = async () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
-    proxyStatus = statusName
-    mainWindow.webContents.send('proxy:status:change', statusName)
+  proxyEmitter.on('status:change', (status: ProxyStatus) => {
+    proxyStatus = status
+    mainWindow.webContents.send('proxy:status:change', status)
   })
   mainWindow.on('closed', () =>
     proxyEmitter.removeAllListeners('status:change')
@@ -220,12 +225,12 @@ const createWindow = async () => {
 
 app.whenReady().then(
   async () => {
+    await createSplashWindow()
     await initSettings()
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
 
     await sendReport(appSettings.telemetry.usageReport)
-    await createSplashWindow()
     await setupProjectStructure()
     await createWindow()
   },
@@ -726,7 +731,6 @@ async function applySettings(
   if (modifiedSettings.proxy) {
     await stopProxyProcess()
     appSettings.proxy = modifiedSettings.proxy
-    proxyEmitter.emit('status:change', 'restarting')
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
   }
   if (modifiedSettings.recorder) {
@@ -761,13 +765,14 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
   console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
 
+  proxyStatus = 'starting'
   return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
       proxyEmitter.emit('status:change', 'online')
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
-      if (appShuttingDown || proxyStatus === 'restarting') {
+      if (appShuttingDown || proxyStatus === 'starting') {
         // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
@@ -787,7 +792,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
       }
 
       proxyRetryCount++
-      proxyEmitter.emit('status:change', 'restarting')
+      proxyEmitter.emit('status:change', 'starting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       const errorMessage = `Proxy failed to start on port ${proxyPort}, restarting...`
