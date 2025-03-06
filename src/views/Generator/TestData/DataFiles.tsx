@@ -5,6 +5,7 @@ import { useStudioUIStore } from '@/store/ui'
 import { DataFile } from '@/types/testData'
 import { css } from '@emotion/react'
 import {
+  ExclamationTriangleIcon,
   FilePlusIcon,
   InfoCircledIcon,
   PlusIcon,
@@ -83,22 +84,38 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
     )
   )
 
+  const isFileMissing = useStudioUIStore(
+    (store) => !store.dataFiles.has(file.name)
+  )
+
   return (
     <Table.Row
       css={css`
         vertical-align: middle;
       `}
     >
-      <Table.Cell>{file.name}</Table.Cell>
+      <Table.Cell>
+        <Flex align="center" gap="1">
+          {isFileMissing && (
+            <Tooltip content="Data file is missing">
+              <ExclamationTriangleIcon
+                color="red"
+                aria-label="Data file is missing"
+              />
+            </Tooltip>
+          )}
+          {file.name}
+        </Flex>
+      </Table.Cell>
       <Table.Cell>Unique item per iteration</Table.Cell>
       <Table.Cell>
         <Tooltip
           content="Data file is referenced in a rule"
-          hidden={!isFileInUse}
+          hidden={!isFileInUse && !isFileMissing}
         >
           <IconButton
             aria-label="Remove"
-            disabled={isFileInUse}
+            disabled={isFileInUse && !isFileMissing}
             onClick={onRemove}
           >
             <TrashIcon width="18" height="18" />
