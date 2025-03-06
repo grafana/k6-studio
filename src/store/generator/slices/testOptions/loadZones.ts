@@ -12,7 +12,7 @@ interface Actions {
 export type LoadZoneStore = State & Actions
 
 export const createLoadZoneSlice: ImmerStateCreator<LoadZoneStore> = (set) => ({
-  loadZones: { distribution: 'even', loadZones: [] },
+  loadZones: { distribution: 'even', zones: [] },
   setLoadZones: (loadZones: LoadZoneData) =>
     set((state) => {
       state.loadZones = loadZones
