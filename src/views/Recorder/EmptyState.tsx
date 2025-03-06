@@ -18,6 +18,7 @@ import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useStudioUIStore } from '@/store/ui'
 import { TextButton } from '@/components/TextButton'
 import { useBrowserCheck } from '@/hooks/useSettings'
+import { ProxyStatus } from '@/types'
 
 interface EmptyStateProps {
   isLoading: boolean
@@ -117,7 +118,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
           </Flex>
         </FieldGroup>
         <WarningMessage
-          isProxyOnline={proxyStatus === 'online'}
+          proxyStatus={proxyStatus}
           isBrowserInstalled={isBrowserInstalled}
         />
       </form>
@@ -126,12 +127,12 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
 }
 
 interface WarningMessageProps {
-  isProxyOnline: boolean
+  proxyStatus: ProxyStatus
   isBrowserInstalled?: boolean
 }
 
 function WarningMessage({
-  isProxyOnline,
+  proxyStatus,
   isBrowserInstalled,
 }: WarningMessageProps) {
   const setIsSettingsDialogOpen = useStudioUIStore(
@@ -159,7 +160,7 @@ function WarningMessage({
     )
   }
 
-  if (!isProxyOnline) {
+  if (proxyStatus === 'offline') {
     return (
       <Callout.Root>
         <Callout.Icon>
@@ -172,6 +173,17 @@ function WarningMessage({
           <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
         </Callout.Text>
       </Callout.Root>
+    )
+  }
+
+  if (proxyStatus === 'starting') {
+    return (
+      <Flex gap="1" align="center">
+        <Spinner />
+        <Text size="1" color="gray">
+          Proxy is starting
+        </Text>
+      </Flex>
     )
   }
 
