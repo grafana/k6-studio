@@ -100,9 +100,9 @@ export function RuleEditor({ rule }: RuleEditorProps) {
       <FormProvider {...formMethods}>
         <StickyPanelHeader>
           <Flex>
-            <Button onClick={handleClose} variant="ghost" color="gray" size="1">
+            <Button onClick={handleClose} variant="ghost" size="1">
               <ChevronLeftIcon />
-              Back to rule list
+              Back
             </Button>
           </Flex>
         </StickyPanelHeader>

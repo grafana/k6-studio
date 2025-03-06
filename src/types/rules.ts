@@ -25,7 +25,11 @@ import {
   VerificationRuleSelectorSchema,
 } from '@/schemas/generator'
 
-export interface CorrelationState {
+interface BaseRuleState {
+  matchedRequestIds: string[]
+}
+
+export interface CorrelationState extends BaseRuleState {
   extractedValue?: string
   count: number
   responsesExtracted: ProxyData[]
@@ -36,30 +40,36 @@ export interface CorrelationState {
   generatedUniqueId: number | undefined
 }
 
-export interface BaseRuleInstance<T extends TestRule> {
+interface BaseState {
+  matchedRequestIds: string[]
+}
+
+export interface BaseRuleInstance<T extends TestRule, S = BaseState> {
   apply: (request: RequestSnippetSchema) => RequestSnippetSchema
   rule: T
   // Needed for discriminated union, nested rule.type doesn't work
   type: T['type']
+  state: S
 }
 
-export type CorrelationRuleInstance = BaseRuleInstance<CorrelationRule> & {
-  state: CorrelationState
-}
+export type CorrelationRuleInstance = BaseRuleInstance<
+  CorrelationRule,
+  CorrelationState
+>
 
-export interface ParameterizationState {
+export interface ParameterizationState extends BaseRuleState {
   requestsReplaced: {
     original: Request
     replaced: Request
   }[]
   uniqueId: number
-  snippedInjected: boolean
+  snippetInjected: boolean
 }
 
-export type ParameterizationRuleInstance =
-  BaseRuleInstance<ParameterizationRule> & {
-    state: ParameterizationState
-  }
+export type ParameterizationRuleInstance = BaseRuleInstance<
+  ParameterizationRule,
+  ParameterizationState
+>
 
 export type VerificationRuleInstance = BaseRuleInstance<VerificationRule>
 export type CustomCodeRuleInstance = BaseRuleInstance<CustomCodeRule>
