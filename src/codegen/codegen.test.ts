@@ -57,6 +57,7 @@ describe('Code generation', () => {
 
       import { group, sleep, check } from 'k6'
       import http from 'k6/http'
+      import execution from 'k6/execution'
 
       export const options = {}
 
@@ -94,7 +95,7 @@ describe('Code generation', () => {
               cloud: {
                 loadZones: {
                   distribution: 'even',
-                  loadZones: [],
+                  zones: [],
                 },
               },
             },
@@ -133,7 +134,7 @@ describe('Code generation', () => {
         cloud: {
           loadZones: {
             distribution: 'even',
-            loadZones: [],
+            zones: [],
           },
         },
       },
@@ -151,6 +152,7 @@ describe('Code generation', () => {
       const expectedResult = await prettify(`
         import { group, sleep, check } from 'k6'
         import http from 'k6/http'
+        import execution from "k6/execution";
       `)
 
       expect(await prettify(generateImports(generator))).toBe(expectedResult)
@@ -161,6 +163,7 @@ describe('Code generation', () => {
       const expectedResult = await prettify(`
         import { group, sleep, check } from 'k6'
         import http from 'k6/http'
+        import execution from "k6/execution";
         import { SharedArray } from 'k6/data'
         import Papa from 'https://jslib.k6.io/papaparse/5.1.1/index.js'
         `)
@@ -214,8 +217,6 @@ describe('Code generation', () => {
             return Array.isArray(data) ? data : [data];
           }),
         };`)
-      const t = await prettify(generateDataFileDeclarations(files))
-      console.log(t)
 
       expect(await prettify(generateDataFileDeclarations(files))).toBe(
         expectedResult

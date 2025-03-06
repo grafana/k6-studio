@@ -64,7 +64,9 @@ export function RequestDetails({ data }: RequestDetailsProps) {
       </Tabs.Content>
 
       <Tabs.Content value="queryParams">
-        <QueryParams request={data.request} matches={requestMatches} />
+        <Box p="2" height="100%">
+          <QueryParams request={data.request} matches={requestMatches} />
+        </Box>
       </Tabs.Content>
     </Tabs.Root>
   )

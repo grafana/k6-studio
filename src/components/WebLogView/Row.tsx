@@ -9,18 +9,26 @@ import { HighlightedText } from '../HighlightedText'
 import { getRequestType } from './WebLogView.utils'
 import { SearchResults } from './SearchResults'
 
-interface RowProps {
+export interface RowProps {
   data: ProxyDataWithMatches
   isSelected?: boolean
   onSelectRequest: (data: ProxyDataWithMatches) => void
   filter?: string
+  className?: string
 }
 
-export function Row({ data, onSelectRequest, isSelected, filter }: RowProps) {
+export function Row({
+  data,
+  onSelectRequest,
+  isSelected,
+  filter,
+  className,
+}: RowProps) {
   return (
     <>
       <Table.Row
         onClick={() => onSelectRequest(data)}
+        className={className}
         css={{
           backgroundColor: isSelected ? 'var(--accent-3)' : 'transparent',
           '&:hover': {
@@ -28,45 +36,7 @@ export function Row({ data, onSelectRequest, isSelected, filter }: RowProps) {
           },
         }}
       >
-        <Table.Cell
-          css={{
-            cursor: 'var(--cursor-button)',
-            padding: '0',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <Box
-            css={{
-              width: '3px',
-              backgroundColor: isSelected ? 'var(--accent-9)' : 'transparent',
-              height: 'var(--table-cell-min-height)',
-              marginRight: 'var(--space-2)',
-            }}
-          />
-          <MethodBadge method={data.request.method}>
-            <HighlightedText
-              text={data.request.method}
-              matches={data.matches}
-            />
-          </MethodBadge>
-        </Table.Cell>
-
-        <Table.Cell>
-          <ResponseStatusBadge status={data.response?.statusCode}>
-            <HighlightedText
-              text={data.response?.statusCode.toString() ?? '-'}
-              matches={data.matches}
-            />
-          </ResponseStatusBadge>
-        </Table.Cell>
-        <TableCellWithTooltip>{getRequestType(data)}</TableCellWithTooltip>
-        <TableCellWithTooltip>
-          <HighlightedText text={data.request.host} matches={data.matches} />
-        </TableCellWithTooltip>
-        <TableCellWithTooltip>
-          <HighlightedText text={data.request.path} matches={data.matches} />
-        </TableCellWithTooltip>
+        <Cells data={data} isSelected={isSelected} />
       </Table.Row>
 
       <SearchResults
@@ -75,6 +45,55 @@ export function Row({ data, onSelectRequest, isSelected, filter }: RowProps) {
         onSelectRequest={onSelectRequest}
         filter={filter}
       />
+    </>
+  )
+}
+
+function Cells({
+  data,
+  isSelected,
+}: {
+  data: ProxyDataWithMatches
+  isSelected?: boolean
+}) {
+  return (
+    <>
+      <Table.Cell
+        css={{
+          cursor: 'var(--cursor-button)',
+          padding: '0',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Box
+          css={{
+            width: '3px',
+            backgroundColor: isSelected ? 'var(--accent-9)' : 'transparent',
+            height: 'var(--table-cell-min-height)',
+            marginRight: 'var(--space-2)',
+          }}
+        />
+        <MethodBadge method={data.request.method}>
+          <HighlightedText text={data.request.method} matches={data.matches} />
+        </MethodBadge>
+      </Table.Cell>
+
+      <Table.Cell>
+        <ResponseStatusBadge status={data.response?.statusCode}>
+          <HighlightedText
+            text={data.response?.statusCode.toString() ?? '-'}
+            matches={data.matches}
+          />
+        </ResponseStatusBadge>
+      </Table.Cell>
+      <TableCellWithTooltip>{getRequestType(data)}</TableCellWithTooltip>
+      <TableCellWithTooltip>
+        <HighlightedText text={data.request.host} matches={data.matches} />
+      </TableCellWithTooltip>
+      <TableCellWithTooltip>
+        <HighlightedText text={data.request.path} matches={data.matches} />
+      </TableCellWithTooltip>
     </>
   )
 }

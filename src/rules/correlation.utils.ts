@@ -40,6 +40,7 @@ function replaceAllTextMatches(
   const content = replaceContent(request.content, extractedValue, variableName)
   const url = replaceUrl(request.url, extractedValue, variableName)
   const path = replaceUrl(request.path, extractedValue, variableName)
+  const host = replaceUrl(request.host, extractedValue, variableName)
   const headers: Header[] = replaceHeaders(
     request.headers,
     extractedValue,
@@ -56,6 +57,7 @@ function replaceAllTextMatches(
     content,
     url,
     path,
+    host,
     headers,
     cookies,
   }
