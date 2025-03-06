@@ -110,7 +110,7 @@ export function LoadZones() {
         </Text>
 
         <FieldGroup name="distribution" label="Distribution" errors={errors}>
-          <Text size="2">
+          <Text size="2" as="label">
             <Flex gap="2" align="center">
               Even
               <Switch
