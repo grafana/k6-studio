@@ -136,6 +136,8 @@ function AddDataFileDropdown() {
   )
 
   const handleAdd = (fileName: string) => {
+    if (selectedFiles.find((file) => file.name === fileName)) return
+
     setFiles([...selectedFiles, { name: fileName }])
   }
 
