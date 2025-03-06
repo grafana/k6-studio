@@ -41,10 +41,7 @@ import {
   getPlatform,
 } from './utils/electron'
 import invariant from 'tiny-invariant'
-import {
-  FILE_SIZE_PREVIEW_THRESHOLD,
-  INVALID_FILENAME_CHARS,
-} from './constants/files'
+import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
 import { HarWithOptionalResponse } from './types/har'
 import { GeneratorFileData } from './types/generator'
 import kill from 'tree-kill'
@@ -89,7 +86,10 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-const proxyEmitter = new eventEmitter()
+const proxyEmitter = new eventEmitter<{
+  'status:change': [ProxyStatus]
+  ready: [void]
+}>()
 
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
@@ -184,6 +184,11 @@ const createWindow = async () => {
   configureWatcher(mainWindow)
   wasAppClosedByClient = false
 
+  proxyEmitter.on('status:change', (status: ProxyStatus) => {
+    proxyStatus = status
+    mainWindow.webContents.send('proxy:status:change', status)
+  })
+
   // Start proxy
   currentProxyProcess = await launchProxyAndAttachEmitter(mainWindow)
 
@@ -201,10 +206,6 @@ const createWindow = async () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
-    proxyStatus = statusName
-    mainWindow.webContents.send('proxy:status:change', statusName)
-  })
   mainWindow.on('closed', () =>
     proxyEmitter.removeAllListeners('status:change')
   )
@@ -223,12 +224,12 @@ const createWindow = async () => {
 
 app.whenReady().then(
   async () => {
+    await createSplashWindow()
     await initSettings()
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
 
     await sendReport(appSettings.telemetry.usageReport)
-    await createSplashWindow()
     await setupProjectStructure()
     await createWindow()
   },
@@ -618,6 +619,9 @@ ipcMain.handle('data-file:import', async (event) => {
     return
   }
 
+  const { size } = await stat(filePath)
+  invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
+
   await copyFile(filePath, path.join(DATA_FILES_PATH, path.basename(filePath)))
 
   return path.basename(filePath)
@@ -625,45 +629,27 @@ ipcMain.handle('data-file:import', async (event) => {
 
 ipcMain.handle(
   'data-file:load-preview',
-  async (event, fileName: string): Promise<DataFilePreview | null> => {
-    try {
-      const fileType = fileName.split('.').pop()
-      const filePath = path.join(DATA_FILES_PATH, fileName)
+  async (_, fileName: string): Promise<DataFilePreview> => {
+    const fileType = fileName.split('.').pop()
+    const filePath = path.join(DATA_FILES_PATH, fileName)
 
-      invariant(
-        fileType === 'csv' || fileType === 'json',
-        'Unsupported file type'
-      )
+    invariant(
+      fileType === 'csv' || fileType === 'json',
+      'Unsupported file type'
+    )
 
-      const { size } = await stat(filePath)
+    const data = await readFile(filePath, {
+      flag: 'r',
+      encoding: 'utf-8',
+    })
 
-      if (size > FILE_SIZE_PREVIEW_THRESHOLD) {
-        return null
-      }
+    const parsedData = parseDataFile(data, fileType)
 
-      const data = await readFile(filePath, {
-        flag: 'r',
-        encoding: 'utf-8',
-      })
-
-      const parsedData = parseDataFile(data, fileType)
-
-      return {
-        type: fileType,
-        data: parsedData.slice(0, 10),
-        props: parsedData[0] ? Object.keys(parsedData[0]) : [],
-        total: parsedData.length,
-      }
-    } catch (error) {
-      console.error(error)
-      const browserWindow = browserWindowFromEvent(event)
-
-      sendToast(browserWindow.webContents, {
-        title: 'Failed to open data file',
-        status: 'error',
-      })
-
-      return null
+    return {
+      type: fileType,
+      data: parsedData.slice(0, 20),
+      props: parsedData[0] ? Object.keys(parsedData[0]) : [],
+      total: parsedData.length,
     }
   }
 )
@@ -744,7 +730,6 @@ async function applySettings(
   if (modifiedSettings.proxy) {
     await stopProxyProcess()
     appSettings.proxy = modifiedSettings.proxy
-    proxyEmitter.emit('status:change', 'restarting')
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
   }
   if (modifiedSettings.recorder) {
@@ -779,13 +764,15 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
   console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
 
+  proxyEmitter.emit('status:change', 'starting')
+
   return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
       proxyEmitter.emit('status:change', 'online')
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
-      if (appShuttingDown || proxyStatus === 'restarting') {
+      if (appShuttingDown || proxyStatus === 'starting') {
         // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
@@ -805,7 +792,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
       }
 
       proxyRetryCount++
-      proxyEmitter.emit('status:change', 'restarting')
+      proxyEmitter.emit('status:change', 'starting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       const errorMessage = `Proxy failed to start on port ${proxyPort}, restarting...`

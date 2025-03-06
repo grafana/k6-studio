@@ -5,11 +5,11 @@ import { createParameterizationRuleInstance } from './parameterization'
 import { ProxyData } from '@/types'
 import {
   customCodeReplaceProjectId,
+  dataFileRule,
   headerRule,
   jsonRule,
   urlRule,
 } from '@/test/fixtures/parameterizationRules'
-import { prettify } from '@/utils/prettify'
 import { generateSequentialInt } from './utils'
 
 let idGenerator = generateSequentialInt()
@@ -154,7 +154,7 @@ describe('applyParameterization', () => {
     })
   })
 
-  it('supports custom code', async () => {
+  it('supports custom code', () => {
     const requestSnippet = createRequestSnippet(
       createProxyData({
         request: createRequest({
@@ -168,18 +168,29 @@ describe('applyParameterization', () => {
       idGenerator
     ).apply(requestSnippet)
 
-    expect(await prettify(updatedRequest.before[0] ?? '')).toBe(
-      await prettify(
-        `function getParameterizationValue0() { ${customCodeReplaceProjectId.value.code} }`
-      )
-    )
-
     expect(updatedRequest.data.request.url).toBe(
       'http://example.com/api/v1/project_id=${getParameterizationValue0()}'
     )
   })
 
-  it('supports array variables')
+  it('supports data files', () => {
+    const requestSnippet = createRequestSnippet(
+      createProxyData({
+        request: createRequest({
+          url: 'http://example.com/api/v1/project_id=123',
+        }),
+      })
+    )
+
+    const updatedRequest = createParameterizationRuleInstance(
+      dataFileRule,
+      idGenerator
+    ).apply(requestSnippet)
+
+    expect(updatedRequest.data.request.url).toBe(
+      "http://example.com/api/v1/project_id=${getUniqueItem(FILES['projects'])['id']}"
+    )
+  })
 })
 
 function createRequestSnippet(proxyData: ProxyData) {

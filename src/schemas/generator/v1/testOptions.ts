@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ThresholdSchema } from './thresholds'
+import { LoadZoneSchema } from './loadZone'
 
 export const SleepTypeSchema = z.enum(['groups', 'requests', 'iterations'])
 
@@ -68,4 +69,9 @@ export const TestOptionsSchema = z.object({
   loadProfile: LoadProfileExecutorOptionsSchema,
   thinkTime: ThinkTimeSchema,
   thresholds: z.array(ThresholdSchema).default([]),
+  cloud: z
+    .object({
+      loadZones: LoadZoneSchema,
+    })
+    .default({ loadZones: { distribution: 'even', loadZones: [] } }),
 })

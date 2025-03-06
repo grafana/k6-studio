@@ -7,6 +7,7 @@ import {
 import { exhaustive } from '@/utils/typescript'
 import { replaceRequestValues } from './shared'
 import { matchFilter } from './utils'
+import { getFileNameWithoutExtension } from '@/utils/file'
 
 export function createParameterizationRuleInstance(
   rule: ParameterizationRule,
@@ -63,16 +64,6 @@ export function createParameterizationRuleInstance(
         return updatedRequestSnippet
       }
 
-      const beforeSnippet = getBeforeSnippet(rule, state.uniqueId)
-
-      if (beforeSnippet) {
-        state.snippedInjected = true
-
-        return {
-          ...updatedRequestSnippet,
-          before: [...updatedRequestSnippet.before, beforeSnippet],
-        }
-      }
       return updatedRequestSnippet
     },
   }
@@ -88,21 +79,16 @@ function getRuleValue(rule: ParameterizationRule, id: number) {
     case 'variable':
       return `\${VARS['${value.variableName}']}`
 
+    case 'dataFileValue': {
+      const displayName = getFileNameWithoutExtension(value.fileName)
+      return `\${getUniqueItem(FILES['${displayName}'])['${value.propertyName}']}`
+    }
+
     case 'customCode':
       return `\${getParameterizationValue${id}()}`
 
     default:
       return exhaustive(value)
-  }
-}
-
-function getBeforeSnippet(rule: ParameterizationRule, id: number) {
-  switch (rule.value.type) {
-    case 'customCode':
-      return getCustomCodeSnippet(rule.value.code, id)
-
-    default:
-      return
   }
 }
 

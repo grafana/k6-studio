@@ -1,13 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { TrashIcon } from '@radix-ui/react-icons'
-import {
-  Button,
-  IconButton,
-  TextField,
-  Text,
-  Code,
-  Tooltip,
-} from '@radix-ui/themes'
+import { Button, IconButton, TextField, Text, Tooltip } from '@radix-ui/themes'
 import { useGeneratorStore } from '@/store/generator'
 import {
   useForm,
@@ -66,9 +59,7 @@ export function VariablesEditor() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Text size="2" as="p" mb="2">
-        Define custom variables and use them in your custom code rules, for
-        example:
-        <Code>{'VARS["variable_0"]'}</Code>.
+        Define variables and use them in your test rules.
       </Text>
       <Table.Root size="1" variant="surface">
         <Table.Header>
@@ -87,7 +78,7 @@ export function VariablesEditor() {
               index={index}
               register={register}
               errors={errors}
-              remove={remove}
+              onRemove={remove}
             />
           ))}
           <Table.Row>
@@ -103,19 +94,21 @@ export function VariablesEditor() {
   )
 }
 
+interface VariableRowProps {
+  field: FieldArrayWithId<Pick<TestData, 'variables'>, 'variables', 'id'>
+  index: number
+  register: UseFormRegister<Pick<TestData, 'variables'>>
+  errors: FieldErrors<Pick<TestData, 'variables'>>
+  onRemove: UseFieldArrayRemove
+}
+
 function VariableRow({
   field,
   index,
   errors,
   register,
-  remove,
-}: {
-  field: FieldArrayWithId<Pick<TestData, 'variables'>, 'variables', 'id'>
-  index: number
-  register: UseFormRegister<Pick<TestData, 'variables'>>
-  errors: FieldErrors<Pick<TestData, 'variables'>>
-  remove: UseFieldArrayRemove
-}) {
+  onRemove,
+}: VariableRowProps) {
   const isVariableInUse = useGeneratorStore((state) =>
     state.rules.some(
       (rule) =>
@@ -126,7 +119,7 @@ function VariableRow({
   )
 
   return (
-    <Table.Row key={field.id}>
+    <Table.Row>
       <Table.Cell maxWidth="400px">
         <FieldGroup errors={errors} name={`variables.${index}.name`} mb="0">
           <TextField.Root
@@ -145,8 +138,15 @@ function VariableRow({
         </FieldGroup>
       </Table.Cell>
       <Table.Cell>
-        <Tooltip content="Variable is in use by rule" hidden={!isVariableInUse}>
-          <IconButton disabled={isVariableInUse} onClick={() => remove(index)}>
+        <Tooltip
+          content="Variable is referenced in a rule"
+          hidden={!isVariableInUse}
+        >
+          <IconButton
+            aria-label="Remove"
+            disabled={isVariableInUse}
+            onClick={() => onRemove(index)}
+          >
             <TrashIcon width="18" height="18" />
           </IconButton>
         </Tooltip>
