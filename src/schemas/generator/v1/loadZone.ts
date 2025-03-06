@@ -48,7 +48,7 @@ export const LoadZoneSchema = z.object({
     (data) => {
       const totalPercentage = currentLoadZonePercentage(data)
       return {
-        message: `Total percentage must be 100, currently ${totalPercentage}`,
+        message: `Total percentage must be 100 (currently ${totalPercentage})`,
         path: ['root'],
       }
     }
