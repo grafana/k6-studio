@@ -7,7 +7,16 @@ export function useImportDataFile() {
 
   return useCallback(async () => {
     try {
-      await window.studio.data.importFile()
+      const fileName = await window.studio.data.importFile()
+
+      if (fileName) {
+        showToast({
+          title: `Imported ${fileName}`,
+          status: 'success',
+        })
+      }
+
+      return fileName
     } catch (error) {
       showToast({
         title: 'Failed to import data file',
