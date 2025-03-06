@@ -509,7 +509,7 @@ ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
 
-ipcMain.handle('ui:check-browser-path', () => {
+ipcMain.handle('ui:detect-browser', () => {
   try {
     const browserPath = getBrowserPath()
     return browserPath !== ''
