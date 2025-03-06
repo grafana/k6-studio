@@ -103,6 +103,7 @@ jobs:
         run: |
           sudo apt install -y rpm
           npm run publish
+          npm run publish -- --arch=arm64
 
       - name: cleanup macos certificates
         if: startsWith(matrix.platform, 'macos-')
