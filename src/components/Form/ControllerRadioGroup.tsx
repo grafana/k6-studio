@@ -33,7 +33,7 @@ export function ControlledRadioGroup<T extends FieldValues, O extends Option>({
         >
           <Flex
             direction={direction}
-            gap={direction === 'column' ? undefined : '1'}
+            gap={direction === 'column' ? undefined : '2'}
           >
             {options.map((option) => (
               <RadioGroup.Item key={option.value} value={option.value}>

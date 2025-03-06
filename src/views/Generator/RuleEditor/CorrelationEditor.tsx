@@ -9,8 +9,8 @@ import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 
 const EXTRACTION_MODE_OPTIONS = [
-  { value: 'single', label: 'First occurence' },
-  { value: 'multiple', label: 'All occurences' },
+  { value: 'single', label: 'First match' },
+  { value: 'multiple', label: 'Most recent match' },
 ]
 
 export function CorrelationEditor() {
@@ -50,7 +50,7 @@ export function CorrelationEditor() {
         <SelectorField field="extractor.selector" />
         <FieldGroup
           name="extractor.extractionMode,"
-          label="Extraction mode"
+          label="Use value from"
           errors={errors}
         >
           <ControlledRadioGroup
