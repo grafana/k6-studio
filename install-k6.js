@@ -55,23 +55,26 @@ Remove-Item -Path "${K6_PATH_WIN_AMD}" -Recurse
 }
 
 const getLinuxK6Binary = () => {
-  const arch = process.arch === 'arm64' ? 'arm64' : 'x86_64'
-  const binaryName = arch === 'arm64' ? K6_PATH_LINUX_ARM : K6_PATH_LINUX_AMD
-
   const command = `
 # download binaries
-curl -LO https://github.com/grafana/k6/releases/download/${K6_VERSION}/${binaryName}.tar.gz
+curl -LO https://github.com/grafana/k6/releases/download/${K6_VERSION}/${K6_PATH_LINUX_AMD}.tar.gz
+curl -LO https://github.com/grafana/k6/releases/download/${K6_VERSION}/${K6_PATH_LINUX_ARM}.tar.gz
 
 # unzip & smoke test
-tar -zxf ${binaryName}.tar.gz
-${binaryName}/k6 version
+tar -zxf ${K6_PATH_LINUX_AMD}.tar.gz
+tar -zxf ${K6_PATH_LINUX_ARM}.tar.gz
+${K6_PATH_LINUX_AMD}/k6 version
+${K6_PATH_LINUX_ARM}/k6 version
 
 # move to resource folder
-mv ${binaryName}/k6 resources/linux/${arch}
+mv ${K6_PATH_LINUX_AMD}/k6 resources/linux/x86_64
+mv ${K6_PATH_LINUX_ARM}/k6 resources/linux/arm64
 
 # cleanup
-rm ${binaryName}.tar.gz
-rmdir ${binaryName}
+rm ${K6_PATH_LINUX_AMD}.tar.gz
+rm ${K6_PATH_LINUX_ARM}.tar.gz
+rmdir ${K6_PATH_LINUX_AMD}
+rmdir ${K6_PATH_LINUX_ARM}
 `
 
   execSync(command)
@@ -96,8 +99,8 @@ switch (process.platform) {
     }
     break
   case 'linux':
-    const arch = process.arch === 'arm64' ? 'arm64' : 'x86_64'
-    if (!existsSync(`resources/linux/${arch}/k6`)) {
+    // we check only for one arch since we include both binaries
+    if (!existsSync('resources/linux/x86_64/k6')) {
       console.log('k6 binary not found')
       console.log('downloading k6... this might take some time...')
       getLinuxK6Binary()
