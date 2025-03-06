@@ -64,7 +64,7 @@ curl -LO https://github.com/grafana/k6/releases/download/${K6_VERSION}/${K6_PATH
 tar -zxf ${K6_PATH_LINUX_AMD}.tar.gz
 tar -zxf ${K6_PATH_LINUX_ARM}.tar.gz
 ${K6_PATH_LINUX_AMD}/k6 version
-${K6_PATH_LINUX_ARM}/k6 version
+# ${K6_PATH_LINUX_ARM}/k6 version  ## if we move to separate images for architectures we could test this one as well
 
 # move to resource folder
 mv ${K6_PATH_LINUX_AMD}/k6 resources/linux/x86_64
