@@ -152,9 +152,10 @@ function WarningMessage({
         <Callout.Text>
           <strong>Supported browser not found</strong>
           <br />
-          Google Chrome needs to be installed on your machine for the recording
-          functionality to work. If the browser is installed, specify the path
-          in <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
+          Google Chrome or Chromium need to be installed on your machine for the
+          recording functionality to work. If the browser is installed, specify
+          the path in{' '}
+          <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
         </Callout.Text>
       </Callout.Root>
     )
