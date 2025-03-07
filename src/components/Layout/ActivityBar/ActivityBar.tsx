@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
-import { css } from '@emotion/react'
-import { Flex, Grid } from '@radix-ui/themes'
+import { Flex, Grid, Separator } from '@radix-ui/themes'
 
 import k6Logo from '@/assets/logo.svg'
 import k6LogoDark from '@/assets/logo-dark.svg'
@@ -13,6 +12,8 @@ import { ProxyStatusIndicator } from './ProxyStatusIndicator'
 import { HelpButton } from './HelpButton'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { useTheme } from '@/hooks/useTheme'
+import { Profile } from './Profile'
+import { css } from '@emotion/react'
 
 export function ActivityBar() {
   const theme = useTheme()
@@ -54,7 +55,11 @@ export function ActivityBar() {
         <ProxyStatusIndicator />
         <SettingsButton />
         <HelpButton />
-        <VersionLabel />
+        <Separator orientation="horizontal" size="2" />
+        <Flex direction="column" align="center" gap="3">
+          <Profile />
+          <VersionLabel />
+        </Flex>
       </Flex>
     </Flex>
   )

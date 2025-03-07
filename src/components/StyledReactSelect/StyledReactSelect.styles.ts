@@ -67,7 +67,7 @@ export function getStylesConfig<Option>(): StylesConfig<Option> {
       alignItems: 'center',
       position: 'relative',
       paddingLeft: 'var(--space-5)',
-      paddingRight: 'var(--space-6)',
+      paddingRight: 'var(--space-5)',
       borderRadius: 'var(--radius-2)',
     }),
   }

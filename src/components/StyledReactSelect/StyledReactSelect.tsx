@@ -2,6 +2,7 @@ import { ComponentProps, useMemo } from 'react'
 import Select, { components, OptionProps } from 'react-select'
 import { ChevronDownIcon, ThickCheckIcon } from '@radix-ui/themes'
 import { getStylesConfig, getThemeConfig } from './StyledReactSelect.styles'
+import { css } from '@emotion/react'
 
 export function StyledReactSelect<Option>(
   props: ComponentProps<typeof Select<Option>>
@@ -41,8 +42,15 @@ function OptionComponent<Option>({ children, ...props }: OptionProps<Option>) {
       >
         {props.isSelected && <ThickCheckIcon />}
       </div>
-
-      {children}
+      <div
+        css={css`
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        `}
+      >
+        {children}
+      </div>
     </components.Option>
   )
 }
