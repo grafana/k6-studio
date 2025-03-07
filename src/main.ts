@@ -23,7 +23,7 @@ import { Process } from '@puppeteer/browsers'
 import { watch, FSWatcher } from 'chokidar'
 
 import { launchProxy, type ProxyProcess } from './proxy'
-import { launchBrowser } from './browser'
+import { getBrowserPath, launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
 import {
@@ -507,6 +507,17 @@ ipcMain.handle(
 // UI
 ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
+})
+
+ipcMain.handle('ui:detect-browser', () => {
+  try {
+    const browserPath = getBrowserPath()
+    return browserPath !== ''
+  } catch {
+    log.error('Failed to find browser executable')
+  }
+
+  return false
 })
 
 ipcMain.handle('ui:delete-file', async (_, file: StudioFile) => {

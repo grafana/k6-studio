@@ -1,11 +1,10 @@
 import { css } from '@emotion/react'
 import { Link1Icon, LinkBreak1Icon, LinkNone1Icon } from '@radix-ui/react-icons'
 import { Box, Flex, Tooltip } from '@radix-ui/themes'
-import { useEffect } from 'react'
 
-import { useStudioUIStore } from '@/store/ui'
 import type { ProxyStatus } from '@/types'
 import { exhaustive } from '@/utils/typescript'
+import { useProxyStatus } from '@/hooks/useProxyStatus'
 
 const COLOR_MAP: Record<ProxyStatus, string> = {
   ['online']: 'var(--green-9)',
@@ -14,19 +13,7 @@ const COLOR_MAP: Record<ProxyStatus, string> = {
 }
 
 export function ProxyStatusIndicator() {
-  const status = useStudioUIStore((state) => state.proxyStatus)
-  const setProxyStatus = useStudioUIStore((state) => state.setProxyStatus)
-
-  useEffect(() => {
-    ;(async function fetchProxyStatus() {
-      const status = await window.studio.proxy.getProxyStatus()
-      setProxyStatus(status)
-    })()
-
-    return window.studio.proxy.onProxyStatusChange((status) =>
-      setProxyStatus(status)
-    )
-  }, [setProxyStatus])
+  const status = useProxyStatus()
 
   return (
     <Tooltip content={`Proxy status: ${status}`} side="right">
