@@ -99,7 +99,6 @@ export function LoadZones() {
 
   return (
     <FormProvider {...formMethods}>
-      {/* TODO: check that user is authenticate with Cloud */}
       <LoadZoneCloudInfo />
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -202,8 +201,7 @@ function LoadZoneCloudInfo() {
       </Callout.Icon>
 
       <Callout.Text>
-        Load zones configuration only affect tests running in the cloud.{' '}
-        <RadixLink href="">Click here</RadixLink> to log in.
+        Load zones configuration only affect tests running in the cloud.
       </Callout.Text>
     </Callout.Root>
   )
