@@ -2,7 +2,6 @@ import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
 import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { NewRuleMenu } from '../NewRuleMenu'
 import { SortableRuleList } from './SortableRuleList'
-import { css } from '@emotion/react'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { RuleEditor } from '../RuleEditor'
 import { StickyPanelHeader } from './StickyPanelHeader'
@@ -28,13 +27,7 @@ export function TestRuleContainer() {
         <RulesNotAppliedCallout />
 
         <Flex align="center" gap="3">
-          <Heading
-            css={css`
-              font-size: 15px;
-              line-height: 24px;
-              font-weight: 500;
-            `}
-          >
+          <Heading size="2" weight="medium">
             Test rules ({rules.length})
           </Heading>
           <NewRuleMenu />
