@@ -26,7 +26,7 @@ import {
   getRemainingPercentage,
   LOAD_ZONES_REGIONS_OPTIONS,
 } from './LoadZones.utils'
-import { Cross1Icon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { Cross1Icon } from '@radix-ui/react-icons'
 
 export function LoadZones() {
   const loadZones = useGeneratorStore((store) => store.loadZones)
@@ -99,8 +99,6 @@ export function LoadZones() {
 
   return (
     <FormProvider {...formMethods}>
-      <LoadZoneCloudInfo />
-
       <form onSubmit={handleSubmit(onSubmit)}>
         <Text size="2" as="p" mb="4">
           Configure the geographical zones that the load test should be run
@@ -108,7 +106,7 @@ export function LoadZones() {
           <RadixLink href="" onClick={handleOpenDocs}>
             docs
           </RadixLink>
-          .
+          . Load zones configuration only affect tests running in the cloud.
         </Text>
 
         <FieldGroup name="distribution" label="Distribution" errors={errors}>
@@ -189,20 +187,6 @@ function LoadZonePercentageError() {
       </Callout.Icon>
 
       <Callout.Text>{errors.zones?.root?.message}</Callout.Text>
-    </Callout.Root>
-  )
-}
-
-function LoadZoneCloudInfo() {
-  return (
-    <Callout.Root variant="soft" color="indigo" mb="3">
-      <Callout.Icon>
-        <InfoCircledIcon />
-      </Callout.Icon>
-
-      <Callout.Text>
-        Load zones configuration only affect tests running in the cloud.
-      </Callout.Text>
     </Callout.Root>
   )
 }
