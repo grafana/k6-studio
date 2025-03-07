@@ -18,7 +18,7 @@ const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
 }
 
-async function getBrowserPath() {
+export async function getBrowserPath() {
   const { recorder } = appSettings
 
   if (recorder.detectBrowserPath) {
