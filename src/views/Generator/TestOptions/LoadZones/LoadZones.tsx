@@ -109,7 +109,12 @@ export function LoadZones() {
           . Load zones configuration only affect tests running in the cloud.
         </Text>
 
-        <FieldGroup name="distribution" label="Distribution" errors={errors}>
+        <FieldGroup
+          name="distribution"
+          label="Distribution"
+          errors={errors}
+          width="130px"
+        >
           <Text size="2" as="label">
             <Flex gap="2" align="center">
               Even
