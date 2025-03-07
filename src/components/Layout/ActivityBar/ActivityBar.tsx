@@ -14,7 +14,6 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { useTheme } from '@/hooks/useTheme'
 import { Profile } from './Profile'
 import { css } from '@emotion/react'
-import { Feature } from '@/components/Feature'
 
 export function ActivityBar() {
   const theme = useTheme()
@@ -56,13 +55,9 @@ export function ActivityBar() {
         <ProxyStatusIndicator />
         <SettingsButton />
         <HelpButton />
-        <Feature feature="cloud-auth">
-          <Separator orientation="horizontal" size="2" />
-        </Feature>
+        <Separator orientation="horizontal" size="2" />
         <Flex direction="column" align="center" gap="3">
-          <Feature feature="cloud-auth">
-            <Profile />
-          </Feature>
+          <Profile />
           <VersionLabel />
         </Flex>
       </Flex>

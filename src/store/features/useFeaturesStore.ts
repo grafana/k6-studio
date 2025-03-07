@@ -9,7 +9,6 @@ interface FeaturesStore {
 
 const defaultFeatures: Record<Feature, boolean> = {
   'dummy-feature': false,
-  'cloud-auth': false,
   'load-zones': false,
 }
 

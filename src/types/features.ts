@@ -1,1 +1,1 @@
-export type Feature = 'dummy-feature' | 'load-zones' | 'cloud-auth'
+export type Feature = 'dummy-feature' | 'load-zones'
