@@ -35,7 +35,6 @@ export function openLogFolder() {
   const logFile = log.transports.file.getFile().path
   const logPath = path.dirname(logFile)
 
-  // supports only Mac and Windows at this time
   const executable = ['mac', 'linux'].includes(getPlatform())
     ? 'open'
     : 'explorer'
