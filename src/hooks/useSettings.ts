@@ -24,3 +24,10 @@ export function useSaveSettings(onSuccess?: () => void) {
     },
   })
 }
+
+export function useBrowserCheck() {
+  return useQuery({
+    queryKey: ['settings', 'browserCheck'],
+    queryFn: window.studio.ui.detectBrowser,
+  })
+}

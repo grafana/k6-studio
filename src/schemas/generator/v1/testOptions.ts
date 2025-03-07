@@ -73,5 +73,5 @@ export const TestOptionsSchema = z.object({
     .object({
       loadZones: LoadZoneSchema,
     })
-    .default({ loadZones: { distribution: 'even', loadZones: [] } }),
+    .default({ loadZones: { distribution: 'even', zones: [] } }),
 })

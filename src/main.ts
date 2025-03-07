@@ -23,7 +23,7 @@ import { Process } from '@puppeteer/browsers'
 import { watch, FSWatcher } from 'chokidar'
 
 import { launchProxy, type ProxyProcess } from './proxy'
-import { launchBrowser } from './browser'
+import { getBrowserPath, launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
 import {
@@ -66,6 +66,7 @@ import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
 import { createNewGeneratorFile } from './utils/generator'
 import { GeneratorFileDataSchema } from './schemas/generator'
+import { COPYFILE_EXCL } from 'constants'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -509,6 +510,17 @@ ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
 
+ipcMain.handle('ui:detect-browser', () => {
+  try {
+    const browserPath = getBrowserPath()
+    return browserPath !== ''
+  } catch {
+    log.error('Failed to find browser executable')
+  }
+
+  return false
+})
+
 ipcMain.handle('ui:delete-file', async (_, file: StudioFile) => {
   console.info('ui:delete-file event received')
 
@@ -622,7 +634,11 @@ ipcMain.handle('data-file:import', async (event) => {
   const { size } = await stat(filePath)
   invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
 
-  await copyFile(filePath, path.join(DATA_FILES_PATH, path.basename(filePath)))
+  await copyFile(
+    filePath,
+    path.join(DATA_FILES_PATH, path.basename(filePath)),
+    COPYFILE_EXCL
+  )
 
   return path.basename(filePath)
 })

@@ -9,9 +9,9 @@ import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
-import { applyRules } from '@/rules/rules'
-import { useMemo } from 'react'
 import { RequestListHeader } from './RequestListHeader'
+import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { RequestRow } from './RequestRow'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -28,17 +28,7 @@ export function RequestList({
     (state) => state.previewOriginalRequests
   )
 
-  const rules = useGeneratorStore((state) => state.rules)
-
-  const requestsWithRulesApplied = useMemo(() => {
-    if (previewOriginalRequests) {
-      return requests
-    }
-
-    return applyRules(requests, rules).requestSnippetSchemas.map(
-      (request) => request.data
-    )
-  }, [requests, rules, previewOriginalRequests])
+  const { requestsWithRulesApplied, selectedRuleInstance } = useApplyRules()
 
   const {
     filter,
@@ -47,7 +37,7 @@ export function RequestList({
     filterAllData,
     setFilterAllData,
   } = useFilterRequests({
-    proxyData: requestsWithRulesApplied,
+    proxyData: previewOriginalRequests ? requests : requestsWithRulesApplied,
   })
   const allRequests = useGeneratorStore((state) => state.requests)
 
@@ -105,6 +95,14 @@ export function RequestList({
             onSelectRequest={onSelectRequest}
             groups={groups}
             filter={filter}
+            RowComponent={(props) => (
+              <RequestRow
+                {...props}
+                highlightedRequestIds={
+                  selectedRuleInstance?.state?.matchedRequestIds
+                }
+              />
+            )}
           />
         )}
       </ScrollArea>

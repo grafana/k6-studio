@@ -48,10 +48,10 @@ export function LoadZones() {
 
   const { append, remove, fields } = useFieldArray<LoadZoneData>({
     control,
-    name: 'loadZones',
+    name: 'zones',
   })
 
-  const { distribution, loadZones: usedLoadZones } = watch()
+  const { distribution, zones: usedLoadZones } = watch()
 
   const handleOpenDocs = (event: React.MouseEvent) => {
     event.preventDefault()
@@ -93,7 +93,7 @@ export function LoadZones() {
     fields.forEach((_, index) => {
       // ensure only integers are used
       const percent = index < remainder ? basePercent + 1 : basePercent
-      setValue(`loadZones.${index}.percent`, percent)
+      setValue(`zones.${index}.percent`, percent)
     })
   }, [distribution, fields, setValue])
 
@@ -125,7 +125,7 @@ export function LoadZones() {
           </Text>
         </FieldGroup>
 
-        {errors.loadZones?.root && <LoadZonePercentageError />}
+        {errors.zones?.root && <LoadZonePercentageError />}
 
         <Table.Root size="1" variant="surface" layout="fixed">
           <Table.Header>
@@ -186,7 +186,7 @@ function LoadZonePercentageError() {
         <Cross1Icon />
       </Callout.Icon>
 
-      <Callout.Text>{errors.loadZones?.root?.message}</Callout.Text>
+      <Callout.Text>{errors.zones?.root?.message}</Callout.Text>
     </Callout.Root>
   )
 }

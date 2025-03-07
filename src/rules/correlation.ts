@@ -36,6 +36,7 @@ export function createCorrelationRuleInstance(
     responsesExtracted: [],
     requestsReplaced: [],
     generatedUniqueId: undefined,
+    matchedRequestIds: [],
   }
 
   function setState(newState: Partial<CorrelationState>) {
@@ -98,6 +99,10 @@ function applyRule({
             replaced: replacedRequest,
           },
         ],
+        matchedRequestIds: [
+          ...state.matchedRequestIds,
+          requestSnippetSchema.data.id,
+        ],
       })
     }
   }
@@ -120,7 +125,7 @@ function applyRule({
 
   if (extractedValue && correlationExtractionSnippet) {
     // Skip extraction and bump count if value is already extracted and we are in single extraction mode
-    if (state.extractedValue && rule.extractor.extractionMode === "single") {
+    if (state.extractedValue && rule.extractor.extractionMode === 'single') {
       setState({
         count: state.count + 1,
       })
@@ -138,6 +143,10 @@ function applyRule({
       ],
 
       count: state.count + 1,
+      matchedRequestIds: [
+        ...state.matchedRequestIds,
+        requestSnippetSchema.data.id,
+      ],
     })
 
     return {

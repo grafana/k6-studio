@@ -129,6 +129,9 @@ const ui = {
   toggleTheme: () => {
     ipcRenderer.send('ui:toggle-theme')
   },
+  detectBrowser: (): Promise<boolean> => {
+    return ipcRenderer.invoke('ui:detect-browser')
+  },
   openContainingFolder: (file: StudioFile) => {
     ipcRenderer.send('ui:open-folder', file)
   },

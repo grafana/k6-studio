@@ -14,12 +14,8 @@ import { TelemetrySettings } from './TelemetrySettings'
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
 import { AppearanceSettings } from './AppearanceSettings'
 import { LogsSettings } from './LogsSettings'
-import { useSaveSettings, useSettings } from './Settings.hooks'
-
-type SettingsDialogProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+import { useStudioUIStore } from '@/store/ui'
+import { useSaveSettings, useSettings } from '@/hooks/useSettings'
 
 const tabs = [
   { label: 'Proxy', value: 'proxy', component: ProxySettings },
@@ -41,10 +37,12 @@ const tabs = [
   },
 ]
 
-export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
+export const SettingsDialog = () => {
   const { data: settings } = useSettings()
+  const isOpen = useStudioUIStore((state) => state.isSettingsDialogOpen)
+  const setIsOpen = useStudioUIStore((state) => state.setIsSettingsDialogOpen)
   const { mutateAsync: saveSettings, isPending } = useSaveSettings(() => {
-    onOpenChange(false)
+    setIsOpen(false)
   })
   const [selectedTab, setSelectedTab] = useState('proxy')
 
@@ -71,11 +69,11 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
   const handleOpenChange = () => {
     reset(settings)
     setSelectedTab('proxy')
-    onOpenChange(!open)
+    setIsOpen(!isOpen)
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
+    <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
       <Dialog.Content
         maxWidth="800px"
         maxHeight="640px"

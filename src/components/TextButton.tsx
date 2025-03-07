@@ -8,6 +8,7 @@ export function TextButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       data-accent-color=""
       className="rt-Text rt-reset rt-Link rt-underline-auto"

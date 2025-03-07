@@ -1,4 +1,13 @@
-import { Box, Grid, Heading, Switch, Text } from '@radix-ui/themes'
+import {
+  Box,
+  Code,
+  Flex,
+  Grid,
+  Heading,
+  Switch,
+  Text,
+  Tooltip,
+} from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
@@ -7,6 +16,9 @@ import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
 import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
+import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { useApplyRules } from '@/store/hooks/useApplyRules'
+import invariant from 'tiny-invariant'
 
 const EXTRACTION_MODE_OPTIONS = [
   { value: 'single', label: 'First match' },
@@ -14,12 +26,21 @@ const EXTRACTION_MODE_OPTIONS = [
 ]
 
 export function CorrelationEditor() {
+  const { selectedRuleInstance } = useApplyRules()
+
+  invariant(
+    selectedRuleInstance?.type === 'correlation',
+    'Selected rule instance is not a correlation rule'
+  )
+
   const {
     setValue,
     watch,
     control,
     formState: { errors },
   } = useFormContext<TestRule>()
+
+  const { extractedValue } = selectedRuleInstance.state
   const replacer = watch('replacer')
 
   const isCustomReplacerSelector = !!replacer?.selector
@@ -66,32 +87,51 @@ export function CorrelationEditor() {
             }
           />
         </FieldGroup>
+        {extractedValue && (
+          <Text size="2">
+            <Text color="gray">Extracted value:</Text>{' '}
+            <Code>{extractedValue}</Code>
+          </Text>
+        )}
+        {!extractedValue && (
+          <Text size="2" color="gray">
+            The rule does not match any requests
+          </Text>
+        )}
       </Box>
       <Box>
-        <Heading size="2" weight="medium" mb="2">
-          Replacer
-        </Heading>
+        <Flex justify="between" align="center">
+          <Heading size="2" weight="medium" mb="2">
+            Replacer
+          </Heading>
+
+          <Flex align="center" gap="1" mb="2">
+            <Tooltip content={replacerTooltip}>
+              <InfoCircledIcon />
+            </Tooltip>
+            <Label>
+              <Text size="2" css={{ lineHeight: '18px' }}>
+                Customize selector
+              </Text>
+              <Switch
+                onCheckedChange={toggleCustomReplacerSelector}
+                checked={isCustomReplacerSelector}
+                size="1"
+              />
+            </Label>
+          </Flex>
+        </Flex>
         <Text size="2" as="p" mb="2" color="gray">
           Replace matched values with the extracted value.{' '}
         </Text>
 
         <>
           <FilterField field="replacer.filter" />
-          <Label mb="2">
-            <Text size="2">Customize selector</Text>
-
-            <Switch
-              onCheckedChange={toggleCustomReplacerSelector}
-              checked={isCustomReplacerSelector}
-              size="1"
-            />
-          </Label>
 
           {!isCustomReplacerSelector && (
             <Text size="2" as="p" mb="2" color="gray">
-              By default, the correlation rule will replace all occurrences of
-              the extracted value in the requests. Enable this option to fine
-              tune your selection.
+              The correlation rule will replace all occurrences of the extracted
+              value in the requests.
             </Text>
           )}
           <SelectorField field="replacer.selector" />
@@ -100,3 +140,6 @@ export function CorrelationEditor() {
     </Grid>
   )
 }
+
+const replacerTooltip =
+  'By default, the correlation rule will replace all occurrences of the extracted value in the requests. Enable this option to fine tune your selection.'

@@ -95,7 +95,7 @@ describe('Code generation', () => {
               cloud: {
                 loadZones: {
                   distribution: 'even',
-                  loadZones: [],
+                  zones: [],
                 },
               },
             },
@@ -134,7 +134,7 @@ describe('Code generation', () => {
         cloud: {
           loadZones: {
             distribution: 'even',
-            loadZones: [],
+            zones: [],
           },
         },
       },

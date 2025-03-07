@@ -54,6 +54,7 @@ function replaceTextUrl(
     ...request,
     url: replaceUrl(request.url, selector.value, value),
     path: replaceUrl(request.path, selector.value, value),
+    host: replaceUrl(request.host, selector.value, value),
   }
 }
 
