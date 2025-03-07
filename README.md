@@ -43,12 +43,10 @@ https://github.com/user-attachments/assets/46ccd340-804f-4aa5-b3a4-acec9f6a2dcd
 
 ## Installation
 
-Grafana k6 Studio is available for Mac and Windows and Linux. You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
+Grafana k6 Studio is available for Mac and Windows (Linux support coming soon). You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
 
 > [!IMPORTANT]  
-> For the recording functionality to work on Linux arm64, [Chromium](https://www.chromium.org/Home/) needs to be installed.
->
-> Other platforms (including Linux x86_64), [Google Chrome](https://www.google.com/chrome/browser-tools/) needs to be installed.
+> [Google Chrome](https://www.google.com/chrome/browser-tools/) needs to be installed on your machine for the recording functionality to work.
 
 ## How it works
 
