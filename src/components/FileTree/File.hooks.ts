@@ -27,6 +27,10 @@ export function useRenameFile(file: StudioFile) {
       removeFile(file)
       addFile(updatedFile)
 
+      if (selectedFileName !== file.fileName) {
+        return
+      }
+
       if (file.type === 'generator') {
         queryClient.setQueryData(
           ['generator', newName],
@@ -34,9 +38,7 @@ export function useRenameFile(file: StudioFile) {
         )
       }
 
-      if (selectedFileName === file.fileName) {
-        navigate(getViewPath(file.type, newName), { replace: true })
-      }
+      navigate(getViewPath(file.type, newName), { replace: true })
 
       if (file.type === 'generator') {
         await queryClient.invalidateQueries({
