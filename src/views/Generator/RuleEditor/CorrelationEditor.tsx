@@ -1,13 +1,23 @@
-import { Box, Grid, Heading, Switch, Text } from '@radix-ui/themes'
+import { Box, Code, Grid, Heading, Switch, Text } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
+import { useApplyRules } from '@/store/hooks/useApplyRules'
+import invariant from 'tiny-invariant'
 
 export function CorrelationEditor() {
+  const { selectedRuleInstance } = useApplyRules()
+
+  invariant(
+    selectedRuleInstance?.type === 'correlation',
+    'Selected rule instance is not a correlation rule'
+  )
+
   const { setValue, watch } = useFormContext<TestRule>()
+  const { extractedValue } = selectedRuleInstance.state
   const replacer = watch('replacer')
 
   const isCustomReplacerSelector = !!replacer?.selector
@@ -36,6 +46,17 @@ export function CorrelationEditor() {
         </Text>
         <FilterField field="extractor.filter" />
         <SelectorField field="extractor.selector" />
+        {extractedValue && (
+          <Text size="2">
+            <Text color="gray">Extracted value:</Text>{' '}
+            <Code>{extractedValue}</Code>
+          </Text>
+        )}
+        {!extractedValue && (
+          <Text size="2" color="gray">
+            The rule does not match any requests
+          </Text>
+        )}
       </Box>
       <Box>
         <Heading size="2" weight="medium" mb="2">

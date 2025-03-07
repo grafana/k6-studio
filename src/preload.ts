@@ -109,7 +109,7 @@ const data = {
   importFile: (): Promise<string | undefined> => {
     return ipcRenderer.invoke('data-file:import')
   },
-  loadPreview: (filePath: string): Promise<DataFilePreview | null> => {
+  loadPreview: (filePath: string): Promise<DataFilePreview> => {
     return ipcRenderer.invoke('data-file:load-preview', filePath)
   },
 } as const

@@ -1,5 +1,5 @@
 import { ProxyData, RequestSnippetSchema } from '@/types'
-import { TestRule } from '@/types/rules'
+import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
 import { applyRules } from '@/rules/rules'
 import { GeneratorFileData } from '@/types/generator'
 import { DataFile, Variable } from '@/types/testData'
@@ -12,6 +12,7 @@ import { generateImportStatement } from './imports'
 import { cleanupRecording, shouldIncludeHeaderInScript } from './codegen.utils'
 import { groupProxyData } from '@/utils/groups'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { getCustomCodeSnippet } from '@/rules/parameterization'
 
 interface GenerateScriptParams {
   recording: ProxyData[]
@@ -30,6 +31,7 @@ export function generateScript({
 
     ${generateVariableDeclarations(generator.testData.variables)}
     ${generateDataFileDeclarations(generator.testData.files)}
+    ${generateGetUniqueItemFunction(generator.testData.files)}
 
     export default function() {
       ${generateVUCode(recording, generator.rules, generator.options.thinkTime)}
@@ -46,7 +48,7 @@ export function generateImports(generator: GeneratorFileData): string {
     ...REQUIRED_IMPORTS,
     // Import SharedArray for data files
     ...(hasDataFiles ? [K6_EXPORTS['k6/data']] : []),
-    // TODO: replace with k6/experimental/csv once https://github.com/grafana/k6/pull/4295 is released
+    // TODO: replace with k6/experimental/csv once we switch to k6@0.57.0 or higher
     ...(hasCsvDataFiles ? [JSLIB['papaparse']] : []),
   ]
 
@@ -92,17 +94,36 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
   return `const FILES = {\n${fileKeyValuePairs}\n};`
 }
 
+export function generateGetUniqueItemFunction(files: DataFile[]) {
+  if (files.length === 0) {
+    return ''
+  }
+
+  return `
+    function getUniqueItem(array){
+      return array[execution.scenario.iterationInTest % array.length]
+    }`
+}
+
 export function generateVUCode(
   recording: ProxyData[],
   rules: TestRule[],
   thinkTime: ThinkTime
 ): string {
   const cleanedRecording = cleanupRecording(recording)
+  const enabledRules = rules.filter((rule) => rule.enabled)
 
   const requestSnippets = generateRequestSnippets(
     cleanedRecording,
-    rules,
+    enabledRules,
     thinkTime
+  )
+
+  const parameterizationRules = enabledRules.filter(
+    (rule) => rule.type === 'parameterization'
+  )
+  const parameterizationCustomCode = generateParameterizationCustomCode(
+    parameterizationRules
   )
 
   // Group requests after applying rules to correlate requests between different groups
@@ -127,6 +148,7 @@ export function generateVUCode(
     let url
     const correlation_vars = {}
     `,
+    parameterizationCustomCode,
     groupSnippets,
     thinkTime.sleepType === 'iterations' ? generateSleep(thinkTime.timing) : '',
   ].join('\n')
@@ -250,6 +272,21 @@ export function generateRequestParams(request: ProxyData['request']): string {
       }
     }
   `
+}
+
+export function generateParameterizationCustomCode(
+  rules: ParameterizationRule[]
+): string {
+  return rules
+    .map((rule, index) => ({ rule, parameterizationIndex: index }))
+    .filter(({ rule }) => rule.value?.type === 'customCode')
+    .map(({ rule, parameterizationIndex }) =>
+      getCustomCodeSnippet(
+        (rule.value as CustomCodeValue).code,
+        parameterizationIndex
+      )
+    )
+    .join('\n')
 }
 
 function generateScriptHeaderComment() {

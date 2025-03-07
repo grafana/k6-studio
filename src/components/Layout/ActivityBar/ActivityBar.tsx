@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Flex, Grid, Separator } from '@radix-ui/themes'
 
 import k6Logo from '@/assets/logo.svg'
@@ -19,43 +20,42 @@ export function ActivityBar() {
   const theme = useTheme()
 
   return (
-    <Flex direction="column" align="center" asChild position="relative">
-      <Flex
-        direction="column"
-        height="100%"
-        maxHeight="100%"
-        maxWidth="100%"
-        py="3"
-        overflow="hidden"
-        gap="3"
+    <Flex
+      height="100%"
+      maxHeight="100%"
+      maxWidth="100%"
+      py="3"
+      direction="column"
+      align="center"
+      position="relative"
+      overflow="hidden"
+    >
+      <Link
+        to={getRoutePath('home')}
+        css={css`
+          text-align: center;
+        `}
+        aria-label="Home"
       >
-        <Flex direction="column" align="center">
-          <img
-            src={theme === 'dark' ? k6LogoDark : k6Logo}
-            alt="k6 Logo"
-            width="32"
-          />
-        </Flex>
-        <Grid
-          css={css`
-            flex: 1 1 0;
-          `}
-          gap="5"
-          mt="4"
-        >
-          <NavIconButton
-            to={getRoutePath('home')}
-            icon={<HomeIcon />}
-            tooltip="Home"
-          />
-        </Grid>
+        <img
+          src={theme === 'dark' ? k6LogoDark : k6Logo}
+          role="presentation"
+          width="32"
+        />
+      </Link>
+      <Grid gap="5" mt="4">
+        <NavIconButton
+          to={getRoutePath('home')}
+          icon={<HomeIcon />}
+          tooltip="Home"
+        />
+      </Grid>
 
-        <Flex direction="column" align="center" gap="3">
-          <ThemeSwitcher />
-          <ProxyStatusIndicator />
-          <SettingsButton />
-          <HelpButton />
-        </Flex>
+      <Flex direction="column" align="center" gap="3" mt="auto">
+        <ThemeSwitcher />
+        <ProxyStatusIndicator />
+        <SettingsButton />
+        <HelpButton />
         <Feature feature="cloud-auth">
           <Separator orientation="horizontal" size="2" />
         </Feature>

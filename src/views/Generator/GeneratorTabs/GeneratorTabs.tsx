@@ -1,21 +1,20 @@
 import { css } from '@emotion/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { ScriptPreview } from './ScriptPreview'
 import {
   selectFilteredRequests,
   selectHasRecording,
-  selectIsRulePreviewable,
   useGeneratorStore,
 } from '@/store/generator'
-import { RulePreview } from '../RulePreview/RulePreview'
 import { RequestList } from './RequestList'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { CrossCircledIcon } from '@radix-ui/react-icons'
 import { TestOptions } from '../TestOptions'
 import { Allowlist } from '../Allowlist'
 import { ProxyData } from '@/types'
+import { TestData } from '../TestData'
 
 export function GeneratorTabs({
   onSelectRequest,
@@ -29,18 +28,6 @@ export function GeneratorTabs({
   const { hasError } = useScriptPreview()
 
   const hasRecording = useGeneratorStore(selectHasRecording)
-  const hasPreview = useGeneratorStore(selectIsRulePreviewable)
-
-  useEffect(() => {
-    if (!hasPreview) {
-      setTab((currentTab) =>
-        currentTab === 'rule-preview' ? 'requests' : currentTab
-      )
-      return
-    }
-
-    setTab('rule-preview')
-  }, [hasPreview])
 
   return (
     <Flex direction="column" height="100%" minHeight="0" asChild>
@@ -72,31 +59,15 @@ export function GeneratorTabs({
                   )}
                   Script
                 </Tabs.Trigger>
-                {hasPreview && (
-                  <Tabs.Trigger value="rule-preview">Rule preview</Tabs.Trigger>
-                )}
               </Flex>
               <Flex pr="2" pl="4" gap="4">
                 <TestOptions />
+                <TestData />
                 <Allowlist />
               </Flex>
             </Flex>
           </Tabs.List>
         </Box>
-        {hasPreview && (
-          <Tabs.Content
-            value="rule-preview"
-            css={css`
-              flex-grow: 1;
-              min-height: 0;
-            `}
-          >
-            <RulePreview
-              selectedRequest={selectedRequest}
-              onSelectRequest={onSelectRequest}
-            />
-          </Tabs.Content>
-        )}
         <Tabs.Content
           value="requests"
           css={css`

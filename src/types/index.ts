@@ -103,7 +103,7 @@ export interface FolderContent {
   dataFiles: Map<string, StudioFile>
 }
 
-export type ProxyStatus = 'online' | 'offline' | 'restarting'
+export type ProxyStatus = 'online' | 'offline' | 'starting'
 
 export type ProxyDataWithMatches = ProxyData & {
   matches?: SearchMatch[]

@@ -36,6 +36,7 @@ export function createCorrelationRuleInstance(
     responsesExtracted: [],
     requestsReplaced: [],
     generatedUniqueId: undefined,
+    matchedRequestIds: [],
   }
 
   function setState(newState: Partial<CorrelationState>) {
@@ -98,6 +99,10 @@ function applyRule({
             replaced: replacedRequest,
           },
         ],
+        matchedRequestIds: [
+          ...state.matchedRequestIds,
+          requestSnippetSchema.data.id,
+        ],
       })
     }
   }
@@ -138,6 +143,10 @@ function applyRule({
       ],
 
       count: state.count + 1,
+      matchedRequestIds: [
+        ...state.matchedRequestIds,
+        requestSnippetSchema.data.id,
+      ],
     })
 
     return {

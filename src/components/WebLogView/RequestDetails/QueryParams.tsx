@@ -1,7 +1,6 @@
-import { Flex } from '@radix-ui/themes'
+import { DataList, Flex } from '@radix-ui/themes'
 
 import { Request } from '@/types'
-import { Table } from '@/components/Table'
 import { SearchMatch } from '@/types/fuse'
 import { HighlightedText } from '@/components/HighlightedText'
 
@@ -20,34 +19,21 @@ export function QueryParams({
     )
   }
   return (
-    <Table.Root size="1" variant="surface">
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-
-      <Table.Body>
-        {request.query.map(([key, value]) => (
-          <Table.Row key={key}>
-            <Table.Cell>
-              <HighlightedText
-                text={key}
-                matches={matches}
-                highlightAllMatches
-              />
-            </Table.Cell>
-            <Table.Cell>
-              <HighlightedText
-                text={value}
-                matches={matches}
-                highlightAllMatches
-              />
-            </Table.Cell>
-          </Table.Row>
-        ))}
-      </Table.Body>
-    </Table.Root>
+    <DataList.Root size="1" trim="both">
+      {request.query.map(([key, value]) => (
+        <DataList.Item key={key}>
+          <DataList.Label>
+            <HighlightedText text={key} matches={matches} highlightAllMatches />
+          </DataList.Label>
+          <DataList.Value>
+            <HighlightedText
+              text={value}
+              matches={matches}
+              highlightAllMatches
+            />
+          </DataList.Value>
+        </DataList.Item>
+      ))}
+    </DataList.Root>
   )
 }
