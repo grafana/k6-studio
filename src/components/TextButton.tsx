@@ -5,7 +5,7 @@ export function TextButton(props: ComponentProps<'button'>) {
   return (
     <Link asChild>
       <Reset>
-        <button {...props} />
+        <button type="button" {...props} />
       </Reset>
     </Link>
   )

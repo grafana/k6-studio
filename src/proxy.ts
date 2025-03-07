@@ -125,7 +125,7 @@ export const getCertificatesPath = () => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     return path.join(app.getAppPath(), 'resources', 'certificates')
   } else {
-    return path.join(process.resourcesPath, 'certificates')
+    return path.join(app.getPath('userData'), 'certificates')
   }
 }
 
