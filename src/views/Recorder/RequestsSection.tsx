@@ -13,7 +13,7 @@ import { useLocalStorage } from 'react-use'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]
-  groups?: Group[]
+  groups: Group[]
   selectedRequestId?: string
   autoScroll?: boolean
   noDataElement?: ReactNode

@@ -1,5 +1,6 @@
 import {
   Box,
+  Code,
   Flex,
   Grid,
   Heading,
@@ -14,9 +15,19 @@ import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { useApplyRules } from '@/store/hooks/useApplyRules'
+import invariant from 'tiny-invariant'
 
 export function CorrelationEditor() {
+  const { selectedRuleInstance } = useApplyRules()
+
+  invariant(
+    selectedRuleInstance?.type === 'correlation',
+    'Selected rule instance is not a correlation rule'
+  )
+
   const { setValue, watch } = useFormContext<TestRule>()
+  const { extractedValue } = selectedRuleInstance.state
   const replacer = watch('replacer')
 
   const isCustomReplacerSelector = !!replacer?.selector
@@ -45,6 +56,17 @@ export function CorrelationEditor() {
         </Text>
         <FilterField field="extractor.filter" />
         <SelectorField field="extractor.selector" />
+        {extractedValue && (
+          <Text size="2">
+            <Text color="gray">Extracted value:</Text>{' '}
+            <Code>{extractedValue}</Code>
+          </Text>
+        )}
+        {!extractedValue && (
+          <Text size="2" color="gray">
+            The rule does not match any requests
+          </Text>
+        )}
       </Box>
       <Box>
         <Flex justify="between" align="center">

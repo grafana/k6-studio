@@ -75,9 +75,7 @@ export const LOAD_ZONES_REGIONS_OPTIONS = loadZoneOptionsMap.map(
   })
 )
 
-export const findUnusedLoadZone = (
-  usedLoadZones: LoadZoneData['loadZones']
-) => {
+export const findUnusedLoadZone = (usedLoadZones: LoadZoneData['zones']) => {
   const usedLoadZonesNames = usedLoadZones.map((item) => item.loadZone)
 
   return (
@@ -87,9 +85,7 @@ export const findUnusedLoadZone = (
   )
 }
 
-export const getRemainingPercentage = (
-  loadZones: LoadZoneData['loadZones']
-) => {
+export const getRemainingPercentage = (loadZones: LoadZoneData['zones']) => {
   const totalPercentage = loadZones.reduce(
     (sum, { percent }) => sum + percent,
     0
