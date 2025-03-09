@@ -13,10 +13,27 @@ export function migrate(generator: z.infer<typeof AnyGeneratorSchema>) {
     case '0':
       return migrate(v0.migrate(generator))
     case '1.0':
+      migrateEmptyExtractionModeInCorrelation(generator)
       return generator
     default:
       return exhaustive(generator)
   }
+}
+
+// We added a new field `extractionMode` with a default value of `multiple` for the Correlation Rule
+// This rule was working in a `single` extraction mode previously so this migration checks that the value
+// is not defined and in that case we manually set the previous way of working
+function migrateEmptyExtractionModeInCorrelation(
+  generator: v1.GeneratorSchema
+) {
+  generator.rules.forEach((rule) => {
+    if (
+      rule.type === 'correlation' &&
+      rule.extractor.extractionMode === undefined
+    ) {
+      rule.extractor.extractionMode = 'single'
+    }
+  })
 }
 
 export const GeneratorFileDataSchema = AnyGeneratorSchema.transform(migrate)
