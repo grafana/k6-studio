@@ -30,7 +30,16 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
       },
     },
     testData: { ...generator.testData, files: [] },
-    rules: generator.rules,
+    rules: generator.rules.map((rule) => {
+      if (rule.type === 'correlation') {
+        return {
+          ...rule,
+          extractor: { ...rule.extractor, extractionMode: 'single' },
+        }
+      }
+
+      return rule
+    }),
     allowlist: generator.allowlist,
     includeStaticAssets: generator.includeStaticAssets,
     scriptName: generator.scriptName,
