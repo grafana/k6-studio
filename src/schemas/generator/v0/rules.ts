@@ -84,7 +84,6 @@ export const CorrelationExtractorSchema = z.object({
   filter: FilterSchema,
   selector: SelectorSchema,
   variableName: z.string().optional(),
-  extractionMode: z.enum(['single', 'multiple']).default('single'),
 })
 
 export const CorrelationReplacerSchema = z.object({
