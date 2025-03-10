@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import log from 'electron-log/main'
 
 const PersonalTokenResponseSchema = z.object({
   personal_token: z.string(),
@@ -35,6 +36,14 @@ export async function fetchPersonalToken(
   }
 
   if (response.status !== 200) {
+    const body: unknown = await response.json()
+
+    log.error('Failed to fetch personal token', {
+      status: response.status,
+      statusMessage: response.statusText,
+      body,
+    })
+
     throw new Error(
       `Failed to fetch personal token. The server responsed with ${response.status}.`
     )

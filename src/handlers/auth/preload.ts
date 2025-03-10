@@ -27,20 +27,23 @@ export function retryStack() {
 }
 
 export function selectStack(response: SelectStackResponse) {
-  return ipcRenderer.send('auth:select-stack', response)
+  return ipcRenderer.send(AuthHandler.SelectStack, response)
 }
 
 export function abortSignIn() {
-  return ipcRenderer.invoke('auth:abort') as Promise<void>
+  return ipcRenderer.invoke(AuthHandler.Abort) as Promise<void>
 }
 
 export function signOut(stack: StackInfo) {
-  return ipcRenderer.invoke('auth:sign-out', stack) as Promise<SignOutResponse>
+  return ipcRenderer.invoke(
+    AuthHandler.SignOut,
+    stack
+  ) as Promise<SignOutResponse>
 }
 
 export function changeStack(stackId: string) {
   return ipcRenderer.invoke(
-    'auth:change-stack',
+    AuthHandler.ChangeStack,
     stackId
   ) as Promise<ChangeStackResponse>
 }
@@ -48,5 +51,5 @@ export function changeStack(stackId: string) {
 export function onStateChange(
   callback: (newState: SignInProcessState) => void
 ) {
-  return createListener('auth:state-change', callback)
+  return createListener(AuthHandler.StateChange, callback)
 }

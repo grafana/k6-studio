@@ -90,7 +90,14 @@ export const runScript = async ({
   await writeFile(tempScriptPath, modifiedScript)
 
   // 4. Archive the script and its dependencies
-  const archivePath = await archiveScript(tempScriptPath, browserWindow)
+  const archivePath = await archiveScript({
+    scriptPath: tempScriptPath,
+    onLog: createLogsHandler(browserWindow),
+  }).catch((error) => {
+    browserWindow.webContents.send('script:failed')
+
+    throw error
+  })
 
   // 5. Delete the temp script file
   await unlink(tempScriptPath)
@@ -146,10 +153,15 @@ const createLogsHandler = (browserWindow: BrowserWindow) => (data: string) => {
   browserWindow.webContents.send('script:log', logData)
 }
 
-export const archiveScript = (
-  scriptPath: string,
-  browserWindow: BrowserWindow
-): Promise<string> => {
+interface ArchiveScriptOptions {
+  scriptPath: string
+  onLog?: (data: string) => void
+}
+
+export const archiveScript = ({
+  scriptPath,
+  onLog,
+}: ArchiveScriptOptions): Promise<string> => {
   return new Promise((resolve, reject) => {
     const k6Args = [
       'archive',
@@ -161,12 +173,11 @@ export const archiveScript = (
 
     spawnK6({
       args: k6Args,
-      onStdErr: createLogsHandler(browserWindow),
+      onStdErr: onLog,
       onClose: (code) => {
         if (code === 0) {
           resolve(TEMP_K6_ARCHIVE_PATH)
         } else {
-          browserWindow.webContents.send('script:failed')
           reject(
             new Error(
               `Failed to create archive: k6 process exited with code ${code}`
