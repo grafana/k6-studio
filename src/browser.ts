@@ -65,6 +65,11 @@ export const launchBrowser = async (
     return Promise.resolve()
   }
 
+  const sendBrowserLaunchFailedEvent = (error: Error) => {
+    log.error(error)
+    browserWindow.webContents.send('browser:failed')
+  }
+
   const args = [
     '--new',
     '--args',
@@ -85,16 +90,19 @@ export const launchBrowser = async (
   // if we are on linux we spawn the browser directly and attach the on exit callback
   if (getPlatform() === 'linux') {
     const browserProc = spawn(path, args)
+    browserProc.on('error', sendBrowserLaunchFailedEvent)
     browserProc.once('exit', sendBrowserClosedEvent)
     return browserProc
   }
 
   // macOS & windows
-  return launch({
+  const browserProc = launch({
     executablePath: path,
     args: args,
     onExit: sendBrowserClosedEvent,
   })
+  browserProc.nodeProcess.on('error', sendBrowserLaunchFailedEvent)
+  return browserProc
 }
 
 function getChromePath() {
