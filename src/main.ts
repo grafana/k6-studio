@@ -117,6 +117,24 @@ if (require('electron-squirrel-startup')) {
 
 initializeLogger()
 
+// Used to convert `.json` files into the appropriate file extension for the Generator
+async function migrateJsonGenerator() {
+  const files = (
+    await readdir(GENERATORS_PATH, { withFileTypes: true })
+  ).filter((f) => f.isFile() && path.extname(f.name) === '.json')
+
+  await Promise.all(
+    files.map(async (f) => {
+      const oldPath = path.join(GENERATORS_PATH, f.name)
+      const newPath = path.join(
+        GENERATORS_PATH,
+        path.parse(f.name).name + '.k6gen'
+      )
+      await rename(oldPath, newPath)
+    })
+  )
+}
+
 const createSplashWindow = async () => {
   splashscreenWindow = new BrowserWindow({
     width: 700,
@@ -233,6 +251,7 @@ const createWindow = async () => {
 app.whenReady().then(
   async () => {
     await createSplashWindow()
+    await migrateJsonGenerator()
     await initSettings()
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
@@ -489,7 +508,7 @@ ipcMain.handle('generator:create', async (_, recordingPath: string) => {
   const fileName = await createFileWithUniqueName({
     data: JSON.stringify(generator, null, 2),
     directory: GENERATORS_PATH,
-    ext: '.json',
+    ext: '.k6gen',
     prefix: 'Generator',
   })
 
@@ -910,7 +929,7 @@ function getStudioFileFromPath(filePath: string): StudioFile | undefined {
 
   if (
     filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === '.json'
+    path.extname(filePath) === '.k6gen'
   ) {
     return {
       type: 'generator',
