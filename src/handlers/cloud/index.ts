@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, ipcMain, shell } from 'electron'
 import { CloudHandlers } from './types'
 import { RunInCloudStateMachine } from './states'
 import { isAbsolute, join } from 'path'
@@ -21,7 +21,13 @@ export function initialize(browserWindow: BrowserWindow) {
         browserWindow.webContents.send('cloud:state-change', state)
       })
 
-      return await stateMachine.run()
+      const result = await stateMachine.run()
+
+      if (result.type === 'started') {
+        await shell.openExternal(result.testRunUrl)
+      }
+
+      return result
     } finally {
       stateMachine = null
     }

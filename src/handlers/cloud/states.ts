@@ -73,7 +73,7 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
     this.#scriptPath = scriptPath
   }
 
-  async run() {
+  async run(): Promise<RunInCloudResult> {
     let state: State = {
       type: 'initializing',
     }
@@ -85,6 +85,10 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
         if (state.type === 'done') {
           return state.result
         }
+      }
+
+      return {
+        type: 'aborted',
       }
     } catch (error) {
       log.error('Failed to run test in cloud.', error)
@@ -226,6 +230,7 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
     return {
       type: 'done',
       result: {
+        type: 'started',
         testRunUrl: `${state.stack.url}/a/k6-app/runs/${run.id}`,
       },
     }

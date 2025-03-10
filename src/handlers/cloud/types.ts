@@ -4,6 +4,13 @@ export enum CloudHandlers {
   StateChange = 'cloud:state-change',
 }
 
-export interface RunInCloudResult {
+export interface RunInCloudAborted {
+  type: 'aborted'
+}
+
+export interface RunInCloudStarted {
+  type: 'started'
   testRunUrl: string
 }
+
+export type RunInCloudResult = RunInCloudAborted | RunInCloudStarted
