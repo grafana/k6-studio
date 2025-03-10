@@ -24,7 +24,7 @@ export function createGeneratorData(
       cloud: {
         loadZones: {
           distribution: 'even',
-          loadZones: [],
+          zones: [],
         },
       },
     },
@@ -106,7 +106,7 @@ export function createGeneratorState(
 
     loadZones: {
       distribution: 'even',
-      loadZones: [],
+      zones: [],
     },
     setLoadZones: vi.fn(),
 

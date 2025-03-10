@@ -23,7 +23,7 @@ import { Process } from '@puppeteer/browsers'
 import { watch, FSWatcher } from 'chokidar'
 
 import { launchProxy, type ProxyProcess } from './proxy'
-import { launchBrowser } from './browser'
+import { getBrowserPath, launchBrowser } from './browser'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import { setupProjectStructure } from './utils/workspace'
 import {
@@ -66,6 +66,10 @@ import { DataFilePreview } from './types/testData'
 import { parseDataFile } from './utils/dataFile'
 import { createNewGeneratorFile } from './utils/generator'
 import { GeneratorFileDataSchema } from './schemas/generator'
+import { ChildProcessWithoutNullStreams } from 'child_process'
+import { COPYFILE_EXCL } from 'constants'
+
+import * as handlers from './handlers'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -86,7 +90,10 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-const proxyEmitter = new eventEmitter()
+const proxyEmitter = new eventEmitter<{
+  'status:change': [ProxyStatus]
+  ready: [void]
+}>()
 
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
@@ -98,7 +105,7 @@ let currentClientRoute = '/'
 let wasAppClosedByClient = false
 export let appSettings = defaultSettings
 
-let currentBrowserProcess: Process | null
+let currentBrowserProcess: Process | ChildProcessWithoutNullStreams | null
 let currentk6Process: K6Process | null
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
@@ -177,9 +184,18 @@ const createWindow = async () => {
     },
   })
 
+  handlers.initialize({
+    browserWindow: mainWindow,
+  })
+
   configureApplicationMenu()
   configureWatcher(mainWindow)
   wasAppClosedByClient = false
+
+  proxyEmitter.on('status:change', (status: ProxyStatus) => {
+    proxyStatus = status
+    mainWindow.webContents.send('proxy:status:change', status)
+  })
 
   // Start proxy
   currentProxyProcess = await launchProxyAndAttachEmitter(mainWindow)
@@ -198,10 +214,6 @@ const createWindow = async () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   }
 
-  proxyEmitter.on('status:change', (statusName: ProxyStatus) => {
-    proxyStatus = statusName
-    mainWindow.webContents.send('proxy:status:change', statusName)
-  })
   mainWindow.on('closed', () =>
     proxyEmitter.removeAllListeners('status:change')
   )
@@ -220,12 +232,12 @@ const createWindow = async () => {
 
 app.whenReady().then(
   async () => {
+    await createSplashWindow()
     await initSettings()
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
 
     await sendReport(appSettings.telemetry.usageReport)
-    await createSplashWindow()
     await setupProjectStructure()
     await createWindow()
   },
@@ -313,8 +325,16 @@ ipcMain.handle('browser:start', async (event, url?: string) => {
 
 ipcMain.on('browser:stop', async () => {
   console.info('browser:stop event received')
+
   if (currentBrowserProcess) {
-    await currentBrowserProcess.close()
+    // macOS & windows
+    if ('close' in currentBrowserProcess) {
+      await currentBrowserProcess.close()
+      // linux
+    } else {
+      currentBrowserProcess.kill()
+    }
+
     currentBrowserProcess = null
   }
 })
@@ -505,6 +525,17 @@ ipcMain.on('ui:toggle-theme', () => {
   nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
 })
 
+ipcMain.handle('ui:detect-browser', async () => {
+  try {
+    const browserPath = await getBrowserPath()
+    return browserPath !== ''
+  } catch {
+    log.error('Failed to find browser executable')
+  }
+
+  return false
+})
+
 ipcMain.handle('ui:delete-file', async (_, file: StudioFile) => {
   console.info('ui:delete-file event received')
 
@@ -618,14 +649,18 @@ ipcMain.handle('data-file:import', async (event) => {
   const { size } = await stat(filePath)
   invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
 
-  await copyFile(filePath, path.join(DATA_FILES_PATH, path.basename(filePath)))
+  await copyFile(
+    filePath,
+    path.join(DATA_FILES_PATH, path.basename(filePath)),
+    COPYFILE_EXCL
+  )
 
   return path.basename(filePath)
 })
 
 ipcMain.handle(
   'data-file:load-preview',
-  async (_, fileName: string): Promise<DataFilePreview | null> => {
+  async (_, fileName: string): Promise<DataFilePreview> => {
     const fileType = fileName.split('.').pop()
     const filePath = path.join(DATA_FILES_PATH, fileName)
 
@@ -643,7 +678,7 @@ ipcMain.handle(
 
     return {
       type: fileType,
-      data: parsedData.slice(0, 10),
+      data: parsedData.slice(0, 20),
       props: parsedData[0] ? Object.keys(parsedData[0]) : [],
       total: parsedData.length,
     }
@@ -726,7 +761,6 @@ async function applySettings(
   if (modifiedSettings.proxy) {
     await stopProxyProcess()
     appSettings.proxy = modifiedSettings.proxy
-    proxyEmitter.emit('status:change', 'restarting')
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
   }
   if (modifiedSettings.recorder) {
@@ -761,13 +795,15 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
   console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
 
+  proxyEmitter.emit('status:change', 'starting')
+
   return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
       proxyEmitter.emit('status:change', 'online')
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
-      if (appShuttingDown || proxyStatus === 'restarting') {
+      if (appShuttingDown || proxyStatus === 'starting') {
         // don't restart the proxy if the app is shutting down or if it's already restarting
         return
       }
@@ -787,7 +823,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
       }
 
       proxyRetryCount++
-      proxyEmitter.emit('status:change', 'restarting')
+      proxyEmitter.emit('status:change', 'starting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       const errorMessage = `Proxy failed to start on port ${proxyPort}, restarting...`

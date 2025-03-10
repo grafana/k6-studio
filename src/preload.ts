@@ -1,6 +1,6 @@
 // TODO: https://github.com/grafana/k6-studio/issues/277
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { ipcRenderer, contextBridge, IpcRendererEvent } from 'electron'
+import { ipcRenderer, contextBridge } from 'electron'
 import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
 import { HarWithOptionalResponse } from './types/har'
 import { GeneratorFileData } from './types/generator'
@@ -8,25 +8,14 @@ import { AddToastPayload } from './types/toast'
 import { AppSettings } from './types/settings'
 import * as Sentry from './sentry'
 import { DataFilePreview } from './types/testData'
+import { createListener } from './handlers/utils'
+import * as auth from './handlers/auth/preload'
 
 interface GetFilesResponse {
   recordings: StudioFile[]
   generators: StudioFile[]
   scripts: StudioFile[]
   dataFiles: StudioFile[]
-}
-
-// Create listener and return clean up function to be used in useEffect
-function createListener<T>(channel: string, callback: (data: T) => void) {
-  const listener = (_: IpcRendererEvent, data: T) => {
-    callback(data)
-  }
-
-  ipcRenderer.on(channel, listener)
-
-  return () => {
-    ipcRenderer.removeListener(channel, listener)
-  }
 }
 
 const proxy = {
@@ -129,6 +118,9 @@ const ui = {
   toggleTheme: () => {
     ipcRenderer.send('ui:toggle-theme')
   },
+  detectBrowser: (): Promise<boolean> => {
+    return ipcRenderer.invoke('ui:detect-browser')
+  },
   openContainingFolder: (file: StudioFile) => {
     ipcRenderer.send('ui:open-folder', file)
   },
@@ -215,6 +207,7 @@ const settings = {
 }
 
 const studio = {
+  auth,
   proxy,
   browser,
   script,

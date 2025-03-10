@@ -4,6 +4,7 @@ import { immer } from 'zustand/middleware/immer'
 
 interface State extends FolderContent {
   proxyStatus: ProxyStatus
+  isSettingsDialogOpen: boolean
 }
 
 interface Actions {
@@ -11,6 +12,7 @@ interface Actions {
   removeFile: (file: StudioFile) => void
   setFolderContent: (content: FolderContent) => void
   setProxyStatus: (status: ProxyStatus) => void
+  setIsSettingsDialogOpen: (isOpen: boolean) => void
 }
 
 export type StudioUIStore = State & Actions
@@ -22,6 +24,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
     scripts: new Map(),
     dataFiles: new Map(),
     proxyStatus: 'offline',
+    isSettingsDialogOpen: false,
 
     addFile: (file) =>
       set((state) => {
@@ -69,6 +72,10 @@ export const useStudioUIStore = create<StudioUIStore>()(
     setProxyStatus: (status) =>
       set((state) => {
         state.proxyStatus = status
+      }),
+    setIsSettingsDialogOpen: (isOpen) =>
+      set((state) => {
+        state.isSettingsDialogOpen = isOpen
       }),
   }))
 )

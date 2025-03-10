@@ -22,7 +22,7 @@ export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
       cloud: {
         loadZones: {
           distribution: 'even',
-          loadZones: [],
+          zones: [],
         },
       },
     },

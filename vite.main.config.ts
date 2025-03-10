@@ -7,12 +7,35 @@ import {
   pluginHotRestart,
 } from './vite.base.config'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import * as dotenv from 'dotenv'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+function getDotEnv(defaults: Record<string, string>) {
+  const env = {
+    ...defaults,
+    ...dotenv.config().parsed,
+  }
+
+  return Object.fromEntries(
+    Object.entries(env).map(([key, value]) => [key, JSON.stringify(value)])
+  )
+}
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'build'>
   const { forgeConfigSelf } = forgeEnv
-  const define = getBuildDefine(forgeEnv)
+
+  const define = {
+    ...getBuildDefine(forgeEnv),
+    ...getDotEnv({
+      GRAFANA_CLIENT_ID: '<tbd>',
+      K6_API_URL: 'https://api.k6.io/v6',
+      MOCK_PERSONAL_API_TOKEN: 'I AM NOT A REAL TOKEN!!!',
+      GRAFANA_API_URL: 'https://grafana.com/api',
+    }),
+  }
+
   const config: UserConfig = {
     build: {
       lib: {
@@ -21,11 +44,12 @@ export default defineConfig((env) => {
         formats: ['cjs'],
       },
       rollupOptions: {
-        external,
+        external: external.filter((id) => id !== 'openid-client'),
       },
       sourcemap: true,
     },
     plugins: [
+      tsconfigPaths(),
       pluginHotRestart('restart'),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,

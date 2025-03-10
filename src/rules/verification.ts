@@ -78,27 +78,34 @@ function getCheckDescription(
 export function createVerificationRuleInstance(
   rule: VerificationRule
 ): VerificationRuleInstance {
+  const state: VerificationRuleInstance['state'] = {
+    matchedRequestIds: [],
+  }
+
   return {
     rule,
     type: rule.type,
+    state,
     apply: (requestSnippetSchema: RequestSnippetSchema) => {
       if (!matchFilter(requestSnippetSchema.data.request, rule.filter)) {
         return requestSnippetSchema
       }
 
       const {
-        data: { response },
+        data: { response, id },
       } = requestSnippetSchema
 
       if (!response) {
         return requestSnippetSchema
       }
 
+      // Update state with matched request
+      state.matchedRequestIds = [...state.matchedRequestIds, id]
+
       const value = getValueFromRule(rule, response)
       const checkExpression = getCheckExpression(rule, value)
       const checkDescription = getCheckDescription(rule, value)
 
-      // TODO: should not generate multiple check statements, instead should merge them
       const verificationSnippet = `check(resp, { '${checkDescription}': (r) => ${checkExpression}, })`
 
       return {

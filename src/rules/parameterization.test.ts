@@ -5,6 +5,7 @@ import { createParameterizationRuleInstance } from './parameterization'
 import { ProxyData } from '@/types'
 import {
   customCodeReplaceProjectId,
+  dataFileRule,
   headerRule,
   jsonRule,
   urlRule,
@@ -172,7 +173,24 @@ describe('applyParameterization', () => {
     )
   })
 
-  it('supports array variables')
+  it('supports data files', () => {
+    const requestSnippet = createRequestSnippet(
+      createProxyData({
+        request: createRequest({
+          url: 'http://example.com/api/v1/project_id=123',
+        }),
+      })
+    )
+
+    const updatedRequest = createParameterizationRuleInstance(
+      dataFileRule,
+      idGenerator
+    ).apply(requestSnippet)
+
+    expect(updatedRequest.data.request.url).toBe(
+      "http://example.com/api/v1/project_id=${getUniqueItem(FILES['projects'])['id']}"
+    )
+  })
 })
 
 function createRequestSnippet(proxyData: ProxyData) {

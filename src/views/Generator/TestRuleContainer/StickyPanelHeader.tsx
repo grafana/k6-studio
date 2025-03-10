@@ -7,7 +7,7 @@ export function StickyPanelHeader({ children }: { children: React.ReactNode }) {
       justify="center"
       top="0"
       p="2"
-      minHeight="40px"
+      py="3"
       direction="column"
       css={{
         backgroundColor: 'var(--color-background)',
