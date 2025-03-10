@@ -23,6 +23,10 @@ export interface StartedState {
   testRunUrl: string
 }
 
+export interface ErrorState {
+  type: 'error'
+}
+
 export type RunInCloudState =
   | InitializingState
   | SignInState
@@ -30,3 +34,4 @@ export type RunInCloudState =
   | UploadingState
   | StartingState
   | StartedState
+  | ErrorState

@@ -1,4 +1,4 @@
-import { RunInCloudState } from '@/components/RunInCloud/types'
+import { RunInCloudState } from '@/components/RunInCloud/states/types'
 import { exhaustive } from '@/utils/typescript'
 import { EventEmitter } from 'events'
 import { getProfileData } from '../auth/fs'

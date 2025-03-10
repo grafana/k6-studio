@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { RunInCloudState } from './types'
-import { RunInCloudStates } from './RunInCloudStates'
+import { RunInCloudState, RunInCloudStates } from './states'
 
 interface RunInCloudProps {
   scriptPath: string
@@ -23,6 +22,10 @@ export function RunInCloud({ scriptPath }: RunInCloudProps) {
       })
       .catch((error) => {
         console.error(error)
+
+        setState({
+          type: 'error',
+        })
       })
   }, [scriptPath])
 

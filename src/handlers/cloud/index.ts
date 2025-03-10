@@ -8,14 +8,22 @@ export function initialize(browserWindow: BrowserWindow) {
   let stateMachine: RunInCloudStateMachine | null = null
 
   ipcMain.handle(CloudHandlers.Run, async (_event, scriptName: string) => {
-    stateMachine = new RunInCloudStateMachine(
-      !isAbsolute(scriptName) ? join(SCRIPTS_PATH, scriptName) : scriptName
-    )
+    try {
+      if (stateMachine !== null) {
+        stateMachine.abort()
+      }
 
-    stateMachine.on('state-change', (state) => {
-      browserWindow.webContents.send('cloud:state-change', state)
-    })
+      stateMachine = new RunInCloudStateMachine(
+        !isAbsolute(scriptName) ? join(SCRIPTS_PATH, scriptName) : scriptName
+      )
 
-    return await stateMachine.run()
+      stateMachine.on('state-change', (state) => {
+        browserWindow.webContents.send('cloud:state-change', state)
+      })
+
+      return await stateMachine.run()
+    } finally {
+      stateMachine = null
+    }
   })
 }

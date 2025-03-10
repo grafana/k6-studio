@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { SignInState as ProfileSignInState } from '../Profile/ProfileState/types'
-import { ProfileState } from '../Profile/ProfileState'
+import { SignInState } from '../../Profile/ProfileState/types'
+import { ProfileState } from '../../Profile/ProfileState'
 
-export function SignInState() {
-  const [state, setState] = useState<ProfileSignInState>({
+export function SignIn() {
+  const [state, setState] = useState<SignInState>({
     type: 'signed-out',
   })
 
-  const handleStateChange = (state: ProfileSignInState) => {
+  const handleStateChange = (state: SignInState) => {
     if (state.type === 'signed-in') {
       window.studio.cloud.signedIn()
 
