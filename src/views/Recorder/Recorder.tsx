@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 import { Box, Button, Flex } from '@radix-ui/themes'
-import { PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
+import { GearIcon, PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
 import { Allotment } from 'allotment'
 import log from 'electron-log/renderer'
 
@@ -26,6 +26,7 @@ import { DEFAULT_GROUP_NAME } from '@/constants'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { EmptyState } from './EmptyState'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { useStudioUIStore } from '@/store/ui/useStudioUIStore'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -38,6 +39,9 @@ export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
+  const setIsSettingsDialogOpen = useStudioUIStore(
+    (state) => state.setIsSettingsDialogOpen
+  )
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
 
@@ -146,6 +150,23 @@ export function Recorder() {
     resetProxyData()
     setGroups(INITIAL_GROUPS)
   }
+
+  useEffect(() => {
+    return window.studio.browser.onBrowserLaunchFailed(() => {
+      setRecorderState('idle')
+      showToast({
+        title: 'Failed to launch browser',
+        description: 'Please check your browser path and try again.',
+        action: (
+          <Button onClick={() => setIsSettingsDialogOpen(true)}>
+            <GearIcon />
+            Open settings
+          </Button>
+        ),
+        status: 'error',
+      })
+    })
+  }, [setIsSettingsDialogOpen, showToast])
 
   useEffect(() => {
     return window.studio.browser.onBrowserClosed(async () => {
