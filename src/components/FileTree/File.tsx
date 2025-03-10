@@ -90,7 +90,7 @@ function EditableFile({
     setEditMode(false)
 
     if (isSelected) {
-      navigate(getViewPath(file.type, newFileName))
+      navigate(getViewPath(file.type, newFileName), { replace: true })
     }
   }
 
