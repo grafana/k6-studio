@@ -106,11 +106,16 @@ export function LoadZones() {
           <RadixLink href="" onClick={handleOpenDocs}>
             docs
           </RadixLink>
-          .
+          . Load zones configuration only affects tests running in the cloud.
         </Text>
 
-        <FieldGroup name="distribution" label="Distribution" errors={errors}>
-          <Text size="2">
+        <FieldGroup
+          name="distribution"
+          label="Distribution"
+          errors={errors}
+          width="130px"
+        >
+          <Text size="2" as="label">
             <Flex gap="2" align="center">
               Even
               <Switch
