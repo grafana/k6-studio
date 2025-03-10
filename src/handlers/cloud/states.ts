@@ -5,6 +5,14 @@ import { getProfileData } from '../auth/fs'
 import { waitFor } from '../utils'
 import { CloudHandlers, RunInCloudResult } from './types'
 import { StackInfo } from '@/schemas/profile'
+import { K6Client } from '@/utils/k6Client'
+import { TEMP_K6_ARCHIVE_PATH } from '@/constants/workspace'
+import { basename } from 'path'
+import { safeStorage } from 'electron'
+import { ProjectClient } from '@/services/k6/projects'
+import { TestClient } from '@/services/k6/tests'
+import { CloudCredentials } from '@/services/k6/types'
+import log from 'electron-log/main'
 
 interface InitializingState {
   type: 'initializing'
@@ -16,22 +24,22 @@ interface SigningInState {
 
 interface PreparingState {
   type: 'preparing'
-  token: string
   stack: StackInfo
+  credentials: CloudCredentials
 }
 
 interface UploadingState {
   type: 'uploading'
   archivePath: string
-  token: string
   stack: StackInfo
+  credentials: CloudCredentials
 }
 
 interface StartingState {
   type: 'starting'
-  token: string
-  testId: string
+  testId: number
   stack: StackInfo
+  credentials: CloudCredentials
 }
 
 interface DoneState {
@@ -57,6 +65,8 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
   #controller = new AbortController()
   #signal = this.#controller.signal
 
+  #client = new K6Client()
+
   constructor(scriptPath: string) {
     super()
 
@@ -68,12 +78,18 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
       type: 'initializing',
     }
 
-    while (!this.#signal.aborted) {
-      state = await this.#execute(state)
+    try {
+      while (!this.#signal.aborted) {
+        state = await this.#execute(state)
 
-      if (state.type === 'done') {
-        return state.result
+        if (state.type === 'done') {
+          return state.result
+        }
       }
+    } catch (error) {
+      log.error('Failed to run test in cloud.', error)
+
+      throw error
     }
   }
 
@@ -121,8 +137,11 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
 
     return {
       type: 'preparing',
-      token,
       stack,
+      credentials: {
+        stackId: stack.id,
+        token: safeStorage.decryptString(Buffer.from(token, 'base64')),
+      },
     }
   }
 
@@ -146,16 +165,17 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
       type: 'preparing',
     })
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          type: 'uploading',
-          archivePath: this.#scriptPath,
-          token: state.token,
-          stack: state.stack,
-        })
-      }, 1000)
+    await this.#client.archive({
+      scriptPath: this.#scriptPath,
+      outputPath: TEMP_K6_ARCHIVE_PATH,
     })
+
+    return {
+      type: 'uploading',
+      stack: state.stack,
+      archivePath: TEMP_K6_ARCHIVE_PATH,
+      credentials: state.credentials,
+    }
   }
 
   async #upload(state: UploadingState): Promise<State> {
@@ -163,16 +183,32 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
       type: 'uploading',
     })
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          type: 'starting',
-          token: state.token,
-          testId: 'test-id',
-          stack: state.stack,
-        })
-      }, 1000)
+    const options = await this.#client.inspect({
+      scriptPath: this.#scriptPath,
     })
+
+    const projects = new ProjectClient(state.credentials)
+    const tests = new TestClient(state.credentials)
+
+    const name = options?.cloud?.name ?? basename(this.#scriptPath)
+
+    const projectId =
+      options?.cloud?.projectID ??
+      (await projects.findDefault({ signal: this.#signal })).id
+
+    const test = await tests.upload({
+      projectId,
+      name,
+      path: state.archivePath,
+      signal: this.#signal,
+    })
+
+    return {
+      type: 'starting',
+      testId: test.id,
+      stack: state.stack,
+      credentials: state.credentials,
+    }
   }
 
   async #start(state: StartingState): Promise<State> {
@@ -180,16 +216,19 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
       type: 'starting',
     })
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          type: 'done',
-          result: {
-            testRunUrl: `${state.stack.url}/a/k6-app/runs/123`,
-          },
-        })
-      }, 1000)
+    const tests = new TestClient(state.credentials)
+
+    const run = await tests.run({
+      testId: state.testId,
+      signal: this.#signal,
     })
+
+    return {
+      type: 'done',
+      result: {
+        testRunUrl: `${state.stack.url}/a/k6-app/runs/${run.id}`,
+      },
+    }
   }
 
   abort() {
