@@ -106,7 +106,7 @@ export function LoadZones() {
           <RadixLink href="" onClick={handleOpenDocs}>
             docs
           </RadixLink>
-          . Load zones configuration only affect tests running in the cloud.
+          . Load zones configuration only affects tests running in the cloud.
         </Text>
 
         <FieldGroup
