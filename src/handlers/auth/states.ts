@@ -7,7 +7,7 @@ import {
   SignInResult,
   Stack,
 } from '@/types/auth'
-import { safeStorage, shell } from 'electron'
+import { shell } from 'electron'
 import { waitFor } from '../utils'
 import { fetchPersonalToken } from '@/services/k6'
 import { getProfileData, saveProfileData } from './fs'
@@ -243,10 +243,6 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
       }
     }
 
-    const encryptedToken = safeStorage
-      .encryptString(apiTokenResponse.token)
-      .toString('base64')
-
     const profileData = await getProfileData()
 
     const stackInfo: StackInfo = {
@@ -263,7 +259,7 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
       version: '1.0',
       tokens: {
         ...profileData.tokens,
-        [stack.id]: encryptedToken,
+        [stack.id]: apiTokenResponse.token,
       },
       profiles: {
         ...profileData.profiles,
