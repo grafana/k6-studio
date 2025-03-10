@@ -16,6 +16,7 @@ import {
   readFile,
   stat,
 } from 'fs/promises'
+import { readdirSync, renameSync } from 'fs'
 import { updateElectronApp } from 'update-electron-app'
 import path from 'path'
 import eventEmitter from 'events'
@@ -116,6 +117,20 @@ if (require('electron-squirrel-startup')) {
 }
 
 initializeLogger()
+migrateJsonGenerator()
+
+function migrateJsonGenerator() {
+  readdirSync(GENERATORS_PATH, { withFileTypes: true })
+    .filter((f) => f.isFile() && path.extname(f.name) === '.json')
+    .map((f) => {
+      const oldPath = path.join(GENERATORS_PATH, f.name)
+      const newPath = path.join(
+        GENERATORS_PATH,
+        path.parse(f.name).name + '.k6gen'
+      )
+      renameSync(oldPath, newPath)
+    })
+}
 
 const createSplashWindow = async () => {
   splashscreenWindow = new BrowserWindow({
@@ -489,7 +504,7 @@ ipcMain.handle('generator:create', async (_, recordingPath: string) => {
   const fileName = await createFileWithUniqueName({
     data: JSON.stringify(generator, null, 2),
     directory: GENERATORS_PATH,
-    ext: '.json',
+    ext: '.k6gen',
     prefix: 'Generator',
   })
 
@@ -910,7 +925,7 @@ function getStudioFileFromPath(filePath: string): StudioFile | undefined {
 
   if (
     filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === '.json'
+    path.extname(filePath) === '.k6gen'
   ) {
     return {
       type: 'generator',
