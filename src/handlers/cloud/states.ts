@@ -8,7 +8,6 @@ import { StackInfo } from '@/schemas/profile'
 import { K6Client } from '@/utils/k6Client'
 import { TEMP_K6_ARCHIVE_PATH } from '@/constants/workspace'
 import { basename } from 'path'
-import { safeStorage } from 'electron'
 import { ProjectClient } from '@/services/k6/projects'
 import { TestClient } from '@/services/k6/tests'
 import { CloudCredentials } from '@/services/k6/types'
@@ -144,7 +143,7 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
       stack,
       credentials: {
         stackId: stack.id,
-        token: safeStorage.decryptString(Buffer.from(token, 'base64')),
+        token: token,
       },
     }
   }
