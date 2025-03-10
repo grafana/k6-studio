@@ -30,7 +30,18 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
       },
     },
     testData: { ...generator.testData, files: [] },
-    rules: generator.rules,
+    // To please the schema addition defined in v1 we need to set the default value for extractionMode
+    // since the rule was working in single mode before the addition of multiple mode we define that as default
+    rules: generator.rules.map((rule) => {
+      if (rule.type === 'correlation') {
+        return {
+          ...rule,
+          extractor: { ...rule.extractor, extractionMode: 'single' },
+        }
+      }
+
+      return rule
+    }),
     allowlist: generator.allowlist,
     includeStaticAssets: generator.includeStaticAssets,
     scriptName: generator.scriptName,
