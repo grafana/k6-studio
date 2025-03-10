@@ -124,8 +124,8 @@ function applyRule({
     )
 
   if (extractedValue && correlationExtractionSnippet) {
-    // Skip extraction and bump count if value is already extracted
-    if (state.extractedValue) {
+    // Skip extraction and bump count if value is already extracted and we are in single extraction mode
+    if (state.extractedValue && rule.extractor.extractionMode === 'single') {
       setState({
         count: state.count + 1,
       })
@@ -858,7 +858,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     ).toStrictEqual(expectedResult)
   })
 
-  it('extracts only first correlation match', () => {
+  it('extracts only first correlation match in single mode', () => {
     const recording = [
       createProxyData({
         response: createResponse({
@@ -887,6 +887,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
           from: 'body',
           path: 'user_id',
         },
+        extractionMode: 'single',
       },
     }
 
@@ -902,8 +903,59 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     expect(requestSnippets[0]?.after[0]?.replace(/\s/g, '')).toBe(
       `correlation_vars['correlation_0']=resp.json().user_id`
     )
-
+    expect(ruleInstance.state.extractedValue).toBe('444')
     expect(requestSnippets[1]?.after).toEqual([])
+  })
+
+  it('extracts multiple correlation match in multiple mode', () => {
+    const recording = [
+      createProxyData({
+        response: createResponse({
+          content: JSON.stringify({ user_id: '444' }),
+        }),
+      }),
+      createProxyData({
+        request: createRequest({
+          url: 'http://test.k6.io/api/v1/login?user_id=444',
+        }),
+        response: createResponse({
+          content: JSON.stringify({ user_id: '777' }),
+        }),
+      }),
+    ]
+    const sequentialIdGenerator = generateSequentialInt()
+
+    const rule: CorrelationRule = {
+      type: 'correlation',
+      id: '1',
+      enabled: true,
+      extractor: {
+        filter: { path: '' },
+        selector: {
+          type: 'json',
+          from: 'body',
+          path: 'user_id',
+        },
+        extractionMode: 'multiple',
+      },
+    }
+
+    const ruleInstance = createCorrelationRuleInstance(
+      rule,
+      sequentialIdGenerator
+    )
+
+    const requestSnippets = recording.map((data) =>
+      ruleInstance.apply({ data, before: [], after: [] })
+    )
+
+    expect(requestSnippets[0]?.after[0]?.replace(/\s/g, '')).toBe(
+      `correlation_vars['correlation_0']=resp.json().user_id`
+    )
+    expect(requestSnippets[1]?.after[0]?.replace(/\s/g, '')).toBe(
+      `correlation_vars['correlation_0']=resp.json().user_id`
+    )
+    expect(ruleInstance.state.extractedValue).toBe('777')
   })
 
   it('does not apply replacer if filter does not match', () => {
@@ -935,6 +987,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
           from: 'body',
           path: 'user_id',
         },
+        extractionMode: 'single',
       },
 
       replacer: {
@@ -990,6 +1043,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
           from: 'body',
           path: 'user_id',
         },
+        extractionMode: 'single',
       },
 
       replacer: {
