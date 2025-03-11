@@ -128,7 +128,11 @@ export function Generator() {
   return (
     <View
       title="Generator"
-      subTitle={getFileNameWithoutExtension(fileName)}
+      subTitle={
+        <>
+          {getFileNameWithoutExtension(fileName)} {isDirty && '(edited)'}
+        </>
+      }
       actions={
         <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }
