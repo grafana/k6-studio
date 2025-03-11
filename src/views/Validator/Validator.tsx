@@ -163,11 +163,16 @@ export function Validator() {
           />
         }
       />
-      <RunInCloudDialog
-        open={showRunInCloudDialog}
-        scriptPath={scriptPath ?? 'Why is this undefineable?'}
-        onOpenChange={setShowRunInCloudDialog}
-      />
+      {scriptPath !== undefined && (
+        <RunInCloudDialog
+          open={showRunInCloudDialog}
+          script={{
+            type: 'file',
+            path: scriptPath,
+          }}
+          onOpenChange={setShowRunInCloudDialog}
+        />
+      )}
     </View>
   )
 }

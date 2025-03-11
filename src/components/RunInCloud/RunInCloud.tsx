@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { RunInCloudState, RunInCloudStates } from './states'
+import { Script } from '@/handlers/cloud/types'
+import { useDeepCompareEffect } from 'react-use'
 
 interface RunInCloudProps {
-  scriptPath: string
+  script: Script
   onClose: () => void
 }
 
-export function RunInCloud({ scriptPath, onClose }: RunInCloudProps) {
+export function RunInCloud({ script, onClose }: RunInCloudProps) {
   const onCloseRef = useRef(onClose)
 
   const [state, setState] = useState<RunInCloudState>({
@@ -20,9 +22,9 @@ export function RunInCloud({ scriptPath, onClose }: RunInCloudProps) {
     onCloseRef.current = onClose
   }, [onClose])
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     window.studio.cloud
-      .run(scriptPath)
+      .run(script)
       .then(() => {
         onCloseRef.current()
       })
@@ -33,7 +35,7 @@ export function RunInCloud({ scriptPath, onClose }: RunInCloudProps) {
           type: 'error',
         })
       })
-  }, [scriptPath])
+  }, [script])
 
   useEffect(() => {
     return window.studio.cloud.onStateChange(setState)

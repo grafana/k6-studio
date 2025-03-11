@@ -1,12 +1,12 @@
 import { ipcRenderer } from 'electron'
-import { CloudHandlers, RunInCloudResult } from './types'
+import { CloudHandlers, RunInCloudResult, Script } from './types'
 import { RunInCloudState } from '@/components/RunInCloud/states/types'
 import { createListener } from '../utils'
 
-export function run(scriptPath: string): Promise<RunInCloudResult> {
+export function run(scroåt: Script): Promise<RunInCloudResult> {
   return ipcRenderer.invoke(
     CloudHandlers.Run,
-    scriptPath
+    scroåt
   ) as Promise<RunInCloudResult>
 }
 

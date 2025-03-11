@@ -13,4 +13,16 @@ export interface RunInCloudStarted {
   testRunUrl: string
 }
 
+export interface ScriptFile {
+  type: 'file'
+  path: string
+}
+
+export interface RawScript {
+  type: 'raw'
+  content: string
+}
+
+export type Script = ScriptFile | RawScript
+
 export type RunInCloudResult = RunInCloudAborted | RunInCloudStarted

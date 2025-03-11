@@ -8,8 +8,11 @@ import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
 import { ValidatorDialog } from '../ValidatorDialog'
 import { ExportScriptDialog } from '../ExportScriptDialog'
 import { exportScript } from '../Generator.utils'
+import { RunInCloudButton } from '@/components/RunInCloud/RunInCloudButton'
+import { RunInCloudDialog } from '@/components/RunInCloud/RunInCloudDialog'
 
 export function ScriptPreview() {
+  const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
@@ -19,6 +22,11 @@ export function ScriptPreview() {
   return (
     <Flex direction="column" height="100%">
       <Flex p="2" gap="2" justify="end">
+        <RunInCloudButton
+          onClick={() => {
+            setIsRunInCloudDialogOpen(true)
+          }}
+        />
         <Button
           onClick={() => {
             setIsValidatorDialogOpen(true)
@@ -47,6 +55,11 @@ export function ScriptPreview() {
       )}
       {isScriptExportable && (
         <>
+          <RunInCloudDialog
+            open={isRunInCloudDialogOpen}
+            script={{ type: 'raw', content: preview }}
+            onOpenChange={setIsRunInCloudDialogOpen}
+          />
           <ValidatorDialog
             script={preview}
             open={isValidatorDialogOpen}

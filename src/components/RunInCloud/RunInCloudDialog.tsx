@@ -2,16 +2,17 @@ import { css } from '@emotion/react'
 import { Cross1Icon } from '@radix-ui/react-icons'
 import { Dialog, Flex, IconButton } from '@radix-ui/themes'
 import { RunInCloud } from './RunInCloud'
+import { Script } from '@/handlers/cloud/types'
 
 interface RunInCloudDialogProps {
   open: boolean
-  scriptPath: string
+  script: Script
   onOpenChange: (open: boolean) => void
 }
 
 export function RunInCloudDialog({
   open,
-  scriptPath,
+  script,
   onOpenChange,
 }: RunInCloudDialogProps) {
   return (
@@ -30,10 +31,7 @@ export function RunInCloudDialog({
               <Cross1Icon />
             </IconButton>
           </Dialog.Close>
-          <RunInCloud
-            scriptPath={scriptPath}
-            onClose={() => onOpenChange(false)}
-          />
+          <RunInCloud script={script} onClose={() => onOpenChange(false)} />
         </Flex>
       </Dialog.Content>
     </Dialog.Root>
