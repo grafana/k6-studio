@@ -3,13 +3,15 @@ import { useShallowCompareEffect } from 'react-use'
 
 import { WebLogView } from '@/components/WebLogView'
 import { ProxyData } from '@/types'
-import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
+import { RequestListHeader } from './RequestListHeader'
+import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { RequestRow } from './RequestRow'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -22,6 +24,12 @@ export function RequestList({
   onSelectRequest,
   selectedRequest,
 }: RequestListProps) {
+  const previewOriginalRequests = useGeneratorStore(
+    (state) => state.previewOriginalRequests
+  )
+
+  const { requestsWithRulesApplied, selectedRuleInstance } = useApplyRules()
+
   const {
     filter,
     setFilter,
@@ -29,7 +37,7 @@ export function RequestList({
     filterAllData,
     setFilterAllData,
   } = useFilterRequests({
-    proxyData: requests,
+    proxyData: previewOriginalRequests ? requests : requestsWithRulesApplied,
   })
   const allRequests = useGeneratorStore((state) => state.requests)
 
@@ -62,6 +70,15 @@ export function RequestList({
 
   return (
     <Flex direction="column" height="100%">
+      {!recordingError && (
+        <RequestListHeader
+          filter={filter}
+          setFilter={setFilter}
+          filterAllData={filterAllData}
+          setFilterAllData={setFilterAllData}
+        />
+      )}
+
       <ScrollArea scrollbars="vertical">
         {recordingError && (
           <EmptyMessage
@@ -72,27 +89,21 @@ export function RequestList({
         )}
 
         {!recordingError && (
-          <>
-            <Filter
-              filter={filter}
-              setFilter={setFilter}
-              css={{
-                borderRadius: 0,
-                outlineOffset: '-2px',
-                boxShadow: 'none',
-              }}
-              size="2"
-              filterAllData={filterAllData}
-              setFilterAllData={setFilterAllData}
-            />
-            <WebLogView
-              requests={filteredRequests}
-              selectedRequestId={selectedRequest?.id}
-              onSelectRequest={onSelectRequest}
-              groups={groups}
-              filter={filter}
-            />
-          </>
+          <WebLogView
+            requests={filteredRequests}
+            selectedRequestId={selectedRequest?.id}
+            onSelectRequest={onSelectRequest}
+            groups={groups}
+            filter={filter}
+            RowComponent={(props) => (
+              <RequestRow
+                {...props}
+                highlightedRequestIds={
+                  selectedRuleInstance?.state?.matchedRequestIds
+                }
+              />
+            )}
+          />
         )}
       </ScrollArea>
     </Flex>

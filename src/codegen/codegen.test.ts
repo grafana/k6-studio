@@ -8,6 +8,7 @@ import {
   generateVUCode,
   generateDataFileDeclarations,
   generateImports,
+  generateParameterizationCustomCode,
 } from './codegen'
 import { TestRule } from '@/types/rules'
 import { GeneratorFileData } from '@/types/generator'
@@ -22,6 +23,8 @@ import {
   jsonRule,
 } from '@/test/fixtures/parameterizationRules'
 import { prettify } from '@/utils/prettify'
+import { createParameterizationRuleInstance } from '@/rules/parameterization'
+import { generateSequentialInt } from '@/rules/utils'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
 
@@ -54,6 +57,7 @@ describe('Code generation', () => {
 
       import { group, sleep, check } from 'k6'
       import http from 'k6/http'
+      import execution from 'k6/execution'
 
       export const options = {}
 
@@ -88,6 +92,12 @@ describe('Code generation', () => {
                 },
               },
               thresholds: [],
+              cloud: {
+                loadZones: {
+                  distribution: 'even',
+                  zones: [],
+                },
+              },
             },
             testData: {
               variables: [],
@@ -121,6 +131,12 @@ describe('Code generation', () => {
           },
         },
         thresholds: [],
+        cloud: {
+          loadZones: {
+            distribution: 'even',
+            zones: [],
+          },
+        },
       },
       testData: {
         variables: [],
@@ -136,6 +152,7 @@ describe('Code generation', () => {
       const expectedResult = await prettify(`
         import { group, sleep, check } from 'k6'
         import http from 'k6/http'
+        import execution from "k6/execution";
       `)
 
       expect(await prettify(generateImports(generator))).toBe(expectedResult)
@@ -146,6 +163,7 @@ describe('Code generation', () => {
       const expectedResult = await prettify(`
         import { group, sleep, check } from 'k6'
         import http from 'k6/http'
+        import execution from "k6/execution";
         import { SharedArray } from 'k6/data'
         import Papa from 'https://jslib.k6.io/papaparse/5.1.1/index.js'
         `)
@@ -193,14 +211,12 @@ describe('Code generation', () => {
           users: new SharedArray("users", () => {
             return Papa.parse(open("../Data/users.csv"), { header: true }).data;
           }),
-          
+
           products: new SharedArray("products", () => {
             const data = JSON.parse(open("../Data/products.json"));
             return Array.isArray(data) ? data : [data];
           }),
         };`)
-      const t = await prettify(generateDataFileDeclarations(files))
-      console.log(t)
 
       expect(await prettify(generateDataFileDeclarations(files))).toBe(
         expectedResult
@@ -261,6 +277,7 @@ describe('Code generation', () => {
               from: 'body',
               path: 'user_id',
             },
+            extractionMode: 'single',
           },
         },
         {
@@ -274,6 +291,7 @@ describe('Code generation', () => {
               from: 'headers',
               regex: 'project_id=(.*)$',
             },
+            extractionMode: 'single',
           },
         },
       ]
@@ -343,39 +361,39 @@ describe('Code generation', () => {
           let regex
           let url
           const correlation_vars = {}
-  
+
           group('one', function () {
             params = {
               headers: {}, cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/foo\`
             resp = http.request('POST', url, null, params)
-   
+
             params = {
               headers: {}, cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/login?project_id=555\`
             resp = http.request('POST', url, null, params)
           })
-  
+
           group('two', function () {
             params = {
               headers: {}, cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/users/333\`
             resp = http.request('GET', url, null, params)
-  
+
             params = {
               headers: {}, cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/users\`
             resp = http.request('POST', url, \`${JSON.stringify({ user_id: '333' })}\`, params)
           })
-  
+
           sleep(1)
         `)
 
@@ -458,7 +476,14 @@ describe('Code generation', () => {
           let regex
           let url
           const correlation_vars = {}
-  
+
+          function getParameterizationValue1() {
+            const randomInteger = Math.floor(Math.random() * 100000)
+            return randomInteger
+          }
+          function getParameterizationValue2() {
+            return '123456'
+          }
           group('Default group', function () {
             params = {
               headers: {
@@ -466,38 +491,30 @@ describe('Code generation', () => {
               },
               cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/users\`
             resp = http.request('POST', url, \`${JSON.stringify({ user_id: 'TEST_ID' })}\`, params)
-  
+
             params = {
               headers: {},
               cookies: {},
             }
-  
-            function getParameterizationValue1() {
-              const randomInteger = Math.floor(Math.random() * 100000)
-              return randomInteger
-            }
-            function getParameterizationValue2() {
-              return '123456'
-            }
-  
+
             url = http.url\`http://example.com/api/v1/users?project_id=\${getParameterizationValue1()}&csrf=\${getParameterizationValue2()}\`
             resp = http.request('GET', url, null, params)
-  
-  
+
+
             params = {
               headers: {},
               cookies: {},
             }
-  
+
             url = http.url\`http://example.com/api/v1/users?project_id=\${getParameterizationValue1()}\`
             resp = http.request('GET', url, null, params)
           })
-  
+
           sleep(1)
-  
+
         `)
 
         expect(
@@ -519,7 +536,7 @@ describe('Code generation', () => {
           let regex
           let url
           const correlation_vars = {}
-  
+
           group('Default group', function () {
             params = {
               headers: {
@@ -527,30 +544,30 @@ describe('Code generation', () => {
               },
               cookies: {}
             }
-  
+
             url = http.url\`http://test.k6.io/api/v1/users\`
             resp = http.request('POST', url, \`${JSON.stringify({ user_id: '333' })}\`, params)
-  
+
             params = {
               headers: {},
               cookies: {},
             }
-   
+
             url = http.url\`http://example.com/api/v1/users?project_id=123&csrf=321\`
             resp = http.request('GET', url, null, params)
-  
-  
+
+
             params = {
               headers: {},
               cookies: {},
             }
-  
+
             url = http.url\`http://example.com/api/v1/users?project_id=123\`
             resp = http.request('GET', url, null, params)
           })
-  
+
           sleep(1)
-  
+
         `)
 
         expect(
@@ -663,6 +680,24 @@ describe('Code generation', () => {
     }
   `
       expect(generateRequestParams(request)).toBe(expectedResult)
+    })
+  })
+
+  describe('generateParameterizationCustomCode', () => {
+    it('should generate custom code correctly', async () => {
+      const idGenerator = generateSequentialInt()
+      const { rule } = createParameterizationRuleInstance(
+        customCodeReplaceProjectId,
+        idGenerator
+      )
+
+      const customCode = generateParameterizationCustomCode([rule])
+
+      expect(await prettify(customCode)).toBe(
+        await prettify(
+          `function getParameterizationValue0() { ${customCodeReplaceProjectId.value.code} }`
+        )
+      )
     })
   })
 })

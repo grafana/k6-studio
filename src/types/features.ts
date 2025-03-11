@@ -1,1 +1,1 @@
-export type Feature = 'data-files'
+export type Feature = 'dummy-feature'

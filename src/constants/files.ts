@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-control-regex
 export const INVALID_FILENAME_CHARS = /[<>:"/\\|?*\x00-\x1F]/
 
-// Limit the file size for preview to avoid performance issues
-export const FILE_SIZE_PREVIEW_THRESHOLD = 1024 * 1024 * 10
+// TODO: Find a better way to handle large files
+// Limit the file size for data files to avoid performance issues
+export const MAX_DATA_FILE_SIZE = 1024 * 1024 * 10

@@ -1,6 +1,7 @@
 import { Flex, TextField, Button } from '@radix-ui/themes'
 import { FieldGroup } from './FieldGroup'
 import { Controller, FieldErrors } from 'react-hook-form'
+import { css } from '@emotion/react'
 
 type FileUploadInputProps = {
   name: string
@@ -34,29 +35,26 @@ export const FileUploadInput = ({
             hint={hint}
             hintType="text"
           >
-            <TextField.Root
-              type="text"
-              disabled={disabled}
-              onChange={field.onChange}
-              name={field.name}
-              // TODO: https://github.com/grafana/k6-studio/issues/277
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              value={field.value}
-            />
+            <Flex gap="2" width="100%">
+              <TextField.Root
+                css={css`
+                  flex: 1;
+                `}
+                type="text"
+                disabled={disabled}
+                onChange={field.onChange}
+                name={field.name}
+                // TODO: https://github.com/grafana/k6-studio/issues/277
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                value={field.value}
+              />
+              <Button disabled={disabled} onClick={onSelectFile} type="button">
+                {buttonText}
+              </Button>
+            </Flex>
           </FieldGroup>
         )}
       />
-
-      <Button
-        ml="2"
-        disabled={disabled}
-        onClick={onSelectFile}
-        style={{
-          marginTop: 48,
-        }}
-      >
-        {buttonText}
-      </Button>
     </Flex>
   )
 }

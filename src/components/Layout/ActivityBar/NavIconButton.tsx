@@ -18,6 +18,7 @@ export function NavIconButton({
   return (
     <Tooltip content={tooltip} side="right">
       <IconButton
+        aria-label={tooltip}
         variant="ghost"
         color="gray"
         asChild={onClick === undefined}
