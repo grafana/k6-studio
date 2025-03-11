@@ -13,7 +13,7 @@ export function RunInCloudContent({ script, onClose }: RunInCloudContentProps) {
   const onCloseRef = useRef(onClose)
 
   const [state, setState] = useState<RunInCloudState>({
-    type: 'sign-in',
+    type: 'initializing',
   })
 
   useEffect(() => {

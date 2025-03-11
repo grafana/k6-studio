@@ -2,7 +2,7 @@ import { exhaustive } from '@/utils/typescript'
 import { SignIn } from './SignIn'
 import { RunInCloudState } from './types'
 import { Error } from './Error'
-import { LoadingMessage } from '@/components/Profile/LoadingMessage'
+import { Loading } from './Loading'
 
 interface RunInCloudStatesProps {
   state: RunInCloudState
@@ -12,7 +12,7 @@ interface RunInCloudStatesProps {
 export function RunInCloudStates({ state }: RunInCloudStatesProps) {
   switch (state.type) {
     case 'initializing':
-      return <LoadingMessage>Initializing...</LoadingMessage>
+      return <Loading>Initializing...</Loading>
 
     case 'sign-in':
       return <SignIn />
@@ -21,7 +21,7 @@ export function RunInCloudStates({ state }: RunInCloudStatesProps) {
     case 'uploading':
     case 'starting':
     case 'started':
-      return <LoadingMessage>Uploading...</LoadingMessage>
+      return <Loading>Uploading test...</Loading>
 
     case 'error':
       return <Error state={state} />
