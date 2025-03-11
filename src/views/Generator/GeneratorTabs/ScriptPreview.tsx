@@ -1,4 +1,4 @@
-import { Button, Flex } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 import { useState } from 'react'
 
 import { CodeEditor } from '@/components/Monaco/CodeEditor'
@@ -10,6 +10,7 @@ import { ExportScriptDialog } from '../ExportScriptDialog'
 import { exportScript } from '../Generator.utils'
 import { RunInCloudButton } from '@/components/RunInCloud/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloud/RunInCloudDialog'
+import { GhostButton } from '@/components/GhostButton'
 
 export function ScriptPreview() {
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
@@ -21,32 +22,32 @@ export function ScriptPreview() {
 
   return (
     <Flex direction="column" height="100%">
-      <Flex p="2" gap="2" justify="end">
+      <Flex py="1" px="2" gap="2" align="center" justify="end">
+        <GhostButton
+          disabled={!isScriptExportable}
+          onClick={() => {
+            setIsValidatorDialogOpen(true)
+          }}
+        >
+          <CheckCircledIcon />
+          Validate
+        </GhostButton>
+        <GhostButton
+          disabled={!isScriptExportable}
+          onClick={() => {
+            setIsExportScriptDialogOpen(true)
+          }}
+        >
+          <DownloadIcon />
+          Export
+        </GhostButton>
         <RunInCloudButton
+          variant="outline"
+          disabled={!isScriptExportable}
           onClick={() => {
             setIsRunInCloudDialogOpen(true)
           }}
         />
-        <Button
-          onClick={() => {
-            setIsValidatorDialogOpen(true)
-          }}
-          disabled={!isScriptExportable}
-          variant="soft"
-        >
-          <CheckCircledIcon />
-          Validate
-        </Button>
-        <Button
-          onClick={() => {
-            setIsExportScriptDialogOpen(true)
-          }}
-          disabled={!isScriptExportable}
-          variant="soft"
-        >
-          <DownloadIcon />
-          Export
-        </Button>
       </Flex>
       {error ? (
         <ScriptPreviewError error={error} />

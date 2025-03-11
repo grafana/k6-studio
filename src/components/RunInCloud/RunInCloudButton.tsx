@@ -1,13 +1,9 @@
-import { Button } from '@radix-ui/themes'
+import { Button, ButtonProps } from '@radix-ui/themes'
 import { GrafanaIcon } from '../icons/GrafanaIcon'
 
-interface RunInCloudButtonProps {
-  onClick: () => void
-}
-
-export function RunInCloudButton({ onClick }: RunInCloudButtonProps) {
+export function RunInCloudButton(props: ButtonProps) {
   return (
-    <Button variant="outline" onClick={onClick}>
+    <Button {...props}>
       <GrafanaIcon /> Run in Grafana Cloud
     </Button>
   )
