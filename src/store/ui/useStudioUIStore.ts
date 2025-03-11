@@ -1,3 +1,4 @@
+import { SettingsTabValue } from '@/components/Settings/types'
 import { FolderContent, ProxyStatus, StudioFile } from '@/types'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
@@ -5,6 +6,7 @@ import { immer } from 'zustand/middleware/immer'
 interface State extends FolderContent {
   proxyStatus: ProxyStatus
   isSettingsDialogOpen: boolean
+  selectedSettingsTab: SettingsTabValue
 }
 
 interface Actions {
@@ -12,7 +14,8 @@ interface Actions {
   removeFile: (file: StudioFile) => void
   setFolderContent: (content: FolderContent) => void
   setProxyStatus: (status: ProxyStatus) => void
-  setIsSettingsDialogOpen: (isOpen: boolean) => void
+  openSettingsDialog: (tab?: SettingsTabValue) => void
+  closeSettingsDialog: () => void
 }
 
 export type StudioUIStore = State & Actions
@@ -25,6 +28,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
     dataFiles: new Map(),
     proxyStatus: 'offline',
     isSettingsDialogOpen: false,
+    selectedSettingsTab: 'proxy',
 
     addFile: (file) =>
       set((state) => {
@@ -73,9 +77,15 @@ export const useStudioUIStore = create<StudioUIStore>()(
       set((state) => {
         state.proxyStatus = status
       }),
-    setIsSettingsDialogOpen: (isOpen) =>
+    openSettingsDialog: (tab) =>
       set((state) => {
-        state.isSettingsDialogOpen = isOpen
+        state.selectedSettingsTab = tab || 'proxy'
+        state.isSettingsDialogOpen = true
+      }),
+    closeSettingsDialog: () =>
+      set((state) => {
+        state.isSettingsDialogOpen = false
+        state.selectedSettingsTab = 'proxy'
       }),
   }))
 )
