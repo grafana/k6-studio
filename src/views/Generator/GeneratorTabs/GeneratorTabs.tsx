@@ -16,13 +16,17 @@ import { Allowlist } from '../Allowlist'
 import { ProxyData } from '@/types'
 import { TestData } from '../TestData'
 
-export function GeneratorTabs({
-  onSelectRequest,
-  selectedRequest,
-}: {
-  onSelectRequest: (request: ProxyData | null) => void
+interface GeneratorTabsProps {
+  fileName: string
   selectedRequest: ProxyData | null
-}) {
+  onSelectRequest: (request: ProxyData | null) => void
+}
+
+export function GeneratorTabs({
+  fileName,
+  selectedRequest,
+  onSelectRequest,
+}: GeneratorTabsProps) {
   const [tab, setTab] = useState('requests')
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
   const { hasError } = useScriptPreview()
@@ -87,7 +91,7 @@ export function GeneratorTabs({
             flex-grow: 1;
           `}
         >
-          <ScriptPreview />
+          <ScriptPreview fileName={fileName} />
         </Tabs.Content>
       </Tabs.Root>
     </Flex>

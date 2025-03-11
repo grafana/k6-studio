@@ -7,7 +7,6 @@ import { CloudHandlers, RunInCloudResult } from './types'
 import { StackInfo } from '@/schemas/profile'
 import { K6Client } from '@/utils/k6Client'
 import { TEMP_K6_ARCHIVE_PATH } from '@/constants/workspace'
-import { basename } from 'path'
 import { ProjectClient } from '@/services/k6/projects'
 import { TestClient } from '@/services/k6/tests'
 import { CloudCredentials } from '@/services/k6/types'
@@ -59,6 +58,7 @@ interface RunInCloudEventMap {
 }
 
 export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
+  #testName: string
   #scriptPath: string
 
   #controller = new AbortController()
@@ -66,10 +66,11 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
 
   #client = new K6Client()
 
-  constructor(scriptPath: string) {
+  constructor(scriptPath: string, testName: string) {
     super()
 
     this.#scriptPath = scriptPath
+    this.#testName = testName
   }
 
   async run(): Promise<RunInCloudResult> {
@@ -193,7 +194,7 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
     const projects = new ProjectClient(state.credentials)
     const tests = new TestClient(state.credentials)
 
-    const name = options?.cloud?.name ?? basename(this.#scriptPath)
+    const name = options?.cloud?.name ?? this.#testName
 
     const projectId =
       options?.cloud?.projectID ??

@@ -1,18 +1,19 @@
 import { BrowserWindow, ipcMain, shell } from 'electron'
-import { CloudHandlers, Script } from './types'
+import { CloudHandlers, RawScript, Script } from './types'
 import { RunInCloudStateMachine } from './states'
-import { isAbsolute, join } from 'path'
+import { basename, extname, isAbsolute, join } from 'path'
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/script'
 import { rm, writeFile } from 'fs/promises'
 
-async function createTempFile(content: string) {
+async function createTempFile(script: RawScript) {
   const tempFileName = getTempScriptName()
   const tempFilePath = join(SCRIPTS_PATH, tempFileName)
 
-  await writeFile(tempFilePath, content)
+  await writeFile(tempFilePath, script.content)
 
   return {
+    name: basename(script.name, extname(script.name)),
     path: tempFilePath,
     dispose() {
       try {
@@ -26,10 +27,11 @@ async function createTempFile(content: string) {
 
 function toScriptFile(script: Script) {
   if (script.type === 'raw') {
-    return createTempFile(script.content)
+    return createTempFile(script)
   }
 
   return {
+    name: basename(script.path),
     path: script.path,
     dispose() {},
   }
@@ -50,7 +52,7 @@ export function initialize(browserWindow: BrowserWindow) {
         stateMachine.abort()
       }
 
-      stateMachine = new RunInCloudStateMachine(absolutePath)
+      stateMachine = new RunInCloudStateMachine(absolutePath, file.name)
 
       stateMachine.on('state-change', (state) => {
         browserWindow.webContents.send('cloud:state-change', state)

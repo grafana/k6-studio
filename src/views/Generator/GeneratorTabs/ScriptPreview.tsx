@@ -12,7 +12,11 @@ import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { GhostButton } from '@/components/GhostButton'
 
-export function ScriptPreview() {
+interface ScriptPreviewProps {
+  fileName: string
+}
+
+export function ScriptPreview({ fileName }: ScriptPreviewProps) {
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
@@ -58,7 +62,7 @@ export function ScriptPreview() {
         <>
           <RunInCloudDialog
             open={isRunInCloudDialogOpen}
-            script={{ type: 'raw', content: preview }}
+            script={{ type: 'raw', name: fileName, content: preview }}
             onOpenChange={setIsRunInCloudDialogOpen}
           />
           <ValidatorDialog
