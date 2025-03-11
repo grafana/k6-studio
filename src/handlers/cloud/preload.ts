@@ -3,10 +3,10 @@ import { CloudHandlers, RunInCloudResult, Script } from './types'
 import { RunInCloudState } from '@/components/RunInCloudDialog/states/types'
 import { createListener } from '../utils'
 
-export function run(scroåt: Script): Promise<RunInCloudResult> {
+export function run(script: Script): Promise<RunInCloudResult> {
   return ipcRenderer.invoke(
     CloudHandlers.Run,
-    scroåt
+    script
   ) as Promise<RunInCloudResult>
 }
 
