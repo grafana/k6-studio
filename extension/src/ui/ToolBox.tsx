@@ -64,6 +64,7 @@ export function ToolBox({ selected, onSelect }: ToolBoxProps) {
           transform: translateX(-50%);
           box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
           background-color: white;
+          z-index: 9999999999;
         `}
         onValueChange={handleToolChange}
       >

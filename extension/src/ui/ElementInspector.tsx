@@ -34,6 +34,7 @@ export function ElementInspector({ onEscape }: ElementInspectorProps) {
                 background-color: white;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                 font-weight: 500;
+                z-index: 9999999999;
               `}
             >
               <Tooltip.Arrow
