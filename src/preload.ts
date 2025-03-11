@@ -9,6 +9,7 @@ import { AppSettings } from './types/settings'
 import { BrowserEvent } from './schemas/recording'
 import * as Sentry from './sentry'
 import { DataFilePreview } from './types/testData'
+import * as browserRemote from './handlers/browserRemote.preload'
 import { createListener } from './handlers/utils'
 import * as auth from './handlers/auth/preload'
 
@@ -223,6 +224,7 @@ const studio = {
   app,
   log,
   settings,
+  browserRemote,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

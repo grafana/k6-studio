@@ -25,6 +25,7 @@ import { RequestLog } from './RequestLog'
 import { useSettings } from '@/hooks/useSettings'
 import { RecordingInspector } from './RecordingInspector'
 import { EmptyState } from './EmptyState'
+import { RecordingContext } from './RecordingContext'
 
 const INITIAL_GROUPS: Group[] = [
   {
@@ -174,58 +175,61 @@ export function Recorder() {
   }, [validateAndSaveHarFile, showToast, navigate])
 
   return (
-    <View
-      title="Recorder"
-      actions={
-        recorderState !== 'idle' && (
-          <>
-            {isLoading && <TextSpinner text="Starting" />}
-            <Button
-              disabled={isLoading}
-              color="red"
-              onClick={handleStopRecording}
-            >
-              <StopIcon /> Stop recording
-            </Button>
-          </>
-        )
-      }
-    >
-      {recorderState === 'idle' && (
-        <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
-      )}
-
-      {recorderState !== 'idle' && settings?.recorder.enableBrowserRecorder && (
-        <RecordingInspector
-          recorderState={recorderState}
-          groups={groups}
-          requests={debouncedProxyData}
-          browserEvents={browserEvents}
-          onCreateGroup={handleCreateGroup}
-          onUpdateGroup={handleUpdateGroup}
-          onResetRecording={handleResetRecording}
-        />
-      )}
-
-      {recorderState !== 'idle' &&
-        !settings?.recorder.enableBrowserRecorder && (
-          <RequestLog
-            recorderState={recorderState}
-            groups={groups}
-            requests={debouncedProxyData}
-            onUpdateGroup={handleUpdateGroup}
-            onResetRecording={handleResetRecording}
-            onCreateGroup={handleCreateGroup}
-          />
+    <RecordingContext recording>
+      <View
+        title="Recorder"
+        actions={
+          recorderState !== 'idle' && (
+            <>
+              {isLoading && <TextSpinner text="Starting" />}
+              <Button
+                disabled={isLoading}
+                color="red"
+                onClick={handleStopRecording}
+              >
+                <StopIcon /> Stop recording
+              </Button>
+            </>
+          )
+        }
+      >
+        {recorderState === 'idle' && (
+          <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
         )}
 
-      <ConfirmNavigationDialog
-        open={blocker.state === 'blocked'}
-        state={recorderState}
-        onCancel={handleCancelNavigation}
-        onStopRecording={handleConfirmNavigation}
-      />
-    </View>
+        {recorderState !== 'idle' &&
+          settings?.recorder.enableBrowserRecorder && (
+            <RecordingInspector
+              recorderState={recorderState}
+              groups={groups}
+              requests={debouncedProxyData}
+              browserEvents={browserEvents}
+              onCreateGroup={handleCreateGroup}
+              onUpdateGroup={handleUpdateGroup}
+              onResetRecording={handleResetRecording}
+            />
+          )}
+
+        {recorderState !== 'idle' &&
+          !settings?.recorder.enableBrowserRecorder && (
+            <RequestLog
+              recorderState={recorderState}
+              groups={groups}
+              requests={debouncedProxyData}
+              onUpdateGroup={handleUpdateGroup}
+              onResetRecording={handleResetRecording}
+              onCreateGroup={handleCreateGroup}
+            />
+          )}
+
+        <ConfirmNavigationDialog
+          open={blocker.state === 'blocked'}
+          state={recorderState}
+          onCancel={handleCancelNavigation}
+          onStopRecording={handleConfirmNavigation}
+        />
+      </View>
+    </RecordingContext>
   )
 }
 
