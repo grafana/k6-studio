@@ -16,6 +16,8 @@ function getPlatformSpecificResources() {
   // Otherwise the x86_64 build will still be having the resources/arm64 only binaries
   if (getPlatform() === 'mac') {
     return ['./resources/mac/arm64', './resources/mac/x86_64']
+  } else if (getPlatform() === 'linux') {
+    return ['./resources/linux/arm64', './resources/linux/x86_64']
   }
 
   return [path.join('./resources/', getPlatform(), getArch())]
@@ -23,6 +25,7 @@ function getPlatformSpecificResources() {
 
 const config: ForgeConfig = {
   packagerConfig: {
+    executableName: 'k6-studio',
     icon: './resources/icons/logo',
     asar: true,
     extraResource: [
@@ -65,9 +68,8 @@ const config: ForgeConfig = {
       },
       ['darwin']
     ),
-    new MakerRpm({}),
-    new MakerRpm({}),
-    new MakerDeb({ options: { icon: './src/assets/icons/logo.png' } }),
+    new MakerRpm({ options: { icon: './resources/icons/logo.png' } }),
+    new MakerDeb({ options: { icon: './resources/icons/logo.png' } }),
   ],
   plugins: [
     new VitePlugin({

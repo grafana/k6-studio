@@ -1,7 +1,14 @@
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Button, Callout } from '@radix-ui/themes'
+import {
+  Box,
+  Button,
+  Callout,
+  Flex,
+  Heading,
+  ScrollArea,
+} from '@radix-ui/themes'
 import { ChevronLeftIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 
 import { useGeneratorStore } from '@/store/generator'
@@ -12,6 +19,7 @@ import { TestRule } from '@/types/rules'
 import { TestRuleSchema } from '@/schemas/generator'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
 import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
+import { capitalize, startCase } from 'lodash-es'
 
 export function RuleEditorSwitch() {
   const { watch } = useFormContext<TestRule>()
@@ -96,19 +104,31 @@ export function RuleEditor({ rule }: RuleEditorProps) {
   }, [rule.id])
 
   return (
-    <FormProvider {...formMethods}>
-      <form onSubmit={handleSubmit(onSubmit)}>
+    <ScrollArea scrollbars="vertical">
+      <FormProvider {...formMethods}>
         <StickyPanelHeader>
-          <Button onClick={handleClose} variant="ghost" color="gray" size="1">
-            <ChevronLeftIcon />
-            Back to rule list
-          </Button>
+          <Flex align="center" gap="3">
+            <Heading size="2" weight="medium">
+              {capitalize(startCase(rule.type))}
+            </Heading>
+            <Button
+              onClick={handleClose}
+              variant="ghost"
+              size="1"
+              css={{ gap: 0 }}
+            >
+              <ChevronLeftIcon />
+              Back
+            </Button>
+          </Flex>
         </StickyPanelHeader>
-        <Box p="2" pr="4" css={{ borderTop: '1px solid var(--gray-3)' }}>
-          {!rule.enabled && <RuleDisabledWarning />}
-          <RuleEditorSwitch />
-        </Box>
-      </form>
-    </FormProvider>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Box p="2">
+            {!rule.enabled && <RuleDisabledWarning />}
+            <RuleEditorSwitch />
+          </Box>
+        </form>
+      </FormProvider>
+    </ScrollArea>
   )
 }

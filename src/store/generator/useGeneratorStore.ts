@@ -37,7 +37,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
     ...createScriptDataSlice(set, ...rest),
     setGeneratorFile: (
       {
-        options: { thinkTime, loadProfile, thresholds },
+        options: { thinkTime, loadProfile, thresholds, cloud },
         testData: { variables, files },
         recordingPath,
         rules,
@@ -48,9 +48,11 @@ export const useGeneratorStore = create<GeneratorStore>()(
       recording = []
     ) =>
       set((state) => {
+        state.selectedRuleId = null
         // options
         state.sleepType = thinkTime.sleepType
         state.timing = thinkTime.timing
+        state.loadZones = cloud.loadZones
         state.thresholds = thresholds
         state.executor = loadProfile.executor
         switch (loadProfile.executor) {
@@ -80,6 +82,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.scriptName = scriptName
         // rules
         state.rules = rules
+        state.previewOriginalRequests = false
       }),
   }))
 )

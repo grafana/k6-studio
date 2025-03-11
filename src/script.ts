@@ -166,10 +166,17 @@ export const archiveScript = (
   browserWindow: BrowserWindow
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const k6Args = ['archive', scriptPath, '-O', TEMP_K6_ARCHIVE_PATH]
+    const k6Args = [
+      'archive',
+      scriptPath,
+      '-O',
+      TEMP_K6_ARCHIVE_PATH,
+      '--log-format=json',
+    ]
 
     spawnK6({
       args: k6Args,
+      onStdErr: createLogsHandler(browserWindow),
       onClose: (code) => {
         if (code === 0) {
           resolve(TEMP_K6_ARCHIVE_PATH)

@@ -6,6 +6,7 @@ import { AppSettingsSchema } from './schemas/settings'
 import { existsSync, readFileSync } from 'fs'
 import { safeJsonParse } from './utils/json'
 import log from 'electron-log/main'
+import { getPlatform } from './utils/electron'
 
 export const defaultSettings: AppSettings = {
   version: '3.0',
@@ -124,11 +125,16 @@ function isSettingsJsonObject() {
 }
 
 export async function selectBrowserExecutable() {
-  const extensions = process.platform === 'darwin' ? ['app'] : ['exe']
+  const extensions = {
+    mac: ['app'],
+    win: ['exe'],
+    linux: ['*'],
+  }
+
   return dialog.showOpenDialog({
     title: 'Select browser executable',
     properties: ['openFile'],
-    filters: [{ name: 'Executables', extensions }],
+    filters: [{ name: 'Executables', extensions: extensions[getPlatform()] }],
   })
 }
 

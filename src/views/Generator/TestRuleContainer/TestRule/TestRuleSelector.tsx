@@ -116,6 +116,13 @@ function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
           {rule.value.variableName}
         </Strong>
       )
+    case 'dataFileValue':
+      return (
+        <>
+          <Strong>{rule.value.propertyName}</Strong> from{' '}
+          <Strong>{rule.value.fileName}</Strong>
+        </>
+      )
     case 'customCode':
       return null
     default:

@@ -21,6 +21,7 @@ export const rules: TestRule[] = [
         begin: '<meta name=Copyright content="',
         end: '">',
       },
+      extractionMode: 'single',
     },
   },
   {
@@ -34,6 +35,7 @@ export const rules: TestRule[] = [
         from: 'url',
         regex: 'grafana.com/(.*?)/',
       },
+      extractionMode: 'single',
     },
   },
   {
@@ -48,6 +50,7 @@ export const rules: TestRule[] = [
         begin: 'charset=',
         end: '-8',
       },
+      extractionMode: 'single',
     },
   },
   {
@@ -61,6 +64,7 @@ export const rules: TestRule[] = [
         from: 'body',
         path: 'organizations[0].id',
       },
+      extractionMode: 'single',
     },
   },
 ]

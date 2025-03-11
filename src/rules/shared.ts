@@ -189,7 +189,8 @@ export const replaceBeginEndUrl = (
 
   const url = replaceUrl(request.url, valueToReplace, variableName)
   const path = replaceUrl(request.path, valueToReplace, variableName)
-  return { ...request, url, path }
+  const host = replaceUrl(request.host, valueToReplace, variableName)
+  return { ...request, url, path, host }
 }
 
 export const replaceRegexBody = (
@@ -234,7 +235,8 @@ export const replaceRegexUrl = (
 
   const url = replaceUrl(request.url, valueToReplace, variableName)
   const path = replaceUrl(request.path, valueToReplace, variableName)
-  return { ...request, url, path }
+  const host = replaceUrl(request.host, valueToReplace, variableName)
+  return { ...request, url, path, host }
 }
 
 export const replaceJsonBody = (

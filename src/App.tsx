@@ -3,13 +3,14 @@ import { Global } from '@emotion/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { enableMapSet } from 'immer'
 
-import { useTheme } from './hooks/useTheme'
+import { DevToolsDialog } from '@/components/DevToolsDialog'
+import { SettingsDialog } from '@/components/Settings/SettingsDialog'
+import { Toasts } from '@/components/Toast/Toasts'
+import { useCloseSplashScreen } from '@/hooks/useCloseSplashScreen'
+import { useTheme } from '@/hooks/useTheme'
+import { queryClient } from '@/utils/query'
 import { globalStyles } from './globalStyles'
 import { AppRoutes } from './AppRoutes'
-import { Toasts } from './components/Toast/Toasts'
-import { queryClient } from './utils/query'
-import { useCloseSplashScreen } from './hooks/useCloseSplashScreen'
-import { DevToolsDialog } from './components/DevToolsDialog'
 
 enableMapSet()
 
@@ -24,6 +25,7 @@ export function App() {
         <Toasts />
         <AppRoutes />
         <DevToolsDialog />
+        <SettingsDialog />
       </Theme>
     </QueryClientProvider>
   )

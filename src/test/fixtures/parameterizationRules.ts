@@ -85,3 +85,20 @@ export const customCodeReplaceCsrf = {
     `,
   },
 } satisfies ParameterizationRule
+
+export const dataFileRule = {
+  type: 'parameterization',
+  id: '42',
+  enabled: true,
+  filter: { path: '' },
+  selector: {
+    type: 'regex',
+    from: 'url',
+    regex: 'project_id=(\\d+)',
+  },
+  value: {
+    type: 'dataFileValue',
+    fileName: 'projects.json',
+    propertyName: 'id',
+  },
+} satisfies ParameterizationRule
