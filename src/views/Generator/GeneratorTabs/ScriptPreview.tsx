@@ -8,8 +8,8 @@ import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
 import { ValidatorDialog } from '../ValidatorDialog'
 import { ExportScriptDialog } from '../ExportScriptDialog'
 import { exportScript } from '../Generator.utils'
-import { RunInCloudButton } from '@/components/RunInCloud/RunInCloudButton'
-import { RunInCloudDialog } from '@/components/RunInCloud/RunInCloudDialog'
+import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
+import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { GhostButton } from '@/components/GhostButton'
 
 export function ScriptPreview() {

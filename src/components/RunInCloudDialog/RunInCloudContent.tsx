@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { RunInCloudState, RunInCloudStates } from './states'
+import { RunInCloudStates } from './states'
 import { Script } from '@/handlers/cloud/types'
 import { useDeepCompareEffect } from 'react-use'
+import { RunInCloudState } from './states/types'
 
-interface RunInCloudProps {
+interface RunInCloudContentProps {
   script: Script
   onClose: () => void
 }
 
-export function RunInCloud({ script, onClose }: RunInCloudProps) {
+export function RunInCloudContent({ script, onClose }: RunInCloudContentProps) {
   const onCloseRef = useRef(onClose)
 
   const [state, setState] = useState<RunInCloudState>({

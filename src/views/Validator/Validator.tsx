@@ -13,7 +13,7 @@ import { useRunChecks } from '@/hooks/useRunChecks'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
 import { EmptyMessage } from '@/components/EmptyMessage'
-import { RunInCloudDialog } from '@/components/RunInCloud/RunInCloudDialog'
+import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 
 export function Validator() {
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
