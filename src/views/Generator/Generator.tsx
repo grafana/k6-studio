@@ -21,6 +21,7 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import log from 'electron-log/renderer'
 import { ProxyData } from '@/types'
 import { Details } from '@/components/WebLogView/Details'
+import useSaveShortcut from '@/hooks/useSaveShortcut'
 
 export function Generator() {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
@@ -99,6 +100,8 @@ export function Generator() {
     const generator = selectGeneratorData(useGeneratorStore.getState())
     return saveGenerator(generator)
   }
+
+  useSaveShortcut(handleSaveGenerator)
 
   const handleSaveGeneratorDialog = async () => {
     await handleSaveGenerator()
