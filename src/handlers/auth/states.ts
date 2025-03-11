@@ -215,7 +215,7 @@ export class SignInStateMachine extends EventEmitter<StateEventMap> {
     })
 
     const apiTokenResponse = await fetchPersonalToken(
-      stack.id,
+      stack,
       grant.token,
       this.#signal
     )

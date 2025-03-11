@@ -1,3 +1,5 @@
+import { Stack } from '@/types/auth'
+import { timeout } from '@/utils/async'
 import { z } from 'zod'
 
 const PersonalTokenResponseSchema = z.object({
@@ -15,36 +17,52 @@ interface NotAMember {
 
 export type FetchPersonalTokenRespone = TokenExchanged | NotAMember
 
+const MAX_RETRIES = 5
+
 export async function fetchPersonalToken(
-  stackId: string,
+  stack: Stack,
   token: string,
   signal: AbortSignal
 ): Promise<FetchPersonalTokenRespone> {
-  const response = await fetch(`${K6_API_URL}/api_token`, {
-    headers: {
-      'X-Stack-Id': stackId,
-      Authorization: `Bearer ${token}`,
-    },
-    signal,
-  })
+  for (let i = 0; i < MAX_RETRIES; ++i) {
+    const response = await fetch(`${K6_API_URL}/api_token`, {
+      headers: {
+        'X-Stack-Id': stack.id,
+        Authorization: `Bearer ${token}`,
+      },
+      signal,
+    })
 
-  if (response.status === 403) {
+    // It might take a while for the stack to wake up after being paused
+    // and the permissions check might timeout, so we retry a few times.
+    if (response.status === 503 && stack.status === 'paused') {
+      await timeout(1000)
+
+      continue
+    }
+
+    if (response.status === 403) {
+      return {
+        type: 'not-a-member',
+      }
+    }
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to fetch personal token. The server responsed with ${response.status}.`
+      )
+    }
+
+    const data: unknown = await response.json()
+    const parsed = PersonalTokenResponseSchema.parse(data)
+
     return {
-      type: 'not-a-member',
+      type: 'token-exchanged',
+      token: parsed.personal_token,
     }
   }
 
-  if (response.status !== 200) {
-    throw new Error(
-      `Failed to fetch personal token. The server responsed with ${response.status}.`
-    )
-  }
-
-  const data: unknown = await response.json()
-  const parsed = PersonalTokenResponseSchema.parse(data)
-
-  return {
-    type: 'token-exchanged',
-    token: parsed.personal_token,
-  }
+  throw new Error(
+    `Failed to fetch personal token after ${MAX_RETRIES} retries.`
+  )
 }
