@@ -13,7 +13,7 @@ export function RunInCloudContent({ script, onClose }: RunInCloudContentProps) {
   const onCloseRef = useRef(onClose)
 
   const [state, setState] = useState<RunInCloudState>({
-    type: 'initializing',
+    type: 'sign-in',
   })
 
   useEffect(() => {
@@ -31,7 +31,6 @@ export function RunInCloudContent({ script, onClose }: RunInCloudContentProps) {
       })
       .catch((error) => {
         console.error(error)
-
         setState({
           type: 'error',
         })

@@ -17,8 +17,8 @@ export function RunInCloudDialog({
 }: RunInCloudDialogProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content height="80vh" maxHeight="600px">
-        <Flex align="center" justify="center" height="100%" width="100%">
+      <Dialog.Content maxHeight="600px">
+        <Flex align="stretch" justify="center" minHeight="200px" width="100%">
           <Dialog.Close>
             <IconButton
               variant="ghost"

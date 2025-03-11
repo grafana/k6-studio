@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SignInState } from '../../Profile/ProfileState/types'
 import { ProfileState } from '../../Profile/ProfileState'
+import { Flex } from '@radix-ui/themes'
 
 export function SignIn() {
   const [state, setState] = useState<SignInState>({
@@ -21,5 +22,9 @@ export function SignIn() {
     setState(state)
   }
 
-  return <ProfileState state={state} onStateChange={handleStateChange} />
+  return (
+    <Flex align="center" minHeight="500px">
+      <ProfileState state={state} onStateChange={handleStateChange} />
+    </Flex>
+  )
 }
