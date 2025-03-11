@@ -123,7 +123,7 @@ export function RuleEditor({ rule }: RuleEditorProps) {
           </Flex>
         </StickyPanelHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Box p="2" pr="4">
+          <Box p="2">
             {!rule.enabled && <RuleDisabledWarning />}
             <RuleEditorSwitch />
           </Box>
