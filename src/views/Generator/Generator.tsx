@@ -138,7 +138,7 @@ export function Generator() {
       title="Generator"
       subTitle={
         <>
-          {getFileNameWithoutExtension(fileName)} {isDirty && '(edited)'}
+          {getFileNameWithoutExtension(fileName)} {isDirty && '*'}
         </>
       }
       actions={
