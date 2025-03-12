@@ -1,5 +1,5 @@
 import { Allotment } from 'allotment'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
@@ -49,6 +49,7 @@ export function Generator() {
   const isLoading = isLoadingGenerator || isLoadingRecording
 
   const isDirty = useIsGeneratorDirty(fileName)
+  const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
 
@@ -98,6 +99,10 @@ export function Generator() {
     })
   })
 
+  useEffect(() => {
+    isDirtyRef.current = isDirty
+  }, [isDirty])
+
   const handleSaveGenerator = useCallback(() => {
     const generator = selectGeneratorData(useGeneratorStore.getState())
     return saveGenerator(generator)
@@ -105,7 +110,7 @@ export function Generator() {
 
   useEffect(() => {
     ;(async () => {
-      if (onSaveKeyPress) {
+      if (onSaveKeyPress && isDirtyRef.current === true) {
         await handleSaveGenerator()
       }
     })()
