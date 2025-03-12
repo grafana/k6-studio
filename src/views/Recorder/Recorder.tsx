@@ -39,8 +39,8 @@ export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
-  const setIsSettingsDialogOpen = useStudioUIStore(
-    (state) => state.setIsSettingsDialogOpen
+  const openSettingsDialog = useStudioUIStore(
+    (state) => state.openSettingsDialog
   )
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
@@ -158,7 +158,7 @@ export function Recorder() {
         title: 'Failed to launch browser',
         description: 'Please check your browser path and try again.',
         action: (
-          <Button onClick={() => setIsSettingsDialogOpen(true)}>
+          <Button onClick={() => openSettingsDialog('recorder')}>
             <GearIcon />
             Open settings
           </Button>
@@ -166,7 +166,7 @@ export function Recorder() {
         status: 'error',
       })
     })
-  }, [setIsSettingsDialogOpen, showToast])
+  }, [openSettingsDialog, showToast])
 
   useEffect(() => {
     return window.studio.browser.onBrowserClosed(async () => {
