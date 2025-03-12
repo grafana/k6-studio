@@ -1,5 +1,5 @@
 import { Allotment } from 'allotment'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
@@ -21,7 +21,7 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import log from 'electron-log/renderer'
 import { ProxyData } from '@/types'
 import { Details } from '@/components/WebLogView/Details'
-import useSaveShortcut from '@/hooks/useSaveShortcut'
+import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 export function Generator() {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
@@ -51,6 +51,8 @@ export function Generator() {
   const isDirty = useIsGeneratorDirty(fileName)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
+
+  const [, onSaveKeyPress] = useKeyboardJs(['command + s', 'ctrl + s'])
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting home from invalid generator
@@ -96,12 +98,18 @@ export function Generator() {
     })
   })
 
-  const handleSaveGenerator = () => {
+  const handleSaveGenerator = useCallback(() => {
     const generator = selectGeneratorData(useGeneratorStore.getState())
     return saveGenerator(generator)
-  }
+  }, [saveGenerator])
 
-  useSaveShortcut(handleSaveGenerator)
+  useEffect(() => {
+    ;(async () => {
+      if (onSaveKeyPress) {
+        await handleSaveGenerator()
+      }
+    })()
+  }, [handleSaveGenerator, onSaveKeyPress])
 
   const handleSaveGeneratorDialog = async () => {
     await handleSaveGenerator()
