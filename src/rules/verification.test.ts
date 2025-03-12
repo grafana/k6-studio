@@ -297,5 +297,25 @@ describe('createVerificationRuleInstance', () => {
         "'body equals success': (r) => r.body === 'success'"
       )
     })
+
+    it('supports body comparison with recorded value', () => {
+      const instance = createInstance(
+        createMockVerificationRule({
+          target: 'body',
+          value: { type: 'recordedValue' },
+        })
+      )
+
+      const mockRequestSnippet = createMockRequestSnippet({
+        response: { content: 'Operation completed successfully' },
+      })
+
+      const result = instance.apply(mockRequestSnippet)
+
+      expect(result.after).toHaveLength(1)
+      expect(result.after[0]).toContain(
+        "'body equals recorded value': (r) => r.body.replace(/(?:\\r\\n|\\r|\\n)/g, '') === String.raw`Operation completed successfully`"
+      )
+    })
   })
 })

@@ -5,6 +5,7 @@ import { exhaustive } from '@/utils/typescript'
 
 type CheckValue = string | number
 
+// TODO: this is redundant
 function getValueFromRule(
   rule: VerificationRule,
   response: RequestSnippetSchema['data']['response']
@@ -28,19 +29,34 @@ const getExpectedValue = (
   rule: VerificationRule,
   value: CheckValue
 ): CheckValue => {
-  switch (rule.target) {
-    case 'status':
-      return rule.value.type === 'variable' ? `Number(${value})` : value
-    case 'body':
-      return rule.value.type === 'variable' ? value : `'${value}'`
+  switch (rule.value.type) {
+    case 'recordedValue':
+      return rule.target === 'status'
+        ? value
+        : `String.raw\`${escapeBackticksAndDollarSign(value.replace(/(?:\r\n|\r|\n)/g, ''))}\``
+    case 'string':
+      return rule.target === 'status' ? value : `'${value}'`
+    case 'variable':
+      return rule.target === 'status' ? `Number(${value})` : value
     default:
-      return exhaustive(rule.target)
+      return exhaustive(rule.value)
   }
 }
 
+function getTarget(rule: VerificationRule) {
+  const property = rule.target === 'status' ? 'r.status' : 'r.body'
+
+  if (rule.value.type === 'recordedValue' && rule.target === 'body') {
+    return `${property}.replace(/(?:\\r\\n|\\r|\\n)/g, '')`
+  }
+
+  return property
+}
+
 function getCheckExpression(rule: VerificationRule, value: CheckValue): string {
-  const target = rule.target === 'status' ? 'r.status' : 'r.body'
+  const target = getTarget(rule)
   const expectedValue = getExpectedValue(rule, value)
+  console.log('expectedValue', expectedValue)
 
   switch (rule.operator) {
     case 'equals':
@@ -54,14 +70,24 @@ function getCheckExpression(rule: VerificationRule, value: CheckValue): string {
   }
 }
 
+function getValueDescription(rule: VerificationRule, value: CheckValue) {
+  switch (rule.value.type) {
+    case 'recordedValue':
+      return rule.target === 'body' ? 'recorded value' : value
+    case 'string':
+      return value
+    case 'variable':
+      return `variable "${rule.value.variableName}"`
+    default:
+      return exhaustive(rule.value)
+  }
+}
+
 function getCheckDescription(
   rule: VerificationRule,
   value: CheckValue
 ): string {
-  const valueDescription =
-    rule.value.type === 'variable'
-      ? `variable "${rule.value.variableName}"`
-      : value
+  const valueDescription = getValueDescription(rule, value)
 
   switch (rule.operator) {
     case 'equals':
@@ -114,4 +140,9 @@ export function createVerificationRuleInstance(
       }
     },
   }
+}
+
+// Without escaping, backticks and dollar sign break the String.raw template literal
+function escapeBackticksAndDollarSign(str: string) {
+  return str.replace(/\$/g, '${"$"}').replace(/`/g, '${"`"}')
 }

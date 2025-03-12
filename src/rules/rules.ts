@@ -34,6 +34,7 @@ export function applyRules(recording: ProxyData[], rules: TestRule[]) {
       after: [],
     })
   )
+  console.log('rules applied', requestSnippetSchemas)
 
   return { requestSnippetSchemas, ruleInstances }
 }
