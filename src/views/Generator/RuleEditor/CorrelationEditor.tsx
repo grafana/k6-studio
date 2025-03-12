@@ -4,6 +4,7 @@ import {
   Flex,
   Grid,
   Heading,
+  Separator,
   Switch,
   Text,
   Tooltip,
@@ -14,9 +15,16 @@ import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
+import { FieldGroup } from '@/components/Form'
+import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
 import invariant from 'tiny-invariant'
+
+const EXTRACTION_MODE_OPTIONS = [
+  { value: 'single', label: 'First match' },
+  { value: 'multiple', label: 'Most recent match' },
+]
 
 export function CorrelationEditor() {
   const { selectedRuleInstance } = useApplyRules()
@@ -26,7 +34,13 @@ export function CorrelationEditor() {
     'Selected rule instance is not a correlation rule'
   )
 
-  const { setValue, watch } = useFormContext<TestRule>()
+  const {
+    setValue,
+    watch,
+    control,
+    formState: { errors },
+  } = useFormContext<TestRule>()
+
   const { extractedValue } = selectedRuleInstance.state
   const replacer = watch('replacer')
 
@@ -46,7 +60,7 @@ export function CorrelationEditor() {
   }
 
   return (
-    <Grid columns="1fr 1fr" gap="3">
+    <Grid columns="1fr auto 1fr" gap="4">
       <Box>
         <Heading size="2" weight="medium" mb="2">
           Extractor
@@ -56,6 +70,24 @@ export function CorrelationEditor() {
         </Text>
         <FilterField field="extractor.filter" />
         <SelectorField field="extractor.selector" />
+        <FieldGroup
+          name="extractor.extractionMode,"
+          label="Use value from"
+          errors={errors}
+        >
+          <ControlledRadioGroup
+            name="extractor.extractionMode"
+            control={control}
+            options={EXTRACTION_MODE_OPTIONS}
+            direction="row"
+            onChange={(value) =>
+              setValue(
+                'extractor.extractionMode',
+                value as 'single' | 'multiple'
+              )
+            }
+          />
+        </FieldGroup>
         {extractedValue && (
           <Text size="2">
             <Text color="gray">Extracted value:</Text>{' '}
@@ -68,6 +100,7 @@ export function CorrelationEditor() {
           </Text>
         )}
       </Box>
+      <Separator orientation="vertical" size="4" decorative />
       <Box>
         <Flex justify="between" align="center">
           <Heading size="2" weight="medium" mb="2">
