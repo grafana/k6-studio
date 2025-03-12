@@ -5,6 +5,7 @@ import { basename, extname, isAbsolute, join } from 'path'
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/script'
 import { rm, writeFile } from 'fs/promises'
+import { logError } from '@/utils/errors'
 
 async function createTempFile(script: RawScript) {
   const tempFileName = getTempScriptName()
@@ -65,6 +66,10 @@ export function initialize(browserWindow: BrowserWindow) {
       }
 
       return result
+    } catch (error) {
+      logError(error)
+
+      throw error
     } finally {
       await file.dispose()
 

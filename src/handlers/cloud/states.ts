@@ -10,7 +10,7 @@ import { TEMP_K6_ARCHIVE_PATH } from '@/constants/workspace'
 import { ProjectClient } from '@/services/k6/projects'
 import { TestClient } from '@/services/k6/tests'
 import { CloudCredentials } from '@/services/k6/types'
-import log from 'electron-log/main'
+import { isAbortError } from '@/utils/errors'
 
 interface InitializingState {
   type: 'initializing'
@@ -74,11 +74,11 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
   }
 
   async run(): Promise<RunInCloudResult> {
-    let state: State = {
-      type: 'initializing',
-    }
-
     try {
+      let state: State = {
+        type: 'initializing',
+      }
+
       while (!this.#signal.aborted) {
         state = await this.#execute(state)
 
@@ -91,7 +91,11 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
         type: 'aborted',
       }
     } catch (error) {
-      log.error('Failed to run test in cloud.', error)
+      if (isAbortError(error)) {
+        return {
+          type: 'aborted',
+        }
+      }
 
       throw error
     }

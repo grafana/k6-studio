@@ -1,3 +1,4 @@
+import { HttpError } from '@/utils/errors'
 import { ListCloudProjectsSchema } from './schemas'
 import { CloudCredentials, CloudRequest } from './types'
 import { getHeaders, parse, url } from './utils'
@@ -16,7 +17,7 @@ export class ProjectClient {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to fetch default project.')
+      throw new HttpError('Failed to fetch projects.', response)
     }
 
     const projects = await parse(response, ListCloudProjectsSchema)
