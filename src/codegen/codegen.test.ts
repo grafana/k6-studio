@@ -423,7 +423,7 @@ describe('Code generation', () => {
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/foo\`
         resp = http.request('POST', url, null, params)
-        check(resp, { 'status equals 200': (r) => r.status === 200, })
+        check(resp, { 'status equals recorded value': (r) => r.status === 200, })
       `
 
       expect(

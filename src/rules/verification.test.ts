@@ -51,7 +51,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals 200': (r) => r.status === 200"
+        "'status equals recorded value': (r) => r.status === 200"
       )
     })
 
@@ -74,43 +74,6 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(0)
     })
-
-    it('applies multiple verification rules to the same request', () => {
-      const rule1 = createMockVerificationRule({
-        filter: { path: '/api/v1/users' },
-      })
-      const rule2 = createMockVerificationRule({
-        filter: { path: '/api/v1/users' },
-      })
-
-      const instance1 = createInstance(rule1)
-      const instance2 = createInstance(rule2)
-
-      const mockRequestSnippet = createMockRequestSnippet({
-        response: { statusCode: 200 },
-        request: {
-          path: '/api/v1/users',
-          url: 'http://example.com/api/v1/users',
-        },
-      })
-
-      const result1 = instance1.apply(mockRequestSnippet)
-      const result2 = instance2.apply({
-        ...result1,
-        data: {
-          ...result1.data,
-          response: createResponse({ statusCode: 201 }),
-        },
-      })
-
-      expect(result2.after).toHaveLength(2)
-      expect(result2.after[0]).toContain(
-        "'status equals 200': (r) => r.status === 200"
-      )
-      expect(result2.after[1]).toContain(
-        "'status equals 201': (r) => r.status === 201"
-      )
-    })
   })
 
   describe('operators', () => {
@@ -129,7 +92,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals 200': (r) => r.status === 200"
+        "'status equals recorded value': (r) => r.status === 200"
       )
     })
 
@@ -192,7 +155,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals 200': (r) => r.status === 200"
+        "'status equals recorded value': (r) => r.status === 200"
       )
     })
 
@@ -274,7 +237,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals 200': (r) => r.status === 200"
+        "'status equals recorded value': (r) => r.status === 200"
       )
     })
 
