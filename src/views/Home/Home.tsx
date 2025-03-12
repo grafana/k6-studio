@@ -11,7 +11,6 @@ import {
 import { NavigationCard } from './NavigationCard'
 import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { ExperimentalBanner } from '@/components/ExperimentalBanner'
 
 export function Home() {
   const createNewGenerator = useCreateGenerator()
@@ -20,7 +19,6 @@ export function Home() {
 
   return (
     <Flex direction="column" height="100%">
-      <ExperimentalBanner />
       <Flex
         direction="column"
         align="center"
