@@ -10,15 +10,15 @@ interface LoadingProps {
 
 export function Loading({ children }: LoadingProps) {
   return (
-    <Flex direction="column" align="center" justify="center" gap="4">
+    <Flex direction="column" align="center" justify="center">
       <div>
         <img
           css={css`
-            width: 125px;
+            width: 200px;
             transform: scaleX(-1);
           `}
           src={grot}
-          alt="Grot drinking tea"
+          alt="Grot drinking tea."
         />
       </div>
       <LoadingMessage>{children}</LoadingMessage>
