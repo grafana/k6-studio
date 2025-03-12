@@ -13,8 +13,11 @@ import { useRunChecks } from '@/hooks/useRunChecks'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 
 export function Validator() {
+  const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
+
   const [isLoading, setIsLoading] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [script, setScript] = useState('')
@@ -82,6 +85,10 @@ export function Validator() {
     await window.studio.script.runScript(scriptPath, isExternal)
   }
 
+  function handleRunInCloud() {
+    setShowRunInCloudDialog(true)
+  }
+
   function handleStopScript() {
     window.studio.script.stopScript()
     setIsRunning(false)
@@ -130,6 +137,7 @@ export function Validator() {
           isScriptSelected={Boolean(scriptPath)}
           onDeleteScript={handleDeleteScript}
           onRunScript={handleRunScript}
+          onRunInCloud={handleRunInCloud}
           onSelectScript={handleSelectExternalScript}
           onStopScript={handleStopScript}
         />
@@ -155,6 +163,16 @@ export function Validator() {
           />
         }
       />
+      {scriptPath !== undefined && (
+        <RunInCloudDialog
+          open={showRunInCloudDialog}
+          script={{
+            type: 'file',
+            path: scriptPath,
+          }}
+          onOpenChange={setShowRunInCloudDialog}
+        />
+      )}
     </View>
   )
 }

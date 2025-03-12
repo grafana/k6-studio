@@ -136,8 +136,9 @@ export function Generator() {
           <Allotment vertical>
             <Allotment.Pane minSize={200}>
               <GeneratorTabs
-                onSelectRequest={setSelectedRequest}
+                fileName={fileName}
                 selectedRequest={selectedRequest}
+                onSelectRequest={setSelectedRequest}
               />
             </Allotment.Pane>
             <Allotment.Pane minSize={200}>
