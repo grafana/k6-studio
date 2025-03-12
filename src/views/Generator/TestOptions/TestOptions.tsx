@@ -8,7 +8,6 @@ import { VariablesEditor } from '../TestData/VariablesEditor'
 import { PopoverDialog } from '@/components/PopoverDialogs'
 import { Thresholds } from './Thresholds'
 import { LoadZones } from './LoadZones'
-import { Feature } from '@/components/Feature'
 import { useState } from 'react'
 
 export function TestOptions() {
@@ -35,9 +34,7 @@ export function TestOptions() {
             <Tabs.Trigger value="loadProfile">Load profile</Tabs.Trigger>
             <Tabs.Trigger value="thresholds">Thresholds</Tabs.Trigger>
             <Tabs.Trigger value="thinkTime">Think time</Tabs.Trigger>
-            <Feature feature="load-zones">
-              <Tabs.Trigger value="loadZones">Load zones</Tabs.Trigger>
-            </Feature>
+            <Tabs.Trigger value="loadZones">Load zones</Tabs.Trigger>
           </Tabs.List>
           <ScrollArea
             scrollbars="vertical"
@@ -58,11 +55,9 @@ export function TestOptions() {
               <Tabs.Content value="thresholds">
                 <Thresholds />
               </Tabs.Content>
-              <Feature feature="load-zones">
-                <Tabs.Content value="loadZones">
-                  <LoadZones />
-                </Tabs.Content>
-              </Feature>
+              <Tabs.Content value="loadZones">
+                <LoadZones />
+              </Tabs.Content>
             </Box>
           </ScrollArea>
         </Tabs.Root>

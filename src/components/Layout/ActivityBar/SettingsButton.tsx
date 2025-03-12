@@ -3,7 +3,9 @@ import { GearIcon } from '@radix-ui/react-icons'
 import { Tooltip, IconButton } from '@radix-ui/themes'
 
 export function SettingsButton() {
-  const setIsOpen = useStudioUIStore((state) => state.setIsSettingsDialogOpen)
+  const openSettingsDialog = useStudioUIStore(
+    (state) => state.openSettingsDialog
+  )
 
   return (
     <Tooltip content="Settings" side="right">
@@ -11,7 +13,7 @@ export function SettingsButton() {
         area-label="Settings"
         color="gray"
         variant="ghost"
-        onClick={() => setIsOpen(true)}
+        onClick={() => openSettingsDialog()}
       >
         <GearIcon />
       </IconButton>

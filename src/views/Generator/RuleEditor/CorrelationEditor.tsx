@@ -4,6 +4,7 @@ import {
   Flex,
   Grid,
   Heading,
+  Separator,
   Switch,
   Text,
   Tooltip,
@@ -59,7 +60,7 @@ export function CorrelationEditor() {
   }
 
   return (
-    <Grid columns="1fr 1fr" gap="3">
+    <Grid columns="1fr auto 1fr" gap="4">
       <Box>
         <Heading size="2" weight="medium" mb="2">
           Extractor
@@ -99,6 +100,7 @@ export function CorrelationEditor() {
           </Text>
         )}
       </Box>
+      <Separator orientation="vertical" size="4" decorative />
       <Box>
         <Flex justify="between" align="center">
           <Heading size="2" weight="medium" mb="2">

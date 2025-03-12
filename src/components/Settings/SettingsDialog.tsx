@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { findIndex, sortBy } from 'lodash-es'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 import { ProxySettings } from './ProxySettings'
@@ -16,8 +16,13 @@ import { AppearanceSettings } from './AppearanceSettings'
 import { LogsSettings } from './LogsSettings'
 import { useStudioUIStore } from '@/store/ui'
 import { useSaveSettings, useSettings } from '@/hooks/useSettings'
+import { SettingsTabValue } from './types'
 
-const tabs = [
+const tabs: Array<{
+  label: string
+  value: SettingsTabValue
+  component: () => React.ReactNode
+}> = [
   { label: 'Proxy', value: 'proxy', component: ProxySettings },
   { label: 'Recorder', value: 'recorder', component: RecorderSettings },
   {
@@ -39,12 +44,19 @@ const tabs = [
 
 export const SettingsDialog = () => {
   const { data: settings } = useSettings()
-  const isOpen = useStudioUIStore((state) => state.isSettingsDialogOpen)
-  const setIsOpen = useStudioUIStore((state) => state.setIsSettingsDialogOpen)
+  const {
+    isSettingsDialogOpen: isOpen,
+    closeSettingsDialog,
+    selectedSettingsTab,
+  } = useStudioUIStore((state) => state)
   const { mutateAsync: saveSettings, isPending } = useSaveSettings(() => {
-    setIsOpen(false)
+    closeSettingsDialog()
   })
-  const [selectedTab, setSelectedTab] = useState('proxy')
+  const [selectedTab, setSelectedTab] = useState(selectedSettingsTab)
+
+  useEffect(() => {
+    setSelectedTab(selectedSettingsTab)
+  }, [isOpen, selectedSettingsTab])
 
   const formMethods = useForm<AppSettings>({
     resolver: zodResolver(AppSettingsSchema),
@@ -61,15 +73,16 @@ export const SettingsDialog = () => {
   const onInvalid = (errors: Record<string, unknown>) => {
     // Sort tabs by the order they appear in the UI
     const tabsWithError = sortBy(Object.keys(errors), (key) =>
-      findIndex(tabs, { value: key })
+      findIndex(tabs, { value: key as SettingsTabValue })
     )
-    setSelectedTab(tabsWithError[0] || 'proxy')
+    setSelectedTab((tabsWithError[0] as SettingsTabValue) || 'proxy')
   }
 
   const handleOpenChange = () => {
     reset(settings)
-    setSelectedTab('proxy')
-    setIsOpen(!isOpen)
+    if (isOpen) {
+      closeSettingsDialog()
+    }
   }
 
   return (
@@ -89,7 +102,7 @@ export const SettingsDialog = () => {
         <FormProvider {...formMethods}>
           <Tabs.Root
             value={selectedTab}
-            onValueChange={(value) => setSelectedTab(value)}
+            onValueChange={(value) => setSelectedTab(value as SettingsTabValue)}
             css={css`
               height: 100%;
               display: flex;
