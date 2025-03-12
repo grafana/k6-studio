@@ -277,6 +277,7 @@ describe('Code generation', () => {
               from: 'body',
               path: 'user_id',
             },
+            extractionMode: 'single',
           },
         },
         {
@@ -290,6 +291,7 @@ describe('Code generation', () => {
               from: 'headers',
               regex: 'project_id=(.*)$',
             },
+            extractionMode: 'single',
           },
         },
       ]

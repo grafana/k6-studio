@@ -15,6 +15,7 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
             begin: '',
             end: '',
           },
+          extractionMode: 'multiple',
         },
         replacer: {
           filter: { path: '' },

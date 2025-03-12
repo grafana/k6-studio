@@ -31,6 +31,13 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
     },
     testData: { ...generator.testData, files: [] },
     rules: generator.rules.map((rule): v1.GeneratorSchema['rules'][number] => {
+      if (rule.type === 'correlation') {
+        return {
+          ...rule,
+          extractor: { ...rule.extractor, extractionMode: 'single' },
+        }
+      }
+
       if (rule.type === 'verification') {
         return {
           ...rule,
@@ -39,6 +46,7 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
           value: { type: 'recordedValue' },
         }
       }
+
       return rule
     }),
 
