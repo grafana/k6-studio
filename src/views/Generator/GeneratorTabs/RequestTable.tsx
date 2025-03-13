@@ -1,4 +1,4 @@
-import { Table } from '@radix-ui/themes'
+import { Table } from '@/components/Table'
 
 import { RequestListProps } from '@/components/WebLogView'
 import { RequestRow } from './RequestRow'
