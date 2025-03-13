@@ -10,12 +10,6 @@ const TARGET_OPTIONS = [
   { value: 'body', label: 'Response body' },
 ]
 
-const OPERATOR_OPTIONS = [
-  { value: 'equals', label: 'Equals' },
-  { value: 'contains', label: 'Contains' },
-  { value: 'notContains', label: 'Does not contain' },
-]
-
 export function VerificationEditor() {
   const {
     control,
@@ -35,13 +29,6 @@ export function VerificationEditor() {
               name="target"
               control={control}
               options={TARGET_OPTIONS}
-            />
-          </FieldGroup>
-          <FieldGroup name="operator" errors={errors} label="Operator">
-            <ControlledSelect
-              name="operator"
-              control={control}
-              options={OPERATOR_OPTIONS}
             />
           </FieldGroup>
         </Box>
