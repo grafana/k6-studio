@@ -91,7 +91,9 @@ export function CorrelationEditor() {
         {extractedValue && (
           <Text size="2">
             <Text color="gray">Extracted value:</Text>{' '}
-            <Code>{extractedValue}</Code>
+            <pre>
+              <Code>{JSON.stringify(extractedValue, null, 2)}</Code>
+            </pre>
           </Text>
         )}
         {!extractedValue && (

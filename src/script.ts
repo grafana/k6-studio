@@ -78,6 +78,10 @@ export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   return scriptPath
 }
 
+export const getTempScriptName = () => {
+  return `.${Math.random().toString(36).substring(7)}${TEMP_SCRIPT_SUFFIX}`
+}
+
 export const runScript = async ({
   scriptPath,
   proxyPort,
@@ -95,8 +99,10 @@ export const runScript = async ({
   // 2. Save the enhanced script content to a temp file in the same directory as the original script
   // (k6 will look for modules/data files in the same directory as the script)
   const dirname = path.dirname(scriptPath)
-  const randomTempFileName = `.${Math.random().toString(36).substring(7)}${TEMP_SCRIPT_SUFFIX}`
-  const tempScriptPath = path.join(dirname, randomTempFileName)
+
+  const tempFileName = getTempScriptName()
+  const tempScriptPath = path.join(dirname, tempFileName)
+
   await writeFile(tempScriptPath, modifiedScript)
 
   // 3. Archive the script and its dependencies

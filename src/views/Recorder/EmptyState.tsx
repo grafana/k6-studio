@@ -136,12 +136,12 @@ function WarningMessage({
   proxyStatus,
   isBrowserInstalled,
 }: WarningMessageProps) {
-  const setIsSettingsDialogOpen = useStudioUIStore(
-    (state) => state.setIsSettingsDialogOpen
+  const openSettingsDialog = useStudioUIStore(
+    (state) => state.openSettingsDialog
   )
 
   const handleOpenSettings = () => {
-    setIsSettingsDialogOpen(true)
+    openSettingsDialog('recorder')
   }
 
   if (isBrowserInstalled === false) {

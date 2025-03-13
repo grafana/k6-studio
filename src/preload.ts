@@ -12,6 +12,7 @@ import { DataFilePreview } from './types/testData'
 import * as browserRemote from './handlers/browserRemote.preload'
 import { createListener } from './handlers/utils'
 import * as auth from './handlers/auth/preload'
+import * as cloud from './handlers/cloud/preload'
 
 interface GetFilesResponse {
   recordings: StudioFile[]
@@ -225,6 +226,7 @@ const studio = {
   log,
   settings,
   browserRemote,
+  cloud,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

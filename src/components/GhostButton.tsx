@@ -1,0 +1,20 @@
+import { css } from '@emotion/react'
+import { Button, ButtonProps } from '@radix-ui/themes'
+
+type GhostButtonProps = Omit<ButtonProps, 'variant'>
+
+export function GhostButton(props: GhostButtonProps) {
+  return (
+    <Button
+      css={css`
+        margin: 0;
+        height: var(--base-button-height);
+
+        --button-ghost-padding-x: var(--space-3);
+        --button-ghost-padding-y: 0;
+      `}
+      {...props}
+      variant="ghost"
+    />
+  )
+}
