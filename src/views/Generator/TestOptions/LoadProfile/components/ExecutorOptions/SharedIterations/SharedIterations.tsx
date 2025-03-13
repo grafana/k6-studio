@@ -21,7 +21,7 @@ export function SharedIterations() {
         <Box width="50%">
           <FieldGroup
             label="VUs"
-            hint="Number of VUs to run concurrently."
+            hint="Number of VUs to run concurrently"
             errors={errors}
             name="vus"
           >
@@ -44,7 +44,7 @@ export function SharedIterations() {
         <Box width="50%">
           <FieldGroup
             label="Iterations"
-            hint="Total number of script iterations to execute across all VUs."
+            hint="Total number of script iterations to execute across all VUs"
             errors={errors}
             name="iterations"
           >

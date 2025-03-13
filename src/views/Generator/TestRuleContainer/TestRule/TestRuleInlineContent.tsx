@@ -39,7 +39,7 @@ function VerificationContent({ rule }: { rule: VerificationRule }) {
   return (
     <>
       <TestRuleFilter filter={rule.filter} />{' '}
-      <Tooltip content="Checks that all request statuses match the recording.">
+      <Tooltip content="Checks that all request statuses match the recording">
         <Badge color="gray">
           <DiscIcon /> Recording
         </Badge>
