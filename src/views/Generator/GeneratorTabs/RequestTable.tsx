@@ -19,7 +19,7 @@ export function RequestTable({
           <Table.ColumnHeaderCell width="50px">Type</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="20%">Host</Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell width="80%">Path</Table.ColumnHeaderCell>
-          {highlightedRequestIds && <Table.ColumnHeaderCell width="55px" />}
+          <Table.ColumnHeaderCell width="55px" />
         </Table.Row>
       </Table.Header>
       <Table.Body>

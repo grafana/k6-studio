@@ -29,17 +29,15 @@ export function RequestRow({
         }}
       >
         <Cells data={data} isSelected={isSelected} />
-        {highlightedRequestIds && (
-          <Table.Cell css={{ padding: 0 }}>
-            {isMatch && (
-              <Flex justify="end" align="center" height="100%" pr="2">
-                <Badge color="green" size="1">
-                  <Strong>Match</Strong>
-                </Badge>
-              </Flex>
-            )}
-          </Table.Cell>
-        )}
+        <Table.Cell css={{ padding: 0 }}>
+          {isMatch && (
+            <Flex justify="end" align="center" height="100%" pr="2">
+              <Badge color="green" size="1">
+                <Strong>Match</Strong>
+              </Badge>
+            </Flex>
+          )}
+        </Table.Cell>
       </Table.Row>
 
       <SearchResults
@@ -47,7 +45,7 @@ export function RequestRow({
         key={data.id}
         onSelectRequest={onSelectRequest}
         filter={filter}
-        colSpan={highlightedRequestIds ? 6 : 5}
+        colSpan={6}
       />
     </>
   )
