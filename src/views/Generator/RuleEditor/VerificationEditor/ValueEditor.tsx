@@ -3,6 +3,7 @@ import { ControlledSelect, FieldGroup } from '@/components/Form'
 import { VerificationRule } from '@/types/rules'
 import { useFormContext } from 'react-hook-form'
 import { useGeneratorStore } from '@/store/generator'
+import { VariableSelect } from '../VariableSelect'
 
 export function ValueEditor() {
   const {
@@ -13,13 +14,9 @@ export function ValueEditor() {
   } = useFormContext<VerificationRule>()
 
   const hasVariables = useGeneratorStore((state) => state.variables.length > 0)
-  const variables = useGeneratorStore((state) =>
-    state.variables.map((v) => ({
-      value: v.name,
-      label: v.name,
-    }))
-  )
+
   const valueType = watch('value.type')
+  const variableName = watch('value.variableName')
 
   const VALUE_TYPE_OPTIONS = [
     { value: 'recordedValue', label: 'Recorded value' },
@@ -47,13 +44,12 @@ export function ValueEditor() {
       )}
 
       {valueType === 'variable' && (
-        <FieldGroup name="value.variableName" errors={errors} label="Variable">
-          <ControlledSelect
-            control={control}
-            name="value.variableName"
-            options={variables}
-          />
-        </FieldGroup>
+        <VariableSelect
+          control={control}
+          errors={errors}
+          value={variableName}
+          name="value.variableName"
+        />
       )}
     </>
   )
