@@ -138,7 +138,7 @@ function SelectorContent({
             name={`${field}.begin`}
             errors={errors}
             label="Begin"
-            hint="The string immediately before the value to be extracted."
+            hint="The string immediately before the value to be extracted"
           >
             <TextField.Root {...register(`${field}.begin`)} />
           </FieldGroup>
