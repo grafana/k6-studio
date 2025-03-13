@@ -4,7 +4,7 @@ import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { Group, ProxyData } from '@/types'
 import { groupProxyData } from '@/utils/groups'
 import { css } from '@emotion/react'
-import { Box, Flex, Heading, ScrollArea } from '@radix-ui/themes'
+import { Box, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import { ClearRequestsButton } from './ClearRequestsButton'
 import { Filter } from '@/components/WebLogView/Filter'
@@ -65,9 +65,12 @@ export function RequestsSection({
               line-height: 24px;
               font-weight: 500;
               padding: var(--space-2);
+              display: flex;
+              align-items: center;
             `}
           >
-            Requests ({filteredRequests.length})
+            Requests ({filteredRequests.length}){' '}
+            {autoScroll && <Spinner ml="2" />}
           </Heading>
           {resetProxyData && (
             <ClearRequestsButton
