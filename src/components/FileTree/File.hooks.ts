@@ -14,7 +14,7 @@ export function useRenameFile(file: StudioFile) {
   return useMutation({
     mutationFn: (newName: string) =>
       window.studio.ui.renameFile(file.fileName, newName, file.type),
-    onSuccess: async (_, newName) => {
+    onSuccess: (_, newName) => {
       // There's a slight delay between the add and remove callbacks being triggered,
       // causing the UI to flicker because it thinks the renamed file is actually
       // a new file. To prevent this, we optimistically update the file list.
@@ -39,12 +39,6 @@ export function useRenameFile(file: StudioFile) {
       }
 
       navigate(getViewPath(file.type, newName), { replace: true })
-
-      if (file.type === 'generator') {
-        await queryClient.invalidateQueries({
-          queryKey: ['generator', file.fileName],
-        })
-      }
     },
   })
 }
