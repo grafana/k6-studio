@@ -198,5 +198,6 @@ function createRequestSnippet(proxyData: ProxyData) {
     data: proxyData,
     before: [],
     after: [],
+    checks: [],
   }
 }

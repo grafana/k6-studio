@@ -38,11 +38,19 @@ export function createVerificationRuleInstance(
       const checkDescription = getCheckDescription(rule)
       const checkExpression = getCheckExpression(rule, value)
 
-      const verificationSnippet = `check(resp, { '${checkDescription}': (r) => ${checkExpression}, })`
+      // const verificationSnippet = `check(resp, { '${checkDescription}': (r) => ${checkExpression}, })`
+
+      const checks = [
+        ...requestSnippetSchema.checks,
+        {
+          description: checkDescription,
+          expression: `(r) => ${checkExpression}`,
+        },
+      ]
 
       return {
         ...requestSnippetSchema,
-        after: [...requestSnippetSchema.after, verificationSnippet],
+        checks,
       }
     },
   }

@@ -33,7 +33,8 @@ const createMockRequestSnippet = (options?: {
     request: createRequest(options?.request),
   }),
   before: [],
-  after: options?.afterSnippets ?? [],
+  after: [],
+  checks: [],
 })
 
 const createInstance = (rule = createMockVerificationRule()) =>
@@ -49,10 +50,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'status equals recorded value': (r) => r.status.toString() === '200'"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'status equals recorded value',
+        expression: "(r) => r.status.toString() === '200'",
+      })
     })
 
     it('skips verification when request does not match filter', () => {
@@ -72,7 +74,7 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(0)
+      expect(result.checks).toHaveLength(0)
     })
   })
 
@@ -90,10 +92,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'status equals recorded value': (r) => r.status.toString() === '200'"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'status equals recorded value',
+        expression: "(r) => r.status.toString() === '200'",
+      })
     })
 
     it('supports contains operator', () => {
@@ -111,10 +114,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'body contains success': (r) => r.body.includes('success')"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'body contains success',
+        expression: "(r) => r.body.includes('success')",
+      })
     })
 
     it('supports not contains operator', () => {
@@ -132,10 +136,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'body does not contain error': (r) => !r.body.includes('error')"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'body does not contain error',
+        expression: "(r) => !r.body.includes('error')",
+      })
     })
   })
 
@@ -153,10 +158,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'status equals recorded value': (r) => r.status.toString() === '200'"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'status equals recorded value',
+        expression: "(r) => r.status.toString() === '200'",
+      })
     })
 
     it('supports string type', () => {
@@ -172,10 +178,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'status equals 404': (r) => r.status.toString() === '404'"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'status equals 404',
+        expression: "(r) => r.status.toString() === '404'",
+      })
     })
 
     it('supports variable type', () => {
@@ -193,10 +200,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'body contains variable \"username\"': (r) => r.body.includes(VARS['username'])"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'body contains variable "username"',
+        expression: "(r) => r.body.includes(VARS['username'])",
+      })
     })
   })
 
@@ -214,10 +222,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'status equals recorded value': (r) => r.status.toString() === '200'"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'status equals recorded value',
+        expression: "(r) => r.status.toString() === '200'",
+      })
     })
 
     it('supports body target', () => {
@@ -234,10 +243,11 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'body equals success': (r) => r.body === 'success'"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'body equals success',
+        expression: "(r) => r.body === 'success'",
+      })
     })
 
     it('supports body comparison with recorded value', () => {
@@ -254,10 +264,12 @@ describe('createVerificationRuleInstance', () => {
 
       const result = instance.apply(mockRequestSnippet)
 
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'body equals recorded value': (r) => r.body.replace(/(?:\\r\\n|\\r|\\n)/g, '') === String.raw`Operation completed successfully`"
-      )
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'body equals recorded value',
+        expression:
+          "(r) => r.body.replace(/(?:\\r\\n|\\r|\\n)/g, '') === String.raw`Operation completed successfully`",
+      })
     })
   })
 })
