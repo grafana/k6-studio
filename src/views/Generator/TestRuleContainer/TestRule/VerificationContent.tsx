@@ -2,7 +2,7 @@ import { VerificationRule } from '@/types/rules'
 import { TestRuleFilter } from './TestRuleFilter'
 import { Badge, Strong } from '@radix-ui/themes'
 import { exhaustive } from '@/utils/typescript'
-import { Link1Icon } from '@radix-ui/react-icons'
+import { DiscIcon, Link1Icon } from '@radix-ui/react-icons'
 
 export function VerificationContent({ rule }: { rule: VerificationRule }) {
   return (
@@ -35,7 +35,12 @@ function OperatorLabel({
 function ValueLabel({ rule }: { rule: VerificationRule }) {
   switch (rule.value.type) {
     case 'recordedValue':
-      return <Strong>recorded value</Strong>
+      return (
+        <Strong css={{ whiteSpace: 'nowrap' }}>
+          <DiscIcon css={{ verticalAlign: 'middle', display: 'inline' }} />{' '}
+          recorded value
+        </Strong>
+      )
     case 'string':
       return <Strong>{rule.value.value}</Strong>
     case 'variable':
