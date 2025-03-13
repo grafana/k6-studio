@@ -31,14 +31,11 @@ export function createVerificationRuleInstance(
         return requestSnippetSchema
       }
 
-      // Update state with matched request
       state.matchedRequestIds = [...state.matchedRequestIds, id]
 
       const value = getValueFromRule(rule, response)
       const checkDescription = getCheckDescription(rule)
       const checkExpression = getCheckExpression(rule, value)
-
-      // const verificationSnippet = `check(resp, { '${checkDescription}': (r) => ${checkExpression}, })`
 
       const checks = [
         ...requestSnippetSchema.checks,
