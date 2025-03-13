@@ -119,9 +119,8 @@ initializeLogger()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
 async function migrateJsonGenerator() {
-  const files = (
-    await readdir(GENERATORS_PATH, { withFileTypes: true })
-  ).filter((f) => f.isFile() && path.extname(f.name) === '.json')
+  const items = await readdir(GENERATORS_PATH, { withFileTypes: true })
+  const files = items.filter((f) => f.isFile() && path.extname(f.name) === '.json')
 
   await Promise.all(
     files.map(async (f) => {
