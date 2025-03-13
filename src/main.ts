@@ -123,13 +123,13 @@ async function migrateJsonGenerator() {
   const files = items.filter((f) => f.isFile() && path.extname(f.name) === '.json')
 
   await Promise.all(
-    files.map(async (f) => {
+    files.map((f) => {
       const oldPath = path.join(GENERATORS_PATH, f.name)
       const newPath = path.join(
         GENERATORS_PATH,
         path.parse(f.name).name + '.k6g'
       )
-      await rename(oldPath, newPath)
+      return rename(oldPath, newPath)
     })
   )
 }
