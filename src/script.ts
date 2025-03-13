@@ -206,7 +206,14 @@ const enhanceScript = async (scriptContent: string) => {
 
   if (httpImportIndex !== -1) {
     scriptLines.splice(httpImportIndex + 1, 0, groupSnippet)
+
+    // TODO: improve check for k6/execution and k6/http imports
+    if (!scriptContent.includes('k6/execution')) {
+      scriptLines.unshift('import execution from "k6/execution"')
+    }
+
     const modifiedScriptContent = scriptLines.join('\n')
+
     return modifiedScriptContent
   } else {
     throw new Error('http import line not found in script')
