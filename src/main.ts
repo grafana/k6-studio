@@ -128,7 +128,7 @@ async function migrateJsonGenerator() {
       const oldPath = path.join(GENERATORS_PATH, f.name)
       const newPath = path.join(
         GENERATORS_PATH,
-        path.parse(f.name).name + '.k6gen'
+        path.parse(f.name).name + '.k6g'
       )
       await rename(oldPath, newPath)
     })
@@ -508,7 +508,7 @@ ipcMain.handle('generator:create', async (_, recordingPath: string) => {
   const fileName = await createFileWithUniqueName({
     data: JSON.stringify(generator, null, 2),
     directory: GENERATORS_PATH,
-    ext: '.k6gen',
+    ext: '.k6g',
     prefix: 'Generator',
   })
 
@@ -929,7 +929,7 @@ function getStudioFileFromPath(filePath: string): StudioFile | undefined {
 
   if (
     filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === '.k6gen'
+    path.extname(filePath) === '.k6g'
   ) {
     return {
       type: 'generator',
