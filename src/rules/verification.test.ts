@@ -51,7 +51,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals recorded value': (r) => r.status === 200"
+        "'status equals recorded value': (r) => r.status.toString() === '200'"
       )
     })
 
@@ -92,7 +92,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals recorded value': (r) => r.status === 200"
+        "'status equals recorded value': (r) => r.status.toString() === '200'"
       )
     })
 
@@ -155,7 +155,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals recorded value': (r) => r.status === 200"
+        "'status equals recorded value': (r) => r.status.toString() === '200'"
       )
     })
 
@@ -174,7 +174,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals 404': (r) => r.status === 404"
+        "'status equals 404': (r) => r.status.toString() === '404'"
       )
     })
 
@@ -198,27 +198,6 @@ describe('createVerificationRuleInstance', () => {
         "'body contains variable \"username\"': (r) => r.body.includes(VARS['username'])"
       )
     })
-
-    it('parses variable as number when target is status', () => {
-      const instance = createInstance(
-        createMockVerificationRule({
-          value: { type: 'variable', variableName: 'expected_status' },
-          target: 'status',
-          operator: 'equals',
-        })
-      )
-
-      const mockRequestSnippet = createMockRequestSnippet({
-        response: { statusCode: 200 },
-      })
-
-      const result = instance.apply(mockRequestSnippet)
-
-      expect(result.after).toHaveLength(1)
-      expect(result.after[0]).toContain(
-        "'status equals variable \"expected_status\"': (r) => r.status === Number(VARS['expected_status'])"
-      )
-    })
   })
 
   describe('verification target', () => {
@@ -237,7 +216,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.after).toHaveLength(1)
       expect(result.after[0]).toContain(
-        "'status equals recorded value': (r) => r.status === 200"
+        "'status equals recorded value': (r) => r.status.toString() === '200'"
       )
     })
 

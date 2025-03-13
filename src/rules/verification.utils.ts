@@ -11,9 +11,9 @@ export function getValueFromRule(rule: VerificationRule, response: Response) {
     case 'recordedValue':
       return getRecordedValue(rule.target, response)
     case 'string':
-      return getStringValue(rule.target, rule.value.value)
+      return `'${rule.value.value}'`
     case 'variable':
-      return getVariableValue(rule.target, rule.value.variableName)
+      return `VARS['${rule.value.variableName}']`
     default:
       return exhaustive(type)
   }
@@ -58,7 +58,7 @@ function getRecordedValue(
 ) {
   switch (target) {
     case 'status':
-      return response.statusCode
+      return `'${response.statusCode}'`
     case 'body': {
       // Remove newlines when comparing the body to a recorded value
       const singleLineContent = response.content.replace(NEWLINE_REGEX, '')
@@ -71,35 +71,11 @@ function getRecordedValue(
   }
 }
 
-function getStringValue(target: VerificationRule['target'], value: string) {
-  switch (target) {
-    case 'status':
-      return value
-    case 'body':
-      return `'${value}'`
-    default:
-      return exhaustive(target)
-  }
-}
-
-function getVariableValue(
-  target: VerificationRule['target'],
-  variableName: string
-) {
-  switch (target) {
-    case 'status':
-      return `Number(VARS['${variableName}'])`
-    case 'body':
-      return `VARS['${variableName}']`
-    default:
-      return exhaustive(target)
-  }
-}
-
 function getTarget(rule: VerificationRule) {
   switch (rule.target) {
     case 'status':
-      return 'r.status'
+      // Convert to string to support .includes() for status and body
+      return 'r.status.toString()'
     case 'body': {
       // Remove newlines when comparing the body to a recorded value
       if (rule.value.type === 'recordedValue' && rule.target === 'body') {
