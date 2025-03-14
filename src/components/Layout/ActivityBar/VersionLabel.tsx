@@ -4,7 +4,7 @@ export function VersionLabel() {
   return (
     <Flex direction="column" gap="1" align="center">
       <Code size="1" variant="ghost" color="gray">
-        v1.0.0
+        v{__APP_VERSION__}
       </Code>
     </Flex>
   )
