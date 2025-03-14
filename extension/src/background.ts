@@ -154,4 +154,6 @@ runtime.onMessage.addListener((message, sender) => {
 
 captureNavigationEvents(captureEvents)
 
-connect()
+if (!STANDALONE_EXTENSION) {
+  connect()
+}

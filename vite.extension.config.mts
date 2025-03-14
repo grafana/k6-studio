@@ -27,6 +27,9 @@ export default defineConfig((env) => {
     plugins,
     build,
     define: {
+      STANDALONE_EXTENSION: JSON.stringify(
+        process.env.STANDALONE_EXTENSION === 'true'
+      ),
       TARGET_PLATFORM: JSON.stringify(process.platform),
     },
   }
@@ -39,6 +42,9 @@ export default defineConfig((env) => {
     plugins: [
       ...plugins,
       webExtension({
+        webExtConfig: {
+          startUrl: 'https://quickpizza.grafana.com',
+        },
         disableAutoLaunch: process.env.STANDALONE_EXTENSION !== 'true',
         htmlViteConfig: viteConfig,
         scriptViteConfig: viteConfig,
