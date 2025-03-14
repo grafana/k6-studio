@@ -34,7 +34,7 @@ export function createVerificationRuleInstance(
       state.matchedRequestIds = [...state.matchedRequestIds, id]
 
       const value = getValueFromRule(rule, response)
-      const checkDescription = getCheckDescription(rule)
+      const checkDescription = getCheckDescription(rule, value)
       const checkExpression = getCheckExpression(rule, value)
 
       const checks = [

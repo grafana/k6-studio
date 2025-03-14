@@ -42,8 +42,11 @@ export function getCheckExpression(
   }
 }
 
-export function getCheckDescription(rule: VerificationRule): string {
-  const valueDescription = getValueDescription(rule)
+export function getCheckDescription(
+  rule: VerificationRule,
+  value: string | number
+): string {
+  const valueDescription = getValueDescription(rule, value)
   const { operator } = rule
 
   switch (operator) {
@@ -96,10 +99,10 @@ function getTarget(rule: VerificationRule) {
   }
 }
 
-function getValueDescription(rule: VerificationRule) {
+function getValueDescription(rule: VerificationRule, value: string | number) {
   switch (rule.value.type) {
     case 'recordedValue':
-      return 'recorded value'
+      return rule.target === 'status' ? value : 'recorded value'
     case 'string':
       return rule.value.value
     case 'variable':

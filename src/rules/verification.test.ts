@@ -53,7 +53,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
-        description: 'status equals recorded value',
+        description: 'status equals 200',
         expression: '(r) => r.status === 200',
       })
     })
@@ -95,7 +95,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
-        description: 'status equals recorded value',
+        description: 'status equals 200',
         expression: '(r) => r.status === 200',
       })
     })
@@ -115,7 +115,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
-        description: 'status does not equal recorded value',
+        description: 'status does not equal 200',
         expression: '(r) => r.status !== 200',
       })
     })
@@ -181,7 +181,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
-        description: 'status equals recorded value',
+        description: 'status equals 200',
         expression: '(r) => r.status === 200',
       })
     })
@@ -266,7 +266,7 @@ describe('createVerificationRuleInstance', () => {
 
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
-        description: 'status equals recorded value',
+        description: 'status equals 200',
         expression: '(r) => r.status === 200',
       })
     })
