@@ -13,7 +13,6 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
     const newRule = createEmptyRule(type)
     addRule(newRule)
   }
-  const verificationRuleTooltip = 'Add status and body checks'
 
   return (
     <DropdownMenu.Root>
@@ -52,7 +51,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
           </DropdownMenu.Item>
         </Tooltip>
 
-        <Tooltip content={verificationRuleTooltip} side="right">
+        <Tooltip content={'Add status and body checks'} side="right">
           <DropdownMenu.Item
             onClick={() => {
               createRule('verification')

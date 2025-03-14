@@ -31,7 +31,7 @@ export function migrate(generator: GeneratorSchema): v1.GeneratorSchema {
     },
     testData: { ...generator.testData, files: [] },
     // To please the schema addition defined in v1 we need to set the default value for extractionMode
-    // since the rule was working in single mode before the addition of multiple mode we define that as default   testData: { ...generator.testData, files: [] },
+    // since the rule was working in single mode before the addition of multiple mode we define that as default
     rules: generator.rules.map((rule): v1.GeneratorSchema['rules'][number] => {
       if (rule.type === 'correlation') {
         return {
