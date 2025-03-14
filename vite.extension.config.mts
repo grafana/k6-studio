@@ -26,6 +26,9 @@ export default defineConfig((env) => {
   const viteConfig: InlineConfig = {
     plugins,
     build,
+    define: {
+      TARGET_PLATFORM: JSON.stringify(process.platform),
+    },
   }
 
   return {
