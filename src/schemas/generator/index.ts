@@ -13,9 +13,9 @@ const AnyGeneratorSchema = z.discriminatedUnion('version', [
 export function migrate(generator: z.infer<typeof AnyGeneratorSchema>) {
   switch (generator.version) {
     case '0':
-      return migrate(v1.migrate(v0.migrate(generator)))
+      return migrate(v0.migrate(generator))
     case '1.0':
-      return v1.migrate(generator)
+      return migrate(v1.migrate(generator))
     case '2.0':
       return generator
     default:
