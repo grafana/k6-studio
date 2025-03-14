@@ -7,7 +7,7 @@ import { FieldError } from './FieldError'
 
 type FieldGroupProps = BoxProps & {
   children: React.ReactNode
-  errors: FieldErrors
+  errors?: FieldErrors
   name: string
   label?: React.ReactNode
   hint?: React.ReactNode
@@ -45,7 +45,7 @@ export function FieldGroup({
         </Label.Root>
       )}
       <Box>{children}</Box>
-      <ErrorMessage errors={errors} name={name} as={FieldError} />
+      {errors && <ErrorMessage errors={errors} name={name} as={FieldError} />}
     </Box>
   )
 }

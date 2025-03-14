@@ -19,6 +19,7 @@ import { TestRule } from '@/types/rules'
 import { TestRuleSchema } from '@/schemas/generator'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
 import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
+import { VerificationEditor } from './VerificationEditor/VerificationEditor'
 import { capitalize, startCase } from 'lodash-es'
 
 export function RuleEditorSwitch() {
@@ -32,18 +33,8 @@ export function RuleEditorSwitch() {
       return <CustomCodeEditor />
     case 'parameterization':
       return <ParameterizationEditor />
-
     case 'verification':
-      return (
-        <Callout.Root mb="4">
-          <Callout.Icon>
-            <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            Verification rule configuration is coming soon
-          </Callout.Text>
-        </Callout.Root>
-      )
+      return <VerificationEditor />
     default:
       return exhaustive(ruleType)
   }

@@ -202,6 +202,7 @@ export function generateSingleRequestSnippet(
     before,
     after,
     data: { request },
+    checks,
   } = requestSnippetSchema
 
   const method = `'${request.method}'`
@@ -237,7 +238,7 @@ export function generateSingleRequestSnippet(
     resp = http.request(${method}, url, ${content}, params)
   `
 
-  return [params, ...before, main, ...after].join('\n')
+  return [params, ...before, main, generateChecks(checks), ...after].join('\n')
 }
 
 function generateSleep(timing: ThinkTime['timing']): string {
@@ -295,4 +296,16 @@ function generateScriptHeaderComment() {
 
 function escapeBackticks(content: string): string {
   return content.replace(/`/g, '\\`')
+}
+
+function generateChecks(checks: RequestSnippetSchema['checks']) {
+  if (checks.length === 0) {
+    return ''
+  }
+
+  const checksString = checks
+    .map(({ description, expression }) => `'${description}': ${expression}`)
+    .join(',')
+
+  return `check(resp, { ${checksString} })`
 }

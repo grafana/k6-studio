@@ -22,7 +22,6 @@ import {
   TextSelectorSchema,
   VariableValueSchema,
   VerificationRuleSchema,
-  VerificationRuleSelectorSchema,
 } from '@/schemas/generator'
 
 interface BaseRuleState {
@@ -94,9 +93,6 @@ export type TextSelector = z.infer<typeof TextSelectorSchema>
 export type ReplacerSelector = z.infer<typeof ReplacerSelectorSchema>
 export type ExtractorSelector = z.infer<typeof ExtractorSelectorSchema>
 export type Selector = ReplacerSelector | ExtractorSelector
-export type VerificationRuleSelector = z.infer<
-  typeof VerificationRuleSelectorSchema
->
 export type CorrelationExtractor = z.infer<typeof CorrelationExtractorSchema>
 export type CorrelationReplacer = z.infer<typeof CorrelationReplacerSchema>
 export type RuleBase = z.infer<typeof RuleBaseSchema>

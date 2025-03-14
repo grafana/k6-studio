@@ -76,7 +76,7 @@ describe('Code generation', () => {
         generateScript({
           recording: [],
           generator: {
-            version: '1.0',
+            version: '2.0',
             recordingPath: 'test',
             options: {
               loadProfile: {
@@ -115,7 +115,7 @@ describe('Code generation', () => {
 
   describe('generateImports', () => {
     const generator: GeneratorFileData = {
-      version: '1.0',
+      version: '2.0',
       recordingPath: 'test',
       options: {
         loadProfile: {
@@ -413,6 +413,8 @@ describe('Code generation', () => {
           id: '1',
           enabled: true,
           filter: { path: '' },
+          operator: 'equals',
+          target: 'status',
           value: {
             type: 'recordedValue',
           },
@@ -423,7 +425,7 @@ describe('Code generation', () => {
         params = { headers: {}, cookies: {} }
         url = http.url\`http://test.k6.io/api/v1/foo\`
         resp = http.request('POST', url, null, params)
-        check(resp,{'statusmatches200':(r)=>r.status===200,})
+        check(resp, { 'status equals 200': (r) => r.status === 200 })
       `
 
       expect(

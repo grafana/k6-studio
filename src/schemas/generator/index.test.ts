@@ -24,14 +24,26 @@ describe('Generator migration', () => {
       testData: {
         variables: [],
       },
-      rules: [],
+      rules: [
+        {
+          id: '1',
+          type: 'verification',
+          enabled: true,
+          filter: {
+            path: '',
+          },
+          value: {
+            type: 'recordedValue',
+          },
+        },
+      ],
       allowlist: [],
       includeStaticAssets: false,
       scriptName: 'my-script.js',
     }
 
     const migration = migrate(v0Generator)
-    expect(migration.version).toBe('1.0')
+    expect(migration.version).toBe('2.0')
     expect(migration.options.thresholds).toEqual([])
   })
 })

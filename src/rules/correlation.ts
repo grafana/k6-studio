@@ -897,7 +897,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     )
 
     const requestSnippets = recording.map((data) =>
-      ruleInstance.apply({ data, before: [], after: [] })
+      ruleInstance.apply({ data, before: [], after: [], checks: [] })
     )
 
     expect(requestSnippets[0]?.after[0]?.replace(/\s/g, '')).toBe(
@@ -946,7 +946,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     )
 
     const requestSnippets = recording.map((data) =>
-      ruleInstance.apply({ data, before: [], after: [] })
+      ruleInstance.apply({ data, before: [], after: [], checks: [] })
     )
 
     expect(requestSnippets[0]?.after[0]?.replace(/\s/g, '')).toBe(
@@ -1006,7 +1006,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     )
 
     const requestSnippets = recording.map((data) =>
-      ruleInstance.apply({ data, before: [], after: [] })
+      ruleInstance.apply({ data, before: [], after: [], checks: [] })
     )
 
     expect(requestSnippets[1]?.data.request.url).toEqual(
@@ -1057,7 +1057,7 @@ correlation_vars['correlation_1'] = resp.json().user_id`
     )
 
     const requestSnippets = recording.map((data) =>
-      ruleInstance.apply({ data, before: [], after: [] })
+      ruleInstance.apply({ data, before: [], after: [], checks: [] })
     )
 
     expect(requestSnippets[1]?.data.request.url).toEqual(
