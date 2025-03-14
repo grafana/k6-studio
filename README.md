@@ -23,6 +23,10 @@
     <a href="https://github.com/grafana/k6-studio/issues">Report issues</a>
 </p>
 
+[!WARNING]  
+> Grafana k6 Studio is currently in [Public Preview](https://grafana.com/docs/release-life-cycle/#public-preview)
+> Bugs and breaking changes might occur prior to general availability. Please report any issues or feedback to help us improve.
+
 <p align="center">
   <img src="assets/k6-studio-screenshot.png" alt="k6 Studio" width="600" />
 </p>
