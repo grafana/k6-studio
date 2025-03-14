@@ -27,6 +27,8 @@ function OperatorLabel({
       return operator
     case 'notContains':
       return 'does not contain'
+    case 'notEquals':
+      return 'does not equal'
     default:
       return exhaustive(operator)
   }

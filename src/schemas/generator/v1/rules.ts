@@ -137,7 +137,12 @@ export const CorrelationRuleSchema = RuleBaseSchema.extend({
   replacer: CorrelationReplacerSchema.optional(),
 })
 
-const VerificationOperator = z.enum(['equals', 'contains', 'notContains'])
+const VerificationOperator = z.enum([
+  'equals',
+  'notEquals',
+  'contains',
+  'notContains',
+])
 
 const VerificationTarget = z.enum(['body', 'status'])
 
@@ -148,7 +153,10 @@ export const BaseVerificationRuleSchema = RuleBaseSchema.extend({
 
 export const StatusVerificationRuleSchema = BaseVerificationRuleSchema.extend({
   target: z.literal(VerificationTarget.enum.status),
-  operator: z.enum([VerificationOperator.enum.equals]),
+  operator: z.enum([
+    VerificationOperator.enum.equals,
+    VerificationOperator.enum.notEquals,
+  ]),
   value: z.discriminatedUnion('type', [RecordedValueSchema, NumberValueSchema]),
 })
 

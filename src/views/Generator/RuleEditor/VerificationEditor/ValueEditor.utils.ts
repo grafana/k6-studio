@@ -13,8 +13,9 @@ export const VALUE_LABELS: Record<VerificationRule['value']['type'], string> = {
 }
 
 export const OPERATOR_LABELS: Record<VerificationRule['operator'], string> = {
-  contains: 'Contains',
   equals: 'Equals',
+  notEquals: 'Does not equal',
+  contains: 'Contains',
   notContains: 'Does not contain',
 }
 

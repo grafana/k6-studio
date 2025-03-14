@@ -100,25 +100,25 @@ describe('createVerificationRuleInstance', () => {
       })
     })
 
-    // it('supports not equals operator', () => {
-    // const instance = createInstance(
-    // createMockVerificationRule({
-    // operator: 'notEquals',
-    // })
-    // )
+    it('supports not equals operator', () => {
+      const instance = createInstance(
+        createMockVerificationRule({
+          operator: 'notEquals',
+        })
+      )
 
-    // const mockRequestSnippet = createMockRequestSnippet({
-    // response: { statusCode: 200 },
-    // })
+      const mockRequestSnippet = createMockRequestSnippet({
+        response: { statusCode: 200 },
+      })
 
-    // const result = instance.apply(mockRequestSnippet)
+      const result = instance.apply(mockRequestSnippet)
 
-    // expect(result.checks).toHaveLength(1)
-    // expect(result.checks[0]).toMatchObject({
-    // description: 'status not equals recorded value',
-    // expression: '(r) => r.status !== 200',
-    // })
-    // })
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'status does not equal recorded value',
+        expression: '(r) => r.status !== 200',
+      })
+    })
 
     it('supports contains operator', () => {
       const instance = createInstance(

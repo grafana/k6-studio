@@ -31,6 +31,8 @@ export function getCheckExpression(
   switch (operator) {
     case 'equals':
       return `${target} === ${value}`
+    case 'notEquals':
+      return `${target} !== ${value}`
     case 'contains':
       return `${target}.includes(${value})`
     case 'notContains':
@@ -47,6 +49,8 @@ export function getCheckDescription(rule: VerificationRule): string {
   switch (operator) {
     case 'equals':
       return `${rule.target} equals ${valueDescription}`
+    case 'notEquals':
+      return `${rule.target} does not equal ${valueDescription}`
     case 'contains':
       return `${rule.target} contains ${valueDescription}`
     case 'notContains':
