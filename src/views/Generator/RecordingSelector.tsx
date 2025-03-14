@@ -62,28 +62,23 @@ export function RecordingSelector({ compact = false }: { compact?: boolean }) {
         </Text>
       )}
       <Select.Root value={recordingPath} onValueChange={handleOpen}>
-        <Tooltip content="Switch between different recordings.">
-          <Select.Trigger
-            id="recording-selector"
-            placeholder="Select recording"
-            css={css`
-              width: ${compact ? 'auto' : '300px'};
-              @media (max-width: 1060px) {
-                width: 125px;
-              }
-            `}
-          >
-            <Flex as="span" align="center" gap="1">
-              {isRecordingMissing && (
-                <ExclamationTriangleIcon
-                  color="orange"
-                  css={{ minWidth: 16 }}
-                />
-              )}
-              {getFileNameWithoutExtension(recordingPath)}
-            </Flex>
-          </Select.Trigger>
-        </Tooltip>
+        <Select.Trigger
+          id="recording-selector"
+          placeholder="Select recording"
+          css={css`
+            width: ${compact ? 'auto' : '300px'};
+            @media (max-width: 1060px) {
+              width: 125px;
+            }
+          `}
+        >
+          <Flex as="span" align="center" gap="1">
+            {isRecordingMissing && (
+              <ExclamationTriangleIcon color="orange" css={{ minWidth: 16 }} />
+            )}
+            {getFileNameWithoutExtension(recordingPath)}
+          </Flex>
+        </Select.Trigger>
         <Select.Content position="popper">
           {isRecordingMissing && (
             <Select.Item value={recordingPath} disabled>

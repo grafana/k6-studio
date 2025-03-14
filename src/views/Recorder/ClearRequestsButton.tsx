@@ -16,7 +16,7 @@ export function ClearRequestsButton({
           size="1"
           variant="surface"
           disabled={disabled}
-          tooltip="Remove all requests from the recording."
+          tooltip="Remove all requests from the recording"
         >
           Clear
         </ButtonWithTooltip>

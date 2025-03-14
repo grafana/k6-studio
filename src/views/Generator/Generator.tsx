@@ -1,5 +1,5 @@
 import { Allotment } from 'allotment'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
@@ -21,6 +21,7 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import log from 'electron-log/renderer'
 import { ProxyData } from '@/types'
 import { Details } from '@/components/WebLogView/Details'
+import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 export function Generator() {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
@@ -48,8 +49,11 @@ export function Generator() {
   const isLoading = isLoadingGenerator || isLoadingRecording
 
   const isDirty = useIsGeneratorDirty(fileName)
+  const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
+
+  const [, onSaveKeyPress] = useKeyboardJs(['command + s', 'ctrl + s'])
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting home from invalid generator
@@ -95,10 +99,22 @@ export function Generator() {
     })
   })
 
-  const handleSaveGenerator = () => {
+  useEffect(() => {
+    isDirtyRef.current = isDirty
+  }, [isDirty])
+
+  const handleSaveGenerator = useCallback(() => {
     const generator = selectGeneratorData(useGeneratorStore.getState())
     return saveGenerator(generator)
-  }
+  }, [saveGenerator])
+
+  useEffect(() => {
+    ;(async () => {
+      if (onSaveKeyPress && isDirtyRef.current === true) {
+        await handleSaveGenerator()
+      }
+    })()
+  }, [handleSaveGenerator, onSaveKeyPress])
 
   const handleSaveGeneratorDialog = async () => {
     await handleSaveGenerator()
@@ -125,7 +141,11 @@ export function Generator() {
   return (
     <View
       title="Generator"
-      subTitle={getFileNameWithoutExtension(fileName)}
+      subTitle={
+        <>
+          {getFileNameWithoutExtension(fileName)} {isDirty && '*'}
+        </>
+      }
       actions={
         <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }
@@ -136,8 +156,9 @@ export function Generator() {
           <Allotment vertical>
             <Allotment.Pane minSize={200}>
               <GeneratorTabs
-                onSelectRequest={setSelectedRequest}
+                fileName={fileName}
                 selectedRequest={selectedRequest}
+                onSelectRequest={setSelectedRequest}
               />
             </Allotment.Pane>
             <Allotment.Pane minSize={200}>

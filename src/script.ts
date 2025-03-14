@@ -65,6 +65,10 @@ export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   return scriptPath
 }
 
+export const getTempScriptName = () => {
+  return `.${Math.random().toString(36).substring(7)}${TEMP_SCRIPT_SUFFIX}`
+}
+
 export const runScript = async ({
   scriptPath,
   proxyPort,
@@ -85,8 +89,10 @@ export const runScript = async ({
   // 3. Save the enhanced script content to a temp file in the same directory as the original script
   // (k6 will look for modules/data files in the same directory as the script)
   const dirname = path.dirname(scriptPath)
-  const randomTempFileName = `.${Math.random().toString(36).substring(7)}${TEMP_SCRIPT_SUFFIX}`
-  const tempScriptPath = path.join(dirname, randomTempFileName)
+
+  const tempFileName = getTempScriptName()
+  const tempScriptPath = path.join(dirname, tempFileName)
+
   await writeFile(tempScriptPath, modifiedScript)
 
   // 4. Archive the script and its dependencies
@@ -200,7 +206,14 @@ const enhanceScript = async (scriptContent: string) => {
 
   if (httpImportIndex !== -1) {
     scriptLines.splice(httpImportIndex + 1, 0, groupSnippet)
+
+    // TODO: improve check for k6/execution and k6/http imports
+    if (!scriptContent.includes('k6/execution')) {
+      scriptLines.unshift('import execution from "k6/execution"')
+    }
+
     const modifiedScriptContent = scriptLines.join('\n')
+
     return modifiedScriptContent
   } else {
     throw new Error('http import line not found in script')

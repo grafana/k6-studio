@@ -11,7 +11,7 @@ import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
 import { RequestListHeader } from './RequestListHeader'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
-import { RequestRow } from './RequestRow'
+import { RequestTable } from './RequestTable'
 
 interface RequestListProps {
   requests: ProxyData[]
@@ -95,8 +95,8 @@ export function RequestList({
             onSelectRequest={onSelectRequest}
             groups={groups}
             filter={filter}
-            RowComponent={(props) => (
-              <RequestRow
+            ListComponent={(props) => (
+              <RequestTable
                 {...props}
                 highlightedRequestIds={
                   selectedRuleInstance?.state?.matchedRequestIds
