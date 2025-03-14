@@ -76,7 +76,7 @@ describe('Code generation', () => {
         generateScript({
           recording: [],
           generator: {
-            version: '1.0',
+            version: '2.0',
             recordingPath: 'test',
             options: {
               loadProfile: {
@@ -115,7 +115,7 @@ describe('Code generation', () => {
 
   describe('generateImports', () => {
     const generator: GeneratorFileData = {
-      version: '1.0',
+      version: '2.0',
       recordingPath: 'test',
       options: {
         loadProfile: {
