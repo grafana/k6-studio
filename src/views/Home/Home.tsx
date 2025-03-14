@@ -11,7 +11,6 @@ import {
 import { NavigationCard } from './NavigationCard'
 import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { ExperimentalBanner } from '@/components/ExperimentalBanner'
 
 export function Home() {
   const createNewGenerator = useCreateGenerator()
@@ -20,7 +19,6 @@ export function Home() {
 
   return (
     <Flex direction="column" height="100%">
-      <ExperimentalBanner />
       <Flex
         direction="column"
         align="center"
@@ -47,9 +45,8 @@ export function Home() {
             margin-bottom: var(--space-6);
           `}
         >
-          Uncover bottlenecks, accelerate load times, and deliver exceptional
-          user experiences with the industry{"'"}s leading performance testing
-          tool.
+          Quickly capture user journeys and API requests to generate test
+          scripts. No manual scripting required.
         </Text>
         <Grid gap="8" columns="3" maxWidth="720px">
           <NavigationCard
