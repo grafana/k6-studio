@@ -22,7 +22,15 @@ export const RecordedValueSchema = z.object({
 
 export const StringValueSchema = z.object({
   type: z.literal('string'),
-  value: z.string(),
+  value: z.coerce.string(),
+})
+
+export const NumberValueSchema = z.object({
+  type: z.literal('number'),
+  number: z
+    .number({ message: 'Required' })
+    .int()
+    .nonnegative({ message: 'Must be a positive number' }),
 })
 
 export const FilterSchema = z.object({
@@ -94,12 +102,6 @@ export const ReplacerSelectorSchema = z.discriminatedUnion('type', [
   TextSelectorSchema,
 ])
 
-export const VerificationRuleSelectorSchema = z.discriminatedUnion('type', [
-  BeginEndSelectorSchema,
-  RegexSelectorSchema,
-  JsonSelectorSchema,
-])
-
 export const CorrelationExtractorSchema = z.object({
   filter: FilterSchema,
   selector: ExtractorSelectorSchema,
@@ -139,17 +141,31 @@ const VerificationOperator = z.enum(['equals', 'contains', 'notContains'])
 
 const VerificationTarget = z.enum(['body', 'status'])
 
-export const VerificationRuleSchema = RuleBaseSchema.extend({
+export const BaseVerificationRuleSchema = RuleBaseSchema.extend({
   type: z.literal('verification'),
   filter: FilterSchema,
-  operator: VerificationOperator.default('equals'),
-  target: VerificationTarget.default('status'),
+})
+
+export const StatusVerificationRuleSchema = BaseVerificationRuleSchema.extend({
+  target: z.literal(VerificationTarget.enum.status),
+  operator: z.enum([VerificationOperator.enum.equals]),
+  value: z.discriminatedUnion('type', [RecordedValueSchema, NumberValueSchema]),
+})
+
+export const BodyVerificationRuleSchema = BaseVerificationRuleSchema.extend({
+  target: z.literal(VerificationTarget.enum.body),
+  operator: VerificationOperator,
   value: z.discriminatedUnion('type', [
-    VariableValueSchema,
     RecordedValueSchema,
     StringValueSchema,
+    VariableValueSchema,
   ]),
 })
+
+export const VerificationRuleSchema = z.discriminatedUnion('target', [
+  StatusVerificationRuleSchema,
+  BodyVerificationRuleSchema,
+])
 
 export const CustomCodeRuleSchema = RuleBaseSchema.extend({
   type: z.literal('customCode'),
@@ -158,7 +174,7 @@ export const CustomCodeRuleSchema = RuleBaseSchema.extend({
   snippet: z.string(),
 })
 
-export const TestRuleSchema = z.discriminatedUnion('type', [
+export const TestRuleSchema = z.union([
   ParameterizationRuleSchema,
   CorrelationRuleSchema,
   VerificationRuleSchema,

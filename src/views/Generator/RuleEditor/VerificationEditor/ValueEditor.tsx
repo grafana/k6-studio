@@ -4,12 +4,12 @@ import { VerificationRule } from '@/types/rules'
 import { useFormContext } from 'react-hook-form'
 import { useGeneratorStore } from '@/store/generator'
 import { VariableSelect } from '../VariableSelect'
-
-const OPERATOR_OPTIONS = [
-  { value: 'equals', label: 'Equals' },
-  { value: 'contains', label: 'Contains' },
-  { value: 'notContains', label: 'Does not contain' },
-]
+import { useCallback, useEffect, useMemo } from 'react'
+import {
+  getValueTypeOptions,
+  getOperatorOptions,
+  getAvailableValueTypes,
+} from './ValueEditor.utils'
 
 export function ValueEditor() {
   const {
@@ -24,33 +24,48 @@ export function ValueEditor() {
 
   const valueType = watch('value.type')
   const variableName = watch('value.variableName')
+  const target = watch('target')
 
-  const VALUE_TYPE_OPTIONS: Array<{
-    value: VerificationRule['value']['type']
-    label: string
-    disabled?: boolean
-  }> = [
-    { value: 'recordedValue', label: 'Recorded value' },
-    { value: 'string', label: 'Text value' },
-    { value: 'variable', label: 'Variable', disabled: !hasVariables },
-  ]
+  const valueTypeOptions = useMemo(
+    () => getValueTypeOptions(target, hasVariables),
+    [target, hasVariables]
+  )
 
-  const handleToggleValueType = (value: VerificationRule['value']['type']) => {
-    if (value === 'recordedValue') {
-      setValue('operator', 'equals')
-    }
+  const operatorOptions = useMemo(() => getOperatorOptions(target), [target])
 
-    setValue('value.type', value)
-  }
+  const handleChangeValueType = useCallback(
+    (value: VerificationRule['value']['type']) => {
+      if (value === 'recordedValue') {
+        setValue('operator', 'equals')
+      }
+
+      if (value === 'number') {
+        setValue('value.number', 200)
+      }
+
+      if (value === 'string') {
+        setValue('value.value', '')
+      }
+
+      setValue('value.type', value)
+    },
+    [setValue]
+  )
+
+  // Update dropdown values when target changes
+  useEffect(() => {
+    const firstAvailableValueType = getAvailableValueTypes(target)[0]
+    firstAvailableValueType && handleChangeValueType(firstAvailableValueType)
+  }, [target, handleChangeValueType])
 
   return (
     <>
-      <FieldGroup name="value.type" errors={errors} label="Compare with">
+      <FieldGroup name="value.type" label="Compare with">
         <ControlledSelect
           control={control}
           name="value.type"
-          options={VALUE_TYPE_OPTIONS}
-          onChange={handleToggleValueType}
+          options={valueTypeOptions}
+          onChange={handleChangeValueType}
         />
       </FieldGroup>
 
@@ -59,7 +74,7 @@ export function ValueEditor() {
           <ControlledSelect
             name="operator"
             control={control}
-            options={OPERATOR_OPTIONS}
+            options={operatorOptions}
           />
         </FieldGroup>
       )}
@@ -69,6 +84,18 @@ export function ValueEditor() {
           <TextField.Root
             placeholder="Enter value"
             {...register('value.value')}
+          />
+        </FieldGroup>
+      )}
+
+      {valueType === 'number' && (
+        <FieldGroup name="value.number" errors={errors} label="Value">
+          <TextField.Root
+            placeholder="Enter number"
+            type="number"
+            {...register('value.number', {
+              valueAsNumber: true,
+            })}
           />
         </FieldGroup>
       )}

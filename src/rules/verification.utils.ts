@@ -14,6 +14,8 @@ export function getValueFromRule(rule: VerificationRule, response: Response) {
       return `'${rule.value.value}'`
     case 'variable':
       return `VARS['${rule.value.variableName}']`
+    case 'number':
+      return rule.value.number
     default:
       return exhaustive(type)
   }
@@ -24,8 +26,9 @@ export function getCheckExpression(
   value: string | number
 ): string {
   const target = getTarget(rule)
+  const { operator } = rule
 
-  switch (rule.operator) {
+  switch (operator) {
     case 'equals':
       return `${target} === ${value}`
     case 'contains':
@@ -33,14 +36,15 @@ export function getCheckExpression(
     case 'notContains':
       return `!${target}.includes(${value})`
     default:
-      return exhaustive(rule.operator)
+      return exhaustive(operator)
   }
 }
 
 export function getCheckDescription(rule: VerificationRule): string {
   const valueDescription = getValueDescription(rule)
+  const { operator } = rule
 
-  switch (rule.operator) {
+  switch (operator) {
     case 'equals':
       return `${rule.target} equals ${valueDescription}`
     case 'contains':
@@ -48,7 +52,7 @@ export function getCheckDescription(rule: VerificationRule): string {
     case 'notContains':
       return `${rule.target} does not contain ${valueDescription}`
     default:
-      return exhaustive(rule.operator)
+      return exhaustive(operator)
   }
 }
 
@@ -58,7 +62,7 @@ function getRecordedValue(
 ) {
   switch (target) {
     case 'status':
-      return `'${response.statusCode}'`
+      return response.statusCode
     case 'body': {
       // Remove newlines when comparing the body to a recorded value
       const singleLineContent = response.content.replace(NEWLINE_REGEX, '')
@@ -72,10 +76,10 @@ function getRecordedValue(
 }
 
 function getTarget(rule: VerificationRule) {
-  switch (rule.target) {
+  const { target } = rule
+  switch (target) {
     case 'status':
-      // Convert to string to support .includes() for status and body
-      return 'r.status.toString()'
+      return 'r.status'
     case 'body': {
       // Remove newlines when comparing the body to a recorded value
       if (rule.value.type === 'recordedValue' && rule.target === 'body') {
@@ -84,7 +88,7 @@ function getTarget(rule: VerificationRule) {
       return 'r.body'
     }
     default:
-      return exhaustive(rule.target)
+      return exhaustive(target)
   }
 }
 
@@ -96,6 +100,8 @@ function getValueDescription(rule: VerificationRule) {
       return rule.value.value
     case 'variable':
       return `variable "${rule.value.variableName}"`
+    case 'number':
+      return rule.value.number
     default:
       return exhaustive(rule.value)
   }

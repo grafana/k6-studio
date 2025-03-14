@@ -43,6 +43,8 @@ function ValueLabel({ rule }: { rule: VerificationRule }) {
       )
     case 'string':
       return <Strong>{rule.value.value}</Strong>
+    case 'number':
+      return <Strong>{rule.value.number}</Strong>
     case 'variable':
       return (
         <Strong>

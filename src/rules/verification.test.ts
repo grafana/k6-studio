@@ -10,18 +10,19 @@ import {
 
 const createMockVerificationRule = (
   overrides?: Partial<VerificationRule>
-): VerificationRule => ({
-  type: 'verification',
-  id: 'test-id',
-  enabled: true,
-  filter: { path: '' },
-  operator: 'equals',
-  target: 'status',
-  value: {
-    type: 'recordedValue',
-  },
-  ...overrides,
-})
+): VerificationRule =>
+  ({
+    type: 'verification',
+    id: 'test-id',
+    enabled: true,
+    filter: { path: '' },
+    operator: 'equals',
+    target: 'status',
+    value: {
+      type: 'recordedValue',
+    },
+    ...overrides,
+  }) as VerificationRule
 
 const createMockRequestSnippet = (options?: {
   response?: Parameters<typeof createResponse>[0]
@@ -53,7 +54,7 @@ describe('createVerificationRuleInstance', () => {
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
         description: 'status equals recorded value',
-        expression: "(r) => r.status.toString() === '200'",
+        expression: '(r) => r.status === 200',
       })
     })
 
@@ -79,7 +80,7 @@ describe('createVerificationRuleInstance', () => {
   })
 
   describe('operators', () => {
-    it('supports equal operator', () => {
+    it('supports equals operator', () => {
       const instance = createInstance(
         createMockVerificationRule({
           operator: 'equals',
@@ -95,9 +96,29 @@ describe('createVerificationRuleInstance', () => {
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
         description: 'status equals recorded value',
-        expression: "(r) => r.status.toString() === '200'",
+        expression: '(r) => r.status === 200',
       })
     })
+
+    // it('supports not equals operator', () => {
+    // const instance = createInstance(
+    // createMockVerificationRule({
+    // operator: 'notEquals',
+    // })
+    // )
+
+    // const mockRequestSnippet = createMockRequestSnippet({
+    // response: { statusCode: 200 },
+    // })
+
+    // const result = instance.apply(mockRequestSnippet)
+
+    // expect(result.checks).toHaveLength(1)
+    // expect(result.checks[0]).toMatchObject({
+    // description: 'status not equals recorded value',
+    // expression: '(r) => r.status !== 200',
+    // })
+    // })
 
     it('supports contains operator', () => {
       const instance = createInstance(
@@ -161,14 +182,35 @@ describe('createVerificationRuleInstance', () => {
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
         description: 'status equals recorded value',
-        expression: "(r) => r.status.toString() === '200'",
+        expression: '(r) => r.status === 200',
       })
     })
 
     it('supports string type', () => {
       const instance = createInstance(
         createMockVerificationRule({
-          value: { type: 'string', value: '404' },
+          value: { type: 'string', value: '{"success": true}' },
+          target: 'body',
+        })
+      )
+
+      const mockRequestSnippet = createMockRequestSnippet({
+        response: { statusCode: 200 },
+      })
+
+      const result = instance.apply(mockRequestSnippet)
+
+      expect(result.checks).toHaveLength(1)
+      expect(result.checks[0]).toMatchObject({
+        description: 'body equals {"success": true}',
+        expression: '(r) => r.body === \'{"success": true}\'',
+      })
+    })
+
+    it('supports number type', () => {
+      const instance = createInstance(
+        createMockVerificationRule({
+          value: { type: 'number', number: 404 },
         })
       )
 
@@ -181,7 +223,7 @@ describe('createVerificationRuleInstance', () => {
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
         description: 'status equals 404',
-        expression: "(r) => r.status.toString() === '404'",
+        expression: '(r) => r.status === 404',
       })
     })
 
@@ -225,7 +267,7 @@ describe('createVerificationRuleInstance', () => {
       expect(result.checks).toHaveLength(1)
       expect(result.checks[0]).toMatchObject({
         description: 'status equals recorded value',
-        expression: "(r) => r.status.toString() === '200'",
+        expression: '(r) => r.status === 200',
       })
     })
 
