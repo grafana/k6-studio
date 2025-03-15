@@ -1,9 +1,9 @@
 import './ui'
 
 import { BrowserEvent } from '@/schemas/recording'
-import { runtime } from 'webextension-polyfill'
-import { generateSelector } from './selectors'
+import { generateSelector } from '../selectors'
 import { shouldSkipEvent } from './ui/utils'
+import { background } from './client'
 
 function getButton(button: number) {
   switch (button) {
@@ -21,13 +21,11 @@ function getButton(button: number) {
   }
 }
 
-function captureEvents(events: BrowserEvent[] | BrowserEvent) {
-  runtime
-    .sendMessage({
-      type: 'events-captured',
-      events: Array.isArray(events) ? events : [events],
-    })
-    .catch(console.error)
+function recordEvents(events: BrowserEvent[] | BrowserEvent) {
+  background.send({
+    type: 'record-events',
+    events: Array.isArray(events) ? events : [events],
+  })
 }
 
 window.addEventListener(
@@ -58,7 +56,7 @@ window.addEventListener(
       return
     }
 
-    captureEvents({
+    recordEvents({
       type: 'clicked',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
@@ -77,7 +75,7 @@ window.addEventListener(
 )
 
 function handleSelectChange(target: HTMLSelectElement) {
-  captureEvents({
+  recordEvents({
     type: 'select-changed',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
@@ -89,7 +87,7 @@ function handleSelectChange(target: HTMLSelectElement) {
 }
 
 function handleTextAreaChange(target: HTMLTextAreaElement) {
-  captureEvents({
+  recordEvents({
     type: 'input-changed',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
@@ -111,7 +109,7 @@ function handleInputChange(target: HTMLInputElement) {
   }
 
   if (target.type === 'checkbox') {
-    captureEvents({
+    recordEvents({
       type: 'check-changed',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
@@ -128,7 +126,7 @@ function handleInputChange(target: HTMLInputElement) {
       return
     }
 
-    captureEvents({
+    recordEvents({
       type: 'radio-changed',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
@@ -141,7 +139,7 @@ function handleInputChange(target: HTMLInputElement) {
     return
   }
 
-  captureEvents({
+  recordEvents({
     type: 'input-changed',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
@@ -195,7 +193,7 @@ window.addEventListener('submit', (ev) => {
     return
   }
 
-  captureEvents({
+  recordEvents({
     type: 'form-submitted',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),

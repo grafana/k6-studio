@@ -16,7 +16,7 @@ export function initialize(browserServer: BrowserServer) {
 
   ipcMain.on(BrowserRemoteHandlers.NavigateTo, (_event, url: string) => {
     browserServer.send({
-      type: 'navigate-to',
+      type: 'navigate',
       url,
     })
   })

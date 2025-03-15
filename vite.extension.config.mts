@@ -60,7 +60,7 @@ export default defineConfig((env) => {
             content_scripts: [
               {
                 matches: ['<all_urls>'],
-                js: ['extension/src/recorder.ts'],
+                js: ['extension/src/recorder/recorder.ts'],
               },
             ],
             permissions: ['webNavigation'],
