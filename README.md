@@ -15,17 +15,13 @@
   </a>
 </p>
 
-<p align="center">Desktop application for Mac and Windows designed to help you generate k6 test scripts</p>
+<p align="center">Desktop application for Mac, Windows and Linux designed to help you generate k6 test scripts</p>
 
 <p align="center">
     <a href="https://github.com/grafana/k6-studio/releases">Download</a> ·
     <a href="https://grafana.com/docs/k6-studio/set-up/install/">Documentation</a> ·
     <a href="https://github.com/grafana/k6-studio/issues">Report issues</a>
 </p>
-
-> [!WARNING]  
-> Grafana k6 Studio is currently in [Public Preview](https://grafana.com/docs/release-life-cycle/#public-preview)
-> Bugs and breaking changes might occur prior to general availability. Please report any issues or feedback to help us improve.
 
 <p align="center">
   <img src="assets/k6-studio-screenshot.png" alt="k6 Studio" width="600" />
@@ -39,11 +35,14 @@ The goal is to provide **a seamless experience** for generating k6 test scripts,
 
 ## Demo
 
+> [!WARNING]
+> This demo is from an older version of k6 Studio but the concepts still apply.
+
 https://github.com/user-attachments/assets/46ccd340-804f-4aa5-b3a4-acec9f6a2dcd
 
 ## Installation
 
-Grafana k6 Studio is available for Mac and Windows (Linux support coming soon). You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
+Grafana k6 Studio is available for Mac, Windows and Linux. You can download the latest version from the [Releases page](https://github.com/grafana/k6-studio/releases).
 
 > [!IMPORTANT]  
 > [Google Chrome](https://www.google.com/chrome/browser-tools/) needs to be installed on your machine for the recording functionality to work.
@@ -97,6 +96,7 @@ Application logs are saved in the following directory:
 
 - on Mac: `~/Library/Logs/k6 Studio/k6-studio.log`
 - on Windows: `%USERPROFILE%\AppData\Roaming\k6 Studio\logs\k6-studio.log`
+- on Linux: `~/.config/k6 Studio/logs/k6-studio.log`.
 
 When opening an issue, please include a tail of your log file.
 
