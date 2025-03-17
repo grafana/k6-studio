@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.1](https://github.com/grafana/k6-studio/compare/v1.0.0...v1.0.1) (2025-03-17)
+
+
+### Bug Fixes
+
+* Race condition when migrating to k6g ([#570](https://github.com/grafana/k6-studio/issues/570)) ([4837714](https://github.com/grafana/k6-studio/commit/48377148a41607c3d8ad197bd4826fe4f19c33d5))
+
+
+### Documentation
+
+* Update README for v1 ([#568](https://github.com/grafana/k6-studio/issues/568)) ([b6f2077](https://github.com/grafana/k6-studio/commit/b6f2077769532e19c1bcd33b33e47e485345d9fc))
+
 ## [1.0.0](https://github.com/grafana/k6-studio/compare/v0.14.0...v1.0.0) (2025-03-14)
 
 
