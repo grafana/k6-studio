@@ -70,6 +70,7 @@ import { ChildProcessWithoutNullStreams } from 'child_process'
 import { COPYFILE_EXCL } from 'constants'
 
 import * as handlers from './handlers'
+import { existsSync } from 'fs'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -119,6 +120,8 @@ initializeLogger()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
 async function migrateJsonGenerator() {
+  if (!existsSync(GENERATORS_PATH)) return
+
   const items = await readdir(GENERATORS_PATH, { withFileTypes: true })
   const files = items.filter(
     (f) => f.isFile() && path.extname(f.name) === '.json'
@@ -256,13 +259,13 @@ const createWindow = async () => {
 app.whenReady().then(
   async () => {
     await createSplashWindow()
-    await migrateJsonGenerator()
     await initSettings()
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
 
     await sendReport(appSettings.telemetry.usageReport)
     await setupProjectStructure()
+    await migrateJsonGenerator()
     await createWindow()
   },
   (error) => {
