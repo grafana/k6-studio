@@ -1,6 +1,12 @@
 import { css } from '@emotion/react'
-import { Link1Icon, LinkBreak1Icon, LinkNone1Icon } from '@radix-ui/react-icons'
-import { Box, Flex, Tooltip } from '@radix-ui/themes'
+import {
+  Link1Icon,
+  LinkBreak1Icon,
+  LinkNone1Icon,
+  PlayIcon,
+  Cross1Icon,
+} from '@radix-ui/react-icons'
+import { Box, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 
 import type { ProxyStatus } from '@/types'
 import { exhaustive } from '@/utils/typescript'
@@ -16,22 +22,39 @@ export function ProxyStatusIndicator() {
   const status = useProxyStatus()
 
   return (
-    <Tooltip content={`Proxy status: ${status}`} side="right">
-      <Flex position="relative">
-        <ProxyStatusIcon status={status} />
-        <Box
-          position="absolute"
-          width="6px"
-          height="6px"
-          bottom="0"
-          right="0"
-          css={css`
-            background-color: ${COLOR_MAP[status]};
-            border-radius: 50%;
-          `}
-        />
-      </Flex>
-    </Tooltip>
+    <DropdownMenu.Root>
+      <Tooltip content={`Proxy status: ${status}`} side="right">
+        <DropdownMenu.Trigger>
+          <IconButton
+            variant="ghost"
+            color="gray"
+            area-label="Proxy status"
+            css={{ position: 'relative', display: 'flex' }}
+          >
+            <ProxyStatusIcon status={status} />
+            <Box
+              position="absolute"
+              width="6px"
+              height="6px"
+              bottom="6px"
+              right="6px"
+              css={css`
+                background-color: ${COLOR_MAP[status]};
+                border-radius: 50%;
+              `}
+            />
+          </IconButton>
+        </DropdownMenu.Trigger>
+      </Tooltip>
+      <DropdownMenu.Content side="right">
+        <DropdownMenu.Item disabled={['online', 'starting'].includes(status)}>
+          <PlayIcon /> Start
+        </DropdownMenu.Item>
+        <DropdownMenu.Item disabled={['offline', 'starting'].includes(status)}>
+          <Cross1Icon /> Stop
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
   )
 }
 
