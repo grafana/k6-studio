@@ -139,10 +139,6 @@ function WarningMessage({
     (state) => state.openSettingsDialog
   )
 
-  const handleOpenSettings = () => {
-    openSettingsDialog('recorder')
-  }
-
   if (isBrowserInstalled === false) {
     return (
       <Callout.Root>
@@ -154,7 +150,11 @@ function WarningMessage({
           <br />
           Google Chrome needs to be installed on your machine for the recording
           functionality to work. If the browser is installed, specify the path
-          in <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
+          in{' '}
+          <TextButton onClick={() => openSettingsDialog('recorder')}>
+            Settings
+          </TextButton>
+          .
         </Callout.Text>
       </Callout.Root>
     )
@@ -170,7 +170,10 @@ function WarningMessage({
           <strong>Proxy is offline</strong>
           <br />
           Check proxy configuration in{' '}
-          <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
+          <TextButton onClick={() => openSettingsDialog('proxy')}>
+            Settings
+          </TextButton>
+          .
         </Callout.Text>
       </Callout.Root>
     )
