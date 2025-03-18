@@ -3,6 +3,7 @@ import { InBrowserControls } from './InBrowserControls'
 import createCache from '@emotion/cache'
 import { CacheProvider, css, Global } from '@emotion/react'
 import { ContainerProvider } from './ContainerProvider'
+import { Theme } from '../../../../src/components/primitives/Theme'
 
 function createShadowRoot() {
   const mount = document.createElement('div')
@@ -45,6 +46,11 @@ function initialize() {
     <CacheProvider value={globalCache}>
       <Global
         styles={css`
+          html body[data-scroll-locked] {
+            --removed-body-scroll-bar-size: 0 !important;
+            margin-right: 0 !important;
+          }
+
           .ksix-studio-inspecting {
             cursor: pointer !important;
           }
@@ -52,6 +58,7 @@ function initialize() {
       />
       <ContainerProvider container={root}>
         <CacheProvider value={shadowCache}>
+          <Theme />
           <InBrowserControls />
         </CacheProvider>
       </ContainerProvider>
