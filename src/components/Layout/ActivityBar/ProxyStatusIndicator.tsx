@@ -21,6 +21,14 @@ const COLOR_MAP: Record<ProxyStatus, string> = {
 export function ProxyStatusIndicator() {
   const status = useProxyStatus()
 
+  const handleProxyStart = () => {
+    return window.studio.proxy.launchProxy()
+  }
+
+  const handleProxyStop = () => {
+    return window.studio.proxy.stopProxy()
+  }
+
   return (
     <DropdownMenu.Root>
       <Tooltip content={`Proxy status: ${status}`} side="right">
@@ -47,10 +55,16 @@ export function ProxyStatusIndicator() {
         </DropdownMenu.Trigger>
       </Tooltip>
       <DropdownMenu.Content side="right">
-        <DropdownMenu.Item disabled={['online', 'starting'].includes(status)}>
+        <DropdownMenu.Item
+          onClick={handleProxyStart}
+          disabled={['online', 'starting'].includes(status)}
+        >
           <PlayIcon /> Start
         </DropdownMenu.Item>
-        <DropdownMenu.Item disabled={['offline', 'starting'].includes(status)}>
+        <DropdownMenu.Item
+          onClick={handleProxyStop}
+          disabled={['offline', 'starting'].includes(status)}
+        >
           <Cross1Icon /> Stop
         </DropdownMenu.Item>
       </DropdownMenu.Content>
