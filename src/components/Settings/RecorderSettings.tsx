@@ -1,9 +1,10 @@
 import { AppSettings } from '@/types/settings'
-import { Flex, Text, Checkbox } from '@radix-ui/themes'
+import { Flex, Text, Checkbox, Callout } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
 import { SettingsSection } from './SettingsSection'
 import { FileUploadInput } from '../Form'
 import { useEffect } from 'react'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 
 export const RecorderSettings = () => {
   const {
@@ -30,6 +31,19 @@ export const RecorderSettings = () => {
     if (canceled || !filePaths.length) return
     setValue('recorder.browserPath', filePaths[0], { shouldDirty: true })
     clearErrors('recorder.browserPath')
+  }
+
+  const isValidPath = (path?: string) => {
+    if (!path) return false
+    const validPaths = [
+      'chrome.app',
+      'chromium.app',
+      'chrome.exe',
+      'chromium.exe',
+      '/chrome',
+      '/chromium',
+    ]
+    return validPaths.some((validPath) => path.includes(validPath))
   }
 
   return (
@@ -60,6 +74,21 @@ export const RecorderSettings = () => {
         hint="Google Chrome needs to be installed on your machine for the recording functionality to work"
         disabled={recorder.detectBrowserPath}
       />
+
+      {!recorder.detectBrowserPath &&
+        recorder.browserPath !== '' &&
+        !isValidPath(recorder.browserPath?.toLocaleLowerCase()) && (
+          <Callout.Root color="amber">
+            <Callout.Icon>
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+
+            <Callout.Text>
+              The selected executable doesn&apos;t appear to be compatible.
+              Please select the correct executable for Chrome or Chromium.
+            </Callout.Text>
+          </Callout.Root>
+        )}
     </SettingsSection>
   )
 }
