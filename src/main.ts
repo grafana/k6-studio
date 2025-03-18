@@ -145,8 +145,8 @@ async function migrateJsonGenerator() {
 
 const createSplashWindow = async () => {
   splashscreenWindow = new BrowserWindow({
-    width: 700,
-    height: 355,
+    width: 600,
+    height: 400,
     frame: false,
     show: false,
     alwaysOnTop: true,
@@ -258,10 +258,10 @@ const createWindow = async () => {
 
 app.whenReady().then(
   async () => {
-    await createSplashWindow()
     await initSettings()
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
+    await createSplashWindow()
 
     await sendReport(appSettings.telemetry.usageReport)
     await setupProjectStructure()

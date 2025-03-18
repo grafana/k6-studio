@@ -35,7 +35,7 @@
         font-size: 12px;
       }
 
-      @keyframes changeLetter {
+      @keyframes loadingMessage {
         0% {
           content: 'Initializing the app...';
         }
@@ -55,7 +55,7 @@
 
       .footer::after {
         content: '';
-        animation: changeLetter 4s ease-in-out infinite alternate;
+        animation: loadingMessage 4s linear infinite alternate;
       }
 
       @media (prefers-color-scheme: dark) {
