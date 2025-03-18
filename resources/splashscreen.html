@@ -6,69 +6,81 @@
     <title>Grafana k6 Studio</title>
 
     <style>
-      #splashscreen {
+      body {
+        position: relative;
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        height: calc(100vh - 40px);
-      }
-
-      #splashscreen picture {
-        display: flex;
-        flex-grow: 1;
-      }
-
-      #splashscreen-message {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-
-      #splashscreen-message p {
-        color: #7B7C9F;
-        font-size: 16px;
+        place-content: center;
+        height: 100vh;
+        margin: 0;
         font-family: 'Inter', sans-serif;
       }
 
-      .loader {
-        width: 8px;
-        aspect-ratio: 1;
-        border-radius: 50%;
-        animation: loader 1s infinite linear alternate;
+      .logo {
+        margin: auto;
       }
 
-      @keyframes loader {
-        0%  {box-shadow: 20px 0 #F8B36D, -20px 0 #F57427;background: #F8B36D }
-        33% {box-shadow: 20px 0 #F8B36D, -20px 0 #F57427;background: #F57427}
-        66% {box-shadow: 20px 0 #F57427,-20px 0 #F8B36D; background: #F57427}
-        100%{box-shadow: 20px 0 #F57427,-20px 0 #F8B36D; background: #F8B36D }
+      .logo p {
+        margin: 8px 0 0;
+        font-size: 12px;
+        color: #8d8d8d;
+        text-align: center;
+      }
+
+      .footer {
+        position: absolute;
+        text-align: center;
+        bottom: 16px;
+        width: 100%;
+        color: #606060;
+        font-size: 12px;
+      }
+
+      @keyframes changeLetter {
+        0% {
+          content: 'Initializing the app...';
+        }
+        40% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+        60% {
+          opacity: 1;
+        }
+        100% {
+          content: 'Making the magic happen...';
+        }
+      }
+
+      .footer::after {
+        content: '';
+        animation: changeLetter 4s ease-in-out infinite alternate;
       }
 
       @media (prefers-color-scheme: dark) {
         body {
           background: #111110;
+          color: #eee;
         }
 
-        #splashscreen-message p {
-          color: #fff;
+        .footer {
+          color: #eee;
         }
       }
     </style>
   </head>
   <body>
-      <div id="splashscreen">
-        <picture>
-          <source srcset="./logo-splashscreen-dark.svg" media="(prefers-color-scheme: dark)">
-          <img src="./logo-splashscreen.svg" alt="k6 Studio" width="100px" />
-        </picture>
-        <div id="splashscreen-message">
-          <p>Initializing the app...</p>
-          <div class="loader"></div>
-        </div>
-      </div>
+    <div class="logo">
+      <picture>
+        <source
+          srcset="./logo-splashscreen-dark.svg"
+          media="(prefers-color-scheme: dark)"
+        />
+        <img src="./logo-splashscreen.svg" alt="k6 Studio" width="120px" />
+      </picture>
+      <p>by Grafana Labs</p>
     </div>
+    <div class="footer"></div>
   </body>
 </html>
-
