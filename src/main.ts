@@ -39,6 +39,7 @@ import {
   findOpenPort,
   getAppIcon,
   getPlatform,
+  browserWindowFromEvent,
 } from './utils/electron'
 import invariant from 'tiny-invariant'
 import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
@@ -117,6 +118,7 @@ if (require('electron-squirrel-startup')) {
 }
 
 initializeLogger()
+handlers.initialize()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
 async function migrateJsonGenerator() {
@@ -208,10 +210,6 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
     },
-  })
-
-  handlers.initialize({
-    browserWindow: mainWindow,
   })
 
   configureApplicationMenu()
@@ -800,18 +798,6 @@ async function applySettings(
     appSettings.appearance = modifiedSettings.appearance
     nativeTheme.themeSource = appSettings.appearance.theme
   }
-}
-
-const browserWindowFromEvent = (
-  event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
-) => {
-  const browserWindow = BrowserWindow.fromWebContents(event.sender)
-
-  if (!browserWindow) {
-    throw new Error('failed to obtain browserWindow')
-  }
-
-  return browserWindow
 }
 
 const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
