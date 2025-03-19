@@ -32,6 +32,7 @@ export function applyRules(recording: ProxyData[], rules: TestRule[]) {
       data,
       before: [],
       after: [],
+      checks: [],
     })
   )
 

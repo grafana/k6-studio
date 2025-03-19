@@ -4,7 +4,7 @@ import { ParameterizationRule } from '@/types/rules'
 import { useFormContext } from 'react-hook-form'
 import { useGeneratorStore } from '@/store/generator'
 import { exhaustive } from '@/utils/typescript'
-import { VariableSelect } from './VariableSelect'
+import { VariableSelect } from '../VariableSelect'
 import { CustomCode } from './CustomCode'
 import { FileSelect } from './FileSelect'
 
@@ -47,9 +47,11 @@ function ValueTypeSwitch() {
     watch,
     register,
     formState: { errors },
+    control,
   } = useFormContext<ParameterizationRule>()
 
   const type = watch('value.type')
+  const variableName = watch('value.variableName')
 
   switch (type) {
     case 'string':
@@ -59,7 +61,14 @@ function ValueTypeSwitch() {
         </FieldGroup>
       )
     case 'variable':
-      return <VariableSelect />
+      return (
+        <VariableSelect
+          control={control}
+          errors={errors}
+          value={variableName}
+          name="value.variableName"
+        />
+      )
 
     case 'dataFileValue':
       return <FileSelect />

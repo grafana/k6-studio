@@ -35,7 +35,7 @@ export function createGeneratorData(
       variables: [],
       files: [],
     },
-    version: '1.0',
+    version: '2.0',
     ...data,
   }
 }

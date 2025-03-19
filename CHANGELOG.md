@@ -1,5 +1,87 @@
 # Changelog
 
+## [1.0.1](https://github.com/grafana/k6-studio/compare/v1.0.0...v1.0.1) (2025-03-17)
+
+
+### Bug Fixes
+
+* Race condition when migrating to k6g ([#570](https://github.com/grafana/k6-studio/issues/570)) ([4837714](https://github.com/grafana/k6-studio/commit/48377148a41607c3d8ad197bd4826fe4f19c33d5))
+
+
+### Documentation
+
+* Update README for v1 ([#568](https://github.com/grafana/k6-studio/issues/568)) ([b6f2077](https://github.com/grafana/k6-studio/commit/b6f2077769532e19c1bcd33b33e47e485345d9fc))
+
+## [1.0.0](https://github.com/grafana/k6-studio/compare/v0.14.0...v1.0.0) (2025-03-14)
+
+
+### Features
+
+* Add a way to import data files directly from Test Data popover ([#528](https://github.com/grafana/k6-studio/issues/528)) ([619bd60](https://github.com/grafana/k6-studio/commit/619bd604e9a7d8a6da4cbdf1108a16e3129a6398))
+* Add data files support ([#510](https://github.com/grafana/k6-studio/issues/510)) ([c0f625b](https://github.com/grafana/k6-studio/commit/c0f625b41eb1a32da4a8e79466c06be5b0e3c0c1))
+* Add support for Load Zones in Test Options ([#543](https://github.com/grafana/k6-studio/issues/543)) ([cb5a775](https://github.com/grafana/k6-studio/commit/cb5a7758f8b17d692f46b410835603eaec458aa6))
+* Apply rules in request list in generators ([#499](https://github.com/grafana/k6-studio/issues/499)) ([d14fe68](https://github.com/grafana/k6-studio/commit/d14fe686a7c3bc5c8a4377969c1b876079eee2b4))
+* Cloud authentication via Grafana Cloud ([#500](https://github.com/grafana/k6-studio/issues/500)) ([5f0bb58](https://github.com/grafana/k6-studio/commit/5f0bb58e8977624bad867714792dece85a803674))
+* Configurable verification rule ([#554](https://github.com/grafana/k6-studio/issues/554)) ([42acd00](https://github.com/grafana/k6-studio/commit/42acd0036cb1aa796c77fe766c5652422b797459))
+* Highlight requests affected by rules ([#512](https://github.com/grafana/k6-studio/issues/512)) ([af658a7](https://github.com/grafana/k6-studio/commit/af658a7e9c7e07141ac85cab2ca835f2acbc51c9))
+* Implement keyboard shortcuts for saving generator ([#550](https://github.com/grafana/k6-studio/issues/550)) ([c514cd7](https://github.com/grafana/k6-studio/commit/c514cd706254482bd047e368474201e29f2e6ae4))
+* Improve spinner visibility in Validator dialog ([#560](https://github.com/grafana/k6-studio/issues/560)) ([b697315](https://github.com/grafana/k6-studio/commit/b697315d546a69fb6bb7feffef7f2f82a6806646))
+* linux support ([#513](https://github.com/grafana/k6-studio/issues/513)) ([9ebc136](https://github.com/grafana/k6-studio/commit/9ebc136bd1e01562d0b5b3565f4e1043630b2386))
+* Make it possible to open Settings with specific tab selected ([#551](https://github.com/grafana/k6-studio/issues/551)) ([9260004](https://github.com/grafana/k6-studio/commit/9260004dc3a20eb9647cce4082114f513275f5cb))
+* migrate generator extension json -&gt; k6g ([#537](https://github.com/grafana/k6-studio/issues/537)) ([bef9714](https://github.com/grafana/k6-studio/commit/bef97149bd3c20fbb25090e4477974733bd916b3))
+* multiple correlation extraction support ([#505](https://github.com/grafana/k6-studio/issues/505)) ([8e2378e](https://github.com/grafana/k6-studio/commit/8e2378e4c6c66d54c48c91209c7591a84f1e4fae))
+* Rule editor form improvements ([#529](https://github.com/grafana/k6-studio/issues/529)) ([fdfce94](https://github.com/grafana/k6-studio/commit/fdfce94bb1de6f1ee7b56a4e04b73480b602513d))
+* Run generated scripts in Grafana Cloud k6 ([#539](https://github.com/grafana/k6-studio/issues/539)) ([9012900](https://github.com/grafana/k6-studio/commit/9012900e6dff9b3b8ddf946b55b7ded4daa8f0ef))
+* Update generator layout and improve empty state screens ([#428](https://github.com/grafana/k6-studio/issues/428)) ([4db4b32](https://github.com/grafana/k6-studio/commit/4db4b323200a3acdc691ebbca60ee438cd6b82d4))
+* Use labels to highlight matched requests ([#559](https://github.com/grafana/k6-studio/issues/559)) ([1567d2a](https://github.com/grafana/k6-studio/commit/1567d2a769db4e36ed695826e5e38525a2d9339c))
+
+
+### Bug Fixes
+
+* App logo is not clickable ([#527](https://github.com/grafana/k6-studio/issues/527)) ([a9d9973](https://github.com/grafana/k6-studio/commit/a9d997322985033e971256bd6e4db0fd0f75f36c))
+* Code editor scrollbars aren't consistent with app UI ([#509](https://github.com/grafana/k6-studio/issues/509)) ([e765f09](https://github.com/grafana/k6-studio/commit/e765f09bf1ab7e045e4cafa83faf272bf05589e6))
+* Columns in Rule Editor don't have clear separation ([#546](https://github.com/grafana/k6-studio/issues/546)) ([6996c30](https://github.com/grafana/k6-studio/commit/6996c30cfde4865b7463d65822d92e69596413cc))
+* executable name ([#538](https://github.com/grafana/k6-studio/issues/538)) ([d808ce8](https://github.com/grafana/k6-studio/commit/d808ce88fd3bd2ee776585d861ccb6f358adbc1a))
+* Filter field hint and placeholder incorrectly refer to URL as path ([#516](https://github.com/grafana/k6-studio/issues/516)) ([ac23dd4](https://github.com/grafana/k6-studio/commit/ac23dd45df3977f73f2d29917801b44f815c7e15))
+* It's possible to start a recording with no supported browser installed ([#523](https://github.com/grafana/k6-studio/issues/523)) ([1dd0947](https://github.com/grafana/k6-studio/commit/1dd09476f168660e4c728d48ee7bf968b7be8c64))
+* parameterization custom code is not defined ([#503](https://github.com/grafana/k6-studio/issues/503)) ([1f1cdfc](https://github.com/grafana/k6-studio/commit/1f1cdfcf04373b1e38fa301b0fbc1f009d77ca4f))
+* Proxy status is offline during initial start ([#524](https://github.com/grafana/k6-studio/issues/524)) ([eef65a2](https://github.com/grafana/k6-studio/commit/eef65a2815a34631485e990024072147caed9012))
+* Query params list style is inconsistent with other tabs ([#517](https://github.com/grafana/k6-studio/issues/517)) ([e58252d](https://github.com/grafana/k6-studio/commit/e58252d2440fa4cace2a73e12d5d81ac4ffa2481))
+* Renaming generator with unsaved changes creates extra file ([#534](https://github.com/grafana/k6-studio/issues/534)) ([bd74513](https://github.com/grafana/k6-studio/commit/bd74513e0b1bf8ef05b82831324b55e9113dfeb8))
+* Render error when extracting JSON and Arrays in correlation rule ([#548](https://github.com/grafana/k6-studio/issues/548)) ([d924cfc](https://github.com/grafana/k6-studio/commit/d924cfcfc77e7d19e36d39244711e4a51bd642bb))
+* Selected rule is not reset when opening another generator ([#508](https://github.com/grafana/k6-studio/issues/508)) ([80b951a](https://github.com/grafana/k6-studio/commit/80b951a3c13ddd4d063e26dd11ffe994536ea70c))
+* **Validator:** Scripts with no k6/execution import cannot be run ([#561](https://github.com/grafana/k6-studio/issues/561)) ([fbe6138](https://github.com/grafana/k6-studio/commit/fbe61382c2bde9ffe7a42d499aa5bf022aaa0186))
+
+
+### Internal Changes
+
+* **Data files:** Add data files support in Parameterization rules ([#497](https://github.com/grafana/k6-studio/issues/497)) ([5435959](https://github.com/grafana/k6-studio/commit/5435959ced950ef1a7ac2104027ca134d0ca1e3b))
+* Fixed requests to access secrets. ([#536](https://github.com/grafana/k6-studio/issues/536)) ([7870009](https://github.com/grafana/k6-studio/commit/78700097b945f0d9714d0c17d4a85d4634cbf079))
+* **fix:** UX is poor when signing in to paused instances ([#549](https://github.com/grafana/k6-studio/issues/549)) ([874a508](https://github.com/grafana/k6-studio/commit/874a5084aa2fa8372df9d13a04404e161c026147))
+* **Load Zones:** Ability to add load zones ([#518](https://github.com/grafana/k6-studio/issues/518)) ([7301d18](https://github.com/grafana/k6-studio/commit/7301d1891cf3bd7594b6575c04f78df08574775c))
+* **Load Zones:** Generate code for load zones ([#526](https://github.com/grafana/k6-studio/issues/526)) ([1d55758](https://github.com/grafana/k6-studio/commit/1d55758f005a4a0ecefd464d266736de3ac049a8))
+* **Load Zones:** Scaffold UI, schema and state ([#511](https://github.com/grafana/k6-studio/issues/511)) ([6b04583](https://github.com/grafana/k6-studio/commit/6b04583d1e706456c4d29cba6fba1a92a823063b))
+* **Load Zones:** UI improvements for Load Zones feature ([#531](https://github.com/grafana/k6-studio/issues/531)) ([ba0be43](https://github.com/grafana/k6-studio/commit/ba0be43236c3554780a381900658a6709a7420ac))
+
+
+### Styles
+
+* Remove dots from short tooltips ([#552](https://github.com/grafana/k6-studio/issues/552)) ([2687e03](https://github.com/grafana/k6-studio/commit/2687e03ceddf71e06067ebba199ca1b6c74d8f72))
+
+
+### Miscellaneous Chores
+
+* Add Grafana prefix ([#494](https://github.com/grafana/k6-studio/issues/494)) ([bb0d54a](https://github.com/grafana/k6-studio/commit/bb0d54a5edaa57220c6aa777b7f6eed0b392e08e))
+* **deps-dev:** bump vitest from 1.6.0 to 1.6.1 ([#519](https://github.com/grafana/k6-studio/issues/519)) ([51a0cb6](https://github.com/grafana/k6-studio/commit/51a0cb6388b35af12e36cab118b8c7c2172fd5d8))
+* Update bug issue template ([#558](https://github.com/grafana/k6-studio/issues/558)) ([6f861fe](https://github.com/grafana/k6-studio/commit/6f861fec8347904dadb092ad9a3cdb26a7aee87f))
+* update proxy version ([#553](https://github.com/grafana/k6-studio/issues/553)) ([2bfb489](https://github.com/grafana/k6-studio/commit/2bfb489d628414779791e419bc8be2cc0c561f0a))
+* v1 release preparations ([#555](https://github.com/grafana/k6-studio/issues/555)) ([b9f2d7b](https://github.com/grafana/k6-studio/commit/b9f2d7bcf29bf3fc1c232f52c5a8edca9207aaf2))
+
+
+### Build System
+
+* Configure oauth client and urls for production ([#556](https://github.com/grafana/k6-studio/issues/556)) ([edf8c1f](https://github.com/grafana/k6-studio/commit/edf8c1f5beefd79d75146411b43ba77cabaa2df0))
+
 ## [0.14.0](https://github.com/grafana/k6-studio/compare/v0.13.0...v0.14.0) (2025-02-17)
 
 

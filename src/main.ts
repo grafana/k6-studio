@@ -39,6 +39,7 @@ import {
   findOpenPort,
   getAppIcon,
   getPlatform,
+  browserWindowFromEvent,
 } from './utils/electron'
 import invariant from 'tiny-invariant'
 import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
@@ -70,6 +71,7 @@ import { ChildProcessWithoutNullStreams } from 'child_process'
 import { COPYFILE_EXCL } from 'constants'
 
 import * as handlers from './handlers'
+import { existsSync } from 'fs'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -116,6 +118,32 @@ if (require('electron-squirrel-startup')) {
 }
 
 initializeLogger()
+handlers.initialize()
+
+// Used to convert `.json` files into the appropriate file extension for the Generator
+async function migrateJsonGenerator() {
+  if (!existsSync(GENERATORS_PATH)) return
+
+  const items = await readdir(GENERATORS_PATH, { withFileTypes: true })
+  const files = items.filter(
+    (f) => f.isFile() && path.extname(f.name) === '.json'
+  )
+
+  await Promise.all(
+    files.map(async (f) => {
+      try {
+        const oldPath = path.join(GENERATORS_PATH, f.name)
+        const newPath = path.join(
+          GENERATORS_PATH,
+          path.parse(f.name).name + '.k6g'
+        )
+        await rename(oldPath, newPath)
+      } catch (error) {
+        log.error(error)
+      }
+    })
+  )
+}
 
 const createSplashWindow = async () => {
   splashscreenWindow = new BrowserWindow({
@@ -176,16 +204,12 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'Grafana k6 Studio (public preview)',
+    title: 'Grafana k6 Studio',
     backgroundColor: nativeTheme.themeSource === 'light' ? '#fff' : '#111110',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
     },
-  })
-
-  handlers.initialize({
-    browserWindow: mainWindow,
   })
 
   configureApplicationMenu()
@@ -239,6 +263,7 @@ app.whenReady().then(
 
     await sendReport(appSettings.telemetry.usageReport)
     await setupProjectStructure()
+    await migrateJsonGenerator()
     await createWindow()
   },
   (error) => {
@@ -489,7 +514,7 @@ ipcMain.handle('generator:create', async (_, recordingPath: string) => {
   const fileName = await createFileWithUniqueName({
     data: JSON.stringify(generator, null, 2),
     directory: GENERATORS_PATH,
-    ext: '.json',
+    ext: '.k6g',
     prefix: 'Generator',
   })
 
@@ -775,18 +800,6 @@ async function applySettings(
   }
 }
 
-const browserWindowFromEvent = (
-  event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
-) => {
-  const browserWindow = BrowserWindow.fromWebContents(event.sender)
-
-  if (!browserWindow) {
-    throw new Error('failed to obtain browserWindow')
-  }
-
-  return browserWindow
-}
-
 const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
   const { port, automaticallyFindPort } = appSettings.proxy
 
@@ -910,7 +923,7 @@ function getStudioFileFromPath(filePath: string): StudioFile | undefined {
 
   if (
     filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === '.json'
+    path.extname(filePath) === '.k6g'
   ) {
     return {
       type: 'generator',

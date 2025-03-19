@@ -2,25 +2,17 @@ import { PlusCircledIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, Tooltip } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
 
-import { selectHasVerificationRule, useGeneratorStore } from '@/store/generator'
+import { useGeneratorStore } from '@/store/generator'
 import { TestRule } from '@/types/rules'
 import { createEmptyRule } from '@/utils/rules'
 
 export function NewRuleMenu(props: ComponentProps<typeof Button>) {
   const addRule = useGeneratorStore((store) => store.addRule)
-  const hasVerificationRule = useGeneratorStore(selectHasVerificationRule)
 
   const createRule = (type: TestRule['type']) => {
-    if (hasVerificationRule && type === 'verification') {
-      return
-    }
-
     const newRule = createEmptyRule(type)
     addRule(newRule)
   }
-  const verificationRuleTooltip = hasVerificationRule
-    ? 'Currently, only one verification rule per test is supported.'
-    : 'Verify reponse statuses match the recording.'
 
   return (
     <DropdownMenu.Root>
@@ -31,7 +23,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <Tooltip content="Extract and reuse dynamic data." side="right">
+        <Tooltip content="Extract and reuse dynamic data" side="right">
           <DropdownMenu.Item
             onClick={() => {
               createRule('correlation')
@@ -40,7 +32,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
             Correlation
           </DropdownMenu.Item>
         </Tooltip>
-        <Tooltip content="Parameterize request data." side="right">
+        <Tooltip content="Parameterize request data" side="right">
           <DropdownMenu.Item
             onClick={() => {
               createRule('parameterization')
@@ -49,7 +41,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
             Parameterization
           </DropdownMenu.Item>
         </Tooltip>
-        <Tooltip content="Insert custom code snippet." side="right">
+        <Tooltip content="Insert custom code snippet" side="right">
           <DropdownMenu.Item
             onClick={() => {
               createRule('customCode')
@@ -59,14 +51,13 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
           </DropdownMenu.Item>
         </Tooltip>
 
-        <Tooltip content={verificationRuleTooltip} side="right">
+        <Tooltip content={'Add status and body checks'} side="right">
           <DropdownMenu.Item
-            disabled={hasVerificationRule}
             onClick={() => {
               createRule('verification')
             }}
           >
-            Verification (limited)
+            Verification
           </DropdownMenu.Item>
         </Tooltip>
       </DropdownMenu.Content>

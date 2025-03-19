@@ -49,7 +49,7 @@ export function Row({
   )
 }
 
-function Cells({
+export function Cells({
   data,
   isSelected,
 }: {

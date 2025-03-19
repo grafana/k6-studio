@@ -1,11 +1,20 @@
 import { Code, Flex } from '@radix-ui/themes'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { ParameterizationRule } from '@/types/rules'
-import { useFormContext } from 'react-hook-form'
+import { Control, FieldErrors, FieldValues, Path } from 'react-hook-form'
 import { useGeneratorStore } from '@/store/generator'
 import { useMemo } from 'react'
 
-export function VariableSelect() {
+export function VariableSelect<T extends FieldValues>({
+  control,
+  errors,
+  value,
+  name,
+}: {
+  control: Control<T>
+  errors: FieldErrors<T>
+  name: Path<T>
+  value?: string
+}) {
   const variables = useGeneratorStore((store) => store.variables)
 
   const options = useMemo(() => {
@@ -24,24 +33,16 @@ export function VariableSelect() {
     }))
   }, [variables])
 
-  const {
-    control,
-    watch,
-    formState: { errors },
-  } = useFormContext<ParameterizationRule>()
-
-  const variableName = watch('value.variableName')
-
   return (
-    <FieldGroup name="value.variableName" errors={errors} label="Variable">
+    <FieldGroup name={name} errors={errors} label="Variable">
       <ControlledSelect
         options={options}
         control={control}
-        name="value.variableName"
+        name={name}
         selectProps={{
           // Automatically open the select when switching to variable type
           // in new parameterization rule
-          defaultOpen: !variableName,
+          defaultOpen: !value,
         }}
         contentProps={{
           css: { maxWidth: 'var(--radix-select-trigger-width)' },

@@ -39,10 +39,12 @@ export function SearchResults({
   data,
   onSelectRequest,
   filter,
+  colSpan = 5,
 }: {
   data: ProxyDataWithMatches
   onSelectRequest: (data: ProxyDataWithMatches) => void
   filter?: string
+  colSpan?: number
 }) {
   const { setTab: setRequestTab } = useRequestDetailsTab()
   const { setTab: setResponseTab } = useResponseDetailsTab()
@@ -103,7 +105,7 @@ export function SearchResults({
 
   return (
     <Table.Row>
-      <Table.Cell colSpan={5}>
+      <Table.Cell colSpan={colSpan}>
         {visibleResults.map((result, excerptIndex) => (
           <Flex
             key={excerptIndex}

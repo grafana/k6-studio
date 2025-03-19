@@ -11,7 +11,6 @@ import {
   ScrollArea,
   TextField,
   Text,
-  Tooltip,
   Card,
   Inset,
 } from '@radix-ui/themes'
@@ -144,9 +143,7 @@ export function AllowlistDialog({
             checked={includeStaticAssets}
             disabled={staticAssetCount === 0}
           />
-          <Tooltip content="Static assets are excluded from your test by default.">
-            <Text size="2">Include static assets ({staticAssetCount})</Text>
-          </Tooltip>
+          <Text size="2">Include static assets ({staticAssetCount})</Text>
         </Label>
       </Flex>
     </>

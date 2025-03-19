@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { TestRuleSchema } from './rules'
 import { TestDataSchema } from './testData'
 import { TestOptionsSchema } from './testOptions'
+import * as v2 from '../v2'
 
 export const GeneratorFileDataSchema = z.object({
   version: z.literal('1.0'),
@@ -16,7 +17,22 @@ export const GeneratorFileDataSchema = z.object({
 
 export type GeneratorSchema = z.infer<typeof GeneratorFileDataSchema>
 
-// TODO: Migrate generator to the next version
-export function migrate(generator: z.infer<typeof GeneratorFileDataSchema>) {
-  return { ...generator }
+export function migrate(
+  generator: z.infer<typeof GeneratorFileDataSchema>
+): v2.GeneratorSchema {
+  return {
+    ...generator,
+    version: '2.0',
+    rules: generator.rules.map((rule) => {
+      if (rule.type === 'verification') {
+        return {
+          ...rule,
+          target: 'status',
+          operator: 'equals',
+          value: { type: 'recordedValue' },
+        }
+      }
+      return rule
+    }),
+  }
 }
