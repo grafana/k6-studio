@@ -1,12 +1,13 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import { UserProfiles, Profile, StackInfo } from '@/schemas/profile'
 import { SignInResult } from '@/types/auth'
 import log from 'electron-log/main'
 import { AuthHandler, ChangeStackResponse, SignOutResponse } from './types'
 import { getProfileData, saveProfileData } from './fs'
 import { SignInStateMachine } from './states'
+import { browserWindowFromEvent } from '@/utils/electron'
 
-export function initialize(browserWindow: BrowserWindow) {
+export function initialize() {
   ipcMain.handle(AuthHandler.GetProfiles, async (): Promise<UserProfiles> => {
     const profile = await getProfileData()
 
@@ -15,7 +16,8 @@ export function initialize(browserWindow: BrowserWindow) {
 
   let pending: SignInStateMachine | null = null
 
-  ipcMain.handle(AuthHandler.SignIn, async (): Promise<SignInResult> => {
+  ipcMain.handle(AuthHandler.SignIn, async (event): Promise<SignInResult> => {
+    const browserWindow = browserWindowFromEvent(event)
     try {
       if (pending !== null) {
         pending.abort()
