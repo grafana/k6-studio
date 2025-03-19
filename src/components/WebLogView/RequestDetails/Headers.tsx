@@ -15,14 +15,19 @@ export function Headers({
       <Strong>General</Strong>
       <DataList.Item>
         <DataList.Label>Request URL</DataList.Label>
-        <DataList.Value>{data.request.url}</DataList.Value>
+        <DataList.Value>
+          <HighlightedText text={data.request.url} matches={matches} />
+        </DataList.Value>
       </DataList.Item>
 
       <DataList.Item>
         <DataList.Label>Request method</DataList.Label>
-        <DataList.Value>{data.request.method}</DataList.Value>
+        <DataList.Value>
+          <HighlightedText text={data.request.method} matches={matches} />
+        </DataList.Value>
       </DataList.Item>
 
+      <Strong>Headers</Strong>
       {data.request.headers.map(([key, value], index) => (
         <DataList.Item key={`${key}_${index}`}>
           <DataList.Label>
