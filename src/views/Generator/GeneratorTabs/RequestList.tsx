@@ -98,9 +98,7 @@ export function RequestList({
             ListComponent={(props) => (
               <RequestTable
                 {...props}
-                highlightedRequestIds={
-                  selectedRuleInstance?.state?.matchedRequestIds
-                }
+                selectedRuleInstance={selectedRuleInstance}
               />
             )}
           />
