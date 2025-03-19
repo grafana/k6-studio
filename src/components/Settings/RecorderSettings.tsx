@@ -71,7 +71,7 @@ export const RecorderSettings = () => {
         name="recorder.browserPath"
         onSelectFile={handleSelectFile}
         buttonText="Select executable"
-        hint="Google Chrome needs to be installed on your machine for the recording functionality to work"
+        hint="Google Chrome or Chromium needs to be installed on your machine for the recording functionality to work"
         disabled={recorder.detectBrowserPath}
       />
 
