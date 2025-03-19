@@ -9,8 +9,8 @@ import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { validateRecording } from './RequestList.utils'
-import { RequestListHeader } from './RequestListHeader'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { Header } from './Header'
 import { RequestTable } from './RequestTable'
 
 interface RequestListProps {
@@ -71,7 +71,7 @@ export function RequestList({
   return (
     <Flex direction="column" height="100%">
       {!recordingError && (
-        <RequestListHeader
+        <Header
           filter={filter}
           setFilter={setFilter}
           filterAllData={filterAllData}
