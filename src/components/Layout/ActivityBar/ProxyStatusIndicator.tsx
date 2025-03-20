@@ -1,12 +1,6 @@
 import { css } from '@emotion/react'
-import {
-  Link1Icon,
-  LinkBreak1Icon,
-  LinkNone1Icon,
-  PlayIcon,
-  Cross1Icon,
-} from '@radix-ui/react-icons'
-import { Box, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
+import { Link1Icon, LinkBreak1Icon, LinkNone1Icon } from '@radix-ui/react-icons'
+import { Box, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 
 import type { ProxyStatus } from '@/types'
 import { exhaustive } from '@/utils/typescript'
@@ -29,46 +23,40 @@ export function ProxyStatusIndicator() {
     return window.studio.proxy.stopProxy()
   }
 
+  const getTooltipContent = () => {
+    if (status === 'online') {
+      return 'Stop proxy'
+    }
+    if (status === 'offline') {
+      return 'Start proxy'
+    }
+    return 'Proxy is starting'
+  }
+
   return (
-    <DropdownMenu.Root>
-      <Tooltip content={`Proxy status: ${status}`} side="right">
-        <DropdownMenu.Trigger>
-          <IconButton
-            variant="ghost"
-            color="gray"
-            area-label="Proxy status"
-            css={{ position: 'relative', display: 'flex' }}
-          >
-            <ProxyStatusIcon status={status} />
-            <Box
-              position="absolute"
-              width="6px"
-              height="6px"
-              bottom="6px"
-              right="6px"
-              css={css`
-                background-color: ${COLOR_MAP[status]};
-                border-radius: 50%;
-              `}
-            />
-          </IconButton>
-        </DropdownMenu.Trigger>
-      </Tooltip>
-      <DropdownMenu.Content side="right">
-        <DropdownMenu.Item
-          onClick={handleProxyStart}
-          disabled={['online', 'starting'].includes(status)}
-        >
-          <PlayIcon /> Start
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={handleProxyStop}
-          disabled={['offline', 'starting'].includes(status)}
-        >
-          <Cross1Icon /> Stop
-        </DropdownMenu.Item>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
+    <Tooltip content={getTooltipContent()} side="right">
+      <IconButton
+        variant="ghost"
+        color="gray"
+        onClick={status === 'online' ? handleProxyStop : handleProxyStart}
+        disabled={status === 'starting'}
+      >
+        <Flex position="relative">
+          <ProxyStatusIcon status={status} />
+          <Box
+            position="absolute"
+            width="6px"
+            height="6px"
+            bottom="0"
+            right="0"
+            css={css`
+              background-color: ${COLOR_MAP[status]};
+              border-radius: 50%;
+            `}
+          />
+        </Flex>
+      </IconButton>
+    </Tooltip>
   )
 }
 
