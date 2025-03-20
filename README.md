@@ -35,10 +35,7 @@ The goal is to provide **a seamless experience** for generating k6 test scripts,
 
 ## Demo
 
-> [!WARNING]
-> This demo is from an older version of k6 Studio but the concepts still apply.
-
-https://github.com/user-attachments/assets/46ccd340-804f-4aa5-b3a4-acec9f6a2dcd
+https://github.com/user-attachments/assets/e60dc872-56b3-4a7a-8f4b-23b12f9956b6
 
 ## Installation
 
