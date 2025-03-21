@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { generateImportStatement } from './imports'
 
 describe('Code generation - imports', () => {

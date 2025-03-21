@@ -1,8 +1,9 @@
-import { AddToastPayload } from '@/types/toast'
-import { platform, arch } from 'os'
 import { app, BrowserWindow, nativeImage, WebContents } from 'electron'
 import net from 'net'
+import { platform, arch } from 'os'
 import path from 'path'
+
+import { AddToastPayload } from '@/types/toast'
 
 type Platform = 'linux' | 'mac' | 'win'
 type Arch = 'arm64' | 'x86_64'

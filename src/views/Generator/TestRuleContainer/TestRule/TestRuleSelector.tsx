@@ -1,15 +1,15 @@
-import { Badge, Strong, Tooltip } from '@radix-ui/themes'
 import { css } from '@emotion/react'
+import { Link1Icon } from '@radix-ui/react-icons'
+import { Badge, Strong, Tooltip } from '@radix-ui/themes'
+import { useRef } from 'react'
 
+import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import {
   CorrelationRule,
   ParameterizationRule,
   ReplacerSelector,
 } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
-import { useOverflowCheck } from '@/hooks/useOverflowCheck'
-import { useRef } from 'react'
-import { Link1Icon } from '@radix-ui/react-icons'
 
 interface TestRuleSelectorProps {
   rule: CorrelationRule | ParameterizationRule

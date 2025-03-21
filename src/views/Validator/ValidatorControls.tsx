@@ -1,7 +1,8 @@
-import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
-import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
+
+import TextSpinner from '@/components/TextSpinner/TextSpinner'
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 
 interface ValidatorControlsProps {
   isRunning: boolean

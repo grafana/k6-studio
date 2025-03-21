@@ -4,9 +4,9 @@ import {
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
+import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
-import { ProxyData } from '@/types'
 import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(

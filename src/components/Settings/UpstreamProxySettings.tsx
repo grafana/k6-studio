@@ -1,7 +1,8 @@
-import { FieldGroup, FileUploadInput } from '@/components/Form'
-import { AppSettings } from '@/types/settings'
 import { TextField, Flex, Checkbox, Text } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
+
+import { FieldGroup, FileUploadInput } from '@/components/Form'
+import { AppSettings } from '@/types/settings'
 
 export function UpstreamProxySettings() {
   const {

@@ -1,12 +1,14 @@
-import { Button, Flex } from '@radix-ui/themes'
-import { SelectingStackState, Stack } from '@/types/auth'
-import { useState } from 'react'
-import { ExternalLink } from '@/components/ExternalLink'
 import { css } from '@emotion/react'
-import { AuthenticationMessage } from './AuthenticationMessage'
-import { TextButton } from '@/components/TextButton'
-import { StyledReactSelect } from '@/components/StyledReactSelect'
+import { Button, Flex } from '@radix-ui/themes'
+import { useState } from 'react'
 import { SingleValue } from 'react-select'
+
+import { ExternalLink } from '@/components/ExternalLink'
+import { StyledReactSelect } from '@/components/StyledReactSelect'
+import { TextButton } from '@/components/TextButton'
+import { SelectingStackState, Stack } from '@/types/auth'
+
+import { AuthenticationMessage } from './AuthenticationMessage'
 
 interface SelectingStackProps {
   state: SelectingStackState

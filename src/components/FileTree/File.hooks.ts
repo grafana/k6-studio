@@ -1,9 +1,10 @@
+import { useMutation } from '@tanstack/react-query'
+import { useNavigate, useParams } from 'react-router-dom'
+
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension, getViewPath } from '@/utils/file'
 import { queryClient } from '@/utils/query'
-import { useMutation } from '@tanstack/react-query'
-import { useNavigate, useParams } from 'react-router-dom'
 
 export function useRenameFile(file: StudioFile) {
   const { fileName: selectedFileName } = useParams()

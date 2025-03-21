@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import {
   Button,
   Flex,
@@ -6,9 +7,10 @@ import {
   Separator,
   Text,
 } from '@radix-ui/themes'
+
 import { Avatar } from '../Avatar'
+
 import { SignedInState, SignInState } from './types'
-import { css } from '@emotion/react'
 
 interface SignedInStateProps {
   state: SignedInState

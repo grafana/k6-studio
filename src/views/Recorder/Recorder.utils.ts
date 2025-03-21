@@ -1,7 +1,8 @@
-import { ProxyData, Request } from '@/types'
-import { getContentTypeWithCharsetHeader, upsertHeader } from '@/utils/headers'
 import { debounce } from 'lodash-es'
 import { useState, useMemo, useEffect } from 'react'
+
+import { ProxyData, Request } from '@/types'
+import { getContentTypeWithCharsetHeader, upsertHeader } from '@/utils/headers'
 
 // We get 2 requests with the same id, one when
 // the request is sent and another when the response is received

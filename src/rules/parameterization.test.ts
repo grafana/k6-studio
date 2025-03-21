@@ -1,8 +1,6 @@
-import { createProxyData, createRequest } from '@/test/factories/proxyData'
-import { ParameterizationRule } from '@/types/rules'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createParameterizationRuleInstance } from './parameterization'
-import { ProxyData } from '@/types'
+
+import { createProxyData, createRequest } from '@/test/factories/proxyData'
 import {
   customCodeReplaceProjectId,
   dataFileRule,
@@ -10,6 +8,10 @@ import {
   jsonRule,
   urlRule,
 } from '@/test/fixtures/parameterizationRules'
+import { ProxyData } from '@/types'
+import { ParameterizationRule } from '@/types/rules'
+
+import { createParameterizationRuleInstance } from './parameterization'
 import { generateSequentialInt } from './utils'
 
 let idGenerator = generateSequentialInt()

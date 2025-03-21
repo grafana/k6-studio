@@ -1,7 +1,7 @@
-import { useCallback, useEffect } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { TrashIcon } from '@radix-ui/react-icons'
 import { Button, IconButton, TextField, Text, Tooltip } from '@radix-ui/themes'
-import { useGeneratorStore } from '@/store/generator'
+import { useCallback, useEffect } from 'react'
 import {
   useForm,
   useFieldArray,
@@ -10,11 +10,12 @@ import {
   FieldErrors,
   UseFieldArrayRemove,
 } from 'react-hook-form'
-import { TestData } from '@/types/testData'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { TestDataSchema } from '@/schemas/generator'
+
 import { FieldGroup } from '@/components/Form'
 import { Table } from '@/components/Table'
+import { TestDataSchema } from '@/schemas/generator'
+import { useGeneratorStore } from '@/store/generator'
+import { TestData } from '@/types/testData'
 
 export function VariablesEditor() {
   const variables = useGeneratorStore((store) => store.variables)

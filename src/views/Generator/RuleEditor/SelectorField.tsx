@@ -1,9 +1,10 @@
 import { Box, Flex, TextField } from '@radix-ui/themes'
+import { useFormContext } from 'react-hook-form'
 
+import { ControlledSelect, FieldGroup } from '@/components/Form'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
-import { useFormContext } from 'react-hook-form'
-import { ControlledSelect, FieldGroup } from '@/components/Form'
+
 import { HeaderSelect } from './HeaderSelect'
 import { allowedSelectorMap, fromOptions } from './SelectorField.constants'
 

@@ -1,24 +1,27 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { FileTextIcon } from '@radix-ui/react-icons'
 import { AlertDialog, Flex } from '@radix-ui/themes'
+import log from 'electron-log/renderer'
+import { useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { useLocalStorage } from 'react-use'
+
 import {
   ExportScriptDialogData,
   ExportScriptDialogSchema,
 } from '@/schemas/exportScript'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { OverwriteFileWarning } from './OverwriteFileWarning'
-import { ScriptNameForm } from './ScriptNameForm'
-import { useLocalStorage } from 'react-use'
 import { useGeneratorStore } from '@/store/generator'
-import { useEffect } from 'react'
+import { useStudioUIStore } from '@/store/ui'
+import { useToast } from '@/store/ui/useToast'
+
 import {
   useGeneratorParams,
   useUpdateValueInGeneratorFile,
 } from '../Generator.hooks'
-import { useToast } from '@/store/ui/useToast'
+
 import { getScriptNameWithExtension } from './ExportScriptDialog.utils'
-import log from 'electron-log/renderer'
-import { useStudioUIStore } from '@/store/ui'
+import { OverwriteFileWarning } from './OverwriteFileWarning'
+import { ScriptNameForm } from './ScriptNameForm'
 
 export function ExportScriptDialog({
   open,

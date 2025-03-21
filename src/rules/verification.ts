@@ -1,5 +1,6 @@
 import { RequestSnippetSchema } from '@/types'
 import { VerificationRule, VerificationRuleInstance } from '@/types/rules'
+
 import { matchFilter } from './utils'
 import {
   getCheckDescription,

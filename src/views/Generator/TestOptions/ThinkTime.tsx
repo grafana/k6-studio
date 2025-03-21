@@ -1,14 +1,14 @@
-import { useCallback, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Box, Flex, TextField, Text, Grid } from '@radix-ui/themes'
+import { useCallback, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 
-import { selectHasGroups, useGeneratorStore } from '@/store/generator'
-import { ThinkTimeSchema } from '@/schemas/generator'
-import type { ThinkTime } from '@/types/testOptions'
-import { stringAsNullableNumber, stringAsOptionalNumber } from '@/utils/form'
 import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
+import { ThinkTimeSchema } from '@/schemas/generator'
+import { selectHasGroups, useGeneratorStore } from '@/store/generator'
+import type { ThinkTime } from '@/types/testOptions'
+import { stringAsNullableNumber, stringAsOptionalNumber } from '@/utils/form'
 
 const TYPE_OPTIONS = [
   { value: 'fixed', label: 'Fixed' },

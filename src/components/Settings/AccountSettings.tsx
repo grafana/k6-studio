@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
 import { ExternalLinkIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import { Flex, Heading, IconButton, Table } from '@radix-ui/themes'
+
 import { GrafanaIcon } from '../icons/GrafanaIcon'
 
 const examples = [

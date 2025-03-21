@@ -1,9 +1,11 @@
-import { createK6Log } from '@/test/factories/k6Log'
-import { useRunLogs } from './useRunLogs'
 import { renderHook } from '@testing-library/react'
 import { act } from 'react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { createK6Log } from '@/test/factories/k6Log'
 import { K6Log } from '@/types'
+
+import { useRunLogs } from './useRunLogs'
 
 const onScriptLog = vi.fn()
 

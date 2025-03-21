@@ -1,8 +1,8 @@
 import ReactJson from '@microlink/react-json-view'
 
-import { useTheme } from '@/hooks/useTheme'
-import { k6StudioLightBackground } from '@/components/Monaco/themes/k6StudioLight'
 import { k6StudioDarkBackground } from '@/components/Monaco/themes/k6StudioDark'
+import { k6StudioLightBackground } from '@/components/Monaco/themes/k6StudioLight'
+import { useTheme } from '@/hooks/useTheme'
 
 interface JsonPreviewProps {
   content: object

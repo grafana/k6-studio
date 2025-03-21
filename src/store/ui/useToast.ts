@@ -1,7 +1,8 @@
-import { AddToastPayload, Toast } from '@/types/toast'
 import { useCallback } from 'react'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
+
+import { AddToastPayload, Toast } from '@/types/toast'
 
 interface State {
   toasts: Toast[]

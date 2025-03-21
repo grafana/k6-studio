@@ -1,4 +1,3 @@
-import { FieldGroup } from '@/components/Form'
 import {
   Box,
   TextField,
@@ -10,6 +9,8 @@ import {
 } from '@radix-ui/themes'
 import { Dispatch } from 'react'
 import { useFormContext } from 'react-hook-form'
+
+import { FieldGroup } from '@/components/Form'
 
 type ScriptNameFormProps = {
   setAlwaysOverwriteScript: Dispatch<boolean>

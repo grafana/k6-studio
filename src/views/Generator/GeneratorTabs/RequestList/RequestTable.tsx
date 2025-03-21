@@ -1,8 +1,8 @@
 import { Table } from '@/components/Table'
-
 import { RequestListProps } from '@/components/WebLogView'
-import { RequestRow } from './RequestRow'
 import { RuleInstance } from '@/types/rules'
+
+import { RequestRow } from './RequestRow'
 
 export function RequestTable({
   requests,

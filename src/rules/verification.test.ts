@@ -1,12 +1,14 @@
-import { createVerificationRuleInstance } from './verification'
-import { RequestSnippetSchema } from '@/types'
-import { VerificationRule } from '@/types/rules'
 import { describe, it, expect } from 'vitest'
+
 import {
   createProxyData,
   createRequest,
   createResponse,
 } from '@/test/factories/proxyData'
+import { RequestSnippetSchema } from '@/types'
+import { VerificationRule } from '@/types/rules'
+
+import { createVerificationRuleInstance } from './verification'
 
 const createMockVerificationRule = (
   overrides?: Partial<VerificationRule>

@@ -1,9 +1,12 @@
 import { Box, Grid, Text } from '@radix-ui/themes'
 import { useFormContext } from 'react-hook-form'
+
 import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { FilterField } from '../FilterField'
-import { ValueEditor } from './ValueEditor'
 import { VerificationRule } from '@/types/rules'
+
+import { FilterField } from '../FilterField'
+
+import { ValueEditor } from './ValueEditor'
 
 const TARGET_OPTIONS = [
   { value: 'status', label: 'Status code' },

@@ -1,8 +1,10 @@
-import { VerificationRule } from '@/types/rules'
-import { TestRuleFilter } from './TestRuleFilter'
-import { Badge, Strong } from '@radix-ui/themes'
-import { exhaustive } from '@/utils/typescript'
 import { DiscIcon, Link1Icon } from '@radix-ui/react-icons'
+import { Badge, Strong } from '@radix-ui/themes'
+
+import { VerificationRule } from '@/types/rules'
+import { exhaustive } from '@/utils/typescript'
+
+import { TestRuleFilter } from './TestRuleFilter'
 
 export function VerificationContent({ rule }: { rule: VerificationRule }) {
   return (

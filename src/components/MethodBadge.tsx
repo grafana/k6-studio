@@ -1,6 +1,7 @@
-import { Method } from '@/types'
 import { Text } from '@radix-ui/themes'
 import { ComponentProps, ReactNode } from 'react'
+
+import { Method } from '@/types'
 
 interface MethodBadgeProps {
   method: Method

@@ -1,16 +1,19 @@
+import { ipcRenderer } from 'electron'
+
+import { StackInfo, UserProfiles } from '@/schemas/profile'
 import {
   SignInResult,
   SignInProcessState,
   SelectStackResponse,
 } from '@/types/auth'
-import { ipcRenderer } from 'electron'
+
 import { createListener } from '../utils'
+
 import {
   AuthHandler as AuthHandler,
   ChangeStackResponse,
   SignOutResponse,
 } from './types'
-import { StackInfo, UserProfiles } from '@/schemas/profile'
 
 export function getProfiles() {
   return ipcRenderer.invoke(AuthHandler.GetProfiles) as Promise<UserProfiles>

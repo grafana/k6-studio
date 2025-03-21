@@ -1,5 +1,5 @@
-import { ImmerStateCreator } from '@/utils/typescript'
 import { Variable, TestData, DataFile } from '@/types/testData'
+import { ImmerStateCreator } from '@/utils/typescript'
 
 interface Actions {
   setVariables: (variables: Variable[]) => void

@@ -1,10 +1,11 @@
+import { css } from '@emotion/react'
+import { Cross2Icon } from '@radix-ui/react-icons'
+import { Box, Flex, Heading, IconButton } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { PropsWithChildren, useEffect } from 'react'
-import { css } from '@emotion/react'
-import { Box, Flex, Heading, IconButton } from '@radix-ui/themes'
-import { Cross2Icon } from '@radix-ui/react-icons'
 
 import { ProxyData } from '@/types'
+
 import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
 

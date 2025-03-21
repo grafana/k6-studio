@@ -1,3 +1,5 @@
+import { Flex } from '@radix-ui/themes'
+
 import { HighlightedText } from '@/components/HighlightedText'
 import { Table } from '@/components/Table'
 import { TextWithTooltip } from '@/components/TextWithTooltip'
@@ -11,7 +13,7 @@ import {
 } from '@/components/WebLogView'
 import { SearchResults } from '@/components/WebLogView/SearchResults'
 import { RuleInstance } from '@/types/rules'
-import { Flex } from '@radix-ui/themes'
+
 import { RuleBadges } from './RuleBadges'
 
 export function RequestRow({

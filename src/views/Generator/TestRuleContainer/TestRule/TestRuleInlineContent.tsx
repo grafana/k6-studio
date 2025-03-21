@@ -1,18 +1,20 @@
 import {
+  BorderLeftIcon,
+  BorderRightIcon,
+  EyeOpenIcon,
+} from '@radix-ui/react-icons'
+import { Badge, Tooltip } from '@radix-ui/themes'
+
+import {
   CorrelationRule,
   CustomCodeRule,
   TestRule,
   ParameterizationRule,
 } from '@/types/rules'
-import { TestRuleFilter } from './TestRuleFilter'
-import { Badge, Tooltip } from '@radix-ui/themes'
 import { exhaustive } from '@/utils/typescript'
+
+import { TestRuleFilter } from './TestRuleFilter'
 import { TestRuleSelector } from './TestRuleSelector'
-import {
-  BorderLeftIcon,
-  BorderRightIcon,
-  EyeOpenIcon,
-} from '@radix-ui/react-icons'
 import { VerificationContent } from './VerificationContent'
 
 interface TestRuleInlineContentProps {

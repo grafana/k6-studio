@@ -1,7 +1,8 @@
+import { Request } from '@/types'
 import { TextSelector } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
+
 import { replaceContent, replaceUrl, replaceHeaders } from '../shared'
-import { Request } from '@/types'
 
 export function replaceText(
   request: Request,

@@ -1,10 +1,11 @@
 import { exhaustive } from '@/utils/typescript'
+
+import { ConfirmSignOut } from './ConfirmSignOut'
 import { Loading } from './Loading'
+import { SignedIn } from './SignedIn'
 import { SignedOut } from './SignedOut'
 import { SigningIn } from './SigningIn'
-import { SignedIn } from './SignedIn'
 import { SignInState } from './types'
-import { ConfirmSignOut } from './ConfirmSignOut'
 
 interface ProfileStateProps {
   state: SignInState

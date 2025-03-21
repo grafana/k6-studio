@@ -1,7 +1,8 @@
-import { SettingsTabValue } from '@/components/Settings/types'
-import { FolderContent, ProxyStatus, StudioFile } from '@/types'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
+
+import { SettingsTabValue } from '@/components/Settings/types'
+import { FolderContent, ProxyStatus, StudioFile } from '@/types'
 
 interface State extends FolderContent {
   proxyStatus: ProxyStatus

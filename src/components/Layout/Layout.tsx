@@ -1,13 +1,13 @@
-import { Box, IconButton } from '@radix-ui/themes'
 import { css } from '@emotion/react'
-import { Allotment } from 'allotment'
-import { Outlet, useLocation } from 'react-router-dom'
-
-import { Sidebar } from './Sidebar'
-import { ActivityBar } from './ActivityBar'
-import { useEffect } from 'react'
 import { PinRightIcon } from '@radix-ui/react-icons'
+import { Box, IconButton } from '@radix-ui/themes'
+import { Allotment } from 'allotment'
+import { useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
+
+import { ActivityBar } from './ActivityBar'
+import { Sidebar } from './Sidebar'
 
 export function Layout() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(

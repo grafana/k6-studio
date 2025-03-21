@@ -1,12 +1,14 @@
-import { CollapsibleSection } from '@/components/CollapsibleSection'
-import { K6Check } from '@/types'
 import { css } from '@emotion/react'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, ScrollArea } from '@radix-ui/themes'
-import { groupChecksByPath } from './ChecksSection.utils'
-import { CheckRow } from './CheckRow'
 import { useMemo } from 'react'
+
+import { CollapsibleSection } from '@/components/CollapsibleSection'
 import { Table } from '@/components/Table'
+import { K6Check } from '@/types'
+
+import { CheckRow } from './CheckRow'
+import { groupChecksByPath } from './ChecksSection.utils'
 
 interface ChecksSectionProps {
   checks: K6Check[]

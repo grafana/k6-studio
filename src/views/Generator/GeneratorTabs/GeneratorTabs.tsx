@@ -1,20 +1,22 @@
 import { css } from '@emotion/react'
+import { CrossCircledIcon } from '@radix-ui/react-icons'
+import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { useState } from 'react'
 
-import { Box, Flex, Tabs } from '@radix-ui/themes'
-import { ScriptPreview } from './ScriptPreview'
+import { useScriptPreview } from '@/hooks/useScriptPreview'
 import {
   selectFilteredRequests,
   selectHasRecording,
   useGeneratorStore,
 } from '@/store/generator'
-import { RequestList } from './RequestList'
-import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { CrossCircledIcon } from '@radix-ui/react-icons'
-import { TestOptions } from '../TestOptions'
-import { Allowlist } from '../Allowlist'
 import { ProxyData } from '@/types'
+
+import { Allowlist } from '../Allowlist'
 import { TestData } from '../TestData'
+import { TestOptions } from '../TestOptions'
+
+import { RequestList } from './RequestList'
+import { ScriptPreview } from './ScriptPreview'
 
 interface GeneratorTabsProps {
   fileName: string

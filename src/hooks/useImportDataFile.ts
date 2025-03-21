@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
 import log from 'electron-log/renderer'
+import { useCallback } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'

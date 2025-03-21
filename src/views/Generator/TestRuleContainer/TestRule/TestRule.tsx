@@ -1,14 +1,15 @@
-import { css } from '@emotion/react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Flex, Grid, IconButton } from '@radix-ui/themes'
+import { css } from '@emotion/react'
 import { DragHandleDots2Icon } from '@radix-ui/react-icons'
+import { Flex, Grid, IconButton } from '@radix-ui/themes'
 
 import type { TestRule } from '@/types/rules'
+
 import { TestRuleActions } from './TestRuleActions'
-import { TestRuleTypeBadge } from './TestRuleTypeBadge'
 import { TestRuleInlineContent } from './TestRuleInlineContent'
 import { TestRuleToggle } from './TestRuleToggle'
+import { TestRuleTypeBadge } from './TestRuleTypeBadge'
 
 interface TestRuleItemProps {
   rule: TestRule

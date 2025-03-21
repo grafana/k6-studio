@@ -1,5 +1,6 @@
-import { K6Log } from '@/types'
 import { useCallback, useEffect, useState } from 'react'
+
+import { K6Log } from '@/types'
 
 export function useRunLogs() {
   const [logs, setLogs] = useState<K6Log[]>([])

@@ -1,5 +1,6 @@
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { JsonPreview } from '@/components/JsonPreview'
+import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+
 import { Font } from './Font'
 
 interface PreviewProps {

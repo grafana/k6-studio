@@ -1,8 +1,10 @@
-import { Button, Flex, Text } from '@radix-ui/themes'
-import { StackLoginRequiredState } from '@/types/auth'
-import { ExternalLink } from '@/components/ExternalLink'
-import { AuthenticationMessage } from './AuthenticationMessage'
 import { css } from '@emotion/react'
+import { Button, Flex, Text } from '@radix-ui/themes'
+
+import { ExternalLink } from '@/components/ExternalLink'
+import { StackLoginRequiredState } from '@/types/auth'
+
+import { AuthenticationMessage } from './AuthenticationMessage'
 
 interface StackLoginRequiredProps {
   state: StackLoginRequiredState

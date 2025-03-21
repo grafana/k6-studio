@@ -1,6 +1,7 @@
-import { Control, Controller, FieldValues, Path } from 'react-hook-form'
-import { StyledReactSelect } from '../StyledReactSelect'
 import { ComponentProps, ReactNode } from 'react'
+import { Control, Controller, FieldValues, Path } from 'react-hook-form'
+
+import { StyledReactSelect } from '../StyledReactSelect'
 
 type Option = { label: ReactNode; value: string; disabled?: boolean }
 

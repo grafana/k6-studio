@@ -1,11 +1,14 @@
-import { Text, Button, Flex, Box } from '@radix-ui/themes'
-import { SigningInState } from './types'
 import { css } from '@emotion/react'
-import { GrafanaLogo } from '../GrafanaLogo'
-import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
-import { ExternalLink } from '@/components/ExternalLink'
 import { CheckIcon } from '@radix-ui/react-icons'
+import { Text, Button, Flex, Box } from '@radix-ui/themes'
 import { ReactNode } from 'react'
+
+import { ExternalLink } from '@/components/ExternalLink'
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
+
+import { GrafanaLogo } from '../GrafanaLogo'
+
+import { SigningInState } from './types'
 
 function Benefit({ children }: { children: ReactNode }) {
   return (

@@ -1,15 +1,16 @@
-import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
-import { FilePlusIcon, PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
+import { FilePlusIcon, PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
+import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { FileTree } from '@/components/FileTree'
-import { useFiles } from './Sidebar.hooks'
-import { getRoutePath } from '@/routeMap'
-import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { SearchField } from '@/components/SearchField'
+import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useImportDataFile } from '@/hooks/useImportDataFile'
+import { getRoutePath } from '@/routeMap'
+
+import { useFiles } from './Sidebar.hooks'
 
 interface SidebarProps {
   isExpanded?: boolean

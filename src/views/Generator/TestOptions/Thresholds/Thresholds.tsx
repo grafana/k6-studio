@@ -1,14 +1,15 @@
-import { ThresholdDataSchema } from '@/schemas/generator'
-import { useGeneratorStore } from '@/store/generator'
-
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Text } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form'
-import { ThresholdRow } from './ThresholdRow'
-import { Table } from '@/components/Table'
-import { Threshold, ThresholdData } from '@/types/testOptions'
+
 import { ExternalLink } from '@/components/ExternalLink'
+import { Table } from '@/components/Table'
+import { ThresholdDataSchema } from '@/schemas/generator'
+import { useGeneratorStore } from '@/store/generator'
+import { Threshold, ThresholdData } from '@/types/testOptions'
+
+import { ThresholdRow } from './ThresholdRow'
 
 export function Thresholds() {
   const thresholds = useGeneratorStore((store) => store.thresholds)

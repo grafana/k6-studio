@@ -1,8 +1,5 @@
-import { Table } from '@/components/Table'
-import { LoadZoneSchema } from '@/schemas/generator/v1/loadZone'
-import { useGeneratorStore } from '@/store/generator/useGeneratorStore'
-import { LoadZoneData } from '@/types/testOptions'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Cross1Icon } from '@radix-ui/react-icons'
 import { Text, Button, Switch, Flex, Callout, Tooltip } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import {
@@ -11,15 +8,20 @@ import {
   useFieldArray,
   useFormContext,
 } from 'react-hook-form'
-import { LoadZoneRow } from './LoadZoneRow'
+
+import { ExternalLink } from '@/components/ExternalLink'
 import { FieldGroup } from '@/components/Form'
+import { Table } from '@/components/Table'
+import { LoadZoneSchema } from '@/schemas/generator/v1/loadZone'
+import { useGeneratorStore } from '@/store/generator/useGeneratorStore'
+import { LoadZoneData } from '@/types/testOptions'
+
+import { LoadZoneRow } from './LoadZoneRow'
 import {
   findUnusedLoadZone,
   getRemainingPercentage,
   LOAD_ZONES_REGIONS_OPTIONS,
 } from './LoadZones.utils'
-import { Cross1Icon } from '@radix-ui/react-icons'
-import { ExternalLink } from '@/components/ExternalLink'
 
 export function LoadZones() {
   const loadZones = useGeneratorStore((store) => store.loadZones)

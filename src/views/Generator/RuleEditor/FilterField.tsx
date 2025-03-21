@@ -1,8 +1,8 @@
 import { TextField } from '@radix-ui/themes'
-
-import { TestRule } from '@/types/rules'
 import { useFormContext } from 'react-hook-form'
+
 import { FieldGroup } from '@/components/Form'
+import { TestRule } from '@/types/rules'
 
 export function FilterField({
   field,

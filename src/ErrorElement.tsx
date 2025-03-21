@@ -1,3 +1,5 @@
+import { css } from '@emotion/react'
+import { ArrowLeftIcon } from '@radix-ui/react-icons'
 import {
   Button,
   Flex,
@@ -5,10 +7,9 @@ import {
   Link as RadixLink,
   Text,
 } from '@radix-ui/themes'
-import { css } from '@emotion/react'
 
 import GrotCrashed from '@/assets/grot-crashed.svg'
-import { ArrowLeftIcon } from '@radix-ui/react-icons'
+
 import { ExternalLink } from './components/ExternalLink'
 
 const handleOpenLogs = () => {

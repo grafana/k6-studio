@@ -1,4 +1,13 @@
+import {
+  CheckCircledIcon,
+  Cross2Icon,
+  CrossCircledIcon,
+} from '@radix-ui/react-icons'
 import { Box, IconButton } from '@radix-ui/themes'
+
+import { Toast as ToastProps } from '@/types/toast'
+import { exhaustive } from '@/utils/typescript'
+
 import {
   ToastAction,
   ToastClose,
@@ -7,13 +16,6 @@ import {
   ToastRoot,
   ToastTitle,
 } from './Toast.styles'
-import {
-  CheckCircledIcon,
-  Cross2Icon,
-  CrossCircledIcon,
-} from '@radix-ui/react-icons'
-import { Toast as ToastProps } from '@/types/toast'
-import { exhaustive } from '@/utils/typescript'
 
 export function Toast({ toast }: { toast: ToastProps }) {
   return (

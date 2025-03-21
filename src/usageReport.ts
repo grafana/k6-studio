@@ -1,9 +1,10 @@
 import { app } from 'electron'
-import { getPlatform, getArch } from './utils/electron'
+import log from 'electron-log/main'
+import { existsSync } from 'fs'
 import { writeFile, readFile } from 'fs/promises'
 import path from 'path'
-import { existsSync } from 'fs'
-import log from 'electron-log/main'
+
+import { getPlatform, getArch } from './utils/electron'
 
 const URL = 'https://stats.grafana.org/k6-studio-usage-report'
 const filename = '.installation_id'

@@ -1,8 +1,8 @@
-import { GeneratorFileData } from '@/types/generator'
 import { type GeneratorStore } from '@/store/generator'
+import { GeneratorFileData } from '@/types/generator'
 import { TestOptions } from '@/types/testOptions'
-import { exhaustive } from '@/utils/typescript'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
+import { exhaustive } from '@/utils/typescript'
 
 export function selectRuleById(state: GeneratorStore, id?: string) {
   return state.rules.find((rule) => rule.id === id)

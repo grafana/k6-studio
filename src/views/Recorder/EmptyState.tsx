@@ -14,10 +14,10 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
-import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { useStudioUIStore } from '@/store/ui'
 import { TextButton } from '@/components/TextButton'
+import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useBrowserCheck } from '@/hooks/useSettings'
+import { useStudioUIStore } from '@/store/ui'
 import { ProxyStatus } from '@/types'
 
 interface EmptyStateProps {

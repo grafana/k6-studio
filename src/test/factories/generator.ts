@@ -1,6 +1,7 @@
+import { vi } from 'vitest'
+
 import { GeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
-import { vi } from 'vitest'
 
 export function createGeneratorData(
   data?: Partial<GeneratorFileData>

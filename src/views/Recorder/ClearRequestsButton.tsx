@@ -1,5 +1,6 @@
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { AlertDialog, Button, Flex } from '@radix-ui/themes'
+
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 
 export function ClearRequestsButton({
   handleConfirm,

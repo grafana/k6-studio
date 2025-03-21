@@ -1,10 +1,13 @@
-import { AppSettings } from '@/types/settings'
-import { Flex, Text, Checkbox, Callout } from '@radix-ui/themes'
-import { Controller, useFormContext } from 'react-hook-form'
-import { SettingsSection } from './SettingsSection'
-import { FileUploadInput } from '../Form'
-import { useEffect } from 'react'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { Flex, Text, Checkbox, Callout } from '@radix-ui/themes'
+import { useEffect } from 'react'
+import { Controller, useFormContext } from 'react-hook-form'
+
+import { AppSettings } from '@/types/settings'
+
+import { FileUploadInput } from '../Form'
+
+import { SettingsSection } from './SettingsSection'
 
 export const RecorderSettings = () => {
   const {

@@ -1,5 +1,6 @@
 import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
+
 import {
   DATA_FILES_PATH,
   PROJECT_PATH,
