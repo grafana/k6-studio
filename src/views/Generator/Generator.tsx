@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
+import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { Details } from '@/components/WebLogView/Details'
 import { getRoutePath } from '@/routeMap'
@@ -143,9 +144,14 @@ export function Generator() {
     <View
       title="Generator"
       subTitle={
-        <>
-          {getFileNameWithoutExtension(fileName)} {isDirty && '*'}
-        </>
+        <FileNameHeader
+          file={{
+            fileName,
+            displayName: getFileNameWithoutExtension(fileName),
+            type: 'generator',
+          }}
+          isDirty={isDirty}
+        />
       }
       actions={
         <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />

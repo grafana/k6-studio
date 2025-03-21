@@ -6,12 +6,13 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { Details } from '@/components/WebLogView/Details'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { getRoutePath } from '@/routeMap'
-import { ProxyData } from '@/types'
+import { ProxyData, StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
@@ -30,6 +31,11 @@ export function RecordingPreviewer() {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
   invariant(fileName, 'fileName is required')
+  const file: StudioFile = {
+    fileName,
+    displayName: getFileNameWithoutExtension(fileName),
+    type: 'recording',
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -53,27 +59,19 @@ export function RecordingPreviewer() {
   const handleCreateGenerator = () => createTestGenerator(fileName)
 
   const handleDeleteRecording = async () => {
-    await window.studio.ui.deleteFile({
-      type: 'recording',
-      fileName,
-      displayName: getFileNameWithoutExtension(fileName),
-    })
+    await window.studio.ui.deleteFile(file)
     navigate(getRoutePath('home'))
   }
 
   const handleDiscard = async () => {
-    await window.studio.ui.deleteFile({
-      type: 'recording',
-      fileName,
-      displayName: getFileNameWithoutExtension(fileName),
-    })
+    await window.studio.ui.deleteFile(file)
     navigate(getRoutePath('recorder'))
   }
 
   return (
     <View
       title="Recording"
-      subTitle={getFileNameWithoutExtension(fileName)}
+      subTitle={<FileNameHeader file={file} />}
       loading={isLoading}
       actions={
         <>
