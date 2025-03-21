@@ -1,4 +1,4 @@
-import { PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
+import { GearIcon, PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
 import { Box, Button, Flex } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import log from 'electron-log/renderer'
@@ -13,6 +13,7 @@ import { Details } from '@/components/WebLogView/Details'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { getRoutePath } from '@/routeMap'
+import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
 import { Group, ProxyData } from '@/types'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
@@ -39,6 +40,9 @@ export function Recorder() {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
+  const openSettingsDialog = useStudioUIStore(
+    (state) => state.openSettingsDialog
+  )
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
 
@@ -147,6 +151,23 @@ export function Recorder() {
     resetProxyData()
     setGroups(INITIAL_GROUPS)
   }
+
+  useEffect(() => {
+    return window.studio.browser.onBrowserLaunchFailed(() => {
+      setRecorderState('idle')
+      showToast({
+        title: 'Failed to launch browser',
+        description: 'Please check your browser path and try again.',
+        action: (
+          <Button onClick={() => openSettingsDialog('recorder')}>
+            <GearIcon />
+            Open settings
+          </Button>
+        ),
+        status: 'error',
+      })
+    })
+  }, [openSettingsDialog, showToast])
 
   useEffect(() => {
     return window.studio.browser.onBrowserClosed(async () => {

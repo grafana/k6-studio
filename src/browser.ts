@@ -10,6 +10,7 @@ import log from 'electron-log/main'
 import { mkdtemp } from 'fs/promises'
 import os from 'os'
 import path from 'path'
+import { promisify } from 'util'
 
 import { appSettings } from './main'
 import { getCertificateSPKI } from './proxy'
@@ -22,19 +23,21 @@ const createUserDataDir = async () => {
 export async function getBrowserPath() {
   const { recorder } = appSettings
 
-  if (recorder.detectBrowserPath) {
-    if (getPlatform() === 'linux' && process.arch === 'arm64') {
-      // Chrome is not available for arm64, use Chromium instead
-      return await getChromiumPath()
-    }
-
-    return computeSystemExecutablePath({
-      browser: Browser.CHROME,
-      channel: ChromeReleaseChannel.STABLE,
-    })
+  if (!recorder.detectBrowserPath) {
+    return recorder.browserPath || ''
   }
 
-  return recorder.browserPath as string
+  const chromePath = getChromePath()
+  if (chromePath) {
+    return chromePath
+  }
+
+  const chromiumPath = await getChromiumPath()
+  if (chromiumPath) {
+    return chromiumPath
+  }
+
+  throw new Error('Could not detect Chrome or Chromium browser')
 }
 
 export const launchBrowser = async (
@@ -63,6 +66,11 @@ export const launchBrowser = async (
     return Promise.resolve()
   }
 
+  const sendBrowserLaunchFailedEvent = (error: Error) => {
+    log.error(error)
+    browserWindow.webContents.send('browser:failed')
+  }
+
   const args = [
     '--new',
     '--args',
@@ -83,31 +91,49 @@ export const launchBrowser = async (
   // if we are on linux we spawn the browser directly and attach the on exit callback
   if (getPlatform() === 'linux') {
     const browserProc = spawn(path, args)
+    browserProc.on('error', sendBrowserLaunchFailedEvent)
     browserProc.once('exit', sendBrowserClosedEvent)
     return browserProc
   }
 
   // macOS & windows
-  return launch({
+  const browserProc = launch({
     executablePath: path,
     args: args,
     onExit: sendBrowserClosedEvent,
   })
+  browserProc.nodeProcess.on('error', sendBrowserLaunchFailedEvent)
+  return browserProc
 }
 
-function getChromiumPath(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    exec('which chromium', (error, stdout, stderr) => {
-      if (error) {
-        log.error(error)
-        return reject(error)
-      }
-      if (stderr) {
-        log.error(stderr)
-        return reject(stderr)
-      }
-
-      return resolve(stdout.trim())
+function getChromePath() {
+  try {
+    return computeSystemExecutablePath({
+      browser: Browser.CHROME,
+      channel: ChromeReleaseChannel.STABLE,
     })
-  })
+  } catch (e) {
+    log.error(e)
+    return undefined
+  }
+}
+
+async function getChromiumPath() {
+  try {
+    // on Windows, the Chromium executable is called `chrome.exe`
+    const command =
+      getPlatform() === 'win' ? 'where chrome' : 'command -v chromium'
+
+    const { stdout, stderr } = await promisify(exec)(command)
+
+    if (stderr) {
+      log.error(stderr)
+      return undefined
+    }
+
+    return stdout.trim()
+  } catch (error) {
+    log.error(error)
+    return undefined
+  }
 }
