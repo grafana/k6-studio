@@ -1,3 +1,8 @@
+import { Process } from '@puppeteer/browsers'
+import * as Sentry from '@sentry/electron/main'
+import { ChildProcessWithoutNullStreams } from 'child_process'
+import { watch, FSWatcher } from 'chokidar'
+import { COPYFILE_EXCL } from 'constants'
 import {
   app,
   BrowserWindow,
@@ -6,6 +11,10 @@ import {
   nativeTheme,
   shell,
 } from 'electron'
+import log from 'electron-log/main'
+import eventEmitter from 'events'
+import find from 'find-process'
+import { existsSync } from 'fs'
 import {
   access,
   copyFile,
@@ -16,16 +25,13 @@ import {
   readFile,
   stat,
 } from 'fs/promises'
-import { updateElectronApp } from 'update-electron-app'
 import path from 'path'
-import eventEmitter from 'events'
-import { Process } from '@puppeteer/browsers'
-import { watch, FSWatcher } from 'chokidar'
+import invariant from 'tiny-invariant'
+import kill from 'tree-kill'
+import { updateElectronApp } from 'update-electron-app'
 
-import { launchProxy, type ProxyProcess } from './proxy'
 import { getBrowserPath, launchBrowser } from './browser'
-import { runScript, showScriptSelectDialog, type K6Process } from './script'
-import { setupProjectStructure } from './utils/workspace'
+import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
 import {
   DATA_FILES_PATH,
   GENERATORS_PATH,
@@ -34,22 +40,13 @@ import {
   TEMP_GENERATOR_SCRIPT_PATH,
   TEMP_SCRIPT_SUFFIX,
 } from './constants/workspace'
-import {
-  sendToast,
-  findOpenPort,
-  getAppIcon,
-  getPlatform,
-} from './utils/electron'
-import invariant from 'tiny-invariant'
-import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
-import { HarWithOptionalResponse } from './types/har'
-import { GeneratorFileData } from './types/generator'
-import kill from 'tree-kill'
-import find from 'find-process'
+import * as handlers from './handlers'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
-import log from 'electron-log/main'
-import { sendReport } from './usageReport'
-import { AppSettings } from './types/settings'
+import { configureApplicationMenu } from './menu'
+import { launchProxy, type ProxyProcess } from './proxy'
+import { GeneratorFileDataSchema } from './schemas/generator'
+import { runScript, showScriptSelectDialog, type K6Process } from './script'
+import { BrowserServer } from './services/browser/server'
 import {
   defaultSettings,
   getSettings,
@@ -59,18 +56,22 @@ import {
   selectUpstreamCertificate,
 } from './settings'
 import { ProxyStatus, StudioFile } from './types'
-import { configureApplicationMenu } from './menu'
-import * as Sentry from '@sentry/electron/main'
-import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
+import { GeneratorFileData } from './types/generator'
+import { HarWithOptionalResponse } from './types/har'
+import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
+import { sendReport } from './usageReport'
 import { parseDataFile } from './utils/dataFile'
+import {
+  sendToast,
+  findOpenPort,
+  getAppIcon,
+  getPlatform,
+  browserWindowFromEvent,
+} from './utils/electron'
 import { createNewGeneratorFile } from './utils/generator'
-import { GeneratorFileDataSchema } from './schemas/generator'
-import { BrowserServer } from './services/browser/server'
-import { ChildProcessWithoutNullStreams } from 'child_process'
-import { COPYFILE_EXCL } from 'constants'
-
-import * as handlers from './handlers'
+import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
+import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -120,10 +121,35 @@ if (require('electron-squirrel-startup')) {
 
 initializeLogger()
 
+// Used to convert `.json` files into the appropriate file extension for the Generator
+async function migrateJsonGenerator() {
+  if (!existsSync(GENERATORS_PATH)) return
+
+  const items = await readdir(GENERATORS_PATH, { withFileTypes: true })
+  const files = items.filter(
+    (f) => f.isFile() && path.extname(f.name) === '.json'
+  )
+
+  await Promise.all(
+    files.map(async (f) => {
+      try {
+        const oldPath = path.join(GENERATORS_PATH, f.name)
+        const newPath = path.join(
+          GENERATORS_PATH,
+          path.parse(f.name).name + '.k6g'
+        )
+        await rename(oldPath, newPath)
+      } catch (error) {
+        log.error(error)
+      }
+    })
+  )
+}
+
 const createSplashWindow = async () => {
   splashscreenWindow = new BrowserWindow({
-    width: 700,
-    height: 355,
+    width: 600,
+    height: 400,
     frame: false,
     show: false,
     alwaysOnTop: true,
@@ -179,7 +205,7 @@ const createWindow = async () => {
     minHeight: 600,
     show: false,
     icon,
-    title: 'Grafana k6 Studio (public preview)',
+    title: 'Grafana k6 Studio',
     backgroundColor: nativeTheme.themeSource === 'light' ? '#fff' : '#111110',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -236,13 +262,14 @@ const createWindow = async () => {
 
 app.whenReady().then(
   async () => {
-    await createSplashWindow()
     await initSettings()
     appSettings = await getSettings()
     nativeTheme.themeSource = appSettings.appearance.theme
+    await createSplashWindow()
 
     await sendReport(appSettings.telemetry.usageReport)
     await setupProjectStructure()
+    await migrateJsonGenerator()
     await createWindow()
   },
   (error) => {
@@ -493,7 +520,7 @@ ipcMain.handle('generator:create', async (_, recordingPath: string) => {
   const fileName = await createFileWithUniqueName({
     data: JSON.stringify(generator, null, 2),
     directory: GENERATORS_PATH,
-    ext: '.json',
+    ext: '.k6g',
     prefix: 'Generator',
   })
 
@@ -779,18 +806,6 @@ async function applySettings(
   }
 }
 
-const browserWindowFromEvent = (
-  event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
-) => {
-  const browserWindow = BrowserWindow.fromWebContents(event.sender)
-
-  if (!browserWindow) {
-    throw new Error('failed to obtain browserWindow')
-  }
-
-  return browserWindow
-}
-
 const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
   const { port, automaticallyFindPort } = appSettings.proxy
 
@@ -914,7 +929,7 @@ function getStudioFileFromPath(filePath: string): StudioFile | undefined {
 
   if (
     filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === '.json'
+    path.extname(filePath) === '.k6g'
   ) {
     return {
       type: 'generator',

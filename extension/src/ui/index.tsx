@@ -1,8 +1,9 @@
-import { createRoot } from 'react-dom/client'
-import { InBrowserControls } from './InBrowserControls'
 import createCache from '@emotion/cache'
 import { CacheProvider, css, Global } from '@emotion/react'
+import { createRoot } from 'react-dom/client'
+
 import { ContainerProvider } from './ContainerProvider'
+import { InBrowserControls } from './InBrowserControls'
 
 function createShadowRoot() {
   const mount = document.createElement('div')

@@ -1,8 +1,8 @@
-import { Callout } from '@radix-ui/themes'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Callout } from '@radix-ui/themes'
 
-import { TableCellWithTooltip } from '@/components/TableCellWithTooltip'
 import { Table } from '@/components/Table'
+import { TableCellWithTooltip } from '@/components/TableCellWithTooltip'
 import { DataFilePreview } from '@/types/testData'
 import { renderDataFileValue } from '@/utils/dataFile'
 

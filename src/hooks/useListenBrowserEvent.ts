@@ -1,5 +1,6 @@
-import { BrowserEvent } from '@/schemas/recording'
 import { useEffect, useState } from 'react'
+
+import { BrowserEvent } from '@/schemas/recording'
 
 export function useListenBrowserEvent() {
   const [events, setEvents] = useState<BrowserEvent[]>([])

@@ -1,7 +1,8 @@
+import log from 'electron-log/main'
+import { z } from 'zod'
+
 import { Stack } from '@/types/auth'
 import { timeout } from '@/utils/async'
-import { z } from 'zod'
-import log from 'electron-log/main'
 
 const PersonalTokenResponseSchema = z.object({
   personal_token: z.string(),

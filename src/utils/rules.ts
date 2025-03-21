@@ -50,12 +50,8 @@ export function createEmptyRule(type: TestRule['type']): TestRule {
         id: crypto.randomUUID(),
         enabled: true,
         filter: { path: '' },
-        selector: {
-          type: 'begin-end',
-          from: 'body',
-          begin: '',
-          end: '',
-        },
+        operator: 'equals',
+        target: 'status',
         value: {
           type: 'recordedValue',
         },

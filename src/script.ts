@@ -1,16 +1,13 @@
-import { app, dialog, BrowserWindow } from 'electron'
-import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import { readFile, writeFile, unlink } from 'fs/promises'
-import path from 'path'
-import readline from 'readline/promises'
-import { K6Check, K6Log } from './types'
-import { getArch, getPlatform } from './utils/electron'
 import { parse, TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { app, dialog, BrowserWindow } from 'electron'
+import { readFile, writeFile, unlink } from 'fs/promises'
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
+import path from 'path'
 import { format } from 'prettier'
-import { getExports, traverse } from './codegen/estree/traverse'
 // eslint-disable-next-line import/default
 import estree from 'prettier/plugins/estree'
-import { NodeType } from './codegen/estree/nodes'
+import readline from 'readline/promises'
+
 import {
   constDeclarator,
   declareConst,
@@ -18,7 +15,11 @@ import {
   fromObjectLiteral,
   identifier,
 } from './codegen/estree'
+import { NodeType } from './codegen/estree/nodes'
+import { getExports, traverse } from './codegen/estree/traverse'
 import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from './constants/workspace'
+import { K6Check, K6Log } from './types'
+import { getArch, getPlatform } from './utils/electron'
 
 export type K6Process = ChildProcessWithoutNullStreams
 

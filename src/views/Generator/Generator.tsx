@@ -1,11 +1,17 @@
 import { Allotment } from 'allotment'
+import log from 'electron-log/renderer'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
+import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
-import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { View } from '@/components/Layout/View'
-import { GeneratorTabs } from './GeneratorTabs'
-import { TestRuleContainer } from './TestRuleContainer'
+import { Details } from '@/components/WebLogView/Details'
+import { getRoutePath } from '@/routeMap'
+import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
+import { useToast } from '@/store/ui/useToast'
+import { ProxyData } from '@/types'
+import { getFileNameWithoutExtension } from '@/utils/file'
+
 import {
   useGeneratorParams,
   useIsGeneratorDirty,
@@ -14,14 +20,9 @@ import {
   useSaveGeneratorFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
-import { useToast } from '@/store/ui/useToast'
-import { getRoutePath } from '@/routeMap'
+import { GeneratorTabs } from './GeneratorTabs'
+import { TestRuleContainer } from './TestRuleContainer'
 import { UnsavedChangesDialog } from './UnsavedChangesDialog'
-import { getFileNameWithoutExtension } from '@/utils/file'
-import log from 'electron-log/renderer'
-import { ProxyData } from '@/types'
-import { Details } from '@/components/WebLogView/Details'
-import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 export function Generator() {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)

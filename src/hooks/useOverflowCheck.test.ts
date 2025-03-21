@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react'
-import { useOverflowCheck } from './useOverflowCheck'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { useOverflowCheck } from './useOverflowCheck'
 
 class ResizeObserverMock {
   observe = vi.fn()

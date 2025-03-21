@@ -1,17 +1,19 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { FileTextIcon } from '@radix-ui/react-icons'
 import { AlertDialog, Flex } from '@radix-ui/themes'
+import { useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { useLocalStorage } from 'react-use'
+
 import {
   ExportScriptDialogData,
   ExportScriptDialogSchema,
 } from '@/schemas/exportScript'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useStudioUIStore } from '@/store/ui'
+
+import { getScriptNameWithExtension } from './ExportScriptDialog.utils'
 import { OverwriteFileWarning } from './OverwriteFileWarning'
 import { ScriptNameForm } from './ScriptNameForm'
-import { useLocalStorage } from 'react-use'
-import { useEffect } from 'react'
-import { getScriptNameWithExtension } from './ExportScriptDialog.utils'
-import { useStudioUIStore } from '@/store/ui'
 
 interface ExportScriptDialogProps {
   open: boolean

@@ -2,9 +2,9 @@ import { css } from '@emotion/react'
 import { Link1Icon, LinkBreak1Icon, LinkNone1Icon } from '@radix-ui/react-icons'
 import { Box, Flex, Tooltip } from '@radix-ui/themes'
 
+import { useProxyStatus } from '@/hooks/useProxyStatus'
 import type { ProxyStatus } from '@/types'
 import { exhaustive } from '@/utils/typescript'
-import { useProxyStatus } from '@/hooks/useProxyStatus'
 
 const COLOR_MAP: Record<ProxyStatus, string> = {
   ['online']: 'var(--green-9)',

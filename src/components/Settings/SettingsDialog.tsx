@@ -1,21 +1,23 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { findIndex, sortBy } from 'lodash-es'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
-import { ProxySettings } from './ProxySettings'
+import { useSaveSettings, useSettings } from '@/hooks/useSettings'
 import { AppSettingsSchema } from '@/schemas/settings'
-import { RecorderSettings } from './RecorderSettings'
+import { useStudioUIStore } from '@/store/ui'
 import { AppSettings } from '@/types/settings'
-import { TelemetrySettings } from './TelemetrySettings'
+
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
+
 import { AppearanceSettings } from './AppearanceSettings'
 import { LogsSettings } from './LogsSettings'
-import { useStudioUIStore } from '@/store/ui'
-import { useSaveSettings, useSettings } from '@/hooks/useSettings'
+import { ProxySettings } from './ProxySettings'
+import { RecorderSettings } from './RecorderSettings'
+import { TelemetrySettings } from './TelemetrySettings'
 import { SettingsTabValue } from './types'
 
 const tabs: Array<{

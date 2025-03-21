@@ -1,5 +1,6 @@
 import { parse } from '@typescript-eslint/typescript-estree'
 import { describe, it } from 'vitest'
+
 import { getExports } from '@/codegen/estree/traverse'
 
 describe('getExports', () => {

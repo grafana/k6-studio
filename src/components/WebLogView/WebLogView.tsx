@@ -1,11 +1,12 @@
 import { Box } from '@radix-ui/themes'
-
-import { Group as GroupType, ProxyDataWithMatches } from '@/types'
-import { Row, RowProps } from './Row'
-import { Group } from './Group'
-import { Table } from '@/components/Table'
 import { ComponentType, memo, useMemo } from 'react'
 import { useDeepCompareEffect } from 'react-use'
+
+import { Table } from '@/components/Table'
+import { Group as GroupType, ProxyDataWithMatches } from '@/types'
+
+import { Group } from './Group'
+import { Row, RowProps } from './Row'
 
 interface WebLogViewProps {
   requests: ProxyDataWithMatches[]
@@ -14,7 +15,8 @@ interface WebLogViewProps {
   onSelectRequest: (data: ProxyDataWithMatches | null) => void
   onUpdateGroup?: (group: GroupType) => void
   filter?: string
-  RowComponent?: RequestListProps['RowComponent']
+  RowComponent?: ComponentType<RowProps>
+  ListComponent?: ComponentType<RequestListProps>
 }
 
 // Memo improves performance when filtering
@@ -26,6 +28,7 @@ export const WebLogView = memo(function WebLogView({
   onUpdateGroup,
   filter,
   RowComponent = Row,
+  ListComponent = RequestList,
 }: WebLogViewProps) {
   const selectedRequest = useMemo(
     () => requests.find((data) => data.id === selectedRequestId),
@@ -63,7 +66,7 @@ export const WebLogView = memo(function WebLogView({
           length={item.requests.length}
           onUpdate={onUpdateGroup}
         >
-          <RequestList
+          <ListComponent
             requests={item.requests}
             selectedRequestId={selectedRequestId}
             onSelectRequest={onSelectRequest}
@@ -76,7 +79,7 @@ export const WebLogView = memo(function WebLogView({
   )
 })
 
-interface RequestListProps {
+export interface RequestListProps {
   requests: ProxyDataWithMatches[]
   selectedRequestId?: string
   onSelectRequest: (data: ProxyDataWithMatches) => void

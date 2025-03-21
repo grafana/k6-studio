@@ -1,10 +1,11 @@
 import { GeneratorFileData } from '@/types/generator'
 import { RampingStage } from '@/types/testOptions'
+
 import { createEmptyRule } from './rules'
 
 export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
   return {
-    version: '1.0',
+    version: '2.0',
     recordingPath,
     options: {
       loadProfile: {

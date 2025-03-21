@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron'
+
 import { BrowserRemoteHandlers } from './browserRemote.types'
 
 export function highlightElement(selector: string | null) {

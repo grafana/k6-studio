@@ -1,7 +1,9 @@
 import './ui'
 
-import { BrowserEvent } from '@/schemas/recording'
 import { runtime } from 'webextension-polyfill'
+
+import { BrowserEvent } from '@/schemas/recording'
+
 import { generateSelector } from './selectors'
 import { shouldSkipEvent } from './ui/utils'
 

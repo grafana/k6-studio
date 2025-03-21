@@ -1,14 +1,15 @@
-import type { ForgeConfig } from '@electron-forge/shared-types'
+import { FuseV1Options, FuseVersion } from '@electron/fuses'
+import { MakerDeb } from '@electron-forge/maker-deb'
+import { MakerDMG } from '@electron-forge/maker-dmg'
+import { MakerRpm } from '@electron-forge/maker-rpm'
 import { MakerSquirrel } from '@electron-forge/maker-squirrel'
 import { MakerZIP } from '@electron-forge/maker-zip'
-import { MakerDeb } from '@electron-forge/maker-deb'
-import { MakerRpm } from '@electron-forge/maker-rpm'
-import { MakerDMG } from '@electron-forge/maker-dmg'
-import { VitePlugin } from '@electron-forge/plugin-vite'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
-import { FuseV1Options, FuseVersion } from '@electron/fuses'
-import { getPlatform, getArch } from './src/utils/electron'
+import { VitePlugin } from '@electron-forge/plugin-vite'
+import type { ForgeConfig } from '@electron-forge/shared-types'
 import path from 'path'
+
+import { getPlatform, getArch } from './src/utils/electron'
 
 function getPlatformSpecificResources() {
   // on mac we are using a single image to build both architectures so we

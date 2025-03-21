@@ -1,4 +1,5 @@
 import type { Har } from 'har-format'
+
 import { BrowserEvent } from './browser'
 
 declare module 'har-format' {

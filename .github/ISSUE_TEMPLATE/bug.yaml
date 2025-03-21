@@ -2,25 +2,6 @@ name: Bug report
 description: Use this template for reporting bugs. Please search existing issues first.
 labels: bug, needs-triage
 body:
-  - type: textarea
-    attributes:
-      label: Brief summary
-    validations:
-      required: true
-  - type: markdown
-    attributes:
-      value: '## Environment'
-  - type: input
-    attributes:
-      label: Grafana k6 Studio version
-    validations:
-      required: true
-  - type: input
-    attributes:
-      label: OS
-      description: e.g. Windows 10, Arch Linux, macOS 11, etc.
-    validations:
-      required: true
   - type: markdown
     attributes:
       value: '## Detailed issue description'
@@ -39,3 +20,15 @@ body:
       label: Actual behaviour
     validations:
       required: true
+  - type: markdown
+    attributes:
+      value: '## Environment'
+  - type: input
+    attributes:
+      label: Grafana k6 Studio version
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: OS
+      description: e.g. Windows 11, Arch Linux, macOS 15.3.1, etc.

@@ -1,6 +1,7 @@
-import { Callout, Flex, Text } from '@radix-ui/themes'
-import { AwaitingAuthorizationState } from '@/types/auth'
 import { css } from '@emotion/react'
+import { Callout, Flex, Text } from '@radix-ui/themes'
+
+import { AwaitingAuthorizationState } from '@/types/auth'
 
 interface AwaitingAuthorizationProps {
   state: AwaitingAuthorizationState

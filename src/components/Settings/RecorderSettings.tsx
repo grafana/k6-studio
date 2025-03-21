@@ -1,9 +1,13 @@
-import { AppSettings } from '@/types/settings'
-import { Flex, Text, Checkbox } from '@radix-ui/themes'
-import { Controller, useFormContext } from 'react-hook-form'
-import { SettingsSection } from './SettingsSection'
-import { FieldGroup, FileUploadInput } from '../Form'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { Flex, Text, Checkbox, Callout } from '@radix-ui/themes'
 import { useEffect } from 'react'
+import { Controller, useFormContext } from 'react-hook-form'
+
+import { AppSettings } from '@/types/settings'
+
+import { FieldGroup, FileUploadInput } from '../Form'
+
+import { SettingsSection } from './SettingsSection'
 
 export const RecorderSettings = () => {
   const {
@@ -32,6 +36,19 @@ export const RecorderSettings = () => {
     clearErrors('recorder.browserPath')
   }
 
+  const isValidPath = (path?: string) => {
+    if (!path) return false
+    const validPaths = [
+      'chrome.app',
+      'chromium.app',
+      'chrome.exe',
+      'chromium.exe',
+      '/chrome',
+      '/chromium',
+    ]
+    return validPaths.some((validPath) => path.includes(validPath))
+  }
+
   return (
     <SettingsSection>
       <Flex gap="2" mb="4">
@@ -57,9 +74,23 @@ export const RecorderSettings = () => {
         name="recorder.browserPath"
         onSelectFile={handleSelectFile}
         buttonText="Select executable"
-        hint="Google Chrome needs to be installed on your machine for the recording functionality to work"
+        hint="Google Chrome or Chromium needs to be installed on your machine for the recording functionality to work"
         disabled={recorder.detectBrowserPath}
       />
+      {!recorder.detectBrowserPath &&
+        recorder.browserPath !== '' &&
+        !isValidPath(recorder.browserPath?.toLocaleLowerCase()) && (
+          <Callout.Root color="amber">
+            <Callout.Icon>
+              <ExclamationTriangleIcon />
+            </Callout.Icon>
+
+            <Callout.Text>
+              The selected executable doesn&apos;t appear to be compatible.
+              Please select the correct executable for Chrome or Chromium.
+            </Callout.Text>
+          </Callout.Root>
+        )}
 
       <FieldGroup
         label="Browser recording"

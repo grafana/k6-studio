@@ -1,3 +1,5 @@
+import { css } from '@emotion/react'
+import { ArrowLeftIcon } from '@radix-ui/react-icons'
 import {
   Button,
   Flex,
@@ -5,15 +7,10 @@ import {
   Link as RadixLink,
   Text,
 } from '@radix-ui/themes'
-import { css } from '@emotion/react'
 
 import GrotCrashed from '@/assets/grot-crashed.svg'
-import { ArrowLeftIcon } from '@radix-ui/react-icons'
 
-const handleCreateIssue = () =>
-  window.studio.browser.openExternalLink(
-    'https://github.com/grafana/k6-studio/issues'
-  )
+import { ExternalLink } from './components/ExternalLink'
 
 const handleOpenLogs = () => {
   window.studio.log.openLogFolder()
@@ -52,9 +49,9 @@ export function ErrorElement() {
         >
           We apologize for the inconvenience. Please help us improve our
           application by reporting this issue on{' '}
-          <RadixLink href="" onClick={handleCreateIssue}>
+          <ExternalLink href="https://github.com/grafana/k6-studio/issues">
             GitHub
-          </RadixLink>{' '}
+          </ExternalLink>{' '}
           and attaching the tail of{' '}
           <RadixLink href="" onClick={handleOpenLogs}>
             your log file

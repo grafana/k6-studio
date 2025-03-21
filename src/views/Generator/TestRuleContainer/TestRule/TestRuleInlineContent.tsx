@@ -1,20 +1,21 @@
 import {
-  CorrelationRule,
-  CustomCodeRule,
-  TestRule,
-  VerificationRule,
-  ParameterizationRule,
-} from '@/types/rules'
-import { TestRuleFilter } from './TestRuleFilter'
-import { Badge, Tooltip } from '@radix-ui/themes'
-import { exhaustive } from '@/utils/typescript'
-import { TestRuleSelector } from './TestRuleSelector'
-import {
   BorderLeftIcon,
   BorderRightIcon,
   EyeOpenIcon,
-  DiscIcon,
 } from '@radix-ui/react-icons'
+import { Badge, Tooltip } from '@radix-ui/themes'
+
+import {
+  CorrelationRule,
+  CustomCodeRule,
+  TestRule,
+  ParameterizationRule,
+} from '@/types/rules'
+import { exhaustive } from '@/utils/typescript'
+
+import { TestRuleFilter } from './TestRuleFilter'
+import { TestRuleSelector } from './TestRuleSelector'
+import { VerificationContent } from './VerificationContent'
 
 interface TestRuleInlineContentProps {
   rule: TestRule
@@ -33,19 +34,6 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
     default:
       return exhaustive(rule)
   }
-}
-
-function VerificationContent({ rule }: { rule: VerificationRule }) {
-  return (
-    <>
-      <TestRuleFilter filter={rule.filter} />{' '}
-      <Tooltip content="Checks that all request statuses match the recording.">
-        <Badge color="gray">
-          <DiscIcon /> Recording
-        </Badge>
-      </Tooltip>
-    </>
-  )
 }
 
 function CorrelationContent({ rule }: { rule: CorrelationRule }) {

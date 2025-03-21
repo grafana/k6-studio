@@ -1,13 +1,13 @@
-import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
-import { ExclamationTriangleIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
+import { ExclamationTriangleIcon, PlusIcon } from '@radix-ui/react-icons'
+import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
+import log from 'electron-log/renderer'
 
 import { useGeneratorStore } from '@/store/generator'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { useStudioUIStore } from '@/store/ui'
-import { getFileNameWithoutExtension } from '@/utils/file'
 import { useToast } from '@/store/ui/useToast'
-import log from 'electron-log/renderer'
+import { getFileNameWithoutExtension } from '@/utils/file'
+import { harToProxyData } from '@/utils/harToProxyData'
 
 export function RecordingSelector({ compact = false }: { compact?: boolean }) {
   const recordings = useStudioUIStore((store) => [...store.recordings.values()])
@@ -62,28 +62,23 @@ export function RecordingSelector({ compact = false }: { compact?: boolean }) {
         </Text>
       )}
       <Select.Root value={recordingPath} onValueChange={handleOpen}>
-        <Tooltip content="Switch between different recordings.">
-          <Select.Trigger
-            id="recording-selector"
-            placeholder="Select recording"
-            css={css`
-              width: ${compact ? 'auto' : '300px'};
-              @media (max-width: 1060px) {
-                width: 125px;
-              }
-            `}
-          >
-            <Flex as="span" align="center" gap="1">
-              {isRecordingMissing && (
-                <ExclamationTriangleIcon
-                  color="orange"
-                  css={{ minWidth: 16 }}
-                />
-              )}
-              {getFileNameWithoutExtension(recordingPath)}
-            </Flex>
-          </Select.Trigger>
-        </Tooltip>
+        <Select.Trigger
+          id="recording-selector"
+          placeholder="Select recording"
+          css={css`
+            width: ${compact ? 'auto' : '300px'};
+            @media (max-width: 1060px) {
+              width: 125px;
+            }
+          `}
+        >
+          <Flex as="span" align="center" gap="1">
+            {isRecordingMissing && (
+              <ExclamationTriangleIcon color="orange" css={{ minWidth: 16 }} />
+            )}
+            {getFileNameWithoutExtension(recordingPath)}
+          </Flex>
+        </Select.Trigger>
         <Select.Content position="popper">
           {isRecordingMissing && (
             <Select.Item value={recordingPath} disabled>

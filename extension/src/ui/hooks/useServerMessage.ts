@@ -1,6 +1,7 @@
-import { ServerMessage, ServerMessageSchema } from '@/services/browser/schemas'
 import { useEffect, useRef } from 'react'
 import { runtime } from 'webextension-polyfill'
+
+import { ServerMessage, ServerMessageSchema } from '@/services/browser/schemas'
 
 let listeners: Array<(message: ServerMessage) => void> = []
 

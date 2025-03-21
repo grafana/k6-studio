@@ -1,9 +1,14 @@
+import { useMutation } from '@tanstack/react-query'
+import { useNavigate, useParams } from 'react-router-dom'
+
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
-import { useMutation } from '@tanstack/react-query'
+import { getFileNameWithoutExtension, getViewPath } from '@/utils/file'
+import { queryClient } from '@/utils/query'
 
 export function useRenameFile(file: StudioFile) {
+  const { fileName: selectedFileName } = useParams()
+  const navigate = useNavigate()
   const addFile = useStudioUIStore((state) => state.addFile)
   const removeFile = useStudioUIStore((state) => state.removeFile)
 
@@ -19,8 +24,22 @@ export function useRenameFile(file: StudioFile) {
         displayName: getFileNameWithoutExtension(newName),
         fileName: newName,
       }
+
       removeFile(file)
       addFile(updatedFile)
+
+      if (selectedFileName !== file.fileName) {
+        return
+      }
+
+      if (file.type === 'generator') {
+        queryClient.setQueryData(
+          ['generator', newName],
+          queryClient.getQueryData(['generator', file.fileName])
+        )
+      }
+
+      navigate(getViewPath(file.type, newName), { replace: true })
     },
   })
 }

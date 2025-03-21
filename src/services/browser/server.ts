@@ -1,5 +1,6 @@
 import { BrowserWindow } from 'electron'
 import { RawData, WebSocketServer } from 'ws'
+
 import {
   ClientMessageEnvelopeSchema,
   ServerMessage,

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Bounds } from './types'
+
 import { useServerMessage } from './hooks/useServerMessage'
+import { Bounds } from './types'
 
 export function useHighlightedElements() {
   const [bounds, setBounds] = useState<Bounds[]>([])

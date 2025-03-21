@@ -1,7 +1,8 @@
 import { css } from '@emotion/react'
 import * as Tooltip from '@radix-ui/react-tooltip'
-import { useContainerElement } from './ContainerProvider'
 import { useKey } from 'react-use'
+
+import { useContainerElement } from './ContainerProvider'
 import { ElementHighlight } from './ElementHighlight'
 import { useInspectedElement } from './ElementInspector.hooks'
 

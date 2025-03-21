@@ -1,8 +1,11 @@
-import * as ir from './ast'
-import * as model from '../types'
-import { Graph } from '../graph'
-import { exhaustive } from '@/utils/typescript'
 import { groupBy } from 'lodash-es'
+
+import { exhaustive } from '@/utils/typescript'
+
+import { Graph } from '../graph'
+import * as model from '../types'
+
+import * as ir from './ast'
 
 type ScenarioGraph = Graph<model.TestNode, null>
 

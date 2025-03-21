@@ -1,9 +1,11 @@
-import { createK6Check } from '@/test/factories/k6Check'
-import { useRunChecks } from './useRunChecks'
-import { K6Check } from '@/types'
 import { renderHook } from '@testing-library/react'
 import { act } from 'react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { createK6Check } from '@/test/factories/k6Check'
+import { K6Check } from '@/types'
+
+import { useRunChecks } from './useRunChecks'
 
 const onScriptCheck = vi.fn()
 

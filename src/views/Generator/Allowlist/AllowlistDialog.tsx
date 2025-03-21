@@ -1,6 +1,3 @@
-import { Label } from '@/components/Label'
-import { ProxyData } from '@/types'
-import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import {
   Button,
@@ -11,12 +8,15 @@ import {
   ScrollArea,
   TextField,
   Text,
-  Tooltip,
   Card,
   Inset,
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
 import { useMemo, useState } from 'react'
+
+import { Label } from '@/components/Label'
+import { ProxyData } from '@/types'
+import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 export function AllowlistDialog({
   hosts,
@@ -144,9 +144,7 @@ export function AllowlistDialog({
             checked={includeStaticAssets}
             disabled={staticAssetCount === 0}
           />
-          <Tooltip content="Static assets are excluded from your test by default.">
-            <Text size="2">Include static assets ({staticAssetCount})</Text>
-          </Tooltip>
+          <Text size="2">Include static assets ({staticAssetCount})</Text>
         </Label>
       </Flex>
     </>

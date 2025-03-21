@@ -1,8 +1,8 @@
+import { css } from '@emotion/react'
 import { Text } from '@radix-ui/themes'
 
 import { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
-import { css } from '@emotion/react'
 
 interface TestRuleTypeBadgeProps {
   rule: TestRule

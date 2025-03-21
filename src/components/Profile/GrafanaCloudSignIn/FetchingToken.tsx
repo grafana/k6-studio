@@ -1,6 +1,8 @@
 import { ReactNode, useEffect, useState } from 'react'
-import { LoadingMessage } from '../LoadingMessage'
+
 import { FetchingTokenState } from '@/types/auth'
+
+import { LoadingMessage } from '../LoadingMessage'
 
 function useCarousel(message: ReactNode[], interval = 10_000) {
   const [index, setIndex] = useState(0)

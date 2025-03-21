@@ -1,8 +1,11 @@
-import { BrowserEvent } from '@/schemas/recording'
 import { css } from '@emotion/react'
 import { Flex, Table, Button } from '@radix-ui/themes'
 import { useState } from 'react'
+
+import { BrowserEvent } from '@/schemas/recording'
+
 import { ExportScriptDialog } from '../../Generator/ExportScriptDialog'
+
 import { EventDescription } from './EventDescription'
 import { EventIcon } from './EventIcon'
 

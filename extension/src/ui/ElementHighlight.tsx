@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
-import { Bounds } from './types'
 import { forwardRef } from 'react'
+
+import { Bounds } from './types'
 
 interface ElementHighlightProps {
   bounds: Bounds

@@ -1,9 +1,10 @@
 import { Box, Button, Flex } from '@radix-ui/themes'
+import { useFormContext, useFieldArray } from 'react-hook-form'
+
+import { Table } from '@/components/Table'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
 
 import { Stage } from './Stage'
-import { LoadProfileExecutorOptions } from '@/types/testOptions'
-import { useFormContext, useFieldArray } from 'react-hook-form'
-import { Table } from '@/components/Table'
 
 export function VUStages() {
   const {

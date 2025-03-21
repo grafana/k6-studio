@@ -1,5 +1,6 @@
 import { RequestSnippetSchema } from '@/types'
 import { CustomCodeRule, CustomCodeRuleInstance } from '@/types/rules'
+
 import { matchFilter } from './utils'
 
 export function createCustomCodeRuleInstance(

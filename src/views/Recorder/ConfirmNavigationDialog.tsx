@@ -1,4 +1,5 @@
 import { Box, Button, Dialog, Flex, Text } from '@radix-ui/themes'
+
 import { RecorderState } from './types'
 
 interface ConfirmNavigationDialogProps {

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+
 import * as v2 from '../v2'
 
 export const RegularProxySettingsSchema = z.object({

@@ -1,31 +1,32 @@
+import { StopIcon } from '@radix-ui/react-icons'
+import { Button } from '@radix-ui/themes'
+import log from 'electron-log/renderer'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
-import { Button } from '@radix-ui/themes'
-import { StopIcon } from '@radix-ui/react-icons'
-import log from 'electron-log/renderer'
 
 import { View } from '@/components/Layout/View'
+import TextSpinner from '@/components/TextSpinner/TextSpinner'
+import { DEFAULT_GROUP_NAME } from '@/constants'
+import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { useSettings } from '@/hooks/useSettings'
+import { getRoutePath } from '@/routeMap'
+import { useToast } from '@/store/ui/useToast'
+import { Group, ProxyData } from '@/types'
+import { proxyDataToHar } from '@/utils/proxyDataToHar'
+
+import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
+import { EmptyState } from './EmptyState'
 import {
   getHostNameFromURL,
   startRecording,
   stopRecording,
   useDebouncedProxyData,
 } from './Recorder.utils'
-import { proxyDataToHar } from '@/utils/proxyDataToHar'
-import { getRoutePath } from '@/routeMap'
-import { Group, ProxyData } from '@/types'
-import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
-import { RecorderState } from './types'
-import { useToast } from '@/store/ui/useToast'
-import TextSpinner from '@/components/TextSpinner/TextSpinner'
-import { DEFAULT_GROUP_NAME } from '@/constants'
-import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
-import { RequestLog } from './RequestLog'
-import { useSettings } from '@/hooks/useSettings'
-import { RecordingInspector } from './RecordingInspector'
-import { EmptyState } from './EmptyState'
 import { RecordingContext } from './RecordingContext'
+import { RecordingInspector } from './RecordingInspector'
+import { RequestLog } from './RequestLog'
+import { RecorderState } from './types'
 
 const INITIAL_GROUPS: Group[] = [
   {

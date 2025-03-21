@@ -1,13 +1,15 @@
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { Details } from '@/components/WebLogView/Details'
 import { PlusCircledIcon } from '@radix-ui/react-icons'
 import { Flex, Box } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
+import { useMemo, useState } from 'react'
+
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+import { EmptyMessage } from '@/components/EmptyMessage'
+import { Details } from '@/components/WebLogView/Details'
+import { ProxyData, Group } from '@/types'
+
 import { RequestsSection } from './RequestsSection'
 import { RecorderState } from './types'
-import { ProxyData, Group } from '@/types'
-import { useMemo, useState } from 'react'
-import { EmptyMessage } from '@/components/EmptyMessage'
 
 interface RequestLogProps {
   recorderState?: RecorderState | undefined

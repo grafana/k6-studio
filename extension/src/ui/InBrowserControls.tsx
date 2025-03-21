@@ -1,6 +1,6 @@
-import { ToolBox } from './ToolBox'
 import { ElementInspector } from './ElementInspector'
 import { RemoteHighlights } from './RemoteHighlights'
+import { ToolBox } from './ToolBox'
 import { useInBrowserUIStore } from './store'
 
 export function InBrowserControls() {

@@ -1,9 +1,9 @@
+import log from 'electron-log/renderer'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
-import log from 'electron-log/renderer'
 
 export function useCreateGenerator() {
   const navigate = useNavigate()

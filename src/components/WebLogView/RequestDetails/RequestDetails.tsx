@@ -1,13 +1,15 @@
+import { Box } from '@radix-ui/themes'
+import { useEffect, useMemo } from 'react'
+
 import { ProxyDataWithMatches } from '@/types'
 
-import { Tabs } from '../Tabs'
 import { Cookies } from '../Cookies'
+import { useRequestDetailsTab } from '../Details.hooks'
+import { Tabs } from '../Tabs'
+
 import { Headers } from './Headers'
 import { Payload } from './Payload'
 import { QueryParams } from './QueryParams'
-import { Box } from '@radix-ui/themes'
-import { useEffect, useMemo } from 'react'
-import { useRequestDetailsTab } from '../Details.hooks'
 
 interface RequestDetailsProps {
   data: ProxyDataWithMatches

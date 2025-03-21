@@ -1,9 +1,12 @@
 import { Button, Flex, Strong, Text } from '@radix-ui/themes'
-import { ProxyDataWithMatches } from '@/types'
-import { Table } from '@/components/Table'
-import { SearchMatch } from '@/types/fuse'
 import { useMemo, useState } from 'react'
+
+import { Table } from '@/components/Table'
+import { ProxyDataWithMatches } from '@/types'
+import { SearchMatch } from '@/types/fuse'
+
 import { HighlightMark } from '../HighlightedText'
+
 import {
   useGoToContentMatch,
   useGoToPayloadMatch,

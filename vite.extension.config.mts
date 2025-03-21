@@ -1,10 +1,11 @@
-import type { BuildOptions, ConfigEnv, InlineConfig, UserConfig } from 'vite'
-import type { Manifest } from 'webextension-polyfill'
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tsconfigPaths from 'vite-tsconfig-paths'
-import { version } from './package.json'
+import type { BuildOptions, ConfigEnv, InlineConfig, UserConfig } from 'vite'
+import { defineConfig } from 'vite'
 import webExtension from 'vite-plugin-web-extension'
+import tsconfigPaths from 'vite-tsconfig-paths'
+import type { Manifest } from 'webextension-polyfill'
+
+import { version } from './package.json'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {

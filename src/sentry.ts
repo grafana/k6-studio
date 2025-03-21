@@ -1,4 +1,5 @@
 import * as SentryRenderer from '@sentry/electron/renderer'
+
 import { AppSettings } from './types/settings'
 
 export function configureRendererProcess(

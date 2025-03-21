@@ -4,10 +4,11 @@ import {
   ParameterizationRuleInstance,
   ParameterizationState,
 } from '@/types/rules'
+import { getFileNameWithoutExtension } from '@/utils/file'
 import { exhaustive } from '@/utils/typescript'
+
 import { replaceRequestValues } from './shared'
 import { matchFilter } from './utils'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 export function createParameterizationRuleInstance(
   rule: ParameterizationRule,

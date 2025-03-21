@@ -1,18 +1,19 @@
-import { ProxyData, RequestSnippetSchema } from '@/types'
-import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
+import { JSLIB, K6_EXPORTS, REQUIRED_IMPORTS } from '@/constants/imports'
+import { getCustomCodeSnippet } from '@/rules/parameterization'
 import { applyRules } from '@/rules/rules'
+import { ProxyData, RequestSnippetSchema } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
+import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
 import { DataFile, Variable } from '@/types/testData'
 import { ThinkTime } from '@/types/testOptions'
-import { exhaustive } from '@/utils/typescript'
-import { generateOptions } from './options'
-import { getContentTypeWithCharsetHeader } from '@/utils/headers'
-import { JSLIB, K6_EXPORTS, REQUIRED_IMPORTS } from '@/constants/imports'
-import { generateImportStatement } from './imports'
-import { cleanupRecording, shouldIncludeHeaderInScript } from './codegen.utils'
-import { groupProxyData } from '@/utils/groups'
 import { getFileNameWithoutExtension } from '@/utils/file'
-import { getCustomCodeSnippet } from '@/rules/parameterization'
+import { groupProxyData } from '@/utils/groups'
+import { getContentTypeWithCharsetHeader } from '@/utils/headers'
+import { exhaustive } from '@/utils/typescript'
+
+import { cleanupRecording, shouldIncludeHeaderInScript } from './codegen.utils'
+import { generateImportStatement } from './imports'
+import { generateOptions } from './options'
 
 interface GenerateScriptParams {
   recording: ProxyData[]
@@ -202,6 +203,7 @@ export function generateSingleRequestSnippet(
     before,
     after,
     data: { request },
+    checks,
   } = requestSnippetSchema
 
   const method = `'${request.method}'`
@@ -237,7 +239,7 @@ export function generateSingleRequestSnippet(
     resp = http.request(${method}, url, ${content}, params)
   `
 
-  return [params, ...before, main, ...after].join('\n')
+  return [params, ...before, main, generateChecks(checks), ...after].join('\n')
 }
 
 function generateSleep(timing: ThinkTime['timing']): string {
@@ -295,4 +297,16 @@ function generateScriptHeaderComment() {
 
 function escapeBackticks(content: string): string {
   return content.replace(/`/g, '\\`')
+}
+
+function generateChecks(checks: RequestSnippetSchema['checks']) {
+  if (checks.length === 0) {
+    return ''
+  }
+
+  const checksString = checks
+    .map(({ description, expression }) => `'${description}': ${expression}`)
+    .join(',')
+
+  return `check(resp, { ${checksString} })`
 }

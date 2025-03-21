@@ -1,8 +1,8 @@
 import { ScrollArea } from '@radix-ui/themes'
 
 import { LogView } from '@/components/LogView'
-import { K6Log } from '@/types'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
+import { K6Log } from '@/types'
 
 interface LogsSectionProps {
   logs: K6Log[]

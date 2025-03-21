@@ -1,11 +1,14 @@
-import { BrowserWindow, ipcMain, shell } from 'electron'
-import { CloudHandlers, RawScript, Script } from './types'
-import { RunInCloudStateMachine } from './states'
+import { ipcMain, shell } from 'electron'
+import { rm, writeFile } from 'fs/promises'
 import { basename, extname, isAbsolute, join } from 'path'
+
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/script'
-import { rm, writeFile } from 'fs/promises'
+import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
+
+import { RunInCloudStateMachine } from './states'
+import { CloudHandlers, RawScript, Script } from './types'
 
 async function createTempFile(script: RawScript) {
   const tempFileName = getTempScriptName()
@@ -38,10 +41,11 @@ function toScriptFile(script: Script) {
   }
 }
 
-export function initialize(browserWindow: BrowserWindow) {
+export function initialize() {
   let stateMachine: RunInCloudStateMachine | null = null
 
-  ipcMain.handle(CloudHandlers.Run, async (_event, script: Script) => {
+  ipcMain.handle(CloudHandlers.Run, async (event, script: Script) => {
+    const browserWindow = browserWindowFromEvent(event)
     const file = await toScriptFile(script)
 
     const absolutePath = !isAbsolute(file.path)

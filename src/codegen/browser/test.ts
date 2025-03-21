@@ -1,6 +1,7 @@
 import { BrowserEvent } from '@/schemas/recording'
-import { TestNode, PageNode, NodeRef, Test, LocatorNode } from './types'
 import { exhaustive } from '@/utils/typescript'
+
+import { TestNode, PageNode, NodeRef, Test, LocatorNode } from './types'
 
 interface Recording {
   browserEvents: BrowserEvent[]

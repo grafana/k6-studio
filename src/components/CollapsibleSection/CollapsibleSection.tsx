@@ -1,9 +1,9 @@
+import { css } from '@emotion/react'
 import * as Collapsible from '@radix-ui/react-collapsible'
 import { CaretDownIcon, CaretRightIcon } from '@radix-ui/react-icons'
 import { Flex, Reset } from '@radix-ui/themes'
 import { useState } from 'react'
 import './CollapsibleSection.styles.css'
-import { css } from '@emotion/react'
 
 export function CollapsibleSection({
   children,

@@ -1,8 +1,8 @@
 import { DataList, Flex } from '@radix-ui/themes'
 
+import { HighlightedText } from '@/components/HighlightedText'
 import { Request } from '@/types'
 import { SearchMatch } from '@/types/fuse'
-import { HighlightedText } from '@/components/HighlightedText'
 
 export function QueryParams({
   request,

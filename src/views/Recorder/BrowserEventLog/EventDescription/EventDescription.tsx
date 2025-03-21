@@ -1,8 +1,10 @@
+import { Fragment } from 'react'
+
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
-import { Fragment } from 'react'
-import { PageNavigationDescription } from './PageNavigationDescription'
+
 import { ClickDescription } from './ClickDescription'
+import { PageNavigationDescription } from './PageNavigationDescription'
 import { Selector } from './Selector'
 
 function formatOptions(options: string[]) {

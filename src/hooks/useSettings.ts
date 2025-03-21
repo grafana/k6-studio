@@ -1,5 +1,6 @@
-import { queryClient } from '@/utils/query'
 import { useMutation, useQuery } from '@tanstack/react-query'
+
+import { queryClient } from '@/utils/query'
 
 export function useSettings() {
   return useQuery({

@@ -1,10 +1,12 @@
+import { Runtime, runtime, tabs } from 'webextension-polyfill'
+
 import { BrowserEvent } from '@/schemas/recording'
 import {
   ClientMessage,
   ClientMessageEnvelope,
   ServerMessageEnvelopeSchema,
 } from '@/services/browser/schemas'
-import { Runtime, runtime, tabs } from 'webextension-polyfill'
+
 import { BrowserMessageSchema } from './messaging'
 import { captureNavigationEvents } from './navigation'
 

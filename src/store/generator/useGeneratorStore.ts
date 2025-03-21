@@ -1,6 +1,10 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
+import { ProxyData } from '@/types'
+import { GeneratorFileData } from '@/types/generator'
+import { exhaustive } from '@/utils/typescript'
+
 import {
   createRecordingSlice,
   createRulesSlice,
@@ -11,9 +15,6 @@ import {
   TestDataStore,
   TestOptionsStore,
 } from './slices'
-import { exhaustive } from '@/utils/typescript'
-import { GeneratorFileData } from '@/types/generator'
-import { ProxyData } from '@/types'
 import { createScriptDataSlice, ScriptDataStore } from './slices/script'
 
 export interface GeneratorStore

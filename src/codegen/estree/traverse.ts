@@ -1,6 +1,8 @@
 import { TSESTree as ts } from '@typescript-eslint/types'
-import { NodeType } from './nodes'
+
 import { exhaustive } from '@/utils/typescript'
+
+import { NodeType } from './nodes'
 
 type Visitor = {
   [P in ts.Node['type']]?: (node: Extract<ts.Node, { type: P }>) => void

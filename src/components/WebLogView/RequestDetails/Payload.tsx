@@ -1,14 +1,15 @@
 import { Flex } from '@radix-ui/themes'
+import { useEffect } from 'react'
 
 import { ProxyData } from '@/types'
+import { getContentType } from '@/utils/headers'
 
 import { ReadOnlyEditor } from '../../Monaco/ReadOnlyEditor'
-import { parseParams } from './utils'
-import { getContentType } from '@/utils/headers'
-import { FormPayloadPreview } from './FormPayloadPreview'
-import { Raw } from '../ResponseDetails/Raw'
 import { useGoToPayloadMatch } from '../Details.hooks'
-import { useEffect } from 'react'
+import { Raw } from '../ResponseDetails/Raw'
+
+import { FormPayloadPreview } from './FormPayloadPreview'
+import { parseParams } from './utils'
 
 export function Payload({ data }: { data: ProxyData }) {
   const content = parseParams(data)

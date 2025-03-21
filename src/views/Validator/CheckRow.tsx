@@ -1,6 +1,8 @@
-import { K6Check } from '@/types'
 import { Cross2Icon, CheckIcon } from '@radix-ui/react-icons'
 import { Table } from '@radix-ui/themes'
+
+import { K6Check } from '@/types'
+
 import { hasFailures, getPassPercentage } from './ChecksSection.utils'
 
 export function CheckRow({ check }: { check: K6Check }) {

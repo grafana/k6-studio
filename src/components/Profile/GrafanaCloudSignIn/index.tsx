@@ -1,18 +1,21 @@
+import { Button, Flex } from '@radix-ui/themes'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { UserProfiles } from '@/schemas/profile'
+import { SignInProcessState, SignInResult, Stack } from '@/types/auth'
 import { exhaustive } from '@/utils/typescript'
-import { Initializing } from './Initializing'
+
+import { GrafanaLogo } from '../GrafanaLogo'
+
+import { AuthorizationDenied } from './AuthorizationDenied'
 import { AwaitingAuthorization } from './AwaitingAuthorization'
 import { FetchingStacks } from './FetchingStacks'
-import { SelectingStack } from './SelectingStack'
 import { FetchingToken } from './FetchingToken'
+import { Initializing } from './Initializing'
+import { SelectingStack } from './SelectingStack'
 import { StackLoginRequired } from './StackLoginRequired'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Button, Flex } from '@radix-ui/themes'
-import { GrafanaLogo } from '../GrafanaLogo'
 import { TimedOut } from './TimedOut'
-import { SignInProcessState, SignInResult, Stack } from '@/types/auth'
-import { AuthorizationDenied } from './AuthorizationDenied'
 import { UnexpectedError } from './UnexpectedError'
-import { UserProfiles } from '@/schemas/profile'
 
 interface SignInProcessProps {
   state: SignInProcessState

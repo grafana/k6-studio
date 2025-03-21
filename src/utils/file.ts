@@ -1,5 +1,7 @@
-import { getRoutePath } from '../routeMap'
 import { StudioFileType } from '@/types'
+
+import { getRoutePath } from '../routeMap'
+
 import { exhaustive } from './typescript'
 
 export function getFileNameWithoutExtension(fileName: string) {

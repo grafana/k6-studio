@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
+import { useNavigate } from 'react-router-dom'
 
 import { useOpenInDefaultApp } from '@/hooks/useOpenInDefaultApp'
 import { getRoutePath } from '@/routeMap'
