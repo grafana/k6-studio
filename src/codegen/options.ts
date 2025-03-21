@@ -1,6 +1,8 @@
-import { LoadZoneData, TestOptions, Threshold } from '@/types/testOptions'
-import { stringify } from './codegen.utils'
 import { omit } from 'lodash-es'
+
+import { LoadZoneData, TestOptions, Threshold } from '@/types/testOptions'
+
+import { stringify } from './codegen.utils'
 
 export function generateOptions({
   loadProfile,

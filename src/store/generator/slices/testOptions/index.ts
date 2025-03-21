@@ -1,8 +1,9 @@
 import { ImmerStateCreator } from '@/utils/typescript'
+
 import { LoadProfileStore, createLoadProfileSlice } from './loadProfile'
-import { ThinkTimeStore, createThinkTimeSlice } from './thinkTime'
-import { createThresholdSlice, ThresholdStore } from './thesholds'
 import { LoadZoneStore, createLoadZoneSlice } from './loadZones'
+import { createThresholdSlice, ThresholdStore } from './thesholds'
+import { ThinkTimeStore, createThinkTimeSlice } from './thinkTime'
 
 export type TestOptionsStore = LoadProfileStore &
   ThinkTimeStore &

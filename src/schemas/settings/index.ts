@@ -1,8 +1,10 @@
 import { z } from 'zod'
+
+import { exhaustive } from '../../utils/typescript'
+
 import * as v1 from './v1'
 import * as v2 from './v2'
 import * as v3 from './v3'
-import { exhaustive } from '../../utils/typescript'
 
 const AnySettingSchema = z.discriminatedUnion('version', [
   v1.AppSettingsSchema,

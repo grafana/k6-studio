@@ -1,9 +1,10 @@
-import { SettingsSection } from './SettingsSection'
+import { Button, Flex, Spinner, Text } from '@radix-ui/themes'
+import * as monaco from 'monaco-editor'
+import { useEffect, useState, useCallback } from 'react'
 
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
-import { Button, Flex, Spinner, Text } from '@radix-ui/themes'
-import { useEffect, useState, useCallback } from 'react'
-import * as monaco from 'monaco-editor'
+
+import { SettingsSection } from './SettingsSection'
 
 export function LogsSettings() {
   const [logContent, setLogContent] = useState<string>('')

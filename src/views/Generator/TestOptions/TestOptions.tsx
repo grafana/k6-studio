@@ -1,14 +1,16 @@
+import { css } from '@emotion/react'
 import { GearIcon } from '@radix-ui/react-icons'
 import { Box, Button, Inset, ScrollArea, Tabs } from '@radix-ui/themes'
-import { css } from '@emotion/react'
+import { useState } from 'react'
+
+import { PopoverDialog } from '@/components/PopoverDialogs'
+
+import { VariablesEditor } from '../TestData/VariablesEditor'
 
 import { LoadProfile } from './LoadProfile'
-import { ThinkTime } from './ThinkTime'
-import { VariablesEditor } from '../TestData/VariablesEditor'
-import { PopoverDialog } from '@/components/PopoverDialogs'
-import { Thresholds } from './Thresholds'
 import { LoadZones } from './LoadZones'
-import { useState } from 'react'
+import { ThinkTime } from './ThinkTime'
+import { Thresholds } from './Thresholds'
 
 export function TestOptions() {
   const [selectedTab, setSelectedTab] = useState('loadProfile')

@@ -1,7 +1,8 @@
-import { K6Log } from '@/types'
 import { css } from '@emotion/react'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, Code, Flex, Text } from '@radix-ui/themes'
+
+import { K6Log } from '@/types'
 
 const colors: Record<K6Log['level'], string> = {
   info: 'green',

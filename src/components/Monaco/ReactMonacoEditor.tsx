@@ -1,9 +1,11 @@
-import { useTheme } from '@/hooks/useTheme'
 import { Editor, EditorProps, loader, Monaco } from '@monaco-editor/react'
-import * as monaco from 'monaco-editor'
-import { EditorToolbar, ToolbarState } from './EditorToolbar'
-import { useMemo, useState } from 'react'
 import { Flex } from '@radix-ui/themes'
+import * as monaco from 'monaco-editor'
+import { useMemo, useState } from 'react'
+
+import { useTheme } from '@/hooks/useTheme'
+
+import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { useHighlightSearch } from './ReactMonacoEditor.hooks'
 
 loader.config({ monaco })

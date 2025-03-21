@@ -1,11 +1,12 @@
-import { Code } from '@radix-ui/themes'
-import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { ParameterizationRule } from '@/types/rules'
-import { useFormContext } from 'react-hook-form'
-import { useGeneratorStore } from '@/store/generator'
-import { useMemo } from 'react'
-import { useDataFilePreview } from '@/views/DataFile/DataFile.hooks'
 import { css } from '@emotion/react'
+import { Code } from '@radix-ui/themes'
+import { useMemo } from 'react'
+import { useFormContext } from 'react-hook-form'
+
+import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { useGeneratorStore } from '@/store/generator'
+import { ParameterizationRule } from '@/types/rules'
+import { useDataFilePreview } from '@/views/DataFile/DataFile.hooks'
 
 export function FileSelect() {
   const {

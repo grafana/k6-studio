@@ -1,5 +1,6 @@
-import { Stack } from '@/types/auth'
 import { z } from 'zod'
+
+import { Stack } from '@/types/auth'
 
 const InstanceSchema = z.object({
   id: z.coerce.string(),

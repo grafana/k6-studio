@@ -1,19 +1,21 @@
-import { useScriptPreview } from './useScriptPreview'
+import { renderHook, waitFor } from '@testing-library/react'
+import { Dictionary } from 'lodash'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
   useGeneratorStore,
   selectFilteredRequests,
   selectGeneratorData,
 } from '@/store/generator'
-import { groupProxyData } from '@/utils/groups'
-import { generateScriptPreview } from '@/views/Generator/Generator.utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
-import { ProxyData } from '@/types'
-import { Dictionary } from 'lodash'
 import {
   createGeneratorData,
   createGeneratorState,
 } from '@/test/factories/generator'
+import { ProxyData } from '@/types'
+import { groupProxyData } from '@/utils/groups'
+import { generateScriptPreview } from '@/views/Generator/Generator.utils'
+
+import { useScriptPreview } from './useScriptPreview'
 
 vi.mock('lodash-es', () => ({
   debounce: vi.fn((fn: () => void) => fn),

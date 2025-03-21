@@ -1,6 +1,7 @@
-import { ComponentProps } from 'react'
 import { Editor } from '@monaco-editor/react'
 import { editor } from 'monaco-editor'
+import { ComponentProps } from 'react'
+
 import { ReactMonacoEditor } from './ReactMonacoEditor'
 
 const options: editor.IStandaloneEditorConstructionOptions = {

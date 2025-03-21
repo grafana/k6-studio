@@ -1,3 +1,4 @@
+import { InfoCircledIcon } from '@radix-ui/react-icons'
 import {
   Box,
   Code,
@@ -9,16 +10,16 @@ import {
   Text,
   Tooltip,
 } from '@radix-ui/themes'
-
-import { RuleInstance, TestRule } from '@/types/rules'
-import { FilterField } from './FilterField'
-import { SelectorField } from './SelectorField'
-import { Label } from '@/components/Label'
 import { useFormContext } from 'react-hook-form'
+
 import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
-import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Label } from '@/components/Label'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { RuleInstance, TestRule } from '@/types/rules'
+
+import { FilterField } from './FilterField'
+import { SelectorField } from './SelectorField'
 
 const EXTRACTION_MODE_OPTIONS = [
   { value: 'single', label: 'First match' },

@@ -1,13 +1,15 @@
-import { FieldGroup, ControlledSelect } from '@/components/Form'
-import { Table } from '@/components/Table'
-import { LoadZoneData } from '@/types/testOptions'
+import { TrashIcon } from '@radix-ui/react-icons'
+import { IconButton, TextField } from '@radix-ui/themes'
 import {
   FieldArrayWithId,
   UseFieldArrayRemove,
   useFormContext,
 } from 'react-hook-form'
-import { IconButton, TextField } from '@radix-ui/themes'
-import { TrashIcon } from '@radix-ui/react-icons'
+
+import { FieldGroup, ControlledSelect } from '@/components/Form'
+import { Table } from '@/components/Table'
+import { LoadZoneData } from '@/types/testOptions'
+
 import { LOAD_ZONES_REGIONS_OPTIONS } from './LoadZones.utils'
 
 type LoadZoneRowProps = {

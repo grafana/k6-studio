@@ -1,3 +1,8 @@
+import { Process } from '@puppeteer/browsers'
+import * as Sentry from '@sentry/electron/main'
+import { ChildProcessWithoutNullStreams } from 'child_process'
+import { watch, FSWatcher } from 'chokidar'
+import { COPYFILE_EXCL } from 'constants'
 import {
   app,
   BrowserWindow,
@@ -6,6 +11,10 @@ import {
   nativeTheme,
   shell,
 } from 'electron'
+import log from 'electron-log/main'
+import eventEmitter from 'events'
+import find from 'find-process'
+import { existsSync } from 'fs'
 import {
   access,
   copyFile,
@@ -16,16 +25,13 @@ import {
   readFile,
   stat,
 } from 'fs/promises'
-import { updateElectronApp } from 'update-electron-app'
 import path from 'path'
-import eventEmitter from 'events'
-import { Process } from '@puppeteer/browsers'
-import { watch, FSWatcher } from 'chokidar'
+import invariant from 'tiny-invariant'
+import kill from 'tree-kill'
+import { updateElectronApp } from 'update-electron-app'
 
-import { launchProxy, type ProxyProcess } from './proxy'
 import { getBrowserPath, launchBrowser } from './browser'
-import { runScript, showScriptSelectDialog, type K6Process } from './script'
-import { setupProjectStructure } from './utils/workspace'
+import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
 import {
   DATA_FILES_PATH,
   GENERATORS_PATH,
@@ -34,23 +40,12 @@ import {
   TEMP_GENERATOR_SCRIPT_PATH,
   TEMP_SCRIPT_SUFFIX,
 } from './constants/workspace'
-import {
-  sendToast,
-  findOpenPort,
-  getAppIcon,
-  getPlatform,
-  browserWindowFromEvent,
-} from './utils/electron'
-import invariant from 'tiny-invariant'
-import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
-import { HarWithOptionalResponse } from './types/har'
-import { GeneratorFileData } from './types/generator'
-import kill from 'tree-kill'
-import find from 'find-process'
+import * as handlers from './handlers'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
-import log from 'electron-log/main'
-import { sendReport } from './usageReport'
-import { AppSettings } from './types/settings'
+import { configureApplicationMenu } from './menu'
+import { launchProxy, type ProxyProcess } from './proxy'
+import { GeneratorFileDataSchema } from './schemas/generator'
+import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import {
   defaultSettings,
   getSettings,
@@ -60,18 +55,22 @@ import {
   selectUpstreamCertificate,
 } from './settings'
 import { ProxyStatus, StudioFile } from './types'
-import { configureApplicationMenu } from './menu'
-import * as Sentry from '@sentry/electron/main'
-import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
+import { GeneratorFileData } from './types/generator'
+import { HarWithOptionalResponse } from './types/har'
+import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
+import { sendReport } from './usageReport'
 import { parseDataFile } from './utils/dataFile'
+import {
+  sendToast,
+  findOpenPort,
+  getAppIcon,
+  getPlatform,
+  browserWindowFromEvent,
+} from './utils/electron'
 import { createNewGeneratorFile } from './utils/generator'
-import { GeneratorFileDataSchema } from './schemas/generator'
-import { ChildProcessWithoutNullStreams } from 'child_process'
-import { COPYFILE_EXCL } from 'constants'
-
-import * as handlers from './handlers'
-import { existsSync } from 'fs'
+import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
+import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates

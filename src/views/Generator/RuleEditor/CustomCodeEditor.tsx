@@ -1,9 +1,10 @@
 import { Box, Grid } from '@radix-ui/themes'
+import { Controller, useFormContext } from 'react-hook-form'
+
+import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { CodeEditor } from '@/components/Monaco/CodeEditor'
 
 import { FilterField } from './FilterField'
-import { CodeEditor } from '@/components/Monaco/CodeEditor'
-import { Controller, useFormContext } from 'react-hook-form'
-import { ControlledSelect, FieldGroup } from '@/components/Form'
 
 const PLACEMENT_OPTIONS = [
   { value: 'before', label: 'Before matched requests' },

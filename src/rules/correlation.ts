@@ -1,3 +1,10 @@
+import { cloneDeep, escapeRegExp, isEqual } from 'lodash-es'
+
+import {
+  createProxyData,
+  createRequest,
+  createResponse,
+} from '@/test/factories/proxyData'
 import { ProxyData, RequestSnippetSchema, Response, Request } from '@/types'
 import {
   CorrelationRule,
@@ -8,21 +15,16 @@ import {
   CorrelationRuleInstance,
   HeaderNameSelector,
 } from '@/types/rules'
-import { cloneDeep, escapeRegExp, isEqual } from 'lodash-es'
+import { exhaustive } from '@/utils/typescript'
+
+import { replaceCorrelatedValues } from './correlation.utils'
+import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
 import {
   canonicalHeaderKey,
   matchFilter,
   generateSequentialInt,
   isJsonReqResp,
 } from './utils'
-import { exhaustive } from '@/utils/typescript'
-import { replaceCorrelatedValues } from './correlation.utils'
-import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
-import {
-  createProxyData,
-  createRequest,
-  createResponse,
-} from '@/test/factories/proxyData'
 
 type IdGenerator = Generator<number, number, number>
 

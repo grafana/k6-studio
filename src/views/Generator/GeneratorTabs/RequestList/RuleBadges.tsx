@@ -1,7 +1,8 @@
-import { ProxyData } from '@/types'
-import { RuleInstance } from '@/types/rules'
 import { Badge, Flex, Strong } from '@radix-ui/themes'
 import { useMemo } from 'react'
+
+import { ProxyData } from '@/types'
+import { RuleInstance } from '@/types/rules'
 
 export function RuleBadges({
   selectedRuleInstance,

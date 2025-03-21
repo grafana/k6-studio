@@ -1,8 +1,3 @@
-import { Table } from '@/components/Table'
-import { useImportDataFile } from '@/hooks/useImportDataFile'
-import { useGeneratorStore } from '@/store/generator'
-import { useStudioUIStore } from '@/store/ui'
-import { DataFile } from '@/types/testData'
 import { css } from '@emotion/react'
 import {
   ExclamationTriangleIcon,
@@ -19,6 +14,12 @@ import {
   Text,
   Tooltip,
 } from '@radix-ui/themes'
+
+import { Table } from '@/components/Table'
+import { useImportDataFile } from '@/hooks/useImportDataFile'
+import { useGeneratorStore } from '@/store/generator'
+import { useStudioUIStore } from '@/store/ui'
+import { DataFile } from '@/types/testData'
 
 export function DataFiles() {
   const selectedFiles = useGeneratorStore((store) => store.files)

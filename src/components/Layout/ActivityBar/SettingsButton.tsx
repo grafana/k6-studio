@@ -1,6 +1,7 @@
-import { useStudioUIStore } from '@/store/ui'
 import { GearIcon } from '@radix-ui/react-icons'
 import { Tooltip, IconButton } from '@radix-ui/themes'
+
+import { useStudioUIStore } from '@/store/ui'
 
 export function SettingsButton() {
   const openSettingsDialog = useStudioUIStore(

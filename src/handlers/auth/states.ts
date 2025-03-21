@@ -1,5 +1,11 @@
+import { shell } from 'electron'
+import { EventEmitter } from 'node:events'
+import { ClientError } from 'openid-client'
+
+import { Profile, StackInfo } from '@/schemas/profile'
 import { fetchStacks } from '@/services/grafana'
 import { authenticate, GrantedResult } from '@/services/grafana/authenticate'
+import { fetchPersonalToken } from '@/services/k6'
 import {
   RetryLoginResponse,
   SelectStackResponse,
@@ -7,14 +13,11 @@ import {
   SignInResult,
   Stack,
 } from '@/types/auth'
-import { shell } from 'electron'
-import { waitFor } from '../utils'
-import { fetchPersonalToken } from '@/services/k6'
-import { getProfileData, saveProfileData } from './fs'
-import { Profile, StackInfo } from '@/schemas/profile'
-import { ClientError } from 'openid-client'
-import { EventEmitter } from 'node:events'
 import { exhaustive } from '@/utils/typescript'
+
+import { waitFor } from '../utils'
+
+import { getProfileData, saveProfileData } from './fs'
 import { AuthHandler } from './types'
 
 interface AuthorizingState {

@@ -1,5 +1,7 @@
 import { Flex } from '@radix-ui/themes'
+
 import { UnexpectedErrorState } from '@/types/auth'
+
 import { AuthenticationMessage } from './AuthenticationMessage'
 
 interface UnexpectedErrorProps {

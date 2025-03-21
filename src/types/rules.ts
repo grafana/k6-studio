@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Request, ProxyData, RequestSnippetSchema } from '@/types'
+
 import {
   BeginEndSelectorSchema,
   CorrelationExtractorSchema,
@@ -23,6 +23,7 @@ import {
   VariableValueSchema,
   VerificationRuleSchema,
 } from '@/schemas/generator'
+import { Request, ProxyData, RequestSnippetSchema } from '@/types'
 
 interface BaseRuleState {
   matchedRequestIds: string[]

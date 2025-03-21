@@ -1,4 +1,5 @@
 import { InitializingState } from '@/types/auth'
+
 import { LoadingMessage } from '../LoadingMessage'
 
 interface InitializingProps {

@@ -1,7 +1,8 @@
-import { useGeneratorStore } from '@/store/generator'
-import { Callout, Text } from '@radix-ui/themes'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
+import { Callout, Text } from '@radix-ui/themes'
+
 import { TextButton } from '@/components/TextButton'
+import { useGeneratorStore } from '@/store/generator'
 
 export function RulesNotAppliedCallout() {
   const previewOriginalRequests = useGeneratorStore(

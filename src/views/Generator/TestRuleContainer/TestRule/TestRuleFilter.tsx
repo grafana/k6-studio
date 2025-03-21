@@ -1,8 +1,8 @@
+import { css } from '@emotion/react'
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import { Badge, Code, Tooltip } from '@radix-ui/themes'
 
 import { Filter } from '@/types/rules'
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons'
-import { css } from '@emotion/react'
 
 interface TestRuleFilterProps {
   filter: Filter

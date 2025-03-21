@@ -1,9 +1,10 @@
-import { getArch, getPlatform } from '@/utils/electron'
-import { app } from 'electron'
-import { z } from 'zod'
-import path from 'path'
 import { spawn } from 'child_process'
+import { app } from 'electron'
+import path from 'path'
 import readline from 'readline/promises'
+import { z } from 'zod'
+
+import { getArch, getPlatform } from '@/utils/electron'
 
 const TestOptionsSchema = z.object({
   cloud: z

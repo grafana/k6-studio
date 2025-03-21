@@ -1,8 +1,10 @@
 import { z } from 'zod'
+
+import { exhaustive } from '../../utils/typescript'
+
 import * as v0 from './v0'
 import * as v1 from './v1'
 import * as v2 from './v2'
-import { exhaustive } from '../../utils/typescript'
 
 const AnyGeneratorSchema = z.discriminatedUnion('version', [
   v0.GeneratorFileDataSchema,

@@ -1,5 +1,5 @@
 import { escapeRegExp, get, set } from 'lodash-es'
-import { safeJsonParse } from '@/utils/json'
+
 import { Header, Request, Cookie } from '@/types'
 import {
   BeginEndSelector,
@@ -8,9 +8,11 @@ import {
   RegexSelector,
   ReplacerSelector,
 } from '@/types/rules'
-import { canonicalHeaderKey, isJsonReqResp } from './utils'
+import { safeJsonParse } from '@/utils/json'
 import { exhaustive } from '@/utils/typescript'
+
 import { replaceText } from './selectors/text'
+import { canonicalHeaderKey, isJsonReqResp } from './utils'
 
 export function replaceRequestValues({
   selector,

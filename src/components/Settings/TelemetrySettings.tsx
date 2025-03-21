@@ -1,8 +1,11 @@
 import { Flex, Text, Checkbox } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
-import { SettingsSection } from './SettingsSection'
+
 import { AppSettings } from '@/types/settings'
+
 import { ExternalLink } from '../ExternalLink'
+
+import { SettingsSection } from './SettingsSection'
 
 export const TelemetrySettings = () => {
   const { control, register } = useFormContext<AppSettings>()

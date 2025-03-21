@@ -1,12 +1,12 @@
-import { Box, Button, Dialog, Flex, Spinner } from '@radix-ui/themes'
 import { css } from '@emotion/react'
+import { Box, Button, Dialog, Flex, Spinner } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 
+import { EmptyMessage } from '@/components/EmptyMessage'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
 import { ValidatorContent } from '@/views/Validator/ValidatorContent'
-import { useRunChecks } from '@/hooks/useRunChecks'
-import { EmptyMessage } from '@/components/EmptyMessage'
 
 interface ValidatorDialogProps {
   script: string

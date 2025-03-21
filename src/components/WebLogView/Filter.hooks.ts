@@ -1,11 +1,13 @@
-import { ProxyData } from '@/types'
-import { withMatches } from '@/utils/fuse'
-import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import Fuse, { FuseOptionKey } from 'fuse.js'
 import { useState, useMemo } from 'react'
 import { useDebounce, useLocalStorage } from 'react-use'
-import { parseParams } from './RequestDetails/utils'
+
+import { ProxyData } from '@/types'
+import { withMatches } from '@/utils/fuse'
 import { getContentType } from '@/utils/headers'
+import { isNonStaticAssetResponse } from '@/utils/staticAssets'
+
+import { parseParams } from './RequestDetails/utils'
 import { parseContent, toFormat } from './ResponseDetails/ResponseDetails.utils'
 
 export function useFilterRequests({

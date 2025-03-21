@@ -1,6 +1,7 @@
-import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { Tooltip, Table, Text } from '@radix-ui/themes'
 import { ComponentProps, useRef } from 'react'
+
+import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 
 export function TableCellWithTooltip({
   children,

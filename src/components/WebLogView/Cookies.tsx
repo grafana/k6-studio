@@ -1,8 +1,9 @@
 import { DataList, Flex } from '@radix-ui/themes'
 
 import { Cookie } from '@/types'
-import { HighlightedText } from '../HighlightedText'
 import { SearchMatch } from '@/types/fuse'
+
+import { HighlightedText } from '../HighlightedText'
 
 export function Cookies({
   cookies = [],

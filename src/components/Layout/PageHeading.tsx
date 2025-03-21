@@ -1,7 +1,8 @@
-import { Flex, Heading, Tooltip } from '@radix-ui/themes'
 import { css } from '@emotion/react'
 import { DividerVerticalIcon } from '@radix-ui/react-icons'
+import { Flex, Heading, Tooltip } from '@radix-ui/themes'
 import { PropsWithChildren, ReactNode, useRef } from 'react'
+
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 
 interface PageHeadingProps {

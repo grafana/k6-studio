@@ -1,11 +1,12 @@
 import { app, dialog, BrowserWindow } from 'electron'
-import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import { readFile, writeFile, unlink } from 'fs/promises'
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'path'
 import readline from 'readline/promises'
+
+import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from './constants/workspace'
 import { K6Check, K6Log } from './types'
 import { getArch, getPlatform } from './utils/electron'
-import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from './constants/workspace'
 
 export type K6Process = ChildProcessWithoutNullStreams
 

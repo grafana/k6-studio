@@ -1,14 +1,15 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin'
+import * as dotenv from 'dotenv'
 import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig, mergeConfig } from 'vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
 import {
   getBuildConfig,
   getBuildDefine,
   external,
   pluginHotRestart,
 } from './vite.base.config'
-import { sentryVitePlugin } from '@sentry/vite-plugin'
-import * as dotenv from 'dotenv'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 function getDotEnv(defaults: Record<string, string>) {
   const env = {

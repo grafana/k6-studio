@@ -1,6 +1,6 @@
 import { Button, Dialog, Flex, Switch, Text } from '@radix-ui/themes'
-import useKonami from 'use-konami'
 import { useState } from 'react'
+import useKonami from 'use-konami'
 
 import { useFeaturesStore } from '@/store/features'
 import { Feature } from '@/types/features'

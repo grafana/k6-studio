@@ -2,12 +2,13 @@ import { Box, Table } from '@radix-ui/themes'
 
 import { ProxyDataWithMatches } from '@/types'
 
+import { HighlightedText } from '../HighlightedText'
 import { MethodBadge } from '../MethodBadge'
 import { ResponseStatusBadge } from '../ResponseStatusBadge'
 import { TableCellWithTooltip } from '../TableCellWithTooltip'
-import { HighlightedText } from '../HighlightedText'
-import { getRequestType } from './WebLogView.utils'
+
 import { SearchResults } from './SearchResults'
+import { getRequestType } from './WebLogView.utils'
 
 export interface RowProps {
   data: ProxyDataWithMatches

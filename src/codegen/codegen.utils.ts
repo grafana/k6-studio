@@ -1,7 +1,8 @@
 import { flow } from 'lodash-es'
+
+import { canonicalHeaderKey } from '@/rules/utils'
 import { ProxyData } from '@/types'
 import { getLocationHeader, getUpgradeHeader } from '@/utils/headers'
-import { canonicalHeaderKey } from '@/rules/utils'
 
 const HEADERS_TO_EXCLUDE = ['Cookie', 'User-Agent', 'Host', 'Content-Length']
 

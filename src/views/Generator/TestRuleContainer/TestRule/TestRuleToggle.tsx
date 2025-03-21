@@ -1,5 +1,6 @@
-import { useGeneratorStore } from '@/store/generator'
 import { Switch, Tooltip } from '@radix-ui/themes'
+
+import { useGeneratorStore } from '@/store/generator'
 
 interface TestRuleToggleProps {
   ruleId: string

@@ -1,7 +1,8 @@
-import { Flex, TextField, Button } from '@radix-ui/themes'
-import { FieldGroup } from './FieldGroup'
-import { Controller, FieldErrors } from 'react-hook-form'
 import { css } from '@emotion/react'
+import { Flex, TextField, Button } from '@radix-ui/themes'
+import { Controller, FieldErrors } from 'react-hook-form'
+
+import { FieldGroup } from './FieldGroup'
 
 type FileUploadInputProps = {
   name: string

@@ -1,7 +1,9 @@
 import { renderHook } from '@testing-library/react'
-import { useTheme } from './useTheme'
 import { describe, expect, it } from 'vitest'
+
 import { mockMatchMedia } from '@/test/utils/mockMatchMedia'
+
+import { useTheme } from './useTheme'
 
 describe('useTheme', () => {
   it('should return "light" when the media query does not match', () => {

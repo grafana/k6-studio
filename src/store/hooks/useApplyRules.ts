@@ -1,6 +1,8 @@
-import { applyRules } from '@/rules/rules'
-import { selectFilteredRequests, useGeneratorStore } from '../generator'
 import { useMemo } from 'react'
+
+import { applyRules } from '@/rules/rules'
+
+import { selectFilteredRequests, useGeneratorStore } from '../generator'
 
 export function useApplyRules() {
   const rules = useGeneratorStore((state) => state.rules)

@@ -1,10 +1,11 @@
+import { z } from 'zod'
+
 import {
   AppSettingsSchema,
   ProxySettingsSchema,
   RecorderSettingsSchema,
   TelemetrySchema,
 } from '@/schemas/settings'
-import { z } from 'zod'
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>
 export type ProxySettings = z.infer<typeof ProxySettingsSchema>

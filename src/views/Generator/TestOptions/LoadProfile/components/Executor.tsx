@@ -1,7 +1,8 @@
+import { useFormContext } from 'react-hook-form'
+
 import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
-import { useFormContext } from 'react-hook-form'
 
 const EXECUTOR_LABEL_MAP: Record<
   LoadProfileExecutorOptions['executor'],

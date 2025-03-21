@@ -1,6 +1,7 @@
-import { Feature } from '@/types/features'
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
+
+import { Feature } from '@/types/features'
 
 interface FeaturesStore {
   features: Record<Feature, boolean>

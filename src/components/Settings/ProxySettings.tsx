@@ -1,11 +1,13 @@
-import { FieldGroup } from '@/components/Form'
-import { stringAsNumber } from '@/utils/form'
 import { Flex, Text, TextField, Checkbox } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
-import { UpstreamProxySettings } from './UpstreamProxySettings'
-import { SettingsSection } from './SettingsSection'
+
+import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { AppSettings } from '@/types/settings'
+import { stringAsNumber } from '@/utils/form'
+
+import { SettingsSection } from './SettingsSection'
+import { UpstreamProxySettings } from './UpstreamProxySettings'
 
 const modeOptions = [
   {

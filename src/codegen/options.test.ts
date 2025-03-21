@@ -1,18 +1,19 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  generateCloudOptions,
-  generateOptions,
-  generateThresholds,
-} from './options'
+import { createLoadZone } from '@/test/factories/loadZones'
+import { createThreshold } from '@/test/factories/threshold'
 import {
   LoadProfileExecutorOptions,
   LoadZoneData,
   TestOptions,
   Threshold,
 } from '@/types/testOptions'
-import { createThreshold } from '@/test/factories/threshold'
-import { createLoadZone } from '@/test/factories/loadZones'
+
+import {
+  generateCloudOptions,
+  generateOptions,
+  generateThresholds,
+} from './options'
 
 describe('Code generation - options', () => {
   it('should generate load profile for shared-iterations executor', () => {

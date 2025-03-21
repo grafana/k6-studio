@@ -1,16 +1,19 @@
-import { RunInCloudState } from '@/components/RunInCloudDialog/states/types'
-import { exhaustive } from '@/utils/typescript'
 import { EventEmitter } from 'events'
-import { getProfileData } from '../auth/fs'
-import { waitFor } from '../utils'
-import { CloudHandlers, RunInCloudResult } from './types'
-import { StackInfo } from '@/schemas/profile'
-import { K6Client } from '@/utils/k6Client'
+
+import { RunInCloudState } from '@/components/RunInCloudDialog/states/types'
 import { TEMP_K6_ARCHIVE_PATH } from '@/constants/workspace'
+import { StackInfo } from '@/schemas/profile'
 import { ProjectClient } from '@/services/k6/projects'
 import { TestClient } from '@/services/k6/tests'
 import { CloudCredentials } from '@/services/k6/types'
 import { isAbortError } from '@/utils/errors'
+import { K6Client } from '@/utils/k6Client'
+import { exhaustive } from '@/utils/typescript'
+
+import { getProfileData } from '../auth/fs'
+import { waitFor } from '../utils'
+
+import { CloudHandlers, RunInCloudResult } from './types'
 
 interface InitializingState {
   type: 'initializing'

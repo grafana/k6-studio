@@ -1,16 +1,17 @@
 import { Flex, ScrollArea } from '@radix-ui/themes'
 import { useShallowCompareEffect } from 'react-use'
 
+import { EmptyMessage } from '@/components/EmptyMessage'
 import { WebLogView } from '@/components/WebLogView'
-import { ProxyData } from '@/types'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { useStudioUIStore } from '@/store/ui'
 import { useGeneratorStore } from '@/store/generator'
-import { EmptyMessage } from '@/components/EmptyMessage'
-import { validateRecording } from './RequestList.utils'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { useStudioUIStore } from '@/store/ui'
+import { ProxyData } from '@/types'
+
 import { Header } from './Header'
+import { validateRecording } from './RequestList.utils'
 import { RequestTable } from './RequestTable'
 
 interface RequestListProps {

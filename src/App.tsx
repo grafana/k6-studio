@@ -1,5 +1,5 @@
-import { Theme } from '@radix-ui/themes'
 import { Global } from '@emotion/react'
+import { Theme } from '@radix-ui/themes'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { enableMapSet } from 'immer'
 
@@ -9,8 +9,9 @@ import { Toasts } from '@/components/Toast/Toasts'
 import { useCloseSplashScreen } from '@/hooks/useCloseSplashScreen'
 import { useTheme } from '@/hooks/useTheme'
 import { queryClient } from '@/utils/query'
-import { globalStyles } from './globalStyles'
+
 import { AppRoutes } from './AppRoutes'
+import { globalStyles } from './globalStyles'
 
 enableMapSet()
 

@@ -1,8 +1,10 @@
 import { z } from 'zod'
+
+import * as v2 from '../v2'
+
 import { TestRuleSchema } from './rules'
 import { TestDataSchema } from './testData'
 import { TestOptionsSchema } from './testOptions'
-import * as v2 from '../v2'
 
 export const GeneratorFileDataSchema = z.object({
   version: z.literal('1.0'),

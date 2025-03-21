@@ -1,20 +1,22 @@
 import { css } from '@emotion/react'
-import { Box, IconButton, TextField } from '@radix-ui/themes'
+import styled from '@emotion/styled'
+import { ErrorMessage } from '@hookform/error-message'
 import {
   CheckIcon,
   Cross1Icon,
   CrossCircledIcon,
   Pencil1Icon,
 } from '@radix-ui/react-icons'
+import { Box, IconButton, TextField } from '@radix-ui/themes'
 import { KeyboardEvent, MouseEvent, useRef } from 'react'
-import { Group as GroupType } from '@/types'
 import { useForm } from 'react-hook-form'
-import { FieldError } from '../Form'
-import { mergeRefs } from '@/utils/react'
-import { ErrorMessage } from '@hookform/error-message'
-import { Collapsible } from '../Collapsible'
-import styled from '@emotion/styled'
 import { useClickAway } from 'react-use'
+
+import { Group as GroupType } from '@/types'
+import { mergeRefs } from '@/utils/react'
+
+import { Collapsible } from '../Collapsible'
+import { FieldError } from '../Form'
 
 interface GroupProps {
   group: GroupType
