@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
@@ -9,6 +10,7 @@ import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
+import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { useScriptPath } from './Validator.hooks'
@@ -31,6 +33,15 @@ export function Validator() {
   const showToast = useToast()
 
   const { proxyData, resetProxyData } = useListenProxyData()
+
+  const file: StudioFile | undefined =
+    !isExternal && scriptPath
+      ? {
+          type: 'script',
+          fileName: scriptPath,
+          displayName: getFileNameWithoutExtension(scriptPath),
+        }
+      : undefined
 
   const handleSelectExternalScript = useCallback(async () => {
     const externalScriptPath =
@@ -62,15 +73,11 @@ export function Validator() {
   }, [scriptPath, isExternal])
 
   async function handleDeleteScript() {
-    if (isExternal || !scriptPath) {
+    if (!file) {
       return
     }
 
-    await window.studio.ui.deleteFile({
-      type: 'script',
-      fileName: scriptPath,
-      displayName: getFileNameWithoutExtension(scriptPath),
-    })
+    await window.studio.ui.deleteFile(file)
     navigate(getRoutePath('home'))
   }
 
@@ -130,7 +137,7 @@ export function Validator() {
   return (
     <View
       title="Validator"
-      subTitle={getFileNameWithoutExtension(scriptPath ?? '')}
+      subTitle={file ? <FileNameHeader file={file} /> : null}
       actions={
         <ValidatorControls
           isRunning={isRunning}
