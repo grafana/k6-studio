@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 
-import { TestRule } from '@/types/rules'
+import { RuleInstance, TestRule } from '@/types/rules'
 import { FilterField } from './FilterField'
 import { SelectorField } from './SelectorField'
 import { Label } from '@/components/Label'
@@ -19,7 +19,6 @@ import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
-import invariant from 'tiny-invariant'
 
 const EXTRACTION_MODE_OPTIONS = [
   { value: 'single', label: 'First match' },
@@ -29,11 +28,6 @@ const EXTRACTION_MODE_OPTIONS = [
 export function CorrelationEditor() {
   const { selectedRuleInstance } = useApplyRules()
 
-  invariant(
-    selectedRuleInstance?.type === 'correlation',
-    'Selected rule instance is not a correlation rule'
-  )
-
   const {
     setValue,
     watch,
@@ -41,7 +35,6 @@ export function CorrelationEditor() {
     formState: { errors },
   } = useFormContext<TestRule>()
 
-  const { extractedValue } = selectedRuleInstance.state
   const replacer = watch('replacer')
 
   const isCustomReplacerSelector = !!replacer?.selector
@@ -88,19 +81,7 @@ export function CorrelationEditor() {
             }
           />
         </FieldGroup>
-        {extractedValue && (
-          <Text size="2">
-            <Text color="gray">Extracted value:</Text>{' '}
-            <pre>
-              <Code>{JSON.stringify(extractedValue, null, 2)}</Code>
-            </pre>
-          </Text>
-        )}
-        {!extractedValue && (
-          <Text size="2" color="gray">
-            The rule does not match any requests
-          </Text>
-        )}
+        <ExtractedValue selectedRuleInstance={selectedRuleInstance} />
       </Box>
       <Separator orientation="vertical" size="4" decorative />
       <Box>
@@ -142,6 +123,34 @@ export function CorrelationEditor() {
         </>
       </Box>
     </Grid>
+  )
+}
+
+function ExtractedValue({
+  selectedRuleInstance,
+}: {
+  selectedRuleInstance?: RuleInstance
+}) {
+  if (selectedRuleInstance?.type !== 'correlation') {
+    return null
+  }
+
+  const extractedValue = selectedRuleInstance?.state?.extractedValue
+
+  if (!extractedValue) {
+    return (
+      <Text size="2" color="gray">
+        The rule does not match any requests
+      </Text>
+    )
+  }
+  return (
+    <Text size="2">
+      <Text color="gray">Extracted value:</Text>{' '}
+      <pre>
+        <Code>{JSON.stringify(extractedValue, null, 2)}</Code>
+      </pre>
+    </Text>
   )
 }
 

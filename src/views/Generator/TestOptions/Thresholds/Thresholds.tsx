@@ -2,12 +2,13 @@ import { ThresholdDataSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Text, Link as RadixLink } from '@radix-ui/themes'
+import { Button, Text } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form'
 import { ThresholdRow } from './ThresholdRow'
 import { Table } from '@/components/Table'
 import { Threshold, ThresholdData } from '@/types/testOptions'
+import { ExternalLink } from '@/components/ExternalLink'
 
 export function Thresholds() {
   const thresholds = useGeneratorStore((store) => store.thresholds)
@@ -27,13 +28,6 @@ export function Thresholds() {
     control,
     name: 'thresholds',
   })
-
-  const handleOpenDocs = (event: React.MouseEvent) => {
-    event.preventDefault()
-    return window.studio.browser.openExternalLink(
-      'https://grafana.com/docs/k6/latest/using-k6/thresholds'
-    )
-  }
 
   function handleAddThreshold(event: React.MouseEvent) {
     event.preventDefault()
@@ -67,9 +61,9 @@ export function Thresholds() {
         <Text size="2" as="p" mb="4">
           Define pass/fail criteria for your test metrics across all URLs. Learn
           more about thresholds in the{' '}
-          <RadixLink href="" onClick={handleOpenDocs}>
+          <ExternalLink href="https://grafana.com/docs/k6/latest/using-k6/thresholds">
             docs
-          </RadixLink>
+          </ExternalLink>
           .
         </Text>
         <Table.Root size="1" variant="surface" layout="fixed">
