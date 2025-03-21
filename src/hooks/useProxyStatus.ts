@@ -1,5 +1,6 @@
-import { useStudioUIStore } from '@/store/ui'
 import { useEffect } from 'react'
+
+import { useStudioUIStore } from '@/store/ui'
 
 export function useProxyStatus() {
   const status = useStudioUIStore((state) => state.proxyStatus)

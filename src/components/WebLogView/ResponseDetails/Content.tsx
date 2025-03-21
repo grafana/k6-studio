@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
 import { Box, Flex, ScrollArea, SegmentedControl } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 
+import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
+
+import { useGoToContentMatch } from '../Details.hooks'
+
 import { Preview } from './Preview'
 import { Raw } from './Raw'
 import { parseContent, toFormat } from './ResponseDetails.utils'
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
-import { useGoToContentMatch } from '../Details.hooks'
 
 export function Content({ data }: { data: ProxyData }) {
   const [selectedTab, setSelectedTab] = useState('content')

@@ -1,7 +1,8 @@
-import { Filter } from '@/types/rules'
-import { Response, Request } from '@/types'
-import { getHeaderValues } from '@/utils/headers'
 import { escapeRegExp } from 'lodash-es'
+
+import { Response, Request } from '@/types'
+import { Filter } from '@/types/rules'
+import { getHeaderValues } from '@/utils/headers'
 
 /**
  * Converts a header key to its canonical form.

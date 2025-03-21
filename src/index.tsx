@@ -1,6 +1,7 @@
-import { createRoot } from 'react-dom/client'
-import { App } from './App'
 import log from 'electron-log/renderer'
+import { createRoot } from 'react-dom/client'
+
+import { App } from './App'
 
 log.errorHandler.startCatching()
 

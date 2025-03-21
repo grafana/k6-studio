@@ -1,14 +1,15 @@
 import { app, BrowserWindow } from 'electron'
-import path from 'path'
-import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
-import { getPlatform, getArch } from './utils/electron'
-import forge from 'node-forge'
-import { readFile } from 'fs/promises'
-import { ProxyData } from './types'
-import readline from 'readline/promises'
-import { safeJsonParse } from './utils/json'
 import log from 'electron-log/main'
+import { readFile } from 'fs/promises'
+import forge from 'node-forge'
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
+import path from 'path'
+import readline from 'readline/promises'
+
+import { ProxyData } from './types'
 import { ProxySettings } from './types/settings'
+import { getPlatform, getArch } from './utils/electron'
+import { safeJsonParse } from './utils/json'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 

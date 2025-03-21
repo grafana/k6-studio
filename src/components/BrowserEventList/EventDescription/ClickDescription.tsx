@@ -1,6 +1,8 @@
+import { Kbd } from '@radix-ui/themes'
+
 import { ClickedEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
-import { Kbd } from '@radix-ui/themes'
+
 import { Selector } from './Selector'
 
 function getModifierKeys(modifiers: ClickedEvent['modifiers']) {

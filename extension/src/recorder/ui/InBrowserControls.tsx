@@ -1,9 +1,10 @@
-import { ToolBox } from './ToolBox'
-import { ElementInspector } from './ElementInspector'
-import { RemoteHighlights } from './RemoteHighlights'
-import { useInBrowserUIStore } from './store'
-import { EventDrawer } from './EventDrawer'
 import { useState } from 'react'
+
+import { ElementInspector } from './ElementInspector'
+import { EventDrawer } from './EventDrawer'
+import { RemoteHighlights } from './RemoteHighlights'
+import { ToolBox } from './ToolBox'
+import { useInBrowserUIStore } from './store'
 
 export function InBrowserControls() {
   const tool = useInBrowserUIStore((state) => state.tool)

@@ -1,4 +1,5 @@
 import { ProxyData, Response } from '@/types'
+
 import { safeAtob } from '../format'
 
 function parseResponse(response: Response): Response {

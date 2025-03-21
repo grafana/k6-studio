@@ -1,7 +1,9 @@
 import { Box, Grid, Separator, Text } from '@radix-ui/themes'
-import { ValueEditor } from './ValueEditor'
+
 import { FilterField } from '../FilterField'
 import { SelectorField } from '../SelectorField'
+
+import { ValueEditor } from './ValueEditor'
 
 export function ParameterizationEditor() {
   return (

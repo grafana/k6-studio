@@ -1,12 +1,14 @@
 import { app, dialog } from 'electron'
+import log from 'electron-log/main'
+import { existsSync, readFileSync } from 'fs'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
-import { AppSettings } from './types/settings'
+
 import { AppSettingsSchema } from './schemas/settings'
-import { existsSync, readFileSync } from 'fs'
-import { safeJsonParse } from './utils/json'
-import log from 'electron-log/main'
+import { AppSettings } from './types/settings'
 import { getPlatform } from './utils/electron'
+import { safeJsonParse } from './utils/json'
+import { getExecutableNameFromPlist } from './utils/plist'
 
 export const defaultSettings: AppSettings = {
   version: '3.0',
@@ -131,11 +133,31 @@ export async function selectBrowserExecutable() {
     linux: ['*'],
   }
 
-  return dialog.showOpenDialog({
+  const { canceled, filePaths, bookmarks } = await dialog.showOpenDialog({
     title: 'Select browser executable',
     properties: ['openFile'],
     filters: [{ name: 'Executables', extensions: extensions[getPlatform()] }],
   })
+
+  function getFilePaths() {
+    if (getPlatform() === 'mac') {
+      return filePaths.map((filePath) => {
+        const plistPath = path.join(filePath, 'Contents', 'Info.plist')
+        const executableName = getExecutableNameFromPlist(plistPath)
+        if (executableName) {
+          return path.join(filePath, 'Contents', 'MacOS', executableName)
+        }
+        return filePath
+      })
+    }
+    return filePaths
+  }
+
+  return {
+    canceled,
+    bookmarks,
+    filePaths: getFilePaths(),
+  }
 }
 
 export async function selectUpstreamCertificate() {

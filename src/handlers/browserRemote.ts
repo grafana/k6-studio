@@ -1,7 +1,9 @@
 import { ipcMain } from 'electron'
-import { BrowserRemoteHandlers } from './browserRemote.types'
-import { BrowserServer } from '@/services/browser/server'
 import _ from 'lodash'
+
+import { BrowserServer } from '@/services/browser/server'
+
+import { BrowserRemoteHandlers } from './browserRemote.types'
 
 export function initialize(browserServer: BrowserServer) {
   ipcMain.on(

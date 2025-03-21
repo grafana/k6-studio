@@ -1,6 +1,8 @@
-import { BrowserEvent } from '@/schemas/recording'
 import { css } from '@emotion/react'
 import { Flex, Table } from '@radix-ui/themes'
+
+import { BrowserEvent } from '@/schemas/recording'
+
 import { EventDescription } from './EventDescription'
 import { EventIcon } from './EventIcon'
 

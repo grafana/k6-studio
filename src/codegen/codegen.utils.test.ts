@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  mergeRedirects,
-  stringify,
-  removeWebsocketRequests,
-} from './codegen.utils'
-import {
   createRequest,
   createResponse,
   createProxyData,
 } from '@/test/factories/proxyData'
+
+import {
+  mergeRedirects,
+  stringify,
+  removeWebsocketRequests,
+} from './codegen.utils'
 
 describe('Code generation - utils', () => {
   describe('stringify', () => {

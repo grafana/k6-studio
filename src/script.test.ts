@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, it, vi } from 'vitest'
+
 import { enhanceScript } from './script'
 
 const shims = {

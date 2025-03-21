@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Strong } from '@radix-ui/themes'
+
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 
 interface SelectorProps {

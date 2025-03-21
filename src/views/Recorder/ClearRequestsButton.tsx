@@ -1,5 +1,6 @@
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { AlertDialog, Button, Flex } from '@radix-ui/themes'
+
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 
 export function ClearRequestsButton({
   handleConfirm,
@@ -16,7 +17,7 @@ export function ClearRequestsButton({
           size="1"
           variant="surface"
           disabled={disabled}
-          tooltip="Remove all requests from the recording."
+          tooltip="Remove all requests from the recording"
         >
           Clear
         </ButtonWithTooltip>

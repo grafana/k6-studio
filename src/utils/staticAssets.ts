@@ -1,4 +1,5 @@
 import { ProxyData } from '@/types'
+
 import { getContentType } from './headers'
 
 export function isNonStaticAssetResponse(data: ProxyData) {

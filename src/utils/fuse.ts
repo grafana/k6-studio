@@ -1,5 +1,6 @@
-import { SearchMatch } from '@/types/fuse'
 import { FuseResult } from 'fuse.js'
+
+import { SearchMatch } from '@/types/fuse'
 
 type ResultWithMatch<T> = T & {
   matches: SearchMatch[]

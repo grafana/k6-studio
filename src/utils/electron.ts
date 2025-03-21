@@ -1,8 +1,9 @@
-import { AddToastPayload } from '@/types/toast'
-import { platform, arch } from 'os'
-import { app, nativeImage, WebContents } from 'electron'
+import { app, BrowserWindow, nativeImage, WebContents } from 'electron'
 import net from 'net'
+import { platform, arch } from 'os'
 import path from 'path'
+
+import { AddToastPayload } from '@/types/toast'
 
 type Platform = 'linux' | 'mac' | 'win'
 type Arch = 'arm64' | 'x86_64'
@@ -69,4 +70,16 @@ export function getAppIcon(isDev: boolean) {
     : path.join(process.resourcesPath, 'icons', 'logo.png')
 
   return nativeImage.createFromPath(iconPath)
+}
+
+export const browserWindowFromEvent = (
+  event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
+) => {
+  const browserWindow = BrowserWindow.fromWebContents(event.sender)
+
+  if (!browserWindow) {
+    throw new Error('failed to obtain browserWindow')
+  }
+
+  return browserWindow
 }

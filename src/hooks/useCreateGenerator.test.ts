@@ -1,10 +1,12 @@
-import { useNavigate } from 'react-router-dom'
-import { useCreateGenerator } from './useCreateGenerator'
-import { getRoutePath } from '@/routeMap'
-import { useToast } from '@/store/ui/useToast'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { act } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { getRoutePath } from '@/routeMap'
+import { useToast } from '@/store/ui/useToast'
+
+import { useCreateGenerator } from './useCreateGenerator'
 
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),

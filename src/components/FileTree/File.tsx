@@ -1,16 +1,18 @@
 import { css } from '@emotion/react'
-import { NavLink, useNavigate } from 'react-router-dom'
-
-import { FileActionsMenu, FileContextMenu } from './FileContextMenu'
-import { useRef } from 'react'
 import { Grid, Tooltip } from '@radix-ui/themes'
-import { useOverflowCheck } from '@/hooks/useOverflowCheck'
+import { useRef } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useBoolean } from 'react-use'
-import { InlineEditor } from './InlineEditor'
+
+import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { getViewPath } from '@/utils/file'
-import { FileItem } from './types'
+
 import { HighlightedText } from '../HighlightedText'
+
 import { useRenameFile } from './File.hooks'
+import { FileActionsMenu, FileContextMenu } from './FileContextMenu'
+import { InlineEditor } from './InlineEditor'
+import { FileItem } from './types'
 
 interface FileProps {
   file: FileItem
@@ -90,7 +92,7 @@ function EditableFile({
     setEditMode(false)
 
     if (isSelected) {
-      navigate(getViewPath(file.type, newFileName))
+      navigate(getViewPath(file.type, newFileName), { replace: true })
     }
   }
 

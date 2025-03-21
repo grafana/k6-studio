@@ -82,10 +82,16 @@ export interface Group {
 
 export type GroupedProxyData = Record<string, ProxyData[]>
 
+interface Check {
+  description: string
+  expression: string
+}
+
 export interface RequestSnippetSchema {
   data: ProxyData
   before: string[]
   after: string[]
+  checks: Check[]
 }
 
 export interface StudioFile {

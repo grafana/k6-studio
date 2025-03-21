@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
+import { K6Check } from '@/types'
+
 import {
   getPassPercentage,
   groupChecksByPath,
   hasFailures,
 } from './ChecksSection.utils'
-import { K6Check } from '@/types'
 
 function buildCheck(data?: Partial<K6Check>) {
   return {

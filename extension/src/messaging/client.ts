@@ -1,7 +1,9 @@
 import { z } from 'zod'
+
+import { EventEmitter } from '../utils/events'
+
 import { Sender, SenderSchema, Transport } from './transports/transport'
 import { BrowserExtensionMessage, BrowserExtensionMessageSchema } from './types'
-import { EventEmitter } from '../utils/events'
 
 const PingMessageSchema = z.object({
   type: z.literal('ping'),

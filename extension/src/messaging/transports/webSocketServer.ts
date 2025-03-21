@@ -1,5 +1,6 @@
-import { Transport } from './transport'
 import { WebSocketServer } from 'ws'
+
+import { Transport } from './transport'
 
 export class WebSocketServerTransport extends Transport {
   #server: WebSocketServer

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { migrate } from '.'
+
 import * as v1 from './v1'
 import * as v2 from './v2'
+
+import { migrate } from '.'
 
 describe('Settings migration', () => {
   it('should migrate from v1 to latest', () => {

@@ -1,4 +1,5 @@
 import { runtime, Runtime } from 'webextension-polyfill'
+
 import { Transport } from './transport'
 
 export class ContentScriptsTransport extends Transport {

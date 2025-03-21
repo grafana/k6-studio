@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+
 import { Tool } from './types'
 
 interface InBrowserUIStore {

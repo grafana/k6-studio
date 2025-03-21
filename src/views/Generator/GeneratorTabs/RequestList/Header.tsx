@@ -1,10 +1,11 @@
 import { Flex, Switch, Text } from '@radix-ui/themes'
+
 import { Filter } from '@/components/WebLogView/Filter'
+import { RecorderIcon } from '@/components/icons'
 import { useGeneratorStore } from '@/store/generator'
 import { getFileNameWithoutExtension } from '@/utils/file'
-import { RecorderIcon } from '@/components/icons'
 
-export function RequestListHeader({
+export function Header({
   filter,
   setFilter,
   filterAllData,

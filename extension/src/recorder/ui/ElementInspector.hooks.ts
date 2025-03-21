@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Bounds } from './types'
+
 import { generateSelector } from '../../selectors'
+
 import { useGlobalClass } from './hooks/useGlobalClass'
+import { Bounds } from './types'
 
 interface TrackedElement {
   selector: string

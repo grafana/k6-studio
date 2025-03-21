@@ -1,5 +1,6 @@
 import { Flex, FlexProps, Text } from '@radix-ui/themes'
 import { ReactNode } from 'react'
+
 import grotIllustration from '@/assets/grot.svg'
 
 const illustrations = {

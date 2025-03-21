@@ -1,10 +1,11 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin'
+import react from '@vitejs/plugin-react'
 import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { pluginExposeRenderer } from './vite.base.config'
 import tsconfigPaths from 'vite-tsconfig-paths'
+
 import { version } from './package.json'
-import { sentryVitePlugin } from '@sentry/vite-plugin'
+import { pluginExposeRenderer } from './vite.base.config'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {

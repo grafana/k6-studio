@@ -1,7 +1,8 @@
+import { jsonrepair } from 'jsonrepair'
+
 import { ProxyData } from '@/types'
 import { safeAtob, stringify } from '@/utils/format'
 import { getContentType } from '@/utils/headers'
-import { jsonrepair } from 'jsonrepair'
 
 export function parseParams(data: ProxyData) {
   const hasParams = data.request.query.length || data.request.content

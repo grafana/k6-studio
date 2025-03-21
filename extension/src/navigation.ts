@@ -1,5 +1,6 @@
-import { BrowserEvent } from '@/schemas/recording'
 import { WebNavigation, webNavigation } from 'webextension-polyfill'
+
+import { BrowserEvent } from '@/schemas/recording'
 
 function isReload({ transitionType }: WebNavigation.OnCommittedDetailsType) {
   return transitionType === 'reload'

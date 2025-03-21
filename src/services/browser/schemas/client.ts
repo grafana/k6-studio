@@ -1,5 +1,6 @@
-import { BrowserEventSchema } from '@/schemas/recording'
 import { z } from 'zod'
+
+import { BrowserEventSchema } from '@/schemas/recording'
 
 // Client messages
 export const EventsCapturedMessageSchema = z.object({

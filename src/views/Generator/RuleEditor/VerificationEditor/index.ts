@@ -1,0 +1,1 @@
+export { VerificationEditor } from './VerificationEditor'

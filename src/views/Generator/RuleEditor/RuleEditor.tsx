@@ -1,6 +1,5 @@
-import { useCallback, useEffect } from 'react'
-import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { ChevronLeftIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import {
   Box,
   Button,
@@ -9,17 +8,21 @@ import {
   Heading,
   ScrollArea,
 } from '@radix-ui/themes'
-import { ChevronLeftIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { capitalize, startCase } from 'lodash-es'
+import { useCallback, useEffect } from 'react'
+import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 
+import { TestRuleSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'
+import { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
+
+import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
+
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
-import { TestRule } from '@/types/rules'
-import { TestRuleSchema } from '@/schemas/generator'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
-import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
-import { capitalize, startCase } from 'lodash-es'
+import { VerificationEditor } from './VerificationEditor/VerificationEditor'
 
 export function RuleEditorSwitch() {
   const { watch } = useFormContext<TestRule>()
@@ -32,18 +35,8 @@ export function RuleEditorSwitch() {
       return <CustomCodeEditor />
     case 'parameterization':
       return <ParameterizationEditor />
-
     case 'verification':
-      return (
-        <Callout.Root mb="4">
-          <Callout.Icon>
-            <InfoCircledIcon />
-          </Callout.Icon>
-          <Callout.Text>
-            Verification rule configuration is coming soon
-          </Callout.Text>
-        </Callout.Root>
-      )
+      return <VerificationEditor />
     default:
       return exhaustive(ruleType)
   }

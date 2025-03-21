@@ -1,6 +1,8 @@
-import { SignedInState, SignedOutState, SigningInState } from './types'
-import { GrafanaCloudSignIn } from '../GrafanaCloudSignIn'
 import { UserProfiles } from '@/schemas/profile'
+
+import { GrafanaCloudSignIn } from '../GrafanaCloudSignIn'
+
+import { SignedInState, SignedOutState, SigningInState } from './types'
 
 interface SigningInStateProps {
   state: SigningInState

@@ -1,19 +1,20 @@
-import { app, BrowserWindow } from 'electron'
 import {
   computeSystemExecutablePath,
   Browser,
   ChromeReleaseChannel,
   launch,
 } from '@puppeteer/browsers'
-import { getCertificateSPKI } from './proxy'
-import { mkdtemp } from 'fs/promises'
-import path from 'path'
-import os from 'os'
-import { appSettings } from './main'
-import { BrowserServer } from './services/browser/server'
 import { exec, spawn } from 'child_process'
-import { getPlatform } from './utils/electron'
+import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
+import { mkdtemp } from 'fs/promises'
+import os from 'os'
+import path from 'path'
+
+import { appSettings } from './main'
+import { getCertificateSPKI } from './proxy'
+import { BrowserServer } from './services/browser/server'
+import { getPlatform } from './utils/electron'
 
 const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
@@ -73,12 +74,14 @@ export const launchBrowser = async (
     browserServer.start(browserWindow)
   }
 
-  const handleBrowserClose = async (): Promise<void> => {
-    await browserServer.stop()
+  const handleBrowserClose = (): Promise<void> => {
+    browserServer.stop()
 
     // we send the browser:stopped event when the browser is closed
     // NOTE: on macos pressing the X button does not close the application so it won't be fired
     browserWindow.webContents.send('browser:closed')
+
+    return Promise.resolve()
   }
 
   const args = [

@@ -1,6 +1,13 @@
 import { RequestSnippetSchema } from '@/types'
 import { VerificationRule, VerificationRuleInstance } from '@/types/rules'
 
+import { matchFilter } from './utils'
+import {
+  getCheckDescription,
+  getCheckExpression,
+  getValueFromRule,
+} from './verification.utils'
+
 export function createVerificationRuleInstance(
   rule: VerificationRule
 ): VerificationRuleInstance {
@@ -13,25 +20,35 @@ export function createVerificationRuleInstance(
     type: rule.type,
     state,
     apply: (requestSnippetSchema: RequestSnippetSchema) => {
-      const response = requestSnippetSchema.data.response
+      if (!matchFilter(requestSnippetSchema.data.request, rule.filter)) {
+        return requestSnippetSchema
+      }
+
+      const {
+        data: { response, id },
+      } = requestSnippetSchema
 
       if (!response) {
         return requestSnippetSchema
       }
 
-      state.matchedRequestIds = [
-        ...state.matchedRequestIds,
-        requestSnippetSchema.data.id,
+      state.matchedRequestIds = [...state.matchedRequestIds, id]
+
+      const value = getValueFromRule(rule, response)
+      const checkDescription = getCheckDescription(rule, value)
+      const checkExpression = getCheckExpression(rule, value)
+
+      const checks = [
+        ...requestSnippetSchema.checks,
+        {
+          description: checkDescription,
+          expression: `(r) => ${checkExpression}`,
+        },
       ]
 
-      const verificationSnippet = `
-check(resp, {
-    'status matches ${response.statusCode}': (r) => r.status === ${response.statusCode},
-  })
-`
       return {
         ...requestSnippetSchema,
-        after: [...requestSnippetSchema['after'], verificationSnippet],
+        checks,
       }
     },
   }

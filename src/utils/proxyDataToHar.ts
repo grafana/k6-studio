@@ -1,9 +1,11 @@
-import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
 import type { Entry, Page } from 'har-format'
-import { getContentTypeWithCharsetHeader } from './headers'
-import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
-import { groupProxyData } from './groups'
+
 import { BrowserEvent } from '@/schemas/recording'
+import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
+import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
+
+import { groupProxyData } from './groups'
+import { getContentTypeWithCharsetHeader } from './headers'
 
 export function proxyDataToHar(
   data: ProxyData[],

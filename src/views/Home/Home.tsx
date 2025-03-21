@@ -1,17 +1,17 @@
-import { Button, Flex, Grid, Heading, Text } from '@radix-ui/themes'
-import { Link } from 'react-router-dom'
-import { getRoutePath } from '@/routeMap'
 import { css } from '@emotion/react'
 import {
   CheckCircledIcon,
   DiscIcon,
   PlusCircledIcon,
 } from '@radix-ui/react-icons'
+import { Button, Flex, Grid, Heading, Text } from '@radix-ui/themes'
+import { Link } from 'react-router-dom'
 
-import { NavigationCard } from './NavigationCard'
 import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { ExperimentalBanner } from '@/components/ExperimentalBanner'
+import { getRoutePath } from '@/routeMap'
+
+import { NavigationCard } from './NavigationCard'
 
 export function Home() {
   const createNewGenerator = useCreateGenerator()
@@ -20,7 +20,6 @@ export function Home() {
 
   return (
     <Flex direction="column" height="100%">
-      <ExperimentalBanner />
       <Flex
         direction="column"
         align="center"
@@ -47,9 +46,8 @@ export function Home() {
             margin-bottom: var(--space-6);
           `}
         >
-          Uncover bottlenecks, accelerate load times, and deliver exceptional
-          user experiences with the industry{"'"}s leading performance testing
-          tool.
+          Quickly capture user journeys and API requests to generate test
+          scripts. No manual scripting required.
         </Text>
         <Grid gap="8" columns="3" maxWidth="720px">
           <NavigationCard

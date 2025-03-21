@@ -1,10 +1,12 @@
-import { Tabs } from '@radix-ui/themes'
-import { RequestLog } from './RequestLog'
-import { Group, ProxyData } from '@/types'
-import { BrowserEvent } from '@/schemas/recording'
-import { RecorderState } from './types'
-import { BrowserEventLog } from './BrowserEventLog'
 import { css } from '@emotion/react'
+import { Tabs } from '@radix-ui/themes'
+
+import { BrowserEvent } from '@/schemas/recording'
+import { Group, ProxyData } from '@/types'
+
+import { BrowserEventLog } from './BrowserEventLog'
+import { RequestLog } from './RequestLog'
+import { RecorderState } from './types'
 
 interface RecordingInspectorProps {
   recorderState?: RecorderState

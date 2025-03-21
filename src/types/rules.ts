@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Request, ProxyData, RequestSnippetSchema } from '@/types'
+
 import {
   BeginEndSelectorSchema,
   CorrelationExtractorSchema,
@@ -22,8 +22,8 @@ import {
   TextSelectorSchema,
   VariableValueSchema,
   VerificationRuleSchema,
-  VerificationRuleSelectorSchema,
 } from '@/schemas/generator'
+import { Request, ProxyData, RequestSnippetSchema } from '@/types'
 
 interface BaseRuleState {
   matchedRequestIds: string[]
@@ -94,9 +94,6 @@ export type TextSelector = z.infer<typeof TextSelectorSchema>
 export type ReplacerSelector = z.infer<typeof ReplacerSelectorSchema>
 export type ExtractorSelector = z.infer<typeof ExtractorSelectorSchema>
 export type Selector = ReplacerSelector | ExtractorSelector
-export type VerificationRuleSelector = z.infer<
-  typeof VerificationRuleSelectorSchema
->
 export type CorrelationExtractor = z.infer<typeof CorrelationExtractorSchema>
 export type CorrelationReplacer = z.infer<typeof CorrelationReplacerSchema>
 export type RuleBase = z.infer<typeof RuleBaseSchema>

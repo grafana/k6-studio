@@ -1,7 +1,5 @@
-import { exhaustive } from '@/utils/typescript'
-import * as ir from '../intermediate/ast'
 import { TSESTree as ts } from '@typescript-eslint/types'
-import { ScenarioContext } from './context'
+
 import {
   identifier,
   expressionStatement,
@@ -12,7 +10,12 @@ import {
   fromArrayLiteral,
   fromObjectLiteral,
 } from '@/codegen/estree'
+import { exhaustive } from '@/utils/typescript'
+
 import { spaceBetween } from '../formatting/spacing'
+import * as ir from '../intermediate/ast'
+
+import { ScenarioContext } from './context'
 
 function emitNewPageExpression(
   context: ScenarioContext,

@@ -19,7 +19,7 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   ignorePatterns: [
-    'resources/group_snippet.js',
+    'resources/*.js',
     'install-k6.js',
     '.eslintrc.cjs',
     '**/__snapshots__/',
@@ -57,6 +57,20 @@ module.exports = {
     '@typescript-eslint/no-misused-promises': [
       'error',
       { checksVoidReturn: false },
+    ],
+    'import/order': [
+      'warn',
+      {
+        groups: [
+          ['builtin', 'external'],
+          'internal',
+          'parent',
+          'sibling',
+          'index',
+        ],
+        'newlines-between': 'always',
+        alphabetize: { order: 'asc' },
+      },
     ],
   },
 

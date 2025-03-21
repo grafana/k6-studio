@@ -1,9 +1,11 @@
-import { EmptyMessage } from '@/components/EmptyMessage'
-import { ProxyData } from '@/types'
 import { GlobeIcon } from '@radix-ui/react-icons'
 import { Button } from '@radix-ui/themes'
 import { ComponentProps } from 'react'
-import { RecordingSelector } from '../RecordingSelector'
+
+import { EmptyMessage } from '@/components/EmptyMessage'
+import { ProxyData } from '@/types'
+
+import { RecordingSelector } from '../../RecordingSelector'
 
 export function validateRecording({
   allowlist,

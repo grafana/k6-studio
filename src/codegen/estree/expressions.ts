@@ -1,5 +1,7 @@
-import { exhaustive } from '@/utils/typescript'
 import { TSESTree as ts } from '@typescript-eslint/types'
+
+import { exhaustive } from '@/utils/typescript'
+
 import { baseProps, NodeType } from './nodes'
 import { NodeOptions } from './types'
 

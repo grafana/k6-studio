@@ -1,9 +1,10 @@
+import { Controller, useFormContext } from 'react-hook-form'
+
 import { FieldGroup } from '@/components/Form'
 import { ConstrainedCodeEditor } from '@/components/Monaco/ConstrainerCodeEditor'
 import { getCustomCodeSnippet } from '@/rules/parameterization'
 import { selectSelectedRuleIndex, useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
-import { Controller, useFormContext } from 'react-hook-form'
 
 export function CustomCode() {
   const {

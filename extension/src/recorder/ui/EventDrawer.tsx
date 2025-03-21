@@ -1,12 +1,14 @@
-import * as Dialog from '@radix-ui/react-dialog'
 import { css, keyframes } from '@emotion/react'
+import * as Dialog from '@radix-ui/react-dialog'
 import { Cross1Icon } from '@radix-ui/react-icons'
-import { useEffect, useState } from 'react'
-import { BrowserEvent } from '@/schemas/recording'
-import { background } from '../client'
-import { BrowserEventList } from '@/components/BrowserEventList'
 import { TooltipProvider } from '@radix-ui/react-tooltip'
+import { useEffect, useState } from 'react'
+
+import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
+import { BrowserEvent } from '@/schemas/recording'
+
+import { background } from '../client'
 
 function useRecordedEvents() {
   const [events, setEvents] = useState<BrowserEvent[]>([])

@@ -1,9 +1,11 @@
 import './ui'
 
 import { BrowserEvent } from '@/schemas/recording'
+
 import { generateSelector } from '../selectors'
-import { shouldSkipEvent } from './ui/utils'
+
 import { background } from './client'
+import { shouldSkipEvent } from './ui/utils'
 
 function getButton(button: number) {
   switch (button) {

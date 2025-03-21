@@ -1,13 +1,14 @@
+import { ErrorMessage } from '@hookform/error-message'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Box, BoxProps, Flex, Tooltip, Text } from '@radix-ui/themes'
-import { ErrorMessage } from '@hookform/error-message'
 import { FieldErrors } from 'react-hook-form'
+
 import { FieldError } from './FieldError'
 
 type FieldGroupProps = BoxProps & {
   children: React.ReactNode
-  errors: FieldErrors
+  errors?: FieldErrors
   name: string
   label?: React.ReactNode
   hint?: React.ReactNode
@@ -45,7 +46,7 @@ export function FieldGroup({
         </Label.Root>
       )}
       <Box>{children}</Box>
-      <ErrorMessage errors={errors} name={name} as={FieldError} />
+      {errors && <ErrorMessage errors={errors} name={name} as={FieldError} />}
     </Box>
   )
 }

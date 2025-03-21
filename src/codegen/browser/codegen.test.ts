@@ -1,4 +1,5 @@
 import { it } from 'vitest'
+
 import { emitScript } from './codegen'
 
 it('should emit an empty test with browser scenario options', async ({

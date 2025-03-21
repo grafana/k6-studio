@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Bounds } from './types'
+
 import { background } from '../client'
+
+import { Bounds } from './types'
 
 export function useHighlightedElements() {
   const [bounds, setBounds] = useState<Bounds[]>([])

@@ -1,6 +1,7 @@
-import { useToast, useToastStore } from '@/store/ui/useToast'
 import * as RadixToast from '@radix-ui/react-toast'
 import { useEffect } from 'react'
+
+import { useToast, useToastStore } from '@/store/ui/useToast'
 
 import { Toast } from './Toast'
 import { ToastViewport } from './Toast.styles'

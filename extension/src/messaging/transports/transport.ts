@@ -1,5 +1,6 @@
-import { EventEmitter } from 'extension/src/utils/events'
 import { z } from 'zod'
+
+import { EventEmitter } from 'extension/src/utils/events'
 
 interface TransportMessages {
   connect: void

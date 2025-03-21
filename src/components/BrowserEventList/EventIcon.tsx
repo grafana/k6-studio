@@ -1,5 +1,3 @@
-import { BrowserEvent } from '@/schemas/recording'
-import { exhaustive } from '@/utils/typescript'
 import {
   GlobeIcon,
   UpdateIcon,
@@ -11,6 +9,9 @@ import {
   DropdownMenuIcon,
   ReaderIcon,
 } from '@radix-ui/react-icons'
+
+import { BrowserEvent } from '@/schemas/recording'
+import { exhaustive } from '@/utils/typescript'
 
 interface EventIconProps {
   event: BrowserEvent

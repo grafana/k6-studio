@@ -1,17 +1,18 @@
-import { useState } from 'react'
-import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
-
-import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { ValidatorDialog } from '../ValidatorDialog'
-import { ExportScriptDialog } from '../ExportScriptDialog'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
-import { useGeneratorParams, useScriptExport } from '../Generator.hooks'
+import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getRoutePath } from '@/routeMap'
+
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { getFileNameWithoutExtension } from '@/utils/file'
-import { RecordingSelector } from '../RecordingSelector'
+import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore } from '@/store/generator'
+import { getFileNameWithoutExtension } from '@/utils/file'
+
+import { ExportScriptDialog } from '../ExportScriptDialog'
+import { useGeneratorParams, useScriptExport } from '../Generator.hooks'
+import { RecordingSelector } from '../RecordingSelector'
+import { ValidatorDialog } from '../ValidatorDialog'
 
 interface GeneratorControlsProps {
   onSave: () => void

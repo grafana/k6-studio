@@ -1,9 +1,10 @@
-import { getRoutePath } from '@/routeMap'
-import { StudioFile } from '@/types'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { ContextMenu, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { PropsWithChildren } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+import { getRoutePath } from '@/routeMap'
+import { StudioFile } from '@/types'
 
 interface FileContextMenuProps {
   file: StudioFile

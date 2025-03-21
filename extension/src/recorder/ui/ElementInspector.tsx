@@ -1,8 +1,10 @@
+import { css } from '@emotion/react'
 import { useKey } from 'react-use'
+
+import { Tooltip } from '@/components/primitives/Tooltip'
+
 import { ElementHighlight } from './ElementHighlight'
 import { useInspectedElement } from './ElementInspector.hooks'
-import { Tooltip } from '@/components/primitives/Tooltip'
-import { css } from '@emotion/react'
 
 interface ElementInspectorProps {
   onEscape: () => void

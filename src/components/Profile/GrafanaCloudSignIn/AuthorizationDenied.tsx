@@ -1,5 +1,7 @@
 import { Button, Flex } from '@radix-ui/themes'
+
 import { AuthorizationDeniedState } from '@/types/auth'
+
 import { AuthenticationMessage } from './AuthenticationMessage'
 
 interface AuthorizationDeniedProps {

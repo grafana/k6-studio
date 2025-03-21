@@ -1,10 +1,11 @@
+import { CodeIcon } from '@radix-ui/react-icons'
+import { IconButton, TextField, Tooltip } from '@radix-ui/themes'
 import { RootProps } from '@radix-ui/themes/dist/cjs/components/text-field'
 import { useEffect, useRef } from 'react'
 import { useKeyPressEvent } from 'react-use'
 import useKeyboardJs from 'react-use/lib/useKeyboardJs'
+
 import { SearchField, SearchFieldHandle } from '../SearchField'
-import { IconButton, TextField, Tooltip } from '@radix-ui/themes'
-import { CodeIcon } from '@radix-ui/react-icons'
 
 export function Filter({
   filter,

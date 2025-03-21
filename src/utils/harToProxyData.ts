@@ -1,7 +1,9 @@
+import type { Content, Entry } from 'har-format'
+
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { Method, ProxyData, Request, Response } from '@/types'
 import { HarWithOptionalResponse } from '@/types/har'
-import type { Content, Entry } from 'har-format'
+
 import { safeAtob } from './format'
 
 export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {

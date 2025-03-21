@@ -1,13 +1,13 @@
-import * as monacoTypes from 'monaco-editor'
-import { ReactMonacoEditor } from './ReactMonacoEditor'
-// Locally added types
+import { EditorProps } from '@monaco-editor/react'
 // eslint-disable-next-line import/no-named-as-default
 import constrainedEditor, {
   ConstrainedEditorInstance,
   RestrictionObject,
 } from 'constrained-editor-plugin'
+import * as monacoTypes from 'monaco-editor'
 import { useEffect, useState } from 'react'
-import { EditorProps } from '@monaco-editor/react'
+
+import { ReactMonacoEditor } from './ReactMonacoEditor'
 
 interface CodeEditorProps {
   value: string

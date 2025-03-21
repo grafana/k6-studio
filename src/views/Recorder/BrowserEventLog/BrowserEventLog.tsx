@@ -1,8 +1,10 @@
-import { BrowserEvent } from '@/schemas/recording'
 import { Flex, Button } from '@radix-ui/themes'
 import { useState } from 'react'
-import { ExportScriptDialog } from '../../Generator/ExportScriptDialog'
+
 import { BrowserEventList } from '@/components/BrowserEventList'
+import { BrowserEvent } from '@/schemas/recording'
+
+import { ExportScriptDialog } from '../../Generator/ExportScriptDialog'
 
 interface BrowserEventLogProps {
   events: BrowserEvent[]

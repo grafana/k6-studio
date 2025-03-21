@@ -1,8 +1,10 @@
-import { BrowserEvent } from '@/schemas/recording'
-import { captureNavigationEvents } from './navigation'
-import { background, frontend, studio } from './messaging/routing'
 import { tabs } from 'webextension-polyfill'
+
+import { BrowserEvent } from '@/schemas/recording'
+
 import { BrowserExtensionEvent } from './messaging/client'
+import { background, frontend, studio } from './messaging/routing'
+import { captureNavigationEvents } from './navigation'
 
 captureNavigationEvents((events) => {
   background.send({

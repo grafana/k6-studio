@@ -1,18 +1,19 @@
 // TODO: https://github.com/grafana/k6-studio/issues/277
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ipcRenderer, contextBridge } from 'electron'
-import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
-import { HarWithOptionalResponse } from './types/har'
-import { GeneratorFileData } from './types/generator'
-import { AddToastPayload } from './types/toast'
-import { AppSettings } from './types/settings'
+
+import * as auth from './handlers/auth/preload'
+import * as browserRemote from './handlers/browserRemote.preload'
+import * as cloud from './handlers/cloud/preload'
+import { createListener } from './handlers/utils'
 import { BrowserEvent } from './schemas/recording'
 import * as Sentry from './sentry'
+import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
+import { GeneratorFileData } from './types/generator'
+import { HarWithOptionalResponse } from './types/har'
+import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
-import * as browserRemote from './handlers/browserRemote.preload'
-import { createListener } from './handlers/utils'
-import * as auth from './handlers/auth/preload'
-import * as cloud from './handlers/cloud/preload'
+import { AddToastPayload } from './types/toast'
 
 interface GetFilesResponse {
   recordings: StudioFile[]

@@ -1,7 +1,9 @@
 import { css } from '@emotion/react'
 import { CursorArrowIcon, InfoCircledIcon } from '@radix-ui/react-icons'
-import { Tool } from './types'
+
 import { Toolbar } from '@/components/primitives/Toolbar'
+
+import { Tool } from './types'
 
 interface ToolBoxProps {
   tool: Tool | null

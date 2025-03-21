@@ -1,5 +1,6 @@
-import { BrowserEventSchema } from '@/schemas/recording'
 import { z } from 'zod'
+
+import { BrowserEventSchema } from '@/schemas/recording'
 
 export const LoadEventsSchema = z.object({
   type: z.literal('load-events'),

@@ -1,5 +1,6 @@
 import { ProxyData } from '@/types'
 import { ImmerStateCreator } from '@/utils/typescript'
+
 import {
   shouldResetAllowList,
   shouldShowAllowListDialog,

@@ -1,3 +1,4 @@
+import log from 'electron-log/renderer'
 import {
   Navigate,
   Route,
@@ -6,16 +7,16 @@ import {
   createRoutesFromChildren,
   RouterProvider,
 } from 'react-router-dom'
-import log from 'electron-log/renderer'
 
 import { Layout } from '@/components/Layout/Layout'
+import { Generator } from '@/views/Generator/Generator'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
 import { RecordingPreviewer } from '@/views/RecordingPreviewer'
-import { Generator } from '@/views/Generator/Generator'
 import { Validator } from '@/views/Validator'
-import { routeMap } from './routeMap'
+
 import { ErrorElement } from './ErrorElement'
+import { routeMap } from './routeMap'
 import { DataFile } from './views/DataFile'
 
 const router = createHashRouter(

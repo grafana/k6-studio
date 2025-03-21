@@ -1,4 +1,5 @@
 import { z } from 'zod'
+
 import * as v1 from './v1'
 
 const AnyProfileSchema = z.discriminatedUnion('version', [v1.ProfileSchema])

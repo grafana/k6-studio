@@ -1,17 +1,19 @@
+import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
 import { Flex } from '@radix-ui/themes'
 import { useState } from 'react'
 
+import { GhostButton } from '@/components/GhostButton'
 import { CodeEditor } from '@/components/Monaco/CodeEditor'
-import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { ScriptPreviewError } from './ScriptPreviewError'
-import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
-import { ValidatorDialog } from '../ValidatorDialog'
-import { ExportScriptDialog } from '../ExportScriptDialog'
-import { useScriptExport } from '../Generator.hooks'
-import { useGeneratorStore } from '@/store/generator'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { GhostButton } from '@/components/GhostButton'
+import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { useGeneratorStore } from '@/store/generator'
+
+import { ExportScriptDialog } from '../ExportScriptDialog'
+import { useScriptExport } from '../Generator.hooks'
+import { ValidatorDialog } from '../ValidatorDialog'
+
+import { ScriptPreviewError } from './ScriptPreviewError'
 
 interface ScriptPreviewProps {
   fileName: string

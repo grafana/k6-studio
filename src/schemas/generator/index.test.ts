@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { migrate } from '.'
+
 import * as v0 from './v0'
+
+import { migrate } from '.'
 
 describe('Generator migration', () => {
   it('should migrate from v0 to latest', () => {
@@ -24,14 +26,26 @@ describe('Generator migration', () => {
       testData: {
         variables: [],
       },
-      rules: [],
+      rules: [
+        {
+          id: '1',
+          type: 'verification',
+          enabled: true,
+          filter: {
+            path: '',
+          },
+          value: {
+            type: 'recordedValue',
+          },
+        },
+      ],
       allowlist: [],
       includeStaticAssets: false,
       scriptName: 'my-script.js',
     }
 
     const migration = migrate(v0Generator)
-    expect(migration.version).toBe('1.0')
+    expect(migration.version).toBe('2.0')
     expect(migration.options.thresholds).toEqual([])
   })
 })
