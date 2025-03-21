@@ -39,6 +39,13 @@ background.on('navigate', async ({ data }) => {
   await tabs.update(tab.id, { url: data.url })
 })
 
+background.on('load-events', () => {
+  background.send({
+    type: 'events-loaded',
+    events: eventLog,
+  })
+})
+
 const clients = [
   { name: 'background', client: background },
   { name: 'studio', client: studio },

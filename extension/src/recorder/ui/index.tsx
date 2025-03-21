@@ -2,8 +2,8 @@ import { createRoot } from 'react-dom/client'
 import { InBrowserControls } from './InBrowserControls'
 import createCache from '@emotion/cache'
 import { CacheProvider, css, Global } from '@emotion/react'
-import { ContainerProvider } from './ContainerProvider'
-import { Theme } from '../../../../src/components/primitives/Theme'
+import { Theme } from '@/components/primitives/Theme'
+import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 
 function createShadowRoot() {
   const mount = document.createElement('div')
@@ -58,7 +58,7 @@ function initialize() {
       />
       <ContainerProvider container={root}>
         <CacheProvider value={shadowCache}>
-          <Theme />
+          <Theme root={false} />
           <InBrowserControls />
         </CacheProvider>
       </ContainerProvider>

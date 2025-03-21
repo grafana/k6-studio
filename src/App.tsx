@@ -1,4 +1,6 @@
-import { Theme } from '@radix-ui/themes'
+import { Theme as RadixTheme } from '@radix-ui/themes'
+import { Theme as StudioTheme } from '@/components/primitives/Theme'
+
 import { Global } from '@emotion/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { enableMapSet } from 'immer'
@@ -20,13 +22,14 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Theme accentColor="orange" appearance={theme}>
+      <StudioTheme />
+      <RadixTheme accentColor="orange" appearance={theme}>
         <Global styles={globalStyles} />
         <Toasts />
         <AppRoutes />
         <DevToolsDialog />
         <SettingsDialog />
-      </Theme>
+      </RadixTheme>
     </QueryClientProvider>
   )
 }

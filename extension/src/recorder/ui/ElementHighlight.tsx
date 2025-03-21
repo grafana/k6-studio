@@ -18,7 +18,7 @@ export const ElementHighlight = forwardRef<
         pointer-events: none;
         background-color: rgba(0, 0, 0, 0.1);
         border: 1px solid rgba(0, 0, 0);
-        z-index: var(--layer-top-3);
+        z-index: var(--studio-layer-0);
       `}
       style={{
         ...bounds,

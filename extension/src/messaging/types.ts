@@ -1,6 +1,15 @@
 import { BrowserEventSchema } from '@/schemas/recording'
 import { z } from 'zod'
 
+export const LoadEventsSchema = z.object({
+  type: z.literal('load-events'),
+})
+
+export const EventsLoadedSchema = z.object({
+  type: z.literal('events-loaded'),
+  events: z.array(BrowserEventSchema),
+})
+
 export const RecordEventsSchema = z.object({
   type: z.literal('record-events'),
   events: z.array(BrowserEventSchema),
@@ -22,6 +31,8 @@ export const NavigateSchema = z.object({
 })
 
 export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
+  LoadEventsSchema,
+  EventsLoadedSchema,
   RecordEventsSchema,
   EventsRecordedSchema,
   HighlightElementSchema,

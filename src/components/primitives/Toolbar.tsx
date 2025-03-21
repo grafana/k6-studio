@@ -7,8 +7,8 @@ const Link = styled(RadixToolbar.Link)``
 
 const Root = styled(RadixToolbar.Root)`
   display: flex;
-  gap: var(--spacing-1);
-  padding: var(--spacing-1);
+  gap: var(--studio-spacing-1);
+  padding: var(--studio-spacing-1);
 
   &[data-orientation='vertical'] {
     flex-direction: column;
@@ -34,7 +34,7 @@ const Separator = styled(RadixToolbar.Separator)`
 
 const ToggleGroup = styled(RadixToolbar.ToggleGroup)`
   display: flex;
-  gap: var(--spacing-1);
+  gap: var(--studio-spacing-1);
 `
 
 const ToggleItem = styled(RadixToolbar.ToggleItem)`
@@ -42,12 +42,12 @@ const ToggleItem = styled(RadixToolbar.ToggleItem)`
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  background-color: var(--toggle-bg-off);
+  background-color: var(--studio-toggle-bg-off);
   border: none;
-  padding: var(--spacing-2);
+  padding: var(--studio-spacing-2);
 
   &[data-state='on'] {
-    background-color: var(--toggle-bg-on);
+    background-color: var(--studio-toggle-bg-on);
   }
 `
 

@@ -22,11 +22,13 @@ const studio = new BrowserExtensionClient(
 )
 
 background.forward('events-recorded', [studio, frontend])
+background.forward('events-loaded', [frontend])
 
 studio.forward('navigate', [background])
 studio.forward('highlight-element', [frontend])
 
 frontend.forward('record-events', [background])
 frontend.forward('navigate', [background])
+frontend.forward('load-events', [background])
 
 export { background, frontend, studio }

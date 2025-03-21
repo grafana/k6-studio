@@ -1,9 +1,10 @@
 import { NavigatedToPageEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { css } from '@emotion/react'
-import { Tooltip, Strong, Link } from '@radix-ui/themes'
+import { Strong, Link } from '@radix-ui/themes'
 import { forwardRef, MouseEvent } from 'react'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
+import { Tooltip } from '@/components/primitives/Tooltip'
 
 interface RemoteLinkProps {
   url: string

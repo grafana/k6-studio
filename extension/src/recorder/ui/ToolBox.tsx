@@ -36,12 +36,12 @@ export function ToolBox({
     <Toolbar.Root
       css={css`
         position: fixed;
-        top: var(--spacing-2);
+        top: var(--studio-spacing-2);
         left: 50%;
         transform: translateX(-50%);
-        z-index: var(--layer-top-2);
+        z-index: var(--studio-layer-2);
         background-color: white;
-        box-shadow: var(--shadow-1);
+        box-shadow: var(--studio-shadow-1);
       `}
     >
       <Toolbar.ToggleGroup

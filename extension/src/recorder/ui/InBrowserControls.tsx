@@ -9,7 +9,7 @@ export function InBrowserControls() {
   const tool = useInBrowserUIStore((state) => state.tool)
   const selectTool = useInBrowserUIStore((state) => state.selectTool)
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
   const handleInspectorEscape = () => {
     selectTool(null)
