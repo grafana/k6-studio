@@ -139,6 +139,10 @@ function WarningMessage({
     (state) => state.openSettingsDialog
   )
 
+  const handleProxyStart = () => {
+    return window.studio.proxy.launchProxy()
+  }
+
   if (isBrowserInstalled === false) {
     return (
       <Callout.Root>
@@ -169,7 +173,8 @@ function WarningMessage({
         <Callout.Text>
           <strong>Proxy is offline</strong>
           <br />
-          Check proxy configuration in{' '}
+          <TextButton onClick={handleProxyStart}>Start proxy</TextButton> or
+          check proxy configuration in{' '}
           <TextButton onClick={() => openSettingsDialog('proxy')}>
             Settings
           </TextButton>
