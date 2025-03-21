@@ -84,6 +84,11 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             control={control}
             name={`thresholds.${index}.condition`}
             options={THRESHOLD_CONDITIONS_OPTIONS}
+            triggerValue={(val) =>
+              THRESHOLD_CONDITIONS_OPTIONS.find(
+                (option) => option.value === val
+              )?.icon
+            }
           />
         </FieldGroup>
       </Table.Cell>

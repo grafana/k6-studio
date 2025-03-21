@@ -1,8 +1,13 @@
-import { Select, Tooltip, TooltipProps } from '@radix-ui/themes'
+import { Flex, Select, Tooltip, TooltipProps } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 import { Control, Controller, FieldValues, Path } from 'react-hook-form'
 
-type Option = { label: ReactNode; value: string; disabled?: boolean }
+type Option = {
+  label: ReactNode
+  value: string
+  disabled?: boolean
+  icon?: ReactNode
+}
 type GroupedOption = { label: string; options: Option[] }
 
 interface ControlledSelectProps<
@@ -16,6 +21,7 @@ interface ControlledSelectProps<
   contentProps?: Select.ContentProps
   tooltipProps?: TooltipProps
   onChange?: (value: O extends Option ? O['value'] : string) => void
+  triggerValue?: (value: string) => ReactNode
 }
 
 export function ControlledSelect<
@@ -29,6 +35,7 @@ export function ControlledSelect<
   contentProps = {},
   tooltipProps = { content: undefined, hidden: true },
   onChange,
+  triggerValue,
 }: ControlledSelectProps<T, O>) {
   return (
     <Controller
@@ -45,7 +52,9 @@ export function ControlledSelect<
               onBlur={field.onBlur}
               id={name}
               css={{ width: '100%' }}
-            />
+            >
+              {triggerValue ? triggerValue(field.value) : undefined}
+            </Select.Trigger>
           </Tooltip>
           <Select.Content {...contentProps}>
             {options.map((option) =>
@@ -58,7 +67,9 @@ export function ControlledSelect<
                       value={subOption.value}
                       disabled={subOption.disabled}
                     >
-                      {subOption.label}
+                      <Flex justify="between" align="center" gap="1">
+                        {option.label} {subOption.icon}
+                      </Flex>
                     </Select.Item>
                   ))}
                 </Select.Group>
@@ -68,7 +79,9 @@ export function ControlledSelect<
                   value={option.value}
                   disabled={option.disabled}
                 >
-                  {option.label}
+                  <Flex justify="between" align="center" gap="1">
+                    {option.label} {option.icon}
+                  </Flex>
                 </Select.Item>
               )
             )}
