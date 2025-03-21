@@ -143,10 +143,6 @@ function applyRule({
       ],
 
       count: state.count + 1,
-      matchedRequestIds: [
-        ...state.matchedRequestIds,
-        requestSnippetSchema.data.id,
-      ],
     })
 
     return {
