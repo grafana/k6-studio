@@ -1,8 +1,9 @@
+import { css } from '@emotion/react'
 import { Flex } from '@radix-ui/themes'
 import { ReactNode } from 'react'
+
 import grot from '@/assets/grot-tea.svg'
 import { LoadingMessage } from '@/components/Profile/LoadingMessage'
-import { css } from '@emotion/react'
 
 interface LoadingProps {
   children: ReactNode

@@ -1,9 +1,11 @@
-import { FieldGroup } from '@/components/Form'
-import { useFormContext } from 'react-hook-form'
-import { TestRule } from '@/types/rules'
-import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
-import { ControlledReactSelect } from '@/components/Form/ControlledReactSelect'
 import { useMemo } from 'react'
+import { useFormContext } from 'react-hook-form'
+
+import { FieldGroup } from '@/components/Form'
+import { ControlledReactSelect } from '@/components/Form/ControlledReactSelect'
+import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
+import { TestRule } from '@/types/rules'
+
 import { useHeaderOptions } from './HeaderSelect.hooks'
 
 export function HeaderSelect({

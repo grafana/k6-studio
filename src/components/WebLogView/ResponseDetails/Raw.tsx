@@ -1,5 +1,6 @@
-import { Text } from '@radix-ui/themes'
 import { css } from '@emotion/react'
+import { Text } from '@radix-ui/themes'
+
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 
 interface RawProps {

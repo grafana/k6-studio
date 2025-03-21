@@ -1,5 +1,6 @@
-import { SearchMatch } from '@/types/fuse'
 import { ReactNode, useMemo } from 'react'
+
+import { SearchMatch } from '@/types/fuse'
 
 interface MatchSegment {
   match: boolean

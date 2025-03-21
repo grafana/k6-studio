@@ -1,10 +1,13 @@
 import { TextField } from '@radix-ui/themes'
-import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { ParameterizationRule } from '@/types/rules'
 import { useFormContext } from 'react-hook-form'
+
+import { ControlledSelect, FieldGroup } from '@/components/Form'
 import { useGeneratorStore } from '@/store/generator'
+import { ParameterizationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
+
 import { VariableSelect } from '../VariableSelect'
+
 import { CustomCode } from './CustomCode'
 import { FileSelect } from './FileSelect'
 

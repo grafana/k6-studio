@@ -1,8 +1,8 @@
 import { GeneratorStore } from '@/store/generator'
+import { exhaustive } from '@/utils/typescript'
 
 import { RampingVUs } from './RampingVUs'
 import { SharedIterations } from './SharedIterations/SharedIterations'
-import { exhaustive } from '@/utils/typescript'
 
 export function ExecutorOptions({
   executor,

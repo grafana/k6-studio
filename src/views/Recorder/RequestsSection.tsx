@@ -1,15 +1,17 @@
-import { StaticAssetsFilter } from '@/components/StaticAssetsFilter'
-import { WebLogView } from '@/components/WebLogView'
-import { useAutoScroll } from '@/hooks/useAutoScroll'
-import { Group, ProxyData } from '@/types'
-import { groupProxyData } from '@/utils/groups'
 import { css } from '@emotion/react'
 import { Box, Flex, Heading, ScrollArea, Spinner } from '@radix-ui/themes'
 import { ReactNode } from 'react'
-import { ClearRequestsButton } from './ClearRequestsButton'
+import { useLocalStorage } from 'react-use'
+
+import { StaticAssetsFilter } from '@/components/StaticAssetsFilter'
+import { WebLogView } from '@/components/WebLogView'
 import { Filter } from '@/components/WebLogView/Filter'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
-import { useLocalStorage } from 'react-use'
+import { useAutoScroll } from '@/hooks/useAutoScroll'
+import { Group, ProxyData } from '@/types'
+import { groupProxyData } from '@/utils/groups'
+
+import { ClearRequestsButton } from './ClearRequestsButton'
 
 interface RequestsSectionProps {
   proxyData: ProxyData[]

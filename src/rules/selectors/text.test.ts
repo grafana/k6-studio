@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { replaceText } from './text'
+
 import { createRequest } from '@/test/factories/proxyData'
 import { TextSelector } from '@/types/rules'
+
+import { replaceText } from './text'
 
 describe('replaceText', () => {
   it('replaces text matches in URL', () => {

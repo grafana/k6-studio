@@ -1,15 +1,16 @@
-import { Allotment } from 'allotment'
-import { Box, Tabs } from '@radix-ui/themes'
 import { css } from '@emotion/react'
+import { Box, Tabs } from '@radix-ui/themes'
+import { Allotment } from 'allotment'
 import { ReactNode, useEffect, useState } from 'react'
 
-import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { Details } from '@/components/WebLogView/Details'
-import { K6Check, K6Log, ProxyData } from '@/types'
-import { LogsSection } from './LogsSection'
-import { ChecksSection } from './ChecksSection'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
+import { K6Check, K6Log, ProxyData } from '@/types'
+import { RequestsSection } from '@/views/Recorder/RequestsSection'
+
+import { ChecksSection } from './ChecksSection'
+import { LogsSection } from './LogsSection'
 
 interface ValidatorContentProps {
   script: string

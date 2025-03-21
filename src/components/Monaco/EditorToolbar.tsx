@@ -1,10 +1,13 @@
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { useEffect } from 'react'
-import { k6StudioLightBackground } from './themes/k6StudioLight'
-import { useTheme } from '@/hooks/useTheme'
 import { useLocalStorage } from 'react-use'
+
+import { useTheme } from '@/hooks/useTheme'
+
 import { WordWrapIcon } from '../icons'
+
 import { k6StudioDarkBackground } from './themes/k6StudioDark'
+import { k6StudioLightBackground } from './themes/k6StudioLight'
 
 export type ToolbarState = {
   wordWrap: 'on' | 'off'

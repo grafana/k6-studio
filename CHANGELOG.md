@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/grafana/k6-studio/compare/v1.0.1...v1.0.2) (2025-03-19)
+
+
+### Bug Fixes
+
+* App not opening after closing on macOS ([#578](https://github.com/grafana/k6-studio/issues/578)) ([c4611b4](https://github.com/grafana/k6-studio/commit/c4611b485e4c522463f28c772480605a608b4001))
+* It's not possible to select browser executable on macOS ([#576](https://github.com/grafana/k6-studio/issues/576)) ([6f17b97](https://github.com/grafana/k6-studio/commit/6f17b9712e00c63ce72744bb8ccdb85e1a13a20c))
+
 ## [1.0.1](https://github.com/grafana/k6-studio/compare/v1.0.0...v1.0.1) (2025-03-17)
 
 

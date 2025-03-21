@@ -1,32 +1,33 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router-dom'
-import { Box, Button, Flex } from '@radix-ui/themes'
 import { GearIcon, PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
+import { Box, Button, Flex } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import log from 'electron-log/renderer'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useBlocker, useNavigate } from 'react-router-dom'
 
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+import { EmptyMessage } from '@/components/EmptyMessage'
 import { View } from '@/components/Layout/View'
-import { RequestsSection } from './RequestsSection'
+import TextSpinner from '@/components/TextSpinner/TextSpinner'
+import { Details } from '@/components/WebLogView/Details'
+import { DEFAULT_GROUP_NAME } from '@/constants'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { getRoutePath } from '@/routeMap'
+import { useStudioUIStore } from '@/store/ui'
+import { useToast } from '@/store/ui/useToast'
+import { Group, ProxyData } from '@/types'
+import { proxyDataToHar } from '@/utils/proxyDataToHar'
+
+import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
+import { EmptyState } from './EmptyState'
 import {
   getHostNameFromURL,
   startRecording,
   stopRecording,
   useDebouncedProxyData,
 } from './Recorder.utils'
-import { proxyDataToHar } from '@/utils/proxyDataToHar'
-import { getRoutePath } from '@/routeMap'
-import { Details } from '@/components/WebLogView/Details'
-import { Group, ProxyData } from '@/types'
-import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
+import { RequestsSection } from './RequestsSection'
 import { RecorderState } from './types'
-import { useToast } from '@/store/ui/useToast'
-import TextSpinner from '@/components/TextSpinner/TextSpinner'
-import { DEFAULT_GROUP_NAME } from '@/constants'
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { EmptyState } from './EmptyState'
-import { EmptyMessage } from '@/components/EmptyMessage'
-import { useStudioUIStore } from '@/store/ui/useStudioUIStore'
 
 const INITIAL_GROUPS: Group[] = [
   {

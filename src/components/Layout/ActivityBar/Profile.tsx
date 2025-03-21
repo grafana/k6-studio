@@ -1,8 +1,9 @@
+import { css } from '@emotion/react'
 import { Cross1Icon, PersonIcon } from '@radix-ui/react-icons'
 import { Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes'
-import { Profile as ProfileContent } from '@/components/Profile'
 import { useState } from 'react'
-import { css } from '@emotion/react'
+
+import { Profile as ProfileContent } from '@/components/Profile'
 
 function ProfileDialog({
   open,

@@ -1,19 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { ValidatorControls } from './ValidatorControls'
+import { EmptyMessage } from '@/components/EmptyMessage'
 import { View } from '@/components/Layout/View'
+import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
+import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { useRunChecks } from '@/hooks/useRunChecks'
+import { useRunLogs } from '@/hooks/useRunLogs'
 import { getRoutePath } from '@/routeMap'
+import { useToast } from '@/store/ui/useToast'
+import { getFileNameWithoutExtension } from '@/utils/file'
+
 import { useScriptPath } from './Validator.hooks'
 import { ValidatorContent } from './ValidatorContent'
-import { useRunLogs } from '@/hooks/useRunLogs'
-import { useToast } from '@/store/ui/useToast'
-import { useRunChecks } from '@/hooks/useRunChecks'
-import { getFileNameWithoutExtension } from '@/utils/file'
+import { ValidatorControls } from './ValidatorControls'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
-import { EmptyMessage } from '@/components/EmptyMessage'
-import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 
 export function Validator() {
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)

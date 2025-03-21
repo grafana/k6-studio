@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { migrate } from '.'
+
 import * as v0 from './v0'
+
+import { migrate } from '.'
 
 describe('Generator migration', () => {
   it('should migrate from v0 to latest', () => {

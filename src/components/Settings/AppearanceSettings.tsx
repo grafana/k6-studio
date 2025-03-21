@@ -1,9 +1,11 @@
-import { Controller, useFormContext } from 'react-hook-form'
-import { Flex, RadioCards, Text } from '@radix-ui/themes'
 import { GearIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons'
+import { Flex, RadioCards, Text } from '@radix-ui/themes'
+import { Controller, useFormContext } from 'react-hook-form'
 
 import { AppSettings } from '@/types/settings'
+
 import { FieldGroup } from '../Form'
+
 import { SettingsSection } from './SettingsSection'
 
 export function AppearanceSettings() {

@@ -1,10 +1,12 @@
-import { Button, Dialog, Flex } from '@radix-ui/themes'
-import { useGeneratorStore } from '@/store/generator'
-import { AllowlistDialog } from './AllowlistDialog'
-import { extractUniqueHosts } from '@/store/generator/slices/recording.utils'
 import { GlobeIcon } from '@radix-ui/react-icons'
-import { PopoverDialog } from '@/components/PopoverDialogs'
+import { Button, Dialog, Flex } from '@radix-ui/themes'
 import { useState } from 'react'
+
+import { PopoverDialog } from '@/components/PopoverDialogs'
+import { useGeneratorStore } from '@/store/generator'
+import { extractUniqueHosts } from '@/store/generator/slices/recording.utils'
+
+import { AllowlistDialog } from './AllowlistDialog'
 
 export function Allowlist() {
   const requests = useGeneratorStore((store) => store.requests)

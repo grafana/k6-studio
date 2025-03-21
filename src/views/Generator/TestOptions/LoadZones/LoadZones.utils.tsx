@@ -1,5 +1,5 @@
-import { ReactNode } from 'react'
-import { AvailableLoadZones, LoadZoneData } from '@/types/testOptions'
+import { css } from '@emotion/react'
+import { Flex } from '@radix-ui/themes'
 import {
   AU,
   BH,
@@ -20,8 +20,9 @@ import {
   US,
   ZA,
 } from 'country-flag-icons/react/3x2'
-import { css } from '@emotion/react'
-import { Flex } from '@radix-ui/themes'
+import { ReactNode } from 'react'
+
+import { AvailableLoadZones, LoadZoneData } from '@/types/testOptions'
 
 type LoadZonesOption = {
   label: ReactNode

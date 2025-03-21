@@ -1,11 +1,12 @@
 import { Box } from '@radix-ui/themes'
-
-import { Group as GroupType, ProxyDataWithMatches } from '@/types'
-import { Row, RowProps } from './Row'
-import { Group } from './Group'
-import { Table } from '@/components/Table'
 import { ComponentType, memo, useMemo } from 'react'
 import { useDeepCompareEffect } from 'react-use'
+
+import { Table } from '@/components/Table'
+import { Group as GroupType, ProxyDataWithMatches } from '@/types'
+
+import { Group } from './Group'
+import { Row, RowProps } from './Row'
 
 interface WebLogViewProps {
   requests: ProxyDataWithMatches[]

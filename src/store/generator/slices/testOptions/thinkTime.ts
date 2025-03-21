@@ -1,6 +1,6 @@
-import { ImmerStateCreator } from '@/utils/typescript'
 import { SleepType, ThinkTime, Timing } from '@/types/testOptions'
 import { createFixedTiming } from '@/utils/thinkTime'
+import { ImmerStateCreator } from '@/utils/typescript'
 
 interface Actions {
   setSleepType: (value: SleepType) => void

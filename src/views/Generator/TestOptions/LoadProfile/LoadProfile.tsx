@@ -1,12 +1,14 @@
-import { useGeneratorStore } from '@/store/generator'
-import { ExecutorOptions } from './components/ExecutorOptions'
-import { Executor } from './components/Executor'
-import { FormProvider, useForm } from 'react-hook-form'
-import { LoadProfileExecutorOptionsSchema } from '@/schemas/generator'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useCallback, useEffect } from 'react'
-import { LoadProfileExecutorOptions } from '@/types/testOptions'
 import { Text } from '@radix-ui/themes'
+import { useCallback, useEffect } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
+
+import { LoadProfileExecutorOptionsSchema } from '@/schemas/generator'
+import { useGeneratorStore } from '@/store/generator'
+import { LoadProfileExecutorOptions } from '@/types/testOptions'
+
+import { Executor } from './components/Executor'
+import { ExecutorOptions } from './components/ExecutorOptions'
 
 export function LoadProfile() {
   const executor = useGeneratorStore((store) => store.executor)

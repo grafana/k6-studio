@@ -1,8 +1,9 @@
-import { Filter } from '@/types/rules'
+import { useMemo } from 'react'
+
+import { shouldIncludeHeaderInScript } from '@/codegen/codegen.utils'
 import { matchFilter } from '@/rules/utils'
 import { ProxyData } from '@/types'
-import { useMemo } from 'react'
-import { shouldIncludeHeaderInScript } from '@/codegen/codegen.utils'
+import { Filter } from '@/types/rules'
 
 export function useHeaderOptions(
   recording: ProxyData[],

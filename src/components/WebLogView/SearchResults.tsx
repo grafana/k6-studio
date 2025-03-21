@@ -1,9 +1,12 @@
 import { Button, Flex, Strong, Text } from '@radix-ui/themes'
-import { ProxyDataWithMatches } from '@/types'
-import { Table } from '@/components/Table'
-import { SearchMatch } from '@/types/fuse'
 import { useMemo, useState } from 'react'
+
+import { Table } from '@/components/Table'
+import { ProxyDataWithMatches } from '@/types'
+import { SearchMatch } from '@/types/fuse'
+
 import { HighlightMark } from '../HighlightedText'
+
 import {
   useGoToContentMatch,
   useGoToPayloadMatch,
@@ -39,12 +42,10 @@ export function SearchResults({
   data,
   onSelectRequest,
   filter,
-  colSpan = 5,
 }: {
   data: ProxyDataWithMatches
   onSelectRequest: (data: ProxyDataWithMatches) => void
   filter?: string
-  colSpan?: number
 }) {
   const { setTab: setRequestTab } = useRequestDetailsTab()
   const { setTab: setResponseTab } = useResponseDetailsTab()
@@ -105,7 +106,7 @@ export function SearchResults({
 
   return (
     <Table.Row>
-      <Table.Cell colSpan={colSpan}>
+      <Table.Cell colSpan={5}>
         {visibleResults.map((result, excerptIndex) => (
           <Flex
             key={excerptIndex}

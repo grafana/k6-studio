@@ -1,16 +1,17 @@
 import { Badge, Grid } from '@radix-ui/themes'
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { View } from '@/components/Layout/View'
+import { TableSkeleton } from '@/components/TableSkeleton'
+import { getRoutePath } from '@/routeMap'
+import { useToast } from '@/store/ui/useToast'
 import { getFileNameWithoutExtension } from '@/utils/file'
+
 import { useDataFilePreview } from './DataFile.hooks'
 import { DataFileControls } from './DataFileControls'
 import { DataFileTable } from './DataFileTable'
-import { useEffect } from 'react'
-import { useToast } from '@/store/ui/useToast'
-import { getRoutePath } from '@/routeMap'
-import { TableSkeleton } from '@/components/TableSkeleton'
 
 export function DataFile() {
   const { fileName } = useParams()

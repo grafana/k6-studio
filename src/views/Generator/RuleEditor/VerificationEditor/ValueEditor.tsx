@@ -1,10 +1,13 @@
 import { TextField } from '@radix-ui/themes'
-import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { VerificationRule } from '@/types/rules'
-import { useFormContext } from 'react-hook-form'
-import { useGeneratorStore } from '@/store/generator'
-import { VariableSelect } from '../VariableSelect'
 import { useCallback, useEffect, useMemo } from 'react'
+import { useFormContext } from 'react-hook-form'
+
+import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { useGeneratorStore } from '@/store/generator'
+import { VerificationRule } from '@/types/rules'
+
+import { VariableSelect } from '../VariableSelect'
+
 import {
   getValueTypeOptions,
   getOperatorOptions,

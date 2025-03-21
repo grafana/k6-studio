@@ -1,7 +1,7 @@
-import { type ChangeEvent, type ReactNode } from 'react'
-import { Flex, TextField, Tooltip } from '@radix-ui/themes'
-import * as Label from '@radix-ui/react-label'
 import { InfoCircledIcon } from '@radix-ui/react-icons'
+import * as Label from '@radix-ui/react-label'
+import { Flex, TextField, Tooltip } from '@radix-ui/themes'
+import { type ChangeEvent, type ReactNode } from 'react'
 
 interface DurationInputProps extends Omit<TextField.RootProps, 'onChange'> {
   label: string

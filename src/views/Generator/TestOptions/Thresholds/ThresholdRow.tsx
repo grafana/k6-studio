@@ -1,20 +1,22 @@
-import { FieldGroup, ControlledSelect } from '@/components/Form'
 import { TrashIcon } from '@radix-ui/react-icons'
 import { Table, TextField, Checkbox, IconButton, Flex } from '@radix-ui/themes'
+import { useEffect } from 'react'
 import {
   Controller,
   FieldArrayWithId,
   UseFieldArrayRemove,
   useFormContext,
 } from 'react-hook-form'
+
+import { FieldGroup, ControlledSelect } from '@/components/Form'
+import { ThresholdData, Threshold } from '@/types/testOptions'
+
 import {
   THRESHOLD_METRICS_OPTIONS,
   getStatisticOptions,
   THRESHOLD_CONDITIONS_OPTIONS,
   getMetricUnit,
 } from './Thresholds.utils'
-import { useEffect } from 'react'
-import { ThresholdData, Threshold } from '@/types/testOptions'
 
 type ThresholdRowProps = {
   index: number

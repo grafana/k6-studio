@@ -1,13 +1,13 @@
-import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
-import { ExclamationTriangleIcon, PlusIcon } from '@radix-ui/react-icons'
 import { css } from '@emotion/react'
+import { ExclamationTriangleIcon, PlusIcon } from '@radix-ui/react-icons'
+import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
+import log from 'electron-log/renderer'
 
 import { useGeneratorStore } from '@/store/generator'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { useStudioUIStore } from '@/store/ui'
-import { getFileNameWithoutExtension } from '@/utils/file'
 import { useToast } from '@/store/ui/useToast'
-import log from 'electron-log/renderer'
+import { getFileNameWithoutExtension } from '@/utils/file'
+import { harToProxyData } from '@/utils/harToProxyData'
 
 export function RecordingSelector({ compact = false }: { compact?: boolean }) {
   const recordings = useStudioUIStore((store) => [...store.recordings.values()])

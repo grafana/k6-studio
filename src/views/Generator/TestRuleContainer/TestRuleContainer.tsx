@@ -1,11 +1,14 @@
-import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
 import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
-import { NewRuleMenu } from '../NewRuleMenu'
-import { SortableRuleList } from './SortableRuleList'
+
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
+
+import { NewRuleMenu } from '../NewRuleMenu'
 import { RuleEditor } from '../RuleEditor'
-import { StickyPanelHeader } from './StickyPanelHeader'
+
 import { RulesNotAppliedCallout } from './RulesNotAppliedCallout'
+import { SortableRuleList } from './SortableRuleList'
+import { StickyPanelHeader } from './StickyPanelHeader'
 
 export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)

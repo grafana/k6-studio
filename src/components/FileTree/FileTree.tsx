@@ -1,10 +1,10 @@
+import { css } from '@emotion/react'
 import * as Collapsible from '@radix-ui/react-collapsible'
 import { CaretDownIcon, CaretRightIcon } from '@radix-ui/react-icons'
 import { Flex, Reset, Text } from '@radix-ui/themes'
 import { ReactNode, useState } from 'react'
 
 import { FileList } from './FileList'
-import { css } from '@emotion/react'
 import { FileItem } from './types'
 
 interface FileTreeProps {

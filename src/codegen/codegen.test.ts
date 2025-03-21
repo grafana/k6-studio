@@ -1,4 +1,21 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+
+import { createParameterizationRuleInstance } from '@/rules/parameterization'
+import { generateSequentialInt } from '@/rules/utils'
+import { createProxyData, createRequest } from '@/test/factories/proxyData'
+import { checksRecording } from '@/test/fixtures/checksRecording'
+import { correlationRecording } from '@/test/fixtures/correlationRecording'
+import {
+  customCodeReplaceCsrf,
+  customCodeReplaceProjectId,
+  jsonRule,
+} from '@/test/fixtures/parameterizationRules'
+import { Cookie, Header, ProxyData, Request } from '@/types'
+import { GeneratorFileData } from '@/types/generator'
+import { TestRule } from '@/types/rules'
+import { ThinkTime } from '@/types/testOptions'
+import { prettify } from '@/utils/prettify'
+
 import {
   generateScript,
   generateRequestSnippets,
@@ -10,21 +27,6 @@ import {
   generateImports,
   generateParameterizationCustomCode,
 } from './codegen'
-import { TestRule } from '@/types/rules'
-import { GeneratorFileData } from '@/types/generator'
-import { Cookie, Header, ProxyData, Request } from '@/types'
-import { correlationRecording } from '@/test/fixtures/correlationRecording'
-import { checksRecording } from '@/test/fixtures/checksRecording'
-import { ThinkTime } from '@/types/testOptions'
-import { createProxyData, createRequest } from '@/test/factories/proxyData'
-import {
-  customCodeReplaceCsrf,
-  customCodeReplaceProjectId,
-  jsonRule,
-} from '@/test/fixtures/parameterizationRules'
-import { prettify } from '@/utils/prettify'
-import { createParameterizationRuleInstance } from '@/rules/parameterization'
-import { generateSequentialInt } from '@/rules/utils'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
 

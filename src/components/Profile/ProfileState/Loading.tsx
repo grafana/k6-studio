@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+
 import { SignedInState, SignedOutState } from './types'
 
 interface LoadingStateProps {

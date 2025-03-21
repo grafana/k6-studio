@@ -1,11 +1,12 @@
+import { css } from '@emotion/react'
 import { ArchiveIcon } from '@radix-ui/react-icons'
 import { Box, Button, Inset, ScrollArea, Tabs } from '@radix-ui/themes'
-import { css } from '@emotion/react'
 import { useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
-import { VariablesEditor } from './VariablesEditor'
+
 import { DataFiles } from './DataFiles'
+import { VariablesEditor } from './VariablesEditor'
 
 export function TestData() {
   const [selectedTab, setSelectedTab] = useState('variables')

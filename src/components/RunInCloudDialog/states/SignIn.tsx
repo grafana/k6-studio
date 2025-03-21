@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { SignInState } from '../../Profile/ProfileState/types'
-import { ProfileState } from '../../Profile/ProfileState'
 import { Flex } from '@radix-ui/themes'
+import { useState } from 'react'
+
+import { ProfileState } from '../../Profile/ProfileState'
+import { SignInState } from '../../Profile/ProfileState/types'
 
 export function SignIn() {
   const [state, setState] = useState<SignInState>({

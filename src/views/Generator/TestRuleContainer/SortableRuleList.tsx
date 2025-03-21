@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { Flex, Grid } from '@radix-ui/themes'
 import {
   DndContext,
   closestCenter,
@@ -20,10 +18,13 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import { Flex, Grid } from '@radix-ui/themes'
+import { useState } from 'react'
+
+import { useGeneratorStore } from '@/store/generator'
+import { TestRule } from '@/types/rules'
 
 import { TestRuleItem } from './TestRule'
-import { TestRule } from '@/types/rules'
-import { useGeneratorStore } from '@/store/generator'
 
 interface SortableRuleListProps {
   rules: TestRule[]

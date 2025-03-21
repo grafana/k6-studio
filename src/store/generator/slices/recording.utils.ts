@@ -1,5 +1,6 @@
-import { ProxyData } from '@/types'
 import { uniq } from 'lodash-es'
+
+import { ProxyData } from '@/types'
 
 export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))

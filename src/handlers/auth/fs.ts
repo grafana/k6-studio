@@ -1,7 +1,8 @@
-import { readFile, writeFile } from 'fs/promises'
-import { Profile, ProfileSchema } from '@/schemas/profile'
-import path from 'path'
 import { app } from 'electron'
+import { readFile, writeFile } from 'fs/promises'
+import path from 'path'
+
+import { Profile, ProfileSchema } from '@/schemas/profile'
 
 const fileName =
   process.env.NODE_ENV === 'development'

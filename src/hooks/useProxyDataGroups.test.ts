@@ -1,9 +1,11 @@
-import { createProxyData } from '@/test/factories/proxyData'
-import { useProxyDataGroups } from './useProxyDataGroups'
-import { DEFAULT_GROUP_NAME } from '@/constants'
-import { ProxyData } from '@/types'
 import { renderHook } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
+
+import { DEFAULT_GROUP_NAME } from '@/constants'
+import { createProxyData } from '@/test/factories/proxyData'
+import { ProxyData } from '@/types'
+
+import { useProxyDataGroups } from './useProxyDataGroups'
 
 describe('useProxyDataGroups', () => {
   it('should return unique group names from proxy data', () => {

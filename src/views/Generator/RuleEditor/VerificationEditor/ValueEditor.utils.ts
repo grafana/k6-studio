@@ -1,8 +1,8 @@
-import { VerificationRule } from '@/types/rules'
 import {
   StatusVerificationRuleSchema,
   BodyVerificationRuleSchema,
 } from '@/schemas/generator'
+import { VerificationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
 export const VALUE_LABELS: Record<VerificationRule['value']['type'], string> = {

@@ -1,12 +1,14 @@
-import { describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useListenProxyData } from './useListenProxyData'
-import { ProxyData } from '@/types'
+import { describe, expect, it, vi, beforeAll, afterAll } from 'vitest'
+
 import {
   createProxyData,
   createProxyDataWithoutResponse,
   createResponse,
 } from '@/test/factories/proxyData'
+import { ProxyData } from '@/types'
+
+import { useListenProxyData } from './useListenProxyData'
 
 type Callback = (data: ProxyData) => void
 

@@ -1,7 +1,8 @@
+import { DataList, Strong } from '@radix-ui/themes'
+
 import { HighlightedText } from '@/components/HighlightedText'
 import { ProxyData } from '@/types'
 import { SearchMatch } from '@/types/fuse'
-import { DataList, Strong } from '@radix-ui/themes'
 
 export function Headers({
   data,

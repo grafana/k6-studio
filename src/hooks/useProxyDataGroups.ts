@@ -1,6 +1,7 @@
+import { useMemo } from 'react'
+
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { ProxyData } from '@/types'
-import { useMemo } from 'react'
 
 /** Returns an array of unique group names from the given proxy data */
 export function useProxyDataGroups(proxyData: ProxyData[]) {

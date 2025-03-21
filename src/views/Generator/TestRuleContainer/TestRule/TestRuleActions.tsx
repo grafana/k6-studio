@@ -1,6 +1,6 @@
+import { css } from '@emotion/react'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton } from '@radix-ui/themes'
-import { css } from '@emotion/react'
 
 import { useGeneratorStore } from '@/store/generator'
 

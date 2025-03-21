@@ -1,11 +1,13 @@
-import { TestRule } from '@/types/rules'
-import { exhaustive } from '../utils/typescript'
-import { createCustomCodeRuleInstance } from './customCode'
-import { createCorrelationRuleInstance } from './correlation'
-import { createVerificationRuleInstance } from './verification'
-import { createParameterizationRuleInstance } from './parameterization'
 import { ProxyData, RequestSnippetSchema } from '@/types'
+import { TestRule } from '@/types/rules'
+
+import { exhaustive } from '../utils/typescript'
+
+import { createCorrelationRuleInstance } from './correlation'
+import { createCustomCodeRuleInstance } from './customCode'
+import { createParameterizationRuleInstance } from './parameterization'
 import { generateSequentialInt } from './utils'
+import { createVerificationRuleInstance } from './verification'
 
 function createSequentialIdPool() {
   const currentId: Record<

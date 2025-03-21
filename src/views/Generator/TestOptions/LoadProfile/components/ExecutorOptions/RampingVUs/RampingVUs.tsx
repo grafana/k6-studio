@@ -1,4 +1,5 @@
 import { Flex, Text } from '@radix-ui/themes'
+
 import { VUStages } from './VUStages'
 
 export function RampingVUs() {

@@ -1,15 +1,14 @@
-import { Flex, Text, Checkbox, Link } from '@radix-ui/themes'
+import { Flex, Text, Checkbox } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
-import { SettingsSection } from './SettingsSection'
+
 import { AppSettings } from '@/types/settings'
+
+import { ExternalLink } from '../ExternalLink'
+
+import { SettingsSection } from './SettingsSection'
 
 export const TelemetrySettings = () => {
   const { control, register } = useFormContext<AppSettings>()
-
-  const handleLinkClick = () =>
-    window.studio.browser.openExternalLink(
-      'https://grafana.com/docs/k6-studio/set-up/usage-collection/'
-    )
 
   return (
     <SettingsSection>
@@ -17,9 +16,9 @@ export const TelemetrySettings = () => {
         <Text size="2" as="label">
           Grafana k6 Studio collects anonymous telemetry data to improve
           performance and user experience.{' '}
-          <Link href="" onClick={handleLinkClick}>
+          <ExternalLink href="https://grafana.com/docs/k6-studio/set-up/usage-collection/">
             Learn more.
-          </Link>
+          </ExternalLink>
         </Text>
       </Flex>
 

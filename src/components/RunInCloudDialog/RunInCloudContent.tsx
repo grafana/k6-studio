@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { RunInCloudStates } from './states'
-import { Script } from '@/handlers/cloud/types'
 import { useDeepCompareEffect } from 'react-use'
+
+import { Script } from '@/handlers/cloud/types'
+
+import { RunInCloudStates } from './states'
 import { RunInCloudState } from './states/types'
 
 interface RunInCloudContentProps {

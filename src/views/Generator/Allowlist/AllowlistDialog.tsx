@@ -1,6 +1,3 @@
-import { Label } from '@/components/Label'
-import { ProxyData } from '@/types'
-import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import {
   Button,
@@ -16,6 +13,10 @@ import {
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
 import { useMemo, useState } from 'react'
+
+import { Label } from '@/components/Label'
+import { ProxyData } from '@/types'
+import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
 export function AllowlistDialog({
   hosts,

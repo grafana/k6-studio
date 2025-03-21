@@ -1,5 +1,6 @@
 import { Box, Flex } from '@radix-ui/themes'
 import { PropsWithChildren, ReactNode } from 'react'
+
 import { PageHeading } from './PageHeading'
 
 interface ViewProps {

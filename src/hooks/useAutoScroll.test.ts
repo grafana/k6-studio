@@ -1,7 +1,8 @@
 import { renderHook } from '@testing-library/react'
 import React, { useRef } from 'react'
-import { useAutoScroll } from './useAutoScroll'
 import { describe, expect, it, vi, afterAll } from 'vitest'
+
+import { useAutoScroll } from './useAutoScroll'
 
 vi.mock('react', async () => {
   const actual = await vi.importActual<typeof React>('react')

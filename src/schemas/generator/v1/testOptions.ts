@@ -1,6 +1,7 @@
 import { z } from 'zod'
-import { ThresholdSchema } from './thresholds'
+
 import { LoadZoneSchema } from './loadZone'
+import { ThresholdSchema } from './thresholds'
 
 export const SleepTypeSchema = z.enum(['groups', 'requests', 'iterations'])
 

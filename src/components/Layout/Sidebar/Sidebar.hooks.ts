@@ -1,9 +1,10 @@
-import { useStudioUIStore } from '@/store/ui'
-import { StudioFile } from '@/types'
-import { withMatches } from '@/utils/fuse'
 import Fuse, { IFuseOptions } from 'fuse.js'
 import { orderBy } from 'lodash-es'
 import { useEffect, useMemo } from 'react'
+
+import { useStudioUIStore } from '@/store/ui'
+import { StudioFile } from '@/types'
+import { withMatches } from '@/utils/fuse'
 
 function orderByFileName(files: Map<string, StudioFile>) {
   return orderBy([...files.values()], (s) => s.displayName)

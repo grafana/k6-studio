@@ -1,7 +1,9 @@
-import { Text, Flex } from '@radix-ui/themes'
-import { ErrorState } from './types'
-import grotCrashed from '@/assets/grot-crashed.svg'
 import { css } from '@emotion/react'
+import { Text, Flex } from '@radix-ui/themes'
+
+import grotCrashed from '@/assets/grot-crashed.svg'
+
+import { ErrorState } from './types'
 
 interface ErrorProps {
   state: ErrorState

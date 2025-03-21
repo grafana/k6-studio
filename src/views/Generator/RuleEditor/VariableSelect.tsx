@@ -1,8 +1,9 @@
 import { Code, Flex } from '@radix-ui/themes'
-import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { Control, FieldErrors, FieldValues, Path } from 'react-hook-form'
-import { useGeneratorStore } from '@/store/generator'
 import { useMemo } from 'react'
+import { Control, FieldErrors, FieldValues, Path } from 'react-hook-form'
+
+import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { useGeneratorStore } from '@/store/generator'
 
 export function VariableSelect<T extends FieldValues>({
   control,

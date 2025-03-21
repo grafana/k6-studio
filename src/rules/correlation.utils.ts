@@ -1,5 +1,6 @@
-import { CorrelationRule } from '@/types/rules'
 import { Cookie, Header, Request } from '@/types'
+import { CorrelationRule } from '@/types/rules'
+
 import {
   replaceContent,
   replaceCookies,
