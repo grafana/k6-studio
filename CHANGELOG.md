@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0](https://github.com/grafana/k6-studio/compare/v1.0.2...v1.1.0) (2025-03-21)
+
+
+### Features
+
+* Add correlation extraction label ([#577](https://github.com/grafana/k6-studio/issues/577)) ([e6018fb](https://github.com/grafana/k6-studio/commit/e6018fb008a07a5082b797161e9713f0dc07e261))
+* Update splashscreen ([#573](https://github.com/grafana/k6-studio/issues/573)) ([197bdf4](https://github.com/grafana/k6-studio/commit/197bdf4e7a89fdd166040157b68053d587aae112))
+
+
+### Miscellaneous Chores
+
+* Add ESLint import/order rule ([#585](https://github.com/grafana/k6-studio/issues/585)) ([d93b5df](https://github.com/grafana/k6-studio/commit/d93b5df199c01bb49a2e0ba5f65c209aaf4eea95))
+* update demo video ([#586](https://github.com/grafana/k6-studio/issues/586)) ([0afd232](https://github.com/grafana/k6-studio/commit/0afd2323ac87e875e2ab46376b8b26dd931d3fee))
+* Use ExternalLink component for docs and GitHub links ([#584](https://github.com/grafana/k6-studio/issues/584)) ([6404942](https://github.com/grafana/k6-studio/commit/6404942cf7e7166f200bc1f59d69af79c9c298b6))
+
 ## [1.0.2](https://github.com/grafana/k6-studio/compare/v1.0.1...v1.0.2) (2025-03-19)
 
 
