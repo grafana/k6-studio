@@ -80,6 +80,7 @@ const basicSearchKeys: Array<FuseOptionKey<ProxyData>> = [
   'request.host',
   'request.method',
   'response.statusCode',
+  'request.url',
 ]
 
 const fullSearchKeys: Array<FuseOptionKey<ProxyData>> = [
