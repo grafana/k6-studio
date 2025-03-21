@@ -1,8 +1,9 @@
-import { Badge, Grid } from '@radix-ui/themes'
+import { Grid } from '@radix-ui/themes'
 import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
+import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { TableSkeleton } from '@/components/TableSkeleton'
 import { getRoutePath } from '@/routeMap'
@@ -39,14 +40,14 @@ export function DataFile() {
     <View
       title="Data file preview"
       subTitle={
-        <>
-          {getFileNameWithoutExtension(fileName)}
-          {!!preview && (
-            <Badge color="gray" size="1">
-              {preview.type.toUpperCase()}
-            </Badge>
-          )}
-        </>
+        <FileNameHeader
+          file={{
+            fileName,
+            displayName: getFileNameWithoutExtension(fileName),
+            type: 'data-file',
+          }}
+          showExt
+        />
       }
       actions={<DataFileControls fileName={fileName} />}
       loading={isLoading}
