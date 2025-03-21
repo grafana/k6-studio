@@ -1,5 +1,6 @@
 import { ThresholdMetricSchema } from '@/schemas/generator'
 import { ThresholdMetric, ThresholdStatstic } from '@/types/testOptions'
+import { getLogicalOperatorLabelAndIcon } from '@/utils/operatorLabels'
 import { exhaustive } from '@/utils/typescript'
 
 type ThresholdMetricMap = {
@@ -74,12 +75,30 @@ export const THRESHOLD_METRICS_OPTIONS = ThresholdMetricSchema.options.map(
 )
 
 export const THRESHOLD_CONDITIONS_OPTIONS = [
-  { label: '<', value: '<' },
-  { label: '<=', value: '<=' },
-  { label: '>', value: '>' },
-  { label: '>=', value: '>=' },
-  { label: '===', value: '===' },
-  { label: '!=', value: '!=' },
+  {
+    value: '<',
+    ...getLogicalOperatorLabelAndIcon('lessThan'),
+  },
+  {
+    value: '<=',
+    ...getLogicalOperatorLabelAndIcon('lessThanOrEqual'),
+  },
+  {
+    value: '>',
+    ...getLogicalOperatorLabelAndIcon('greaterThan'),
+  },
+  {
+    value: '>=',
+    ...getLogicalOperatorLabelAndIcon('greaterThanOrEqual'),
+  },
+  {
+    value: '===',
+    ...getLogicalOperatorLabelAndIcon('equals'),
+  },
+  {
+    value: '!=',
+    ...getLogicalOperatorLabelAndIcon('notEquals'),
+  },
 ]
 
 type StatisticOption = { label: string; value: ThresholdStatstic }
