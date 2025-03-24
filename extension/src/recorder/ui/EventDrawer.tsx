@@ -1,7 +1,6 @@
 import { css, keyframes } from '@emotion/react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { Cross1Icon } from '@radix-ui/react-icons'
-import { TooltipProvider } from '@radix-ui/react-tooltip'
 import { useEffect, useState } from 'react'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
@@ -9,25 +8,25 @@ import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
 
-import { background } from '../client'
+import { client } from '../client'
 
 function useRecordedEvents() {
   const [events, setEvents] = useState<BrowserEvent[]>([])
 
   useEffect(() => {
-    return background.on('events-recorded', (event) => {
+    return client.on('events-recorded', (event) => {
       setEvents((prev) => [...prev, ...event.data.events])
     })
   }, [])
 
   useEffect(() => {
-    return background.on('events-loaded', (event) => {
+    return client.on('events-loaded', (event) => {
       setEvents(event.data.events)
     })
   }, [])
 
   useEffect(() => {
-    background.send({
+    client.send({
       type: 'load-events',
     })
   }, [])
@@ -64,6 +63,20 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
   const container = useContainerElement()
 
   const events = useRecordedEvents()
+
+  const handleHighlight = (selector: string | null) => {
+    client.send({
+      type: 'highlight-element',
+      selector,
+    })
+  }
+
+  const handleNavigate = (url: string) => {
+    client.send({
+      type: 'navigate',
+      url,
+    })
+  }
 
   return (
     <RecordingContext recording>
@@ -144,13 +157,11 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
                 <Cross1Icon />
               </Dialog.Close>
             </div>
-            <TooltipProvider>
-              <BrowserEventList
-                events={events}
-                onHighlight={() => {}}
-                onNavigate={() => {}}
-              />
-            </TooltipProvider>
+            <BrowserEventList
+              events={events}
+              onNavigate={handleNavigate}
+              onHighlight={handleHighlight}
+            />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

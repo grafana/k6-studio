@@ -4,7 +4,7 @@ import { BrowserEvent } from '@/schemas/recording'
 
 import { generateSelector } from '../selectors'
 
-import { background } from './client'
+import { client } from './client'
 import { shouldSkipEvent } from './ui/utils'
 
 function getButton(button: number) {
@@ -24,7 +24,7 @@ function getButton(button: number) {
 }
 
 function recordEvents(events: BrowserEvent[] | BrowserEvent) {
-  background.send({
+  client.send({
     type: 'record-events',
     events: Array.isArray(events) ? events : [events],
   })

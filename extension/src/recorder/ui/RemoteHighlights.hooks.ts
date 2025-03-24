@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { background } from '../client'
+import { client } from '../client'
 
 import { Bounds } from './types'
 
@@ -8,7 +8,7 @@ export function useHighlightedElements() {
   const [bounds, setBounds] = useState<Bounds[]>([])
 
   useEffect(() => {
-    return background.on('highlight-element', ({ data }) => {
+    return client.on('highlight-element', ({ data }) => {
       if (data.selector === null) {
         setBounds([])
 
