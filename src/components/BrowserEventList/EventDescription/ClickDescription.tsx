@@ -1,5 +1,4 @@
-import { Kbd } from '@radix-ui/themes'
-
+import { Kbd } from '@/components/primitives/Kbd'
 import { ClickedEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
@@ -59,7 +58,7 @@ export function ClickDescription({
 
   return (
     <>
-      <Kbd size="2">{clickedText}</Kbd> on element{' '}
+      <Kbd>{clickedText}</Kbd> on element{' '}
       <Selector value={event.selector} onHighlight={onHighlight} />
     </>
   )

@@ -21,7 +21,7 @@ const Separator = styled(RadixToolbar.Separator)`
   &:before {
     content: ' ';
     display: block;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--studio-border-color);
     width: 1px;
     height: 100%;
   }
@@ -42,6 +42,7 @@ const ToggleItem = styled(RadixToolbar.ToggleItem)`
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  color: var(--studio-foreground);
   background-color: var(--studio-toggle-bg-off);
   border: none;
   padding: var(--studio-spacing-2);

@@ -42,7 +42,8 @@ export function ToolBox({
         left: 50%;
         transform: translateX(-50%);
         z-index: var(--studio-layer-2);
-        background-color: white;
+        color: var(--studio-foreground);
+        background-color: var(--studio-background);
         box-shadow: var(--studio-shadow-1);
       `}
     >

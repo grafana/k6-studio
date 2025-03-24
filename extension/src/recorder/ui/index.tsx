@@ -60,7 +60,7 @@ function initialize() {
       />
       <ContainerProvider container={root}>
         <CacheProvider value={shadowCache}>
-          <Theme root={false} />
+          <Theme root={false} includeColors />
           <InBrowserControls />
         </CacheProvider>
       </ContainerProvider>

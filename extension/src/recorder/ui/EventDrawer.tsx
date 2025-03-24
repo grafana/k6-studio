@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { BrowserEvent } from '@/schemas/recording'
+import { RecordingContext } from '@/views/Recorder/RecordingContext'
 
 import { background } from '../client'
 
@@ -65,86 +66,94 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
   const events = useRecordedEvents()
 
   return (
-    <Dialog.Root modal={false} open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal container={container}>
-        <Dialog.Overlay />
-        <Dialog.Content
-          css={css`
-            position: fixed;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            z-index: var(--studio-layer-1);
-
-            width: 35vw;
-            min-width: 300px;
-            max-width: 600px;
-            padding: var(--studio-spacing-4);
-            background-color: white;
-            box-shadow: var(--studio-shadow-1);
-
-            &[data-state='open'] {
-              animation: ${slideIn} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            }
-
-            &[data-state='closed'] {
-              animation: ${slideOut} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            }
-
-            @media (prefers-reduced-motion: reduce) {
-              animation: none;
-            }
-          `}
-          onInteractOutside={(event) => {
-            event.preventDefault()
-          }}
-        >
-          <div
+    <RecordingContext recording>
+      <Dialog.Root modal={false} open={open} onOpenChange={onOpenChange}>
+        <Dialog.Portal container={container}>
+          <Dialog.Overlay />
+          <Dialog.Content
             css={css`
+              position: fixed;
+              top: 0;
+              right: 0;
+              bottom: 0;
+              z-index: var(--studio-layer-1);
+
+              width: 35vw;
+              min-width: 300px;
+              max-width: 600px;
+              padding: var(--studio-spacing-4);
+              padding-left: var(--studio-spacing-5);
+              background-color: var(--studio-background);
+              box-shadow: var(--studio-shadow-1);
+
               display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding-left: var(--studio-spacing-2);
+              flex-direction: column;
+              gap: var(--studio-spacing-2);
+
+              &[data-state='open'] {
+                animation: ${slideIn} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+              }
+
+              &[data-state='closed'] {
+                animation: ${slideOut} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+              }
+
+              @media (prefers-reduced-motion: reduce) {
+                animation: none;
+              }
             `}
+            onInteractOutside={(event) => {
+              event.preventDefault()
+            }}
           >
-            <Dialog.Title
+            <div
               css={css`
-                margin: 0;
-              `}
-            >
-              Events
-            </Dialog.Title>
-            <Dialog.Close
-              aria-label="Close event list"
-              css={css`
-                background-color: transparent;
-                border: none;
-                padding: 0;
-                cursor: pointer;
-                padding: var(--studio-spacing-2);
-                border-radius: 50%;
-
                 display: flex;
+                justify-content: space-between;
                 align-items: center;
-                justify-content: center;
-
-                &:hover {
-                  background-color: rgba(0, 0, 0, 0.1);
-                }
+                padding-left: var(--studio-spacing-2);
               `}
             >
-              <Cross1Icon />
-            </Dialog.Close>
-          </div>
-          <TooltipProvider>
-            <BrowserEventList
-              events={events}
-              onHighlight={() => {}}
-              onNavigate={() => {}}
-            />
-          </TooltipProvider>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+              <Dialog.Title
+                css={css`
+                  margin: 0;
+                `}
+              >
+                Events
+              </Dialog.Title>
+              <Dialog.Close
+                aria-label="Close event list"
+                css={css`
+                  background-color: transparent;
+                  color: var(--studio-foreground);
+                  border: none;
+                  padding: 0;
+                  cursor: pointer;
+                  padding: var(--studio-spacing-2);
+                  border-radius: 50%;
+
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+
+                  &:hover {
+                    background-color: var(--studio-hover-color);
+                  }
+                `}
+              >
+                <Cross1Icon />
+              </Dialog.Close>
+            </div>
+            <TooltipProvider>
+              <BrowserEventList
+                events={events}
+                onHighlight={() => {}}
+                onNavigate={() => {}}
+              />
+            </TooltipProvider>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </RecordingContext>
   )
 }
