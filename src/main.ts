@@ -60,6 +60,7 @@ import { HarWithOptionalResponse } from './types/har'
 import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
 import { sendReport } from './usageReport'
+import { reportNewIssue } from './utils/bugReport'
 import { parseDataFile } from './utils/dataFile'
 import {
   sendToast,
@@ -605,6 +606,10 @@ ipcMain.handle('ui:get-files', async () => {
     scripts,
     dataFiles,
   }
+})
+
+ipcMain.handle('ui:report-issue', () => {
+  return reportNewIssue()
 })
 
 ipcMain.handle(
