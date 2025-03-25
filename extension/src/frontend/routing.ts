@@ -1,8 +1,7 @@
 import { BrowserExtensionClient } from '../messaging'
 import { BackgroundTransport } from '../messaging/transports/background'
-import { InMemoryTransport } from '../messaging/transports/inMemory'
 
-const frontend = new BrowserExtensionClient('frontend', new InMemoryTransport())
+const frontend = new BrowserExtensionClient('frontend')
 
 const background = new BrowserExtensionClient(
   'recorder',

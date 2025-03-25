@@ -2,6 +2,9 @@ import { runtime, Runtime } from 'webextension-polyfill'
 
 import { Transport } from './transport'
 
+/**
+ * Connects to a background script over a port.
+ */
 export class BackgroundTransport extends Transport {
   #port: Runtime.Port
 

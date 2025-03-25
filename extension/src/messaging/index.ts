@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { EventEmitter } from '../utils/events'
 
+import { NullTransport } from './transports/null'
 import { Sender, SenderSchema, Transport } from './transports/transport'
 import { BrowserExtensionMessage, BrowserExtensionMessageSchema } from './types'
 
@@ -39,11 +40,22 @@ type BrowserExtensionClientEvents = {
 export type BrowserExtensionEvent =
   BrowserExtensionClientEvents[keyof BrowserExtensionClientEvents]
 
+/**
+ * A single interface to handle asynchronous communication between the different parts of the extension,
+ * e.g. from content script to background script, from background script to k6 Studio, etc.
+ *
+ * It builds on a generic Transport type which is responsible for sending and receiving messages, so that
+ * the client doesn't have to care whether it's a web socket, a message port, or something else.
+ *
+ * Messages can be routed to other clients by calling the forward method, which will send the message to
+ * all the clients passed as an argument. That way a message sent by e.g. k6 Studio can find its way to
+ * content scripts.
+ */
 export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientEvents> {
   #transport: Transport
   #keepAlive: Parameters<typeof clearInterval>[0] = undefined
 
-  constructor(name: string, transport: Transport) {
+  constructor(name: string, transport: Transport = new NullTransport()) {
     super()
 
     this.#transport = transport
@@ -84,6 +96,10 @@ export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientE
     }, 5000)
   }
 
+  /**
+   * Sends a message over the configured transport. This will trigger event listeners
+   * both on this instance and on the remote end.
+   */
   send(message: BrowserExtensionMessage, sender?: Sender) {
     this.emit(message.type, {
       sender,
@@ -97,6 +113,11 @@ export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientE
     } satisfies MessageEnvelope)
   }
 
+  /**
+   * Forwards message of the given type to all of the clients passed as an argument.
+   * This lets us route messages from e.g. k6 Studio via the background script to
+   * content scripts with minimal configuration.
+   */
   forward(
     type: BrowserExtensionMessage['type'],
     clients: BrowserExtensionClient[]

@@ -2,7 +2,11 @@ import { runtime, Runtime } from 'webextension-polyfill'
 
 import { Transport } from './transport'
 
-export class ContentScriptsTransport extends Transport {
+/**
+ * Maintains connections to one or more ports, e.g. from
+ * content scripts.
+ */
+export class PortTransport extends Transport {
   #ports: Array<Runtime.Port> = []
 
   constructor() {

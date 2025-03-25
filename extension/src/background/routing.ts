@@ -1,19 +1,12 @@
 import { BrowserExtensionClient } from '../messaging'
 import { BufferedTransport } from '../messaging/transports/buffered'
-import { ContentScriptsTransport } from '../messaging/transports/contentScripts'
-import { InMemoryTransport } from '../messaging/transports/inMemory'
 import { NullTransport } from '../messaging/transports/null'
+import { PortTransport } from '../messaging/transports/port'
 import { WebSocketTransport } from '../messaging/transports/webSocket'
 
-const background = new BrowserExtensionClient(
-  'background',
-  new InMemoryTransport()
-)
+const background = new BrowserExtensionClient('background')
 
-const frontend = new BrowserExtensionClient(
-  'frontend',
-  new ContentScriptsTransport()
-)
+const frontend = new BrowserExtensionClient('frontend', new PortTransport())
 
 const studio = new BrowserExtensionClient(
   'studio',

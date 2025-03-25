@@ -1,5 +1,11 @@
 import { Transport } from './transport'
 
+/**
+ * Stores messages until the underlying transport is connected, then
+ * sends them all at once. If the transport is disconnected, it will
+ * start storing messages again until the next time the transport is
+ * connected.
+ */
 export class BufferedTransport extends Transport {
   #transport: Transport
   #buffer: Array<unknown> = []
