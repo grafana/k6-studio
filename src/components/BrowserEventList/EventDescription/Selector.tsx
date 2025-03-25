@@ -1,5 +1,4 @@
 import { css } from '@emotion/react'
-import { Strong } from '@radix-ui/themes'
 
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 
@@ -24,7 +23,7 @@ export function Selector({ value, onHighlight }: SelectorProps) {
   }
 
   return (
-    <Strong
+    <strong
       css={css`
         font-weight: bold;
         border-radius: var(--radius-2);
@@ -42,6 +41,6 @@ export function Selector({ value, onHighlight }: SelectorProps) {
       onMouseLeave={handleMouseLeave}
     >
       {value}
-    </Strong>
+    </strong>
   )
 }

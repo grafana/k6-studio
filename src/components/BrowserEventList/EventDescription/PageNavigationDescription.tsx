@@ -1,5 +1,4 @@
 import { css } from '@emotion/react'
-import { Strong, Link } from '@radix-ui/themes'
 import { forwardRef, MouseEvent } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
@@ -24,14 +23,14 @@ const RemoteLink = forwardRef<HTMLElement, RemoteLinkProps>(function RemoteLink(
     onClick(url)
   }
 
-  const element = <Strong ref={ref}>{url}</Strong>
+  const element = <strong ref={ref}>{url}</strong>
 
   if (!isRecording) {
     return element
   }
 
   return (
-    <Link
+    <a
       css={css`
         cursor: pointer;
 
@@ -42,7 +41,7 @@ const RemoteLink = forwardRef<HTMLElement, RemoteLinkProps>(function RemoteLink(
       onClick={handleClick}
     >
       {element}
-    </Link>
+    </a>
   )
 })
 
