@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
+import { TextAssertionEditor } from './TextAssertionEditor'
 import { ToolBox } from './ToolBox'
 import { useInBrowserUIStore } from './store'
 
@@ -21,6 +22,7 @@ export function InBrowserControls() {
       {tool === 'inspect' && (
         <ElementInspector onEscape={handleInspectorEscape} />
       )}
+      {tool === 'assert-text' && <TextAssertionEditor />}
       <RemoteHighlights enabled={tool === null} />
       <ToolBox
         isDrawerOpen={isDrawerOpen}

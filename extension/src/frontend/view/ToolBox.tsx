@@ -1,5 +1,9 @@
 import { css } from '@emotion/react'
-import { CursorArrowIcon, ReaderIcon } from '@radix-ui/react-icons'
+import {
+  CursorArrowIcon,
+  CursorTextIcon,
+  ReaderIcon,
+} from '@radix-ui/react-icons'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
 
@@ -20,8 +24,9 @@ export function ToolBox({
 }: ToolBoxProps) {
   const handleToolChange = (value: string) => {
     switch (value) {
+      case 'assert-text':
       case 'inspect':
-        onSelectTool('inspect')
+        onSelectTool(value)
         break
 
       default:
@@ -54,6 +59,9 @@ export function ToolBox({
       >
         <Toolbar.ToggleItem value="inspect">
           <CursorArrowIcon />
+        </Toolbar.ToggleItem>
+        <Toolbar.ToggleItem value="assert-text">
+          <CursorTextIcon />
         </Toolbar.ToggleItem>
       </Toolbar.ToggleGroup>
       <Toolbar.Separator />
