@@ -27,6 +27,12 @@ export default defineConfig((env) => {
   const viteConfig: InlineConfig = {
     plugins,
     build,
+    define: {
+      STANDALONE_EXTENSION: JSON.stringify(
+        process.env.STANDALONE_EXTENSION === 'true'
+      ),
+      TARGET_PLATFORM: JSON.stringify(process.platform),
+    },
   }
 
   return {
@@ -37,6 +43,9 @@ export default defineConfig((env) => {
     plugins: [
       ...plugins,
       webExtension({
+        webExtConfig: {
+          startUrl: 'https://quickpizza.grafana.com',
+        },
         disableAutoLaunch: process.env.STANDALONE_EXTENSION !== 'true',
         htmlViteConfig: viteConfig,
         scriptViteConfig: viteConfig,
@@ -47,12 +56,12 @@ export default defineConfig((env) => {
             version: version.replace(/-.*/, ''),
             manifest_version: 3,
             background: {
-              service_worker: 'extension/src/background.ts',
+              service_worker: 'extension/src/background/index.ts',
             },
             content_scripts: [
               {
                 matches: ['<all_urls>'],
-                js: ['extension/src/recorder.ts'],
+                js: ['extension/src/frontend/index.ts'],
               },
             ],
             permissions: ['webNavigation'],
