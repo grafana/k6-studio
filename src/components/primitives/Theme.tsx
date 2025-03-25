@@ -85,8 +85,8 @@ const styles = css`
 
   --studio-alpha-1: rgba(0, 0, 0, 0.1);
 
-  --studio-foreground: rgb(36, 41, 46);
-  --studio-background: rgb(255, 255, 255);
+  --studio-foreground: var(--gray-11);
+  --studio-background: white;
 
   --studio-shadow-1: rgba(24, 26, 27, 0.2) 0px 4px 8px;
 
@@ -109,8 +109,8 @@ const styles = css`
   @media (prefers-color-scheme: dark) {
     --studio-alpha-1: rgba(255, 255, 255, 0.1);
 
-    --studio-foreground: rgb(255, 255, 255);
-    --studio-background: rgb(36, 41, 46);
+    --studio-foreground: var(--gray-11);
+    --studio-background: var(--gray-1);
 
     --studio-border-color: rgb(255, 255, 255, 0.1);
 
