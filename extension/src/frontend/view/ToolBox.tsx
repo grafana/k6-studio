@@ -6,6 +6,7 @@ import {
 } from '@radix-ui/react-icons'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
+import { Tooltip } from '@/components/primitives/Tooltip'
 
 import { Tool } from './types'
 
@@ -57,12 +58,16 @@ export function ToolBox({
         value={tool ?? ''}
         onValueChange={handleToolChange}
       >
-        <Toolbar.ToggleItem value="inspect">
-          <CursorArrowIcon />
-        </Toolbar.ToggleItem>
-        <Toolbar.ToggleItem value="assert-text">
-          <CursorTextIcon />
-        </Toolbar.ToggleItem>
+        <Tooltip content="Inspect elements">
+          <Toolbar.ToggleItem value="inspect">
+            <CursorArrowIcon />
+          </Toolbar.ToggleItem>
+        </Tooltip>
+        <Tooltip content="Add assertions on text content">
+          <Toolbar.ToggleItem value="assert-text">
+            <CursorTextIcon />
+          </Toolbar.ToggleItem>
+        </Tooltip>
       </Toolbar.ToggleGroup>
       <Toolbar.Separator />
       <Toolbar.ToggleGroup
@@ -70,9 +75,11 @@ export function ToolBox({
         value={isDrawerOpen ? 'events' : ''}
         onValueChange={handleDrawerToggle}
       >
-        <Toolbar.ToggleItem value="events">
-          <ReaderIcon />
-        </Toolbar.ToggleItem>
+        <Tooltip content="Toggle event list">
+          <Toolbar.ToggleItem value="events">
+            <ReaderIcon />
+          </Toolbar.ToggleItem>
+        </Tooltip>
       </Toolbar.ToggleGroup>
     </Toolbar.Root>
   )
