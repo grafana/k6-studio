@@ -1,5 +1,4 @@
 import { css } from '@emotion/react'
-import { ScrollArea } from '@radix-ui/themes'
 
 import { Flex } from '@/components/primitives/Flex'
 import { Table } from '@/components/primitives/Table'
@@ -20,41 +19,39 @@ export function BrowserEventList({
   onHighlight,
 }: BrowserEventListProps) {
   return (
-    <ScrollArea>
-      <Table.Root
-        css={css`
-          border-top: 1px solid var(--gray-6);
-          width: 100%;
-        `}
-      >
-        <Table.Body>
-          {events.map((event) => {
-            return (
-              <Table.Row key={event.eventId}>
-                <Table.Cell>
-                  <Flex align="center" gap="2">
-                    <EventIcon event={event} />
-                    <div
-                      css={css`
-                        flex: 1 1 0;
-                        overflow: hidden;
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
-                      `}
-                    >
-                      <EventDescription
-                        event={event}
-                        onNavigate={onNavigate}
-                        onHighlight={onHighlight}
-                      />
-                    </div>
-                  </Flex>
-                </Table.Cell>
-              </Table.Row>
-            )
-          })}
-        </Table.Body>
-      </Table.Root>
-    </ScrollArea>
+    <Table.Root
+      css={css`
+        border-top: 1px solid var(--gray-6);
+        width: 100%;
+      `}
+    >
+      <Table.Body>
+        {events.map((event) => {
+          return (
+            <Table.Row key={event.eventId}>
+              <Table.Cell>
+                <Flex align="center" gap="2">
+                  <EventIcon event={event} />
+                  <div
+                    css={css`
+                      flex: 1 1 0;
+                      overflow: hidden;
+                      white-space: nowrap;
+                      text-overflow: ellipsis;
+                    `}
+                  >
+                    <EventDescription
+                      event={event}
+                      onNavigate={onNavigate}
+                      onHighlight={onHighlight}
+                    />
+                  </div>
+                </Flex>
+              </Table.Cell>
+            </Table.Row>
+          )
+        })}
+      </Table.Body>
+    </Table.Root>
   )
 }

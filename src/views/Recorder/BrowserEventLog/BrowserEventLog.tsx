@@ -1,4 +1,4 @@
-import { Flex, Button } from '@radix-ui/themes'
+import { Flex, Button, ScrollArea } from '@radix-ui/themes'
 import { useState } from 'react'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
@@ -44,12 +44,13 @@ export function BrowserEventLog({
           </Flex>
         </Flex>
       )}
-
-      <BrowserEventList
-        events={events}
-        onNavigate={handleNavigate}
-        onHighlight={handleHighlight}
-      />
+      <ScrollArea>
+        <BrowserEventList
+          events={events}
+          onNavigate={handleNavigate}
+          onHighlight={handleHighlight}
+        />
+      </ScrollArea>
       {onExportScript && (
         <ExportScriptDialog
           open={showExportDialog}
