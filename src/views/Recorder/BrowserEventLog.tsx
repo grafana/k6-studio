@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { BrowserEvent } from '@/schemas/recording'
 
-import { ExportScriptDialog } from '../../Generator/ExportScriptDialog'
+import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
 
 interface BrowserEventLogProps {
   events: BrowserEvent[]
