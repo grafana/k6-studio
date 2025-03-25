@@ -164,8 +164,8 @@ export const BodyVerificationRuleSchema = BaseVerificationRuleSchema.extend({
   target: z.literal(VerificationTarget.enum.body),
   operator: VerificationOperator,
   value: z.discriminatedUnion('type', [
-    RecordedValueSchema,
     StringValueSchema,
+    RecordedValueSchema,
     VariableValueSchema,
   ]),
 })
