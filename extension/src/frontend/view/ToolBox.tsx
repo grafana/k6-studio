@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { CursorArrowIcon, InfoCircledIcon } from '@radix-ui/react-icons'
+import { CursorArrowIcon, ReaderIcon } from '@radix-ui/react-icons'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
 
@@ -63,7 +63,7 @@ export function ToolBox({
         onValueChange={handleDrawerToggle}
       >
         <Toolbar.ToggleItem value="events">
-          <InfoCircledIcon />
+          <ReaderIcon />
         </Toolbar.ToggleItem>
       </Toolbar.ToggleGroup>
     </Toolbar.Root>
