@@ -139,8 +139,8 @@ function WarningMessage({
     (state) => state.openSettingsDialog
   )
 
-  const handleOpenSettings = () => {
-    openSettingsDialog('recorder')
+  const handleProxyStart = () => {
+    return window.studio.proxy.launchProxy()
   }
 
   if (isBrowserInstalled === false) {
@@ -152,10 +152,13 @@ function WarningMessage({
         <Callout.Text>
           <strong>Supported browser not found</strong>
           <br />
-          Google Chrome or Chromium need to be installed on your machine for the
-          recording functionality to work. If the browser is installed, specify
-          the path in{' '}
-          <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
+          Google Chrome or Chromium needs to be installed on your machine for
+          the recording functionality to work. If the browser is installed,
+          specify the path in{' '}
+          <TextButton onClick={() => openSettingsDialog('recorder')}>
+            Settings
+          </TextButton>
+          .
         </Callout.Text>
       </Callout.Root>
     )
@@ -170,8 +173,12 @@ function WarningMessage({
         <Callout.Text>
           <strong>Proxy is offline</strong>
           <br />
-          Check proxy configuration in{' '}
-          <TextButton onClick={handleOpenSettings}>Settings</TextButton>.
+          <TextButton onClick={handleProxyStart}>Start proxy</TextButton> or
+          check proxy configuration in{' '}
+          <TextButton onClick={() => openSettingsDialog('proxy')}>
+            Settings
+          </TextButton>
+          .
         </Callout.Text>
       </Callout.Root>
     )

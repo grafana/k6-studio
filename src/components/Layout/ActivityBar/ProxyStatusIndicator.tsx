@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Link1Icon, LinkBreak1Icon, LinkNone1Icon } from '@radix-ui/react-icons'
-import { Box, Flex, Tooltip } from '@radix-ui/themes'
+import { Box, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import type { ProxyStatus } from '@/types'
@@ -15,22 +15,47 @@ const COLOR_MAP: Record<ProxyStatus, string> = {
 export function ProxyStatusIndicator() {
   const status = useProxyStatus()
 
+  const handleProxyStart = () => {
+    return window.studio.proxy.launchProxy()
+  }
+
+  const handleProxyStop = () => {
+    return window.studio.proxy.stopProxy()
+  }
+
+  const getTooltipContent = () => {
+    if (status === 'online') {
+      return 'Stop proxy'
+    }
+    if (status === 'offline') {
+      return 'Start proxy'
+    }
+    return 'Proxy is starting'
+  }
+
   return (
-    <Tooltip content={`Proxy status: ${status}`} side="right">
-      <Flex position="relative">
-        <ProxyStatusIcon status={status} />
-        <Box
-          position="absolute"
-          width="6px"
-          height="6px"
-          bottom="0"
-          right="0"
-          css={css`
-            background-color: ${COLOR_MAP[status]};
-            border-radius: 50%;
-          `}
-        />
-      </Flex>
+    <Tooltip content={getTooltipContent()} side="right">
+      <IconButton
+        variant="ghost"
+        color="gray"
+        onClick={status === 'online' ? handleProxyStop : handleProxyStart}
+        disabled={status === 'starting'}
+      >
+        <Flex position="relative">
+          <ProxyStatusIcon status={status} />
+          <Box
+            position="absolute"
+            width="6px"
+            height="6px"
+            bottom="0"
+            right="0"
+            css={css`
+              background-color: ${COLOR_MAP[status]};
+              border-radius: 50%;
+            `}
+          />
+        </Flex>
+      </IconButton>
     </Tooltip>
   )
 }
