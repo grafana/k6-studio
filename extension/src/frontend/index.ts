@@ -1,11 +1,11 @@
-import './ui'
+import './view'
 
 import { BrowserEvent } from '@/schemas/recording'
 
 import { generateSelector } from '../selectors'
 
-import { client } from './client'
-import { shouldSkipEvent } from './ui/utils'
+import { client } from './routing'
+import { shouldSkipEvent } from './view/utils'
 
 function getButton(button: number) {
   switch (button) {

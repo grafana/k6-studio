@@ -85,6 +85,11 @@ export class BrowserExtensionClient extends EventEmitter<BrowserExtensionClientE
   }
 
   send(message: BrowserExtensionMessage, sender?: Sender) {
+    this.emit(message.type, {
+      sender,
+      data: message,
+    } as BrowserExtensionEvent)
+
     this.#transport.send({
       type: 'message',
       sender,

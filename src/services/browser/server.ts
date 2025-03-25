@@ -1,6 +1,6 @@
 import { BrowserWindow } from 'electron'
 
-import { BrowserExtensionClient } from 'extension/src/messaging/client'
+import { BrowserExtensionClient } from 'extension/src/messaging'
 import { WebSocketServerTransport } from 'extension/src/messaging/transports/webSocketServer'
 import { BrowserExtensionMessage } from 'extension/src/messaging/types'
 

@@ -56,12 +56,12 @@ export default defineConfig((env) => {
             version: version.replace(/-.*/, ''),
             manifest_version: 3,
             background: {
-              service_worker: 'extension/src/background.ts',
+              service_worker: 'extension/src/background/index.ts',
             },
             content_scripts: [
               {
                 matches: ['<all_urls>'],
-                js: ['extension/src/recorder/recorder.ts'],
+                js: ['extension/src/frontend/index.ts'],
               },
             ],
             permissions: ['webNavigation'],

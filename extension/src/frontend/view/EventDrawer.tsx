@@ -8,7 +8,7 @@ import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
 
-import { client } from '../client'
+import { client } from '../routing'
 
 function useRecordedEvents() {
   const [events, setEvents] = useState<BrowserEvent[]>([])

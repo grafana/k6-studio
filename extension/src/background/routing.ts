@@ -1,14 +1,15 @@
-import { BrowserExtensionClient } from './client'
-import { BufferedTransport } from './transports/buffered'
-import { ContentScriptsTransport } from './transports/contentScripts'
-import { InMemoryTransport } from './transports/inMemory'
-import { NullTransport } from './transports/null'
-import { WebSocketTransport } from './transports/webSocket'
+import { BrowserExtensionClient } from '../messaging'
+import { BufferedTransport } from '../messaging/transports/buffered'
+import { ContentScriptsTransport } from '../messaging/transports/contentScripts'
+import { InMemoryTransport } from '../messaging/transports/inMemory'
+import { NullTransport } from '../messaging/transports/null'
+import { WebSocketTransport } from '../messaging/transports/webSocket'
 
 const background = new BrowserExtensionClient(
   'background',
   new InMemoryTransport()
 )
+
 const frontend = new BrowserExtensionClient(
   'frontend',
   new ContentScriptsTransport()
@@ -31,4 +32,4 @@ frontend.forward('record-events', [background])
 frontend.forward('navigate', [background])
 frontend.forward('load-events', [background])
 
-export { background, frontend, studio }
+export { background as client }
