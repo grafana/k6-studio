@@ -1,8 +1,12 @@
 import { css } from '@emotion/react'
 import { useEffect, useRef, useState } from 'react'
 
+import { Button } from '@/components/primitives/Button'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
-import { Tooltip } from '@/components/primitives/Tooltip'
+import { Flex } from '@/components/primitives/Flex'
+import { Input } from '@/components/primitives/Input'
+import { Label } from '@/components/primitives/Label'
+import { Popover } from '@/components/primitives/Popover'
 import { generateSelector } from 'extension/src/selectors'
 
 import { ElementHighlight } from './ElementHighlight'
@@ -43,7 +47,7 @@ function useTextSelection() {
     return () => {
       document.removeEventListener('selectstart', handleStart)
     }
-  }, [container])
+  }, [selection, container])
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -108,23 +112,55 @@ export function TextAssertionEditor() {
   return (
     <>
       {selection !== null && (
-        <Tooltip.Root open={true}>
-          <Tooltip.Trigger asChild>
+        <Popover.Root open={true}>
+          <Popover.Anchor asChild>
             <ElementHighlight bounds={selection.bounds} visible={false} />
-          </Tooltip.Trigger>
-          <Tooltip.Portal>
-            <Tooltip.Content
+          </Popover.Anchor>
+          <Popover.Portal>
+            <Popover.Content
               data-inspector-tooltip
               css={css`
+                display: flex;
+                flex-direction: column;
+                gap: var(--studio-spacing-2);
                 user-select: none;
                 font-weight: 500;
+                display: flex;
+                flex-direction: column;
+                min-width: 400px;
+                padding: var(--studio-spacing-2) var(--studio-spacing-4);
               `}
             >
-              <Tooltip.Arrow />
-              <strong>{selection.selector}</strong>: {selection.text}
-            </Tooltip.Content>
-          </Tooltip.Portal>
-        </Tooltip.Root>
+              <Popover.Arrow />
+              <h1
+                css={css`
+                  font-size: var(--studio-font-size-1);
+                  text-align: center;
+                  margin: 0;
+                `}
+              >
+                Add text assertion
+              </h1>
+              <div
+                css={css`
+                  display: grid;
+                  grid-template-columns: auto 1fr;
+                  gap: var(--studio-spacing-2);
+                  align-items: center;
+                `}
+              >
+                <Label size="1">Element</Label>
+                <Input size="1" value={selection.selector} />
+                <Label size="1">Contains</Label>
+                <Input size="1" value={selection.text} />
+              </div>
+
+              <Flex justify="end">
+                <Button size="1">Add</Button>
+              </Flex>
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
       )}
     </>
   )
