@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.1.0](https://github.com/grafana/k6-studio/compare/v1.0.2...v1.1.0) (2025-03-26)
+
+
+### Features
+
+* Ability to control proxy status ([#581](https://github.com/grafana/k6-studio/issues/581)) ([1a10464](https://github.com/grafana/k6-studio/commit/1a10464f9214672975a29c218c0c46c7ad83a142))
+* Add correlation extraction label ([#577](https://github.com/grafana/k6-studio/issues/577)) ([e6018fb](https://github.com/grafana/k6-studio/commit/e6018fb008a07a5082b797161e9713f0dc07e261))
+* add logical operator labels ([#587](https://github.com/grafana/k6-studio/issues/587)) ([466e427](https://github.com/grafana/k6-studio/commit/466e4276e698cf26df1cd800d1799bc875428781))
+* add support for Chromium on all platforms ([#535](https://github.com/grafana/k6-studio/issues/535)) ([951fb20](https://github.com/grafana/k6-studio/commit/951fb208c66f9247a1acc63713245f394d8d6d9d))
+* Pre-fill OS and app version when reporting issues ([#592](https://github.com/grafana/k6-studio/issues/592)) ([748778f](https://github.com/grafana/k6-studio/commit/748778fca29ebad230407ba3bfd30adce890b507))
+* Update splashscreen ([#573](https://github.com/grafana/k6-studio/issues/573)) ([197bdf4](https://github.com/grafana/k6-studio/commit/197bdf4e7a89fdd166040157b68053d587aae112))
+
+
+### Bug Fixes
+
+* Highlight URL search matches in request inspector ([#580](https://github.com/grafana/k6-studio/issues/580)) ([f1a9888](https://github.com/grafana/k6-studio/commit/f1a9888129da4bf96ba60db1633a4a0faa1d5f63))
+* Use text value comparison as default option for body verification rules ([#591](https://github.com/grafana/k6-studio/issues/591)) ([b0d978a](https://github.com/grafana/k6-studio/commit/b0d978ae0ac197fe9e26755edea79675c5f120f4))
+
+
+### Miscellaneous Chores
+
+* Add ESLint import/order rule ([#585](https://github.com/grafana/k6-studio/issues/585)) ([d93b5df](https://github.com/grafana/k6-studio/commit/d93b5df199c01bb49a2e0ba5f65c209aaf4eea95))
+* Update bug template ([#590](https://github.com/grafana/k6-studio/issues/590)) ([76f6bc6](https://github.com/grafana/k6-studio/commit/76f6bc669c57d5aade42929a5549ee481d4f44ef))
+* update demo video ([#586](https://github.com/grafana/k6-studio/issues/586)) ([0afd232](https://github.com/grafana/k6-studio/commit/0afd2323ac87e875e2ab46376b8b26dd931d3fee))
+* Use ExternalLink component for docs and GitHub links ([#584](https://github.com/grafana/k6-studio/issues/584)) ([6404942](https://github.com/grafana/k6-studio/commit/6404942cf7e7166f200bc1f59d69af79c9c298b6))
+
 ## [1.0.2](https://github.com/grafana/k6-studio/compare/v1.0.1...v1.0.2) (2025-03-19)
 
 
