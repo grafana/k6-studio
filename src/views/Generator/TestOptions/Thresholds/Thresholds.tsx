@@ -37,8 +37,8 @@ export function Thresholds() {
       id: crypto.randomUUID(),
       metric: 'http_req_duration',
       statistic: 'avg',
-      condition: '>',
-      value: 0,
+      condition: '<',
+      value: 100,
       stopTest: false,
     })
   }

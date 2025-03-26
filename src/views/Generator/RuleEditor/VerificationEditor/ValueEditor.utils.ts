@@ -3,6 +3,7 @@ import {
   BodyVerificationRuleSchema,
 } from '@/schemas/generator'
 import { VerificationRule } from '@/types/rules'
+import { getLogicalOperatorLabelAndIcon } from '@/utils/operatorLabels'
 import { exhaustive } from '@/utils/typescript'
 
 export const VALUE_LABELS: Record<VerificationRule['value']['type'], string> = {
@@ -12,11 +13,11 @@ export const VALUE_LABELS: Record<VerificationRule['value']['type'], string> = {
   number: 'Number',
 }
 
-export const OPERATOR_LABELS: Record<VerificationRule['operator'], string> = {
-  equals: 'Equals',
-  notEquals: 'Does not equal',
-  contains: 'Contains',
-  notContains: 'Does not contain',
+export const OPERATOR_LABELS = {
+  equals: getLogicalOperatorLabelAndIcon('equals'),
+  notEquals: getLogicalOperatorLabelAndIcon('notEquals'),
+  contains: getLogicalOperatorLabelAndIcon('contains'),
+  notContains: getLogicalOperatorLabelAndIcon('notContains'),
 }
 
 export function getAvailableOperators(target: VerificationRule['target']) {
@@ -59,6 +60,6 @@ export function getValueTypeOptions(
 export function getOperatorOptions(target: VerificationRule['target']) {
   return getAvailableOperators(target).map((val) => ({
     value: val,
-    label: OPERATOR_LABELS[val],
+    ...OPERATOR_LABELS[val],
   }))
 }
