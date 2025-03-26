@@ -42,6 +42,7 @@ const Arrow = styled(RadixTooltip.Arrow)`
 
 interface TooltipProps {
   open?: boolean
+  asChild?: boolean
   content: string
   children: ReactNode
   onOpenChange?: (open: boolean) => void
@@ -49,13 +50,16 @@ interface TooltipProps {
 
 function SimpleTooltip({
   open,
+  asChild,
   content,
   children,
   onOpenChange,
 }: TooltipProps) {
+  const TriggerComponent = asChild ? RadixTooltip.Trigger : Trigger
+
   return (
     <Root open={open} onOpenChange={onOpenChange}>
-      <Trigger>{children}</Trigger>
+      <TriggerComponent asChild={asChild}>{children}</TriggerComponent>
       <Portal>
         <Content>
           <Arrow /> {content}

@@ -165,7 +165,18 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
 
       case 'asserted-text':
-        return null
+        return {
+          type: 'assert',
+          nodeId: event.eventId,
+          operation: {
+            type: 'text-contains',
+            value: event.operation.value,
+          },
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.selector),
+          },
+        }
 
       default:
         return exhaustive(event)

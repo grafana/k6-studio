@@ -1,11 +1,29 @@
 import { exhaustive } from '@/utils/typescript'
 
-import { Expression, Statement, Scenario } from './ast'
+import { Expression, Statement, Scenario, Assertion } from './ast'
 import { IntermediateContext } from './context'
+
+type Substitutions = Map<string, string>
+
+function substituteAssertion(
+  assertion: Assertion,
+  substitutions: Substitutions
+): Assertion {
+  switch (assertion.type) {
+    case 'TextContainsAssertion':
+      return {
+        type: 'TextContainsAssertion',
+        text: substituteExpression(assertion.text, substitutions),
+      }
+
+    default:
+      return exhaustive(assertion.type)
+  }
+}
 
 function substituteExpression(
   node: Expression,
-  substitutions: Map<string, string>
+  substitutions: Substitutions
 ): Expression {
   switch (node.type) {
     case 'StringLiteral':
@@ -72,6 +90,13 @@ function substituteExpression(
         multiple: node.multiple,
       }
 
+    case 'ExpectExpression':
+      return {
+        type: 'ExpectExpression',
+        actual: substituteExpression(node.actual, substitutions),
+        expected: substituteAssertion(node.expected, substitutions),
+      }
+
     default:
       return exhaustive(node)
   }
@@ -79,7 +104,7 @@ function substituteExpression(
 
 function substituteStatement(
   node: Statement,
-  substitutions: Map<string, string>
+  substitutions: Substitutions
 ): Statement {
   switch (node.type) {
     case 'VariableDeclaration':

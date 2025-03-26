@@ -1,6 +1,8 @@
 import { Fragment } from 'react'
 
+import { Tooltip } from '@/components/primitives/Tooltip'
 import { BrowserEvent } from '@/schemas/recording'
+import { trimToLength } from '@/utils/text'
 import { exhaustive } from '@/utils/typescript'
 
 import { ClickDescription } from './ClickDescription'
@@ -100,7 +102,10 @@ export function EventDescription({
         <>
           Assert that{' '}
           <Selector value={event.selector} onHighlight={onHighlight} /> contains
-          the text <code>{`"${event.operation.value}"`}</code>
+          the text{' '}
+          <Tooltip asChild content={event.operation.value}>
+            <em>{trimToLength(event.operation.value, 30)}</em>
+          </Tooltip>
         </>
       )
 

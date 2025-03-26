@@ -80,6 +80,18 @@ export interface CheckNode extends NodeBase {
   }
 }
 
+export interface AssertNode extends NodeBase {
+  type: 'assert'
+  operation: {
+    type: 'text-contains'
+    value: string
+  }
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
+  }
+}
+
 export type TestNode =
   | PageNode
   | GotoNode
@@ -89,6 +101,7 @@ export type TestNode =
   | TypeTextNode
   | SelectOptionsNode
   | CheckNode
+  | AssertNode
 
 export interface Scenario {
   nodes: TestNode[]
