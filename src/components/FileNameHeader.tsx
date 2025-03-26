@@ -19,6 +19,13 @@ import { getFileExtension } from '@/utils/file'
 
 import { FieldGroup } from './Form'
 
+const FileTypeToLabel: Record<StudioFile['type'], string> = {
+  recording: 'recording',
+  generator: 'generator',
+  script: 'script',
+  'data-file': 'data file',
+}
+
 interface FileNameHeaderProps {
   file: StudioFile
   isDirty?: boolean
@@ -55,11 +62,12 @@ export function FileNameHeader({
         </Tooltip>
       )}
 
-      <Tooltip content="Rename file">
+      <Tooltip content={`Rename ${FileTypeToLabel[file.type]}`}>
         <IconButton
           variant="ghost"
+          size="1"
           color="gray"
-          aria-label="Rename file"
+          aria-label={`Rename ${FileTypeToLabel[file.type]}`}
           onClick={() => setIsOpen(true)}
         >
           <Pencil1Icon />
@@ -101,9 +109,11 @@ function RenameFileDialog({ file, open, onOpenChange }: RenameFileDialogProps) {
 
   useEffect(() => {
     reset({ fileName: file.displayName })
-  }, [file.displayName, reset])
+  }, [file.displayName, reset, open])
 
   const onSubmit = async ({ fileName }: { fileName: string }) => {
+    if (!isDirty) return
+
     await mutateAsync(`${fileName.trim()}.${fileExtension}`)
     onOpenChange(false)
   }
@@ -111,25 +121,25 @@ function RenameFileDialog({ file, open, onOpenChange }: RenameFileDialogProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content size="1">
-        <Dialog.Title>Rename File</Dialog.Title>
-        <FieldGroup label="File name" name="fileName" errors={errors}>
-          <TextField.Root
-            placeholder="http://example.com:6000"
-            {...register('fileName')}
-          />
-        </FieldGroup>
-        <Flex justify="end" gap="2">
-          <Dialog.Close>
-            <Button variant="outline">Cancel</Button>
-          </Dialog.Close>
-          <Button
-            disabled={!isDirty}
-            loading={isPending}
-            onClick={handleSubmit(onSubmit)}
-          >
-            Rename
-          </Button>
-        </Flex>
+        <Dialog.Title>Rename {FileTypeToLabel[file.type]}</Dialog.Title>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <FieldGroup label="New name" name="fileName" errors={errors}>
+            <TextField.Root
+              placeholder="http://example.com:6000"
+              {...register('fileName')}
+            />
+          </FieldGroup>
+          <Flex justify="end" gap="2">
+            <Dialog.Close>
+              <Button variant="outline" type="button">
+                Cancel
+              </Button>
+            </Dialog.Close>
+            <Button disabled={!isDirty} loading={isPending} type="submit">
+              Rename
+            </Button>
+          </Flex>
+        </form>
       </Dialog.Content>
     </Dialog.Root>
   )
