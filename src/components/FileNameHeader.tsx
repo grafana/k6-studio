@@ -1,9 +1,23 @@
-import { Badge, Heading, Tooltip } from '@radix-ui/themes'
-import { useRef } from 'react'
+import { Pencil1Icon } from '@radix-ui/react-icons'
+import {
+  Badge,
+  Button,
+  Dialog,
+  Flex,
+  Heading,
+  IconButton,
+  TextField,
+  Tooltip,
+} from '@radix-ui/themes'
+import { useEffect, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
+import { useRenameFile } from '@/hooks/useRenameFile'
 import { StudioFile } from '@/types'
 import { getFileExtension } from '@/utils/file'
+
+import { FieldGroup } from './Form'
 
 interface FileNameHeaderProps {
   file: StudioFile
@@ -16,6 +30,7 @@ export function FileNameHeader({
   isDirty = false,
   showExt = false,
 }: FileNameHeaderProps) {
+  const [isOpen, setIsOpen] = useState(false)
   const subTitleRef = useRef<HTMLHeadingElement>(null)
   const hasEllipsis = useOverflowCheck(subTitleRef)
   const fileExtension = getFileExtension(file.fileName)
@@ -40,11 +55,81 @@ export function FileNameHeader({
         </Tooltip>
       )}
 
+      <Tooltip content="Rename file">
+        <IconButton
+          variant="ghost"
+          color="gray"
+          aria-label="Rename file"
+          onClick={() => setIsOpen(true)}
+        >
+          <Pencil1Icon />
+        </IconButton>
+      </Tooltip>
+
+      <RenameFileDialog file={file} open={isOpen} onOpenChange={setIsOpen} />
+
       {showExt && !!fileExtension && (
         <Badge color="gray" size="1">
           {fileExtension.toUpperCase()}
         </Badge>
       )}
     </>
+  )
+}
+
+interface RenameFileDialogProps {
+  file: StudioFile
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+function RenameFileDialog({ file, open, onOpenChange }: RenameFileDialogProps) {
+  const { mutateAsync, isPending } = useRenameFile(file)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isDirty },
+  } = useForm<{ fileName: string }>({
+    defaultValues: {
+      fileName: file.displayName,
+    },
+    shouldFocusError: false,
+  })
+
+  useEffect(() => {
+    reset({ fileName: file.displayName })
+  }, [file.displayName, reset])
+
+  const onSubmit = async ({ fileName }: { fileName: string }) => {
+    await mutateAsync(fileName)
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Content size="1">
+        <Dialog.Title>Rename File</Dialog.Title>
+        <FieldGroup label="File name" name="fileName" errors={errors}>
+          <TextField.Root
+            placeholder="http://example.com:6000"
+            {...register('fileName')}
+          />
+        </FieldGroup>
+        <Flex justify="end" gap="2">
+          <Dialog.Close>
+            <Button variant="outline">Cancel</Button>
+          </Dialog.Close>
+          <Button
+            disabled={!isDirty}
+            loading={isPending}
+            onClick={handleSubmit(onSubmit)}
+          >
+            Rename
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
   )
 }
