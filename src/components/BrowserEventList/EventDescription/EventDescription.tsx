@@ -95,6 +95,15 @@ export function EventDescription({
         </>
       )
 
+    case 'asserted-text':
+      return (
+        <>
+          Assert that{' '}
+          <Selector value={event.selector} onHighlight={onHighlight} /> contains
+          the text <code>{`"${event.operation.value}"`}</code>
+        </>
+      )
+
     default:
       return exhaustive(event)
   }

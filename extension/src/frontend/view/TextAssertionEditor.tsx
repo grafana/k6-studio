@@ -1,13 +1,15 @@
 import { css } from '@emotion/react'
-import { useEffect, useRef, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/primitives/Button'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
+import { FieldSet } from '@/components/primitives/FieldSet'
 import { Flex } from '@/components/primitives/Flex'
-import { Input } from '@/components/primitives/Input'
-import { Label } from '@/components/primitives/Label'
 import { Popover } from '@/components/primitives/Popover'
+import { TextField } from '@/components/primitives/TextField'
 import { generateSelector } from 'extension/src/selectors'
+
+import { client } from '../routing'
 
 import { ElementHighlight } from './ElementHighlight'
 import { Bounds } from './types'
@@ -15,6 +17,7 @@ import { Bounds } from './types'
 interface TextSelection {
   text: string
   selector: string
+  range: Range
   bounds: Bounds
 }
 
@@ -87,6 +90,7 @@ function useTextSelection() {
       setSelection({
         text: range.toString(),
         selector: generateSelector(commonAncestor),
+        range,
         bounds: {
           top: bounds.top,
           left: bounds.left,
@@ -103,64 +107,169 @@ function useTextSelection() {
     }
   }, [])
 
-  return selection
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      setSelection((selection) => {
+        if (selection === null) {
+          return null
+        }
+
+        const bounds = selection.range.getBoundingClientRect()
+
+        return {
+          ...selection,
+          bounds: {
+            top: bounds.top,
+            left: bounds.left,
+            width: bounds.width,
+            height: bounds.height,
+          },
+        }
+      })
+    })
+
+    observer.observe(document.body)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  return [selection, () => setSelection(null)] as const
+}
+
+interface TextAssertion {
+  selector: string
+  text: string
+}
+
+interface TextAssertionFormProps {
+  selection: TextSelection
+  onAdd: (assertion: TextAssertion) => void
+}
+
+function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
+  const [selector, setSelector] = useState(selection.selector)
+  const [text, setText] = useState(selection.text)
+
+  const handleSelectorFocus = () => {
+    client.send({
+      type: 'highlight-element',
+      selector,
+    })
+  }
+
+  const handleSelectorBlur = () => {
+    client.send({
+      type: 'highlight-element',
+      selector: null,
+    })
+  }
+
+  const handleSelectorChange = (ev: ChangeEvent<HTMLInputElement>) => {
+    client.send({
+      type: 'highlight-element',
+      selector: ev.target.value,
+    })
+
+    setSelector(ev.target.value)
+  }
+
+  const handleTextChange = (ev: ChangeEvent<HTMLInputElement>) => {
+    setText(ev.target.value)
+  }
+
+  const handleAddClick = () => {
+    onAdd({ selector, text })
+  }
+
+  return (
+    <Popover.Root open={true}>
+      <Popover.Anchor asChild>
+        <ElementHighlight bounds={selection.bounds} visible={false} />
+      </Popover.Anchor>
+      <Popover.Portal>
+        <Popover.Content
+          data-inspector-tooltip
+          css={css`
+            display: flex;
+            flex-direction: column;
+            gap: var(--studio-spacing-2);
+            user-select: none;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            min-width: 400px;
+            padding: var(--studio-spacing-2) var(--studio-spacing-4);
+          `}
+        >
+          <Popover.Arrow />
+          <h1
+            css={css`
+              font-size: var(--studio-font-size-1);
+              text-align: center;
+              margin: 0;
+            `}
+          >
+            Add text assertion
+          </h1>
+
+          <FieldSet>
+            <TextField
+              size="1"
+              label="Element"
+              value={selector}
+              onFocus={handleSelectorFocus}
+              onBlur={handleSelectorBlur}
+              onChange={handleSelectorChange}
+            />
+            <TextField
+              size="1"
+              label="Contains"
+              value={text}
+              onChange={handleTextChange}
+            />
+          </FieldSet>
+
+          <Flex justify="end">
+            <Button size="1" onClick={handleAddClick}>
+              Add
+            </Button>
+          </Flex>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  )
 }
 
 export function TextAssertionEditor() {
-  const selection = useTextSelection()
+  const [selection, clearSelection] = useTextSelection()
+
+  const handleAdd = (assertion: TextAssertion) => {
+    clearSelection()
+
+    client.send({
+      type: 'record-events',
+      events: [
+        {
+          eventId: crypto.randomUUID(),
+          timestamp: Date.now(),
+          type: 'asserted-text',
+          selector: assertion.selector,
+          tab: '',
+          operation: {
+            type: 'contains',
+            value: assertion.text,
+          },
+        },
+      ],
+    })
+  }
 
   return (
     <>
       {selection !== null && (
-        <Popover.Root open={true}>
-          <Popover.Anchor asChild>
-            <ElementHighlight bounds={selection.bounds} visible={false} />
-          </Popover.Anchor>
-          <Popover.Portal>
-            <Popover.Content
-              data-inspector-tooltip
-              css={css`
-                display: flex;
-                flex-direction: column;
-                gap: var(--studio-spacing-2);
-                user-select: none;
-                font-weight: 500;
-                display: flex;
-                flex-direction: column;
-                min-width: 400px;
-                padding: var(--studio-spacing-2) var(--studio-spacing-4);
-              `}
-            >
-              <Popover.Arrow />
-              <h1
-                css={css`
-                  font-size: var(--studio-font-size-1);
-                  text-align: center;
-                  margin: 0;
-                `}
-              >
-                Add text assertion
-              </h1>
-              <div
-                css={css`
-                  display: grid;
-                  grid-template-columns: auto 1fr;
-                  gap: var(--studio-spacing-2);
-                  align-items: center;
-                `}
-              >
-                <Label size="1">Element</Label>
-                <Input size="1" value={selection.selector} />
-                <Label size="1">Contains</Label>
-                <Input size="1" value={selection.text} />
-              </div>
-
-              <Flex justify="end">
-                <Button size="1">Add</Button>
-              </Flex>
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
+        <TextAssertionForm selection={selection} onAdd={handleAdd} />
       )}
     </>
   )

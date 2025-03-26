@@ -164,6 +164,9 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
+      case 'asserted-text':
+        return null
+
       default:
         return exhaustive(event)
     }

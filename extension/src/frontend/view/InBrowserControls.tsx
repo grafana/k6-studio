@@ -23,7 +23,7 @@ export function InBrowserControls() {
         <ElementInspector onEscape={handleInspectorEscape} />
       )}
       {tool === 'assert-text' && <TextAssertionEditor />}
-      <RemoteHighlights enabled={tool === null} />
+      <RemoteHighlights enabled={tool !== 'inspect'} />
       <ToolBox
         isDrawerOpen={isDrawerOpen}
         tool={tool}

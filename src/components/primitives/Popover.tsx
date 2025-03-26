@@ -20,6 +20,7 @@ const Arrow = styled(RadixPopover.Arrow)`
 `
 
 const Content = styled(RadixPopover.Content)`
+  z-index: var(--studio-layer-2);
   color: var(--studio-foreground);
   background-color: var(--studio-background);
   user-select: none;
