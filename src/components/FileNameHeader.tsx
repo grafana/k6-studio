@@ -85,6 +85,7 @@ interface RenameFileDialogProps {
 
 function RenameFileDialog({ file, open, onOpenChange }: RenameFileDialogProps) {
   const { mutateAsync, isPending } = useRenameFile(file)
+  const fileExtension = getFileExtension(file.fileName)
 
   const {
     register,
@@ -103,7 +104,7 @@ function RenameFileDialog({ file, open, onOpenChange }: RenameFileDialogProps) {
   }, [file.displayName, reset])
 
   const onSubmit = async ({ fileName }: { fileName: string }) => {
-    await mutateAsync(fileName)
+    await mutateAsync(`${fileName.trim()}.${fileExtension}`)
     onOpenChange(false)
   }
 

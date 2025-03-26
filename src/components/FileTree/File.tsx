@@ -86,7 +86,7 @@ function EditableFile({
   const fileExtension = getFileExtension(file.fileName)
 
   const handleSave = async (newValue: string) => {
-    const newFileName = `${newValue}.${fileExtension}`
+    const newFileName = `${newValue.trim()}.${fileExtension}`
     await renameFile(newFileName)
     setEditMode(false)
   }
