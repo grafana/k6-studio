@@ -11,8 +11,9 @@ import {
 import { capitalize, startCase } from 'lodash-es'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
+import { z } from 'zod'
 
-import { TestRuleSchema } from '@/schemas/generator'
+import { ParameterizationRuleSchema, TestRuleSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'
 import { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
@@ -24,9 +25,14 @@ import { CustomCodeEditor } from './CustomCodeEditor'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
 import { VerificationEditor } from './VerificationEditor/VerificationEditor'
 
-export function RuleEditorSwitch() {
+export function RuleEditorSwitch({ rule }: { rule: TestRule }) {
   const { watch } = useFormContext<TestRule>()
   const ruleType = watch('type')
+
+  const dynamicRule = {
+    ...rule,
+    type: ruleType,
+  } as TestRule
 
   switch (ruleType) {
     case 'correlation':
@@ -34,7 +40,11 @@ export function RuleEditorSwitch() {
     case 'customCode':
       return <CustomCodeEditor />
     case 'parameterization':
-      return <ParameterizationEditor />
+      return (
+        <ParameterizationEditor
+          rule={dynamicRule as z.infer<typeof ParameterizationRuleSchema>}
+        />
+      )
     case 'verification':
       return <VerificationEditor />
     default:
@@ -118,7 +128,7 @@ export function RuleEditor({ rule }: RuleEditorProps) {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Box p="2">
             {!rule.enabled && <RuleDisabledWarning />}
-            <RuleEditorSwitch />
+            <RuleEditorSwitch rule={rule} />
           </Box>
         </form>
       </FormProvider>

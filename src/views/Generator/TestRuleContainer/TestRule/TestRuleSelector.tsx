@@ -62,7 +62,7 @@ function CorrelationSelectorContetent({ rule }: { rule: CorrelationRule }) {
   )
 }
 
-function ParameterizationSelectorContent({
+export function ParameterizationSelectorContent({
   rule,
 }: {
   rule: ParameterizationRule
