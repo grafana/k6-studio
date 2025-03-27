@@ -2,9 +2,24 @@ import { css } from '@emotion/react'
 import '@radix-ui/themes/styles.css'
 import 'allotment/dist/style.css'
 
+import InterVariable from '@/assets/fonts/Inter/InterVariable.woff2'
+
 export const globalStyles = css`
+  @font-face {
+    font-family: 'InterVariable';
+    src: url(${InterVariable}) format('woff2');
+    font-weight: 400 500 600 700;
+    font-display: swap;
+    font-style: normal;
+  }
+
+  .radix-themes {
+    --default-font-family: 'InterVariable', -apple-system, BlinkMacSystemFont,
+      'Segoe UI (Custom)', Roboto, 'Helvetica Neue', 'Open Sans (Custom)',
+      system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  }
+
   body {
-    font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
     margin: 0;
   }
 
