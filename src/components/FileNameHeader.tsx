@@ -2,10 +2,10 @@ import { Pencil1Icon } from '@radix-ui/react-icons'
 import {
   Badge,
   Button,
-  Dialog,
   Flex,
   Heading,
   IconButton,
+  Popover,
   TextField,
   Tooltip,
 } from '@radix-ui/themes'
@@ -37,7 +37,6 @@ export function FileNameHeader({
   isDirty = false,
   showExt = false,
 }: FileNameHeaderProps) {
-  const [isOpen, setIsOpen] = useState(false)
   const subTitleRef = useRef<HTMLHeadingElement>(null)
   const hasEllipsis = useOverflowCheck(subTitleRef)
   const fileExtension = getFileExtension(file.fileName)
@@ -62,19 +61,7 @@ export function FileNameHeader({
         </Tooltip>
       )}
 
-      <Tooltip content={`Rename ${FileTypeToLabel[file.type]}`}>
-        <IconButton
-          variant="ghost"
-          size="1"
-          color="gray"
-          aria-label={`Rename ${FileTypeToLabel[file.type]}`}
-          onClick={() => setIsOpen(true)}
-        >
-          <Pencil1Icon />
-        </IconButton>
-      </Tooltip>
-
-      <RenameFileDialog file={file} open={isOpen} onOpenChange={setIsOpen} />
+      <RenameFileDialog file={file} />
 
       {showExt && !!fileExtension && (
         <Badge color="gray" size="1">
@@ -87,11 +74,10 @@ export function FileNameHeader({
 
 interface RenameFileDialogProps {
   file: StudioFile
-  open: boolean
-  onOpenChange: (open: boolean) => void
 }
 
-function RenameFileDialog({ file, open, onOpenChange }: RenameFileDialogProps) {
+function RenameFileDialog({ file }: RenameFileDialogProps) {
+  const [isOpen, setIsOpen] = useState(false)
   const { mutateAsync, isPending } = useRenameFile(file)
   const fileExtension = getFileExtension(file.fileName)
 
@@ -109,19 +95,31 @@ function RenameFileDialog({ file, open, onOpenChange }: RenameFileDialogProps) {
 
   useEffect(() => {
     reset({ fileName: file.displayName })
-  }, [file.displayName, reset, open])
+  }, [file.displayName, reset, isOpen])
 
   const onSubmit = async ({ fileName }: { fileName: string }) => {
     if (!isDirty) return
 
     await mutateAsync(`${fileName.trim()}.${fileExtension}`)
-    onOpenChange(false)
+    setIsOpen(false)
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content size="1">
-        <Dialog.Title>Rename {FileTypeToLabel[file.type]}</Dialog.Title>
+    <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
+      <Tooltip content={`Rename ${FileTypeToLabel[file.type]}`}>
+        <Popover.Trigger>
+          <IconButton
+            variant="ghost"
+            size="1"
+            color="gray"
+            aria-label={`Rename ${FileTypeToLabel[file.type]}`}
+            onClick={() => setIsOpen(true)}
+          >
+            <Pencil1Icon />
+          </IconButton>
+        </Popover.Trigger>
+      </Tooltip>
+      <Popover.Content size="1" width="400px" side="bottom" align="end">
         <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup label="New name" name="fileName" errors={errors}>
             <TextField.Root
@@ -130,17 +128,17 @@ function RenameFileDialog({ file, open, onOpenChange }: RenameFileDialogProps) {
             />
           </FieldGroup>
           <Flex justify="end" gap="2">
-            <Dialog.Close>
+            <Popover.Close>
               <Button variant="outline" type="button">
                 Cancel
               </Button>
-            </Dialog.Close>
+            </Popover.Close>
             <Button disabled={!isDirty} loading={isPending} type="submit">
               Rename
             </Button>
           </Flex>
         </form>
-      </Dialog.Content>
-    </Dialog.Root>
+      </Popover.Content>
+    </Popover.Root>
   )
 }
