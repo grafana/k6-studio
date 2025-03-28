@@ -3,7 +3,7 @@ import {
   BorderRightIcon,
   EyeOpenIcon,
 } from '@radix-ui/react-icons'
-import { Badge, Tooltip } from '@radix-ui/themes'
+import { Badge, Flex, Tooltip } from '@radix-ui/themes'
 
 import {
   CorrelationRule,
@@ -39,8 +39,10 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
 function CorrelationContent({ rule }: { rule: CorrelationRule }) {
   return (
     <>
-      <TestRuleFilter filter={rule.extractor.filter} />
-      <TestRuleSelector rule={rule} />
+      <Flex gap="2" align="center">
+        <TestRuleFilter filter={rule.extractor.filter} />
+        <TestRuleSelector rule={rule} />
+      </Flex>
     </>
   )
 }
@@ -48,8 +50,10 @@ function CorrelationContent({ rule }: { rule: CorrelationRule }) {
 function ParameterizationContent({ rule }: { rule: ParameterizationRule }) {
   return (
     <>
-      <TestRuleFilter filter={rule.filter} />
-      <TestRuleSelector rule={rule} />
+      <Flex gap="2" align="center">
+        <TestRuleFilter filter={rule.filter} />
+        <TestRuleSelector rule={rule} />
+      </Flex>
     </>
   )
 }
@@ -57,25 +61,27 @@ function ParameterizationContent({ rule }: { rule: ParameterizationRule }) {
 function CustomCodeContent({ rule }: { rule: CustomCodeRule }) {
   return (
     <>
-      <TestRuleFilter filter={rule.filter} />{' '}
-      <Tooltip
-        content={`${rule.placement === 'after' ? 'After' : 'Before'} matched requests`}
-      >
-        <Badge color="gray">
-          {rule.placement === 'after' ? (
-            <BorderRightIcon />
-          ) : (
-            <BorderLeftIcon />
-          )}
-          {rule.placement}
-        </Badge>
-      </Tooltip>
-      <Tooltip content={<code>{rule.snippet}</code>}>
-        <Badge color="gray">
-          <EyeOpenIcon />
-          Snippet
-        </Badge>
-      </Tooltip>
+      <Flex gap="2" align="center">
+        <TestRuleFilter filter={rule.filter} />
+        <Tooltip
+          content={`${rule.placement === 'after' ? 'After' : 'Before'} matched requests`}
+        >
+          <Badge color="gray">
+            {rule.placement === 'after' ? (
+              <BorderRightIcon />
+            ) : (
+              <BorderLeftIcon />
+            )}
+            {rule.placement}
+          </Badge>
+        </Tooltip>
+        <Tooltip content={<code>{rule.snippet}</code>}>
+          <Badge color="gray">
+            <EyeOpenIcon />
+            Snippet
+          </Badge>
+        </Tooltip>
+      </Flex>
     </>
   )
 }

@@ -1,22 +1,15 @@
 import { Box, Grid, Separator, Text } from '@radix-ui/themes'
 
-import { ParameterizationRule } from '@/types/rules'
-
-import { ParameterizationSelectorContent } from '../../TestRuleContainer/TestRule/TestRuleSelector'
 import { FilterField } from '../FilterField'
 import { SelectorField } from '../SelectorField'
 
 import { ValueEditor } from './ValueEditor'
 
-export function ParameterizationEditor({
-  rule,
-}: {
-  rule: ParameterizationRule
-}) {
+export function ParameterizationEditor() {
   return (
     <>
       <Text size="2" as="p" mb="2" color="gray">
-        <ParameterizationSelectorContent rule={rule} />
+        Replace request data with variables or custom values.
       </Text>
       <Grid columns="1fr auto 1fr" gap="4">
         <Box>

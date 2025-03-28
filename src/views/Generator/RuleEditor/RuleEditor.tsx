@@ -11,28 +11,23 @@ import {
 import { capitalize, startCase } from 'lodash-es'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
-import { z } from 'zod'
 
-import { ParameterizationRuleSchema, TestRuleSchema } from '@/schemas/generator'
+import { TestRuleSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'
 import { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
 import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
+import { TestRuleInlineContent } from '../TestRuleContainer/TestRule/TestRuleInlineContent'
 
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
 import { VerificationEditor } from './VerificationEditor/VerificationEditor'
 
-export function RuleEditorSwitch({ rule }: { rule: TestRule }) {
+export function RuleEditorSwitch() {
   const { watch } = useFormContext<TestRule>()
   const ruleType = watch('type')
-
-  const dynamicRule = {
-    ...rule,
-    type: ruleType,
-  } as TestRule
 
   switch (ruleType) {
     case 'correlation':
@@ -40,11 +35,7 @@ export function RuleEditorSwitch({ rule }: { rule: TestRule }) {
     case 'customCode':
       return <CustomCodeEditor />
     case 'parameterization':
-      return (
-        <ParameterizationEditor
-          rule={dynamicRule as z.infer<typeof ParameterizationRuleSchema>}
-        />
-      )
+      return <ParameterizationEditor />
     case 'verification':
       return <VerificationEditor />
     default:
@@ -110,25 +101,28 @@ export function RuleEditor({ rule }: RuleEditorProps) {
     <ScrollArea scrollbars="vertical">
       <FormProvider {...formMethods}>
         <StickyPanelHeader>
-          <Flex align="center" gap="3">
-            <Heading size="2" weight="medium">
-              {capitalize(startCase(rule.type))}
-            </Heading>
-            <Button
-              onClick={handleClose}
-              variant="ghost"
-              size="1"
-              css={{ gap: 0 }}
-            >
-              <ChevronLeftIcon />
-              Back
-            </Button>
+          <Flex align="center" justify="between">
+            <Flex align="center" gap="3" width="100%">
+              <Heading size="2" weight="medium">
+                {capitalize(startCase(rule.type))}
+              </Heading>
+              <Button
+                onClick={handleClose}
+                variant="ghost"
+                size="1"
+                css={{ gap: 0 }}
+              >
+                <ChevronLeftIcon />
+                Back
+              </Button>
+            </Flex>
+            <TestRuleInlineContent rule={rule} />
           </Flex>
         </StickyPanelHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Box p="2">
             {!rule.enabled && <RuleDisabledWarning />}
-            <RuleEditorSwitch rule={rule} />
+            <RuleEditorSwitch />
           </Box>
         </form>
       </FormProvider>

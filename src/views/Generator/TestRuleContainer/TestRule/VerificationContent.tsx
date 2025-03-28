@@ -1,5 +1,5 @@
 import { DiscIcon, Link1Icon } from '@radix-ui/react-icons'
-import { Badge, Strong } from '@radix-ui/themes'
+import { Badge, Strong, Flex } from '@radix-ui/themes'
 
 import { VerificationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
@@ -9,11 +9,13 @@ import { TestRuleFilter } from './TestRuleFilter'
 export function VerificationContent({ rule }: { rule: VerificationRule }) {
   return (
     <>
-      <TestRuleFilter filter={rule.filter} />
-      <Badge color="gray">
-        Verify <Strong>{rule.target}</Strong>{' '}
-        <OperatorLabel operator={rule.operator} /> <ValueLabel rule={rule} />
-      </Badge>
+      <Flex gap="2" align="center">
+        <TestRuleFilter filter={rule.filter} />
+        <Badge color="gray">
+          Verify <Strong>{rule.target}</Strong>{' '}
+          <OperatorLabel operator={rule.operator} /> <ValueLabel rule={rule} />
+        </Badge>
+      </Flex>
     </>
   )
 }

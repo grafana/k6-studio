@@ -6,7 +6,7 @@ export function StickyPanelHeader({ children }: { children: React.ReactNode }) {
       position="sticky"
       justify="center"
       top="0"
-      p="2"
+      px="2"
       py="3"
       direction="column"
       css={{
