@@ -54,6 +54,6 @@ const logEvent = (event: BrowserExtensionEvent) => {
 }
 
 client.on('record-events', logEvent)
-client.on('highlight-element', logEvent)
+client.on('highlight-elements', logEvent)
 client.on('events-recorded', logEvent)
 client.on('navigate', logEvent)

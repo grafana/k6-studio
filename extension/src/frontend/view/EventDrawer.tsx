@@ -66,7 +66,7 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
 
   const handleHighlight = (selector: string | null) => {
     client.send({
-      type: 'highlight-element',
+      type: 'highlight-elements',
       selector,
     })
   }

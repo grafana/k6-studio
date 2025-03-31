@@ -21,8 +21,8 @@ export const EventsRecordedSchema = z.object({
   events: z.array(BrowserEventSchema),
 })
 
-export const HighlightElementSchema = z.object({
-  type: z.literal('highlight-element'),
+export const HighlightElementsSchema = z.object({
+  type: z.literal('highlight-elements'),
   selector: z.string().nullable(),
 })
 
@@ -36,13 +36,13 @@ export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   EventsLoadedSchema,
   RecordEventsSchema,
   EventsRecordedSchema,
-  HighlightElementSchema,
+  HighlightElementsSchema,
   NavigateSchema,
 ])
 
 export type RecordEvents = z.infer<typeof RecordEventsSchema>
 export type EventsRecorded = z.infer<typeof EventsRecordedSchema>
-export type HighlightElement = z.infer<typeof HighlightElementSchema>
+export type HighlightElements = z.infer<typeof HighlightElementsSchema>
 export type Navigate = z.infer<typeof NavigateSchema>
 
 export type BrowserExtensionMessage = z.infer<
