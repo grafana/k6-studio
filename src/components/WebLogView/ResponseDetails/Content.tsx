@@ -11,6 +11,8 @@ export function Content({ data }: { data: ProxyData }) {
   const contentType = getContentType(data.response?.headers ?? [])
   const format = toFormat(contentType)
   const content = parseContent(format, data)
+  const rawFormat = format === 'json' ? 'json-raw' : format
+  const rawContent = parseContent(rawFormat, data)
 
   if (!contentType || !content || !format) {
     return (
@@ -22,9 +24,9 @@ export function Content({ data }: { data: ProxyData }) {
 
   return (
     <ContentPreview
-      data={data}
       format={format}
       content={content}
+      rawContent={rawContent}
       contentType={contentType}
     />
   )

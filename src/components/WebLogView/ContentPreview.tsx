@@ -1,32 +1,27 @@
 import { Flex, SegmentedControl, Box, ScrollArea } from '@radix-ui/themes'
 import { useState, useEffect } from 'react'
 
-import { ProxyData } from '@/types'
-
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
 
 import { useGoToContentMatch } from './Details.hooks'
 import { Preview } from './ResponseDetails/Preview'
 import { Raw } from './ResponseDetails/Raw'
-import { parseContent } from './ResponseDetails/ResponseDetails.utils'
 
 type ContentPreviewProps = {
   content: string
   contentType: string
   format: string
-  data: ProxyData
+  rawContent: string | undefined
 }
 
 export function ContentPreview({
-  data,
   format,
   content,
+  rawContent,
   contentType,
 }: ContentPreviewProps) {
   const [selectedTab, setSelectedTab] = useState('content')
   const { searchString, index, reset } = useGoToContentMatch()
-  const rawFormat = format === 'json' ? 'json-raw' : format
-  const rawContent = parseContent(rawFormat, data)
 
   useEffect(() => {
     setSelectedTab('content')
