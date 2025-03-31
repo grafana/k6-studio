@@ -74,12 +74,14 @@ export const launchBrowser = async (
     browserServer.start(browserWindow)
   }
 
-  const handleBrowserClose = async (): Promise<void> => {
-    await browserServer.stop()
+  const handleBrowserClose = (): Promise<void> => {
+    browserServer.stop()
 
     // we send the browser:stopped event when the browser is closed
     // NOTE: on macos pressing the X button does not close the application so it won't be fired
     browserWindow.webContents.send('browser:closed')
+
+    return Promise.resolve()
   }
 
   const args = [
