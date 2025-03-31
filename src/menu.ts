@@ -1,6 +1,7 @@
 import { Menu, shell } from 'electron'
 
 import { openLogFolder } from './logger'
+import { reportNewIssue } from './utils/bugReport'
 import { getPlatform } from './utils/electron'
 
 const isDevEnv = process.env.NODE_ENV === 'development'
@@ -36,11 +37,7 @@ const template: Electron.MenuItemConstructorOptions[] = [
       },
       {
         label: 'Report an issue',
-        click: async () => {
-          await shell.openExternal(
-            'https://github.com/grafana/k6-studio/issues'
-          )
-        },
+        click: reportNewIssue,
       },
       {
         label: 'Application logs',

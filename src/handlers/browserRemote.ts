@@ -10,7 +10,7 @@ export function initialize(browserServer: BrowserServer) {
     BrowserRemoteHandlers.HighlightElement,
     (_event, selector: string | null) => {
       browserServer.send({
-        type: 'highlight-element',
+        type: 'highlight-elements',
         selector,
       })
     }

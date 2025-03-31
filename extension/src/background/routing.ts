@@ -19,7 +19,7 @@ background.forward('events-recorded', [studio, frontend])
 background.forward('events-loaded', [frontend])
 
 studio.forward('navigate', [background])
-studio.forward('highlight-element', [frontend])
+studio.forward('highlight-elements', [frontend])
 
 frontend.forward('record-events', [background])
 frontend.forward('navigate', [background])

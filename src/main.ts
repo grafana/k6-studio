@@ -61,6 +61,7 @@ import { HarWithOptionalResponse } from './types/har'
 import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
 import { sendReport } from './usageReport'
+import { reportNewIssue } from './utils/bugReport'
 import { parseDataFile } from './utils/dataFile'
 import {
   sendToast,
@@ -105,6 +106,7 @@ const PROXY_RETRY_LIMIT = 5
 let proxyRetryCount = 0
 let currentClientRoute = '/'
 let wasAppClosedByClient = false
+let wasProxyStoppedByClient = false
 export let appSettings = defaultSettings
 
 let currentBrowserProcess: Process | ChildProcessWithoutNullStreams | null
@@ -328,6 +330,7 @@ ipcMain.handle('proxy:start', async (event) => {
 
 ipcMain.on('proxy:stop', () => {
   console.info('proxy:stop event received')
+  wasProxyStoppedByClient = true
   return stopProxyProcess()
 })
 
@@ -614,6 +617,10 @@ ipcMain.handle('ui:get-files', async () => {
   }
 })
 
+ipcMain.handle('ui:report-issue', () => {
+  return reportNewIssue()
+})
+
 ipcMain.handle(
   'ui:rename-file',
   async (
@@ -818,12 +825,21 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
   return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
+      wasProxyStoppedByClient = false
       proxyEmitter.emit('status:change', 'online')
       proxyEmitter.emit('ready')
     },
     onFailure: async () => {
-      if (appShuttingDown || proxyStatus === 'starting') {
-        // don't restart the proxy if the app is shutting down or if it's already restarting
+      if (wasProxyStoppedByClient) {
+        proxyEmitter.emit('status:change', 'offline')
+      }
+
+      if (
+        appShuttingDown ||
+        wasProxyStoppedByClient ||
+        proxyStatus === 'starting'
+      ) {
+        // don't restart the proxy if the app is shutting down, manually stopped by client or already restarting
         return
       }
 

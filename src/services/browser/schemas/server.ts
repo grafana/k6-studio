@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const HighlightElementMessageSchema = z.object({
-  type: z.literal('highlight-element'),
+  type: z.literal('highlight-elements'),
   selector: z.string().nullable(),
 })
 

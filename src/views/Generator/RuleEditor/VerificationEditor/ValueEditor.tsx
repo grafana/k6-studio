@@ -48,6 +48,7 @@ export function ValueEditor() {
 
       if (value === 'string') {
         setValue('value.value', '')
+        setValue('operator', 'contains')
       }
 
       setValue('value.type', value)
