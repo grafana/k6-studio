@@ -7,10 +7,7 @@ export function HelpButton() {
       'https://grafana.com/docs/k6-studio/'
     )
 
-  const handleReportIssue = () =>
-    window.studio.browser.openExternalLink(
-      'https://github.com/grafana/k6-studio/issues'
-    )
+  const handleReportIssue = () => window.studio.ui.reportIssue()
 
   const handleOpenApplicationLogs = () => {
     window.studio.log.openLogFolder()

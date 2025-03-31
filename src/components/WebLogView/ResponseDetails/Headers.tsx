@@ -21,6 +21,7 @@ export function Headers({
         <DataList.Value>{data.response?.statusCode}</DataList.Value>
       </DataList.Item>
 
+      <Strong>Headers</Strong>
       {headers.map(([key, value], index) => (
         <DataList.Item key={`${key}_${index}`}>
           <DataList.Label>

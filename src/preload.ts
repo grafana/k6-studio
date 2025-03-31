@@ -50,6 +50,9 @@ const browser = {
   onBrowserClosed: (callback: () => void) => {
     return createListener('browser:closed', callback)
   },
+  onBrowserLaunchFailed: (callback: () => void) => {
+    return createListener('browser:failed', callback)
+  },
   openExternalLink: (url: string) => {
     return ipcRenderer.invoke('browser:open:external:link', url)
   },
@@ -138,6 +141,14 @@ const ui = {
     return ipcRenderer.invoke('ui:delete-file', file)
   },
   getFiles: (): Promise<GetFilesResponse> => ipcRenderer.invoke('ui:get-files'),
+  renameFile: (
+    oldFileName: string,
+    newFileName: string,
+    type: StudioFile['type']
+  ): Promise<void> => {
+    return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName, type)
+  },
+  reportIssue: (): Promise<void> => ipcRenderer.invoke('ui:report-issue'),
   onAddFile: (callback: (file: StudioFile) => void) => {
     return createListener('ui:add-file', callback)
   },
@@ -146,13 +157,6 @@ const ui = {
   },
   onToast: (callback: (toast: AddToastPayload) => void) => {
     return createListener('ui:toast', callback)
-  },
-  renameFile: (
-    oldFileName: string,
-    newFileName: string,
-    type: StudioFile['type']
-  ): Promise<void> => {
-    return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName, type)
   },
 } as const
 
