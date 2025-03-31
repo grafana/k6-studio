@@ -102,6 +102,7 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
               display: flex;
               flex-direction: column;
               gap: var(--studio-spacing-2);
+              overflow-y: auto;
 
               &[data-state='open'] {
                 animation: ${slideIn} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
