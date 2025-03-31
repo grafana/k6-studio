@@ -94,15 +94,13 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
               width: 35vw;
               min-width: 300px;
               max-width: 600px;
-              padding: var(--studio-spacing-4);
-              padding-left: var(--studio-spacing-5);
               background-color: var(--studio-background);
               box-shadow: var(--studio-shadow-1);
 
               display: flex;
               flex-direction: column;
-              gap: var(--studio-spacing-2);
               overflow-y: auto;
+              overscroll-behavior: contain;
 
               &[data-state='open'] {
                 animation: ${slideIn} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
@@ -125,7 +123,11 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding-left: var(--studio-spacing-2);
+                padding: var(--studio-spacing-4);
+                position: sticky;
+                top: 0;
+                background-color: inherit;
+                z-index: var(--studio-layer-1);
               `}
             >
               <Dialog.Title
@@ -158,11 +160,17 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
                 <Cross1Icon />
               </Dialog.Close>
             </div>
-            <BrowserEventList
-              events={events}
-              onNavigate={handleNavigate}
-              onHighlight={handleHighlight}
-            />
+            <div
+              css={css`
+                padding: 0 var(--studio-spacing-4);
+              `}
+            >
+              <BrowserEventList
+                events={events}
+                onNavigate={handleNavigate}
+                onHighlight={handleHighlight}
+              />
+            </div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
