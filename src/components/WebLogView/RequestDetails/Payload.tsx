@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 
-import { ReadOnlyEditor } from '../../Monaco/ReadOnlyEditor'
+import { ContentPreview } from '../ContentPreview'
 import { useGoToPayloadMatch } from '../Details.hooks'
 import { Raw } from '../ResponseDetails/Raw'
 
@@ -45,11 +45,11 @@ export function Payload({ data }: { data: ProxyData }) {
   }
 
   return (
-    <ReadOnlyEditor
-      language="javascript"
-      value={content}
-      searchString={searchString}
-      searchIndex={index}
+    <ContentPreview
+      data={data}
+      format="json"
+      content={content}
+      contentType={contentType || 'text/plain'}
     />
   )
 }
