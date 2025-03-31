@@ -18,6 +18,7 @@ import { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
 import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
+import { TestRuleInlineContent } from '../TestRuleContainer/TestRule/TestRuleInlineContent'
 
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
@@ -100,7 +101,7 @@ export function RuleEditor({ rule }: RuleEditorProps) {
     <ScrollArea scrollbars="vertical">
       <FormProvider {...formMethods}>
         <StickyPanelHeader>
-          <Flex align="center" gap="3">
+          <Flex align="center" gap="3" width="100%" ml="auto">
             <Heading size="2" weight="medium">
               {capitalize(startCase(rule.type))}
             </Heading>
@@ -114,6 +115,7 @@ export function RuleEditor({ rule }: RuleEditorProps) {
               Back
             </Button>
           </Flex>
+          <TestRuleInlineContent rule={rule} />
         </StickyPanelHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Box p="2">
