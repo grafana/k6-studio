@@ -15,7 +15,6 @@ Follow the issue template and add additional information that will help us repli
 ## Contribute to code
 
 > [!NOTE]
->
 > Grafana k6 Studio is currently in active development. Most of the features are meant to be implemented by the team, so we may or may not accept contributions from the community.
 > Non-critical bug fixes and small features are welcome, but please check with us first to see if we are already working on it.
 
@@ -32,7 +31,5 @@ Additionally, we have the following rules:
 
 - Use a complete sentence for your commit message/PR title. The PR title will appear in the changelog, so the message should give a good idea of what the change is about.
 - Start with an imperative verb. Example: `Add type column to WebLogView`
-
-  - Exception: if the PR fixes a bug, please describe the bug rather than the fix. Example: `fix: Application crashes when opening a HAR file`
-
-- Use Sentence case for the commit message/PR title. Example: `Add type column to WebLogView` instead of `add type column to WebLogView`
+  - **Exception:** if the PR fixes a bug, please describe the bug rather than the fix. Example: `fix: Application crashes when opening a HAR file`
+- Use _Sentence case_ for the commit message/PR title. Example: `Add type column to WebLogView` instead of `add type column to WebLogView`
