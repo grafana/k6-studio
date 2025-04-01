@@ -39,6 +39,8 @@ export function Allowlist() {
   }, [requests])
 
   useEffect(() => {
+    // We only need the allowlist count when "hosts" changes
+    // This happens when the recording or the generator is changed
     const allowlistCount = useGeneratorStore.getState().allowlist.length
     if (hosts[0] !== undefined && allowlistCount === 0) {
       setAllowlist([hosts[0]])
