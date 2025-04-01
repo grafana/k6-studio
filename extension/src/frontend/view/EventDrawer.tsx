@@ -99,7 +99,7 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
 
               display: flex;
               flex-direction: column;
-              overflow-y: auto;
+              overflow: auto hidden;
               overscroll-behavior: contain;
 
               &[data-state='open'] {
@@ -163,6 +163,9 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
             <div
               css={css`
                 padding: 0 var(--studio-spacing-4);
+                overflow-x: auto;
+                overscroll-behavior: contain;
+                flex: 1 1 0;
               `}
             >
               <BrowserEventList
