@@ -1,6 +1,6 @@
 import { GlobeIcon } from '@radix-ui/react-icons'
 import { Button, Dialog, Flex } from '@radix-ui/themes'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
 import { useGeneratorStore } from '@/store/generator'
@@ -33,8 +33,17 @@ export function Allowlist() {
     (store) => store.setIncludeStaticAssets
   )
 
-  const uniqueHosts = extractUniqueHosts(requests)
-  const hosts = reorderHosts(uniqueHosts)
+  const hosts = useMemo(() => {
+    const uniqueHosts = extractUniqueHosts(requests)
+    return reorderHosts(uniqueHosts)
+  }, [requests])
+
+  useEffect(() => {
+    const allowlistCount = useGeneratorStore.getState().allowlist.length
+    if (hosts[0] !== undefined && allowlistCount === 0) {
+      setAllowlist([hosts[0]])
+    }
+  }, [hosts, setAllowlist])
 
   function handleOpenChange(open: boolean) {
     if (!open) {
