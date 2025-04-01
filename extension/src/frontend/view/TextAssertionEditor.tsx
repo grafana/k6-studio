@@ -11,13 +11,14 @@ import { generateSelector } from 'extension/src/selectors'
 
 import { client } from '../routing'
 
-import { ElementHighlight } from './ElementHighlight'
+import { Overlay } from './Overlay'
 import { Bounds } from './types'
 
 interface TextSelection {
   text: string
   selector: string
   range: Range
+  textRects: Bounds[]
   bounds: Bounds
 }
 
@@ -86,11 +87,20 @@ function useTextSelection() {
       }
 
       const bounds = range.getBoundingClientRect()
+      const textRects = Array.from(range.getClientRects()).map((rect) => {
+        return {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        }
+      })
 
       setSelection({
         text: range.toString(),
         selector: generateSelector(commonAncestor),
         range,
+        textRects,
         bounds: {
           top: bounds.top,
           left: bounds.left,
@@ -115,9 +125,20 @@ function useTextSelection() {
         }
 
         const bounds = selection.range.getBoundingClientRect()
+        const textRects = Array.from(selection.range.getClientRects()).map(
+          (rect) => {
+            return {
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+            }
+          }
+        )
 
         return {
           ...selection,
+          textRects,
           bounds: {
             top: bounds.top,
             left: bounds.left,
@@ -186,7 +207,7 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
   return (
     <Popover.Root open={true}>
       <Popover.Anchor asChild>
-        <ElementHighlight bounds={selection.bounds} visible={false} />
+        <Overlay bounds={selection.bounds} />
       </Popover.Anchor>
       <Popover.Portal>
         <Popover.Content
@@ -271,6 +292,17 @@ export function TextAssertionEditor() {
       {selection !== null && (
         <TextAssertionForm selection={selection} onAdd={handleAdd} />
       )}
+      {selection?.textRects.map((rect, index) => {
+        return (
+          <Overlay
+            key={index}
+            css={css`
+              background-color: var(--blue-a5);
+            `}
+            bounds={rect}
+          />
+        )
+      })}
     </>
   )
 }

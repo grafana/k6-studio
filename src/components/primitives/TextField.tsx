@@ -7,7 +7,7 @@ import { Label } from './Label'
 const styles = css`
   display: flex;
   gap: var(--studio-spacing-2);
-  align-items: center;
+  align-items: baseline;
 `
 
 type TextFieldProps = ComponentProps<typeof Input> & {
