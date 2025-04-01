@@ -167,7 +167,7 @@ function emitExpectExpression(
       const text = emitExpression(context, expression.expected.text)
 
       return new ExpressionBuilder(expect)
-        .member('toHaveText')
+        .member('toContainText')
         .call([text])
         .await(context)
         .done()
