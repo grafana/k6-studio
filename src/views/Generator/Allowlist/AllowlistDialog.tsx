@@ -1,4 +1,8 @@
-import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
+import {
+  Cross2Icon,
+  ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
+} from '@radix-ui/react-icons'
 import {
   Button,
   Checkbox,
@@ -10,11 +14,13 @@ import {
   Text,
   Card,
   Inset,
+  Tooltip,
 } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
 import { useMemo, useState } from 'react'
 
 import { Label } from '@/components/Label'
+import { isHostThirdParty } from '@/store/generator/slices/recording.utils'
 import { ProxyData } from '@/types'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
@@ -125,9 +131,14 @@ export function AllowlistDialog({
               >
                 {filteredHosts.map((host) => (
                   <Text as="label" size="2" key={host}>
-                    <Flex gap="2">
+                    <Flex gap="2" align="center">
                       <CheckboxGroup.Item value={host} />{' '}
                       <Text truncate>{host}</Text>
+                      {isHostThirdParty(host) && (
+                        <Tooltip content="This host belongs to a third-party service">
+                          <ExclamationTriangleIcon />
+                        </Tooltip>
+                      )}
                     </Flex>
                   </Text>
                 ))}
@@ -137,7 +148,7 @@ export function AllowlistDialog({
         </Inset>
       </Card>
 
-      <Flex justify="between" align="center">
+      <Flex justify="between" align="center" mb="2">
         <Label>
           <Checkbox
             onCheckedChange={handleCheckStaticAssets}

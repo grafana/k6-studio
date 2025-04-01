@@ -1,9 +1,22 @@
-import { uniq } from 'lodash-es'
+import { uniq, intersection, difference } from 'lodash-es'
 
 import { ProxyData } from '@/types'
 
 export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
+}
+
+export function isHostThirdParty(host: string) {
+  const hostPatterns = ['.google.com', '.googleapis.com', '.gstatic.com']
+  return hostPatterns.some((pattern) => host.includes(pattern))
+}
+
+export function reorderHosts(hosts: string[]) {
+  const matchedHosts = hosts.filter((host) => isHostThirdParty(host))
+  const hostsToGoLast = intersection(hosts, matchedHosts)
+  const hostsToGoFirst = difference(hosts, hostsToGoLast)
+
+  return [...hostsToGoFirst, ...hostsToGoLast]
 }
 
 export function shouldResetAllowList({

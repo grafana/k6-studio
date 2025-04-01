@@ -4,7 +4,10 @@ import { useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
 import { useGeneratorStore } from '@/store/generator'
-import { extractUniqueHosts } from '@/store/generator/slices/recording.utils'
+import {
+  extractUniqueHosts,
+  reorderHosts,
+} from '@/store/generator/slices/recording.utils'
 
 import { AllowlistDialog } from './AllowlistDialog'
 
@@ -30,7 +33,8 @@ export function Allowlist() {
     (store) => store.setIncludeStaticAssets
   )
 
-  const hosts = extractUniqueHosts(requests)
+  const uniqueHosts = extractUniqueHosts(requests)
+  const hosts = reorderHosts(uniqueHosts)
 
   function handleOpenChange(open: boolean) {
     if (!open) {
