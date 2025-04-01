@@ -58,15 +58,19 @@ export function ToolBox({
         value={tool ?? ''}
         onValueChange={handleToolChange}
       >
-        <Tooltip content="Inspect elements">
-          <Toolbar.ToggleItem value="inspect">
-            <CursorArrowIcon />
-          </Toolbar.ToggleItem>
+        <Tooltip asChild content="Inspect elements">
+          <div>
+            <Toolbar.ToggleItem value="inspect">
+              <CursorArrowIcon />
+            </Toolbar.ToggleItem>
+          </div>
         </Tooltip>
-        <Tooltip content="Add assertions on text content">
-          <Toolbar.ToggleItem value="assert-text">
-            <CursorTextIcon />
-          </Toolbar.ToggleItem>
+        <Tooltip asChild content="Add assertions on text content">
+          <div>
+            <Toolbar.ToggleItem value="assert-text">
+              <CursorTextIcon />
+            </Toolbar.ToggleItem>
+          </div>
         </Tooltip>
       </Toolbar.ToggleGroup>
       <Toolbar.Separator />
@@ -75,10 +79,12 @@ export function ToolBox({
         value={isDrawerOpen ? 'events' : ''}
         onValueChange={handleDrawerToggle}
       >
-        <Tooltip content="Toggle event list">
-          <Toolbar.ToggleItem value="events">
-            <ReaderIcon />
-          </Toolbar.ToggleItem>
+        <Tooltip asChild content="Toggle event list">
+          <div>
+            <Toolbar.ToggleItem value="events">
+              <ReaderIcon />
+            </Toolbar.ToggleItem>
+          </div>
         </Tooltip>
       </Toolbar.ToggleGroup>
     </Toolbar.Root>
