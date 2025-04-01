@@ -148,7 +148,7 @@ export function AllowlistDialog({
         </Inset>
       </Card>
 
-      <Flex justify="between" align="center" mb="2">
+      <Flex justify="between" align="center">
         <Label>
           <Checkbox
             onCheckedChange={handleCheckStaticAssets}
