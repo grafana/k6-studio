@@ -61,7 +61,7 @@ export function Payload({ data }: { data: ProxyData }) {
   }
 
   const peviewContentType = getContentTypeForContentPreview()
-  const format = toFormat(peviewContentType) || 'text/plain'
+  const format = toFormat(peviewContentType) || 'plaintext'
 
   return (
     <ContentPreview
