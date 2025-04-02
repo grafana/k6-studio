@@ -92,4 +92,5 @@ export function ContentPreview({
 const isMedia = (format: string) =>
   ['audio', 'font', 'image', 'video'].includes(format)
 
-const isPreviewable = (format: string) => ['html', 'json'].includes(format)
+const isPreviewable = (format: string) =>
+  !['javascript', 'css'].includes(format)
