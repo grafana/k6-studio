@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Link1Icon } from '@radix-ui/react-icons'
-import { Badge, Strong, Tooltip } from '@radix-ui/themes'
+import { Badge, Strong, Text, Tooltip } from '@radix-ui/themes'
 import { useRef } from 'react'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
@@ -8,11 +8,15 @@ import {
   CorrelationRule,
   ParameterizationRule,
   ReplacerSelector,
+  TestRule,
 } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
+import { CodeSnippetPreview, CustomCodeContent } from './CustomCodeContent'
+import { VerificationContent } from './VerificationContent'
+
 interface TestRuleSelectorProps {
-  rule: CorrelationRule | ParameterizationRule
+  rule: TestRule
 }
 
 export function TestRuleSelector({ rule }: TestRuleSelectorProps) {
@@ -20,7 +24,7 @@ export function TestRuleSelector({ rule }: TestRuleSelectorProps) {
   const hasEllipsis = useOverflowCheck(ref)
 
   return (
-    <Tooltip content={<SelectorContent rule={rule} />} hidden={!hasEllipsis}>
+    <Tooltip content={<TooltipContent rule={rule} />} hidden={!hasEllipsis}>
       <Badge
         ref={ref}
         color="gray"
@@ -30,6 +34,9 @@ export function TestRuleSelector({ rule }: TestRuleSelectorProps) {
           text-overflow: ellipsis;
           white-space: nowrap;
           display: inline-block;
+          svg {
+            vertical-align: middle;
+          }
         `}
       >
         <SelectorContent rule={rule} />
@@ -38,16 +45,24 @@ export function TestRuleSelector({ rule }: TestRuleSelectorProps) {
   )
 }
 
-function SelectorContent({
-  rule,
-}: {
-  rule: CorrelationRule | ParameterizationRule
-}) {
+const TooltipContent = ({ rule }: { rule: TestRule }) => {
+  return (
+    <Text css={{ svg: { verticalAlign: 'middle' } }}>
+      <SelectorContent rule={rule} />
+    </Text>
+  )
+}
+
+function SelectorContent({ rule }: { rule: TestRule }) {
   switch (rule.type) {
     case 'correlation':
       return <CorrelationSelectorContetent rule={rule} />
     case 'parameterization':
       return <ParameterizationSelectorContent rule={rule} />
+    case 'verification':
+      return <VerificationContent rule={rule} />
+    case 'customCode':
+      return <CustomCodeContent rule={rule} />
     default:
       return exhaustive(rule)
   }
@@ -112,8 +127,7 @@ function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
     case 'variable':
       return (
         <Strong css={{ whiteSpace: 'nowrap' }}>
-          <Link1Icon css={{ verticalAlign: 'middle', display: 'inline' }} />{' '}
-          {rule.value.variableName}
+          <Link1Icon /> {rule.value.variableName}
         </Strong>
       )
     case 'dataFileValue':
@@ -124,7 +138,7 @@ function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
         </>
       )
     case 'customCode':
-      return null
+      return <CodeSnippetPreview snippet={rule.value.code} />
     default:
       return exhaustive(rule.value)
   }
