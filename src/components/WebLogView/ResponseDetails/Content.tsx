@@ -1,9 +1,11 @@
 import { Flex } from '@radix-ui/themes'
+import { useEffect } from 'react'
 
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 
 import { ContentPreview } from '../ContentPreview'
+import { useGoToContentMatch } from '../Details.hooks'
 
 import { parseContent, toFormat } from './ResponseDetails.utils'
 
@@ -13,6 +15,12 @@ export function Content({ data }: { data: ProxyData }) {
   const content = parseContent(format, data)
   const rawFormat = format === 'json' ? 'json-raw' : format
   const rawContent = parseContent(rawFormat, data)
+  const { searchString, index, reset } = useGoToContentMatch()
+
+  // Reset payload search on unmount
+  useEffect(() => {
+    return reset
+  }, [reset])
 
   if (!contentType || !content || !format) {
     return (
@@ -28,6 +36,8 @@ export function Content({ data }: { data: ProxyData }) {
       content={content}
       rawContent={rawContent}
       contentType={contentType}
+      searchIndex={index}
+      searchString={searchString}
     />
   )
 }

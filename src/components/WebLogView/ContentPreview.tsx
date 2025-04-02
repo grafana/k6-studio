@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
 
-import { useGoToContentMatch } from './Details.hooks'
 import { Preview } from './ResponseDetails/Preview'
 import { Raw } from './ResponseDetails/Raw'
 
@@ -12,6 +11,8 @@ type ContentPreviewProps = {
   contentType: string
   format: string
   rawContent: string | undefined
+  searchIndex: number
+  searchString?: string
 }
 
 export function ContentPreview({
@@ -19,18 +20,14 @@ export function ContentPreview({
   content,
   rawContent,
   contentType,
+  searchIndex,
+  searchString,
 }: ContentPreviewProps) {
   const [selectedTab, setSelectedTab] = useState('content')
-  const { searchString, index, reset } = useGoToContentMatch()
 
   useEffect(() => {
     setSelectedTab('content')
   }, [format])
-
-  // Reset search string on unmount
-  useEffect(() => {
-    return reset
-  }, [reset])
 
   if (isMedia(format)) {
     return (
@@ -74,7 +71,7 @@ export function ContentPreview({
                 content={rawContent ?? ''}
                 format={format}
                 searchString={searchString}
-                searchIndex={index}
+                searchIndex={searchIndex}
               />
             )}
             {selectedTab === 'content' && (
@@ -82,7 +79,7 @@ export function ContentPreview({
                 language={format}
                 value={content}
                 searchString={searchString}
-                searchIndex={index}
+                searchIndex={searchIndex}
               />
             )}
           </Box>

@@ -57,6 +57,8 @@ export function Payload({ data }: { data: ProxyData }) {
       content={content}
       rawContent={getRawContent()}
       contentType={contentType || 'text/plain'}
+      searchIndex={index}
+      searchString={searchString}
     />
   )
 }
