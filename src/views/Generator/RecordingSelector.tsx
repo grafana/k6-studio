@@ -9,7 +9,13 @@ import { useToast } from '@/store/ui/useToast'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
 
-export function RecordingSelector({ compact = false }: { compact?: boolean }) {
+export function RecordingSelector({
+  compact = false,
+  onChangeRecording,
+}: {
+  compact?: boolean
+  onChangeRecording?: () => void
+}) {
   const recordings = useStudioUIStore((store) => [...store.recordings.values()])
   const recordingPath = useGeneratorStore((store) => store.recordingPath)
 
@@ -29,6 +35,7 @@ export function RecordingSelector({ compact = false }: { compact?: boolean }) {
 
       const proxyData = harToProxyData(har)
       setRecording(proxyData, filePath)
+      onChangeRecording?.()
     } catch (error) {
       showToast({
         title: 'Failed to open recording',
