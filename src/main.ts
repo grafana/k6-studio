@@ -56,7 +56,6 @@ import {
 } from './settings'
 import { ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
-import { HarWithOptionalResponse } from './types/har'
 import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
 import { sendReport } from './usageReport'
@@ -459,57 +458,6 @@ ipcMain.handle(
     }
   }
 )
-
-// HAR
-ipcMain.handle(
-  'har:save',
-  async (_, data: HarWithOptionalResponse, prefix: string) => {
-    const fileName = await createFileWithUniqueName({
-      data: JSON.stringify(data, null, 2),
-      directory: RECORDINGS_PATH,
-      ext: '.har',
-      prefix,
-    })
-
-    return fileName
-  }
-)
-
-ipcMain.handle(
-  'har:open',
-  async (_, fileName: string): Promise<HarWithOptionalResponse> => {
-    console.info('har:open event received')
-    const data = await readFile(path.join(RECORDINGS_PATH, fileName), {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
-
-    return JSON.parse(data)
-  }
-)
-
-ipcMain.handle('har:import', async (event) => {
-  console.info('har:import event received')
-
-  const browserWindow = browserWindowFromEvent(event)
-
-  const dialogResult = await dialog.showOpenDialog(browserWindow, {
-    message: 'Import HAR file',
-    properties: ['openFile'],
-    defaultPath: RECORDINGS_PATH,
-    filters: [{ name: 'HAR', extensions: ['har'] }],
-  })
-
-  const filePath = dialogResult.filePaths[0]
-
-  if (dialogResult.canceled || !filePath) {
-    return
-  }
-
-  await copyFile(filePath, path.join(RECORDINGS_PATH, path.basename(filePath)))
-
-  return path.basename(filePath)
-})
 
 // Generator
 ipcMain.handle('generator:create', async (_, recordingPath: string) => {
