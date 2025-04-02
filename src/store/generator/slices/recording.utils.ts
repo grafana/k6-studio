@@ -1,4 +1,4 @@
-import { uniq, intersection, difference } from 'lodash-es'
+import { uniq, orderBy } from 'lodash-es'
 
 import { ProxyData } from '@/types'
 
@@ -11,12 +11,8 @@ export function isHostThirdParty(host: string) {
   return hostPatterns.some((pattern) => host.includes(pattern))
 }
 
-export function reorderHosts(hosts: string[]) {
-  const matchedHosts = hosts.filter((host) => isHostThirdParty(host))
-  const hostsToGoLast = intersection(hosts, matchedHosts)
-  const hostsToGoFirst = difference(hosts, hostsToGoLast)
-
-  return [...hostsToGoFirst, ...hostsToGoLast]
+export function orderThirdPartyHostsLast(hosts: string[]) {
+  return orderBy(hosts, isHostThirdParty)
 }
 
 export function shouldResetAllowList({

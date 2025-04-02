@@ -6,7 +6,7 @@ import { PopoverDialog } from '@/components/PopoverDialogs'
 import { useGeneratorStore } from '@/store/generator'
 import {
   extractUniqueHosts,
-  reorderHosts,
+  orderThirdPartyHostsLast,
 } from '@/store/generator/slices/recording.utils'
 
 import { AllowlistDialog } from './AllowlistDialog'
@@ -35,7 +35,7 @@ export function Allowlist() {
 
   const hosts = useMemo(() => {
     const uniqueHosts = extractUniqueHosts(requests)
-    return reorderHosts(uniqueHosts)
+    return orderThirdPartyHostsLast(uniqueHosts)
   }, [requests])
 
   useEffect(() => {
