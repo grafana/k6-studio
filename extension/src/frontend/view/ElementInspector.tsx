@@ -1,19 +1,19 @@
 import { css } from '@emotion/react'
-import { useKey } from 'react-use'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
 
 import { ElementHighlight } from './ElementHighlight'
 import { useInspectedElement } from './ElementInspector.hooks'
+import { useEscape } from './hooks/useEscape'
 
 interface ElementInspectorProps {
-  onEscape: () => void
+  onCancel: () => void
 }
 
-export function ElementInspector({ onEscape }: ElementInspectorProps) {
+export function ElementInspector({ onCancel }: ElementInspectorProps) {
   const element = useInspectedElement()
 
-  useKey('Escape', onEscape, {}, [onEscape])
+  useEscape(onCancel, [onCancel])
 
   if (element === null) {
     return null

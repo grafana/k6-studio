@@ -13,16 +13,16 @@ export function InBrowserControls() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
-  const handleInspectorEscape = () => {
+  const handleDeselectTool = () => {
     selectTool(null)
   }
 
   return (
     <>
-      {tool === 'inspect' && (
-        <ElementInspector onEscape={handleInspectorEscape} />
+      {tool === 'inspect' && <ElementInspector onCancel={handleDeselectTool} />}
+      {tool === 'assert-text' && (
+        <TextAssertionEditor onClose={handleDeselectTool} />
       )}
-      {tool === 'assert-text' && <TextAssertionEditor />}
       <RemoteHighlights enabled={tool !== 'inspect'} />
       <ToolBox
         isDrawerOpen={isDrawerOpen}
@@ -30,7 +30,11 @@ export function InBrowserControls() {
         onSelectTool={selectTool}
         onToggleDrawer={setIsDrawerOpen}
       />
-      <EventDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
+      <EventDrawer
+        open={isDrawerOpen}
+        editing={tool !== null}
+        onOpenChange={setIsDrawerOpen}
+      />
     </>
   )
 }

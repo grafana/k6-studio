@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 
 import { Button } from '@/components/primitives/Button'
 import { FieldSet } from '@/components/primitives/FieldSet'
@@ -12,6 +12,7 @@ import { client } from '../routing'
 import { Overlay } from './Overlay'
 import { useTextSelection } from './TextAssertionEditor.hooks'
 import { TextSelection } from './TextAssertionEditor.types'
+import { useEscape } from './hooks/useEscape'
 
 interface TextAssertion {
   selector: string
@@ -26,6 +27,15 @@ interface TextAssertionFormProps {
 function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
   const [selector, setSelector] = useState(selection.selector)
   const [text, setText] = useState(selection.text)
+
+  useEffect(() => {
+    return () => {
+      client.send({
+        type: 'highlight-elements',
+        selector: null,
+      })
+    }
+  }, [])
 
   const handleSelectorFocus = () => {
     client.send({
@@ -130,12 +140,14 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
   )
 }
 
-export function TextAssertionEditor() {
+interface TextAssertionEditorProps {
+  onClose: () => void
+}
+
+export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
   const [selection, clearSelection] = useTextSelection()
 
   const handleAdd = (assertion: TextAssertion) => {
-    clearSelection()
-
     client.send({
       type: 'record-events',
       events: [
@@ -152,7 +164,19 @@ export function TextAssertionEditor() {
         },
       ],
     })
+
+    onClose()
   }
+
+  useEscape(() => {
+    if (selection !== null) {
+      clearSelection()
+
+      return
+    }
+
+    onClose()
+  }, [selection, clearSelection, onClose])
 
   return (
     <>

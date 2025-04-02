@@ -65,7 +65,10 @@ export function ToolBox({
             </Toolbar.ToggleItem>
           </div>
         </Tooltip>
-        <Tooltip asChild content="Add assertions on text content">
+        <Tooltip
+          asChild
+          content="Add assertions on text content by selecting it."
+        >
           <div>
             <Toolbar.ToggleItem value="assert-text">
               <CursorTextIcon />
