@@ -61,8 +61,6 @@ function isJsonString(str: string) {
   }
 }
 
-export function getRawJSONParams(content: string) {
-  // TODO: https://github.com/grafana/k6-studio/issues/277
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  return stringify(JSON.parse(safeAtob(content)), 0)
+export function getRawContent(content: string) {
+  return content.replace(/\s+/g, '')
 }

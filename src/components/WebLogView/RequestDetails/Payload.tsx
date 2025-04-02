@@ -7,21 +7,16 @@ import { getContentType } from '@/utils/headers'
 import { ContentPreview } from '../ContentPreview'
 import { useGoToPayloadMatch } from '../Details.hooks'
 import { Raw } from '../ResponseDetails/Raw'
+import { toFormat } from '../ResponseDetails/ResponseDetails.utils'
 
 import { FormPayloadPreview } from './FormPayloadPreview'
-import { getRawJSONParams, parseParams } from './utils'
+import { getRawContent, parseParams } from './utils'
 
 export function Payload({ data }: { data: ProxyData }) {
   const content = parseParams(data)
   const contentType = getContentType(data.request?.headers ?? [])
+  const format = toFormat(contentType) || 'text/plain'
   const { searchString, index, reset } = useGoToPayloadMatch()
-
-  function getRawContent() {
-    if (content && contentType === 'application/json') {
-      return getRawJSONParams(content)
-    }
-    return content
-  }
 
   // Reset payload search on unmount
   useEffect(() => {
@@ -53,9 +48,9 @@ export function Payload({ data }: { data: ProxyData }) {
 
   return (
     <ContentPreview
-      format="json"
+      format={format}
       content={content}
-      rawContent={getRawContent()}
+      rawContent={getRawContent(content)}
       contentType={contentType || 'text/plain'}
       searchIndex={index}
       searchString={searchString}
