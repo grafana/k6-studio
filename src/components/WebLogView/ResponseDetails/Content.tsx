@@ -17,7 +17,7 @@ export function Content({ data }: { data: ProxyData }) {
   const rawContent = parseContent(rawFormat, data)
   const { searchString, index, reset } = useGoToContentMatch()
 
-  // Reset payload search on unmount
+  // Reset search string on unmount
   useEffect(() => {
     return reset
   }, [reset])
