@@ -1,15 +1,15 @@
 import { css } from '@emotion/react'
 import { Grid, Tooltip } from '@radix-ui/themes'
 import { useRef } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useBoolean } from 'react-use'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
-import { getViewPath } from '@/utils/file'
+import { useRenameFile } from '@/hooks/useRenameFile'
+import { getFileExtension, getViewPath } from '@/utils/file'
 
 import { HighlightedText } from '../HighlightedText'
 
-import { useRenameFile } from './File.hooks'
 import { FileActionsMenu, FileContextMenu } from './FileContextMenu'
 import { InlineEditor } from './InlineEditor'
 import { FileItem } from './types'
@@ -79,21 +79,16 @@ function EditableFile({
   setEditMode,
 }: FileProps & { editMode: boolean; setEditMode: (value: boolean) => void }) {
   const linkRef = useRef<HTMLAnchorElement>(null)
+  const hasEllipsis = useOverflowCheck(linkRef)
+
   const { mutateAsync: renameFile } = useRenameFile(file)
 
-  const navigate = useNavigate()
-
-  const hasEllipsis = useOverflowCheck(linkRef)
-  const fileExtension = file.fileName.split('.').pop()
+  const fileExtension = getFileExtension(file.fileName)
 
   const handleSave = async (newValue: string) => {
-    const newFileName = `${newValue}.${fileExtension}`
+    const newFileName = `${newValue.trim()}.${fileExtension}`
     await renameFile(newFileName)
     setEditMode(false)
-
-    if (isSelected) {
-      navigate(getViewPath(file.type, newFileName), { replace: true })
-    }
   }
 
   if (editMode) {

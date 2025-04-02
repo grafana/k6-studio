@@ -6,6 +6,7 @@ import invariant from 'tiny-invariant'
 
 import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
+import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
@@ -13,7 +14,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { useToast } from '@/store/ui/useToast'
-import { ProxyData } from '@/types'
+import { ProxyData, StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
 
@@ -39,6 +40,11 @@ export function RecordingPreviewer() {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
   invariant(fileName, 'fileName is required')
+  const file: StudioFile = {
+    fileName,
+    displayName: getFileNameWithoutExtension(fileName),
+    type: 'recording',
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -64,20 +70,12 @@ export function RecordingPreviewer() {
   const handleCreateGenerator = () => createTestGenerator(fileName)
 
   const handleDeleteRecording = async () => {
-    await window.studio.ui.deleteFile({
-      type: 'recording',
-      fileName,
-      displayName: getFileNameWithoutExtension(fileName),
-    })
+    await window.studio.ui.deleteFile(file)
     navigate(getRoutePath('home'))
   }
 
   const handleDiscard = async () => {
-    await window.studio.ui.deleteFile({
-      type: 'recording',
-      fileName,
-      displayName: getFileNameWithoutExtension(fileName),
-    })
+    await window.studio.ui.deleteFile(file)
     navigate(getRoutePath('recorder'))
   }
 
@@ -108,7 +106,7 @@ export function RecordingPreviewer() {
   return (
     <View
       title="Recording"
-      subTitle={getFileNameWithoutExtension(fileName)}
+      subTitle={<FileNameHeader file={file} />}
       loading={isLoading}
       actions={
         <>
