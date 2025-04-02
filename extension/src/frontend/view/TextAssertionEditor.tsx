@@ -1,163 +1,17 @@
 import { css } from '@emotion/react'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 
 import { Button } from '@/components/primitives/Button'
-import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { FieldSet } from '@/components/primitives/FieldSet'
 import { Flex } from '@/components/primitives/Flex'
 import { Popover } from '@/components/primitives/Popover'
 import { TextField } from '@/components/primitives/TextField'
-import { generateSelector } from 'extension/src/selectors'
 
 import { client } from '../routing'
 
 import { Overlay } from './Overlay'
-import { Bounds } from './types'
-
-interface TextSelection {
-  text: string
-  selector: string
-  range: Range
-  textRects: Bounds[]
-  bounds: Bounds
-}
-
-function useTextSelection() {
-  const isSelecting = useRef(false)
-
-  const container = useContainerElement()
-
-  const [selection, setSelection] = useState<TextSelection | null>(null)
-
-  useEffect(() => {
-    const handleStart = (ev: Event) => {
-      if (ev.target instanceof Node === false) {
-        return
-      }
-
-      if (container.contains(ev.target)) {
-        ev.preventDefault()
-
-        return
-      }
-
-      setSelection(null)
-
-      isSelecting.current = true
-    }
-
-    document.addEventListener('selectstart', handleStart)
-
-    return () => {
-      document.removeEventListener('selectstart', handleStart)
-    }
-  }, [selection, container])
-
-  useEffect(() => {
-    const handleMouseUp = () => {
-      if (!isSelecting.current) {
-        return
-      }
-
-      isSelecting.current = false
-
-      const selection = document.getSelection()
-
-      if (
-        selection === null ||
-        selection.rangeCount === 0 ||
-        selection.isCollapsed
-      ) {
-        setSelection(null)
-
-        return
-      }
-
-      const range = selection.getRangeAt(0)
-
-      const commonAncestor =
-        range.commonAncestorContainer instanceof Element
-          ? range.commonAncestorContainer
-          : range.commonAncestorContainer.parentElement
-
-      if (commonAncestor === null) {
-        setSelection(null)
-
-        return
-      }
-
-      const bounds = range.getBoundingClientRect()
-      const textRects = Array.from(range.getClientRects()).map((rect) => {
-        return {
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height,
-        }
-      })
-
-      setSelection({
-        text: range.toString(),
-        selector: generateSelector(commonAncestor),
-        range,
-        textRects,
-        bounds: {
-          top: bounds.top,
-          left: bounds.left,
-          width: bounds.width,
-          height: bounds.height,
-        },
-      })
-    }
-
-    document.addEventListener('mouseup', handleMouseUp)
-
-    return () => {
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [])
-
-  useEffect(() => {
-    const observer = new ResizeObserver(() => {
-      setSelection((selection) => {
-        if (selection === null) {
-          return null
-        }
-
-        const bounds = selection.range.getBoundingClientRect()
-        const textRects = Array.from(selection.range.getClientRects()).map(
-          (rect) => {
-            return {
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-            }
-          }
-        )
-
-        return {
-          ...selection,
-          textRects,
-          bounds: {
-            top: bounds.top,
-            left: bounds.left,
-            width: bounds.width,
-            height: bounds.height,
-          },
-        }
-      })
-    })
-
-    observer.observe(document.body)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [])
-
-  return [selection, () => setSelection(null)] as const
-}
+import { useTextSelection } from './TextAssertionEditor.hooks'
+import { TextSelection } from './TextAssertionEditor.types'
 
 interface TextAssertion {
   selector: string
@@ -200,8 +54,11 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
     setText(ev.target.value)
   }
 
-  const handleAddClick = () => {
-    onAdd({ selector, text })
+  const handleSubmit = () => {
+    onAdd({
+      selector,
+      text,
+    })
   }
 
   return (
@@ -235,28 +92,38 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
             Add text assertion
           </h1>
 
-          <FieldSet>
-            <TextField
-              size="1"
-              label="Element"
-              value={selector}
-              onFocus={handleSelectorFocus}
-              onBlur={handleSelectorBlur}
-              onChange={handleSelectorChange}
-            />
-            <TextField
-              size="1"
-              label="Contains"
-              value={text}
-              onChange={handleTextChange}
-            />
-          </FieldSet>
+          <form
+            css={css`
+              display: flex;
+              flex-direction: column;
+              gap: var(--studio-spacing-2);
+              width: 100%;
+            `}
+            onSubmit={handleSubmit}
+          >
+            <FieldSet>
+              <TextField
+                size="1"
+                label="Element"
+                value={selector}
+                onFocus={handleSelectorFocus}
+                onBlur={handleSelectorBlur}
+                onChange={handleSelectorChange}
+              />
+              <TextField
+                size="1"
+                label="Contains"
+                value={text}
+                onChange={handleTextChange}
+              />
+            </FieldSet>
 
-          <Flex justify="end">
-            <Button size="1" onClick={handleAddClick}>
-              Add
-            </Button>
-          </Flex>
+            <Flex justify="end">
+              <Button type="submit" size="1">
+                Add
+              </Button>
+            </Flex>
+          </form>
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
@@ -292,7 +159,7 @@ export function TextAssertionEditor() {
       {selection !== null && (
         <TextAssertionForm selection={selection} onAdd={handleAdd} />
       )}
-      {selection?.textRects.map((rect, index) => {
+      {selection?.highlights.map((rect, index) => {
         return (
           <Overlay
             key={index}
