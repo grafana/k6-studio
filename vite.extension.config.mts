@@ -44,6 +44,7 @@ export default defineConfig((env) => {
       ...plugins,
       webExtension({
         webExtConfig: {
+          target: 'chromium',
           startUrl: 'https://quickpizza.grafana.com',
         },
         disableAutoLaunch: process.env.STANDALONE_EXTENSION !== 'true',
