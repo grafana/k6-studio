@@ -4,6 +4,7 @@ import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
 import { ClickDescription } from './ClickDescription'
+import { InputChangedDescription } from './InputChangedDescription'
 import { PageNavigationDescription } from './PageNavigationDescription'
 import { Selector } from './Selector'
 
@@ -54,13 +55,7 @@ export function EventDescription({
       return <ClickDescription event={event} onHighlight={onHighlight} />
 
     case 'input-changed':
-      return (
-        <>
-          Changed input of{' '}
-          <Selector value={event.selector} onHighlight={onHighlight} /> to{' '}
-          <code>{`"${event.sensitive ? '••••' : event.value}"`}</code>
-        </>
-      )
+      return <InputChangedDescription event={event} onHighlight={onHighlight} />
 
     case 'check-changed':
       return (
