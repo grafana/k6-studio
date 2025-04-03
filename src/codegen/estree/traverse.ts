@@ -963,7 +963,7 @@ export function traverse(node: ts.Node, visitor: Visitor) {
 
         node.qualifier && traverse(node.qualifier, visitor)
 
-        node.attributes.forEach((node) => traverse(node, visitor))
+        node.options && traverse(node.options, visitor)
         node.typeArguments && traverse(node.typeArguments, visitor)
 
         visitor[NodeType.TSImportType]?.(node)
