@@ -65,6 +65,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
       px="2"
       mx="auto"
       maxWidth="616px"
+      width="100%"
     >
       <Heading
         size="8"

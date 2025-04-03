@@ -6,11 +6,11 @@ import { useNavigate } from 'react-router-dom'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { getRoutePath } from '@/routeMap'
+import { useGeneratorStore } from '@/store/generator'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
-import { useGeneratorParams } from '../Generator.hooks'
-import { exportScript } from '../Generator.utils'
+import { useGeneratorParams, useScriptExport } from '../Generator.hooks'
 import { RecordingSelector } from '../RecordingSelector'
 import { ValidatorDialog } from '../ValidatorDialog'
 
@@ -20,6 +20,8 @@ interface GeneratorControlsProps {
 }
 
 export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
+  const scriptName = useGeneratorStore((store) => store.scriptName)
+
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
@@ -37,6 +39,8 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
 
     navigate(getRoutePath('home'))
   }
+
+  const handleExportScript = useScriptExport(fileName)
 
   return (
     <>
@@ -82,8 +86,9 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
               onOpenChange={setIsValidatorDialogOpen}
             />
             <ExportScriptDialog
-              onExport={exportScript}
               open={isExportScriptDialogOpen}
+              scriptName={scriptName}
+              onExport={handleExportScript}
               onOpenChange={setIsExportScriptDialogOpen}
             />
           </>

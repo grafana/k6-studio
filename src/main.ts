@@ -46,6 +46,7 @@ import { configureApplicationMenu } from './menu'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { GeneratorFileDataSchema } from './schemas/generator'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
+import { BrowserServer } from './services/browser/server'
 import {
   defaultSettings,
   getSettings,
@@ -113,13 +114,14 @@ let currentk6Process: K6Process | null
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
 
+const browserServer = new BrowserServer()
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
 initializeLogger()
-handlers.initialize()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
 async function migrateJsonGenerator() {
@@ -211,6 +213,11 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
     },
+  })
+
+  handlers.initialize({
+    browserWindow: mainWindow,
+    browserServer,
   })
 
   configureApplicationMenu()
@@ -346,7 +353,7 @@ ipcMain.handle('browser:start', async (event, url?: string) => {
   await waitForProxy()
 
   const browserWindow = browserWindowFromEvent(event)
-  currentBrowserProcess = await launchBrowser(browserWindow, url)
+  currentBrowserProcess = await launchBrowser(browserWindow, browserServer, url)
   console.info('browser started')
 })
 

@@ -1,0 +1,193 @@
+import { css, Global } from '@emotion/react'
+import * as colors from '@radix-ui/colors'
+import { useMemo } from 'react'
+
+interface Colors {
+  dark: {
+    [key: string]: string
+  }
+  light: {
+    [key: string]: string
+  }
+}
+
+type Profiles = {
+  default: Colors
+  p3: Colors
+}
+
+// This loads all of the colors from @radix-ui/colors as CSS variables.
+function getColors() {
+  const profiles: Profiles = {
+    default: {
+      light: {},
+      dark: {},
+    },
+    p3: {
+      light: {},
+      dark: {},
+    },
+  }
+
+  for (const [key, value] of Object.entries(colors)) {
+    const [_, dark, p3] = /[a-z]+(Dark)?(P3)?(A)?/.exec(key) ?? []
+
+    const profile = p3 ? profiles.p3 : profiles.default
+    const theme = dark ? profile.dark : profile.light
+
+    for (const [colorKey, colorValue] of Object.entries(value)) {
+      const [_, name, shade] = /([a-z]+)(A?\d+)/.exec(colorKey) ?? []
+
+      if (!name || !shade) {
+        console.log("Couldn't parse color key", colorKey)
+        continue
+      }
+
+      theme[`--${name}-${shade.toLowerCase()}`] = colorValue
+    }
+  }
+
+  return css`
+    ${toStyles(profiles.default.light)}
+
+    @media (prefers-color-scheme: dark) {
+      ${toStyles(profiles.default.dark)}
+    }
+
+    @supports (color: color(display-p3 1 1 1)) {
+      @media (color-gamut: p3) {
+        ${toStyles(profiles.p3.light)}
+
+        @media (prefers-color-scheme: dark) {
+          ${toStyles(profiles.p3.dark)}
+        }
+      }
+    }
+  `
+}
+
+function toStyles(colors: { [key: string]: string }) {
+  return Object.entries(colors)
+    .map(([key, value]) => `${key}: ${value};`)
+    .join('\n')
+}
+
+const styles = css`
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)', Roboto,
+    'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+
+  --studio-spacing-1: 4px;
+  --studio-spacing-2: calc(var(--studio-spacing-1) * 2);
+  --studio-spacing-3: calc(var(--studio-spacing-1) * 3);
+  --studio-spacing-4: calc(var(--studio-spacing-1) * 4);
+  --studio-spacing-5: calc(var(--studio-spacing-1) * 5);
+
+  --studio-alpha-1: rgba(0, 0, 0, 0.1);
+
+  --studio-foreground: var(--gray-11);
+  --studio-background: white;
+
+  --studio-shadow-1: rgba(24, 26, 27, 0.2) 0px 4px 8px;
+
+  --studio-toggle-bg-on: rgba(0, 0, 0, 0.1);
+  --studio-toggle-bg-off: transparent;
+
+  --studio-layer-0: 0;
+  --studio-layer-1: calc(var(--studio-layer-0) + 1);
+  --studio-layer-2: calc(var(--studio-layer-0) + 2);
+  --studio-layer-3: calc(var(--studio-layer-0) + 3);
+
+  --studio-font-size-1: 12px;
+  --studio-font-size-2: 14px;
+  --studio-font-size-3: 16px;
+
+  --studio-border-color: rgb(229, 231, 235);
+
+  --studio-hover-color: rgb(0, 0, 0, 0.1);
+
+  @media (prefers-color-scheme: dark) {
+    --studio-alpha-1: rgba(255, 255, 255, 0.1);
+
+    --studio-foreground: var(--gray-11);
+    --studio-background: var(--gray-1);
+
+    --studio-border-color: rgb(255, 255, 255, 0.1);
+
+    --studio-hover-color: rgb(255, 255, 255, 0.1);
+    --studio-toggle-bg-on: rgba(255, 255, 255, 0.2);
+  }
+
+  background-color: var(--studio-background);
+  color: var(--studio-foreground);
+
+  // Gap
+  [data-gap='1'] {
+    gap: var(--studio-spacing-1);
+  }
+
+  [data-gap='2'] {
+    gap: var(--studio-spacing-2);
+  }
+
+  [data-gap='3'] {
+    gap: var(--studio-spacing-3);
+  }
+
+  [data-gap='4'] {
+    gap: var(--studio-spacing-4);
+  }
+
+  // Padding
+  [data-p='1'] {
+    padding: var(--studio-spacing-1);
+  }
+
+  [data-p='2'] {
+    padding: var(--studio-spacing-2);
+  }
+
+  [data-p='3'] {
+    padding: var(--studio-spacing-3);
+  }
+
+  [data-p='4'] {
+    padding: var(--studio-spacing-4);
+  }
+`
+
+const getStyles = (root: boolean, includeColors: boolean) => {
+  if (!root) {
+    return css`
+      :host {
+        ${includeColors ? getColors() : ''}
+
+        ${styles};
+
+        --studio-layer-0: 999999990;
+      }
+    `
+  }
+
+  return css`
+    :root {
+      ${includeColors ? getColors() : ''}
+
+      ${styles};
+    }
+  `
+}
+
+interface ThemeProps {
+  root?: boolean
+  includeColors?: boolean
+}
+
+export function Theme({ root = true, includeColors = false }: ThemeProps) {
+  const styles = useMemo(
+    () => getStyles(root, includeColors),
+    [root, includeColors]
+  )
+
+  return <Global styles={styles} />
+}

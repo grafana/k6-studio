@@ -3,8 +3,10 @@
 import { ipcRenderer, contextBridge } from 'electron'
 
 import * as auth from './handlers/auth/preload'
+import * as browserRemote from './handlers/browserRemote.preload'
 import * as cloud from './handlers/cloud/preload'
 import { createListener } from './handlers/utils'
+import { BrowserEvent } from './schemas/recording'
 import * as Sentry from './sentry'
 import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
@@ -53,6 +55,9 @@ const browser = {
   },
   openExternalLink: (url: string) => {
     return ipcRenderer.invoke('browser:open:external:link', url)
+  },
+  onBrowserEvent: (callback: (event: BrowserEvent[]) => void) => {
+    return createListener('browser:event', callback)
   },
 } as const
 
@@ -171,6 +176,7 @@ const generator = {
 } as const
 
 const app = {
+  platform: process.platform,
   closeSplashscreen: () => {
     ipcRenderer.send('splashscreen:close')
   },
@@ -224,6 +230,7 @@ const studio = {
   app,
   log,
   settings,
+  browserRemote,
   cloud,
 } as const
 
