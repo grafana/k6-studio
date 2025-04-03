@@ -36,6 +36,7 @@ const InputChangedEventSchema = BrowserEventBaseSchema.extend({
   tab: z.string(),
   selector: z.string(),
   value: z.string(),
+  sensitive: z.boolean(),
 })
 
 const CheckChangedEventSchema = BrowserEventBaseSchema.extend({

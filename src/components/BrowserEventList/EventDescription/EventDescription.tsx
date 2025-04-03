@@ -58,7 +58,7 @@ export function EventDescription({
         <>
           Changed input of{' '}
           <Selector value={event.selector} onHighlight={onHighlight} /> to{' '}
-          <code>{event.value}</code>
+          <code>{`"${event.sensitive ? '••••' : event.value}"`}</code>
         </>
       )
 
