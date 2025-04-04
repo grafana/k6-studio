@@ -3,6 +3,7 @@ import { EyeNoneIcon, EyeOpenIcon } from '@radix-ui/react-icons'
 import { ReactNode, useState } from 'react'
 
 import { InputChangedEvent } from '@/schemas/recording'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
 
@@ -74,7 +75,7 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
 
 interface InputChangedDescriptionProps {
   event: InputChangedEvent
-  onHighlight: (selector: string | null) => void
+  onHighlight: (selector: HighlightSelector | null) => void
 }
 
 export function InputChangedDescription({
@@ -84,7 +85,7 @@ export function InputChangedDescription({
   return (
     <>
       Changed input of{' '}
-      <Selector value={event.selector} onHighlight={onHighlight} /> to{' '}
+      <Selector selector={event.selector} onHighlight={onHighlight} /> to{' '}
       <code>
         <MaskedValue sensitive={event.sensitive} value={event.value} />
       </code>

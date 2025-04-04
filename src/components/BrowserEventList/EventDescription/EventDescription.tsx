@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { ClickDescription } from './ClickDescription'
 import { InputChangedDescription } from './InputChangedDescription'
@@ -36,7 +37,7 @@ function formatOptions(options: string[]) {
 interface EventDescriptionProps {
   event: BrowserEvent
   onNavigate: (url: string) => void
-  onHighlight: (selector: string | null) => void
+  onHighlight: (selector: HighlightSelector | null) => void
 }
 
 export function EventDescription({
@@ -61,7 +62,7 @@ export function EventDescription({
       return (
         <>
           {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
-          <Selector value={event.selector} onHighlight={onHighlight} />
+          <Selector selector={event.selector} onHighlight={onHighlight} />
         </>
       )
 
@@ -70,7 +71,7 @@ export function EventDescription({
         <>
           Switched value of <strong>{event.name}</strong> to{' '}
           <code>{event.value}</code> from{' '}
-          <Selector value={event.selector} onHighlight={onHighlight} />
+          <Selector selector={event.selector} onHighlight={onHighlight} />
         </>
       )
 
@@ -78,7 +79,7 @@ export function EventDescription({
       return (
         <>
           Selected {formatOptions(event.selected)} from{' '}
-          <Selector value={event.selector} onHighlight={onHighlight} />
+          <Selector selector={event.selector} onHighlight={onHighlight} />
         </>
       )
 
@@ -86,7 +87,7 @@ export function EventDescription({
       return (
         <>
           Submitted form{' '}
-          <Selector value={event.form} onHighlight={onHighlight} />
+          <Selector selector={event.form} onHighlight={onHighlight} />
         </>
       )
 

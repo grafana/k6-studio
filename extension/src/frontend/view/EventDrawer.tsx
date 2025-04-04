@@ -7,6 +7,7 @@ import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { client } from '../routing'
 
@@ -64,7 +65,7 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
 
   const events = useRecordedEvents()
 
-  const handleHighlight = (selector: string | null) => {
+  const handleHighlight = (selector: HighlightSelector | null) => {
     client.send({
       type: 'highlight-elements',
       selector,

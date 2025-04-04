@@ -1,18 +1,23 @@
 import { css } from '@emotion/react'
 
+import { ElementSelector } from '@/schemas/recording'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 interface SelectorProps {
-  value: string
-  onHighlight: (selector: string | null) => void
+  selector: ElementSelector
+  onHighlight: (selector: HighlightSelector | null) => void
 }
 
-export function Selector({ value, onHighlight }: SelectorProps) {
+export function Selector({ selector, onHighlight }: SelectorProps) {
   const isRecording = useIsRecording()
 
   const handleMouseEnter = () => {
     if (isRecording) {
-      onHighlight(value)
+      onHighlight({
+        type: 'css',
+        selector: selector.css,
+      })
     }
   }
 
@@ -40,7 +45,7 @@ export function Selector({ value, onHighlight }: SelectorProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {value}
+      {selector.css}
     </strong>
   )
 }

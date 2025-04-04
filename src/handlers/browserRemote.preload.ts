@@ -1,8 +1,10 @@
 import { ipcRenderer } from 'electron'
 
+import { HighlightSelector } from 'extension/src/messaging/types'
+
 import { BrowserRemoteHandlers } from './browserRemote.types'
 
-export function highlightElement(selector: string | null) {
+export function highlightElement(selector: HighlightSelector | null) {
   ipcRenderer.send(BrowserRemoteHandlers.HighlightElement, selector)
 }
 

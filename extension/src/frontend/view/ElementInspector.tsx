@@ -32,7 +32,7 @@ export function ElementInspector({ onEscape }: ElementInspectorProps) {
           `}
         >
           <Tooltip.Arrow />
-          <strong>{element.selector}</strong>
+          <strong>{element.selector.css}</strong>
         </Tooltip.Content>
       </Tooltip.Portal>
     </Tooltip.Root>
