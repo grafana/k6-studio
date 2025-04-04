@@ -4,9 +4,11 @@ import { launchBrowser } from '@/browser'
 import { waitForProxy } from '@/proxy'
 import { browserWindowFromEvent } from '@/utils/electron'
 
+import { BrowserHandler } from './types'
+
 export function initialize() {
-  ipcMain.handle('browser:start', async (event, url?: string) => {
-    console.info('browser:start event received')
+  ipcMain.handle(BrowserHandler.Start, async (event, url?: string) => {
+    console.info(`${BrowserHandler.Start} event received`)
 
     await waitForProxy()
 
@@ -18,8 +20,8 @@ export function initialize() {
     console.info('browser started')
   })
 
-  ipcMain.on('browser:stop', async () => {
-    console.info('browser:stop event received')
+  ipcMain.on(BrowserHandler.Stop, async () => {
+    console.info(`${BrowserHandler.Stop} event received`)
 
     const { currentBrowserProcess } = k6StudioState
 
@@ -36,8 +38,8 @@ export function initialize() {
     }
   })
 
-  ipcMain.handle('browser:open:external:link', (_, url: string) => {
-    console.info('browser:open:external:link event received')
+  ipcMain.handle(BrowserHandler.OpenExternalLink, (_, url: string) => {
+    console.info(`${BrowserHandler.OpenExternalLink} event received`)
     return shell.openExternal(url)
   })
 }
