@@ -150,6 +150,25 @@ function emitSelectOptionsNode(
   })
 }
 
+function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'ExpectExpression',
+      actual: locator,
+      expected: {
+        type: 'TextContainsAssertion',
+        text: {
+          type: 'StringLiteral',
+          value: node.operation.value,
+        },
+      },
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -175,6 +194,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'select-options':
       return emitSelectOptionsNode(context, node)
+
+    case 'assert':
+      return emitAssertNode(context, node)
 
     default:
       return exhaustive(node)

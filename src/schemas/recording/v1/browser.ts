@@ -73,6 +73,16 @@ const FormSubmittedEventSchema = BrowserEventBaseSchema.extend({
   submitter: ElementSelectorSchema,
 })
 
+const AssertedTextEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('asserted-text'),
+  tab: z.string(),
+  selector: ElementSelectorSchema,
+  operation: z.object({
+    type: z.literal('contains'),
+    value: z.string(),
+  }),
+})
+
 export const BrowserEventSchema = z.discriminatedUnion('type', [
   NavigatedToPageEventSchema,
   ReloadedPageEventSchema,
@@ -82,6 +92,7 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   RadioChangedEventSchema,
   SelectChangedEventSchema,
   FormSubmittedEventSchema,
+  AssertedTextEventSchema,
 ])
 
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
@@ -94,5 +105,6 @@ export type CheckChangedEvent = z.infer<typeof CheckChangedEventSchema>
 export type RadioChangedEvent = z.infer<typeof RadioChangedEventSchema>
 export type SelectChangedEvent = z.infer<typeof SelectChangedEventSchema>
 export type FormSubmittedEvent = z.infer<typeof FormSubmittedEventSchema>
+export type AssertedTextEventSchema = z.infer<typeof AssertedTextEventSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>

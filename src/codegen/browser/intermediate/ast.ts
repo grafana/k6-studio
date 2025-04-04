@@ -60,6 +60,19 @@ export interface SelectOptionsExpression {
   multiple: boolean
 }
 
+export interface TextContainsAssertion {
+  type: 'TextContainsAssertion'
+  text: Expression
+}
+
+export type Assertion = TextContainsAssertion
+
+export interface ExpectExpression {
+  type: 'ExpectExpression'
+  actual: Expression
+  expected: Assertion
+}
+
 export type Expression =
   | Identifier
   | StringLiteral
@@ -72,6 +85,7 @@ export type Expression =
   | TypeTextExpression
   | CheckExpression
   | SelectOptionsExpression
+  | ExpectExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

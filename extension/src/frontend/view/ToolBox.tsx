@@ -1,7 +1,12 @@
 import { css } from '@emotion/react'
-import { CursorArrowIcon, ReaderIcon } from '@radix-ui/react-icons'
+import {
+  CursorArrowIcon,
+  CursorTextIcon,
+  ReaderIcon,
+} from '@radix-ui/react-icons'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
+import { Tooltip } from '@/components/primitives/Tooltip'
 
 import { Tool } from './types'
 
@@ -20,8 +25,9 @@ export function ToolBox({
 }: ToolBoxProps) {
   const handleToolChange = (value: string) => {
     switch (value) {
+      case 'assert-text':
       case 'inspect':
-        onSelectTool('inspect')
+        onSelectTool(value)
         break
 
       default:
@@ -52,9 +58,24 @@ export function ToolBox({
         value={tool ?? ''}
         onValueChange={handleToolChange}
       >
-        <Toolbar.ToggleItem value="inspect">
-          <CursorArrowIcon />
-        </Toolbar.ToggleItem>
+        <Tooltip delayDuration={0} asChild content="Inspect elements">
+          <div>
+            <Toolbar.ToggleItem value="inspect">
+              <CursorArrowIcon />
+            </Toolbar.ToggleItem>
+          </div>
+        </Tooltip>
+        <Tooltip
+          delayDuration={0}
+          asChild
+          content="Add assertions on text content by selecting it."
+        >
+          <div>
+            <Toolbar.ToggleItem value="assert-text">
+              <CursorTextIcon />
+            </Toolbar.ToggleItem>
+          </div>
+        </Tooltip>
       </Toolbar.ToggleGroup>
       <Toolbar.Separator />
       <Toolbar.ToggleGroup
@@ -62,9 +83,13 @@ export function ToolBox({
         value={isDrawerOpen ? 'events' : ''}
         onValueChange={handleDrawerToggle}
       >
-        <Toolbar.ToggleItem value="events">
-          <ReaderIcon />
-        </Toolbar.ToggleItem>
+        <Tooltip delayDuration={0} asChild content="Toggle event list">
+          <div>
+            <Toolbar.ToggleItem value="events">
+              <ReaderIcon />
+            </Toolbar.ToggleItem>
+          </div>
+        </Tooltip>
       </Toolbar.ToggleGroup>
     </Toolbar.Root>
   )

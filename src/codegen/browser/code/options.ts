@@ -6,6 +6,16 @@ import { exhaustive } from '@/utils/typescript'
 import * as ir from '../intermediate/ast'
 
 function isBrowserScenario(scenario: ir.Scenario) {
+  function visitAssertion(node: ir.Assertion): boolean {
+    switch (node.type) {
+      case 'TextContainsAssertion':
+        return visit(node.text)
+
+      default:
+        return exhaustive(node.type)
+    }
+  }
+
   function visit(node: ir.Node): boolean {
     switch (node.type) {
       case 'ExpressionStatement':
@@ -28,6 +38,9 @@ function isBrowserScenario(scenario: ir.Scenario) {
 
       case 'VariableDeclaration':
         return visit(node.value)
+
+      case 'ExpectExpression':
+        return visit(node.actual) || visitAssertion(node.expected)
 
       default:
         return exhaustive(node)

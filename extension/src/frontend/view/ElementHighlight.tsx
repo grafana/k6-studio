@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
 import { forwardRef } from 'react'
 
+import { Overlay } from './Overlay'
 import { Bounds } from './types'
 
 interface ElementHighlightProps {
@@ -12,18 +13,14 @@ export const ElementHighlight = forwardRef<
   ElementHighlightProps
 >(function ElementHighlight({ bounds }, ref) {
   return (
-    <div
+    <Overlay
       ref={ref}
       css={css`
-        position: fixed;
-        pointer-events: none;
         background-color: rgba(0, 0, 0, 0.1);
         border: 1px solid rgba(0, 0, 0);
         z-index: var(--studio-layer-0);
       `}
-      style={{
-        ...bounds,
-      }}
+      bounds={bounds}
     />
   )
 })

@@ -32,7 +32,6 @@ export function Selector({ selector, onHighlight }: SelectorProps) {
       css={css`
         font-weight: bold;
         border-radius: var(--radius-2);
-        padding: 0 0.25rem;
 
         ${isRecording &&
         css`

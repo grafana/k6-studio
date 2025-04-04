@@ -5,4 +5,4 @@ export interface Bounds {
   height: number
 }
 
-export type Tool = 'inspect'
+export type Tool = 'inspect' | 'assert-text'

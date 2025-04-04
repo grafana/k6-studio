@@ -61,6 +61,7 @@ export default defineConfig((env) => {
             },
             content_scripts: [
               {
+                run_at: 'document_start',
                 matches: ['<all_urls>'],
                 js: ['extension/src/frontend/index.ts'],
               },
