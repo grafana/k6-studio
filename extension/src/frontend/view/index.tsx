@@ -7,10 +7,12 @@ import { Theme } from '@/components/primitives/Theme'
 
 import { InBrowserControls } from './InBrowserControls'
 
+let initialized = false
+
 function createShadowRoot() {
   const mount = document.createElement('div')
 
-  document.body.appendChild(mount)
+  document.body.prepend(mount)
 
   const shadow = mount.attachShadow({
     mode: 'open',
@@ -26,6 +28,14 @@ function createShadowRoot() {
 }
 
 function initialize() {
+  // We have multiple points in time when we try to inject the UI. This
+  // makes sure we actually only do it once.
+  if (initialized) {
+    return
+  }
+
+  initialized = true
+
   const root = createShadowRoot()
 
   /**
@@ -69,7 +79,33 @@ function initialize() {
 }
 
 if (document.readyState === 'loading') {
-  window.addEventListener('DOMContentLoaded', initialize)
+  // We use a MutationObserver to try and load the UI as soon as the body
+  // element has been added. Otherwise we have to wait for content to be
+  // downloaded and scripts executed, making it quite noticeable that the
+  // UI is being injected.
+  const mutationObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node instanceof HTMLBodyElement) {
+          mutationObserver.disconnect()
+
+          initialize()
+          break
+        }
+      }
+    }
+  })
+
+  mutationObserver.observe(document.documentElement, {
+    childList: true,
+  })
+
+  // Worst case scenario, we initialize the UI when the DOM is ready.
+  window.addEventListener('DOMContentLoaded', () => {
+    mutationObserver.disconnect()
+
+    initialize()
+  })
 } else {
   initialize()
 }
