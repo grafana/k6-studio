@@ -1,3 +1,5 @@
+import { k6StudioState } from '@/k6StudioState'
+
 export {} // Make this a module
 
 declare global {
@@ -14,6 +16,9 @@ declare global {
       viteDevServers: Record<string, import('vite').ViteDevServer>
     }
   }
+
+  // eslint-disable-next-line no-var
+  var k6StudioState: k6StudioState
 
   type VitePluginConfig = ConstructorParameters<
     typeof import('@electron-forge/plugin-vite').VitePlugin

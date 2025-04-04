@@ -147,3 +147,15 @@ export const getCertificateSPKI = async () => {
   // base64 encoded spki
   return forge.util.encode64(spki)
 }
+
+export const waitForProxy = async (): Promise<void> => {
+  if (k6StudioState.proxyStatus === 'online') {
+    return Promise.resolve()
+  }
+
+  return new Promise((resolve) => {
+    k6StudioState.proxyEmitter.once('ready', () => {
+      resolve()
+    })
+  })
+}

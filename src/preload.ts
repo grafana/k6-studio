@@ -3,6 +3,7 @@
 import { ipcRenderer, contextBridge } from 'electron'
 
 import * as auth from './handlers/auth/preload'
+import * as browser from './handlers/browser/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as har from './handlers/har/preload'
 import { createListener } from './handlers/utils'
@@ -35,24 +36,6 @@ const proxy = {
   },
   onProxyStatusChange: (callback: (status: ProxyStatus) => void) => {
     return createListener('proxy:status:change', callback)
-  },
-} as const
-
-const browser = {
-  launchBrowser: (url?: string): Promise<void> => {
-    return ipcRenderer.invoke('browser:start', url)
-  },
-  stopBrowser: () => {
-    ipcRenderer.send('browser:stop')
-  },
-  onBrowserClosed: (callback: () => void) => {
-    return createListener('browser:closed', callback)
-  },
-  onBrowserLaunchFailed: (callback: () => void) => {
-    return createListener('browser:failed', callback)
-  },
-  openExternalLink: (url: string) => {
-    return ipcRenderer.invoke('browser:open:external:link', url)
   },
 } as const
 

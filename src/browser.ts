@@ -12,6 +12,7 @@ import os from 'os'
 import path from 'path'
 import { promisify } from 'util'
 
+import { BrowserHandler } from './handlers/browser/types'
 import { appSettings } from './main'
 import { getCertificateSPKI } from './proxy'
 import { getPlatform } from './utils/electron'
@@ -62,13 +63,13 @@ export const launchBrowser = async (
   const sendBrowserClosedEvent = (): Promise<void> => {
     // we send the browser:stopped event when the browser is closed
     // NOTE: on macos pressing the X button does not close the application so it won't be fired
-    browserWindow.webContents.send('browser:closed')
+    browserWindow.webContents.send(BrowserHandler.Closed)
     return Promise.resolve()
   }
 
   const sendBrowserLaunchFailedEvent = (error: Error) => {
     log.error(error)
-    browserWindow.webContents.send('browser:failed')
+    browserWindow.webContents.send(BrowserHandler.Failed)
   }
 
   const args = [
