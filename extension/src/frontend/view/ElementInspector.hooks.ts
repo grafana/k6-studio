@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 
+import { ElementSelector } from '@/schemas/recording'
+
 import { generateSelector } from '../../selectors'
 
 import { useGlobalClass } from './hooks/useGlobalClass'
 import { Bounds } from './types'
 
 interface TrackedElement {
-  selector: string
+  selector: ElementSelector
   target: Element
   bounds: Bounds
 }

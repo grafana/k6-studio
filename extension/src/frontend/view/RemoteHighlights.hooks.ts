@@ -15,7 +15,7 @@ export function useHighlightedElements() {
         return
       }
 
-      const elements = document.querySelectorAll(data.selector)
+      const elements = document.querySelectorAll(data.selector.selector)
 
       const bounds = Array.from(elements).map((el) => {
         const { top, left, width, height } = el.getBoundingClientRect()

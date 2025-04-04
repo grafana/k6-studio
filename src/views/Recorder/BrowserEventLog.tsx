@@ -3,6 +3,7 @@ import { useState } from 'react'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { BrowserEvent } from '@/schemas/recording'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
 
@@ -25,7 +26,7 @@ export function BrowserEventLog({
     window.studio.browserRemote.navigateTo(url)
   }
 
-  const handleHighlight = (selector: string | null) => {
+  const handleHighlight = (selector: HighlightSelector | null) => {
     window.studio.browserRemote.highlightElement(selector)
   }
 

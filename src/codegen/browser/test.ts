@@ -1,4 +1,4 @@
-import { BrowserEvent } from '@/schemas/recording'
+import { BrowserEvent, ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
 import { TestNode, PageNode, NodeRef, Test, LocatorNode } from './types'
@@ -36,7 +36,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     return toNodeRef(page)
   }
 
-  function getLocator(tab: string, selector: string): NodeRef {
+  function getLocator(tab: string, selector: ElementSelector): NodeRef {
     const page = getPage(tab)
 
     // Group sequential locators together, so that we reuse the same locator
@@ -48,13 +48,13 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     // await input.type("Hello")
     // await input.press("Enter")
     if (
-      previousLocator?.selector !== selector ||
+      previousLocator?.selector !== selector.css ||
       previousLocator?.inputs.page.nodeId !== page.nodeId
     ) {
       previousLocator = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
-        selector,
+        selector: selector.css,
         inputs: {
           page,
         },

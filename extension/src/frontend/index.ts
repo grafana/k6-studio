@@ -95,6 +95,7 @@ function handleTextAreaChange(target: HTMLTextAreaElement) {
     timestamp: Date.now(),
     selector: generateSelector(target),
     value: target.value,
+    sensitive: false,
     tab: '',
   })
 }
@@ -147,6 +148,7 @@ function handleInputChange(target: HTMLInputElement) {
     timestamp: Date.now(),
     selector: generateSelector(target),
     value: target.value,
+    sensitive: target.type === 'password',
     tab: '',
   })
 }
