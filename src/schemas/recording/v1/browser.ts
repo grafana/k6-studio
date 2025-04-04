@@ -1,5 +1,9 @@
 import { z } from 'zod'
 
+const ElementSelectorSchema = z.object({
+  css: z.string(),
+})
+
 const BrowserEventBaseSchema = z.object({
   eventId: z.string(),
   timestamp: z.number(),
@@ -21,7 +25,7 @@ const ReloadedPageEventSchema = BrowserEventBaseSchema.extend({
 const ClickedEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('clicked'),
   tab: z.string(),
-  selector: z.string(),
+  selector: ElementSelectorSchema,
   button: z.union([z.literal('left'), z.literal('middle'), z.literal('right')]),
   modifiers: z.object({
     ctrl: z.boolean(),
@@ -34,21 +38,21 @@ const ClickedEventSchema = BrowserEventBaseSchema.extend({
 const InputChangedEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('input-changed'),
   tab: z.string(),
-  selector: z.string(),
+  selector: ElementSelectorSchema,
   value: z.string(),
 })
 
 const CheckChangedEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('check-changed'),
   tab: z.string(),
-  selector: z.string(),
+  selector: ElementSelectorSchema,
   checked: z.boolean(),
 })
 
 const RadioChangedEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('radio-changed'),
   tab: z.string(),
-  selector: z.string(),
+  selector: ElementSelectorSchema,
   name: z.string(),
   value: z.string(),
 })
@@ -56,7 +60,7 @@ const RadioChangedEventSchema = BrowserEventBaseSchema.extend({
 const SelectChangedEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('select-changed'),
   tab: z.string(),
-  selector: z.string(),
+  selector: ElementSelectorSchema,
   selected: z.array(z.string()),
   multiple: z.boolean(),
 })
@@ -64,8 +68,8 @@ const SelectChangedEventSchema = BrowserEventBaseSchema.extend({
 const FormSubmittedEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('form-submitted'),
   tab: z.string(),
-  form: z.string(),
-  submitter: z.string(),
+  form: ElementSelectorSchema,
+  submitter: ElementSelectorSchema,
 })
 
 export const BrowserEventSchema = z.discriminatedUnion('type', [
@@ -78,6 +82,8 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   SelectChangedEventSchema,
   FormSubmittedEventSchema,
 ])
+
+export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 
 export type NavigatedToPageEvent = z.infer<typeof NavigatedToPageEventSchema>
 export type ReloadedPageEvent = z.infer<typeof ReloadedPageEventSchema>

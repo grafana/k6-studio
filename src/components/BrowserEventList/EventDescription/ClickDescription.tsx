@@ -1,6 +1,7 @@
 import { Kbd } from '@/components/primitives/Kbd'
 import { ClickedEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
 
@@ -44,7 +45,7 @@ function getButtonDescription(event: ClickedEvent) {
 
 interface ClickDescriptionProps {
   event: ClickedEvent
-  onHighlight: (selector: string | null) => void
+  onHighlight: (selector: HighlightSelector | null) => void
 }
 
 export function ClickDescription({
@@ -59,7 +60,7 @@ export function ClickDescription({
   return (
     <>
       <Kbd>{clickedText}</Kbd> on element{' '}
-      <Selector value={event.selector} onHighlight={onHighlight} />
+      <Selector selector={event.selector} onHighlight={onHighlight} />
     </>
   )
 }

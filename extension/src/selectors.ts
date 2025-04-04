@@ -1,5 +1,9 @@
 import { finder } from '@medv/finder'
 
-export function generateSelector(element: Element) {
-  return finder(element, {})
+import { ElementSelector } from '@/schemas/recording'
+
+export function generateSelector(element: Element): ElementSelector {
+  return {
+    css: finder(element, {}),
+  }
 }
