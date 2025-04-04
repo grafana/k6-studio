@@ -4,11 +4,11 @@ import { ipcRenderer, contextBridge } from 'electron'
 
 import * as auth from './handlers/auth/preload'
 import * as cloud from './handlers/cloud/preload'
+import * as har from './handlers/har/preload'
 import { createListener } from './handlers/utils'
 import * as Sentry from './sentry'
 import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
-import { HarWithOptionalResponse } from './types/har'
 import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
 import { AddToastPayload } from './types/toast'
@@ -92,21 +92,6 @@ const script = {
   },
   onScriptCheck: (callback: (data: K6Check[]) => void) => {
     return createListener('script:check', callback)
-  },
-} as const
-
-const har = {
-  saveFile: (
-    data: HarWithOptionalResponse,
-    prefix: string
-  ): Promise<string> => {
-    return ipcRenderer.invoke('har:save', data, prefix)
-  },
-  openFile: (filePath: string): Promise<HarWithOptionalResponse> => {
-    return ipcRenderer.invoke('har:open', filePath)
-  },
-  importFile: (): Promise<string | undefined> => {
-    return ipcRenderer.invoke('har:import')
   },
 } as const
 

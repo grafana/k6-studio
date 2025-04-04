@@ -56,7 +56,6 @@ import {
 } from './settings'
 import { ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
-import { HarWithOptionalResponse } from './types/har'
 import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
 import { sendReport } from './usageReport'
@@ -69,6 +68,7 @@ import {
   getPlatform,
   browserWindowFromEvent,
 } from './utils/electron'
+import { createFileWithUniqueName } from './utils/fileSystem'
 import { createNewGeneratorFile } from './utils/generator'
 import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
 import { setupProjectStructure } from './utils/workspace'
@@ -458,57 +458,6 @@ ipcMain.handle(
     }
   }
 )
-
-// HAR
-ipcMain.handle(
-  'har:save',
-  async (_, data: HarWithOptionalResponse, prefix: string) => {
-    const fileName = await createFileWithUniqueName({
-      data: JSON.stringify(data, null, 2),
-      directory: RECORDINGS_PATH,
-      ext: '.har',
-      prefix,
-    })
-
-    return fileName
-  }
-)
-
-ipcMain.handle(
-  'har:open',
-  async (_, fileName: string): Promise<HarWithOptionalResponse> => {
-    console.info('har:open event received')
-    const data = await readFile(path.join(RECORDINGS_PATH, fileName), {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
-
-    return JSON.parse(data)
-  }
-)
-
-ipcMain.handle('har:import', async (event) => {
-  console.info('har:import event received')
-
-  const browserWindow = browserWindowFromEvent(event)
-
-  const dialogResult = await dialog.showOpenDialog(browserWindow, {
-    message: 'Import HAR file',
-    properties: ['openFile'],
-    defaultPath: RECORDINGS_PATH,
-    filters: [{ name: 'HAR', extensions: ['har'] }],
-  })
-
-  const filePath = dialogResult.filePaths[0]
-
-  if (dialogResult.canceled || !filePath) {
-    return
-  }
-
-  await copyFile(filePath, path.join(RECORDINGS_PATH, path.basename(filePath)))
-
-  return path.basename(filePath)
-})
 
 // Generator
 ipcMain.handle('generator:create', async (_, recordingPath: string) => {
@@ -998,44 +947,4 @@ const cleanUpProxies = async () => {
   processList.forEach((proc) => {
     kill(proc.pid)
   })
-}
-
-const createFileWithUniqueName = async ({
-  directory,
-  data,
-  prefix,
-  ext,
-}: {
-  directory: string
-  data: string
-  prefix: string
-  ext: string
-}): Promise<string> => {
-  const timestamp = new Date().toISOString().split('T')[0] ?? ''
-  const template = `${prefix ? `${prefix} - ` : ''}${timestamp}${ext}`
-
-  // Start from 2 as it follows the the OS behavior for duplicate files
-  let fileVersion = 2
-  let uniqueFileName = template
-  let fileCreated = false
-
-  do {
-    try {
-      // ax+ flag will throw an error if the file already exists
-      await writeFile(path.join(directory, uniqueFileName), data, {
-        flag: 'ax+',
-      })
-      fileCreated = true
-    } catch (error) {
-      if (isNodeJsErrnoException(error) && error.code !== 'EEXIST') {
-        throw error
-      }
-
-      const { name, ext } = path.parse(template)
-      uniqueFileName = `${name} (${fileVersion})${ext}`
-      fileVersion++
-    }
-  } while (!fileCreated)
-
-  return uniqueFileName
 }
