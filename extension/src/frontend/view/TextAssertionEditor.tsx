@@ -6,6 +6,7 @@ import { FieldSet } from '@/components/primitives/FieldSet'
 import { Flex } from '@/components/primitives/Flex'
 import { Popover } from '@/components/primitives/Popover'
 import { TextField } from '@/components/primitives/TextField'
+import { ElementSelector } from '@/schemas/recording'
 
 import { client } from '../routing'
 
@@ -15,7 +16,7 @@ import { TextSelection } from './TextAssertionEditor.types'
 import { useEscape } from './hooks/useEscape'
 
 interface TextAssertion {
-  selector: string
+  selector: ElementSelector
   text: string
 }
 
@@ -40,7 +41,10 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
   const handleSelectorFocus = () => {
     client.send({
       type: 'highlight-elements',
-      selector,
+      selector: {
+        type: 'css',
+        selector: selector.css,
+      },
     })
   }
 
@@ -54,10 +58,16 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
   const handleSelectorChange = (ev: ChangeEvent<HTMLInputElement>) => {
     client.send({
       type: 'highlight-elements',
-      selector: ev.target.value,
+      selector: {
+        type: 'css',
+        selector: ev.target.value,
+      },
     })
 
-    setSelector(ev.target.value)
+    setSelector({
+      ...selector,
+      css: ev.target.value,
+    })
   }
 
   const handleTextChange = (ev: ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +125,7 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
               <TextField
                 size="1"
                 label="Element"
-                value={selector}
+                value={selector.css}
                 onFocus={handleSelectorFocus}
                 onBlur={handleSelectorBlur}
                 onChange={handleSelectorChange}

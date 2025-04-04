@@ -76,7 +76,7 @@ const FormSubmittedEventSchema = BrowserEventBaseSchema.extend({
 const AssertedTextEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('asserted-text'),
   tab: z.string(),
-  selector: z.string(),
+  selector: ElementSelectorSchema,
   operation: z.object({
     type: z.literal('contains'),
     value: z.string(),

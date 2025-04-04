@@ -58,7 +58,7 @@ export function ToolBox({
         value={tool ?? ''}
         onValueChange={handleToolChange}
       >
-        <Tooltip asChild content="Inspect elements">
+        <Tooltip delayDuration={0} asChild content="Inspect elements">
           <div>
             <Toolbar.ToggleItem value="inspect">
               <CursorArrowIcon />
@@ -66,6 +66,7 @@ export function ToolBox({
           </div>
         </Tooltip>
         <Tooltip
+          delayDuration={0}
           asChild
           content="Add assertions on text content by selecting it."
         >
@@ -82,7 +83,7 @@ export function ToolBox({
         value={isDrawerOpen ? 'events' : ''}
         onValueChange={handleDrawerToggle}
       >
-        <Tooltip asChild content="Toggle event list">
+        <Tooltip delayDuration={0} asChild content="Toggle event list">
           <div>
             <Toolbar.ToggleItem value="events">
               <ReaderIcon />

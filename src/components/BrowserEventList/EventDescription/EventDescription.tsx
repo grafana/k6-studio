@@ -97,8 +97,8 @@ export function EventDescription({
       return (
         <>
           Assert that{' '}
-          <Selector value={event.selector} onHighlight={onHighlight} /> contains
-          the text{' '}
+          <Selector selector={event.selector} onHighlight={onHighlight} />{' '}
+          contains the text{' '}
           <Tooltip asChild content={event.operation.value}>
             <em>{trimToLength(event.operation.value, 30)}</em>
           </Tooltip>
