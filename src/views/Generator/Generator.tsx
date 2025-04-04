@@ -154,7 +154,11 @@ export function Generator() {
         />
       }
       actions={
-        <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
+        <GeneratorControls
+          onSave={handleSaveGenerator}
+          isDirty={isDirty}
+          onChangeRecording={() => setSelectedRequest(null)}
+        />
       }
       loading={isLoading}
     >
