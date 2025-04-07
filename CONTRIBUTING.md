@@ -14,14 +14,11 @@ Follow the issue template and add additional information that will help us repli
 
 ## Contribute to code
 
-> [!NOTE]
-> Grafana k6 Studio is currently in active development. Most of the features are meant to be implemented by the team, so we may or may not accept contributions from the community.
-> Non-critical bug fixes and small features are welcome, but please check with us first to see if we are already working on it.
-
-1. Create a fork and open a feature branch
-2. Sign the [Contributor License Agreement](https://cla-assistant.io/grafana/k6-studio) (the process is integrated with the pull request flow through cla-assistant.io).
-3. Create a pull request. Make sure to include a description of the changes you made, and reference the issue number if applicable. The PR title should be descriptive and follow the [commit message format](#commit-message-format). Make sure to fill the PR template with the information we need to review your PR.
-4. GitHub will assign reviewers to your pull request. We will review your PR and provide feedback. We may ask you to make changes or improvements to your code. Once your PR is approved, a maintainer will merge it.
+1. Pick an issue you'd like to fix. If there isn't one already, or you want to add a feature, please open one, and we can talk about how to do it. Out of respect for your time, please start a discussion about major contributions either in a GitHub Issue or in the [community forums](https://community.grafana.com/c/grafana-k6/k6-studio/) before you start implementing
+2. Create a fork and open a feature branch
+3. Sign the [Contributor License Agreement](https://cla-assistant.io/grafana/k6-studio) (the process is integrated with the pull request flow through cla-assistant.io)
+4. Create a pull request. Make sure to include a description of the changes you made, and reference the issue number if applicable. The PR title should be descriptive and follow the [commit message format](#commit-message-format). Make sure to fill the PR template with the information we need to review your PR
+5. GitHub will assign reviewers to your pull request. We will review your PR and provide feedback. We may ask you to make changes or improvements to your code. Once your PR is approved, a maintainer will merge it
 
 ### Commit message format
 
