@@ -1,6 +1,4 @@
-import { Process } from '@puppeteer/browsers'
 import * as Sentry from '@sentry/electron/main'
-import { ChildProcessWithoutNullStreams } from 'child_process'
 import { watch, FSWatcher } from 'chokidar'
 import { COPYFILE_EXCL } from 'constants'
 import {
@@ -12,7 +10,6 @@ import {
   shell,
 } from 'electron'
 import log from 'electron-log/main'
-import eventEmitter from 'events'
 import find from 'find-process'
 import { existsSync } from 'fs'
 import {
@@ -30,7 +27,7 @@ import invariant from 'tiny-invariant'
 import kill from 'tree-kill'
 import { updateElectronApp } from 'update-electron-app'
 
-import { getBrowserPath, launchBrowser } from './browser'
+import { getBrowserPath } from './browser'
 import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
 import {
   DATA_FILES_PATH,
@@ -41,9 +38,10 @@ import {
   TEMP_SCRIPT_SUFFIX,
 } from './constants/workspace'
 import * as handlers from './handlers'
+import * as mainState from './k6StudioState'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { configureApplicationMenu } from './menu'
-import { launchProxy, type ProxyProcess } from './proxy'
+import { launchProxy, waitForProxy, type ProxyProcess } from './proxy'
 import { GeneratorFileDataSchema } from './schemas/generator'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import {
@@ -92,15 +90,9 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-const proxyEmitter = new eventEmitter<{
-  'status:change': [ProxyStatus]
-  ready: [void]
-}>()
-
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
-let proxyStatus: ProxyStatus = 'offline'
 const PROXY_RETRY_LIMIT = 5
 let proxyRetryCount = 0
 let currentClientRoute = '/'
@@ -108,7 +100,6 @@ let wasAppClosedByClient = false
 let wasProxyStoppedByClient = false
 export let appSettings = defaultSettings
 
-let currentBrowserProcess: Process | ChildProcessWithoutNullStreams | null
 let currentk6Process: K6Process | null
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
@@ -119,6 +110,7 @@ if (require('electron-squirrel-startup')) {
 }
 
 initializeLogger()
+mainState.initialize()
 handlers.initialize()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
@@ -217,8 +209,8 @@ const createWindow = async () => {
   configureWatcher(mainWindow)
   wasAppClosedByClient = false
 
-  proxyEmitter.on('status:change', (status: ProxyStatus) => {
-    proxyStatus = status
+  k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
+    k6StudioState.proxyStatus = status
     mainWindow.webContents.send('proxy:status:change', status)
   })
 
@@ -240,7 +232,7 @@ const createWindow = async () => {
   }
 
   mainWindow.on('closed', () =>
-    proxyEmitter.removeAllListeners('status:change')
+    k6StudioState.proxyEmitter.removeAllListeners('status:change')
   )
 
   mainWindow.on('moved', () => trackWindowState(mainWindow))
@@ -325,45 +317,6 @@ ipcMain.on('proxy:stop', () => {
   console.info('proxy:stop event received')
   wasProxyStoppedByClient = true
   return stopProxyProcess()
-})
-
-const waitForProxy = async (): Promise<void> => {
-  if (proxyStatus === 'online') {
-    return Promise.resolve()
-  }
-
-  return new Promise((resolve) => {
-    proxyEmitter.once('ready', () => {
-      resolve()
-    })
-  })
-}
-
-// Browser
-ipcMain.handle('browser:start', async (event, url?: string) => {
-  console.info('browser:start event received')
-
-  await waitForProxy()
-
-  const browserWindow = browserWindowFromEvent(event)
-  currentBrowserProcess = await launchBrowser(browserWindow, url)
-  console.info('browser started')
-})
-
-ipcMain.on('browser:stop', async () => {
-  console.info('browser:stop event received')
-
-  if (currentBrowserProcess) {
-    // macOS & windows
-    if ('close' in currentBrowserProcess) {
-      await currentBrowserProcess.close()
-      // linux
-    } else {
-      currentBrowserProcess.kill()
-    }
-
-    currentBrowserProcess = null
-  }
 })
 
 // Script
@@ -676,11 +629,6 @@ ipcMain.on('splashscreen:close', (event) => {
   }
 })
 
-ipcMain.handle('browser:open:external:link', (_, url: string) => {
-  console.info('browser:open:external:link event received')
-  return shell.openExternal(url)
-})
-
 ipcMain.on('log:open', () => {
   console.info('log:open event received')
   openLogFolder()
@@ -731,7 +679,7 @@ ipcMain.handle('settings:select-upstream-certificate', async () => {
 
 ipcMain.handle('proxy:status:get', () => {
   console.info('proxy:status:get event received')
-  return proxyStatus
+  return k6StudioState.proxyStatus
 })
 
 async function applySettings(
@@ -763,23 +711,23 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
   console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
 
-  proxyEmitter.emit('status:change', 'starting')
+  k6StudioState.proxyEmitter.emit('status:change', 'starting')
 
   return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
       wasProxyStoppedByClient = false
-      proxyEmitter.emit('status:change', 'online')
-      proxyEmitter.emit('ready')
+      k6StudioState.proxyEmitter.emit('status:change', 'online')
+      k6StudioState.proxyEmitter.emit('ready')
     },
     onFailure: async () => {
       if (wasProxyStoppedByClient) {
-        proxyEmitter.emit('status:change', 'offline')
+        k6StudioState.proxyEmitter.emit('status:change', 'offline')
       }
 
       if (
         appShuttingDown ||
         wasProxyStoppedByClient ||
-        proxyStatus === 'starting'
+        k6StudioState.proxyStatus === 'starting'
       ) {
         // don't restart the proxy if the app is shutting down, manually stopped by client or already restarting
         return
@@ -787,7 +735,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
       if (proxyRetryCount === PROXY_RETRY_LIMIT && !automaticallyFindPort) {
         proxyRetryCount = 0
-        proxyEmitter.emit('status:change', 'offline')
+        k6StudioState.proxyEmitter.emit('status:change', 'offline')
 
         sendToast(browserWindow.webContents, {
           title: `Port ${proxyPort} is already in use`,
@@ -800,7 +748,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
       }
 
       proxyRetryCount++
-      proxyEmitter.emit('status:change', 'starting')
+      k6StudioState.proxyEmitter.emit('status:change', 'starting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       const errorMessage = `Proxy failed to start on port ${proxyPort}, restarting...`
