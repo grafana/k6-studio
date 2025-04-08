@@ -2,7 +2,6 @@ import { Fragment } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { BrowserEvent } from '@/schemas/recording'
-import { trimToLength } from '@/utils/text'
 import { exhaustive } from '@/utils/typescript'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
@@ -100,7 +99,7 @@ export function EventDescription({
           <Selector selector={event.selector} onHighlight={onHighlight} />{' '}
           contains the text{' '}
           <Tooltip asChild content={event.operation.value}>
-            <em>{trimToLength(event.operation.value, 30)}</em>
+            <em>{`"${event.operation.value}"`}</em>
           </Tooltip>
         </>
       )

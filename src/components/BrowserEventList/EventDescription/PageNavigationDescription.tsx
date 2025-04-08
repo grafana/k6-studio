@@ -26,22 +26,28 @@ const RemoteLink = forwardRef<HTMLElement, RemoteLinkProps>(function RemoteLink(
   const element = <strong ref={ref}>{url}</strong>
 
   if (!isRecording) {
-    return element
+    return (
+      <Tooltip asChild content={url}>
+        {element}
+      </Tooltip>
+    )
   }
 
   return (
-    <a
-      css={css`
-        cursor: pointer;
+    <Tooltip asChild content={url}>
+      <a
+        css={css`
+          cursor: pointer;
 
-        &:hover {
-          text-decoration: underline;
-        }
-      `}
-      onClick={handleClick}
-    >
-      {element}
-    </a>
+          &:hover {
+            text-decoration: underline;
+          }
+        `}
+        onClick={handleClick}
+      >
+        {element}
+      </a>
+    </Tooltip>
   )
 })
 
@@ -54,11 +60,7 @@ export function PageNavigationDescription({
   event,
   onNavigate,
 }: PageNavigationDescriptionProps) {
-  const url = (
-    <Tooltip content={event.url}>
-      <RemoteLink url={event.url} onClick={onNavigate} />
-    </Tooltip>
-  )
+  const url = <RemoteLink url={event.url} onClick={onNavigate} />
 
   switch (event.source) {
     case 'address-bar':
