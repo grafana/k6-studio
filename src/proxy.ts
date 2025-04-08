@@ -56,6 +56,7 @@ export const launchProxy = (
     `${proxySettings.port}`,
     '--mode',
     getProxyMode(proxySettings),
+    '--ssl-insecure',
   ]
 
   if (proxySettings.mode === 'upstream' && proxySettings.requiresAuth) {
