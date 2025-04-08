@@ -9,11 +9,13 @@ import { waitForProxy } from '@/proxy'
 import { showScriptSelectDialog, runScript, type K6Process } from '@/script'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 
+import { ScriptHandler } from './types'
+
 export function initialize() {
   let currentk6Process: K6Process | null
 
-  ipcMain.handle('script:select', async (event) => {
-    console.info('script:select event received')
+  ipcMain.handle(ScriptHandler.Select, async (event) => {
+    console.info(`${ScriptHandler.Select} event received`)
     const browserWindow = browserWindowFromEvent(event)
     const scriptPath = await showScriptSelectDialog(browserWindow)
 
@@ -21,9 +23,9 @@ export function initialize() {
   })
 
   ipcMain.handle(
-    'script:open',
+    ScriptHandler.Open,
     async (_, scriptPath: string, absolute: boolean = false) => {
-      console.log('script:open event received')
+      console.log(`${ScriptHandler.Open} event received`)
       const resolvedScriptPath = absolute
         ? scriptPath
         : path.join(SCRIPTS_PATH, scriptPath)
@@ -38,9 +40,9 @@ export function initialize() {
   )
 
   ipcMain.handle(
-    'script:run',
+    ScriptHandler.Run,
     async (event, scriptPath: string, absolute: boolean = false) => {
-      console.info('script:run event received')
+      console.info(`${ScriptHandler.Run} event received`)
       await waitForProxy()
 
       const browserWindow = browserWindowFromEvent(event)
@@ -58,37 +60,40 @@ export function initialize() {
     }
   )
 
-  ipcMain.on('script:stop', (event) => {
-    console.info('script:stop event received')
+  ipcMain.on(ScriptHandler.Stop, (event) => {
+    console.info(`${ScriptHandler.Stop} event received`)
     if (currentk6Process) {
       currentk6Process.kill()
       currentk6Process = null
     }
 
     const browserWindow = browserWindowFromEvent(event)
-    browserWindow.webContents.send('script:stopped')
-  })
-
-  ipcMain.handle('script:run-from-generator', async (event, script: string) => {
-    console.log('script:run-from-generator event received')
-    await writeFile(TEMP_GENERATOR_SCRIPT_PATH, script)
-
-    const browserWindow = browserWindowFromEvent(event)
-
-    currentk6Process = await runScript({
-      browserWindow,
-      scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
-      proxyPort: appSettings.proxy.port,
-      usageReport: appSettings.telemetry.usageReport,
-    })
-
-    await unlink(TEMP_GENERATOR_SCRIPT_PATH)
+    browserWindow.webContents.send(ScriptHandler.Stopped)
   })
 
   ipcMain.handle(
-    'script:save',
+    ScriptHandler.RunFromGenerator,
+    async (event, script: string) => {
+      console.info(`${ScriptHandler.RunFromGenerator} event received`)
+      await writeFile(TEMP_GENERATOR_SCRIPT_PATH, script)
+
+      const browserWindow = browserWindowFromEvent(event)
+
+      currentk6Process = await runScript({
+        browserWindow,
+        scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
+        proxyPort: appSettings.proxy.port,
+        usageReport: appSettings.telemetry.usageReport,
+      })
+
+      await unlink(TEMP_GENERATOR_SCRIPT_PATH)
+    }
+  )
+
+  ipcMain.handle(
+    ScriptHandler.Save,
     async (event, script: string, fileName: string = 'script.js') => {
-      console.log('script:save event received')
+      console.info(`${ScriptHandler.Save} event received`)
       const browserWindow = browserWindowFromEvent(event)
       try {
         const filePath = path.join(SCRIPTS_PATH, fileName)
