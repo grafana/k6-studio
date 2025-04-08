@@ -34,16 +34,14 @@ import {
   GENERATORS_PATH,
   RECORDINGS_PATH,
   SCRIPTS_PATH,
-  TEMP_GENERATOR_SCRIPT_PATH,
   TEMP_SCRIPT_SUFFIX,
 } from './constants/workspace'
 import * as handlers from './handlers'
 import * as mainState from './k6StudioState'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { configureApplicationMenu } from './menu'
-import { launchProxy, waitForProxy, type ProxyProcess } from './proxy'
+import { launchProxy, type ProxyProcess } from './proxy'
 import { GeneratorFileDataSchema } from './schemas/generator'
-import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import {
   defaultSettings,
   getSettings,
@@ -100,7 +98,6 @@ let wasAppClosedByClient = false
 let wasProxyStoppedByClient = false
 export let appSettings = defaultSettings
 
-let currentk6Process: K6Process | null
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
 
@@ -318,99 +315,6 @@ ipcMain.on('proxy:stop', () => {
   wasProxyStoppedByClient = true
   return stopProxyProcess()
 })
-
-// Script
-ipcMain.handle('script:select', async (event) => {
-  console.info('script:select event received')
-  const browserWindow = browserWindowFromEvent(event)
-  const scriptPath = await showScriptSelectDialog(browserWindow)
-
-  return scriptPath
-})
-
-ipcMain.handle(
-  'script:open',
-  async (_, scriptPath: string, absolute: boolean = false) => {
-    const resolvedScriptPath = absolute
-      ? scriptPath
-      : path.join(SCRIPTS_PATH, scriptPath)
-
-    const script = await readFile(resolvedScriptPath, {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
-
-    return script
-  }
-)
-
-ipcMain.handle(
-  'script:run',
-  async (event, scriptPath: string, absolute: boolean = false) => {
-    console.info('script:run event received')
-    await waitForProxy()
-
-    const browserWindow = browserWindowFromEvent(event)
-
-    const resolvedScriptPath = absolute
-      ? scriptPath
-      : path.join(SCRIPTS_PATH, scriptPath)
-
-    currentk6Process = await runScript({
-      browserWindow,
-      scriptPath: resolvedScriptPath,
-      proxyPort: appSettings.proxy.port,
-      usageReport: appSettings.telemetry.usageReport,
-    })
-  }
-)
-
-ipcMain.on('script:stop', (event) => {
-  console.info('script:stop event received')
-  if (currentk6Process) {
-    currentk6Process.kill()
-    currentk6Process = null
-  }
-
-  const browserWindow = browserWindowFromEvent(event)
-  browserWindow.webContents.send('script:stopped')
-})
-
-ipcMain.handle('script:run-from-generator', async (event, script: string) => {
-  await writeFile(TEMP_GENERATOR_SCRIPT_PATH, script)
-
-  const browserWindow = browserWindowFromEvent(event)
-
-  currentk6Process = await runScript({
-    browserWindow,
-    scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
-    proxyPort: appSettings.proxy.port,
-    usageReport: appSettings.telemetry.usageReport,
-  })
-
-  await unlink(TEMP_GENERATOR_SCRIPT_PATH)
-})
-
-ipcMain.handle(
-  'script:save',
-  async (event, script: string, fileName: string = 'script.js') => {
-    const browserWindow = browserWindowFromEvent(event)
-    try {
-      const filePath = path.join(SCRIPTS_PATH, fileName)
-      await writeFile(filePath, script)
-      sendToast(browserWindow.webContents, {
-        title: 'Script exported successfully',
-        status: 'success',
-      })
-    } catch (error) {
-      sendToast(browserWindow.webContents, {
-        title: 'Failed to export the script',
-        status: 'error',
-      })
-      log.error(error)
-    }
-  }
-)
 
 // Generator
 ipcMain.handle('generator:create', async (_, recordingPath: string) => {
