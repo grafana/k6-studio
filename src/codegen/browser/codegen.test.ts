@@ -359,3 +359,40 @@ it('should emit select with multiple options on element', async ({
     '__snapshots__/browser/select-multiple-options-on-element.ts'
   )
 })
+
+it('should assert that element contains text', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'button',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-contains-text',
+          operation: {
+            type: 'text-contains',
+            value: 'Hello, World!',
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/element-contains-text.ts'
+  )
+})
