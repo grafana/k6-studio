@@ -1,10 +1,11 @@
 import createCache from '@emotion/cache'
-import { CacheProvider, css, Global } from '@emotion/react'
+import { CacheProvider } from '@emotion/react'
 import { createRoot } from 'react-dom/client'
 
 import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 import { Theme } from '@/components/primitives/Theme'
 
+import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
 
 let initialized = false
@@ -20,6 +21,7 @@ function createShadowRoot() {
 
   const root = document.createElement('div')
 
+  root.style.cursor = 'initial'
   root.dataset.ksixStudio = 'true'
 
   shadow.appendChild(root)
@@ -56,18 +58,7 @@ function initialize() {
 
   createRoot(root).render(
     <CacheProvider value={globalCache}>
-      <Global
-        styles={css`
-          html body[data-scroll-locked] {
-            --removed-body-scroll-bar-size: 0 !important;
-            margin-right: 0 !important;
-          }
-
-          .ksix-studio-inspecting {
-            cursor: pointer !important;
-          }
-        `}
-      />
+      <GlobalStyles />
       <ContainerProvider container={root}>
         <CacheProvider value={shadowCache}>
           <Theme root={false} includeColors />

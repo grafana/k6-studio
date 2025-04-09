@@ -10,10 +10,12 @@ import { ElementSelector } from '@/schemas/recording'
 
 import { client } from '../routing'
 
+import { useGlobalClass } from './GlobalStyles'
 import { Overlay } from './Overlay'
 import { useTextSelection } from './TextAssertionEditor.hooks'
 import { TextSelection } from './TextAssertionEditor.types'
 import { useEscape } from './hooks/useEscape'
+import { usePreventClick } from './hooks/usePreventClick'
 
 interface TextAssertion {
   selector: ElementSelector
@@ -156,6 +158,9 @@ interface TextAssertionEditorProps {
 
 export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
   const [selection, clearSelection] = useTextSelection()
+
+  useGlobalClass('asserting-text')
+  usePreventClick(selection === null)
 
   const handleAdd = (assertion: TextAssertion) => {
     client.send({
