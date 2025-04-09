@@ -113,7 +113,7 @@ If you're interested in contributing to the Grafana k6 Studio project:
 - Explore our [issues](https://github.com/grafana/k6-studio/issues) and see if there's anything you'd like to work on
 - Set up your development environment and start coding
 
-### Development environment
+## Development environment
 
 ### Dependencies
 
