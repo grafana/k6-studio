@@ -97,6 +97,7 @@ function applyRule({
         requestsReplaced: [
           ...state.requestsReplaced,
           {
+            id: requestSnippetSchema.data.id,
             original: requestSnippetSchema.data.request,
             replaced: replacedRequest,
           },

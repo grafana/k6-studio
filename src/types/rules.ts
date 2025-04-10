@@ -29,22 +29,22 @@ interface BaseRuleState {
   matchedRequestIds: string[]
 }
 
+// TODO: better name?
+interface RequestsReplaced {
+  id: string
+  original: Request
+  replaced: Request
+}
+
 export interface CorrelationState extends BaseRuleState {
   extractedValue?: string
   count: number
   responsesExtracted: ProxyData[]
-  requestsReplaced: {
-    original: Request
-    replaced: Request
-  }[]
   generatedUniqueId: number | undefined
+  requestsReplaced: RequestsReplaced[]
 }
 
-interface BaseState {
-  matchedRequestIds: string[]
-}
-
-export interface BaseRuleInstance<T extends TestRule, S = BaseState> {
+export interface BaseRuleInstance<T extends TestRule, S = BaseRuleState> {
   apply: (request: RequestSnippetSchema) => RequestSnippetSchema
   rule: T
   // Needed for discriminated union, nested rule.type doesn't work
@@ -58,12 +58,9 @@ export type CorrelationRuleInstance = BaseRuleInstance<
 >
 
 export interface ParameterizationState extends BaseRuleState {
-  requestsReplaced: {
-    original: Request
-    replaced: Request
-  }[]
   uniqueId: number
   snippetInjected: boolean
+  requestsReplaced: RequestsReplaced[]
 }
 
 export type ParameterizationRuleInstance = BaseRuleInstance<

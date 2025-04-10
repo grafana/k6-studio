@@ -9,10 +9,19 @@ export function useApplyRules() {
   const selectedRuleId = useGeneratorStore((state) => state.selectedRuleId)
   const requests = useGeneratorStore(selectFilteredRequests)
 
-  const ruleApplicationResult = useMemo(
-    () => applyRules(requests, rules),
-    [requests, rules]
-  )
+  // TODO: refactor
+  const ruleApplicationResult = useMemo(() => {
+    // const grouped = groupBy(rules, rule => ru)
+    const selectedRuleIndex = rules.findIndex(
+      (rule) => rule.id === selectedRuleId
+    )
+    // const preceedingRules = rules.slice(0, selectedRuleIndex + 1)
+    const rls =
+      selectedRuleIndex === -1 ? rules : rules.slice(0, selectedRuleIndex + 1)
+
+    console.log('rls', rls)
+    return applyRules(requests, rls)
+  }, [requests, rules, selectedRuleId])
 
   const selectedRuleInstance = useMemo(
     () =>

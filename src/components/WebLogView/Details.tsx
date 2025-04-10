@@ -2,9 +2,13 @@ import { css } from '@emotion/react'
 import { Cross2Icon } from '@radix-ui/react-icons'
 import { Box, Flex, Heading, IconButton } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
+import * as JsDiff from 'diff'
 import { PropsWithChildren, useEffect } from 'react'
 
-import { ProxyData } from '@/types'
+import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { Header, ProxyData } from '@/types'
+import { SearchMatch } from '@/types/fuse'
+import { RuleInstance } from '@/types/rules'
 
 import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
@@ -14,12 +18,149 @@ interface DetailsProps {
   onSelectRequest: (data: ProxyData | null) => void
 }
 
+export type ProxyDataWithDiff = {
+  id: ProxyData['id']
+  response?: ProxyData['response']
+  request: {
+    headers: Array<{ name: string; value: string; diff: JsDiff.Change[] }>
+  }
+}
+
+function getProxyDataDiff(
+  ruleInstance: RuleInstance,
+  selectedRequestId: string
+): SearchMatch[] | undefined {
+  // const foo = get(original, properties[1])
+  if (!('requestsReplaced' in ruleInstance.state)) {
+    return
+  }
+
+  const index = ruleInstance.state.requestsReplaced.findIndex(
+    (request) => request.id === selectedRequestId
+  )
+
+  const original = ruleInstance.state.requestsReplaced[index]?.original
+  const modified = ruleInstance.state.requestsReplaced[index]?.replaced
+
+  if (!original || !modified) {
+    return
+  }
+
+  const requestHeaderMatches = getHeaderMatches(
+    original.headers,
+    modified.headers,
+    'request.headers'
+  )
+
+  const urlDiff = JsDiff.diffWords(original.url ?? '', modified.url ?? '')
+  const urlMatches = [
+    {
+      indices: diffToMatches(urlDiff),
+      key: 'request.url',
+      value: modified.url,
+    },
+  ]
+
+  return [...requestHeaderMatches, ...urlMatches]
+}
+
+function getHeaderMatches(
+  originalHeaders: Header[],
+  headers: Header[],
+  key: string
+) {
+  return headers.map((header, index): SearchMatch => {
+    const originalValue = originalHeaders[index]?.[1]
+    const value = header[1]
+    const diff = JsDiff.diffWords(originalValue ?? '', value, {
+      // maxEditLength: 10,
+    })
+    console.log('diffO', diff)
+    if (diff.length < 2) {
+      return undefined
+    }
+    console.log('value', value)
+
+    return {
+      indices: diffToMatches(diff),
+      key,
+      value,
+    }
+  })
+}
+
+function diffToMatches(diff: JsDiff.Change[]): SearchMatch['indices'] {
+  const finalAccumulator = diff.reduce<{
+    indices: SearchMatch['indices']
+    start: number
+  }>(
+    (acc, part) => {
+      if (part.added) {
+        const newRange: [number, number] = [
+          acc.start,
+          acc.start + part.value.length - 1,
+        ]
+        return {
+          indices: [...acc.indices, newRange],
+          start: acc.start + part.value.length,
+        }
+      }
+
+      if (!part.removed) {
+        // Only advance start for non-removed parts
+        return {
+          ...acc,
+          start: acc.start + part.value.length,
+        }
+      }
+
+      // If part is removed, don't change accumulator
+      return acc
+    },
+    { indices: [], start: 0 } // Initial accumulator
+  )
+
+  return finalAccumulator.indices
+}
+
 export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
+  const { selectedRuleInstance } = useApplyRules()
+  console.log('selectedRuleInstance', selectedRuleInstance)
+  // const originalRequest =
   useEffect(() => {
     return () => {
-      onSelectRequest(null)
+      // onSelectRequest(null)
     }
   }, [onSelectRequest])
+
+  if (!selectedRequest) {
+    return null
+  }
+  console.log('selectedRequest', selectedRequest)
+
+  const diff = selectedRuleInstance
+    ? getProxyDataDiff(selectedRuleInstance, selectedRequest.id)
+    : []
+
+  // const original = {
+  // ...selectedRequest,
+  // request: {
+  // ...selectedRequest?.request,
+  // url: 'foobar',
+  // },
+  // }
+  // const changes = JsDiff.diffJson(original, selectedRequest)
+  // console.log('changes', changes)
+
+  // const result = changes
+  // .map((part) => {
+  // if (part.added || part.removed) {
+  // return '"REDACTED"'
+  // }
+  // return part.value
+  // })
+  // .join('')
+  // console.log('parsed', JSON.parse(result))
 
   return (
     <>
@@ -46,7 +187,7 @@ export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
           <Allotment defaultSizes={[1, 1]} vertical>
             <Allotment.Pane minSize={200}>
               <PaneContent heading="Request">
-                <RequestDetails data={selectedRequest} />
+                <RequestDetails data={{ ...selectedRequest, matches: diff }} />
               </PaneContent>
             </Allotment.Pane>
             <Allotment.Pane minSize={200} visible={!!selectedRequest.response}>
