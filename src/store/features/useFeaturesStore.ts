@@ -10,6 +10,7 @@ interface FeaturesStore {
 
 const defaultFeatures: Record<Feature, boolean> = {
   'dummy-feature': false,
+  'floating-recording-controls': false,
 }
 
 export const useFeaturesStore = create<FeaturesStore>()(

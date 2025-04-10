@@ -13,14 +13,19 @@ export const globalStyles = css`
     font-style: normal;
   }
 
-  .radix-themes {
-    --default-font-family: 'InterVariable', -apple-system, BlinkMacSystemFont,
+  :root {
+    --font-family: 'InterVariable', -apple-system, BlinkMacSystemFont,
       'Segoe UI (Custom)', Roboto, 'Helvetica Neue', 'Open Sans (Custom)',
       system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
   }
 
+  .radix-themes {
+    --default-font-family: var(--font-family);
+  }
+
   body {
     margin: 0;
+    font-family: var(--font-family);
   }
 
   pre {
