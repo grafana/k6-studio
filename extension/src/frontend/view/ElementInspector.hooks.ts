@@ -5,6 +5,7 @@ import { ElementSelector } from '@/schemas/recording'
 import { generateSelector } from '../../selectors'
 
 import { useGlobalClass } from './GlobalStyles'
+import { useHighlightDebounce } from './hooks/useHighlightDebounce'
 import { usePreventClick } from './hooks/usePreventClick'
 import { Bounds } from './types'
 
@@ -63,5 +64,5 @@ export function useInspectedElement() {
   usePreventClick(element !== null)
   useGlobalClass('inspecting')
 
-  return element
+  return useHighlightDebounce(element)
 }

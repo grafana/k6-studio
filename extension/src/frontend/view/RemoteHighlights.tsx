@@ -5,43 +5,9 @@ import { Overlay } from './Overlay'
 import { useHighlightedElements } from './RemoteHighlights.hooks'
 import { Bounds } from './types'
 
-const Backdrop = forwardRef<HTMLDivElement, ComponentProps<'div'>>(
-  function Backdrop(props, ref) {
-    return (
-      <div
-        ref={ref}
-        css={css`
-          position: fixed;
-          inset: 0;
-          z-index: var(--studio-layer-0);
-          background-color: rgba(0, 0, 0, 0.4);
-          mix-blend-mode: darken;
-          pointer-events: none;
-        `}
-        {...props}
-      />
-    )
-  }
-)
-
 interface ElementHighlightProps extends ComponentProps<'div'> {
   bounds: Bounds
 }
-
-const ElementCutout = forwardRef<HTMLDivElement, ElementHighlightProps>(
-  function ElementCutout(props, ref) {
-    return (
-      <Overlay
-        ref={ref}
-        css={css`
-          z-index: var(--studio-layer-0);
-          background-color: white;
-        `}
-        {...props}
-      />
-    )
-  }
-)
 
 const ElementOutline = forwardRef<HTMLDivElement, ElementHighlightProps>(
   function ElementOutline(props, ref) {
@@ -50,7 +16,10 @@ const ElementOutline = forwardRef<HTMLDivElement, ElementHighlightProps>(
         ref={ref}
         css={css`
           z-index: var(--studio-layer-0);
+          border: 2px solid var(--gray-6);
           outline: 2px solid var(--gray-12);
+          outline-offset: 2px;
+          background-color: var(--blue-a3);
         `}
         {...props}
       />
@@ -62,21 +31,16 @@ const ElementOutline = forwardRef<HTMLDivElement, ElementHighlightProps>(
  * Highlights elements when hovering over selectors inside k6 Studio.
  */
 export function RemoteHighlights() {
-  const bounds = useHighlightedElements()
+  const highlights = useHighlightedElements()
 
-  if (bounds === null) {
+  if (highlights === null) {
     return null
   }
 
   return (
     <>
-      <Backdrop>
-        {bounds.map((bound, index) => {
-          return <ElementCutout key={index} bounds={bound} />
-        })}
-      </Backdrop>
-      {bounds.map((bound, index) => {
-        return <ElementOutline key={index} bounds={bound} />
+      {highlights.map((highlight) => {
+        return <ElementOutline key={highlight.id} bounds={highlight.bounds} />
       })}
     </>
   )

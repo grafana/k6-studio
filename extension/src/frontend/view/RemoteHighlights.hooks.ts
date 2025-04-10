@@ -1,11 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { client } from '../routing'
 
+import { useHighlightDebounce } from './hooks/useHighlightDebounce'
 import { Bounds } from './types'
 
+interface Highlight {
+  id: number
+  bounds: Bounds
+}
+
 export function useHighlightedElements() {
-  const [bounds, setBounds] = useState<Bounds[] | null>(null)
+  const idCounter = useRef(0)
+  const [bounds, setBounds] = useState<Highlight[] | null>(null)
 
   useEffect(() => {
     return client.on('highlight-elements', ({ data }) => {
@@ -21,10 +28,13 @@ export function useHighlightedElements() {
         const { top, left, width, height } = el.getBoundingClientRect()
 
         return {
-          top,
-          left,
-          width,
-          height,
+          id: idCounter.current++,
+          bounds: {
+            top,
+            left,
+            width,
+            height,
+          },
         }
       })
 
@@ -32,5 +42,5 @@ export function useHighlightedElements() {
     })
   }, [])
 
-  return bounds
+  return useHighlightDebounce(bounds)
 }
