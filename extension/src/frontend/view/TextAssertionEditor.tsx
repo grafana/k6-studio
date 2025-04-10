@@ -51,10 +51,10 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
   }
 
   const handleSelectorBlur = () => {
-    // client.send({
-    //   type: 'highlight-elements',
-    //   selector: null,
-    // })
+    client.send({
+      type: 'highlight-elements',
+      selector: null,
+    })
   }
 
   const handleSelectorChange = (ev: ChangeEvent<HTMLInputElement>) => {
