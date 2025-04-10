@@ -51,10 +51,10 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
   }
 
   const handleSelectorBlur = () => {
-    client.send({
-      type: 'highlight-elements',
-      selector: null,
-    })
+    // client.send({
+    //   type: 'highlight-elements',
+    //   selector: null,
+    // })
   }
 
   const handleSelectorChange = (ev: ChangeEvent<HTMLInputElement>) => {
@@ -101,6 +101,7 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
             flex-direction: column;
             min-width: 400px;
             padding: var(--studio-spacing-2) var(--studio-spacing-4);
+            border: 1px solid var(--gray-6);
           `}
         >
           <Popover.Arrow />

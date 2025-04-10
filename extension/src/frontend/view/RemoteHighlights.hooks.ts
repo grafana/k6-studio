@@ -5,12 +5,12 @@ import { client } from '../routing'
 import { Bounds } from './types'
 
 export function useHighlightedElements() {
-  const [bounds, setBounds] = useState<Bounds[]>([])
+  const [bounds, setBounds] = useState<Bounds[] | null>(null)
 
   useEffect(() => {
     return client.on('highlight-elements', ({ data }) => {
       if (data.selector === null) {
-        setBounds([])
+        setBounds(null)
 
         return
       }

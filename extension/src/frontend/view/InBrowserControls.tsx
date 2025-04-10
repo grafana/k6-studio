@@ -19,11 +19,11 @@ export function InBrowserControls() {
 
   return (
     <>
+      <RemoteHighlights />
       {tool === 'inspect' && <ElementInspector onCancel={handleDeselectTool} />}
       {tool === 'assert-text' && (
         <TextAssertionEditor onClose={handleDeselectTool} />
       )}
-      <RemoteHighlights enabled={tool !== 'inspect'} />
       <ToolBox
         isDrawerOpen={isDrawerOpen}
         tool={tool}

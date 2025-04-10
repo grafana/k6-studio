@@ -1,9 +1,12 @@
 import { css } from '@emotion/react'
+import { useEffect } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
 
-import { ElementHighlight } from './ElementHighlight'
+import { client } from '../routing'
+
 import { useInspectedElement } from './ElementInspector.hooks'
+import { Overlay } from './Overlay'
 import { useEscape } from './hooks/useEscape'
 
 interface ElementInspectorProps {
@@ -15,6 +18,16 @@ export function ElementInspector({ onCancel }: ElementInspectorProps) {
 
   useEscape(onCancel, [onCancel])
 
+  useEffect(() => {
+    client.send({
+      type: 'highlight-elements',
+      selector: element && {
+        type: 'css',
+        selector: element.selector.css,
+      },
+    })
+  }, [element])
+
   if (element === null) {
     return null
   }
@@ -22,7 +35,7 @@ export function ElementInspector({ onCancel }: ElementInspectorProps) {
   return (
     <Tooltip.Root open={true}>
       <Tooltip.Trigger asChild>
-        <ElementHighlight bounds={element.bounds} />
+        <Overlay bounds={element.bounds} />
       </Tooltip.Trigger>
       <Tooltip.Portal>
         <Tooltip.Content
