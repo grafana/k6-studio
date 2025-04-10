@@ -2,7 +2,7 @@ import os
 import json
 
 
-version = os.environ['INPUT_VERSION']
+version = os.environ['PACKAGE_VERSION']
 
 
 with open('package.json', 'r') as f:

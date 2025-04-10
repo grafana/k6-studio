@@ -27,8 +27,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set version for test release
-        with:
-          version: ${{ inputs.version }}
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
         run: python update_version.py
 
       - name: setup node
