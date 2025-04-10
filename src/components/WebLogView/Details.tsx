@@ -88,14 +88,12 @@ function getHeaderMatches(
   return headers.map((header, index): SearchMatch => {
     const originalValue = originalHeaders[index]?.[1]
     const value = header[1]
-    const diff = JsDiff.diffWords(originalValue ?? '', value, {
-      // maxEditLength: 10,
-    })
-    console.log('diffO', diff)
-    if (diff.length < 2) {
-      return undefined
-    }
-    console.log('value', value)
+    const diff = JsDiff.diffWords(originalValue ?? '', value)
+
+    // TODO: check if was needed
+    // if (diff.length < 2) {
+    // return
+    // }
 
     return {
       indices: diffToMatches(diff),

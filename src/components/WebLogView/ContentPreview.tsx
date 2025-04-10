@@ -1,8 +1,6 @@
 import { Flex, SegmentedControl, Box, ScrollArea } from '@radix-ui/themes'
 import { useState, useEffect } from 'react'
 
-import { useApplyRules } from '@/store/hooks/useApplyRules'
-
 import { DiffEditor } from '../Monaco/DiffEditor'
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
 
@@ -94,8 +92,6 @@ export function ContentPreview({
                 language={format}
                 value={content}
                 original={originalContent}
-                // searchString={searchString}
-                // searchIndex={searchIndex}
               />
             )}
           </Box>

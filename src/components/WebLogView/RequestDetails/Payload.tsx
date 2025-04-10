@@ -18,13 +18,13 @@ function useUnmodifiedRequest(id: string) {
   const { selectedRuleInstance } = useApplyRules()
   const requests = useGeneratorStore((store) => store.requests)
 
-  if (!selectedRuleInstance) {
+  if (
+    !selectedRuleInstance ||
+    !('requestsReplaced' in selectedRuleInstance.state)
+  ) {
     return requests.find((request) => request.id === id)?.request
   }
 
-  if (!('requestsReplaced' in selectedRuleInstance.state)) {
-    return
-  }
   const request = selectedRuleInstance?.state.requestsReplaced.find(
     (request) => request.id === id
   )
@@ -33,14 +33,12 @@ function useUnmodifiedRequest(id: string) {
 }
 
 export function Payload({ data }: { data: ProxyData }) {
-  const content = parseParams(data)
+  const content = parseParams(data.request)
   const originalContentType = getContentType(data.request?.headers ?? [])
   const { searchString, index, reset } = useGoToPayloadMatch()
+
   const unmodifiedRequest = useUnmodifiedRequest(data.id)
-  console.log('unmodifiedRequest', unmodifiedRequest)
-  const originalContent =
-    unmodifiedRequest && parseParams({ request: unmodifiedRequest })
-  console.log('originalContent', originalContent)
+  const originalContent = unmodifiedRequest && parseParams(unmodifiedRequest)
 
   // Reset payload search on unmount
   useEffect(() => {

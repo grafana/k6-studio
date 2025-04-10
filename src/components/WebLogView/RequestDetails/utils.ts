@@ -1,23 +1,23 @@
 import { jsonrepair } from 'jsonrepair'
 
-import { ProxyData } from '@/types'
+import { Request } from '@/types'
 import { safeAtob, stringify } from '@/utils/format'
 import { getContentType } from '@/utils/headers'
 
-export function parseParams(data: ProxyData) {
-  const hasParams = data.request.query.length || data.request.content
+export function parseParams(request: Request) {
+  const hasParams = request.query.length || request.content
 
-  if (data.request.method === 'OPTIONS' || !hasParams) {
+  if (request.method === 'OPTIONS' || !hasParams) {
     return
   }
 
   try {
-    if (data.request.content === '') {
+    if (request.content === '') {
       return
     }
 
-    const contentType = getContentType(data.request?.headers ?? [])
-    const contentDecoded = safeAtob(data.request.content ?? '')
+    const contentType = getContentType(request?.headers ?? [])
+    const contentDecoded = safeAtob(request.content ?? '')
 
     if (contentType === 'multipart/form-data') {
       return contentDecoded
