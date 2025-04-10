@@ -16,11 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # There is a bug on Ubuntu 22.04 (ubuntu-latest) regarding stripping a binary for a different
-        # architecture. Since we include both x86_64 and arm64 in linux a solution is to use ubuntu 20.04
-        # https://github.com/electron/forge/issues/3102
-        # https://github.com/electron/forge/issues/3701
-        platform: [macos-latest, windows-latest, ubuntu-20.04]
+        platform: [macos-latest, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -117,6 +113,12 @@ jobs:
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
           sudo apt install -y rpm
+
+          # There is a bug on Ubuntu 22.04 (ubuntu-latest) regarding stripping a binary for a different architecture.
+          # https://github.com/electron/forge/issues/3102
+          # https://github.com/electron/forge/issues/3701
+          echo "%__strip /bin/true" >> ~/.rpmmacros
+
           npm run publish
           npm run publish -- --arch=arm64
 
