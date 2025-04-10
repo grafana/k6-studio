@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Specify a version for the test release (ex. test-browser)"
+        description: "Specify a version suffix for the test release (limit to 20 characters or windows build will fail)"
         required: true
         type: string
         default: "test-version"
