@@ -1,6 +1,4 @@
-import { Process } from '@puppeteer/browsers'
 import * as Sentry from '@sentry/electron/main'
-import { ChildProcessWithoutNullStreams } from 'child_process'
 import { watch, FSWatcher } from 'chokidar'
 import { COPYFILE_EXCL } from 'constants'
 import {
@@ -12,7 +10,6 @@ import {
   shell,
 } from 'electron'
 import log from 'electron-log/main'
-import eventEmitter from 'events'
 import find from 'find-process'
 import { existsSync } from 'fs'
 import {
@@ -30,7 +27,7 @@ import invariant from 'tiny-invariant'
 import kill from 'tree-kill'
 import { updateElectronApp } from 'update-electron-app'
 
-import { getBrowserPath, launchBrowser } from './browser'
+import { getBrowserPath } from './browser'
 import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
 import {
   DATA_FILES_PATH,
@@ -41,9 +38,10 @@ import {
   TEMP_SCRIPT_SUFFIX,
 } from './constants/workspace'
 import * as handlers from './handlers'
+import * as mainState from './k6StudioState'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { configureApplicationMenu } from './menu'
-import { launchProxy, type ProxyProcess } from './proxy'
+import { launchProxy, waitForProxy, type ProxyProcess } from './proxy'
 import { GeneratorFileDataSchema } from './schemas/generator'
 import { runScript, showScriptSelectDialog, type K6Process } from './script'
 import {
@@ -56,7 +54,6 @@ import {
 } from './settings'
 import { ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
-import { HarWithOptionalResponse } from './types/har'
 import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
 import { sendReport } from './usageReport'
@@ -69,6 +66,7 @@ import {
   getPlatform,
   browserWindowFromEvent,
 } from './utils/electron'
+import { createFileWithUniqueName } from './utils/fileSystem'
 import { createNewGeneratorFile } from './utils/generator'
 import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
 import { setupProjectStructure } from './utils/workspace'
@@ -92,15 +90,9 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-const proxyEmitter = new eventEmitter<{
-  'status:change': [ProxyStatus]
-  ready: [void]
-}>()
-
 // Used mainly to avoid starting a new proxy when closing the active one on shutdown
 let appShuttingDown: boolean = false
 let currentProxyProcess: ProxyProcess | null
-let proxyStatus: ProxyStatus = 'offline'
 const PROXY_RETRY_LIMIT = 5
 let proxyRetryCount = 0
 let currentClientRoute = '/'
@@ -108,7 +100,6 @@ let wasAppClosedByClient = false
 let wasProxyStoppedByClient = false
 export let appSettings = defaultSettings
 
-let currentBrowserProcess: Process | ChildProcessWithoutNullStreams | null
 let currentk6Process: K6Process | null
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
@@ -119,6 +110,7 @@ if (require('electron-squirrel-startup')) {
 }
 
 initializeLogger()
+mainState.initialize()
 handlers.initialize()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
@@ -217,8 +209,8 @@ const createWindow = async () => {
   configureWatcher(mainWindow)
   wasAppClosedByClient = false
 
-  proxyEmitter.on('status:change', (status: ProxyStatus) => {
-    proxyStatus = status
+  k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
+    k6StudioState.proxyStatus = status
     mainWindow.webContents.send('proxy:status:change', status)
   })
 
@@ -240,7 +232,7 @@ const createWindow = async () => {
   }
 
   mainWindow.on('closed', () =>
-    proxyEmitter.removeAllListeners('status:change')
+    k6StudioState.proxyEmitter.removeAllListeners('status:change')
   )
 
   mainWindow.on('moved', () => trackWindowState(mainWindow))
@@ -325,45 +317,6 @@ ipcMain.on('proxy:stop', () => {
   console.info('proxy:stop event received')
   wasProxyStoppedByClient = true
   return stopProxyProcess()
-})
-
-const waitForProxy = async (): Promise<void> => {
-  if (proxyStatus === 'online') {
-    return Promise.resolve()
-  }
-
-  return new Promise((resolve) => {
-    proxyEmitter.once('ready', () => {
-      resolve()
-    })
-  })
-}
-
-// Browser
-ipcMain.handle('browser:start', async (event, url?: string) => {
-  console.info('browser:start event received')
-
-  await waitForProxy()
-
-  const browserWindow = browserWindowFromEvent(event)
-  currentBrowserProcess = await launchBrowser(browserWindow, url)
-  console.info('browser started')
-})
-
-ipcMain.on('browser:stop', async () => {
-  console.info('browser:stop event received')
-
-  if (currentBrowserProcess) {
-    // macOS & windows
-    if ('close' in currentBrowserProcess) {
-      await currentBrowserProcess.close()
-      // linux
-    } else {
-      currentBrowserProcess.kill()
-    }
-
-    currentBrowserProcess = null
-  }
 })
 
 // Script
@@ -458,57 +411,6 @@ ipcMain.handle(
     }
   }
 )
-
-// HAR
-ipcMain.handle(
-  'har:save',
-  async (_, data: HarWithOptionalResponse, prefix: string) => {
-    const fileName = await createFileWithUniqueName({
-      data: JSON.stringify(data, null, 2),
-      directory: RECORDINGS_PATH,
-      ext: '.har',
-      prefix,
-    })
-
-    return fileName
-  }
-)
-
-ipcMain.handle(
-  'har:open',
-  async (_, fileName: string): Promise<HarWithOptionalResponse> => {
-    console.info('har:open event received')
-    const data = await readFile(path.join(RECORDINGS_PATH, fileName), {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
-
-    return JSON.parse(data)
-  }
-)
-
-ipcMain.handle('har:import', async (event) => {
-  console.info('har:import event received')
-
-  const browserWindow = browserWindowFromEvent(event)
-
-  const dialogResult = await dialog.showOpenDialog(browserWindow, {
-    message: 'Import HAR file',
-    properties: ['openFile'],
-    defaultPath: RECORDINGS_PATH,
-    filters: [{ name: 'HAR', extensions: ['har'] }],
-  })
-
-  const filePath = dialogResult.filePaths[0]
-
-  if (dialogResult.canceled || !filePath) {
-    return
-  }
-
-  await copyFile(filePath, path.join(RECORDINGS_PATH, path.basename(filePath)))
-
-  return path.basename(filePath)
-})
 
 // Generator
 ipcMain.handle('generator:create', async (_, recordingPath: string) => {
@@ -727,11 +629,6 @@ ipcMain.on('splashscreen:close', (event) => {
   }
 })
 
-ipcMain.handle('browser:open:external:link', (_, url: string) => {
-  console.info('browser:open:external:link event received')
-  return shell.openExternal(url)
-})
-
 ipcMain.on('log:open', () => {
   console.info('log:open event received')
   openLogFolder()
@@ -782,7 +679,7 @@ ipcMain.handle('settings:select-upstream-certificate', async () => {
 
 ipcMain.handle('proxy:status:get', () => {
   console.info('proxy:status:get event received')
-  return proxyStatus
+  return k6StudioState.proxyStatus
 })
 
 async function applySettings(
@@ -814,23 +711,23 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
   console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
 
-  proxyEmitter.emit('status:change', 'starting')
+  k6StudioState.proxyEmitter.emit('status:change', 'starting')
 
   return launchProxy(browserWindow, appSettings.proxy, {
     onReady: () => {
       wasProxyStoppedByClient = false
-      proxyEmitter.emit('status:change', 'online')
-      proxyEmitter.emit('ready')
+      k6StudioState.proxyEmitter.emit('status:change', 'online')
+      k6StudioState.proxyEmitter.emit('ready')
     },
     onFailure: async () => {
       if (wasProxyStoppedByClient) {
-        proxyEmitter.emit('status:change', 'offline')
+        k6StudioState.proxyEmitter.emit('status:change', 'offline')
       }
 
       if (
         appShuttingDown ||
         wasProxyStoppedByClient ||
-        proxyStatus === 'starting'
+        k6StudioState.proxyStatus === 'starting'
       ) {
         // don't restart the proxy if the app is shutting down, manually stopped by client or already restarting
         return
@@ -838,7 +735,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 
       if (proxyRetryCount === PROXY_RETRY_LIMIT && !automaticallyFindPort) {
         proxyRetryCount = 0
-        proxyEmitter.emit('status:change', 'offline')
+        k6StudioState.proxyEmitter.emit('status:change', 'offline')
 
         sendToast(browserWindow.webContents, {
           title: `Port ${proxyPort} is already in use`,
@@ -851,7 +748,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
       }
 
       proxyRetryCount++
-      proxyEmitter.emit('status:change', 'starting')
+      k6StudioState.proxyEmitter.emit('status:change', 'starting')
       currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
 
       const errorMessage = `Proxy failed to start on port ${proxyPort}, restarting...`
@@ -998,44 +895,4 @@ const cleanUpProxies = async () => {
   processList.forEach((proc) => {
     kill(proc.pid)
   })
-}
-
-const createFileWithUniqueName = async ({
-  directory,
-  data,
-  prefix,
-  ext,
-}: {
-  directory: string
-  data: string
-  prefix: string
-  ext: string
-}): Promise<string> => {
-  const timestamp = new Date().toISOString().split('T')[0] ?? ''
-  const template = `${prefix ? `${prefix} - ` : ''}${timestamp}${ext}`
-
-  // Start from 2 as it follows the the OS behavior for duplicate files
-  let fileVersion = 2
-  let uniqueFileName = template
-  let fileCreated = false
-
-  do {
-    try {
-      // ax+ flag will throw an error if the file already exists
-      await writeFile(path.join(directory, uniqueFileName), data, {
-        flag: 'ax+',
-      })
-      fileCreated = true
-    } catch (error) {
-      if (isNodeJsErrnoException(error) && error.code !== 'EEXIST') {
-        throw error
-      }
-
-      const { name, ext } = path.parse(template)
-      uniqueFileName = `${name} (${fileVersion})${ext}`
-      fileVersion++
-    }
-  } while (!fileCreated)
-
-  return uniqueFileName
 }

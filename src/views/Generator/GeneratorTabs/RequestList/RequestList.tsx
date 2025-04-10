@@ -1,5 +1,4 @@
 import { Flex, ScrollArea } from '@radix-ui/themes'
-import { useShallowCompareEffect } from 'react-use'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { WebLogView } from '@/components/WebLogView'
@@ -63,11 +62,6 @@ export function RequestList({
     filter,
     setShowAllowlistDialog,
   })
-
-  // Preserve the selected request when modifying rules
-  useShallowCompareEffect(() => {
-    onSelectRequest(null)
-  }, [requests])
 
   return (
     <Flex direction="column" height="100%">

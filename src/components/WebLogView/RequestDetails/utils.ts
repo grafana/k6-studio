@@ -52,11 +52,15 @@ function queryStringToJSONString(str: string) {
   return JSON.stringify(Object.fromEntries(new URLSearchParams(str)))
 }
 
-function isJsonString(str: string) {
+export function isJsonString(str: string) {
   try {
     JSON.parse(str)
     return true
   } catch {
     return false
   }
+}
+
+export function getRawContent(content: string) {
+  return content.replace(/\s+/g, '')
 }
