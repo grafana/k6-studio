@@ -5,10 +5,10 @@ import { Allotment } from 'allotment'
 import * as JsDiff from 'diff'
 import { PropsWithChildren, useEffect } from 'react'
 
+import { useGeneratorStore } from '@/store/generator'
 import { useApplyRules } from '@/store/hooks/useApplyRules'
-import { Header, ProxyData } from '@/types'
+import { Header, ProxyData, ProxyDataWithMatches } from '@/types'
 import { SearchMatch } from '@/types/fuse'
-import { RuleInstance } from '@/types/rules'
 
 import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
@@ -26,33 +26,49 @@ export type ProxyDataWithDiff = {
   }
 }
 
-function getProxyDataDiff(
-  ruleInstance: RuleInstance,
-  selectedRequestId: string
-): SearchMatch[] | undefined {
-  // const foo = get(original, properties[1])
-  if (!('requestsReplaced' in ruleInstance.state)) {
+function useOriginalRequest(id?: string) {
+  const { selectedRuleInstance } = useApplyRules()
+  const requests = useGeneratorStore((store) => store.requests)
+
+  if (!id) {
     return
   }
 
-  const index = ruleInstance.state.requestsReplaced.findIndex(
-    (request) => request.id === selectedRequestId
+  if (!selectedRuleInstance) {
+    return requests.find((request) => request.id === id)?.request
+  }
+
+  if (!('requestsReplaced' in selectedRuleInstance.state)) {
+    return
+  }
+  const request = selectedRuleInstance?.state.requestsReplaced.find(
+    (request) => request.id === id
   )
 
-  const original = ruleInstance.state.requestsReplaced[index]?.original
-  const modified = ruleInstance.state.requestsReplaced[index]?.replaced
+  return request?.original
+}
 
-  if (!original || !modified) {
+function useDiff(
+  selectedRequest: ProxyDataWithMatches | null
+): SearchMatch[] | undefined {
+  const originalRequest = useOriginalRequest(selectedRequest?.id)
+
+  const modified = selectedRequest?.request
+
+  if (!originalRequest || !modified) {
     return
   }
 
   const requestHeaderMatches = getHeaderMatches(
-    original.headers,
+    originalRequest.headers,
     modified.headers,
     'request.headers'
   )
 
-  const urlDiff = JsDiff.diffWords(original.url ?? '', modified.url ?? '')
+  const urlDiff = JsDiff.diffWords(
+    originalRequest.url ?? '',
+    modified.url ?? ''
+  )
   const urlMatches = [
     {
       indices: diffToMatches(urlDiff),
@@ -124,23 +140,17 @@ function diffToMatches(diff: JsDiff.Change[]): SearchMatch['indices'] {
 }
 
 export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
-  const { selectedRuleInstance } = useApplyRules()
-  console.log('selectedRuleInstance', selectedRuleInstance)
-  // const originalRequest =
   useEffect(() => {
     return () => {
       // onSelectRequest(null)
     }
   }, [onSelectRequest])
+  const diff = useDiff(selectedRequest)
 
   if (!selectedRequest) {
     return null
   }
   console.log('selectedRequest', selectedRequest)
-
-  const diff = selectedRuleInstance
-    ? getProxyDataDiff(selectedRuleInstance, selectedRequest.id)
-    : []
 
   // const original = {
   // ...selectedRequest,

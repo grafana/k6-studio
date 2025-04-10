@@ -1,6 +1,9 @@
 import { Flex, SegmentedControl, Box, ScrollArea } from '@radix-ui/themes'
 import { useState, useEffect } from 'react'
 
+import { useApplyRules } from '@/store/hooks/useApplyRules'
+
+import { DiffEditor } from '../Monaco/DiffEditor'
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
 
 import { Preview } from './ResponseDetails/Preview'
@@ -13,6 +16,7 @@ type ContentPreviewProps = {
   rawContent: string | undefined
   searchIndex: number
   searchString?: string
+  originalContent?: string
 }
 
 export function ContentPreview({
@@ -22,6 +26,7 @@ export function ContentPreview({
   contentType,
   searchIndex,
   searchString,
+  originalContent,
 }: ContentPreviewProps) {
   const [selectedTab, setSelectedTab] = useState('content')
 
@@ -54,6 +59,8 @@ export function ContentPreview({
               Preview
             </SegmentedControl.Item>
           )}
+
+          <SegmentedControl.Item value="diff">Diff</SegmentedControl.Item>
         </SegmentedControl.Root>
       </Flex>
       <Box flexGrow="1">
@@ -80,6 +87,15 @@ export function ContentPreview({
                 value={content}
                 searchString={searchString}
                 searchIndex={searchIndex}
+              />
+            )}
+            {selectedTab === 'diff' && (
+              <DiffEditor
+                language={format}
+                value={content}
+                original={originalContent}
+                // searchString={searchString}
+                // searchIndex={searchIndex}
               />
             )}
           </Box>
