@@ -73,20 +73,40 @@ function toStyles(colors: { [key: string]: string }) {
 }
 
 const styles = css`
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)', Roboto,
-    'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
+  --studio-color-scheme: light;
+
+  --studio-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)',
+    Roboto, 'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji';
+
+  --studio-foreground: var(--gray-11);
+  --studio-background: white;
+
+  --studio-accent-1: var(--orange-1);
+  --studio-accent-2: var(--orange-2);
+  --studio-accent-3: var(--orange-3);
+  --studio-accent-4: var(--orange-4);
+  --studio-accent-5: var(--orange-5);
+  --studio-accent-6: var(--orange-6);
+  --studio-accent-7: var(--orange-7);
+  --studio-accent-8: var(--orange-8);
+  --studio-accent-9: var(--orange-9);
+  --studio-accent-10: var(--orange-10);
+  --studio-accent-11: var(--orange-11);
+  --studio-accent-12: var(--orange-12);
+
+  --studio-accent-contrast: white;
 
   --studio-spacing-1: 4px;
   --studio-spacing-2: calc(var(--studio-spacing-1) * 2);
   --studio-spacing-3: calc(var(--studio-spacing-1) * 3);
   --studio-spacing-4: calc(var(--studio-spacing-1) * 4);
   --studio-spacing-5: calc(var(--studio-spacing-1) * 5);
+  --studio-spacing-6: calc(var(--studio-spacing-1) * 6);
+  --studio-spacing-7: calc(var(--studio-spacing-1) * 7);
+  --studio-spacing-8: calc(var(--studio-spacing-1) * 8);
 
   --studio-alpha-1: rgba(0, 0, 0, 0.1);
-
-  --studio-foreground: var(--gray-11);
-  --studio-background: white;
 
   --studio-shadow-1: rgba(24, 26, 27, 0.2) 0px 4px 8px;
 
@@ -107,9 +127,11 @@ const styles = css`
   --studio-hover-color: rgb(0, 0, 0, 0.1);
 
   @media (prefers-color-scheme: dark) {
+    --studio-color-scheme: dark;
+
     --studio-alpha-1: rgba(255, 255, 255, 0.1);
 
-    --studio-foreground: var(--gray-11);
+    --studio-foreground: var(--gray-12);
     --studio-background: var(--gray-1);
 
     --studio-border-color: rgb(255, 255, 255, 0.1);
@@ -118,8 +140,13 @@ const styles = css`
     --studio-toggle-bg-on: rgba(255, 255, 255, 0.2);
   }
 
+  font-family: var(--studio-font-family);
   background-color: var(--studio-background);
   color: var(--studio-foreground);
+
+  & :focus-visible {
+    outline: 2px solid var(--studio-accent-8);
+  }
 
   // Gap
   [data-gap='1'] {

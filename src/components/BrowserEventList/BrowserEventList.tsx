@@ -30,7 +30,11 @@ export function BrowserEventList({
         {events.map((event) => {
           return (
             <Table.Row key={event.eventId}>
-              <Table.Cell>
+              <Table.Cell
+                css={css`
+                  max-width: 0;
+                `}
+              >
                 <Flex align="center" gap="2">
                   <EventIcon event={event} />
                   <div

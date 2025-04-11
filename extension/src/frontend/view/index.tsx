@@ -1,16 +1,19 @@
 import createCache from '@emotion/cache'
-import { CacheProvider, css, Global } from '@emotion/react'
+import { CacheProvider } from '@emotion/react'
 import { createRoot } from 'react-dom/client'
 
 import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 import { Theme } from '@/components/primitives/Theme'
 
+import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
+
+let initialized = false
 
 function createShadowRoot() {
   const mount = document.createElement('div')
 
-  document.body.appendChild(mount)
+  document.body.prepend(mount)
 
   const shadow = mount.attachShadow({
     mode: 'open',
@@ -18,6 +21,7 @@ function createShadowRoot() {
 
   const root = document.createElement('div')
 
+  root.style.cursor = 'initial'
   root.dataset.ksixStudio = 'true'
 
   shadow.appendChild(root)
@@ -26,6 +30,14 @@ function createShadowRoot() {
 }
 
 function initialize() {
+  // We have multiple points in time when we try to inject the UI. This
+  // makes sure we actually only do it once.
+  if (initialized) {
+    return
+  }
+
+  initialized = true
+
   const root = createShadowRoot()
 
   /**
@@ -46,18 +58,7 @@ function initialize() {
 
   createRoot(root).render(
     <CacheProvider value={globalCache}>
-      <Global
-        styles={css`
-          html body[data-scroll-locked] {
-            --removed-body-scroll-bar-size: 0 !important;
-            margin-right: 0 !important;
-          }
-
-          .ksix-studio-inspecting {
-            cursor: pointer !important;
-          }
-        `}
-      />
+      <GlobalStyles />
       <ContainerProvider container={root}>
         <CacheProvider value={shadowCache}>
           <Theme root={false} includeColors />
@@ -69,7 +70,33 @@ function initialize() {
 }
 
 if (document.readyState === 'loading') {
-  window.addEventListener('DOMContentLoaded', initialize)
+  // We use a MutationObserver to try and load the UI as soon as the body
+  // element has been added. Otherwise we have to wait for content to be
+  // downloaded and scripts executed, making it quite noticeable that the
+  // UI is being injected.
+  const mutationObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node instanceof HTMLBodyElement) {
+          mutationObserver.disconnect()
+
+          initialize()
+          break
+        }
+      }
+    }
+  })
+
+  mutationObserver.observe(document.documentElement, {
+    childList: true,
+  })
+
+  // Worst case scenario, we initialize the UI when the DOM is ready.
+  window.addEventListener('DOMContentLoaded', () => {
+    mutationObserver.disconnect()
+
+    initialize()
+  })
 } else {
   initialize()
 }

@@ -8,6 +8,7 @@ import {
   RadiobuttonIcon,
   DropdownMenuIcon,
   ReaderIcon,
+  EyeOpenIcon,
 } from '@radix-ui/react-icons'
 
 import { BrowserEvent } from '@/schemas/recording'
@@ -42,6 +43,9 @@ export function EventIcon({ event }: EventIconProps) {
 
     case 'form-submitted':
       return <ReaderIcon />
+
+    case 'asserted-text':
+      return <EyeOpenIcon />
 
     default:
       return exhaustive(event)

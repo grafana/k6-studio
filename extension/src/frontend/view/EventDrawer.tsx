@@ -57,10 +57,11 @@ const slideOut = keyframes`
 
 interface EventDrawerProps {
   open: boolean
+  editing: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
+export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
   const container = useContainerElement()
 
   const events = useRecordedEvents()
@@ -100,7 +101,7 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
 
               display: flex;
               flex-direction: column;
-              overflow-y: auto;
+              overflow: auto hidden;
               overscroll-behavior: contain;
 
               &[data-state='open'] {
@@ -115,6 +116,13 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
                 animation: none;
               }
             `}
+            onEscapeKeyDown={(event) => {
+              // If the user is currently editing something, the escape key should deselect
+              // the tool and not close the drawer.
+              if (editing) {
+                event.preventDefault()
+              }
+            }}
             onInteractOutside={(event) => {
               event.preventDefault()
             }}
@@ -164,6 +172,9 @@ export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
             <div
               css={css`
                 padding: 0 var(--studio-spacing-4);
+                overflow-x: auto;
+                overscroll-behavior: contain;
+                flex: 1 1 0;
               `}
             >
               <BrowserEventList

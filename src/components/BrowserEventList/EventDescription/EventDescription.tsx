@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { Tooltip } from '@/components/primitives/Tooltip'
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { HighlightSelector } from 'extension/src/messaging/types'
@@ -88,6 +89,18 @@ export function EventDescription({
         <>
           Submitted form{' '}
           <Selector selector={event.form} onHighlight={onHighlight} />
+        </>
+      )
+
+    case 'asserted-text':
+      return (
+        <>
+          Assert that{' '}
+          <Selector selector={event.selector} onHighlight={onHighlight} />{' '}
+          contains the text{' '}
+          <Tooltip asChild content={event.operation.value}>
+            <em>{`"${event.operation.value}"`}</em>
+          </Tooltip>
         </>
       )
 

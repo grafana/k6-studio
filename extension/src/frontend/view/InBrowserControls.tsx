@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
+import { TextAssertionEditor } from './TextAssertionEditor'
 import { ToolBox } from './ToolBox'
 import { useInBrowserUIStore } from './store'
 
@@ -12,23 +13,28 @@ export function InBrowserControls() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
-  const handleInspectorEscape = () => {
+  const handleDeselectTool = () => {
     selectTool(null)
   }
 
   return (
     <>
-      {tool === 'inspect' && (
-        <ElementInspector onEscape={handleInspectorEscape} />
+      <RemoteHighlights />
+      {tool === 'inspect' && <ElementInspector onCancel={handleDeselectTool} />}
+      {tool === 'assert-text' && (
+        <TextAssertionEditor onClose={handleDeselectTool} />
       )}
-      <RemoteHighlights enabled={tool === null} />
       <ToolBox
         isDrawerOpen={isDrawerOpen}
         tool={tool}
         onSelectTool={selectTool}
         onToggleDrawer={setIsDrawerOpen}
       />
-      <EventDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
+      <EventDrawer
+        open={isDrawerOpen}
+        editing={tool !== null}
+        onOpenChange={setIsDrawerOpen}
+      />
     </>
   )
 }

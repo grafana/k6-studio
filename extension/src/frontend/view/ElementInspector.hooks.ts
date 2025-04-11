@@ -4,7 +4,9 @@ import { ElementSelector } from '@/schemas/recording'
 
 import { generateSelector } from '../../selectors'
 
-import { useGlobalClass } from './hooks/useGlobalClass'
+import { useGlobalClass } from './GlobalStyles'
+import { useHighlightDebounce } from './hooks/useHighlightDebounce'
+import { usePreventClick } from './hooks/usePreventClick'
 import { Bounds } from './types'
 
 interface TrackedElement {
@@ -64,19 +66,19 @@ export function useInspectedElement() {
       return
     }
 
-    const captureClick = (ev: MouseEvent) => {
-      ev.preventDefault()
-      ev.stopPropagation()
+    const handleScroll = () => {
+      setInspectedElement(null)
     }
 
-    window.addEventListener('click', captureClick, { capture: true })
+    window.addEventListener('scroll', handleScroll)
 
     return () => {
-      window.removeEventListener('click', captureClick, { capture: true })
+      window.removeEventListener('scroll', handleScroll)
     }
   }, [element])
 
-  useGlobalClass('ksix-studio-inspecting')
+  usePreventClick(element !== null)
+  useGlobalClass('inspecting')
 
-  return element
+  return useHighlightDebounce(element)
 }

@@ -150,6 +150,35 @@ function emitSelectOptionsExpression(
     .done()
 }
 
+function emitExpectExpression(
+  context: ScenarioContext,
+  expression: ir.ExpectExpression
+): ts.Expression {
+  context.import(['expect'], 'https://jslib.k6.io/k6-testing/0.4.0/index.js')
+
+  const locator = emitExpression(context, expression.actual)
+
+  const expect = new ExpressionBuilder(identifier({ name: 'expect' }))
+    .call([locator])
+    .done()
+
+  switch (expression.expected.type) {
+    case 'TextContainsAssertion': {
+      const text = emitExpression(context, expression.expected.text)
+
+      return new ExpressionBuilder(expect)
+        .member('toContainText')
+        .call([text])
+        .await(context)
+        .done()
+    }
+
+    default: {
+      return exhaustive(expression.expected.type)
+    }
+  }
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -187,6 +216,9 @@ function emitExpression(
 
     case 'SelectOptionsExpression':
       return emitSelectOptionsExpression(context, expression)
+
+    case 'ExpectExpression':
+      return emitExpectExpression(context, expression)
 
     default:
       return exhaustive(expression)
