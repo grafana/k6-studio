@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.2.0](https://github.com/grafana/k6-studio/compare/v1.1.0...v1.2.0) (2025-04-11)
+
+
+### Features
+
+* Add support for content preview in request payload ([#613](https://github.com/grafana/k6-studio/issues/613)) ([260579b](https://github.com/grafana/k6-studio/commit/260579ba586272f45d3293ce4c1e2cb41fa6d202))
+
+
+### Documentation
+
+* Link contributing guide in readme ([#640](https://github.com/grafana/k6-studio/issues/640)) ([ccd0a1a](https://github.com/grafana/k6-studio/commit/ccd0a1ab9ff259161d21fc934611b737f9c3664c))
+
+
+### Miscellaneous Chores
+
+* **deps:** bump @babel/runtime from 7.24.8 to 7.27.0 ([#647](https://github.com/grafana/k6-studio/issues/647)) ([3900f40](https://github.com/grafana/k6-studio/commit/3900f409c4ef5974bda8e0bf7fdd2293b3af36b4))
+* **deps:** bump @sentry/node and @sentry/electron ([#649](https://github.com/grafana/k6-studio/issues/649)) ([e984723](https://github.com/grafana/k6-studio/commit/e984723e98844e5d36ccec208319884b50222fb3))
+* **deps:** bump tar-fs from 3.0.6 to 3.0.8 ([#612](https://github.com/grafana/k6-studio/issues/612)) ([6bae41a](https://github.com/grafana/k6-studio/commit/6bae41a5216225d505bef83eda897b17a8521c22))
+* manual release action & update runner to ubuntu-latest ([#645](https://github.com/grafana/k6-studio/issues/645)) ([cb5d97e](https://github.com/grafana/k6-studio/commit/cb5d97ed68e2e7465b31279a30ad8e78d6bb70bf))
+* release test version action ([#644](https://github.com/grafana/k6-studio/issues/644)) ([f4cb277](https://github.com/grafana/k6-studio/commit/f4cb277fae821500e9773e27a070eb4b8638b617))
+
+
+### Code Refactoring
+
+* **split main:** Move browser handlers out of main.ts ([#627](https://github.com/grafana/k6-studio/issues/627)) ([7ff55af](https://github.com/grafana/k6-studio/commit/7ff55afb9ffa4f9c931c9aa27d8880c43b0bebbb))
+* **split main:** Move script handlers out of main.ts ([#642](https://github.com/grafana/k6-studio/issues/642)) ([a6c0929](https://github.com/grafana/k6-studio/commit/a6c092928acbe6e8b2b406773d6fda3d66f0bd8e))
+
 ## [1.1.0](https://github.com/grafana/k6-studio/compare/v1.0.2...v1.1.0) (2025-04-07)
 
 
