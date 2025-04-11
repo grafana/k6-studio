@@ -16,7 +16,14 @@ interface ElementInspectorProps {
 export function ElementInspector({ onCancel }: ElementInspectorProps) {
   const element = useInspectedElement()
 
-  useEscape(onCancel, [onCancel])
+  useEscape(() => {
+    client.send({
+      type: 'highlight-elements',
+      selector: null,
+    })
+
+    onCancel()
+  }, [onCancel])
 
   useEffect(() => {
     client.send({
