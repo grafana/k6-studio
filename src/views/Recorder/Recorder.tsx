@@ -7,7 +7,9 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { Feature } from '@/components/Feature'
 import { View } from '@/components/Layout/View'
+import { RecordingControlWindow } from '@/components/RecordingControlWindow'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { Details } from '@/components/WebLogView/Details'
 import { DEFAULT_GROUP_NAME } from '@/constants'
@@ -268,6 +270,9 @@ export function Recorder() {
         onCancel={handleCancelNavigation}
         onStopRecording={handleConfirmNavigation}
       />
+      <Feature feature="floating-recording-controls">
+        <RecordingControlWindow isOpen={recorderState === 'recording'} />
+      </Feature>
     </View>
   )
 }
