@@ -7,9 +7,10 @@ import * as browser from './handlers/browser/preload'
 import * as browserRemote from './handlers/browserRemote/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as har from './handlers/har/preload'
+import * as script from './handlers/script/preload'
 import { createListener } from './handlers/utils'
 import * as Sentry from './sentry'
-import { ProxyData, K6Log, K6Check, ProxyStatus, StudioFile } from './types'
+import { ProxyData, ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
 import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
@@ -37,45 +38,6 @@ const proxy = {
   },
   onProxyStatusChange: (callback: (status: ProxyStatus) => void) => {
     return createListener('proxy:status:change', callback)
-  },
-} as const
-
-const script = {
-  showScriptSelectDialog: (): Promise<string | void> => {
-    return ipcRenderer.invoke('script:select')
-  },
-  openScript: (
-    scriptPath: string,
-    absolute: boolean = false
-  ): Promise<string> => {
-    return ipcRenderer.invoke('script:open', scriptPath, absolute)
-  },
-  runScriptFromGenerator: (script: string): Promise<void> => {
-    return ipcRenderer.invoke('script:run-from-generator', script)
-  },
-  saveScript: (script: string, fileName: string): Promise<void> => {
-    return ipcRenderer.invoke('script:save', script, fileName)
-  },
-  runScript: (scriptPath: string, absolute: boolean = false): Promise<void> => {
-    return ipcRenderer.invoke('script:run', scriptPath, absolute)
-  },
-  stopScript: () => {
-    ipcRenderer.send('script:stop')
-  },
-  onScriptLog: (callback: (data: K6Log) => void) => {
-    return createListener('script:log', callback)
-  },
-  onScriptStopped: (callback: () => void) => {
-    return createListener('script:stopped', callback)
-  },
-  onScriptFinished: (callback: () => void) => {
-    return createListener('script:finished', callback)
-  },
-  onScriptFailed: (callback: () => void) => {
-    return createListener('script:failed', callback)
-  },
-  onScriptCheck: (callback: (data: K6Check[]) => void) => {
-    return createListener('script:check', callback)
   },
 } as const
 

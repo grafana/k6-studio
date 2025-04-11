@@ -7,6 +7,7 @@ import * as browser from './browser'
 import * as browserRemote from './browserRemote'
 import * as cloud from './cloud'
 import * as har from './har'
+import * as script from './script'
 
 interface Services {
   browserServer: BrowserServer
@@ -19,4 +20,5 @@ export function initialize({ browserServer }: Services) {
   cloud.initialize()
   har.initialize()
   browser.initialize(browserServer)
+  script.initialize()
 }
