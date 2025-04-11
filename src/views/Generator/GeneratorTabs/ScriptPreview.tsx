@@ -27,7 +27,7 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
   const isScriptExportable = !error && !!preview
 
   return (
-    <Flex direction="column" height="100%">
+    <Flex direction="column" height="100%" position="relative">
       <Flex py="1" px="2" gap="2" align="center" justify="end">
         <GhostButton
           disabled={!isScriptExportable}
@@ -55,11 +55,10 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
           }}
         />
       </Flex>
-      {error ? (
-        <ScriptPreviewError error={error} />
-      ) : (
-        <CodeEditor readOnly value={preview} />
-      )}
+      <CodeEditor readOnly value={preview} />
+
+      {!!error && <ScriptPreviewError error={error} />}
+
       {isScriptExportable && (
         <>
           <RunInCloudDialog

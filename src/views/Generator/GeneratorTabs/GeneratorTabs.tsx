@@ -91,6 +91,7 @@ export function GeneratorTabs({
           value="script"
           css={css`
             flex-grow: 1;
+            min-height: 0;
           `}
         >
           <ScriptPreview fileName={fileName} />
