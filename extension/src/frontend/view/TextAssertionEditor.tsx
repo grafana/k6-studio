@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 
 import { Button } from '@/components/primitives/Button'
 import { FieldSet } from '@/components/primitives/FieldSet'
@@ -81,7 +81,9 @@ function TextAssertionForm({
     setText(ev.target.value)
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = (ev: FormEvent<HTMLFormElement>) => {
+    ev.preventDefault()
+
     onAdd({
       selector,
       text,

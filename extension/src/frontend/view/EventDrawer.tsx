@@ -101,7 +101,8 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
 
               display: flex;
               flex-direction: column;
-              overflow: auto hidden;
+              overflow-x: auto;
+              overflow-y: hidden;
               overscroll-behavior: contain;
 
               &[data-state='open'] {

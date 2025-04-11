@@ -28,7 +28,7 @@ export function GlobalStyles() {
           ) !important;
         }
 
-        .kxis-studio-inspecting-${uuid} {
+        .ksix-studio-inspecting-${uuid} {
           cursor: pointer !important;
         }
 
