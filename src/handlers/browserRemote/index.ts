@@ -4,7 +4,7 @@ import _ from 'lodash'
 import { BrowserServer } from '@/services/browser/server'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
-import { BrowserRemoteHandlers } from './browserRemote.types'
+import { BrowserRemoteHandlers } from './types'
 
 export function initialize(browserServer: BrowserServer) {
   ipcMain.on(

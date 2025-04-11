@@ -4,7 +4,7 @@ import { ipcRenderer, contextBridge } from 'electron'
 
 import * as auth from './handlers/auth/preload'
 import * as browser from './handlers/browser/preload'
-import * as browserRemote from './handlers/browserRemote.preload'
+import * as browserRemote from './handlers/browserRemote/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as har from './handlers/har/preload'
 import { createListener } from './handlers/utils'
