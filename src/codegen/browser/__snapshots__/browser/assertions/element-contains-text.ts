@@ -1,5 +1,5 @@
 import { browser } from "k6/browser";
-import { expect } from "https://jslib.k6.io/k6-testing/0.3.0/index.js";
+import { expect } from "https://jslib.k6.io/k6-testing/0.4.0/index.js";
 
 export const options = {
   scenarios: {
