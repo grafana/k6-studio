@@ -1,5 +1,7 @@
 export interface SearchMatch {
-  indices: Readonly<Array<[number, number]>>
+  indices: Array<[number, number]>
   value?: string
   key?: string
+  // TODO: import radix color type
+  color?: string
 }

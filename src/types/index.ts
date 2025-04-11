@@ -111,6 +111,7 @@ export interface FolderContent {
 
 export type ProxyStatus = 'online' | 'offline' | 'starting'
 
+// TODO: rename to ProxyDataWithHighlights
 export type ProxyDataWithMatches = ProxyData & {
   matches?: SearchMatch[]
 }

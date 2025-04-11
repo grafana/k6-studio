@@ -9,6 +9,7 @@ import { View } from '@/components/Layout/View'
 import { Details } from '@/components/WebLogView/Details'
 import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
+import { useHighlightRequestChanges } from '@/store/generator/hooks/useHighlightRequestChanges'
 import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
@@ -28,6 +29,8 @@ import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 export function Generator() {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const selectedRequestWithHighlights =
+    useHighlightRequestChanges(selectedRequest)
 
   const showToast = useToast()
   const navigate = useNavigate()
@@ -180,7 +183,7 @@ export function Generator() {
 
         <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
           <Details
-            selectedRequest={selectedRequest}
+            selectedRequest={selectedRequestWithHighlights}
             onSelectRequest={setSelectedRequest}
           />
         </Allotment.Pane>

@@ -5,7 +5,7 @@ import { WebLogView } from '@/components/WebLogView'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useGeneratorStore } from '@/store/generator'
-import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { useApplyRules } from '@/store/generator/hooks/useApplyRules'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyData } from '@/types'
 

@@ -1,8 +1,7 @@
 import { Flex } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
-import { useGeneratorStore } from '@/store/generator'
-import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { useRequestSnapshot } from '@/store/generator/hooks/useRequestSnapshot'
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 
@@ -14,30 +13,12 @@ import { toFormat } from '../ResponseDetails/ResponseDetails.utils'
 import { FormPayloadPreview } from './FormPayloadPreview'
 import { getRawContent, isJsonString, parseParams } from './utils'
 
-function useUnmodifiedRequest(id: string) {
-  const { selectedRuleInstance } = useApplyRules()
-  const requests = useGeneratorStore((store) => store.requests)
-
-  if (
-    !selectedRuleInstance ||
-    !('requestsReplaced' in selectedRuleInstance.state)
-  ) {
-    return requests.find((request) => request.id === id)?.request
-  }
-
-  const request = selectedRuleInstance?.state.requestsReplaced.find(
-    (request) => request.id === id
-  )
-
-  return request?.original
-}
-
 export function Payload({ data }: { data: ProxyData }) {
   const content = parseParams(data.request)
   const originalContentType = getContentType(data.request?.headers ?? [])
   const { searchString, index, reset } = useGoToPayloadMatch()
 
-  const unmodifiedRequest = useUnmodifiedRequest(data.id)
+  const unmodifiedRequest = useRequestSnapshot(data.id)
   const originalContent = unmodifiedRequest && parseParams(unmodifiedRequest)
 
   // Reset payload search on unmount
