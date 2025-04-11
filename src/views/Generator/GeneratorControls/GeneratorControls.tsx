@@ -17,9 +17,14 @@ import { ValidatorDialog } from '../ValidatorDialog'
 interface GeneratorControlsProps {
   onSave: () => void
   isDirty: boolean
+  onChangeRecording: () => void
 }
 
-export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
+export function GeneratorControls({
+  onSave,
+  isDirty,
+  onChangeRecording,
+}: GeneratorControlsProps) {
   const scriptName = useGeneratorStore((store) => store.scriptName)
 
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
@@ -44,7 +49,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
 
   return (
     <>
-      <RecordingSelector />
+      <RecordingSelector onChangeRecording={onChangeRecording} />
       <Flex align="center" justify="between" gap="2" ml="2">
         <ButtonWithTooltip
           onClick={onSave}

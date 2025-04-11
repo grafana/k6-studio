@@ -105,15 +105,33 @@ For more information visit the [documentation](https://grafana.com/docs/k6-studi
 
 ---
 
-## Development
+## Contributing
 
-### Requirements
+If you're interested in contributing to the Grafana k6 Studio project:
 
-- Node.js >= v20
+- Start by reading the [Contributing guide](CONTRIBUTING.md)
+- Explore our [issues](https://github.com/grafana/k6-studio/issues) and see if there's anything you'd like to work on
+- Set up your development environment and start coding
 
-### Dev install
+## Development environment
+
+### Dependencies
+
+Make sure you have the following dependencies installed before setting up your developer environment:
+
+- [Git](https://git-scm.com/downloads)
+- [Node.js](https://nodejs.org/en/download/) >= v20
+
+### Run Grafana k6 Studio locally
+
+Before you can start the app, you need to install the related dependencies:
 
 ```
 npm install
+```
+
+After the command has finished, you start the app locally with:
+
+```
 npm start
 ```

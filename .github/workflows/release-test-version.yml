@@ -1,7 +1,13 @@
-name: 'Manual Release'
+name: 'Manual Release Test Version'
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Specify a version suffix for the test release (limit to 20 characters or windows build will fail)"
+        required: true
+        type: string
+        default: "test-version"
 
 jobs:
   publish-studio:
@@ -15,6 +21,11 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set version for test release
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
+        run: python update_version.py
 
       - name: setup node
         uses: actions/setup-node@v4

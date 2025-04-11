@@ -1,19 +1,14 @@
 import { DiscIcon, Link1Icon } from '@radix-ui/react-icons'
-import { Badge, Strong } from '@radix-ui/themes'
+import { Strong } from '@radix-ui/themes'
 
 import { VerificationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
-import { TestRuleFilter } from './TestRuleFilter'
-
 export function VerificationContent({ rule }: { rule: VerificationRule }) {
   return (
     <>
-      <TestRuleFilter filter={rule.filter} />
-      <Badge color="gray">
-        Verify <Strong>{rule.target}</Strong>{' '}
-        <OperatorLabel operator={rule.operator} /> <ValueLabel rule={rule} />
-      </Badge>
+      Verify <Strong>{rule.target}</Strong>{' '}
+      <OperatorLabel operator={rule.operator} /> <ValueLabel rule={rule} />
     </>
   )
 }
@@ -40,9 +35,8 @@ function ValueLabel({ rule }: { rule: VerificationRule }) {
   switch (rule.value.type) {
     case 'recordedValue':
       return (
-        <Strong css={{ whiteSpace: 'nowrap' }}>
-          <DiscIcon css={{ verticalAlign: 'middle', display: 'inline' }} />{' '}
-          recorded value
+        <Strong>
+          <DiscIcon /> recorded value
         </Strong>
       )
     case 'string':
@@ -52,8 +46,7 @@ function ValueLabel({ rule }: { rule: VerificationRule }) {
     case 'variable':
       return (
         <Strong>
-          <Link1Icon css={{ verticalAlign: 'middle', display: 'inline' }} />{' '}
-          {rule.value.variableName}
+          <Link1Icon /> {rule.value.variableName}
         </Strong>
       )
     default:
