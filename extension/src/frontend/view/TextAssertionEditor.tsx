@@ -25,9 +25,14 @@ interface TextAssertion {
 interface TextAssertionFormProps {
   selection: TextSelection
   onAdd: (assertion: TextAssertion) => void
+  onClose: () => void
 }
 
-function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
+function TextAssertionForm({
+  selection,
+  onAdd,
+  onClose,
+}: TextAssertionFormProps) {
   const [selector, setSelector] = useState(selection.selector)
   const [text, setText] = useState(selection.text)
 
@@ -84,7 +89,7 @@ function TextAssertionForm({ selection, onAdd }: TextAssertionFormProps) {
   }
 
   return (
-    <Popover.Root open={true}>
+    <Popover.Root modal open={true} onOpenChange={onClose}>
       <Popover.Anchor asChild>
         <Overlay bounds={selection.bounds} />
       </Popover.Anchor>
@@ -184,6 +189,10 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
     onClose()
   }
 
+  const handleFormClose = () => {
+    clearSelection()
+  }
+
   useEscape(() => {
     if (selection !== null) {
       clearSelection()
@@ -197,7 +206,11 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
   return (
     <>
       {selection !== null && (
-        <TextAssertionForm selection={selection} onAdd={handleAdd} />
+        <TextAssertionForm
+          selection={selection}
+          onAdd={handleAdd}
+          onClose={handleFormClose}
+        />
       )}
       {selection?.highlights.map((rect, index) => {
         return (

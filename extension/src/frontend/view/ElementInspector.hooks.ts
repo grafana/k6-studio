@@ -61,6 +61,22 @@ export function useInspectedElement() {
     }
   }, [])
 
+  useEffect(() => {
+    if (element === null) {
+      return
+    }
+
+    const handleScroll = () => {
+      setInspectedElement(null)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [element])
+
   usePreventClick(element !== null)
   useGlobalClass('inspecting')
 
