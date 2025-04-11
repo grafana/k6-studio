@@ -1,10 +1,13 @@
 import { GlobeIcon } from '@radix-ui/react-icons'
 import { Button, Dialog, Flex } from '@radix-ui/themes'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
 import { useGeneratorStore } from '@/store/generator'
-import { extractUniqueHosts } from '@/store/generator/slices/recording.utils'
+import {
+  extractUniqueHosts,
+  orderThirdPartyHostsLast,
+} from '@/store/generator/slices/recording.utils'
 
 import { AllowlistDialog } from './AllowlistDialog'
 
@@ -30,7 +33,19 @@ export function Allowlist() {
     (store) => store.setIncludeStaticAssets
   )
 
-  const hosts = extractUniqueHosts(requests)
+  const hosts = useMemo(() => {
+    const uniqueHosts = extractUniqueHosts(requests)
+    return orderThirdPartyHostsLast(uniqueHosts)
+  }, [requests])
+
+  useEffect(() => {
+    // We only need the allowlist count when "hosts" changes
+    // This happens when the recording or the generator is changed
+    const allowlistCount = useGeneratorStore.getState().allowlist.length
+    if (hosts[0] !== undefined && allowlistCount === 0) {
+      setAllowlist([hosts[0]])
+    }
+  }, [hosts, setAllowlist])
 
   function handleOpenChange(open: boolean) {
     if (!open) {

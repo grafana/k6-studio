@@ -1,9 +1,18 @@
-import { uniq } from 'lodash-es'
+import { uniq, orderBy } from 'lodash-es'
 
 import { ProxyData } from '@/types'
 
 export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
+}
+
+export function isHostThirdParty(host: string) {
+  const hostPatterns = ['.google.com', '.googleapis.com', '.gstatic.com']
+  return hostPatterns.some((pattern) => host.includes(pattern))
+}
+
+export function orderThirdPartyHostsLast(hosts: string[]) {
+  return orderBy(hosts, isHostThirdParty)
 }
 
 export function shouldResetAllowList({
