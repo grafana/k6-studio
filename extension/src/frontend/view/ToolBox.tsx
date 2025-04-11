@@ -45,7 +45,7 @@ export function ToolBox({
       css={css`
         position: fixed;
         top: var(--studio-spacing-2);
-        left: 50%;
+        left: calc(50% - var(--removed-body-scroll-bar-size, 0px) / 2);
         transform: translateX(-50%);
         z-index: var(--studio-layer-2);
         color: var(--studio-foreground);

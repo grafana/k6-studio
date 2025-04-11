@@ -139,5 +139,37 @@ export function useTextSelection() {
     }
   }, [])
 
+  useEffect(() => {
+    if (selection !== null) {
+      return
+    }
+
+    // The default behavior of links is to drag them so the user can't select
+    // text inside. We work around this by preventing the dragstart event (which
+    // the user shouldn't be able to do any way).
+    const handleDragStart = (event: Event) => {
+      event.preventDefault()
+
+      isSelecting.current = true
+
+      // We need to surpress the click event that will be sent after the drag
+      // has ended, otherwise the user might trigger e.g. links or buttons.
+      window.addEventListener(
+        'click',
+        (event) => {
+          event.preventDefault()
+          event.stopPropagation()
+        },
+        { capture: true, once: true }
+      )
+    }
+
+    window.addEventListener('dragstart', handleDragStart)
+
+    return () => {
+      window.removeEventListener('dragstart', handleDragStart)
+    }
+  }, [selection])
+
   return [selection, () => setSelection(null)] as const
 }

@@ -22,8 +22,10 @@ export function GlobalStyles() {
     <Global
       styles={css`
         html body[data-scroll-locked] {
-          --removed-body-scroll-bar-size: 0 !important;
-          margin-right: 0 !important;
+          width: inherit !important;
+          min-width: calc(
+            100% - var(--removed-body-scroll-bar-size)
+          ) !important;
         }
 
         .kxis-studio-inspecting-${uuid} {
