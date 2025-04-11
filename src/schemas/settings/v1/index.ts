@@ -61,6 +61,7 @@ export const ProxySettingsSchema = z
 
 const RecorderDetectBrowserPathSchema = z.object({
   detectBrowserPath: z.literal(true),
+  enableBrowserRecorder: z.boolean().default(true),
 })
 
 const RecorderBrowserPathSchema = RecorderDetectBrowserPathSchema.extend({

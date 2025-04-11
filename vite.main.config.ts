@@ -57,6 +57,7 @@ export default defineConfig((env) => {
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
       }),
+      tsconfigPaths(),
     ],
     define,
     resolve: {

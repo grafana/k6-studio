@@ -4,6 +4,7 @@ import { ipcRenderer, contextBridge } from 'electron'
 
 import * as auth from './handlers/auth/preload'
 import * as browser from './handlers/browser/preload'
+import * as browserRemote from './handlers/browserRemote/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as har from './handlers/har/preload'
 import * as script from './handlers/script/preload'
@@ -101,6 +102,7 @@ const generator = {
 } as const
 
 const app = {
+  platform: process.platform,
   closeSplashscreen: () => {
     ipcRenderer.send('splashscreen:close')
   },
@@ -154,6 +156,7 @@ const studio = {
   app,
   log,
   settings,
+  browserRemote,
   cloud,
 } as const
 

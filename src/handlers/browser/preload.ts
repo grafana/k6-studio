@@ -1,5 +1,7 @@
 import { ipcRenderer } from 'electron'
 
+import { BrowserEvent } from '@/schemas/recording'
+
 import { createListener } from '../utils'
 
 import { BrowserHandler } from './types'
@@ -22,4 +24,8 @@ export function onBrowserLaunchFailed(callback: () => void) {
 
 export function openExternalLink(url: string) {
   return ipcRenderer.invoke(BrowserHandler.OpenExternalLink, url)
+}
+
+export function onBrowserEvent(callback: (event: BrowserEvent[]) => void) {
+  return createListener(BrowserHandler.BrowserEvent, callback)
 }

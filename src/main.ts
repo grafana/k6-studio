@@ -42,6 +42,7 @@ import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { configureApplicationMenu } from './menu'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { GeneratorFileDataSchema } from './schemas/generator'
+import { BrowserServer } from './services/browser/server'
 import {
   defaultSettings,
   getSettings,
@@ -101,14 +102,16 @@ export let appSettings = defaultSettings
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
 
+const browserServer = new BrowserServer()
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
 initializeLogger()
+
 mainState.initialize()
-handlers.initialize()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
 async function migrateJsonGenerator() {
@@ -200,6 +203,11 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
     },
+  })
+
+  handlers.initialize({
+    browserWindow: mainWindow,
+    browserServer,
   })
 
   configureApplicationMenu()
