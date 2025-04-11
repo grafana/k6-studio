@@ -821,10 +821,12 @@ function configureWatcher(browserWindow: BrowserWindow) {
 function attachWindowOpenHandler(window: BrowserWindow) {
   window.webContents.setWindowOpenHandler(({ url, features }) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { options } = JSON.parse(features)
+    const { id, options } = JSON.parse(features)
 
     app.on('browser-window-created', (_, subWindow) => {
-      subWindow.on('close', () => {})
+      subWindow.on('close', () => {
+        ipcMain.emit('ui:close-window', id)
+      })
     })
 
     if (url !== 'about:blank') {

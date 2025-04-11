@@ -8,14 +8,17 @@ import { globalStyles } from '@/globalStyles'
 
 interface SubWindowProps {
   options: BrowserWindowConstructorOptions
+  onClose?: () => void
 }
 
 export function SubWindow({
   children,
   options,
+  onClose,
 }: PropsWithChildren<SubWindowProps>) {
+  const [id] = useState(crypto.randomUUID())
   const [subWindow] = useState<Window | null>(() =>
-    window.open('about:blank', '_blank', JSON.stringify({ options }))
+    window.open('about:blank', '_blank', JSON.stringify({ id, options }))
   )
 
   useEffect(() => {
@@ -25,6 +28,16 @@ export function SubWindow({
       }
     }
   }, [subWindow])
+
+  useEffect(() => {
+    return window.studio.ui.onCloseWindow((windowId) => {
+      if (id !== windowId) {
+        return
+      }
+
+      onClose?.()
+    })
+  }, [onClose, id])
 
   if (subWindow === null) {
     return null

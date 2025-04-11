@@ -9,6 +9,7 @@ import { SubWindow } from './SubWindow'
 
 interface RecordingControlWindowProps {
   isOpen: boolean
+  onClose?: () => void
 }
 
 const windowOptions: BrowserWindowConstructorOptions = {
@@ -25,6 +26,7 @@ const windowOptions: BrowserWindowConstructorOptions = {
 
 export function RecordingControlWindow({
   isOpen,
+  onClose,
 }: RecordingControlWindowProps) {
   if (!isOpen) {
     return null
@@ -35,7 +37,7 @@ export function RecordingControlWindow({
   }
 
   return (
-    <SubWindow options={windowOptions}>
+    <SubWindow options={windowOptions} onClose={onClose}>
       <div
         css={css`
           display: flex;
