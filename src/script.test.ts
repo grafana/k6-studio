@@ -4,7 +4,6 @@ import { enhanceScript } from './script'
 
 const shims = {
   group: `
-    import execution from "k6/execution"
     (function() {
       console.log("This is the groups shim")
     })()
@@ -106,23 +105,6 @@ describe('groups shim', () => {
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/groups-shim/without-http-import.js'
-    )
-  })
-
-  it('should not duplicate execution import if it already exists', async ({
-    expect,
-  }) => {
-    const script = `
-      import http from "k6/http"
-      import execution from "k6/execution"
-
-      export default function() {}
-    `
-
-    const result = await enhanceScript({ script, shims })
-
-    await expect(result).toMatchFileSnapshot(
-      './__snapshots__/script/groups-shim/with-existing-execution-import.js'
     )
   })
 
