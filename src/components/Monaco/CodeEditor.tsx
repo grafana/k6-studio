@@ -1,6 +1,4 @@
 import { OnChange } from '@monaco-editor/react'
-import * as monaco from 'monaco-editor'
-import { useEffect, useState } from 'react'
 
 import { ReactMonacoEditor } from './ReactMonacoEditor'
 
@@ -15,29 +13,13 @@ export function CodeEditor({
   onChange,
   readOnly = false,
 }: CodeEditorProps) {
-  const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>()
-
-  useEffect(() => {
-    if (!editor) return
-    const position = editor.getPosition()
-    editor.setValue(value)
-    if (position) {
-      editor.setPosition(position)
-    }
-  }, [editor, value])
-
-  const handleEditorMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
-    setEditor(editor)
-  }
-
   return (
     <ReactMonacoEditor
       showToolbar
       defaultLanguage="javascript"
       options={{ readOnly }}
-      defaultValue={value}
+      value={value}
       onChange={onChange}
-      onMount={handleEditorMount}
     />
   )
 }
