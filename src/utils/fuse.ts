@@ -6,6 +6,7 @@ type ResultWithMatch<T> = T & {
   matches: SearchMatch[]
 }
 
+// TODO: fix types
 export function withMatches<T>(result: FuseResult<T>): ResultWithMatch<T> {
   return {
     ...result.item,
