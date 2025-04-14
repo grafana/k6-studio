@@ -20,7 +20,19 @@ export function groupHostsByParty(hosts: string[]) {
 }
 
 export function isHostThirdParty(host: string) {
-  const hostPatterns = ['.google.com', '.googleapis.com', '.gstatic.com']
+  const hostPatterns = [
+    '.google.com',
+    '.googleapis.com',
+    '.gstatic.com',
+    '.googleusercontent.com',
+    '.googleadservices.com',
+    '.doubleclick.net',
+    '.google-analytics.com',
+    '.googletagmanager.com',
+    '.googlesyndication.com',
+    '.googletagservices.com',
+    '.recaptcha.net',
+  ]
   return hostPatterns.some((pattern) => host.includes(pattern))
 }
 
