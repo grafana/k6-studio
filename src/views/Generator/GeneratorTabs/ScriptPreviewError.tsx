@@ -16,7 +16,7 @@ export function ScriptPreviewError({ error }: ScriptPreviewErrorProps) {
         position: absolute;
         inset: 0;
         background: var(--color-background);
-        z-index: 1;
+        z-index: 5;
       `}
     >
       <Callout.Root role="alert" variant="soft" color="red" size="1">
