@@ -3,6 +3,7 @@ import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
+import { useProxyStatus } from '@/hooks/useProxyStatus'
 
 interface ValidatorControlsProps {
   isRunning: boolean
@@ -25,6 +26,8 @@ export function ValidatorControls({
   onSelectScript,
   onStopScript,
 }: ValidatorControlsProps) {
+  const proxyStatus = useProxyStatus()
+
   return (
     <>
       {isRunning && (
@@ -40,9 +43,14 @@ export function ValidatorControls({
           <Button variant="outline" onClick={onRunInCloud}>
             <GrafanaIcon /> Run in Grafana Cloud
           </Button>
-          <Button disabled={!isScriptSelected} onClick={onRunScript}>
-            Validate script
-          </Button>
+          <Tooltip content="Proxy is offline" hidden={proxyStatus === 'online'}>
+            <Button
+              disabled={!isScriptSelected || proxyStatus !== 'online'}
+              onClick={onRunScript}
+            >
+              Validate script
+            </Button>
+          </Tooltip>
         </>
       )}
       <DropdownMenu.Root>
