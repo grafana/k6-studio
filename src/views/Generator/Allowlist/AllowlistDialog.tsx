@@ -12,6 +12,7 @@ import {
   Inset,
   Separator,
 } from '@radix-ui/themes'
+import { every, includes } from 'lodash'
 import { useMemo, useState } from 'react'
 
 import { Label } from '@/components/Label'
@@ -60,7 +61,7 @@ export function AllowlistDialog({
   }, [requests, allowlist])
 
   function handleSelectAll() {
-    setAllowlist(firstPartyFilteredHosts)
+    setAllowlist([...allowlist, ...firstPartyFilteredHosts])
   }
 
   function handleSelectNone() {
@@ -73,6 +74,10 @@ export function AllowlistDialog({
 
   function handleCheckStaticAssets(checked: boolean) {
     setIncludeStaticAssets(checked && staticAssetCount > 0)
+  }
+
+  function shouldDisableSelectAll() {
+    return every(firstPartyFilteredHosts, (host) => includes(allowlist, host))
   }
 
   return (
@@ -108,7 +113,7 @@ export function AllowlistDialog({
           <Button
             size="1"
             onClick={handleSelectAll}
-            // disabled={isEqual(filteredHosts, allowlist)}
+            disabled={shouldDisableSelectAll()}
           >
             Select all
           </Button>
