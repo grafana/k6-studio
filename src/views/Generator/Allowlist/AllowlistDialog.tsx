@@ -57,7 +57,10 @@ export function AllowlistDialog({
   }, [requests, allowlist])
 
   function handleSelectAll() {
-    setAllowlist(filteredHosts)
+    const hostsToSelect = filteredHosts.filter(
+      (host) => !isHostThirdParty(host)
+    )
+    setAllowlist(hostsToSelect)
   }
 
   function handleSelectNone() {
