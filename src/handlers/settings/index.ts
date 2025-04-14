@@ -11,14 +11,16 @@ import {
 import { AppSettings } from '@/types/settings'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 
+import { SettingsHandler } from './types'
+
 export function initialize() {
-  ipcMain.handle('settings:get', async () => {
-    console.info('settings:get event received')
+  ipcMain.handle(SettingsHandler.Get, async () => {
+    console.info(`${SettingsHandler.Get} event received`)
     return await getSettings()
   })
 
-  ipcMain.handle('settings:save', async (event, data: AppSettings) => {
-    console.info('settings:save event received')
+  ipcMain.handle(SettingsHandler.Save, async (event, data: AppSettings) => {
+    console.info(`${SettingsHandler.Save} event received`)
 
     const browserWindow = browserWindowFromEvent(event)
     try {
@@ -42,11 +44,13 @@ export function initialize() {
     }
   })
 
-  ipcMain.handle('settings:select-browser-executable', async () => {
+  ipcMain.handle(SettingsHandler.SelectBrowserExecutable, async () => {
+    console.info(`${SettingsHandler.SelectBrowserExecutable} event received`)
     return selectBrowserExecutable()
   })
 
-  ipcMain.handle('settings:select-upstream-certificate', async () => {
+  ipcMain.handle(SettingsHandler.SelectUpstreamCertificate, async () => {
+    console.info(`${SettingsHandler.SelectUpstreamCertificate} event received`)
     return selectUpstreamCertificate()
   })
 }
