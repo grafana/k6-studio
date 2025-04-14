@@ -1,12 +1,8 @@
-import {
-  Cross2Icon,
-  ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
-} from '@radix-ui/react-icons'
+import { css } from '@emotion/react'
+import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import {
   Button,
   Checkbox,
-  CheckboxGroup,
   Flex,
   IconButton,
   ScrollArea,
@@ -14,25 +10,27 @@ import {
   Text,
   Card,
   Inset,
-  Tooltip,
+  Separator,
 } from '@radix-ui/themes'
-import { isEqual } from 'lodash-es'
 import { useMemo, useState } from 'react'
 
 import { Label } from '@/components/Label'
-import { isHostThirdParty } from '@/store/generator/slices/recording.utils'
 import { ProxyData } from '@/types'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
+import AllowlistCheckGroup from './AllowlistCheckGroup'
+
 export function AllowlistDialog({
-  hosts,
+  firstPartyHosts,
+  thirdPartyHosts,
   allowlist,
   requests,
   includeStaticAssets,
   setAllowlist,
   setIncludeStaticAssets,
 }: {
-  hosts: string[]
+  firstPartyHosts: string[]
+  thirdPartyHosts: string[]
   allowlist: string[]
   includeStaticAssets: boolean
   requests: ProxyData[]
@@ -41,9 +39,14 @@ export function AllowlistDialog({
 }) {
   const [filter, setFilter] = useState('')
 
-  const filteredHosts = useMemo(
-    () => hosts.filter((host) => host.includes(filter)),
-    [hosts, filter]
+  const firstPartyFilteredHosts = useMemo(
+    () => firstPartyHosts.filter((host) => host.includes(filter)),
+    [firstPartyHosts, filter]
+  )
+
+  const thirdPartyFilteredHosts = useMemo(
+    () => thirdPartyHosts.filter((host) => host.includes(filter)),
+    [thirdPartyHosts, filter]
   )
 
   const staticAssetCount = useMemo(() => {
@@ -57,10 +60,7 @@ export function AllowlistDialog({
   }, [requests, allowlist])
 
   function handleSelectAll() {
-    const hostsToSelect = filteredHosts.filter(
-      (host) => !isHostThirdParty(host)
-    )
-    setAllowlist(hostsToSelect)
+    setAllowlist(firstPartyFilteredHosts)
   }
 
   function handleSelectNone() {
@@ -108,7 +108,7 @@ export function AllowlistDialog({
           <Button
             size="1"
             onClick={handleSelectAll}
-            disabled={isEqual(filteredHosts, allowlist)}
+            // disabled={isEqual(filteredHosts, allowlist)}
           >
             Select all
           </Button>
@@ -126,27 +126,33 @@ export function AllowlistDialog({
       <Card size="1" mb="2">
         <Inset css={{ height: '210px' }}>
           <ScrollArea scrollbars="vertical" type="always">
-            <Flex p="2" pr="4" asChild overflow="hidden">
-              <CheckboxGroup.Root
-                size="2"
-                value={allowlist}
+            <>
+              <AllowlistCheckGroup
+                allowlist={allowlist}
                 onValueChange={handleChangeHosts}
-              >
-                {filteredHosts.map((host) => (
-                  <Text as="label" size="2" key={host}>
-                    <Flex gap="2" align="center">
-                      <CheckboxGroup.Item value={host} />{' '}
-                      <Text truncate>{host}</Text>
-                      {isHostThirdParty(host) && (
-                        <Tooltip content="This host belongs to a third-party service">
-                          <ExclamationTriangleIcon />
-                        </Tooltip>
-                      )}
-                    </Flex>
-                  </Text>
-                ))}
-              </CheckboxGroup.Root>
-            </Flex>
+                hosts={firstPartyFilteredHosts}
+              />
+              {thirdPartyFilteredHosts.length > 0 && (
+                <>
+                  <Flex align="center" px="2">
+                    <Text size="1" color="gray">
+                      3rd party hosts
+                    </Text>
+                    <Separator
+                      ml="2"
+                      css={css`
+                        flex-grow: 1;
+                      `}
+                    />
+                  </Flex>
+                  <AllowlistCheckGroup
+                    allowlist={allowlist}
+                    onValueChange={handleChangeHosts}
+                    hosts={thirdPartyFilteredHosts}
+                  />
+                </>
+              )}
+            </>
           </ScrollArea>
         </Inset>
       </Card>
