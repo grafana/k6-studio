@@ -13,7 +13,6 @@ import path from 'path'
 import { promisify } from 'util'
 
 import { BrowserHandler } from './handlers/browser/types'
-import { appSettings } from './main'
 import { getCertificateSPKI } from './proxy'
 import { getPlatform } from './utils/electron'
 
@@ -22,7 +21,7 @@ const createUserDataDir = async () => {
 }
 
 export async function getBrowserPath() {
-  const { recorder } = appSettings
+  const { recorder } = k6StudioState.appSettings
 
   if (!recorder.detectBrowserPath) {
     return recorder.browserPath || ''
@@ -83,7 +82,7 @@ export const launchBrowser = async (
     '--disable-background-networking',
     '--disable-component-update',
     '--disable-search-engine-choice-screen',
-    `--proxy-server=http://localhost:${appSettings.proxy.port}`,
+    `--proxy-server=http://localhost:${k6StudioState.appSettings.proxy.port}`,
     `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
     disableChromeOptimizations,
     url?.trim() || 'about:blank',
