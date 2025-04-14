@@ -42,13 +42,7 @@ import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { configureApplicationMenu } from './menu'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { GeneratorFileDataSchema } from './schemas/generator'
-import {
-  getSettings,
-  initSettings,
-  saveSettings,
-  selectBrowserExecutable,
-  selectUpstreamCertificate,
-} from './settings'
+import { getSettings, initSettings, saveSettings } from './settings'
 import { ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
 import { AppSettings } from './types/settings'
@@ -541,50 +535,14 @@ ipcMain.handle('log:read', () => {
   return getLogContent()
 })
 
-ipcMain.handle('settings:get', async () => {
-  console.info('settings:get event received')
-  return await getSettings()
-})
-
-ipcMain.handle('settings:save', async (event, data: AppSettings) => {
-  console.info('settings:save event received')
-
-  const browserWindow = browserWindowFromEvent(event)
-  try {
-    // don't pass fields that are not submitted by the form
-    const { windowState: _, ...settings } = data
-    const modifiedSettings = await saveSettings(settings)
-    await applySettings(modifiedSettings, browserWindow)
-
-    sendToast(browserWindow.webContents, {
-      title: 'Settings saved successfully',
-      status: 'success',
-    })
-    return true
-  } catch (error) {
-    log.error(error)
-    sendToast(browserWindow.webContents, {
-      title: 'Failed to save settings',
-      status: 'error',
-    })
-    return false
-  }
-})
-
-ipcMain.handle('settings:select-browser-executable', async () => {
-  return selectBrowserExecutable()
-})
-
-ipcMain.handle('settings:select-upstream-certificate', async () => {
-  return selectUpstreamCertificate()
-})
-
 ipcMain.handle('proxy:status:get', () => {
   console.info('proxy:status:get event received')
   return k6StudioState.proxyStatus
 })
 
-async function applySettings(
+// TODO: Move this function to settings.ts once proxy handlers are refactored
+// https://github.com/grafana/k6-studio/issues/378
+export async function applySettings(
   modifiedSettings: Partial<AppSettings>,
   browserWindow: BrowserWindow
 ) {
