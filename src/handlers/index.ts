@@ -3,6 +3,7 @@ import * as browser from './browser'
 import * as cloud from './cloud'
 import * as har from './har'
 import * as script from './script'
+import * as settings from './settings'
 
 export function initialize() {
   auth.initialize()
@@ -10,4 +11,5 @@ export function initialize() {
   har.initialize()
   browser.initialize()
   script.initialize()
+  settings.initialize()
 }
