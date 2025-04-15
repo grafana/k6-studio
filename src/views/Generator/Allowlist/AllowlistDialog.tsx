@@ -1,5 +1,9 @@
 import { css } from '@emotion/react'
-import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
+import {
+  Cross2Icon,
+  InfoCircledIcon,
+  MagnifyingGlassIcon,
+} from '@radix-ui/react-icons'
 import {
   Button,
   Checkbox,
@@ -11,6 +15,7 @@ import {
   Card,
   Inset,
   Separator,
+  Tooltip,
 } from '@radix-ui/themes'
 import { every, includes } from 'lodash'
 import { useMemo, useState } from 'react'
@@ -132,7 +137,10 @@ export function AllowlistDialog({
       <Card size="1" mb="2">
         <Inset css={{ height: '210px' }}>
           <ScrollArea scrollbars="vertical" type="always">
-            <>
+            <Flex direction="column" pt="2">
+              {firstPartyFilteredHosts.length > 0 && (
+                <AllowlistSeparator text="Hosts" />
+              )}
               <AllowlistCheckGroup
                 allowlist={allowlist}
                 onValueChange={handleChangeHosts}
@@ -140,17 +148,10 @@ export function AllowlistDialog({
               />
               {thirdPartyFilteredHosts.length > 0 && (
                 <>
-                  <Flex align="center" px="2">
-                    <Text size="1" color="gray">
-                      3rd party hosts
-                    </Text>
-                    <Separator
-                      ml="2"
-                      css={css`
-                        flex-grow: 1;
-                      `}
-                    />
-                  </Flex>
+                  <AllowlistSeparator
+                    text="3rd party hosts"
+                    tooltip="Selecting third-party hosts may include irrelevant or sensitive data outside your control. It is recommended that only hosts directly related to your app are selected."
+                  />
                   <AllowlistCheckGroup
                     allowlist={allowlist}
                     onValueChange={handleChangeHosts}
@@ -158,7 +159,7 @@ export function AllowlistDialog({
                   />
                 </>
               )}
-            </>
+            </Flex>
           </ScrollArea>
         </Inset>
       </Card>
@@ -174,5 +175,36 @@ export function AllowlistDialog({
         </Label>
       </Flex>
     </>
+  )
+}
+
+function AllowlistSeparator({
+  text,
+  tooltip,
+}: {
+  text: string
+  tooltip?: string
+}) {
+  return (
+    <Flex align="center" px="2">
+      <Text size="1" color="gray">
+        {text}
+      </Text>
+      {tooltip && (
+        <Tooltip content={tooltip}>
+          <InfoCircledIcon
+            css={css`
+              margin-left: var(--space-1);
+            `}
+          />
+        </Tooltip>
+      )}
+      <Separator
+        ml="2"
+        css={css`
+          flex-grow: 1;
+        `}
+      />
+    </Flex>
   )
 }
