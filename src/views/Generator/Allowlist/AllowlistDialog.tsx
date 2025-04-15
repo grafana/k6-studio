@@ -1,8 +1,12 @@
-import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
+import { css } from '@emotion/react'
+import {
+  Cross2Icon,
+  InfoCircledIcon,
+  MagnifyingGlassIcon,
+} from '@radix-ui/react-icons'
 import {
   Button,
   Checkbox,
-  CheckboxGroup,
   Flex,
   IconButton,
   ScrollArea,
@@ -10,23 +14,29 @@ import {
   Text,
   Card,
   Inset,
+  Separator,
+  Tooltip,
 } from '@radix-ui/themes'
-import { isEqual } from 'lodash-es'
+import { every, includes } from 'lodash'
 import { useMemo, useState } from 'react'
 
 import { Label } from '@/components/Label'
 import { ProxyData } from '@/types'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
+import AllowlistCheckGroup from './AllowlistCheckGroup'
+
 export function AllowlistDialog({
-  hosts,
+  firstPartyHosts,
+  thirdPartyHosts,
   allowlist,
   requests,
   includeStaticAssets,
   setAllowlist,
   setIncludeStaticAssets,
 }: {
-  hosts: string[]
+  firstPartyHosts: string[]
+  thirdPartyHosts: string[]
   allowlist: string[]
   includeStaticAssets: boolean
   requests: ProxyData[]
@@ -35,9 +45,14 @@ export function AllowlistDialog({
 }) {
   const [filter, setFilter] = useState('')
 
-  const filteredHosts = useMemo(
-    () => hosts.filter((host) => host.includes(filter)),
-    [hosts, filter]
+  const firstPartyFilteredHosts = useMemo(
+    () => firstPartyHosts.filter((host) => host.includes(filter)),
+    [firstPartyHosts, filter]
+  )
+
+  const thirdPartyFilteredHosts = useMemo(
+    () => thirdPartyHosts.filter((host) => host.includes(filter)),
+    [thirdPartyHosts, filter]
   )
 
   const staticAssetCount = useMemo(() => {
@@ -51,7 +66,7 @@ export function AllowlistDialog({
   }, [requests, allowlist])
 
   function handleSelectAll() {
-    setAllowlist(filteredHosts)
+    setAllowlist([...allowlist, ...firstPartyFilteredHosts])
   }
 
   function handleSelectNone() {
@@ -65,6 +80,11 @@ export function AllowlistDialog({
   function handleCheckStaticAssets(checked: boolean) {
     setIncludeStaticAssets(checked && staticAssetCount > 0)
   }
+
+  const isSelectAllDisabled = useMemo(
+    () => every(firstPartyFilteredHosts, (host) => includes(allowlist, host)),
+    [firstPartyFilteredHosts, allowlist]
+  )
 
   return (
     <>
@@ -99,7 +119,7 @@ export function AllowlistDialog({
           <Button
             size="1"
             onClick={handleSelectAll}
-            disabled={isEqual(filteredHosts, allowlist)}
+            disabled={isSelectAllDisabled}
           >
             Select all
           </Button>
@@ -117,21 +137,28 @@ export function AllowlistDialog({
       <Card size="1" mb="2">
         <Inset css={{ height: '210px' }}>
           <ScrollArea scrollbars="vertical" type="always">
-            <Flex p="2" pr="4" asChild overflow="hidden">
-              <CheckboxGroup.Root
-                size="2"
-                value={allowlist}
+            <Flex direction="column" pt="2">
+              {firstPartyFilteredHosts.length > 0 && (
+                <AllowlistSeparator text="Hosts" />
+              )}
+              <AllowlistCheckGroup
+                allowlist={allowlist}
                 onValueChange={handleChangeHosts}
-              >
-                {filteredHosts.map((host) => (
-                  <Text as="label" size="2" key={host}>
-                    <Flex gap="2">
-                      <CheckboxGroup.Item value={host} />{' '}
-                      <Text truncate>{host}</Text>
-                    </Flex>
-                  </Text>
-                ))}
-              </CheckboxGroup.Root>
+                hosts={firstPartyFilteredHosts}
+              />
+              {thirdPartyFilteredHosts.length > 0 && (
+                <>
+                  <AllowlistSeparator
+                    text="3rd party hosts"
+                    tooltip="Selecting third-party hosts may include irrelevant or sensitive data outside your control. It is recommended that only hosts directly related to your app are selected."
+                  />
+                  <AllowlistCheckGroup
+                    allowlist={allowlist}
+                    onValueChange={handleChangeHosts}
+                    hosts={thirdPartyFilteredHosts}
+                  />
+                </>
+              )}
             </Flex>
           </ScrollArea>
         </Inset>
@@ -148,5 +175,36 @@ export function AllowlistDialog({
         </Label>
       </Flex>
     </>
+  )
+}
+
+function AllowlistSeparator({
+  text,
+  tooltip,
+}: {
+  text: string
+  tooltip?: string
+}) {
+  return (
+    <Flex align="center" px="2">
+      <Text size="1" color="gray">
+        {text}
+      </Text>
+      {tooltip && (
+        <Tooltip content={tooltip}>
+          <InfoCircledIcon
+            css={css`
+              margin-left: var(--space-1);
+            `}
+          />
+        </Tooltip>
+      )}
+      <Separator
+        ml="2"
+        css={css`
+          flex-grow: 1;
+        `}
+      />
+    </Flex>
   )
 }
