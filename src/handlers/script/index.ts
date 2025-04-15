@@ -4,7 +4,6 @@ import { readFile, writeFile, unlink } from 'fs/promises'
 import path from 'path'
 
 import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
-import { appSettings } from '@/main'
 import { waitForProxy } from '@/proxy'
 import { showScriptSelectDialog, runScript, type K6Process } from '@/script'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
@@ -54,8 +53,8 @@ export function initialize() {
       currentk6Process = await runScript({
         browserWindow,
         scriptPath: resolvedScriptPath,
-        proxyPort: appSettings.proxy.port,
-        usageReport: appSettings.telemetry.usageReport,
+        proxyPort: k6StudioState.appSettings.proxy.port,
+        usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
     }
   )
@@ -82,8 +81,8 @@ export function initialize() {
       currentk6Process = await runScript({
         browserWindow,
         scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
-        proxyPort: appSettings.proxy.port,
-        usageReport: appSettings.telemetry.usageReport,
+        proxyPort: k6StudioState.appSettings.proxy.port,
+        usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
 
       await unlink(TEMP_GENERATOR_SCRIPT_PATH)

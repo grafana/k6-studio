@@ -13,7 +13,6 @@ import path from 'path'
 import { promisify } from 'util'
 
 import { BrowserHandler } from './handlers/browser/types'
-import { appSettings } from './main'
 import { getCertificateSPKI } from './proxy'
 import { BrowserServer } from './services/browser/server'
 import { getPlatform } from './utils/electron'
@@ -23,7 +22,7 @@ const createUserDataDir = async () => {
 }
 
 export async function getBrowserPath() {
-  const { recorder } = appSettings
+  const { recorder } = k6StudioState.appSettings
 
   if (!recorder.detectBrowserPath) {
     return recorder.browserPath || ''
@@ -74,7 +73,7 @@ export const launchBrowser = async (
   const extensionPath = getExtensionPath()
   console.info(`extension path: ${extensionPath}`)
 
-  if (appSettings.recorder.enableBrowserRecorder) {
+  if (k6StudioState.appSettings.recorder.enableBrowserRecorder) {
     browserServer.start(browserWindow)
   }
 
@@ -94,7 +93,8 @@ export const launchBrowser = async (
     browserWindow.webContents.send(BrowserHandler.Failed)
   }
 
-  const browserRecordingArgs = appSettings.recorder.enableBrowserRecorder
+  const browserRecordingArgs = k6StudioState.appSettings.recorder
+    .enableBrowserRecorder
     ? [`--load-extension=${extensionPath}`]
     : []
 
@@ -109,7 +109,7 @@ export const launchBrowser = async (
     '--disable-background-networking',
     '--disable-component-update',
     '--disable-search-engine-choice-screen',
-    `--proxy-server=http://localhost:${appSettings.proxy.port}`,
+    `--proxy-server=http://localhost:${k6StudioState.appSettings.proxy.port}`,
     `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
     ...browserRecordingArgs,
     disableChromeOptimizations,
