@@ -94,6 +94,10 @@ export const launchBrowser = async (
     browserWindow.webContents.send(BrowserHandler.Failed)
   }
 
+  const browserRecordingArgs = appSettings.recorder.enableBrowserRecorder
+    ? [`--load-extension=${extensionPath}`, `--disable-back-forward-cache`]
+    : []
+
   const args = [
     '--new',
     '--args',
@@ -107,9 +111,7 @@ export const launchBrowser = async (
     '--disable-search-engine-choice-screen',
     `--proxy-server=http://localhost:${appSettings.proxy.port}`,
     `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
-    appSettings.recorder.enableBrowserRecorder
-      ? `--load-extension=${extensionPath}`
-      : '',
+    ...browserRecordingArgs,
     disableChromeOptimizations,
     url?.trim() || 'about:blank',
   ]
