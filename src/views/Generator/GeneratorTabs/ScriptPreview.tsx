@@ -1,11 +1,12 @@
 import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
-import { Flex } from '@radix-ui/themes'
+import { Flex, Tooltip } from '@radix-ui/themes'
 import { useState } from 'react'
 
 import { GhostButton } from '@/components/GhostButton'
 import { CodeEditor } from '@/components/Monaco/CodeEditor'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
+import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { useGeneratorStore } from '@/store/generator'
 
@@ -27,6 +28,7 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
   const { preview, error } = useScriptPreview()
+  const proxyStatus = useProxyStatus()
   const isScriptExportable = !error && !!preview
 
   const handleExportScript = useScriptExport(fileName)
@@ -34,15 +36,20 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
   return (
     <Flex direction="column" height="100%" position="relative">
       <Flex py="1" px="2" gap="2" align="center" justify="end">
-        <GhostButton
-          disabled={!isScriptExportable}
-          onClick={() => {
-            setIsValidatorDialogOpen(true)
-          }}
+        <Tooltip
+          content={`Proxy is ${proxyStatus}`}
+          hidden={proxyStatus === 'online'}
         >
-          <CheckCircledIcon />
-          Validate
-        </GhostButton>
+          <GhostButton
+            disabled={!isScriptExportable || proxyStatus !== 'online'}
+            onClick={() => {
+              setIsValidatorDialogOpen(true)
+            }}
+          >
+            <CheckCircledIcon />
+            Validate
+          </GhostButton>
+        </Tooltip>
         <GhostButton
           disabled={!isScriptExportable}
           onClick={() => {

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore } from '@/store/generator'
@@ -32,6 +33,7 @@ export function GeneratorControls({
     useState(false)
   const { fileName } = useGeneratorParams()
   const { preview, hasError } = useScriptPreview()
+  const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
   const navigate = useNavigate()
 
@@ -67,7 +69,7 @@ export function GeneratorControls({
           <DropdownMenu.Content>
             <DropdownMenu.Item
               onSelect={() => setIsValidatorDialogOpen(true)}
-              disabled={!isScriptExportable}
+              disabled={!isScriptExportable || proxyStatus !== 'online'}
             >
               Validate script
             </DropdownMenu.Item>
