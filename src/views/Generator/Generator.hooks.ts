@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
+import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
@@ -8,7 +9,7 @@ import { useToast } from '@/store/ui/useToast'
 import { GeneratorFileData } from '@/types/generator'
 import { queryClient } from '@/utils/query'
 
-import { loadGeneratorFile, loadHarFile } from './Generator.utils'
+import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
 
 export function useGeneratorParams() {
   const { fileName } = useParams()
@@ -88,5 +89,41 @@ export function useIsGeneratorDirty(fileName: string) {
   // `property: undefined` values
   return (
     JSON.stringify(generatorStateData) !== JSON.stringify(generatorFileData)
+  )
+}
+
+export function useScriptExport(generatorFileName: string) {
+  const showToast = useToast()
+  const setScriptName = useGeneratorStore((store) => store.setScriptName)
+  const { mutateAsync: updateGeneratorFile } =
+    useUpdateValueInGeneratorFile(generatorFileName)
+
+  return useCallback(
+    async (scriptName: string) => {
+      setScriptName(scriptName)
+
+      try {
+        await exportScript(scriptName)
+      } catch (error) {
+        log.error(error)
+
+        showToast({
+          title: 'Failed to export script',
+          status: 'error',
+        })
+      }
+
+      try {
+        await updateGeneratorFile({ key: 'scriptName', value: scriptName })
+      } catch (error) {
+        log.error(error)
+
+        showToast({
+          title: 'Failed to update script name',
+          status: 'error',
+        })
+      }
+    },
+    [showToast, setScriptName, updateGeneratorFile]
   )
 }

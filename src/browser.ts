@@ -5,7 +5,7 @@ import {
   launch,
 } from '@puppeteer/browsers'
 import { exec, spawn } from 'child_process'
-import { BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { mkdtemp } from 'fs/promises'
 import os from 'os'
@@ -14,6 +14,7 @@ import { promisify } from 'util'
 
 import { BrowserHandler } from './handlers/browser/types'
 import { getCertificateSPKI } from './proxy'
+import { BrowserServer } from './services/browser/server'
 import { getPlatform } from './utils/electron'
 
 const createUserDataDir = async () => {
@@ -40,8 +41,18 @@ export async function getBrowserPath() {
   throw new Error('Could not detect Chrome or Chromium browser')
 }
 
+function getExtensionPath() {
+  // @ts-expect-error - Electron apps are built as CJS.
+  if (import.meta.env.DEV) {
+    return path.join(app.getAppPath(), '.vite/build/extension')
+  }
+
+  return path.join(process.resourcesPath, 'extension')
+}
+
 export const launchBrowser = async (
   browserWindow: BrowserWindow,
+  browserServer: BrowserServer,
   url?: string
 ) => {
   const path = await getBrowserPath()
@@ -59,17 +70,33 @@ export const launchBrowser = async (
   ]
   const disableChromeOptimizations = `--disable-features=${optimizationsToDisable.join(',')}`
 
-  const sendBrowserClosedEvent = (): Promise<void> => {
+  const extensionPath = getExtensionPath()
+  console.info(`extension path: ${extensionPath}`)
+
+  if (k6StudioState.appSettings.recorder.enableBrowserRecorder) {
+    browserServer.start(browserWindow)
+  }
+
+  const handleBrowserClose = (): Promise<void> => {
+    browserServer.stop()
+
     // we send the browser:stopped event when the browser is closed
     // NOTE: on macos pressing the X button does not close the application so it won't be fired
     browserWindow.webContents.send(BrowserHandler.Closed)
+
     return Promise.resolve()
   }
 
-  const sendBrowserLaunchFailedEvent = (error: Error) => {
+  const handleBrowserLaunchError = (error: Error) => {
     log.error(error)
+    browserServer.stop()
     browserWindow.webContents.send(BrowserHandler.Failed)
   }
+
+  const browserRecordingArgs = k6StudioState.appSettings.recorder
+    .enableBrowserRecorder
+    ? [`--load-extension=${extensionPath}`]
+    : []
 
   const args = [
     '--new',
@@ -84,6 +111,7 @@ export const launchBrowser = async (
     '--disable-search-engine-choice-screen',
     `--proxy-server=http://localhost:${k6StudioState.appSettings.proxy.port}`,
     `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
+    ...browserRecordingArgs,
     disableChromeOptimizations,
     url?.trim() || 'about:blank',
   ]
@@ -91,8 +119,9 @@ export const launchBrowser = async (
   // if we are on linux we spawn the browser directly and attach the on exit callback
   if (getPlatform() === 'linux') {
     const browserProc = spawn(path, args)
-    browserProc.on('error', sendBrowserLaunchFailedEvent)
-    browserProc.once('exit', sendBrowserClosedEvent)
+
+    browserProc.on('error', handleBrowserLaunchError)
+    browserProc.once('exit', handleBrowserClose)
     return browserProc
   }
 
@@ -100,9 +129,9 @@ export const launchBrowser = async (
   const browserProc = launch({
     executablePath: path,
     args: args,
-    onExit: sendBrowserClosedEvent,
+    onExit: handleBrowserClose,
   })
-  browserProc.nodeProcess.on('error', sendBrowserLaunchFailedEvent)
+  browserProc.nodeProcess.on('error', handleBrowserLaunchError)
   return browserProc
 }
 

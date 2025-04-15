@@ -7,9 +7,10 @@ import { CodeEditor } from '@/components/Monaco/CodeEditor'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { useGeneratorStore } from '@/store/generator'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
-import { exportScript } from '../Generator.utils'
+import { useScriptExport } from '../Generator.hooks'
 import { ValidatorDialog } from '../ValidatorDialog'
 
 import { ScriptPreviewError } from './ScriptPreviewError'
@@ -19,12 +20,16 @@ interface ScriptPreviewProps {
 }
 
 export function ScriptPreview({ fileName }: ScriptPreviewProps) {
+  const scriptName = useGeneratorStore((store) => store.scriptName)
+
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
   const { preview, error } = useScriptPreview()
   const isScriptExportable = !error && !!preview
+
+  const handleExportScript = useScriptExport(fileName)
 
   return (
     <Flex direction="column" height="100%" position="relative">
@@ -72,8 +77,9 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
             onOpenChange={setIsValidatorDialogOpen}
           />
           <ExportScriptDialog
-            onExport={exportScript}
             open={isExportScriptDialogOpen}
+            scriptName={scriptName}
+            onExport={handleExportScript}
             onOpenChange={setIsExportScriptDialogOpen}
           />
         </>

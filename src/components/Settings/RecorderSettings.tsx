@@ -5,7 +5,7 @@ import { Controller, useFormContext } from 'react-hook-form'
 
 import { AppSettings } from '@/types/settings'
 
-import { FileUploadInput } from '../Form'
+import { FieldGroup, FileUploadInput } from '../Form'
 
 import { SettingsSection } from './SettingsSection'
 
@@ -77,7 +77,6 @@ export const RecorderSettings = () => {
         hint="Google Chrome or Chromium needs to be installed on your machine for the recording functionality to work"
         disabled={recorder.detectBrowserPath}
       />
-
       {!recorder.detectBrowserPath &&
         recorder.browserPath !== '' &&
         !isValidPath(recorder.browserPath?.toLocaleLowerCase()) && (
@@ -92,6 +91,38 @@ export const RecorderSettings = () => {
             </Callout.Text>
           </Callout.Root>
         )}
+
+      <FieldGroup
+        label="Browser recording"
+        name="recorder.enableBrowserRecorder"
+        errors={errors}
+        hint={
+          <>
+            Enables the <em>experimental</em> browser recording feature. With
+            this feature enabled user interactions in the browser are recorded
+            alongside network requests. The recorded interactions can be
+            exported as a k6 browser script.
+          </>
+        }
+        hintType="text"
+      >
+        <Flex>
+          <Controller
+            control={control}
+            name="recorder.enableBrowserRecorder"
+            render={({ field }) => (
+              <Text size="2" as="label">
+                <Checkbox
+                  {...register('recorder.enableBrowserRecorder')}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />{' '}
+                Enable browser recording (experimental)
+              </Text>
+            )}
+          />
+        </Flex>
+      </FieldGroup>
     </SettingsSection>
   )
 }
