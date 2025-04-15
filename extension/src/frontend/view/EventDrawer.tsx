@@ -32,6 +32,24 @@ function useRecordedEvents() {
     })
   }, [])
 
+  useEffect(() => {
+    // We reload the list of events whenever the page is shown from the
+    // back/forward cache to make sure we have the latest state.
+    function handlePageShow(event: PageTransitionEvent) {
+      if (event.persisted) {
+        client.send({
+          type: 'load-events',
+        })
+      }
+    }
+
+    window.addEventListener('pageshow', handlePageShow)
+
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow)
+    }
+  }, [])
+
   return events
 }
 
