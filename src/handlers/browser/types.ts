@@ -4,4 +4,5 @@ export enum BrowserHandler {
   Closed = 'browser:closed',
   Failed = 'browser:failed',
   OpenExternalLink = 'browser:open:external:link',
+  BrowserEvent = 'browser:event',
 }

@@ -19,6 +19,7 @@ export const defaultSettings: AppSettings = {
   },
   recorder: {
     detectBrowserPath: true,
+    enableBrowserRecorder: true,
   },
   windowState: {
     width: 1200,

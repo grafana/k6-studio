@@ -41,6 +41,7 @@ export default defineConfig((env) => {
       GRAFANA_COM_URL: JSON.stringify(
         process.env.GRAFANA_COM_URL ?? 'https://grafana.com'
       ),
+      TARGET_PLATFORM: JSON.stringify(process.platform),
     },
     clearScreen: false,
   } as UserConfig
