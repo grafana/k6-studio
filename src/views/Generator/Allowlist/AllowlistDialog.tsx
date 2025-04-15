@@ -76,9 +76,10 @@ export function AllowlistDialog({
     setIncludeStaticAssets(checked && staticAssetCount > 0)
   }
 
-  function shouldDisableSelectAll() {
-    return every(firstPartyFilteredHosts, (host) => includes(allowlist, host))
-  }
+  const isSelectAllDisabled = useMemo(
+    () => every(firstPartyFilteredHosts, (host) => includes(allowlist, host)),
+    [firstPartyFilteredHosts, allowlist]
+  )
 
   return (
     <>
@@ -113,7 +114,7 @@ export function AllowlistDialog({
           <Button
             size="1"
             onClick={handleSelectAll}
-            disabled={shouldDisableSelectAll()}
+            disabled={isSelectAllDisabled}
           >
             Select all
           </Button>
