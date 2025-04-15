@@ -95,7 +95,7 @@ export const launchBrowser = async (
   }
 
   const browserRecordingArgs = appSettings.recorder.enableBrowserRecorder
-    ? [`--load-extension=${extensionPath}`, `--disable-back-forward-cache`]
+    ? [`--load-extension=${extensionPath}`]
     : []
 
   const args = [

@@ -11,22 +11,19 @@ export class BackgroundTransport extends Transport {
   constructor(name: string) {
     super()
 
-    this.#port = runtime.connect({ name })
-
-    this.#port.onMessage.addListener((message) => {
-      this.emit('message', {
-        sender: {
-          tab: this.#port.sender?.tab?.id?.toString() ?? null,
-        },
-        data: message,
-      })
+    window.addEventListener('pageshow', (ev) => {
+      // When a page is put into the back/forward cache the page state is saved
+      // but the port gets disconnected. We need to detect when the page is restored
+      // and reconnect to the background script. The `persisted` property is true
+      // if the page was loaded from the back/forward cache and false if it is a normal
+      // page load.
+      if (ev.persisted) {
+        this.#port.disconnect()
+        this.#port = this.#connect(name)
+      }
     })
 
-    this.#port.onDisconnect.addListener(() => {
-      this.emit('disconnect', undefined)
-    })
-
-    this.emit('connect', undefined)
+    this.#port = this.#connect(name)
   }
 
   send(data: unknown): void {
@@ -35,5 +32,26 @@ export class BackgroundTransport extends Transport {
 
   dispose() {
     this.#port.disconnect()
+  }
+
+  #connect(name: string) {
+    const port = runtime.connect({ name })
+
+    port.onMessage.addListener((message) => {
+      this.emit('message', {
+        sender: {
+          tab: this.#port.sender?.tab?.id?.toString() ?? null,
+        },
+        data: message,
+      })
+    })
+
+    port.onDisconnect.addListener(() => {
+      this.emit('disconnect', undefined)
+    })
+
+    this.emit('connect', undefined)
+
+    return port
   }
 }
