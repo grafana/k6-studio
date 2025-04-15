@@ -35,17 +35,15 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
           content={`Proxy is ${proxyStatus}`}
           hidden={proxyStatus === 'online'}
         >
-          <span>
-            <GhostButton
-              disabled={!isScriptExportable || proxyStatus !== 'online'}
-              onClick={() => {
-                setIsValidatorDialogOpen(true)
-              }}
-            >
-              <CheckCircledIcon />
-              Validate
-            </GhostButton>
-          </span>
+          <GhostButton
+            disabled={!isScriptExportable || proxyStatus !== 'online'}
+            onClick={() => {
+              setIsValidatorDialogOpen(true)
+            }}
+          >
+            <CheckCircledIcon />
+            Validate
+          </GhostButton>
         </Tooltip>
         <GhostButton
           disabled={!isScriptExportable}
