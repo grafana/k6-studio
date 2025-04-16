@@ -84,7 +84,7 @@ const TextAssertionSchema = z.object({
 // Will eventually be a union of different assertion types
 const AssertionSchema = TextAssertionSchema
 
-const AssertedEventSchema = BrowserEventBaseSchema.extend({
+const AssertEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('assert'),
   tab: z.string(),
   selector: ElementSelectorSchema,
@@ -100,7 +100,7 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   RadioChangedEventSchema,
   SelectChangedEventSchema,
   FormSubmittedEventSchema,
-  AssertedEventSchema,
+  AssertEventSchema,
 ])
 
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
@@ -113,6 +113,6 @@ export type CheckChangedEvent = z.infer<typeof CheckChangedEventSchema>
 export type RadioChangedEvent = z.infer<typeof RadioChangedEventSchema>
 export type SelectChangedEvent = z.infer<typeof SelectChangedEventSchema>
 export type FormSubmittedEvent = z.infer<typeof FormSubmittedEventSchema>
-export type AssertedEvent = z.infer<typeof AssertedEventSchema>
+export type AssertEvent = z.infer<typeof AssertEventSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>
