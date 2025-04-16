@@ -1,26 +1,35 @@
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
-import { EmptyMessage } from '@/components/EmptyMessage'
+import { emitScript } from '@/codegen/browser'
+import { convertToTest } from '@/codegen/browser/test'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
-import { Details } from '@/components/WebLogView/Details'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
+import { useSettings } from '@/hooks/useSettings'
 import { getRoutePath } from '@/routeMap'
+import { BrowserEvent } from '@/schemas/recording'
+import { useToast } from '@/store/ui/useToast'
 import { ProxyData, StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
-import { RequestsSection } from '@/views/Recorder/RequestsSection'
+
+import { RecordingInspector } from '../Recorder/RecordingInspector'
+import { RequestLog } from '../Recorder/RequestLog'
 
 export function RecordingPreviewer() {
+  const { data: settings } = useSettings()
+
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
+
+  const showToast = useToast()
+
+  const [isLoading, setIsLoading] = useState(true)
   const { fileName } = useParams()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
@@ -47,10 +56,12 @@ export function RecordingPreviewer() {
       invariant(har, 'Failed to open file')
 
       setProxyData(harToProxyData(har))
+      setBrowserEvents(har.log._browserEvents ?? [])
     })()
 
     return () => {
       setProxyData([])
+      setBrowserEvents([])
     }
   }, [fileName, navigate])
 
@@ -66,6 +77,30 @@ export function RecordingPreviewer() {
   const handleDiscard = async () => {
     await window.studio.ui.deleteFile(file)
     navigate(getRoutePath('recorder'))
+  }
+
+  const handleExportBrowserScript = (fileName: string) => {
+    const test = convertToTest({
+      browserEvents,
+    })
+
+    emitScript(test)
+      .then((script) => window.studio.script.saveScript(script, fileName))
+      .then(() => {
+        navigate(
+          getRoutePath('validator', {
+            fileName: encodeURIComponent(fileName),
+          })
+        )
+      })
+      .catch((err) => {
+        console.error(err)
+
+        showToast({
+          title: 'Failed to export browser script.',
+          status: 'error',
+        })
+      })
   }
 
   return (
@@ -103,25 +138,18 @@ export function RecordingPreviewer() {
         </>
       }
     >
-      <Allotment defaultSizes={[1, 1]}>
-        <Allotment.Pane>
-          <RequestsSection
-            groups={groups}
-            proxyData={proxyData}
-            noDataElement={<EmptyMessage message="The recording is empty" />}
-            selectedRequestId={selectedRequest?.id}
-            onSelectRequest={setSelectedRequest}
-          />
-        </Allotment.Pane>
-        {selectedRequest !== null && (
-          <Allotment.Pane minSize={300}>
-            <Details
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
-          </Allotment.Pane>
-        )}
-      </Allotment>
+      {!isLoading && settings?.recorder.enableBrowserRecorder && (
+        <RecordingInspector
+          groups={groups}
+          requests={proxyData}
+          browserEvents={browserEvents}
+          onExportBrowserScript={handleExportBrowserScript}
+        />
+      )}
+
+      {!isLoading && !settings?.recorder.enableBrowserRecorder && (
+        <RequestLog groups={groups} requests={proxyData} />
+      )}
     </View>
   )
 }
