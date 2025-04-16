@@ -92,14 +92,14 @@ export function EventDescription({
         </>
       )
 
-    case 'asserted-text':
+    case 'asserted':
       return (
         <>
           Assert that{' '}
           <Selector selector={event.selector} onHighlight={onHighlight} />{' '}
           contains the text{' '}
-          <Tooltip asChild content={event.operation.value}>
-            <em>{`"${event.operation.value}"`}</em>
+          <Tooltip asChild content={event.assertion.operation.value}>
+            <em>{`"${event.assertion.operation.value}"`}</em>
           </Tooltip>
         </>
       )

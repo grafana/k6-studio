@@ -164,13 +164,13 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'asserted-text':
+      case 'asserted':
         return {
           type: 'assert',
           nodeId: event.eventId,
           operation: {
             type: 'text-contains',
-            value: event.operation.value,
+            value: event.assertion.operation.value,
           },
           inputs: {
             previous,

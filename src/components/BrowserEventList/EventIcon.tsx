@@ -44,7 +44,7 @@ export function EventIcon({ event }: EventIconProps) {
     case 'form-submitted':
       return <ReaderIcon />
 
-    case 'asserted-text':
+    case 'asserted':
       return <EyeOpenIcon />
 
     default:
