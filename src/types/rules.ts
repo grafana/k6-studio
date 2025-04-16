@@ -29,8 +29,7 @@ interface BaseRuleState {
   matchedRequestIds: string[]
 }
 
-// TODO: better name?
-interface RequestsReplaced {
+interface RequestSnapshot {
   id: string
   original: Request
   replaced: Request
@@ -41,7 +40,7 @@ export interface CorrelationState extends BaseRuleState {
   count: number
   responsesExtracted: ProxyData[]
   generatedUniqueId: number | undefined
-  requestsReplaced: RequestsReplaced[]
+  requestSnapshots: RequestSnapshot[]
 }
 
 export interface BaseRuleInstance<T extends TestRule, S = BaseRuleState> {
@@ -60,7 +59,7 @@ export type CorrelationRuleInstance = BaseRuleInstance<
 export interface ParameterizationState extends BaseRuleState {
   uniqueId: number
   snippetInjected: boolean
-  requestsReplaced: RequestsReplaced[]
+  requestSnapshots: RequestSnapshot[]
 }
 
 export type ParameterizationRuleInstance = BaseRuleInstance<

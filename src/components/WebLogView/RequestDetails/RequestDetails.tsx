@@ -37,7 +37,6 @@ export function RequestDetails({ data }: RequestDetailsProps) {
     () => data?.matches?.filter((match) => match?.key?.startsWith('request.')),
     [data.matches]
   )
-  console.log('requestMatches', requestMatches)
 
   return (
     <Tabs.Root value={tab} onValueChange={setTab}>

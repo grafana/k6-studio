@@ -146,11 +146,11 @@ describe('applyParameterization', () => {
 
     ruleInstance.apply(requestSnippet)
 
-    expect(ruleInstance.state.requestsReplaced[0]?.original).toStrictEqual(
+    expect(ruleInstance.state.requestSnapshots[0]?.original).toStrictEqual(
       requestSnippet.data.request
     )
 
-    expect(ruleInstance.state.requestsReplaced[0]?.replaced).toStrictEqual({
+    expect(ruleInstance.state.requestSnapshots[0]?.replaced).toStrictEqual({
       ...requestSnippet.data.request,
       content: '{"user_id":"TEST_ID"}',
     })

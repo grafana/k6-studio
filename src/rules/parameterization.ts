@@ -15,7 +15,7 @@ export function createParameterizationRuleInstance(
   idGenerator: Generator<number, number, number>
 ): ParameterizationRuleInstance {
   const state: ParameterizationState = {
-    requestsReplaced: [],
+    requestSnapshots: [],
     uniqueId: idGenerator.next().value,
     snippetInjected: false,
 
@@ -23,8 +23,8 @@ export function createParameterizationRuleInstance(
   }
 
   function addReplacedRequests(original: ProxyData, replaced: Request) {
-    state.requestsReplaced = [
-      ...state.requestsReplaced,
+    state.requestSnapshots = [
+      ...state.requestSnapshots,
       {
         id: original.id,
         original: original.request,

@@ -17,9 +17,9 @@ export function useHighlightRequestChanges(
   function getOriginalRequest(id: string) {
     if (
       selectedRuleInstance &&
-      'requestsReplaced' in selectedRuleInstance.state
+      'requestSnapshots' in selectedRuleInstance.state
     ) {
-      return selectedRuleInstance?.state.requestsReplaced.find(
+      return selectedRuleInstance?.state.requestSnapshots.find(
         (request) => request.id === id
       )?.original
     }

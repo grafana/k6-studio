@@ -96,10 +96,10 @@ export function RequestList({
           </Callout.Icon>
           <Callout.Text>
             <Heading size="2" mb="2">
-              Request snapshot
+              Recording snapshot
             </Heading>
             <Text>
-              You are viewing a snapshot of the request before any subsequent
+              You are viewing a snapshot of the requests before any subsequent
               rules were applied. Only changes introduced by the{' '}
               <Strong>selected rule</Strong> are highlighted.
             </Text>

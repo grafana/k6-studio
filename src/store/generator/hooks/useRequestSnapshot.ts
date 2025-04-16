@@ -7,7 +7,7 @@ export function useRequestSnapshot(id?: string) {
   const { selectedRuleInstance } = useApplyRules()
   const requests = useGeneratorStore(selectFilteredRequests)
 
-  // TODO: Would be nice to make it non-option here
+  // TODO: remove condition of possible
   if (!id) {
     return
   }
@@ -15,9 +15,9 @@ export function useRequestSnapshot(id?: string) {
   // Try to find sanpshot of the request before selected rule was applied
   if (
     selectedRuleInstance &&
-    'requestsReplaced' in selectedRuleInstance.state
+    'requestSnapshots' in selectedRuleInstance.state
   ) {
-    return selectedRuleInstance?.state.requestsReplaced.find(
+    return selectedRuleInstance?.state.requestSnapshots.find(
       (request) => request.id === id
     )?.original
   }
