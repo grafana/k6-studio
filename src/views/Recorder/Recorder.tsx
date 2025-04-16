@@ -253,7 +253,7 @@ export function Recorder() {
           onStopRecording={handleConfirmNavigation}
         />
         <Feature feature="floating-recording-controls">
-          <RecordingControlWindow isOpen={recorderState === 'recording'} />
+          <RecordingControlWindow state={recorderState} />
         </Feature>
       </View>
     </RecordingContext>

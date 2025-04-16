@@ -5,15 +5,16 @@ import {
   StopIcon,
 } from '@radix-ui/react-icons'
 import { BrowserWindowConstructorOptions } from 'electron'
+import { useEffect, useState } from 'react'
 
 import { stopRecording } from '@/views/Recorder/Recorder.utils'
+import { RecorderState } from '@/views/Recorder/types'
 
 import { SubWindow } from './SubWindow'
 import { Button } from './primitives/Button'
 
 interface RecordingControlWindowProps {
-  isOpen: boolean
-  onClose?: () => void
+  state: RecorderState
 }
 
 const windowOptions: BrowserWindowConstructorOptions = {
@@ -29,20 +30,28 @@ const windowOptions: BrowserWindowConstructorOptions = {
   useContentSize: true,
 }
 
-export function RecordingControlWindow({
-  isOpen,
-  onClose,
-}: RecordingControlWindowProps) {
-  if (!isOpen) {
-    return null
-  }
+export function RecordingControlWindow({ state }: RecordingControlWindowProps) {
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleStopRecording = () => {
     stopRecording()
   }
 
+  const handleClose = () => {
+    setIsOpen(false)
+  }
+
+  useEffect(() => {
+    console.log('RecordingControlWindow state', state)
+    setIsOpen(state === 'recording')
+  }, [state])
+
+  if (!isOpen) {
+    return null
+  }
+
   return (
-    <SubWindow options={windowOptions} onClose={onClose}>
+    <SubWindow options={windowOptions} onClose={handleClose}>
       <div
         css={css`
           box-sizing: border-box;
@@ -91,7 +100,7 @@ export function RecordingControlWindow({
         <Button size="1" onClick={handleStopRecording}>
           <StopIcon /> Stop
         </Button>
-        <Button size="1" onClick={onClose}>
+        <Button size="1" onClick={handleClose}>
           <MinusCircledIcon /> Close
         </Button>
         <div

@@ -25,7 +25,6 @@ export function SubWindow({
 
   useEffect(() => {
     return () => {
-      console.log('CLEANUP SUBWINDOW', subWindow)
       if (subWindow) {
         subWindow.close()
       }
