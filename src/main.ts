@@ -700,8 +700,6 @@ function attachWindowOpenHandler(window: BrowserWindow) {
     })
 
     if (url !== 'about:blank') {
-      // Open external links in the default browser
-      // shell.openExternal(url)
       return { action: 'deny' }
     }
 
