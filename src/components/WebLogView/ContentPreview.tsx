@@ -1,5 +1,6 @@
 import { Flex, SegmentedControl, Box, ScrollArea } from '@radix-ui/themes'
 import { useState, useEffect } from 'react'
+import { useEffectOnce } from 'react-use'
 
 import { DiffEditor } from '../Monaco/DiffEditor'
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
@@ -32,6 +33,12 @@ export function ContentPreview({
     setSelectedTab('content')
   }, [format])
 
+  useEffectOnce(() => {
+    if (originalContent && originalContent !== content && !searchString) {
+      setSelectedTab('diff')
+    }
+  })
+
   if (isMedia(format)) {
     return (
       <Box height="100%">
@@ -58,7 +65,9 @@ export function ContentPreview({
             </SegmentedControl.Item>
           )}
 
-          <SegmentedControl.Item value="diff">Diff</SegmentedControl.Item>
+          {originalContent !== undefined && (
+            <SegmentedControl.Item value="diff">Diff</SegmentedControl.Item>
+          )}
         </SegmentedControl.Root>
       </Flex>
       <Box flexGrow="1">

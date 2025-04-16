@@ -2,15 +2,45 @@ import { diffWords } from 'diff'
 
 import { Header, ProxyDataWithMatches } from '@/types'
 import { SearchMatch } from '@/types/fuse'
+import { RuleInstance } from '@/types/rules'
 import { diffChangesToFuseIndices } from '@/utils/diff'
 
-import { useRequestSnapshot } from './useRequestSnapshot'
+import { selectFilteredRequests, useGeneratorStore } from '..'
 
 export function useHighlightRequestChanges(
-  data: ProxyDataWithMatches | null
-): ProxyDataWithMatches | null {
-  const originalRequest = useRequestSnapshot(data?.id)
+  requests: ProxyDataWithMatches[],
+  selectedRuleInstance: RuleInstance | undefined
+): ProxyDataWithMatches[] {
+  const originalRequests = useGeneratorStore(selectFilteredRequests)
 
+  // TODO: refactor, useRequestSnapshot has similar logic
+  function getOriginalRequest(id: string) {
+    if (
+      selectedRuleInstance &&
+      'requestsReplaced' in selectedRuleInstance.state
+    ) {
+      return selectedRuleInstance?.state.requestsReplaced.find(
+        (request) => request.id === id
+      )?.original
+    }
+    return originalRequests.find((request) => request.id === id)?.request
+  }
+
+  return requests.map((data) => {
+    const originalRequest = getOriginalRequest(data.id)
+
+    if (!originalRequest) {
+      return data
+    }
+
+    return addHighlights(originalRequest, data)
+  })
+}
+
+function addHighlights(
+  originalRequest: ProxyDataWithMatches['request'],
+  data: ProxyDataWithMatches
+) {
   // Don't overwrite search matches when present
   if (data?.matches && data?.matches.length > 0) {
     return data
@@ -22,26 +52,37 @@ export function useHighlightRequestChanges(
     return data
   }
 
-  const requestHeaderMatches = getHeaderMatches(
+  const requestHeaderMatches = getHeaderHighlights(
     originalRequest.headers,
     modified.headers,
-    'request.headers'
+    'request.header.value'
   )
 
-  const urlMatches = getDiffHighlights(
+  const urlMatches = getStringHighlights(
     originalRequest.url,
     modified.url,
     'request.url'
   )
 
+  const pathMatches = getStringHighlights(
+    originalRequest.path,
+    modified.path,
+    'request.path'
+  )
+
+  const hostMatches = getStringHighlights(
+    originalRequest.host,
+    modified.host,
+    'request.host'
+  )
+
   return {
     ...data,
-    matches: [...requestHeaderMatches, urlMatches],
+    matches: [...requestHeaderMatches, urlMatches, pathMatches, hostMatches],
   }
 }
 
-// TODO: naming
-function getDiffHighlights(original: string, modified: string, key: string) {
+function getStringHighlights(original: string, modified: string, key: string) {
   const diff = diffWords(original, modified)
 
   return {
@@ -52,8 +93,7 @@ function getDiffHighlights(original: string, modified: string, key: string) {
   }
 }
 
-// TODO: naming
-function getHeaderMatches(
+function getHeaderHighlights(
   originalHeaders: Header[],
   headers: Header[],
   key: string
@@ -62,6 +102,6 @@ function getHeaderMatches(
     const originalValue = originalHeaders[index]?.[1]
     const value = header[1]
 
-    return getDiffHighlights(originalValue ?? '', value, key)
+    return getStringHighlights(originalValue ?? '', value, key)
   })
 }

@@ -29,8 +29,8 @@ import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 export function Generator() {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-  const selectedRequestWithHighlights =
-    useHighlightRequestChanges(selectedRequest)
+  // const selectedRequestWithHighlights =
+  // useHighlightRequestChanges(selectedRequest)
 
   const showToast = useToast()
   const navigate = useNavigate()
@@ -183,7 +183,7 @@ export function Generator() {
 
         <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
           <Details
-            selectedRequest={selectedRequestWithHighlights}
+            selectedRequest={selectedRequest}
             onSelectRequest={setSelectedRequest}
           />
         </Allotment.Pane>
