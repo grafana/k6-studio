@@ -6,6 +6,8 @@ import { createPortal } from 'react-dom'
 
 import { globalStyles } from '@/globalStyles'
 
+import { Theme } from '../primitives/Theme'
+
 interface SubWindowProps {
   options: BrowserWindowConstructorOptions
   onClose?: () => void
@@ -23,6 +25,7 @@ export function SubWindow({
 
   useEffect(() => {
     return () => {
+      console.log('CLEANUP SUBWINDOW', subWindow)
       if (subWindow) {
         subWindow.close()
       }
@@ -51,6 +54,7 @@ export function SubWindow({
   return createPortal(
     <CacheProvider value={subWindowCache}>
       <Global styles={globalStyles} />
+      <Theme root={true} includeColors />
       {children}
     </CacheProvider>,
     subWindow.document.body

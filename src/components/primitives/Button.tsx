@@ -2,6 +2,9 @@ import { css } from '@emotion/react'
 import { ComponentProps, forwardRef } from 'react'
 
 const styles = css`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--studio-spacing-2);
   border: none;
   border-radius: 4px;
   font-size: var(--studio-font-size-2);

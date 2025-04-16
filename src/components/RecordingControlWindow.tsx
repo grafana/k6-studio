@@ -1,11 +1,15 @@
 import { css } from '@emotion/react'
-import { StopIcon } from '@radix-ui/react-icons'
-import { Button, Heading } from '@radix-ui/themes'
+import {
+  DragHandleDots2Icon,
+  MinusCircledIcon,
+  StopIcon,
+} from '@radix-ui/react-icons'
 import { BrowserWindowConstructorOptions } from 'electron'
 
 import { stopRecording } from '@/views/Recorder/Recorder.utils'
 
 import { SubWindow } from './SubWindow'
+import { Button } from './primitives/Button'
 
 interface RecordingControlWindowProps {
   isOpen: boolean
@@ -13,8 +17,8 @@ interface RecordingControlWindowProps {
 }
 
 const windowOptions: BrowserWindowConstructorOptions = {
-  width: 380,
-  height: 88,
+  width: 320,
+  height: 32,
   alwaysOnTop: true,
   resizable: false,
   fullscreenable: false,
@@ -22,6 +26,7 @@ const windowOptions: BrowserWindowConstructorOptions = {
   maximizable: false,
   frame: false,
   title: 'Recording toolbar',
+  useContentSize: true,
 }
 
 export function RecordingControlWindow({
@@ -40,42 +45,64 @@ export function RecordingControlWindow({
     <SubWindow options={windowOptions} onClose={onClose}>
       <div
         css={css`
+          box-sizing: border-box;
+          height: 100%;
           display: flex;
-          flex-direction: column;
-          gap: 8px;
-          padding: 8px;
+          align-items: center;
           user-select: none;
+          gap: 8px;
+          padding: 4px 8px;
         `}
       >
-        <Heading
+        <div
           css={css`
-            margin: 0;
-            font-size: 16px;
-            font-weight: 500;
             app-region: drag;
+            font-size: var(--studio-font-size-1);
+
+            &:before {
+              content: '';
+              display: inline-block;
+              width: 8px;
+              height: 8px;
+              margin-right: 4px;
+              background-color: #f00;
+              border-radius: 50%;
+              animation: pulse 2s ease-in-out infinite;
+
+              @keyframes pulse {
+                0% {
+                  transform: scale(1);
+                  opacity: 1;
+                }
+                50% {
+                  transform: scale(1.2);
+                  opacity: 0.5;
+                }
+                100% {
+                  transform: scale(1);
+                  opacity: 1;
+                }
+              }
+            }
           `}
         >
-          You{"'"}re recording with Grafana k6 Studio
-        </Heading>
-        <Button
-          onClick={handleStopRecording}
-          css={css`
-            display: flex;
-            gap: 8px;
-            width: 100%;
-            justify-content: center;
-            align-items: center;
-          `}
-        >
-          <StopIcon /> Stop recording
+          Recording
+        </div>
+        <Button size="1" onClick={handleStopRecording}>
+          <StopIcon /> Stop
+        </Button>
+        <Button size="1" onClick={onClose}>
+          <MinusCircledIcon /> Close
         </Button>
         <div
           css={css`
-            font-size: 10px;
+            app-region: drag;
+            display: flex;
+            justify-content: flex-end;
+            flex-grow: 1;
           `}
         >
-          Your interactions in the browser will be recorded until you stop the
-          recording
+          <DragHandleDots2Icon />
         </div>
       </div>
     </SubWindow>
