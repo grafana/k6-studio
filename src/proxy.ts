@@ -8,6 +8,7 @@ import path from 'path'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
 
+import { ProxyHandler } from './handlers/proxy/types'
 import { ProxyData } from './types'
 import { ProxySettings } from './types/settings'
 import { getPlatform, getArch, findOpenPort, sendToast } from './utils/electron'
@@ -88,7 +89,7 @@ export const launchProxy = (
 
     const proxyData = safeJsonParse<ProxyData>(data)
     if (proxyData) {
-      browserWindow.webContents.send('proxy:data', proxyData)
+      browserWindow.webContents.send(ProxyHandler.Data, proxyData)
     } else {
       // the proxy outputs some errors to stdout
       // example: [Errno 48] HTTP(S) proxy failed to listen on *:6001
@@ -109,7 +110,7 @@ export const launchProxy = (
       return
     }
 
-    browserWindow.webContents.send('proxy:close', code)
+    browserWindow.webContents.send(ProxyHandler.Close, code)
     onFailure?.()
   })
 

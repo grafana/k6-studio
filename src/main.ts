@@ -35,6 +35,7 @@ import {
   TEMP_SCRIPT_SUFFIX,
 } from './constants/workspace'
 import * as handlers from './handlers'
+import { ProxyHandler } from './handlers/proxy/types'
 import * as mainState from './k6StudioState'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { configureApplicationMenu } from './menu'
@@ -204,7 +205,7 @@ const createWindow = async () => {
 
   k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
     k6StudioState.proxyStatus = status
-    mainWindow.webContents.send('proxy:status:change', status)
+    mainWindow.webContents.send(ProxyHandler.ChangeStatus, status)
   })
 
   // Start proxy

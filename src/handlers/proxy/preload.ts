@@ -4,22 +4,24 @@ import { ProxyData, ProxyStatus } from '@/types'
 
 import { createListener } from '../utils'
 
+import { ProxyHandler } from './types'
+
 export function launchProxy() {
-  return ipcRenderer.invoke('proxy:start') as Promise<void>
+  return ipcRenderer.invoke(ProxyHandler.Start) as Promise<void>
 }
 
 export function stopProxy() {
-  ipcRenderer.send('proxy:stop')
+  ipcRenderer.send(ProxyHandler.Stop)
 }
 
 export function onProxyData(callback: (data: ProxyData) => void) {
-  return createListener('proxy:data', callback)
+  return createListener(ProxyHandler.Data, callback)
 }
 
 export function getProxyStatus() {
-  return ipcRenderer.invoke('proxy:status:get') as Promise<ProxyStatus>
+  return ipcRenderer.invoke(ProxyHandler.GetStatus) as Promise<ProxyStatus>
 }
 
 export function onProxyStatusChange(callback: (status: ProxyStatus) => void) {
-  return createListener('proxy:status:change', callback)
+  return createListener(ProxyHandler.ChangeStatus, callback)
 }
