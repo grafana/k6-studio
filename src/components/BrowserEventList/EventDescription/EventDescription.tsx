@@ -92,7 +92,7 @@ export function EventDescription({
         </>
       )
 
-    case 'asserted':
+    case 'assert':
       return (
         <>
           Assert that{' '}

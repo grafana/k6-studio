@@ -164,7 +164,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'asserted':
+      case 'assert':
         return {
           type: 'assert',
           nodeId: event.eventId,

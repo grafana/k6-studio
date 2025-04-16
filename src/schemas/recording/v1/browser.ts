@@ -85,7 +85,7 @@ const TextAssertionSchema = z.object({
 const AssertionSchema = TextAssertionSchema
 
 const AssertedEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('asserted'),
+  type: z.literal('assert'),
   tab: z.string(),
   selector: ElementSelectorSchema,
   assertion: AssertionSchema,
