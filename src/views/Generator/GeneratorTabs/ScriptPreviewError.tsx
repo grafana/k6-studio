@@ -8,33 +8,35 @@ interface ScriptPreviewErrorProps {
 
 export function ScriptPreviewError({ error }: ScriptPreviewErrorProps) {
   return (
-    <Flex flexGrow="1" p="2" direction="column">
-      <Callout.Root color="amber" role="alert" variant="surface" size="1">
+    <Flex
+      direction="column"
+      gap="2"
+      p="2"
+      css={css`
+        position: absolute;
+        inset: 0;
+        background: var(--color-background);
+        z-index: 5;
+      `}
+    >
+      <Callout.Root role="alert" variant="soft" color="red" size="1">
         <Callout.Icon>
           <ExclamationTriangleIcon />
         </Callout.Icon>
         <Callout.Text>
-          Failed to generate script preview. Make sure your custom code snippets
-          do not contain syntax errors.
+          Script generation failed. Check your code snippets for errors.
         </Callout.Text>
       </Callout.Root>
 
-      <Flex
-        direction="column"
-        flexGrow="1"
-        mt="4"
-        css={css`
-          border-top: 1px solid var(--gray-7);
-        `}
-        asChild
-      >
+      <Flex direction="column" flexGrow="1" asChild>
         <ScrollArea scrollbars="vertical">
           <pre
             css={css`
-              font-size: 13px;
+              margin: 0;
+              font-size: 12px;
             `}
           >
-            {error.message}
+            {error.name}: {error.message}
           </pre>
         </ScrollArea>
       </Flex>

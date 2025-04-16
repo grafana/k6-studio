@@ -1,19 +1,17 @@
-import { GearIcon, PlusCircledIcon, StopIcon } from '@radix-ui/react-icons'
-import { Box, Button, Flex } from '@radix-ui/themes'
-import { Allotment } from 'allotment'
+import { GearIcon, StopIcon } from '@radix-ui/react-icons'
+import { Button } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { EmptyMessage } from '@/components/EmptyMessage'
 import { Feature } from '@/components/Feature'
 import { View } from '@/components/Layout/View'
 import { RecordingControlWindow } from '@/components/RecordingControlWindow'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
-import { Details } from '@/components/WebLogView/Details'
 import { DEFAULT_GROUP_NAME } from '@/constants'
+import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { useSettings } from '@/hooks/useSettings'
 import { getRoutePath } from '@/routeMap'
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
@@ -28,7 +26,9 @@ import {
   stopRecording,
   useDebouncedProxyData,
 } from './Recorder.utils'
-import { RequestsSection } from './RequestsSection'
+import { RecordingContext } from './RecordingContext'
+import { RecordingInspector } from './RecordingInspector'
+import { RequestLog } from './RequestLog'
 import { RecorderState } from './types'
 
 const INITIAL_GROUPS: Group[] = [
@@ -39,7 +39,8 @@ const INITIAL_GROUPS: Group[] = [
 ]
 
 export function Recorder() {
-  const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
+  const { data: settings } = useSettings()
+
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
   const openSettingsDialog = useStudioUIStore(
@@ -51,6 +52,8 @@ export function Recorder() {
   const { proxyData, resetProxyData } = useListenProxyData(group?.id)
   const [recorderState, setRecorderState] = useState<RecorderState>('idle')
   const showToast = useToast()
+
+  const browserEvents = useListenBrowserEvent()
 
   // Debounce the proxy data to avoid disappearing static asset requests
   // when recording
@@ -111,7 +114,7 @@ export function Recorder() {
         }
       })
 
-      const har = proxyDataToHar(grouped)
+      const har = proxyDataToHar(grouped, browserEvents)
       const prefix = getHostNameFromURL(startUrl) ?? 'Recording'
       const fileName = await window.studio.har.saveFile(har, prefix)
 
@@ -119,7 +122,7 @@ export function Recorder() {
     } finally {
       setRecorderState('idle')
     }
-  }, [groups, proxyData, startUrl])
+  }, [groups, proxyData, startUrl, browserEvents])
 
   function handleStopRecording() {
     stopRecording()
@@ -195,85 +198,65 @@ export function Recorder() {
     })
   }, [validateAndSaveHarFile, showToast, navigate])
 
-  const noDataElement = useMemo(() => {
-    if (recorderState === 'idle') {
-      return <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
-    }
-
-    if (recorderState === 'starting') {
-      return <EmptyMessage message="Requests will appear here" />
-    }
-  }, [recorderState, isLoading, handleStartRecording])
-
   return (
-    <View
-      title="Recorder"
-      actions={
-        recorderState !== 'idle' && (
-          <>
-            {isLoading && <TextSpinner text="Starting" />}
-            <Button
-              disabled={isLoading}
-              color="red"
-              onClick={handleStopRecording}
-            >
-              <StopIcon /> Stop recording
-            </Button>
-          </>
-        )
-      }
-    >
-      <Allotment defaultSizes={[1, 1]}>
-        <Allotment.Pane minSize={200}>
-          <Flex direction="column" height="100%">
-            <div css={{ flexGrow: 0, minHeight: 0 }}>
-              <RequestsSection
-                proxyData={debouncedProxyData}
-                noDataElement={noDataElement}
-                selectedRequestId={selectedRequest?.id}
-                autoScroll
-                groups={groups}
-                onSelectRequest={setSelectedRequest}
-                onUpdateGroup={handleUpdateGroup}
-                resetProxyData={handleResetRecording}
-              />
-            </div>
-            {recorderState === 'recording' && (
-              <Box width="200px" p="2">
-                <ButtonWithTooltip
-                  size="2"
-                  variant="ghost"
-                  ml="2"
-                  onClick={() => handleCreateGroup(`Group ${groups.length}`)}
-                  tooltip="Groups are used to organize specific steps in your recording. After you create a group, any further requests will be added to it."
-                >
-                  <PlusCircledIcon />
-                  Create group
-                </ButtonWithTooltip>
-              </Box>
-            )}
-          </Flex>
-        </Allotment.Pane>
-        {selectedRequest !== null && (
-          <Allotment.Pane minSize={300}>
-            <Details
-              selectedRequest={selectedRequest}
-              onSelectRequest={setSelectedRequest}
-            />
-          </Allotment.Pane>
+    <RecordingContext recording>
+      <View
+        title="Recorder"
+        actions={
+          recorderState !== 'idle' && (
+            <>
+              {isLoading && <TextSpinner text="Starting" />}
+              <Button
+                disabled={isLoading}
+                color="red"
+                onClick={handleStopRecording}
+              >
+                <StopIcon /> Stop recording
+              </Button>
+            </>
+          )
+        }
+      >
+        {recorderState === 'idle' && (
+          <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
         )}
-      </Allotment>
 
-      <ConfirmNavigationDialog
-        open={blocker.state === 'blocked'}
-        state={recorderState}
-        onCancel={handleCancelNavigation}
-        onStopRecording={handleConfirmNavigation}
-      />
-      <Feature feature="floating-recording-controls">
-        <RecordingControlWindow isOpen={recorderState === 'recording'} />
-      </Feature>
-    </View>
+        {recorderState !== 'idle' &&
+          settings?.recorder.enableBrowserRecorder && (
+            <RecordingInspector
+              recorderState={recorderState}
+              groups={groups}
+              requests={debouncedProxyData}
+              browserEvents={browserEvents}
+              onCreateGroup={handleCreateGroup}
+              onUpdateGroup={handleUpdateGroup}
+              onResetRecording={handleResetRecording}
+            />
+          )}
+
+        {recorderState !== 'idle' &&
+          !settings?.recorder.enableBrowserRecorder && (
+            <RequestLog
+              recorderState={recorderState}
+              groups={groups}
+              requests={debouncedProxyData}
+              onUpdateGroup={handleUpdateGroup}
+              onResetRecording={handleResetRecording}
+              onCreateGroup={handleCreateGroup}
+            />
+          )}
+
+        <ConfirmNavigationDialog
+          open={blocker.state === 'blocked'}
+          state={recorderState}
+          onCancel={handleCancelNavigation}
+          onStopRecording={handleConfirmNavigation}
+        />
+        <Feature feature="floating-recording-controls">
+          <RecordingControlWindow isOpen={recorderState === 'recording'} />
+        </Feature>
+      </View>
+    </RecordingContext>
   )
 }
 

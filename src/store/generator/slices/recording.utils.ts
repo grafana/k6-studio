@@ -6,6 +6,36 @@ export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
 }
 
+export function groupHostsByParty(hosts: string[]) {
+  return hosts.reduce(
+    (acc, host) => {
+      const key = isHostThirdParty(host) ? 'thirdParty' : 'firstParty'
+      return {
+        ...acc,
+        [key]: [...acc[key], host],
+      }
+    },
+    { firstParty: [], thirdParty: [] }
+  )
+}
+
+export function isHostThirdParty(host: string) {
+  const hostPatterns = [
+    '.google.com',
+    '.googleapis.com',
+    '.gstatic.com',
+    '.googleusercontent.com',
+    '.googleadservices.com',
+    '.doubleclick.net',
+    '.google-analytics.com',
+    '.googletagmanager.com',
+    '.googlesyndication.com',
+    '.googletagservices.com',
+    '.recaptcha.net',
+  ]
+  return hostPatterns.some((pattern) => host.includes(pattern))
+}
+
 export function shouldResetAllowList({
   requests,
   allowList,
