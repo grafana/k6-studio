@@ -1,4 +1,12 @@
-import { Flex, ScrollArea } from '@radix-ui/themes'
+import { InfoCircledIcon } from '@radix-ui/react-icons'
+import {
+  Callout,
+  Flex,
+  Heading,
+  ScrollArea,
+  Strong,
+  Text,
+} from '@radix-ui/themes'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { WebLogView } from '@/components/WebLogView'
@@ -28,6 +36,8 @@ export function RequestList({
   const previewOriginalRequests = useGeneratorStore(
     (state) => state.previewOriginalRequests
   )
+
+  const selectedRuleId = useGeneratorStore((state) => state.selectedRuleId)
 
   const { requestsWithRulesApplied, selectedRuleInstance } = useApplyRules()
 
@@ -68,7 +78,6 @@ export function RequestList({
     filteredRequests,
     selectedRuleInstance
   )
-  console.log('selectedRequest', selectedRequest)
 
   return (
     <Flex direction="column" height="100%">
@@ -79,6 +88,23 @@ export function RequestList({
           filterAllData={filterAllData}
           setFilterAllData={setFilterAllData}
         />
+      )}
+      {selectedRuleId && (
+        <Callout.Root size="1" color="green" css={{ borderRadius: '0' }}>
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          <Callout.Text>
+            <Heading size="2" mb="2">
+              Request snapshot
+            </Heading>
+            <Text>
+              You are viewing a snapshot of the request before any subsequent
+              rules were applied. Only changes introduced by the{' '}
+              <Strong>selected rule</Strong> are highlighted.
+            </Text>
+          </Callout.Text>
+        </Callout.Root>
       )}
 
       <ScrollArea scrollbars="vertical">
