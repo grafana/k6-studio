@@ -2,14 +2,14 @@ import { DataList, Flex } from '@radix-ui/themes'
 
 import { HighlightedText } from '@/components/HighlightedText'
 import { Request } from '@/types'
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
 export function QueryParams({
   request,
   matches,
 }: {
   request: Request
-  matches?: SearchMatch[]
+  matches?: Match[]
 }) {
   if (request.query.length === 0) {
     return (

@@ -1,14 +1,14 @@
 import { ReactNode, useMemo } from 'react'
 
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
 interface MatchSegment {
   match: boolean
   text: string
-  color?: SearchMatch['color']
+  color?: Match['color']
 }
 
-function longestMatchOnly(matches: SearchMatch[]): SearchMatch[] {
+function longestMatchOnly(matches: Match[]): Match[] {
   return matches.map((match) => {
     return {
       ...match,
@@ -19,7 +19,7 @@ function longestMatchOnly(matches: SearchMatch[]): SearchMatch[] {
   })
 }
 
-function splitByMatches(text: string, matches: SearchMatch[]) {
+function splitByMatches(text: string, matches: Match[]) {
   return matches.flatMap((match) => {
     const { indices, color } = match
 
@@ -53,7 +53,7 @@ function splitByMatches(text: string, matches: SearchMatch[]) {
 
 interface HighlightedTextProps {
   text: string
-  matches: SearchMatch[] | undefined
+  matches: Match[] | undefined
   highlightAllMatches?: boolean
 }
 
@@ -102,7 +102,7 @@ export function HighlightMark({
 }: {
   children: ReactNode
   className?: string
-  color?: SearchMatch['color']
+  color?: Match['color']
 }) {
   return (
     <mark

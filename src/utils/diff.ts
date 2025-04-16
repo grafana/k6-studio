@@ -1,12 +1,10 @@
 import { Change } from 'diff'
 
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
-export function diffChangesToFuseIndices(
-  diff: Change[]
-): SearchMatch['indices'] {
+export function diffChangesToFuseIndices(diff: Change[]): Match['indices'] {
   return diff.reduce<{
-    indices: SearchMatch['indices']
+    indices: Match['indices']
     start: number
   }>(
     (acc, part) => {

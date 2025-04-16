@@ -1,7 +1,7 @@
 import { diffWords } from 'diff'
 
 import { Header, ProxyDataWithMatches } from '@/types'
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 import { RuleInstance } from '@/types/rules'
 import { diffChangesToFuseIndices } from '@/utils/diff'
 
@@ -98,7 +98,7 @@ function getHeaderHighlights(
   headers: Header[],
   key: string
 ) {
-  return headers.map((header, index): SearchMatch => {
+  return headers.map((header, index): Match => {
     const originalValue = originalHeaders[index]?.[1]
     const value = header[1]
 
