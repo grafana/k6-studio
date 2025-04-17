@@ -19,12 +19,16 @@ import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
 import { isNodeJsErrnoException } from '@/utils/typescript'
 
+import { UIHandler } from './types'
+
 export function initialize() {
-  ipcMain.on('ui:toggle-theme', () => {
+  ipcMain.on(UIHandler.TOGGLE_THEME, () => {
+    console.info(`${UIHandler.TOGGLE_THEME} event received`)
     nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
   })
 
-  ipcMain.handle('ui:detect-browser', async () => {
+  ipcMain.handle(UIHandler.DETECT_BROWSER, async () => {
+    console.info(`${UIHandler.DETECT_BROWSER} event received`)
     try {
       const browserPath = await getBrowserPath()
       return browserPath !== ''
@@ -35,25 +39,27 @@ export function initialize() {
     return false
   })
 
-  ipcMain.handle('ui:delete-file', async (_, file: StudioFile) => {
-    console.info('ui:delete-file event received')
+  ipcMain.handle(UIHandler.DELETE_FILE, async (_, file: StudioFile) => {
+    console.info(`${UIHandler.DELETE_FILE} event received`)
 
     const filePath = getFilePath(file)
     return unlink(filePath)
   })
 
-  ipcMain.on('ui:open-folder', (_, file: StudioFile) => {
+  ipcMain.on(UIHandler.OPEN_FOLDER, (_, file: StudioFile) => {
+    console.info(`${UIHandler.OPEN_FOLDER} event received`)
     const filePath = getFilePath(file)
     return shell.showItemInFolder(filePath)
   })
 
-  ipcMain.handle('ui:open-file-in-default-app', (_, file: StudioFile) => {
+  ipcMain.handle(UIHandler.OPEN_FILE_IN_DEFAULT_APP, (_, file: StudioFile) => {
+    console.info(`${UIHandler.OPEN_FILE_IN_DEFAULT_APP} event received`)
     const filePath = getFilePath(file)
     return shell.openPath(filePath)
   })
 
-  ipcMain.handle('ui:get-files', async () => {
-    console.info('ui:get-files event received')
+  ipcMain.handle(UIHandler.GET_FILES, async () => {
+    console.info(`${UIHandler.GET_FILES} event received`)
     const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
       .filter((f) => f.isFile())
       .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
@@ -82,18 +88,20 @@ export function initialize() {
     }
   })
 
-  ipcMain.handle('ui:report-issue', () => {
+  ipcMain.handle(UIHandler.REPORT_ISSUE, () => {
+    console.info(`${UIHandler.REPORT_ISSUE} event received`)
     return reportNewIssue()
   })
 
   ipcMain.handle(
-    'ui:rename-file',
+    UIHandler.RENAME_FILE,
     async (
       e,
       oldFileName: string,
       newFileName: string,
       type: StudioFile['type']
     ) => {
+      console.info(`${UIHandler.RENAME_FILE} event received`)
       const browserWindow = BrowserWindow.fromWebContents(e.sender)
 
       try {

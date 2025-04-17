@@ -26,6 +26,7 @@ import {
 } from './constants/workspace'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
+import { UIHandler } from './handlers/ui/types'
 import * as mainState from './k6StudioState'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { getStudioFileFromPath } from './main/file'
@@ -440,7 +441,7 @@ function configureWatcher(browserWindow: BrowserWindow) {
       return
     }
 
-    browserWindow.webContents.send('ui:add-file', file)
+    browserWindow.webContents.send(UIHandler.ADD_FILE, file)
   })
 
   watcher.on('unlink', (filePath) => {
@@ -450,6 +451,6 @@ function configureWatcher(browserWindow: BrowserWindow) {
       return
     }
 
-    browserWindow.webContents.send('ui:remove-file', file)
+    browserWindow.webContents.send(UIHandler.REMOVE_FILE, file)
   })
 }
