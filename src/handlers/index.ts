@@ -1,5 +1,3 @@
-import { BrowserWindow } from 'electron'
-
 import { BrowserServer } from '@/services/browser/server'
 
 import * as auth from './auth'
@@ -12,7 +10,6 @@ import * as settings from './settings'
 
 interface Services {
   browserServer: BrowserServer
-  browserWindow: BrowserWindow
 }
 
 export function initialize({ browserServer }: Services) {

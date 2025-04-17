@@ -102,7 +102,9 @@ if (require('electron-squirrel-startup')) {
 }
 
 initializeLogger()
-
+handlers.initialize({
+  browserServer,
+})
 mainState.initialize()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
@@ -195,11 +197,6 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
     },
-  })
-
-  handlers.initialize({
-    browserWindow: mainWindow,
-    browserServer,
   })
 
   configureApplicationMenu()
