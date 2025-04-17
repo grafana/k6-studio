@@ -84,6 +84,9 @@ const ui = {
   onToast: (callback: (toast: AddToastPayload) => void) => {
     return createListener('ui:toast', callback)
   },
+  onCloseWindow: (callback: (id: string) => void) => {
+    return createListener('ui:close-window', callback)
+  },
 } as const
 
 const generator = {

@@ -4,7 +4,9 @@ import log from 'electron-log/renderer'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
+import { Feature } from '@/components/Feature'
 import { View } from '@/components/Layout/View'
+import { RecordingControlWindow } from '@/components/RecordingControlWindow'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
@@ -250,6 +252,9 @@ export function Recorder() {
           onCancel={handleCancelNavigation}
           onStopRecording={handleConfirmNavigation}
         />
+        <Feature feature="floating-recording-controls">
+          <RecordingControlWindow state={recorderState} />
+        </Feature>
       </View>
     </RecordingContext>
   )

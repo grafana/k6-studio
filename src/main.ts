@@ -200,6 +200,7 @@ const createWindow = async () => {
   })
 
   configureApplicationMenu()
+  attachWindowOpenHandler(mainWindow)
   configureWatcher(mainWindow)
   wasAppClosedByClient = false
 
@@ -681,6 +682,35 @@ function configureWatcher(browserWindow: BrowserWindow) {
     }
 
     browserWindow.webContents.send('ui:remove-file', file)
+  })
+}
+
+function attachWindowOpenHandler(window: BrowserWindow) {
+  window.webContents.setWindowOpenHandler(({ url, features }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { id, options } = JSON.parse(features)
+
+    app.on('browser-window-created', (_, subWindow) => {
+      subWindow.on('close', () => {
+        ipcMain.emit('ui:close-window', id)
+      })
+    })
+
+    if (url !== 'about:blank') {
+      return { action: 'deny' }
+    }
+
+    return {
+      action: 'allow',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      overrideBrowserWindowOptions: {
+        ...options,
+        webPreferences: {
+          contextIsolation: true,
+          nodeIntegration: false,
+        },
+      },
+    }
   })
 }
 
