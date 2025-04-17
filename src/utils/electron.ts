@@ -5,6 +5,8 @@ import path from 'path'
 
 import { AddToastPayload } from '@/types/toast'
 
+import { UIHandler } from '../handlers/ui/types'
+
 type Platform = 'linux' | 'mac' | 'win'
 type Arch = 'arm64' | 'x86_64'
 
@@ -44,7 +46,7 @@ export function getArch(): Arch {
  * Show a toast in React
  */
 export function sendToast(webContents: WebContents, toast: AddToastPayload) {
-  webContents.send('ui:toast', toast)
+  webContents.send(UIHandler.TOAST, toast)
 }
 
 export const findOpenPort = (startPort: number = 3000): Promise<number> => {

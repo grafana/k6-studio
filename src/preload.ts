@@ -10,19 +10,11 @@ import * as har from './handlers/har/preload'
 import * as proxy from './handlers/proxy/preload'
 import * as script from './handlers/script/preload'
 import * as settings from './handlers/settings/preload'
+import * as ui from './handlers/ui/preload'
 import { createListener } from './handlers/utils'
 import * as Sentry from './sentry'
-import { StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
 import { DataFilePreview } from './types/testData'
-import { AddToastPayload } from './types/toast'
-
-interface GetFilesResponse {
-  recordings: StudioFile[]
-  generators: StudioFile[]
-  scripts: StudioFile[]
-  dataFiles: StudioFile[]
-}
 
 const data = {
   importFile: (): Promise<string | undefined> => {
@@ -30,42 +22,6 @@ const data = {
   },
   loadPreview: (filePath: string): Promise<DataFilePreview> => {
     return ipcRenderer.invoke('data-file:load-preview', filePath)
-  },
-} as const
-
-const ui = {
-  toggleTheme: () => {
-    ipcRenderer.send('ui:toggle-theme')
-  },
-  detectBrowser: (): Promise<boolean> => {
-    return ipcRenderer.invoke('ui:detect-browser')
-  },
-  openContainingFolder: (file: StudioFile) => {
-    ipcRenderer.send('ui:open-folder', file)
-  },
-  openFileInDefaultApp: (file: StudioFile): Promise<string> => {
-    return ipcRenderer.invoke('ui:open-file-in-default-app', file)
-  },
-  deleteFile: (file: StudioFile): Promise<void> => {
-    return ipcRenderer.invoke('ui:delete-file', file)
-  },
-  getFiles: (): Promise<GetFilesResponse> => ipcRenderer.invoke('ui:get-files'),
-  renameFile: (
-    oldFileName: string,
-    newFileName: string,
-    type: StudioFile['type']
-  ): Promise<void> => {
-    return ipcRenderer.invoke('ui:rename-file', oldFileName, newFileName, type)
-  },
-  reportIssue: (): Promise<void> => ipcRenderer.invoke('ui:report-issue'),
-  onAddFile: (callback: (file: StudioFile) => void) => {
-    return createListener('ui:add-file', callback)
-  },
-  onRemoveFile: (callback: (file: StudioFile) => void) => {
-    return createListener('ui:remove-file', callback)
-  },
-  onToast: (callback: (toast: AddToastPayload) => void) => {
-    return createListener('ui:toast', callback)
   },
 } as const
 
