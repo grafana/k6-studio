@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: k6-studio
+  title: k6-studio
+  description: |
+    Desktop application for Mac, Windows and Linux designed to help you generate k6 test scripts
+  annotations:
+    github.com/project-slug: grafana/k6-studio
+spec:
+  type: tool
+  owner: group:default/k6-studio
+  lifecycle: production
