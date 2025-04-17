@@ -10,8 +10,11 @@ import { GeneratorFileData } from '@/types/generator'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { createNewGeneratorFile } from '@/utils/generator'
 
+import { GeneratorHandler } from './types'
+
 export function initialize() {
-  ipcMain.handle('generator:create', async (_, recordingPath: string) => {
+  ipcMain.handle(GeneratorHandler.Create, async (_, recordingPath: string) => {
+    console.log(`${GeneratorHandler.Create} event received`)
     const generator = createNewGeneratorFile(recordingPath)
     const fileName = await createFileWithUniqueName({
       data: JSON.stringify(generator, null, 2),
@@ -24,8 +27,9 @@ export function initialize() {
   })
 
   ipcMain.handle(
-    'generator:save',
+    GeneratorHandler.Save,
     async (_, generator: GeneratorFileData, fileName: string) => {
+      console.log(`${GeneratorHandler.Save} event received`)
       invariant(!INVALID_FILENAME_CHARS.test(fileName), 'Invalid file name')
 
       await writeFile(
@@ -36,8 +40,9 @@ export function initialize() {
   )
 
   ipcMain.handle(
-    'generator:open',
+    GeneratorHandler.Open,
     async (_, fileName: string): Promise<GeneratorFileData> => {
+      console.log(`${GeneratorHandler.Open} event received`)
       const data = await readFile(path.join(GENERATORS_PATH, fileName), {
         encoding: 'utf-8',
         flag: 'r',
