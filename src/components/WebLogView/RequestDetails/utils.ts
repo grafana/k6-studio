@@ -35,7 +35,11 @@ export function parseParams(data: ProxyData) {
     return stringify(
       // TODO: https://github.com/grafana/k6-studio/issues/277
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      JSON.parse(jsonrepair(parsePythonByteString(contentDecoded)))
+      JSON.parse(
+        jsonrepair(
+          parsePythonByteString(wrapTemplateExpressionsInQuotes(contentDecoded))
+        )
+      )
     )
   } catch (e) {
     console.error('Failed to parse query parameters', e)
@@ -63,4 +67,13 @@ export function isJsonString(str: string) {
 
 export function getRawContent(content: string) {
   return content.replace(/\s+/g, '')
+}
+
+// When replacing number values in the payload, we need to wrap variable expressions
+// in quotes, otherwise JSON parse will fail
+function wrapTemplateExpressionsInQuotes(str: string) {
+  return str.replace(
+    /(:\s*)(\$\{[^}]+\})(?=[,}])/g,
+    (_, prefix, expr) => `${prefix}"${expr}"`
+  )
 }

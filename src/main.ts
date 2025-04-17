@@ -42,14 +42,8 @@ import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { configureApplicationMenu } from './menu'
 import { launchProxy, type ProxyProcess } from './proxy'
 import { GeneratorFileDataSchema } from './schemas/generator'
-import {
-  defaultSettings,
-  getSettings,
-  initSettings,
-  saveSettings,
-  selectBrowserExecutable,
-  selectUpstreamCertificate,
-} from './settings'
+import { BrowserServer } from './services/browser/server'
+import { getSettings, initSettings, saveSettings } from './settings'
 import { ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
 import { AppSettings } from './types/settings'
@@ -80,7 +74,7 @@ if (process.env.NODE_ENV !== 'development') {
 
     // conditionally send the event based on the user's settings
     beforeSend: (event) => {
-      if (appSettings.telemetry.errorReport) {
+      if (k6StudioState.appSettings.telemetry.errorReport) {
         return event
       }
       return null
@@ -96,10 +90,11 @@ let proxyRetryCount = 0
 let currentClientRoute = '/'
 let wasAppClosedByClient = false
 let wasProxyStoppedByClient = false
-export let appSettings = defaultSettings
 
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
+
+const browserServer = new BrowserServer()
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -107,8 +102,8 @@ if (require('electron-squirrel-startup')) {
 }
 
 initializeLogger()
+
 mainState.initialize()
-handlers.initialize()
 
 // Used to convert `.json` files into the appropriate file extension for the Generator
 async function migrateJsonGenerator() {
@@ -182,7 +177,7 @@ const createWindow = async () => {
   // clean leftover proxies if any, this might happen on windows
   await cleanUpProxies()
 
-  const { width, height, x, y } = appSettings.windowState
+  const { width, height, x, y } = k6StudioState.appSettings.windowState
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -200,6 +195,11 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
     },
+  })
+
+  handlers.initialize({
+    browserWindow: mainWindow,
+    browserServer,
   })
 
   configureApplicationMenu()
@@ -247,11 +247,11 @@ const createWindow = async () => {
 app.whenReady().then(
   async () => {
     await initSettings()
-    appSettings = await getSettings()
-    nativeTheme.themeSource = appSettings.appearance.theme
+    k6StudioState.appSettings = await getSettings()
+    nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
     await createSplashWindow()
 
-    await sendReport(appSettings.telemetry.usageReport)
+    await sendReport(k6StudioState.appSettings.telemetry.usageReport)
     await setupProjectStructure()
     await migrateJsonGenerator()
     await createWindow()
@@ -543,81 +543,47 @@ ipcMain.handle('log:read', () => {
   return getLogContent()
 })
 
-ipcMain.handle('settings:get', async () => {
-  console.info('settings:get event received')
-  return await getSettings()
-})
-
-ipcMain.handle('settings:save', async (event, data: AppSettings) => {
-  console.info('settings:save event received')
-
-  const browserWindow = browserWindowFromEvent(event)
-  try {
-    // don't pass fields that are not submitted by the form
-    const { windowState: _, ...settings } = data
-    const modifiedSettings = await saveSettings(settings)
-    await applySettings(modifiedSettings, browserWindow)
-
-    sendToast(browserWindow.webContents, {
-      title: 'Settings saved successfully',
-      status: 'success',
-    })
-    return true
-  } catch (error) {
-    log.error(error)
-    sendToast(browserWindow.webContents, {
-      title: 'Failed to save settings',
-      status: 'error',
-    })
-    return false
-  }
-})
-
-ipcMain.handle('settings:select-browser-executable', async () => {
-  return selectBrowserExecutable()
-})
-
-ipcMain.handle('settings:select-upstream-certificate', async () => {
-  return selectUpstreamCertificate()
-})
-
 ipcMain.handle('proxy:status:get', () => {
   console.info('proxy:status:get event received')
   return k6StudioState.proxyStatus
 })
 
-async function applySettings(
+// TODO: Move this function to settings.ts once proxy handlers are refactored
+// https://github.com/grafana/k6-studio/issues/378
+export async function applySettings(
   modifiedSettings: Partial<AppSettings>,
   browserWindow: BrowserWindow
 ) {
   if (modifiedSettings.proxy) {
     await stopProxyProcess()
-    appSettings.proxy = modifiedSettings.proxy
+    k6StudioState.appSettings.proxy = modifiedSettings.proxy
     currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
   }
   if (modifiedSettings.recorder) {
-    appSettings.recorder = modifiedSettings.recorder
+    k6StudioState.appSettings.recorder = modifiedSettings.recorder
   }
   if (modifiedSettings.telemetry) {
-    appSettings.telemetry = modifiedSettings.telemetry
+    k6StudioState.appSettings.telemetry = modifiedSettings.telemetry
   }
   if (modifiedSettings.appearance) {
-    appSettings.appearance = modifiedSettings.appearance
-    nativeTheme.themeSource = appSettings.appearance.theme
+    k6StudioState.appSettings.appearance = modifiedSettings.appearance
+    nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
   }
 }
 
 const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
-  const { port, automaticallyFindPort } = appSettings.proxy
+  const { port, automaticallyFindPort } = k6StudioState.appSettings.proxy
 
   const proxyPort = automaticallyFindPort ? await findOpenPort(port) : port
-  appSettings.proxy.port = proxyPort
+  k6StudioState.appSettings.proxy.port = proxyPort
 
-  console.log(`launching proxy ${JSON.stringify(appSettings.proxy)}`)
+  console.log(
+    `launching proxy ${JSON.stringify(k6StudioState.appSettings.proxy)}`
+  )
 
   k6StudioState.proxyEmitter.emit('status:change', 'starting')
 
-  return launchProxy(browserWindow, appSettings.proxy, {
+  return launchProxy(browserWindow, k6StudioState.appSettings.proxy, {
     onReady: () => {
       wasProxyStoppedByClient = false
       k6StudioState.proxyEmitter.emit('status:change', 'online')
@@ -666,7 +632,7 @@ const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
 }
 
 function showWindow(browserWindow: BrowserWindow) {
-  const { isMaximized } = appSettings.windowState
+  const { isMaximized } = k6StudioState.appSettings.windowState
   if (isMaximized) {
     browserWindow.maximize()
   } else {
@@ -678,7 +644,7 @@ function showWindow(browserWindow: BrowserWindow) {
 async function trackWindowState(browserWindow: BrowserWindow) {
   const { width, height, x, y } = browserWindow.getBounds()
   const isMaximized = browserWindow.isMaximized()
-  appSettings.windowState = {
+  k6StudioState.appSettings.windowState = {
     width,
     height,
     x,
@@ -686,7 +652,7 @@ async function trackWindowState(browserWindow: BrowserWindow) {
     isMaximized,
   }
   try {
-    await saveSettings(appSettings)
+    await saveSettings(k6StudioState.appSettings)
   } catch (error) {
     log.error(error)
   }

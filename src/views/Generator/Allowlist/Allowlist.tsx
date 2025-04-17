@@ -1,10 +1,13 @@
 import { GlobeIcon } from '@radix-ui/react-icons'
 import { Button, Dialog, Flex } from '@radix-ui/themes'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
 import { useGeneratorStore } from '@/store/generator'
-import { extractUniqueHosts } from '@/store/generator/slices/recording.utils'
+import {
+  extractUniqueHosts,
+  groupHostsByParty,
+} from '@/store/generator/slices/recording.utils'
 
 import { AllowlistDialog } from './AllowlistDialog'
 
@@ -30,7 +33,19 @@ export function Allowlist() {
     (store) => store.setIncludeStaticAssets
   )
 
-  const hosts = extractUniqueHosts(requests)
+  const { firstParty, thirdParty } = useMemo(() => {
+    const uniqueHosts = extractUniqueHosts(requests)
+    return groupHostsByParty(uniqueHosts)
+  }, [requests])
+
+  useEffect(() => {
+    // Using allowlist.length would require adding it as a dependency of useEffect.
+    // This causes an unintended behavior of automatically selecting the first item when the user unselects all checkboxes. (making it impossible to make allowlist empty).
+    const allowlistCount = useGeneratorStore.getState().allowlist.length
+    if (firstParty[0] !== undefined && allowlistCount === 0) {
+      setAllowlist([firstParty[0]])
+    }
+  }, [firstParty, setAllowlist])
 
   function handleOpenChange(open: boolean) {
     if (!open) {
@@ -43,6 +58,8 @@ export function Allowlist() {
   // Show dialog as popover when triggered from the button
   const Wrapper = openAsPopover ? PopoverWrapper : DialogWrapper
 
+  const allHosts = [...firstParty, ...thirdParty]
+
   const trigger = (
     <Button
       size="1"
@@ -51,7 +68,7 @@ export function Allowlist() {
       onClick={() => setOpenAsPopover(true)}
     >
       <GlobeIcon />
-      Allowed hosts [{allowlist.length}/{hosts.length}]
+      Allowed hosts [{allowlist.length}/{allHosts.length}]
     </Button>
   )
 
@@ -62,7 +79,8 @@ export function Allowlist() {
       onOpenChange={handleOpenChange}
     >
       <AllowlistDialog
-        hosts={hosts}
+        firstPartyHosts={firstParty}
+        thirdPartyHosts={thirdParty}
         allowlist={allowlist}
         requests={requests}
         includeStaticAssets={includeStaticAssets}

@@ -4,14 +4,15 @@ import { ipcRenderer, contextBridge } from 'electron'
 
 import * as auth from './handlers/auth/preload'
 import * as browser from './handlers/browser/preload'
+import * as browserRemote from './handlers/browserRemote/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as har from './handlers/har/preload'
 import * as script from './handlers/script/preload'
+import * as settings from './handlers/settings/preload'
 import { createListener } from './handlers/utils'
 import * as Sentry from './sentry'
 import { ProxyData, ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
-import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
 import { AddToastPayload } from './types/toast'
 
@@ -101,6 +102,7 @@ const generator = {
 } as const
 
 const app = {
+  platform: process.platform,
   closeSplashscreen: () => {
     ipcRenderer.send('splashscreen:close')
   },
@@ -127,21 +129,6 @@ const log = {
   },
 } as const
 
-const settings = {
-  getSettings: (): Promise<AppSettings> => {
-    return ipcRenderer.invoke('settings:get')
-  },
-  saveSettings: (settings: AppSettings): Promise<AppSettings> => {
-    return ipcRenderer.invoke('settings:save', settings)
-  },
-  selectBrowserExecutable: (): Promise<Electron.OpenDialogReturnValue> => {
-    return ipcRenderer.invoke('settings:select-browser-executable')
-  },
-  selectUpstreamCertificate: (): Promise<Electron.OpenDialogReturnValue> => {
-    return ipcRenderer.invoke('settings:select-upstream-certificate')
-  },
-}
-
 const studio = {
   auth,
   proxy,
@@ -154,6 +141,7 @@ const studio = {
   app,
   log,
   settings,
+  browserRemote,
   cloud,
 } as const
 

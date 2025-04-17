@@ -16,6 +16,7 @@ describe('Settings migration', () => {
       },
       recorder: {
         detectBrowserPath: true,
+        enableBrowserRecorder: true,
       },
       windowState: {
         width: 1200,
@@ -48,6 +49,7 @@ describe('Settings migration', () => {
       },
       recorder: {
         detectBrowserPath: true,
+        enableBrowserRecorder: true,
       },
       windowState: {
         width: 1200,

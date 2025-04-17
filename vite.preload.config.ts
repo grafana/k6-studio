@@ -1,6 +1,7 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig, mergeConfig } from 'vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { getBuildConfig, external, pluginHotRestart } from './vite.base.config'
 
@@ -27,6 +28,7 @@ export default defineConfig((env) => {
     },
     plugins: [
       pluginHotRestart('reload'),
+      tsconfigPaths(),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: process.env.SENTRY_ORG,
