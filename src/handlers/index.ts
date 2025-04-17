@@ -10,6 +10,7 @@ import * as har from './har'
 import * as proxy from './proxy'
 import * as script from './script'
 import * as settings from './settings'
+import * as ui from './ui'
 
 interface Services {
   browserServer: BrowserServer
@@ -25,4 +26,5 @@ export function initialize({ browserServer }: Services) {
   script.initialize()
   settings.initialize()
   proxy.initialize()
+  ui.initialize()
 }
