@@ -1,11 +1,11 @@
 import { Kbd } from '@/components/primitives/Kbd'
-import { ClickedEvent } from '@/schemas/recording'
+import { ClickEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
 
-function getModifierKeys(modifiers: ClickedEvent['modifiers']) {
+function getModifierKeys(modifiers: ClickEvent['modifiers']) {
   const keys = []
 
   if (modifiers.ctrl) {
@@ -27,7 +27,7 @@ function getModifierKeys(modifiers: ClickedEvent['modifiers']) {
   return keys
 }
 
-function getButtonDescription(event: ClickedEvent) {
+function getButtonDescription(event: ClickEvent) {
   switch (event.button) {
     case 'left':
       return 'Clicked'
@@ -44,7 +44,7 @@ function getButtonDescription(event: ClickedEvent) {
 }
 
 interface ClickDescriptionProps {
-  event: ClickedEvent
+  event: ClickEvent
   onHighlight: (selector: HighlightSelector | null) => void
 }
 

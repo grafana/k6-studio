@@ -6,7 +6,7 @@ import { exhaustive } from '@/utils/typescript'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { ClickDescription } from './ClickDescription'
-import { InputChangedDescription } from './InputChangedDescription'
+import { InputChangeDescription } from './InputChangeDescription'
 import { PageNavigationDescription } from './PageNavigationDescription'
 import { Selector } from './Selector'
 
@@ -47,19 +47,19 @@ export function EventDescription({
   onHighlight,
 }: EventDescriptionProps) {
   switch (event.type) {
-    case 'navigated-to-page':
+    case 'navigate-to-page':
       return <PageNavigationDescription event={event} onNavigate={onNavigate} />
 
-    case 'reloaded-page':
+    case 'reload-page':
       return <>Reloaded page</>
 
-    case 'clicked':
+    case 'click':
       return <ClickDescription event={event} onHighlight={onHighlight} />
 
-    case 'input-changed':
-      return <InputChangedDescription event={event} onHighlight={onHighlight} />
+    case 'input-change':
+      return <InputChangeDescription event={event} onHighlight={onHighlight} />
 
-    case 'check-changed':
+    case 'check-change':
       return (
         <>
           {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
@@ -67,7 +67,7 @@ export function EventDescription({
         </>
       )
 
-    case 'radio-changed':
+    case 'radio-change':
       return (
         <>
           Switched value of <strong>{event.name}</strong> to{' '}
@@ -76,7 +76,7 @@ export function EventDescription({
         </>
       )
 
-    case 'select-changed':
+    case 'select-change':
       return (
         <>
           Selected {formatOptions(event.selected)} from{' '}
@@ -84,7 +84,7 @@ export function EventDescription({
         </>
       )
 
-    case 'form-submitted':
+    case 'submit-form':
       return (
         <>
           Submitted form{' '}

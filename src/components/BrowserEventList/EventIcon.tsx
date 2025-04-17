@@ -20,28 +20,28 @@ interface EventIconProps {
 
 export function EventIcon({ event }: EventIconProps) {
   switch (event.type) {
-    case 'navigated-to-page':
+    case 'navigate-to-page':
       return <GlobeIcon />
 
-    case 'reloaded-page':
+    case 'reload-page':
       return <UpdateIcon />
 
-    case 'clicked':
+    case 'click':
       return <TargetIcon />
 
-    case 'input-changed':
+    case 'input-change':
       return <InputIcon />
 
-    case 'check-changed':
+    case 'check-change':
       return event.checked ? <CheckCircledIcon /> : <CircleIcon />
 
-    case 'radio-changed':
+    case 'radio-change':
       return <RadiobuttonIcon />
 
-    case 'select-changed':
+    case 'select-change':
       return <DropdownMenuIcon />
 
-    case 'form-submitted':
+    case 'submit-form':
       return <ReaderIcon />
 
     case 'assert':

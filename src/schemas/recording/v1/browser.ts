@@ -9,21 +9,21 @@ const BrowserEventBaseSchema = z.object({
   timestamp: z.number(),
 })
 
-const NavigatedToPageEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('navigated-to-page'),
+const NavigateToPageEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('navigate-to-page'),
   tab: z.string(),
   url: z.string(),
   source: z.union([z.literal('address-bar'), z.literal('history')]),
 })
 
-const ReloadedPageEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('reloaded-page'),
+const ReloadPageEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('reload-page'),
   tab: z.string(),
   url: z.string(),
 })
 
-const ClickedEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('clicked'),
+const ClickEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('click'),
   tab: z.string(),
   selector: ElementSelectorSchema,
   button: z.union([z.literal('left'), z.literal('middle'), z.literal('right')]),
@@ -35,39 +35,39 @@ const ClickedEventSchema = BrowserEventBaseSchema.extend({
   }),
 })
 
-const InputChangedEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('input-changed'),
+const InputChangeEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('input-change'),
   tab: z.string(),
   selector: ElementSelectorSchema,
   value: z.string(),
   sensitive: z.boolean(),
 })
 
-const CheckChangedEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('check-changed'),
+const CheckChangeEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('check-change'),
   tab: z.string(),
   selector: ElementSelectorSchema,
   checked: z.boolean(),
 })
 
-const RadioChangedEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('radio-changed'),
+const RadioChangeEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('radio-change'),
   tab: z.string(),
   selector: ElementSelectorSchema,
   name: z.string(),
   value: z.string(),
 })
 
-const SelectChangedEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('select-changed'),
+const SelectChangeEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('select-change'),
   tab: z.string(),
   selector: ElementSelectorSchema,
   selected: z.array(z.string()),
   multiple: z.boolean(),
 })
 
-const FormSubmittedEventSchema = BrowserEventBaseSchema.extend({
-  type: z.literal('form-submitted'),
+const SubmitFormEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('submit-form'),
   tab: z.string(),
   form: ElementSelectorSchema,
   submitter: ElementSelectorSchema,
@@ -92,27 +92,27 @@ const AssertEventSchema = BrowserEventBaseSchema.extend({
 })
 
 export const BrowserEventSchema = z.discriminatedUnion('type', [
-  NavigatedToPageEventSchema,
-  ReloadedPageEventSchema,
-  ClickedEventSchema,
-  InputChangedEventSchema,
-  CheckChangedEventSchema,
-  RadioChangedEventSchema,
-  SelectChangedEventSchema,
-  FormSubmittedEventSchema,
+  NavigateToPageEventSchema,
+  ReloadPageEventSchema,
+  ClickEventSchema,
+  InputChangeEventSchema,
+  CheckChangeEventSchema,
+  RadioChangeEventSchema,
+  SelectChangeEventSchema,
+  SubmitFormEventSchema,
   AssertEventSchema,
 ])
 
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 
-export type NavigatedToPageEvent = z.infer<typeof NavigatedToPageEventSchema>
-export type ReloadedPageEvent = z.infer<typeof ReloadedPageEventSchema>
-export type ClickedEvent = z.infer<typeof ClickedEventSchema>
-export type InputChangedEvent = z.infer<typeof InputChangedEventSchema>
-export type CheckChangedEvent = z.infer<typeof CheckChangedEventSchema>
-export type RadioChangedEvent = z.infer<typeof RadioChangedEventSchema>
-export type SelectChangedEvent = z.infer<typeof SelectChangedEventSchema>
-export type FormSubmittedEvent = z.infer<typeof FormSubmittedEventSchema>
+export type NavigateToPageEvent = z.infer<typeof NavigateToPageEventSchema>
+export type ReloadPageEvent = z.infer<typeof ReloadPageEventSchema>
+export type ClickEvent = z.infer<typeof ClickEventSchema>
+export type InputChangeEvent = z.infer<typeof InputChangeEventSchema>
+export type CheckChangeEvent = z.infer<typeof CheckChangeEventSchema>
+export type RadioChangeEvent = z.infer<typeof RadioChangeEventSchema>
+export type SelectChangeEvent = z.infer<typeof SelectChangeEventSchema>
+export type SubmitFormEvent = z.infer<typeof SubmitFormEventSchema>
 export type AssertEvent = z.infer<typeof AssertEventSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>
