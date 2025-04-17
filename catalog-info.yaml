@@ -6,7 +6,6 @@ metadata:
   description: |
     Desktop application for Mac, Windows and Linux designed to help you generate k6 test scripts
   annotations:
-    backstage.io/techdocs-ref: dir:./doc
     github.com/project-slug: grafana/k6-studio
 spec:
   type: tool
