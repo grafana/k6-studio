@@ -30,6 +30,8 @@ export function initialize() {
     currentProxyProcess: null,
     wasProxyStoppedByClient: false,
     proxyRetryCount: 0,
+
+    // Used mainly to avoid starting a new proxy when closing the active one on shutdown
     appShuttingDown: false,
   }
 }
