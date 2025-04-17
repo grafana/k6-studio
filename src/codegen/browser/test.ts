@@ -68,7 +68,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
 
   function toNode(event: BrowserEvent): TestNode | null {
     switch (event.type) {
-      case 'navigated-to-page':
+      case 'navigate-to-page':
         return {
           type: 'goto',
           nodeId: event.eventId,
@@ -79,7 +79,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'reloaded-page':
+      case 'reload-page':
         return {
           type: 'reload',
           nodeId: event.eventId,
@@ -89,7 +89,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'clicked': {
+      case 'click': {
         return {
           type: 'click',
           nodeId: event.eventId,
@@ -102,7 +102,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
       }
 
-      case 'input-changed':
+      case 'input-change':
         return {
           type: 'type-text',
           nodeId: event.eventId,
@@ -113,7 +113,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'check-changed':
+      case 'check-change':
         return {
           type: 'check',
           nodeId: event.eventId,
@@ -124,7 +124,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'radio-changed':
+      case 'radio-change':
         return {
           type: 'check',
           nodeId: event.eventId,
@@ -135,7 +135,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'select-changed':
+      case 'select-change':
         return {
           type: 'select-options',
           nodeId: event.eventId,
@@ -147,7 +147,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'form-submitted':
+      case 'submit-form':
         return {
           type: 'click',
           nodeId: event.eventId,
@@ -164,13 +164,13 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'asserted-text':
+      case 'assert':
         return {
           type: 'assert',
           nodeId: event.eventId,
           operation: {
             type: 'text-contains',
-            value: event.operation.value,
+            value: event.assertion.operation.value,
           },
           inputs: {
             previous,
