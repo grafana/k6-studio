@@ -36,6 +36,7 @@ export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
         <IconButton
           size="1"
           variant="ghost"
+          color="gray"
           onClick={() => onSelectRequest(null)}
         >
           <Cross2Icon />

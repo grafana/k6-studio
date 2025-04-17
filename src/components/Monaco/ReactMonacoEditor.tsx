@@ -7,31 +7,9 @@ import { useTheme } from '@/hooks/useTheme'
 
 import { EditorToolbar, ToolbarState } from './EditorToolbar'
 import { useHighlightSearch } from './ReactMonacoEditor.hooks'
+import { DEFAULT_OPTIONS } from './defaultOptions'
 
 loader.config({ monaco })
-
-const defaultOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
-  tabSize: 2,
-  codeLens: false,
-  contextmenu: false,
-  minimap: {
-    enabled: false,
-    renderCharacters: false,
-  },
-  language: 'javascript',
-  lineNumbersMinChars: 4,
-  overviewRulerBorder: false,
-  automaticLayout: true,
-  fixedOverflowWidgets: true,
-  scrollBeyondLastLine: false,
-  scrollbar: {
-    alwaysConsumeMouseWheel: true,
-    verticalSliderSize: 4,
-    horizontalSliderSize: 4,
-    verticalScrollbarSize: 12,
-    horizontalScrollbarSize: 12,
-  },
-}
 
 interface ReactMonacoEditorProps extends EditorProps {
   showToolbar?: boolean
@@ -90,7 +68,7 @@ export function ReactMonacoEditor({
       <Editor
         {...props}
         options={{
-          ...defaultOptions,
+          ...DEFAULT_OPTIONS,
           ...props.options,
           wordWrap: toolbarState.wordWrap,
         }}

@@ -1,11 +1,20 @@
-import { Flex, ScrollArea } from '@radix-ui/themes'
+import { InfoCircledIcon } from '@radix-ui/react-icons'
+import {
+  Callout,
+  Flex,
+  Heading,
+  ScrollArea,
+  Strong,
+  Text,
+} from '@radix-ui/themes'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { WebLogView } from '@/components/WebLogView'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useGeneratorStore } from '@/store/generator'
-import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { useApplyRules } from '@/store/generator/hooks/useApplyRules'
+import { useHighlightRequestChanges } from '@/store/generator/hooks/useHighlightRequestChanges'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyData } from '@/types'
 
@@ -27,6 +36,8 @@ export function RequestList({
   const previewOriginalRequests = useGeneratorStore(
     (state) => state.previewOriginalRequests
   )
+
+  const selectedRuleId = useGeneratorStore((state) => state.selectedRuleId)
 
   const { requestsWithRulesApplied, selectedRuleInstance } = useApplyRules()
 
@@ -63,6 +74,11 @@ export function RequestList({
     setShowAllowlistDialog,
   })
 
+  const requestWithHighlights = useHighlightRequestChanges(
+    filteredRequests,
+    selectedRuleInstance
+  )
+
   return (
     <Flex direction="column" height="100%">
       {!recordingError && (
@@ -72,6 +88,23 @@ export function RequestList({
           filterAllData={filterAllData}
           setFilterAllData={setFilterAllData}
         />
+      )}
+      {selectedRuleId && (
+        <Callout.Root size="1" color="green" css={{ borderRadius: '0' }}>
+          <Callout.Icon>
+            <InfoCircledIcon />
+          </Callout.Icon>
+          <Callout.Text>
+            <Heading size="2" mb="2">
+              Recording snapshot
+            </Heading>
+            <Text>
+              You are viewing a snapshot of the requests before any subsequent
+              rules were applied. Only changes introduced by the{' '}
+              <Strong>selected rule</Strong> are highlighted.
+            </Text>
+          </Callout.Text>
+        </Callout.Root>
       )}
 
       <ScrollArea scrollbars="vertical">
@@ -85,7 +118,7 @@ export function RequestList({
 
         {!recordingError && (
           <WebLogView
-            requests={filteredRequests}
+            requests={requestWithHighlights}
             selectedRequestId={selectedRequest?.id}
             onSelectRequest={onSelectRequest}
             groups={groups}

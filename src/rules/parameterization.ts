@@ -1,4 +1,4 @@
-import { RequestSnippetSchema, Request } from '@/types'
+import { RequestSnippetSchema, Request, ProxyData } from '@/types'
 import {
   ParameterizationRule,
   ParameterizationRuleInstance,
@@ -15,18 +15,19 @@ export function createParameterizationRuleInstance(
   idGenerator: Generator<number, number, number>
 ): ParameterizationRuleInstance {
   const state: ParameterizationState = {
-    requestsReplaced: [],
+    requestSnapshots: [],
     uniqueId: idGenerator.next().value,
     snippetInjected: false,
 
     matchedRequestIds: [],
   }
 
-  function addReplacedRequests(original: Request, replaced: Request) {
-    state.requestsReplaced = [
-      ...state.requestsReplaced,
+  function addReplacedRequests(original: ProxyData, replaced: Request) {
+    state.requestSnapshots = [
+      ...state.requestSnapshots,
       {
-        original,
+        id: original.id,
+        original: original.request,
         replaced,
       },
     ]
@@ -53,7 +54,7 @@ export function createParameterizationRuleInstance(
       }
 
       // Save original and replaced requests for preview
-      addReplacedRequests(requestSnippet.data.request, updatedRequest)
+      addReplacedRequests(requestSnippet.data, updatedRequest)
 
       state.matchedRequestIds = [
         ...state.matchedRequestIds,

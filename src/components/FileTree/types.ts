@@ -1,6 +1,6 @@
 import { StudioFile } from '@/types'
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
 export type FileItem = StudioFile & {
-  matches?: SearchMatch[]
+  matches?: Match[]
 }

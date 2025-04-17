@@ -1,6 +1,7 @@
 import { Flex } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
+import { useRequestSnapshot } from '@/store/generator/hooks/useRequestSnapshot'
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 
@@ -13,9 +14,12 @@ import { FormPayloadPreview } from './FormPayloadPreview'
 import { getRawContent, isJsonString, parseParams } from './utils'
 
 export function Payload({ data }: { data: ProxyData }) {
-  const content = parseParams(data)
+  const content = parseParams(data.request)
   const originalContentType = getContentType(data.request?.headers ?? [])
   const { searchString, index, reset } = useGoToPayloadMatch()
+
+  const unmodifiedRequest = useRequestSnapshot(data.id)
+  const originalContent = unmodifiedRequest && parseParams(unmodifiedRequest)
 
   // Reset payload search on unmount
   useEffect(() => {
@@ -71,6 +75,7 @@ export function Payload({ data }: { data: ProxyData }) {
       contentType={peviewContentType}
       searchIndex={index}
       searchString={searchString}
+      originalContent={originalContent}
     />
   )
 }

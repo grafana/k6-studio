@@ -36,7 +36,7 @@ export function createCorrelationRuleInstance(
     extractedValue: undefined,
     count: 0,
     responsesExtracted: [],
-    requestsReplaced: [],
+    requestSnapshots: [],
     generatedUniqueId: undefined,
     matchedRequestIds: [],
   }
@@ -94,9 +94,10 @@ function applyRule({
       snippetSchemaReturnValue.data.request = replacedRequest
 
       setState({
-        requestsReplaced: [
-          ...state.requestsReplaced,
+        requestSnapshots: [
+          ...state.requestSnapshots,
           {
+            id: requestSnippetSchema.data.id,
             original: requestSnippetSchema.data.request,
             replaced: replacedRequest,
           },
