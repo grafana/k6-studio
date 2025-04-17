@@ -83,8 +83,6 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-// Used mainly to avoid starting a new proxy when closing the active one on shutdown
-let appShuttingDown: boolean = false
 let currentClientRoute = '/'
 let wasAppClosedByClient = false
 
@@ -279,7 +277,7 @@ app.on('activate', async () => {
 
 app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
-  appShuttingDown = true
+  k6StudioState.appShuttingDown = true
   await watcher.close()
   return stopProxyProcess()
 })
@@ -292,7 +290,7 @@ ipcMain.on('app:close', (event) => {
   console.log('app:close event received')
 
   wasAppClosedByClient = true
-  if (appShuttingDown) {
+  if (k6StudioState.appShuttingDown) {
     app.quit()
     return
   }
