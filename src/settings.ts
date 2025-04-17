@@ -1,9 +1,10 @@
-import { app, dialog } from 'electron'
+import { app, BrowserWindow, dialog, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import { existsSync, readFileSync } from 'fs'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
 
+import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
 import { AppSettingsSchema } from './schemas/settings'
 import { AppSettings } from './types/settings'
 import { getPlatform } from './utils/electron'
@@ -166,4 +167,26 @@ export async function selectUpstreamCertificate() {
     properties: ['openFile'],
     filters: [{ name: 'Proxy certificate', extensions: ['pem', 'cer', 'p12'] }],
   })
+}
+
+export async function applySettings(
+  modifiedSettings: Partial<AppSettings>,
+  browserWindow: BrowserWindow
+) {
+  if (modifiedSettings.proxy) {
+    await stopProxyProcess()
+    k6StudioState.appSettings.proxy = modifiedSettings.proxy
+    k6StudioState.currentProxyProcess =
+      await launchProxyAndAttachEmitter(browserWindow)
+  }
+  if (modifiedSettings.recorder) {
+    k6StudioState.appSettings.recorder = modifiedSettings.recorder
+  }
+  if (modifiedSettings.telemetry) {
+    k6StudioState.appSettings.telemetry = modifiedSettings.telemetry
+  }
+  if (modifiedSettings.appearance) {
+    k6StudioState.appSettings.appearance = modifiedSettings.appearance
+    nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
+  }
 }

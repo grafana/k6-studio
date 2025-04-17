@@ -7,11 +7,12 @@ import * as browser from './handlers/browser/preload'
 import * as browserRemote from './handlers/browserRemote/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as har from './handlers/har/preload'
+import * as proxy from './handlers/proxy/preload'
 import * as script from './handlers/script/preload'
 import * as settings from './handlers/settings/preload'
 import { createListener } from './handlers/utils'
 import * as Sentry from './sentry'
-import { ProxyData, ProxyStatus, StudioFile } from './types'
+import { StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
 import { DataFilePreview } from './types/testData'
 import { AddToastPayload } from './types/toast'
@@ -22,24 +23,6 @@ interface GetFilesResponse {
   scripts: StudioFile[]
   dataFiles: StudioFile[]
 }
-
-const proxy = {
-  launchProxy: (): Promise<void> => {
-    return ipcRenderer.invoke('proxy:start')
-  },
-  stopProxy: () => {
-    ipcRenderer.send('proxy:stop')
-  },
-  onProxyData: (callback: (data: ProxyData) => void) => {
-    return createListener('proxy:data', callback)
-  },
-  getProxyStatus: (): Promise<ProxyStatus> => {
-    return ipcRenderer.invoke('proxy:status:get')
-  },
-  onProxyStatusChange: (callback: (status: ProxyStatus) => void) => {
-    return createListener('proxy:status:change', callback)
-  },
-} as const
 
 const data = {
   importFile: (): Promise<string | undefined> => {

@@ -1,8 +1,8 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 
-import { applySettings } from '@/main'
 import {
+  applySettings,
   getSettings,
   saveSettings,
   selectBrowserExecutable,
