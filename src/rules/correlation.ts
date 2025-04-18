@@ -70,7 +70,7 @@ function applyRule({
   // this is the modified schema that we return to the accumulator
   const snippetSchemaReturnValue = cloneDeep(requestSnippetSchema)
 
-  if (state.extractedValue) {
+  if (state.extractedValue !== undefined && state.extractedValue !== '') {
     // Skip replacement if replacer filter doesn't match
     if (
       rule.replacer &&
@@ -125,7 +125,7 @@ function applyRule({
       idGenerator
     )
 
-  if (extractedValue && correlationExtractionSnippet) {
+  if (extractedValue !== undefined && correlationExtractionSnippet) {
     // Skip extraction and bump count if value is already extracted and we are in single extraction mode
     if (state.extractedValue && rule.extractor.extractionMode === 'single') {
       setState({
@@ -558,7 +558,7 @@ const extractCorrelationJsonBody = (
   const extractedValue = getJsonObjectFromPath(response.content, selector.path)
 
   if (
-    !extractedValue ||
+    extractedValue === undefined ||
     (Array.isArray(extractedValue) && extractedValue.length === 0)
   ) {
     return noCorrelationResult
