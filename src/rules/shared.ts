@@ -255,7 +255,7 @@ export const replaceJsonBody = (
   // TODO: https://github.com/grafana/k6-studio/issues/277
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const valueToReplace = getJsonObjectFromPath(request.content, selector.path)
-  if (!valueToReplace) return
+  if (valueToReplace === undefined) return
 
   const content = setJsonObjectFromPath(request.content, selector.path, value)
   return { ...request, content }
@@ -528,6 +528,7 @@ if (import.meta.vitest) {
       from: 'body',
       path: '[0].hello',
     }
+
     expect(
       replaceJsonBody(
         selectorMatch,
@@ -535,6 +536,7 @@ if (import.meta.vitest) {
         '${correl_0}'
       )?.content
     ).toBe('{"hello":"${correl_0}"}')
+
     expect(
       replaceJsonBody(
         selectorNotMatch,
@@ -542,10 +544,29 @@ if (import.meta.vitest) {
         '${correl_0}'
       )
     ).toBeUndefined()
+
     expect(
       replaceJsonBody(
         selectorMatchArray,
         generateRequest('[{"hello":"world"}]'),
+        '${correl_0}'
+      )?.content
+    ).toBe('[{"hello":"${correl_0}"}]')
+
+    // Empty string replacement
+    expect(
+      replaceJsonBody(
+        selectorMatchArray,
+        generateRequest('[{"hello":""}]'),
+        '${correl_0}'
+      )?.content
+    ).toBe('[{"hello":"${correl_0}"}]')
+
+    // Boolean replacement
+    expect(
+      replaceJsonBody(
+        selectorMatchArray,
+        generateRequest('[{"hello":false}]'),
         '${correl_0}'
       )?.content
     ).toBe('[{"hello":"${correl_0}"}]')
