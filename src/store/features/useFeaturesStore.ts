@@ -10,6 +10,7 @@ interface FeaturesStore {
 
 const defaultFeatures: Record<Feature, boolean> = {
   'dummy-feature': false,
+  'typeahead-json': true,
 }
 
 export const useFeaturesStore = create<FeaturesStore>()(
