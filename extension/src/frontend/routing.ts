@@ -14,5 +14,6 @@ frontend.forward('load-events', [background])
 
 background.forward('events-recorded', [frontend])
 background.forward('events-loaded', [frontend])
+background.forward('highlight-elements', [frontend])
 
 export { frontend as client }
