@@ -177,12 +177,15 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
         {
           eventId: crypto.randomUUID(),
           timestamp: Date.now(),
-          type: 'asserted-text',
-          selector: assertion.selector,
+          type: 'assert',
           tab: '',
-          operation: {
-            type: 'contains',
-            value: assertion.text,
+          selector: assertion.selector,
+          assertion: {
+            type: 'text',
+            operation: {
+              type: 'contains',
+              value: assertion.text,
+            },
           },
         },
       ],

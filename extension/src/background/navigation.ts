@@ -48,7 +48,7 @@ export function captureNavigationEvents(
 
     if (isReload(details)) {
       onCaptured({
-        type: 'reloaded-page',
+        type: 'reload-page',
         eventId: crypto.randomUUID(),
         timestamp: details.timeStamp,
         tab: details.tabId.toString(),
@@ -65,7 +65,7 @@ export function captureNavigationEvents(
     }
 
     onCaptured({
-      type: 'navigated-to-page',
+      type: 'navigate-to-page',
       eventId: crypto.randomUUID(),
       timestamp: details.timeStamp,
       tab: details.tabId.toString(),
@@ -79,7 +79,7 @@ export function captureNavigationEvents(
 
     if (isHistoryNavigation(details)) {
       onCaptured({
-        type: 'navigated-to-page',
+        type: 'navigate-to-page',
         eventId: crypto.randomUUID(),
         timestamp: details.timeStamp,
         tab: details.tabId.toString(),
