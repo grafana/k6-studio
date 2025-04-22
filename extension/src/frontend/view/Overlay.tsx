@@ -13,7 +13,7 @@ export const Overlay = forwardRef<HTMLDivElement, OverlayProps>(
       <div
         ref={ref}
         css={css`
-          position: fixed;
+          position: absolute;
           pointer-events: none;
         `}
         style={{
