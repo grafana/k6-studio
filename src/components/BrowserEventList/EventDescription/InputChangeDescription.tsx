@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { EyeNoneIcon, EyeOpenIcon } from '@radix-ui/react-icons'
 import { ReactNode, useState } from 'react'
 
-import { InputChangedEvent } from '@/schemas/recording'
+import { InputChangeEvent } from '@/schemas/recording'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
@@ -73,15 +73,15 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
   )
 }
 
-interface InputChangedDescriptionProps {
-  event: InputChangedEvent
+interface InputChangeDescriptionProps {
+  event: InputChangeEvent
   onHighlight: (selector: HighlightSelector | null) => void
 }
 
-export function InputChangedDescription({
+export function InputChangeDescription({
   event,
   onHighlight,
-}: InputChangedDescriptionProps) {
+}: InputChangeDescriptionProps) {
   return (
     <>
       Changed input of{' '}

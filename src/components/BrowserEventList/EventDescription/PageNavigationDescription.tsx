@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { forwardRef, MouseEvent } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { NavigatedToPageEvent } from '@/schemas/recording'
+import { NavigateToPageEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 
@@ -52,7 +52,7 @@ const RemoteLink = forwardRef<HTMLElement, RemoteLinkProps>(function RemoteLink(
 })
 
 interface PageNavigationDescriptionProps {
-  event: NavigatedToPageEvent
+  event: NavigateToPageEvent
   onNavigate: (url: string) => void
 }
 
