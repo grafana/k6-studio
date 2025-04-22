@@ -1,21 +1,12 @@
 import * as Sentry from '@sentry/electron/main'
 import { watch, FSWatcher } from 'chokidar'
 import { COPYFILE_EXCL } from 'constants'
-import {
-  app,
-  BrowserWindow,
-  dialog,
-  ipcMain,
-  nativeTheme,
-  shell,
-} from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import { existsSync } from 'fs'
 import {
-  access,
   copyFile,
   writeFile,
-  unlink,
   readdir,
   rename,
   readFile,
@@ -25,7 +16,6 @@ import path from 'path'
 import invariant from 'tiny-invariant'
 import { updateElectronApp } from 'update-electron-app'
 
-import { getBrowserPath } from './browser'
 import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
 import {
   DATA_FILES_PATH,
@@ -36,8 +26,10 @@ import {
 } from './constants/workspace'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
+import { UIHandler } from './handlers/ui/types'
 import * as mainState from './k6StudioState'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
+import { getStudioFileFromPath } from './main/file'
 import { configureApplicationMenu } from './menu'
 import {
   cleanUpProxies,
@@ -47,21 +39,18 @@ import {
 import { GeneratorFileDataSchema } from './schemas/generator'
 import { BrowserServer } from './services/browser/server'
 import { getSettings, initSettings, saveSettings } from './settings'
-import { ProxyStatus, StudioFile } from './types'
+import { ProxyStatus } from './types'
 import { GeneratorFileData } from './types/generator'
 import { DataFilePreview } from './types/testData'
 import { sendReport } from './usageReport'
-import { reportNewIssue } from './utils/bugReport'
 import { parseDataFile } from './utils/dataFile'
 import {
-  sendToast,
   getAppIcon,
   getPlatform,
   browserWindowFromEvent,
 } from './utils/electron'
 import { createFileWithUniqueName } from './utils/fileSystem'
 import { createNewGeneratorFile } from './utils/generator'
-import { exhaustive, isNodeJsErrnoException } from './utils/typescript'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
@@ -332,121 +321,6 @@ ipcMain.handle(
   }
 )
 
-// UI
-ipcMain.on('ui:toggle-theme', () => {
-  nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
-})
-
-ipcMain.handle('ui:detect-browser', async () => {
-  try {
-    const browserPath = await getBrowserPath()
-    return browserPath !== ''
-  } catch {
-    log.error('Failed to find browser executable')
-  }
-
-  return false
-})
-
-ipcMain.handle('ui:delete-file', async (_, file: StudioFile) => {
-  console.info('ui:delete-file event received')
-
-  const filePath = getFilePath(file)
-  return unlink(filePath)
-})
-
-ipcMain.on('ui:open-folder', (_, file: StudioFile) => {
-  const filePath = getFilePath(file)
-  return shell.showItemInFolder(filePath)
-})
-
-ipcMain.handle('ui:open-file-in-default-app', (_, file: StudioFile) => {
-  const filePath = getFilePath(file)
-  return shell.openPath(filePath)
-})
-
-ipcMain.handle('ui:get-files', async () => {
-  console.info('ui:get-files event received')
-  const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile())
-    .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
-    .filter((f) => typeof f !== 'undefined')
-
-  const generators = (await readdir(GENERATORS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile())
-    .map((f) => getStudioFileFromPath(path.join(GENERATORS_PATH, f.name)))
-    .filter((f) => typeof f !== 'undefined')
-
-  const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile() && !f.name.endsWith(TEMP_SCRIPT_SUFFIX))
-    .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
-    .filter((f) => typeof f !== 'undefined')
-
-  const dataFiles = (await readdir(DATA_FILES_PATH, { withFileTypes: true }))
-    .filter((f) => f.isFile())
-    .map((f) => getStudioFileFromPath(path.join(DATA_FILES_PATH, f.name)))
-    .filter((f) => typeof f !== 'undefined')
-
-  return {
-    recordings,
-    generators,
-    scripts,
-    dataFiles,
-  }
-})
-
-ipcMain.handle('ui:report-issue', () => {
-  return reportNewIssue()
-})
-
-ipcMain.handle(
-  'ui:rename-file',
-  async (
-    e,
-    oldFileName: string,
-    newFileName: string,
-    type: StudioFile['type']
-  ) => {
-    const browserWindow = BrowserWindow.fromWebContents(e.sender)
-
-    try {
-      invariant(!INVALID_FILENAME_CHARS.test(newFileName), 'Invalid file name')
-
-      const oldPath = getFilePath({
-        type,
-        fileName: oldFileName,
-      })
-      const newPath = getFilePath({
-        type,
-        fileName: newFileName,
-      })
-
-      try {
-        await access(newPath)
-        throw new Error(`File with name ${newFileName} already exists`)
-      } catch (error) {
-        // Only rename if the error code is ENOENT (file does not exist)
-        if (isNodeJsErrnoException(error) && error.code === 'ENOENT') {
-          await rename(oldPath, newPath)
-          return
-        }
-
-        throw error
-      }
-    } catch (e) {
-      log.error(e)
-      browserWindow &&
-        sendToast(browserWindow.webContents, {
-          title: 'Failed to rename file',
-          description: e instanceof Error ? e.message : undefined,
-          status: 'error',
-        })
-
-      throw e
-    }
-  }
-)
-
 ipcMain.handle('data-file:import', async (event) => {
   const browserWindow = browserWindowFromEvent(event)
 
@@ -564,7 +438,7 @@ function configureWatcher(browserWindow: BrowserWindow) {
       return
     }
 
-    browserWindow.webContents.send('ui:add-file', file)
+    browserWindow.webContents.send(UIHandler.ADD_FILE, file)
   })
 
   watcher.on('unlink', (filePath) => {
@@ -574,67 +448,6 @@ function configureWatcher(browserWindow: BrowserWindow) {
       return
     }
 
-    browserWindow.webContents.send('ui:remove-file', file)
+    browserWindow.webContents.send(UIHandler.REMOVE_FILE, file)
   })
-}
-
-function getStudioFileFromPath(filePath: string): StudioFile | undefined {
-  const file = {
-    displayName: path.parse(filePath).name,
-    fileName: path.basename(filePath),
-  }
-
-  if (
-    filePath.startsWith(RECORDINGS_PATH) &&
-    path.extname(filePath) === '.har'
-  ) {
-    return {
-      type: 'recording',
-      ...file,
-    }
-  }
-
-  if (
-    filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === '.k6g'
-  ) {
-    return {
-      type: 'generator',
-      ...file,
-    }
-  }
-
-  if (filePath.startsWith(SCRIPTS_PATH) && path.extname(filePath) === '.js') {
-    return {
-      type: 'script',
-      ...file,
-    }
-  }
-
-  if (
-    filePath.startsWith(DATA_FILES_PATH) &&
-    (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv')
-  ) {
-    return {
-      type: 'data-file',
-      ...file,
-    }
-  }
-}
-
-function getFilePath(
-  file: Partial<StudioFile> & Pick<StudioFile, 'type' | 'fileName'>
-) {
-  switch (file.type) {
-    case 'recording':
-      return path.join(RECORDINGS_PATH, file.fileName)
-    case 'generator':
-      return path.join(GENERATORS_PATH, file.fileName)
-    case 'script':
-      return path.join(SCRIPTS_PATH, file.fileName)
-    case 'data-file':
-      return path.join(DATA_FILES_PATH, file.fileName)
-    default:
-      return exhaustive(file.type)
-  }
 }
