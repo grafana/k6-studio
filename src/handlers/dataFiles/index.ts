@@ -10,8 +10,10 @@ import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { browserWindowFromEvent } from '@/utils/electron'
 
+import { DataFileHandler } from './types'
+
 export function initialize() {
-  ipcMain.handle('data-file:import', async (event) => {
+  ipcMain.handle(DataFileHandler.Import, async (event) => {
     const browserWindow = browserWindowFromEvent(event)
 
     const dialogResult = await dialog.showOpenDialog(browserWindow, {
@@ -39,7 +41,7 @@ export function initialize() {
   })
 
   ipcMain.handle(
-    'data-file:load-preview',
+    DataFileHandler.LoadPreview,
     async (_, fileName: string): Promise<DataFilePreview> => {
       const fileType = fileName.split('.').pop()
       const filePath = path.join(DATA_FILES_PATH, fileName)
