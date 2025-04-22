@@ -6,6 +6,7 @@ import * as auth from './handlers/auth/preload'
 import * as browser from './handlers/browser/preload'
 import * as browserRemote from './handlers/browserRemote/preload'
 import * as cloud from './handlers/cloud/preload'
+import * as data from './handlers/dataFiles/preload'
 import * as generator from './handlers/generator/preload'
 import * as har from './handlers/har/preload'
 import * as proxy from './handlers/proxy/preload'
@@ -14,16 +15,6 @@ import * as settings from './handlers/settings/preload'
 import * as ui from './handlers/ui/preload'
 import { createListener } from './handlers/utils'
 import * as Sentry from './sentry'
-import { DataFilePreview } from './types/testData'
-
-const data = {
-  importFile: (): Promise<string | undefined> => {
-    return ipcRenderer.invoke('data-file:import')
-  },
-  loadPreview: (filePath: string): Promise<DataFilePreview> => {
-    return ipcRenderer.invoke('data-file:load-preview', filePath)
-  },
-} as const
 
 const app = {
   platform: process.platform,
