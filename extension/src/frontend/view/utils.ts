@@ -28,6 +28,10 @@ export function shouldSkipEvent(event: Event): boolean {
 }
 
 export function toBounds(rect: DOMRect): Bounds {
+  // `getBoundingClientRect` returns the coordinates relative to the viewport
+  // and not the document, so we add the scroll position so that the element
+  // is relative to the page instead. This means that content will stay in place
+  // when scrolling.
   return {
     top: rect.top + window.scrollY,
     left: rect.left + window.scrollX,
