@@ -4,19 +4,12 @@ import { COPYFILE_EXCL } from 'constants'
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import { existsSync } from 'fs'
-import {
-  copyFile,
-  writeFile,
-  readdir,
-  rename,
-  readFile,
-  stat,
-} from 'fs/promises'
+import { copyFile, readdir, rename, readFile, stat } from 'fs/promises'
 import path from 'path'
 import invariant from 'tiny-invariant'
 import { updateElectronApp } from 'update-electron-app'
 
-import { MAX_DATA_FILE_SIZE, INVALID_FILENAME_CHARS } from './constants/files'
+import { MAX_DATA_FILE_SIZE } from './constants/files'
 import {
   DATA_FILES_PATH,
   GENERATORS_PATH,
@@ -36,11 +29,9 @@ import {
   launchProxyAndAttachEmitter,
   stopProxyProcess,
 } from './proxy'
-import { GeneratorFileDataSchema } from './schemas/generator'
 import { BrowserServer } from './services/browser/server'
 import { getSettings, initSettings, saveSettings } from './settings'
 import { ProxyStatus } from './types'
-import { GeneratorFileData } from './types/generator'
 import { DataFilePreview } from './types/testData'
 import { sendReport } from './usageReport'
 import { parseDataFile } from './utils/dataFile'
@@ -49,8 +40,6 @@ import {
   getPlatform,
   browserWindowFromEvent,
 } from './utils/electron'
-import { createFileWithUniqueName } from './utils/fileSystem'
-import { createNewGeneratorFile } from './utils/generator'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
@@ -283,43 +272,6 @@ ipcMain.on('app:close', (event) => {
   const browserWindow = browserWindowFromEvent(event)
   browserWindow.close()
 })
-
-// Generator
-ipcMain.handle('generator:create', async (_, recordingPath: string) => {
-  const generator = createNewGeneratorFile(recordingPath)
-  const fileName = await createFileWithUniqueName({
-    data: JSON.stringify(generator, null, 2),
-    directory: GENERATORS_PATH,
-    ext: '.k6g',
-    prefix: 'Generator',
-  })
-
-  return fileName
-})
-
-ipcMain.handle(
-  'generator:save',
-  async (_, generator: GeneratorFileData, fileName: string) => {
-    invariant(!INVALID_FILENAME_CHARS.test(fileName), 'Invalid file name')
-
-    await writeFile(
-      path.join(GENERATORS_PATH, fileName),
-      JSON.stringify(generator, null, 2)
-    )
-  }
-)
-
-ipcMain.handle(
-  'generator:open',
-  async (_, fileName: string): Promise<GeneratorFileData> => {
-    const data = await readFile(path.join(GENERATORS_PATH, fileName), {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
-
-    return GeneratorFileDataSchema.parse(JSON.parse(data))
-  }
-)
 
 ipcMain.handle('data-file:import', async (event) => {
   const browserWindow = browserWindowFromEvent(event)
