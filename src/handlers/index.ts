@@ -4,6 +4,7 @@ import * as auth from './auth'
 import * as browser from './browser'
 import * as browserRemote from './browserRemote'
 import * as cloud from './cloud'
+import * as dataFiles from './dataFiles'
 import * as generator from './generator'
 import * as har from './har'
 import * as proxy from './proxy'
@@ -26,4 +27,5 @@ export function initialize({ browserServer }: Services) {
   proxy.initialize()
   ui.initialize()
   generator.initialize()
+  dataFiles.initialize()
 }
