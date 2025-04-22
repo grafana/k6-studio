@@ -5,6 +5,7 @@ import * as browser from './browser'
 import * as browserRemote from './browserRemote'
 import * as cloud from './cloud'
 import * as har from './har'
+import * as proxy from './proxy'
 import * as script from './script'
 import * as settings from './settings'
 
@@ -20,4 +21,5 @@ export function initialize({ browserServer }: Services) {
   browser.initialize(browserServer)
   script.initialize()
   settings.initialize()
+  proxy.initialize()
 }

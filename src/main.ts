@@ -10,7 +10,6 @@ import {
   shell,
 } from 'electron'
 import log from 'electron-log/main'
-import find from 'find-process'
 import { existsSync } from 'fs'
 import {
   access,
@@ -24,7 +23,6 @@ import {
 } from 'fs/promises'
 import path from 'path'
 import invariant from 'tiny-invariant'
-import kill from 'tree-kill'
 import { updateElectronApp } from 'update-electron-app'
 
 import { getBrowserPath } from './browser'
@@ -37,23 +35,26 @@ import {
   TEMP_SCRIPT_SUFFIX,
 } from './constants/workspace'
 import * as handlers from './handlers'
+import { ProxyHandler } from './handlers/proxy/types'
 import * as mainState from './k6StudioState'
 import { getLogContent, initializeLogger, openLogFolder } from './logger'
 import { configureApplicationMenu } from './menu'
-import { launchProxy, type ProxyProcess } from './proxy'
+import {
+  cleanUpProxies,
+  launchProxyAndAttachEmitter,
+  stopProxyProcess,
+} from './proxy'
 import { GeneratorFileDataSchema } from './schemas/generator'
 import { BrowserServer } from './services/browser/server'
 import { getSettings, initSettings, saveSettings } from './settings'
 import { ProxyStatus, StudioFile } from './types'
 import { GeneratorFileData } from './types/generator'
-import { AppSettings } from './types/settings'
 import { DataFilePreview } from './types/testData'
 import { sendReport } from './usageReport'
 import { reportNewIssue } from './utils/bugReport'
 import { parseDataFile } from './utils/dataFile'
 import {
   sendToast,
-  findOpenPort,
   getAppIcon,
   getPlatform,
   browserWindowFromEvent,
@@ -82,14 +83,8 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-// Used mainly to avoid starting a new proxy when closing the active one on shutdown
-let appShuttingDown: boolean = false
-let currentProxyProcess: ProxyProcess | null
-const PROXY_RETRY_LIMIT = 5
-let proxyRetryCount = 0
 let currentClientRoute = '/'
 let wasAppClosedByClient = false
-let wasProxyStoppedByClient = false
 
 let watcher: FSWatcher
 let splashscreenWindow: BrowserWindow
@@ -205,11 +200,12 @@ const createWindow = async () => {
 
   k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
     k6StudioState.proxyStatus = status
-    mainWindow.webContents.send('proxy:status:change', status)
+    mainWindow.webContents.send(ProxyHandler.ChangeStatus, status)
   })
 
   // Start proxy
-  currentProxyProcess = await launchProxyAndAttachEmitter(mainWindow)
+  k6StudioState.currentProxyProcess =
+    await launchProxyAndAttachEmitter(mainWindow)
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -278,7 +274,7 @@ app.on('activate', async () => {
 
 app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
-  appShuttingDown = true
+  k6StudioState.appShuttingDown = true
   await watcher.close()
   return stopProxyProcess()
 })
@@ -291,26 +287,12 @@ ipcMain.on('app:close', (event) => {
   console.log('app:close event received')
 
   wasAppClosedByClient = true
-  if (appShuttingDown) {
+  if (k6StudioState.appShuttingDown) {
     app.quit()
     return
   }
   const browserWindow = browserWindowFromEvent(event)
   browserWindow.close()
-})
-
-// Proxy
-ipcMain.handle('proxy:start', async (event) => {
-  console.info('proxy:start event received')
-
-  const browserWindow = browserWindowFromEvent(event)
-  currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
-})
-
-ipcMain.on('proxy:stop', () => {
-  console.info('proxy:stop event received')
-  wasProxyStoppedByClient = true
-  return stopProxyProcess()
 })
 
 // Generator
@@ -540,94 +522,6 @@ ipcMain.handle('log:read', () => {
   return getLogContent()
 })
 
-ipcMain.handle('proxy:status:get', () => {
-  console.info('proxy:status:get event received')
-  return k6StudioState.proxyStatus
-})
-
-// TODO: Move this function to settings.ts once proxy handlers are refactored
-// https://github.com/grafana/k6-studio/issues/378
-export async function applySettings(
-  modifiedSettings: Partial<AppSettings>,
-  browserWindow: BrowserWindow
-) {
-  if (modifiedSettings.proxy) {
-    await stopProxyProcess()
-    k6StudioState.appSettings.proxy = modifiedSettings.proxy
-    currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
-  }
-  if (modifiedSettings.recorder) {
-    k6StudioState.appSettings.recorder = modifiedSettings.recorder
-  }
-  if (modifiedSettings.telemetry) {
-    k6StudioState.appSettings.telemetry = modifiedSettings.telemetry
-  }
-  if (modifiedSettings.appearance) {
-    k6StudioState.appSettings.appearance = modifiedSettings.appearance
-    nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
-  }
-}
-
-const launchProxyAndAttachEmitter = async (browserWindow: BrowserWindow) => {
-  const { port, automaticallyFindPort } = k6StudioState.appSettings.proxy
-
-  const proxyPort = automaticallyFindPort ? await findOpenPort(port) : port
-  k6StudioState.appSettings.proxy.port = proxyPort
-
-  console.log(
-    `launching proxy ${JSON.stringify(k6StudioState.appSettings.proxy)}`
-  )
-
-  k6StudioState.proxyEmitter.emit('status:change', 'starting')
-
-  return launchProxy(browserWindow, k6StudioState.appSettings.proxy, {
-    onReady: () => {
-      wasProxyStoppedByClient = false
-      k6StudioState.proxyEmitter.emit('status:change', 'online')
-      k6StudioState.proxyEmitter.emit('ready')
-    },
-    onFailure: async () => {
-      if (wasProxyStoppedByClient) {
-        k6StudioState.proxyEmitter.emit('status:change', 'offline')
-      }
-
-      if (
-        appShuttingDown ||
-        wasProxyStoppedByClient ||
-        k6StudioState.proxyStatus === 'starting'
-      ) {
-        // don't restart the proxy if the app is shutting down, manually stopped by client or already restarting
-        return
-      }
-
-      if (proxyRetryCount === PROXY_RETRY_LIMIT && !automaticallyFindPort) {
-        proxyRetryCount = 0
-        k6StudioState.proxyEmitter.emit('status:change', 'offline')
-
-        sendToast(browserWindow.webContents, {
-          title: `Port ${proxyPort} is already in use`,
-          description:
-            'Please select a different port or enable automatic port selection',
-          status: 'error',
-        })
-
-        return
-      }
-
-      proxyRetryCount++
-      k6StudioState.proxyEmitter.emit('status:change', 'starting')
-      currentProxyProcess = await launchProxyAndAttachEmitter(browserWindow)
-
-      const errorMessage = `Proxy failed to start on port ${proxyPort}, restarting...`
-      log.error(errorMessage)
-      sendToast(browserWindow.webContents, {
-        title: errorMessage,
-        status: 'error',
-      })
-    },
-  })
-}
-
 function showWindow(browserWindow: BrowserWindow) {
   const { isMaximized } = k6StudioState.appSettings.windowState
   if (isMaximized) {
@@ -743,23 +637,4 @@ function getFilePath(
     default:
       return exhaustive(file.type)
   }
-}
-
-const stopProxyProcess = async () => {
-  if (currentProxyProcess) {
-    currentProxyProcess.kill()
-    currentProxyProcess = null
-
-    // kill remaining proxies if any, this might happen on windows
-    if (getPlatform() === 'win') {
-      await cleanUpProxies()
-    }
-  }
-}
-
-const cleanUpProxies = async () => {
-  const processList = await find('name', 'k6-studio-proxy', false)
-  processList.forEach((proc) => {
-    kill(proc.pid)
-  })
 }
