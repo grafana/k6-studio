@@ -93,15 +93,24 @@ export const RecorderSettings = () => {
         )}
 
       <FieldGroup
-        label="Browser recording"
+        label={
+          <Flex align="center" gap="1">
+            <span>
+              Browser Recording{' '}
+              <Text size="1" weight="light">
+                (Preview)
+              </Text>{' '}
+            </span>
+          </Flex>
+        }
         name="recorder.enableBrowserRecorder"
         errors={errors}
         hint={
           <>
-            Enables the browser recording <em>preview</em> feature. With this
-            feature enabled user interactions in the browser are recorded
-            alongside network requests. The recorded interactions can be
-            exported as a k6 browser script.
+            Enables the browser recording feature. With this feature enabled
+            user interactions in the browser are recorded alongside network
+            requests. The recorded interactions can be exported as a k6 browser
+            script.
           </>
         }
         hintType="text"
@@ -117,7 +126,7 @@ export const RecorderSettings = () => {
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />{' '}
-                Enable browser recording (preview)
+                Enable browser recording
               </Text>
             )}
           />
