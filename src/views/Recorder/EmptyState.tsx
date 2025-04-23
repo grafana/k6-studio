@@ -16,8 +16,8 @@ import {
   TextField,
   Tooltip,
 } from '@radix-ui/themes'
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
@@ -45,7 +45,10 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
   const proxyStatus = useProxyStatus()
   const { data: isBrowserInstalled } = useBrowserCheck()
 
-  const [captureBrowser, setCaptureBrowser] = useState(true)
+  const [captureBrowser = true, setCaptureBrowser] = useLocalStorage(
+    'start-recording.capture.browser',
+    true
+  )
 
   const canCaptureBrowser = settings?.recorder.enableBrowserRecorder ?? false
 
