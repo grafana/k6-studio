@@ -6,6 +6,7 @@ import {
   InfoCircledIcon,
 } from '@radix-ui/react-icons'
 import {
+  Box,
   Button,
   Callout,
   Checkbox,
@@ -16,6 +17,7 @@ import {
   TextField,
   Tooltip,
 } from '@radix-ui/themes'
+import { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
@@ -155,13 +157,8 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
           </div>
 
           {canCaptureBrowser && (
-            <FieldGroup
-              name="captureBrowser"
-              label={<CaptureBrowserLabel />}
-              hint="Record user interactions in the browser alongside network requests."
-              hintType="text"
-            >
-              <Text size="2">
+            <BrowserEventsSection>
+              <Text as="label" size="2">
                 <Flex gap="2" align="center">
                   <Checkbox
                     disabled={!canRecord}
@@ -171,7 +168,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
                   <span>Capture browser events</span>
                 </Flex>
               </Text>
-            </FieldGroup>
+            </BrowserEventsSection>
           )}
         </Flex>
       </form>
@@ -179,26 +176,38 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
   )
 }
 
-function CaptureBrowserLabel() {
+interface BrowserEventsSectionProps {
+  children: ReactNode
+}
+
+function BrowserEventsSection({ children }: BrowserEventsSectionProps) {
   return (
-    <Flex align="center" gap="1">
-      <span>
-        Browser Events{' '}
-        <Text size="1" weight="light">
-          (Preview)
-        </Text>{' '}
-      </span>
-      <Tooltip
-        content={
-          <>
-            This will enable capture of user interactions such as clicks and
-            navigation. Recordings with these events can later be used to export
-            a k6 browser script.
-          </>
-        }
-      >
-        <InfoCircledIcon />
-      </Tooltip>
+    <Flex direction="column" gap="1">
+      <Text size="2" weight="medium">
+        <Flex align="center" gap="1">
+          <span>
+            Browser Events{' '}
+            <Text size="1" weight="light">
+              (Preview)
+            </Text>
+          </span>
+          <Tooltip
+            content={
+              <>
+                This will enable capture of user interactions such as clicks and
+                navigation. Recordings with these events can later be used to
+                export a k6 browser script.
+              </>
+            }
+          >
+            <InfoCircledIcon />
+          </Tooltip>
+        </Flex>
+      </Text>
+      <Text size="1" as="p" color="gray" mb="1">
+        Record user interactions in the browser alongside network requests.
+      </Text>
+      <Box>{children}</Box>
     </Flex>
   )
 }
