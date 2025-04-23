@@ -12,10 +12,11 @@ import os from 'os'
 import path from 'path'
 import { promisify } from 'util'
 
-import { BrowserHandler } from './handlers/browser/types'
-import { getCertificateSPKI } from './proxy'
-import { BrowserServer } from './services/browser/server'
-import { getPlatform } from './utils/electron'
+import { getCertificateSPKI } from '../../proxy'
+import { BrowserServer } from '../../services/browser/server'
+import { getPlatform } from '../../utils/electron'
+
+import { BrowserHandler, LaunchBrowserOptions } from './types'
 
 const createUserDataDir = async () => {
   return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
@@ -53,7 +54,7 @@ function getExtensionPath() {
 export const launchBrowser = async (
   browserWindow: BrowserWindow,
   browserServer: BrowserServer,
-  url?: string
+  { url, capture }: LaunchBrowserOptions
 ) => {
   const path = await getBrowserPath()
   console.info(`browser path: ${path}`)
@@ -73,7 +74,7 @@ export const launchBrowser = async (
   const extensionPath = getExtensionPath()
   console.info(`extension path: ${extensionPath}`)
 
-  if (k6StudioState.appSettings.recorder.enableBrowserRecorder) {
+  if (capture.browser) {
     browserServer.start(browserWindow)
   }
 
@@ -93,8 +94,7 @@ export const launchBrowser = async (
     browserWindow.webContents.send(BrowserHandler.Failed)
   }
 
-  const browserRecordingArgs = k6StudioState.appSettings.recorder
-    .enableBrowserRecorder
+  const browserRecordingArgs = capture.browser
     ? [`--load-extension=${extensionPath}`]
     : []
 

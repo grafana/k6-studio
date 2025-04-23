@@ -1,6 +1,7 @@
 import { debounce } from 'lodash-es'
 import { useState, useMemo, useEffect } from 'react'
 
+import { LaunchBrowserOptions } from '@/handlers/browser/types'
 import { ProxyData, Request } from '@/types'
 import { getContentTypeWithCharsetHeader, upsertHeader } from '@/utils/headers'
 
@@ -87,11 +88,11 @@ export function getHostNameFromURL(url?: string) {
 }
 
 // TODO: add error and timeout handling
-export async function startRecording(url?: string) {
+export async function startRecording(options: LaunchBrowserOptions) {
   // Kill previous browser window
   window.studio.browser.stopBrowser()
 
-  return window.studio.browser.launchBrowser(url)
+  return window.studio.browser.launchBrowser(options)
 }
 
 export function stopRecording() {

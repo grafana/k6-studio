@@ -4,7 +4,6 @@ import { unlink, readdir, access, rename } from 'fs/promises'
 import path from 'path'
 import invariant from 'tiny-invariant'
 
-import { getBrowserPath } from '@/browser'
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
 import {
   RECORDINGS_PATH,
@@ -13,6 +12,7 @@ import {
   TEMP_SCRIPT_SUFFIX,
   DATA_FILES_PATH,
 } from '@/constants/workspace'
+import { getBrowserPath } from '@/handlers/browser/launch'
 import { getFilePath, getStudioFileFromPath } from '@/main/file'
 import { StudioFile } from '@/types'
 import { reportNewIssue } from '@/utils/bugReport'

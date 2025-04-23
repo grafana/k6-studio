@@ -7,6 +7,7 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 import { View } from '@/components/Layout/View'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
+import { LaunchBrowserOptions } from '@/handlers/browser/types'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSettings } from '@/hooks/useSettings'
@@ -65,12 +66,13 @@ export function Recorder() {
   const isLoading = recorderState === 'starting' || recorderState === 'saving'
 
   const handleStartRecording = useCallback(
-    async (url?: string) => {
-      setStartUrl(url)
+    async (options: LaunchBrowserOptions) => {
+      setStartUrl(options.url)
+
       try {
         resetProxyData()
         setRecorderState('starting')
-        await startRecording(url)
+        await startRecording(options)
       } catch (error) {
         setRecorderState('idle')
         showToast({
@@ -95,7 +97,7 @@ export function Recorder() {
     try {
       setRecorderState('saving')
 
-      if (proxyData.length === 0) {
+      if (proxyData.length === 0 && browserEvents.length === 0) {
         return null
       }
 

@@ -4,25 +4,28 @@ import { DiscIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import {
   Button,
   Callout,
+  Checkbox,
   Flex,
   Heading,
   Spinner,
   Text,
   TextField,
 } from '@radix-ui/themes'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
 import { TextButton } from '@/components/TextButton'
+import { LaunchBrowserOptions } from '@/handlers/browser/types'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { useBrowserCheck } from '@/hooks/useSettings'
+import { useBrowserCheck, useSettings } from '@/hooks/useSettings'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyStatus } from '@/types'
 
 interface EmptyStateProps {
   isLoading: boolean
-  onStart: (url?: string) => void
+  onStart: (options: LaunchBrowserOptions) => void
 }
 
 const RecorderEmptyStateSchema = z.object({
@@ -32,8 +35,14 @@ const RecorderEmptyStateSchema = z.object({
 type RecorderEmptyStateFields = z.infer<typeof RecorderEmptyStateSchema>
 
 export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
+  const { data: settings } = useSettings()
+
   const proxyStatus = useProxyStatus()
   const { data: isBrowserInstalled } = useBrowserCheck()
+
+  const [captureBrowser, setCaptureBrowser] = useState(true)
+
+  const canCaptureBrowser = settings?.recorder.enableBrowserRecorder ?? false
 
   const {
     register,
@@ -46,6 +55,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     },
     shouldFocusError: false,
   })
+
   const canRecord = proxyStatus === 'online' && isBrowserInstalled === true
 
   const onSubmit = ({ url }: RecorderEmptyStateFields) => {
@@ -53,7 +63,16 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
       return
     }
 
-    onStart(url)
+    onStart({
+      url,
+      capture: {
+        browser: canCaptureBrowser && captureBrowser,
+      },
+    })
+  }
+
+  const handleCaptureBrowserChange = (value: boolean | 'indeterminate') => {
+    setCaptureBrowser(value === true)
   }
 
   return (
@@ -118,6 +137,19 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
             </Button>
           </Flex>
         </FieldGroup>
+        {canCaptureBrowser && (
+          <Text as="label" size="2">
+            <Flex gap="2">
+              <Checkbox
+                disabled={!canRecord}
+                checked={captureBrowser}
+                onCheckedChange={handleCaptureBrowserChange}
+              />
+              <span>Capture browser events (Preview)</span>
+            </Flex>
+          </Text>
+        )}
+
         <WarningMessage
           proxyStatus={proxyStatus}
           isBrowserInstalled={isBrowserInstalled}
