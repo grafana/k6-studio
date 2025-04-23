@@ -1,7 +1,16 @@
 import styled from '@emotion/styled'
 import * as RadixToolbar from '@radix-ui/react-toolbar'
 
-const Button = styled(RadixToolbar.Button)``
+const Button = styled(RadixToolbar.Button)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: var(--studio-foreground);
+  background-color: var(--studio-toggle-bg-off);
+  border: none;
+  padding: var(--studio-spacing-2);
+`
 
 const Link = styled(RadixToolbar.Link)``
 

@@ -24,5 +24,6 @@ studio.forward('highlight-elements', [frontend])
 frontend.forward('record-events', [background])
 frontend.forward('navigate', [background])
 frontend.forward('load-events', [background])
+frontend.forward('stop-recording', [studio])
 
 export { background as client }

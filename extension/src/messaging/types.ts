@@ -40,13 +40,19 @@ export const NavigateSchema = z.object({
   url: z.string(),
 })
 
+export const StopRecordingSchema = z.object({
+  type: z.literal('stop-recording'),
+})
+
 export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   LoadEventsSchema,
+
   EventsLoadedSchema,
   RecordEventsSchema,
   EventsRecordedSchema,
   HighlightElementsSchema,
   NavigateSchema,
+  StopRecordingSchema,
 ])
 
 export type RecordEvents = z.infer<typeof RecordEventsSchema>
@@ -54,6 +60,7 @@ export type EventsRecorded = z.infer<typeof EventsRecordedSchema>
 export type HighlightSelector = z.infer<typeof HighlightSelectorSchema>
 export type HighlightElements = z.infer<typeof HighlightElementsSchema>
 export type Navigate = z.infer<typeof NavigateSchema>
+export type StopRecording = z.infer<typeof StopRecordingSchema>
 
 export type BrowserExtensionMessage = z.infer<
   typeof BrowserExtensionMessageSchema

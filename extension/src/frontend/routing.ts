@@ -11,6 +11,7 @@ const background = new BrowserExtensionClient(
 frontend.forward('record-events', [background])
 frontend.forward('navigate', [background])
 frontend.forward('load-events', [background])
+frontend.forward('stop-recording', [background])
 
 background.forward('events-recorded', [frontend])
 background.forward('events-loaded', [frontend])
