@@ -1,6 +1,10 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { DiscIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import {
+  DiscIcon,
+  ExclamationTriangleIcon,
+  InfoCircledIcon,
+} from '@radix-ui/react-icons'
 import {
   Button,
   Callout,
@@ -10,6 +14,7 @@ import {
   Spinner,
   Text,
   TextField,
+  Tooltip,
 } from '@radix-ui/themes'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -104,57 +109,93 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
           margin-top: var(--space-6);
         `}
       >
-        <FieldGroup
-          name="url"
-          label="Starting URL"
-          hint="Enter the URL of the website or service you want to test"
-          hintType="text"
-          errors={errors}
-          width="100%"
-        >
-          <Flex>
-            <TextField.Root
-              {...register('url')}
-              placeholder="e.g. quickpizza.grafana.com"
-              autoFocus
-              css={css`
-                flex-grow: 1;
-                border-right: 0;
-                border-bottom-right-radius: 0;
-                border-top-right-radius: 0;
-              `}
-            />
-            <Button
-              disabled={isLoading || !canRecord}
-              type="submit"
-              css={css`
-                margin-left: -1px;
-                border-bottom-left-radius: 0;
-                border-top-left-radius: 0;
-              `}
+        <Flex direction="column" gap="4">
+          <div>
+            <FieldGroup
+              name="url"
+              label="Starting URL"
+              hint="Enter the URL of the website or service you want to test"
+              hintType="text"
+              errors={errors}
+              width="100%"
             >
-              {isLoading ? <Spinner /> : <DiscIcon />} Start recording
-            </Button>
-          </Flex>
-        </FieldGroup>
-        {canCaptureBrowser && (
-          <Text as="label" size="2">
-            <Flex gap="2">
-              <Checkbox
-                disabled={!canRecord}
-                checked={captureBrowser}
-                onCheckedChange={handleCaptureBrowserChange}
-              />
-              <span>Capture browser events (Preview)</span>
-            </Flex>
-          </Text>
-        )}
+              <Flex>
+                <TextField.Root
+                  {...register('url')}
+                  placeholder="e.g. quickpizza.grafana.com"
+                  autoFocus
+                  css={css`
+                    flex-grow: 1;
+                    border-right: 0;
+                    border-bottom-right-radius: 0;
+                    border-top-right-radius: 0;
+                  `}
+                />
+                <Button
+                  disabled={isLoading || !canRecord}
+                  type="submit"
+                  css={css`
+                    margin-left: -1px;
+                    border-bottom-left-radius: 0;
+                    border-top-left-radius: 0;
+                  `}
+                >
+                  {isLoading ? <Spinner /> : <DiscIcon />} Start recording
+                </Button>
+              </Flex>
+            </FieldGroup>
 
-        <WarningMessage
-          proxyStatus={proxyStatus}
-          isBrowserInstalled={isBrowserInstalled}
-        />
+            <WarningMessage
+              proxyStatus={proxyStatus}
+              isBrowserInstalled={isBrowserInstalled}
+            />
+          </div>
+
+          {canCaptureBrowser && (
+            <FieldGroup
+              name="captureBrowser"
+              label={<CaptureBrowserLabel />}
+              hint="Record user interactions in the browser alongside network requests."
+              hintType="text"
+            >
+              <Text size="2">
+                <Flex gap="2" align="center">
+                  <Checkbox
+                    disabled={!canRecord}
+                    checked={captureBrowser}
+                    onCheckedChange={handleCaptureBrowserChange}
+                  />
+                  <span>Capture browser events</span>
+                </Flex>
+              </Text>
+            </FieldGroup>
+          )}
+        </Flex>
       </form>
+    </Flex>
+  )
+}
+
+function CaptureBrowserLabel() {
+  return (
+    <Flex align="center" gap="1">
+      <span>
+        Browser Events{' '}
+        <Text size="1" weight="light">
+          (Preview)
+        </Text>{' '}
+      </span>
+      <Tooltip
+        content={
+          <>
+            This will enable capture of user interactions such as clicks and
+            navigation. Recordings with these events can later be used to export
+            a k6 browser script.
+          </>
+        }
+      >
+        <InfoCircledIcon />
+      </Tooltip>
     </Flex>
   )
 }
