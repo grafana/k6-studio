@@ -91,7 +91,7 @@ function TextAssertionForm({
   }
 
   return (
-    <Popover.Root modal open={true} onOpenChange={onClose}>
+    <Popover.Root open={true} onOpenChange={onClose}>
       <Popover.Anchor asChild>
         <Overlay bounds={selection.bounds} />
       </Popover.Anchor>

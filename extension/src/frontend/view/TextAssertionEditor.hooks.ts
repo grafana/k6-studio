@@ -4,6 +4,14 @@ import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { generateSelector } from 'extension/src/selectors'
 
 import { TextSelection } from './TextAssertionEditor.types'
+import { getElementBounds, toBounds } from './utils'
+
+function measureRange(range: Range) {
+  return {
+    highlights: Array.from(range.getClientRects()).map(toBounds),
+    bounds: getElementBounds(range),
+  }
+}
 
 export function useTextSelection() {
   const isSelecting = useRef(false)
@@ -69,27 +77,11 @@ export function useTextSelection() {
         return
       }
 
-      const bounds = range.getBoundingClientRect()
-      const highlights = Array.from(range.getClientRects()).map((rect) => {
-        return {
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height,
-        }
-      })
-
       setSelection({
         text: range.toString(),
         selector: generateSelector(commonAncestor),
         range,
-        highlights: highlights,
-        bounds: {
-          top: bounds.top,
-          left: bounds.left,
-          width: bounds.width,
-          height: bounds.height,
-        },
+        ...measureRange(range),
       })
     }
 
@@ -107,27 +99,9 @@ export function useTextSelection() {
           return null
         }
 
-        const bounds = selection.range.getBoundingClientRect()
-        const textRects = Array.from(selection.range.getClientRects()).map(
-          (rect) => {
-            return {
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-            }
-          }
-        )
-
         return {
           ...selection,
-          highlights: textRects,
-          bounds: {
-            top: bounds.top,
-            left: bounds.left,
-            width: bounds.width,
-            height: bounds.height,
-          },
+          ...measureRange(selection.range),
         }
       })
     })

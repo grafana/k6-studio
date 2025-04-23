@@ -8,11 +8,20 @@ import { useGlobalClass } from './GlobalStyles'
 import { useHighlightDebounce } from './hooks/useHighlightDebounce'
 import { usePreventClick } from './hooks/usePreventClick'
 import { Bounds } from './types'
+import { getElementBounds } from './utils'
 
 interface TrackedElement {
   selector: ElementSelector
   target: Element
   bounds: Bounds
+}
+
+function toTrackedElement(element: Element): TrackedElement {
+  return {
+    selector: generateSelector(element),
+    target: element,
+    bounds: getElementBounds(element),
+  }
 }
 
 export function useInspectedElement() {
@@ -40,18 +49,7 @@ export function useInspectedElement() {
         return
       }
 
-      const { top, left, width, height } = target.getBoundingClientRect()
-
-      setInspectedElement({
-        selector: generateSelector(target),
-        target: target,
-        bounds: {
-          top,
-          left,
-          width,
-          height,
-        },
-      })
+      setInspectedElement(toTrackedElement(target))
     }
 
     window.addEventListener('mouseover', handleMouseOver)
@@ -60,22 +58,6 @@ export function useInspectedElement() {
       window.removeEventListener('mouseover', handleMouseOver)
     }
   }, [])
-
-  useEffect(() => {
-    if (element === null) {
-      return
-    }
-
-    const handleScroll = () => {
-      setInspectedElement(null)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [element])
 
   usePreventClick(element !== null)
   useGlobalClass('inspecting')

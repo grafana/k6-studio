@@ -284,7 +284,7 @@ describe('Code generation', () => {
         },
         {
           type: 'correlation',
-          id: '1',
+          id: '2',
           enabled: true,
           extractor: {
             filter: { path: '' },
@@ -292,6 +292,20 @@ describe('Code generation', () => {
               type: 'regex',
               from: 'headers',
               regex: 'project_id=(.*)$',
+            },
+            extractionMode: 'single',
+          },
+        },
+        {
+          type: 'correlation',
+          id: '3',
+          enabled: true,
+          extractor: {
+            filter: { path: '' },
+            selector: {
+              type: 'json',
+              from: 'body',
+              path: 'is_admin',
             },
             extractionMode: 'single',
           },
@@ -321,6 +335,8 @@ describe('Code generation', () => {
             correlation_vars["correlation_0"] = match[1];
           }
 
+          correlation_vars['correlation_1'] = resp.json().is_admin
+
           params = {
             headers: {}, cookies: {}
           }
@@ -328,7 +344,7 @@ describe('Code generation', () => {
           url = http.url\`http://test.k6.io/api/v1/login?project_id=\${correlation_vars['correlation_0']}\`
           resp = http.request('POST', url, null, params)
 
-          correlation_vars['correlation_1'] = resp.json().user_id
+          correlation_vars['correlation_2'] = resp.json().user_id
         })
 
         group('two', function () {
@@ -336,7 +352,7 @@ describe('Code generation', () => {
             headers: {}, cookies: {}
           }
 
-          url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars['correlation_1']}\`
+          url = http.url\`http://test.k6.io/api/v1/users/\${correlation_vars['correlation_2']}\`
           resp = http.request('GET', url, null, params)
 
           params = {
@@ -344,7 +360,12 @@ describe('Code generation', () => {
           }
 
           url = http.url\`http://test.k6.io/api/v1/users\`
-          resp = http.request('POST', url, \`${JSON.stringify({ user_id: "${correlation_vars['correlation_1']}" })}\`, params)
+          resp = http.request(
+            'POST',
+            url,
+            \`{"user_id":"\${correlation_vars['correlation_2']}","is_admin":\${correlation_vars['correlation_1']}}\`,
+            params
+          )
         })
 
         sleep(1)
@@ -393,7 +414,12 @@ describe('Code generation', () => {
             }
 
             url = http.url\`http://test.k6.io/api/v1/users\`
-            resp = http.request('POST', url, \`${JSON.stringify({ user_id: '333' })}\`, params)
+            resp = http.request(
+              'POST',
+              url,
+              \`${JSON.stringify({ user_id: '333', is_admin: false })}\`,
+              params
+            )
           })
 
           sleep(1)
