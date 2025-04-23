@@ -1,10 +1,10 @@
 import { Fragment } from 'react'
 
-import { Tooltip } from '@/components/primitives/Tooltip'
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
+import { AssertedDescription } from './AssertedDescription'
 import { ClickDescription } from './ClickDescription'
 import { InputChangeDescription } from './InputChangeDescription'
 import { PageNavigationDescription } from './PageNavigationDescription'
@@ -93,16 +93,7 @@ export function EventDescription({
       )
 
     case 'assert':
-      return (
-        <>
-          Assert that{' '}
-          <Selector selector={event.selector} onHighlight={onHighlight} />{' '}
-          contains the text{' '}
-          <Tooltip asChild content={event.assertion.operation.value}>
-            <em>{`"${event.assertion.operation.value}"`}</em>
-          </Tooltip>
-        </>
-      )
+      return <AssertedDescription event={event} onHighlight={onHighlight} />
 
     default:
       return exhaustive(event)

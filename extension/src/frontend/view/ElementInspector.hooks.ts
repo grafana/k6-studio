@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { last } from 'lodash-es'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { ElementSelector } from '@/schemas/recording'
 
@@ -7,10 +8,10 @@ import { generateSelector } from '../../selectors'
 import { useGlobalClass } from './GlobalStyles'
 import { useHighlightDebounce } from './hooks/useHighlightDebounce'
 import { usePreventClick } from './hooks/usePreventClick'
-import { Bounds } from './types'
+import { Bounds, Position } from './types'
 import { getElementBounds } from './utils'
 
-interface TrackedElement {
+export interface TrackedElement {
   selector: ElementSelector
   target: Element
   bounds: Bounds
@@ -25,7 +26,12 @@ function toTrackedElement(element: Element): TrackedElement {
 }
 
 export function useInspectedElement() {
-  const [element, setInspectedElement] = useState<TrackedElement | null>(null)
+  const [mousePosition, setMousePosition] = useState<Position>({
+    top: 0,
+    left: 0,
+  })
+  const [pinnedEl, setPinnedElement] = useState<TrackedElement[]>([])
+  const [hoveredEl, setHoveredEl] = useState<TrackedElement | null>(null)
 
   useEffect(() => {
     const handleMouseOver = (ev: MouseEvent) => {
@@ -44,12 +50,12 @@ export function useInspectedElement() {
           return
         }
 
-        setInspectedElement(null)
+        setHoveredEl(null)
 
         return
       }
 
-      setInspectedElement(toTrackedElement(target))
+      setHoveredEl(toTrackedElement(target))
     }
 
     window.addEventListener('mouseover', handleMouseOver)
@@ -57,10 +63,107 @@ export function useInspectedElement() {
     return () => {
       window.removeEventListener('mouseover', handleMouseOver)
     }
-  }, [])
+  }, [pinnedEl])
 
-  usePreventClick(element !== null)
+  useEffect(() => {
+    if (hoveredEl === null) {
+      return
+    }
+
+    const handleScroll = () => {
+      setHoveredEl(null)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [hoveredEl])
+
+  usePreventClick({
+    callback: (ev) => {
+      if (hoveredEl === null) {
+        return
+      }
+
+      if (pinnedEl.length > 0) {
+        console.log('unpinning')
+        setMousePosition({
+          top: 0,
+          left: 0,
+        })
+        setPinnedElement([])
+
+        return
+      }
+
+      setMousePosition({
+        top: ev.clientY + window.scrollY,
+        left: ev.clientX + window.scrollX,
+      })
+
+      setPinnedElement([hoveredEl])
+    },
+    dependencies: [pinnedEl, hoveredEl],
+  })
+
   useGlobalClass('inspecting')
 
-  return useHighlightDebounce(element)
+  const unpin = useCallback(() => {
+    setPinnedElement([])
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      setPinnedElement([])
+      setHoveredEl(null)
+    }
+  }, [unpin])
+
+  const expand = useMemo(() => {
+    const [head] = pinnedEl
+
+    if (head === undefined) {
+      return undefined
+    }
+
+    const parent = head.target.parentElement
+
+    if (parent === null || parent === document.documentElement) {
+      return undefined
+    }
+
+    return () => {
+      setPinnedElement((pinned) => {
+        return [toTrackedElement(parent), ...pinned]
+      })
+    }
+  }, [pinnedEl])
+
+  const contract = useMemo(() => {
+    const [head, ...tail] = pinnedEl
+
+    // If head is undefined, that means no element is pinned. If tail is
+    // empty, that means we're back at the intial element. In either case
+    // we can't decrease the selection any further.
+    if (head === undefined || tail.length === 0) {
+      return undefined
+    }
+
+    return () => {
+      setPinnedElement(tail)
+    }
+  }, [pinnedEl])
+
+  const highlightedEl = useHighlightDebounce(hoveredEl)
+
+  return {
+    pinned: last(pinnedEl) ?? null,
+    element: pinnedEl[0] ?? highlightedEl,
+    mousePosition,
+    unpin,
+    expand,
+    contract,
+  }
 }

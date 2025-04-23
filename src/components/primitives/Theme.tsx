@@ -106,8 +106,6 @@ const styles = css`
   --studio-spacing-7: calc(var(--studio-spacing-1) * 7);
   --studio-spacing-8: calc(var(--studio-spacing-1) * 8);
 
-  --studio-alpha-1: rgba(0, 0, 0, 0.1);
-
   --studio-shadow-1: rgba(24, 26, 27, 0.2) 0px 4px 8px;
 
   --studio-toggle-bg-on: rgba(0, 0, 0, 0.1);
@@ -126,10 +124,15 @@ const styles = css`
 
   --studio-hover-color: rgb(0, 0, 0, 0.1);
 
+  // Popover variables
+  --studio-popover-foreground: var(--studio-foreground);
+  --studio-popover-background: var(--studio-background);
+  --studio-popover-shadow: var(--studio-shadow-1);
+  --studio-popover-layer: var(--studio-layer-2);
+  --studio-popover-padding: var(--studio-spacing-2);
+
   @media (prefers-color-scheme: dark) {
     --studio-color-scheme: dark;
-
-    --studio-alpha-1: rgba(255, 255, 255, 0.1);
 
     --studio-foreground: var(--gray-12);
     --studio-background: var(--gray-1);
@@ -180,6 +183,46 @@ const styles = css`
 
   [data-p='4'] {
     padding: var(--studio-spacing-4);
+  }
+
+  [data-px='1'] {
+    padding-left: var(--studio-spacing-1);
+    padding-right: var(--studio-spacing-1);
+  }
+
+  [data-px='2'] {
+    padding-left: var(--studio-spacing-1);
+    padding-right: var(--studio-spacing-1);
+  }
+
+  [data-px='3'] {
+    padding-left: var(--studio-spacing-1);
+    padding-right: var(--studio-spacing-1);
+  }
+
+  [data-px='4'] {
+    padding-left: var(--studio-spacing-1);
+    padding-right: var(--studio-spacing-1);
+  }
+
+  [data-py='1'] {
+    padding-top: var(--studio-spacing-1);
+    padding-bottom: var(--studio-spacing-1);
+  }
+
+  [data-py='2'] {
+    padding-top: var(--studio-spacing-1);
+    padding-bottom: var(--studio-spacing-1);
+  }
+
+  [data-py='3'] {
+    padding-top: var(--studio-spacing-1);
+    padding-bottom: var(--studio-spacing-1);
+  }
+
+  [data-py='4'] {
+    padding-top: var(--studio-spacing-1);
+    padding-bottom: var(--studio-spacing-1);
   }
 `
 

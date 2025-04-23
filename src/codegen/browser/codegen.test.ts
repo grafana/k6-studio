@@ -396,3 +396,77 @@ it('should assert that element contains text', async ({ expect }) => {
     '__snapshots__/browser/assertions/element-contains-text.ts'
   )
 })
+
+it('should assert that element is visible', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'button',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-visible',
+          operation: {
+            type: 'is-visible',
+            visible: true,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/element-is-visible.ts'
+  )
+})
+
+it('should assert that element is hidden', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'button',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-hidden',
+          operation: {
+            type: 'is-visible',
+            visible: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/element-is-hidden.ts'
+  )
+})

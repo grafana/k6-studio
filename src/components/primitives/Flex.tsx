@@ -51,14 +51,18 @@ interface FlexProps {
   justify?: 'start' | 'center' | 'end' | 'between' | 'around'
   gap?: '0' | '1' | '2' | '3' | '4'
   p?: '0' | '1' | '2' | '3' | '4'
-  children: ReactNode
+  px?: '0' | '1' | '2' | '3' | '4'
+  py?: '0' | '1' | '2' | '3' | '4'
+  children?: ReactNode
 }
 
 export function Flex({
   direction = 'row',
   align = 'center',
   justify = 'start',
-  p = '0',
+  p,
+  px,
+  py,
   gap = '0',
   children,
 }: FlexProps) {
@@ -69,6 +73,8 @@ export function Flex({
       data-justify={justify}
       data-gap={gap}
       data-p={p}
+      data-px={px}
+      data-py={py}
       css={styles}
     >
       {children}

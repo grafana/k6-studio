@@ -52,6 +52,7 @@ export function ToolBox({
         background-color: var(--studio-background);
         box-shadow: var(--studio-shadow-1);
         border: 1px solid var(--gray-6);
+        padding: var(--studio-spacing-1);
       `}
     >
       <Toolbar.ToggleGroup

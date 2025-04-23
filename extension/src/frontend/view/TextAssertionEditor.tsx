@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 
 import { Button } from '@/components/primitives/Button'
-import { FieldSet } from '@/components/primitives/FieldSet'
+import { FieldGrid } from '@/components/primitives/FieldGrid'
 import { Flex } from '@/components/primitives/Flex'
 import { Popover } from '@/components/primitives/Popover'
 import { TextField } from '@/components/primitives/TextField'
@@ -131,7 +131,7 @@ function TextAssertionForm({
             `}
             onSubmit={handleSubmit}
           >
-            <FieldSet>
+            <FieldGrid>
               <TextField
                 size="1"
                 label="Element"
@@ -146,7 +146,7 @@ function TextAssertionForm({
                 value={text}
                 onChange={handleTextChange}
               />
-            </FieldSet>
+            </FieldGrid>
 
             <Flex justify="end">
               <Button type="submit" size="1">
@@ -168,7 +168,9 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
   const [selection, clearSelection] = useTextSelection()
 
   useGlobalClass('asserting-text')
-  usePreventClick(selection === null)
+  usePreventClick({
+    enabled: selection !== null,
+  })
 
   const handleAdd = (assertion: TextAssertion) => {
     client.send({
