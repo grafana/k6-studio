@@ -18,7 +18,7 @@ import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
 import { UIHandler } from './handlers/ui/types'
 import * as mainState from './k6StudioState'
-import { getLogContent, initializeLogger, openLogFolder } from './logger'
+import { initializeLogger } from './logger'
 import { getStudioFileFromPath } from './main/file'
 import { configureApplicationMenu } from './menu'
 import {
@@ -277,16 +277,6 @@ ipcMain.on('splashscreen:close', (event) => {
     splashscreenWindow.close()
     showWindow(browserWindow)
   }
-})
-
-ipcMain.on('log:open', () => {
-  console.info('log:open event received')
-  openLogFolder()
-})
-
-ipcMain.handle('log:read', () => {
-  console.info('log:read event received')
-  return getLogContent()
 })
 
 function showWindow(browserWindow: BrowserWindow) {

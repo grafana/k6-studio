@@ -9,6 +9,7 @@ import * as cloud from './handlers/cloud/preload'
 import * as data from './handlers/dataFiles/preload'
 import * as generator from './handlers/generator/preload'
 import * as har from './handlers/har/preload'
+import * as log from './handlers/log/preload'
 import * as proxy from './handlers/proxy/preload'
 import * as script from './handlers/script/preload'
 import * as settings from './handlers/settings/preload'
@@ -29,18 +30,6 @@ const app = {
   },
   changeRoute: (route: string) => {
     return ipcRenderer.send('app:change-route', route)
-  },
-} as const
-
-const log = {
-  openLogFolder: () => {
-    ipcRenderer.send('log:open')
-  },
-  getLogContent: (): Promise<string> => {
-    return ipcRenderer.invoke('log:read')
-  },
-  onLogChange: (callback: (content: string) => void) => {
-    return createListener('log:change', callback)
   },
 } as const
 
