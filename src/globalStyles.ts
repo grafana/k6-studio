@@ -17,6 +17,8 @@ export const globalStyles = css`
     --default-font-family: 'InterVariable', -apple-system, BlinkMacSystemFont,
       'Segoe UI (Custom)', Roboto, 'Helvetica Neue', 'Open Sans (Custom)',
       system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+
+    --cursor-button: pointer;
   }
 
   body {
@@ -25,11 +27,6 @@ export const globalStyles = css`
 
   pre {
     white-space: pre-wrap;
-  }
-
-  .rt-IconButton,
-  .rt-Button {
-    cursor: pointer;
   }
 
   /* Prevent overflow in scroll area with flex parent */
