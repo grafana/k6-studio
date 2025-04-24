@@ -124,6 +124,12 @@ Make sure you have the following dependencies installed before setting up your d
 
 ### Run Grafana k6 Studio locally
 
+(Optional) If you're using nvm, switch to a compatible Node version:
+
+```
+nvm use
+```
+
 Before you can start the app, you need to install the related dependencies:
 
 ```
