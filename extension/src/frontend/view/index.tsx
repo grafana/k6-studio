@@ -89,6 +89,10 @@ function initialize() {
   const shadowCache = createCache({
     key: 'ksix-studio',
     container: root,
+    // For performance reasons, Emotion uses `insertRule` to insert styles in
+    // production builds. However, it seems that moving an element clears its
+    // styles. Since we need to move our mount, we have to resort to using the
+    // less performance option of inserting `<style />` elements.
     speedy: false,
   })
 
