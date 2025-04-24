@@ -1,5 +1,6 @@
 import { Process } from '@puppeteer/browsers'
 import { ChildProcessWithoutNullStreams } from 'child_process'
+import { BrowserWindow } from 'electron'
 import eventEmitter from 'events'
 
 import { type ProxyProcess } from './proxy'
@@ -16,6 +17,9 @@ export type k6StudioState = {
   wasProxyStoppedByClient: boolean
   proxyRetryCount: number
   appShuttingDown: boolean
+  currentClientRoute: string
+  wasAppClosedByClient: boolean
+  splashscreenWindow: BrowserWindow | null
 }
 
 export function initialize() {
@@ -33,5 +37,10 @@ export function initialize() {
 
     // Used mainly to avoid starting a new proxy when closing the active one on shutdown
     appShuttingDown: false,
+    // Used to track the current route in the client side
+    currentClientRoute: '/',
+    wasAppClosedByClient: false,
+
+    splashscreenWindow: null,
   }
 }

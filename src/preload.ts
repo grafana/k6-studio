@@ -1,7 +1,6 @@
-// TODO: https://github.com/grafana/k6-studio/issues/277
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-import { ipcRenderer, contextBridge } from 'electron'
+import { contextBridge } from 'electron'
 
+import * as app from './handlers/app/preload'
 import * as auth from './handlers/auth/preload'
 import * as browser from './handlers/browser/preload'
 import * as browserRemote from './handlers/browserRemote/preload'
@@ -14,24 +13,7 @@ import * as proxy from './handlers/proxy/preload'
 import * as script from './handlers/script/preload'
 import * as settings from './handlers/settings/preload'
 import * as ui from './handlers/ui/preload'
-import { createListener } from './handlers/utils'
 import * as Sentry from './sentry'
-
-const app = {
-  platform: process.platform,
-  closeSplashscreen: () => {
-    ipcRenderer.send('splashscreen:close')
-  },
-  onApplicationClose: (callback: () => void) => {
-    return createListener('app:close', callback)
-  },
-  closeApplication: () => {
-    ipcRenderer.send('app:close')
-  },
-  changeRoute: (route: string) => {
-    return ipcRenderer.send('app:change-route', route)
-  },
-} as const
 
 const studio = {
   auth,
