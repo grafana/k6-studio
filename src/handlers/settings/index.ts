@@ -7,7 +7,7 @@ import {
   saveSettings,
   selectBrowserExecutable,
   selectUpstreamCertificate,
-} from '@/settings'
+} from '@/main/settings'
 import { AppSettings } from '@/types/settings'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 

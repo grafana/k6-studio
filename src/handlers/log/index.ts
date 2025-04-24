@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 
-import { openLogFolder, getLogContent } from '@/logger'
+import { openLogFolder, getLogContent } from '@/main/logger'
 
 import { LogHandler } from './types'
 

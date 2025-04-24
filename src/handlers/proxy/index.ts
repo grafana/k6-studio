@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 
-import { launchProxyAndAttachEmitter, stopProxyProcess } from '@/proxy'
+import { launchProxyAndAttachEmitter, stopProxyProcess } from '@/main/proxy'
 import { browserWindowFromEvent } from '@/utils/electron'
 
 import { ProxyHandler } from './types'

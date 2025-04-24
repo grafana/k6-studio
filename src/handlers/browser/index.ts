@@ -1,7 +1,7 @@
 import { ipcMain, shell } from 'electron'
 
 import { launchBrowser } from '@/handlers/browser/launch'
-import { waitForProxy } from '@/proxy'
+import { waitForProxy } from '@/main/proxy'
 import { BrowserServer } from '@/services/browser/server'
 import { browserWindowFromEvent } from '@/utils/electron'
 
