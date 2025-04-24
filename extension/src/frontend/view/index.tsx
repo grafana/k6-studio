@@ -89,6 +89,7 @@ function initialize() {
   const shadowCache = createCache({
     key: 'ksix-studio',
     container: root,
+    speedy: false,
   })
 
   createRoot(root).render(
