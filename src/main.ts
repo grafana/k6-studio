@@ -211,6 +211,8 @@ app.on('activate', async () => {
 app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
   k6StudioState.appShuttingDown = true
-  await k6StudioState.watcher!.close()
+  if (k6StudioState.watcher) {
+    await k6StudioState.watcher.close()
+  }
   return stopProxyProcess()
 })
