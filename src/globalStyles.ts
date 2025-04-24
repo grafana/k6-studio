@@ -27,6 +27,11 @@ export const globalStyles = css`
     white-space: pre-wrap;
   }
 
+  .rt-IconButton,
+  .rt-Button {
+    cursor: pointer;
+  }
+
   /* Prevent overflow in scroll area with flex parent */
   .rt-ScrollAreaViewport > * {
     width: auto;
