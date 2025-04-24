@@ -1,5 +1,6 @@
 import { BrowserServer } from '@/services/browser/server'
 
+import * as app from './app'
 import * as auth from './auth'
 import * as browser from './browser'
 import * as browserRemote from './browserRemote'
@@ -30,4 +31,5 @@ export function initialize({ browserServer }: Services) {
   generator.initialize()
   dataFiles.initialize()
   log.initialize()
+  app.initialize()
 }

@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/electron/main'
 import { watch, FSWatcher } from 'chokidar'
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import { existsSync } from 'fs'
 import { readdir, rename } from 'fs/promises'
@@ -20,6 +20,7 @@ import { UIHandler } from './handlers/ui/types'
 import * as mainState from './k6StudioState'
 import { initializeLogger } from './logger'
 import { getStudioFileFromPath } from './main/file'
+import { showWindow, trackWindowState } from './main/window'
 import { configureApplicationMenu } from './menu'
 import {
   cleanUpProxies,
@@ -27,14 +28,10 @@ import {
   stopProxyProcess,
 } from './proxy'
 import { BrowserServer } from './services/browser/server'
-import { getSettings, initSettings, saveSettings } from './settings'
+import { getSettings, initSettings } from './settings'
 import { ProxyStatus } from './types'
 import { sendReport } from './usageReport'
-import {
-  getAppIcon,
-  getPlatform,
-  browserWindowFromEvent,
-} from './utils/electron'
+import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
@@ -56,11 +53,7 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-let currentClientRoute = '/'
-let wasAppClosedByClient = false
-
 let watcher: FSWatcher
-let splashscreenWindow: BrowserWindow
 
 const browserServer = new BrowserServer()
 
@@ -101,7 +94,7 @@ async function migrateJsonGenerator() {
 }
 
 const createSplashWindow = async () => {
-  splashscreenWindow = new BrowserWindow({
+  k6StudioState.splashscreenWindow = new BrowserWindow({
     width: 600,
     height: 400,
     frame: false,
@@ -124,17 +117,21 @@ const createSplashWindow = async () => {
 
   // Open the DevTools.
   if (process.env.NODE_ENV === 'development') {
-    splashscreenWindow.webContents.openDevTools({ mode: 'detach' })
+    k6StudioState.splashscreenWindow.webContents.openDevTools({
+      mode: 'detach',
+    })
   }
 
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
-  splashscreenWindow.once('ready-to-show', () => {
-    splashscreenWindow.show()
+  k6StudioState.splashscreenWindow.once('ready-to-show', () => {
+    if (k6StudioState.splashscreenWindow) {
+      k6StudioState.splashscreenWindow.show()
+    }
   })
 
-  await splashscreenWindow.loadFile(splashscreenFile)
+  await k6StudioState.splashscreenWindow.loadFile(splashscreenFile)
 
-  return splashscreenWindow
+  return k6StudioState.splashscreenWindow
 }
 
 const createWindow = async () => {
@@ -169,7 +166,7 @@ const createWindow = async () => {
 
   configureApplicationMenu()
   configureWatcher(mainWindow)
-  wasAppClosedByClient = false
+  k6StudioState.wasAppClosedByClient = false
 
   k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
     k6StudioState.proxyStatus = status
@@ -202,7 +199,10 @@ const createWindow = async () => {
   mainWindow.on('resized', () => trackWindowState(mainWindow))
   mainWindow.on('close', (event) => {
     mainWindow.webContents.send('app:close')
-    if (currentClientRoute.startsWith('/generator') && !wasAppClosedByClient) {
+    if (
+      k6StudioState.currentClientRoute.startsWith('/generator') &&
+      !k6StudioState.wasAppClosedByClient
+    ) {
       event.preventDefault()
     }
   })
@@ -251,60 +251,6 @@ app.on('before-quit', async () => {
   await watcher.close()
   return stopProxyProcess()
 })
-
-ipcMain.on('app:change-route', (_, route: string) => {
-  currentClientRoute = route
-})
-
-ipcMain.on('app:close', (event) => {
-  console.log('app:close event received')
-
-  wasAppClosedByClient = true
-  if (k6StudioState.appShuttingDown) {
-    app.quit()
-    return
-  }
-  const browserWindow = browserWindowFromEvent(event)
-  browserWindow.close()
-})
-
-ipcMain.on('splashscreen:close', (event) => {
-  console.info('splashscreen:close event received')
-
-  const browserWindow = browserWindowFromEvent(event)
-
-  if (splashscreenWindow && !splashscreenWindow.isDestroyed()) {
-    splashscreenWindow.close()
-    showWindow(browserWindow)
-  }
-})
-
-function showWindow(browserWindow: BrowserWindow) {
-  const { isMaximized } = k6StudioState.appSettings.windowState
-  if (isMaximized) {
-    browserWindow.maximize()
-  } else {
-    browserWindow.show()
-  }
-  browserWindow.focus()
-}
-
-async function trackWindowState(browserWindow: BrowserWindow) {
-  const { width, height, x, y } = browserWindow.getBounds()
-  const isMaximized = browserWindow.isMaximized()
-  k6StudioState.appSettings.windowState = {
-    width,
-    height,
-    x,
-    y,
-    isMaximized,
-  }
-  try {
-    await saveSettings(k6StudioState.appSettings)
-  } catch (error) {
-    log.error(error)
-  }
-}
 
 function configureWatcher(browserWindow: BrowserWindow) {
   watcher = watch(
