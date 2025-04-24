@@ -6,3 +6,10 @@ export enum BrowserHandler {
   OpenExternalLink = 'browser:open:external:link',
   BrowserEvent = 'browser:event',
 }
+
+export interface LaunchBrowserOptions {
+  url?: string
+  capture: {
+    browser: boolean
+  }
+}

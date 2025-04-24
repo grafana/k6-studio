@@ -138,7 +138,7 @@ function ExtractedValue({
 
   const extractedValue = selectedRuleInstance?.state?.extractedValue
 
-  if (!extractedValue) {
+  if (extractedValue === undefined) {
     return (
       <Text size="2" color="gray">
         The rule does not match any requests

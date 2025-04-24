@@ -1,14 +1,17 @@
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
+import find from 'find-process'
 import { readFile } from 'fs/promises'
 import forge from 'node-forge'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'path'
 import readline from 'readline/promises'
+import kill from 'tree-kill'
 
+import { ProxyHandler } from './handlers/proxy/types'
 import { ProxyData } from './types'
 import { ProxySettings } from './types/settings'
-import { getPlatform, getArch } from './utils/electron'
+import { getPlatform, getArch, findOpenPort, sendToast } from './utils/electron'
 import { safeJsonParse } from './utils/json'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
@@ -86,7 +89,7 @@ export const launchProxy = (
 
     const proxyData = safeJsonParse<ProxyData>(data)
     if (proxyData) {
-      browserWindow.webContents.send('proxy:data', proxyData)
+      browserWindow.webContents.send(ProxyHandler.Data, proxyData)
     } else {
       // the proxy outputs some errors to stdout
       // example: [Errno 48] HTTP(S) proxy failed to listen on *:6001
@@ -107,7 +110,7 @@ export const launchProxy = (
       return
     }
 
-    browserWindow.webContents.send('proxy:close', code)
+    browserWindow.webContents.send(ProxyHandler.Close, code)
     onFailure?.()
   })
 
@@ -157,5 +160,91 @@ export const waitForProxy = async (): Promise<void> => {
     k6StudioState.proxyEmitter.once('ready', () => {
       resolve()
     })
+  })
+}
+
+export const launchProxyAndAttachEmitter = async (
+  browserWindow: BrowserWindow
+) => {
+  const PROXY_RETRY_LIMIT = 5
+  const { port, automaticallyFindPort } = k6StudioState.appSettings.proxy
+
+  const proxyPort = automaticallyFindPort ? await findOpenPort(port) : port
+  k6StudioState.appSettings.proxy.port = proxyPort
+
+  console.log(
+    `launching proxy ${JSON.stringify(k6StudioState.appSettings.proxy)}`
+  )
+
+  k6StudioState.proxyEmitter.emit('status:change', 'starting')
+
+  return launchProxy(browserWindow, k6StudioState.appSettings.proxy, {
+    onReady: () => {
+      k6StudioState.wasProxyStoppedByClient = false
+      k6StudioState.proxyEmitter.emit('status:change', 'online')
+      k6StudioState.proxyEmitter.emit('ready')
+    },
+    onFailure: async () => {
+      if (k6StudioState.wasProxyStoppedByClient) {
+        k6StudioState.proxyEmitter.emit('status:change', 'offline')
+      }
+
+      if (
+        k6StudioState.appShuttingDown ||
+        k6StudioState.wasProxyStoppedByClient ||
+        k6StudioState.proxyStatus === 'starting'
+      ) {
+        // don't restart the proxy if the app is shutting down, manually stopped by client or already restarting
+        return
+      }
+
+      if (
+        k6StudioState.proxyRetryCount === PROXY_RETRY_LIMIT &&
+        !automaticallyFindPort
+      ) {
+        k6StudioState.proxyRetryCount = 0
+        k6StudioState.proxyEmitter.emit('status:change', 'offline')
+
+        sendToast(browserWindow.webContents, {
+          title: `Port ${proxyPort} is already in use`,
+          description:
+            'Please select a different port or enable automatic port selection',
+          status: 'error',
+        })
+
+        return
+      }
+
+      k6StudioState.proxyRetryCount++
+      k6StudioState.proxyEmitter.emit('status:change', 'starting')
+      k6StudioState.currentProxyProcess =
+        await launchProxyAndAttachEmitter(browserWindow)
+
+      const errorMessage = `Proxy failed to start on port ${proxyPort}, restarting...`
+      log.error(errorMessage)
+      sendToast(browserWindow.webContents, {
+        title: errorMessage,
+        status: 'error',
+      })
+    },
+  })
+}
+
+export const stopProxyProcess = async () => {
+  if (k6StudioState.currentProxyProcess) {
+    k6StudioState.currentProxyProcess.kill()
+    k6StudioState.currentProxyProcess = null
+
+    // kill remaining proxies if any, this might happen on windows
+    if (getPlatform() === 'win') {
+      await cleanUpProxies()
+    }
+  }
+}
+
+export const cleanUpProxies = async () => {
+  const processList = await find('name', 'k6-studio-proxy', false)
+  processList.forEach((proc) => {
+    kill(proc.pid)
   })
 }

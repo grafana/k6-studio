@@ -10,11 +10,45 @@ import { InBrowserControls } from './InBrowserControls'
 
 let initialized = false
 
-function createShadowRoot() {
+function createMount() {
   const mount = document.createElement('div')
 
-  document.body.prepend(mount)
+  document.body.appendChild(mount)
 
+  // Our mount needs to stay at the end of the body, otherwise it will interfere
+  // with the selector algorithm. For example, take the following DOM:
+  //
+  // ```
+  // <body>
+  //   <div>User element</div>
+  //   <div id="ksix-studio-mount"></div>
+  //   <div>Dynamically added later</div>
+  // </body>
+  // ```
+  //
+  // If the user was highlighting the dynamically added element, the selector generator
+  // could generate a selector like `body > div:nth-child(3)`. But running the generated
+  // script would always result in an error because the mount is only present when recording
+  // and the correct selector should have been `body > div:nth-child(2)`.
+  //
+  // So we use a MutationObserver to continuously check if the mount is still the last
+  // element in the body. If it isn't, we move it to the end of the body.
+  const observer = new MutationObserver(() => {
+    if (mount.nextSibling === null) {
+      return
+    }
+
+    document.body.appendChild(mount)
+  })
+
+  observer.observe(document.body, {
+    childList: true,
+  })
+
+  return mount
+}
+
+function createShadowRoot(mount: Element) {
   const shadow = mount.attachShadow({
     mode: 'open',
   })
@@ -38,7 +72,8 @@ function initialize() {
 
   initialized = true
 
-  const root = createShadowRoot()
+  const mount = createMount()
+  const root = createShadowRoot(mount)
 
   /**
    * The global cache contains any styles that should be applied to the

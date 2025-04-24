@@ -91,7 +91,7 @@ function TextAssertionForm({
   }
 
   return (
-    <Popover.Root modal open={true} onOpenChange={onClose}>
+    <Popover.Root open={true} onOpenChange={onClose}>
       <Popover.Anchor asChild>
         <Overlay bounds={selection.bounds} />
       </Popover.Anchor>
@@ -177,12 +177,15 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
         {
           eventId: crypto.randomUUID(),
           timestamp: Date.now(),
-          type: 'asserted-text',
-          selector: assertion.selector,
+          type: 'assert',
           tab: '',
-          operation: {
-            type: 'contains',
-            value: assertion.text,
+          selector: assertion.selector,
+          assertion: {
+            type: 'text',
+            operation: {
+              type: 'contains',
+              value: assertion.text,
+            },
           },
         },
       ],

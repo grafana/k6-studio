@@ -1,13 +1,12 @@
 import { ipcRenderer } from 'electron'
 
+import { LaunchBrowserOptions, BrowserHandler } from '@/handlers/browser/types'
 import { BrowserEvent } from '@/schemas/recording'
 
 import { createListener } from '../utils'
 
-import { BrowserHandler } from './types'
-
-export function launchBrowser(url?: string) {
-  return ipcRenderer.invoke(BrowserHandler.Start, url) as Promise<void>
+export function launchBrowser(options: LaunchBrowserOptions) {
+  return ipcRenderer.invoke(BrowserHandler.Start, options) as Promise<void>
 }
 
 export function stopBrowser() {

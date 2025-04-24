@@ -1,18 +1,20 @@
-import { BrowserWindow } from 'electron'
-
 import { BrowserServer } from '@/services/browser/server'
 
 import * as auth from './auth'
 import * as browser from './browser'
 import * as browserRemote from './browserRemote'
 import * as cloud from './cloud'
+import * as dataFiles from './dataFiles'
+import * as generator from './generator'
 import * as har from './har'
+import * as log from './log'
+import * as proxy from './proxy'
 import * as script from './script'
 import * as settings from './settings'
+import * as ui from './ui'
 
 interface Services {
   browserServer: BrowserServer
-  browserWindow: BrowserWindow
 }
 
 export function initialize({ browserServer }: Services) {
@@ -23,4 +25,9 @@ export function initialize({ browserServer }: Services) {
   browser.initialize(browserServer)
   script.initialize()
   settings.initialize()
+  proxy.initialize()
+  ui.initialize()
+  generator.initialize()
+  dataFiles.initialize()
+  log.initialize()
 }
