@@ -14,12 +14,15 @@ import {
   exportNamed,
   fromObjectLiteral,
   identifier,
-} from './codegen/estree'
-import { NodeType } from './codegen/estree/nodes'
-import { getExports, traverse } from './codegen/estree/traverse'
-import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from './constants/workspace'
-import { K6Check, K6Log } from './types'
-import { getArch, getPlatform } from './utils/electron'
+} from '../codegen/estree'
+import { NodeType } from '../codegen/estree/nodes'
+import { getExports, traverse } from '../codegen/estree/traverse'
+import {
+  TEMP_K6_ARCHIVE_PATH,
+  TEMP_SCRIPT_SUFFIX,
+} from '../constants/workspace'
+import { K6Check, K6Log } from '../types'
+import { getArch, getPlatform } from '../utils/electron'
 
 export type K6Process = ChildProcessWithoutNullStreams
 

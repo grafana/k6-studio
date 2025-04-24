@@ -1,12 +1,14 @@
 import { Process } from '@puppeteer/browsers'
 import { ChildProcessWithoutNullStreams } from 'child_process'
+import { FSWatcher } from 'chokidar'
 import { BrowserWindow } from 'electron'
 import eventEmitter from 'events'
 
+import { ProxyStatus } from '../types'
+import { AppSettings } from '../types/settings'
+
 import { type ProxyProcess } from './proxy'
 import { defaultSettings } from './settings'
-import { ProxyStatus } from './types'
-import { AppSettings } from './types/settings'
 
 export type k6StudioState = {
   currentBrowserProcess: Process | ChildProcessWithoutNullStreams | null
@@ -20,6 +22,7 @@ export type k6StudioState = {
   currentClientRoute: string
   wasAppClosedByClient: boolean
   splashscreenWindow: BrowserWindow | null
+  watcher: FSWatcher | null
 }
 
 export function initialize() {
@@ -42,5 +45,6 @@ export function initialize() {
     wasAppClosedByClient: false,
 
     splashscreenWindow: null,
+    watcher: null,
   }
 }

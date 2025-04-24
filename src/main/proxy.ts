@@ -8,11 +8,16 @@ import path from 'path'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
 
-import { ProxyHandler } from './handlers/proxy/types'
-import { ProxyData } from './types'
-import { ProxySettings } from './types/settings'
-import { getPlatform, getArch, findOpenPort, sendToast } from './utils/electron'
-import { safeJsonParse } from './utils/json'
+import { ProxyHandler } from '../handlers/proxy/types'
+import { ProxyData } from '../types'
+import { ProxySettings } from '../types/settings'
+import {
+  getPlatform,
+  getArch,
+  findOpenPort,
+  sendToast,
+} from '../utils/electron'
+import { safeJsonParse } from '../utils/json'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 

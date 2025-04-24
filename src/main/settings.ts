@@ -4,12 +4,13 @@ import { existsSync, readFileSync } from 'fs'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
 
+import { AppSettingsSchema } from '../schemas/settings'
+import { AppSettings } from '../types/settings'
+import { getPlatform } from '../utils/electron'
+import { safeJsonParse } from '../utils/json'
+import { getExecutableNameFromPlist } from '../utils/plist'
+
 import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
-import { AppSettingsSchema } from './schemas/settings'
-import { AppSettings } from './types/settings'
-import { getPlatform } from './utils/electron'
-import { safeJsonParse } from './utils/json'
-import { getExecutableNameFromPlist } from './utils/plist'
 
 export const defaultSettings: AppSettings = {
   version: '3.0',
