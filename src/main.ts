@@ -1,34 +1,24 @@
 import * as Sentry from '@sentry/electron/main'
-import { watch, FSWatcher } from 'chokidar'
 import { app, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
-import { existsSync } from 'fs'
-import { readdir, rename } from 'fs/promises'
 import path from 'path'
 import { updateElectronApp } from 'update-electron-app'
 
-import {
-  DATA_FILES_PATH,
-  GENERATORS_PATH,
-  RECORDINGS_PATH,
-  SCRIPTS_PATH,
-  TEMP_SCRIPT_SUFFIX,
-} from './constants/workspace'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
-import { UIHandler } from './handlers/ui/types'
-import * as mainState from './k6StudioState'
-import { initializeLogger } from './logger'
-import { getStudioFileFromPath } from './main/file'
-import { showWindow, trackWindowState } from './main/window'
-import { configureApplicationMenu } from './menu'
+import { migrateJsonGenerator } from './main/generator'
+import * as mainState from './main/k6StudioState'
+import { initializeLogger } from './main/logger'
+import { configureApplicationMenu } from './main/menu'
 import {
   cleanUpProxies,
   launchProxyAndAttachEmitter,
   stopProxyProcess,
-} from './proxy'
+} from './main/proxy'
+import { getSettings, initSettings } from './main/settings'
+import { configureWatcher } from './main/watcher'
+import { showWindow, trackWindowState } from './main/window'
 import { BrowserServer } from './services/browser/server'
-import { getSettings, initSettings } from './settings'
 import { ProxyStatus } from './types'
 import { sendReport } from './usageReport'
 import { getAppIcon, getPlatform } from './utils/electron'
@@ -53,8 +43,6 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-let watcher: FSWatcher
-
 const browserServer = new BrowserServer()
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -67,31 +55,6 @@ handlers.initialize({
   browserServer,
 })
 mainState.initialize()
-
-// Used to convert `.json` files into the appropriate file extension for the Generator
-async function migrateJsonGenerator() {
-  if (!existsSync(GENERATORS_PATH)) return
-
-  const items = await readdir(GENERATORS_PATH, { withFileTypes: true })
-  const files = items.filter(
-    (f) => f.isFile() && path.extname(f.name) === '.json'
-  )
-
-  await Promise.all(
-    files.map(async (f) => {
-      try {
-        const oldPath = path.join(GENERATORS_PATH, f.name)
-        const newPath = path.join(
-          GENERATORS_PATH,
-          path.parse(f.name).name + '.k6g'
-        )
-        await rename(oldPath, newPath)
-      } catch (error) {
-        log.error(error)
-      }
-    })
-  )
-}
 
 const createSplashWindow = async () => {
   k6StudioState.splashscreenWindow = new BrowserWindow({
@@ -248,35 +211,6 @@ app.on('activate', async () => {
 app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
   k6StudioState.appShuttingDown = true
-  await watcher.close()
+  await k6StudioState.watcher!.close()
   return stopProxyProcess()
 })
-
-function configureWatcher(browserWindow: BrowserWindow) {
-  watcher = watch(
-    [RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH, DATA_FILES_PATH],
-    {
-      ignoreInitial: true,
-    }
-  )
-
-  watcher.on('add', (filePath) => {
-    const file = getStudioFileFromPath(filePath)
-
-    if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
-      return
-    }
-
-    browserWindow.webContents.send(UIHandler.ADD_FILE, file)
-  })
-
-  watcher.on('unlink', (filePath) => {
-    const file = getStudioFileFromPath(filePath)
-
-    if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
-      return
-    }
-
-    browserWindow.webContents.send(UIHandler.REMOVE_FILE, file)
-  })
-}
