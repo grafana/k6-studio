@@ -2,27 +2,17 @@ import { diffWords } from 'diff'
 
 import { Header, ProxyDataWithMatches } from '@/types'
 import { Match } from '@/types/fuse'
-import { RuleInstance } from '@/types/rules'
 import { diffChangesToFuseIndices } from '@/utils/diff'
 
 import { selectFilteredRequests, useGeneratorStore } from '..'
 
 export function useHighlightRequestChanges(
-  requests: ProxyDataWithMatches[],
-  selectedRuleInstance: RuleInstance | undefined
+  requests: ProxyDataWithMatches[]
 ): ProxyDataWithMatches[] {
   const originalRequests = useGeneratorStore(selectFilteredRequests)
 
-  // TODO: refactor, useRequestSnapshot has similar logic
+  // TODO: refactor, useUnmodifiedRequest has similar logic
   function getOriginalRequest(id: string) {
-    if (
-      selectedRuleInstance &&
-      'requestSnapshots' in selectedRuleInstance.state
-    ) {
-      return selectedRuleInstance?.state.requestSnapshots.find(
-        (request) => request.id === id
-      )?.original
-    }
     return originalRequests.find((request) => request.id === id)?.request
   }
 

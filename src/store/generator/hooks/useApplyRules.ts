@@ -10,17 +10,10 @@ export function useApplyRules() {
   const selectedRuleId = useGeneratorStore((state) => state.selectedRuleId)
   const requests = useGeneratorStore(selectFilteredRequests)
 
-  const ruleApplicationResult = useMemo(() => {
-    const selectedRuleIndex = selectedRuleId
-      ? rules.findIndex((rule) => rule.id === selectedRuleId)
-      : -1
-
-    // Apply selected and preceeding rules
-    const rulesToApply =
-      selectedRuleIndex === -1 ? rules : rules.slice(0, selectedRuleIndex + 1)
-
-    return applyRules(requests, rulesToApply)
-  }, [requests, rules, selectedRuleId])
+  const ruleApplicationResult = useMemo(
+    () => applyRules(requests, rules),
+    [requests, rules]
+  )
 
   const selectedRuleInstance = useMemo(
     () =>
