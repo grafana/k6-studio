@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Tabs } from '@radix-ui/themes'
+import { FlaskConical } from 'lucide-react'
 
 import { BrowserEvent } from '@/schemas/recording'
 import { Group, ProxyData } from '@/types'
@@ -50,6 +51,14 @@ export function RecordingInspector({
           Requests ({requests.length})
         </Tabs.Trigger>
         <Tabs.Trigger value="browser-events">
+          <FlaskConical
+            css={css`
+              width: 1em;
+              height: 1em;
+              margin-right: 0.25em;
+            `}
+            strokeWidth={1.5}
+          />{' '}
           Browser events ({browserEvents.length})
         </Tabs.Trigger>
       </Tabs.List>
