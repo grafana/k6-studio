@@ -33,18 +33,22 @@ export function useHighlightedElements() {
       return
     }
 
-    const elements = document.querySelectorAll(selector.selector)
-    const highlights = Array.from(elements).map((element) => {
-      const bounds = getElementBounds(element)
+    try {
+      const elements = document.querySelectorAll(selector.selector)
+      const highlights = Array.from(elements).map((element) => {
+        const bounds = getElementBounds(element)
 
-      return {
-        id: idCounter.current++,
-        element,
-        bounds,
-      }
-    })
+        return {
+          id: idCounter.current++,
+          element,
+          bounds,
+        }
+      })
 
-    setHighlights(highlights)
+      setHighlights(highlights)
+    } catch {
+      setHighlights([])
+    }
   }, [selector])
 
   useEffect(() => {
