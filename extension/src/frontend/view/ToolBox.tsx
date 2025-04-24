@@ -62,6 +62,7 @@ export function ToolBox({
           <StopIcon />
         </Toolbar.Button>
       </Tooltip>
+      <Toolbar.Separator />
       <Toolbar.ToggleGroup
         type="single"
         value={tool ?? ''}
