@@ -1,5 +1,3 @@
-// TODO: https://github.com/grafana/k6-studio/issues/277
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { contextBridge } from 'electron'
 
 import * as app from './handlers/app/preload'
