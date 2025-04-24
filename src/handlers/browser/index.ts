@@ -47,4 +47,8 @@ export function initialize(browserServer: BrowserServer) {
     console.info(`${BrowserHandler.OpenExternalLink} event received`)
     return shell.openExternal(url)
   })
+
+  browserServer.on('stop-recording', () => {
+    ipcMain.emit(BrowserHandler.Stop)
+  })
 }

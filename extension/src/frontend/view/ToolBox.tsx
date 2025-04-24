@@ -3,6 +3,7 @@ import {
   CursorArrowIcon,
   CursorTextIcon,
   ReaderIcon,
+  StopIcon,
 } from '@radix-ui/react-icons'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
@@ -14,6 +15,7 @@ interface ToolBoxProps {
   tool: Tool | null
   isDrawerOpen: boolean
   onSelectTool: (value: Tool | null) => void
+  onStopRecording: () => void
   onToggleDrawer: (open: boolean) => void
 }
 
@@ -21,6 +23,7 @@ export function ToolBox({
   isDrawerOpen,
   tool,
   onSelectTool,
+  onStopRecording,
   onToggleDrawer,
 }: ToolBoxProps) {
   const handleToolChange = (value: string) => {
@@ -54,6 +57,12 @@ export function ToolBox({
         border: 1px solid var(--gray-6);
       `}
     >
+      <Tooltip delayDuration={0} asChild content="Stop recording">
+        <Toolbar.Button onClick={onStopRecording}>
+          <StopIcon />
+        </Toolbar.Button>
+      </Tooltip>
+      <Toolbar.Separator />
       <Toolbar.ToggleGroup
         type="single"
         value={tool ?? ''}
