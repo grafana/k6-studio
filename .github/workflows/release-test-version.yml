@@ -66,7 +66,7 @@ jobs:
         env:
           WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
 
-      - name: publish macOS
+      - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-')
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
@@ -86,6 +86,26 @@ jobs:
           # on macos we also build the x64 app separately
           # npm run publish -- --arch=x64
           npm run publish
+
+      - name: publish macOS x86_64
+        if: startsWith(matrix.platform, 'macos-')
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # notarization
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ./apple_api_key.p8
+          # sentry integration
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          # sentry vite plugin integration during build
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+          DEBUG: '*'
+        run: |
+          # on macos we also build the x64 app separately
+          npm run publish -- --arch=x64
 
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')
