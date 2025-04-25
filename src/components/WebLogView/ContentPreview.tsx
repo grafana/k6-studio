@@ -57,9 +57,11 @@ export function ContentPreview({
           variant="classic"
           onValueChange={(value) => setSelectedTab(value)}
         >
-          <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
+          {isRawAvailable(contentType) && (
+            <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
+          )}
           <SegmentedControl.Item value="content">Content</SegmentedControl.Item>
-          {isPreviewable(format) && (
+          {isPreviewable(format, contentType) && (
             <SegmentedControl.Item value="preview">
               Preview
             </SegmentedControl.Item>
@@ -113,5 +115,9 @@ export function ContentPreview({
 const isMedia = (format: string) =>
   ['audio', 'font', 'image', 'video'].includes(format)
 
-const isPreviewable = (format: string) =>
-  !['javascript', 'css'].includes(format)
+const isPreviewable = (format: string, contentType: string) =>
+  !['javascript', 'css'].includes(format) &&
+  contentType !== 'multipart/form-data'
+
+const isRawAvailable = (contentType: string) =>
+  contentType === 'application/json'

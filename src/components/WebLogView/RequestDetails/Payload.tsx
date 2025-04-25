@@ -7,7 +7,6 @@ import { getContentType } from '@/utils/headers'
 
 import { ContentPreview } from '../ContentPreview'
 import { useGoToPayloadMatch } from '../Details.hooks'
-import { Raw } from '../ResponseDetails/Raw'
 import { toFormat } from '../ResponseDetails/ResponseDetails.utils'
 
 import { FormPayloadPreview } from './FormPayloadPreview'
@@ -31,17 +30,6 @@ export function Payload({ data }: { data: ProxyData }) {
       <Flex height="200px" justify="center" align="center">
         No payload
       </Flex>
-    )
-  }
-
-  if (originalContentType === 'multipart/form-data') {
-    return (
-      <Raw
-        content={content}
-        format="text"
-        searchString={searchString}
-        searchIndex={index}
-      />
     )
   }
 
