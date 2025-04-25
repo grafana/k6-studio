@@ -84,7 +84,7 @@ jobs:
           DEBUG: '*'
         run: |
           # on macos we also build the x64 app separately
-          npm run publish -- --arch=x64
+          # npm run publish -- --arch=x64
           npm run publish
 
       - name: publish Windows
