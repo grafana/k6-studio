@@ -121,7 +121,7 @@ jobs:
           # https://github.com/electron/forge/issues/3701
           echo "%__strip /bin/true" >> ~/.rpmmacros
 
-          npm run publish
+          # npm run publish
           npm run publish -- --arch=arm64
 
       - name: cleanup macos certificates
