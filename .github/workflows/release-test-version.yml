@@ -30,7 +30,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       # try earlier python version for appdmg
       # https://github.com/electron/forge/issues/3371#issuecomment-2105195302
