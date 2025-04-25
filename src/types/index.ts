@@ -12,7 +12,7 @@ export type Method =
   | 'CONNECT'
   | 'TRACE'
 
-type KeyValueTuple = [string, string]
+export type KeyValueTuple = [string, string]
 
 export type Header = KeyValueTuple
 export type Cookie = KeyValueTuple

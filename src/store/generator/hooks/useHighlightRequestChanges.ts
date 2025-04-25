@@ -1,6 +1,6 @@
 import { diffWords } from 'diff'
 
-import { Header, ProxyDataWithMatches } from '@/types'
+import { KeyValueTuple, ProxyDataWithMatches } from '@/types'
 import { Match } from '@/types/fuse'
 import { diffChangesToFuseIndices } from '@/utils/diff'
 
@@ -42,10 +42,22 @@ function addHighlights(
     return data
   }
 
-  const requestHeaderMatches = getHeaderHighlights(
+  const requestHeaderMatches = getKeyValueTupleHighlights(
     originalRequest.headers,
     modified.headers,
     'request.header.value'
+  )
+
+  const requestCookieMatches = getKeyValueTupleHighlights(
+    originalRequest.cookies,
+    modified.cookies,
+    'request.cookie.value'
+  )
+
+  const queryMatches = getKeyValueTupleHighlights(
+    originalRequest.query,
+    modified.query,
+    'request.query.value'
   )
 
   const urlMatches = getStringHighlights(
@@ -68,7 +80,14 @@ function addHighlights(
 
   return {
     ...data,
-    matches: [...requestHeaderMatches, urlMatches, pathMatches, hostMatches],
+    matches: [
+      ...requestHeaderMatches,
+      ...requestCookieMatches,
+      ...queryMatches,
+      urlMatches,
+      pathMatches,
+      hostMatches,
+    ],
   }
 }
 
@@ -83,14 +102,13 @@ function getStringHighlights(original: string, modified: string, key: string) {
   }
 }
 
-function getHeaderHighlights(
-  originalHeaders: Header[],
-  headers: Header[],
+function getKeyValueTupleHighlights(
+  originalValues: KeyValueTuple[],
+  values: KeyValueTuple[],
   key: string
 ) {
-  return headers.map((header, index): Match => {
-    const originalValue = originalHeaders[index]?.[1]
-    const value = header[1]
+  return values.map(([_, value], index): Match => {
+    const originalValue = originalValues[index]?.[1]
 
     return getStringHighlights(originalValue ?? '', value, key)
   })
