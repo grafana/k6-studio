@@ -13,7 +13,7 @@ import { exhaustive } from '@/utils/typescript'
 
 import {
   cleanupRecording,
-  generateScriptHeaderComment,
+  generateScriptHeader,
   shouldIncludeHeaderInScript,
 } from './codegen.utils'
 import { generateImportStatement } from './imports'
@@ -29,7 +29,8 @@ export function generateScript({
   generator,
 }: GenerateScriptParams): string {
   return `
-    ${generateScriptHeaderComment()}
+    // ${generateScriptHeader()}
+    
     ${generateImports(generator)}
 
     export const options = ${generateOptions(generator.options)}

@@ -22,6 +22,22 @@ declare module 'prettier/plugins/estree' {
   const options: Record<string, SupportOption>
 }
 
+function applySpacing(node: ts.Node | null, doc: builders.Doc): builders.Doc {
+  if (node?.newLine === 'before') {
+    return [hardline, doc]
+  }
+
+  if (node?.newLine === 'after') {
+    return [doc, hardline]
+  }
+
+  if (node?.newLine === 'both') {
+    return [hardline, doc, hardline]
+  }
+
+  return doc
+}
+
 /**
  * A custom Prettier plugin that checks our custom `newLine` property and
  * adds new lines before, after, or both before and after the node.
@@ -53,25 +69,12 @@ function createPlugin(program: ts.Program): Plugin {
         print(path: AstPath<ts.Node>, options: ParserOptions<ts.Node>, print) {
           const node = path.getNode()
 
-          if (node?.comment !== undefined) {
-            return ['// ', node.comment]
-          }
+          const doc =
+            node?.comment === undefined
+              ? estree.print(path, options, print)
+              : ['// ', node.comment]
 
-          const doc = estree.print(path, options, print)
-
-          if (node?.newLine === 'before') {
-            return [hardline, doc]
-          }
-
-          if (node?.newLine === 'after') {
-            return [doc, hardline]
-          }
-
-          if (node?.newLine === 'both') {
-            return [hardline, doc, hardline]
-          }
-
-          return doc
+          return applySpacing(node, doc)
         },
       },
     },

@@ -93,9 +93,9 @@ export function toTypeScriptAst(test: ir.Test): ts.Program {
     ...scenarios.filter((item) => item !== undefined),
   ])
 
-  const header = generateScriptHeader()
+  const header = spaceAfter([comment(generateScriptHeader())])
 
   return program({
-    body: [comment(header), ...imports, ...exports],
+    body: [...header, ...imports, ...exports],
   })
 }
