@@ -1,6 +1,6 @@
 /* eslint-disable import/default */
 import type { TSESTree as ts } from '@typescript-eslint/types'
-import type {
+import {
   AstPath,
   Plugin,
   Printer,
@@ -51,8 +51,13 @@ function createPlugin(program: ts.Program): Plugin {
     printers: {
       estree: {
         print(path: AstPath<ts.Node>, options: ParserOptions<ts.Node>, print) {
-          const doc = estree.print(path, options, print)
           const node = path.getNode()
+
+          if (node?.comment !== undefined) {
+            return ['// ', node.comment]
+          }
+
+          const doc = estree.print(path, options, print)
 
           if (node?.newLine === 'before') {
             return [hardline, doc]

@@ -1,5 +1,6 @@
 import { TSESTree as ts } from '@typescript-eslint/types'
 
+import { generateScriptHeader } from '@/codegen/codegen.utils'
 import {
   declareConst,
   constDeclarator,
@@ -18,6 +19,7 @@ import {
 import { spaceAfter, spaceBetween } from '../formatting/spacing'
 import * as ir from '../intermediate/ast'
 
+import { comment } from './comment'
 import { CodeGenContext, Import } from './context'
 import { emitOptions } from './options'
 import { emitScenarioBody } from './scenario'
@@ -91,7 +93,9 @@ export function toTypeScriptAst(test: ir.Test): ts.Program {
     ...scenarios.filter((item) => item !== undefined),
   ])
 
+  const header = generateScriptHeader()
+
   return program({
-    body: [...imports, ...exports],
+    body: [comment(header), ...imports, ...exports],
   })
 }
