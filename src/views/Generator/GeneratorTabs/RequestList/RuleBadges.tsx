@@ -1,4 +1,4 @@
-import { Pencil1Icon } from '@radix-ui/react-icons'
+import { Pencil2Icon } from '@radix-ui/react-icons'
 import { Badge, Flex, Strong, Tooltip } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
 import { useMemo } from 'react'
@@ -90,7 +90,7 @@ function ModifiedBadge({ data }: { data: ProxyData }) {
 
   return (
     <Tooltip content="Request modified by rules">
-      <Pencil1Icon color="green" />
+      <Pencil2Icon color="green" />
     </Tooltip>
   )
 }
