@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 
-import { saveSettings } from '@/settings'
+import { saveSettings } from './settings'
 
 export function showWindow(browserWindow: BrowserWindow) {
   const { isMaximized } = k6StudioState.appSettings.windowState

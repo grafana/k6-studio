@@ -12,7 +12,8 @@ import os from 'os'
 import path from 'path'
 import { promisify } from 'util'
 
-import { getCertificateSPKI } from '../../proxy'
+import { getCertificateSPKI } from '@/main/proxy'
+
 import { BrowserServer } from '../../services/browser/server'
 import { getPlatform } from '../../utils/electron'
 
