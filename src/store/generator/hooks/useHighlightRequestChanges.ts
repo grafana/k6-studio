@@ -1,4 +1,5 @@
 import { diffWords } from 'diff'
+import { useMemo } from 'react'
 
 import { KeyValueTuple, ProxyDataWithMatches } from '@/types'
 import { Match } from '@/types/fuse'
@@ -11,20 +12,19 @@ export function useHighlightRequestChanges(
 ): ProxyDataWithMatches[] {
   const originalRequests = useGeneratorStore(selectFilteredRequests)
 
-  // TODO: refactor, useUnmodifiedRequest has similar logic
-  function getOriginalRequest(id: string) {
-    return originalRequests.find((request) => request.id === id)?.request
-  }
+  return useMemo(() => {
+    return requests.map((data) => {
+      const originalRequest = originalRequests.find(
+        (request) => request.id === data.id
+      )?.request
 
-  return requests.map((data) => {
-    const originalRequest = getOriginalRequest(data.id)
+      if (!originalRequest) {
+        return data
+      }
 
-    if (!originalRequest) {
-      return data
-    }
-
-    return addHighlights(originalRequest, data)
-  })
+      return addHighlights(originalRequest, data)
+    })
+  }, [requests, originalRequests])
 }
 
 function addHighlights(
@@ -91,7 +91,11 @@ function addHighlights(
   }
 }
 
-function getStringHighlights(original: string, modified: string, key: string) {
+function getStringHighlights(
+  original: string,
+  modified: string,
+  key: string
+): Match {
   const diff = diffWords(original, modified)
 
   return {
