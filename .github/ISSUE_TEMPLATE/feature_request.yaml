@@ -1,6 +1,6 @@
 name: Feature request
 description: Use this template for requesting new features. Please search existing issues first.
-labels: feature, needs-triage
+labels: needs-triage
 type: Feature
 body:
   - type: textarea
