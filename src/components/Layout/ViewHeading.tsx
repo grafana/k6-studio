@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { DividerVerticalIcon } from '@radix-ui/react-icons'
 import { Flex, Heading } from '@radix-ui/themes'
+import { MinusIcon } from 'lucide-react'
 import { PropsWithChildren, ReactNode } from 'react'
 
 interface ViewHeadingProps {
@@ -34,7 +34,7 @@ export function ViewHeading({
         </Heading>
         {!!subTitle && (
           <>
-            <DividerVerticalIcon
+            <MinusIcon
               aria-hidden
               css={css`
                 flex-shrink: 0;

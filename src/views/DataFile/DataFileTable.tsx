@@ -1,5 +1,5 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Callout } from '@radix-ui/themes'
+import { InfoIcon } from 'lucide-react'
 
 import { Table } from '@/components/Table'
 import { TableCellWithTooltip } from '@/components/TableCellWithTooltip'
@@ -16,7 +16,7 @@ export function DataFileTable({ preview }: DataFileTableProps) {
     <>
       <Callout.Root variant="soft" color="indigo">
         <Callout.Icon>
-          <InfoCircledIcon />
+          <InfoIcon />
         </Callout.Icon>
         <Callout.Text>
           <strong>{preview.data.length}</strong> out of{' '}

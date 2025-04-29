@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import * as Collapsible from '@radix-ui/react-collapsible'
-import { CaretDownIcon, CaretRightIcon } from '@radix-ui/react-icons'
 import { Flex, Reset } from '@radix-ui/themes'
+import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
 import { useState } from 'react'
 import './CollapsibleSection.styles.css'
 
@@ -42,9 +42,9 @@ export function CollapsibleSection({
           >
             <Flex align="center" gap="1">
               {open ? (
-                <CaretDownIcon height={iconSize} width={iconSize} />
+                <ChevronDownIcon height={iconSize} width={iconSize} />
               ) : (
-                <CaretRightIcon height={iconSize} width={iconSize} />
+                <ChevronRightIcon height={iconSize} width={iconSize} />
               )}
               {children}
             </Flex>

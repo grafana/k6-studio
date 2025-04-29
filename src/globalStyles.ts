@@ -52,4 +52,9 @@ export const globalStyles = css`
       background-color: var(--gray-a9);
     }
   }
+
+  .lucide {
+    width: 1em;
+    height: 1em;
+  }
 `

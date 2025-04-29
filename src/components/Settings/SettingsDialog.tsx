@@ -1,8 +1,8 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Box, Button, Dialog, Flex, ScrollArea, Tabs } from '@radix-ui/themes'
 import { findIndex, sortBy } from 'lodash-es'
+import { AlertTriangleIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
@@ -117,7 +117,7 @@ export const SettingsDialog = () => {
                   <Tabs.Trigger key={tab.value} value={tab.value}>
                     {tab.label}
                     {errors[tab.value as keyof typeof errors] && (
-                      <ExclamationTriangleIcon
+                      <AlertTriangleIcon
                         css={css`
                           margin-left: var(--space-1);
                         `}

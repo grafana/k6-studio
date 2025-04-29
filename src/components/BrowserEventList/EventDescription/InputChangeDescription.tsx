@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { EyeNoneIcon, EyeOpenIcon } from '@radix-ui/react-icons'
+import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 
 import { InputChangeEvent } from '@/schemas/recording'
@@ -65,8 +65,8 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
         aria-label={showValue ? 'Hide masked value' : 'Show masked value'}
         onClick={() => setShowValue(!showValue)}
       >
-        {showValue && <EyeNoneIcon />}
-        {!showValue && <EyeOpenIcon />}
+        {showValue && <EyeOffIcon />}
+        {!showValue && <EyeIcon />}
       </button>
       {'"'}
     </span>

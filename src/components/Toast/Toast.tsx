@@ -1,9 +1,5 @@
-import {
-  CheckCircledIcon,
-  Cross2Icon,
-  CrossCircledIcon,
-} from '@radix-ui/react-icons'
 import { Box, IconButton } from '@radix-ui/themes'
+import { CircleCheckIcon, CircleXIcon, XIcon } from 'lucide-react'
 
 import { Toast as ToastProps } from '@/types/toast'
 import { exhaustive } from '@/utils/typescript'
@@ -38,7 +34,7 @@ export function Toast({ toast }: { toast: ToastProps }) {
       )}
       <ToastClose asChild className="close-button">
         <IconButton variant="outline" color="gray" radius="full" size="1">
-          <Cross2Icon width="12px" height="12px" />
+          <XIcon width={12} />
         </IconButton>
       </ToastClose>
     </ToastRoot>
@@ -48,9 +44,9 @@ export function Toast({ toast }: { toast: ToastProps }) {
 function StatusIcon({ status }: { status: ToastProps['status'] }) {
   switch (status) {
     case 'success':
-      return <CheckCircledIcon color="green" width="25px" height="25px" />
+      return <CircleCheckIcon color="green" />
     case 'error':
-      return <CrossCircledIcon color="red" width="25px" height="25px" />
+      return <CircleXIcon color="red" />
     case 'default':
       return null
     default:
