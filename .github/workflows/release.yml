@@ -3,6 +3,8 @@ name: 'Manual Release'
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   publish-studio:
     permissions:
@@ -15,6 +17,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: setup node
         uses: actions/setup-node@v4

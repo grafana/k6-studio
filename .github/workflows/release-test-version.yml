@@ -9,6 +9,8 @@ on:
         type: string
         default: "test-version"
 
+permissions: {}
+
 jobs:
   publish-studio:
     permissions:
@@ -21,6 +23,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set version for test release
         env:
