@@ -34,7 +34,7 @@ export function Toast({ toast }: { toast: ToastProps }) {
       )}
       <ToastClose asChild className="close-button">
         <IconButton variant="outline" color="gray" radius="full" size="1">
-          <XIcon width={12} />
+          <XIcon />
         </IconButton>
       </ToastClose>
     </ToastRoot>
