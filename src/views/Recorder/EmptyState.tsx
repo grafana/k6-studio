@@ -153,6 +153,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
             <WarningMessage
               proxyStatus={proxyStatus}
               isBrowserInstalled={isBrowserInstalled}
+              isSSLInsecureEnabled={settings?.proxy.sslInsecure}
             />
           </div>
 
@@ -215,11 +216,13 @@ function BrowserEventsSection({ children }: BrowserEventsSectionProps) {
 interface WarningMessageProps {
   proxyStatus: ProxyStatus
   isBrowserInstalled?: boolean
+  isSSLInsecureEnabled?: boolean
 }
 
 function WarningMessage({
   proxyStatus,
   isBrowserInstalled,
+  isSSLInsecureEnabled,
 }: WarningMessageProps) {
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
@@ -242,6 +245,26 @@ function WarningMessage({
           the recording functionality to work. If the browser is installed,
           specify the path in{' '}
           <TextButton onClick={() => openSettingsDialog('recorder')}>
+            Settings
+          </TextButton>
+          .
+        </Callout.Text>
+      </Callout.Root>
+    )
+  }
+
+  if (proxyStatus === 'online' && isSSLInsecureEnabled) {
+    return (
+      <Callout.Root>
+        <Callout.Icon>
+          <ExclamationTriangleIcon />
+        </Callout.Icon>
+        <Callout.Text>
+          <strong>SSL/TLS certificate validation will be skipped</strong>
+          <br />
+          Recording with this option enabled introduces vulnerability to TLS
+          interception. Use carefully or disable it in{' '}
+          <TextButton onClick={() => openSettingsDialog('proxy')}>
             Settings
           </TextButton>
           .
