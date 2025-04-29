@@ -79,6 +79,29 @@ export const ProxySettings = () => {
       </FieldGroup>
 
       {proxy && proxy.mode === 'upstream' && <UpstreamProxySettings />}
+
+      <Flex direction="column" mb="4">
+        <Flex mt="2" mb="1">
+          <Controller
+            control={control}
+            name="proxy.sslInsecure"
+            render={({ field }) => (
+              <Text size="2" as="label">
+                <Checkbox
+                  {...register('proxy.sslInsecure')}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />{' '}
+                Skip SSL/TLS certificate validation
+              </Text>
+            )}
+          />
+        </Flex>
+        <Text size="1" color="gray">
+          Enabling this option introduces vulnerability to TLS interception. Use
+          carefully.
+        </Text>
+      </Flex>
     </SettingsSection>
   )
 }
