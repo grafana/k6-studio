@@ -9,7 +9,6 @@ import { ContentPreview } from '../ContentPreview'
 import { useGoToPayloadMatch } from '../Details.hooks'
 import { toFormat } from '../ResponseDetails/ResponseDetails.utils'
 
-import { FormPayloadPreview } from './FormPayloadPreview'
 import { getRawContent, isJsonString, parseParams } from './utils'
 
 export function Payload({ data }: { data: ProxyData }) {
@@ -31,10 +30,6 @@ export function Payload({ data }: { data: ProxyData }) {
         No payload
       </Flex>
     )
-  }
-
-  if (originalContentType === 'application/x-www-form-urlencoded') {
-    return <FormPayloadPreview payloadJsonString={content} />
   }
 
   const getContentTypeForContentPreview = () => {

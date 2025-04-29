@@ -25,11 +25,11 @@ export function parseParams(request: Request) {
 
     if (contentType === 'application/x-www-form-urlencoded') {
       if (isJsonString(contentDecoded)) {
-        return contentDecoded
+        return stringify(JSON.parse(contentDecoded))
       }
 
       // k6 returns form data as key=value pair string
-      return queryStringToJSONString(contentDecoded)
+      return stringify(JSON.parse(queryStringToJSONString(contentDecoded)))
     }
 
     return stringify(
