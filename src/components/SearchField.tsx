@@ -40,12 +40,12 @@ export const SearchField = forwardRef<SearchFieldHandle, SearchFieldProps>(
         {...inputProps}
       >
         <TextField.Slot>
-          <SearchIcon size={12} />
+          <SearchIcon />
         </TextField.Slot>
         {filter !== '' && (
           <TextField.Slot>
             <IconButton variant="ghost" size="1" onClick={clear}>
-              <XIcon size={12} />
+              <XIcon />
             </IconButton>
           </TextField.Slot>
         )}
