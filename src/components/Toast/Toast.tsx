@@ -44,9 +44,9 @@ export function Toast({ toast }: { toast: ToastProps }) {
 function StatusIcon({ status }: { status: ToastProps['status'] }) {
   switch (status) {
     case 'success':
-      return <CircleCheckIcon color="green" />
+      return <CircleCheckIcon color="var(--green-11)" />
     case 'error':
-      return <CircleXIcon color="red" />
+      return <CircleXIcon color="var(--red-11)" />
     case 'default':
       return null
     default:
