@@ -7,19 +7,14 @@ import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
 
-const valueStyles = css`
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--studio-spacing-1);
-`
-
 const buttonStyles = css`
   display: inline-flex;
   align-items: center;
   border: none;
   background: transparent;
-  padding: 0 0.2em;
+  padding: 0 0.3em;
   cursor: pointer;
+  color: var(--studio-foreground);
 
   opacity: 1;
 
@@ -54,21 +49,19 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
   return (
     <>
       {'"'}
-      <span css={valueStyles}>
-        <span>
-          {showValue && value}
-          {!showValue && '••••'}
-        </span>
-        <button
-          css={buttonStyles}
-          aria-pressed={showValue}
-          aria-label={showValue ? 'Hide masked value' : 'Show masked value'}
-          onClick={() => setShowValue(!showValue)}
-        >
-          {showValue && <EyeOffIcon />}
-          {!showValue && <EyeIcon />}
-        </button>
+      <span>
+        {showValue && value}
+        {!showValue && '••••'}
       </span>
+      <button
+        css={buttonStyles}
+        aria-pressed={showValue}
+        aria-label={showValue ? 'Hide masked value' : 'Show masked value'}
+        onClick={() => setShowValue(!showValue)}
+      >
+        {showValue && <EyeOffIcon />}
+        {!showValue && <EyeIcon />}
+      </button>
       {'"'}
     </>
   )
