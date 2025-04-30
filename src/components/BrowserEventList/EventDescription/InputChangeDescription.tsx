@@ -10,16 +10,15 @@ import { Selector } from './Selector'
 const valueStyles = css`
   display: inline-flex;
   align-items: baseline;
-  gap: var(--space-1);
+  gap: var(--studio-spacing-1);
 `
 
 const buttonStyles = css`
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   border: none;
   background: transparent;
-  padding: 0;
+  padding: 0 0.2em;
   cursor: pointer;
 
   opacity: 1;
@@ -28,7 +27,7 @@ const buttonStyles = css`
     opacity: 0.7;
   }
 
-  & > svg {
+  & > svg.lucide {
     width: 0.9em;
     height: 0.9em;
   }
@@ -53,23 +52,25 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
   }
 
   return (
-    <span css={valueStyles}>
+    <>
       {'"'}
-      <span>
-        {showValue && value}
-        {!showValue && '••••'}
+      <span css={valueStyles}>
+        <span>
+          {showValue && value}
+          {!showValue && '••••'}
+        </span>
+        <button
+          css={buttonStyles}
+          aria-pressed={showValue}
+          aria-label={showValue ? 'Hide masked value' : 'Show masked value'}
+          onClick={() => setShowValue(!showValue)}
+        >
+          {showValue && <EyeOffIcon />}
+          {!showValue && <EyeIcon />}
+        </button>
       </span>
-      <button
-        css={buttonStyles}
-        aria-pressed={showValue}
-        aria-label={showValue ? 'Hide masked value' : 'Show masked value'}
-        onClick={() => setShowValue(!showValue)}
-      >
-        {showValue && <EyeOffIcon />}
-        {!showValue && <EyeIcon />}
-      </button>
       {'"'}
-    </span>
+    </>
   )
 }
 
