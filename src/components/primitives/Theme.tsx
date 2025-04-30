@@ -185,6 +185,7 @@ const styles = css`
   .lucide {
     width: 1em;
     height: 1em;
+    stroke-width: 1.5;
   }
 `
 
