@@ -1,8 +1,8 @@
 import { css } from '@emotion/react'
 import {
-  ClipboardListIcon,
-  MousePointer2Icon,
-  StopCircleIcon,
+  PanelRight,
+  SquareDashedMousePointerIcon,
+  SquareIcon,
   TextCursorIcon,
 } from 'lucide-react'
 
@@ -59,7 +59,7 @@ export function ToolBox({
     >
       <Tooltip delayDuration={0} asChild content="Stop recording">
         <Toolbar.Button onClick={onStopRecording}>
-          <StopCircleIcon />
+          <SquareIcon />
         </Toolbar.Button>
       </Tooltip>
       <Toolbar.Separator />
@@ -71,7 +71,7 @@ export function ToolBox({
         <Tooltip delayDuration={0} asChild content="Inspect elements">
           <div>
             <Toolbar.ToggleItem value="inspect">
-              <MousePointer2Icon />
+              <SquareDashedMousePointerIcon />
             </Toolbar.ToggleItem>
           </div>
         </Tooltip>
@@ -96,7 +96,7 @@ export function ToolBox({
         <Tooltip delayDuration={0} asChild content="Toggle event list">
           <div>
             <Toolbar.ToggleItem value="events">
-              <ClipboardListIcon />
+              <PanelRight />
             </Toolbar.ToggleItem>
           </div>
         </Tooltip>
