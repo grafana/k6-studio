@@ -98,8 +98,8 @@ export const ProxySettings = () => {
           />
         </Flex>
         <Text size="1" color="gray">
-          Enabling this option introduces vulnerability to TLS interception. Use
-          carefully.
+          Enabling this option leaves connections open to man-in-the-middle
+          (MITM) attacks. Use it carefully.
         </Text>
       </Flex>
     </SettingsSection>

@@ -262,8 +262,8 @@ function WarningMessage({
         <Callout.Text>
           <strong>SSL/TLS certificate validation will be skipped</strong>
           <br />
-          Recording with this option enabled introduces vulnerability to TLS
-          interception. Use carefully or disable it in{' '}
+          Recording with this option enabled introduces vulnerability to
+          man-in-the-middle (MITM) attacks. Use carefully or disable it in{' '}
           <TextButton onClick={() => openSettingsDialog('proxy')}>
             Settings
           </TextButton>
