@@ -283,7 +283,6 @@ const getProxyCertificatePath = () => {
 const getProxyCertificateContent = () => {
   const certPath = expandHomeDir(getProxyCertificatePath())
   if (certPath && existsSync(certPath)) {
-    console.log(`Certificate path: ${certPath}`)
     return readFileSync(certPath)
   }
   return undefined
