@@ -2,8 +2,11 @@ import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import find from 'find-process'
 import { readFile } from 'fs/promises'
+import https from 'https'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 import forge from 'node-forge'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'path'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
@@ -18,6 +21,8 @@ import {
   sendToast,
 } from '../utils/electron'
 import { safeJsonParse } from '../utils/json'
+
+import { expandHomeDir } from './file'
 
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
@@ -184,9 +189,11 @@ export const launchProxyAndAttachEmitter = async (
   k6StudioState.proxyEmitter.emit('status:change', 'starting')
 
   return launchProxy(browserWindow, k6StudioState.appSettings.proxy, {
-    onReady: () => {
+    onReady: async () => {
+      const isProxyHealthy = await checkProxyHealth()
+      const proxyStatus = isProxyHealthy ? 'online' : 'unhealthy'
       k6StudioState.wasProxyStoppedByClient = false
-      k6StudioState.proxyEmitter.emit('status:change', 'online')
+      k6StudioState.proxyEmitter.emit('status:change', proxyStatus)
       k6StudioState.proxyEmitter.emit('ready')
     },
     onFailure: async () => {
@@ -251,5 +258,57 @@ export const cleanUpProxies = async () => {
   const processList = await find('name', 'k6-studio-proxy', false)
   processList.forEach((proc) => {
     kill(proc.pid)
+  })
+}
+
+const getProxyURL = () => {
+  const { proxy } = k6StudioState.appSettings
+  if (proxy.mode === 'upstream') {
+    return proxy.url
+  }
+  return `http://localhost:${proxy.port}`
+}
+
+const getProxyCertificatePath = () => {
+  const { proxy } = k6StudioState.appSettings
+  if (proxy.mode === 'upstream') {
+    return proxy.certificatePath
+  }
+  return path.join(getCertificatesPath(), 'mitmproxy-ca-cert.pem')
+}
+
+const getProxyCertificateContent = () => {
+  const certPath = expandHomeDir(getProxyCertificatePath())
+  if (certPath && existsSync(certPath)) {
+    console.log(`Certificate path: ${certPath}`)
+    return readFileSync(certPath)
+  }
+  return undefined
+}
+
+const checkProxyHealth = async () => {
+  return new Promise((resolve) => {
+    const certContent = getProxyCertificateContent()
+    const agent = new HttpsProxyAgent(getProxyURL())
+    const options = {
+      agent,
+      ca: certContent,
+      headers: {
+        'k6-Studio-Health-Check': 'true',
+      },
+    }
+
+    https
+      .get('https://quickpizza.grafana.com', options, (res) => {
+        console.log(`Proxy health check status: ${res.statusCode}`)
+        if (res.statusCode === 200) {
+          return resolve(true)
+        }
+        resolve(false)
+      })
+      .on('error', (err) => {
+        log.error(err)
+        resolve(false)
+      })
   })
 }
