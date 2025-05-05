@@ -13,6 +13,7 @@ describe('Settings migration', () => {
         mode: 'regular',
         port: 6000,
         automaticallyFindPort: true,
+        sslInsecure: false,
       },
       recorder: {
         detectBrowserPath: true,
@@ -46,6 +47,7 @@ describe('Settings migration', () => {
         mode: 'regular',
         port: 6000,
         automaticallyFindPort: true,
+        sslInsecure: false,
       },
       recorder: {
         detectBrowserPath: true,
