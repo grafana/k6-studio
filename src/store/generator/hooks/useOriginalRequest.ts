@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { selectFilteredRequests } from '../selectors'
 import { useGeneratorStore } from '../useGeneratorStore'
 
-export function useUnmodifiedRequest(id?: string) {
+export function useOriginalRequest(id?: string) {
   const requests = useGeneratorStore(selectFilteredRequests)
 
   return useMemo(() => {

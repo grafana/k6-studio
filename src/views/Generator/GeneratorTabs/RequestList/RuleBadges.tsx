@@ -3,7 +3,7 @@ import { Badge, Flex, Strong, Tooltip } from '@radix-ui/themes'
 import { isEqual } from 'lodash-es'
 import { useMemo } from 'react'
 
-import { useUnmodifiedRequest } from '@/store/generator/hooks/useUnmodifiedRequest'
+import { useOriginalRequest } from '@/store/generator/hooks/useOriginalRequest'
 import { ProxyData } from '@/types'
 import { RuleInstance } from '@/types/rules'
 
@@ -82,9 +82,9 @@ function ExtractorBadge({
 }
 
 function ModifiedBadge({ data }: { data: ProxyData }) {
-  const unmodifiedRequest = useUnmodifiedRequest(data.id)
+  const originalRequest = useOriginalRequest(data.id)
 
-  if (isEqual(unmodifiedRequest, data.request)) {
+  if (isEqual(originalRequest, data.request)) {
     return
   }
 

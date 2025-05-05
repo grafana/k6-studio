@@ -1,7 +1,7 @@
 import { Flex } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
-import { useUnmodifiedRequest } from '@/store/generator/hooks/useUnmodifiedRequest'
+import { useOriginalRequest } from '@/store/generator/hooks/useOriginalRequest'
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 
@@ -16,8 +16,8 @@ export function Payload({ data }: { data: ProxyData }) {
   const originalContentType = getContentType(data.request?.headers ?? [])
   const { searchString, index, reset } = useGoToPayloadMatch()
 
-  const unmodifiedRequest = useUnmodifiedRequest(data.id)
-  const originalContent = unmodifiedRequest && parseParams(unmodifiedRequest)
+  const originalRequest = useOriginalRequest(data.id)
+  const originalContent = originalRequest && parseParams(originalRequest)
 
   // Reset payload search on unmount
   useEffect(() => {
