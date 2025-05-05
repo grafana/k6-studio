@@ -10,6 +10,7 @@ export const RegularProxySettingsSchema = z.object({
     .min(1)
     .max(65535, { message: 'Port number must be between 1 and 65535' }),
   automaticallyFindPort: z.boolean(),
+  sslInsecure: z.boolean().default(false),
 })
 
 export const UpstreamProxySettingsSchema = RegularProxySettingsSchema.extend({

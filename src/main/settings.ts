@@ -18,6 +18,7 @@ export const defaultSettings: AppSettings = {
     mode: 'regular',
     port: 6000,
     automaticallyFindPort: true,
+    sslInsecure: false,
   },
   recorder: {
     detectBrowserPath: true,
