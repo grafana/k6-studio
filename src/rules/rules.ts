@@ -1,3 +1,5 @@
+import { produce } from 'immer'
+
 import { ProxyData, RequestSnippetSchema } from '@/types'
 import { TestRule } from '@/types/rules'
 
@@ -70,14 +72,7 @@ function createRuleInstance<T extends TestRule>(
 function updateQueryParams(
   requestSnippet: RequestSnippetSchema
 ): RequestSnippetSchema {
-  return {
-    ...requestSnippet,
-    data: {
-      ...requestSnippet.data,
-      request: {
-        ...requestSnippet.data.request,
-        query: urlToQueryParams(requestSnippet.data.request.url),
-      },
-    },
-  }
+  return produce(requestSnippet, (draft) => {
+    draft.data.request.query = urlToQueryParams(draft.data.request.url)
+  })
 }
