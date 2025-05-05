@@ -67,7 +67,7 @@ export function ContentPreview({
             </SegmentedControl.Item>
           )}
 
-          {originalContent !== undefined && (
+          {originalContent !== undefined && originalContent !== content && (
             <SegmentedControl.Item value="diff">Diff</SegmentedControl.Item>
           )}
         </SegmentedControl.Root>
