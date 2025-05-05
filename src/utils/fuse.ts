@@ -7,7 +7,6 @@ type ResultWithMatch<T> = T & {
 }
 
 export function withMatches<T>(result: FuseResult<T>): ResultWithMatch<T> {
-  // @ts-expect-error assigning readonly indices to mutable
   return {
     ...result.item,
     matches:

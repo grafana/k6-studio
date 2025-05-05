@@ -8,11 +8,12 @@ interface MatchSegment {
   color?: Match['color']
 }
 
-function longestMatchOnly(matches: Match[]): Match[] {
+function longestMatchOnly(matches: Match[]) {
   return matches.map((match) => {
     return {
       ...match,
       indices: match.indices
+        .slice() // create mutable copy
         .sort((a, b) => b[1] - b[0] - (a[1] - a[0]))
         .slice(0, 1),
     }

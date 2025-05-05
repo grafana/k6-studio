@@ -1,5 +1,7 @@
+import { RangeTuple } from 'fuse.js'
+
 export interface Match {
-  indices: Array<[number, number]>
+  indices: ReadonlyArray<RangeTuple>
   value?: string
   key?: string
   color?: string
