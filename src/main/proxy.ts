@@ -23,7 +23,6 @@ import {
 import { safeJsonParse } from '../utils/json'
 
 import { expandHomeDir } from './file'
-
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
 interface options {
@@ -294,12 +293,13 @@ const checkProxyHealth = async () => {
   return new Promise((resolve) => {
     const certContent = getProxyCertificateContent()
     const agent = new HttpsProxyAgent(getProxyURL())
-    const options = {
+    const options: https.RequestOptions = {
       agent,
       ca: certContent,
       headers: {
         'k6-Studio-Health-Check': 'true',
       },
+      rejectUnauthorized: !k6StudioState.appSettings.proxy.sslInsecure,
     }
 
     https
