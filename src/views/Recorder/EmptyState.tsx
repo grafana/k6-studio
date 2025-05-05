@@ -17,11 +17,13 @@ import {
   TextField,
   Tooltip,
 } from '@radix-ui/themes'
+import { MinusCircle } from 'lucide-react'
 import { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
+import { ExternalLink } from '@/components/ExternalLink'
 import { FieldGroup } from '@/components/Form'
 import { TextButton } from '@/components/TextButton'
 import { LaunchBrowserOptions } from '@/handlers/browser/types'
@@ -66,7 +68,8 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     shouldFocusError: false,
   })
 
-  const canRecord = proxyStatus === 'online' && isBrowserInstalled === true
+  const canRecord =
+    ['online', 'unhealthy'].includes(proxyStatus) && isBrowserInstalled === true
 
   const onSubmit = ({ url }: RecorderEmptyStateFields) => {
     if (isLoading || !canRecord) {
@@ -265,6 +268,30 @@ function WarningMessage({
             Settings
           </TextButton>
           .
+        </Callout.Text>
+      </Callout.Root>
+    )
+  }
+
+  if (proxyStatus === 'unhealthy') {
+    return (
+      <Callout.Root>
+        <Callout.Icon>
+          <MinusCircle />
+        </Callout.Icon>
+        <Callout.Text>
+          <strong>Proxy is unhealthy</strong>
+          <br />
+          k6 Studio was unable to reach your network. If you have issues
+          recording, please check your{' '}
+          <TextButton onClick={() => openSettingsDialog('proxy')}>
+            proxy settings
+          </TextButton>{' '}
+          or learn more in the{' '}
+          <ExternalLink href="https://grafana.com/docs/k6-studio/troubleshoot/#502-bad-gateway-error">
+            Troubleshoot
+          </ExternalLink>{' '}
+          guide.
         </Callout.Text>
       </Callout.Root>
     )
