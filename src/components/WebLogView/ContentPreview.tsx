@@ -103,6 +103,7 @@ export function ContentPreview({
                 language={format}
                 value={content}
                 original={originalContent}
+                showToolbar
               />
             )}
           </Box>
