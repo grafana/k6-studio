@@ -4,8 +4,12 @@ import { readFile, writeFile, unlink } from 'fs/promises'
 import path from 'path'
 
 import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
-import { waitForProxy } from '@/proxy'
-import { showScriptSelectDialog, runScript, type K6Process } from '@/script'
+import { waitForProxy } from '@/main/proxy'
+import {
+  showScriptSelectDialog,
+  runScript,
+  type K6Process,
+} from '@/main/script'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 
 import { ScriptHandler } from './types'

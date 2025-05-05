@@ -1,4 +1,4 @@
-import { k6StudioState } from '@/k6StudioState'
+import { k6StudioState } from '@/main/k6StudioState'
 
 export {} // Make this a module
 

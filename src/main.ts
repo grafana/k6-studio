@@ -1,40 +1,27 @@
 import * as Sentry from '@sentry/electron/main'
-import { watch, FSWatcher } from 'chokidar'
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
-import { existsSync } from 'fs'
-import { readdir, rename } from 'fs/promises'
 import path from 'path'
 import { updateElectronApp } from 'update-electron-app'
 
-import {
-  DATA_FILES_PATH,
-  GENERATORS_PATH,
-  RECORDINGS_PATH,
-  SCRIPTS_PATH,
-  TEMP_SCRIPT_SUFFIX,
-} from './constants/workspace'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
-import { UIHandler } from './handlers/ui/types'
-import * as mainState from './k6StudioState'
-import { initializeLogger } from './logger'
-import { getStudioFileFromPath } from './main/file'
-import { configureApplicationMenu } from './menu'
+import { migrateJsonGenerator } from './main/generator'
+import * as mainState from './main/k6StudioState'
+import { initializeLogger } from './main/logger'
+import { configureApplicationMenu } from './main/menu'
 import {
   cleanUpProxies,
   launchProxyAndAttachEmitter,
   stopProxyProcess,
-} from './proxy'
+} from './main/proxy'
+import { getSettings, initSettings } from './main/settings'
+import { configureWatcher } from './main/watcher'
+import { showWindow, trackWindowState } from './main/window'
 import { BrowserServer } from './services/browser/server'
-import { getSettings, initSettings, saveSettings } from './settings'
 import { ProxyStatus } from './types'
 import { sendReport } from './usageReport'
-import {
-  getAppIcon,
-  getPlatform,
-  browserWindowFromEvent,
-} from './utils/electron'
+import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
@@ -56,12 +43,6 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-let currentClientRoute = '/'
-let wasAppClosedByClient = false
-
-let watcher: FSWatcher
-let splashscreenWindow: BrowserWindow
-
 const browserServer = new BrowserServer()
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -75,33 +56,8 @@ handlers.initialize({
 })
 mainState.initialize()
 
-// Used to convert `.json` files into the appropriate file extension for the Generator
-async function migrateJsonGenerator() {
-  if (!existsSync(GENERATORS_PATH)) return
-
-  const items = await readdir(GENERATORS_PATH, { withFileTypes: true })
-  const files = items.filter(
-    (f) => f.isFile() && path.extname(f.name) === '.json'
-  )
-
-  await Promise.all(
-    files.map(async (f) => {
-      try {
-        const oldPath = path.join(GENERATORS_PATH, f.name)
-        const newPath = path.join(
-          GENERATORS_PATH,
-          path.parse(f.name).name + '.k6g'
-        )
-        await rename(oldPath, newPath)
-      } catch (error) {
-        log.error(error)
-      }
-    })
-  )
-}
-
 const createSplashWindow = async () => {
-  splashscreenWindow = new BrowserWindow({
+  k6StudioState.splashscreenWindow = new BrowserWindow({
     width: 600,
     height: 400,
     frame: false,
@@ -124,17 +80,21 @@ const createSplashWindow = async () => {
 
   // Open the DevTools.
   if (process.env.NODE_ENV === 'development') {
-    splashscreenWindow.webContents.openDevTools({ mode: 'detach' })
+    k6StudioState.splashscreenWindow.webContents.openDevTools({
+      mode: 'detach',
+    })
   }
 
   // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
-  splashscreenWindow.once('ready-to-show', () => {
-    splashscreenWindow.show()
+  k6StudioState.splashscreenWindow.once('ready-to-show', () => {
+    if (k6StudioState.splashscreenWindow) {
+      k6StudioState.splashscreenWindow.show()
+    }
   })
 
-  await splashscreenWindow.loadFile(splashscreenFile)
+  await k6StudioState.splashscreenWindow.loadFile(splashscreenFile)
 
-  return splashscreenWindow
+  return k6StudioState.splashscreenWindow
 }
 
 const createWindow = async () => {
@@ -169,7 +129,7 @@ const createWindow = async () => {
 
   configureApplicationMenu()
   configureWatcher(mainWindow)
-  wasAppClosedByClient = false
+  k6StudioState.wasAppClosedByClient = false
 
   k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
     k6StudioState.proxyStatus = status
@@ -202,7 +162,10 @@ const createWindow = async () => {
   mainWindow.on('resized', () => trackWindowState(mainWindow))
   mainWindow.on('close', (event) => {
     mainWindow.webContents.send('app:close')
-    if (currentClientRoute.startsWith('/generator') && !wasAppClosedByClient) {
+    if (
+      k6StudioState.currentClientRoute.startsWith('/generator') &&
+      !k6StudioState.wasAppClosedByClient
+    ) {
       event.preventDefault()
     }
   })
@@ -248,89 +211,8 @@ app.on('activate', async () => {
 app.on('before-quit', async () => {
   // stop watching files to avoid crash on exit
   k6StudioState.appShuttingDown = true
-  await watcher.close()
+  if (k6StudioState.watcher) {
+    await k6StudioState.watcher.close()
+  }
   return stopProxyProcess()
 })
-
-ipcMain.on('app:change-route', (_, route: string) => {
-  currentClientRoute = route
-})
-
-ipcMain.on('app:close', (event) => {
-  console.log('app:close event received')
-
-  wasAppClosedByClient = true
-  if (k6StudioState.appShuttingDown) {
-    app.quit()
-    return
-  }
-  const browserWindow = browserWindowFromEvent(event)
-  browserWindow.close()
-})
-
-ipcMain.on('splashscreen:close', (event) => {
-  console.info('splashscreen:close event received')
-
-  const browserWindow = browserWindowFromEvent(event)
-
-  if (splashscreenWindow && !splashscreenWindow.isDestroyed()) {
-    splashscreenWindow.close()
-    showWindow(browserWindow)
-  }
-})
-
-function showWindow(browserWindow: BrowserWindow) {
-  const { isMaximized } = k6StudioState.appSettings.windowState
-  if (isMaximized) {
-    browserWindow.maximize()
-  } else {
-    browserWindow.show()
-  }
-  browserWindow.focus()
-}
-
-async function trackWindowState(browserWindow: BrowserWindow) {
-  const { width, height, x, y } = browserWindow.getBounds()
-  const isMaximized = browserWindow.isMaximized()
-  k6StudioState.appSettings.windowState = {
-    width,
-    height,
-    x,
-    y,
-    isMaximized,
-  }
-  try {
-    await saveSettings(k6StudioState.appSettings)
-  } catch (error) {
-    log.error(error)
-  }
-}
-
-function configureWatcher(browserWindow: BrowserWindow) {
-  watcher = watch(
-    [RECORDINGS_PATH, GENERATORS_PATH, SCRIPTS_PATH, DATA_FILES_PATH],
-    {
-      ignoreInitial: true,
-    }
-  )
-
-  watcher.on('add', (filePath) => {
-    const file = getStudioFileFromPath(filePath)
-
-    if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
-      return
-    }
-
-    browserWindow.webContents.send(UIHandler.ADD_FILE, file)
-  })
-
-  watcher.on('unlink', (filePath) => {
-    const file = getStudioFileFromPath(filePath)
-
-    if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
-      return
-    }
-
-    browserWindow.webContents.send(UIHandler.REMOVE_FILE, file)
-  })
-}

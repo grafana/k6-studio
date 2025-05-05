@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { client } from '../routing'
+
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
@@ -17,6 +19,12 @@ export function InBrowserControls() {
     selectTool(null)
   }
 
+  const handleStopRecording = () => {
+    client.send({
+      type: 'stop-recording',
+    })
+  }
+
   return (
     <>
       <RemoteHighlights />
@@ -28,6 +36,7 @@ export function InBrowserControls() {
         isDrawerOpen={isDrawerOpen}
         tool={tool}
         onSelectTool={selectTool}
+        onStopRecording={handleStopRecording}
         onToggleDrawer={setIsDrawerOpen}
       />
       <EventDrawer

@@ -9,6 +9,8 @@ on:
         type: string
         default: "test-version"
 
+permissions: {}
+
 jobs:
   publish-studio:
     permissions:
@@ -16,11 +18,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, windows-latest, ubuntu-latest]
+        platform: [macos-latest, macos-13, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set version for test release
         env:
@@ -30,7 +34,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       # try earlier python version for appdmg
       # https://github.com/electron/forge/issues/3371#issuecomment-2105195302
@@ -65,8 +69,8 @@ jobs:
         env:
           WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
 
-      - name: publish macOS
-        if: startsWith(matrix.platform, 'macos-')
+      - name: publish macOS arm64
+        if: startsWith(matrix.platform, 'macos-latest')
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,9 +85,25 @@ jobs:
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
-          # on macos we also build the x64 app separately
-          npm run publish -- --arch=x64
           npm run publish
+
+      - name: publish macOS x86_64
+        if: startsWith(matrix.platform, 'macos-13')
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # notarization
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ./apple_api_key.p8
+          # sentry integration
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          # sentry vite plugin integration during build
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: |
+          npm run publish -- --arch=x64
 
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')

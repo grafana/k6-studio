@@ -1,10 +1,11 @@
 # Changelog
 
-## [1.2.0](https://github.com/grafana/k6-studio/compare/v1.1.0...v1.2.0) (2025-04-24)
+## [1.2.0](https://github.com/grafana/k6-studio/compare/v1.1.0...v1.2.0) (2025-04-25)
 
 
 ### Features
 
+* Add stop recording button to in-browser controls ([#688](https://github.com/grafana/k6-studio/issues/688)) ([0a3dad5](https://github.com/grafana/k6-studio/commit/0a3dad500f7be7826da4085ab7ddfa647bd3a1d3))
 * Add support for content preview in request payload ([#613](https://github.com/grafana/k6-studio/issues/613)) ([260579b](https://github.com/grafana/k6-studio/commit/260579ba586272f45d3293ce4c1e2cb41fa6d202))
 * **browser:** Public preview of browser recording ([#622](https://github.com/grafana/k6-studio/issues/622)) ([81dfea2](https://github.com/grafana/k6-studio/commit/81dfea29973bddc46b5ff44f23445b04aa226541))
 * Pre-select first host in rercording ([#616](https://github.com/grafana/k6-studio/issues/616)) ([f1f035a](https://github.com/grafana/k6-studio/commit/f1f035a0993deb9a9eff851d38e0f85432b065f4))
@@ -12,21 +13,31 @@
 
 ### Bug Fixes
 
+* Cursor is inconsistent across different buttons ([#698](https://github.com/grafana/k6-studio/issues/698)) ([ea120ac](https://github.com/grafana/k6-studio/commit/ea120acea7bcbb3f0d494e6434d9cd76ef4f645b))
 * Preview payload when correlating numeric properties ([#671](https://github.com/grafana/k6-studio/issues/671)) ([ae4c428](https://github.com/grafana/k6-studio/commit/ae4c4287552d3f0af6f93c987aee4c27fcceb89b))
 * Replace falsy values with json selector ([#666](https://github.com/grafana/k6-studio/issues/666)) ([c6cd3f2](https://github.com/grafana/k6-studio/commit/c6cd3f2f71f27d16f7eed6de87d05170e99b1cf2))
 * Resolving script error switches focus to script preview ([1c343ce](https://github.com/grafana/k6-studio/commit/1c343ce549d168a7a25a993c77d9c1a5bdf2edc9))
 * Validator run is available when proxy is offline ([#660](https://github.com/grafana/k6-studio/issues/660)) ([82e7ffa](https://github.com/grafana/k6-studio/commit/82e7ffaa3381e4eaca4bc10b8e949056c45b9874))
 
 
+### Reverts
+
+* Revert "chore(main): release 1.2.0 ([#633](https://github.com/grafana/k6-studio/issues/633))" ([#699](https://github.com/grafana/k6-studio/issues/699)) ([aae57e6](https://github.com/grafana/k6-studio/commit/aae57e6091cead7b868665748ddeb5dbf79a3d24))
+* Revert "chore(main): release 1.2.0 ([#697](https://github.com/grafana/k6-studio/issues/697))" ([#706](https://github.com/grafana/k6-studio/issues/706)) ([eaabaf0](https://github.com/grafana/k6-studio/commit/eaabaf0f44af855438b1bf4bfc9f2875914fd418))
+
+
 ### Internal Changes
 
 * **browser:** Add beaker icon to Browser Events tab ([#691](https://github.com/grafana/k6-studio/issues/691)) ([f989ead](https://github.com/grafana/k6-studio/commit/f989ead778f33fae44ee7e4ac25c7822dc79b846))
+* **browser:** Add header to generated browser scripts ([#703](https://github.com/grafana/k6-studio/issues/703)) ([fae46f3](https://github.com/grafana/k6-studio/commit/fae46f393183cb05239920b0e3221af11b227e87))
 * **browser:** Add toggle for browser events to start recording page ([#689](https://github.com/grafana/k6-studio/issues/689)) ([560ee05](https://github.com/grafana/k6-studio/commit/560ee05dd8aedd45b79a80fb7af2530493523c25))
 * **browser:** Element highlights get out of sync with content when resizing/scrolling page ([#681](https://github.com/grafana/k6-studio/issues/681)) ([006d168](https://github.com/grafana/k6-studio/commit/006d168c741f6c1088649fa1b779b0bf2a38d1c9))
 * **browser:** Elements are not highlighted when hovering selector in k6 Studio ([#680](https://github.com/grafana/k6-studio/issues/680)) ([6992ce7](https://github.com/grafana/k6-studio/commit/6992ce712f49b7c27e2654c25c4137a9310aa439))
 * **browser:** In-browser UI breaks selector generation ([#684](https://github.com/grafana/k6-studio/issues/684)) ([a8c9bcb](https://github.com/grafana/k6-studio/commit/a8c9bcb222a6c20eedf2c0dd5ae8c3760482d28a))
 * **browser:** In-browser UI crashes when entering an invalid selector ([#694](https://github.com/grafana/k6-studio/issues/694)) ([2464629](https://github.com/grafana/k6-studio/commit/2464629188b2a789d46e8ef17752bfc91d5b4018))
+* **browser:** Styles are not applied to in-browser UI in production ([#702](https://github.com/grafana/k6-studio/issues/702)) ([9be0f2d](https://github.com/grafana/k6-studio/commit/9be0f2dbcaf9546ceb300d33c280e0cda9b57d8e))
 * **browser:** Unified schema for assertion events ([#669](https://github.com/grafana/k6-studio/issues/669)) ([fdae74a](https://github.com/grafana/k6-studio/commit/fdae74a3462aa7c13f5819d0df87fc00473f5b2c))
+* fix macos build action ([#705](https://github.com/grafana/k6-studio/issues/705)) ([cca9744](https://github.com/grafana/k6-studio/commit/cca9744c240dfec367616bcf04f28253e08b0fb2))
 * main window cannot be restored on macOS ([#668](https://github.com/grafana/k6-studio/issues/668)) ([1848282](https://github.com/grafana/k6-studio/commit/1848282f0435cba293255b54701e2f882a6c192e))
 
 
@@ -42,6 +53,8 @@
 * **deps:** bump @babel/runtime from 7.24.8 to 7.27.0 ([#647](https://github.com/grafana/k6-studio/issues/647)) ([3900f40](https://github.com/grafana/k6-studio/commit/3900f409c4ef5974bda8e0bf7fdd2293b3af36b4))
 * **deps:** bump @sentry/node and @sentry/electron ([#649](https://github.com/grafana/k6-studio/issues/649)) ([e984723](https://github.com/grafana/k6-studio/commit/e984723e98844e5d36ccec208319884b50222fb3))
 * **deps:** bump tar-fs from 3.0.6 to 3.0.8 ([#612](https://github.com/grafana/k6-studio/issues/612)) ([6bae41a](https://github.com/grafana/k6-studio/commit/6bae41a5216225d505bef83eda897b17a8521c22))
+* **main:** release 1.2.0 ([#633](https://github.com/grafana/k6-studio/issues/633)) ([6c39ce4](https://github.com/grafana/k6-studio/commit/6c39ce468c1bb92a5e4bfa48bff448b1f585e1e8))
+* **main:** release 1.2.0 ([#697](https://github.com/grafana/k6-studio/issues/697)) ([8290d75](https://github.com/grafana/k6-studio/commit/8290d754c197f146c3f676ab2badff14b896966c))
 * manual release action & update runner to ubuntu-latest ([#645](https://github.com/grafana/k6-studio/issues/645)) ([cb5d97e](https://github.com/grafana/k6-studio/commit/cb5d97ed68e2e7465b31279a30ad8e78d6bb70bf))
 * release test version action ([#644](https://github.com/grafana/k6-studio/issues/644)) ([f4cb277](https://github.com/grafana/k6-studio/commit/f4cb277fae821500e9773e27a070eb4b8638b617))
 * update k6 version to v0.58 ([#693](https://github.com/grafana/k6-studio/issues/693)) ([0f4ef9e](https://github.com/grafana/k6-studio/commit/0f4ef9e429fdbc2af560159de1ff70f7aec0cf23))
@@ -49,6 +62,7 @@
 
 ### Code Refactoring
 
+* **Split main:** Move app handlers out of main.ts ([#690](https://github.com/grafana/k6-studio/issues/690)) ([fd16d2b](https://github.com/grafana/k6-studio/commit/fd16d2bdcc5b0c4282d3b7553379e82b4c78d7e4))
 * **split main:** Move browser handlers out of main.ts ([#627](https://github.com/grafana/k6-studio/issues/627)) ([7ff55af](https://github.com/grafana/k6-studio/commit/7ff55afb9ffa4f9c931c9aa27d8880c43b0bebbb))
 * **Split main:** Move data file handlers out of main.ts ([#682](https://github.com/grafana/k6-studio/issues/682)) ([6a993a4](https://github.com/grafana/k6-studio/commit/6a993a4e481392c7dfaf52cf58edd7e3c90847ff))
 * **Split main:** Move generator handlers out of main.ts  ([#676](https://github.com/grafana/k6-studio/issues/676)) ([b3afd72](https://github.com/grafana/k6-studio/commit/b3afd724d84612092a6450ed1c57c1d05b368e16))

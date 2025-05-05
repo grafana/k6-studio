@@ -5,7 +5,7 @@ import fs from 'fs/promises'
 import { spawn } from 'node:child_process'
 import path from 'node:path'
 
-import { getPlatform } from './utils/electron'
+import { getPlatform } from '../utils/electron'
 
 let watcher: FSWatcher
 

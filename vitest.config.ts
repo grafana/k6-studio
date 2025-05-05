@@ -9,5 +9,6 @@ export default defineConfig({
   },
   define: {
     'import.meta.vitest': 'undefined',
+    __APP_VERSION__: JSON.stringify('0.0.0-vitest'),
   },
 })

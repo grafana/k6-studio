@@ -1,0 +1,17 @@
+name: Feature request
+description: Use this template for requesting new features. Please search existing issues first.
+labels: needs-triage
+type: Feature
+body:
+  - type: textarea
+    attributes:
+      label: Feature description
+      description: A clear and concise description of the problem or missing capability
+  - type: textarea
+    attributes:
+      label: Suggested solution (optional)
+      description: If you have a solution in mind, please describe it.
+  - type: textarea
+    attributes:
+      label: Already existing or connected issues / PRs (optional)
+      description: If you have found some issues or pull requests that are related to your new issue, please link them here.

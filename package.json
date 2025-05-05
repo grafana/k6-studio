@@ -5,6 +5,9 @@
   "description": "k6 Studio",
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
+  "engines": {
+    "node": "^22.0.0"
+  },
   "scripts": {
     "preinstall": "node install-k6.js",
     "start": "electron-forge start",

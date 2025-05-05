@@ -1,6 +1,6 @@
 /* eslint-disable import/default */
 import type { TSESTree as ts } from '@typescript-eslint/types'
-import type {
+import {
   AstPath,
   Plugin,
   Printer,
@@ -20,6 +20,22 @@ declare module 'prettier/plugins/estree' {
   }
 
   const options: Record<string, SupportOption>
+}
+
+function applySpacing(node: ts.Node | null, doc: builders.Doc): builders.Doc {
+  if (node?.newLine === 'before') {
+    return [hardline, doc]
+  }
+
+  if (node?.newLine === 'after') {
+    return [doc, hardline]
+  }
+
+  if (node?.newLine === 'both') {
+    return [hardline, doc, hardline]
+  }
+
+  return doc
 }
 
 /**
@@ -51,22 +67,14 @@ function createPlugin(program: ts.Program): Plugin {
     printers: {
       estree: {
         print(path: AstPath<ts.Node>, options: ParserOptions<ts.Node>, print) {
-          const doc = estree.print(path, options, print)
           const node = path.getNode()
 
-          if (node?.newLine === 'before') {
-            return [hardline, doc]
-          }
+          const doc =
+            node?.comment === undefined
+              ? estree.print(path, options, print)
+              : ['// ', node.comment]
 
-          if (node?.newLine === 'after') {
-            return [doc, hardline]
-          }
-
-          if (node?.newLine === 'both') {
-            return [hardline, doc, hardline]
-          }
-
-          return doc
+          return applySpacing(node, doc)
         },
       },
     },

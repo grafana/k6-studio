@@ -1,8 +1,9 @@
 import { Menu, shell } from 'electron'
 
+import { reportNewIssue } from '../utils/bugReport'
+import { getPlatform } from '../utils/electron'
+
 import { openLogFolder } from './logger'
-import { reportNewIssue } from './utils/bugReport'
-import { getPlatform } from './utils/electron'
 
 const isDevEnv = process.env.NODE_ENV === 'development'
 const isMac = getPlatform() === 'mac'
