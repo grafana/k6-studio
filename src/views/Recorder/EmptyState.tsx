@@ -303,18 +303,18 @@ function WarningMessage({
           <MinusCircle />
         </Callout.Icon>
         <Callout.Text>
-          <strong>Proxy is unhealthy</strong>
+          <strong>Proxy health check failed</strong>
           <br />
-          k6 Studio was unable to reach your network. If you have issues
-          recording, please check your{' '}
+          Grafana k6 Studio cannot establish connection to the Internet. Unless
+          this is expected due to your internal network configuration, check{' '}
           <TextButton onClick={() => openSettingsDialog('proxy')}>
             proxy settings
           </TextButton>{' '}
           or learn more in the{' '}
           <ExternalLink href="https://grafana.com/docs/k6-studio/troubleshoot/#502-bad-gateway-error">
-            Troubleshoot
+            troubleshooting guide
           </ExternalLink>{' '}
-          guide.
+          .
         </Callout.Text>
       </Callout.Root>
     )
