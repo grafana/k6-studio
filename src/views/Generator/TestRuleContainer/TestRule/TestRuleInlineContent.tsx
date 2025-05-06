@@ -39,10 +39,10 @@ export function TestRuleInlineContent({ rule }: TestRuleInlineContentProps) {
 function CorrelationContent({ rule }: { rule: CorrelationRule }) {
   return (
     <>
-      <Flex gap="2" align="center">
-        <TestRuleFilter filter={rule.extractor.filter} />
-        <TestRuleSelector rule={rule} />
-      </Flex>
+      {/* <Flex gap="2" align="center"> */}
+      <TestRuleFilter filter={rule.extractor.filter} />
+      <TestRuleSelector rule={rule} />
+      {/* </Flex> */}
     </>
   )
 }
