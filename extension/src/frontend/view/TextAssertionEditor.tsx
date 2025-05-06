@@ -1,11 +1,9 @@
 import { css } from '@emotion/react'
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 
 import { Button } from '@/components/primitives/Button'
-import { FieldGrid } from '@/components/primitives/FieldGrid'
 import { Flex } from '@/components/primitives/Flex'
 import { Popover } from '@/components/primitives/Popover'
-import { TextField } from '@/components/primitives/TextField'
 import { ElementSelector } from '@/schemas/recording'
 
 import { client } from '../routing'
@@ -14,6 +12,8 @@ import { useGlobalClass } from './GlobalStyles'
 import { Overlay } from './Overlay'
 import { useTextSelection } from './TextAssertionEditor.hooks'
 import { TextSelection } from './TextAssertionEditor.types'
+import { TextAssertionForm } from './assertions/TextAssertionForm'
+import { TextAssertionData } from './assertions/types'
 import { useEscape } from './hooks/useEscape'
 import { usePreventClick } from './hooks/usePreventClick'
 
@@ -22,19 +22,22 @@ interface TextAssertion {
   text: string
 }
 
-interface TextAssertionFormProps {
+interface TextAssertionEditorContentProps {
   selection: TextSelection
   onAdd: (assertion: TextAssertion) => void
   onClose: () => void
 }
 
-function TextAssertionForm({
+function TextAssertionEditorContent({
   selection,
   onAdd,
   onClose,
-}: TextAssertionFormProps) {
-  const [selector, setSelector] = useState(selection.selector)
-  const [text, setText] = useState(selection.text)
+}: TextAssertionEditorContentProps) {
+  const [assertion, setAssertion] = useState<TextAssertionData>({
+    type: 'text',
+    selector: selection.selector.css,
+    text: selection.text,
+  })
 
   useEffect(() => {
     return () => {
@@ -45,48 +48,18 @@ function TextAssertionForm({
     }
   }, [])
 
-  const handleSelectorFocus = () => {
-    client.send({
-      type: 'highlight-elements',
-      selector: {
-        type: 'css',
-        selector: selector.css,
-      },
-    })
-  }
-
-  const handleSelectorBlur = () => {
-    client.send({
-      type: 'highlight-elements',
-      selector: null,
-    })
-  }
-
-  const handleSelectorChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    client.send({
-      type: 'highlight-elements',
-      selector: {
-        type: 'css',
-        selector: ev.target.value,
-      },
-    })
-
-    setSelector({
-      ...selector,
-      css: ev.target.value,
-    })
-  }
-
-  const handleTextChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    setText(ev.target.value)
+  const handleChange = (assertion: TextAssertionData) => {
+    setAssertion(assertion)
   }
 
   const handleSubmit = (ev: FormEvent<HTMLFormElement>) => {
     ev.preventDefault()
 
     onAdd({
-      selector,
-      text,
+      selector: {
+        css: assertion.selector,
+      },
+      text: assertion.text,
     })
   }
 
@@ -131,22 +104,11 @@ function TextAssertionForm({
             `}
             onSubmit={handleSubmit}
           >
-            <FieldGrid>
-              <TextField
-                size="1"
-                label="Element"
-                value={selector.css}
-                onFocus={handleSelectorFocus}
-                onBlur={handleSelectorBlur}
-                onChange={handleSelectorChange}
-              />
-              <TextField
-                size="1"
-                label="Contains"
-                value={text}
-                onChange={handleTextChange}
-              />
-            </FieldGrid>
+            <TextAssertionForm
+              canEditSelector
+              assertion={assertion}
+              onChange={handleChange}
+            />
 
             <Flex justify="end">
               <Button type="submit" size="1">
@@ -213,7 +175,7 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
   return (
     <>
       {selection !== null && (
-        <TextAssertionForm
+        <TextAssertionEditorContent
           selection={selection}
           onAdd={handleAdd}
           onClose={handleFormClose}

@@ -2,6 +2,7 @@ import { last } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { ElementSelector } from '@/schemas/recording'
+import { uuid } from '@/utils/uuid'
 
 import { generateSelector } from '../../selectors'
 
@@ -12,6 +13,7 @@ import { Bounds, Position } from './types'
 import { getElementBounds } from './utils'
 
 export interface TrackedElement {
+  id: string
   selector: ElementSelector
   target: Element
   bounds: Bounds
@@ -19,10 +21,26 @@ export interface TrackedElement {
 
 function toTrackedElement(element: Element): TrackedElement {
   return {
+    id: uuid(),
     selector: generateSelector(element),
     target: element,
     bounds: getElementBounds(element),
   }
+}
+
+function isInsideBounds(
+  position: Position,
+  { top, left, width, height }: Bounds
+) {
+  const right = left + width
+  const bottom = top + height
+
+  return (
+    position.top >= top &&
+    position.left >= left &&
+    position.left <= right &&
+    position.top <= bottom
+  )
 }
 
 export function useInspectedElement() {
@@ -30,8 +48,11 @@ export function useInspectedElement() {
     top: 0,
     left: 0,
   })
+
   const [pinnedEl, setPinnedElement] = useState<TrackedElement[]>([])
   const [hoveredEl, setHoveredEl] = useState<TrackedElement | null>(null)
+
+  useGlobalClass('inspecting')
 
   useEffect(() => {
     const handleMouseOver = (ev: MouseEvent) => {
@@ -81,6 +102,15 @@ export function useInspectedElement() {
     }
   }, [hoveredEl])
 
+  const unpin = useCallback(() => {
+    setMousePosition({
+      top: 0,
+      left: 0,
+    })
+
+    setPinnedElement([])
+  }, [])
+
   usePreventClick({
     callback: (ev) => {
       if (hoveredEl === null) {
@@ -88,31 +118,25 @@ export function useInspectedElement() {
       }
 
       if (pinnedEl.length > 0) {
-        console.log('unpinning')
-        setMousePosition({
-          top: 0,
-          left: 0,
-        })
-        setPinnedElement([])
+        unpin()
 
         return
       }
 
-      setMousePosition({
+      const position = {
         top: ev.clientY + window.scrollY,
         left: ev.clientX + window.scrollX,
-      })
+      }
 
+      if (!isInsideBounds(position, hoveredEl.bounds)) {
+        return
+      }
+
+      setMousePosition(position)
       setPinnedElement([hoveredEl])
     },
-    dependencies: [pinnedEl, hoveredEl],
+    dependencies: [pinnedEl, hoveredEl, unpin],
   })
-
-  useGlobalClass('inspecting')
-
-  const unpin = useCallback(() => {
-    setPinnedElement([])
-  }, [])
 
   useEffect(() => {
     return () => {
