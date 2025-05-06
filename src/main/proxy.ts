@@ -288,7 +288,7 @@ const getProxyCertificateContent = () => {
   return undefined
 }
 
-const checkProxyHealth = async () => {
+const checkProxyHealth = () => {
   return new Promise((resolve) => {
     const certContent = getProxyCertificateContent()
     const agent = new HttpsProxyAgent(getProxyURL())
