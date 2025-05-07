@@ -16,7 +16,7 @@ import {
   stopProxyProcess,
 } from './main/proxy'
 import { getSettings, initSettings } from './main/settings'
-import { configureWatcher } from './main/watcher'
+import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { BrowserServer } from './services/browser/server'
 import { ProxyStatus } from './types'
@@ -193,10 +193,13 @@ app.whenReady().then(
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
     app.quit()
+    return
   }
+
+  await closeWatcher()
 })
 
 app.on('activate', async () => {
@@ -209,10 +212,7 @@ app.on('activate', async () => {
 })
 
 app.on('before-quit', async () => {
-  // stop watching files to avoid crash on exit
   k6StudioState.appShuttingDown = true
-  if (k6StudioState.watcher) {
-    await k6StudioState.watcher.close()
-  }
+  await closeWatcher()
   return stopProxyProcess()
 })
