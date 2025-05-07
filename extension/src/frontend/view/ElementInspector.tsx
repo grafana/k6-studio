@@ -1,6 +1,11 @@
 import { css } from '@emotion/react'
 import { EyeOpenIcon, TextIcon } from '@radix-ui/react-icons'
 import { ToolbarButtonProps } from '@radix-ui/react-toolbar'
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SquareDashedMousePointerIcon,
+} from 'lucide-react'
 import { ComponentProps, FormEvent, useEffect, useState } from 'react'
 
 import { Button } from '@/components/primitives/Button'
@@ -34,14 +39,15 @@ function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
 function ToolbarButton(props: ToolbarButtonProps) {
   return (
     <Toolbar.Button
+      {...props}
       css={css`
         display: flex;
         justify-content: flex-start;
         align-items: center;
         gap: var(--studio-spacing-2);
         padding: var(--studio-spacing-2);
+        font-size: var(--studio-font-size-1);
       `}
-      {...props}
     />
   )
 }
@@ -50,9 +56,17 @@ interface ElementPopoverProps {
   anchor: Position
   element: TrackedElement
   onClose: () => void
+  onSelectionDecrease?: () => void
+  onSelectionIncrease?: () => void
 }
 
-function ElementPopover({ anchor, element, onClose }: ElementPopoverProps) {
+function ElementPopover({
+  anchor,
+  element,
+  onClose,
+  onSelectionDecrease,
+  onSelectionIncrease,
+}: ElementPopoverProps) {
   const [assertion, setAssertion] = useState<AssertionData | null>(null)
 
   const handleAddVisibilityAssertion = () => {
@@ -117,7 +131,7 @@ function ElementPopover({ anchor, element, onClose }: ElementPopoverProps) {
               justify-content: center;
               padding: var(--studio-spacing-1);
               margin-bottom: var(--studio-spacing-1);
-              min-width: 200px;
+              min-width: 250px;
               border-bottom: 1px solid var(--studio-border-color);
             `}
           >
@@ -137,6 +151,47 @@ function ElementPopover({ anchor, element, onClose }: ElementPopoverProps) {
               <ToolbarButton onClick={handleAddTextAssertion}>
                 <TextIcon /> <div>Add text assertion</div>
               </ToolbarButton>
+              <Toolbar.Separator />
+              <div
+                css={css`
+                  display: flex;
+                  gap: var(--studio-spacing-1);
+                  align-items: center;
+                  padding: var(--studio-spacing-1) var(--studio-spacing-2);
+                `}
+              >
+                <div
+                  css={css`
+                    display: flex;
+                    gap: var(--studio-spacing-2);
+                    align-items: center;
+                    flex: 1 1 0;
+                  `}
+                >
+                  <SquareDashedMousePointerIcon size={16} strokeWidth={1.5} />
+                  Selection
+                </div>
+                <Tooltip asChild content="Select parent element.">
+                  <div>
+                    <Toolbar.Button
+                      disabled={onSelectionIncrease === undefined}
+                      onClick={onSelectionIncrease}
+                    >
+                      <ChevronLeftIcon size={16} strokeWidth={1.5} />
+                    </Toolbar.Button>
+                  </div>
+                </Tooltip>
+                <Tooltip asChild content="Select child element.">
+                  <div>
+                    <Toolbar.Button
+                      disabled={onSelectionDecrease === undefined}
+                      onClick={onSelectionDecrease}
+                    >
+                      <ChevronRightIcon size={16} strokeWidth={1.5} />
+                    </Toolbar.Button>
+                  </div>
+                </Tooltip>
+              </div>
             </ToolbarRoot>
           )}
           {assertion !== null && (
@@ -191,7 +246,8 @@ interface ElementInspectorProps {
 }
 
 export function ElementInspector({ onCancel }: ElementInspectorProps) {
-  const { pinned, element, mousePosition, unpin } = useInspectedElement()
+  const { pinned, element, mousePosition, unpin, expand, contract } =
+    useInspectedElement()
 
   useEscape(() => {
     if (pinned) {
@@ -249,9 +305,11 @@ export function ElementInspector({ onCancel }: ElementInspectorProps) {
 
   return (
     <ElementPopover
-      key={element.id}
+      key={pinned.id}
       anchor={mousePosition}
       element={element}
+      onSelectionDecrease={contract}
+      onSelectionIncrease={expand}
       onClose={unpin}
     />
   )
