@@ -15,6 +15,8 @@ const DEFAULT_DIFF_OPTIONS: editor.IDiffEditorOptions = {
   readOnly: true,
   renderOverviewRuler: false,
   lineNumbers: 'off',
+  renderIndicators: false,
+  useShadowDOM: false, // needed to disable context menu by CSS
 }
 
 interface Props extends ComponentProps<typeof Editor> {
@@ -59,8 +61,13 @@ export function DiffEditor({
         theme={theme === 'dark' ? 'k6-studio-dark' : 'k6-studio-light'}
         css={{
           // Hide lightbulb icon in diff editor
+          // https://github.com/microsoft/monaco-editor/issues/3873
           '.codicon': {
             display: 'none',
+          },
+          // Hide context menu when clicking on removed line
+          '.monaco-menu': {
+            display: 'none !important',
           },
         }}
       />
