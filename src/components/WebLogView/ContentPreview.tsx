@@ -1,6 +1,5 @@
 import { Flex, SegmentedControl, Box, ScrollArea } from '@radix-ui/themes'
-import { useState, useEffect } from 'react'
-import { useEffectOnce } from 'react-use'
+import { useState } from 'react'
 
 import { DiffEditor } from '../Monaco/DiffEditor'
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
@@ -27,17 +26,15 @@ export function ContentPreview({
   searchString,
   originalContent,
 }: ContentPreviewProps) {
-  const [selectedTab, setSelectedTab] = useState('content')
-
-  useEffect(() => {
-    setSelectedTab('content')
-  }, [format])
-
-  useEffectOnce(() => {
+  function getInitialTab() {
     if (originalContent && originalContent !== content && !searchString) {
-      setSelectedTab('diff')
+      return 'diff'
     }
-  })
+
+    return 'content'
+  }
+
+  const [selectedTab, setSelectedTab] = useState(getInitialTab)
 
   if (isMedia(format)) {
     return (
