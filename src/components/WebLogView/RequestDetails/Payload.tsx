@@ -13,11 +13,11 @@ import { getRawContent, isJsonString, parseParams } from './utils'
 
 export function Payload({ data }: { data: ProxyData }) {
   const content = parseParams(data.request)
-  const originalContentType = getContentType(data.request?.headers ?? [])
   const { searchString, index, reset } = useGoToPayloadMatch()
 
   const originalRequest = useOriginalRequest(data.id)
   const originalContent = originalRequest && parseParams(originalRequest)
+  const originalContentType = getContentType(originalRequest?.headers ?? [])
 
   // Reset payload search on unmount
   useEffect(() => {
