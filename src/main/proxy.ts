@@ -2,8 +2,6 @@ import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import find from 'find-process'
 import { readFile } from 'fs/promises'
-import https from 'https'
-import { HttpsProxyAgent } from 'https-proxy-agent'
 import forge from 'node-forge'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
@@ -23,6 +21,7 @@ import {
 import { safeJsonParse } from '../utils/json'
 
 import { expandHomeDir } from './file'
+import { checkProxyHealth } from './healthCheck'
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
 interface options {
@@ -264,7 +263,7 @@ export const cleanUpProxies = async () => {
   })
 }
 
-const getProxyURL = () => {
+export const getProxyURL = () => {
   const { proxy } = k6StudioState.appSettings
   if (proxy.mode === 'upstream') {
     return proxy.url
@@ -280,38 +279,10 @@ const getProxyCertificatePath = () => {
   return path.join(getCertificatesPath(), 'mitmproxy-ca-cert.pem')
 }
 
-const getProxyCertificateContent = () => {
+export const getProxyCertificateContent = () => {
   const certPath = expandHomeDir(getProxyCertificatePath())
   if (certPath && existsSync(certPath)) {
     return readFileSync(certPath)
   }
   return undefined
-}
-
-const checkProxyHealth = () => {
-  return new Promise((resolve) => {
-    const certContent = getProxyCertificateContent()
-    const agent = new HttpsProxyAgent(getProxyURL())
-    const options: https.RequestOptions = {
-      agent,
-      ca: certContent,
-      headers: {
-        'k6-Studio-Health-Check': 'true',
-      },
-      rejectUnauthorized: !k6StudioState.appSettings.proxy.sslInsecure,
-    }
-
-    https
-      .get('https://quickpizza.grafana.com', options, (res) => {
-        console.log(`Proxy health check status: ${res.statusCode}`)
-        if (res.statusCode === 200) {
-          return resolve(true)
-        }
-        resolve(false)
-      })
-      .on('error', (err) => {
-        log.error(err)
-        resolve(false)
-      })
-  })
 }
