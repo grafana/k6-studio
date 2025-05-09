@@ -28,7 +28,7 @@ import { TestRuleItem } from './TestRule'
 
 interface SortableRuleListProps {
   rules: TestRule[]
-  onSwapRules: (idA: string, idB: string) => void
+  onSwapRules?: (idA: string, idB: string) => void
 }
 
 export function SortableRuleList({

@@ -1,4 +1,5 @@
 import { css } from '@emotion/react'
+import { ButtonIcon, MagicWandIcon } from '@radix-ui/react-icons'
 import { Box, Button, Dialog, Flex, Spinner } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -6,7 +7,10 @@ import { EmptyMessage } from '@/components/EmptyMessage'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
+import { selectFilteredRequests, useGeneratorStore } from '@/store/generator'
 import { ValidatorContent } from '@/views/Validator/ValidatorContent'
+
+import { AutofixDialog } from './AutofixDialog'
 
 interface ValidatorDialogProps {
   script: string
@@ -20,9 +24,12 @@ export function ValidatorDialog({
   onOpenChange,
 }: ValidatorDialogProps) {
   const [isRunning, setIsRunning] = useState(false)
+  const [isAutofixOpen, setIsAutofixOpen] = useState(false)
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
+
+  const originalRequests = useGeneratorStore(selectFilteredRequests)
 
   const resetState = useCallback(() => {
     resetLogs()
@@ -52,6 +59,7 @@ export function ValidatorDialog({
 
   useEffect(() => {
     if (!open) return
+    setIsAutofixOpen(false)
 
     // TODO: https://github.com/grafana/k6-studio/issues/277
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -81,6 +89,12 @@ export function ValidatorDialog({
                 {isRunning && <Spinner ml="2" />}
               </Flex>
               <Flex gap="3" justify="end" align="center">
+                <Button
+                  disabled={isRunning}
+                  onClick={() => setIsAutofixOpen((state) => !state)}
+                >
+                  <MagicWandIcon /> Autofix
+                </Button>
                 <Dialog.Close>
                   <Button variant="outline">Close</Button>
                 </Dialog.Close>
@@ -102,16 +116,26 @@ export function ValidatorDialog({
               border-top: 1px solid var(--gray-5);
             `}
           >
-            <ValidatorContent
-              script={script}
-              proxyData={proxyData}
-              logs={logs}
-              checks={checks}
-              noDataElement={
-                <EmptyMessage message="Requests will appear here" />
-              }
-              isRunning={isRunning}
-            />
+            {!isAutofixOpen && (
+              <ValidatorContent
+                script={script}
+                proxyData={proxyData}
+                logs={logs}
+                checks={checks}
+                noDataElement={
+                  <EmptyMessage message="Requests will appear here" />
+                }
+                isRunning={isRunning}
+              />
+            )}
+            {isAutofixOpen && (
+              <AutofixDialog
+                onOpenChange={setIsAutofixOpen}
+                originalRequests={originalRequests}
+                validationRequests={proxyData}
+                handleRunScript={handleRunScript}
+              />
+            )}
           </Box>
         </Flex>
       </Dialog.Content>
