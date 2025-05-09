@@ -39,7 +39,11 @@ export function ProxyStatusIndicator() {
       <IconButton
         variant="ghost"
         color="gray"
-        onClick={status === 'online' ? handleProxyStop : handleProxyStart}
+        onClick={
+          ['online', 'unhealthy'].includes(status)
+            ? handleProxyStop
+            : handleProxyStart
+        }
         disabled={status === 'starting'}
       >
         <Flex position="relative">
