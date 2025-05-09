@@ -2,14 +2,14 @@ import { DataList, Strong } from '@radix-ui/themes'
 
 import { HighlightedText } from '@/components/HighlightedText'
 import { ProxyData } from '@/types'
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
 export function Headers({
   data,
   matches,
 }: {
   data: ProxyData
-  matches?: SearchMatch[]
+  matches?: Match[]
 }) {
   return (
     <DataList.Root size="1" trim="both">
