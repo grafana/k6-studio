@@ -4,7 +4,7 @@ import https from 'node:https'
 
 import { getProxyCertificateContent, getProxyURL } from './proxy'
 
-export const checkProxyHealth = async () => {
+const checkProxyHealth = async () => {
   try {
     const results = await Promise.allSettled([
       isUrlReachable('https://www.google.com/generate_204'),
@@ -21,7 +21,7 @@ export const checkProxyHealth = async () => {
   }
 }
 
-const isUrlReachable = async (url: string) => {
+const isUrlReachable = (url: string) => {
   return new Promise((resolve) => {
     const certContent = getProxyCertificateContent()
     const agent = new HttpsProxyAgent(getProxyURL())
@@ -29,7 +29,7 @@ const isUrlReachable = async (url: string) => {
       agent,
       ca: certContent,
       headers: {
-        'k6-Studio-Health-Check': 'true',
+        'X-K6-Studio-Health-Check': 'true',
       },
       rejectUnauthorized: !k6StudioState.appSettings.proxy.sslInsecure,
     }
@@ -47,4 +47,24 @@ const isUrlReachable = async (url: string) => {
         resolve(false)
       })
   })
+}
+
+export const startHealthCheckPolling = () => {
+  setInterval(async () => {
+    // Don't check if proxy is offline or starting
+    // Don't check if a recording is in progress
+    // Don't check if not in the /recorder page
+    if (
+      !k6StudioState.currentProxyProcess ||
+      ['starting', 'offline'].includes(k6StudioState.proxyStatus) ||
+      k6StudioState.currentBrowserProcess ||
+      !k6StudioState.currentClientRoute.startsWith('/recorder')
+    ) {
+      return
+    }
+
+    const isHealthy = await checkProxyHealth()
+    const status = isHealthy ? 'online' : 'unhealthy'
+    k6StudioState.proxyEmitter.emit('status:change', status)
+  }, 2000)
 }

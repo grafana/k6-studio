@@ -7,6 +7,7 @@ import { updateElectronApp } from 'update-electron-app'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
 import { migrateJsonGenerator } from './main/generator'
+import { startHealthCheckPolling } from './main/healthCheck'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
 import { configureApplicationMenu } from './main/menu'
@@ -184,6 +185,7 @@ app.whenReady().then(
     await setupProjectStructure()
     await migrateJsonGenerator()
     await createWindow()
+    startHealthCheckPolling()
   },
   (error) => {
     log.error(error)
