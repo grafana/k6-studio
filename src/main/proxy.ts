@@ -21,7 +21,6 @@ import {
 import { safeJsonParse } from '../utils/json'
 
 import { expandHomeDir } from './file'
-import { checkProxyHealth } from './healthCheck'
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
 interface options {
@@ -191,11 +190,9 @@ export const launchProxyAndAttachEmitter = async (
   k6StudioState.proxyEmitter.emit('status:change', 'starting')
 
   return launchProxy(browserWindow, k6StudioState.appSettings.proxy, {
-    onReady: async () => {
-      const isProxyHealthy = await checkProxyHealth()
-      const proxyStatus = isProxyHealthy ? 'online' : 'unhealthy'
+    onReady: () => {
       k6StudioState.wasProxyStoppedByClient = false
-      k6StudioState.proxyEmitter.emit('status:change', proxyStatus)
+      k6StudioState.proxyEmitter.emit('status:change', 'online')
       k6StudioState.proxyEmitter.emit('ready')
     },
     onFailure: async () => {
