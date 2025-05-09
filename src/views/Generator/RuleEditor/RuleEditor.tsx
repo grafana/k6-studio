@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronLeftIcon, InfoCircledIcon } from '@radix-ui/react-icons'
 import {
   Box,
   Button,
@@ -9,6 +8,7 @@ import {
   ScrollArea,
 } from '@radix-ui/themes'
 import { capitalize, startCase } from 'lodash-es'
+import { ChevronLeftIcon, InfoIcon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 
@@ -46,7 +46,7 @@ function RuleDisabledWarning() {
   return (
     <Callout.Root mb="4">
       <Callout.Icon>
-        <InfoCircledIcon />
+        <InfoIcon />
       </Callout.Icon>
       <Callout.Text>This rule is currently disabled.</Callout.Text>
     </Callout.Root>

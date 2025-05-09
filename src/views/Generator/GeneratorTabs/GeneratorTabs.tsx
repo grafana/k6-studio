@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { CrossCircledIcon } from '@radix-ui/react-icons'
 import { Box, Flex, Tabs } from '@radix-ui/themes'
+import { CircleXIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { useScriptPreview } from '@/hooks/useScriptPreview'
@@ -56,9 +56,9 @@ export function GeneratorTabs({
                   }
                 >
                   {hasError && (
-                    <CrossCircledIcon
+                    <CircleXIcon
                       css={css`
-                        margin-right: 5px;
+                        margin-right: var(--space-1);
                       `}
                       color="var(--red-9)"
                     />

@@ -1,6 +1,6 @@
 import { css, keyframes } from '@emotion/react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { Cross1Icon } from '@radix-ui/react-icons'
+import { XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
@@ -185,7 +185,7 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
                   }
                 `}
               >
-                <Cross1Icon />
+                <XIcon />
               </Dialog.Close>
             </div>
             <div

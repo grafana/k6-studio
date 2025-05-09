@@ -181,6 +181,12 @@ const styles = css`
   [data-p='4'] {
     padding: var(--studio-spacing-4);
   }
+
+  .lucide {
+    width: 1em;
+    height: 1em;
+    stroke-width: 1.5;
+  }
 `
 
 const getStyles = (root: boolean, includeColors: boolean) => {

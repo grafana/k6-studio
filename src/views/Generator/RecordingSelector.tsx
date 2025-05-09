@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
-import { ExclamationTriangleIcon, PlusIcon } from '@radix-ui/react-icons'
 import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
+import { AlertTriangleIcon, PlusIcon } from 'lucide-react'
 
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
@@ -81,7 +81,12 @@ export function RecordingSelector({
         >
           <Flex as="span" align="center" gap="1">
             {isRecordingMissing && (
-              <ExclamationTriangleIcon color="orange" css={{ minWidth: 16 }} />
+              <AlertTriangleIcon
+                css={css`
+                  flex-shrink: 0;
+                  color: var(--accent-9);
+                `}
+              />
             )}
             {getFileNameWithoutExtension(recordingPath)}
           </Flex>

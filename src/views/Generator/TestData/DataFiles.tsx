@@ -1,12 +1,5 @@
 import { css } from '@emotion/react'
 import {
-  ExclamationTriangleIcon,
-  FilePlusIcon,
-  InfoCircledIcon,
-  PlusIcon,
-  TrashIcon,
-} from '@radix-ui/react-icons'
-import {
   Button,
   DropdownMenu,
   Flex,
@@ -14,6 +7,13 @@ import {
   Text,
   Tooltip,
 } from '@radix-ui/themes'
+import {
+  FilePlusIcon,
+  InfoIcon,
+  PlusIcon,
+  Trash2Icon,
+  TriangleAlertIcon,
+} from 'lucide-react'
 
 import { Table } from '@/components/Table'
 import { useImportDataFile } from '@/hooks/useImportDataFile'
@@ -42,7 +42,7 @@ export function DataFiles() {
               <Flex align="center" gap="1">
                 Access method
                 <Tooltip content="Defines how the items are accessed during the test">
-                  <InfoCircledIcon />
+                  <InfoIcon size={12} />
                 </Tooltip>
               </Flex>
             </Table.ColumnHeaderCell>
@@ -99,8 +99,10 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
         <Flex align="center" gap="1">
           {isFileMissing && (
             <Tooltip content="Data file is missing">
-              <ExclamationTriangleIcon
-                color="red"
+              <TriangleAlertIcon
+                css={css`
+                  color: var(--red-9);
+                `}
                 aria-label="Data file is missing"
               />
             </Tooltip>
@@ -119,7 +121,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
             disabled={isFileInUse && !isFileMissing}
             onClick={onRemove}
           >
-            <TrashIcon width="18" height="18" />
+            <Trash2Icon />
           </IconButton>
         </Tooltip>
       </Table.Cell>

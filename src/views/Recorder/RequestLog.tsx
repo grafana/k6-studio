@@ -1,6 +1,6 @@
-import { PlusCircledIcon } from '@radix-ui/react-icons'
 import { Flex, Box } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
+import { CirclePlusIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
@@ -65,7 +65,7 @@ export function RequestLog({
                 onClick={() => onCreateGroup?.(`Group ${groups.length}`)}
                 tooltip="Groups are used to organize specific steps in your recording. After you create a group, any further requests will be added to it."
               >
-                <PlusCircledIcon />
+                <CirclePlusIcon />
                 Create group
               </ButtonWithTooltip>
             </Box>

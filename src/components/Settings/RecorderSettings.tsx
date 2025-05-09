@@ -1,5 +1,5 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Flex, Text, Checkbox, Callout } from '@radix-ui/themes'
+import { AlertTriangleIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
@@ -82,7 +82,7 @@ export const RecorderSettings = () => {
         !isValidPath(recorder.browserPath?.toLocaleLowerCase()) && (
           <Callout.Root color="amber">
             <Callout.Icon>
-              <ExclamationTriangleIcon />
+              <AlertTriangleIcon />
             </Callout.Icon>
 
             <Callout.Text>

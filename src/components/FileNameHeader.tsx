@@ -1,4 +1,3 @@
-import { Pencil1Icon } from '@radix-ui/react-icons'
 import {
   Badge,
   Button,
@@ -9,6 +8,7 @@ import {
   TextField,
   Tooltip,
 } from '@radix-ui/themes'
+import { PencilIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -115,7 +115,7 @@ function RenameFileDialog({ file }: RenameFileDialogProps) {
             aria-label={`Rename ${FileTypeToLabel[file.type]}`}
             onClick={() => setIsOpen(true)}
           >
-            <Pencil1Icon />
+            <PencilIcon />
           </IconButton>
         </Popover.Trigger>
       </Tooltip>

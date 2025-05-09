@@ -1,5 +1,4 @@
 import { css } from '@emotion/react'
-import { ArrowLeftIcon } from '@radix-ui/react-icons'
 import {
   Button,
   Flex,
@@ -7,6 +6,7 @@ import {
   Link as RadixLink,
   Text,
 } from '@radix-ui/themes'
+import { ChevronLeftIcon } from 'lucide-react'
 
 import GrotCrashed from '@/assets/grot-crashed.svg'
 
@@ -59,7 +59,7 @@ export function ErrorElement() {
           .
         </Text>
         <Button onClick={handleRestart}>
-          <ArrowLeftIcon />
+          <ChevronLeftIcon />
           Go back
         </Button>
       </Flex>

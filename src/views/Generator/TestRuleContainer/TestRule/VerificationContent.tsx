@@ -1,5 +1,5 @@
-import { DiscIcon, Link1Icon } from '@radix-ui/react-icons'
 import { Strong } from '@radix-ui/themes'
+import { DiscIcon, Link2Icon } from 'lucide-react'
 
 import { VerificationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
@@ -46,7 +46,7 @@ function ValueLabel({ rule }: { rule: VerificationRule }) {
     case 'variable':
       return (
         <Strong>
-          <Link1Icon /> {rule.value.variableName}
+          <Link2Icon /> {rule.value.variableName}
         </Strong>
       )
     default:

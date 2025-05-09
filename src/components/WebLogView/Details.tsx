@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
-import { Cross2Icon } from '@radix-ui/react-icons'
 import { Box, Flex, Heading, IconButton } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
+import { XIcon } from 'lucide-react'
 import { PropsWithChildren, useEffect } from 'react'
 
 import { ProxyData } from '@/types'
@@ -38,7 +38,7 @@ export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
           variant="ghost"
           onClick={() => onSelectRequest(null)}
         >
-          <Cross2Icon />
+          <XIcon />
         </IconButton>
       </Box>
       {selectedRequest !== null && (

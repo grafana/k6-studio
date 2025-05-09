@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import * as Collapsible from '@radix-ui/react-collapsible'
-import { CaretDownIcon, CaretRightIcon } from '@radix-ui/react-icons'
 import { Flex, Reset, Text } from '@radix-ui/themes'
+import { ChevronDownIcon, ChevronRight } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 
 import { FileList } from './FileList'
@@ -29,11 +29,7 @@ export function FileTree({
           <Reset>
             <button type="button">
               <Flex align="center" gap="1">
-                {open ? (
-                  <CaretDownIcon width="16" height="16" />
-                ) : (
-                  <CaretRightIcon width="16" height="16" />
-                )}
+                {open ? <ChevronDownIcon /> : <ChevronRight />}
                 <Text
                   size="2"
                   css={css`

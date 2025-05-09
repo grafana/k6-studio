@@ -1,5 +1,5 @@
-import { QuestionMarkCircledIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
+import { CircleHelpIcon } from 'lucide-react'
 
 export function HelpButton() {
   const handleOpenDocs = () =>
@@ -22,7 +22,7 @@ export function HelpButton() {
             color="gray"
             variant="ghost"
           >
-            <QuestionMarkCircledIcon />
+            <CircleHelpIcon />
           </IconButton>
         </DropdownMenu.Trigger>
       </Tooltip>

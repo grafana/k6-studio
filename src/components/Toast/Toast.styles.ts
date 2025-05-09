@@ -33,11 +33,11 @@ export const ToastRoot = styled(RadixToast.Root)`
   background: var(--color-background);
   border-radius: var(--radius-3);
   box-shadow: var(--shadow-5);
-  padding: 15px;
+  padding: var(--space-4);
   align-items: center;
   position: relative;
   display: flex;
-  gap: 10px;
+  gap: var(--space-2);
 
   &[data-state='open'] {
     animation: ${slideIn} 150ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -66,14 +66,14 @@ export const ToastRoot = styled(RadixToast.Root)`
 `
 
 export const ToastViewport = styled(RadixToast.Viewport)`
-  --viewport-padding: 25px;
+  --viewport-padding: var(--space-6);
   position: fixed;
   bottom: 0;
   right: 0;
   display: flex;
   flex-direction: column;
   padding: var(--viewport-padding);
-  gap: 10px;
+  gap: var(--space-2);
   width: 390px;
   max-width: 100vw;
   margin: 0;
@@ -88,7 +88,7 @@ export const ToastTitle = styled(RadixToast.Title)`
 `
 
 export const ToastDescription = styled(RadixToast.Description)`
-  margin-top: 5px;
+  margin-top: var(--space-1);
   color: var(--slate-11);
   font-size: 13px;
   line-height: 1.3;
@@ -104,9 +104,19 @@ export const ToastClose = styled(RadixToast.Close)`
   width: 17px;
   height: 17px;
   display: none;
+
+  .lucide {
+    width: 12px;
+    height: 12px;
+  }
 `
 
 export const ToastIcon = styled.div`
   flex-shrink: 0;
-  height: 25px;
+  height: 24px;
+
+  .lucide {
+    width: 24px;
+    height: 24px;
+  }
 `
