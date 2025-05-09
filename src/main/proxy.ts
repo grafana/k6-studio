@@ -4,6 +4,7 @@ import find from 'find-process'
 import { readFile } from 'fs/promises'
 import forge from 'node-forge'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'path'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
@@ -19,6 +20,7 @@ import {
 } from '../utils/electron'
 import { safeJsonParse } from '../utils/json'
 
+import { expandHomeDir } from './file'
 export type ProxyProcess = ChildProcessWithoutNullStreams
 
 interface options {
@@ -256,4 +258,28 @@ export const cleanUpProxies = async () => {
   processList.forEach((proc) => {
     kill(proc.pid)
   })
+}
+
+export const getProxyURL = () => {
+  const { proxy } = k6StudioState.appSettings
+  if (proxy.mode === 'upstream') {
+    return proxy.url
+  }
+  return `http://localhost:${proxy.port}`
+}
+
+const getProxyCertificatePath = () => {
+  const { proxy } = k6StudioState.appSettings
+  if (proxy.mode === 'upstream') {
+    return proxy.certificatePath
+  }
+  return path.join(getCertificatesPath(), 'mitmproxy-ca-cert.pem')
+}
+
+export const getProxyCertificateContent = () => {
+  const certPath = expandHomeDir(getProxyCertificatePath())
+  if (certPath && existsSync(certPath)) {
+    return readFileSync(certPath)
+  }
+  return undefined
 }

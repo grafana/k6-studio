@@ -10,6 +10,7 @@ const COLOR_MAP: Record<ProxyStatus, string> = {
   ['online']: 'var(--green-9)',
   ['offline']: 'var(--gray-9)',
   ['starting']: 'var(--blue-9)',
+  ['unhealthy']: 'var(--red-9)',
 }
 
 export function ProxyStatusIndicator() {
@@ -24,7 +25,7 @@ export function ProxyStatusIndicator() {
   }
 
   const getTooltipContent = () => {
-    if (status === 'online') {
+    if (['online', 'unhealthy'].includes(status)) {
       return 'Stop proxy'
     }
     if (status === 'offline') {
@@ -38,7 +39,11 @@ export function ProxyStatusIndicator() {
       <IconButton
         variant="ghost"
         color="gray"
-        onClick={status === 'online' ? handleProxyStop : handleProxyStart}
+        onClick={
+          ['online', 'unhealthy'].includes(status)
+            ? handleProxyStop
+            : handleProxyStart
+        }
         disabled={status === 'starting'}
       >
         <Flex position="relative">
@@ -63,6 +68,7 @@ export function ProxyStatusIndicator() {
 function ProxyStatusIcon({ status }: { status: ProxyStatus }) {
   switch (status) {
     case 'online':
+    case 'unhealthy':
       return <Link1Icon color="gray" />
     case 'offline':
       return <LinkBreak1Icon color="gray" />
