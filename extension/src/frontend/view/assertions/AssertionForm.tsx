@@ -7,17 +7,32 @@ import { AssertionData } from './types'
 interface AssertionFormProps {
   assertion: AssertionData
   onChange: (assertion: AssertionData) => void
+  onSubmit: (assertion: AssertionData) => void
 }
 
-export function AssertionForm({ assertion, onChange }: AssertionFormProps) {
+export function AssertionForm({
+  assertion,
+  onChange,
+  onSubmit,
+}: AssertionFormProps) {
   switch (assertion.type) {
     case 'visibility':
       return (
-        <VisibilityAssertionForm assertion={assertion} onChange={onChange} />
+        <VisibilityAssertionForm
+          assertion={assertion}
+          onChange={onChange}
+          onSubmit={onSubmit}
+        />
       )
 
     case 'text':
-      return <TextAssertionForm assertion={assertion} onChange={onChange} />
+      return (
+        <TextAssertionForm
+          assertion={assertion}
+          onChange={onChange}
+          onSubmit={onSubmit}
+        />
+      )
 
     default:
       return exhaustive(assertion)

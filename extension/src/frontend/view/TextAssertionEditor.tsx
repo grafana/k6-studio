@@ -1,13 +1,11 @@
 import { css } from '@emotion/react'
-import { FormEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Button } from '@/components/primitives/Button'
-import { Flex } from '@/components/primitives/Flex'
-import { Popover } from '@/components/primitives/Popover'
 import { ElementSelector } from '@/schemas/recording'
 
 import { client } from '../routing'
 
+import { ElementPopover } from './ElementPopover'
 import { useGlobalClass } from './GlobalStyles'
 import { Overlay } from './Overlay'
 import { useTextSelection } from './TextAssertionEditor.hooks'
@@ -52,73 +50,31 @@ function TextAssertionEditorContent({
     setAssertion(assertion)
   }
 
-  const handleSubmit = (ev: FormEvent<HTMLFormElement>) => {
-    ev.preventDefault()
-
+  const handleSubmit = (assertion: TextAssertionData) => {
     onAdd({
       selector: {
         css: assertion.selector,
       },
       text: assertion.text,
     })
+
+    onClose()
   }
 
   return (
-    <Popover.Root open={true} onOpenChange={onClose}>
-      <Popover.Anchor asChild>
-        <Overlay bounds={selection.bounds} />
-      </Popover.Anchor>
-      <Popover.Portal>
-        <Popover.Content
-          data-inspector-tooltip
-          css={css`
-            display: flex;
-            flex-direction: column;
-            gap: var(--studio-spacing-2);
-            user-select: none;
-            font-weight: 500;
-            display: flex;
-            flex-direction: column;
-            min-width: 400px;
-            padding: var(--studio-spacing-2) var(--studio-spacing-4);
-            border: 1px solid var(--gray-6);
-          `}
-        >
-          <Popover.Arrow />
-          <h1
-            css={css`
-              font-size: var(--studio-font-size-1);
-              text-align: center;
-              margin: 0;
-            `}
-          >
-            Add text assertion
-          </h1>
-
-          <form
-            css={css`
-              display: flex;
-              flex-direction: column;
-              gap: var(--studio-spacing-2);
-              width: 100%;
-            `}
-            onSubmit={handleSubmit}
-          >
-            <TextAssertionForm
-              canEditSelector
-              assertion={assertion}
-              onChange={handleChange}
-            />
-
-            <Flex justify="end">
-              <Button type="submit" size="1">
-                Add
-              </Button>
-            </Flex>
-          </form>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+    <ElementPopover
+      open
+      anchor={<Overlay bounds={selection.bounds} />}
+      header="Add text assertion"
+      onOpenChange={onClose}
+    >
+      <TextAssertionForm
+        canEditSelector
+        assertion={assertion}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+      />
+    </ElementPopover>
   )
 }
 

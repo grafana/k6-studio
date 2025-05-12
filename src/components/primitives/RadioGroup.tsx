@@ -13,6 +13,8 @@ const Root = styled(RadixRadioGroup.Root)`
 `
 
 const Item = styled(RadixRadioGroup.Item)`
+  font-weight: var(--studio-font-weight-normal);
+
   position: relative;
   display: flex;
   align-items: center;

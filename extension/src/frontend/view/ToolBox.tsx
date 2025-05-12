@@ -69,7 +69,11 @@ export function ToolBox({
         value={tool ?? ''}
         onValueChange={handleToolChange}
       >
-        <Tooltip delayDuration={0} asChild content="Inspect elements">
+        <Tooltip
+          delayDuration={0}
+          asChild
+          content="Pick an element to add assertions to it."
+        >
           <div>
             <Toolbar.ToggleItem value="inspect">
               <CursorArrowIcon />

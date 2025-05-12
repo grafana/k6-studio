@@ -28,7 +28,7 @@ export function InBrowserControls() {
   return (
     <>
       <RemoteHighlights />
-      {tool === 'inspect' && <ElementInspector onCancel={handleDeselectTool} />}
+      {tool === 'inspect' && <ElementInspector onClose={handleDeselectTool} />}
       {tool === 'assert-text' && (
         <TextAssertionEditor onClose={handleDeselectTool} />
       )}

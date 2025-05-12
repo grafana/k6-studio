@@ -1,9 +1,10 @@
 import { useId } from 'react'
 
-import { FieldSet } from '@/components/primitives/FieldSet'
 import { Flex } from '@/components/primitives/Flex'
+import { Label } from '@/components/primitives/Label'
 import { RadioGroup } from '@/components/primitives/RadioGroup'
 
+import { AddAssertionForm } from './AddAssertionForm'
 import { VisibilityAssertionData } from './types'
 
 function asLiteral<T extends string>(
@@ -20,14 +21,15 @@ function asLiteral<T extends string>(
 interface VisibilityAssertionFormProps {
   assertion: VisibilityAssertionData
   onChange: (state: VisibilityAssertionData) => void
+  onSubmit: (state: VisibilityAssertionData) => void
 }
 
 export function VisibilityAssertionForm({
   assertion,
   onChange,
+  onSubmit,
 }: VisibilityAssertionFormProps) {
-  const hiddenId = useId()
-  const visibleId = useId()
+  const labelId = useId()
 
   const handleValueChange = asLiteral(['visible', 'hidden'], (value) => {
     onChange({
@@ -36,25 +38,35 @@ export function VisibilityAssertionForm({
     })
   })
 
+  const handleSubmit = () => {
+    onSubmit(assertion)
+  }
+
   return (
-    <Flex px="2">
-      <FieldSet>
-        <legend>Expected visibility:</legend>
+    <AddAssertionForm onSubmit={handleSubmit}>
+      <Flex direction="column" align="start" px="2" gap="2">
+        <Label id={labelId} size="1">
+          Expected visibility
+        </Label>
         <RadioGroup.Root
-          orientation="horizontal"
+          aria-labelledby={labelId}
           value={assertion.state}
           onValueChange={handleValueChange}
         >
-          <Flex align="center" gap="1">
-            <RadioGroup.Item id={visibleId} value="visible" />
-            <label htmlFor={visibleId}>Visible</label>
+          <Flex asChild align="center" gap="1">
+            <Label size="1" weight="normal">
+              <RadioGroup.Item value="visible" />
+              Visible
+            </Label>
           </Flex>
-          <Flex align="center" gap="1">
-            <RadioGroup.Item id={hiddenId} value="hidden" />
-            <label htmlFor={hiddenId}>Hidden</label>
+          <Flex asChild align="center" gap="1">
+            <Label size="1" weight="normal">
+              <RadioGroup.Item value="hidden" />
+              Hidden
+            </Label>
           </Flex>
         </RadioGroup.Root>
-      </FieldSet>
-    </Flex>
+      </Flex>
+    </AddAssertionForm>
   )
 }

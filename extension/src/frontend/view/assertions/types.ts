@@ -1,5 +1,6 @@
 export interface VisibilityAssertionData {
   type: 'visibility'
+  selector: string
   state: 'visible' | 'hidden'
 }
 

@@ -79,7 +79,7 @@ const styles = css`
     Roboto, 'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji';
 
-  --studio-foreground: var(--gray-11);
+  --studio-foreground: var(--gray-12);
   --studio-background: white;
 
   --studio-accent-1: var(--orange-1);
@@ -119,6 +119,11 @@ const styles = css`
   --studio-font-size-1: 12px;
   --studio-font-size-2: 14px;
   --studio-font-size-3: 16px;
+
+  --studio-font-weight-light: 300;
+  --studio-font-weight-normal: 400;
+  --studio-font-weight-medium: 500;
+  --studio-font-weight-bold: 700;
 
   --studio-border-color: rgb(229, 231, 235);
 
@@ -223,6 +228,43 @@ const styles = css`
   [data-py='4'] {
     padding-top: var(--studio-spacing-1);
     padding-bottom: var(--studio-spacing-1);
+  }
+
+  & :where([data-size='1']) {
+    font-size: var(--studio-font-size-1);
+  }
+
+  & :where([data-size='2']) {
+    font-size: var(--studio-font-size-2);
+  }
+
+  & :where([data-weight='light']) {
+    font-weight: var(--studio-font-weight-light);
+  }
+
+  & :where([data-weight='normal']) {
+    font-weight: var(--studio-font-weight-normal);
+  }
+
+  & :where([data-weight='medium']) {
+    font-weight: var(--studio-font-weight-medium);
+  }
+
+  & :where([data-weight='bold']) {
+    font-weight: var(--studio-font-weight-bold);
+  }
+
+  // Input and textarea
+  --studio-input-font-size: var(--studio-font-size-2);
+  --studio-input-padding: var(--studio-spacing-2);
+  --studio-input-height: var(--studio-spacing-8);
+  --studio-input-border-radius: 4px;
+
+  .input[data-size='1'] {
+    --studio-input-font-size: var(--studio-font-size-1);
+    --studio-input-padding: calc(var(--studio-spacing-1) * 1.5);
+    --studio-input-height: var(--studio-spacing-6);
+    --studio-input-box-shadow: inset 0 0 0 1px var(--gray-a7);
   }
 `
 

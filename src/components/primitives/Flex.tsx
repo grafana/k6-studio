@@ -1,4 +1,5 @@
 import { css } from '@emotion/react'
+import * as Slot from '@radix-ui/react-slot'
 import { ReactNode } from 'react'
 
 const styles = css`
@@ -24,6 +25,10 @@ const styles = css`
     align-items: stretch;
   }
 
+  &[data-align='baseline'] {
+    align-items: baseline;
+  }
+
   &[data-justify='start'] {
     justify-content: flex-start;
   }
@@ -46,8 +51,9 @@ const styles = css`
 `
 
 interface FlexProps {
+  asChild?: boolean
   direction?: 'row' | 'column'
-  align?: 'start' | 'center' | 'end' | 'stretch'
+  align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline'
   justify?: 'start' | 'center' | 'end' | 'between' | 'around'
   gap?: '0' | '1' | '2' | '3' | '4'
   p?: '0' | '1' | '2' | '3' | '4'
@@ -57,6 +63,7 @@ interface FlexProps {
 }
 
 export function Flex({
+  asChild = false,
   direction = 'row',
   align = 'center',
   justify = 'start',
@@ -66,8 +73,10 @@ export function Flex({
   gap = '0',
   children,
 }: FlexProps) {
+  const Component = asChild ? Slot.Root : 'div'
+
   return (
-    <div
+    <Component
       data-direction={direction}
       data-align={align}
       data-justify={justify}
@@ -78,6 +87,6 @@ export function Flex({
       css={styles}
     >
       {children}
-    </div>
+    </Component>
   )
 }

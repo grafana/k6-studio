@@ -1,23 +1,32 @@
-import { ChangeEvent, useEffect } from 'react'
+import { css } from '@emotion/react'
+import { ChangeEvent, useEffect, useId } from 'react'
 
-import { FieldGrid } from '@/components/primitives/FieldGrid'
-import { TextField } from '@/components/primitives/TextField'
+import { Flex } from '@/components/primitives/Flex'
+import { Input } from '@/components/primitives/Input'
+import { Label } from '@/components/primitives/Label'
+import { TextArea } from '@/components/primitives/TextArea'
 
 import { client } from '../../routing'
 
+import { AddAssertionForm } from './AddAssertionForm'
 import { TextAssertionData } from './types'
 
 interface TextAssertionFormProps {
   assertion: TextAssertionData
   canEditSelector?: boolean
   onChange: (assertion: TextAssertionData) => void
+  onSubmit: (assertion: TextAssertionData) => void
 }
 
 export function TextAssertionForm({
   assertion,
   canEditSelector = false,
   onChange,
+  onSubmit,
 }: TextAssertionFormProps) {
+  const selectorId = useId()
+  const containsId = useId()
+
   useEffect(() => {
     return () => {
       client.send({
@@ -59,33 +68,50 @@ export function TextAssertionForm({
     })
   }
 
-  const handleTextChange = (ev: ChangeEvent<HTMLInputElement>) => {
+  const handleTextChange = (ev: ChangeEvent<HTMLTextAreaElement>) => {
     onChange({
       ...assertion,
       text: ev.target.value,
     })
   }
 
+  const handleSubmit = () => {
+    onSubmit(assertion)
+  }
+
   return (
-    <>
-      <FieldGrid>
-        {canEditSelector && (
-          <TextField
+    <AddAssertionForm onSubmit={handleSubmit}>
+      {canEditSelector && (
+        <Flex direction="column" align="stretch" gap="1">
+          <Label htmlFor={selectorId} size="1">
+            Selector
+          </Label>
+          <Input
+            id={selectorId}
             size="1"
-            label="Element"
             value={assertion.selector}
             onFocus={handleSelectorFocus}
             onBlur={handleSelectorBlur}
             onChange={handleSelectorChange}
           />
-        )}
-        <TextField
+        </Flex>
+      )}
+      <Flex direction="column" align="stretch" gap="1">
+        <Label htmlFor={containsId} size="1">
+          Assert that element contains text:
+        </Label>
+        <TextArea
+          id={containsId}
+          css={css`
+            min-height: 100px;
+            min-width: 400px;
+            resize: vertical;
+          `}
           size="1"
-          label="Contains"
           value={assertion.text}
           onChange={handleTextChange}
         />
-      </FieldGrid>
-    </>
+      </Flex>
+    </AddAssertionForm>
   )
 }
