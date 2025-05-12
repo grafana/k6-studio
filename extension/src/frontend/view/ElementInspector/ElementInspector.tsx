@@ -2,6 +2,7 @@ import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
+import { uuid } from '@/utils/uuid'
 
 import { client } from '../../routing'
 import { Anchor } from '../Anchor'
@@ -77,7 +78,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
       events: [
         {
           type: 'assert',
-          eventId: crypto.randomUUID(),
+          eventId: uuid(),
           timestamp: Date.now(),
           tab: '',
           selector: {
