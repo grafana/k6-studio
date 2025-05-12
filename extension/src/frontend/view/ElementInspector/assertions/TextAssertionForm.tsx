@@ -6,7 +6,7 @@ import { Input } from '@/components/primitives/Input'
 import { Label } from '@/components/primitives/Label'
 import { TextArea } from '@/components/primitives/TextArea'
 
-import { client } from '../../routing'
+import { client } from '../../../routing'
 
 import { AddAssertionForm } from './AddAssertionForm'
 import { TextAssertionData } from './types'

@@ -12,15 +12,15 @@ import { Toolbar } from '@/components/primitives/Toolbar'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { Assertion } from '@/schemas/recording'
 
-import { client } from '../routing'
+import { client } from '../../routing'
+import { Anchor } from '../Anchor'
+import { Overlay } from '../Overlay'
+import { useEscape } from '../hooks/useEscape'
 
-import { Anchor } from './Anchor'
 import { TrackedElement, useInspectedElement } from './ElementInspector.hooks'
 import { ElementPopover } from './ElementPopover'
-import { Overlay } from './Overlay'
 import { AssertionForm } from './assertions/AssertionForm'
 import { AssertionData } from './assertions/types'
-import { useEscape } from './hooks/useEscape'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
   return (

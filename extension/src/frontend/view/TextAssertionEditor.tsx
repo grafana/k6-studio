@@ -5,13 +5,13 @@ import { ElementSelector } from '@/schemas/recording'
 
 import { client } from '../routing'
 
-import { ElementPopover } from './ElementPopover'
+import { ElementPopover } from './ElementInspector/ElementPopover'
+import { TextAssertionForm } from './ElementInspector/assertions/TextAssertionForm'
+import { TextAssertionData } from './ElementInspector/assertions/types'
 import { useGlobalClass } from './GlobalStyles'
 import { Overlay } from './Overlay'
 import { useTextSelection } from './TextAssertionEditor.hooks'
 import { TextSelection } from './TextAssertionEditor.types'
-import { TextAssertionForm } from './assertions/TextAssertionForm'
-import { TextAssertionData } from './assertions/types'
 import { useEscape } from './hooks/useEscape'
 import { usePreventClick } from './hooks/usePreventClick'
 

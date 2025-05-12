@@ -4,13 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ElementSelector } from '@/schemas/recording'
 import { uuid } from '@/utils/uuid'
 
-import { generateSelector } from '../../selectors'
-
-import { useGlobalClass } from './GlobalStyles'
-import { useHighlightDebounce } from './hooks/useHighlightDebounce'
-import { usePreventClick } from './hooks/usePreventClick'
-import { Bounds, Position } from './types'
-import { getElementBounds } from './utils'
+import { generateSelector } from '../../../selectors'
+import { useGlobalClass } from '../GlobalStyles'
+import { useHighlightDebounce } from '../hooks/useHighlightDebounce'
+import { usePreventClick } from '../hooks/usePreventClick'
+import { Bounds, Position } from '../types'
+import { getElementBounds } from '../utils'
 
 export interface TrackedElement {
   id: string
