@@ -3,12 +3,12 @@ import { FormEvent, ReactNode } from 'react'
 
 import { Button } from '@/components/primitives/Button'
 
-interface AddAssertionProps {
+interface AssertionFormProps {
   children: ReactNode
   onSubmit: () => void
 }
 
-export function AssertionForm({ children, onSubmit }: AddAssertionProps) {
+export function AssertionForm({ children, onSubmit }: AssertionFormProps) {
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
 
