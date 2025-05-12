@@ -5,15 +5,15 @@ import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
 
-interface AssertedDescriptionProps {
+interface AssertDescriptionProps {
   event: AssertEvent
   onHighlight: (selector: HighlightSelector | null) => void
 }
 
-export function AssertedDescription({
+export function AssertDescription({
   event: { selector, assertion },
   onHighlight,
-}: AssertedDescriptionProps) {
+}: AssertDescriptionProps) {
   switch (assertion.type) {
     case 'text':
       return (

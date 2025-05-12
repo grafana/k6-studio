@@ -4,7 +4,7 @@ import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
-import { AssertedDescription } from './AssertedDescription'
+import { AssertDescription } from './AssertDescription'
 import { ClickDescription } from './ClickDescription'
 import { InputChangeDescription } from './InputChangeDescription'
 import { PageNavigationDescription } from './PageNavigationDescription'
@@ -93,7 +93,7 @@ export function EventDescription({
       )
 
     case 'assert':
-      return <AssertedDescription event={event} onHighlight={onHighlight} />
+      return <AssertDescription event={event} onHighlight={onHighlight} />
 
     default:
       return exhaustive(event)
