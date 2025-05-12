@@ -2,6 +2,7 @@ import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
 
 import { ElementSelector } from '@/schemas/recording'
+import { uuid } from '@/utils/uuid'
 
 import { client } from '../routing'
 
@@ -95,7 +96,7 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
       type: 'record-events',
       events: [
         {
-          eventId: crypto.randomUUID(),
+          eventId: uuid(),
           timestamp: Date.now(),
           type: 'assert',
           tab: '',
