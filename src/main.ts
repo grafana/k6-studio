@@ -168,6 +168,13 @@ const createWindow = async () => {
     ) {
       event.preventDefault()
     }
+
+    if (
+      k6StudioState.currentClientRoute.startsWith('/recorder') &&
+      k6StudioState.currentBrowserProcess !== null
+    ) {
+      event.preventDefault()
+    }
   })
 
   return mainWindow
