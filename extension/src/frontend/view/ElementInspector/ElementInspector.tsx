@@ -13,7 +13,7 @@ import { useInspectedElement } from './ElementInspector.hooks'
 import { toAssertion } from './ElementInspector.utils'
 import { ElementMenu } from './ElementMenu'
 import { ElementPopover } from './ElementPopover'
-import { AssertionForm } from './assertions/AssertionForm'
+import { AssertionEditor } from './assertions/AssertionEditor'
 import { AssertionData } from './assertions/types'
 
 function getHeader(assertion: AssertionData | null) {
@@ -135,7 +135,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
       )}
 
       {assertion !== null && (
-        <AssertionForm
+        <AssertionEditor
           assertion={assertion}
           onSubmit={handleAssertionSubmit}
           onChange={setAssertion}

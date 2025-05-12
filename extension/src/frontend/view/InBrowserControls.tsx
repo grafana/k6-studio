@@ -5,7 +5,7 @@ import { client } from '../routing'
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
-import { TextAssertionEditor } from './TextAssertionEditor'
+import { TextSelectionPopover } from './TextSelectionPopover'
 import { ToolBox } from './ToolBox'
 import { useInBrowserUIStore } from './store'
 
@@ -30,7 +30,7 @@ export function InBrowserControls() {
       <RemoteHighlights />
       {tool === 'inspect' && <ElementInspector onClose={handleDeselectTool} />}
       {tool === 'assert-text' && (
-        <TextAssertionEditor onClose={handleDeselectTool} />
+        <TextSelectionPopover onClose={handleDeselectTool} />
       )}
       <ToolBox
         isDrawerOpen={isDrawerOpen}

@@ -1,40 +1,41 @@
-import { exhaustive } from '@/utils/typescript'
+import { css } from '@emotion/react'
+import { FormEvent, ReactNode } from 'react'
 
-import { TextAssertionForm } from './TextAssertionForm'
-import { VisibilityAssertionForm } from './VisibilityAssertionForm'
-import { AssertionData } from './types'
+import { Button } from '@/components/primitives/Button'
 
-interface AssertionFormProps {
-  assertion: AssertionData
-  onChange: (assertion: AssertionData) => void
-  onSubmit: (assertion: AssertionData) => void
+interface AddAssertionProps {
+  children: ReactNode
+  onSubmit: () => void
 }
 
-export function AssertionForm({
-  assertion,
-  onChange,
-  onSubmit,
-}: AssertionFormProps) {
-  switch (assertion.type) {
-    case 'visibility':
-      return (
-        <VisibilityAssertionForm
-          assertion={assertion}
-          onChange={onChange}
-          onSubmit={onSubmit}
-        />
-      )
+export function AssertionForm({ children, onSubmit }: AddAssertionProps) {
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault()
 
-    case 'text':
-      return (
-        <TextAssertionForm
-          assertion={assertion}
-          onChange={onChange}
-          onSubmit={onSubmit}
-        />
-      )
-
-    default:
-      return exhaustive(assertion)
+    onSubmit()
   }
+
+  return (
+    <form
+      css={css`
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--studio-spacing-1);
+        padding: var(--studio-spacing-2);
+      `}
+      onSubmit={handleSubmit}
+    >
+      {children}
+      <Button
+        type="submit"
+        size="1"
+        css={css`
+          align-self: flex-end;
+        `}
+      >
+        Add
+      </Button>
+    </form>
+  )
 }

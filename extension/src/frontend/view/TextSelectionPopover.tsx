@@ -1,37 +1,31 @@
 import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
 
-import { ElementSelector } from '@/schemas/recording'
 import { uuid } from '@/utils/uuid'
 
 import { client } from '../routing'
 
 import { ElementPopover } from './ElementInspector/ElementPopover'
-import { TextAssertionForm } from './ElementInspector/assertions/TextAssertionForm'
+import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertionEditor'
 import { TextAssertionData } from './ElementInspector/assertions/types'
 import { useGlobalClass } from './GlobalStyles'
 import { Overlay } from './Overlay'
-import { useTextSelection } from './TextAssertionEditor.hooks'
-import { TextSelection } from './TextAssertionEditor.types'
+import { useTextSelection } from './TextSelectionPopover.hooks'
+import { TextSelection } from './TextSelectionPopover.types'
 import { useEscape } from './hooks/useEscape'
 import { usePreventClick } from './hooks/usePreventClick'
 
-interface TextAssertion {
-  selector: ElementSelector
-  text: string
-}
-
-interface TextAssertionEditorContentProps {
+interface TextSelectionPopoverContentProps {
   selection: TextSelection
-  onAdd: (assertion: TextAssertion) => void
+  onAdd: (assertion: TextAssertionData) => void
   onClose: () => void
 }
 
-function TextAssertionEditorContent({
+function TextSelectionPopoverContent({
   selection,
   onAdd,
   onClose,
-}: TextAssertionEditorContentProps) {
+}: TextSelectionPopoverContentProps) {
   const [assertion, setAssertion] = useState<TextAssertionData>({
     type: 'text',
     selector: selection.selector.css,
@@ -52,13 +46,7 @@ function TextAssertionEditorContent({
   }
 
   const handleSubmit = (assertion: TextAssertionData) => {
-    onAdd({
-      selector: {
-        css: assertion.selector,
-      },
-      text: assertion.text,
-    })
-
+    onAdd(assertion)
     onClose()
   }
 
@@ -69,7 +57,7 @@ function TextAssertionEditorContent({
       header="Add text assertion"
       onOpenChange={onClose}
     >
-      <TextAssertionForm
+      <TextAssertionEditor
         canEditSelector
         assertion={assertion}
         onChange={handleChange}
@@ -79,11 +67,11 @@ function TextAssertionEditorContent({
   )
 }
 
-interface TextAssertionEditorProps {
+interface TextSelectionPopoverProps {
   onClose: () => void
 }
 
-export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
+export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
   const [selection, clearSelection] = useTextSelection()
 
   useGlobalClass('asserting-text')
@@ -91,7 +79,7 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
     enabled: selection !== null,
   })
 
-  const handleAdd = (assertion: TextAssertion) => {
+  const handleAdd = (assertion: TextAssertionData) => {
     client.send({
       type: 'record-events',
       events: [
@@ -100,7 +88,9 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
           timestamp: Date.now(),
           type: 'assert',
           tab: '',
-          selector: assertion.selector,
+          selector: {
+            css: assertion.selector,
+          },
           assertion: {
             type: 'text',
             operation: {
@@ -132,7 +122,7 @@ export function TextAssertionEditor({ onClose }: TextAssertionEditorProps) {
   return (
     <>
       {selection !== null && (
-        <TextAssertionEditorContent
+        <TextSelectionPopoverContent
           selection={selection}
           onAdd={handleAdd}
           onClose={handleFormClose}

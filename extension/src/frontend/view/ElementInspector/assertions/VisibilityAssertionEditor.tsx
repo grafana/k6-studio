@@ -4,7 +4,7 @@ import { Flex } from '@/components/primitives/Flex'
 import { Label } from '@/components/primitives/Label'
 import { RadioGroup } from '@/components/primitives/RadioGroup'
 
-import { AddAssertionForm } from './AddAssertionForm'
+import { AssertionForm } from './AssertionForm'
 import { VisibilityAssertionData } from './types'
 
 function asLiteral<T extends string>(
@@ -18,17 +18,17 @@ function asLiteral<T extends string>(
   }
 }
 
-interface VisibilityAssertionFormProps {
+interface VisibilityAssertionEditorProps {
   assertion: VisibilityAssertionData
   onChange: (state: VisibilityAssertionData) => void
   onSubmit: (state: VisibilityAssertionData) => void
 }
 
-export function VisibilityAssertionForm({
+export function VisibilityAssertionEditor({
   assertion,
   onChange,
   onSubmit,
-}: VisibilityAssertionFormProps) {
+}: VisibilityAssertionEditorProps) {
   const labelId = useId()
 
   const handleValueChange = asLiteral(['visible', 'hidden'], (value) => {
@@ -43,7 +43,7 @@ export function VisibilityAssertionForm({
   }
 
   return (
-    <AddAssertionForm onSubmit={handleSubmit}>
+    <AssertionForm onSubmit={handleSubmit}>
       <Flex direction="column" align="start" px="2" gap="2">
         <Label id={labelId} size="1">
           Expected visibility
@@ -67,6 +67,6 @@ export function VisibilityAssertionForm({
           </Flex>
         </RadioGroup.Root>
       </Flex>
-    </AddAssertionForm>
+    </AssertionForm>
   )
 }

@@ -8,22 +8,22 @@ import { TextArea } from '@/components/primitives/TextArea'
 
 import { client } from '../../../routing'
 
-import { AddAssertionForm } from './AddAssertionForm'
+import { AssertionForm } from './AssertionForm'
 import { TextAssertionData } from './types'
 
-interface TextAssertionFormProps {
+interface TextAssertionEditorProps {
   assertion: TextAssertionData
   canEditSelector?: boolean
   onChange: (assertion: TextAssertionData) => void
   onSubmit: (assertion: TextAssertionData) => void
 }
 
-export function TextAssertionForm({
+export function TextAssertionEditor({
   assertion,
   canEditSelector = false,
   onChange,
   onSubmit,
-}: TextAssertionFormProps) {
+}: TextAssertionEditorProps) {
   const selectorId = useId()
   const containsId = useId()
 
@@ -80,7 +80,7 @@ export function TextAssertionForm({
   }
 
   return (
-    <AddAssertionForm onSubmit={handleSubmit}>
+    <AssertionForm onSubmit={handleSubmit}>
       {canEditSelector && (
         <Flex direction="column" align="stretch" gap="1">
           <Label htmlFor={selectorId} size="1">
@@ -112,6 +112,6 @@ export function TextAssertionForm({
           onChange={handleTextChange}
         />
       </Flex>
-    </AddAssertionForm>
+    </AssertionForm>
   )
 }
