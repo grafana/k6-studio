@@ -152,7 +152,7 @@ function emitSelectOptionsNode(
 
 function emitAssertion(
   context: IntermediateContext,
-  assertion: m.Assertion
+  assertion: m.AssertionOperation
 ): ir.Assertion {
   switch (assertion.type) {
     case 'text-contains':

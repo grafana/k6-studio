@@ -90,11 +90,11 @@ export interface IsVisibleAssertion {
   visible: boolean
 }
 
-export type Assertion = TextContainsAssertion | IsVisibleAssertion
+export type AssertionOperation = TextContainsAssertion | IsVisibleAssertion
 
 export interface AssertNode extends NodeBase {
   type: 'assert'
-  operation: Assertion
+  operation: AssertionOperation
   inputs: {
     previous?: NodeRef
     locator: NodeRef
