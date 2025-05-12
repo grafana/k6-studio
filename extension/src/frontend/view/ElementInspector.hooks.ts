@@ -49,6 +49,16 @@ export function useInspectedElement() {
     left: 0,
   })
 
+  /**
+   * We track elements in two different ways:
+   *
+   * 1. The hovered element is the element that the mouse is currently over. It's
+   *    only tracked as long as the user hasn't pinned an element.
+   * 2. The pinned element is a stack of element where the first element is the
+   *    currently selected element. Elements are added to the stack when the expand
+   *    the selection and removed when the user contracts the selection. If the
+   *    stack is empty, then no element is pinned.
+   */
   const [pinnedEl, setPinnedElement] = useState<TrackedElement[]>([])
   const [hoveredEl, setHoveredEl] = useState<TrackedElement | null>(null)
 
@@ -84,23 +94,7 @@ export function useInspectedElement() {
     return () => {
       window.removeEventListener('mouseover', handleMouseOver)
     }
-  }, [pinnedEl])
-
-  useEffect(() => {
-    if (hoveredEl === null) {
-      return
-    }
-
-    const handleScroll = () => {
-      setHoveredEl(null)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [hoveredEl])
+  }, [])
 
   const unpin = useCallback(() => {
     setMousePosition({
@@ -128,6 +122,11 @@ export function useInspectedElement() {
         left: ev.clientX + window.scrollX,
       }
 
+      // In certain cases the mouse position is outside the bounds of
+      // the hovered element, e.g. when the last hovered element was
+      // the `body` element. Showing the menu when clicking outside
+      // the bounds is very confusing because you have no idea what
+      // element the menu is for.
       if (!isInsideBounds(position, hoveredEl.bounds)) {
         return
       }
@@ -137,13 +136,6 @@ export function useInspectedElement() {
     },
     dependencies: [pinnedEl, hoveredEl, unpin],
   })
-
-  useEffect(() => {
-    return () => {
-      setPinnedElement([])
-      setHoveredEl(null)
-    }
-  }, [unpin])
 
   const expand = useMemo(() => {
     const [head] = pinnedEl
