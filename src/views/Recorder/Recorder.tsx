@@ -45,6 +45,7 @@ export function Recorder() {
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
   )
+  const [isAppClosing, setIsAppClosing] = useState(false)
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
 
@@ -93,6 +94,16 @@ export function Recorder() {
     }
   }, [recorderState, proxyData.length])
 
+  useEffect(() => {
+    return window.studio.app.onApplicationClose(() => {
+      if (recorderState === 'recording' || recorderState === 'starting') {
+        setIsAppClosing(true)
+        return
+      }
+      window.studio.app.closeApplication()
+    })
+  })
+
   const validateAndSaveHarFile = useCallback(async () => {
     try {
       setRecorderState('saving')
@@ -129,6 +140,7 @@ export function Recorder() {
   }
 
   function handleCancelNavigation() {
+    setIsAppClosing(false)
     blocker.reset?.()
   }
 
@@ -136,6 +148,10 @@ export function Recorder() {
     stopRecording()
 
     await validateAndSaveHarFile()
+
+    if (isAppClosing) {
+      return window.studio.app.closeApplication()
+    }
 
     blocker.proceed?.()
   }
@@ -176,6 +192,12 @@ export function Recorder() {
 
   useEffect(() => {
     return window.studio.browser.onBrowserClosed(async () => {
+      // if the user changed routes or closed the app during a recorder, the browser will be forced to close
+      // in this case, we don't need to save the recording again as it's already handled by handleConfirmNavigation
+      if (blocker.state === 'blocked' || isAppClosing) {
+        return
+      }
+
       const fileName = await validateAndSaveHarFile()
 
       if (fileName === null) {
@@ -196,7 +218,7 @@ export function Recorder() {
         }
       )
     })
-  }, [validateAndSaveHarFile, showToast, navigate])
+  }, [validateAndSaveHarFile, showToast, navigate, blocker.state, isAppClosing])
 
   return (
     <RecordingContext recording>
@@ -247,7 +269,7 @@ export function Recorder() {
           )}
 
         <ConfirmNavigationDialog
-          open={blocker.state === 'blocked'}
+          open={blocker.state === 'blocked' || isAppClosing}
           state={recorderState}
           onCancel={handleCancelNavigation}
           onStopRecording={handleConfirmNavigation}
