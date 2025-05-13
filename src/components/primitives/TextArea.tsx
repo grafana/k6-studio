@@ -13,6 +13,7 @@ export function TextArea({ className, size, ...props }: TextAreaProps) {
       className={clsx('input', className)}
       data-size={size}
       css={css`
+        color: var(--studio-input-color);
         font-family: var(--studio-font-family);
         font-size: var(--studio-input-font-size);
         padding: var(--studio-input-padding);

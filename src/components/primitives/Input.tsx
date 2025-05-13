@@ -25,6 +25,7 @@ const styles = css`
     font-family: var(--studio-font-family);
     font-size: var(--studio-input-font-size);
     color-scheme: var(--studio-color-scheme);
+    color: var(--studio-input-color);
   }
 
   &:where([data-size='1']) {

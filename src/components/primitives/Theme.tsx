@@ -259,6 +259,7 @@ const styles = css`
   --studio-input-padding: var(--studio-spacing-2);
   --studio-input-height: var(--studio-spacing-8);
   --studio-input-border-radius: 4px;
+  --studio-input-color: var(--studio-foreground);
 
   .input[data-size='1'] {
     --studio-input-font-size: var(--studio-font-size-1);
