@@ -1,21 +1,23 @@
 import { Flex } from '@radix-ui/themes'
 import { useEffect } from 'react'
 
+import { useOriginalRequest } from '@/store/generator/hooks/useOriginalRequest'
 import { ProxyData } from '@/types'
 import { getContentType } from '@/utils/headers'
 
 import { ContentPreview } from '../ContentPreview'
 import { useGoToPayloadMatch } from '../Details.hooks'
-import { Raw } from '../ResponseDetails/Raw'
 import { toFormat } from '../ResponseDetails/ResponseDetails.utils'
 
-import { FormPayloadPreview } from './FormPayloadPreview'
 import { getRawContent, isJsonString, parseParams } from './utils'
 
 export function Payload({ data }: { data: ProxyData }) {
-  const content = parseParams(data)
-  const originalContentType = getContentType(data.request?.headers ?? [])
+  const content = parseParams(data.request)
   const { searchString, index, reset } = useGoToPayloadMatch()
+
+  const originalRequest = useOriginalRequest(data.id)
+  const originalContent = originalRequest && parseParams(originalRequest)
+  const originalContentType = getContentType(originalRequest?.headers ?? [])
 
   // Reset payload search on unmount
   useEffect(() => {
@@ -28,21 +30,6 @@ export function Payload({ data }: { data: ProxyData }) {
         No payload
       </Flex>
     )
-  }
-
-  if (originalContentType === 'multipart/form-data') {
-    return (
-      <Raw
-        content={content}
-        format="text"
-        searchString={searchString}
-        searchIndex={index}
-      />
-    )
-  }
-
-  if (originalContentType === 'application/x-www-form-urlencoded') {
-    return <FormPayloadPreview payloadJsonString={content} />
   }
 
   const getContentTypeForContentPreview = () => {
@@ -71,6 +58,7 @@ export function Payload({ data }: { data: ProxyData }) {
       contentType={peviewContentType}
       searchIndex={index}
       searchString={searchString}
+      originalContent={originalContent}
     />
   )
 }
