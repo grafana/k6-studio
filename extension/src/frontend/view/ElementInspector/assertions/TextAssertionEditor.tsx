@@ -98,7 +98,7 @@ export function TextAssertionEditor({
       )}
       <Flex direction="column" align="stretch" gap="1">
         <Label htmlFor={containsId} size="1">
-          Assert that element contains text:
+          Assert that element contains text
         </Label>
         <TextArea
           id={containsId}

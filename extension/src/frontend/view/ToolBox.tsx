@@ -72,7 +72,7 @@ export function ToolBox({
         <Tooltip
           delayDuration={0}
           asChild
-          content="Pick an element to add assertions to it."
+          content="Pick an element to add assertions to it"
         >
           <div>
             <Toolbar.ToggleItem value="inspect">
@@ -83,7 +83,7 @@ export function ToolBox({
         <Tooltip
           delayDuration={0}
           asChild
-          content="Add assertions on text content by selecting it."
+          content="Add assertions on text content by selecting it"
         >
           <div>
             <Toolbar.ToggleItem value="assert-text">

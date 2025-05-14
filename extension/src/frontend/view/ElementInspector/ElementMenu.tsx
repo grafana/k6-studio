@@ -105,7 +105,7 @@ export function ElementMenu({
           <SquareDashedMousePointerIcon size={16} strokeWidth={1.5} />
           Selection
         </div>
-        <Tooltip asChild content="Select parent element.">
+        <Tooltip asChild content="Select parent element">
           <div>
             <Toolbar.Button
               disabled={onSelectionIncrease === undefined}
@@ -115,7 +115,7 @@ export function ElementMenu({
             </Toolbar.Button>
           </div>
         </Tooltip>
-        <Tooltip asChild content="Select child element.">
+        <Tooltip asChild content="Select child element">
           <div>
             <Toolbar.Button
               disabled={onSelectionDecrease === undefined}
