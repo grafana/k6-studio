@@ -12,7 +12,12 @@ import {
   TextField,
   Tooltip,
 } from '@radix-ui/themes'
-import { DiscIcon, InfoIcon, TriangleAlertIcon } from 'lucide-react'
+import {
+  AlertTriangleIcon,
+  DiscIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+} from 'lucide-react'
 import { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
@@ -256,7 +261,7 @@ function WarningMessage({
     return (
       <Callout.Root>
         <Callout.Icon>
-          <ExclamationTriangleIcon />
+          <AlertTriangleIcon />
         </Callout.Icon>
         <Callout.Text>
           <strong>SSL/TLS certificate validation will be skipped</strong>
