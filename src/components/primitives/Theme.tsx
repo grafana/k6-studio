@@ -95,6 +95,19 @@ const styles = css`
   --studio-accent-11: var(--orange-11);
   --studio-accent-12: var(--orange-12);
 
+  --studio-accent-a1: var(--orange-a1);
+  --studio-accent-a2: var(--orange-a2);
+  --studio-accent-a3: var(--orange-a3);
+  --studio-accent-a4: var(--orange-a4);
+  --studio-accent-a5: var(--orange-a5);
+  --studio-accent-a6: var(--orange-a6);
+  --studio-accent-a7: var(--orange-a7);
+  --studio-accent-a8: var(--orange-a8);
+  --studio-accent-a9: var(--orange-a9);
+  --studio-accent-a10: var(--orange-a10);
+  --studio-accent-a11: var(--orange-a11);
+  --studio-accent-a12: var(--orange-a12);
+
   --studio-accent-contrast: white;
 
   --studio-spacing-1: 4px;

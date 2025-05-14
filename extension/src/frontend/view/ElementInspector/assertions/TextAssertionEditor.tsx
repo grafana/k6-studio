@@ -14,6 +14,7 @@ import { TextAssertionData } from './types'
 interface TextAssertionEditorProps {
   assertion: TextAssertionData
   canEditSelector?: boolean
+  onCancel: () => void
   onChange: (assertion: TextAssertionData) => void
   onSubmit: (assertion: TextAssertionData) => void
 }
@@ -21,6 +22,7 @@ interface TextAssertionEditorProps {
 export function TextAssertionEditor({
   assertion,
   canEditSelector = false,
+  onCancel,
   onChange,
   onSubmit,
 }: TextAssertionEditorProps) {
@@ -80,7 +82,7 @@ export function TextAssertionEditor({
   }
 
   return (
-    <AssertionForm onSubmit={handleSubmit}>
+    <AssertionForm onCancel={onCancel} onSubmit={handleSubmit}>
       {canEditSelector && (
         <Flex direction="column" align="stretch" gap="1">
           <Label htmlFor={selectorId} size="1">

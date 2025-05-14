@@ -6,12 +6,14 @@ import { AssertionData } from './types'
 
 interface AssertionEditorProps {
   assertion: AssertionData
+  onCancel: () => void
   onChange: (assertion: AssertionData) => void
   onSubmit: (assertion: AssertionData) => void
 }
 
 export function AssertionEditor({
   assertion,
+  onCancel,
   onChange,
   onSubmit,
 }: AssertionEditorProps) {
@@ -20,6 +22,7 @@ export function AssertionEditor({
       return (
         <VisibilityAssertionEditor
           assertion={assertion}
+          onCancel={onCancel}
           onChange={onChange}
           onSubmit={onSubmit}
         />
@@ -29,6 +32,7 @@ export function AssertionEditor({
       return (
         <TextAssertionEditor
           assertion={assertion}
+          onCancel={onCancel}
           onChange={onChange}
           onSubmit={onSubmit}
         />

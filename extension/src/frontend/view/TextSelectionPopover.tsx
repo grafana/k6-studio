@@ -60,6 +60,7 @@ function TextSelectionPopoverContent({
       <TextAssertionEditor
         canEditSelector
         assertion={assertion}
+        onCancel={onClose}
         onChange={handleChange}
         onSubmit={handleSubmit}
       />
