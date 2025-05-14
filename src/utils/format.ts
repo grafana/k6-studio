@@ -42,7 +42,10 @@ export function safeBtoa(content: string) {
   }
 }
 
-export function stringify(obj: object, space: number = 2) {
+export function stringify(
+  obj: Parameters<JSON['stringify']>[0],
+  space: number = 2
+) {
   return JSON.stringify(obj, null, space)
 }
 

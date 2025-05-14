@@ -40,3 +40,10 @@ export function configureWatcher(browserWindow: BrowserWindow) {
     browserWindow.webContents.send(UIHandler.REMOVE_FILE, file)
   })
 }
+
+export async function closeWatcher() {
+  // stop watching files to avoid crash on exit
+  if (k6StudioState.watcher) {
+    await k6StudioState.watcher.close()
+  }
+}

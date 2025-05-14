@@ -109,6 +109,6 @@ const fullSearchKeys: Array<FuseOptionKey<ProxyData>> = [
   },
   {
     name: 'request.content',
-    getFn: (data) => parseParams(data) ?? '',
+    getFn: (data) => parseParams(data.request) ?? '',
   },
 ]

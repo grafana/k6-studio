@@ -1,7 +1,7 @@
 import { DataList, Flex } from '@radix-ui/themes'
 
 import { Cookie } from '@/types'
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
 import { HighlightedText } from '../HighlightedText'
 
@@ -10,7 +10,7 @@ export function Cookies({
   matches,
 }: {
   cookies?: Cookie[]
-  matches?: SearchMatch[]
+  matches?: Match[]
 }) {
   if (!cookies.length) {
     return (
