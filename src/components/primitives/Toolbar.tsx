@@ -1,5 +1,34 @@
+import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as RadixToolbar from '@radix-ui/react-toolbar'
+
+type RootProps = RadixToolbar.ToolbarProps & {
+  size?: '1' | '2'
+}
+
+function Root({ size, ...props }: RootProps) {
+  return (
+    <RadixToolbar.Root
+      css={css`
+        display: flex;
+        gap: var(--studio-spacing-1);
+        align-items: center;
+
+        &[data-orientation='vertical'] {
+          flex-direction: column;
+        }
+
+        --studio-toolbar-button-padding: var(--studio-spacing-2);
+
+        &[data-size='1'] {
+          --studio-toolbar-button-padding: var(--studio-spacing-1);
+        }
+      `}
+      {...props}
+      data-size={size}
+    />
+  )
+}
 
 const Button = styled(RadixToolbar.Button)`
   display: flex;
@@ -9,20 +38,19 @@ const Button = styled(RadixToolbar.Button)`
   color: var(--studio-foreground);
   background-color: var(--studio-toggle-bg-off);
   border: none;
-  padding: var(--studio-spacing-2);
+  padding: var(--studio-toolbar-button-padding);
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover {
+    background-color: var(--studio-toggle-bg-on);
+  }
 `
 
 const Link = styled(RadixToolbar.Link)``
-
-const Root = styled(RadixToolbar.Root)`
-  display: flex;
-  gap: var(--studio-spacing-1);
-  padding: var(--studio-spacing-1);
-
-  &[data-orientation='vertical'] {
-    flex-direction: column;
-  }
-`
 
 const Separator = styled(RadixToolbar.Separator)`
   align-self: stretch;
@@ -54,7 +82,7 @@ const ToggleItem = styled(RadixToolbar.ToggleItem)`
   color: var(--studio-foreground);
   background-color: var(--studio-toggle-bg-off);
   border: none;
-  padding: var(--studio-spacing-2);
+  padding: var(--studio-toolbar-button-padding);
 
   &[data-state='on'] {
     background-color: var(--studio-toggle-bg-on);

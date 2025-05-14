@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from 'react'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { generateSelector } from 'extension/src/selectors'
 
-import { TextSelection } from './TextAssertionEditor.types'
+import { TextSelection } from './TextSelectionPopover.types'
 import { getElementBounds, toBounds } from './utils'
 
 function measureRange(range: Range) {

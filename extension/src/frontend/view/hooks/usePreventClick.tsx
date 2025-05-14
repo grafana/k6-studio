@@ -1,9 +1,25 @@
-import { useEffect } from 'react'
+import { DependencyList, useEffect, useLayoutEffect, useRef } from 'react'
 
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
 
-export function usePreventClick(enabled: boolean) {
+interface UsePreventClickOptions {
+  enabled?: boolean
+  dependencies?: DependencyList
+  callback?: (ev: MouseEvent) => void
+}
+
+export function usePreventClick({
+  enabled = true,
+  dependencies,
+  callback,
+}: UsePreventClickOptions) {
+  const callbackRef = useRef(callback)
   const container = useContainerElement()
+
+  useLayoutEffect(() => {
+    callbackRef.current = callback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependencies)
 
   useEffect(() => {
     if (!enabled) {
@@ -16,6 +32,8 @@ export function usePreventClick(enabled: boolean) {
       if (ev.composedPath().includes(container)) {
         return
       }
+
+      callbackRef.current?.(ev)
 
       ev.preventDefault()
       ev.stopPropagation()

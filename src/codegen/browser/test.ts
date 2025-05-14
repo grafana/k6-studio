@@ -1,7 +1,14 @@
-import { BrowserEvent, ElementSelector } from '@/schemas/recording'
+import { Assertion, BrowserEvent, ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
-import { TestNode, PageNode, NodeRef, Test, LocatorNode } from './types'
+import {
+  TestNode,
+  PageNode,
+  NodeRef,
+  Test,
+  LocatorNode,
+  AssertionOperation,
+} from './types'
 
 interface Recording {
   browserEvents: BrowserEvent[]
@@ -10,6 +17,25 @@ interface Recording {
 function toNodeRef(node: TestNode): NodeRef {
   return {
     nodeId: node.nodeId,
+  }
+}
+
+function toAssertionOperation(assertion: Assertion): AssertionOperation {
+  switch (assertion.type) {
+    case 'text':
+      return {
+        type: 'text-contains',
+        value: assertion.operation.value,
+      }
+
+    case 'visibility':
+      return {
+        type: 'is-visible',
+        visible: assertion.visible,
+      }
+
+    default:
+      return exhaustive(assertion)
   }
 }
 
@@ -164,19 +190,17 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
-      case 'assert':
+      case 'assert': {
         return {
           type: 'assert',
           nodeId: event.eventId,
-          operation: {
-            type: 'text-contains',
-            value: event.assertion.operation.value,
-          },
+          operation: toAssertionOperation(event.assertion),
           inputs: {
             previous,
             locator: getLocator(event.tab, event.selector),
           },
         }
+      }
 
       default:
         return exhaustive(event)

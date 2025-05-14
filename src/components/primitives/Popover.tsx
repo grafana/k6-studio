@@ -16,16 +16,16 @@ const Trigger = styled(RadixPopover.Trigger)``
 const Anchor = styled(RadixPopover.Anchor)``
 
 const Arrow = styled(RadixPopover.Arrow)`
-  fill: var(--studio-background);
+  fill: var(--studio-popover-background);
 `
 
 const Content = styled(RadixPopover.Content)`
-  z-index: var(--studio-layer-2);
-  color: var(--studio-foreground);
-  background-color: var(--studio-background);
+  z-index: var(--studio-popover-layer);
+  color: var(--studio-popover-foreground);
+  background-color: var(--studio-popover-background);
+  box-shadow: var(--studio-popover-shadow);
+  padding: var(--studio-popover-padding);
   user-select: none;
-  box-shadow: var(--studio-shadow-1);
-  padding: var(--studio-spacing-2);
 `
 
 export const Popover = {
