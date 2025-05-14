@@ -1,6 +1,7 @@
 import { Flex, SegmentedControl, Box, ScrollArea } from '@radix-ui/themes'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
+import { DiffEditor } from '../Monaco/DiffEditor'
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
 
 import { Preview } from './ResponseDetails/Preview'
@@ -13,6 +14,7 @@ type ContentPreviewProps = {
   rawContent: string | undefined
   searchIndex: number
   searchString?: string
+  originalContent?: string
 }
 
 export function ContentPreview({
@@ -22,12 +24,17 @@ export function ContentPreview({
   contentType,
   searchIndex,
   searchString,
+  originalContent,
 }: ContentPreviewProps) {
-  const [selectedTab, setSelectedTab] = useState('content')
+  function getInitialTab() {
+    if (originalContent && originalContent !== content && !searchString) {
+      return 'diff'
+    }
 
-  useEffect(() => {
-    setSelectedTab('content')
-  }, [format])
+    return 'content'
+  }
+
+  const [selectedTab, setSelectedTab] = useState(getInitialTab)
 
   if (isMedia(format)) {
     return (
@@ -47,12 +54,18 @@ export function ContentPreview({
           variant="classic"
           onValueChange={(value) => setSelectedTab(value)}
         >
-          <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
+          {isRawAvailable(contentType) && (
+            <SegmentedControl.Item value="raw">Raw</SegmentedControl.Item>
+          )}
           <SegmentedControl.Item value="content">Content</SegmentedControl.Item>
-          {isPreviewable(format) && (
+          {isPreviewable(format, contentType) && (
             <SegmentedControl.Item value="preview">
               Preview
             </SegmentedControl.Item>
+          )}
+
+          {originalContent !== undefined && originalContent !== content && (
+            <SegmentedControl.Item value="diff">Diff</SegmentedControl.Item>
           )}
         </SegmentedControl.Root>
       </Flex>
@@ -82,6 +95,14 @@ export function ContentPreview({
                 searchIndex={searchIndex}
               />
             )}
+            {selectedTab === 'diff' && (
+              <DiffEditor
+                language={format}
+                value={content}
+                original={originalContent}
+                showToolbar
+              />
+            )}
           </Box>
         </ScrollArea>
       </Box>
@@ -92,5 +113,9 @@ export function ContentPreview({
 const isMedia = (format: string) =>
   ['audio', 'font', 'image', 'video'].includes(format)
 
-const isPreviewable = (format: string) =>
-  !['javascript', 'css'].includes(format)
+const isPreviewable = (format: string, contentType: string) =>
+  !['javascript', 'css'].includes(format) &&
+  contentType !== 'multipart/form-data'
+
+const isRawAvailable = (contentType: string) =>
+  contentType === 'application/json'

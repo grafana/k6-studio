@@ -15,7 +15,7 @@ import { useFormContext } from 'react-hook-form'
 import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { Label } from '@/components/Label'
-import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { useApplyRules } from '@/store/generator/hooks/useApplyRules'
 import { RuleInstance, TestRule } from '@/types/rules'
 
 import { FilterField } from './FilterField'

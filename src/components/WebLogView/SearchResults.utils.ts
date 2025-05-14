@@ -1,4 +1,4 @@
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
 export function getMatchType(key?: string) {
   if (key?.includes('headers')) {
@@ -20,7 +20,7 @@ export function stringEndsWithSpace(str: string) {
   return str[str.length - 1] === ' '
 }
 
-export function addSegmentsToMatches(matches: SearchMatch[]) {
+export function addSegmentsToMatches(matches: Match[]) {
   return matches.flatMap((match) => {
     const segments = match.indices.map((indices, index) => ({
       segment: getSegments(match.value ?? '', indices),
@@ -85,10 +85,7 @@ export function highlightResult({
   }
 }
 
-export function getSegments(
-  text: string,
-  index: SearchMatch['indices'][number]
-) {
+export function getSegments(text: string, index: Match['indices'][number]) {
   const lengthBeforeMatch = 800
   // Avoid adding long response bodies into dom
   const lengthAfterMatch = 800

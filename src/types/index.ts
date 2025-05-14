@@ -1,4 +1,4 @@
-import { SearchMatch } from './fuse'
+import { Match } from './fuse'
 
 // TODO: modify json_output.py to use CamelCase instead of snake_case
 export type Method =
@@ -12,7 +12,7 @@ export type Method =
   | 'CONNECT'
   | 'TRACE'
 
-type KeyValueTuple = [string, string]
+export type KeyValueTuple = [string, string]
 
 export type Header = KeyValueTuple
 export type Cookie = KeyValueTuple
@@ -112,5 +112,5 @@ export interface FolderContent {
 export type ProxyStatus = 'online' | 'offline' | 'starting'
 
 export type ProxyDataWithMatches = ProxyData & {
-  matches?: SearchMatch[]
+  matches?: Match[]
 }

@@ -1,48 +1,60 @@
 import { ReactNode, useMemo } from 'react'
 
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
 interface MatchSegment {
   match: boolean
   text: string
+  color?: Match['color']
 }
 
-function longestMatchOnly(
-  matches: Array<[number, number]>
-): Array<[number, number]> {
-  return matches.sort((a, b) => b[1] - b[0] - (a[1] - a[0])).slice(0, 1)
+function longestMatchOnly(matches: Match[]) {
+  return matches.map((match) => {
+    return {
+      ...match,
+      indices: match.indices
+        .slice() // create mutable copy
+        .sort((a, b) => b[1] - b[0] - (a[1] - a[0]))
+        .slice(0, 1),
+    }
+  })
 }
 
-function splitByMatches(text: string, matches: Array<[number, number]>) {
-  const segments: MatchSegment[] = []
+function splitByMatches(text: string, matches: Match[]) {
+  return matches.flatMap((match) => {
+    const { indices, color } = match
 
-  let previousEnd = 0
+    const segments: MatchSegment[] = []
 
-  for (const [matchStart, matchEnd] of matches) {
+    let previousEnd = 0
+
+    for (const [matchStart, matchEnd] of indices) {
+      segments.push({
+        match: false,
+        text: text.slice(previousEnd, matchStart),
+      })
+
+      segments.push({
+        match: true,
+        text: text.slice(matchStart, matchEnd + 1),
+        color,
+      })
+
+      previousEnd = matchEnd + 1
+    }
+
     segments.push({
       match: false,
-      text: text.slice(previousEnd, matchStart),
+      text: text.slice(previousEnd),
     })
 
-    segments.push({
-      match: true,
-      text: text.slice(matchStart, matchEnd + 1),
-    })
-
-    previousEnd = matchEnd + 1
-  }
-
-  segments.push({
-    match: false,
-    text: text.slice(previousEnd),
+    return segments
   })
-
-  return segments
 }
 
 interface HighlightedTextProps {
   text: string
-  matches: SearchMatch[] | undefined
+  matches: Match[] | undefined
   highlightAllMatches?: boolean
 }
 
@@ -57,19 +69,25 @@ export function HighlightedText({
       (match) => match.value === text
     )
 
-    const indices = filteredMatches.flatMap((match) => match.indices)
-
     return splitByMatches(
       text,
-      highlightAllMatches ? indices : longestMatchOnly(indices)
+      highlightAllMatches ? filteredMatches : longestMatchOnly(filteredMatches)
     )
   }, [text, matches, highlightAllMatches])
+
+  if (!segments.length) {
+    return <span>{text}</span>
+  }
 
   return (
     <span>
       {segments.map((segment, index) => {
         if (segment.match) {
-          return <HighlightMark key={index}>{segment.text}</HighlightMark>
+          return (
+            <HighlightMark key={index} color={segment.color}>
+              {segment.text}
+            </HighlightMark>
+          )
         }
 
         return segment.text
@@ -81,15 +99,17 @@ export function HighlightedText({
 export function HighlightMark({
   children,
   className,
+  color = 'accent',
 }: {
   children: ReactNode
   className?: string
+  color?: Match['color']
 }) {
   return (
     <mark
       css={{
-        color: 'var(--accent-12)',
-        backgroundColor: 'var(--accent-5)',
+        color: `var(--${color}-12)`,
+        backgroundColor: `var(--${color}-4)`,
         fontWeight: 700,
       }}
       className={className}

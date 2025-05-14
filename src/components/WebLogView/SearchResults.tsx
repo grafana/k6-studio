@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 
 import { Table } from '@/components/Table'
 import { ProxyDataWithMatches } from '@/types'
-import { SearchMatch } from '@/types/fuse'
+import { Match } from '@/types/fuse'
 
 import { HighlightMark } from '../HighlightedText'
 
@@ -35,7 +35,7 @@ const PREVIEWABLE_MATCH_KEYS = [
 
 interface Result {
   segment: Segment
-  match: SearchMatch
+  match: Match
 }
 
 export function SearchResults({

@@ -5,7 +5,8 @@ import { WebLogView } from '@/components/WebLogView'
 import { useFilterRequests } from '@/components/WebLogView/Filter.hooks'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useGeneratorStore } from '@/store/generator'
-import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { useApplyRules } from '@/store/generator/hooks/useApplyRules'
+import { useHighlightRequestChanges } from '@/store/generator/hooks/useHighlightRequestChanges'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyData } from '@/types'
 
@@ -63,6 +64,8 @@ export function RequestList({
     setShowAllowlistDialog,
   })
 
+  const requestWithHighlights = useHighlightRequestChanges(filteredRequests)
+
   return (
     <Flex direction="column" height="100%">
       {!recordingError && (
@@ -85,7 +88,7 @@ export function RequestList({
 
         {!recordingError && (
           <WebLogView
-            requests={filteredRequests}
+            requests={requestWithHighlights}
             selectedRequestId={selectedRequest?.id}
             onSelectRequest={onSelectRequest}
             groups={groups}
