@@ -13,14 +13,10 @@ export function Avatar() {
         border: 4px solid var(--accent-9);
         color: var(--accent-9);
         border-radius: 50%;
+        font-size: 64px;
       `}
     >
-      <User2Icon
-        css={css`
-          width: 64px;
-          height: 64px;
-        `}
-      />
+      <User2Icon />
     </Flex>
   )
 }
