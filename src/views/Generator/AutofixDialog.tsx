@@ -14,12 +14,19 @@ import { SortableRuleList } from './TestRuleContainer/SortableRuleList'
 import { TestRuleInlineContent } from './TestRuleContainer/TestRule/TestRuleInlineContent'
 import { TestRuleTypeBadge } from './TestRuleContainer/TestRule/TestRuleTypeBadge'
 
+interface AutofixProps {
+  onOpenChange: (open: boolean) => void
+  originalRequests: ProxyData[]
+  validationRequests: ProxyData[]
+  handleRunScript: () => void
+}
+
 export function AutofixDialog({
   onOpenChange,
   originalRequests,
   validationRequests,
   handleRunScript,
-}) {
+}: AutofixProps) {
   console.log('AutofixDialog', originalRequests, validationRequests)
   const rez = useFetchAutofix(
     cleanUpRequests(originalRequests),
