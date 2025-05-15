@@ -22,7 +22,7 @@ const INSTALLATION_ID_FILE = path.join(
 const EVENT_QUEUE_FILE = path.join(app.getPath('userData'), 'event_queue.json')
 
 export class UsageTracker {
-  private static instance: UsageTracker
+  static #instance: UsageTracker
 
   private constructor() {
     if (process.env.NODE_ENV === 'development') {
@@ -35,16 +35,16 @@ export class UsageTracker {
     })
 
     // Track installation on service initialization
-    this.trackInstallation().catch((error) => {
+    this.#trackInstallation().catch((error) => {
       log.error('Failed to track installation:', error)
     })
   }
 
   static getInstance() {
-    if (!UsageTracker.instance) {
-      UsageTracker.instance = new UsageTracker()
+    if (!UsageTracker.#instance) {
+      UsageTracker.#instance = new UsageTracker()
     }
-    return UsageTracker.instance
+    return UsageTracker.#instance
   }
 
   async trackEvent(event: UsageTrackingEvent) {
@@ -53,7 +53,7 @@ export class UsageTracker {
     }
 
     const metadata: UsageTrackingEventMetadata = {
-      usageStatsId: await this.getInstallationId(),
+      usageStatsId: await this.#getInstallationId(),
       timestamp: Date(),
       appVersion: app.getVersion(),
       os: getPlatform(),
@@ -71,14 +71,14 @@ export class UsageTracker {
     }
 
     try {
-      await this.sendEvent(eventWithMetadata)
+      await this.#sendEvent(eventWithMetadata)
     } catch (error) {
       log.error('Failed to send event, saving to queue:', error)
-      await this.saveEventToQueue(eventWithMetadata)
+      await this.#saveEventToQueue(eventWithMetadata)
     }
   }
 
-  private async sendEvent(event: UsageTrackingEventWithMetadata) {
+  async #sendEvent(event: UsageTrackingEventWithMetadata) {
     if (!k6StudioState.appSettings.telemetry.usageReport) {
       return
     }
@@ -94,7 +94,7 @@ export class UsageTracker {
     }
   }
 
-  private async saveEventToQueue(event: Record<string, unknown>) {
+  async #saveEventToQueue(event: Record<string, unknown>) {
     let queue: Record<string, unknown>[] = []
     try {
       const data = await readFile(EVENT_QUEUE_FILE, 'utf-8')
@@ -108,9 +108,9 @@ export class UsageTracker {
     await writeFile(EVENT_QUEUE_FILE, JSON.stringify(queue, null, 2))
   }
 
-  private async trackInstallation() {
+  async #trackInstallation() {
     try {
-      if (await this.installationIdExists()) {
+      if (await this.#installationIdExists()) {
         return // Installation already tracked
       }
 
@@ -127,7 +127,7 @@ export class UsageTracker {
     }
   }
 
-  private async installationIdExists(): Promise<boolean> {
+  async #installationIdExists(): Promise<boolean> {
     try {
       await readFile(INSTALLATION_ID_FILE, 'utf-8')
       return true
@@ -136,7 +136,7 @@ export class UsageTracker {
     }
   }
 
-  private async getInstallationId(): Promise<string> {
+  async #getInstallationId(): Promise<string> {
     try {
       return await readFile(INSTALLATION_ID_FILE, 'utf-8')
     } catch {
@@ -156,7 +156,7 @@ export class UsageTracker {
 
     for (const event of queue) {
       try {
-        await this.sendEvent(event)
+        await this.#sendEvent(event)
       } catch (error) {
         log.error('Failed to flush event:', error)
         return // Stop flushing on first failure
