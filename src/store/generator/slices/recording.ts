@@ -2,6 +2,7 @@ import { ProxyData } from '@/types'
 import { ImmerStateCreator } from '@/utils/typescript'
 
 import {
+  generateJsonPaths,
   shouldResetAllowList,
   shouldShowAllowListDialog,
 } from './recording.utils'
@@ -22,17 +23,34 @@ interface Actions {
   setShowAllowlistDialog: (value: boolean) => void
 }
 
-export type RecordingSliceStore = State & Actions
+export type JsonPathType = 'request' | 'response'
+export type RecordingSliceStore = State &
+  Actions & {
+    getJsonPaths: (type: JsonPathType) => string[]
+  }
 
 export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
-  set
+  set,
+  getState
 ) => ({
   requests: [],
   recordingPath: '',
   allowlist: [],
+  /**
+   * @poc
+   * @description Realistically, should generate this during a recording. Measure size of data, and do a round-robin on the lazy loading of the data for the typeahead.
+   */
+  getJsonPaths: (type: JsonPathType) => {
+    const { response, request } = generateJsonPaths(getState().requests)
+    if (type === 'request') {
+      return request
+    } else if (type === 'response') {
+      return response
+    }
+    return []
+  },
   includeStaticAssets: false,
   showAllowlistDialog: false,
-
   setRecording: (requests: ProxyData[], path: string) =>
     set((state) => {
       if (shouldResetAllowList({ requests, allowList: state.allowlist })) {

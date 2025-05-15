@@ -24,22 +24,25 @@ import { CustomCodeEditor } from './CustomCodeEditor'
 import { ParameterizationEditor } from './ParameterizationEditor/ParameterizationEditor'
 import { VerificationEditor } from './VerificationEditor/VerificationEditor'
 
+/**
+ *  Dynamically add editors
+ */
+const editorMappings = {
+  correlation: <CorrelationEditor />,
+  customCode: <CustomCodeEditor />,
+  parameterization: <ParameterizationEditor />,
+  verification: <VerificationEditor />,
+}
+
 export function RuleEditorSwitch() {
   const { watch } = useFormContext<TestRule>()
   const ruleType = watch('type')
 
-  switch (ruleType) {
-    case 'correlation':
-      return <CorrelationEditor />
-    case 'customCode':
-      return <CustomCodeEditor />
-    case 'parameterization':
-      return <ParameterizationEditor />
-    case 'verification':
-      return <VerificationEditor />
-    default:
-      return exhaustive(ruleType)
+  const editor = editorMappings[ruleType]
+  if (!editor) {
+    return exhaustive(ruleType as never)
   }
+  return editor
 }
 
 function RuleDisabledWarning() {

@@ -17,8 +17,13 @@ import {
 } from './slices'
 import { createScriptDataSlice, ScriptDataStore } from './slices/script'
 
+type JsonPaths = {
+  json_paths: string[]
+}
+
 export interface GeneratorStore
   extends RecordingSliceStore,
+    JsonPaths,
     RulesSliceStore,
     TestDataStore,
     TestOptionsStore,
@@ -36,6 +41,7 @@ export const useGeneratorStore = create<GeneratorStore>()(
     ...createTestDataSlice(set, ...rest),
     ...createTestOptionsSlice(set, ...rest),
     ...createScriptDataSlice(set, ...rest),
+    json_paths: [],
     setGeneratorFile: (
       {
         options: { thinkTime, loadProfile, thresholds, cloud },
