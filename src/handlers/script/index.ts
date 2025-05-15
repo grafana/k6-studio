@@ -10,12 +10,15 @@ import {
   runScript,
   type K6Process,
 } from '@/main/script'
+import { UsageTracker } from '@/services/usageTracking'
+import { UsageTrackingEvents } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 
 import { ScriptHandler } from './types'
 
 export function initialize() {
   let currentk6Process: K6Process | null
+  const tracker = UsageTracker.getInstance()
 
   ipcMain.handle(ScriptHandler.Select, async (event) => {
     console.info(`${ScriptHandler.Select} event received`)
@@ -60,6 +63,14 @@ export function initialize() {
         proxyPort: k6StudioState.appSettings.proxy.port,
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
+
+      tracker
+        .trackEvent({
+          type: UsageTrackingEvents.ScriptValidated,
+        })
+        .catch((error) => {
+          log.error('Failed to track event:', error)
+        })
     }
   )
 

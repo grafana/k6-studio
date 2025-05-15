@@ -3,12 +3,10 @@ import net from 'net'
 import { platform, arch } from 'os'
 import path from 'path'
 
+import { Arch, Platform } from '@/types/electron'
 import { AddToastPayload } from '@/types/toast'
 
 import { UIHandler } from '../handlers/ui/types'
-
-type Platform = 'linux' | 'mac' | 'win'
-type Arch = 'arm64' | 'x86_64'
 
 export function getPlatform(): Platform {
   switch (platform()) {
@@ -30,7 +28,7 @@ export function getPlatform(): Platform {
 
 // note: the os.arch() returns the architecture for which the node runtime got compiled for, this could
 // be wrong for our use case since we want to fish binaries for specific architectures we are building for.
-// TODO: validate behaviour
+// TODO: validate behavior
 export function getArch(): Arch {
   switch (arch()) {
     case 'arm64':
