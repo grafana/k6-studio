@@ -62,11 +62,11 @@ export class UsageTracker {
 
     const eventWithMetadata = {
       ...event,
-      ...metadata,
+      metadata,
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(event)
+      console.log(eventWithMetadata)
       return
     }
 

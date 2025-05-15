@@ -28,7 +28,7 @@ export function getPlatform(): Platform {
 
 // note: the os.arch() returns the architecture for which the node runtime got compiled for, this could
 // be wrong for our use case since we want to fish binaries for specific architectures we are building for.
-// TODO: validate behavior
+// TODO: validate behaviour
 export function getArch(): Arch {
   switch (arch()) {
     case 'arm64':
