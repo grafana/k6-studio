@@ -73,5 +73,6 @@ export type UsageTrackingEvent =
   | ScriptRunInCloudEvent
   | UserAuthenticatedEvent
 
-export type UsageTrackingEventWithMetadata = UsageTrackingEvent &
-  UsageTrackingEventMetadata
+export type UsageTrackingEventWithMetadata = UsageTrackingEvent & {
+  metadata: UsageTrackingEventMetadata
+}
