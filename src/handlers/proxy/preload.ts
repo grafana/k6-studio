@@ -25,3 +25,7 @@ export function getProxyStatus() {
 export function onProxyStatusChange(callback: (status: ProxyStatus) => void) {
   return createListener(ProxyHandler.ChangeStatus, callback)
 }
+
+export function checkProxyHealth() {
+  return ipcRenderer.invoke(ProxyHandler.CheckHealth) as Promise<boolean>
+}

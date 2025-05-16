@@ -24,8 +24,10 @@ import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
+import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { TextButton } from '@/components/TextButton'
 import { LaunchBrowserOptions } from '@/handlers/browser/types'
+import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useBrowserCheck, useSettings } from '@/hooks/useSettings'
 import { useStudioUIStore } from '@/store/ui'
@@ -232,6 +234,8 @@ function WarningMessage({
     (state) => state.openSettingsDialog
   )
 
+  const { isProxyHealthy } = useProxyHealthCheck(proxyStatus)
+
   const handleProxyStart = () => {
     return window.studio.proxy.launchProxy()
   }
@@ -295,6 +299,10 @@ function WarningMessage({
         </Callout.Text>
       </Callout.Root>
     )
+  }
+
+  if (proxyStatus === 'online' && !isProxyHealthy) {
+    return <ProxyHealthWarning />
   }
 
   if (proxyStatus === 'starting') {

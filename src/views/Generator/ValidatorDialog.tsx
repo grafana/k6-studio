@@ -3,7 +3,9 @@ import { Box, Button, Dialog, Flex, Spinner } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { ProxyHealthBadge } from '@/components/ProxyHealthWarning'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
 import { ValidatorContent } from '@/views/Validator/ValidatorContent'
@@ -29,6 +31,8 @@ export function ValidatorDialog({
     resetProxyData()
     resetChecks()
   }, [resetChecks, resetLogs, resetProxyData])
+
+  const { isProxyHealthy } = useProxyHealthCheck()
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -79,6 +83,7 @@ export function ValidatorDialog({
               <Flex align="center">
                 Validator
                 {isRunning && <Spinner ml="2" />}
+                {!isProxyHealthy && <ProxyHealthBadge />}
               </Flex>
               <Flex gap="3" justify="end" align="center">
                 <Dialog.Close>
