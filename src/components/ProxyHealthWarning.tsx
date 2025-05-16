@@ -1,4 +1,4 @@
-import { Callout } from '@radix-ui/themes'
+import { Badge, Callout, Tooltip } from '@radix-ui/themes'
 import { TriangleAlert } from 'lucide-react'
 
 import { useStudioUIStore } from '@/store/ui'
@@ -31,5 +31,16 @@ export function ProxyHealthWarning() {
         .
       </Callout.Text>
     </Callout.Root>
+  )
+}
+
+export function ProxyHealthBadge() {
+  return (
+    <Tooltip content="Grafana k6 Studio cannot establish connection to the Internet. Unless this is expected due to your internal network configuration, check your proxy settings.">
+      <Badge color="orange" ml="2">
+        <TriangleAlert />
+        Proxy health check failed
+      </Badge>
+    </Tooltip>
   )
 }
