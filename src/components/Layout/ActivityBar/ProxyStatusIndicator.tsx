@@ -24,7 +24,7 @@ export function ProxyStatusIndicator() {
   }
 
   const getTooltipContent = () => {
-    if (['online', 'unhealthy'].includes(status)) {
+    if (status === 'online') {
       return 'Stop proxy'
     }
     if (status === 'offline') {
@@ -38,11 +38,7 @@ export function ProxyStatusIndicator() {
       <IconButton
         variant="ghost"
         color="gray"
-        onClick={
-          ['online', 'unhealthy'].includes(status)
-            ? handleProxyStop
-            : handleProxyStart
-        }
+        onClick={status === 'online' ? handleProxyStop : handleProxyStart}
         disabled={status === 'starting'}
       >
         <Flex position="relative">
