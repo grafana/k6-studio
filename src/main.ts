@@ -19,8 +19,8 @@ import { getSettings, initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { BrowserServer } from './services/browser/server'
+import { UsageTracker } from './services/usageTracking'
 import { ProxyStatus } from './types'
-import { sendReport } from './usageReport'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
@@ -187,7 +187,7 @@ app.whenReady().then(
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
     await createSplashWindow()
 
-    await sendReport(k6StudioState.appSettings.telemetry.usageReport)
+    UsageTracker.getInstance()
     await setupProjectStructure()
     await migrateJsonGenerator()
     await createWindow()
