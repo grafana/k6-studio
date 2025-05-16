@@ -79,7 +79,7 @@ const styles = css`
     Roboto, 'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji';
 
-  --studio-foreground: var(--gray-11);
+  --studio-foreground: var(--gray-12);
   --studio-background: white;
 
   --studio-accent-1: var(--orange-1);
@@ -95,6 +95,19 @@ const styles = css`
   --studio-accent-11: var(--orange-11);
   --studio-accent-12: var(--orange-12);
 
+  --studio-accent-a1: var(--orange-a1);
+  --studio-accent-a2: var(--orange-a2);
+  --studio-accent-a3: var(--orange-a3);
+  --studio-accent-a4: var(--orange-a4);
+  --studio-accent-a5: var(--orange-a5);
+  --studio-accent-a6: var(--orange-a6);
+  --studio-accent-a7: var(--orange-a7);
+  --studio-accent-a8: var(--orange-a8);
+  --studio-accent-a9: var(--orange-a9);
+  --studio-accent-a10: var(--orange-a10);
+  --studio-accent-a11: var(--orange-a11);
+  --studio-accent-a12: var(--orange-a12);
+
   --studio-accent-contrast: white;
 
   --studio-spacing-1: 4px;
@@ -105,8 +118,6 @@ const styles = css`
   --studio-spacing-6: calc(var(--studio-spacing-1) * 6);
   --studio-spacing-7: calc(var(--studio-spacing-1) * 7);
   --studio-spacing-8: calc(var(--studio-spacing-1) * 8);
-
-  --studio-alpha-1: rgba(0, 0, 0, 0.1);
 
   --studio-shadow-1: rgba(24, 26, 27, 0.2) 0px 4px 8px;
 
@@ -122,14 +133,24 @@ const styles = css`
   --studio-font-size-2: 14px;
   --studio-font-size-3: 16px;
 
+  --studio-font-weight-light: 300;
+  --studio-font-weight-normal: 400;
+  --studio-font-weight-medium: 500;
+  --studio-font-weight-bold: 700;
+
   --studio-border-color: rgb(229, 231, 235);
 
   --studio-hover-color: rgb(0, 0, 0, 0.1);
 
+  // Popover variables
+  --studio-popover-foreground: var(--studio-foreground);
+  --studio-popover-background: var(--studio-background);
+  --studio-popover-shadow: var(--studio-shadow-1);
+  --studio-popover-layer: var(--studio-layer-2);
+  --studio-popover-padding: var(--studio-spacing-2);
+
   @media (prefers-color-scheme: dark) {
     --studio-color-scheme: dark;
-
-    --studio-alpha-1: rgba(255, 255, 255, 0.1);
 
     --studio-foreground: var(--gray-12);
     --studio-background: var(--gray-1);
@@ -180,6 +201,84 @@ const styles = css`
 
   [data-p='4'] {
     padding: var(--studio-spacing-4);
+  }
+
+  [data-px='1'] {
+    padding-left: var(--studio-spacing-1);
+    padding-right: var(--studio-spacing-1);
+  }
+
+  [data-px='2'] {
+    padding-left: var(--studio-spacing-1);
+    padding-right: var(--studio-spacing-1);
+  }
+
+  [data-px='3'] {
+    padding-left: var(--studio-spacing-1);
+    padding-right: var(--studio-spacing-1);
+  }
+
+  [data-px='4'] {
+    padding-left: var(--studio-spacing-1);
+    padding-right: var(--studio-spacing-1);
+  }
+
+  [data-py='1'] {
+    padding-top: var(--studio-spacing-1);
+    padding-bottom: var(--studio-spacing-1);
+  }
+
+  [data-py='2'] {
+    padding-top: var(--studio-spacing-1);
+    padding-bottom: var(--studio-spacing-1);
+  }
+
+  [data-py='3'] {
+    padding-top: var(--studio-spacing-1);
+    padding-bottom: var(--studio-spacing-1);
+  }
+
+  [data-py='4'] {
+    padding-top: var(--studio-spacing-1);
+    padding-bottom: var(--studio-spacing-1);
+  }
+
+  & :where([data-size='1']) {
+    font-size: var(--studio-font-size-1);
+  }
+
+  & :where([data-size='2']) {
+    font-size: var(--studio-font-size-2);
+  }
+
+  & :where([data-weight='light']) {
+    font-weight: var(--studio-font-weight-light);
+  }
+
+  & :where([data-weight='normal']) {
+    font-weight: var(--studio-font-weight-normal);
+  }
+
+  & :where([data-weight='medium']) {
+    font-weight: var(--studio-font-weight-medium);
+  }
+
+  & :where([data-weight='bold']) {
+    font-weight: var(--studio-font-weight-bold);
+  }
+
+  // Input and textarea
+  --studio-input-font-size: var(--studio-font-size-2);
+  --studio-input-padding: var(--studio-spacing-2);
+  --studio-input-height: var(--studio-spacing-8);
+  --studio-input-border-radius: 4px;
+  --studio-input-color: var(--studio-foreground);
+
+  .input[data-size='1'] {
+    --studio-input-font-size: var(--studio-font-size-1);
+    --studio-input-padding: calc(var(--studio-spacing-1) * 1.5);
+    --studio-input-height: var(--studio-spacing-6);
+    --studio-input-box-shadow: inset 0 0 0 1px var(--gray-a7);
   }
 
   .lucide {

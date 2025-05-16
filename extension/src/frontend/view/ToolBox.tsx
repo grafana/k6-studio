@@ -55,6 +55,7 @@ export function ToolBox({
         background-color: var(--studio-background);
         box-shadow: var(--studio-shadow-1);
         border: 1px solid var(--gray-6);
+        padding: var(--studio-spacing-1);
       `}
     >
       <Tooltip delayDuration={0} asChild content="Stop recording">
@@ -68,7 +69,11 @@ export function ToolBox({
         value={tool ?? ''}
         onValueChange={handleToolChange}
       >
-        <Tooltip delayDuration={0} asChild content="Inspect elements">
+        <Tooltip
+          delayDuration={0}
+          asChild
+          content="Pick an element to add assertions to it"
+        >
           <div>
             <Toolbar.ToggleItem value="inspect">
               <SquareDashedMousePointerIcon />
@@ -78,7 +83,7 @@ export function ToolBox({
         <Tooltip
           delayDuration={0}
           asChild
-          content="Add assertions on text content by selecting it."
+          content="Add assertions on text content by selecting it"
         >
           <div>
             <Toolbar.ToggleItem value="assert-text">

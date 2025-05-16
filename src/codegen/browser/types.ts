@@ -80,12 +80,21 @@ export interface CheckNode extends NodeBase {
   }
 }
 
+export interface TextContainsAssertion {
+  type: 'text-contains'
+  value: string
+}
+
+export interface IsVisibleAssertion {
+  type: 'is-visible'
+  visible: boolean
+}
+
+export type AssertionOperation = TextContainsAssertion | IsVisibleAssertion
+
 export interface AssertNode extends NodeBase {
   type: 'assert'
-  operation: {
-    type: 'text-contains'
-    value: string
-  }
+  operation: AssertionOperation
   inputs: {
     previous?: NodeRef
     locator: NodeRef
