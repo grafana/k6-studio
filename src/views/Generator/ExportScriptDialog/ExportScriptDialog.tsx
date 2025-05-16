@@ -1,6 +1,7 @@
+import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FileTextIcon } from '@radix-ui/react-icons'
 import { AlertDialog, Flex } from '@radix-ui/themes'
+import { FileCode2Icon } from 'lucide-react'
 import { useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
@@ -85,7 +86,11 @@ export function ExportScriptDialog({
       >
         <AlertDialog.Title>
           <Flex align="center" gap="2">
-            <FileTextIcon color="orange" width="20px" height="20px" />
+            <FileCode2Icon
+              css={css`
+                color: var(--accent-9);
+              `}
+            />
             Export script
           </Flex>
         </AlertDialog.Title>

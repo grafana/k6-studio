@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, IconButton } from '@radix-ui/themes'
+import { EllipsisVerticalIcon } from 'lucide-react'
 
 import { useGeneratorStore } from '@/store/generator'
 
@@ -38,7 +38,7 @@ export function TestRuleActions({ ruleId }: TestRuleActionsProps) {
             margin-left: auto;
           `}
         >
-          <DotsVerticalIcon width="15" height="15" />
+          <EllipsisVerticalIcon />
         </IconButton>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>

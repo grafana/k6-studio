@@ -1,5 +1,5 @@
-import { CheckCircledIcon } from '@radix-ui/react-icons'
 import { Button, Spinner, Text } from '@radix-ui/themes'
+import { CircleCheckIcon } from 'lucide-react'
 
 import { TextButton } from '@/components/TextButton'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
@@ -63,7 +63,7 @@ export function ValidatorEmptyState({
       </Text>
       <Button disabled={isRunning} onClick={onRunScript}>
         <Spinner loading={isRunning}>
-          <CheckCircledIcon />
+          <CircleCheckIcon />
         </Spinner>
         Validate script
       </Button>

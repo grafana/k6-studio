@@ -1,4 +1,3 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import {
   Box,
   Code,
@@ -10,6 +9,7 @@ import {
   Text,
   Tooltip,
 } from '@radix-ui/themes'
+import { InfoIcon } from 'lucide-react'
 import { useFormContext } from 'react-hook-form'
 
 import { FieldGroup } from '@/components/Form'
@@ -93,7 +93,7 @@ export function CorrelationEditor() {
 
           <Flex align="center" gap="1" mb="2">
             <Tooltip content={replacerTooltip}>
-              <InfoCircledIcon />
+              <InfoIcon />
             </Tooltip>
             <Label>
               <Text size="2" css={{ lineHeight: '18px' }}>

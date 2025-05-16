@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, ScrollArea } from '@radix-ui/themes'
+import { InfoIcon } from 'lucide-react'
 import { useMemo } from 'react'
 
 import { CollapsibleSection } from '@/components/CollapsibleSection'
@@ -89,7 +89,7 @@ function NoChecksMessage() {
     <Box p="2">
       <Callout.Root>
         <Callout.Icon>
-          <InfoCircledIcon />
+          <InfoIcon />
         </Callout.Icon>
         <Callout.Text>Your checks will appear here.</Callout.Text>
       </Callout.Root>
