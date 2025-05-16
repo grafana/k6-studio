@@ -69,8 +69,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     shouldFocusError: false,
   })
 
-  const canRecord =
-    ['online', 'unhealthy'].includes(proxyStatus) && isBrowserInstalled === true
+  const canRecord = proxyStatus === 'online' && isBrowserInstalled === true
 
   const onSubmit = ({ url }: RecorderEmptyStateFields) => {
     if (isLoading || !canRecord) {
