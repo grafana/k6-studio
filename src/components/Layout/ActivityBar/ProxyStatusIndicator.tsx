@@ -10,7 +10,6 @@ const COLOR_MAP: Record<ProxyStatus, string> = {
   ['online']: 'var(--green-9)',
   ['offline']: 'var(--gray-9)',
   ['starting']: 'var(--blue-9)',
-  ['unhealthy']: 'var(--red-9)',
 }
 
 export function ProxyStatusIndicator() {
@@ -68,7 +67,6 @@ export function ProxyStatusIndicator() {
 function ProxyStatusIcon({ status }: { status: ProxyStatus }) {
   switch (status) {
     case 'online':
-    case 'unhealthy':
       return <Link2Icon color="gray" />
     case 'offline':
       return <Link2OffIcon color="gray" />

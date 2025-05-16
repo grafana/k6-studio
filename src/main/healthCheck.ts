@@ -4,12 +4,11 @@ import https from 'node:https'
 
 import { getProxyCertificateContent, getProxyURL } from './proxy'
 
-const checkProxyHealth = async () => {
+export const checkProxyHealth = async () => {
   try {
     const results = await Promise.allSettled([
       isUrlReachable('https://www.google.com/generate_204'),
       isUrlReachable('https://quickpizza.grafana.com'),
-      isUrlReachable('https://k6.io'),
     ])
     const isProxyHealthy = results.some(
       (r) => r.status === 'fulfilled' && r.value === true
@@ -47,24 +46,4 @@ const isUrlReachable = (url: string) => {
         resolve(false)
       })
   })
-}
-
-export const startHealthCheckPolling = () => {
-  setInterval(async () => {
-    // Don't check if proxy is offline or starting
-    // Don't check if a recording is in progress
-    // Don't check if not in the /recorder page
-    if (
-      !k6StudioState.currentProxyProcess ||
-      ['starting', 'offline'].includes(k6StudioState.proxyStatus) ||
-      k6StudioState.currentBrowserProcess ||
-      !k6StudioState.currentClientRoute.startsWith('/recorder')
-    ) {
-      return
-    }
-
-    const isHealthy = await checkProxyHealth()
-    const status = isHealthy ? 'online' : 'unhealthy'
-    k6StudioState.proxyEmitter.emit('status:change', status)
-  }, 2000)
 }
