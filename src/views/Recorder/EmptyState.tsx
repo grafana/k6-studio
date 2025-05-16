@@ -19,7 +19,7 @@ import {
   MinusCircle,
   TriangleAlertIcon,
 } from 'lucide-react'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
@@ -28,6 +28,7 @@ import { ExternalLink } from '@/components/ExternalLink'
 import { FieldGroup } from '@/components/Form'
 import { TextButton } from '@/components/TextButton'
 import { LaunchBrowserOptions } from '@/handlers/browser/types'
+import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useBrowserCheck, useSettings } from '@/hooks/useSettings'
 import { useStudioUIStore } from '@/store/ui'
@@ -235,6 +236,17 @@ function WarningMessage({
     (state) => state.openSettingsDialog
   )
 
+  const { isProxyHealthy, refetchProxyHealth } = useProxyHealthCheck()
+
+  useEffect(() => {
+    const fetchProxyHealth = async () => {
+      if (proxyStatus === 'online') {
+        await refetchProxyHealth()
+      }
+    }
+    void fetchProxyHealth()
+  }, [proxyStatus, refetchProxyHealth])
+
   const handleProxyStart = () => {
     return window.studio.proxy.launchProxy()
   }
@@ -300,7 +312,7 @@ function WarningMessage({
     )
   }
 
-  if (proxyStatus === 'unhealthy') {
+  if (proxyStatus === 'online' && !isProxyHealthy) {
     return (
       <Callout.Root>
         <Callout.Icon>

@@ -35,7 +35,6 @@ const isUrlReachable = (url: string) => {
 
     https
       .get(url, options, (res) => {
-        console.log(`Proxy health check status: ${res.statusCode} for ${url}`)
         if (res.statusCode && res.statusCode >= 200 && res.statusCode < 400) {
           return resolve(true)
         }
