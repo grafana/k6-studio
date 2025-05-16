@@ -1,5 +1,5 @@
-import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
+import { EllipsisVerticalIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { useOpenInDefaultApp } from '@/hooks/useOpenInDefaultApp'
@@ -39,7 +39,7 @@ export function DataFileControls({ fileName }: DataFileControlsProps) {
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
           <IconButton variant="ghost" aria-label="Actions" color="gray">
-            <DotsVerticalIcon />
+            <EllipsisVerticalIcon />
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>

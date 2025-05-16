@@ -280,6 +280,14 @@ const styles = css`
     --studio-input-height: var(--studio-spacing-6);
     --studio-input-box-shadow: inset 0 0 0 1px var(--gray-a7);
   }
+
+  .lucide {
+    width: 1em;
+    height: 1em;
+    min-width: 16px;
+    min-height: 16px;
+    stroke-width: 1.5;
+  }
 `
 
 const getStyles = (root: boolean, includeColors: boolean) => {

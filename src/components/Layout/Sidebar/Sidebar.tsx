@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { FilePlusIcon, PinLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
+import { FilePlusIcon, PanelLeftCloseIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -51,7 +51,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               color="gray"
               onClick={onCollapseSidebar}
             >
-              <PinLeftIcon />
+              <PanelLeftCloseIcon />
             </IconButton>
           )}
         </Flex>
@@ -85,7 +85,6 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               actions={
                 <Tooltip content="New generator" side="right">
                   <IconButton
-                    asChild
                     aria-label="New generator"
                     variant="ghost"
                     size="1"
@@ -109,7 +108,6 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               actions={
                 <Tooltip content="Import data file" side="right">
                   <IconButton
-                    asChild
                     aria-label="Import data file"
                     variant="ghost"
                     size="1"

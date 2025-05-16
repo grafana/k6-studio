@@ -1,6 +1,6 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Flex, TextField, Tooltip } from '@radix-ui/themes'
+import { InfoIcon } from 'lucide-react'
 import { type ChangeEvent, type ReactNode } from 'react'
 
 interface DurationInputProps extends Omit<TextField.RootProps, 'onChange'> {
@@ -33,7 +33,7 @@ export function DurationInput({
         <Tooltip
           content={<DurationInfo fieldName={label}>{tooltip}</DurationInfo>}
         >
-          <InfoCircledIcon />
+          <InfoIcon />
         </Tooltip>
       </Flex>
 

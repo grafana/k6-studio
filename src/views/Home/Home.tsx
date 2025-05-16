@@ -1,10 +1,6 @@
 import { css } from '@emotion/react'
-import {
-  CheckCircledIcon,
-  DiscIcon,
-  PlusCircledIcon,
-} from '@radix-ui/react-icons'
 import { Button, Flex, Grid, Heading, Text } from '@radix-ui/themes'
+import { CircleCheckIcon, CirclePlusIcon, DiscIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
@@ -68,7 +64,7 @@ export function Home() {
             description="Transform a recorded flow into a k6 test script"
           >
             <Button variant="ghost" onClick={handleCreateNewGenerator}>
-              <PlusCircledIcon />
+              <CirclePlusIcon />
               Generate test
             </Button>
           </NavigationCard>
@@ -79,7 +75,7 @@ export function Home() {
           >
             <Button variant="ghost" asChild>
               <Link to={getRoutePath('validator', {})}>
-                <CheckCircledIcon />
+                <CircleCheckIcon />
                 Validate script
               </Link>
             </Button>

@@ -1,5 +1,5 @@
-import { GearIcon } from '@radix-ui/react-icons'
 import { Tooltip, IconButton } from '@radix-ui/themes'
+import { SettingsIcon } from 'lucide-react'
 
 import { useStudioUIStore } from '@/store/ui'
 
@@ -16,7 +16,7 @@ export function SettingsButton() {
         variant="ghost"
         onClick={() => openSettingsDialog()}
       >
-        <GearIcon />
+        <SettingsIcon />
       </IconButton>
     </Tooltip>
   )

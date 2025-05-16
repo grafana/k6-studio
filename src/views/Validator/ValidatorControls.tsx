@@ -1,5 +1,5 @@
-import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
+import { EllipsisVerticalIcon } from 'lucide-react'
 
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
@@ -59,7 +59,7 @@ export function ValidatorControls({
       <DropdownMenu.Root>
         <DropdownMenu.Trigger disabled={isRunning}>
           <IconButton variant="ghost" color="gray" aria-label="Actions">
-            <DotsVerticalIcon />
+            <EllipsisVerticalIcon />
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>

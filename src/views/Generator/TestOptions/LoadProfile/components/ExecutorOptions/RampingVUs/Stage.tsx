@@ -1,5 +1,5 @@
-import { TrashIcon } from '@radix-ui/react-icons'
 import { IconButton, Table, TextField } from '@radix-ui/themes'
+import { Trash2Icon } from 'lucide-react'
 import { FieldErrors, UseFormRegister } from 'react-hook-form'
 
 import { FieldGroup } from '@/components/Form'
@@ -43,7 +43,7 @@ export function Stage({ index, register, handleRemove, errors }: StageProps) {
       </Table.Cell>
       <Table.Cell>
         <IconButton onClick={handleRemove}>
-          <TrashIcon width="18" height="18" />
+          <Trash2Icon />
         </IconButton>
       </Table.Cell>
     </>

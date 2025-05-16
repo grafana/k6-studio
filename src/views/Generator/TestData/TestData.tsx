@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { ArchiveIcon } from '@radix-ui/react-icons'
 import { Box, Button, Inset, ScrollArea, Tabs } from '@radix-ui/themes'
+import { ArchiveIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'

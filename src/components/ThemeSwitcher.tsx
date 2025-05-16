@@ -1,5 +1,5 @@
-import { MoonIcon, SunIcon } from '@radix-ui/react-icons'
 import { IconButton, Tooltip } from '@radix-ui/themes'
+import { MoonIcon, SunIcon } from 'lucide-react'
 
 import { useTheme } from '@/hooks/useTheme'
 

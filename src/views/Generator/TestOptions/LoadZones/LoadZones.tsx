@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Cross1Icon } from '@radix-ui/react-icons'
 import { Text, Button, Switch, Flex, Callout, Tooltip } from '@radix-ui/themes'
+import { CircleXIcon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
 import {
   FormProvider,
@@ -176,7 +176,7 @@ function LoadZonePercentageError() {
   return (
     <Callout.Root variant="soft" color="tomato" mb="3">
       <Callout.Icon>
-        <Cross1Icon />
+        <CircleXIcon />
       </Callout.Icon>
 
       <Callout.Text>{errors.zones?.root?.message}</Callout.Text>

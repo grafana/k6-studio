@@ -1,5 +1,5 @@
-import { GlobeIcon } from '@radix-ui/react-icons'
 import { Button, Dialog, Flex } from '@radix-ui/themes'
+import { GlobeIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'

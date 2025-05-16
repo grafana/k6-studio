@@ -1,8 +1,8 @@
 import { css, keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as RadixCollapsible from '@radix-ui/react-collapsible'
-import { CaretRightIcon } from '@radix-ui/react-icons'
 import { Flex, Reset } from '@radix-ui/themes'
+import { ChevronRightIcon } from 'lucide-react'
 
 const slideDown = keyframes`
   from {
@@ -34,7 +34,7 @@ const Header = styled.div`
   border-bottom: 1px solid var(--gray-3);
 `
 
-const CaretIcon = styled(CaretRightIcon)`
+const CaretIcon = styled(ChevronRightIcon)`
   transform: rotate(0deg);
 
   button[data-state='open'] & {

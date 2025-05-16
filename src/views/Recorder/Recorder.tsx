@@ -1,6 +1,6 @@
-import { GearIcon, StopIcon } from '@radix-ui/react-icons'
 import { Button } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
+import { SettingsIcon, StopCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
@@ -181,7 +181,7 @@ export function Recorder() {
         description: 'Please check your browser path and try again.',
         action: (
           <Button onClick={() => openSettingsDialog('recorder')}>
-            <GearIcon />
+            <SettingsIcon />
             Open settings
           </Button>
         ),
@@ -233,7 +233,7 @@ export function Recorder() {
                 color="red"
                 onClick={handleStopRecording}
               >
-                <StopIcon /> Stop recording
+                <StopCircle /> Stop recording
               </Button>
             </>
           )

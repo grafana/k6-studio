@@ -1,6 +1,5 @@
 import { css } from '@emotion/react'
-import { DividerVerticalIcon } from '@radix-ui/react-icons'
-import { Flex, Heading } from '@radix-ui/themes'
+import { Flex, Heading, Separator } from '@radix-ui/themes'
 import { PropsWithChildren, ReactNode } from 'react'
 
 interface ViewHeadingProps {
@@ -23,7 +22,7 @@ export function ViewHeading({
         min-height: 49px;
       `}
     >
-      <Flex maxWidth="50%" flexGrow="1" gap="1" align="center">
+      <Flex maxWidth="50%" flexGrow="1" gap="2" align="center">
         <Heading
           size="2"
           css={css`
@@ -34,12 +33,7 @@ export function ViewHeading({
         </Heading>
         {!!subTitle && (
           <>
-            <DividerVerticalIcon
-              aria-hidden
-              css={css`
-                flex-shrink: 0;
-              `}
-            />
+            <Separator orientation="vertical" />
             {subTitle}
           </>
         )}

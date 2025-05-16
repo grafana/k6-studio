@@ -1,5 +1,5 @@
-import { EyeOpenIcon } from '@radix-ui/react-icons'
 import { Strong, Text, Tooltip } from '@radix-ui/themes'
+import { EyeIcon } from 'lucide-react'
 
 import { CustomCodeRule } from '@/types/rules'
 
@@ -23,7 +23,7 @@ export function CodeSnippetPreview({ snippet }: { snippet: string }) {
       }
     >
       <Text>
-        <EyeOpenIcon /> <Strong>snippet</Strong>
+        <EyeIcon /> <Strong>snippet</Strong>
       </Text>
     </Tooltip>
   )

@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { Cross1Icon } from '@radix-ui/react-icons'
 import { Dialog, Flex, IconButton } from '@radix-ui/themes'
+import { XIcon } from 'lucide-react'
 
 import { Script } from '@/handlers/cloud/types'
 
@@ -30,7 +30,7 @@ export function RunInCloudDialog({
                 right: var(--space-4);
               `}
             >
-              <Cross1Icon />
+              <XIcon />
             </IconButton>
           </Dialog.Close>
           <RunInCloudContent

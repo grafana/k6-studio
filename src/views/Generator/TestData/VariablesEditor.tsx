@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { TrashIcon } from '@radix-ui/react-icons'
 import { Button, IconButton, TextField, Text, Tooltip } from '@radix-ui/themes'
+import { Trash2Icon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
 import {
   useForm,
@@ -148,7 +148,7 @@ function VariableRow({
             disabled={isVariableInUse}
             onClick={() => onRemove(index)}
           >
-            <TrashIcon width="18" height="18" />
+            <Trash2Icon />
           </IconButton>
         </Tooltip>
       </Table.Cell>

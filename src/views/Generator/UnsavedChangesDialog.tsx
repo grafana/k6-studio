@@ -1,5 +1,5 @@
-import { Cross2Icon } from '@radix-ui/react-icons'
 import { Box, Button, Dialog, Flex, IconButton, Text } from '@radix-ui/themes'
+import { XIcon } from 'lucide-react'
 
 export function UnsavedChangesDialog({
   open,
@@ -20,7 +20,7 @@ export function UnsavedChangesDialog({
         <Box position="absolute" right="10px" top="10px">
           <Dialog.Close>
             <IconButton color="gray" variant="ghost">
-              <Cross2Icon />
+              <XIcon />
             </IconButton>
           </Dialog.Close>
         </Box>

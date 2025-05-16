@@ -1,10 +1,5 @@
 import { css } from '@emotion/react'
 import {
-  Cross2Icon,
-  InfoCircledIcon,
-  MagnifyingGlassIcon,
-} from '@radix-ui/react-icons'
-import {
   Button,
   Checkbox,
   Flex,
@@ -18,6 +13,7 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 import { every, includes } from 'lodash'
+import { InfoIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { Label } from '@/components/Label'
@@ -100,7 +96,7 @@ export function AllowlistDialog({
             value={filter}
           >
             <TextField.Slot>
-              <MagnifyingGlassIcon height="16" width="16" />
+              <SearchIcon size={12} />
             </TextField.Slot>
             {filter !== '' && (
               <TextField.Slot>
@@ -109,7 +105,7 @@ export function AllowlistDialog({
                   variant="ghost"
                   onClick={() => setFilter('')}
                 >
-                  <Cross2Icon height="12" width="12" />
+                  <XIcon size={12} />
                 </IconButton>
               </TextField.Slot>
             )}
@@ -192,7 +188,7 @@ function AllowlistSeparator({
       </Text>
       {tooltip && (
         <Tooltip content={tooltip}>
-          <InfoCircledIcon
+          <InfoIcon
             css={css`
               margin-left: var(--space-1);
             `}

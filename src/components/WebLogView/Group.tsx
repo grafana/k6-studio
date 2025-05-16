@@ -1,13 +1,8 @@
 import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { ErrorMessage } from '@hookform/error-message'
-import {
-  CheckIcon,
-  Cross1Icon,
-  CrossCircledIcon,
-  Pencil1Icon,
-} from '@radix-ui/react-icons'
 import { Box, IconButton, TextField } from '@radix-ui/themes'
+import { CheckIcon, CircleXIcon, PencilIcon, XIcon } from 'lucide-react'
 import { KeyboardEvent, MouseEvent, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useClickAway } from 'react-use'
@@ -137,7 +132,7 @@ export function Group({
                   </TextField.Slot>
                   <TextField.Slot side="right">
                     {errors?.name !== undefined && (
-                      <CrossCircledIcon color="red" />
+                      <CircleXIcon color="var(--red-11)" />
                     )}
                   </TextField.Slot>
                 </TextField.Root>
@@ -156,7 +151,7 @@ export function Group({
                   style={{ margin: 0 }}
                   onClick={handleReset}
                 >
-                  <Cross1Icon />
+                  <XIcon />
                 </IconButton>
               </InlineForm>
             </Collapsible.Heading>
@@ -183,7 +178,7 @@ export function Group({
                   style={{ margin: 0 }}
                   onClick={handleEdit}
                 >
-                  <Pencil1Icon />
+                  <PencilIcon />
                 </IconButton>
               )}
             </Collapsible.Heading>

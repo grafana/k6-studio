@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { EyeNoneIcon, EyeOpenIcon } from '@radix-ui/react-icons'
+import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 
 import { InputChangeEvent } from '@/schemas/recording'
@@ -7,20 +7,14 @@ import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
 
-const valueStyles = css`
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--space-1);
-`
-
 const buttonStyles = css`
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   border: none;
   background: transparent;
-  padding: 0;
+  padding: 0 0.3em;
   cursor: pointer;
+  color: var(--studio-foreground);
 
   opacity: 1;
 
@@ -28,7 +22,7 @@ const buttonStyles = css`
     opacity: 0.7;
   }
 
-  & > svg {
+  & > svg.lucide {
     width: 0.9em;
     height: 0.9em;
   }
@@ -53,7 +47,7 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
   }
 
   return (
-    <span css={valueStyles}>
+    <>
       {'"'}
       <span>
         {showValue && value}
@@ -65,11 +59,11 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
         aria-label={showValue ? 'Hide masked value' : 'Show masked value'}
         onClick={() => setShowValue(!showValue)}
       >
-        {showValue && <EyeNoneIcon />}
-        {!showValue && <EyeOpenIcon />}
+        {showValue && <EyeOffIcon />}
+        {!showValue && <EyeIcon />}
       </button>
       {'"'}
-    </span>
+    </>
   )
 }
 

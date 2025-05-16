@@ -1,5 +1,5 @@
-import { TrashIcon } from '@radix-ui/react-icons'
 import { IconButton, TextField } from '@radix-ui/themes'
+import { Trash2Icon } from 'lucide-react'
 import {
   FieldArrayWithId,
   UseFieldArrayRemove,
@@ -65,7 +65,7 @@ export function LoadZoneRow({ field, index, remove }: LoadZoneRowProps) {
       </Table.Cell>
       <Table.Cell>
         <IconButton onClick={() => remove(index)}>
-          <TrashIcon width="18" height="18" />
+          <Trash2Icon />
         </IconButton>
       </Table.Cell>
     </Table.Row>

@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { Link1Icon } from '@radix-ui/react-icons'
 import { Badge, Strong, Text, Tooltip } from '@radix-ui/themes'
+import { Link2Icon } from 'lucide-react'
 import { useRef } from 'react'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
@@ -56,7 +56,7 @@ const TooltipContent = ({ rule }: { rule: TestRule }) => {
 function SelectorContent({ rule }: { rule: TestRule }) {
   switch (rule.type) {
     case 'correlation':
-      return <CorrelationSelectorContetent rule={rule} />
+      return <CorrelationSelectorContent rule={rule} />
     case 'parameterization':
       return <ParameterizationSelectorContent rule={rule} />
     case 'verification':
@@ -68,7 +68,7 @@ function SelectorContent({ rule }: { rule: TestRule }) {
   }
 }
 
-function CorrelationSelectorContetent({ rule }: { rule: CorrelationRule }) {
+function CorrelationSelectorContent({ rule }: { rule: CorrelationRule }) {
   return (
     <>
       Correlate <SelectorLabel selector={rule.extractor.selector} /> from{' '}
@@ -127,7 +127,7 @@ function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
     case 'variable':
       return (
         <Strong css={{ whiteSpace: 'nowrap' }}>
-          <Link1Icon /> {rule.value.variableName}
+          <Link2Icon /> {rule.value.variableName}
         </Strong>
       )
     case 'dataFileValue':

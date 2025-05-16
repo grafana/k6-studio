@@ -1,11 +1,6 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  DiscIcon,
-  ExclamationTriangleIcon,
-  InfoCircledIcon,
-} from '@radix-ui/react-icons'
-import {
   Box,
   Button,
   Callout,
@@ -17,6 +12,12 @@ import {
   TextField,
   Tooltip,
 } from '@radix-ui/themes'
+import {
+  AlertTriangleIcon,
+  DiscIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+} from 'lucide-react'
 import { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
@@ -145,7 +146,10 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
                     border-top-left-radius: 0;
                   `}
                 >
-                  {isLoading ? <Spinner /> : <DiscIcon />} Start recording
+                  <Spinner loading={isLoading}>
+                    <DiscIcon />
+                  </Spinner>
+                  Start recording
                 </Button>
               </Flex>
             </FieldGroup>
@@ -201,7 +205,7 @@ function BrowserEventsSection({ children }: BrowserEventsSectionProps) {
               </>
             }
           >
-            <InfoCircledIcon />
+            <InfoIcon />
           </Tooltip>
         </Flex>
       </Text>
@@ -236,7 +240,7 @@ function WarningMessage({
     return (
       <Callout.Root>
         <Callout.Icon>
-          <ExclamationTriangleIcon />
+          <TriangleAlertIcon />
         </Callout.Icon>
         <Callout.Text>
           <strong>Supported browser not found</strong>
@@ -257,7 +261,7 @@ function WarningMessage({
     return (
       <Callout.Root>
         <Callout.Icon>
-          <ExclamationTriangleIcon />
+          <AlertTriangleIcon />
         </Callout.Icon>
         <Callout.Text>
           <strong>SSL/TLS certificate validation will be skipped</strong>
@@ -277,7 +281,7 @@ function WarningMessage({
     return (
       <Callout.Root>
         <Callout.Icon>
-          <ExclamationTriangleIcon />
+          <TriangleAlertIcon />
         </Callout.Icon>
         <Callout.Text>
           <strong>Proxy is offline</strong>
