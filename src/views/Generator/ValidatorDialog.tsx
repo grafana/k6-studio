@@ -3,7 +3,9 @@ import { Box, Button, Dialog, Flex, Spinner } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
+import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
 import { ValidatorContent } from '@/views/Validator/ValidatorContent'
@@ -29,6 +31,8 @@ export function ValidatorDialog({
     resetProxyData()
     resetChecks()
   }, [resetChecks, resetLogs, resetProxyData])
+
+  const { isProxyHealthy } = useProxyHealthCheck()
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -108,7 +112,14 @@ export function ValidatorDialog({
               logs={logs}
               checks={checks}
               noDataElement={
-                <EmptyMessage message="Requests will appear here" />
+                <Flex direction="column" align="center">
+                  <EmptyMessage message="Requests will appear here" />
+                  {!isProxyHealthy && (
+                    <Box width="720px" mt="4">
+                      <ProxyHealthWarning />
+                    </Box>
+                  )}
+                </Flex>
               }
               isRunning={isRunning}
             />

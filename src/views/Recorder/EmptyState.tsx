@@ -16,16 +16,15 @@ import {
   AlertTriangleIcon,
   DiscIcon,
   InfoIcon,
-  MinusCircle,
   TriangleAlertIcon,
 } from 'lucide-react'
-import { ReactNode, useEffect } from 'react'
+import { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
-import { ExternalLink } from '@/components/ExternalLink'
 import { FieldGroup } from '@/components/Form'
+import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { TextButton } from '@/components/TextButton'
 import { LaunchBrowserOptions } from '@/handlers/browser/types'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
@@ -236,16 +235,7 @@ function WarningMessage({
     (state) => state.openSettingsDialog
   )
 
-  const { isProxyHealthy, refetchProxyHealth } = useProxyHealthCheck()
-
-  useEffect(() => {
-    const fetchProxyHealth = async () => {
-      if (proxyStatus === 'online') {
-        await refetchProxyHealth()
-      }
-    }
-    void fetchProxyHealth()
-  }, [proxyStatus, refetchProxyHealth])
+  const { isProxyHealthy } = useProxyHealthCheck(proxyStatus)
 
   const handleProxyStart = () => {
     return window.studio.proxy.launchProxy()
@@ -313,27 +303,7 @@ function WarningMessage({
   }
 
   if (proxyStatus === 'online' && !isProxyHealthy) {
-    return (
-      <Callout.Root>
-        <Callout.Icon>
-          <MinusCircle />
-        </Callout.Icon>
-        <Callout.Text>
-          <strong>Proxy health check failed</strong>
-          <br />
-          Grafana k6 Studio cannot establish connection to the Internet. Unless
-          this is expected due to your internal network configuration, check{' '}
-          <TextButton onClick={() => openSettingsDialog('proxy')}>
-            proxy settings
-          </TextButton>{' '}
-          or learn more in the{' '}
-          <ExternalLink href="https://grafana.com/docs/k6-studio/troubleshoot/#502-bad-gateway-error">
-            troubleshooting guide
-          </ExternalLink>{' '}
-          .
-        </Callout.Text>
-      </Callout.Root>
-    )
+    return <ProxyHealthWarning />
   }
 
   if (proxyStatus === 'starting') {
