@@ -128,9 +128,7 @@ export function ValidatorDialog({
               logs={logs}
               checks={checks}
               noDataElement={
-                <Flex direction="column" align="center">
-                  <EmptyMessage message="Requests will appear here" />
-                </Flex>
+                <EmptyMessage message="Requests will appear here" />
               }
               isRunning={isRunning}
             />
