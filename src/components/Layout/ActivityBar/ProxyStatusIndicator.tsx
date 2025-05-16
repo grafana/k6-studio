@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
+import { Link1Icon, LinkBreak1Icon, LinkNone1Icon } from '@radix-ui/react-icons'
 import { Box, Flex, IconButton, Tooltip } from '@radix-ui/themes'
-import { Link2Icon, Link2OffIcon, Unlink2Icon } from 'lucide-react'
 
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import type { ProxyStatus } from '@/types'
@@ -24,7 +24,7 @@ export function ProxyStatusIndicator() {
   }
 
   const getTooltipContent = () => {
-    if (['online', 'unhealthy'].includes(status)) {
+    if (status === 'online') {
       return 'Stop proxy'
     }
     if (status === 'offline') {
@@ -38,11 +38,7 @@ export function ProxyStatusIndicator() {
       <IconButton
         variant="ghost"
         color="gray"
-        onClick={
-          ['online', 'unhealthy'].includes(status)
-            ? handleProxyStop
-            : handleProxyStart
-        }
+        onClick={status === 'online' ? handleProxyStop : handleProxyStart}
         disabled={status === 'starting'}
       >
         <Flex position="relative">
@@ -67,11 +63,11 @@ export function ProxyStatusIndicator() {
 function ProxyStatusIcon({ status }: { status: ProxyStatus }) {
   switch (status) {
     case 'online':
-      return <Link2Icon color="gray" />
+      return <Link1Icon color="gray" />
     case 'offline':
-      return <Link2OffIcon color="gray" />
+      return <LinkBreak1Icon color="gray" />
     case 'starting':
-      return <Unlink2Icon color="gray" />
+      return <LinkNone1Icon color="gray" />
     default:
       return exhaustive(status)
   }
