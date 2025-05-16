@@ -1,9 +1,17 @@
 import { css } from '@emotion/react'
-import { Box, Button, Dialog, Flex, Spinner } from '@radix-ui/themes'
+import {
+  Badge,
+  Box,
+  Button,
+  Dialog,
+  Flex,
+  Spinner,
+  Tooltip,
+} from '@radix-ui/themes'
+import { TriangleAlert } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
-import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useRunChecks } from '@/hooks/useRunChecks'
@@ -83,6 +91,14 @@ export function ValidatorDialog({
               <Flex align="center">
                 Validator
                 {isRunning && <Spinner ml="2" />}
+                {!isProxyHealthy && (
+                  <Tooltip content="Grafana k6 Studio cannot establish connection to the Internet. Unless this is expected due to your internal network configuration, check your proxy settings.">
+                    <Badge color="orange" ml="2">
+                      <TriangleAlert />
+                      Proxy health check failed
+                    </Badge>
+                  </Tooltip>
+                )}
               </Flex>
               <Flex gap="3" justify="end" align="center">
                 <Dialog.Close>
@@ -114,11 +130,6 @@ export function ValidatorDialog({
               noDataElement={
                 <Flex direction="column" align="center">
                   <EmptyMessage message="Requests will appear here" />
-                  {!isProxyHealthy && (
-                    <Box width="720px" mt="4">
-                      <ProxyHealthWarning />
-                    </Box>
-                  )}
                 </Flex>
               }
               isRunning={isRunning}
