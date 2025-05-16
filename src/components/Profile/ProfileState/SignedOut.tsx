@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { CheckIcon } from '@radix-ui/react-icons'
 import { Text, Button, Flex, Box } from '@radix-ui/themes'
+import { CheckIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
 import { ExternalLink } from '@/components/ExternalLink'
@@ -17,6 +17,7 @@ function Benefit({ children }: { children: ReactNode }) {
         display: flex;
         align-items: center;
         gap: var(--space-1);
+        color: var(--green-9);
       `}
     >
       <CheckIcon color="green" />

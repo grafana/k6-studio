@@ -1,5 +1,5 @@
-import { GlobeIcon } from '@radix-ui/react-icons'
 import { Button } from '@radix-ui/themes'
+import { GlobeIcon } from 'lucide-react'
 import { ComponentProps } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'

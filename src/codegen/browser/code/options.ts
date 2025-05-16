@@ -9,10 +9,12 @@ function isBrowserScenario(scenario: ir.Scenario) {
   function visitAssertion(node: ir.Assertion): boolean {
     switch (node.type) {
       case 'TextContainsAssertion':
-        return visit(node.text)
+      case 'IsVisibleAssertion':
+      case 'IsHiddenAssertion':
+        return true
 
       default:
-        return exhaustive(node.type)
+        return exhaustive(node)
     }
   }
 

@@ -1,6 +1,6 @@
 import { escapeRegExp } from 'lodash-es'
 
-import { Response, Request } from '@/types'
+import { Response, Request, Query } from '@/types'
 import { Filter } from '@/types/rules'
 import { getHeaderValues } from '@/utils/headers'
 
@@ -53,6 +53,15 @@ export const isJsonReqResp = (reqResp: Request | Response) => {
   }
 
   return true
+}
+
+export function urlToQueryParams(url: string): Query[] {
+  try {
+    const urlObj = new URL(url)
+    return Array.from(urlObj.searchParams.entries())
+  } catch (error) {
+    return []
+  }
 }
 
 // @ts-expect-error we have commonjs set as module option

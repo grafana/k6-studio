@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import { Badge, Code, Tooltip } from '@radix-ui/themes'
+import { SearchIcon } from 'lucide-react'
 
 import { Filter } from '@/types/rules'
 
@@ -20,9 +20,7 @@ export function TestRuleFilter({ filter }: TestRuleFilterProps) {
           max-width: 25%;
         `}
       >
-        <MagnifyingGlassIcon
-          width={15}
-          height={15}
+        <SearchIcon
           css={css`
             flex-shrink: 0;
           `}

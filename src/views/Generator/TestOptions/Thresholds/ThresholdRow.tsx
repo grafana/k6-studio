@@ -1,5 +1,5 @@
-import { TrashIcon } from '@radix-ui/react-icons'
 import { Table, TextField, Checkbox, IconButton, Flex } from '@radix-ui/themes'
+import { Trash2Icon } from 'lucide-react'
 import { useEffect } from 'react'
 import {
   Controller,
@@ -126,7 +126,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
       </Table.Cell>
       <Table.Cell>
         <IconButton onClick={() => remove(index)}>
-          <TrashIcon width="18" height="18" />
+          <Trash2Icon />
         </IconButton>
       </Table.Cell>
     </Table.Row>

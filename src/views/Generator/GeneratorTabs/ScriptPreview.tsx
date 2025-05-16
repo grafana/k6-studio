@@ -1,5 +1,5 @@
-import { CheckCircledIcon, DownloadIcon } from '@radix-ui/react-icons'
 import { Flex, Tooltip } from '@radix-ui/themes'
+import { CircleCheckIcon, DownloadIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { GhostButton } from '@/components/GhostButton'
@@ -46,7 +46,7 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
               setIsValidatorDialogOpen(true)
             }}
           >
-            <CheckCircledIcon />
+            <CircleCheckIcon />
             Validate
           </GhostButton>
         </Tooltip>

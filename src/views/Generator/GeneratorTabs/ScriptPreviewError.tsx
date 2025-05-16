@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Callout, Flex, ScrollArea } from '@radix-ui/themes'
+import { AlertTriangleIcon } from 'lucide-react'
 
 interface ScriptPreviewErrorProps {
   error: Error
@@ -21,7 +21,7 @@ export function ScriptPreviewError({ error }: ScriptPreviewErrorProps) {
     >
       <Callout.Root role="alert" variant="soft" color="red" size="1">
         <Callout.Icon>
-          <ExclamationTriangleIcon />
+          <AlertTriangleIcon />
         </Callout.Icon>
         <Callout.Text>
           Script generation failed. Check your code snippets for errors.

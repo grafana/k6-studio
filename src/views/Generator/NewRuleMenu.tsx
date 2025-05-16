@@ -1,5 +1,5 @@
-import { PlusCircledIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, Tooltip } from '@radix-ui/themes'
+import { CirclePlusIcon } from 'lucide-react'
 import { ComponentProps } from 'react'
 
 import { useGeneratorStore } from '@/store/generator'
@@ -18,7 +18,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
         <Button variant="ghost" size="1" color="gray" {...props}>
-          <PlusCircledIcon />
+          <CirclePlusIcon />
           Add rule
         </Button>
       </DropdownMenu.Trigger>

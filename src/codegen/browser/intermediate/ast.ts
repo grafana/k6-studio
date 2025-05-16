@@ -65,7 +65,18 @@ export interface TextContainsAssertion {
   text: Expression
 }
 
-export type Assertion = TextContainsAssertion
+export interface IsVisibleAssertion {
+  type: 'IsVisibleAssertion'
+}
+
+export interface IsHiddenAssertion {
+  type: 'IsHiddenAssertion'
+}
+
+export type Assertion =
+  | TextContainsAssertion
+  | IsVisibleAssertion
+  | IsHiddenAssertion
 
 export interface ExpectExpression {
   type: 'ExpectExpression'

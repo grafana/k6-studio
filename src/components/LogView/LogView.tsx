@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Box, Callout, Code, Flex, Text } from '@radix-ui/themes'
+import { InfoIcon } from 'lucide-react'
 
 import { K6Log } from '@/types'
 
@@ -44,7 +44,7 @@ function NoLogsMessage() {
     <Box p="2">
       <Callout.Root>
         <Callout.Icon>
-          <InfoCircledIcon />
+          <InfoIcon />
         </Callout.Icon>
         <Callout.Text>Your logs will appear here.</Callout.Text>
       </Callout.Root>

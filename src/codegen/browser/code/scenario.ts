@@ -173,8 +173,22 @@ function emitExpectExpression(
         .done()
     }
 
+    case 'IsHiddenAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toBeHidden')
+        .call([])
+        .await(context)
+        .done()
+
+    case 'IsVisibleAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toBeVisible')
+        .call([])
+        .await(context)
+        .done()
+
     default: {
-      return exhaustive(expression.expected.type)
+      return exhaustive(expression.expected)
     }
   }
 }

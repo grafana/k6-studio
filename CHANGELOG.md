@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.3.0](https://github.com/grafana/k6-studio/compare/v1.2.0...v1.3.0) (2025-05-14)
+
+
+### Features
+
+* Add support to start proxy with --ssl-insecure flag ([#713](https://github.com/grafana/k6-studio/issues/713)) ([b818b0c](https://github.com/grafana/k6-studio/commit/b818b0c6ef38469b77b7e61ce1d6f7d8697d8c47))
+* **browser:** Add assertions to check if elements are visible or not. ([#725](https://github.com/grafana/k6-studio/issues/725)) ([61a5ada](https://github.com/grafana/k6-studio/commit/61a5adaa4da64906ef3b6f554e77a18b96d28e3b))
+* Highlight values replaced by rules ([#665](https://github.com/grafana/k6-studio/issues/665)) ([a3f1a2d](https://github.com/grafana/k6-studio/commit/a3f1a2de9d9d8c736546f6cab3ce6965156bcebb))
+* Prompt to save recording when closing app ([#726](https://github.com/grafana/k6-studio/issues/726)) ([e1b1f1b](https://github.com/grafana/k6-studio/commit/e1b1f1b9887f4cc75f0fbc503345a02767ddcf7a))
+
+
+### Bug Fixes
+
+* Can't delete file after restoring window on macOS ([#722](https://github.com/grafana/k6-studio/issues/722)) ([7563bb1](https://github.com/grafana/k6-studio/commit/7563bb109f2fa8e88b444f840e75fa52a8f2bef9))
+
+
+### Miscellaneous Chores
+
+* Add issue template for Feature Requests and Project Spec ([#708](https://github.com/grafana/k6-studio/issues/708)) ([078b3d9](https://github.com/grafana/k6-studio/commit/078b3d93f1d7677439801cd672dbfae24fd3cad1))
+* add software catalog yaml ([#715](https://github.com/grafana/k6-studio/issues/715)) ([8e26c17](https://github.com/grafana/k6-studio/commit/8e26c179211ed8f8d67bbf13df4bb37feeee902f))
+* **deps-dev:** bump vite from 5.4.18 to 5.4.19 ([#723](https://github.com/grafana/k6-studio/issues/723)) ([1697d6a](https://github.com/grafana/k6-studio/commit/1697d6a317a7ffff6792ceced82959733070f048))
+* Lock node version in package.json ([#701](https://github.com/grafana/k6-studio/issues/701)) ([06664e1](https://github.com/grafana/k6-studio/commit/06664e1bb3150901327ee1ac57f296b26ad7d445))
+* Preload fonts ([#714](https://github.com/grafana/k6-studio/issues/714)) ([d9eccc7](https://github.com/grafana/k6-studio/commit/d9eccc791dab75d3e968f68713a6c6ea50059ccc))
+* Remove default bug label ([#709](https://github.com/grafana/k6-studio/issues/709)) ([07c7fbc](https://github.com/grafana/k6-studio/commit/07c7fbc0c0cf06839a13fff9e4a100fc2607633b))
+* update actions ([#710](https://github.com/grafana/k6-studio/issues/710)) ([834cf31](https://github.com/grafana/k6-studio/commit/834cf31466200b437f8156359f1bde30ee33506e))
+
+
+### Code Refactoring
+
+* Move "main" files to "main" directory ([#700](https://github.com/grafana/k6-studio/issues/700)) ([1957dcb](https://github.com/grafana/k6-studio/commit/1957dcbfd0c534ea814a5cded88bceb142833b69))
+
 ## [1.2.0](https://github.com/grafana/k6-studio/compare/v1.1.0...v1.2.0) (2025-04-25)
 
 

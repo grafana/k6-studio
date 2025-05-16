@@ -1,5 +1,5 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import { Callout, Text } from '@radix-ui/themes'
+import { InfoIcon } from 'lucide-react'
 
 import { TextButton } from '@/components/TextButton'
 import { useGeneratorStore } from '@/store/generator'
@@ -24,7 +24,7 @@ export function RulesNotAppliedCallout() {
   return (
     <Callout.Root color="red" size="1" m="1" mb="3" css={{}}>
       <Callout.Icon>
-        <InfoCircledIcon />
+        <InfoIcon />
       </Callout.Icon>
       <Callout.Text>
         <Text as="p">

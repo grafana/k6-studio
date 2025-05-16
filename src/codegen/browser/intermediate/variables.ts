@@ -16,8 +16,12 @@ function substituteAssertion(
         text: substituteExpression(assertion.text, substitutions),
       }
 
+    case 'IsHiddenAssertion':
+    case 'IsVisibleAssertion':
+      return assertion
+
     default:
-      return exhaustive(assertion.type)
+      return exhaustive(assertion)
   }
 }
 
