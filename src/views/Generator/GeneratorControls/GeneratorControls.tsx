@@ -1,5 +1,5 @@
-import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
+import { EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -63,7 +63,7 @@ export function GeneratorControls({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             <IconButton variant="ghost" color="gray">
-              <DotsVerticalIcon />
+              <EllipsisVerticalIcon />
             </IconButton>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>

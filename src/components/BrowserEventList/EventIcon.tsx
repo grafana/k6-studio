@@ -1,15 +1,15 @@
 import {
-  GlobeIcon,
-  UpdateIcon,
-  TargetIcon,
-  InputIcon,
-  CheckCircledIcon,
+  CircleCheckIcon,
+  CircleDotIcon,
   CircleIcon,
-  RadiobuttonIcon,
-  DropdownMenuIcon,
-  ReaderIcon,
-  EyeOpenIcon,
-} from '@radix-ui/react-icons'
+  ClipboardListIcon,
+  EyeIcon,
+  GlobeIcon,
+  ListFilterPlusIcon,
+  RefreshCwIcon,
+  TargetIcon,
+  TextCursorInputIcon,
+} from 'lucide-react'
 
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
@@ -24,28 +24,28 @@ export function EventIcon({ event }: EventIconProps) {
       return <GlobeIcon />
 
     case 'reload-page':
-      return <UpdateIcon />
+      return <RefreshCwIcon />
 
     case 'click':
       return <TargetIcon />
 
     case 'input-change':
-      return <InputIcon />
+      return <TextCursorInputIcon />
 
     case 'check-change':
-      return event.checked ? <CheckCircledIcon /> : <CircleIcon />
+      return event.checked ? <CircleCheckIcon /> : <CircleIcon />
 
     case 'radio-change':
-      return <RadiobuttonIcon />
+      return <CircleDotIcon />
 
     case 'select-change':
-      return <DropdownMenuIcon />
+      return <ListFilterPlusIcon />
 
     case 'submit-form':
-      return <ReaderIcon />
+      return <ClipboardListIcon />
 
     case 'assert':
-      return <EyeOpenIcon />
+      return <EyeIcon />
 
     default:
       return exhaustive(event)

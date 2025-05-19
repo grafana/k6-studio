@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
-import { PinRightIcon } from '@radix-ui/react-icons'
 import { Box, IconButton } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
+import { PanelLeftOpenIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
@@ -50,7 +50,7 @@ export function Layout() {
             z-index: 10000;
           `}
         >
-          <PinRightIcon />
+          <PanelLeftOpenIcon />
         </IconButton>
       )}
       <Allotment onVisibleChange={handleVisibleChange}>

@@ -1,10 +1,11 @@
 import { css } from '@emotion/react'
-import { EyeOpenIcon, TextIcon } from '@radix-ui/react-icons'
 import { ToolbarButtonProps } from '@radix-ui/react-toolbar'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  EyeIcon,
   SquareDashedMousePointerIcon,
+  TypeIcon,
 } from 'lucide-react'
 import { ComponentProps } from 'react'
 
@@ -80,10 +81,10 @@ export function ElementMenu({
       `}
     >
       <ToolbarButton onClick={handleAddVisibilityAssertion}>
-        <EyeOpenIcon /> <div>Add visibility assertion</div>
+        <EyeIcon /> <div>Add visibility assertion</div>
       </ToolbarButton>
       <ToolbarButton onClick={handleAddTextAssertion}>
-        <TextIcon /> <div>Add text assertion</div>
+        <TypeIcon /> <div>Add text assertion</div>
       </ToolbarButton>
       <Toolbar.Separator />
       <div
@@ -105,7 +106,7 @@ export function ElementMenu({
           <SquareDashedMousePointerIcon size={16} strokeWidth={1.5} />
           Selection
         </div>
-        <Tooltip asChild content="Select parent element.">
+        <Tooltip asChild content="Select parent element">
           <div>
             <Toolbar.Button
               disabled={onSelectionIncrease === undefined}
@@ -115,7 +116,7 @@ export function ElementMenu({
             </Toolbar.Button>
           </div>
         </Tooltip>
-        <Tooltip asChild content="Select child element.">
+        <Tooltip asChild content="Select child element">
           <div>
             <Toolbar.Button
               disabled={onSelectionDecrease === undefined}

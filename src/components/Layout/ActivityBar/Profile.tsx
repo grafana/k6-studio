@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { Cross1Icon, PersonIcon } from '@radix-ui/react-icons'
 import { Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes'
+import { UserRoundIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { Profile as ProfileContent } from '@/components/Profile'
@@ -25,7 +25,7 @@ function ProfileDialog({
                 right: var(--space-4);
               `}
             >
-              <Cross1Icon />
+              <XIcon />
             </IconButton>
           </Dialog.Close>
           <ProfileContent />
@@ -46,8 +46,11 @@ export function Profile() {
           color="gray"
           variant="ghost"
           onClick={() => setOpen(true)}
+          css={css`
+            font-size: 24px;
+          `}
         >
-          <PersonIcon width="24" height="24" />
+          <UserRoundIcon />
         </IconButton>
       </Tooltip>
       <ProfileDialog open={open} onOpenChange={setOpen} />

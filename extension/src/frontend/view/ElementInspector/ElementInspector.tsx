@@ -92,6 +92,10 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
     onClose()
   }
 
+  const handleEditorCancel = () => {
+    setAssertion(null)
+  }
+
   if (element === null) {
     return null
   }
@@ -137,6 +141,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
       {assertion !== null && (
         <AssertionEditor
           assertion={assertion}
+          onCancel={handleEditorCancel}
           onSubmit={handleAssertionSubmit}
           onChange={setAssertion}
         />

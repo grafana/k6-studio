@@ -1,6 +1,6 @@
-import { CodeIcon } from '@radix-ui/react-icons'
 import { IconButton, TextField, Tooltip } from '@radix-ui/themes'
 import { RootProps } from '@radix-ui/themes/dist/cjs/components/text-field'
+import { CodeXmlIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { useKeyPressEvent } from 'react-use'
 import useKeyboardJs from 'react-use/lib/useKeyboardJs'
@@ -56,7 +56,7 @@ export function Filter({
             // Override ghost button margin
             css={{ margin: '0' }}
           >
-            <CodeIcon />
+            <CodeXmlIcon />
           </IconButton>
         </Tooltip>
       </TextField.Slot>

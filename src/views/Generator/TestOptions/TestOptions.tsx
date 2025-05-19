@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { GearIcon } from '@radix-ui/react-icons'
 import { Box, Button, Inset, ScrollArea, Tabs } from '@radix-ui/themes'
+import { SettingsIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
@@ -21,7 +21,7 @@ export function TestOptions() {
       width="780px"
       trigger={
         <Button variant="ghost" size="1" color="gray">
-          <GearIcon />
+          <SettingsIcon />
           Test options
         </Button>
       }

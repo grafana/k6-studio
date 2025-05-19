@@ -20,12 +20,14 @@ function asLiteral<T extends string>(
 
 interface VisibilityAssertionEditorProps {
   assertion: VisibilityAssertionData
+  onCancel: () => void
   onChange: (state: VisibilityAssertionData) => void
   onSubmit: (state: VisibilityAssertionData) => void
 }
 
 export function VisibilityAssertionEditor({
   assertion,
+  onCancel,
   onChange,
   onSubmit,
 }: VisibilityAssertionEditorProps) {
@@ -43,7 +45,7 @@ export function VisibilityAssertionEditor({
   }
 
   return (
-    <AssertionForm onSubmit={handleSubmit}>
+    <AssertionForm onCancel={onCancel} onSubmit={handleSubmit}>
       <Flex direction="column" align="start" px="2" gap="2">
         <Label id={labelId} size="1">
           Expected visibility

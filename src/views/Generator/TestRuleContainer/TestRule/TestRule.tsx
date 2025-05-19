@@ -1,8 +1,8 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { css } from '@emotion/react'
-import { DragHandleDots2Icon } from '@radix-ui/react-icons'
 import { Flex, Grid, IconButton } from '@radix-ui/themes'
+import { GripVerticalIcon } from 'lucide-react'
 
 import type { TestRule } from '@/types/rules'
 
@@ -84,18 +84,13 @@ export function TestRuleItem({
         variant="ghost"
         color="gray"
         aria-label="Drag to reorder"
+        css={css`
+          cursor: grab;
+        `}
         {...attributes}
         {...listeners}
       >
-        <DragHandleDots2Icon
-          color="gray"
-          css={css`
-            cursor: grab;
-          `}
-          width={16}
-          height={16}
-          aria-hidden
-        />
+        <GripVerticalIcon color="gray" aria-hidden />
       </IconButton>
       <TestRuleTypeBadge rule={rule} />
       <Flex gap="2" overflow="hidden">
