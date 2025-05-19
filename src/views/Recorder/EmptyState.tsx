@@ -261,23 +261,29 @@ function WarningMessage({
     )
   }
 
-  if (proxyStatus === 'online' && isSSLInsecureEnabled) {
+  if (proxyStatus === 'online') {
     return (
-      <Callout.Root>
-        <Callout.Icon>
-          <AlertTriangleIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          <strong>SSL/TLS certificate validation will be skipped</strong>
-          <br />
-          Recording with this option enabled introduces vulnerability to
-          man-in-the-middle (MITM) attacks. Use carefully or disable it in{' '}
-          <TextButton onClick={() => openSettingsDialog('proxy')}>
-            Settings
-          </TextButton>
-          .
-        </Callout.Text>
-      </Callout.Root>
+      <Flex direction="column" gap="2">
+        {!isProxyHealthy && <ProxyHealthWarning />}
+
+        {isSSLInsecureEnabled && (
+          <Callout.Root>
+            <Callout.Icon>
+              <AlertTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              <strong>SSL/TLS certificate validation will be skipped</strong>
+              <br />
+              Recording with this option enabled introduces vulnerability to
+              man-in-the-middle (MITM) attacks. Use carefully or disable it in{' '}
+              <TextButton onClick={() => openSettingsDialog('proxy')}>
+                Settings
+              </TextButton>
+              .
+            </Callout.Text>
+          </Callout.Root>
+        )}
+      </Flex>
     )
   }
 
@@ -299,10 +305,6 @@ function WarningMessage({
         </Callout.Text>
       </Callout.Root>
     )
-  }
-
-  if (proxyStatus === 'online' && !isProxyHealthy) {
-    return <ProxyHealthWarning />
   }
 
   if (proxyStatus === 'starting') {
