@@ -15,6 +15,8 @@ export function useProxyHealthCheck(proxyStatus?: ProxyStatus) {
   })
 
   useEffect(() => {
+    // This auto-refetch is needed to handle cases where you change your settings (from unhealthy to healthy) with the Recorder page opened.
+    // This ensures that a new health check is performed as soon as the proxy restarts (without need to reopen the page again).
     const fetchProxyHealth = async () => {
       if (proxyStatus === 'online') {
         await refetch()
