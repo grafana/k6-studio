@@ -5,4 +5,5 @@ export enum ProxyHandler {
   GetStatus = 'proxy:status:get',
   ChangeStatus = 'proxy:status:change',
   Data = 'proxy:data',
+  CheckHealth = 'proxy:health:check',
 }

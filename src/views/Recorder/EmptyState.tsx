@@ -24,8 +24,10 @@ import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
+import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { TextButton } from '@/components/TextButton'
 import { LaunchBrowserOptions } from '@/handlers/browser/types'
+import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useBrowserCheck, useSettings } from '@/hooks/useSettings'
 import { useStudioUIStore } from '@/store/ui'
@@ -232,6 +234,8 @@ function WarningMessage({
     (state) => state.openSettingsDialog
   )
 
+  const { isProxyHealthy } = useProxyHealthCheck(proxyStatus)
+
   const handleProxyStart = () => {
     return window.studio.proxy.launchProxy()
   }
@@ -257,23 +261,29 @@ function WarningMessage({
     )
   }
 
-  if (proxyStatus === 'online' && isSSLInsecureEnabled) {
+  if (proxyStatus === 'online') {
     return (
-      <Callout.Root>
-        <Callout.Icon>
-          <AlertTriangleIcon />
-        </Callout.Icon>
-        <Callout.Text>
-          <strong>SSL/TLS certificate validation will be skipped</strong>
-          <br />
-          Recording with this option enabled introduces vulnerability to
-          man-in-the-middle (MITM) attacks. Use carefully or disable it in{' '}
-          <TextButton onClick={() => openSettingsDialog('proxy')}>
-            Settings
-          </TextButton>
-          .
-        </Callout.Text>
-      </Callout.Root>
+      <Flex direction="column" gap="2">
+        {!isProxyHealthy && <ProxyHealthWarning />}
+
+        {isSSLInsecureEnabled && (
+          <Callout.Root>
+            <Callout.Icon>
+              <AlertTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              <strong>SSL/TLS certificate validation will be skipped</strong>
+              <br />
+              Recording with this option enabled introduces vulnerability to
+              man-in-the-middle (MITM) attacks. Use carefully or disable it in{' '}
+              <TextButton onClick={() => openSettingsDialog('proxy')}>
+                Settings
+              </TextButton>
+              .
+            </Callout.Text>
+          </Callout.Root>
+        )}
+      </Flex>
     )
   }
 

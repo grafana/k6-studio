@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 
+import { checkProxyHealth } from '@/main/healthCheck'
 import { launchProxyAndAttachEmitter, stopProxyProcess } from '@/main/proxy'
 import { browserWindowFromEvent } from '@/utils/electron'
 
@@ -23,5 +24,11 @@ export function initialize() {
   ipcMain.handle(ProxyHandler.GetStatus, () => {
     console.info(`${ProxyHandler.GetStatus} event received`)
     return k6StudioState.proxyStatus
+  })
+
+  ipcMain.handle(ProxyHandler.CheckHealth, async () => {
+    console.info(`${ProxyHandler.CheckHealth} event received`)
+    const isHealthy = await checkProxyHealth()
+    return isHealthy
   })
 }

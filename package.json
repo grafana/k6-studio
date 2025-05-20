@@ -115,6 +115,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "find-process": "^1.4.7",
     "fuse.js": "^7.0.0",
+    "https-proxy-agent": "^7.0.6",
     "immer": "^10.1.1",
     "jsonrepair": "^3.8.0",
     "keyboardjs": "^2.7.0",
