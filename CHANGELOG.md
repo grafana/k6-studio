@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/grafana/k6-studio/compare/v1.3.0...v1.4.0) (2025-05-20)
+
+
+### Features
+
+* Implement proxy health check ([#716](https://github.com/grafana/k6-studio/issues/716)) ([f05ed08](https://github.com/grafana/k6-studio/commit/f05ed08a3226dec94014d29c90531ce0bdd89f3f))
+
+
+### Miscellaneous Chores
+
+* Switch to Lucide icons ([#711](https://github.com/grafana/k6-studio/issues/711)) ([d81f19d](https://github.com/grafana/k6-studio/commit/d81f19da2a29ac9fddadf4b472781f190d0266a0))
+
 ## [1.3.0](https://github.com/grafana/k6-studio/compare/v1.2.0...v1.3.0) (2025-05-14)
 
 
