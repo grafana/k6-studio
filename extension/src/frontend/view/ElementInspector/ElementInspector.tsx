@@ -1,8 +1,13 @@
 import { css } from '@emotion/react'
+import { upperFirst } from 'lodash-es'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { Flex } from '@/components/primitives/Flex'
+import { IconButton } from '@/components/primitives/IconButton'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { uuid } from '@/utils/uuid'
+import { ElementRole } from 'extension/src/utils/aria'
 
 import { client } from '../../routing'
 import { Anchor } from '../Anchor'
@@ -19,14 +24,60 @@ import { AssertionData } from './assertions/types'
 function getHeader(assertion: AssertionData | null) {
   switch (assertion?.type) {
     case 'visibility':
-      return 'Add visibility assertion'
+      return (
+        <ElementPopover.Heading>
+          Add visibility assertion
+        </ElementPopover.Heading>
+      )
 
     case 'text':
-      return 'Add text assertion'
+      return <ElementPopover.Heading>Add text assertion</ElementPopover.Heading>
 
     default:
       return null
   }
+}
+
+interface ElementSelectorProps {
+  selector: string
+  onExpand?: () => void
+  onContract?: () => void
+}
+
+function ElementSelector({
+  selector,
+  onExpand,
+  onContract,
+}: ElementSelectorProps) {
+  return (
+    <Flex align="center" gap="1">
+      <Tooltip asChild content="Select parent element">
+        <IconButton disabled={onExpand === undefined} onClick={onExpand}>
+          <ChevronLeftIcon />
+        </IconButton>
+      </Tooltip>
+      <ElementPopover.Heading
+        css={css`
+          flex: 1 1 0;
+        `}
+      >
+        {selector}
+      </ElementPopover.Heading>
+      <Tooltip asChild content="Select child element">
+        <IconButton disabled={onContract === undefined} onClick={onContract}>
+          <ChevronRightIcon />
+        </IconButton>
+      </Tooltip>
+    </Flex>
+  )
+}
+
+function formatRoles(roles: ElementRole[]) {
+  if (roles.length === 0) {
+    return 'None'
+  }
+
+  return roles.map((role) => upperFirst(role.role)).join(', ')
 }
 
 interface ElementInspectorProps {
@@ -107,14 +158,22 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
           <Overlay bounds={element.bounds} />
         </Tooltip.Trigger>
         <Tooltip.Portal>
-          <Tooltip.Content
-            data-inspector-tooltip
-            css={css`
-              font-weight: 500;
-            `}
-          >
+          <Tooltip.Content data-inspector-tooltip>
             <Tooltip.Arrow />
-            <strong>{element.selector.css}</strong>
+            <div
+              css={css`
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 0 var(--studio-spacing-2);
+              `}
+            >
+              <div>Tag</div>
+              <div>{element.target.tagName.toLowerCase()}</div>
+              <div>Selector</div>
+              <div>{element.selector.css}</div>
+              <div>Roles</div>
+              <div>{formatRoles(element.roles)}</div>
+            </div>
           </Tooltip.Content>
         </Tooltip.Portal>
       </Tooltip.Root>
@@ -126,16 +185,19 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
       key={pinned.id}
       open
       anchor={<Anchor position={mousePosition} />}
-      header={getHeader(assertion) ?? element.selector.css}
+      header={
+        getHeader(assertion) ?? (
+          <ElementSelector
+            selector={element.selector.css}
+            onContract={contract}
+            onExpand={expand}
+          />
+        )
+      }
       onOpenChange={handleOpenChange}
     >
       {assertion === null && (
-        <ElementMenu
-          element={element}
-          onSelectAssertion={setAssertion}
-          onSelectionIncrease={expand}
-          onSelectionDecrease={contract}
-        />
+        <ElementMenu element={element} onSelectAssertion={setAssertion} />
       )}
 
       {assertion !== null && (
