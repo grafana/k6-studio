@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { GRAFANA_K6_STUDIO_USER_AGENT } from '@/constants/cloud'
+import { getUserAgent } from '@/utils/cloud'
 
 import { CloudCredentials } from './types'
 
@@ -12,7 +12,7 @@ export function getHeaders({ stackId, token }: CloudCredentials) {
   return {
     'X-Stack-Id': stackId,
     Authorization: `Bearer ${token}`,
-    'User-Agent': GRAFANA_K6_STUDIO_USER_AGENT,
+    'User-Agent': getUserAgent(),
   }
 }
 
