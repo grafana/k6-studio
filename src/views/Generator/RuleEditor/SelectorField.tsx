@@ -2,8 +2,12 @@ import { Box, Flex, TextField } from '@radix-ui/themes'
 import { useFormContext } from 'react-hook-form'
 
 import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { useFeaturesStore } from '@/store/features'
+import { useGeneratorStore } from '@/store/generator'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
+import { Typeahead } from '@/views/Generator/RuleEditor/Typeahead'
+import { SuggestionMode } from '@/views/Generator/RuleEditor/Typeahead/useTypeahead'
 
 import { HeaderSelect } from './HeaderSelect'
 import { allowedSelectorMap, fromOptions } from './SelectorField.constants'
@@ -19,6 +23,13 @@ export function SelectorField({
     setValue,
     formState: { errors },
   } = useFormContext<TestRule>()
+
+  const options = useGeneratorStore((state) => {
+    if (field === 'extractor.selector' || field === 'replacer.selector') {
+      return state.getJsonPaths('response')
+    }
+    return state.getJsonPaths('request')
+  })
   const selector = watch(field)
 
   if (!selector) {
@@ -108,15 +119,17 @@ export function SelectorField({
           </FieldGroup>
         </Box>
       </Flex>
-      <SelectorContent selector={selector} field={field} />
+      <SelectorContent selector={selector} options={options} field={field} />
     </>
   )
 }
 
 function SelectorContent({
+  options,
   selector,
   field,
 }: {
+  options?: string[]
   selector: Selector
   field: 'extractor.selector' | 'replacer.selector' | 'selector'
 }) {
@@ -124,12 +137,31 @@ function SelectorContent({
     register,
     formState: { errors },
   } = useFormContext<TestRule>()
-
+  /**
+   * @poc - might be questionable to put the state here, but to prevent too much refactoring keeping it here for now.
+   */
+  const typeaheadFeatureFlag = useFeaturesStore((state) => {
+    return {
+      isEnabled: state.features['typeahead-json'],
+      // options: onDot, onFirstKey, onThirdKey
+      mode: 'onDot' as SuggestionMode,
+    }
+  })
   switch (selector.type) {
     case 'json':
       return (
         <FieldGroup name={`${field}.path`} errors={errors} label="JSON path">
-          <TextField.Root {...register(`${field}.path`)} />
+          {typeaheadFeatureFlag.isEnabled ? (
+            <Typeahead
+              placeholder="Search for JSON key paths"
+              defaultValue={selector.path}
+              mode={typeaheadFeatureFlag.mode}
+              options={options || []}
+              {...register(`${field}.path`)}
+            />
+          ) : (
+            <TextField.Root {...register(`${field}.path`)} />
+          )}
         </FieldGroup>
       )
     case 'begin-end':
