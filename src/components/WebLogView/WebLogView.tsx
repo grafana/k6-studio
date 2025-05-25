@@ -37,20 +37,6 @@ export const WebLogView = memo(function WebLogView({
     [requests, selectedRequestId]
   )
 
-  console.log('requests', requests)
-
-  const cleanedUpRequests = useMemo(() => {
-    return requests.map((request) => {
-      return produce(request, (draft) => {
-        delete draft.clientConn
-        delete draft.serverConn
-        if (draft.response) {
-          draft.response.content = safeAtob(draft.response.content)
-        }
-      })
-    })
-  }, [requests])
-  console.log('cleanedUpRequests', cleanedUpRequests)
   // Sync selectedRequest when requests change to show updates in correlation preview
   useDeepCompareEffect(() => {
     if (!selectedRequest) {

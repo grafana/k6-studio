@@ -28,6 +28,7 @@ export function ValidatorDialog({
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
+  const [sessionID, setSessionID] = useState(crypto.randomUUID())
 
   const originalRequests = useGeneratorStore(selectFilteredRequests)
 
@@ -49,6 +50,12 @@ export function ValidatorDialog({
     },
     [onOpenChange, resetState]
   )
+
+  useEffect(() => {
+    if (open) {
+      setSessionID(crypto.randomUUID())
+    }
+  }, [open])
 
   const handleRunScript = useCallback(async () => {
     resetState()
@@ -134,6 +141,7 @@ export function ValidatorDialog({
                 originalRequests={originalRequests}
                 validationRequests={proxyData}
                 handleRunScript={handleRunScript}
+                sessionID={sessionID}
               />
             )}
           </Box>

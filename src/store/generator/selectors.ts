@@ -32,9 +32,23 @@ export function selectFilteredRequests(state: GeneratorStore) {
     return state.allowlist.includes(request.request.host)
   })
 
-  return state.includeStaticAssets
+  const rez = state.includeStaticAssets
     ? allowedRequests
     : allowedRequests.filter(isNonStaticAssetResponse)
+
+  return rez
+  // return rez
+  const list = rez.filter((req) => {
+    // return true
+    return [
+      '/api/csrf-token',
+      '/api/users/token/login?set_cookie=true',
+      '/api/pizza',
+      '/api/ratings',
+    ].includes(req.request.path)
+  })
+
+  return list
 }
 
 export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
