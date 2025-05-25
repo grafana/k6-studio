@@ -1,7 +1,20 @@
-import { Box, Flex, TextField } from '@radix-ui/themes'
+import {
+  Box,
+  Card,
+  Code,
+  Flex,
+  Heading,
+  Inset,
+  Text,
+  TextField,
+} from '@radix-ui/themes'
+import * as monaco from 'monaco-editor'
+import { useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { CodeEditor } from '@/components/Monaco/CodeEditor'
+import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
@@ -113,6 +126,118 @@ export function SelectorField({
   )
 }
 
+const snippet = `{
+  "user": {
+    "name": "John",
+    "hobbies": ["hiking", "fishing", "jogging"]
+  }
+}`
+
+function JSONHint() {
+  const [editor, setEditor] =
+    useState<monaco.editor.IStandaloneCodeEditor | null>(null)
+
+  // TODO: think is this is usable, create layout shift when opening popover
+  // editor?.onDidChangeModelDecorations(() => {
+  // updateEditorHeight() // typing
+  // requestAnimationFrame(updateEditorHeight) // folding
+  // })
+
+  let prevHeight = 0
+
+  const updateEditorHeight = () => {
+    const editorElement = editor?.getDomNode()
+
+    if (!editor || !editorElement) {
+      return
+    }
+
+    const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight)
+    const lineCount = editor.getModel()?.getLineCount() || 1
+    const height = editor.getTopForLineNumber(lineCount + 1) + lineHeight
+
+    if (prevHeight !== height) {
+      prevHeight = height
+      editorElement.style.height = `${height + 10}px`
+      editor.layout()
+    }
+  }
+  return (
+    <Box>
+      <Text size="1">
+        Use dot and bracket notation to navigate JSON objects and extract
+        values.
+      </Text>
+      <Text size="1">
+        <Box>
+          <Code>JSON:</Code>
+
+          <Inset>
+            <Box
+              css={{
+                margin: 'var(--space-4) 0',
+                borderTop: '1px solid var(--gray-3)',
+                borderBottom: '1px solid var(--gray-3)',
+              }}
+            >
+              <Box height="120px">
+                <ReadOnlyEditor
+                  value={snippet}
+                  language="json"
+                  showToolbar={false}
+                  onMount={setEditor}
+                  options={{
+                    readOnly: true,
+                    minimap: { enabled: false },
+                    lineNumbers: 'off',
+                    folding: false,
+                    contextmenu: false,
+                    scrollbar: {
+                      vertical: 'hidden',
+                      horizontal: 'hidden',
+                    },
+                    renderLineHighlight: 'none',
+                    overviewRulerLanes: 0,
+                    renderIndentGuides: false,
+                    wordWrap: 'on',
+                    padding: {
+                      top: 5,
+                      bottom: 5,
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+          </Inset>
+        </Box>
+        <Box>
+          Use dot path to access nested values: <br />
+          <Code>user.name</Code> {'->'} <Code>John</Code>
+          <br />
+          Use brackets to access array elements: <br />
+          <Code>user.hobbies[1]</Code> {'->'} <Code>fishing</Code>
+        </Box>
+      </Text>
+    </Box>
+  )
+}
+
+function CodeBlock({ children }: { children: React.ReactNode }) {
+  return (
+    <Box
+      css={{
+        padding: '1px 10px',
+        background: 'var(--gray-3)',
+        fontSize: '29px',
+      }}
+    >
+      <Text size="1">
+        <pre>{children}</pre>
+      </Text>
+    </Box>
+  )
+}
+
 function SelectorContent({
   selector,
   field,
@@ -125,11 +250,17 @@ function SelectorContent({
     formState: { errors },
   } = useFormContext<TestRule>()
 
+  const hint = JSONHint()
   switch (selector.type) {
     case 'json':
       return (
-        <FieldGroup name={`${field}.path`} errors={errors} label="JSON path">
-          <TextField.Root {...register(`${field}.path`)} />
+        <FieldGroup
+          name={`${field}.path`}
+          errors={errors}
+          label="JSON path"
+          hint={hint}
+        >
+          <TextField.Root {...register(`${field}.path`)} id={`${field}.path`} />
         </FieldGroup>
       )
     case 'begin-end':
