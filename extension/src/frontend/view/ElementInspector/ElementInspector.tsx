@@ -33,6 +33,11 @@ function getHeader(assertion: AssertionData | null) {
     case 'text':
       return <ElementPopover.Heading>Add text assertion</ElementPopover.Heading>
 
+    case 'check':
+      return (
+        <ElementPopover.Heading>Add check assertion</ElementPopover.Heading>
+      )
+
     default:
       return null
   }
