@@ -36,16 +36,26 @@ export const ThresholdStatisticSchema = z.enum([
   'min',
 ])
 
-export const ThresholdSchema = z.object({
-  id: z.string(),
-  metric: ThresholdMetricSchema,
-  statistic: ThresholdStatisticSchema,
-  condition: ThresholdConditionSchema,
-  value: z
-    .number({ message: 'Invalid value' })
-    .min(0, { message: 'Invalid value' }),
-  stopTest: z.boolean().default(false),
-})
+export const ThresholdSchema = z
+  .object({
+    id: z.string(),
+    metric: ThresholdMetricSchema,
+    statistic: ThresholdStatisticSchema,
+    condition: ThresholdConditionSchema,
+    value: z
+      .number({ message: 'Invalid value' })
+      .min(0, { message: 'Invalid value' }),
+    stopTest: z.boolean().default(false),
+  })
+  .superRefine((data, ctx) => {
+    if (data.metric === 'http_req_failed' && data.value > 100) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Invalid percentage',
+        path: ['value'],
+      })
+    }
+  })
 
 export const ThresholdDataSchema = z.object({
   thresholds: z.array(ThresholdSchema),

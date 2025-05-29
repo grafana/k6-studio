@@ -22,7 +22,7 @@ const metricsMap: Record<ThresholdMetric, ThresholdMetricMap> = {
   },
   http_req_failed: {
     label: 'Failed requests',
-    unit: '',
+    unit: '%',
     type: 'rate',
   },
   http_req_connecting: {
