@@ -27,7 +27,6 @@ jobs:
         uses: grafana/shared-workflows/actions/get-vault-secrets@get-vault-secrets-v1.2.0
         with:
           repo_secrets: |
-            ENVVAR2=test-secret:key1
             # apple
             APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
             CERTIFICATE_PASSWORD=apple-certificates:APPLE_CERTIFICATE_P12_PASSWORD
