@@ -9,6 +9,7 @@ jobs:
   publish-studio:
     permissions:
       contents: write
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -16,6 +17,25 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
+      - id: get-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@get-vault-secrets-v1.2.0
+        with:
+          repo_secrets: |
+            ENVVAR2=test-secret:key1
+            # apple
+            APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
+            CERTIFICATE_PASSWORD=apple-certificates:APPLE_CERTIFICATE_P12_PASSWORD
+
+            # notarization
+            APPLE_API_KEY_ID=apple-certificates:APPLE_API_KEY_ID
+            APPLE_API_ISSUER=apple-certificates:APPLE_API_ISSUER
+            APPLE_API_KEY=apple-certificates:APPLE_API_KEY
+
+            # windows
+            WINDOWS_CERTIFICATE_PATH=windows-certificates:WINDOWS_CERTIFICATE_PATH
+            WINDOWS_CERTIFICATE_PASSWORD=windows-certificates:WINDOWS_CERTIFICATE_PASSWORD
+
+
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -45,10 +65,6 @@ jobs:
           security unlock-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
           security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
-        env:
-          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_P12_PASSWORD }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
 
       - name: setup windows certificate
         if: startsWith(matrix.platform, 'windows-')
@@ -63,10 +79,6 @@ jobs:
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # notarization
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          APPLE_API_KEY: ./apple_api_key.p8
           # sentry integration
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           # sentry vite plugin integration during build
@@ -81,10 +93,6 @@ jobs:
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # notarization
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          APPLE_API_KEY: ./apple_api_key.p8
           # sentry integration
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           # sentry vite plugin integration during build
