@@ -74,6 +74,7 @@ const CHILD_INPUT_SELECTOR = [
   'select',
   'textarea',
   '[role="checkbox"]',
+  '[role="radio"]',
 ].join(', ')
 
 function findInChildren(target: HTMLLabelElement) {
@@ -131,15 +132,6 @@ function findLabeledControl({
     findByForAttribute(label) ??
     findInChildren(label) ??
     findByLabelledBy(label)
-
-  // if (target instanceof HTMLLabelElement === false) {
-  //   return null
-  // }
-
-  // const element =
-  //   findByForAttribute(target) ??
-  //   findInChildren(target) ??
-  //   findByLabelledBy(target)
 
   if (element === null) {
     return null
