@@ -21,18 +21,13 @@ jobs:
         uses: grafana/shared-workflows/actions/get-vault-secrets@get-vault-secrets-v1.2.0
         with:
           repo_secrets: |
-            # apple
             APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
             CERTIFICATE_PASSWORD=apple-certificates:APPLE_CERTIFICATE_P12_PASSWORD
-            # notarization
             APPLE_API_KEY_ID=apple-certificates:APPLE_API_KEY_ID
             APPLE_API_ISSUER=apple-certificates:APPLE_API_ISSUER
             APPLE_API_KEY=apple-certificates:APPLE_API_KEY
-            # windows
             WINDOWS_CERTIFICATE_PATH=windows-certificates:WINDOWS_CERTIFICATE_PATH
             WINDOWS_CERTIFICATE_PASSWORD=windows-certificates:WINDOWS_CERTIFICATE_PASSWORD
-
-
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
