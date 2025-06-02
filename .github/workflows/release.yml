@@ -71,6 +71,8 @@ jobs:
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # apple notarization
+          APPLE_API_KEY: ./apple_api_key.p8
           # sentry integration
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           # sentry vite plugin integration during build
@@ -85,6 +87,8 @@ jobs:
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # apple notarization
+          APPLE_API_KEY: ./apple_api_key.p8
           # sentry integration
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           # sentry vite plugin integration during build
