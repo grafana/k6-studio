@@ -1,3 +1,5 @@
+import { CheckState } from '@/schemas/recording'
+
 export type NodeId = string
 
 interface NodeBase {
@@ -93,7 +95,7 @@ export interface IsVisibleAssertion {
 export interface IsCheckedAssertion {
   type: 'is-checked'
   inputType: 'aria' | 'html'
-  expected: 'checked' | 'unchecked' | 'indeterminate'
+  expected: CheckState
 }
 
 export type AssertionOperation =

@@ -1,8 +1,10 @@
+import { CheckState } from '@/schemas/recording'
+
 export interface CheckAssertionData {
   type: 'check'
   selector: string
   inputType: 'aria' | 'html'
-  expected: 'checked' | 'unchecked' | 'indeterminate'
+  expected: CheckState
 }
 
 export interface VisibilityAssertionData {
