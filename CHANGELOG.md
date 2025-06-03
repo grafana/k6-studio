@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.0](https://github.com/grafana/k6-studio/compare/v1.3.0...v1.4.0) (2025-06-03)
+
+
+### Features
+
+* Display Rule preview in Rule editor ([#740](https://github.com/grafana/k6-studio/issues/740)) ([83ff7eb](https://github.com/grafana/k6-studio/commit/83ff7eb80ec86f8ddb1b7eab5cd7286e6399d4b0))
+* Implement proxy health check ([#716](https://github.com/grafana/k6-studio/issues/716)) ([f05ed08](https://github.com/grafana/k6-studio/commit/f05ed08a3226dec94014d29c90531ce0bdd89f3f))
+
+
+### Miscellaneous Chores
+
+* Set studio-specific User-Agent ([#733](https://github.com/grafana/k6-studio/issues/733)) ([8459ed4](https://github.com/grafana/k6-studio/commit/8459ed49ef0334b2a0bf3df149aa45fbc6b426a3))
+* Switch to Lucide icons ([#711](https://github.com/grafana/k6-studio/issues/711)) ([d81f19d](https://github.com/grafana/k6-studio/commit/d81f19da2a29ac9fddadf4b472781f190d0266a0))
+
 ## [1.3.0](https://github.com/grafana/k6-studio/compare/v1.2.0...v1.3.0) (2025-05-14)
 
 
