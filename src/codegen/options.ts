@@ -35,7 +35,7 @@ export function generateThresholds(thresholds: Threshold[]) {
       result[key] = []
     }
 
-    const thresholdValue = `${threshold.statistic}${threshold.condition}${threshold.value}`
+    const thresholdValue = getThresholdValue(threshold)
 
     if (threshold.stopTest) {
       result[key].push({ threshold: thresholdValue, abortOnFail: true })
@@ -65,4 +65,13 @@ export function generateLoadZones(loadZones: LoadZoneData['zones']) {
   })
 
   return result
+}
+
+function getThresholdValue(threshold: Threshold) {
+  let thresholdValue = threshold.value
+  if (threshold.metric === 'http_req_failed') {
+    thresholdValue = threshold.value / 100
+  }
+
+  return `${threshold.statistic}${threshold.condition}${thresholdValue}`
 }
