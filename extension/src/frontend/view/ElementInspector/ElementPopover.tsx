@@ -26,30 +26,46 @@ export function ElementPopover({
           side="bottom"
           sideOffset={8}
           css={css`
-            gap: var(--studio-spacing-1);
             padding: var(--studio-spacing-1);
             font-size: var(--studio-font-size-1);
           `}
         >
           <Popover.Arrow />
-          <h1
+          <div
             css={css`
-              display: flex;
-              align-self: stretch;
-              justify-content: center;
-              min-width: 250px;
-              margin: 0;
-              margin-bottom: var(--studio-spacing-1);
-              padding: var(--studio-spacing-1);
               border-bottom: 1px solid var(--studio-border-color);
-              font-size: var(--studio-font-size-1);
+              margin-bottom: var(--studio-spacing-1);
             `}
           >
             {header}
-          </h1>
+          </div>
           <div>{children}</div>
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
+  )
+}
+
+interface PopoverHeadingProps {
+  children: ReactNode
+}
+
+ElementPopover.Heading = function PopoverHeading({
+  children,
+}: PopoverHeadingProps) {
+  return (
+    <h1
+      css={css`
+        display: flex;
+        align-self: stretch;
+        justify-content: center;
+        min-width: 250px;
+        margin: 0;
+        padding: var(--studio-spacing-1);
+        font-size: var(--studio-font-size-1);
+      `}
+    >
+      {children}
+    </h1>
   )
 }
