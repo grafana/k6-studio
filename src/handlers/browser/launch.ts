@@ -3,15 +3,20 @@ import {
   Browser,
   ChromeReleaseChannel,
   launch,
+  detectBrowserPlatform,
+  install,
+  resolveBuildId,
 } from '@puppeteer/browsers'
 import { exec, spawn } from 'child_process'
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import { mkdtemp } from 'fs/promises'
+import { existsSync } from 'fs'
+import { mkdtemp, mkdir } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import { promisify } from 'util'
 
+import { CHROME_DOWNLOAD_PATH } from '@/constants/workspace'
 import { getCertificateSPKI } from '@/main/proxy'
 
 import { BrowserServer } from '../../services/browser/server'
@@ -57,7 +62,10 @@ export const launchBrowser = async (
   browserServer: BrowserServer,
   { url, capture }: LaunchBrowserOptions
 ) => {
-  const path = await getBrowserPath()
+  const path = await ensureChromeForTesting()
+  if (!path) {
+    throw new Error('Failed to get Chrome executable path')
+  }
   console.info(`browser path: ${path}`)
 
   const userDataDir = await createUserDataDir()
@@ -165,5 +173,53 @@ async function getChromiumPath() {
   } catch (error) {
     log.error(error)
     return undefined
+  }
+}
+/**
+ * Downloads Chrome for Testing if not already present and returns its executable path.
+ * @param downloadPath Optional: The directory where Chrome should be downloaded.
+ * Defaults to a 'chrome-for-testing' subdirectory in the current script's directory.
+ * @returns Promise<ChromeInstallResult | null> An object containing the executable path and browser info, or null on failure.
+ */
+async function ensureChromeForTesting() {
+  // Determine the platform
+  const platform = detectBrowserPlatform()
+  const browser = Browser.CHROME
+  if (!platform) {
+    console.error('Failed to detect platform.')
+    return null
+  }
+
+  if (existsSync(CHROME_DOWNLOAD_PATH)) {
+    await mkdir(CHROME_DOWNLOAD_PATH, { recursive: true })
+  }
+
+  const buildId = await resolveBuildId(browser, platform, 'stable')
+
+  try {
+    const installation = await install({
+      browser,
+      buildId,
+      cacheDir: CHROME_DOWNLOAD_PATH,
+      unpack: true,
+      downloadProgressCallback: (downloadedBytes, totalBytes) => {
+        const percent =
+          totalBytes > 0
+            ? ((downloadedBytes / totalBytes) * 100).toFixed(2)
+            : '0'
+        console.log(
+          `Downloading Chrome: ${percent}% (${downloadedBytes}/${totalBytes} bytes)`
+        )
+      },
+    })
+
+    console.log(
+      `${installation.browser} (buildId: ${installation.buildId}) successfully installed/verified in ${installation.path}`
+    )
+
+    return installation.executablePath // This is the root directory of the installed browser
+  } catch (error) {
+    console.error(`Failed to install or find Chrome for Testing:`, error)
+    return null
   }
 }
