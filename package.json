@@ -85,7 +85,7 @@
     "@medv/finder": "^4.0.2",
     "@microlink/react-json-view": "^1.23.1",
     "@monaco-editor/react": "^4.6.0",
-    "@puppeteer/browsers": "^2.2.3",
+    "@puppeteer/browsers": "^2.10.5",
     "@radix-ui/colors": "^3.0.0",
     "@radix-ui/react-collapsible": "^1.0.3",
     "@radix-ui/react-dialog": "^1.1.6",
