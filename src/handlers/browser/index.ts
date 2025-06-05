@@ -25,22 +25,11 @@ export function initialize(browserServer: BrowserServer) {
     }
   )
 
-  ipcMain.on(BrowserHandler.Stop, async () => {
+  ipcMain.on(BrowserHandler.Stop, () => {
     console.info(`${BrowserHandler.Stop} event received`)
 
-    const { currentBrowserProcess } = k6StudioState
-
-    if (currentBrowserProcess) {
-      // macOS & windows
-      if ('close' in currentBrowserProcess) {
-        await currentBrowserProcess.close()
-        // linux
-      } else {
-        currentBrowserProcess.kill()
-      }
-
-      k6StudioState.currentBrowserProcess = null
-    }
+    k6StudioState.currentBrowserProcess?.kill()
+    k6StudioState.currentBrowserProcess = null
   })
 
   ipcMain.handle(BrowserHandler.OpenExternalLink, (_, url: string) => {

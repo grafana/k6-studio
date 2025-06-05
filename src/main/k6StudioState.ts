@@ -1,5 +1,4 @@
-import { Process } from '@puppeteer/browsers'
-import { ChildProcessWithoutNullStreams } from 'child_process'
+import { ChildProcess } from 'child_process'
 import { FSWatcher } from 'chokidar'
 import { BrowserWindow } from 'electron'
 import eventEmitter from 'events'
@@ -11,7 +10,7 @@ import { type ProxyProcess } from './proxy'
 import { defaultSettings } from './settings'
 
 export type k6StudioState = {
-  currentBrowserProcess: Process | ChildProcessWithoutNullStreams | null
+  currentBrowserProcess: ChildProcess | null
   proxyStatus: ProxyStatus
   proxyEmitter: eventEmitter
   appSettings: AppSettings
