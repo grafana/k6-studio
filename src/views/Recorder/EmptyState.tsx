@@ -1,28 +1,41 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { DiscIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import {
+  Box,
   Button,
   Callout,
+  Checkbox,
   Flex,
   Heading,
   Spinner,
   Text,
   TextField,
+  Tooltip,
 } from '@radix-ui/themes'
+import {
+  AlertTriangleIcon,
+  DiscIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+} from 'lucide-react'
+import { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
+import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
+import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { TextButton } from '@/components/TextButton'
+import { LaunchBrowserOptions } from '@/handlers/browser/types'
+import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { useBrowserCheck } from '@/hooks/useSettings'
+import { useBrowserCheck, useSettings } from '@/hooks/useSettings'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyStatus } from '@/types'
 
 interface EmptyStateProps {
   isLoading: boolean
-  onStart: (url?: string) => void
+  onStart: (options: LaunchBrowserOptions) => void
 }
 
 const RecorderEmptyStateSchema = z.object({
@@ -32,8 +45,17 @@ const RecorderEmptyStateSchema = z.object({
 type RecorderEmptyStateFields = z.infer<typeof RecorderEmptyStateSchema>
 
 export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
+  const { data: settings } = useSettings()
+
   const proxyStatus = useProxyStatus()
   const { data: isBrowserInstalled } = useBrowserCheck()
+
+  const [captureBrowser = true, setCaptureBrowser] = useLocalStorage(
+    'start-recording.capture.browser',
+    true
+  )
+
+  const canCaptureBrowser = settings?.recorder.enableBrowserRecorder ?? false
 
   const {
     register,
@@ -46,6 +68,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     },
     shouldFocusError: false,
   })
+
   const canRecord = proxyStatus === 'online' && isBrowserInstalled === true
 
   const onSubmit = ({ url }: RecorderEmptyStateFields) => {
@@ -53,7 +76,16 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
       return
     }
 
-    onStart(url)
+    onStart({
+      url,
+      capture: {
+        browser: canCaptureBrowser && captureBrowser,
+      },
+    })
+  }
+
+  const handleCaptureBrowserChange = (value: boolean | 'indeterminate') => {
+    setCaptureBrowser(value === true)
   }
 
   return (
@@ -85,44 +117,104 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
           margin-top: var(--space-6);
         `}
       >
-        <FieldGroup
-          name="url"
-          label="Starting URL"
-          hint="Enter the URL of the website or service you want to test"
-          hintType="text"
-          errors={errors}
-          width="100%"
-        >
-          <Flex>
-            <TextField.Root
-              {...register('url')}
-              placeholder="e.g. quickpizza.grafana.com"
-              autoFocus
-              css={css`
-                flex-grow: 1;
-                border-right: 0;
-                border-bottom-right-radius: 0;
-                border-top-right-radius: 0;
-              `}
-            />
-            <Button
-              disabled={isLoading || !canRecord}
-              type="submit"
-              css={css`
-                margin-left: -1px;
-                border-bottom-left-radius: 0;
-                border-top-left-radius: 0;
-              `}
+        <Flex direction="column" gap="4">
+          <div>
+            <FieldGroup
+              name="url"
+              label="Starting URL"
+              hint="Enter the URL of the website or service you want to test"
+              hintType="text"
+              errors={errors}
+              width="100%"
             >
-              {isLoading ? <Spinner /> : <DiscIcon />} Start recording
-            </Button>
-          </Flex>
-        </FieldGroup>
-        <WarningMessage
-          proxyStatus={proxyStatus}
-          isBrowserInstalled={isBrowserInstalled}
-        />
+              <Flex>
+                <TextField.Root
+                  {...register('url')}
+                  placeholder="e.g. quickpizza.grafana.com"
+                  autoFocus
+                  css={css`
+                    flex-grow: 1;
+                    border-right: 0;
+                    border-bottom-right-radius: 0;
+                    border-top-right-radius: 0;
+                  `}
+                />
+                <Button
+                  disabled={isLoading || !canRecord}
+                  type="submit"
+                  css={css`
+                    margin-left: -1px;
+                    border-bottom-left-radius: 0;
+                    border-top-left-radius: 0;
+                  `}
+                >
+                  <Spinner loading={isLoading}>
+                    <DiscIcon />
+                  </Spinner>
+                  Start recording
+                </Button>
+              </Flex>
+            </FieldGroup>
+
+            <WarningMessage
+              proxyStatus={proxyStatus}
+              isBrowserInstalled={isBrowserInstalled}
+              isSSLInsecureEnabled={settings?.proxy.sslInsecure}
+            />
+          </div>
+
+          {canCaptureBrowser && (
+            <BrowserEventsSection>
+              <Text as="label" size="2">
+                <Flex gap="2" align="center">
+                  <Checkbox
+                    disabled={!canRecord}
+                    checked={captureBrowser}
+                    onCheckedChange={handleCaptureBrowserChange}
+                  />
+                  <span>Capture browser events</span>
+                </Flex>
+              </Text>
+            </BrowserEventsSection>
+          )}
+        </Flex>
       </form>
+    </Flex>
+  )
+}
+
+interface BrowserEventsSectionProps {
+  children: ReactNode
+}
+
+function BrowserEventsSection({ children }: BrowserEventsSectionProps) {
+  return (
+    <Flex direction="column" gap="1">
+      <Text size="2" weight="medium">
+        <Flex align="center" gap="1">
+          <span>
+            Browser Events{' '}
+            <Text size="1" weight="light">
+              (Preview)
+            </Text>
+          </span>
+          <Tooltip
+            content={
+              <>
+                This will enable capture of user interactions such as clicks and
+                navigation. Recordings with these events can later be used to
+                export a k6 browser script.
+              </>
+            }
+          >
+            <InfoIcon />
+          </Tooltip>
+        </Flex>
+      </Text>
+      <Text size="1" as="p" color="gray" mb="1">
+        Record user interactions in the browser alongside network requests.
+      </Text>
+      <Box>{children}</Box>
     </Flex>
   )
 }
@@ -130,15 +222,19 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
 interface WarningMessageProps {
   proxyStatus: ProxyStatus
   isBrowserInstalled?: boolean
+  isSSLInsecureEnabled?: boolean
 }
 
 function WarningMessage({
   proxyStatus,
   isBrowserInstalled,
+  isSSLInsecureEnabled,
 }: WarningMessageProps) {
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
   )
+
+  const { isProxyHealthy } = useProxyHealthCheck(proxyStatus)
 
   const handleProxyStart = () => {
     return window.studio.proxy.launchProxy()
@@ -148,7 +244,7 @@ function WarningMessage({
     return (
       <Callout.Root>
         <Callout.Icon>
-          <ExclamationTriangleIcon />
+          <TriangleAlertIcon />
         </Callout.Icon>
         <Callout.Text>
           <strong>Supported browser not found</strong>
@@ -165,11 +261,37 @@ function WarningMessage({
     )
   }
 
+  if (proxyStatus === 'online') {
+    return (
+      <Flex direction="column" gap="2">
+        {!isProxyHealthy && <ProxyHealthWarning />}
+
+        {isSSLInsecureEnabled && (
+          <Callout.Root>
+            <Callout.Icon>
+              <AlertTriangleIcon />
+            </Callout.Icon>
+            <Callout.Text>
+              <strong>SSL/TLS certificate validation will be skipped</strong>
+              <br />
+              Recording with this option enabled introduces vulnerability to
+              man-in-the-middle (MITM) attacks. Use carefully or disable it in{' '}
+              <TextButton onClick={() => openSettingsDialog('proxy')}>
+                Settings
+              </TextButton>
+              .
+            </Callout.Text>
+          </Callout.Root>
+        )}
+      </Flex>
+    )
+  }
+
   if (proxyStatus === 'offline') {
     return (
       <Callout.Root>
         <Callout.Icon>
-          <ExclamationTriangleIcon />
+          <TriangleAlertIcon />
         </Callout.Icon>
         <Callout.Text>
           <strong>Proxy is offline</strong>

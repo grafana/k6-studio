@@ -1,9 +1,10 @@
 import { css } from '@emotion/react'
 import {
-  CursorArrowIcon,
-  CursorTextIcon,
-  ReaderIcon,
-} from '@radix-ui/react-icons'
+  PanelRight,
+  SquareDashedMousePointerIcon,
+  SquareIcon,
+  TextCursorIcon,
+} from 'lucide-react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
 import { Tooltip } from '@/components/primitives/Tooltip'
@@ -14,6 +15,7 @@ interface ToolBoxProps {
   tool: Tool | null
   isDrawerOpen: boolean
   onSelectTool: (value: Tool | null) => void
+  onStopRecording: () => void
   onToggleDrawer: (open: boolean) => void
 }
 
@@ -21,6 +23,7 @@ export function ToolBox({
   isDrawerOpen,
   tool,
   onSelectTool,
+  onStopRecording,
   onToggleDrawer,
 }: ToolBoxProps) {
   const handleToolChange = (value: string) => {
@@ -52,28 +55,39 @@ export function ToolBox({
         background-color: var(--studio-background);
         box-shadow: var(--studio-shadow-1);
         border: 1px solid var(--gray-6);
+        padding: var(--studio-spacing-1);
       `}
     >
+      <Tooltip delayDuration={0} asChild content="Stop recording">
+        <Toolbar.Button onClick={onStopRecording}>
+          <SquareIcon />
+        </Toolbar.Button>
+      </Tooltip>
+      <Toolbar.Separator />
       <Toolbar.ToggleGroup
         type="single"
         value={tool ?? ''}
         onValueChange={handleToolChange}
       >
-        <Tooltip delayDuration={0} asChild content="Inspect elements">
+        <Tooltip
+          delayDuration={0}
+          asChild
+          content="Pick an element to add assertions to it"
+        >
           <div>
             <Toolbar.ToggleItem value="inspect">
-              <CursorArrowIcon />
+              <SquareDashedMousePointerIcon />
             </Toolbar.ToggleItem>
           </div>
         </Tooltip>
         <Tooltip
           delayDuration={0}
           asChild
-          content="Add assertions on text content by selecting it."
+          content="Add assertions on text content by selecting it"
         >
           <div>
             <Toolbar.ToggleItem value="assert-text">
-              <CursorTextIcon />
+              <TextCursorIcon />
             </Toolbar.ToggleItem>
           </div>
         </Tooltip>
@@ -87,7 +101,7 @@ export function ToolBox({
         <Tooltip delayDuration={0} asChild content="Toggle event list">
           <div>
             <Toolbar.ToggleItem value="events">
-              <ReaderIcon />
+              <PanelRight />
             </Toolbar.ToggleItem>
           </div>
         </Tooltip>

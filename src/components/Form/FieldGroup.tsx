@@ -1,7 +1,7 @@
 import { ErrorMessage } from '@hookform/error-message'
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import * as Label from '@radix-ui/react-label'
 import { Box, BoxProps, Flex, Tooltip, Text } from '@radix-ui/themes'
+import { InfoIcon } from 'lucide-react'
 import { FieldErrors } from 'react-hook-form'
 
 import { FieldError } from './FieldError'
@@ -34,7 +34,7 @@ export function FieldGroup({
             </Text>
             {hint && hintType === 'tooltip' && (
               <Tooltip content={hint}>
-                <InfoCircledIcon />
+                <InfoIcon />
               </Tooltip>
             )}
           </Flex>

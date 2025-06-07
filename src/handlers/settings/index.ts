@@ -1,13 +1,13 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 
-import { applySettings } from '@/main'
 import {
+  applySettings,
   getSettings,
   saveSettings,
   selectBrowserExecutable,
   selectUpstreamCertificate,
-} from '@/settings'
+} from '@/main/settings'
 import { AppSettings } from '@/types/settings'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 

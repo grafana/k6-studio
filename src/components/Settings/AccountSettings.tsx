@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { ExternalLinkIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons'
 import { Flex, Heading, IconButton, Table } from '@radix-ui/themes'
+import { ExternalLinkIcon, PlusIcon, TrashIcon } from 'lucide-react'
 
 import { GrafanaIcon } from '../icons/GrafanaIcon'
 
@@ -61,8 +61,8 @@ export function AccountSettings() {
                     <IconButton variant="ghost">
                       <ExternalLinkIcon />
                     </IconButton>
-                    <IconButton variant="ghost">
-                      <TrashIcon color="red" />
+                    <IconButton variant="ghost" color="red">
+                      <TrashIcon />
                     </IconButton>
                   </Flex>
                 </Table.Cell>

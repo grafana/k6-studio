@@ -1,7 +1,9 @@
-import { CheckCircledIcon } from '@radix-ui/react-icons'
-import { Button, Spinner, Text } from '@radix-ui/themes'
+import { Box, Button, Spinner, Text } from '@radix-ui/themes'
+import { CircleCheckIcon } from 'lucide-react'
 
+import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'
 import { TextButton } from '@/components/TextButton'
+import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useStudioUIStore } from '@/store/ui'
 
@@ -22,6 +24,7 @@ export function ValidatorEmptyState({
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
   )
+  const { isProxyHealthy } = useProxyHealthCheck(proxyStatus)
   const handleProxyStart = () => {
     return window.studio.proxy.launchProxy()
   }
@@ -63,10 +66,16 @@ export function ValidatorEmptyState({
       </Text>
       <Button disabled={isRunning} onClick={onRunScript}>
         <Spinner loading={isRunning}>
-          <CheckCircledIcon />
+          <CircleCheckIcon />
         </Spinner>
         Validate script
       </Button>
+
+      {!isProxyHealthy && (
+        <Box width="720px">
+          <ProxyHealthWarning />
+        </Box>
+      )}
     </>
   )
 }

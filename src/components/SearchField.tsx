@@ -1,6 +1,6 @@
-import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'
 import { IconButton, TextField } from '@radix-ui/themes'
 import { RootProps } from '@radix-ui/themes/dist/cjs/components/text-field'
+import { SearchIcon, XIcon } from 'lucide-react'
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
 
 export interface SearchFieldHandle {
@@ -40,12 +40,12 @@ export const SearchField = forwardRef<SearchFieldHandle, SearchFieldProps>(
         {...inputProps}
       >
         <TextField.Slot>
-          <MagnifyingGlassIcon />
+          <SearchIcon />
         </TextField.Slot>
         {filter !== '' && (
           <TextField.Slot>
             <IconButton variant="ghost" size="1" onClick={clear}>
-              <Cross2Icon />
+              <XIcon />
             </IconButton>
           </TextField.Slot>
         )}

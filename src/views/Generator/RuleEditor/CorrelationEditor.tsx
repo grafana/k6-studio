@@ -1,4 +1,3 @@
-import { InfoCircledIcon } from '@radix-ui/react-icons'
 import {
   Box,
   Code,
@@ -10,12 +9,13 @@ import {
   Text,
   Tooltip,
 } from '@radix-ui/themes'
+import { InfoIcon } from 'lucide-react'
 import { useFormContext } from 'react-hook-form'
 
 import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { Label } from '@/components/Label'
-import { useApplyRules } from '@/store/hooks/useApplyRules'
+import { useApplyRules } from '@/store/generator/hooks/useApplyRules'
 import { RuleInstance, TestRule } from '@/types/rules'
 
 import { FilterField } from './FilterField'
@@ -93,7 +93,7 @@ export function CorrelationEditor() {
 
           <Flex align="center" gap="1" mb="2">
             <Tooltip content={replacerTooltip}>
-              <InfoCircledIcon />
+              <InfoIcon />
             </Tooltip>
             <Label>
               <Text size="2" css={{ lineHeight: '18px' }}>
@@ -138,7 +138,7 @@ function ExtractedValue({
 
   const extractedValue = selectedRuleInstance?.state?.extractedValue
 
-  if (!extractedValue) {
+  if (extractedValue === undefined) {
     return (
       <Text size="2" color="gray">
         The rule does not match any requests

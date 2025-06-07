@@ -1,46 +1,82 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { HighlightSelector } from 'extension/src/messaging/types'
+
 import { client } from '../routing'
 
 import { useHighlightDebounce } from './hooks/useHighlightDebounce'
 import { Bounds } from './types'
+import { getElementBounds } from './utils'
 
 interface Highlight {
   id: number
+  element: Element
   bounds: Bounds
 }
 
 export function useHighlightedElements() {
   const idCounter = useRef(0)
-  const [bounds, setBounds] = useState<Highlight[] | null>(null)
+
+  const [selector, setSelector] = useState<HighlightSelector | null>(null)
+  const [highlights, setHighlights] = useState<Highlight[] | null>(null)
 
   useEffect(() => {
     return client.on('highlight-elements', ({ data }) => {
-      if (data.selector === null) {
-        setBounds(null)
-
-        return
-      }
-
-      const elements = document.querySelectorAll(data.selector.selector)
-
-      const bounds = Array.from(elements).map((el) => {
-        const { top, left, width, height } = el.getBoundingClientRect()
-
-        return {
-          id: idCounter.current++,
-          bounds: {
-            top,
-            left,
-            width,
-            height,
-          },
-        }
-      })
-
-      setBounds(bounds)
+      setSelector(data.selector)
     })
   }, [])
 
-  return useHighlightDebounce(bounds)
+  useEffect(() => {
+    if (selector === null) {
+      setHighlights(null)
+
+      return
+    }
+
+    try {
+      const elements = document.querySelectorAll(selector.selector)
+      const highlights = Array.from(elements).map((element) => {
+        const bounds = getElementBounds(element)
+
+        return {
+          id: idCounter.current++,
+          element,
+          bounds,
+        }
+      })
+
+      setHighlights(highlights)
+    } catch {
+      setHighlights([])
+    }
+  }, [selector])
+
+  useEffect(() => {
+    if (selector === null) {
+      return
+    }
+
+    const observer = new ResizeObserver(() => {
+      setHighlights((highlights) => {
+        if (highlights === null) {
+          return null
+        }
+
+        return highlights.map((highlight) => {
+          return {
+            ...highlight,
+            bounds: getElementBounds(highlight.element),
+          }
+        })
+      })
+    })
+
+    observer.observe(document.body)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [selector])
+
+  return useHighlightDebounce(highlights)
 }

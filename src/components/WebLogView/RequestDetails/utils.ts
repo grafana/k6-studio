@@ -1,23 +1,23 @@
 import { jsonrepair } from 'jsonrepair'
 
-import { ProxyData } from '@/types'
+import { Request } from '@/types'
 import { safeAtob, stringify } from '@/utils/format'
 import { getContentType } from '@/utils/headers'
 
-export function parseParams(data: ProxyData) {
-  const hasParams = data.request.query.length || data.request.content
+export function parseParams(request: Request) {
+  const hasParams = request.query.length || request.content
 
-  if (data.request.method === 'OPTIONS' || !hasParams) {
+  if (request.method === 'OPTIONS' || !hasParams) {
     return
   }
 
   try {
-    if (data.request.content === '') {
+    if (request.content === '') {
       return
     }
 
-    const contentType = getContentType(data.request?.headers ?? [])
-    const contentDecoded = safeAtob(data.request.content ?? '')
+    const contentType = getContentType(request?.headers ?? [])
+    const contentDecoded = safeAtob(request.content ?? '')
 
     if (contentType === 'multipart/form-data') {
       return contentDecoded
@@ -25,17 +25,21 @@ export function parseParams(data: ProxyData) {
 
     if (contentType === 'application/x-www-form-urlencoded') {
       if (isJsonString(contentDecoded)) {
-        return contentDecoded
+        return stringify(JSON.parse(contentDecoded))
       }
 
       // k6 returns form data as key=value pair string
-      return queryStringToJSONString(contentDecoded)
+      return stringify(JSON.parse(queryStringToJSONString(contentDecoded)))
     }
 
     return stringify(
       // TODO: https://github.com/grafana/k6-studio/issues/277
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      JSON.parse(jsonrepair(parsePythonByteString(contentDecoded)))
+      JSON.parse(
+        jsonrepair(
+          parsePythonByteString(wrapTemplateExpressionsInQuotes(contentDecoded))
+        )
+      )
     )
   } catch (e) {
     console.error('Failed to parse query parameters', e)
@@ -63,4 +67,13 @@ export function isJsonString(str: string) {
 
 export function getRawContent(content: string) {
   return content.replace(/\s+/g, '')
+}
+
+// When replacing number values in the payload, we need to wrap variable expressions
+// in quotes, otherwise JSON parse will fail
+function wrapTemplateExpressionsInQuotes(str: string) {
+  return str.replace(
+    /(:\s*)(\$\{[^}]+\})(?=[,}])/g,
+    (_, prefix, expr) => `${prefix}"${expr}"`
+  )
 }

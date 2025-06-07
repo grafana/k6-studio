@@ -41,6 +41,7 @@ export function RequestRow({
               <HighlightedText
                 text={data.request.path}
                 matches={data.matches}
+                highlightAllMatches
               />
             </TextWithTooltip>
             <RuleBadges

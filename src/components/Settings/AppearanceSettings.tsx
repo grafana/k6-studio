@@ -1,5 +1,5 @@
-import { GearIcon, MoonIcon, SunIcon } from '@radix-ui/react-icons'
 import { Flex, RadioCards, Text } from '@radix-ui/themes'
+import { MoonIcon, SettingsIcon, SunIcon } from 'lucide-react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { AppSettings } from '@/types/settings'
@@ -46,7 +46,7 @@ export function AppearanceSettings() {
               </RadioCards.Item>
               <RadioCards.Item value="system">
                 <Flex width="100%" align="center" gap="2">
-                  <GearIcon />
+                  <SettingsIcon />
                   <Text>System</Text>
                 </Flex>
               </RadioCards.Item>

@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
-import { PersonIcon } from '@radix-ui/react-icons'
 import { Flex } from '@radix-ui/themes'
+import { User2Icon } from 'lucide-react'
 
 export function Avatar() {
   return (
@@ -13,9 +13,10 @@ export function Avatar() {
         border: 4px solid var(--accent-9);
         color: var(--accent-9);
         border-radius: 50%;
+        font-size: 64px;
       `}
     >
-      <PersonIcon width="64px" height="64px" />
+      <User2Icon />
     </Flex>
   )
 }

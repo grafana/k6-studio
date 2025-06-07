@@ -1,5 +1,5 @@
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { ContextMenu, DropdownMenu, IconButton } from '@radix-ui/themes'
+import { EllipsisIcon } from 'lucide-react'
 import { PropsWithChildren } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -50,7 +50,7 @@ export function FileActionsMenu({
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
         <IconButton variant="ghost" aria-label="Actions" color="gray" size="1">
-          <DotsHorizontalIcon />
+          <EllipsisIcon />
         </IconButton>
       </DropdownMenu.Trigger>
 

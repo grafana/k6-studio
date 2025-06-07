@@ -1,5 +1,5 @@
-import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
+import { EllipsisVerticalIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
@@ -117,7 +117,7 @@ export function RecordingPreviewer() {
           )}
 
           {!isDiscardable && (
-            <Button variant="outline" asChild css={{ cursor: 'default' }}>
+            <Button variant="outline" asChild>
               <Link to={getRoutePath('recorder')}>New recording</Link>
             </Button>
           )}
@@ -126,7 +126,7 @@ export function RecordingPreviewer() {
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
               <IconButton variant="ghost" aria-label="Actions" color="gray">
-                <DotsVerticalIcon />
+                <EllipsisVerticalIcon />
               </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>

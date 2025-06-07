@@ -1,6 +1,15 @@
-import { it } from 'vitest'
+import { afterAll, beforeAll, it, vi } from 'vitest'
 
 import { emitScript } from './codegen'
+
+beforeAll(() => {
+  vi.useFakeTimers()
+  vi.setSystemTime(new Date('2023-10-01T00:00:00Z'))
+})
+
+afterAll(() => {
+  vi.useRealTimers()
+})
 
 it('should emit an empty test with browser scenario options', async ({
   expect,
@@ -394,5 +403,79 @@ it('should assert that element contains text', async ({ expect }) => {
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/assertions/element-contains-text.ts'
+  )
+})
+
+it('should assert that element is visible', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'button',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-visible',
+          operation: {
+            type: 'is-visible',
+            visible: true,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/element-is-visible.ts'
+  )
+})
+
+it('should assert that element is hidden', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'button',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-hidden',
+          operation: {
+            type: 'is-visible',
+            visible: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/element-is-hidden.ts'
   )
 })

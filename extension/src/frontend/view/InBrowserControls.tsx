@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
+import { client } from '../routing'
+
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
-import { TextAssertionEditor } from './TextAssertionEditor'
+import { TextSelectionPopover } from './TextSelectionPopover'
 import { ToolBox } from './ToolBox'
 import { useInBrowserUIStore } from './store'
 
@@ -17,17 +19,24 @@ export function InBrowserControls() {
     selectTool(null)
   }
 
+  const handleStopRecording = () => {
+    client.send({
+      type: 'stop-recording',
+    })
+  }
+
   return (
     <>
       <RemoteHighlights />
-      {tool === 'inspect' && <ElementInspector onCancel={handleDeselectTool} />}
+      {tool === 'inspect' && <ElementInspector onClose={handleDeselectTool} />}
       {tool === 'assert-text' && (
-        <TextAssertionEditor onClose={handleDeselectTool} />
+        <TextSelectionPopover onClose={handleDeselectTool} />
       )}
       <ToolBox
         isDrawerOpen={isDrawerOpen}
         tool={tool}
         onSelectTool={selectTool}
+        onStopRecording={handleStopRecording}
         onToggleDrawer={setIsDrawerOpen}
       />
       <EventDrawer

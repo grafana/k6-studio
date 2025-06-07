@@ -150,6 +150,30 @@ function emitSelectOptionsNode(
   })
 }
 
+function emitAssertion(
+  context: IntermediateContext,
+  assertion: m.AssertionOperation
+): ir.Assertion {
+  switch (assertion.type) {
+    case 'text-contains':
+      return {
+        type: 'TextContainsAssertion',
+        text: {
+          type: 'StringLiteral',
+          value: assertion.value,
+        },
+      }
+
+    case 'is-visible':
+      return assertion.visible
+        ? { type: 'IsVisibleAssertion' }
+        : { type: 'IsHiddenAssertion' }
+
+    default:
+      return exhaustive(assertion)
+  }
+}
+
 function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
   const locator = context.reference(node.inputs.locator)
 
@@ -158,13 +182,7 @@ function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
     expression: {
       type: 'ExpectExpression',
       actual: locator,
-      expected: {
-        type: 'TextContainsAssertion',
-        text: {
-          type: 'StringLiteral',
-          value: node.operation.value,
-        },
-      },
+      expected: emitAssertion(context, node.operation),
     },
   })
 }

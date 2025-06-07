@@ -5,9 +5,10 @@ const styles = css`
   border: none;
   border-radius: 4px;
   font-size: var(--studio-font-size-2);
+  font-weight: var(--studio-font-weight-medium);
   padding: var(--studio-spacing-2) var(--studio-spacing-3);
   color: var(--studio-accent-contrast);
-  background-color: var(--studio-accent-9);
+  background-color: rgba(0, 0, 0, 0);
 
   &:hover {
     background-color: var(--studio-accent-10);
@@ -17,11 +18,25 @@ const styles = css`
     font-size: var(--studio-font-size-1);
     padding: var(--studio-spacing-1) var(--studio-spacing-2);
   }
+
+  &[data-variant='solid'] {
+    background-color: var(--studio-accent-9);
+    color: var(--studio-accent-contrast);
+  }
+
+  &[data-variant='outline'] {
+    box-shadow: inset 0 0 0 1px var(--studio-accent-a8);
+    color: var(--studio-accent-a11);
+
+    &:hover {
+      background-color: var(--studio-accent-a2);
+    }
+  }
 `
 
 type ButtonProps = ComponentProps<'button'> & {
   size?: '1' | '2'
-  variant?: 'solid'
+  variant?: 'solid' | 'outline'
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

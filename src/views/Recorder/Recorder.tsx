@@ -1,12 +1,13 @@
-import { GearIcon, StopIcon } from '@radix-ui/react-icons'
 import { Button } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
+import { SettingsIcon, StopCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { View } from '@/components/Layout/View'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
+import { LaunchBrowserOptions } from '@/handlers/browser/types'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSettings } from '@/hooks/useSettings'
@@ -44,6 +45,7 @@ export function Recorder() {
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
   )
+  const [isAppClosing, setIsAppClosing] = useState(false)
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
 
@@ -65,12 +67,13 @@ export function Recorder() {
   const isLoading = recorderState === 'starting' || recorderState === 'saving'
 
   const handleStartRecording = useCallback(
-    async (url?: string) => {
-      setStartUrl(url)
+    async (options: LaunchBrowserOptions) => {
+      setStartUrl(options.url)
+
       try {
         resetProxyData()
         setRecorderState('starting')
-        await startRecording(url)
+        await startRecording(options)
       } catch (error) {
         setRecorderState('idle')
         showToast({
@@ -91,11 +94,21 @@ export function Recorder() {
     }
   }, [recorderState, proxyData.length])
 
+  useEffect(() => {
+    return window.studio.app.onApplicationClose(() => {
+      if (recorderState === 'recording' || recorderState === 'starting') {
+        setIsAppClosing(true)
+        return
+      }
+      window.studio.app.closeApplication()
+    })
+  })
+
   const validateAndSaveHarFile = useCallback(async () => {
     try {
       setRecorderState('saving')
 
-      if (proxyData.length === 0) {
+      if (proxyData.length === 0 && browserEvents.length === 0) {
         return null
       }
 
@@ -127,6 +140,7 @@ export function Recorder() {
   }
 
   function handleCancelNavigation() {
+    setIsAppClosing(false)
     blocker.reset?.()
   }
 
@@ -134,6 +148,10 @@ export function Recorder() {
     stopRecording()
 
     await validateAndSaveHarFile()
+
+    if (isAppClosing) {
+      return window.studio.app.closeApplication()
+    }
 
     blocker.proceed?.()
   }
@@ -163,7 +181,7 @@ export function Recorder() {
         description: 'Please check your browser path and try again.',
         action: (
           <Button onClick={() => openSettingsDialog('recorder')}>
-            <GearIcon />
+            <SettingsIcon />
             Open settings
           </Button>
         ),
@@ -174,6 +192,12 @@ export function Recorder() {
 
   useEffect(() => {
     return window.studio.browser.onBrowserClosed(async () => {
+      // if the user changed routes or closed the app during a recorder, the browser will be forced to close
+      // in this case, we don't need to save the recording again as it's already handled by handleConfirmNavigation
+      if (blocker.state === 'blocked' || isAppClosing) {
+        return
+      }
+
       const fileName = await validateAndSaveHarFile()
 
       if (fileName === null) {
@@ -194,7 +218,7 @@ export function Recorder() {
         }
       )
     })
-  }, [validateAndSaveHarFile, showToast, navigate])
+  }, [validateAndSaveHarFile, showToast, navigate, blocker.state, isAppClosing])
 
   return (
     <RecordingContext recording>
@@ -209,7 +233,7 @@ export function Recorder() {
                 color="red"
                 onClick={handleStopRecording}
               >
-                <StopIcon /> Stop recording
+                <StopCircle /> Stop recording
               </Button>
             </>
           )
@@ -245,7 +269,7 @@ export function Recorder() {
           )}
 
         <ConfirmNavigationDialog
-          open={blocker.state === 'blocked'}
+          open={blocker.state === 'blocked' || isAppClosing}
           state={recorderState}
           onCancel={handleCancelNavigation}
           onStopRecording={handleConfirmNavigation}
