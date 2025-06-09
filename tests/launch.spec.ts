@@ -33,5 +33,41 @@ test('launch app', async () => {
   expect(title).toBe('Grafana k6 Studio')
 
   const body = await splashscreenWindow.locator('body');
+  // not loading without this await for some reason
+  await body.count()
   expect(body).toBeVisible()
+})
+
+
+test('start recording', async () => {
+  const testUrl = 'quickpizza.grafana.com'
+  const recordingButton = await mainWindow.getByRole('link', { name: /record flow/i })
+  await recordingButton.click()
+
+  // insert test url
+  const urlInput = mainWindow.getByRole('textbox', { name: /e\.g\./i })
+  await urlInput.fill(testUrl)
+
+  // start recording button
+  const startRecording = await mainWindow.getByRole('button', { name: /start recording/i })
+  expect(startRecording).toBeVisible()
+
+  await startRecording.click()
+
+
+  // requests are getting recorded, check row appears with quickpizza
+  const pizzaRows = await mainWindow.locator('tr:has-text("quickpizza.grafana.com")')
+  await pizzaRows.waitFor()
+
+  expect(pizzaRows).toBeVisible()
+
+
+  // stop recording
+  const stopRecordingButton = await mainWindow.getByRole('button', { name: /Stop recording/i })
+  expect(stopRecordingButton).toBeVisible()
+  await stopRecordingButton.click()
+
+  // assert we have the create test generator button
+  const createTestGeneratorButton = await mainWindow.getByRole('button', { name: /Create test generator/i })
+  expect(createTestGeneratorButton).toBeVisible()
 })
