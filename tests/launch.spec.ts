@@ -69,5 +69,6 @@ test('start recording', async () => {
 
   // assert we have the create test generator button
   const createTestGeneratorButton = await mainWindow.getByRole('button', { name: /Create test generator/i })
+  await createTestGeneratorButton.waitFor()
   expect(createTestGeneratorButton).toBeVisible()
 })
