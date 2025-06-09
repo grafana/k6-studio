@@ -150,3 +150,7 @@ jobs:
         if: startsWith(matrix.platform, 'windows-')
         run: |
           del certificate.pfx
+
+      - name: automated tests
+        run: |
+          npm run flow-test
