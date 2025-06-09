@@ -59,7 +59,7 @@ test('start recording', async () => {
   const pizzaRows = await mainWindow.locator('tr:has-text("quickpizza.grafana.com")')
   await pizzaRows.first().waitFor()
 
-  expect(pizzaRows).first().toBeVisible()
+  expect(pizzaRows.first()).toBeVisible()
 
 
   // stop recording
