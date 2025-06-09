@@ -12,9 +12,7 @@ let splashscreenWindow: Page
 
 test.beforeAll(async () => {
   const latestBuild = findLatestBuild()
-  console.log(latestBuild)
   const appInfo = parseElectronApp(latestBuild)
-  console.log(appInfo)
 
   electronApp = await electron.launch({
     args: [appInfo.main],
@@ -59,7 +57,7 @@ test('start recording', async () => {
 
   // requests are getting recorded, check row appears with quickpizza
   const pizzaRows = await mainWindow.locator('tr:has-text("quickpizza.grafana.com")')
-  await pizzaRows.waitFor()
+  await pizzaRows.first().waitFor()
 
   expect(pizzaRows).toBeVisible()
 
