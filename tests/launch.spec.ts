@@ -12,7 +12,9 @@ let splashscreenWindow: Page
 
 test.beforeAll(async () => {
   const latestBuild = findLatestBuild()
+  console.log(latestBuild)
   const appInfo = parseElectronApp(latestBuild)
+  console.log(appInfo)
 
   electronApp = await electron.launch({
     args: [appInfo.main],
