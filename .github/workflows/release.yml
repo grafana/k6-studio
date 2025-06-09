@@ -28,6 +28,8 @@ jobs:
             APPLE_API_KEY=apple-certificates:APPLE_API_KEY
             WINDOWS_CERTIFICATE=windows-certificates:WINDOWS_CERTIFICATE
             WINDOWS_CERTIFICATE_PASSWORD=windows-certificates:WINDOWS_CERTIFICATE_PASSWORD
+            SENTRY_DSN=sentry:SENTRY_DSN
+            SENTRY_AUTH_TOKEN=sentry:SENTRY_AUTH_TOKEN
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -74,9 +76,7 @@ jobs:
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
           # sentry integration
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           # sentry vite plugin integration during build
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
@@ -90,9 +90,7 @@ jobs:
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
           # sentry integration
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           # sentry vite plugin integration during build
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
@@ -106,9 +104,7 @@ jobs:
           WINDOWS_CERTIFICATE_PATH: ./certificate.pfx
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
           # sentry integration
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           # sentry vite plugin integration during build
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: npm run publish
@@ -119,9 +115,7 @@ jobs:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # sentry integration
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           # sentry vite plugin integration during build
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
