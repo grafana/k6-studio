@@ -153,4 +153,5 @@ jobs:
 
       - name: automated tests
         run: |
+          npm run make
           npm run flow-test
