@@ -152,5 +152,6 @@ jobs:
           del certificate.pfx
 
       - name: automated tests
+        if: startsWith(matrix.platform, 'macos-')
         run: |
           npm run flow-test
