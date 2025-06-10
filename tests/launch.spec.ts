@@ -21,7 +21,7 @@ test.beforeAll(async () => {
 })
 
 test.afterAll(async () => {
-  await electronApp.close()
+  // await electronApp.close()
   // on macos-latest closing might get stuck so we force kill it if we finished testing
   try {
     await electronApp.close()
