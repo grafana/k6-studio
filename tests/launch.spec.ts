@@ -22,6 +22,16 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await electronApp.close()
+  // on macos-latest closing might get stuck so we force kill it if we finished testing
+  try {
+    await electronApp.close()
+  } catch (error) {
+    console.error('Normal close failed, forcing close:', error)
+    const pid = electronApp.process().pid
+    if (pid !== undefined) {
+      process.kill(pid)
+    }
+  }
 })
 
 test('launch app', async () => {
