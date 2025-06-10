@@ -122,5 +122,11 @@ test('create generator', async () => {
 
   // close button of Validator dialog is visible
   const closeValidator = mainWindow.getByRole('button', { name: 'Close' })
+  await closeValidator.waitFor()
   expect(closeValidator).toBeVisible()
+  await closeValidator.click()
+
+  // go back to Home
+  const home = mainWindow.getByRole('link', { name: 'Home' })
+  await home.first().click()
 })
