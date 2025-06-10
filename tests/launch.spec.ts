@@ -21,11 +21,11 @@ test.beforeAll(async () => {
 })
 
 test.afterAll(async () => {
-  const pid = electronApp.process().pid
-  if (pid !== undefined) {
-    process.kill(pid)
-  }
-  // await electronApp.close()
+  // const pid = electronApp.process().pid
+  // if (pid !== undefined) {
+  //   process.kill(pid)
+  // }
+  await electronApp.close()
   // on macos-latest closing might get stuck so we force kill it if we finished testing
   // try {
   //   await electronApp.close()
