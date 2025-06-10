@@ -78,35 +78,44 @@ test('create generator', async () => {
     name: /Create test generator/i,
   })
   await createTestGeneratorButton.click()
+  console.log('created test generator')
 
   // on the allowlist popup, press continue
   const allowlistContinue = mainWindow.getByRole('button', { name: 'Continue' })
   await allowlistContinue.click()
+  console.log('pressed continue on allowlist')
 
   // add new Custom code rule
   const addRule = mainWindow.getByRole('button', { name: 'Add rule' })
   await addRule.first().click()
+  console.log('add rule click')
 
   const customCode = mainWindow.getByRole('menuitem', { name: 'Custom code' })
   await customCode.click()
+  console.log('custom code click')
 
   // type in the rule
   const editor = mainWindow.getByRole('code').nth(1)
   await editor.click()
   await mainWindow.keyboard.type("console.log('hello test')")
+  console.log('type in the custom code editor')
 
   // save the generator
   const save = mainWindow.getByRole('button', { name: 'Save generator' })
   await save.click()
+  console.log('saved generator')
 
   // validate script
   const scriptTab = mainWindow.getByRole('tab', { name: 'Script' })
   await scriptTab.click()
+  console.log('changed to script tab')
 
   const validate = mainWindow.getByRole('button', { name: 'Validate' })
   await validate.click()
+  console.log('pressed validate')
 
   // close button of Validator dialog is visible
   const closeValidator = mainWindow.getByRole('button', { name: 'Close' })
   expect(closeValidator).toBeVisible()
+  console.log('closed validation and finished test')
 })
