@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { getUserAgent } from '@/utils/cloud'
+
 import { CloudCredentials } from './types'
 
 export function url(path: `/${string}`) {
@@ -10,6 +12,7 @@ export function getHeaders({ stackId, token }: CloudCredentials) {
   return {
     'X-Stack-Id': stackId,
     Authorization: `Bearer ${token}`,
+    'User-Agent': getUserAgent(),
   }
 }
 

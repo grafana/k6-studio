@@ -159,6 +159,10 @@ def flow_to_json(flow: mitmproxy.flow.Flow) -> dict:
 
 
 def request(flow: http.HTTPFlow) -> None:
+    # we don't want to log health check requests to stdout and be captured by the client
+    if flow.request.headers.get("X-K6-Studio-Health-Check", "").lower() == "true":
+        flow.request.anticache()
+        return
 
     data = flow_to_json(flow)
     data = json.dumps(data)
@@ -166,6 +170,10 @@ def request(flow: http.HTTPFlow) -> None:
 
 
 def response(flow: http.HTTPFlow) -> None:
+    # we don't want to log health check requests to stdout and be captured by the client
+    if flow.request.headers.get("X-K6-Studio-Health-Check", "").lower() == "true":
+        flow.request.anticache()
+        return
 
     data = flow_to_json(flow)
     data = json.dumps(data)

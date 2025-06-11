@@ -2,7 +2,6 @@ import {
   computeSystemExecutablePath,
   Browser,
   ChromeReleaseChannel,
-  launch,
 } from '@puppeteer/browsers'
 import { exec, spawn } from 'child_process'
 import { app, BrowserWindow } from 'electron'
@@ -13,6 +12,7 @@ import path from 'path'
 import { promisify } from 'util'
 
 import { getCertificateSPKI } from '@/main/proxy'
+import { ChromeDevtoolsClient } from '@/utils/cdp/client'
 
 import { BrowserServer } from '../../services/browser/server'
 import { getPlatform } from '../../utils/electron'
@@ -52,6 +52,18 @@ function getExtensionPath() {
   return path.join(process.resourcesPath, 'extension')
 }
 
+const FEATURES_TO_DISABLE = [
+  'OptimizationGuideModelDownloading',
+  'OptimizationHintsFetching',
+  'OptimizationTargetPrediction',
+  'OptimizationHints',
+]
+
+const BROWSER_RECORDING_ARGS = [
+  '--remote-debugging-pipe',
+  '--enable-unsafe-extension-debugging',
+]
+
 export const launchBrowser = async (
   browserWindow: BrowserWindow,
   browserServer: BrowserServer,
@@ -64,20 +76,8 @@ export const launchBrowser = async (
   console.log(userDataDir)
   const certificateSPKI = await getCertificateSPKI()
 
-  const optimizationsToDisable = [
-    'OptimizationGuideModelDownloading',
-    'OptimizationHintsFetching',
-    'OptimizationTargetPrediction',
-    'OptimizationHints',
-  ]
-  const disableChromeOptimizations = `--disable-features=${optimizationsToDisable.join(',')}`
-
   const extensionPath = getExtensionPath()
   console.info(`extension path: ${extensionPath}`)
-
-  if (capture.browser) {
-    browserServer.start(browserWindow)
-  }
 
   const handleBrowserClose = (): Promise<void> => {
     browserServer.stop()
@@ -95,9 +95,7 @@ export const launchBrowser = async (
     browserWindow.webContents.send(BrowserHandler.Failed)
   }
 
-  const browserRecordingArgs = capture.browser
-    ? [`--load-extension=${extensionPath}`]
-    : []
+  const browserRecordingArgs = capture.browser ? BROWSER_RECORDING_ARGS : []
 
   const args = [
     '--new',
@@ -112,28 +110,36 @@ export const launchBrowser = async (
     '--disable-search-engine-choice-screen',
     `--proxy-server=http://localhost:${k6StudioState.appSettings.proxy.port}`,
     `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
+    `--disable-features=${FEATURES_TO_DISABLE.join(',')}`,
     ...browserRecordingArgs,
-    disableChromeOptimizations,
     url?.trim() || 'about:blank',
   ]
 
-  // if we are on linux we spawn the browser directly and attach the on exit callback
-  if (getPlatform() === 'linux') {
-    const browserProc = spawn(path, args)
+  const process = spawn(path, args, {
+    stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
+  })
 
-    browserProc.on('error', handleBrowserLaunchError)
-    browserProc.once('exit', handleBrowserClose)
-    return browserProc
+  if (capture.browser) {
+    browserServer.start(browserWindow)
+
+    const client = ChromeDevtoolsClient.fromChildProcess(process)
+
+    process.on('spawn', async () => {
+      const response = await client.call({
+        method: 'Extensions.loadUnpacked',
+        params: {
+          path: extensionPath,
+        },
+      })
+
+      console.log(`k6 Studio extension loaded`, response)
+    })
   }
 
-  // macOS & windows
-  const browserProc = launch({
-    executablePath: path,
-    args: args,
-    onExit: handleBrowserClose,
-  })
-  browserProc.nodeProcess.on('error', handleBrowserLaunchError)
-  return browserProc
+  process.on('error', handleBrowserLaunchError)
+  process.once('exit', handleBrowserClose)
+
+  return process
 }
 
 function getChromePath() {

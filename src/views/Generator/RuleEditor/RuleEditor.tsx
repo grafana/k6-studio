@@ -1,13 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import {
-  Box,
-  Button,
-  Callout,
-  Flex,
-  Heading,
-  ScrollArea,
-} from '@radix-ui/themes'
-import { capitalize, startCase } from 'lodash-es'
+import { Box, Button, Callout, Flex, ScrollArea } from '@radix-ui/themes'
 import { ChevronLeftIcon, InfoIcon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
@@ -18,6 +10,8 @@ import { TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
 import { StickyPanelHeader } from '../TestRuleContainer/StickyPanelHeader'
+import { TestRuleInlineContent } from '../TestRuleContainer/TestRule/TestRuleInlineContent'
+import { TestRuleTypeBadge } from '../TestRuleContainer/TestRule/TestRuleTypeBadge'
 
 import { CorrelationEditor } from './CorrelationEditor'
 import { CustomCodeEditor } from './CustomCodeEditor'
@@ -100,10 +94,7 @@ export function RuleEditor({ rule }: RuleEditorProps) {
     <ScrollArea scrollbars="vertical">
       <FormProvider {...formMethods}>
         <StickyPanelHeader>
-          <Flex align="center" gap="3">
-            <Heading size="2" weight="medium">
-              {capitalize(startCase(rule.type))}
-            </Heading>
+          <Flex align="center" gap="3" maxWidth="100%">
             <Button
               onClick={handleClose}
               variant="ghost"
@@ -113,6 +104,10 @@ export function RuleEditor({ rule }: RuleEditorProps) {
               <ChevronLeftIcon />
               Back
             </Button>
+            <Flex align="center" gap="2" flexGrow="1" minWidth="0">
+              <TestRuleTypeBadge rule={rule} />
+              <TestRuleInlineContent rule={rule} />
+            </Flex>
           </Flex>
         </StickyPanelHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
