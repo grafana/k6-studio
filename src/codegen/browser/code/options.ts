@@ -11,6 +11,10 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'TextContainsAssertion':
       case 'IsVisibleAssertion':
       case 'IsHiddenAssertion':
+      case 'IsCheckedAssertion':
+      case 'IsNotCheckedAssertion':
+      case 'IsIndeterminateAssertion':
+      case 'IsAttributeEqualToAssertion':
         return true
 
       default:
