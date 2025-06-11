@@ -1,8 +1,7 @@
-import { check } from "k6";
-
+import {check} from "k6";
 export default function () {
   check(true, {
-    "is true": (value) => value === true,
+    'is true': value => value === true
   });
 }
 export function handleSummary() {
@@ -10,6 +9,10 @@ export function handleSummary() {
 }
 export const options = {
   scenarios: {
-    default: { executor: "shared-iterations", vus: 1, iterations: 1 },
-  },
+    default: {
+      executor: "shared-iterations",
+      vus: 1,
+      iterations: 1
+    }
+  }
 };
