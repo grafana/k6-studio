@@ -64,12 +64,6 @@ export function CheckAssertionEditor({
               Unchecked
             </Label>
           </Flex>
-          <Flex asChild align="center" gap="1">
-            <Label size="1" weight="normal">
-              <RadioGroup.Item value="indeterminate" />
-              Indeterminate
-            </Label>
-          </Flex>
         </RadioGroup.Root>
       </Flex>
     </AssertionForm>
