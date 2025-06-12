@@ -29,9 +29,12 @@ import { TextButton } from '@/components/TextButton'
 import { LaunchBrowserOptions } from '@/handlers/browser/types'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
+import { useRecentURLs } from '@/hooks/useRecentURLs'
 import { useBrowserCheck, useSettings } from '@/hooks/useSettings'
 import { useStudioUIStore } from '@/store/ui'
 import { ProxyStatus } from '@/types'
+
+import { RecentURLs } from './RecentURLs'
 
 interface EmptyStateProps {
   isLoading: boolean
@@ -61,6 +64,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<RecorderEmptyStateFields>({
     resolver: zodResolver(RecorderEmptyStateSchema),
     defaultValues: {
@@ -69,12 +73,16 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     shouldFocusError: false,
   })
 
+  const { recentURLs, addURL, removeURL } = useRecentURLs()
+
   const canRecord = proxyStatus === 'online' && isBrowserInstalled === true
 
   const onSubmit = ({ url }: RecorderEmptyStateFields) => {
     if (isLoading || !canRecord) {
       return
     }
+
+    addURL(url)
 
     onStart({
       url,
@@ -86,6 +94,10 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
 
   const handleCaptureBrowserChange = (value: boolean | 'indeterminate') => {
     setCaptureBrowser(value === true)
+  }
+
+  const handleSelectURL = (url: string) => {
+    setValue('url', url)
   }
 
   return (
@@ -155,6 +167,13 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
                 </Button>
               </Flex>
             </FieldGroup>
+
+            <RecentURLs
+              urls={recentURLs}
+              disabled={isLoading}
+              onSelectURL={handleSelectURL}
+              onRemoveURL={removeURL}
+            />
 
             <WarningMessage
               proxyStatus={proxyStatus}
