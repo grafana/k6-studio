@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/grafana/k6-studio/compare/v1.4.0...v1.4.1) (2025-06-12)
+
+
+### Bug Fixes
+
+* Threshold metric for http_req_failed ([#734](https://github.com/grafana/k6-studio/issues/734)) ([bc84b7e](https://github.com/grafana/k6-studio/commit/bc84b7eed5f172f2f617901efc5771ea397dc5b8))
+
 ## [1.4.0](https://github.com/grafana/k6-studio/compare/v1.3.0...v1.4.0) (2025-06-11)
 
 
