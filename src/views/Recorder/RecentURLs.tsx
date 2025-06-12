@@ -32,7 +32,12 @@ export function RecentURLs({
       `}
     >
       {urls.map((url) => (
-        <li key={url}>
+        <li
+          key={url}
+          css={css`
+            max-width: 100%;
+          `}
+        >
           <Badge
             size="1"
             variant="soft"
@@ -40,6 +45,7 @@ export function RecentURLs({
             highContrast
             css={css`
               position: relative;
+              max-width: 100%;
 
               &:hover {
                 background-color: var(--gray-4);
@@ -57,6 +63,11 @@ export function RecentURLs({
                 aria-label="Select URL"
                 disabled={disabled}
                 css={css`
+                  flex: 1;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+
                   &::after {
                     content: '';
                     position: absolute;
