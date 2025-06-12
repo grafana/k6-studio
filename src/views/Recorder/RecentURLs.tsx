@@ -25,10 +25,10 @@ export function RecentURLs({
       css={css`
         list-style: none;
         padding: 0;
-        margin: 0;
+        margin: 0 0 var(--space-3);
         display: flex;
         flex-wrap: wrap;
-        gap: var(--space-3);
+        gap: var(--space-1) var(--space-3);
       `}
     >
       {urls.map((url) => (
@@ -45,7 +45,8 @@ export function RecentURLs({
                 background-color: var(--gray-4);
               }
 
-              &:focus-within > button:last-of-type {
+              &:focus-within > button:last-of-type,
+              &:hover > button:last-of-type {
                 opacity: 1;
               }
             `}
