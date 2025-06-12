@@ -10,11 +10,13 @@ export function useRecentURLs() {
   )
 
   const addURL = (url: string) => {
-    if (!url || recentURLs.includes(url)) {
+    const trimmedURL = url.trim()
+
+    if (!trimmedURL || recentURLs.includes(trimmedURL)) {
       return
     }
 
-    const updatedURLs = [url, ...recentURLs].slice(0, MAX_RECENT_URLS)
+    const updatedURLs = [trimmedURL, ...recentURLs].slice(0, MAX_RECENT_URLS)
     setRecentURLs(updatedURLs)
   }
 
