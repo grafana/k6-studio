@@ -280,7 +280,7 @@ function WarningMessage({
     )
   }
 
-  if (proxyStatus === 'online') {
+  if (proxyStatus === 'online' && (!isProxyHealthy || isSSLInsecureEnabled)) {
     return (
       <Flex direction="column" gap="2">
         {!isProxyHealthy && <ProxyHealthWarning />}

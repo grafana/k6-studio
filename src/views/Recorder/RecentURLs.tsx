@@ -25,10 +25,14 @@ export function RecentURLs({
       css={css`
         list-style: none;
         padding: 0;
-        margin: 0 0 var(--space-3);
+        margin: 0;
         display: flex;
         flex-wrap: wrap;
         gap: var(--space-1) var(--space-3);
+
+        &:not(:last-child) {
+          margin-bottom: var(--space-3);
+        }
       `}
     >
       {urls.map((url) => (
@@ -42,10 +46,10 @@ export function RecentURLs({
             size="1"
             variant="soft"
             color="gray"
-            highContrast
             css={css`
               position: relative;
               max-width: 100%;
+              overflow: hidden;
 
               &:hover {
                 background-color: var(--gray-4);
@@ -60,7 +64,6 @@ export function RecentURLs({
             <Reset>
               <button
                 type="button"
-                aria-label="Select URL"
                 disabled={disabled}
                 css={css`
                   flex: 1;
@@ -86,8 +89,10 @@ export function RecentURLs({
                     display: flex;
                     position: relative;
                     z-index: 1;
-                    opacity: 0;
-                    margin: 0 calc(var(--space-1) * -1);
+                    opacity: 0.6;
+                    margin: calc(var(--space-1) * -0.5)
+                      calc(var(--space-1) * -1.5);
+                    padding: calc(var(--space-1) * 0.5) var(--space-1);
 
                     &:hover,
                     &:focus {
