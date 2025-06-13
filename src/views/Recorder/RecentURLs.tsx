@@ -92,7 +92,13 @@ export function RecentURLs({
                     opacity: 0.6;
                     margin: calc(var(--space-1) * -0.5)
                       calc(var(--space-1) * -1.5);
-                    padding: calc(var(--space-1) * 0.5) var(--space-1);
+                    padding: var(--space-1);
+
+                    font-size: var(--font-size-1);
+                    & > .lucide {
+                      min-width: var(--font-size-1);
+                      min-height: var(--font-size-1);
+                    }
 
                     &:hover,
                     &:focus {
