@@ -26,6 +26,7 @@ export function RecentURLs({
         list-style: none;
         padding: 0;
         margin: 0;
+        line-height: 1;
         display: flex;
         flex-wrap: wrap;
         gap: var(--space-1) var(--space-3);
@@ -50,15 +51,6 @@ export function RecentURLs({
               position: relative;
               max-width: 100%;
               overflow: hidden;
-
-              &:hover {
-                background-color: var(--gray-4);
-              }
-
-              &:focus-within > button:last-of-type,
-              &:hover > button:last-of-type {
-                opacity: 1;
-              }
             `}
           >
             <Reset>
@@ -70,6 +62,12 @@ export function RecentURLs({
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
+                  font-weight: 500;
+                  color: var(--gray-11);
+
+                  &:hover {
+                    color: var(--orange-9);
+                  }
 
                   &::after {
                     content: '';
@@ -90,8 +88,9 @@ export function RecentURLs({
                     position: relative;
                     z-index: 1;
                     opacity: 0.6;
-                    margin: calc(var(--space-1) * -0.5)
-                      calc(var(--space-1) * -1.5);
+
+                    margin: calc(var(--space-1) * -0.5);
+                    margin-right: calc(var(--space-1) * -1.5);
                     padding: var(--space-1);
 
                     font-size: var(--font-size-1);
@@ -102,8 +101,8 @@ export function RecentURLs({
 
                     &:hover,
                     &:focus {
+                      color: var(--red-11);
                       opacity: 1;
-                      background: var(--gray-6);
                     }
                   `}
                   type="button"
