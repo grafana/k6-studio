@@ -10,14 +10,15 @@ export function useRecentURLs() {
   )
 
   const addURL = (url: string) => {
-    const trimmedURL = url.trim()
+    const normalizedURL = url.toLowerCase().trim()
+    if (!normalizedURL) return
 
-    if (!trimmedURL || recentURLs.includes(trimmedURL)) {
-      return
-    }
-
-    const updatedURLs = [trimmedURL, ...recentURLs].slice(0, MAX_RECENT_URLS)
-    setRecentURLs(updatedURLs)
+    setRecentURLs((prev = []) =>
+      [normalizedURL, ...prev.filter((u) => u !== normalizedURL)].slice(
+        0,
+        MAX_RECENT_URLS
+      )
+    )
   }
 
   const removeURL = (url: string) => {
