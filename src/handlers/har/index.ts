@@ -1,5 +1,4 @@
 import { ipcMain, dialog } from 'electron'
-import log from 'electron-log/main'
 import { readFile, copyFile } from 'fs/promises'
 import path from 'path'
 
@@ -27,11 +26,7 @@ export function initialize() {
         prefix,
       })
 
-      tracker
-        .trackEvent({ type: UsageTrackingEvents.RecordingCreated })
-        .catch((error) => {
-          log.error('Failed to track event:', error)
-        })
+      tracker.trackEvent({ type: UsageTrackingEvents.RecordingCreated })
 
       return fileName
     }

@@ -64,13 +64,9 @@ export function initialize() {
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
 
-      tracker
-        .trackEvent({
-          type: UsageTrackingEvents.ScriptValidated,
-        })
-        .catch((error) => {
-          log.error('Failed to track event:', error)
-        })
+      tracker.trackEvent({
+        type: UsageTrackingEvents.ScriptValidated,
+      })
     }
   )
 

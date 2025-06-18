@@ -19,7 +19,6 @@ const INSTALLATION_ID_FILE = path.join(
   app.getPath('userData'),
   '.installation_id'
 )
-const EVENT_QUEUE_FILE = path.join(app.getPath('userData'), 'event_queue.json')
 
 export class UsageTracker {
   static #instance: UsageTracker
@@ -28,11 +27,6 @@ export class UsageTracker {
     if (process.env.NODE_ENV === 'development') {
       return
     }
-
-    // Flush the event queue on service initialization
-    this.flushQueue().catch((error) => {
-      log.error('Failed to flush event queue on startup:', error)
-    })
 
     // Track installation on service initialization
     this.#trackInstallation().catch((error) => {
@@ -47,34 +41,37 @@ export class UsageTracker {
     return UsageTracker.#instance
   }
 
-  async trackEvent(event: UsageTrackingEvent) {
-    if (!k6StudioState.appSettings.telemetry.usageReport) {
-      return
-    }
+  trackEvent(event: UsageTrackingEvent) {
+    // Runs the event tracking asynchronously in the background,
+    // without blocking or requiring the caller to handle completion or errors
+    ;async () => {
+      if (!k6StudioState.appSettings.telemetry.usageReport) {
+        return
+      }
 
-    const metadata: UsageTrackingEventMetadata = {
-      usageStatsId: await this.#getInstallationId(),
-      timestamp: Date(),
-      appVersion: app.getVersion(),
-      os: getPlatform(),
-      arch: getArch(),
-    }
+      const metadata: UsageTrackingEventMetadata = {
+        usageStatsId: await this.#getInstallationId(),
+        timestamp: Date(),
+        appVersion: app.getVersion(),
+        os: getPlatform(),
+        arch: getArch(),
+      }
 
-    const eventWithMetadata = {
-      ...event,
-      ...metadata,
-    }
+      const eventWithMetadata = {
+        ...event,
+        ...metadata,
+      }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(eventWithMetadata)
-      return
-    }
+      if (process.env.NODE_ENV === 'development') {
+        console.log(eventWithMetadata)
+        return
+      }
 
-    try {
-      await this.#sendEvent(eventWithMetadata)
-    } catch (error) {
-      log.error('Failed to send event, saving to queue:', error)
-      await this.#saveEventToQueue(eventWithMetadata)
+      try {
+        await this.#sendEvent(eventWithMetadata)
+      } catch (error) {
+        log.error('Failed to send usage statistic event:', error)
+      }
     }
   }
 
@@ -94,20 +91,6 @@ export class UsageTracker {
     }
   }
 
-  async #saveEventToQueue(event: Record<string, unknown>) {
-    let queue: Record<string, unknown>[] = []
-    try {
-      const data = await readFile(EVENT_QUEUE_FILE, 'utf-8')
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      queue = JSON.parse(data)
-    } catch {
-      // File doesn't exist or is invalid, start with an empty queue
-    }
-
-    queue.push(event)
-    await writeFile(EVENT_QUEUE_FILE, JSON.stringify(queue, null, 2))
-  }
-
   async #trackInstallation() {
     try {
       if (await this.#installationIdExists()) {
@@ -121,7 +104,7 @@ export class UsageTracker {
         type: UsageTrackingEvents.AppInstalled,
       }
 
-      await this.trackEvent(event)
+      this.trackEvent(event)
     } catch (error) {
       log.error('Error tracking installation:', error)
     }
@@ -142,28 +125,5 @@ export class UsageTracker {
     } catch {
       throw new Error('Installation ID file is missing')
     }
-  }
-
-  async flushQueue() {
-    let queue: UsageTrackingEventWithMetadata[] = []
-    try {
-      const data = await readFile(EVENT_QUEUE_FILE, 'utf-8')
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      queue = JSON.parse(data)
-    } catch {
-      return // No queue to flush
-    }
-
-    for (const event of queue) {
-      try {
-        await this.#sendEvent(event)
-      } catch (error) {
-        log.error('Failed to flush event:', error)
-        return // Stop flushing on first failure
-      }
-    }
-
-    // Clear the queue if all events were sent successfully
-    await writeFile(EVENT_QUEUE_FILE, JSON.stringify([], null, 2))
   }
 }
