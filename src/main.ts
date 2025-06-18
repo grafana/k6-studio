@@ -19,6 +19,7 @@ import { getSettings, initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { BrowserServer } from './services/browser/server'
+import { configureSystemProxy as configureFetchProxy } from './services/http'
 import { ProxyStatus } from './types'
 import { sendReport } from './usageReport'
 import { getAppIcon, getPlatform } from './utils/electron'
@@ -135,6 +136,9 @@ const createWindow = async () => {
     k6StudioState.proxyStatus = status
     mainWindow.webContents.send(ProxyHandler.ChangeStatus, status)
   })
+
+  // Configure `fetch` to use the system proxy settings if available.
+  await configureFetchProxy()
 
   // Start proxy
   k6StudioState.currentProxyProcess =

@@ -33,4 +33,5 @@ export {
   RecorderSettingsSchema,
   TelemetrySchema,
   WindowStateSchema,
+  type UpstreamProxySettings,
 } from './v3'
