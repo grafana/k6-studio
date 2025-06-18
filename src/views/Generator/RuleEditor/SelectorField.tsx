@@ -1,19 +1,9 @@
-import {
-  Box,
-  Card,
-  Code,
-  Flex,
-  Heading,
-  Inset,
-  Text,
-  TextField,
-} from '@radix-ui/themes'
+import { Box, Code, Flex, Inset, Text, TextField } from '@radix-ui/themes'
 import * as monaco from 'monaco-editor'
 import { useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { CodeEditor } from '@/components/Monaco/CodeEditor'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
@@ -145,7 +135,7 @@ function JSONHint() {
 
   let prevHeight = 0
 
-  const updateEditorHeight = () => {
+  const _updateEditorHeight = () => {
     const editorElement = editor?.getDomNode()
 
     if (!editor || !editorElement) {
@@ -170,8 +160,6 @@ function JSONHint() {
       </Text>
       <Text size="1">
         <Box>
-          <Code>JSON:</Code>
-
           <Inset>
             <Box
               css={{
@@ -198,7 +186,7 @@ function JSONHint() {
                     },
                     renderLineHighlight: 'none',
                     overviewRulerLanes: 0,
-                    renderIndentGuides: false,
+                    // renderIndentGuides: false, // TODO: check if this is needed
                     wordWrap: 'on',
                     padding: {
                       top: 5,
@@ -211,28 +199,15 @@ function JSONHint() {
           </Inset>
         </Box>
         <Box>
-          Use dot path to access nested values: <br />
-          <Code>user.name</Code> {'->'} <Code>John</Code>
-          <br />
-          Use brackets to access array elements: <br />
-          <Code>user.hobbies[1]</Code> {'->'} <Code>fishing</Code>
+          <Text as="p" size="1" mb="1">
+            Use dot path to access nested values: <Code>user.name</Code> {'->'}{' '}
+            <Code>John</Code>
+          </Text>
+          <Text as="p" size="1">
+            Use brackets to access array elements: <Code>user.hobbies[1]</Code>{' '}
+            {'->'} <Code>fishing</Code>
+          </Text>
         </Box>
-      </Text>
-    </Box>
-  )
-}
-
-function CodeBlock({ children }: { children: React.ReactNode }) {
-  return (
-    <Box
-      css={{
-        padding: '1px 10px',
-        background: 'var(--gray-3)',
-        fontSize: '29px',
-      }}
-    >
-      <Text size="1">
-        <pre>{children}</pre>
       </Text>
     </Box>
   )
