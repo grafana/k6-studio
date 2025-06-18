@@ -7,7 +7,7 @@ import { UpstreamProxySettings } from '@/schemas/settings'
 const DEFAULT_DISPATCHER = getGlobalDispatcher()
 
 async function readCertificate(path: string | undefined) {
-  if (path === undefined) {
+  if (path === undefined || path.trim() === '') {
     return undefined
   }
 
@@ -46,6 +46,7 @@ export async function configureSystemProxy() {
     headers: getAuthorizationHeader(proxy),
     requestTls: {
       ca: certificate,
+      rejectUnauthorized: !proxy.sslInsecure,
     },
   })
 
