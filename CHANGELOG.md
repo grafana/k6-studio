@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/grafana/k6-studio/compare/v1.4.0...v1.5.0) (2025-06-19)
+
+
+### Features
+
+* Display recent URLs in Recorder ([#748](https://github.com/grafana/k6-studio/issues/748)) ([815762f](https://github.com/grafana/k6-studio/commit/815762f2bf7bbbe1cc60efc88d7e344335c7255a))
+
+
+### Bug Fixes
+
+* Add support for Chromium path from Flatpak ([#750](https://github.com/grafana/k6-studio/issues/750)) ([b35b9ea](https://github.com/grafana/k6-studio/commit/b35b9eae4c811447f575856fcebbaaf25ce78ced))
+* Threshold metric for http_req_failed ([#734](https://github.com/grafana/k6-studio/issues/734)) ([bc84b7e](https://github.com/grafana/k6-studio/commit/bc84b7eed5f172f2f617901efc5771ea397dc5b8))
+
 ## [1.4.0](https://github.com/grafana/k6-studio/compare/v1.3.0...v1.4.0) (2025-06-11)
 
 
