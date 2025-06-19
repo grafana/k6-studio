@@ -10,7 +10,11 @@ export function PopoverTooltip({
   return (
     <Popover.Root>
       <Popover.Trigger>{children}</Popover.Trigger>
-      <Popover.Content side="top" size="1">
+      <Popover.Content
+        side="top"
+        size="1"
+        css={{ lineHeight: 'var(--line-height-1)' }}
+      >
         {typeof content === 'string' ? (
           <Text size="1">{content}</Text>
         ) : (

@@ -10,13 +10,13 @@ import {
   Card,
   Inset,
   Separator,
-  Tooltip,
 } from '@radix-ui/themes'
 import { every, includes } from 'lodash'
 import { InfoIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { Label } from '@/components/Label'
+import { PopoverTooltip } from '@/components/PopoverTooltip'
 import { ProxyData } from '@/types'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
@@ -187,13 +187,13 @@ function AllowlistSeparator({
         {text}
       </Text>
       {tooltip && (
-        <Tooltip content={tooltip}>
+        <PopoverTooltip content={tooltip}>
           <InfoIcon
             css={css`
               margin-left: var(--space-1);
             `}
           />
-        </Tooltip>
+        </PopoverTooltip>
       )}
       <Separator
         ml="2"
