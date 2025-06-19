@@ -1,8 +1,10 @@
 import { ErrorMessage } from '@hookform/error-message'
 import * as Label from '@radix-ui/react-label'
-import { Box, BoxProps, Flex, Tooltip, Text, Popover } from '@radix-ui/themes'
+import { Box, BoxProps, Flex, Text } from '@radix-ui/themes'
 import { InfoIcon } from 'lucide-react'
 import { FieldErrors } from 'react-hook-form'
+
+import { PopoverTooltip } from '../PopoverTooltip'
 
 import { FieldError } from './FieldError'
 
@@ -13,27 +15,6 @@ type FieldGroupProps = BoxProps & {
   label?: React.ReactNode
   hint?: React.ReactNode
   hintType?: 'tooltip' | 'text'
-}
-
-function PopoverTooltip({
-  children,
-  content,
-}: {
-  children: React.ReactNode
-  content: React.ReactNode
-}) {
-  return (
-    <Popover.Root>
-      <Popover.Trigger>{children}</Popover.Trigger>
-      <Popover.Content side="top" size="1">
-        {typeof content === 'string' ? (
-          <Text size="1">{content}</Text>
-        ) : (
-          content
-        )}
-      </Popover.Content>
-    </Popover.Root>
-  )
 }
 
 export function FieldGroup({

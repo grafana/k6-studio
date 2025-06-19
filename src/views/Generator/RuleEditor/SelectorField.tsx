@@ -1,13 +1,12 @@
-import { Box, Code, Flex, Inset, Text, TextField } from '@radix-ui/themes'
-import { useEffect, useMemo } from 'react'
+import { Box, Flex, TextField } from '@radix-ui/themes'
 import { useFormContext } from 'react-hook-form'
 
 import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
 import { HeaderSelect } from './HeaderSelect'
+import { JsonSelectorHint } from './JsonSelectorHint'
 import { allowedSelectorMap, fromOptions } from './SelectorField.constants'
 
 export function SelectorField({
@@ -115,109 +114,6 @@ export function SelectorField({
   )
 }
 
-const snippet = `{
-  "user": {
-    "name": "John",
-    "hobbies": ["hiking", "fishing", "jogging"]
-  }
-}`
-
-function JSONHint() {
-  return (
-    <Box>
-      <Text size="1">
-        Use dot and bracket notation to navigate JSON objects and extract
-        values.
-      </Text>
-      <Text size="1">
-        <Box>
-          <Inset>
-            <Box
-              css={{
-                margin: 'var(--space-4) 0',
-                borderTop: '1px solid var(--gray-3)',
-                borderBottom: '1px solid var(--gray-3)',
-              }}
-            >
-              <CodeSnippet value={snippet} language="json" />
-            </Box>
-          </Inset>
-        </Box>
-        <Box>
-          <Text as="p" size="1" mb="1">
-            Dot path to access nested values: <Code>user.name</Code> {'->'}{' '}
-            <Code>John</Code>
-          </Text>
-          <Text as="p" size="1" mb="1">
-            Brackets to access nested values: <Code>{`["user"]["name"]`}</Code>{' '}
-            {'->'} <Code>John</Code>
-          </Text>
-
-          <Text as="p" size="1">
-            Brackets to access array elements: <Code>user.hobbies[1]</Code>{' '}
-            {'->'} <Code>fishing</Code>
-          </Text>
-        </Box>
-      </Text>
-    </Box>
-  )
-}
-
-function CodeSnippet({
-  value,
-  language = 'json',
-}: {
-  value: string
-  language: string
-}) {
-  const editorHeight = useMemo(() => {
-    const lineHeight = 20
-    const lines = value.split('\n').length
-
-    return lineHeight * lines
-  }, [value])
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur()
-        }
-      })
-    })
-  }, [])
-
-  return (
-    <Box height={`${editorHeight}px`}>
-      <ReadOnlyEditor
-        value={value}
-        language={language}
-        showToolbar={false}
-        options={{
-          readOnly: true,
-          minimap: { enabled: false },
-          lineNumbers: 'off',
-          folding: false,
-          contextmenu: false,
-          scrollbar: {
-            vertical: 'hidden',
-            horizontal: 'hidden',
-          },
-          renderLineHighlight: 'none',
-          overviewRulerLanes: 0,
-          // @ts-expect-error incorrect types, renderIndentGuides is a valid option
-          renderIndentGuides: false,
-          wordWrap: 'on',
-          padding: {
-            top: 5,
-            bottom: 5,
-          },
-        }}
-      />
-    </Box>
-  )
-}
-
 function SelectorContent({
   selector,
   field,
@@ -230,7 +126,6 @@ function SelectorContent({
     formState: { errors },
   } = useFormContext<TestRule>()
 
-  const hint = JSONHint()
   switch (selector.type) {
     case 'json':
       return (
@@ -238,7 +133,7 @@ function SelectorContent({
           name={`${field}.path`}
           errors={errors}
           label="JSON path"
-          hint={hint}
+          hint={<JsonSelectorHint />}
         >
           <TextField.Root {...register(`${field}.path`)} id={`${field}.path`} />
         </FieldGroup>
