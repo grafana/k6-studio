@@ -1,6 +1,5 @@
 import { Box, Code, Flex, Inset, Text, TextField } from '@radix-ui/themes'
-import * as monaco from 'monaco-editor'
-import { useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 import { ControlledSelect, FieldGroup } from '@/components/Form'
@@ -124,34 +123,6 @@ const snippet = `{
 }`
 
 function JSONHint() {
-  const [editor, setEditor] =
-    useState<monaco.editor.IStandaloneCodeEditor | null>(null)
-
-  // TODO: think is this is usable, create layout shift when opening popover
-  // editor?.onDidChangeModelDecorations(() => {
-  // updateEditorHeight() // typing
-  // requestAnimationFrame(updateEditorHeight) // folding
-  // })
-
-  let prevHeight = 0
-
-  const _updateEditorHeight = () => {
-    const editorElement = editor?.getDomNode()
-
-    if (!editor || !editorElement) {
-      return
-    }
-
-    const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight)
-    const lineCount = editor.getModel()?.getLineCount() || 1
-    const height = editor.getTopForLineNumber(lineCount + 1) + lineHeight
-
-    if (prevHeight !== height) {
-      prevHeight = height
-      editorElement.style.height = `${height + 10}px`
-      editor.layout()
-    }
-  }
   return (
     <Box>
       <Text size="1">
@@ -168,47 +139,81 @@ function JSONHint() {
                 borderBottom: '1px solid var(--gray-3)',
               }}
             >
-              <Box height="120px">
-                <ReadOnlyEditor
-                  value={snippet}
-                  language="json"
-                  showToolbar={false}
-                  onMount={setEditor}
-                  options={{
-                    readOnly: true,
-                    minimap: { enabled: false },
-                    lineNumbers: 'off',
-                    folding: false,
-                    contextmenu: false,
-                    scrollbar: {
-                      vertical: 'hidden',
-                      horizontal: 'hidden',
-                    },
-                    renderLineHighlight: 'none',
-                    overviewRulerLanes: 0,
-                    // renderIndentGuides: false, // TODO: check if this is needed
-                    wordWrap: 'on',
-                    padding: {
-                      top: 5,
-                      bottom: 5,
-                    },
-                  }}
-                />
-              </Box>
+              <CodeSnippet value={snippet} language="json" />
             </Box>
           </Inset>
         </Box>
         <Box>
           <Text as="p" size="1" mb="1">
-            Use dot path to access nested values: <Code>user.name</Code> {'->'}{' '}
+            Dot path to access nested values: <Code>user.name</Code> {'->'}{' '}
             <Code>John</Code>
           </Text>
+          <Text as="p" size="1" mb="1">
+            Brackets to access nested values: <Code>{`["user"]["name"]`}</Code>{' '}
+            {'->'} <Code>John</Code>
+          </Text>
+
           <Text as="p" size="1">
-            Use brackets to access array elements: <Code>user.hobbies[1]</Code>{' '}
+            Brackets to access array elements: <Code>user.hobbies[1]</Code>{' '}
             {'->'} <Code>fishing</Code>
           </Text>
         </Box>
       </Text>
+    </Box>
+  )
+}
+
+function CodeSnippet({
+  value,
+  language = 'json',
+}: {
+  value: string
+  language: string
+}) {
+  const editorHeight = useMemo(() => {
+    const lineHeight = 20
+    const lines = value.split('\n').length
+
+    return lineHeight * lines
+  }, [value])
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur()
+        }
+      })
+    })
+  }, [])
+
+  return (
+    <Box height={`${editorHeight}px`}>
+      <ReadOnlyEditor
+        value={value}
+        language={language}
+        showToolbar={false}
+        options={{
+          readOnly: true,
+          minimap: { enabled: false },
+          lineNumbers: 'off',
+          folding: false,
+          contextmenu: false,
+          scrollbar: {
+            vertical: 'hidden',
+            horizontal: 'hidden',
+          },
+          renderLineHighlight: 'none',
+          overviewRulerLanes: 0,
+          // @ts-expect-error incorrect types, renderIndentGuides is a valid option
+          renderIndentGuides: false,
+          wordWrap: 'on',
+          padding: {
+            top: 5,
+            bottom: 5,
+          },
+        }}
+      />
     </Box>
   )
 }
