@@ -3,6 +3,8 @@ import { readFile, copyFile } from 'fs/promises'
 import path from 'path'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
+import { UsageTracker } from '@/services/usageTracking'
+import { UsageTrackingEvents } from '@/services/usageTracking/types'
 import { HarWithOptionalResponse } from '@/types/har'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
@@ -10,6 +12,8 @@ import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { HarHandler } from './types'
 
 export function initialize() {
+  const tracker = UsageTracker.getInstance()
+
   ipcMain.handle(
     HarHandler.SaveFile,
     async (_, data: HarWithOptionalResponse, prefix: string) => {
@@ -21,6 +25,8 @@ export function initialize() {
         ext: '.har',
         prefix,
       })
+
+      tracker.trackEvent({ type: UsageTrackingEvents.RecordingCreated })
 
       return fileName
     }
