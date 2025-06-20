@@ -15,6 +15,7 @@ import {
   TriangleAlertIcon,
 } from 'lucide-react'
 
+import { PopoverTooltip } from '@/components/PopoverTooltip'
 import { Table } from '@/components/Table'
 import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { useGeneratorStore } from '@/store/generator'
@@ -41,9 +42,9 @@ export function DataFiles() {
             <Table.ColumnHeaderCell>
               <Flex align="center" gap="1">
                 Access method
-                <Tooltip content="Defines how the items are accessed during the test">
+                <PopoverTooltip content="Defines how the items are accessed during the test">
                   <InfoIcon size={12} />
-                </Tooltip>
+                </PopoverTooltip>
               </Flex>
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell width="0"></Table.ColumnHeaderCell>

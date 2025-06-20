@@ -7,7 +7,6 @@ import {
   Separator,
   Switch,
   Text,
-  Tooltip,
 } from '@radix-ui/themes'
 import { InfoIcon } from 'lucide-react'
 import { useFormContext } from 'react-hook-form'
@@ -15,6 +14,7 @@ import { useFormContext } from 'react-hook-form'
 import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { Label } from '@/components/Label'
+import { PopoverTooltip } from '@/components/PopoverTooltip'
 import { useApplyRules } from '@/store/generator/hooks/useApplyRules'
 import { RuleInstance, TestRule } from '@/types/rules'
 
@@ -92,9 +92,9 @@ export function CorrelationEditor() {
           </Heading>
 
           <Flex align="center" gap="1" mb="2">
-            <Tooltip content={replacerTooltip}>
+            <PopoverTooltip content={replacerTooltip}>
               <InfoIcon />
-            </Tooltip>
+            </PopoverTooltip>
             <Label>
               <Text size="2" css={{ lineHeight: '18px' }}>
                 Customize selector

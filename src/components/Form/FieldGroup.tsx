@@ -1,8 +1,10 @@
 import { ErrorMessage } from '@hookform/error-message'
 import * as Label from '@radix-ui/react-label'
-import { Box, BoxProps, Flex, Tooltip, Text } from '@radix-ui/themes'
+import { Box, BoxProps, Flex, Text } from '@radix-ui/themes'
 import { InfoIcon } from 'lucide-react'
 import { FieldErrors } from 'react-hook-form'
+
+import { PopoverTooltip } from '../PopoverTooltip'
 
 import { FieldError } from './FieldError'
 
@@ -27,15 +29,17 @@ export function FieldGroup({
   return (
     <Box mb="3" {...props}>
       {label && (
-        <Label.Root htmlFor={name}>
+        <>
           <Flex align="center" gap="1" mb="1">
-            <Text size="2" weight="medium">
-              {label}
-            </Text>
+            <Label.Root htmlFor={name}>
+              <Text size="2" weight="medium">
+                {label}
+              </Text>
+            </Label.Root>
             {hint && hintType === 'tooltip' && (
-              <Tooltip content={hint}>
+              <PopoverTooltip content={hint}>
                 <InfoIcon />
-              </Tooltip>
+              </PopoverTooltip>
             )}
           </Flex>
           {hint && hintType === 'text' && (
@@ -43,7 +47,7 @@ export function FieldGroup({
               {hint}
             </Text>
           )}
-        </Label.Root>
+        </>
       )}
       <Box>{children}</Box>
       {errors && <ErrorMessage errors={errors} name={name} as={FieldError} />}
