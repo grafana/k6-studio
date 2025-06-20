@@ -1,5 +1,5 @@
 import { Box } from '@radix-ui/themes'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { ReadOnlyEditor } from './Monaco/ReadOnlyEditor'
 
@@ -18,20 +18,19 @@ export function CodeSnippet({
   }, [value])
 
   // Disable monaco editor focus on mount
-  useEffect(() => {
+  function handleEditorMount() {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur()
-        }
-      })
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur()
+      }
     })
-  }, [])
+  }
 
   return (
     <Box height={`${editorHeight}px`}>
       <ReadOnlyEditor
         value={value}
+        onMount={handleEditorMount}
         language={language}
         showToolbar={false}
         options={{
