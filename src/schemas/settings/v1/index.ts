@@ -125,4 +125,5 @@ export function migrate(
   }
 }
 
+export type UpstreamProxySettings = z.infer<typeof UpstreamProxySettingsSchema>
 export type AppSettings = z.infer<typeof AppSettingsSchema>
