@@ -132,7 +132,7 @@ function SelectorContent({
         <FieldGroup
           name={`${field}.path`}
           errors={errors}
-          label="JSON path"
+          label="JSON property path"
           hint={<JsonSelectorHint />}
         >
           <TextField.Root {...register(`${field}.path`)} id={`${field}.path`} />
