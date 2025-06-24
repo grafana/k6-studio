@@ -7,10 +7,10 @@ import { getArch, getPlatform } from '@/utils/electron'
 import { uuid } from '@/utils/uuid'
 
 import {
-  UsageTrackingEvent,
-  UsageTrackingEventMetadata,
-  UsageTrackingEvents,
-  UsageTrackingEventWithMetadata,
+  UsageEvent,
+  UsageEventMetadata,
+  UsageEventName,
+  UsageEventWithMetadata,
 } from './types'
 
 // const TRACKING_URL = 'https://stats.grafana.org/k6-studio-usage-report'
@@ -41,7 +41,7 @@ export class UsageTracker {
     return UsageTracker.#instance
   }
 
-  trackEvent(event: UsageTrackingEvent) {
+  trackEvent(event: UsageEvent) {
     // Runs the event tracking asynchronously in the background,
     // without blocking or requiring the caller to handle completion or errors
     ;async () => {
@@ -49,7 +49,7 @@ export class UsageTracker {
         return
       }
 
-      const metadata: UsageTrackingEventMetadata = {
+      const metadata: UsageEventMetadata = {
         usageStatsId: await this.#getInstallationId(),
         timestamp: Date(),
         appVersion: app.getVersion(),
@@ -75,7 +75,7 @@ export class UsageTracker {
     }
   }
 
-  async #sendEvent(event: UsageTrackingEventWithMetadata) {
+  async #sendEvent(event: UsageEventWithMetadata) {
     if (!k6StudioState.appSettings.telemetry.usageReport) {
       return
     }
@@ -100,11 +100,9 @@ export class UsageTracker {
       const installationId = uuid()
       await writeFile(INSTALLATION_ID_FILE, installationId)
 
-      const event: UsageTrackingEvent = {
-        type: UsageTrackingEvents.AppInstalled,
-      }
-
-      this.trackEvent(event)
+      this.trackEvent({
+        event: UsageEventName.AppInstalled,
+      })
     } catch (error) {
       log.error('Error tracking installation:', error)
     }

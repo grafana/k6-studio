@@ -11,7 +11,7 @@ import {
   type K6Process,
 } from '@/main/script'
 import { UsageTracker } from '@/services/usageTracking'
-import { UsageTrackingEvents } from '@/services/usageTracking/types'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 
 import { ScriptHandler } from './types'
@@ -65,7 +65,7 @@ export function initialize() {
       })
 
       tracker.trackEvent({
-        type: UsageTrackingEvents.ScriptValidated,
+        event: UsageEventName.ScriptValidated,
       })
     }
   )

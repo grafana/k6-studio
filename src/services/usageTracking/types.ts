@@ -1,6 +1,6 @@
 import { Arch, Platform } from '@/types/electron'
 
-export enum UsageTrackingEvents {
+export enum UsageEventName {
   // General
   AppInstalled = 'app_installed',
 
@@ -16,7 +16,7 @@ export enum UsageTrackingEvents {
   ScriptRunInCloud = 'script_run_in_cloud',
 }
 
-export interface UsageTrackingEventMetadata {
+export interface UsageEventMetadata {
   usageStatsId: string
   timestamp: string
   appVersion: string
@@ -25,30 +25,30 @@ export interface UsageTrackingEventMetadata {
 }
 
 export interface AppInstalledEvent {
-  type: UsageTrackingEvents.AppInstalled
+  event: UsageEventName.AppInstalled
 }
 
 export interface RecordingCreatedEvent {
-  type: UsageTrackingEvents.RecordingCreated
+  event: UsageEventName.RecordingCreated
 }
 
 export interface GeneratorCreatedEvent {
-  type: UsageTrackingEvents.GeneratorSaved
+  event: UsageEventName.GeneratorSaved
 }
 
 export interface ScriptExportedEvent {
-  type: UsageTrackingEvents.ScriptExported
+  event: UsageEventName.ScriptExported
 }
 
 export interface ScriptValidatedEvent {
-  type: UsageTrackingEvents.ScriptValidated
+  event: UsageEventName.ScriptValidated
 }
 
 export interface ScriptRunInCloudEvent {
-  type: UsageTrackingEvents.ScriptRunInCloud
+  event: UsageEventName.ScriptRunInCloud
 }
 
-export type UsageTrackingEvent =
+export type UsageEvent =
   | AppInstalledEvent
   | RecordingCreatedEvent
   | GeneratorCreatedEvent
@@ -56,5 +56,4 @@ export type UsageTrackingEvent =
   | ScriptValidatedEvent
   | ScriptRunInCloudEvent
 
-export type UsageTrackingEventWithMetadata = UsageTrackingEvent &
-  UsageTrackingEventMetadata
+export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata
