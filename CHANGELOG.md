@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.5.0](https://github.com/grafana/k6-studio/compare/v1.4.0...v1.5.0) (2025-06-24)
+
+
+### Features
+
+* Display recent URLs in Recorder ([#748](https://github.com/grafana/k6-studio/issues/748)) ([815762f](https://github.com/grafana/k6-studio/commit/815762f2bf7bbbe1cc60efc88d7e344335c7255a))
+
+
+### Bug Fixes
+
+* Add support for Chromium path from Flatpak ([#750](https://github.com/grafana/k6-studio/issues/750)) ([b35b9ea](https://github.com/grafana/k6-studio/commit/b35b9eae4c811447f575856fcebbaaf25ce78ced))
+* Cloud sign-in fails when user is behind a network proxy ([#756](https://github.com/grafana/k6-studio/issues/756)) ([660399d](https://github.com/grafana/k6-studio/commit/660399dd77fc6fdff9c747b0ca7561e99c167a7d))
+* Threshold metric for http_req_failed ([#734](https://github.com/grafana/k6-studio/issues/734)) ([bc84b7e](https://github.com/grafana/k6-studio/commit/bc84b7eed5f172f2f617901efc5771ea397dc5b8))
+
+
+### Miscellaneous Chores
+
+* update k6 version to v1.0.0 ([#760](https://github.com/grafana/k6-studio/issues/760)) ([c8ad5ed](https://github.com/grafana/k6-studio/commit/c8ad5edb384c6805ce4cf7fd62bf6f475672bc71))
+
 ## [1.4.0](https://github.com/grafana/k6-studio/compare/v1.3.0...v1.4.0) (2025-06-11)
 
 
