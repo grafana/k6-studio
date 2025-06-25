@@ -12,8 +12,6 @@ import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { HarHandler } from './types'
 
 export function initialize() {
-  const tracker = UsageTracker.getInstance()
-
   ipcMain.handle(
     HarHandler.SaveFile,
     async (_, data: HarWithOptionalResponse, prefix: string) => {
@@ -26,7 +24,7 @@ export function initialize() {
         prefix,
       })
 
-      tracker.trackEvent({ event: UsageEventName.RecordingCreated })
+      UsageTracker.track({ event: UsageEventName.RecordingCreated })
 
       return fileName
     }

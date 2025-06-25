@@ -18,7 +18,6 @@ import { ScriptHandler } from './types'
 
 export function initialize() {
   let currentk6Process: K6Process | null
-  const tracker = UsageTracker.getInstance()
 
   ipcMain.handle(ScriptHandler.Select, async (event) => {
     console.info(`${ScriptHandler.Select} event received`)
@@ -64,7 +63,7 @@ export function initialize() {
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
 
-      tracker.trackEvent({
+      UsageTracker.track({
         event: UsageEventName.ScriptValidated,
       })
     }

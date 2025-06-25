@@ -13,70 +13,48 @@ import {
   UsageEventWithMetadata,
 } from './types'
 
-// const TRACKING_URL = 'https://stats.grafana.org/k6-studio-usage-report'
-const TRACKING_URL = '127.0.0.1'
+const TRACKING_URL = 'https://stats.grafana.org/k6-studio-usage-report'
 const INSTALLATION_ID_FILE = path.join(
   app.getPath('userData'),
   '.installation_id'
 )
 
 export class UsageTracker {
-  static #instance: UsageTracker
-
-  private constructor() {
+  static async init() {
     if (process.env.NODE_ENV === 'development') {
       return
     }
 
-    // Track installation on service initialization
-    this.#trackInstallation().catch((error) => {
+    try {
+      await this.trackInstallation()
+    } catch (error) {
       log.error('Failed to track installation:', error)
-    })
-  }
-
-  static getInstance() {
-    if (!UsageTracker.#instance) {
-      UsageTracker.#instance = new UsageTracker()
     }
-    return UsageTracker.#instance
   }
 
-  trackEvent(event: UsageEvent) {
-    // Runs the event tracking asynchronously in the background,
-    // without blocking or requiring the caller to handle completion or errors
-    ;async () => {
+  static track(event: UsageEvent) {
+    ;(async () => {
       if (!k6StudioState.appSettings.telemetry.usageReport) {
         return
       }
 
-      const metadata: UsageEventMetadata = {
-        usageStatsId: await this.#getInstallationId(),
-        timestamp: Date(),
-        appVersion: app.getVersion(),
-        os: getPlatform(),
-        arch: getArch(),
-      }
-
-      const eventWithMetadata = {
-        ...event,
-        ...metadata,
-      }
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log(eventWithMetadata)
-        return
-      }
+      const eventWithMetadata = await this.createEventWithMetadata(event)
 
       try {
-        await this.#sendEvent(eventWithMetadata)
+        await this.sendEvent(eventWithMetadata)
       } catch (error) {
         log.error('Failed to send usage statistic event:', error)
       }
-    }
+    })()
   }
 
-  async #sendEvent(event: UsageEventWithMetadata) {
+  private static async sendEvent(event: UsageEventWithMetadata) {
     if (!k6StudioState.appSettings.telemetry.usageReport) {
+      return
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(event)
       return
     }
 
@@ -91,16 +69,16 @@ export class UsageTracker {
     }
   }
 
-  async #trackInstallation() {
+  private static async trackInstallation() {
     try {
-      if (await this.#installationIdExists()) {
+      if (await this.installationIdExists()) {
         return // Installation already tracked
       }
 
       const installationId = uuid()
       await writeFile(INSTALLATION_ID_FILE, installationId)
 
-      this.trackEvent({
+      this.track({
         event: UsageEventName.AppInstalled,
       })
     } catch (error) {
@@ -108,7 +86,7 @@ export class UsageTracker {
     }
   }
 
-  async #installationIdExists(): Promise<boolean> {
+  private static async installationIdExists(): Promise<boolean> {
     try {
       await readFile(INSTALLATION_ID_FILE, 'utf-8')
       return true
@@ -117,11 +95,28 @@ export class UsageTracker {
     }
   }
 
-  async #getInstallationId(): Promise<string> {
+  private static async getInstallationId(): Promise<string> {
     try {
       return await readFile(INSTALLATION_ID_FILE, 'utf-8')
     } catch {
       throw new Error('Installation ID file is missing')
+    }
+  }
+
+  private static async createEventWithMetadata(
+    event: UsageEvent
+  ): Promise<UsageEventWithMetadata> {
+    const metadata: UsageEventMetadata = {
+      usageStatsId: await this.getInstallationId(),
+      timestamp: Date(),
+      appVersion: app.getVersion(),
+      os: getPlatform(),
+      arch: getArch(),
+    }
+
+    return {
+      ...event,
+      ...metadata,
     }
   }
 }

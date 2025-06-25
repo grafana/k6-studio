@@ -191,9 +191,9 @@ app.whenReady().then(
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
     await createSplashWindow()
 
-    UsageTracker.getInstance()
     await setupProjectStructure()
     await migrateJsonGenerator()
+    await UsageTracker.init()
     await createWindow()
   },
   (error) => {
