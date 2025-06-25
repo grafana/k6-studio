@@ -7,15 +7,15 @@ export const UsageEventName = {
   AppInstalled: `${PREFIX}_app_installed`,
 
   // Recorder
-  RecordingCreated: '${PREFIX}_recording_created',
+  RecordingCreated: `${PREFIX}_recording_created`,
 
   // Generator
-  GeneratorSaved: '${PREFIX}_generator_saved',
+  GeneratorSaved: `${PREFIX}_generator_saved`,
 
   // Script
-  ScriptExported: '${PREFIX}_script_exported',
-  ScriptValidated: '${PREFIX}_script_validated',
-  ScriptRunInCloud: '${PREFIX}_script_run_in_cloud',
+  ScriptExported: `${PREFIX}_script_exported`,
+  ScriptValidated: `${PREFIX}_script_validated`,
+  ScriptRunInCloud: `${PREFIX}_script_run_in_cloud`,
 } as const
 
 export interface UsageEventMetadata {
