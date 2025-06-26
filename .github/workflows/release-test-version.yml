@@ -75,7 +75,7 @@ jobs:
       - name: setup windows certificate
         if: startsWith(matrix.platform, 'windows-')
         run: |
-          $bytes = [Convert]::FromBase64String("$WINDOWS_CERTIFICATE")
+          $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
           [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
 
           if (Test-Path "certificate.pfx") {
