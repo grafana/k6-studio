@@ -6,6 +6,7 @@ import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
 import { HeaderSelect } from './HeaderSelect'
+import { JsonSelectorHint } from './JsonSelectorHint'
 import { allowedSelectorMap, fromOptions } from './SelectorField.constants'
 
 export function SelectorField({
@@ -128,8 +129,13 @@ function SelectorContent({
   switch (selector.type) {
     case 'json':
       return (
-        <FieldGroup name={`${field}.path`} errors={errors} label="JSON path">
-          <TextField.Root {...register(`${field}.path`)} />
+        <FieldGroup
+          name={`${field}.path`}
+          errors={errors}
+          label="JSON property path"
+          hint={<JsonSelectorHint />}
+        >
+          <TextField.Root {...register(`${field}.path`)} id={`${field}.path`} />
         </FieldGroup>
       )
     case 'begin-end':
