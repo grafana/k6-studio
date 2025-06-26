@@ -1,4 +1,5 @@
 import { Box } from '@radix-ui/themes'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { useMemo } from 'react'
 
 import { ReadOnlyEditor } from './Monaco/ReadOnlyEditor'
@@ -17,13 +18,9 @@ export function CodeSnippet({
     return lineHeight * lines
   }, [value])
 
-  // Disable monaco editor focus on mount
-  function handleEditorMount() {
-    requestAnimationFrame(() => {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur()
-      }
-    })
+  // Prevent the editor from stealing focus when mounted
+  function handleEditorMount(editor: monaco.editor.IStandaloneCodeEditor) {
+    editor.focus = () => {}
   }
 
   return (
