@@ -167,7 +167,8 @@ describe('Code generation', () => {
         import http from 'k6/http'
         import execution from "k6/execution";
         import { SharedArray } from 'k6/data'
-        import Papa from 'https://jslib.k6.io/papaparse/5.1.1/index.js'
+        import csv from "k6/experimental/csv";
+        import fs from "k6/experimental/fs";
         `)
 
       expect(
@@ -210,9 +211,7 @@ describe('Code generation', () => {
 
       const expectedResult = await prettify(`
         const FILES = {
-          users: new SharedArray("users", () => {
-            return Papa.parse(open("../Data/users.csv"), { header: true }).data;
-          }),
+          users: await csv.parse(await fs.open("../Data/users.csv"), { asObjects: true }),
 
           products: new SharedArray("products", () => {
             const data = JSON.parse(open("../Data/products.json"));
