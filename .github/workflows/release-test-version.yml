@@ -77,14 +77,6 @@ jobs:
           $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
           [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
 
-          if (Test-Path "certificate.pfx") {
-            $fileInfo = Get-Item "certificate.pfx"
-            Write-Host "Certificate file exists."
-            Write-Host "File size: $($fileInfo.Length) bytes"
-          } else {
-            Write-Host "Certificate file does NOT exist."
-          }
-
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
         env:
