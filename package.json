@@ -17,6 +17,7 @@
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
     "test": "vitest run",
+    "flow-test": "playwright test -- tests",
     "test:watch": "vitest watch",
     "format": "prettier --ignore-unknown --write \"./**/*\"",
     "prepare": "husky && husky install"
@@ -33,6 +34,7 @@
     "@electron-forge/plugin-vite": "^7.4.0",
     "@electron-forge/publisher-github": "^7.4.0",
     "@electron/fuses": "^1.8.0",
+    "@playwright/test": "^1.52.0",
     "@tanstack/eslint-plugin-query": "^5.53.0",
     "@testing-library/react": "^16.0.1",
     "@types/chrome": "^0.0.287",
@@ -51,6 +53,7 @@
     "@typescript-eslint/types": "^8.21.0",
     "dotenv": "^16.4.7",
     "electron": "30.0.8",
+    "electron-playwright-helpers": "^1.7.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",

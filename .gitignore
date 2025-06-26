@@ -107,3 +107,6 @@ resources/win/x86_64/k6
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# tests
+test-results
