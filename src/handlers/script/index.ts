@@ -10,6 +10,8 @@ import {
   runScript,
   type K6Process,
 } from '@/main/script'
+import { UsageTracker } from '@/services/usageTracking'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 
 import { ScriptHandler } from './types'
@@ -59,6 +61,10 @@ export function initialize() {
         scriptPath: resolvedScriptPath,
         proxyPort: k6StudioState.appSettings.proxy.port,
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
+      })
+
+      UsageTracker.track({
+        event: UsageEventName.ScriptValidated,
       })
     }
   )
