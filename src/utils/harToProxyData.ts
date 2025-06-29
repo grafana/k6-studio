@@ -1,18 +1,28 @@
-import type { Content, Entry } from 'har-format'
+import type { Content, Entry, Header } from 'har-format'
 
 import { DEFAULT_GROUP_NAME } from '@/constants'
+import { defaultFeatures } from '@/store/features'
+import {
+  generateJsonPaths,
+  isJsonContentType,
+} from '@/store/generator/slices/recording.utils'
 import { Method, ProxyData, Request, Response } from '@/types'
 import { HarWithOptionalResponse } from '@/types/har'
 
 import { safeAtob } from './format'
 
 export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
-  return har.log.entries.map((entry) => ({
-    id: self.crypto.randomUUID(),
-    request: parseRequest(entry.request),
-    response: entry.response ? parseResponse(entry.response) : undefined,
-    group: entry.pageref || DEFAULT_GROUP_NAME,
-  }))
+  return har.log.entries.map((entry) => {
+    const request = parseRequest(entry.request)
+    const response = entry.response ? parseResponse(entry.response) : undefined
+
+    return {
+      id: self.crypto.randomUUID(),
+      request,
+      response,
+      group: entry.pageref || DEFAULT_GROUP_NAME,
+    }
+  })
 }
 
 function parseRequest(request: Entry['request']): Request {
@@ -31,6 +41,7 @@ function parseRequest(request: Entry['request']): Request {
     )
   }
 
+  const jsonPaths = parseJsonPaths(content, request.headers)
   const url = new URL(request.url)
 
   return {
@@ -40,6 +51,7 @@ function parseRequest(request: Entry['request']): Request {
     headers: request.headers.map((h) => [h.name, h.value]),
     query: request.queryString.map((q) => [q.name, q.value]),
     cookies: request.cookies.map((c) => [c.name, c.value]),
+    jsonPaths,
     content,
     // TODO: add actual values
     // @ts-expect-error incomplete type
@@ -58,17 +70,32 @@ function parseRequest(request: Entry['request']): Request {
 }
 
 function parseResponse(response: Entry['response']): Response {
+  const content = parseContent(response.content)
+  const jsonPaths = parseJsonPaths(content, response.headers)
+
   return {
     statusCode: response.status,
     reason: response.statusText,
     httpVersion: response.httpVersion,
     headers: response.headers.map((h) => [h.name, h.value]),
     cookies: response.cookies.map((c) => [c.name, c.value]),
-    content: parseContent(response.content),
+    jsonPaths,
+    content,
     contentLength: response.content?.size ?? 0,
     timestampStart: 0,
     path: '',
   }
+}
+
+function parseJsonPaths(content: string, headers: Header[]): string[] {
+  const isJsonPathsFeatureFlagTrue = defaultFeatures['typeahead-json']
+  const isJsonPathsEnabled =
+    isJsonPathsFeatureFlagTrue && isJsonContentType(headers)
+
+  if (!isJsonPathsEnabled) {
+    return []
+  }
+  return generateJsonPaths(content)
 }
 
 function isoToUnixTimestamp(isoString: string): number {
