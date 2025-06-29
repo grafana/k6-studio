@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
+import { extractUniqueJsonPaths } from '@/store/generator/slices/recording.utils'
 import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { exhaustive } from '@/utils/typescript'
@@ -17,13 +18,8 @@ import {
 } from './slices'
 import { createScriptDataSlice, ScriptDataStore } from './slices/script'
 
-type JsonPaths = {
-  json_paths: string[]
-}
-
 export interface GeneratorStore
   extends RecordingSliceStore,
-    JsonPaths,
     RulesSliceStore,
     TestDataStore,
     TestOptionsStore,
@@ -41,7 +37,6 @@ export const useGeneratorStore = create<GeneratorStore>()(
     ...createTestDataSlice(set, ...rest),
     ...createTestOptionsSlice(set, ...rest),
     ...createScriptDataSlice(set, ...rest),
-    json_paths: [],
     setGeneratorFile: (
       {
         options: { thinkTime, loadProfile, thresholds, cloud },
@@ -90,6 +85,20 @@ export const useGeneratorStore = create<GeneratorStore>()(
         // rules
         state.rules = rules
         state.previewOriginalRequests = false
+
+        /**
+         * Store request level metadata.
+         * This uniqifies the json paths across all requests, since the json paths already are precomputed.
+         * Using a simple set based merge strategy
+         */
+        const { requestJsonPaths, responseJsonPaths } = extractUniqueJsonPaths(
+          state.requests
+        )
+
+        state.metadata = {
+          requestJsonPaths,
+          responseJsonPaths,
+        }
       }),
   }))
 )

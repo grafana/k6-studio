@@ -26,7 +26,7 @@ export const Typeahead = forwardRef<HTMLInputElement, TypeaheadProps>(
               top: '100%',
               left: 0,
               maxHeight: '10em',
-              background: 'white',
+              background: 'var(--color-panel)', // Dynamically adjusts for dark/light themes
               overflowY: 'auto',
               right: 0,
               zIndex: 100,

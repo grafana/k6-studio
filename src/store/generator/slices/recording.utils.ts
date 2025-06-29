@@ -1,3 +1,4 @@
+import type { Header } from 'har-format'
 import { uniq } from 'lodash-es'
 
 import { ProxyData } from '@/types'
@@ -77,43 +78,20 @@ export function shouldShowAllowListDialog({
 }
 
 /**
- * @TODO keeping it here for now, until im directed to a more suitable place.
+ *  @TODO should move to a more generic json oriented folder or util
  * 💡 In a more advance implementation this will react to globalized filters as well. (api filter paths)
  */
-type JsonPaths = { response: string[]; request: string[] }
-export function generateJsonPaths(recording: ProxyData[]): JsonPaths {
-  const request_paths = new Set<string>()
-  const response_paths = new Set<string>()
+export function generateJsonPaths(data: string): string[] {
+  const jsonPathsSet = new Set<string>()
 
-  if (!recording || recording.length === 0) {
-    return {
-      request: Array.from(request_paths),
-      response: Array.from(response_paths),
-    }
+  if (!data) {
+    return []
   }
 
-  for (const proxy of recording) {
-    const { request, response } = proxy
-    const isRequestJson = isJson(request?.headers || [])
-    const isResponseJson = isJson(response?.headers || [])
+  const parsedContent = parseToJsonPaths(data)
+  parsedContent.forEach((path) => jsonPathsSet.add(path))
 
-    if (isRequestJson && request?.content) {
-      for (const path of parseToJsonPaths(request.content)) {
-        request_paths.add(path)
-      }
-    }
-
-    if (isResponseJson && response?.content) {
-      for (const path of parseToJsonPaths(response.content)) {
-        response_paths.add(path)
-      }
-    }
-  }
-
-  return {
-    request: Array.from(request_paths),
-    response: Array.from(response_paths),
-  }
+  return Array.from(jsonPathsSet)
 }
 
 function parseToJsonPaths(content: string): string[] {
@@ -149,12 +127,37 @@ function parseToJsonPaths(content: string): string[] {
   return paths
 }
 
-function isJson(headersGroups: ProxyData['request']['headers']): boolean {
-  return headersGroups.some((headers) => {
-    const [key, value] = headers
+/**
+ * Takes a set of headers and determines if its of json content type
+ */
+export function isJsonContentType(headerValues: Header[]): boolean {
+  return headerValues.some((header) => {
+    const name = header.name
+    const value = header.value
+    if (!name || !value) {
+      return false
+    }
     return (
-      key.toLowerCase() === 'content-type' &&
+      name.toLowerCase() === 'content-type' &&
       value.toLowerCase().includes('application/json')
     )
   })
+}
+
+export function extractUniqueJsonPaths(requests: ProxyData[]): {
+  requestJsonPaths: string[]
+  responseJsonPaths: string[]
+} {
+  const requestJsonPaths = new Set<string>()
+  const responseJsonPaths = new Set<string>()
+
+  for (const proxy of requests) {
+    proxy.request?.jsonPaths?.forEach((path) => requestJsonPaths.add(path))
+    proxy.response?.jsonPaths?.forEach((path) => responseJsonPaths.add(path))
+  }
+
+  return {
+    requestJsonPaths: Array.from(requestJsonPaths),
+    responseJsonPaths: Array.from(responseJsonPaths),
+  }
 }
