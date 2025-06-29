@@ -7,7 +7,6 @@ import { useGeneratorStore } from '@/store/generator'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { Typeahead } from '@/views/Generator/RuleEditor/Typeahead'
-import { SuggestionMode } from '@/views/Generator/RuleEditor/Typeahead/useTypeahead'
 
 import { HeaderSelect } from './HeaderSelect'
 import { allowedSelectorMap, fromOptions } from './SelectorField.constants'
@@ -24,11 +23,11 @@ export function SelectorField({
     formState: { errors },
   } = useFormContext<TestRule>()
 
-  const options = useGeneratorStore((state) => {
+  const options = useGeneratorStore((state): string[] => {
     if (field === 'extractor.selector' || field === 'replacer.selector') {
-      return state.getJsonPaths('response')
+      return state.metadata.responseJsonPaths
     }
-    return state.getJsonPaths('request')
+    return state.metadata.requestJsonPaths
   })
   const selector = watch(field)
 
@@ -137,25 +136,20 @@ function SelectorContent({
     register,
     formState: { errors },
   } = useFormContext<TestRule>()
-  /**
-   * @poc - might be questionable to put the state here, but to prevent too much refactoring keeping it here for now.
-   */
-  const typeaheadFeatureFlag = useFeaturesStore((state) => {
-    return {
-      isEnabled: state.features['typeahead-json'],
-      // options: onDot, onFirstKey, onThirdKey
-      mode: 'onDot' as SuggestionMode,
-    }
+
+  const typeaheadEnabled = useFeaturesStore((state) => {
+    return state.features['typeahead-json']
   })
+
   switch (selector.type) {
     case 'json':
       return (
         <FieldGroup name={`${field}.path`} errors={errors} label="JSON path">
-          {typeaheadFeatureFlag.isEnabled ? (
+          {typeaheadEnabled ? (
             <Typeahead
               placeholder="Search for JSON key paths"
               defaultValue={selector.path}
-              mode={typeaheadFeatureFlag.mode}
+              mode="onDot"
               options={options || []}
               {...register(`${field}.path`)}
             />

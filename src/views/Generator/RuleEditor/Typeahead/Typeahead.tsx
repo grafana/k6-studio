@@ -1,6 +1,5 @@
 import { Box, Card, TextField } from '@radix-ui/themes'
-import * as React from 'react'
-import { ComponentProps } from 'react'
+import { forwardRef, ComponentProps } from 'react'
 
 import { SuggestionMode, useTypeahead } from './useTypeahead'
 
@@ -9,7 +8,7 @@ export type TypeaheadProps = ComponentProps<typeof TextField.Root> & {
   mode: SuggestionMode
 }
 
-export const Typeahead = React.forwardRef<HTMLInputElement, TypeaheadProps>(
+export const Typeahead = forwardRef<HTMLInputElement, TypeaheadProps>(
   (props, ref) => {
     const { options, mode } = props
     const { inputProps, filteredOptions, isFocused, dropdownProps } =
