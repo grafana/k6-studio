@@ -3,7 +3,7 @@ import { Box, IconButton } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { PanelLeftOpenIcon } from 'lucide-react'
 import { useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
 import { ActivityBar } from './ActivityBar'
@@ -24,6 +24,16 @@ export function Layout() {
   useEffect(() => {
     window.studio.app.changeRoute(location.pathname)
   }, [location])
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    return window.studio.deepLinks.onDeepLink((link) => {
+      console.log('Received deep link:', link)
+      const route = link.replace('k6-studio://open', '')
+      navigate(route)
+    })
+  }, [navigate])
 
   return (
     <Box

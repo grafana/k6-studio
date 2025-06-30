@@ -9,6 +9,8 @@ import { VitePlugin } from '@electron-forge/plugin-vite'
 import type { ForgeConfig } from '@electron-forge/shared-types'
 import path from 'path'
 
+import { CUSTOM_APP_PROTOCOL } from '@/main/deepLinks.constants'
+
 import { getPlatform, getArch } from './src/utils/electron'
 
 function getPlatformSpecificResources() {
@@ -51,6 +53,12 @@ const config: ForgeConfig = {
       appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
       appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
     },
+    protocols: [
+      {
+        name: CUSTOM_APP_PROTOCOL,
+        schemes: [CUSTOM_APP_PROTOCOL],
+      },
+    ],
   },
   rebuildConfig: {},
   makers: [
@@ -70,7 +78,12 @@ const config: ForgeConfig = {
       ['darwin']
     ),
     new MakerRpm({ options: { icon: './resources/icons/logo.png' } }),
-    new MakerDeb({ options: { icon: './resources/icons/logo.png' } }),
+    new MakerDeb({
+      options: {
+        icon: './resources/icons/logo.png',
+        mimeType: [`x-scheme-handler/${CUSTOM_APP_PROTOCOL}`],
+      },
+    }),
   ],
   plugins: [
     new VitePlugin({
