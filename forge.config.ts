@@ -9,8 +9,7 @@ import { VitePlugin } from '@electron-forge/plugin-vite'
 import type { ForgeConfig } from '@electron-forge/shared-types'
 import path from 'path'
 
-import { CUSTOM_APP_PROTOCOL } from '@/main/deepLinks.constants'
-
+import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
 
 function getPlatformSpecificResources() {

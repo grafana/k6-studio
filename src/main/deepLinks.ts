@@ -67,18 +67,37 @@ function listenWindowsDeepLink() {
 
 function handleDeepLink(url: string) {
   const mainWindow = BrowserWindow.getAllWindows()[0]
-  log.info('Handling custom URL:', url, mainWindow)
-  if (mainWindow) {
-    mainWindow.webContents.send('deep-link', url)
 
-    // Restore and focus the main window, needed for windows
-    if (mainWindow.isMinimized()) {
-      mainWindow.restore()
-    }
-
-    mainWindow.focus()
-  } else {
-    // Main window not ready yet, store the URL for later
+  // Main window not ready yet, store the URL until splash screen is closed
+  if (!mainWindow) {
     deepLinkUrl = url
+    return
+  }
+
+  const parsedUrl = parseUrl(url)
+
+  // Only handle the 'open' action, e.g. k6-studio://open?path=some/path
+  if (!parsedUrl || parsedUrl.hostname !== 'open') {
+    return
+  }
+
+  const path = parsedUrl.searchParams.get('path')
+
+  mainWindow.webContents.send('deep-link', path)
+
+  // Restore and focus the main window, needed for windows
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore()
+  }
+
+  mainWindow.focus()
+}
+
+function parseUrl(url: string): URL | null {
+  try {
+    return new URL(url)
+  } catch (error) {
+    log.error('Failed to parse deep link URL: ', error)
+    return null
   }
 }

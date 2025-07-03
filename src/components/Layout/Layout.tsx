@@ -28,10 +28,8 @@ export function Layout() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    return window.studio.deepLinks.onDeepLink((link) => {
-      console.log('Received deep link:', link)
-      const route = link.replace('k6-studio://open', '')
-      navigate(route)
+    return window.studio.deepLinks.onDeepLink((path) => {
+      navigate(path)
     })
   }, [navigate])
 
