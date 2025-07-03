@@ -14,6 +14,7 @@ export function initializeDeepLinks() {
   listenWindowsDeepLink()
 }
 
+// Register application to handle custom protocol links
 function registerCustomProtocol() {
   if (process.defaultApp) {
     if (process.argv.length >= 2) {
