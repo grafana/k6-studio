@@ -3,8 +3,10 @@ import { Box, IconButton } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { PanelLeftOpenIcon } from 'lucide-react'
 import { useEffect } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
+
+import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
 
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
@@ -15,6 +17,7 @@ export function Layout() {
     true
   )
   const location = useLocation()
+  useListenDeepLinks()
 
   const handleVisibleChange = (index: number, visible: boolean) => {
     if (index !== 1) return
@@ -24,14 +27,6 @@ export function Layout() {
   useEffect(() => {
     window.studio.app.changeRoute(location.pathname)
   }, [location])
-
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    return window.studio.deepLinks.onDeepLink((path) => {
-      navigate(path)
-    })
-  }, [navigate])
 
   return (
     <Box

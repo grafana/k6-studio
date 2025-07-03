@@ -13,15 +13,7 @@ import * as proxy from './handlers/proxy/preload'
 import * as script from './handlers/script/preload'
 import * as settings from './handlers/settings/preload'
 import * as ui from './handlers/ui/preload'
-import { createListener } from './handlers/utils'
 import * as Sentry from './sentry'
-
-const deepLinks = {
-  onDeepLink: (callback: (url: string) => void) => {
-    console.log('received deep link')
-    return createListener('deep-link', callback)
-  },
-}
 
 const studio = {
   auth,
@@ -37,7 +29,6 @@ const studio = {
   settings,
   browserRemote,
   cloud,
-  deepLinks,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)
