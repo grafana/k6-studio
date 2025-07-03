@@ -51,7 +51,12 @@ function listenWindowsDeepLink() {
     app.quit()
   } else {
     app.on('second-instance', (_, commands) => {
-      handleDeepLink(commands.pop() ?? '')
+      const url = commands.find((command) =>
+        command.startsWith(`${CUSTOM_APP_PROTOCOL}://`)
+      )
+      if (url) {
+        handleDeepLink(url)
+      }
     })
   }
 
