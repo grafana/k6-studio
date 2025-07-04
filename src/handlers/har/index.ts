@@ -3,6 +3,8 @@ import { readFile, copyFile } from 'fs/promises'
 import path from 'path'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
+import { UsageTracker } from '@/services/usageTracking'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { HarWithOptionalResponse } from '@/types/har'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
@@ -21,6 +23,8 @@ export function initialize() {
         ext: '.har',
         prefix,
       })
+
+      UsageTracker.track({ event: UsageEventName.RecordingCreated })
 
       return fileName
     }
