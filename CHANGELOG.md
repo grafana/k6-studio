@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.6.0](https://github.com/grafana/k6-studio/compare/v1.5.0...v1.6.0) (2025-07-04)
+
+
+### Features
+
+* Add JSON path explanation ([#759](https://github.com/grafana/k6-studio/issues/759)) ([df46dbf](https://github.com/grafana/k6-studio/commit/df46dbf36b47c6435020675ec5c0c8eb7d4b247e))
+
+
+### Bug Fixes
+
+* windows build ([#762](https://github.com/grafana/k6-studio/issues/762)) ([87fba5b](https://github.com/grafana/k6-studio/commit/87fba5bacd74384424c5444b377b86a5c81ef518))
+
+
+### Dependency Updates
+
+* Replace `papaparse` with `k6/experimental/csv` ([#758](https://github.com/grafana/k6-studio/issues/758)) ([fc48842](https://github.com/grafana/k6-studio/commit/fc488422eb7192d0cae5026f5003062fcbf4b5fb))
+
 ## [1.5.0](https://github.com/grafana/k6-studio/compare/v1.4.0...v1.5.0) (2025-06-24)
 
 
