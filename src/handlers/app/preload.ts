@@ -21,3 +21,7 @@ export function closeApplication() {
 export function changeRoute(route: string) {
   return ipcRenderer.send(AppHandler.CHANGE_ROUTE, route)
 }
+
+export function onDeepLink(callback: (url: string) => void) {
+  return createListener(AppHandler.DEEP_LINK, callback)
+}

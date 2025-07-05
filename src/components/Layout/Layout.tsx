@@ -6,6 +6,8 @@ import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
+import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
+
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
 
@@ -15,6 +17,7 @@ export function Layout() {
     true
   )
   const location = useLocation()
+  useListenDeepLinks()
 
   const handleVisibleChange = (index: number, visible: boolean) => {
     if (index !== 1) return
