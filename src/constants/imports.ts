@@ -6,6 +6,8 @@ type K6ExportName =
   | 'k6/encoding'
   | 'k6/data'
   | 'k6/execution'
+  | 'k6/experimental/csv'
+  | 'k6/experimental/fs'
   | 'k6/html'
   | 'k6/http'
   | 'k6/net/grpc'
@@ -43,6 +45,14 @@ export const K6_EXPORTS: Record<K6ExportName, ImportModule> = {
   'k6/execution': {
     path: 'k6/execution',
     default: { name: 'execution' },
+  },
+  'k6/experimental/csv': {
+    path: 'k6/experimental/csv',
+    default: { name: 'csv' },
+  },
+  'k6/experimental/fs': {
+    path: 'k6/experimental/fs',
+    default: { name: 'fs' },
   },
   'k6/html': {
     path: 'k6/html',

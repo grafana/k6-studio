@@ -1,11 +1,9 @@
 import { parse, TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { generate } from 'astring'
 import { app, dialog, BrowserWindow } from 'electron'
 import { readFile, writeFile, unlink } from 'fs/promises'
 import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'path'
-import { format } from 'prettier'
-// eslint-disable-next-line import/default
-import estree from 'prettier/plugins/estree'
 import readline from 'readline/promises'
 
 import {
@@ -320,25 +318,7 @@ export const enhanceScript = async ({
     })
   )
 
-  return format(script, {
-    parser: 'k6',
-    plugins: [
-      estree,
-      // This is a custom parser plugin that simply returns our modified AST.
-      {
-        parsers: {
-          k6: {
-            astFormat: 'estree',
-            parse: () => {
-              return scriptAst
-            },
-            locStart: () => 0,
-            locEnd: () => 0,
-          },
-        },
-      },
-    ],
-  })
+  return generate(scriptAst)
 }
 
 const getSnippetPath = (snippetName: string) => {

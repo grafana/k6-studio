@@ -4,6 +4,8 @@ import { existsSync, readFileSync } from 'fs'
 import { writeFile, open } from 'fs/promises'
 import path from 'node:path'
 
+import { configureSystemProxy } from '@/services/http'
+
 import { AppSettingsSchema } from '../schemas/settings'
 import { AppSettings } from '../types/settings'
 import { getPlatform } from '../utils/electron'
@@ -177,16 +179,22 @@ export async function applySettings(
 ) {
   if (modifiedSettings.proxy) {
     await stopProxyProcess()
+
     k6StudioState.appSettings.proxy = modifiedSettings.proxy
     k6StudioState.currentProxyProcess =
       await launchProxyAndAttachEmitter(browserWindow)
+
+    await configureSystemProxy()
   }
+
   if (modifiedSettings.recorder) {
     k6StudioState.appSettings.recorder = modifiedSettings.recorder
   }
+
   if (modifiedSettings.telemetry) {
     k6StudioState.appSettings.telemetry = modifiedSettings.telemetry
   }
+
   if (modifiedSettings.appearance) {
     k6StudioState.appSettings.appearance = modifiedSettings.appearance
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
