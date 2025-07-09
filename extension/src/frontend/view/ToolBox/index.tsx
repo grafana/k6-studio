@@ -3,7 +3,6 @@ import {
   DragEndEvent,
   Modifier,
   MouseSensor,
-  useDraggable,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -11,9 +10,7 @@ import {
   restrictToHorizontalAxis,
   restrictToWindowEdges,
 } from '@dnd-kit/modifiers'
-import { css } from '@emotion/react'
 import {
-  GripVerticalIcon,
   PanelRight,
   SquareDashedMousePointerIcon,
   SquareIcon,
@@ -21,79 +18,12 @@ import {
 } from 'lucide-react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
-import { Tooltip } from '@/components/primitives/Tooltip'
 
-import { InBrowserSettings, useToolboxSettings } from './settings'
-import { Tool } from './types'
+import { useToolboxSettings } from '../settings'
+import { Tool } from '../types'
 
-interface ToolBoxRootProps {
-  settings: InBrowserSettings['toolbox']
-  children?: React.ReactNode
-}
-
-function ToolBoxRoot({ settings, children }: ToolBoxRootProps) {
-  const {
-    isDragging,
-    attributes,
-    listeners,
-    transform,
-    setNodeRef,
-    setActivatorNodeRef,
-  } = useDraggable({
-    id: 'toolbox',
-  })
-
-  return (
-    <div
-      ref={setNodeRef}
-      css={css`
-        position: fixed;
-        top: var(--studio-spacing-2);
-        transform: translateX(-50%);
-        z-index: var(--studio-layer-2);
-
-        display: flex;
-        align-items: stretch;
-
-        color: var(--studio-foreground);
-        background-color: var(--studio-background);
-        box-shadow: var(--studio-shadow-1);
-        border: 1px solid var(--gray-6);
-      `}
-      style={{
-        transform:
-          transform !== null
-            ? `translateX(calc(${transform.x}px - 50%))`
-            : undefined,
-        left: `${settings.position.left}vw`,
-      }}
-    >
-      <div
-        ref={setActivatorNodeRef}
-        css={css`
-          display: flex;
-          align-items: center;
-          color: var(--gray-7);
-          border-right: 1px solid var(--gray-3);
-        `}
-        style={{
-          cursor: isDragging ? 'grabbing' : 'grab',
-        }}
-        {...attributes}
-        {...listeners}
-      >
-        <GripVerticalIcon size={'1.2em'} />
-      </div>
-      <Toolbar.Root
-        css={css`
-          padding: var(--studio-spacing-1);
-        `}
-      >
-        {children}
-      </Toolbar.Root>
-    </div>
-  )
-}
+import { ToolBoxRoot } from './ToolBoxRoot'
+import { ToolBoxTooltip } from './ToolBoxTooltip'
 
 const restrictToolBoxToWindowEdges: Modifier = ({
   draggingNodeRect,
@@ -174,39 +104,27 @@ export function ToolBox({
       onDragEnd={handleDragEnd}
     >
       <ToolBoxRoot settings={settings}>
-        <Tooltip delayDuration={0} asChild content="Stop recording">
+        <ToolBoxTooltip content="Stop recording">
           <Toolbar.Button onClick={onStopRecording}>
             <SquareIcon />
           </Toolbar.Button>
-        </Tooltip>
+        </ToolBoxTooltip>
         <Toolbar.Separator />
         <Toolbar.ToggleGroup
           type="single"
           value={tool ?? ''}
           onValueChange={handleToolChange}
         >
-          <Tooltip
-            delayDuration={0}
-            asChild
-            content="Pick an element to add assertions to it"
-          >
-            <div>
-              <Toolbar.ToggleItem value="inspect">
-                <SquareDashedMousePointerIcon />
-              </Toolbar.ToggleItem>
-            </div>
-          </Tooltip>
-          <Tooltip
-            delayDuration={0}
-            asChild
-            content="Add assertions on text content by selecting it"
-          >
-            <div>
-              <Toolbar.ToggleItem value="assert-text">
-                <TextCursorIcon />
-              </Toolbar.ToggleItem>
-            </div>
-          </Tooltip>
+          <ToolBoxTooltip content="Pick an element to add assertions to it">
+            <Toolbar.ToggleItem value="inspect">
+              <SquareDashedMousePointerIcon />
+            </Toolbar.ToggleItem>
+          </ToolBoxTooltip>
+          <ToolBoxTooltip content="Add assertions on text content by selecting it">
+            <Toolbar.ToggleItem value="assert-text">
+              <TextCursorIcon />
+            </Toolbar.ToggleItem>
+          </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
         <Toolbar.Separator />
         <Toolbar.ToggleGroup
@@ -214,13 +132,11 @@ export function ToolBox({
           value={isDrawerOpen ? 'events' : ''}
           onValueChange={handleDrawerToggle}
         >
-          <Tooltip delayDuration={0} asChild content="Toggle event list">
-            <div>
-              <Toolbar.ToggleItem value="events">
-                <PanelRight />
-              </Toolbar.ToggleItem>
-            </div>
-          </Tooltip>
+          <ToolBoxTooltip content="Toggle event list">
+            <Toolbar.ToggleItem value="events">
+              <PanelRight />
+            </Toolbar.ToggleItem>
+          </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
       </ToolBoxRoot>
     </DndContext>
