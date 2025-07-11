@@ -1,6 +1,11 @@
 import { css } from '@emotion/react'
 import { ToolbarButtonProps } from '@radix-ui/react-toolbar'
-import { CheckSquareIcon, EyeIcon, TypeIcon } from 'lucide-react'
+import {
+  CheckSquareIcon,
+  EyeIcon,
+  TextCursorInputIcon,
+  TypeIcon,
+} from 'lucide-react'
 import { ComponentProps, ReactNode } from 'react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
@@ -9,6 +14,9 @@ import { TrackedElement } from './ElementInspector.hooks'
 import {
   findLabeledControl,
   getCheckedState,
+  getSelectedValues,
+  getSelectOptions,
+  getTextBoxValue,
   LabeledControl,
 } from './ElementMenu.utils'
 import { AssertionData, CheckAssertionData } from './assertions/types'
@@ -130,6 +138,69 @@ function RadioCategory({ input, onAddAssertion }: RadioCategoryProps) {
   )
 }
 
+interface TextBoxCategory {
+  input: LabeledControl
+  onAddAssertion: (data: AssertionData) => void
+}
+
+function TextBoxCategory({ input, onAddAssertion }: TextBoxCategory) {
+  const role = input.roles.find((role) => role.role === 'textbox')
+
+  if (role === undefined) {
+    return null
+  }
+
+  const handleAddAssertion = () => {
+    onAddAssertion({
+      type: 'input-value',
+      selector: input.selector.css,
+      multiline:
+        input.element instanceof HTMLTextAreaElement ||
+        input.element.getAttribute('aria-multiline') === 'true',
+      expected: getTextBoxValue(input.element),
+    })
+  }
+
+  return (
+    <>
+      <CategorySeparator>Text box</CategorySeparator>
+      <ToolbarButton onClick={handleAddAssertion}>
+        <TextCursorInputIcon /> <div>Add value assertion</div>
+      </ToolbarButton>
+    </>
+  )
+}
+
+function ListBoxCategory({ input, onAddAssertion }: TextBoxCategory) {
+  const role = input.roles.find((role) => role.role === 'listbox')
+
+  if (role === undefined) {
+    return null
+  }
+
+  const handleAddAssertion = () => {
+    const [first = { value: '', label: '' }, ...rest] = getSelectedValues(
+      input.element
+    )
+
+    onAddAssertion({
+      type: 'select-value',
+      selector: input.selector.css,
+      expected: [first, ...rest],
+      options: getSelectOptions(input.element),
+    })
+  }
+
+  return (
+    <>
+      <CategorySeparator>List box</CategorySeparator>
+      <ToolbarButton onClick={handleAddAssertion}>
+        <TextCursorInputIcon /> <div>Add value assertion</div>
+      </ToolbarButton>
+    </>
+  )
+}
+
 interface ElementMenuProps {
   element: TrackedElement
   onSelectAssertion: (data: AssertionData) => void
@@ -169,6 +240,14 @@ export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
             onAddAssertion={onSelectAssertion}
           />
           <RadioCategory
+            input={inputElement}
+            onAddAssertion={onSelectAssertion}
+          />
+          <TextBoxCategory
+            input={inputElement}
+            onAddAssertion={onSelectAssertion}
+          />
+          <ListBoxCategory
             input={inputElement}
             onAddAssertion={onSelectAssertion}
           />

@@ -10,6 +10,7 @@ import {
   fromArrayLiteral,
   fromObjectLiteral,
 } from '@/codegen/estree'
+import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
 import { spaceBetween } from '../formatting/spacing'
@@ -222,6 +223,27 @@ function emitExpectExpression(
         ])
         .await(context)
         .done()
+
+    case 'HasValueAssertion': {
+      const expectedValues = mapNonEmpty(
+        expression.expected.expected,
+        (value) => emitExpression(context, value)
+      )
+
+      if (expectedValues.length === 1) {
+        return new ExpressionBuilder(expect)
+          .member('toHaveValue')
+          .call([expectedValues[0]])
+          .await(context)
+          .done()
+      }
+
+      return new ExpressionBuilder(expect)
+        .member('toHaveValues')
+        .call([fromArrayLiteral(expectedValues)])
+        .await(context)
+        .done()
+    }
 
     default: {
       return exhaustive(expression.expected)
