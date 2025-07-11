@@ -1,10 +1,11 @@
-import { useDraggable } from '@dnd-kit/core'
+import { useDndMonitor, useDraggable } from '@dnd-kit/core'
 import { css } from '@emotion/react'
 import { GripVerticalIcon } from 'lucide-react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
 
 import { InBrowserSettings } from '../settings'
+import { useInBrowserUIStore } from '../store'
 
 interface ToolBoxRootProps {
   settings: InBrowserSettings['toolbox']
@@ -21,6 +22,33 @@ export function ToolBoxRoot({ settings, children }: ToolBoxRootProps) {
     setActivatorNodeRef,
   } = useDraggable({
     id: 'toolbox',
+  })
+
+  const blockEventCapture = useInBrowserUIStore(
+    (state) => state.blockEventCapture
+  )
+
+  const unblockEventCapture = useInBrowserUIStore(
+    (state) => state.unblockEventCapture
+  )
+
+  const resetDragging = () => {
+    // Dragging is ended on 'mouseup', so we need to wait a tick to allow
+    // any 'click' events to be processed before unblocking.
+    setTimeout(() => {
+      unblockEventCapture()
+    }, 0)
+  }
+
+  useDndMonitor({
+    onDragStart() {
+      // We need to block event capture while dragging the toolbox, otherwise
+      // click events could be recorded if the user releases the button outside
+      // of the toolbox.
+      blockEventCapture()
+    },
+    onDragCancel: resetDragging,
+    onDragEnd: resetDragging,
   })
 
   return (
