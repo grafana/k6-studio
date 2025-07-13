@@ -9,6 +9,7 @@ import { exhaustive } from '@/utils/typescript'
 import { Typeahead } from '@/views/Generator/RuleEditor/Typeahead'
 
 import { HeaderSelect } from './HeaderSelect'
+import { JsonSelectorHint } from './JsonSelectorHint'
 import { allowedSelectorMap, fromOptions } from './SelectorField.constants'
 
 export function SelectorField({
@@ -144,7 +145,12 @@ function SelectorContent({
   switch (selector.type) {
     case 'json':
       return (
-        <FieldGroup name={`${field}.path`} errors={errors} label="JSON path">
+        <FieldGroup
+          name={`${field}.path`}
+          errors={errors}
+          label="JSON property path"
+          hint={<JsonSelectorHint />}
+        >
           {typeaheadEnabled ? (
             <Typeahead
               placeholder="Search for JSON key paths"

@@ -4,7 +4,7 @@ import { Bounds } from './types'
 export function shouldSkipEvent(event: Event): boolean {
   const store = useInBrowserUIStore.getState()
 
-  if (store.tool !== null) {
+  if (store.tool !== null || store.isCaptureBlocked) {
     return true
   }
 

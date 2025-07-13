@@ -6,6 +6,7 @@ import { updateElectronApp } from 'update-electron-app'
 
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
+import { initializeDeepLinks } from './main/deepLinks'
 import { migrateJsonGenerator } from './main/generator'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
@@ -19,6 +20,7 @@ import { getSettings, initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { BrowserServer } from './services/browser/server'
+import { configureSystemProxy } from './services/http'
 import { ProxyStatus } from './types'
 import { sendReport } from './usageReport'
 import { getAppIcon, getPlatform } from './utils/electron'
@@ -55,6 +57,7 @@ handlers.initialize({
   browserServer,
 })
 mainState.initialize()
+initializeDeepLinks()
 
 const createSplashWindow = async () => {
   k6StudioState.splashscreenWindow = new BrowserWindow({
@@ -135,6 +138,9 @@ const createWindow = async () => {
     k6StudioState.proxyStatus = status
     mainWindow.webContents.send(ProxyHandler.ChangeStatus, status)
   })
+
+  // Configure proxy settings for `fetch`.
+  await configureSystemProxy()
 
   // Start proxy
   k6StudioState.currentProxyProcess =

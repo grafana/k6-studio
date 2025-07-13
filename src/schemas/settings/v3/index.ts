@@ -5,6 +5,7 @@ import {
   ProxySettingsSchema,
   RecorderSettingsSchema,
   WindowStateSchema,
+  type UpstreamProxySettings,
 } from '../v1'
 
 const TelemetrySchema = z.object({
@@ -18,6 +19,7 @@ export {
   RecorderSettingsSchema,
   TelemetrySchema,
   WindowStateSchema,
+  type UpstreamProxySettings,
 }
 
 export const AppSettingsSchema = z.object({
