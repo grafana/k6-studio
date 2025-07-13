@@ -13,6 +13,13 @@ export type SuggestionMode = 'onDot' | 'onFirstKey' | 'onThirdKey'
 type ExternalProps = Omit<TypeaheadProps, 'options' | 'mode'>
 const defaultSuggestionMode: SuggestionMode = 'onDot'
 
+function checkKeyPrefixes(value: string, mode: SuggestionMode) {
+  if (mode === 'onDot') return value.includes('.')
+  if (mode === 'onFirstKey') return value.length >= 1
+  if (mode === 'onThirdKey') return value.length >= 3
+  return false
+}
+
 export function useTypeahead(
   options: string[],
   props: ExternalProps = {},
@@ -45,10 +52,7 @@ export function useTypeahead(
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null)
 
   const shouldSuggest = React.useMemo(() => {
-    if (mode === 'onDot') return inputValue.includes('.')
-    if (mode === 'onFirstKey') return inputValue.length >= 1
-    if (mode === 'onThirdKey') return inputValue.length >= 3
-    return false
+    return checkKeyPrefixes(inputValue, mode)
   }, [inputValue, mode])
 
   const filteredOptions = React.useMemo(() => {
@@ -120,15 +124,12 @@ export function useTypeahead(
   )
 
   const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    const v = e.target.value ?? ''
+    const changeValue = e.target.value ?? ''
     if (!isControlled) {
-      setInputValue(v)
+      setInputValue(changeValue)
     }
     extOnChange?.(e)
-    const shouldFocus =
-      (mode === 'onDot' && v.includes('.')) ||
-      (mode === 'onFirstKey' && v.length >= 1) ||
-      (mode === 'onThirdKey' && v.length >= 3)
+    const shouldFocus = checkKeyPrefixes(changeValue, mode)
     setFocused(shouldFocus)
     setActiveIndex(null)
   }
