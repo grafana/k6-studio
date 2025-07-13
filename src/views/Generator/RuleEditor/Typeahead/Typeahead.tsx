@@ -19,32 +19,31 @@ export const Typeahead = forwardRef<HTMLInputElement, TypeaheadProps>(
         <TextField.Root {...inputProps} ref={ref} />
 
         {isFocused && filteredOptions.length > 0 && (
-          <Card
-            role="listbox"
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              maxHeight: '10em',
-              background: 'var(--color-panel)', // Dynamically adjusts for dark/light themes
-              overflowY: 'auto',
-              right: 0,
-              zIndex: 100,
-            }}
-          >
-            {filteredOptions.map((option, idx) => (
-              <Box
-                id={`typeahead-option-${option}`}
-                key={option}
-                as="div"
-                onMouseEnter={dropdownProps.onMouseEnter}
-                onMouseLeave={dropdownProps.onMouseLeave}
-                onMouseDown={() => dropdownProps.onMouseDown(option)}
-                style={dropdownProps.style(idx)}
-              >
-                {option}
-              </Box>
-            ))}
+          <Card role="listbox">
+            <div
+              style={{
+                top: '0',
+                maxHeight: 'calc(100vh - 200px)',
+                left: 0,
+                background: 'var(--color-panel)', // automatically switch themes
+                overflowY: 'auto',
+                right: 0,
+                zIndex: 100,
+              }}
+            >
+              {filteredOptions.map((option, idx) => (
+                <Box
+                  key={option}
+                  id={`typeahead-option-${option}`}
+                  onMouseEnter={dropdownProps.onMouseEnter}
+                  onMouseLeave={dropdownProps.onMouseLeave}
+                  onMouseDown={() => dropdownProps.onMouseDown(option)}
+                  style={dropdownProps.style(idx)}
+                >
+                  {option}
+                </Box>
+              ))}
+            </div>
           </Card>
         )}
       </Box>
