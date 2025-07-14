@@ -99,7 +99,7 @@ When opening an issue, please include a tail of your log file.
 
 ## Usage collection
 
-By default, Grafana k6 Studio sends anonymous usage reports so that we can track relevant information to be able to build the product making better data-driven decisions. Prioritizing the features that benefit the most and reducing the impact of changes.
+By default, Grafana k6 Studio collects anonymous usage data to help us improve the product through data-driven decisions. This allows us to prioritize features that benefit users most and minimize the impact of changes.
 
 For more information visit the [documentation](https://grafana.com/docs/k6-studio/set-up/usage-collection/).
 
