@@ -14,7 +14,7 @@ import {
 } from './types'
 
 const TRACKING_URL = 'https://stats.grafana.org/k6-studio-usage-report'
-const EVENT_PREFIX = 'grafana_k6_studio'
+const EVENT_PREFIX = 'k6_studio'
 const INSTALLATION_ID_FILE = path.join(
   app.getPath('userData'),
   '.installation_id'
