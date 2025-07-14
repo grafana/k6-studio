@@ -56,6 +56,7 @@ export default defineConfig((env) => {
             name: 'k6 Studio',
             version: version.replace(/-.*/, ''),
             manifest_version: 3,
+
             background: {
               service_worker: 'extension/src/background/index.ts',
             },
