@@ -10,7 +10,7 @@ import {
   runScript,
   type K6Process,
 } from '@/main/script'
-import { UsageTracker } from '@/services/usageTracking'
+import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 
@@ -63,7 +63,7 @@ export function initialize() {
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
 
-      UsageTracker.track({
+      trackEvent({
         event: UsageEventName.ScriptValidated,
       })
     }

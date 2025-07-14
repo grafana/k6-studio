@@ -19,104 +19,96 @@ const INSTALLATION_ID_FILE = path.join(
   '.installation_id'
 )
 
-export class UsageTracker {
-  static async init() {
-    if (process.env.NODE_ENV === 'development') {
-      return
-    }
-
-    try {
-      await this.trackInstallation()
-    } catch (error) {
-      log.error('Failed to track installation:', error)
-    }
+export async function initEventTracking() {
+  if (process.env.NODE_ENV === 'development') {
+    return
   }
 
-  static track(event: UsageEvent) {
-    ;(async () => {
-      if (!k6StudioState.appSettings.telemetry.usageReport) {
-        return
-      }
+  try {
+    await trackInstallation()
+  } catch (error) {
+    log.error('Failed to track installation:', error)
+  }
+}
 
-      const eventWithMetadata = await this.createEventWithMetadata(event)
-
-      try {
-        await this.sendEvent(eventWithMetadata)
-      } catch (error) {
-        log.error('Failed to send usage statistic event:', error)
-      }
-    })()
+export function trackEvent(event: UsageEvent) {
+  if (!k6StudioState.appSettings.telemetry.usageReport) {
+    return
   }
 
-  private static async sendEvent(event: UsageEventWithMetadata) {
-    if (!k6StudioState.appSettings.telemetry.usageReport) {
-      return
+  createEventWithMetadata(event)
+    .then(sendEvent)
+    .catch((error) => log.error('Failed to send usage statistic event:', error))
+}
+
+async function sendEvent(event: UsageEventWithMetadata) {
+  if (!k6StudioState.appSettings.telemetry.usageReport) {
+    return
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(event)
+    return
+  }
+
+  const response = await fetch(TRACKING_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(event),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to send event: ${response.statusText}`)
+  }
+}
+
+async function createEventWithMetadata(
+  event: UsageEvent
+): Promise<UsageEventWithMetadata> {
+  const metadata: UsageEventMetadata = {
+    usageStatsId: await getInstallationId(),
+    timestamp: Date(),
+    appVersion: app.getVersion(),
+    os: getPlatform(),
+    arch: getArch(),
+  }
+
+  return {
+    ...event,
+    ...metadata,
+  }
+}
+
+async function getInstallationId(): Promise<string> {
+  try {
+    return await readFile(INSTALLATION_ID_FILE, 'utf-8')
+  } catch {
+    throw new Error('Installation ID file is missing')
+  }
+}
+
+async function installationIdExists(): Promise<boolean> {
+  try {
+    await readFile(INSTALLATION_ID_FILE, 'utf-8')
+    return true
+  } catch {
+    return false // File does not exist
+  }
+}
+
+async function trackInstallation() {
+  try {
+    if (await installationIdExists()) {
+      return // Installation already tracked
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(event)
-      return
-    }
+    const installationId = uuid()
+    await writeFile(INSTALLATION_ID_FILE, installationId)
 
-    const response = await fetch(TRACKING_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(event),
+    trackEvent({
+      event: UsageEventName.AppInstalled,
     })
-
-    if (!response.ok) {
-      throw new Error(`Failed to send event: ${response.statusText}`)
-    }
-  }
-
-  private static async trackInstallation() {
-    try {
-      if (await this.installationIdExists()) {
-        return // Installation already tracked
-      }
-
-      const installationId = uuid()
-      await writeFile(INSTALLATION_ID_FILE, installationId)
-
-      this.track({
-        event: UsageEventName.AppInstalled,
-      })
-    } catch (error) {
-      log.error('Error tracking installation:', error)
-    }
-  }
-
-  private static async installationIdExists(): Promise<boolean> {
-    try {
-      await readFile(INSTALLATION_ID_FILE, 'utf-8')
-      return true
-    } catch {
-      return false // File does not exist
-    }
-  }
-
-  private static async getInstallationId(): Promise<string> {
-    try {
-      return await readFile(INSTALLATION_ID_FILE, 'utf-8')
-    } catch {
-      throw new Error('Installation ID file is missing')
-    }
-  }
-
-  private static async createEventWithMetadata(
-    event: UsageEvent
-  ): Promise<UsageEventWithMetadata> {
-    const metadata: UsageEventMetadata = {
-      usageStatsId: await this.getInstallationId(),
-      timestamp: Date(),
-      appVersion: app.getVersion(),
-      os: getPlatform(),
-      arch: getArch(),
-    }
-
-    return {
-      ...event,
-      ...metadata,
-    }
+  } catch (error) {
+    log.error('Error tracking installation:', error)
   }
 }
