@@ -1,22 +1,20 @@
 import { Arch, Platform } from '@/types/electron'
 
-const PREFIX = 'grafana_k6_studio'
-
-export const UsageEventName = {
+export enum UsageEventName {
   // General
-  AppInstalled: `${PREFIX}_app_installed`,
+  AppInstalled = 'app_installed',
 
   // Recorder
-  RecordingCreated: `${PREFIX}_recording_created`,
+  RecordingCreated = 'recording_created',
 
   // Generator
-  GeneratorSaved: `${PREFIX}_generator_saved`,
+  GeneratorSaved = 'generator_saved',
 
   // Script
-  ScriptExported: `${PREFIX}_script_exported`,
-  ScriptValidated: `${PREFIX}_script_validated`,
-  ScriptRunInCloud: `${PREFIX}_script_run_in_cloud`,
-} as const
+  ScriptExported = 'script_exported',
+  ScriptValidated = 'script_validated',
+  ScriptRunInCloud = 'script_run_in_cloud',
+}
 
 export interface UsageEventMetadata {
   usageStatsId: string
@@ -27,27 +25,27 @@ export interface UsageEventMetadata {
 }
 
 export interface AppInstalledEvent {
-  event: typeof UsageEventName.AppInstalled
+  event: UsageEventName.AppInstalled
 }
 
 export interface RecordingCreatedEvent {
-  event: typeof UsageEventName.RecordingCreated
+  event: UsageEventName.RecordingCreated
 }
 
 export interface GeneratorCreatedEvent {
-  event: typeof UsageEventName.GeneratorSaved
+  event: UsageEventName.GeneratorSaved
 }
 
 export interface ScriptExportedEvent {
-  event: typeof UsageEventName.ScriptExported
+  event: UsageEventName.ScriptExported
 }
 
 export interface ScriptValidatedEvent {
-  event: typeof UsageEventName.ScriptValidated
+  event: UsageEventName.ScriptValidated
 }
 
 export interface ScriptRunInCloudEvent {
-  event: typeof UsageEventName.ScriptRunInCloud
+  event: UsageEventName.ScriptRunInCloud
 }
 
 export type UsageEvent =
