@@ -6,6 +6,7 @@ import { updateElectronApp } from 'update-electron-app'
 
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
+import { initializeDeepLinks } from './main/deepLinks'
 import { migrateJsonGenerator } from './main/generator'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
@@ -56,6 +57,7 @@ handlers.initialize({
   browserServer,
 })
 mainState.initialize()
+initializeDeepLinks()
 
 const createSplashWindow = async () => {
   k6StudioState.splashscreenWindow = new BrowserWindow({

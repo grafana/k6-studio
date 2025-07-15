@@ -40,7 +40,7 @@ const Arrow = styled(RadixTooltip.Arrow)`
   fill: var(--studio-foreground);
 `
 
-interface TooltipProps extends RadixTooltip.TooltipProps {
+export interface TooltipProps extends RadixTooltip.TooltipProps {
   asChild?: boolean
   content: string
   children: ReactNode
