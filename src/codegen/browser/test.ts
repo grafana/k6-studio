@@ -41,10 +41,10 @@ function toAssertionOperation(assertion: Assertion): AssertionOperation {
         expected: assertion.expected,
       }
 
-    case 'value':
+    case 'text-value':
       return {
         type: 'has-values',
-        expected: assertion.expected,
+        expected: [assertion.expected],
       }
 
     default:

@@ -98,16 +98,16 @@ const CheckAssertionSchema = z.object({
   expected: CheckStateSchema,
 })
 
-const ValueAssertionSchema = z.object({
-  type: z.literal('value'),
-  expected: z.tuple([z.string()]).rest(z.string()),
+const TextValueAssertionSchema = z.object({
+  type: z.literal('text-value'),
+  expected: z.string(),
 })
 
 const AssertionSchema = z.discriminatedUnion('type', [
   TextAssertionSchema,
   VisibilityAssertionSchema,
   CheckAssertionSchema,
-  ValueAssertionSchema,
+  TextValueAssertionSchema,
 ])
 
 const AssertEventSchema = BrowserEventBaseSchema.extend({
@@ -145,6 +145,7 @@ export type AssertEvent = z.infer<typeof AssertEventSchema>
 export type TextAssertion = z.infer<typeof TextAssertionSchema>
 export type VisibilityAssertion = z.infer<typeof VisibilityAssertionSchema>
 export type CheckAssertion = z.infer<typeof CheckAssertionSchema>
+export type TextValueAssertion = z.infer<typeof TextValueAssertionSchema>
 export type Assertion = z.infer<typeof AssertionSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>

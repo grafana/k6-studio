@@ -6,21 +6,21 @@ import { Label } from '@/components/primitives/Label'
 import { TextArea } from '@/components/primitives/TextArea'
 
 import { AssertionForm } from './AssertionForm'
-import { InputValueAssertionData } from './types'
+import { TextValueAssertionData } from './types'
 
-interface InputValueAssertionProps {
-  assertion: InputValueAssertionData
+interface TextValueAssertionProps {
+  assertion: TextValueAssertionData
   onCancel: () => void
-  onChange: (state: InputValueAssertionData) => void
-  onSubmit: (state: InputValueAssertionData) => void
+  onChange: (state: TextValueAssertionData) => void
+  onSubmit: (state: TextValueAssertionData) => void
 }
 
-export function InputValueAssertionEditor({
+export function TextValueAssertionEditor({
   assertion,
   onCancel,
   onChange,
   onSubmit,
-}: InputValueAssertionProps) {
+}: TextValueAssertionProps) {
   const expectedValueId = useId()
 
   const handleExpectedValueChange = (
@@ -45,14 +45,16 @@ export function InputValueAssertionEditor({
         {!assertion.multiline && (
           <Input
             id={expectedValueId}
+            autoFocus
             size="1"
-            value={assertion.selector}
+            value={assertion.expected}
             onChange={handleExpectedValueChange}
           />
         )}
         {assertion.multiline && (
           <TextArea
             id={expectedValueId}
+            autoFocus
             size="1"
             value={assertion.expected}
             onChange={handleExpectedValueChange}

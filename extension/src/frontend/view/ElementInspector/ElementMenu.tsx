@@ -14,8 +14,6 @@ import { TrackedElement } from './ElementInspector.hooks'
 import {
   findLabeledControl,
   getCheckedState,
-  getSelectedValues,
-  getSelectOptions,
   getTextBoxValue,
   LabeledControl,
 } from './ElementMenu.utils'
@@ -152,7 +150,7 @@ function TextBoxCategory({ input, onAddAssertion }: TextBoxCategory) {
 
   const handleAddAssertion = () => {
     onAddAssertion({
-      type: 'input-value',
+      type: 'text-value',
       selector: input.selector.css,
       multiline:
         input.element instanceof HTMLTextAreaElement ||
@@ -164,36 +162,6 @@ function TextBoxCategory({ input, onAddAssertion }: TextBoxCategory) {
   return (
     <>
       <CategorySeparator>Text box</CategorySeparator>
-      <ToolbarButton onClick={handleAddAssertion}>
-        <TextCursorInputIcon /> <div>Add value assertion</div>
-      </ToolbarButton>
-    </>
-  )
-}
-
-function ListBoxCategory({ input, onAddAssertion }: TextBoxCategory) {
-  const role = input.roles.find((role) => role.role === 'listbox')
-
-  if (role === undefined) {
-    return null
-  }
-
-  const handleAddAssertion = () => {
-    const [first = { value: '', label: '' }, ...rest] = getSelectedValues(
-      input.element
-    )
-
-    onAddAssertion({
-      type: 'select-value',
-      selector: input.selector.css,
-      expected: [first, ...rest],
-      options: getSelectOptions(input.element),
-    })
-  }
-
-  return (
-    <>
-      <CategorySeparator>List box</CategorySeparator>
       <ToolbarButton onClick={handleAddAssertion}>
         <TextCursorInputIcon /> <div>Add value assertion</div>
       </ToolbarButton>
@@ -244,10 +212,6 @@ export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
             onAddAssertion={onSelectAssertion}
           />
           <TextBoxCategory
-            input={inputElement}
-            onAddAssertion={onSelectAssertion}
-          />
-          <ListBoxCategory
             input={inputElement}
             onAddAssertion={onSelectAssertion}
           />

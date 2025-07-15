@@ -1,14 +1,9 @@
 import { ElementSelector } from '@/schemas/recording'
-import { uuid } from '@/utils/uuid'
 import { generateSelector } from 'extension/src/selectors'
-import {
-  ElementRole,
-  getElementRoles,
-  getLabel,
-} from 'extension/src/utils/aria'
+import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 
 import { TrackedElement } from './ElementInspector.hooks'
-import { AssertedSelectOption, CheckAssertionData } from './assertions/types'
+import { CheckAssertionData } from './assertions/types'
 
 function findByForAttribute(target: HTMLLabelElement) {
   const forAttribute = target.getAttribute('for')
@@ -136,51 +131,4 @@ export function getTextBoxValue(element: Element): string {
 
   // The input must be an aria textbox, so we'll use the textContent.
   return element.textContent ?? ''
-}
-
-function getAriaOptions(
-  element: Element,
-  onlySelected = false
-): AssertedSelectOption[] {
-  const selector = onlySelected
-    ? "[role='option'][aria-selected='true']"
-    : "[role='option']"
-
-  const options = [...element.querySelectorAll(selector)]
-
-  return options.map((el) => {
-    const value = el.getAttribute('data-value') ?? el.textContent ?? uuid()
-    const label = getLabel(el) ?? value
-
-    return {
-      label,
-      value,
-    }
-  })
-}
-
-export function getSelectedValues(element: Element): AssertedSelectOption[] {
-  if (element instanceof HTMLSelectElement) {
-    return [...element.selectedOptions].map((option) => {
-      return {
-        label: option.value,
-        value: option.textContent ?? option.value,
-      }
-    })
-  }
-
-  return getAriaOptions(element, true)
-}
-
-export function getSelectOptions(element: Element): AssertedSelectOption[] {
-  if (element instanceof HTMLSelectElement) {
-    return [...element.options].map((option) => {
-      return {
-        label: option.value,
-        value: option.textContent ?? option.value,
-      }
-    })
-  }
-
-  return getAriaOptions(element)
 }

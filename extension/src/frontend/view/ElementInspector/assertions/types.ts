@@ -1,5 +1,4 @@
 import { CheckState } from '@/schemas/recording'
-import { NonEmptyArray } from '@/utils/list'
 
 export interface CheckAssertionData {
   type: 'check'
@@ -14,23 +13,11 @@ export interface VisibilityAssertionData {
   state: 'visible' | 'hidden'
 }
 
-export interface InputValueAssertionData {
-  type: 'input-value'
+export interface TextValueAssertionData {
+  type: 'text-value'
   selector: string
   multiline: boolean
   expected: string
-}
-
-export interface AssertedSelectOption {
-  value: string
-  label: string
-}
-
-export interface SelectValueAssertionData {
-  type: 'select-value'
-  selector: string
-  expected: NonEmptyArray<AssertedSelectOption>
-  options: AssertedSelectOption[]
 }
 
 export interface TextAssertionData {
@@ -42,6 +29,5 @@ export interface TextAssertionData {
 export type AssertionData =
   | VisibilityAssertionData
   | CheckAssertionData
-  | InputValueAssertionData
+  | TextValueAssertionData
   | TextAssertionData
-  | SelectValueAssertionData

@@ -43,17 +43,10 @@ function getHeader(assertion: AssertionData | null) {
         <ElementPopover.Heading>Add check assertion</ElementPopover.Heading>
       )
 
-    case 'input-value':
+    case 'text-value':
       return (
         <ElementPopover.Heading>
-          Add input value assertion
-        </ElementPopover.Heading>
-      )
-
-    case 'select-value':
-      return (
-        <ElementPopover.Heading>
-          Add select value assertion
+          Add text value assertion
         </ElementPopover.Heading>
       )
 

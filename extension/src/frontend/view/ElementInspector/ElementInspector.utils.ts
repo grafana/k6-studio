@@ -27,16 +27,11 @@ export function toAssertion(data: AssertionData): Assertion {
         expected: data.expected,
       }
 
-    case 'input-value':
+    case 'text-value':
       return {
-        type: 'value',
-        expected: [data.expected],
+        type: 'text-value',
+        expected: data.expected,
       }
-
-    case 'select-value':
-      throw new Error(
-        'Select value assertions are not supported in the recording schema'
-      )
 
     default:
       return exhaustive(data)

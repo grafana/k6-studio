@@ -43,14 +43,14 @@ export function AssertDescription({
         </>
       )
 
-    case 'value':
+    case 'text-value':
       return (
         <>
           Assert that the input{' '}
           <Selector selector={selector} onHighlight={onHighlight} /> has the
           value{' '}
-          <Tooltip asChild content={assertion.expected[0]}>
-            {assertion.expected[0]}
+          <Tooltip asChild content={assertion.expected}>
+            <em>{`"${assertion.expected}"`}</em>
           </Tooltip>
           .
         </>
