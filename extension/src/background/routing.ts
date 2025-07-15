@@ -21,6 +21,7 @@ background.forward('events-loaded', [frontend])
 studio.forward('navigate', [background])
 studio.forward('highlight-elements', [frontend])
 
+frontend.forward('reload-extension', [background])
 frontend.forward('record-events', [background])
 frontend.forward('navigate', [background])
 frontend.forward('load-events', [background])
