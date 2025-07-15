@@ -16,11 +16,10 @@ type BrowserExtensionServerEvents = {
 export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
   #client: BrowserExtensionClient | null = null
 
-  start(browserWindow: BrowserWindow) {
-    this.#client = new BrowserExtensionClient(
-      'studio-server',
-      new WebSocketServerTransport('localhost', 7554)
-    )
+  async start(browserWindow: BrowserWindow) {
+    const transport = await WebSocketServerTransport.create('localhost', 7554)
+
+    this.#client = new BrowserExtensionClient('studio-server', transport)
 
     this.#client.on('events-recorded', (event) => {
       browserWindow.webContents.send('browser:event', event.data.events)

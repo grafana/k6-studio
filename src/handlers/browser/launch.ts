@@ -120,11 +120,17 @@ export const launchBrowser = async (
   })
 
   if (capture.browser) {
-    browserServer.start(browserWindow)
+    try {
+      await Promise.all([
+        new Promise<void>((resolve, reject) => {
+          process.on('spawn', resolve)
+          process.on('error', reject)
+        }),
+        browserServer.start(browserWindow),
+      ])
 
-    const client = ChromeDevtoolsClient.fromChildProcess(process)
+      const client = ChromeDevtoolsClient.fromChildProcess(process)
 
-    process.on('spawn', async () => {
       const response = await client.call({
         method: 'Extensions.loadUnpacked',
         params: {
@@ -132,8 +138,12 @@ export const launchBrowser = async (
         },
       })
 
-      console.log(`k6 Studio extension loaded`, response)
-    })
+      log.log(`k6 Studio extension loaded`, response)
+    } catch (error) {
+      // If we fail to start browser recording, we'll log the error
+      // and continue without it.
+      log.error('Failed to start browser recording:', error)
+    }
   }
 
   process.on('error', handleBrowserLaunchError)
