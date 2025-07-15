@@ -1,7 +1,7 @@
 import type { Content, Entry, Header } from 'har-format'
 
 import { DEFAULT_GROUP_NAME } from '@/constants'
-import { defaultFeatures } from '@/store/features'
+import { useFeaturesStore } from '@/store/features'
 import {
   generateJsonPaths,
   isJsonContentType,
@@ -88,7 +88,8 @@ function parseResponse(response: Entry['response']): Response {
 }
 
 function parseJsonPaths(content: string, headers: Header[]): string[] {
-  const isJsonPathsFeatureFlagTrue = defaultFeatures['typeahead-json']
+  const isJsonPathsFeatureFlagTrue =
+    useFeaturesStore.getState().features['typeahead-json']
   const isJsonPathsEnabled =
     isJsonPathsFeatureFlagTrue && isJsonContentType(headers)
 
