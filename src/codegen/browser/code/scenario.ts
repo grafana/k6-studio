@@ -154,7 +154,7 @@ function emitExpectExpression(
   context: ScenarioContext,
   expression: ir.ExpectExpression
 ): ts.Expression {
-  context.import(['expect'], 'https://jslib.k6.io/k6-testing/0.4.0/index.js')
+  context.import(['expect'], 'https://jslib.k6.io/k6-testing/0.5.0/index.js')
 
   const locator = emitExpression(context, expression.actual)
 
