@@ -1,8 +1,8 @@
 import { app } from 'electron'
 import log from 'electron-log/main'
 import { writeFile, readFile } from 'fs/promises'
-import path from 'path'
 
+import { TRACKING_URL, INSTALLATION_ID_FILE } from '@/constants/usage'
 import { getArch, getPlatform } from '@/utils/electron'
 import { uuid } from '@/utils/uuid'
 
@@ -12,12 +12,6 @@ import {
   UsageEventName,
   UsageEventWithMetadata,
 } from './types'
-
-const TRACKING_URL = 'https://stats.grafana.org/k6-studio-usage-report'
-const INSTALLATION_ID_FILE = path.join(
-  app.getPath('userData'),
-  '.installation_id'
-)
 
 export async function initEventTracking() {
   if (process.env.NODE_ENV === 'development') {
@@ -99,7 +93,7 @@ async function installationIdExists(): Promise<boolean> {
 async function trackInstallation() {
   try {
     if (await installationIdExists()) {
-      return // Installation already tracked
+      return
     }
 
     const installationId = uuid()
