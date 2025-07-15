@@ -12,6 +12,9 @@ export function useProxyHealthCheck(proxyStatus?: ProxyStatus) {
     // only refetch when the proxy is unhealthy
     refetchInterval: (isProxyHealthy) =>
       isProxyHealthy.state.data ? false : 2000,
+    // Only start the health check if the proxy is online, to avoid showing
+    // false unhealthy state in recorder
+    enabled: proxyStatus === undefined || proxyStatus === 'online',
   })
 
   useEffect(() => {

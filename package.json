@@ -12,6 +12,7 @@
     "preinstall": "node install-k6.js",
     "start": "electron-forge start",
     "start:extension": "STANDALONE_EXTENSION=true vite --config vite.extension.config.mts",
+    "watch:extension": "vite --config vite.extension.config.mts",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",

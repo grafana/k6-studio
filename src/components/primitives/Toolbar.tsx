@@ -1,14 +1,19 @@
 import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as RadixToolbar from '@radix-ui/react-toolbar'
+import { forwardRef } from 'react'
 
 type RootProps = RadixToolbar.ToolbarProps & {
   size?: '1' | '2'
 }
 
-function Root({ size, ...props }: RootProps) {
+const Root = forwardRef<HTMLDivElement, RootProps>(function Root(
+  { size, ...props },
+  ref
+) {
   return (
     <RadixToolbar.Root
+      ref={ref}
       css={css`
         display: flex;
         gap: var(--studio-spacing-1);
@@ -28,7 +33,7 @@ function Root({ size, ...props }: RootProps) {
       data-size={size}
     />
   )
-}
+})
 
 const Button = styled(RadixToolbar.Button)`
   display: flex;
