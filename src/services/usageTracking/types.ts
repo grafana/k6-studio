@@ -3,6 +3,7 @@ import { Arch, Platform } from '@/types/electron'
 export enum UsageEventName {
   // General
   AppInstalled = 'app_installed',
+  UserLoggedIn = 'user_logged_in',
 
   // Recorder
   RecordingCreated = 'recording_created',
@@ -26,40 +27,45 @@ export interface UsageEventMetadata {
   arch: Arch
 }
 
-export interface AppInstalledEvent {
+interface AppInstalledEvent {
   event: UsageEventName.AppInstalled
 }
 
-export interface RecordingCreatedEvent {
+interface UserLoggedInEvent {
+  event: UsageEventName.UserLoggedIn
+}
+
+interface RecordingCreatedEvent {
   event: UsageEventName.RecordingCreated
 }
 
-export interface RecordingImportedEvent {
+interface RecordingImportedEvent {
   event: UsageEventName.RecordingImported
 }
 
-export interface GeneratorCreatedEvent {
+interface GeneratorCreatedEvent {
   event: UsageEventName.GeneratorCreated
 }
 
-export interface GeneratorUpdatedEvent {
+interface GeneratorUpdatedEvent {
   event: UsageEventName.GeneratorUpdated
 }
 
-export interface ScriptExportedEvent {
+interface ScriptExportedEvent {
   event: UsageEventName.ScriptExported
 }
 
-export interface ScriptValidatedEvent {
+interface ScriptValidatedEvent {
   event: UsageEventName.ScriptValidated
 }
 
-export interface ScriptRunInCloudEvent {
+interface ScriptRunInCloudEvent {
   event: UsageEventName.ScriptRunInCloud
 }
 
 export type UsageEvent =
   | AppInstalledEvent
+  | UserLoggedInEvent
   | RecordingCreatedEvent
   | RecordingImportedEvent
   | GeneratorCreatedEvent
