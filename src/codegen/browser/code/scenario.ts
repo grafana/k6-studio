@@ -154,7 +154,7 @@ function emitExpectExpression(
   context: ScenarioContext,
   expression: ir.ExpectExpression
 ): ts.Expression {
-  context.import(['expect'], 'https://jslib.k6.io/k6-testing/0.4.0/index.js')
+  context.import(['expect'], 'https://jslib.k6.io/k6-testing/0.5.0/index.js')
 
   const locator = emitExpression(context, expression.actual)
 
@@ -184,6 +184,42 @@ function emitExpectExpression(
       return new ExpressionBuilder(expect)
         .member('toBeVisible')
         .call([])
+        .await(context)
+        .done()
+
+    case 'IsCheckedAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toBeChecked')
+        .call([])
+        .await(context)
+        .done()
+
+    case 'IsNotCheckedAssertion':
+      return new ExpressionBuilder(expect)
+        .member('not')
+        .member('toBeChecked')
+        .call([])
+        .await(context)
+        .done()
+
+    case 'IsIndeterminateAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toBeChecked')
+        .call([
+          fromObjectLiteral({
+            indeterminate: true,
+          }),
+        ])
+        .await(context)
+        .done()
+
+    case 'IsAttributeEqualToAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toHaveAttribute')
+        .call([
+          emitExpression(context, expression.expected.attribute),
+          emitExpression(context, expression.expected.value),
+        ])
         .await(context)
         .done()
 
