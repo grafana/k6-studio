@@ -1,19 +1,23 @@
 import { css } from '@emotion/react'
 import { ToolbarButtonProps } from '@radix-ui/react-toolbar'
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  CheckSquareIcon,
   EyeIcon,
-  SquareDashedMousePointerIcon,
+  TextCursorInputIcon,
   TypeIcon,
 } from 'lucide-react'
-import { ComponentProps } from 'react'
+import { ComponentProps, ReactNode } from 'react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
-import { Tooltip } from '@/components/primitives/Tooltip'
 
 import { TrackedElement } from './ElementInspector.hooks'
-import { AssertionData } from './assertions/types'
+import {
+  findLabeledControl,
+  getCheckedState,
+  getTextBoxValue,
+  LabeledControl,
+} from './ElementMenu.utils'
+import { AssertionData, CheckAssertionData } from './assertions/types'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
   return (
@@ -43,19 +47,136 @@ function ToolbarButton(props: ToolbarButtonProps) {
   )
 }
 
+function CategorySeparator({ children }: { children: ReactNode }) {
+  return (
+    <div
+      role="separator"
+      css={css`
+        font-size: var(--studio-font-size-1);
+        font-weight: var(--studio-font-weight-medium);
+        display: flex;
+        align-items: center;
+        gap: var(--studio-spacing-2);
+        padding: var(--studio-spacing-1);
+        padding-right: 0;
+      `}
+    >
+      {children}
+    </div>
+  )
+}
+
+interface CheckboxCategoryProps {
+  input: LabeledControl
+  onAddAssertion: (data: CheckAssertionData) => void
+}
+
+function CheckboxCategory({ input, onAddAssertion }: CheckboxCategoryProps) {
+  const role = input.roles.find((role) => role.role === 'checkbox')
+
+  if (role === undefined) {
+    return null
+  }
+
+  function handleAddCheckAssertion() {
+    if (role === undefined) {
+      return
+    }
+
+    onAddAssertion({
+      type: 'check',
+      selector: input.selector.css,
+      inputType: role.type === 'intrinsic' ? 'html' : 'aria',
+      expected: getCheckedState(input.element),
+    })
+  }
+
+  return (
+    <>
+      <CategorySeparator>Checkbox</CategorySeparator>
+      <ToolbarButton onClick={handleAddCheckAssertion}>
+        <CheckSquareIcon /> <div>Add check assertion</div>
+      </ToolbarButton>
+    </>
+  )
+}
+
+interface RadioCategoryProps {
+  input: LabeledControl
+  onAddAssertion: (data: CheckAssertionData) => void
+}
+
+function RadioCategory({ input, onAddAssertion }: RadioCategoryProps) {
+  const role = input.roles.find((role) => role.role === 'radio')
+
+  if (role === undefined) {
+    return null
+  }
+
+  function handleAddCheckAssertion() {
+    if (role === undefined) {
+      return
+    }
+
+    onAddAssertion({
+      type: 'check',
+      selector: input.selector.css,
+      inputType: role.type === 'intrinsic' ? 'html' : 'aria',
+      expected: getCheckedState(input.element),
+    })
+  }
+
+  return (
+    <>
+      <CategorySeparator>Radio</CategorySeparator>
+      <ToolbarButton onClick={handleAddCheckAssertion}>
+        <CheckSquareIcon /> <div>Add check assertion</div>
+      </ToolbarButton>
+    </>
+  )
+}
+
+interface TextBoxCategory {
+  input: LabeledControl
+  onAddAssertion: (data: AssertionData) => void
+}
+
+function TextBoxCategory({ input, onAddAssertion }: TextBoxCategory) {
+  const role = input.roles.find((role) => role.role === 'textbox')
+
+  if (role === undefined) {
+    return null
+  }
+
+  const handleAddAssertion = () => {
+    onAddAssertion({
+      type: 'text-value',
+      selector: input.selector.css,
+      multiline:
+        input.element instanceof HTMLTextAreaElement ||
+        input.element.getAttribute('aria-multiline') === 'true',
+      expected: getTextBoxValue(input.element),
+    })
+  }
+
+  return (
+    <>
+      <CategorySeparator>Text box</CategorySeparator>
+      <ToolbarButton onClick={handleAddAssertion}>
+        <TextCursorInputIcon /> <div>Add value assertion</div>
+      </ToolbarButton>
+    </>
+  )
+}
+
 interface ElementMenuProps {
   element: TrackedElement
   onSelectAssertion: (data: AssertionData) => void
-  onSelectionDecrease?: () => void
-  onSelectionIncrease?: () => void
 }
 
-export function ElementMenu({
-  element,
-  onSelectAssertion,
-  onSelectionDecrease,
-  onSelectionIncrease,
-}: ElementMenuProps) {
+export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
+  const inputElement = findLabeledControl(element)
+
   const handleAddVisibilityAssertion = () => {
     onSelectAssertion({
       type: 'visibility',
@@ -80,53 +201,30 @@ export function ElementMenu({
         gap: 0;
       `}
     >
+      {inputElement !== null && (
+        <>
+          <CheckboxCategory
+            input={inputElement}
+            onAddAssertion={onSelectAssertion}
+          />
+          <RadioCategory
+            input={inputElement}
+            onAddAssertion={onSelectAssertion}
+          />
+          <TextBoxCategory
+            input={inputElement}
+            onAddAssertion={onSelectAssertion}
+          />
+        </>
+      )}
+
+      <CategorySeparator>General</CategorySeparator>
       <ToolbarButton onClick={handleAddVisibilityAssertion}>
         <EyeIcon /> <div>Add visibility assertion</div>
       </ToolbarButton>
       <ToolbarButton onClick={handleAddTextAssertion}>
         <TypeIcon /> <div>Add text assertion</div>
       </ToolbarButton>
-      <Toolbar.Separator />
-      <div
-        css={css`
-          display: flex;
-          gap: var(--studio-spacing-1);
-          align-items: center;
-          padding: var(--studio-spacing-1) var(--studio-spacing-2);
-        `}
-      >
-        <div
-          css={css`
-            display: flex;
-            gap: var(--studio-spacing-2);
-            align-items: center;
-            flex: 1 1 0;
-          `}
-        >
-          <SquareDashedMousePointerIcon size={16} strokeWidth={1.5} />
-          Selection
-        </div>
-        <Tooltip asChild content="Select parent element">
-          <div>
-            <Toolbar.Button
-              disabled={onSelectionIncrease === undefined}
-              onClick={onSelectionIncrease}
-            >
-              <ChevronLeftIcon size={16} strokeWidth={1.5} />
-            </Toolbar.Button>
-          </div>
-        </Tooltip>
-        <Tooltip asChild content="Select child element">
-          <div>
-            <Toolbar.Button
-              disabled={onSelectionDecrease === undefined}
-              onClick={onSelectionDecrease}
-            >
-              <ChevronRightIcon size={16} strokeWidth={1.5} />
-            </Toolbar.Button>
-          </div>
-        </Tooltip>
-      </div>
     </ToolbarRoot>
   )
 }

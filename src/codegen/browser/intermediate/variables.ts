@@ -1,3 +1,4 @@
+import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
 import { Expression, Statement, Scenario, Assertion } from './ast'
@@ -16,8 +17,26 @@ function substituteAssertion(
         text: substituteExpression(assertion.text, substitutions),
       }
 
+    case 'IsAttributeEqualToAssertion':
+      return {
+        type: 'IsAttributeEqualToAssertion',
+        attribute: substituteExpression(assertion.attribute, substitutions),
+        value: substituteExpression(assertion.value, substitutions),
+      }
+
+    case 'HasValueAssertion':
+      return {
+        type: 'HasValueAssertion',
+        expected: mapNonEmpty(assertion.expected, (value) =>
+          substituteExpression(value, substitutions)
+        ),
+      }
+
     case 'IsHiddenAssertion':
     case 'IsVisibleAssertion':
+    case 'IsCheckedAssertion':
+    case 'IsNotCheckedAssertion':
+    case 'IsIndeterminateAssertion':
       return assertion
 
     default:
