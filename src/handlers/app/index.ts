@@ -1,6 +1,8 @@
 import { ipcMain, app } from 'electron'
 
 import { showWindow } from '@/main/window'
+import { trackEvent } from '@/services/usageTracking'
+import { UsageEvent } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 
 import { AppHandler } from './types'
@@ -34,5 +36,9 @@ export function initialize() {
       k6StudioState.splashscreenWindow.close()
       showWindow(browserWindow)
     }
+  })
+
+  ipcMain.on(AppHandler.TRACK_EVENT, (_, event: UsageEvent) => {
+    trackEvent(event)
   })
 }
