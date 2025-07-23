@@ -8,8 +8,9 @@ interface FeaturesStore {
   toggleFeature: (feature: Feature) => void
 }
 
-const defaultFeatures: Record<Feature, boolean> = {
+export const defaultFeatures: Record<Feature, boolean> = {
   'dummy-feature': false,
+  'typeahead-json': false,
 }
 
 export const useFeaturesStore = create<FeaturesStore>()(

@@ -2,8 +2,11 @@ import { Box, Flex, TextField } from '@radix-ui/themes'
 import { useFormContext } from 'react-hook-form'
 
 import { ControlledSelect, FieldGroup } from '@/components/Form'
+import { useFeaturesStore } from '@/store/features'
+import { useGeneratorStore } from '@/store/generator'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
+import { Typeahead } from '@/views/Generator/RuleEditor/Typeahead'
 
 import { HeaderSelect } from './HeaderSelect'
 import { JsonSelectorHint } from './JsonSelectorHint'
@@ -20,6 +23,13 @@ export function SelectorField({
     setValue,
     formState: { errors },
   } = useFormContext<TestRule>()
+
+  const options = useGeneratorStore((state): string[] => {
+    if (field === 'extractor.selector' || field === 'replacer.selector') {
+      return state.metadata.responseJsonPaths
+    }
+    return state.metadata.requestJsonPaths
+  })
   const selector = watch(field)
 
   if (!selector) {
@@ -109,15 +119,17 @@ export function SelectorField({
           </FieldGroup>
         </Box>
       </Flex>
-      <SelectorContent selector={selector} field={field} />
+      <SelectorContent selector={selector} options={options} field={field} />
     </>
   )
 }
 
 function SelectorContent({
+  options,
   selector,
   field,
 }: {
+  options?: string[]
   selector: Selector
   field: 'extractor.selector' | 'replacer.selector' | 'selector'
 }) {
@@ -125,6 +137,10 @@ function SelectorContent({
     register,
     formState: { errors },
   } = useFormContext<TestRule>()
+
+  const typeaheadEnabled = useFeaturesStore((state) => {
+    return state.features['typeahead-json']
+  })
 
   switch (selector.type) {
     case 'json':
@@ -135,7 +151,17 @@ function SelectorContent({
           label="JSON property path"
           hint={<JsonSelectorHint />}
         >
-          <TextField.Root {...register(`${field}.path`)} id={`${field}.path`} />
+          {typeaheadEnabled ? (
+            <Typeahead
+              placeholder="Search for JSON key paths"
+              defaultValue={selector.path}
+              mode="onDot"
+              options={options || []}
+              {...register(`${field}.path`)}
+            />
+          ) : (
+            <TextField.Root {...register(`${field}.path`)} />
+          )}
         </FieldGroup>
       )
     case 'begin-end':
