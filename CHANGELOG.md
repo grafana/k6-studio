@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.6.0](https://github.com/grafana/k6-studio/compare/v1.5.0...v1.6.0) (2025-07-28)
+
+
+### Features
+
+* Add custom protocol support ([#763](https://github.com/grafana/k6-studio/issues/763)) ([c2d6be4](https://github.com/grafana/k6-studio/commit/c2d6be44cbb1f941527e42b5563a8a4996d55a36))
+* Add JSON path explanation ([#759](https://github.com/grafana/k6-studio/issues/759)) ([df46dbf](https://github.com/grafana/k6-studio/commit/df46dbf36b47c6435020675ec5c0c8eb7d4b247e))
+* Allow in-browser toolbar to be re-positioned ([#765](https://github.com/grafana/k6-studio/issues/765)) ([3c397d7](https://github.com/grafana/k6-studio/commit/3c397d7f333a9377870a64c16044d99d1c913268))
+
+
+### Bug Fixes
+
+* windows build ([#762](https://github.com/grafana/k6-studio/issues/762)) ([87fba5b](https://github.com/grafana/k6-studio/commit/87fba5bacd74384424c5444b377b86a5c81ef518))
+
+
+### Internal Changes
+
+* Improved tools for developing the browser extension ([#766](https://github.com/grafana/k6-studio/issues/766)) ([7648d27](https://github.com/grafana/k6-studio/commit/7648d2722489c27529338d7f1aa3722d695c9e18))
+
+
+### Dependency Updates
+
+* Replace `papaparse` with `k6/experimental/csv` ([#758](https://github.com/grafana/k6-studio/issues/758)) ([fc48842](https://github.com/grafana/k6-studio/commit/fc488422eb7192d0cae5026f5003062fcbf4b5fb))
+
+
+### Miscellaneous Chores
+
+* Add more flexible usage tracking service ([#732](https://github.com/grafana/k6-studio/issues/732)) ([ff71b92](https://github.com/grafana/k6-studio/commit/ff71b92ed9491f2055395dc6c6d5baeae9d3497b))
+* Anonymous usage tracking for Recorder, Generator, Validator ([#771](https://github.com/grafana/k6-studio/issues/771)) ([96906c0](https://github.com/grafana/k6-studio/commit/96906c0acbc1e421680daa2e1f7163239be99bc4))
+* **deps:** bump form-data from 4.0.0 to 4.0.4 ([#772](https://github.com/grafana/k6-studio/issues/772)) ([317d44a](https://github.com/grafana/k6-studio/commit/317d44a068e80ea4afb7f5da35ccc331cbc5d228))
+
 ## [1.5.0](https://github.com/grafana/k6-studio/compare/v1.4.0...v1.5.0) (2025-06-24)
 
 

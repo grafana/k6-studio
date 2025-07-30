@@ -44,6 +44,10 @@ export const StopRecordingSchema = z.object({
   type: z.literal('stop-recording'),
 })
 
+export const ReloadExtensionSchema = z.object({
+  type: z.literal('reload-extension'),
+})
+
 export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   LoadEventsSchema,
 
@@ -53,6 +57,8 @@ export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   HighlightElementsSchema,
   NavigateSchema,
   StopRecordingSchema,
+
+  ReloadExtensionSchema,
 ])
 
 export type RecordEvents = z.infer<typeof RecordEventsSchema>

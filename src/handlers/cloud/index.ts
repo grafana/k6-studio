@@ -4,6 +4,8 @@ import { basename, extname, isAbsolute, join } from 'path'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
 import { getTempScriptName } from '@/main/script'
+import { trackEvent } from '@/services/usageTracking'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
 
@@ -66,6 +68,9 @@ export function initialize() {
       const result = await stateMachine.run()
 
       if (result.type === 'started') {
+        trackEvent({
+          event: UsageEventName.ScriptRunInCloud,
+        })
         await shell.openExternal(result.testRunUrl)
       }
 
