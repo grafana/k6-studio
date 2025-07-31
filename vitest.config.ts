@@ -1,11 +1,12 @@
 import viteTsconfigPaths from 'vite-tsconfig-paths'
-import { defineConfig } from 'vitest/config'
+import { defineConfig, configDefaults } from 'vitest/config'
 
 export default defineConfig({
   plugins: [viteTsconfigPaths()],
   test: {
     includeSource: ['src/**/*.{js,ts}'],
     environment: 'jsdom',
+    exclude: [...configDefaults.exclude, 'tests/*'],
   },
   define: {
     'import.meta.vitest': 'undefined',
