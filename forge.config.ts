@@ -99,6 +99,7 @@ const config: ForgeConfig = {
           config: 'vite.preload.config.ts',
         },
         {
+          entry: 'extension/src/frontend/index.ts',
           config: 'vite.extension.config.mts',
         },
       ],
