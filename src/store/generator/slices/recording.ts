@@ -22,17 +22,27 @@ interface Actions {
   setShowAllowlistDialog: (value: boolean) => void
 }
 
-export type RecordingSliceStore = State & Actions
+export type PreGeneratedJsonPaths = {
+  requestJsonPaths: string[]
+  responseJsonPaths: string[]
+}
+export type RecordingSliceStore = State &
+  Actions & {
+    metadata: PreGeneratedJsonPaths
+  }
 
 export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   set
 ) => ({
+  metadata: {
+    requestJsonPaths: [],
+    responseJsonPaths: [],
+  },
   requests: [],
   recordingPath: '',
   allowlist: [],
   includeStaticAssets: false,
   showAllowlistDialog: false,
-
   setRecording: (requests: ProxyData[], path: string) =>
     set((state) => {
       if (shouldResetAllowList({ requests, allowList: state.allowlist })) {
