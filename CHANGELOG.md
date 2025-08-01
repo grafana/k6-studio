@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.6.1](https://github.com/grafana/k6-studio/compare/v1.6.0...v1.6.1) (2025-08-01)
+
+
+### Internal Changes
+
+* [POC] Render JSON suggestions ([#678](https://github.com/grafana/k6-studio/issues/678)) ([458f0fc](https://github.com/grafana/k6-studio/commit/458f0fc076a7198fad7c63dc7c9b70535018e1fd))
+
+
+### Dependency Updates
+
+* Bump Electron version and [@electron-forge](https://github.com/electron-forge) packages ([#775](https://github.com/grafana/k6-studio/issues/775)) ([cad5ef5](https://github.com/grafana/k6-studio/commit/cad5ef5900d6042e3874e877065f8f8bae79332b))
+
+
+### Miscellaneous Chores
+
+* Pin get-vault-secrets action to a hash ([#777](https://github.com/grafana/k6-studio/issues/777)) ([a862ad3](https://github.com/grafana/k6-studio/commit/a862ad3cf93484c2a9bd8b852d5a38c2451c11d9))
+
 ## [1.6.0](https://github.com/grafana/k6-studio/compare/v1.5.0...v1.6.0) (2025-07-28)
 
 
