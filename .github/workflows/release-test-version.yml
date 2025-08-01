@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - id: get-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@get-vault-secrets-v1.2.0
+        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
         with:
           repo_secrets: |
             APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
