@@ -1,3 +1,4 @@
+import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
 import * as m from '../types'
@@ -168,6 +169,48 @@ function emitAssertion(
       return assertion.visible
         ? { type: 'IsVisibleAssertion' }
         : { type: 'IsHiddenAssertion' }
+
+    case 'is-checked':
+      if (assertion.inputType === 'aria') {
+        return {
+          type: 'IsAttributeEqualToAssertion',
+          attribute: {
+            type: 'StringLiteral',
+            value: 'aria-checked',
+          },
+          value: {
+            type: 'StringLiteral',
+            value:
+              assertion.expected === 'checked'
+                ? 'true'
+                : assertion.expected === 'unchecked'
+                  ? 'false'
+                  : 'mixed',
+          },
+        }
+      }
+
+      if (assertion.expected === 'indeterminate') {
+        return { type: 'IsIndeterminateAssertion' }
+      }
+
+      if (assertion.expected === 'unchecked') {
+        return { type: 'IsNotCheckedAssertion' }
+      }
+
+      return { type: 'IsCheckedAssertion' }
+
+    case 'has-values': {
+      return {
+        type: 'HasValueAssertion',
+        expected: mapNonEmpty(assertion.expected, (value) => {
+          return {
+            type: 'StringLiteral',
+            value,
+          }
+        }),
+      }
+    }
 
     default:
       return exhaustive(assertion)

@@ -73,10 +73,38 @@ export interface IsHiddenAssertion {
   type: 'IsHiddenAssertion'
 }
 
+export interface IsAttributeEqualToAssertion {
+  type: 'IsAttributeEqualToAssertion'
+  attribute: Expression
+  value: Expression
+}
+
+export interface IsCheckedAssertion {
+  type: 'IsCheckedAssertion'
+}
+
+export interface IsNotCheckedAssertion {
+  type: 'IsNotCheckedAssertion'
+}
+
+export interface IsIndeterminateAssertion {
+  type: 'IsIndeterminateAssertion'
+}
+
+export interface HasValueAssertion {
+  type: 'HasValueAssertion'
+  expected: [Expression, ...Expression[]]
+}
+
 export type Assertion =
   | TextContainsAssertion
   | IsVisibleAssertion
   | IsHiddenAssertion
+  | IsAttributeEqualToAssertion
+  | IsCheckedAssertion
+  | IsNotCheckedAssertion
+  | IsIndeterminateAssertion
+  | HasValueAssertion
 
 export interface ExpectExpression {
   type: 'ExpectExpression'
