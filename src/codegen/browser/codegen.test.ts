@@ -479,3 +479,309 @@ it('should assert that element is hidden', async ({ expect }) => {
     '__snapshots__/browser/assertions/element-is-hidden.ts'
   )
 })
+
+it('should assert that html input is checked', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'input[type="checkbox"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-checked',
+          operation: {
+            type: 'is-checked',
+            inputType: 'html',
+            expected: 'checked',
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/input/checkbox/input-is-checked.ts'
+  )
+})
+
+it('should assert that html input is not checked', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'input[type="checkbox"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-checked',
+          operation: {
+            type: 'is-checked',
+            inputType: 'html',
+            expected: 'unchecked',
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/input/checkbox/input-is-not-checked.ts'
+  )
+})
+
+it('should assert that html input is indeterminate', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'input[type="checkbox"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-checked',
+          operation: {
+            type: 'is-checked',
+            inputType: 'html',
+            expected: 'indeterminate',
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/input/checkbox/input-is-indeterminate.ts'
+  )
+})
+
+it('should assert that aria input is checked', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: '[role="checkbox"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-checked',
+          operation: {
+            type: 'is-checked',
+            inputType: 'aria',
+            expected: 'checked',
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/input/checkbox/aria-input-is-checked.ts'
+  )
+})
+
+it('should assert that aria input is not checked', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: '[role="checkbox"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-checked',
+          operation: {
+            type: 'is-checked',
+            inputType: 'aria',
+            expected: 'unchecked',
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/input/checkbox/aria-input-is-not-checked.ts'
+  )
+})
+
+it('should assert that aria input is indeterminate', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: '[role="checkbox"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-is-checked',
+          operation: {
+            type: 'is-checked',
+            inputType: 'aria',
+            expected: 'indeterminate',
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/input/checkbox/aria-input-is-indeterminate.ts'
+  )
+})
+
+it('should assert that input has single value using toHaveValue', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'input[type="text"]',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-has-value',
+          operation: {
+            type: 'has-values',
+            expected: ['value1'],
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/input/input-has-single-value.ts'
+  )
+})
+
+it('should assert that input has multiple values using toHaveValues', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: 'select',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'assert',
+          nodeId: 'assert-has-value',
+          operation: {
+            type: 'has-values',
+            expected: ['value1', 'value2'],
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/assertions/input/input-has-multiple-values.ts'
+  )
+})

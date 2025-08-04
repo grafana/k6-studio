@@ -34,6 +34,19 @@ function toAssertionOperation(assertion: Assertion): AssertionOperation {
         visible: assertion.visible,
       }
 
+    case 'check':
+      return {
+        type: 'is-checked',
+        inputType: assertion.inputType,
+        expected: assertion.expected,
+      }
+
+    case 'text-value':
+      return {
+        type: 'has-values',
+        expected: [assertion.expected],
+      }
+
     default:
       return exhaustive(assertion)
   }
