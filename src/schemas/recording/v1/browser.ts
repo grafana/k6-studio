@@ -86,9 +86,22 @@ const VisibilityAssertionSchema = z.object({
   visible: z.boolean(),
 })
 
+const CheckStateSchema = z.union([
+  z.literal('checked'),
+  z.literal('unchecked'),
+  z.literal('indeterminate'),
+])
+
+const CheckAssertionSchema = z.object({
+  type: z.literal('check'),
+  inputType: z.union([z.literal('aria'), z.literal('html')]),
+  expected: CheckStateSchema,
+})
+
 const AssertionSchema = z.discriminatedUnion('type', [
   TextAssertionSchema,
   VisibilityAssertionSchema,
+  CheckAssertionSchema,
 ])
 
 const AssertEventSchema = BrowserEventBaseSchema.extend({
@@ -111,6 +124,7 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
 ])
 
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
+export type CheckState = z.infer<typeof CheckStateSchema>
 
 export type NavigateToPageEvent = z.infer<typeof NavigateToPageEventSchema>
 export type ReloadPageEvent = z.infer<typeof ReloadPageEventSchema>
@@ -124,6 +138,7 @@ export type AssertEvent = z.infer<typeof AssertEventSchema>
 
 export type TextAssertion = z.infer<typeof TextAssertionSchema>
 export type VisibilityAssertion = z.infer<typeof VisibilityAssertionSchema>
+export type CheckAssertion = z.infer<typeof CheckAssertionSchema>
 export type Assertion = z.infer<typeof AssertionSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>
