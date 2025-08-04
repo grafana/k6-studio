@@ -1,4 +1,4 @@
-import { WebNavigation, webNavigation } from 'webextension-polyfill'
+import { tabs, WebNavigation, webNavigation } from 'webextension-polyfill'
 
 import { BrowserEvent } from '@/schemas/recording'
 
@@ -90,4 +90,30 @@ export function captureNavigationEvents(
       return
     }
   })
+
+  tabs
+    .query({ active: true, currentWindow: true })
+    .then((tabs) => {
+      for (const tab of tabs) {
+        if (
+          tab.id === undefined ||
+          tab.url === undefined ||
+          tab.url.startsWith('chrome://')
+        ) {
+          continue
+        }
+
+        onCaptured({
+          type: 'navigate-to-page',
+          eventId: crypto.randomUUID(),
+          timestamp: Date.now(),
+          tab: tab.id.toString(),
+          url: tab.url,
+          source: 'address-bar',
+        })
+      }
+    })
+    .catch((error) => {
+      console.error('Error getting active tab:', error)
+    })
 }
