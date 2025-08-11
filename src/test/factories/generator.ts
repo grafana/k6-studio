@@ -45,6 +45,10 @@ export function createGeneratorState(
   state?: Partial<GeneratorStore>
 ): GeneratorStore {
   return {
+    metadata: {
+      requestJsonPaths: [],
+      responseJsonPaths: [],
+    },
     addRule: vi.fn(),
     cloneRule: vi.fn(),
     deleteRule: vi.fn(),

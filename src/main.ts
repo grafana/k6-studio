@@ -21,8 +21,8 @@ import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { BrowserServer } from './services/browser/server'
 import { configureSystemProxy } from './services/http'
+import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
-import { sendReport } from './usageReport'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
@@ -103,7 +103,7 @@ const createSplashWindow = async () => {
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
   if (getPlatform() === 'mac') {
-    app.dock.setIcon(icon)
+    app.dock?.setIcon(icon)
   }
   app.setName('Grafana k6 Studio')
 
@@ -193,9 +193,9 @@ app.whenReady().then(
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
     await createSplashWindow()
 
-    await sendReport(k6StudioState.appSettings.telemetry.usageReport)
     await setupProjectStructure()
     await migrateJsonGenerator()
+    await initEventTracking()
     await createWindow()
   },
   (error) => {

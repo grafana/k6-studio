@@ -2,6 +2,7 @@ import { Button, Flex } from '@radix-ui/themes'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { UserProfiles } from '@/schemas/profile'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { SignInProcessState, SignInResult, Stack } from '@/types/auth'
 import { exhaustive } from '@/utils/typescript'
 
@@ -89,6 +90,9 @@ export function GrafanaCloudSignIn({
     switch (result.type) {
       case 'authenticated':
         onSignInRef.current(result.profiles)
+        window.studio.app.trackEvent({
+          event: UsageEventName.UserLoggedIn,
+        })
         break
 
       case 'timed-out':
