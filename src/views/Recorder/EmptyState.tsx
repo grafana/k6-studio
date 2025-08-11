@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import * as Select from '@radix-ui/react-select'
 import {
   Box,
   Button,
@@ -110,7 +111,29 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
       mx="auto"
       maxWidth="616px"
       width="100%"
+      position="relative"
     >
+      <Select.Root value="none">
+        <Select.Trigger
+          css={css`
+            position: relative;
+            left: 0;
+            top: 0;
+          `}
+        >
+          <Select.Value>Tools</Select.Value>
+          <Select.Icon />
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Content position="popper">
+            <Select.ScrollUpButton />
+            <Select.Viewport>
+              <Select.Item value="none">None</Select.Item>
+            </Select.Viewport>
+            <Select.ScrollDownButton />
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
       <Heading
         size="8"
         css={css`

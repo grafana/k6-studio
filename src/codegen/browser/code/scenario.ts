@@ -10,6 +10,7 @@ import {
   fromArrayLiteral,
   fromObjectLiteral,
 } from '@/codegen/estree'
+import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
 import { spaceBetween } from '../formatting/spacing'
@@ -154,7 +155,7 @@ function emitExpectExpression(
   context: ScenarioContext,
   expression: ir.ExpectExpression
 ): ts.Expression {
-  context.import(['expect'], 'https://jslib.k6.io/k6-testing/0.4.0/index.js')
+  context.import(['expect'], 'https://jslib.k6.io/k6-testing/0.5.0/index.js')
 
   const locator = emitExpression(context, expression.actual)
 
@@ -186,6 +187,63 @@ function emitExpectExpression(
         .call([])
         .await(context)
         .done()
+
+    case 'IsCheckedAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toBeChecked')
+        .call([])
+        .await(context)
+        .done()
+
+    case 'IsNotCheckedAssertion':
+      return new ExpressionBuilder(expect)
+        .member('not')
+        .member('toBeChecked')
+        .call([])
+        .await(context)
+        .done()
+
+    case 'IsIndeterminateAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toBeChecked')
+        .call([
+          fromObjectLiteral({
+            indeterminate: true,
+          }),
+        ])
+        .await(context)
+        .done()
+
+    case 'IsAttributeEqualToAssertion':
+      return new ExpressionBuilder(expect)
+        .member('toHaveAttribute')
+        .call([
+          emitExpression(context, expression.expected.attribute),
+          emitExpression(context, expression.expected.value),
+        ])
+        .await(context)
+        .done()
+
+    case 'HasValueAssertion': {
+      const expectedValues = mapNonEmpty(
+        expression.expected.expected,
+        (value) => emitExpression(context, value)
+      )
+
+      if (expectedValues.length === 1) {
+        return new ExpressionBuilder(expect)
+          .member('toHaveValue')
+          .call([expectedValues[0]])
+          .await(context)
+          .done()
+      }
+
+      return new ExpressionBuilder(expect)
+        .member('toHaveValues')
+        .call([fromArrayLiteral(expectedValues)])
+        .await(context)
+        .done()
+    }
 
     default: {
       return exhaustive(expression.expected)

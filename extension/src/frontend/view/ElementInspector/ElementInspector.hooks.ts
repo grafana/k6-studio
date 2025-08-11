@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { ElementSelector } from '@/schemas/recording'
 import { uuid } from '@/utils/uuid'
+import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 
 import { generateSelector } from '../../../selectors'
 import { useGlobalClass } from '../GlobalStyles'
@@ -11,16 +12,75 @@ import { usePreventClick } from '../hooks/usePreventClick'
 import { Bounds, Position } from '../types'
 import { getElementBounds } from '../utils'
 
+function* getAncestors(element: Element) {
+  let current: Element | null = element.parentElement
+
+  while (current !== null) {
+    yield current
+
+    if (current === document.documentElement) {
+      break
+    }
+
+    current = current.parentElement
+  }
+}
+
+function findLabelFor(label: HTMLLabelElement): Element | null {
+  const id = label.getAttribute('for')
+
+  if (id === null) {
+    return null
+  }
+
+  return document.getElementById(id)
+}
+
+function findInChildren(label: HTMLLabelElement): Element | null {
+  return label.querySelector('input, select, textarea')
+}
+
+function findLabelledBy(label: HTMLLabelElement): Element | null {
+  if (label.id === '') {
+    return null
+  }
+
+  return document.querySelector(`[aria-labelledby="${label.id}"]`)
+}
+
+export function findRelatedInput(element: Element): TrackedElement | null {
+  const label = [...getAncestors(element)].find(
+    (ancestor) => ancestor instanceof HTMLLabelElement
+  )
+
+  if (label === undefined) {
+    return null
+  }
+
+  const input =
+    findLabelFor(label) ?? findInChildren(label) ?? findLabelledBy(label)
+
+  if (input === null) {
+    return null
+  }
+
+  return toTrackedElement(input)
+}
+
 export interface TrackedElement {
   id: string
+  roles: ElementRole[]
   selector: ElementSelector
   target: Element
   bounds: Bounds
 }
 
 function toTrackedElement(element: Element): TrackedElement {
+  const roles = getElementRoles(element)
+
   return {
     id: uuid(),
+    roles: [...roles],
     selector: generateSelector(element),
     target: element,
     bounds: getElementBounds(element),

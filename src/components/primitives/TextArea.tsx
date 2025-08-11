@@ -10,7 +10,7 @@ export function TextArea({ className, size, ...props }: TextAreaProps) {
   return (
     <textarea
       {...props}
-      className={clsx('input', className)}
+      className={clsx('studio-input', className)}
       data-size={size}
       css={css`
         color: var(--studio-input-color);
