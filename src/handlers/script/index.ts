@@ -10,6 +10,8 @@ import {
   runScript,
   type K6Process,
 } from '@/main/script'
+import { trackEvent } from '@/services/usageTracking'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 
 import { ScriptHandler } from './types'
@@ -60,6 +62,10 @@ export function initialize() {
         proxyPort: k6StudioState.appSettings.proxy.port,
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
+
+      trackEvent({
+        event: UsageEventName.ScriptValidated,
+      })
     }
   )
 
@@ -89,6 +95,10 @@ export function initialize() {
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
 
+      trackEvent({
+        event: UsageEventName.ScriptValidated,
+      })
+
       await unlink(TEMP_GENERATOR_SCRIPT_PATH)
     }
   )
@@ -101,6 +111,10 @@ export function initialize() {
       try {
         const filePath = path.join(SCRIPTS_PATH, fileName)
         await writeFile(filePath, script)
+
+        trackEvent({
+          event: UsageEventName.ScriptExported,
+        })
         sendToast(browserWindow.webContents, {
           title: 'Script exported successfully',
           status: 'success',
