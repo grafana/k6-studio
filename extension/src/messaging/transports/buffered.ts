@@ -22,6 +22,11 @@ export class BufferedTransport extends Transport {
     this.#transport.on('connect', () => {
       this.emit('connect', undefined)
 
+      console.log(
+        'Underlying transport connected. Flushing buffer...',
+        this.#buffer
+      )
+
       for (const message of this.#buffer) {
         this.#transport.send(message)
       }
@@ -38,6 +43,10 @@ export class BufferedTransport extends Transport {
     if (this.#transport.connected) {
       this.#transport.send(data)
     } else {
+      console.log(
+        'Underlying transport not connected. Buffering message...',
+        data
+      )
       this.#buffer.push(data)
     }
   }

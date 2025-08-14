@@ -95,6 +95,12 @@ export function captureNavigationEvents(
     .query({ active: true, currentWindow: true })
     .then((tabs) => {
       for (const tab of tabs) {
+        // If the pendingUrl is set, it means that the navigation hasn't been
+        // comitted yet so the onCommited handler will record the navigation.
+        if (tab.pendingUrl !== undefined) {
+          continue
+        }
+
         if (
           tab.id === undefined ||
           tab.url === undefined ||

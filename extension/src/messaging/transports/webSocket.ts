@@ -26,6 +26,8 @@ export class WebSocketTransport extends Transport {
     const socket = new WebSocket(this.#url)
 
     socket.addEventListener('open', () => {
+      console.log(`WebSocket connection opened to ${this.#url}`)
+
       this.emit('connect', undefined)
     })
 
