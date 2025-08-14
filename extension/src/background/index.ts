@@ -1,4 +1,4 @@
-import { tabs } from 'webextension-polyfill'
+import { runtime, tabs } from 'webextension-polyfill'
 
 import { BrowserEvent } from '@/schemas/recording'
 
@@ -47,6 +47,12 @@ client.on('load-events', () => {
     type: 'events-loaded',
     events: eventLog,
   })
+})
+
+client.on('reload-extension', () => {
+  console.log('reloading extension...')
+
+  runtime.reload()
 })
 
 const logEvent = (event: BrowserExtensionEvent) => {
