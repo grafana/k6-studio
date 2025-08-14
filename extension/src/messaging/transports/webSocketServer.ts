@@ -3,12 +3,27 @@ import { WebSocketServer } from 'ws'
 import { Transport } from './transport'
 
 export class WebSocketServerTransport extends Transport {
+  static async create(
+    host: string,
+    port: number
+  ): Promise<WebSocketServerTransport> {
+    return new Promise<WebSocketServerTransport>((resolve, reject) => {
+      const server = new WebSocketServer({ host, port })
+
+      server.on('listening', () => {
+        resolve(new WebSocketServerTransport(server))
+      })
+
+      server.on('error', reject)
+    })
+  }
+
   #server: WebSocketServer
 
-  constructor(host: string, port: number) {
+  constructor(server: WebSocketServer) {
     super()
 
-    this.#server = new WebSocketServer({ host, port })
+    this.#server = server
 
     this.#server.on('connection', (socket) => {
       socket.on('message', (data) => {
