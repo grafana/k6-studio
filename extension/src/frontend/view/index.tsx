@@ -7,8 +7,11 @@ import { Theme } from '@/components/primitives/Theme'
 
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
+import { shouldBypassEvent } from './utils'
 
 let initialized = false
+
+let shadowRoot: ShadowRoot | null = null
 
 function createMount() {
   const mount = document.createElement('div')
@@ -33,7 +36,7 @@ function createMount() {
   //
   // So we use a MutationObserver to continuously check if the mount is still the last
   // element in the body. If it isn't, we move it to the end of the body.
-  const observer = new MutationObserver(() => {
+  const positionObserver = new MutationObserver(() => {
     if (mount.nextSibling === null) {
       return
     }
@@ -41,24 +44,40 @@ function createMount() {
     document.body.appendChild(mount)
   })
 
-  observer.observe(document.body, {
+  positionObserver.observe(document.body, {
     childList: true,
+  })
+
+  // Some UI frameworks use the `inert` attribute to disable interaction with
+  // elements outside of a modal. We remove this attribute so that the recording
+  // controls are always accessible.
+  const attributeObserver = new MutationObserver(() => {
+    if (mount.hasAttribute('inert')) {
+      mount.removeAttribute('inert')
+    }
+  })
+
+  attributeObserver.observe(mount, {
+    attributes: true,
+    attributeFilter: ['inert'],
   })
 
   return mount
 }
 
 function createShadowRoot(mount: Element) {
-  const shadow = mount.attachShadow({
+  shadowRoot = mount.attachShadow({
     mode: 'open',
   })
 
   const root = document.createElement('div')
 
   root.style.cursor = 'initial'
+  root.style.pointerEvents = 'auto'
+
   root.dataset.ksixStudio = 'true'
 
-  shadow.appendChild(root)
+  shadowRoot.appendChild(root)
 
   return root
 }
@@ -140,3 +159,41 @@ if (document.readyState === 'loading') {
 } else {
   initialize()
 }
+
+function bypassRecordedPage(event: Event) {
+  const target = event.composedPath()[0]
+
+  if (target instanceof Element === false) {
+    return
+  }
+
+  const root = target.getRootNode()
+
+  if (root !== shadowRoot && !shouldBypassEvent(event)) {
+    return
+  }
+
+  const EventConstructor = event.constructor as new (
+    type: string,
+    eventInitDict?: EventInit
+  ) => Event
+
+  const newEvent = new EventConstructor(event.type, {
+    ...event,
+    composed: false,
+    cancelable: event.cancelable,
+    bubbles: event.bubbles,
+  })
+
+  event.stopImmediatePropagation()
+
+  target.dispatchEvent(newEvent)
+}
+
+window.addEventListener('click', bypassRecordedPage, true)
+window.addEventListener('pointerdown', bypassRecordedPage, true)
+window.addEventListener('pointerup', bypassRecordedPage, true)
+window.addEventListener('focusin', bypassRecordedPage, true)
+window.addEventListener('focusout', bypassRecordedPage, true)
+window.addEventListener('focus', bypassRecordedPage, true)
+window.addEventListener('blur', bypassRecordedPage, true)
