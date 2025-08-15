@@ -7,8 +7,11 @@ import { Theme } from '@/components/primitives/Theme'
 
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
+import { isUsingTool } from './utils'
 
 let initialized = false
+
+let shadowRoot: ShadowRoot | null = null
 
 function createMount() {
   const mount = document.createElement('div')
@@ -33,7 +36,7 @@ function createMount() {
   //
   // So we use a MutationObserver to continuously check if the mount is still the last
   // element in the body. If it isn't, we move it to the end of the body.
-  const observer = new MutationObserver(() => {
+  const positionObserver = new MutationObserver(() => {
     if (mount.nextSibling === null) {
       return
     }
@@ -41,24 +44,40 @@ function createMount() {
     document.body.appendChild(mount)
   })
 
-  observer.observe(document.body, {
+  positionObserver.observe(document.body, {
     childList: true,
+  })
+
+  // Some UI frameworks use the `inert` attribute to disable interaction with
+  // elements outside of a modal. We remove this attribute so that the recording
+  // controls are always accessible.
+  const attributeObserver = new MutationObserver(() => {
+    if (mount.hasAttribute('inert')) {
+      mount.removeAttribute('inert')
+    }
+  })
+
+  attributeObserver.observe(mount, {
+    attributes: true,
+    attributeFilter: ['inert'],
   })
 
   return mount
 }
 
 function createShadowRoot(mount: Element) {
-  const shadow = mount.attachShadow({
+  shadowRoot = mount.attachShadow({
     mode: 'open',
   })
 
   const root = document.createElement('div')
 
   root.style.cursor = 'initial'
+  root.style.pointerEvents = 'auto'
+
   root.dataset.ksixStudio = 'true'
 
-  shadow.appendChild(root)
+  shadowRoot.appendChild(root)
 
   return root
 }
@@ -140,3 +159,71 @@ if (document.readyState === 'loading') {
 } else {
   initialize()
 }
+
+function isInsideBrowserUI(element: Element) {
+  return element.getRootNode() === shadowRoot
+}
+
+// We want to make sure that the user can always interact with the toolbar.
+// This function checks if an event is being dispatched to an element inside
+// our UI and, if so, stops any event listeners outside the our shadow root
+// from being triggered.
+function bypassRecordedPage(event: Event) {
+  const target = event.composedPath()[0]
+
+  if (target instanceof Element === false) {
+    return
+  }
+
+  if (!isInsideBrowserUI(target)) {
+    return
+  }
+
+  // We create a copy of the event, stop the original and dispatch the new one
+  // to the target with `composed` set to `false` so that it doesn't propagate outside.
+  const EventConstructor = event.constructor as new (
+    type: string,
+    eventInitDict?: EventInit
+  ) => Event
+
+  const newEvent = new EventConstructor(event.type, {
+    ...event,
+    composed: false,
+    cancelable: event.cancelable,
+    bubbles: event.bubbles,
+  })
+
+  event.stopImmediatePropagation()
+
+  target.dispatchEvent(newEvent)
+}
+
+// Handling focus events requires some extra logic because we want to
+// stop focus events whenever the user is using a tool, but we also
+// want to user events to propagate to the browser UI if the event was
+// triggered there.
+function bypassFocusEvent(event: FocusEvent) {
+  if (event.target instanceof Element === false) {
+    return
+  }
+
+  if (isInsideBrowserUI(event.target)) {
+    bypassRecordedPage(event)
+
+    return
+  }
+
+  if (!isUsingTool()) {
+    return
+  }
+
+  event.stopImmediatePropagation()
+}
+
+window.addEventListener('click', bypassRecordedPage, true)
+window.addEventListener('pointerdown', bypassRecordedPage, true)
+window.addEventListener('pointerup', bypassRecordedPage, true)
+window.addEventListener('focusin', bypassFocusEvent, true)
+window.addEventListener('focusout', bypassFocusEvent, true)
+window.addEventListener('focus', bypassFocusEvent, true)
+window.addEventListener('blur', bypassFocusEvent, true)
