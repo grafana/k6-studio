@@ -160,6 +160,10 @@ if (document.readyState === 'loading') {
   initialize()
 }
 
+// We want to make sure that the user can always interact with the toolbar.
+// This function checks if an event is being dispatched to an element inside
+// our UI and, if so, stops any event listeners outside the our shadow root
+// from being triggered.
 function bypassRecordedPage(event: Event) {
   const target = event.composedPath()[0]
 
@@ -173,6 +177,8 @@ function bypassRecordedPage(event: Event) {
     return
   }
 
+  // We create a copy of the event, stop the original and dispatch the new one
+  // to the target with `composed` set to `false` so that it doesn't propagate outside.
   const EventConstructor = event.constructor as new (
     type: string,
     eventInitDict?: EventInit
