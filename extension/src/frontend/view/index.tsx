@@ -7,7 +7,7 @@ import { Theme } from '@/components/primitives/Theme'
 
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
-import { shouldBypassEvent } from './utils'
+import { isUsingTool } from './utils'
 
 let initialized = false
 
@@ -160,6 +160,10 @@ if (document.readyState === 'loading') {
   initialize()
 }
 
+function isInsideBrowserUI(element: Element) {
+  return element.getRootNode() === shadowRoot
+}
+
 // We want to make sure that the user can always interact with the toolbar.
 // This function checks if an event is being dispatched to an element inside
 // our UI and, if so, stops any event listeners outside the our shadow root
@@ -171,9 +175,7 @@ function bypassRecordedPage(event: Event) {
     return
   }
 
-  const root = target.getRootNode()
-
-  if (root !== shadowRoot && !shouldBypassEvent(event)) {
+  if (!isInsideBrowserUI(target)) {
     return
   }
 
@@ -196,10 +198,32 @@ function bypassRecordedPage(event: Event) {
   target.dispatchEvent(newEvent)
 }
 
+// Handling focus events requires some extra logic because we want to
+// stop focus events whenever the user is using a tool, but we also
+// want to user events to propagate to the browser UI if the event was
+// triggered there.
+function bypassFocusEvent(event: FocusEvent) {
+  if (event.target instanceof Element === false) {
+    return
+  }
+
+  if (isInsideBrowserUI(event.target)) {
+    bypassRecordedPage(event)
+
+    return
+  }
+
+  if (!isUsingTool()) {
+    return
+  }
+
+  event.stopImmediatePropagation()
+}
+
 window.addEventListener('click', bypassRecordedPage, true)
 window.addEventListener('pointerdown', bypassRecordedPage, true)
 window.addEventListener('pointerup', bypassRecordedPage, true)
-window.addEventListener('focusin', bypassRecordedPage, true)
-window.addEventListener('focusout', bypassRecordedPage, true)
-window.addEventListener('focus', bypassRecordedPage, true)
-window.addEventListener('blur', bypassRecordedPage, true)
+window.addEventListener('focusin', bypassFocusEvent, true)
+window.addEventListener('focusout', bypassFocusEvent, true)
+window.addEventListener('focus', bypassFocusEvent, true)
+window.addEventListener('blur', bypassFocusEvent, true)

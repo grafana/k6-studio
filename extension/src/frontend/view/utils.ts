@@ -1,7 +1,7 @@
 import { useInBrowserUIStore } from './store'
 import { Bounds } from './types'
 
-export function shouldBypassEvent(event: Event): boolean {
+export function isUsingTool(): boolean {
   return (
     event instanceof FocusEvent && useInBrowserUIStore.getState().tool !== null
   )
