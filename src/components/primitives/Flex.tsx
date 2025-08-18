@@ -52,6 +52,7 @@ const styles = css`
 
 interface FlexProps {
   asChild?: boolean
+  className?: string
   direction?: 'row' | 'column'
   align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline'
   justify?: 'start' | 'center' | 'end' | 'between' | 'around'
@@ -64,6 +65,7 @@ interface FlexProps {
 
 export function Flex({
   asChild = false,
+  className,
   direction = 'row',
   align = 'center',
   justify = 'start',
@@ -77,6 +79,7 @@ export function Flex({
 
   return (
     <Component
+      className={className}
       data-direction={direction}
       data-align={align}
       data-justify={justify}
