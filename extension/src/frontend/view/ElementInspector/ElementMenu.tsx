@@ -7,7 +7,7 @@ import { Toolbar } from '@/components/primitives/Toolbar'
 
 import { TrackedElement } from './ElementInspector.hooks'
 import {
-  findLabeledControl,
+  findAssociatedControl,
   getCheckedState,
   LabeledControl,
 } from './ElementMenu.utils'
@@ -136,7 +136,7 @@ interface ElementMenuProps {
 }
 
 export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
-  const inputElement = findLabeledControl(element)
+  const associatedElement = findAssociatedControl(element)
 
   const handleAddVisibilityAssertion = () => {
     onSelectAssertion({
@@ -162,14 +162,14 @@ export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
         gap: 0;
       `}
     >
-      {inputElement !== null && (
+      {associatedElement !== null && (
         <>
           <CheckboxCategory
-            input={inputElement}
+            input={associatedElement}
             onAddAssertion={onSelectAssertion}
           />
           <RadioCategory
-            input={inputElement}
+            input={associatedElement}
             onAddAssertion={onSelectAssertion}
           />
         </>

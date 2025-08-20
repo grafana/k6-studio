@@ -54,12 +54,17 @@ export interface LabeledControl {
   roles: ElementRole[]
 }
 
-export function findLabeledControl({
+export function findAssociatedControl({
   target,
   selector,
   roles,
 }: TrackedElement): LabeledControl | null {
-  if (target instanceof HTMLInputElement) {
+  // If the target is already a control, then we don't need to do a search.
+  if (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLButtonElement ||
+    target instanceof HTMLSelectElement
+  ) {
     return {
       element: target,
       selector,
@@ -75,19 +80,19 @@ export function findLabeledControl({
     return null
   }
 
-  const element =
+  const associatedElement =
     findByForAttribute(label) ??
     findInChildren(label) ??
     findByLabelledBy(label)
 
-  if (element === null) {
+  if (associatedElement === null) {
     return null
   }
 
   return {
-    element,
-    selector: generateSelector(element),
-    roles: [...getElementRoles(element)],
+    element: associatedElement,
+    selector: generateSelector(associatedElement),
+    roles: [...getElementRoles(associatedElement)],
   }
 }
 
