@@ -1,6 +1,12 @@
 import { useInBrowserUIStore } from './store'
 import { Bounds } from './types'
 
+export function isUsingTool(): boolean {
+  return (
+    event instanceof FocusEvent && useInBrowserUIStore.getState().tool !== null
+  )
+}
+
 export function shouldSkipEvent(event: Event): boolean {
   const store = useInBrowserUIStore.getState()
 
