@@ -104,7 +104,7 @@ function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
   context.emit({
     type: 'ExpressionStatement',
     expression: {
-      type: 'TypeTextExpression',
+      type: 'FillTextExpression',
       target: locator,
       value: {
         type: 'StringLiteral',

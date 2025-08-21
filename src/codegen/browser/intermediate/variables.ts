@@ -70,9 +70,9 @@ function substituteExpression(
         locator: substituteExpression(node.locator, substitutions),
       }
 
-    case 'TypeTextExpression':
+    case 'FillTextExpression':
       return {
-        type: 'TypeTextExpression',
+        type: 'FillTextExpression',
         target: substituteExpression(node.target, substitutions),
         value: substituteExpression(node.value, substitutions),
       }

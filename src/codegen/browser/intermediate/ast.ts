@@ -35,8 +35,8 @@ export interface ClickOptionsExpression {
   modifiers: Array<'Control' | 'Shift' | 'Alt' | 'Meta'>
 }
 
-export interface TypeTextExpression {
-  type: 'TypeTextExpression'
+export interface FillTextExpression {
+  type: 'FillTextExpression'
   target: Expression
   value: Expression
 }
@@ -93,7 +93,7 @@ export type Expression =
   | ReloadExpression
   | ClickExpression
   | ClickOptionsExpression
-  | TypeTextExpression
+  | FillTextExpression
   | CheckExpression
   | SelectOptionsExpression
   | ExpectExpression
