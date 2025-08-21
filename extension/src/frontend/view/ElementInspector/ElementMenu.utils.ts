@@ -121,3 +121,18 @@ export function getCheckedState(
       return 'unchecked'
   }
 }
+
+export function isNative(role: ElementRole, element: Element) {
+  // The 'switch' role differs from 'checkbox' only in semantics, so if it is on a
+  // native checkbox we want the generated code to use `.toBeChecked()` and not
+  // `.toHaveAttribute()`.
+  if (
+    role.role === 'switch' &&
+    element instanceof HTMLInputElement &&
+    element.type === 'checkbox'
+  ) {
+    return true
+  }
+
+  return role.type === 'intrinsic'
+}

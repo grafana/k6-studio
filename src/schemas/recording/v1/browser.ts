@@ -94,8 +94,13 @@ const CheckStateSchema = z.union([
 
 const CheckAssertionSchema = z.object({
   type: z.literal('check'),
-  inputType: z.union([z.literal('aria'), z.literal('html')]),
   expected: CheckStateSchema,
+  /**
+   * Indicates whether the assertion is targeting a native input element or
+   * a custom implementation. This is used to determine the kind of assertion
+   * that wll be emitted during codegen.
+   */
+  inputType: z.union([z.literal('aria'), z.literal('native')]),
 })
 
 const AssertionSchema = z.discriminatedUnion('type', [

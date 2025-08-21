@@ -94,7 +94,7 @@ export interface IsVisibleAssertion {
 
 export interface IsCheckedAssertion {
   type: 'is-checked'
-  inputType: 'aria' | 'html'
+  inputType: 'aria' | 'native'
   expected: CheckState
 }
 
