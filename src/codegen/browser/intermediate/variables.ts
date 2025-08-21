@@ -16,8 +16,18 @@ function substituteAssertion(
         text: substituteExpression(assertion.text, substitutions),
       }
 
+    case 'IsAttributeEqualToAssertion':
+      return {
+        type: 'IsAttributeEqualToAssertion',
+        attribute: substituteExpression(assertion.attribute, substitutions),
+        value: substituteExpression(assertion.value, substitutions),
+      }
+
     case 'IsHiddenAssertion':
     case 'IsVisibleAssertion':
+    case 'IsCheckedAssertion':
+    case 'IsNotCheckedAssertion':
+    case 'IsIndeterminateAssertion':
       return assertion
 
     default:
