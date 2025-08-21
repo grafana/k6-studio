@@ -7,6 +7,65 @@ import { generateSelector } from '../selectors'
 import { client } from './routing'
 import { shouldSkipEvent } from './view/utils'
 
+/**
+ * Adapted list of widgets that are interacted with a simple click, regardless where the item
+ * was clicked. Other widgets, such as "scrollbar", can have their behaviour change depending on
+ * where the click happened.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles
+ */
+const SIMPLE_CLICK_WIDGET_ROLES = [
+  'searchbox',
+  'switch',
+  'tab',
+  'treeitem',
+  'button',
+  'checkbox',
+  'link',
+  'menuitem',
+  'menuitemcheckbox',
+  'menuitemradio',
+  'option',
+  'radio',
+  'textbox',
+]
+
+function findInteractiveElement(element: Element): Element | null {
+  // https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Content_categories#interactive_content
+  if (
+    element instanceof HTMLButtonElement ||
+    element instanceof HTMLLabelElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement
+  ) {
+    return element
+  }
+
+  if (element instanceof HTMLAnchorElement && element.hasAttribute('href')) {
+    return element
+  }
+
+  if (element instanceof HTMLImageElement && element.hasAttribute('usemap')) {
+    return element
+  }
+
+  if (element instanceof HTMLInputElement && element.type !== 'hidden') {
+    return element
+  }
+
+  const role = element.getAttribute('role')
+
+  if (role !== null && SIMPLE_CLICK_WIDGET_ROLES.includes(role)) {
+    return element
+  }
+
+  if (element.parentElement === null) {
+    return null
+  }
+
+  return findInteractiveElement(element.parentElement)
+}
+
 function getButton(button: number) {
   switch (button) {
     case 0:
@@ -41,13 +100,28 @@ window.addEventListener(
       return
     }
 
+    // From the user's point of view, they clicked a button and not a `<span />` inside a
+    // button. So whenever we record a click we try to find the underlying interactive
+    // element. Only if there's no such element do we record a click on the actual
+    // target.
+    //
+    // In the future, we might want to have this behavior configurable:
+    //
+    // - Ignore any click on non-interactive elements
+    // - Record click on the interactive element with fallback (current behavior).
+    // - Record all clicks exactly as they happened.
+    //
+    // The first option would be especially useful since it can reduce noise
+    // in the recordings.
+    const clickTarget = findInteractiveElement(ev.target) ?? ev.target
+
     // We don't want to capture clicks on form elements since they will be
     // interacted with using e.g. the `selectOption` or `type` functions.
     if (
-      ev.target instanceof HTMLInputElement ||
-      ev.target instanceof HTMLTextAreaElement ||
-      ev.target instanceof HTMLSelectElement ||
-      ev.target instanceof HTMLOptionElement
+      clickTarget instanceof HTMLInputElement ||
+      clickTarget instanceof HTMLTextAreaElement ||
+      clickTarget instanceof HTMLSelectElement ||
+      clickTarget instanceof HTMLOptionElement
     ) {
       return
     }
@@ -62,7 +136,7 @@ window.addEventListener(
       type: 'click',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
-      selector: generateSelector(ev.target),
+      selector: generateSelector(clickTarget),
       button,
       modifiers: {
         ctrl: ev.ctrlKey,
