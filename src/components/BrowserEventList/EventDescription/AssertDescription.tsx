@@ -34,6 +34,15 @@ export function AssertDescription({
         </>
       )
 
+    case 'check':
+      return (
+        <>
+          Assert that the checked state of{' '}
+          <Selector selector={selector} onHighlight={onHighlight} /> is{' '}
+          <code>{assertion.expected}</code>
+        </>
+      )
+
     default:
       return exhaustive(assertion)
   }

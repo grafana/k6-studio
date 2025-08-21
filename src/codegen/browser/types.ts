@@ -1,3 +1,5 @@
+import { CheckState } from '@/schemas/recording'
+
 export type NodeId = string
 
 interface NodeBase {
@@ -90,7 +92,16 @@ export interface IsVisibleAssertion {
   visible: boolean
 }
 
-export type AssertionOperation = TextContainsAssertion | IsVisibleAssertion
+export interface IsCheckedAssertion {
+  type: 'is-checked'
+  inputType: 'aria' | 'native'
+  expected: CheckState
+}
+
+export type AssertionOperation =
+  | TextContainsAssertion
+  | IsVisibleAssertion
+  | IsCheckedAssertion
 
 export interface AssertNode extends NodeBase {
   type: 'assert'
