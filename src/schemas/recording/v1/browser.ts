@@ -94,7 +94,7 @@ const CheckStateSchema = z.union([
 
 const CheckAssertionSchema = z.object({
   type: z.literal('check'),
-  inputType: z.union([z.literal('aria'), z.literal('html')]),
+  inputType: z.union([z.literal('aria'), z.literal('native')]),
   expected: CheckStateSchema,
 })
 

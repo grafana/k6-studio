@@ -3,7 +3,7 @@ import { CheckState } from '@/schemas/recording'
 export interface CheckAssertionData {
   type: 'check'
   selector: string
-  inputType: 'aria' | 'html'
+  inputType: 'aria' | 'native'
   expected: CheckState
 }
 

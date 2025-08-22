@@ -501,7 +501,7 @@ it('should assert that html input is checked', async ({ expect }) => {
           nodeId: 'assert-is-checked',
           operation: {
             type: 'is-checked',
-            inputType: 'html',
+            inputType: 'native',
             expected: 'checked',
           },
           inputs: {
@@ -539,7 +539,7 @@ it('should assert that html input is not checked', async ({ expect }) => {
           nodeId: 'assert-is-checked',
           operation: {
             type: 'is-checked',
-            inputType: 'html',
+            inputType: 'native',
             expected: 'unchecked',
           },
           inputs: {
@@ -577,7 +577,7 @@ it('should assert that html input is indeterminate', async ({ expect }) => {
           nodeId: 'assert-is-checked',
           operation: {
             type: 'is-checked',
-            inputType: 'html',
+            inputType: 'native',
             expected: 'indeterminate',
           },
           inputs: {

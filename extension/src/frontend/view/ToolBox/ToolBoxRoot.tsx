@@ -61,7 +61,7 @@ export function ToolBoxRoot({ settings, children }: ToolBoxRootProps) {
         z-index: var(--studio-layer-2);
 
         display: flex;
-        align-items: stretch;
+        align-items: center;
 
         color: var(--studio-foreground);
         background-color: var(--studio-background);
@@ -82,6 +82,7 @@ export function ToolBoxRoot({ settings, children }: ToolBoxRootProps) {
           display: flex;
           align-items: center;
           color: var(--gray-7);
+          align-self: stretch;
           border-right: 1px solid var(--gray-3);
         `}
         style={{
@@ -92,9 +93,11 @@ export function ToolBoxRoot({ settings, children }: ToolBoxRootProps) {
       >
         <GripVerticalIcon size={'1.2em'} />
       </div>
+
       <Toolbar.Root
         css={css`
-          padding: var(--studio-spacing-1);
+          padding: var(--studio-spacing-1) var(--studio-spacing-2);
+          gap: 0;
         `}
       >
         {children}

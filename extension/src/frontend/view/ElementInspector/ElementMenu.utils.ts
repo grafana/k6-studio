@@ -54,13 +54,15 @@ export interface LabeledControl {
   roles: ElementRole[]
 }
 
-export function findLabeledControl({
+export function findAssociatedControl({
   target,
   selector,
   roles,
 }: TrackedElement): LabeledControl | null {
+  // If the target is already a control, then we don't need to do a search.
   if (
     target instanceof HTMLInputElement ||
+    target instanceof HTMLButtonElement ||
     target instanceof HTMLSelectElement ||
     target instanceof HTMLTextAreaElement
   ) {
@@ -79,19 +81,19 @@ export function findLabeledControl({
     return null
   }
 
-  const element =
+  const associatedElement =
     findByForAttribute(label) ??
     findInChildren(label) ??
     findByLabelledBy(label)
 
-  if (element === null) {
+  if (associatedElement === null) {
     return null
   }
 
   return {
-    element,
-    selector: generateSelector(element),
-    roles: [...getElementRoles(element)],
+    element: associatedElement,
+    selector: generateSelector(associatedElement),
+    roles: [...getElementRoles(associatedElement)],
   }
 }
 
@@ -131,4 +133,19 @@ export function getTextBoxValue(element: Element): string {
 
   // The input must be an aria textbox, so we'll use the textContent.
   return element.textContent ?? ''
+}
+
+export function isNative(role: ElementRole, element: Element) {
+  // The 'switch' role differs from 'checkbox' only in semantics, so if it is on a
+  // native checkbox we want the generated code to use `.toBeChecked()` and not
+  // `.toHaveAttribute()`.
+  if (
+    role.role === 'switch' &&
+    element instanceof HTMLInputElement &&
+    element.type === 'checkbox'
+  ) {
+    return true
+  }
+
+  return role.type === 'intrinsic'
 }

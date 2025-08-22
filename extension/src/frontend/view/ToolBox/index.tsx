@@ -15,16 +15,18 @@ import {
   PanelRight,
   RotateCcwIcon,
   SquareDashedMousePointerIcon,
-  SquareIcon,
+  SquareStopIcon,
   TextCursorIcon,
 } from 'lucide-react'
 
+import { Flex } from '@/components/primitives/Flex'
 import { Toolbar } from '@/components/primitives/Toolbar'
 
 import { client } from '../../routing'
 import { useToolboxSettings } from '../settings'
 import { Tool } from '../types'
 
+import { ToolBoxLogo } from './ToolBoxLogo'
 import { ToolBoxRoot } from './ToolBoxRoot'
 import { ToolBoxTooltip } from './ToolBoxTooltip'
 
@@ -107,11 +109,29 @@ export function ToolBox({
       onDragEnd={handleDragEnd}
     >
       <ToolBoxRoot settings={settings}>
-        <ToolBoxTooltip content="Stop recording">
-          <Toolbar.Button onClick={onStopRecording}>
-            <SquareIcon />
-          </Toolbar.Button>
-        </ToolBoxTooltip>
+        <ToolBoxLogo />
+        <Toolbar.Separator />
+        <Flex
+          css={css`
+            color: var(--red-11);
+            font-size: var(--studio-font-size-2);
+            font-weight: 500;
+          `}
+          align="center"
+          gap="1"
+        >
+          <ToolBoxTooltip content="Stop recording">
+            <Toolbar.Button onClick={onStopRecording}>
+              <SquareStopIcon
+                css={css`
+                  color: var(--red-11);
+                `}
+              />
+            </Toolbar.Button>
+          </ToolBoxTooltip>
+          <span>Recording</span>
+        </Flex>
+
         <Toolbar.Separator />
         <Toolbar.ToggleGroup
           type="single"

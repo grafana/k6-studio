@@ -9,13 +9,15 @@ import {
 import { ComponentProps, ReactNode } from 'react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
+import { ElementRole } from 'extension/src/utils/aria'
 
 import { TrackedElement } from './ElementInspector.hooks'
 import {
-  findLabeledControl,
+  findAssociatedControl,
   getCheckedState,
-  getTextBoxValue,
+  isNative,
   LabeledControl,
+  getTextBoxValue,
 } from './ElementMenu.utils'
 import { AssertionData, CheckAssertionData } from './assertions/types'
 
@@ -47,107 +49,70 @@ function ToolbarButton(props: ToolbarButtonProps) {
   )
 }
 
-function CategorySeparator({ children }: { children: ReactNode }) {
+interface CategoryProps {
+  heading: ReactNode
+  children: ReactNode
+}
+
+function MenuSection({ heading, children }: CategoryProps) {
   return (
-    <div
-      role="separator"
-      css={css`
-        font-size: var(--studio-font-size-1);
-        font-weight: var(--studio-font-weight-medium);
-        display: flex;
-        align-items: center;
-        gap: var(--studio-spacing-2);
-        padding: var(--studio-spacing-1);
-        padding-right: 0;
-      `}
-    >
+    <>
+      <div
+        role="separator"
+        css={css`
+          font-size: var(--studio-font-size-1);
+          font-weight: var(--studio-font-weight-medium);
+          display: flex;
+          align-items: center;
+          gap: var(--studio-spacing-2);
+          padding: var(--studio-spacing-1);
+          padding-right: 0;
+        `}
+      >
+        {heading}
+      </div>
       {children}
-    </div>
+    </>
   )
 }
 
 interface CheckboxCategoryProps {
+  role: ElementRole
   input: LabeledControl
   onAddAssertion: (data: CheckAssertionData) => void
 }
 
-function CheckboxCategory({ input, onAddAssertion }: CheckboxCategoryProps) {
-  const role = input.roles.find((role) => role.role === 'checkbox')
-
-  if (role === undefined) {
-    return null
-  }
-
+function CheckboxAssertion({
+  role,
+  input,
+  onAddAssertion,
+}: CheckboxCategoryProps) {
   function handleAddCheckAssertion() {
-    if (role === undefined) {
-      return
-    }
-
     onAddAssertion({
       type: 'check',
       selector: input.selector.css,
-      inputType: role.type === 'intrinsic' ? 'html' : 'aria',
+      inputType: isNative(role, input.element) ? 'native' : 'aria',
       expected: getCheckedState(input.element),
     })
   }
 
   return (
-    <>
-      <CategorySeparator>Checkbox</CategorySeparator>
-      <ToolbarButton onClick={handleAddCheckAssertion}>
-        <CheckSquareIcon /> <div>Add check assertion</div>
-      </ToolbarButton>
-    </>
+    <ToolbarButton onClick={handleAddCheckAssertion}>
+      <CheckSquareIcon /> <div>Add check assertion</div>
+    </ToolbarButton>
   )
 }
 
-interface RadioCategoryProps {
-  input: LabeledControl
-  onAddAssertion: (data: CheckAssertionData) => void
-}
-
-function RadioCategory({ input, onAddAssertion }: RadioCategoryProps) {
-  const role = input.roles.find((role) => role.role === 'radio')
-
-  if (role === undefined) {
-    return null
-  }
-
-  function handleAddCheckAssertion() {
-    if (role === undefined) {
-      return
-    }
-
-    onAddAssertion({
-      type: 'check',
-      selector: input.selector.css,
-      inputType: role.type === 'intrinsic' ? 'html' : 'aria',
-      expected: getCheckedState(input.element),
-    })
-  }
-
-  return (
-    <>
-      <CategorySeparator>Radio</CategorySeparator>
-      <ToolbarButton onClick={handleAddCheckAssertion}>
-        <CheckSquareIcon /> <div>Add check assertion</div>
-      </ToolbarButton>
-    </>
-  )
-}
-
-interface TextBoxCategory {
+interface TextValueAssertionProps {
+  role: ElementRole
   input: LabeledControl
   onAddAssertion: (data: AssertionData) => void
 }
 
-function TextBoxCategory({ input, onAddAssertion }: TextBoxCategory) {
-  const role = input.roles.find((role) => role.role === 'textbox')
-
-  if (role === undefined) {
-    return null
-  }
-
+function TextValueAssertion({
+  input,
+  onAddAssertion,
+}: TextValueAssertionProps) {
   const handleAddAssertion = () => {
     onAddAssertion({
       type: 'text-value',
@@ -160,13 +125,61 @@ function TextBoxCategory({ input, onAddAssertion }: TextBoxCategory) {
   }
 
   return (
-    <>
-      <CategorySeparator>Text box</CategorySeparator>
-      <ToolbarButton onClick={handleAddAssertion}>
-        <TextCursorInputIcon /> <div>Add value assertion</div>
-      </ToolbarButton>
-    </>
+    <ToolbarButton onClick={handleAddAssertion}>
+      <TextCursorInputIcon /> <div>Add value assertion</div>
+    </ToolbarButton>
   )
+}
+
+function toRoleHeading(role: string) {
+  switch (role) {
+    case 'textbox':
+      return 'Text box'
+
+    case 'searchbox':
+      return 'Search box'
+
+    default:
+      return role.slice(0, 1).toUpperCase() + role.slice(1)
+  }
+}
+
+interface RoleCategoryProps {
+  role: ElementRole
+  input: LabeledControl
+  onAddAssertion: (assertion: AssertionData) => void
+}
+
+function RoleAssertions({ role, input, onAddAssertion }: RoleCategoryProps) {
+  switch (role.role) {
+    case 'radio':
+    case 'checkbox':
+    case 'switch':
+      return (
+        <MenuSection heading={toRoleHeading(role.role)}>
+          <CheckboxAssertion
+            role={role}
+            input={input}
+            onAddAssertion={onAddAssertion}
+          />
+        </MenuSection>
+      )
+
+    case 'textbox':
+    case 'searchbox':
+      return (
+        <MenuSection heading={toRoleHeading(role.role)}>
+          <TextValueAssertion
+            role={role}
+            input={input}
+            onAddAssertion={onAddAssertion}
+          />
+        </MenuSection>
+      )
+
+    default:
+      return null
+  }
 }
 
 interface ElementMenuProps {
@@ -175,7 +188,7 @@ interface ElementMenuProps {
 }
 
 export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
-  const inputElement = findLabeledControl(element)
+  const associatedElement = findAssociatedControl(element)
 
   const handleAddVisibilityAssertion = () => {
     onSelectAssertion({
@@ -201,30 +214,25 @@ export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
         gap: 0;
       `}
     >
-      {inputElement !== null && (
-        <>
-          <CheckboxCategory
-            input={inputElement}
+      {associatedElement?.roles.map((role) => {
+        return (
+          <RoleAssertions
+            key={role.role}
+            role={role}
+            input={associatedElement}
             onAddAssertion={onSelectAssertion}
           />
-          <RadioCategory
-            input={inputElement}
-            onAddAssertion={onSelectAssertion}
-          />
-          <TextBoxCategory
-            input={inputElement}
-            onAddAssertion={onSelectAssertion}
-          />
-        </>
-      )}
+        )
+      })}
 
-      <CategorySeparator>General</CategorySeparator>
-      <ToolbarButton onClick={handleAddVisibilityAssertion}>
-        <EyeIcon /> <div>Add visibility assertion</div>
-      </ToolbarButton>
-      <ToolbarButton onClick={handleAddTextAssertion}>
-        <TypeIcon /> <div>Add text assertion</div>
-      </ToolbarButton>
+      <MenuSection heading="General">
+        <ToolbarButton onClick={handleAddVisibilityAssertion}>
+          <EyeIcon /> <div>Add visibility assertion</div>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleAddTextAssertion}>
+          <TypeIcon /> <div>Add text assertion</div>
+        </ToolbarButton>
+      </MenuSection>
     </ToolbarRoot>
   )
 }
