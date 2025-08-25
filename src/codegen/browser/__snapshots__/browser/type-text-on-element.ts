@@ -14,5 +14,5 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.locator("input").type("Hello, World!");
+  await page.locator("input").fill("Hello, World!");
 }
