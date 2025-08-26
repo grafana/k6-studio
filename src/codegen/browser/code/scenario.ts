@@ -104,13 +104,13 @@ function emitClickExpression(
 
 function emitTypeTextExpression(
   context: ScenarioContext,
-  expression: ir.TypeTextExpression
+  expression: ir.FillTextExpression
 ): ts.Expression {
   const target = emitExpression(context, expression.target)
   const value = emitExpression(context, expression.value)
 
   return new ExpressionBuilder(target)
-    .member('type')
+    .member('fill')
     .call([value])
     .await(context)
     .done()
@@ -280,7 +280,7 @@ function emitExpression(
     case 'ClickOptionsExpression':
       return emitClickOptionsExpression(context, expression)
 
-    case 'TypeTextExpression':
+    case 'FillTextExpression':
       return emitTypeTextExpression(context, expression)
 
     case 'CheckExpression':
