@@ -7,13 +7,6 @@ import { BrowserExtensionEvent } from '../messaging'
 import { captureNavigationEvents } from './navigation'
 import { client } from './routing'
 
-captureNavigationEvents((events) => {
-  client.send({
-    type: 'record-events',
-    events: Array.isArray(events) ? events : [events],
-  })
-})
-
 const eventLog: BrowserEvent[] = []
 
 client.on('record-events', ({ sender, data }) => {
@@ -63,3 +56,10 @@ client.on('record-events', logEvent)
 client.on('highlight-elements', logEvent)
 client.on('events-recorded', logEvent)
 client.on('navigate', logEvent)
+
+captureNavigationEvents((events) => {
+  client.send({
+    type: 'record-events',
+    events: Array.isArray(events) ? events : [events],
+  })
+})

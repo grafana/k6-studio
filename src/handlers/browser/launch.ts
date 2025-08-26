@@ -3,7 +3,7 @@ import {
   Browser,
   ChromeReleaseChannel,
 } from '@puppeteer/browsers'
-import { exec, spawn } from 'child_process'
+import { ChildProcess, exec, spawn } from 'child_process'
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { mkdir, mkdtemp, writeFile } from 'fs/promises'
@@ -149,26 +149,56 @@ export const launchBrowser = async (
     url?.trim() || 'about:blank',
   ]
 
+  if (capture.browser) {
+    try {
+      await browserServer.start(browserWindow)
+
+      const process = await new Promise<ChildProcess>((resolve, reject) => {
+        const process = spawn(path, args, {
+          stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
+        })
+
+        process.on('spawn', () => {
+          resolve(process)
+        })
+
+        process.on('error', (err) => {
+          reject(err)
+        })
+      })
+
+      try {
+        const client = ChromeDevtoolsClient.fromChildProcess(process)
+
+        const response = await client.call({
+          method: 'Extensions.loadUnpacked',
+          params: {
+            path: extensionPath,
+          },
+        })
+
+        log.log(`k6 Studio extension loaded`, response)
+      } catch (error) {
+        // If we fail to load the extension, we'll log the error and continue without it.
+        log.error('Failed to start browser recording:', error)
+      }
+
+      process.once('exit', handleBrowserClose)
+
+      return process
+    } catch (error) {
+      log.error(error)
+
+      browserServer.stop()
+      browserWindow.webContents.send(BrowserHandler.Failed)
+
+      return null
+    }
+  }
+
   const process = spawn(path, args, {
     stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
   })
-
-  if (capture.browser) {
-    browserServer.start(browserWindow)
-
-    const client = ChromeDevtoolsClient.fromChildProcess(process)
-
-    process.on('spawn', async () => {
-      const response = await client.call({
-        method: 'Extensions.loadUnpacked',
-        params: {
-          path: extensionPath,
-        },
-      })
-
-      console.log(`k6 Studio extension loaded`, response)
-    })
-  }
 
   process.on('error', handleBrowserLaunchError)
   process.once('exit', handleBrowserClose)
