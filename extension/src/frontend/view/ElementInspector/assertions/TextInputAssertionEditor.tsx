@@ -6,21 +6,21 @@ import { Label } from '@/components/primitives/Label'
 import { TextArea } from '@/components/primitives/TextArea'
 
 import { AssertionForm } from './AssertionForm'
-import { TextValueAssertionData } from './types'
+import { TextInputAssertionData } from './types'
 
-interface TextValueAssertionProps {
-  assertion: TextValueAssertionData
+interface TextInputAssertionProps {
+  assertion: TextInputAssertionData
   onCancel: () => void
-  onChange: (state: TextValueAssertionData) => void
-  onSubmit: (state: TextValueAssertionData) => void
+  onChange: (state: TextInputAssertionData) => void
+  onSubmit: (state: TextInputAssertionData) => void
 }
 
-export function TextValueAssertionEditor({
+export function TextInputAssertionEditor({
   assertion,
   onCancel,
   onChange,
   onSubmit,
-}: TextValueAssertionProps) {
+}: TextInputAssertionProps) {
   const expectedValueId = useId()
 
   const handleExpectedValueChange = (

@@ -41,7 +41,7 @@ function toAssertionOperation(assertion: Assertion): AssertionOperation {
         expected: assertion.expected,
       }
 
-    case 'text-value':
+    case 'text-input':
       return {
         type: 'has-values',
         expected: [assertion.expected],

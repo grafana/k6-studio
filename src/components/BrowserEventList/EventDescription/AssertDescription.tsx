@@ -43,7 +43,7 @@ export function AssertDescription({
         </>
       )
 
-    case 'text-value':
+    case 'text-input':
       return (
         <>
           Assert that the input{' '}

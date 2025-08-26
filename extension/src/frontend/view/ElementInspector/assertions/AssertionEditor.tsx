@@ -2,7 +2,7 @@ import { exhaustive } from '@/utils/typescript'
 
 import { CheckAssertionEditor } from './CheckAssertionEditor'
 import { TextAssertionEditor } from './TextAssertionEditor'
-import { TextValueAssertionEditor } from './TextValueAssertionEditor'
+import { TextInputAssertionEditor } from './TextInputAssertionEditor'
 import { VisibilityAssertionEditor } from './VisibilityAssertionEditor'
 import { AssertionData } from './types'
 
@@ -24,8 +24,8 @@ export function AssertionEditor({ assertion, ...props }: AssertionEditorProps) {
     case 'check':
       return <CheckAssertionEditor assertion={assertion} {...props} />
 
-    case 'text-value':
-      return <TextValueAssertionEditor assertion={assertion} {...props} />
+    case 'text-input':
+      return <TextInputAssertionEditor assertion={assertion} {...props} />
 
     default:
       return exhaustive(assertion)

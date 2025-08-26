@@ -103,19 +103,19 @@ function CheckboxAssertion({
   )
 }
 
-interface TextValueAssertionProps {
+interface TextInputAssertionProps {
   role: ElementRole
   input: LabeledControl
   onAddAssertion: (data: AssertionData) => void
 }
 
-function TextValueAssertion({
+function TextInputAssertion({
   input,
   onAddAssertion,
-}: TextValueAssertionProps) {
+}: TextInputAssertionProps) {
   const handleAddAssertion = () => {
     onAddAssertion({
-      type: 'text-value',
+      type: 'text-input',
       selector: input.selector.css,
       multiline:
         input.element instanceof HTMLTextAreaElement ||
@@ -169,7 +169,7 @@ function RoleAssertions({ role, input, onAddAssertion }: RoleCategoryProps) {
     case 'searchbox':
       return (
         <MenuSection heading={toRoleHeading(role.role)}>
-          <TextValueAssertion
+          <TextInputAssertion
             role={role}
             input={input}
             onAddAssertion={onAddAssertion}

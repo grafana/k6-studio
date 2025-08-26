@@ -13,8 +13,8 @@ export interface VisibilityAssertionData {
   state: 'visible' | 'hidden'
 }
 
-export interface TextValueAssertionData {
-  type: 'text-value'
+export interface TextInputAssertionData {
+  type: 'text-input'
   selector: string
   multiline: boolean
   expected: string
@@ -29,5 +29,5 @@ export interface TextAssertionData {
 export type AssertionData =
   | VisibilityAssertionData
   | CheckAssertionData
-  | TextValueAssertionData
+  | TextInputAssertionData
   | TextAssertionData

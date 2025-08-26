@@ -27,9 +27,9 @@ export function toAssertion(data: AssertionData): Assertion {
         expected: data.expected,
       }
 
-    case 'text-value':
+    case 'text-input':
       return {
-        type: 'text-value',
+        type: 'text-input',
         expected: data.expected,
       }
 
