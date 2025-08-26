@@ -134,24 +134,3 @@ export function getElementRoles(element: Element): Set<ElementRole> {
 
   return new Set(matchedRoles?.flatMap((role) => role.roles))
 }
-
-export function getLabel(element: Element): string | undefined {
-  const label = element.getAttribute('aria-label')
-
-  if (label !== null) {
-    return label
-  }
-
-  const labelledBy = element.getAttribute('aria-labelledby')
-
-  if (labelledBy !== null) {
-    return labelledBy
-      .split(/\s+/)
-      .map((id) => document.getElementById(id))
-      .filter((el) => el !== null)
-      .map((el) => el.textContent)
-      .join(' ')
-  }
-
-  return element.textContent?.trim()
-}
