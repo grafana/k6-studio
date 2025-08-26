@@ -19,6 +19,7 @@ const SIMPLE_CLICK_WIDGET_ROLES = [
   'option',
   'radio',
   'textbox',
+  'combobox',
 ]
 
 export function findInteractiveElement(element: Element): Element | null {
