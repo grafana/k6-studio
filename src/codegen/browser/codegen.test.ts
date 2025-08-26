@@ -743,45 +743,6 @@ it('should assert that input has single value using toHaveValue', async ({
   })
 
   await expect(script).toMatchFileSnapshot(
-    '__snapshots__/browser/assertions/input/input-has-single-value.ts'
-  )
-})
-
-it('should assert that input has multiple values using toHaveValues', async ({
-  expect,
-}) => {
-  const script = await emitScript({
-    defaultScenario: {
-      nodes: [
-        {
-          type: 'page',
-          nodeId: 'page',
-        },
-        {
-          type: 'locator',
-          nodeId: 'locator',
-          selector: 'select',
-          inputs: {
-            page: { nodeId: 'page' },
-          },
-        },
-        {
-          type: 'assert',
-          nodeId: 'assert-has-value',
-          operation: {
-            type: 'has-values',
-            expected: ['value1', 'value2'],
-          },
-          inputs: {
-            locator: { nodeId: 'locator' },
-          },
-        },
-      ],
-    },
-    scenarios: {},
-  })
-
-  await expect(script).toMatchFileSnapshot(
-    '__snapshots__/browser/assertions/input/input-has-multiple-values.ts'
+    '__snapshots__/browser/assertions/input/text-input-has-value.ts'
   )
 })

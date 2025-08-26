@@ -29,18 +29,6 @@ export function ElementPopover({
             padding: var(--studio-spacing-1);
             font-size: var(--studio-font-size-1);
           `}
-          onInteractOutside={(event) => {
-            const target = event.detail.originalEvent.target
-
-            if (target instanceof Element === false) {
-              return
-            }
-
-            // Prevents popover from closing when e.g. clicking outside a select dropdown.
-            if (target.hasAttribute('data-ignore-interact-outside')) {
-              event.preventDefault()
-            }
-          }}
         >
           <Popover.Arrow />
           <div

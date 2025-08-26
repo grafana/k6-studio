@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { Flex } from '@/components/primitives/Flex'
 import { IconButton } from '@/components/primitives/IconButton'
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { exhaustive } from '@/utils/typescript'
 import { uuid } from '@/utils/uuid'
 import { ElementRole } from 'extension/src/utils/aria'
 
@@ -23,11 +22,7 @@ import { AssertionEditor } from './assertions/AssertionEditor'
 import { AssertionData } from './assertions/types'
 
 function getHeader(assertion: AssertionData | null) {
-  if (assertion === null) {
-    return null
-  }
-
-  switch (assertion.type) {
+  switch (assertion?.type) {
     case 'visibility':
       return (
         <ElementPopover.Heading>
@@ -51,7 +46,7 @@ function getHeader(assertion: AssertionData | null) {
       )
 
     default:
-      return exhaustive(assertion)
+      return null
   }
 }
 
