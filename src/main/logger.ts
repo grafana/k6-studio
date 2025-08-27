@@ -44,6 +44,10 @@ export function initializeLogger() {
   }
 
   log.hooks.push((msg) => {
+    if (!msg.data.some((d) => d instanceof AggregateError)) {
+      return msg
+    }
+
     const data = msg.data.flatMap<unknown>(unwrapAggregateError)
 
     return {
