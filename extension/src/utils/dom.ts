@@ -25,40 +25,36 @@ const SIMPLE_CLICK_WIDGET_ROLES = [
 export function findInteractiveElement(element: Element): Element | null {
   let current: Element | null = element
 
-  while (element !== null) {
+  while (current !== null) {
     // https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Content_categories#interactive_content
     if (
-      element instanceof HTMLButtonElement ||
-      element instanceof HTMLLabelElement ||
-      element instanceof HTMLTextAreaElement ||
-      element instanceof HTMLSelectElement
+      current instanceof HTMLButtonElement ||
+      current instanceof HTMLLabelElement ||
+      current instanceof HTMLTextAreaElement ||
+      current instanceof HTMLSelectElement
     ) {
-      return element
+      return current
     }
 
-    if (element instanceof HTMLAnchorElement && element.hasAttribute('href')) {
-      return element
+    if (current instanceof HTMLAnchorElement && current.hasAttribute('href')) {
+      return current
     }
 
-    if (element instanceof HTMLImageElement && element.hasAttribute('usemap')) {
-      return element
+    if (current instanceof HTMLImageElement && current.hasAttribute('usemap')) {
+      return current
     }
 
-    if (element instanceof HTMLInputElement && element.type !== 'hidden') {
-      return element
+    if (current instanceof HTMLInputElement && current.type !== 'hidden') {
+      return current
     }
 
-    const role = element.getAttribute('role')
+    const role = current.getAttribute('role')
 
     if (role !== null && SIMPLE_CLICK_WIDGET_ROLES.includes(role)) {
-      return element
+      return current
     }
 
-    if (element.parentElement === null) {
-      return null
-    }
-
-    current = element.parentElement
+    current = current.parentElement
   }
 
   return current
