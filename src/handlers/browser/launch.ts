@@ -127,7 +127,10 @@ export const launchBrowser = async (
   const handleBrowserLaunchError = (error: Error) => {
     log.error(error)
     browserServer.stop()
-    browserWindow.webContents.send(BrowserHandler.Error, 'browser-launch')
+    browserWindow.webContents.send(BrowserHandler.Error, {
+      reason: 'browser-launch',
+      fatal: true,
+    })
   }
 
   const browserRecordingArgs = capture.browser ? BROWSER_RECORDING_ARGS : []
