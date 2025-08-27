@@ -225,6 +225,7 @@ export function Recorder() {
 
         default:
           exhaustive(error.reason)
+          break
       }
     })
   }, [openSettingsDialog, showToast])
