@@ -7,10 +7,7 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 import { View } from '@/components/Layout/View'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
-import {
-  LaunchBrowserFailedReason,
-  LaunchBrowserOptions,
-} from '@/handlers/browser/types'
+import { LaunchBrowserOptions } from '@/handlers/browser/types'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSettings } from '@/hooks/useSettings'
@@ -178,44 +175,58 @@ export function Recorder() {
   }
 
   useEffect(() => {
-    return window.studio.browser.onBrowserLaunchFailed(
-      (reason: LaunchBrowserFailedReason) => {
+    return window.studio.browser.onBrowserLaunchError((error) => {
+      if (error.fatal) {
         setRecorderState('idle')
-
-        switch (reason) {
-          case 'websocket-server-error':
-            showToast({
-              status: 'error',
-              title: 'Failed to start recording',
-              description:
-                'An error occurred while initializing browser recording.',
-              action: (
-                <Button onClick={() => openSettingsDialog('logs')}>
-                  Open log file
-                </Button>
-              ),
-            })
-            break
-
-          case 'browser-launch':
-            showToast({
-              status: 'error',
-              title: 'Failed to launch browser',
-              description: 'Please check your browser path and try again.',
-              action: (
-                <Button onClick={() => openSettingsDialog('recorder')}>
-                  <SettingsIcon />
-                  Open settings
-                </Button>
-              ),
-            })
-            break
-
-          default:
-            return exhaustive(reason)
-        }
       }
-    )
+
+      switch (error.reason) {
+        case 'websocket-server-error':
+          showToast({
+            status: 'error',
+            title: 'Failed to start recording',
+            description:
+              'An error occurred while initializing browser recording.',
+            action: (
+              <Button onClick={() => openSettingsDialog('logs')}>
+                Open log file
+              </Button>
+            ),
+          })
+          break
+
+        case 'browser-launch':
+          showToast({
+            status: 'error',
+            title: 'Failed to launch browser',
+            description: 'Please check your browser path and try again.',
+            action: (
+              <Button onClick={() => openSettingsDialog('recorder')}>
+                <SettingsIcon />
+                Open settings
+              </Button>
+            ),
+          })
+          break
+
+        case 'extension-load':
+          showToast({
+            status: 'error',
+            title: 'Failed to load extension',
+            description:
+              'Loading the browser extension failed. Browser recording will not be available.',
+            action: (
+              <Button onClick={() => openSettingsDialog('logs')}>
+                Open log file
+              </Button>
+            ),
+          })
+          break
+
+        default:
+          return exhaustive(error.reason)
+      }
+    })
   }, [openSettingsDialog, showToast])
 
   useEffect(() => {

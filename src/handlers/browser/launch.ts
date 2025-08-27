@@ -127,7 +127,7 @@ export const launchBrowser = async (
   const handleBrowserLaunchError = (error: Error) => {
     log.error(error)
     browserServer.stop()
-    browserWindow.webContents.send(BrowserHandler.Failed, 'browser-launch')
+    browserWindow.webContents.send(BrowserHandler.Error, 'browser-launch')
   }
 
   const browserRecordingArgs = capture.browser ? BROWSER_RECORDING_ARGS : []
@@ -182,6 +182,11 @@ export const launchBrowser = async (
       } catch (error) {
         // If we fail to load the extension, we'll log the error and continue without it.
         log.error('Failed to start browser recording: ', error)
+
+        browserWindow.webContents.send(BrowserHandler.Error, {
+          reason: 'extension-load',
+          fatal: false,
+        })
       }
 
       process.once('exit', handleBrowserClose)
@@ -192,12 +197,13 @@ export const launchBrowser = async (
 
       browserServer.stop()
 
-      browserWindow.webContents.send(
-        BrowserHandler.Failed,
-        error instanceof WebSocketServerError
-          ? 'websocket-server-error'
-          : 'browser-launch'
-      )
+      browserWindow.webContents.send(BrowserHandler.Error, {
+        fatal: true,
+        reason:
+          error instanceof WebSocketServerError
+            ? 'websocket-server-error'
+            : 'browser-launch',
+      })
 
       return null
     }

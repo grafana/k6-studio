@@ -2,7 +2,7 @@ export enum BrowserHandler {
   Start = 'browser:start',
   Stop = 'browser:stop',
   Closed = 'browser:closed',
-  Failed = 'browser:failed',
+  Error = 'browser:error',
   OpenExternalLink = 'browser:open:external:link',
   BrowserEvent = 'browser:event',
 }
@@ -14,6 +14,12 @@ export interface LaunchBrowserOptions {
   }
 }
 
-export type LaunchBrowserFailedReason =
+export type LaunchBrowserErrorReason =
   | 'websocket-server-error'
+  | 'extension-load'
   | 'browser-launch'
+
+export interface LaunchBrowserError {
+  fatal: boolean
+  reason: LaunchBrowserErrorReason
+}
