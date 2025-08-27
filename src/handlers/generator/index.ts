@@ -43,25 +43,7 @@ export function initialize() {
         JSON.stringify(generator, null, 2)
       )
 
-      trackEvent({
-        event: UsageEventName.GeneratorUpdated,
-        payload: {
-          rules: {
-            correlation: generator.rules.filter(
-              (rule) => rule.type === 'correlation'
-            ).length,
-            parameterization: generator.rules.filter(
-              (rule) => rule.type === 'parameterization'
-            ).length,
-            verification: generator.rules.filter(
-              (rule) => rule.type === 'verification'
-            ).length,
-            customCode: generator.rules.filter(
-              (rule) => rule.type === 'customCode'
-            ).length,
-          },
-        },
-      })
+      trackGeneratorUpdated(generator)
     }
   )
 
@@ -77,4 +59,21 @@ export function initialize() {
       return GeneratorFileDataSchema.parse(JSON.parse(data))
     }
   )
+}
+
+function trackGeneratorUpdated({ rules }: GeneratorFileData) {
+  trackEvent({
+    event: UsageEventName.GeneratorUpdated,
+    payload: {
+      rules: {
+        correlation: rules.filter((rule) => rule.type === 'correlation').length,
+        parameterization: rules.filter(
+          (rule) => rule.type === 'parameterization'
+        ).length,
+        verification: rules.filter((rule) => rule.type === 'verification')
+          .length,
+        customCode: rules.filter((rule) => rule.type === 'customCode').length,
+      },
+    },
+  })
 }

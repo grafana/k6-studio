@@ -11,11 +11,18 @@ const fileName =
 
 const filePath = path.join(app.getPath('userData'), fileName)
 
+let profileDataCache: Profile | null = null
+
 export async function getProfileData(): Promise<Profile> {
+  if (profileDataCache) {
+    return profileDataCache
+  }
+
   try {
     const file = await readFile(filePath, 'utf-8')
+    profileDataCache = ProfileSchema.parse(JSON.parse(file))
 
-    return ProfileSchema.parse(JSON.parse(file))
+    return profileDataCache
   } catch {
     return {
       version: '1.0',
