@@ -1,42 +1,10 @@
 import { ElementSelector } from '@/schemas/recording'
 import { generateSelector } from 'extension/src/selectors'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
+import { findAssociatedElement } from 'extension/src/utils/dom'
 
 import { TrackedElement } from './ElementInspector.hooks'
 import { CheckAssertionData } from './assertions/types'
-
-function findByForAttribute(target: HTMLLabelElement) {
-  const forAttribute = target.getAttribute('for')
-
-  if (forAttribute === null) {
-    return null
-  }
-
-  return document.getElementById(forAttribute)
-}
-
-const CHILD_INPUT_SELECTOR = [
-  // Hidden inputs are not labelable per the HTML specification
-  'input:not([type="hidden"])',
-  'select',
-  'textarea',
-  '[role="checkbox"]',
-  '[role="radio"]',
-].join(', ')
-
-function findInChildren(target: HTMLLabelElement) {
-  // According to the HTML specification, the labelled element is the first one
-  // in "tree order" which is the same order that `querySelector` searches in.
-  return target.querySelector(CHILD_INPUT_SELECTOR)
-}
-
-function findByLabelledBy(target: HTMLLabelElement) {
-  if (target.id === '') {
-    return null
-  }
-
-  return target.querySelector(`[aria-labelledby="${target.id}"]`)
-}
 
 function* getAncestors(element: Element) {
   let currentElement: Element | null = element
@@ -80,10 +48,7 @@ export function findAssociatedControl({
     return null
   }
 
-  const associatedElement =
-    findByForAttribute(label) ??
-    findInChildren(label) ??
-    findByLabelledBy(label)
+  const associatedElement = findAssociatedElement(label)
 
   if (associatedElement === null) {
     return null

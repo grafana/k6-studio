@@ -1,3 +1,6 @@
+import { ElementSelector } from '@/schemas/recording'
+import { ElementRole } from 'extension/src/utils/aria'
+
 /**
  * Adapted list of widgets that are interacted with a simple click, regardless where the item
  * was clicked. Other widgets, such as "scrollbar", can have their behaviour change depending on
@@ -58,4 +61,75 @@ export function findInteractiveElement(element: Element): Element | null {
   }
 
   return current
+}
+
+function findByForAttribute(target: HTMLLabelElement) {
+  const forAttribute = target.getAttribute('for')
+
+  if (forAttribute === null) {
+    return null
+  }
+
+  return document.getElementById(forAttribute)
+}
+
+const CHILD_INPUT_SELECTOR = [
+  // Hidden inputs are not labelable per the HTML specification
+  'input:not([type="hidden"])',
+  'select',
+  'textarea',
+  '[role="checkbox"]',
+  '[role="radio"]',
+].join(', ')
+
+function findInChildren(target: HTMLLabelElement) {
+  // According to the HTML specification, the labelled element is the first one
+  // in "tree order" which is the same order that `querySelector` searches in.
+  return target.querySelector(CHILD_INPUT_SELECTOR)
+}
+
+function findByLabelledBy(target: HTMLLabelElement) {
+  if (target.id === '') {
+    return null
+  }
+
+  return target.querySelector(`[aria-labelledby="${target.id}"]`)
+}
+
+export interface LabeledControl {
+  element: Element
+  selector: ElementSelector
+  roles: ElementRole[]
+}
+
+export function findAssociatedElement(label: Element): Element | null {
+  if (label instanceof HTMLLabelElement === false) {
+    return null
+  }
+
+  return (
+    findByForAttribute(label) ??
+    findInChildren(label) ??
+    findByLabelledBy(label)
+  )
+}
+
+export function isNativeCheckbox(element: Element) {
+  return element instanceof HTMLInputElement && element.type === 'checkbox'
+}
+
+export function isNativeRadio(element: Element) {
+  return element instanceof HTMLInputElement && element.type === 'radio'
+}
+
+export function isNativeButton(element: Element) {
+  if (element instanceof HTMLButtonElement) {
+    return true
+  }
+
+  if (element instanceof HTMLInputElement === false) {
+    return false
+  }
+
+  return element.type === 'button' || element.type === 'submit'
 }
