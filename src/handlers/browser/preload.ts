@@ -1,6 +1,10 @@
 import { ipcRenderer } from 'electron'
 
-import { LaunchBrowserOptions, BrowserHandler } from '@/handlers/browser/types'
+import {
+  LaunchBrowserOptions,
+  BrowserHandler,
+  LaunchBrowserError,
+} from '@/handlers/browser/types'
 import { BrowserEvent } from '@/schemas/recording'
 
 import { createListener } from '../utils'
@@ -17,8 +21,10 @@ export function onBrowserClosed(callback: () => void) {
   return createListener(BrowserHandler.Closed, callback)
 }
 
-export function onBrowserLaunchFailed(callback: () => void) {
-  return createListener(BrowserHandler.Failed, callback)
+export function onBrowserLaunchError(
+  callback: (reason: LaunchBrowserError) => void
+) {
+  return createListener(BrowserHandler.Error, callback)
 }
 
 export function openExternalLink(url: string) {

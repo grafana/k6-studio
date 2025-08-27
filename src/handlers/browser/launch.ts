@@ -13,6 +13,7 @@ import { promisify } from 'util'
 
 import { getCertificateSPKI } from '@/main/proxy'
 import { ChromeDevtoolsClient } from '@/utils/cdp/client'
+import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
 
 import { BrowserServer } from '../../services/browser/server'
 import { getPlatform } from '../../utils/electron'
@@ -126,7 +127,10 @@ export const launchBrowser = async (
   const handleBrowserLaunchError = (error: Error) => {
     log.error(error)
     browserServer.stop()
-    browserWindow.webContents.send(BrowserHandler.Failed)
+    browserWindow.webContents.send(BrowserHandler.Error, {
+      reason: 'browser-launch',
+      fatal: true,
+    })
   }
 
   const browserRecordingArgs = capture.browser ? BROWSER_RECORDING_ARGS : []
@@ -180,17 +184,29 @@ export const launchBrowser = async (
         log.log(`k6 Studio extension loaded`, response)
       } catch (error) {
         // If we fail to load the extension, we'll log the error and continue without it.
-        log.error('Failed to start browser recording:', error)
+        log.error('Failed to start browser recording: ', error)
+
+        browserWindow.webContents.send(BrowserHandler.Error, {
+          reason: 'extension-load',
+          fatal: false,
+        })
       }
 
       process.once('exit', handleBrowserClose)
 
       return process
     } catch (error) {
-      log.error(error)
+      log.error('An error occurred while starting recording: ', error)
 
       browserServer.stop()
-      browserWindow.webContents.send(BrowserHandler.Failed)
+
+      browserWindow.webContents.send(BrowserHandler.Error, {
+        fatal: true,
+        reason:
+          error instanceof WebSocketServerError
+            ? 'websocket-server-error'
+            : 'browser-launch',
+      })
 
       return null
     }
