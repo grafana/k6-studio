@@ -3,6 +3,7 @@ import log from 'electron-log/main'
 import { writeFile, readFile } from 'fs/promises'
 
 import { TRACKING_URL, INSTALLATION_ID_FILE } from '@/constants/usage'
+import { getProfileData } from '@/handlers/auth/fs'
 import { getArch, getPlatform } from '@/utils/electron'
 import { uuid } from '@/utils/uuid'
 
@@ -45,10 +46,20 @@ async function sendEvent(event: UsageEventWithMetadata) {
     return
   }
 
+  const payloadWithLoginState = {
+    isLoggedIn: await getLoginState(),
+    ...('payload' in event && event.payload),
+  }
+
+  const serializedEvent = {
+    ...event,
+    payload: JSON.stringify(payloadWithLoginState),
+  }
+
   const response = await fetch(TRACKING_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(event),
+    body: JSON.stringify(serializedEvent),
   })
 
   if (!response.ok) {
@@ -104,5 +115,15 @@ async function trackInstallation() {
     })
   } catch (error) {
     log.error('Error tracking installation:', error)
+  }
+}
+
+async function getLoginState(): Promise<boolean> {
+  try {
+    const { profiles } = await getProfileData()
+    return Object.keys(profiles.stacks).length === 0
+  } catch (error) {
+    log.error('Error getting login state:', error)
+    return false
   }
 }

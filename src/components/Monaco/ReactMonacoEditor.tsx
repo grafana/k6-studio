@@ -1,7 +1,7 @@
 import { Editor, EditorProps, loader, Monaco } from '@monaco-editor/react'
 import { Flex } from '@radix-ui/themes'
 import * as monaco from 'monaco-editor'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useTheme } from '@/hooks/useTheme'
 
@@ -16,12 +16,14 @@ interface ReactMonacoEditorProps extends EditorProps {
   showToolbar?: boolean
   searchString?: string
   searchIndex?: number
+  onCopy?: (event: ClipboardEvent) => void
 }
 
 export function ReactMonacoEditor({
   showToolbar,
   searchString,
   searchIndex,
+  onCopy,
   ...props
 }: ReactMonacoEditorProps) {
   const theme = useTheme()
@@ -43,6 +45,21 @@ export function ReactMonacoEditor({
       props.onMount(editor, monaco)
     }
   }
+
+  useEffect(() => {
+    if (!editor || !onCopy) {
+      return
+    }
+    // Listen to the native copy event on the editor's DOM element
+    const editorDomNode = editor.getDomNode()
+    if (editorDomNode) {
+      editorDomNode.addEventListener('copy', onCopy)
+
+      return () => {
+        editorDomNode.removeEventListener('copy', onCopy)
+      }
+    }
+  }, [editor, onCopy])
 
   return (
     <Flex height="100%" width="100%" direction="column">

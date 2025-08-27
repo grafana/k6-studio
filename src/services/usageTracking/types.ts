@@ -14,6 +14,7 @@ export enum UsageEventName {
   GeneratorUpdated = 'generator_updated',
 
   // Script
+  ScriptCopied = 'script_copied',
   ScriptExported = 'script_exported',
   ScriptValidated = 'script_validated',
   ScriptRunInCloud = 'script_run_in_cloud',
@@ -49,6 +50,18 @@ interface GeneratorCreatedEvent {
 
 interface GeneratorUpdatedEvent {
   event: UsageEventName.GeneratorUpdated
+  payload: {
+    rules: {
+      correlation: number
+      parameterization: number
+      verification: number
+      customCode: number
+    }
+  }
+}
+
+interface ScriptCopiedEvent {
+  event: UsageEventName.ScriptCopied
 }
 
 interface ScriptExportedEvent {
@@ -70,6 +83,7 @@ export type UsageEvent =
   | RecordingImportedEvent
   | GeneratorCreatedEvent
   | GeneratorUpdatedEvent
+  | ScriptCopiedEvent
   | ScriptExportedEvent
   | ScriptValidatedEvent
   | ScriptRunInCloudEvent

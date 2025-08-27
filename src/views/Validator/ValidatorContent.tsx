@@ -6,6 +6,7 @@ import { ReactNode, useEffect, useState } from 'react'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { Details } from '@/components/WebLogView/Details'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
+import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
 import { K6Check, K6Log, ProxyData } from '@/types'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 
@@ -51,6 +52,8 @@ export function ValidatorContent({
       setSelectedTab('logs')
     })
   }, [])
+
+  const handleCopy = useTrackScriptCopy(script)
 
   return (
     <Allotment defaultSizes={[3, 2]}>
@@ -106,7 +109,11 @@ export function ValidatorContent({
                     flex: 1;
                   `}
                 >
-                  <ReadOnlyEditor language="javascript" value={script} />
+                  <ReadOnlyEditor
+                    language="javascript"
+                    value={script}
+                    onCopy={handleCopy}
+                  />
                 </Tabs.Content>
                 <Tabs.Content
                   value="checks"

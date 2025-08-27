@@ -45,6 +45,22 @@ export function initialize() {
 
       trackEvent({
         event: UsageEventName.GeneratorUpdated,
+        payload: {
+          rules: {
+            correlation: generator.rules.filter(
+              (rule) => rule.type === 'correlation'
+            ).length,
+            parameterization: generator.rules.filter(
+              (rule) => rule.type === 'parameterization'
+            ).length,
+            verification: generator.rules.filter(
+              (rule) => rule.type === 'verification'
+            ).length,
+            customCode: generator.rules.filter(
+              (rule) => rule.type === 'customCode'
+            ).length,
+          },
+        },
       })
     }
   )

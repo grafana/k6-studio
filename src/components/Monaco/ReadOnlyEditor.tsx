@@ -15,6 +15,7 @@ interface Props extends ComponentProps<typeof Editor> {
   searchString?: string
   searchIndex?: number
   showToolbar?: boolean
+  onCopy?: (event: ClipboardEvent) => void
 }
 
 export function ReadOnlyEditor({ showToolbar = true, ...props }: Props) {
