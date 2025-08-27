@@ -28,6 +28,10 @@ vi.mock('@/utils/uuid', () => ({
   uuid: vi.fn(() => 'test-uuid-123'),
 }))
 
+vi.mock('@/handlers/auth/fs', () => ({
+  getProfileData: vi.fn(() => ({ profiles: { stacks: { a: {} } } })),
+}))
+
 vi.mock('@/constants/usage', () => ({
   TRACKING_URL: 'MOCK_TRACKING_URL',
   INSTALLATION_ID_FILE: '/mock/user/data/.installation_id',
