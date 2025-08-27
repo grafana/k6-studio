@@ -9,6 +9,21 @@ import { getPlatform } from '../utils/electron'
 
 let watcher: FSWatcher
 
+/**
+ * Recursively unwraps an AggregateError into its constituent errors. A new line
+ * will be added between each error for better readability in the logs.
+ */
+function unwrapAggregateError(error: unknown): unknown[] {
+  if (error instanceof AggregateError) {
+    return [
+      error,
+      ...error.errors.flatMap((err) => ['\n', ...unwrapAggregateError(err)]),
+    ]
+  }
+
+  return [error]
+}
+
 export function initializeLogger() {
   // allow logs to be triggered from the renderer process
   // https://github.com/megahertz/electron-log/blob/master/docs/initialize.md
@@ -23,9 +38,21 @@ export function initializeLogger() {
   log.errorHandler.startCatching()
 
   log.transports.file.fileName = 'k6-studio.log'
+
   if (process.env.NODE_ENV === 'development') {
     log.transports.file.fileName = 'k6-studio-dev.log'
   }
+
+  log.hooks.push((msg) => {
+    // If data contains an AggregateError, then we want to know what each individual
+    // error inside it is.
+    const data = msg.data.flatMap<unknown>(unwrapAggregateError)
+
+    return {
+      ...msg,
+      data,
+    }
+  })
 
   // initialize chokidar watcher to watch log file
   watcher = watch(log.transports.file.getFile().path)

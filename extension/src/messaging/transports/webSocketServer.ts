@@ -2,6 +2,14 @@ import { WebSocketServer } from 'ws'
 
 import { Transport } from './transport'
 
+export class WebSocketServerError extends AggregateError {
+  constructor(errors: unknown[]) {
+    super(errors, 'WebSocket server transport error')
+
+    this.name = 'WebSocketServerError'
+  }
+}
+
 export class WebSocketServerTransport extends Transport {
   static async create(
     host: string,
@@ -14,7 +22,9 @@ export class WebSocketServerTransport extends Transport {
         resolve(new WebSocketServerTransport(server))
       })
 
-      server.on('error', reject)
+      server.on('error', (err) => {
+        reject(new WebSocketServerError([err]))
+      })
     })
   }
 

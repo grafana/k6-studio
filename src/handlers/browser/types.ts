@@ -13,3 +13,7 @@ export interface LaunchBrowserOptions {
     browser: boolean
   }
 }
+
+export type LaunchBrowserFailedReason =
+  | 'websocket-server-error'
+  | 'browser-launch'
