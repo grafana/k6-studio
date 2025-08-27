@@ -41,11 +41,6 @@ async function sendEvent(event: UsageEventWithMetadata) {
     return
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log(event)
-    return
-  }
-
   const payloadWithLoginState = {
     isLoggedIn: await getLoginState(),
     ...('payload' in event && event.payload),
@@ -54,6 +49,11 @@ async function sendEvent(event: UsageEventWithMetadata) {
   const serializedEvent = {
     ...event,
     payload: JSON.stringify(payloadWithLoginState),
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(serializedEvent)
+    return
   }
 
   const response = await fetch(TRACKING_URL, {
@@ -121,7 +121,7 @@ async function trackInstallation() {
 async function getLoginState(): Promise<boolean> {
   try {
     const { profiles } = await getProfileData()
-    return Object.keys(profiles.stacks).length === 0
+    return Object.keys(profiles.stacks).length !== 0
   } catch (error) {
     log.error('Error getting login state:', error)
     return false
