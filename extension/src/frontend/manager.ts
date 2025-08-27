@@ -68,6 +68,15 @@ export class WindowEventManager {
       return false
     }
 
-    return this.#blockedEvents[ev.type]?.delete(ev.target) ?? false
+    const blockedForType = this.#blockedEvents[ev.type]
+
+    if (blockedForType === undefined) {
+      return false
+    }
+
+    // We only want to block the first occurence of the event for the target
+    // and `delete` will return `true` if the target was present in the set
+    // and therefore blocked.
+    return blockedForType.delete(ev.target)
   }
 }
