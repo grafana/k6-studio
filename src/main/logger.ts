@@ -44,8 +44,6 @@ export function initializeLogger() {
   }
 
   log.hooks.push((msg) => {
-    // If data contains an AggregateError, then we want to know what each individual
-    // error inside it is.
     const data = msg.data.flatMap<unknown>(unwrapAggregateError)
 
     return {
