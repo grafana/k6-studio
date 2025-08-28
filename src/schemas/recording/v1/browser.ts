@@ -94,19 +94,20 @@ const CheckStateSchema = z.union([
 
 const CheckAssertionSchema = z.object({
   type: z.literal('check'),
-  expected: CheckStateSchema,
-  /**
-   * Indicates whether the assertion is targeting a native input element or
-   * a custom implementation. This is used to determine the kind of assertion
-   * that wll be emitted during codegen.
-   */
   inputType: z.union([z.literal('aria'), z.literal('native')]),
+  expected: CheckStateSchema,
+})
+
+const TextInputAssertionSchema = z.object({
+  type: z.literal('text-input'),
+  expected: z.string(),
 })
 
 const AssertionSchema = z.discriminatedUnion('type', [
   TextAssertionSchema,
   VisibilityAssertionSchema,
   CheckAssertionSchema,
+  TextInputAssertionSchema,
 ])
 
 const AssertEventSchema = BrowserEventBaseSchema.extend({
@@ -144,6 +145,7 @@ export type AssertEvent = z.infer<typeof AssertEventSchema>
 export type TextAssertion = z.infer<typeof TextAssertionSchema>
 export type VisibilityAssertion = z.infer<typeof VisibilityAssertionSchema>
 export type CheckAssertion = z.infer<typeof CheckAssertionSchema>
+export type TextInputAssertion = z.infer<typeof TextInputAssertionSchema>
 export type Assertion = z.infer<typeof AssertionSchema>
 
 export type BrowserEvent = z.infer<typeof BrowserEventSchema>

@@ -43,6 +43,19 @@ export function AssertDescription({
         </>
       )
 
+    case 'text-input':
+      return (
+        <>
+          Assert that the input{' '}
+          <Selector selector={selector} onHighlight={onHighlight} /> has the
+          value{' '}
+          <Tooltip asChild content={assertion.expected}>
+            <em>{`"${assertion.expected}"`}</em>
+          </Tooltip>
+          .
+        </>
+      )
+
     default:
       return exhaustive(assertion)
   }

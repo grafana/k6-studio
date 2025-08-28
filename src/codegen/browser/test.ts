@@ -41,6 +41,12 @@ function toAssertionOperation(assertion: Assertion): AssertionOperation {
         expected: assertion.expected,
       }
 
+    case 'text-input':
+      return {
+        type: 'has-values',
+        expected: [assertion.expected],
+      }
+
     default:
       return exhaustive(assertion)
   }

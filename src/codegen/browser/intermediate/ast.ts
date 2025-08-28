@@ -91,6 +91,11 @@ export interface IsIndeterminateAssertion {
   type: 'IsIndeterminateAssertion'
 }
 
+export interface HasValueAssertion {
+  type: 'HasValueAssertion'
+  expected: [Expression, ...Expression[]]
+}
+
 export type Assertion =
   | TextContainsAssertion
   | IsVisibleAssertion
@@ -99,6 +104,7 @@ export type Assertion =
   | IsCheckedAssertion
   | IsNotCheckedAssertion
   | IsIndeterminateAssertion
+  | HasValueAssertion
 
 export interface ExpectExpression {
   type: 'ExpectExpression'

@@ -63,7 +63,8 @@ export function findAssociatedControl({
   if (
     target instanceof HTMLInputElement ||
     target instanceof HTMLButtonElement ||
-    target instanceof HTMLSelectElement
+    target instanceof HTMLSelectElement ||
+    target instanceof HTMLTextAreaElement
   ) {
     return {
       element: target,
@@ -120,6 +121,18 @@ export function getCheckedState(
     default:
       return 'unchecked'
   }
+}
+
+export function getTextBoxValue(element: Element): string {
+  if (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement
+  ) {
+    return element.value
+  }
+
+  // The input must be an aria textbox, so we'll use the textContent.
+  return element.textContent ?? ''
 }
 
 export function isNative(role: ElementRole, element: Element) {

@@ -273,12 +273,29 @@ const styles = css`
   --studio-input-height: var(--studio-spacing-8);
   --studio-input-border-radius: 4px;
   --studio-input-color: var(--studio-foreground);
+  --studio-input-box-shadow: inset 0 0 0 1px var(--gray-a7);
 
-  .input[data-size='1'] {
+  .studio-input {
+    border: none;
+    border-radius: var(--studio-input-border-radius);
+
+    font-family: var(--studio-font-family);
+    font-size: var(--studio-input-font-size);
+    color-scheme: var(--studio-color-scheme);
+    color: var(--studio-input-color);
+
+    background-color: transparent;
+    background-clip: content-box;
+    box-shadow: var(--studio-input-box-shadow);
+    box-sizing: border-box;
+    border-radius: var(--studio-input-border-radius);
+    min-height: var(--studio-input-height);
+  }
+
+  .studio-input[data-size='1'] {
     --studio-input-font-size: var(--studio-font-size-1);
     --studio-input-padding: calc(var(--studio-spacing-1) * 1.5);
     --studio-input-height: var(--studio-spacing-6);
-    --studio-input-box-shadow: inset 0 0 0 1px var(--gray-a7);
   }
 
   .lucide {

@@ -27,6 +27,12 @@ export function toAssertion(data: AssertionData): Assertion {
         expected: data.expected,
       }
 
+    case 'text-input':
+      return {
+        type: 'text-input',
+        expected: data.expected,
+      }
+
     default:
       return exhaustive(data)
   }

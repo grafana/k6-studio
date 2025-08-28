@@ -1,6 +1,11 @@
 import { css } from '@emotion/react'
 import { ToolbarButtonProps } from '@radix-ui/react-toolbar'
-import { CheckSquareIcon, EyeIcon, TypeIcon } from 'lucide-react'
+import {
+  CheckSquareIcon,
+  EyeIcon,
+  TextCursorInputIcon,
+  TypeIcon,
+} from 'lucide-react'
 import { ComponentProps, ReactNode } from 'react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
@@ -12,6 +17,7 @@ import {
   getCheckedState,
   isNative,
   LabeledControl,
+  getTextBoxValue,
 } from './ElementMenu.utils'
 import { AssertionData, CheckAssertionData } from './assertions/types'
 
@@ -97,8 +103,45 @@ function CheckboxAssertion({
   )
 }
 
+interface TextInputAssertionProps {
+  role: ElementRole
+  input: LabeledControl
+  onAddAssertion: (data: AssertionData) => void
+}
+
+function TextInputAssertion({
+  input,
+  onAddAssertion,
+}: TextInputAssertionProps) {
+  const handleAddAssertion = () => {
+    onAddAssertion({
+      type: 'text-input',
+      selector: input.selector.css,
+      multiline:
+        input.element instanceof HTMLTextAreaElement ||
+        input.element.getAttribute('aria-multiline') === 'true',
+      expected: getTextBoxValue(input.element),
+    })
+  }
+
+  return (
+    <ToolbarButton onClick={handleAddAssertion}>
+      <TextCursorInputIcon /> <div>Add value assertion</div>
+    </ToolbarButton>
+  )
+}
+
 function toRoleHeading(role: string) {
-  return role.slice(0, 1).toUpperCase() + role.slice(1)
+  switch (role) {
+    case 'textbox':
+      return 'Text box'
+
+    case 'searchbox':
+      return 'Search box'
+
+    default:
+      return role.slice(0, 1).toUpperCase() + role.slice(1)
+  }
 }
 
 interface RoleCategoryProps {
@@ -115,6 +158,18 @@ function RoleAssertions({ role, input, onAddAssertion }: RoleCategoryProps) {
       return (
         <MenuSection heading={toRoleHeading(role.role)}>
           <CheckboxAssertion
+            role={role}
+            input={input}
+            onAddAssertion={onAddAssertion}
+          />
+        </MenuSection>
+      )
+
+    case 'textbox':
+    case 'searchbox':
+      return (
+        <MenuSection heading={toRoleHeading(role.role)}>
+          <TextInputAssertion
             role={role}
             input={input}
             onAddAssertion={onAddAssertion}

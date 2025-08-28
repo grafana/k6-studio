@@ -13,6 +13,13 @@ export interface VisibilityAssertionData {
   state: 'visible' | 'hidden'
 }
 
+export interface TextInputAssertionData {
+  type: 'text-input'
+  selector: string
+  multiline: boolean
+  expected: string
+}
+
 export interface TextAssertionData {
   type: 'text'
   selector: string
@@ -22,4 +29,5 @@ export interface TextAssertionData {
 export type AssertionData =
   | VisibilityAssertionData
   | CheckAssertionData
+  | TextInputAssertionData
   | TextAssertionData

@@ -1,3 +1,4 @@
+import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
 import * as m from '../types'
@@ -198,6 +199,18 @@ function emitAssertion(
       }
 
       return { type: 'IsCheckedAssertion' }
+
+    case 'has-values': {
+      return {
+        type: 'HasValueAssertion',
+        expected: mapNonEmpty(assertion.expected, (value) => {
+          return {
+            type: 'StringLiteral',
+            value,
+          }
+        }),
+      }
+    }
 
     default:
       return exhaustive(assertion)
