@@ -9,14 +9,7 @@ function isReload({ transitionType }: WebNavigation.OnCommittedDetailsType) {
 function isAddressBarNavigation({
   transitionType,
 }: WebNavigation.OnCommittedDetailsType) {
-  return (
-    transitionType === 'typed' ||
-    transitionType === 'generated' ||
-    transitionType === 'start_page' ||
-    transitionType === 'auto_bookmark' ||
-    transitionType === 'keyword' ||
-    transitionType === 'keyword_generated'
-  )
+  return transitionType === 'typed' || transitionType === 'start_page'
 }
 
 function isHistoryNavigation({
