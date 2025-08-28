@@ -73,6 +73,7 @@ function trackGeneratorUpdated({ rules }: GeneratorFileData) {
         verification: rules.filter((rule) => rule.type === 'verification')
           .length,
         customCode: rules.filter((rule) => rule.type === 'customCode').length,
+        disabled: rules.filter((rule) => !rule.enabled).length,
       },
     },
   })

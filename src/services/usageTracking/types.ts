@@ -52,10 +52,13 @@ interface GeneratorUpdatedEvent {
   event: UsageEventName.GeneratorUpdated
   payload: {
     rules: {
+      // Total number of rules per type
       correlation: number
       parameterization: number
       verification: number
       customCode: number
+      // Total number of disabled rules
+      disabled: number
     }
   }
 }

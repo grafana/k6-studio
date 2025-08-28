@@ -37,4 +37,5 @@ export async function getProfileData(): Promise<Profile> {
 
 export async function saveProfileData(profile: Profile) {
   await writeFile(filePath, JSON.stringify(profile, null, 2))
+  profileDataCache = profile
 }
