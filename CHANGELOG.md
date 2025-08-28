@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.7.0](https://github.com/grafana/k6-studio/compare/v1.6.0...v1.7.0) (2025-08-28)
+
+
+### Features
+
+* Add assertions of values in text inputs ([#770](https://github.com/grafana/k6-studio/issues/770)) ([a570e5d](https://github.com/grafana/k6-studio/commit/a570e5dda242be9e8c797ae2327e6b14a9920199))
+* Add assertions on checkbox/radio button state ([#738](https://github.com/grafana/k6-studio/issues/738)) ([89c0dcb](https://github.com/grafana/k6-studio/commit/89c0dcb88bdb8475767e5b3692cea48c036468b9))
+* Improved error handling when starting a recording ([#795](https://github.com/grafana/k6-studio/issues/795)) ([6483add](https://github.com/grafana/k6-studio/commit/6483add8ced2a72b6cc17a54b784faddad62702a))
+* Improved in-browser toolbar design ([#781](https://github.com/grafana/k6-studio/issues/781)) ([b685029](https://github.com/grafana/k6-studio/commit/b685029bbff9c039d0ccc5f35af007cc2d1caa3a))
+* Improved selector stability for click events ([#791](https://github.com/grafana/k6-studio/issues/791)) ([135d35c](https://github.com/grafana/k6-studio/commit/135d35c28e0198fbd600a34072b6bf09671e921b))
+
+
+### Bug Fixes
+
+* Clicking the label of a checkbox/radio records two events ([#798](https://github.com/grafana/k6-studio/issues/798)) ([994815a](https://github.com/grafana/k6-studio/commit/994815ae22e576919990a06dabd1463a57e53ff5))
+* Initial navigation event is sometimes not captured when starting a recording ([#769](https://github.com/grafana/k6-studio/issues/769)) ([1d26926](https://github.com/grafana/k6-studio/commit/1d2692648fb4c2bdc685f85f2c8ad2598bdafa4a))
+* Modals close when trying to interact with the toolbar ([#782](https://github.com/grafana/k6-studio/issues/782)) ([de03354](https://github.com/grafana/k6-studio/commit/de03354d8c63590c3f984c322e2eb26417b6ef74))
+* Navigation events are captures while typing in address bar ([#799](https://github.com/grafana/k6-studio/issues/799)) ([9245d7f](https://github.com/grafana/k6-studio/commit/9245d7fa48a890639716a201e40702654d0148dd))
+* Use `.fill()` instead of `.type()` when a text input has changed ([#788](https://github.com/grafana/k6-studio/issues/788)) ([86c06d0](https://github.com/grafana/k6-studio/commit/86c06d01fdb729fbdf1b5723c6382ac4e9346dfb))
+
+
+### Internal Changes
+
+* [POC] Render JSON suggestions ([#678](https://github.com/grafana/k6-studio/issues/678)) ([458f0fc](https://github.com/grafana/k6-studio/commit/458f0fc076a7198fad7c63dc7c9b70535018e1fd))
+* **fix:** Infinite loop when recording clicks ([#797](https://github.com/grafana/k6-studio/issues/797)) ([50469cc](https://github.com/grafana/k6-studio/commit/50469cc38f99b47479b1fc7cb102602cd6cae404))
+* Unwrap AggregateErrors before logging ([#794](https://github.com/grafana/k6-studio/issues/794)) ([b7b106e](https://github.com/grafana/k6-studio/commit/b7b106e0b688b649c665877826fb656f4cd48f6f))
+
+
+### Dependency Updates
+
+* Bump Electron version and [@electron-forge](https://github.com/electron-forge) packages ([#775](https://github.com/grafana/k6-studio/issues/775)) ([cad5ef5](https://github.com/grafana/k6-studio/commit/cad5ef5900d6042e3874e877065f8f8bae79332b))
+
+
+### Miscellaneous Chores
+
+* Additional usage collection ([#796](https://github.com/grafana/k6-studio/issues/796)) ([85b82c8](https://github.com/grafana/k6-studio/commit/85b82c8520643a5a0629ac913a50e53b654536ed))
+* Pin get-vault-secrets action to a hash ([#777](https://github.com/grafana/k6-studio/issues/777)) ([a862ad3](https://github.com/grafana/k6-studio/commit/a862ad3cf93484c2a9bd8b852d5a38c2451c11d9))
+* update k6 version to v1.2.1 ([#783](https://github.com/grafana/k6-studio/issues/783)) ([d593ad2](https://github.com/grafana/k6-studio/commit/d593ad28ab4ec9c1b269410dd1e4044234fae4f6))
+
 ## [1.6.0](https://github.com/grafana/k6-studio/compare/v1.5.0...v1.6.0) (2025-07-28)
 
 
