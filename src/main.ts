@@ -103,7 +103,7 @@ const createSplashWindow = async () => {
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
   if (getPlatform() === 'mac') {
-    app.dock?.setIcon(icon)
+    app.dock.setIcon(icon)
   }
   app.setName('Grafana k6 Studio')
 
