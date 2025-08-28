@@ -1,0 +1,82 @@
+import { shouldSkipEvent } from './view/utils'
+
+type EventBlockerMap = Record<string, WeakSet<EventTarget>>
+
+/**
+ * Since we can't use `preventDefault`, `stopPropagation` or similar methods without
+ * affecting the actual page, we need a way to block events that are side-effects of
+ * other events. This manager adds logic on top of `addEventListener` that allows
+ * blocking the next event of a given type on a given target.
+ */
+export class WindowEventManager {
+  #blockedEvents: EventBlockerMap = {}
+
+  /**
+   * Blocks the next event of the given type on the given target. This is useful to
+   * avoid recording follow-up events that are triggered as a side-effect of the
+   * original event.
+   */
+  block<T extends keyof WindowEventMap>(type: T, target: EventTarget): this {
+    let blockedForType = this.#blockedEvents[type]
+
+    if (blockedForType === undefined) {
+      blockedForType = new WeakSet()
+
+      this.#blockedEvents[type] = blockedForType
+    }
+
+    blockedForType.add(target)
+
+    // Queue cleanup of the blocked target for the next event loop iteration. If we
+    // don't do this, we might end up blocking an event we actually want to capture.
+    //
+    // For example, imagine a user clicking a label that is associated with a checkbox.
+    // This would trigger a follow-up `click` event on the checkbox which we don't want
+    // to record. However, if the recorded page calls `preventDefault` on the original
+    // click event, the follow-up click on the checkbox will never happen. So the block
+    // would never be removed and we would end up blocking the next legitimate click.
+    setTimeout(() => {
+      blockedForType.delete(target)
+    }, 1)
+
+    return this
+  }
+
+  capture<K extends keyof WindowEventMap>(
+    type: K,
+    listener: (ev: WindowEventMap[K], manager: WindowEventManager) => void
+  ) {
+    window.addEventListener(
+      type,
+      (ev) => {
+        if (shouldSkipEvent(ev)) {
+          return
+        }
+
+        if (this.#isBlocked(ev)) {
+          return
+        }
+
+        listener(ev, this)
+      },
+      { capture: true }
+    )
+  }
+
+  #isBlocked(ev: Event) {
+    if (ev.target === null) {
+      return false
+    }
+
+    const blockedForType = this.#blockedEvents[ev.type]
+
+    if (blockedForType === undefined) {
+      return false
+    }
+
+    // We only want to block the first occurence of the event for the target
+    // and `delete` will return `true` if the target was present in the set
+    // and therefore blocked.
+    return blockedForType.delete(ev.target)
+  }
+}
