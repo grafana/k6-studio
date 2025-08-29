@@ -30,6 +30,10 @@ export function ConstrainedCodeEditor({
     if (!model || !constrainedInstance) {
       return
     }
+    // Synchronize the editor model's content before re-applying constraints
+    if (value !== model.getValue()) {
+      model.setValue(value)
+    }
 
     // Add editable range to editor
     const constrainedModel = constrainedInstance.addRestrictionsTo(model, [
@@ -48,7 +52,7 @@ export function ConstrainedCodeEditor({
 
     // Cleanup
     return constrainedModel.disposeRestrictions
-  }, [model, constrainedInstance, editableRange, onChange])
+  }, [model, constrainedInstance, editableRange, onChange, value])
 
   const handleEditorMount = (
     editor: monacoTypes.editor.IStandaloneCodeEditor,
