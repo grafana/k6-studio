@@ -1,4 +1,4 @@
-import { CheckState } from '@/schemas/recording'
+import { CheckState, ModifierKeys } from '@/schemas/recording'
 
 export type NodeId = string
 
@@ -42,12 +42,17 @@ export interface ReloadNode extends NodeBase {
 export interface ClickNode extends NodeBase {
   type: 'click'
   button: 'left' | 'middle' | 'right'
-  modifiers: {
-    ctrl: boolean
-    shift: boolean
-    alt: boolean
-    meta: boolean
+  modifiers: ModifierKeys
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
   }
+}
+
+export interface PressKeyNode extends NodeBase {
+  type: 'press-key'
+  key: string
+  modifiers: ModifierKeys
   inputs: {
     previous?: NodeRef
     locator: NodeRef
@@ -124,6 +129,7 @@ export type TestNode =
   | ReloadNode
   | LocatorNode
   | ClickNode
+  | PressKeyNode
   | TypeTextNode
   | SelectOptionsNode
   | CheckNode

@@ -1,5 +1,12 @@
 import { z } from 'zod'
 
+const ModifierKeysSchema = z.object({
+  ctrl: z.boolean(),
+  shift: z.boolean(),
+  alt: z.boolean(),
+  meta: z.boolean(),
+})
+
 const ElementSelectorSchema = z.object({
   css: z.string(),
 })
@@ -27,12 +34,15 @@ const ClickEventSchema = BrowserEventBaseSchema.extend({
   tab: z.string(),
   selector: ElementSelectorSchema,
   button: z.union([z.literal('left'), z.literal('middle'), z.literal('right')]),
-  modifiers: z.object({
-    ctrl: z.boolean(),
-    shift: z.boolean(),
-    alt: z.boolean(),
-    meta: z.boolean(),
-  }),
+  modifiers: ModifierKeysSchema,
+})
+
+const KeyPressEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('key-press'),
+  tab: z.string(),
+  selector: ElementSelectorSchema,
+  key: z.string(),
+  modifiers: ModifierKeysSchema,
 })
 
 const InputChangeEventSchema = BrowserEventBaseSchema.extend({
@@ -66,6 +76,9 @@ const SelectChangeEventSchema = BrowserEventBaseSchema.extend({
   multiple: z.boolean(),
 })
 
+/**
+ * @deprecated Form submissions are captured as side effects of other events instead.
+ */
 const SubmitFormEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('submit-form'),
   tab: z.string(),
@@ -121,20 +134,24 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   NavigateToPageEventSchema,
   ReloadPageEventSchema,
   ClickEventSchema,
+  KeyPressEventSchema,
   InputChangeEventSchema,
   CheckChangeEventSchema,
   RadioChangeEventSchema,
   SelectChangeEventSchema,
-  SubmitFormEventSchema,
   AssertEventSchema,
+
+  SubmitFormEventSchema,
 ])
 
+export type ModifierKeys = z.infer<typeof ModifierKeysSchema>
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 export type CheckState = z.infer<typeof CheckStateSchema>
 
 export type NavigateToPageEvent = z.infer<typeof NavigateToPageEventSchema>
 export type ReloadPageEvent = z.infer<typeof ReloadPageEventSchema>
 export type ClickEvent = z.infer<typeof ClickEventSchema>
+export type KeyPressEvent = z.infer<typeof KeyPressEventSchema>
 export type InputChangeEvent = z.infer<typeof InputChangeEventSchema>
 export type CheckChangeEvent = z.infer<typeof CheckChangeEventSchema>
 export type RadioChangeEvent = z.infer<typeof RadioChangeEventSchema>

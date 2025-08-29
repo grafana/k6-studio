@@ -55,6 +55,11 @@ function buildScenarioGraph(scenario: model.Scenario) {
         connectPrevious(graph, node)
         break
 
+      case 'press-key':
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        connectPrevious(graph, node)
+        break
+
       case 'type-text':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
         connectPrevious(graph, node)

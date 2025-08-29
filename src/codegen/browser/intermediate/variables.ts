@@ -89,6 +89,13 @@ function substituteExpression(
         locator: substituteExpression(node.locator, substitutions),
       }
 
+    case 'PressKeyExpression':
+      return {
+        type: 'PressKeyExpression',
+        locator: substituteExpression(node.locator, substitutions),
+        key: substituteExpression(node.key, substitutions),
+      }
+
     case 'FillTextExpression':
       return {
         type: 'FillTextExpression',

@@ -6,6 +6,8 @@ import { generateSelector } from '../selectors'
 import {
   findAssociatedElement,
   findInteractiveElement,
+  hasModifierKeys,
+  isImplicitSubmitInput,
   isNativeButton,
   isNativeCheckbox,
   isNativeRadio,
@@ -122,6 +124,59 @@ manager.capture('click', (ev, manager) => {
   })
 })
 
+manager.capture('keydown', (ev) => {
+  if (ev.target instanceof Element === false) {
+    return
+  }
+
+  if (ev.repeat) {
+    return
+  }
+
+  if (ev.key !== 'Enter' && ev.key !== 'Escape') {
+    return
+  }
+
+  // Pressing Enter in an input of a form will trigger a click on the submit
+  // submit button (if it has one). If the value of the input is changed, then
+  // the order of events will be:
+  //
+  //   1. keydown
+  //   2. change
+  //   3. click
+  //   4. submit
+  //
+  // In a generated script, we'd want to have the change before the keydown otherwise
+  // the script might submit the form before the change is applied. To avoid the
+  // complexity of trying to reorder events, we simply treat pressing Enter in a
+  // form input as a 'click' on the submit button.
+  //
+  // We might want to revisit this in the future to make the behavior match more
+  // closely what the user actually did.
+  if (
+    ev.key === 'Enter' &&
+    !hasModifierKeys(ev) &&
+    isImplicitSubmitInput(ev.target)
+  ) {
+    return
+  }
+
+  recordEvents({
+    type: 'key-press',
+    eventId: crypto.randomUUID(),
+    timestamp: Date.now(),
+    selector: generateSelector(ev.target),
+    key: ev.key,
+    modifiers: {
+      ctrl: ev.ctrlKey,
+      shift: ev.shiftKey,
+      alt: ev.altKey,
+      meta: ev.metaKey,
+    },
+    tab: '',
+  })
+})
+
 function handleSelectChange(target: HTMLSelectElement) {
   recordEvents({
     type: 'select-change',
@@ -217,26 +272,4 @@ manager.capture('change', (ev) => {
 
     return
   }
-})
-
-manager.capture('submit', (ev) => {
-  if (ev.target instanceof Element === false) {
-    return
-  }
-
-  // The `submitter` property will be null if the submission was triggered by a script.
-  // In that case, we will assume that there was some other recorded action that caused
-  // that script to run.
-  if (ev.submitter === null) {
-    return
-  }
-
-  recordEvents({
-    type: 'submit-form',
-    eventId: crypto.randomUUID(),
-    timestamp: Date.now(),
-    form: generateSelector(ev.target),
-    submitter: generateSelector(ev.submitter),
-    tab: '',
-  })
 })

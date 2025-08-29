@@ -4,28 +4,7 @@ import { exhaustive } from '@/utils/typescript'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
-
-function getModifierKeys(modifiers: ClickEvent['modifiers']) {
-  const keys = []
-
-  if (modifiers.ctrl) {
-    keys.push('⌃ Ctrl')
-  }
-
-  if (modifiers.shift) {
-    keys.push('⇧ Shift')
-  }
-
-  if (modifiers.alt) {
-    keys.push(TARGET_PLATFORM === 'darwin' ? '⌥ Option' : '⌥ Alt')
-  }
-
-  if (modifiers.meta) {
-    keys.push(TARGET_PLATFORM === 'darwin' ? '⌘ Command' : '⊞ Meta')
-  }
-
-  return keys
-}
+import { getModifierKeys } from './utils'
 
 function getButtonDescription(event: ClickEvent) {
   switch (event.button) {

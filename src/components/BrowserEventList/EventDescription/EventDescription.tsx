@@ -7,6 +7,7 @@ import { HighlightSelector } from 'extension/src/messaging/types'
 import { AssertDescription } from './AssertDescription'
 import { ClickDescription } from './ClickDescription'
 import { InputChangeDescription } from './InputChangeDescription'
+import { KeyPressDescription } from './KeyPressDescription'
 import { PageNavigationDescription } from './PageNavigationDescription'
 import { Selector } from './Selector'
 
@@ -55,6 +56,9 @@ export function EventDescription({
 
     case 'click':
       return <ClickDescription event={event} onHighlight={onHighlight} />
+
+    case 'key-press':
+      return <KeyPressDescription event={event} onHighlight={onHighlight} />
 
     case 'input-change':
       return <InputChangeDescription event={event} onHighlight={onHighlight} />

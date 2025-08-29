@@ -102,6 +102,20 @@ function emitClickExpression(
     .done()
 }
 
+function emitPressKeyExpression(
+  context: ScenarioContext,
+  expression: ir.PressKeyExpression
+): ts.Expression {
+  const locator = emitExpression(context, expression.locator)
+  const key = emitExpression(context, expression.key)
+
+  return new ExpressionBuilder(locator)
+    .member('press')
+    .call([key])
+    .await(context)
+    .done()
+}
+
 function emitTypeTextExpression(
   context: ScenarioContext,
   expression: ir.FillTextExpression
@@ -279,6 +293,9 @@ function emitExpression(
 
     case 'ClickOptionsExpression':
       return emitClickOptionsExpression(context, expression)
+
+    case 'PressKeyExpression':
+      return emitPressKeyExpression(context, expression)
 
     case 'FillTextExpression':
       return emitTypeTextExpression(context, expression)

@@ -5,6 +5,7 @@ import {
   ClipboardListIcon,
   EyeIcon,
   GlobeIcon,
+  KeyboardIcon,
   ListFilterPlusIcon,
   RefreshCwIcon,
   TargetIcon,
@@ -28,6 +29,9 @@ export function EventIcon({ event }: EventIconProps) {
 
     case 'click':
       return <TargetIcon />
+
+    case 'key-press':
+      return <KeyboardIcon />
 
     case 'input-change':
       return <TextCursorInputIcon />

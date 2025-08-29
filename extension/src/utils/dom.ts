@@ -122,7 +122,9 @@ export function isNativeRadio(element: Element) {
   return element instanceof HTMLInputElement && element.type === 'radio'
 }
 
-export function isNativeButton(element: Element) {
+export function isNativeButton(
+  element: Element
+): element is HTMLButtonElement | HTMLInputElement {
   if (element instanceof HTMLButtonElement) {
     return true
   }
@@ -132,4 +134,27 @@ export function isNativeButton(element: Element) {
   }
 
   return element.type === 'button' || element.type === 'submit'
+}
+
+/**
+ * Checks whether pressing enter in the given element would implicitly submit a form.
+ */
+export function isImplicitSubmitInput(element: Element) {
+  if (element instanceof HTMLInputElement === false) {
+    return false
+  }
+
+  return (
+    element.type === 'text' ||
+    element.type === 'password' ||
+    element.type === 'email' ||
+    element.type === 'search' ||
+    element.type === 'tel' ||
+    element.type === 'url' ||
+    element.type === 'number'
+  )
+}
+
+export function hasModifierKeys(ev: KeyboardEvent | MouseEvent) {
+  return ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey
 }

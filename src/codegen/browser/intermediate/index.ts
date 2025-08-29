@@ -99,6 +99,22 @@ function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
   })
 }
 
+function emitPressKeyNode(context: IntermediateContext, node: m.PressKeyNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'PressKeyExpression',
+      locator,
+      key: {
+        type: 'StringLiteral',
+        value: node.key,
+      },
+    },
+  })
+}
+
 function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
   const locator = context.reference(node.inputs.locator)
 
@@ -246,6 +262,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'click':
       return emitClickNode(context, node)
+
+    case 'press-key':
+      return emitPressKeyNode(context, node)
 
     case 'type-text':
       return emitTypeTextNode(context, node)

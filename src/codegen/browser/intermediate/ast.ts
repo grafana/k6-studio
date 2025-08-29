@@ -35,16 +35,22 @@ export interface ClickOptionsExpression {
   modifiers: Array<'Control' | 'Shift' | 'Alt' | 'Meta'>
 }
 
-export interface FillTextExpression {
-  type: 'FillTextExpression'
-  target: Expression
-  value: Expression
-}
-
 export interface ClickExpression {
   type: 'ClickExpression'
   locator: Expression
   options: Expression | null
+}
+
+export interface PressKeyExpression {
+  type: 'PressKeyExpression'
+  locator: Expression
+  key: Expression
+}
+
+export interface FillTextExpression {
+  type: 'FillTextExpression'
+  target: Expression
+  value: Expression
 }
 
 export interface CheckExpression {
@@ -121,6 +127,7 @@ export type Expression =
   | ReloadExpression
   | ClickExpression
   | ClickOptionsExpression
+  | PressKeyExpression
   | FillTextExpression
   | CheckExpression
   | SelectOptionsExpression

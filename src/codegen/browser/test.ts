@@ -141,6 +141,18 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
       }
 
+      case 'key-press':
+        return {
+          type: 'press-key',
+          nodeId: event.eventId,
+          key: event.key,
+          modifiers: event.modifiers,
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.selector),
+          },
+        }
+
       case 'input-change':
         return {
           type: 'type-text',
@@ -187,9 +199,12 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
 
       case 'submit-form':
-        return {
+        return toNode({
           type: 'click',
-          nodeId: event.eventId,
+          timestamp: event.timestamp,
+          eventId: event.eventId,
+          tab: event.tab,
+          selector: event.submitter,
           button: 'left',
           modifiers: {
             ctrl: false,
@@ -197,11 +212,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
             alt: false,
             meta: false,
           },
-          inputs: {
-            previous,
-            locator: getLocator(event.tab, event.submitter),
-          },
-        }
+        })
 
       case 'assert': {
         return {
