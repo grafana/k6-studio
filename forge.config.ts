@@ -72,8 +72,9 @@ const config: ForgeConfig = {
     }),
     new MakerWix({
       windowsSign: {
-        certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
-        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+        // certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
+        // certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+        signWithParams: `/td sha256 /f ${process.env.WINDOWS_CERTIFICATE_PATH} /p ${process.env.WINDOWS_CERTIFICATE_PASSWORD} /fd sha256`,
       },
       manufacturer: 'Grafana Labs',
       icon: './resources/icons/logo.ico',
