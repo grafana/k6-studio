@@ -9,7 +9,6 @@ import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
 import type { ForgeConfig } from '@electron-forge/shared-types'
 import path from 'path'
-import { spawn } from 'node:child_process'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
@@ -73,59 +72,10 @@ const config: ForgeConfig = {
     }),
     new MakerWix({
       windowsSign: {
-          hookFunction: async (fileToSign: string) => {
-            const {
-              code,
-              stderr,
-              stdout,
-            }: {code: number | null; stderr: string; stdout: string} =
-              await new Promise(resolve => {
-                const command = process.env.SIGNTOOL_PATH ?? '';
-                const hash = 'sha256';
-                const args = [
-                  'sign',
-                  '/tr',
-                  process.env.TIMESTAMP_SERVER ?? '',
-                  '/td',
-                  hash,
-                  '/f',
-                  process.env.WINDOWS_CERTIFICATE_PATH ?? '',
-                  '/p',
-                  process.env.WINDOWS_CERTIFICATE_PASSWORD ?? '',
-                  '/fd',
-                  hash,
-                  fileToSign,
-                ];
-                const fork = spawn(command, args, {
-                  env: process.env,
-                  cwd: process.cwd(),
-                });
-                let stdout = '';
-                let stderr = '';
-                fork.stdout.on('data', data => {
-                  stdout += data;
-                });
-                fork.stderr.on('data', data => {
-                  stderr += data;
-                });
-                fork.on('close', code => {
-                  resolve({stdout, stderr, code});
-                });
-              });
-
-            if (code !== 0) {
-              console.error(
-                `Signtool exited with code ${code}. Stderr: ${stderr}. Stdout: ${stdout}`,
-              );
-              // eslint-disable-next-line no-process-exit
-              process.exit(1);
-            }
-          },
-        },
-      // windowsSign: {
-      //   certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
-      //   certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
-      // },
+        // certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
+        // certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+        signWithParams: `/td sha256 /f ${process.env.WINDOWS_CERTIFICATE_PATH} /p ${process.env.WINDOWS_CERTIFICATE_PASSWORD} /fd sha256`,
+      },
       manufacturer: 'Grafana Labs',
       icon: './resources/icons/logo.ico',
     }),
