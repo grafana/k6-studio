@@ -86,7 +86,6 @@ const config: ForgeConfig = {
           const command = `node_modules\\@electron\\windows-sign\\vendor\\signtool.exe sign /f "${certificateFile}" /p "${certificatePassword}" /fd sha256 /tr http://timestamp.digicert.com /td sha256 "${filePath}"`
 
           try {
-            execSync('dir', { stdio: 'inherit' })
             execSync(command, { stdio: 'inherit' })
             console.log(`Successfully signed: ${filePath}`)
           } catch (error) {
