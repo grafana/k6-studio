@@ -53,6 +53,11 @@ const config: ForgeConfig = {
       appleApiKeyId: process.env.APPLE_API_KEY_ID ?? '',
       appleApiIssuer: process.env.APPLE_API_ISSUER ?? '',
     },
+    windowsSign: {
+      certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
+      certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+      signWithParams: `/fd sha256 /td sha256`,
+    },
     protocols: [
       {
         name: CUSTOM_APP_PROTOCOL,
@@ -63,19 +68,10 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
-      windowsSign: {
-        certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
-        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
-      },
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
     new MakerWix({
-      windowsSign: {
-        certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
-        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
-        signWithParams: `/td sha256 /fd sha256`,
-      },
       manufacturer: 'Grafana Labs',
       icon: './resources/icons/logo.ico',
     }),
