@@ -4,7 +4,7 @@ import { Allotment } from 'allotment'
 import { ReactNode, useEffect, useState } from 'react'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
-import { Details } from '@/components/WebLogView/Details'
+import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
 import { K6Check, K6Log, ProxyData } from '@/types'
@@ -131,7 +131,7 @@ export function ValidatorContent({
       </Allotment.Pane>
       {selectedRequest !== null && (
         <Allotment.Pane minSize={300}>
-          <Details
+          <HttpRequestDetails
             selectedRequest={selectedRequest}
             onSelectRequest={setSelectedRequest}
           />
