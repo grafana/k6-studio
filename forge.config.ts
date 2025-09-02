@@ -96,6 +96,14 @@ const config: ForgeConfig = {
       },
       manufacturer: 'Grafana Labs',
       icon: './resources/icons/logo.ico',
+      features: {
+        autoUpdate: true,
+        autoLaunch: false,
+      },
+      ui: {
+        chooseDirectory: true,
+      },
+      nestedFolderName: 'k6-Studio',
     }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG(
