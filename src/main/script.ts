@@ -6,6 +6,9 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'path'
 import readline from 'readline/promises'
 
+import { ScriptHandler } from '@/handlers/script/types'
+import { ArchiveError, K6Client } from '@/utils/k6/client'
+
 import {
   constDeclarator,
   declareConst,
@@ -169,36 +172,31 @@ const createLogsHandler = (browserWindow: BrowserWindow) => (data: string) => {
   browserWindow.webContents.send('script:log', logData)
 }
 
-export const archiveScript = (
+export const archiveScript = async (
   scriptPath: string,
   browserWindow: BrowserWindow
 ): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const k6Args = [
-      'archive',
-      scriptPath,
-      '-O',
-      TEMP_K6_ARCHIVE_PATH,
-      '--log-format=json',
-    ]
+  try {
+    const client = new K6Client()
 
-    spawnK6({
-      args: k6Args,
-      onStdErr: createLogsHandler(browserWindow),
-      onClose: (code) => {
-        if (code === 0) {
-          resolve(TEMP_K6_ARCHIVE_PATH)
-        } else {
-          browserWindow.webContents.send('script:failed')
-          reject(
-            new Error(
-              `Failed to create archive: k6 process exited with code ${code}`
-            )
-          )
-        }
-      },
+    await client.archive({
+      scriptPath,
+      outputPath: TEMP_K6_ARCHIVE_PATH,
+      logFormat: 'json',
     })
-  })
+
+    return TEMP_K6_ARCHIVE_PATH
+  } catch (error) {
+    browserWindow.webContents.send(ScriptHandler.Failed)
+
+    if (error instanceof ArchiveError) {
+      for (const log of error.stderr) {
+        browserWindow.webContents.send(ScriptHandler.Log, log)
+      }
+    }
+
+    throw error
+  }
 }
 
 interface EnhanceScriptOptions {

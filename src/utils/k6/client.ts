@@ -4,6 +4,8 @@ import path from 'path'
 import readline from 'readline/promises'
 import { z } from 'zod'
 
+import { LogEntrySchema } from '@/schemas/k6'
+import { K6Log } from '@/types'
 import { getArch, getPlatform } from '@/utils/electron'
 
 const TestOptionsSchema = z.object({
@@ -24,12 +26,6 @@ const RESOURCES_PATH = MAIN_WINDOW_VITE_DEV_SERVER_URL
   : process.resourcesPath
 
 const EXECUTABLE_PATH = path.join(RESOURCES_PATH, getArch(), EXECUTABLE_NAME)
-
-interface Handlers {
-  onStdOut?: (line: string) => void
-  onStdErr?: (line: string) => void
-  onClose?: (code: number | null) => void
-}
 
 interface SpawnArgs {
   args: Array<string[] | string | null | undefined | false>
@@ -54,9 +50,9 @@ interface InspectArgs {
 
 export class ArchiveError extends Error {
   code: number | null
-  stderr: string[]
+  stderr: K6Log[]
 
-  constructor(code: number | null, stderr: string[]) {
+  constructor(code: number | null, stderr: K6Log[]) {
     super('Failed to archive script')
 
     this.code = code
@@ -65,12 +61,6 @@ export class ArchiveError extends Error {
 }
 
 export class K6Client {
-  #handlers: Handlers
-
-  constructor(handlers: Handlers = {}) {
-    this.#handlers = handlers
-  }
-
   async archive({
     scriptPath,
     outputPath,
@@ -86,7 +76,12 @@ export class K6Client {
     })
 
     if (code !== 0) {
-      throw new ArchiveError(code, stderr)
+      const parsedErrors = stderr
+        .map((line) => LogEntrySchema.safeParse(JSON.parse(line)))
+        .filter((entry) => entry.success)
+        .map((entry) => entry.data)
+
+      throw new ArchiveError(code, parsedErrors)
     }
   }
 
@@ -127,14 +122,10 @@ export class K6Client {
 
       readline.createInterface(k6.stdout).on('line', (line) => {
         stdout.push(line)
-
-        this.#handlers.onStdOut?.(line)
       })
 
       readline.createInterface(k6.stderr).on('line', (line) => {
         stderr.push(line)
-
-        this.#handlers.onStdErr?.(line)
       })
 
       k6.on('error', (error) => {
@@ -142,8 +133,6 @@ export class K6Client {
       })
 
       k6.on('close', (code) => {
-        this.#handlers.onClose?.(code)
-
         resolve({
           code,
           stdout,
