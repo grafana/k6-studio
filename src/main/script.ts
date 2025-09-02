@@ -6,6 +6,8 @@ import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'path'
 import readline from 'readline/promises'
 
+import { ProxySettings } from '@/types/settings'
+
 import {
   constDeclarator,
   declareConst,
@@ -21,6 +23,8 @@ import {
 } from '../constants/workspace'
 import { K6Check, K6Log } from '../types'
 import { getArch, getPlatform } from '../utils/electron'
+
+import { getProxyArguments } from './proxy'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -84,17 +88,19 @@ export const getTempScriptName = () => {
   return `.${Math.random().toString(36).substring(7)}${TEMP_SCRIPT_SUFFIX}`
 }
 
+interface RunScriptOptions {
+  scriptPath: string
+  usageReport: boolean
+  proxySettings: ProxySettings
+  browserWindow: BrowserWindow
+}
+
 export const runScript = async ({
   scriptPath,
-  proxyPort,
   usageReport,
+  proxySettings,
   browserWindow,
-}: {
-  scriptPath: string
-  proxyPort: number
-  usageReport: boolean
-  browserWindow: BrowserWindow
-}) => {
+}: RunScriptOptions) => {
   // 1. Get an enhanced version of the script content
   const modifiedScript = await enhanceScriptFromPath(scriptPath)
 
@@ -113,6 +119,8 @@ export const runScript = async ({
   // 4. Delete the temp script file
   await unlink(tempScriptPath)
 
+  const proxyArgs = await getProxyArguments(proxySettings, '')
+
   // 5. Run the test
   const k6 = spawnK6({
     args: [
@@ -124,9 +132,10 @@ export const runScript = async ({
       ...(usageReport ? [] : ['--no-usage-report']),
     ],
     env: {
-      HTTP_PROXY: `http://localhost:${proxyPort}`,
-      HTTPS_PROXY: `http://localhost:${proxyPort}`,
+      HTTP_PROXY: `http://localhost:${proxySettings.port}`,
+      HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
+      K6_BROWSER_ARGS: proxyArgs.join(','),
     },
     onStdOut: createChecksHandler(browserWindow),
     onStdErr: createLogsHandler(browserWindow),
