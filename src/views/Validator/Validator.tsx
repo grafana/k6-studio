@@ -13,9 +13,8 @@ import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
-import { ValidatorContent } from '../Generator/ValidatorContent'
-
 import { useScriptPath } from './Validator.hooks'
+import { ValidatorContent } from './ValidatorContent'
 import { ValidatorControls } from './ValidatorControls'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
 
