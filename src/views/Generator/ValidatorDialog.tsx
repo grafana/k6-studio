@@ -8,7 +8,7 @@ import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
-import { ValidatorContent } from '@/views/Validator/ValidatorContent'
+import { ValidatorContent } from '@/views/Generator/ValidatorContent'
 
 interface ValidatorDialogProps {
   script: string

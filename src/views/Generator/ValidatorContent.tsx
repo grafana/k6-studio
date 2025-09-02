@@ -10,8 +10,8 @@ import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
 import { K6Check, K6Log, ProxyData } from '@/types'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 
-import { ChecksSection } from './ChecksSection'
-import { LogsSection } from './LogsSection'
+import { ChecksSection } from '../Validator/ChecksSection'
+import { LogsSection } from '../Validator/LogsSection'
 
 interface ValidatorContentProps {
   script: string
