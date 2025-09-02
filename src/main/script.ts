@@ -119,7 +119,9 @@ export const runScript = async ({
   // 4. Delete the temp script file
   await unlink(tempScriptPath)
 
-  const proxyArgs = await getProxyArguments(proxySettings, '')
+  const proxyArgs = await getProxyArguments(proxySettings, {
+    prefix: '',
+  })
 
   // 5. Run the test
   const k6 = spawnK6({

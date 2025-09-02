@@ -286,13 +286,13 @@ export const getProxyCertificateContent = () => {
 
 export async function getProxyArguments(
   settings: ProxySettings,
-  prefix = '--'
+  options: { prefix: string } = { prefix: '--' }
 ): Promise<string[]> {
   const spki = await getCertificateSPKI()
   const port = settings.port
 
   return [
-    `${prefix}proxy-server=http://localhost:${port}`,
-    `${prefix}ignore-certificate-errors-spki-list=${spki}`,
+    `${options.prefix}proxy-server=http://localhost:${port}`,
+    `${options.prefix}ignore-certificate-errors-spki-list=${spki}`,
   ]
 }
