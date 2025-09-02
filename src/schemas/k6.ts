@@ -8,4 +8,15 @@ export const LogEntrySchema = z.object({
   error: z.string().optional(),
 })
 
+export const CheckSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  path: z.string(),
+  passes: z.number(),
+  fails: z.number(),
+})
+
+export const CheckArraySchema = z.array(CheckSchema)
+
 export type LogEntry = z.infer<typeof LogEntrySchema>
+export type Check = z.infer<typeof CheckSchema>

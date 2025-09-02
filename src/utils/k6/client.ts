@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app } from 'electron'
 import path from 'path'
 import readline from 'readline/promises'
@@ -7,6 +7,8 @@ import { z } from 'zod'
 import { LogEntrySchema } from '@/schemas/k6'
 import { K6Log } from '@/types'
 import { getArch, getPlatform } from '@/utils/electron'
+
+import { TestRun } from './testRun'
 
 const TestOptionsSchema = z.object({
   cloud: z
@@ -25,7 +27,11 @@ const RESOURCES_PATH = MAIN_WINDOW_VITE_DEV_SERVER_URL
   ? path.join(app.getAppPath(), 'resources', getPlatform())
   : process.resourcesPath
 
-const EXECUTABLE_PATH = path.join(RESOURCES_PATH, getArch(), EXECUTABLE_NAME)
+const DEFAULT_EXECUTABLE_PATH = path.join(
+  RESOURCES_PATH,
+  getArch(),
+  EXECUTABLE_NAME
+)
 
 interface SpawnArgs {
   args: Array<string[] | string | null | undefined | false>
@@ -41,11 +47,18 @@ interface SpawnResult {
 interface ArchiveArgs {
   scriptPath: string
   outputPath?: string
-  logFormat?: 'json'
 }
 
 interface InspectArgs {
   scriptPath: string
+}
+
+interface RunArgs {
+  path: string
+  quiet?: boolean
+  insecureSkipTLSVerify?: boolean
+  noUsageReport?: boolean
+  env?: Record<string, string>
 }
 
 export class ArchiveError extends Error {
@@ -61,19 +74,22 @@ export class ArchiveError extends Error {
 }
 
 export class K6Client {
-  async archive({
-    scriptPath,
-    outputPath,
-    logFormat,
-  }: ArchiveArgs): Promise<void> {
-    const { code, stderr } = await this.#spawn({
+  #executablePath: string
+
+  constructor(executablePath: string = DEFAULT_EXECUTABLE_PATH) {
+    this.#executablePath = executablePath
+  }
+
+  async archive({ scriptPath, outputPath }: ArchiveArgs): Promise<void> {
+    const process = this.#spawn('archive', {
       args: [
-        'archive',
         outputPath && ['--archive-out', outputPath],
-        logFormat && ['--log-format', logFormat],
+        ['--log-format', 'json'],
         scriptPath,
       ],
     })
+
+    const { code, stderr } = await this.#wait(process)
 
     if (code !== 0) {
       const parsedErrors = stderr
@@ -86,9 +102,11 @@ export class K6Client {
   }
 
   async inspect({ scriptPath }: InspectArgs): Promise<TestOptions | null> {
-    const { code, stdout } = await this.#spawn({
-      args: ['inspect', scriptPath],
+    const process = this.#spawn('inspect', {
+      args: [scriptPath],
     })
+
+    const { code, stdout } = await this.#wait(process)
 
     if (code !== 0) {
       return null
@@ -104,30 +122,50 @@ export class K6Client {
     return parsed.data
   }
 
-  #spawn({ args, env }: SpawnArgs): Promise<SpawnResult> {
+  run({
+    path,
+    quiet,
+    insecureSkipTLSVerify,
+    noUsageReport,
+    env = {},
+  }: RunArgs): TestRun {
+    const args = [
+      ['--log-format', 'json'],
+      quiet && '--quiet',
+      insecureSkipTLSVerify && '--insecure-skip-tls-verify',
+      noUsageReport && '--no-usage-report',
+      path,
+    ]
+
+    const process = this.#spawn('run', {
+      args,
+      env,
+    })
+
+    return new TestRun(process)
+  }
+
+  #wait(k6: ChildProcessWithoutNullStreams): Promise<SpawnResult> {
+    const stdout: string[] = []
+    const stderr: string[] = []
+
+    readline.createInterface(k6.stdout).on('line', (line) => {
+      stdout.push(line)
+    })
+
+    readline.createInterface(k6.stderr).on('line', (line) => {
+      stderr.push(line)
+    })
+
+    if (k6.exitCode !== null) {
+      return Promise.resolve({
+        code: k6.exitCode,
+        stdout,
+        stderr,
+      })
+    }
+
     return new Promise<SpawnResult>((resolve, reject) => {
-      const flattenedArgs = args
-        .filter((arg) => arg !== null && arg !== undefined && arg !== false)
-        .flat()
-
-      const k6 = spawn(EXECUTABLE_PATH, flattenedArgs, {
-        env: {
-          ...process.env,
-          ...env,
-        },
-      })
-
-      const stdout: string[] = []
-      const stderr: string[] = []
-
-      readline.createInterface(k6.stdout).on('line', (line) => {
-        stdout.push(line)
-      })
-
-      readline.createInterface(k6.stderr).on('line', (line) => {
-        stderr.push(line)
-      })
-
       k6.on('error', (error) => {
         reject(error)
       })
@@ -139,6 +177,22 @@ export class K6Client {
           stderr,
         })
       })
+    })
+  }
+
+  #spawn(
+    command: string,
+    { args, env }: SpawnArgs
+  ): ChildProcessWithoutNullStreams {
+    const flattenedArgs = args
+      .filter((arg) => arg !== null && arg !== undefined && arg !== false)
+      .flat()
+
+    return spawn(this.#executablePath, [command, ...flattenedArgs], {
+      env: {
+        ...process.env,
+        ...env,
+      },
     })
   }
 }
