@@ -23,15 +23,14 @@ type TestOptions = z.infer<typeof TestOptionsSchema>
 
 const EXECUTABLE_NAME = getPlatform() === 'win' ? 'k6.exe' : 'k6'
 
-const RESOURCES_PATH = MAIN_WINDOW_VITE_DEV_SERVER_URL
-  ? path.join(app.getAppPath(), 'resources', getPlatform())
-  : process.resourcesPath
+function getDefaultExecutablePath() {
+  // @ts-expect-error - fails because we're targeting node
+  const resourcesPath = import.meta.env.DEV
+    ? path.join(app.getAppPath(), 'resources', getPlatform())
+    : process.resourcesPath
 
-const DEFAULT_EXECUTABLE_PATH = path.join(
-  RESOURCES_PATH,
-  getArch(),
-  EXECUTABLE_NAME
-)
+  return path.join(resourcesPath, getArch(), EXECUTABLE_NAME)
+}
 
 interface SpawnArgs {
   args: Array<string[] | string | null | undefined | false>
@@ -76,7 +75,7 @@ export class ArchiveError extends Error {
 export class K6Client {
   #executablePath: string
 
-  constructor(executablePath: string = DEFAULT_EXECUTABLE_PATH) {
+  constructor(executablePath: string = getDefaultExecutablePath()) {
     this.#executablePath = executablePath
   }
 
