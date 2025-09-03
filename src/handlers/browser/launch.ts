@@ -11,7 +11,7 @@ import os from 'os'
 import path from 'path'
 import { promisify } from 'util'
 
-import { getCertificateSPKI } from '@/main/proxy'
+import { getProxyArguments } from '@/main/proxy'
 import { ChromeDevtoolsClient } from '@/utils/cdp/client'
 import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
 
@@ -109,7 +109,6 @@ export const launchBrowser = async (
 
   const userDataDir = await createUserDataDir()
   console.log(userDataDir)
-  const certificateSPKI = await getCertificateSPKI()
 
   const extensionPath = getExtensionPath()
   console.info(`extension path: ${extensionPath}`)
@@ -133,6 +132,8 @@ export const launchBrowser = async (
     })
   }
 
+  const proxyArgs = await getProxyArguments(k6StudioState.appSettings.proxy)
+
   const browserRecordingArgs = capture.browser ? BROWSER_RECORDING_ARGS : []
 
   const args = [
@@ -146,9 +147,8 @@ export const launchBrowser = async (
     '--disable-background-networking',
     '--disable-component-update',
     '--disable-search-engine-choice-screen',
-    `--proxy-server=http://localhost:${k6StudioState.appSettings.proxy.port}`,
-    `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
     `--disable-features=${FEATURES_TO_DISABLE.join(',')}`,
+    ...proxyArgs,
     ...browserRecordingArgs,
     url?.trim() || 'about:blank',
   ]

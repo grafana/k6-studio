@@ -59,7 +59,7 @@ export function initialize() {
       currentk6Process = await runScript({
         browserWindow,
         scriptPath: resolvedScriptPath,
-        proxyPort: k6StudioState.appSettings.proxy.port,
+        proxySettings: k6StudioState.appSettings.proxy,
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
 
@@ -91,7 +91,7 @@ export function initialize() {
       currentk6Process = await runScript({
         browserWindow,
         scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
-        proxyPort: k6StudioState.appSettings.proxy.port,
+        proxySettings: k6StudioState.appSettings.proxy,
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
 

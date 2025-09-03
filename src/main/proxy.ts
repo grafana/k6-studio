@@ -144,7 +144,7 @@ export const getCertificatesPath = () => {
   }
 }
 
-export const getCertificateSPKI = async () => {
+const getCertificateSPKI = async () => {
   const certificatePath = path.join(
     getCertificatesPath(),
     'mitmproxy-ca-cert.pem'
@@ -282,4 +282,17 @@ export const getProxyCertificateContent = () => {
     return readFileSync(certPath)
   }
   return undefined
+}
+
+export async function getProxyArguments(
+  settings: ProxySettings,
+  options: { prefix: string } = { prefix: '--' }
+): Promise<string[]> {
+  const spki = await getCertificateSPKI()
+  const port = settings.port
+
+  return [
+    `${options.prefix}proxy-server=http://localhost:${port}`,
+    `${options.prefix}ignore-certificate-errors-spki-list=${spki}`,
+  ]
 }
