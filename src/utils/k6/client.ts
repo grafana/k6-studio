@@ -8,6 +8,8 @@ import { LogEntrySchema } from '@/schemas/k6'
 import { K6Log } from '@/types'
 import { getArch, getPlatform } from '@/utils/electron'
 
+import { parseJsonAsSchema } from '../json'
+
 import { TestRun } from './testRun'
 
 const TestOptionsSchema = z.object({
@@ -24,7 +26,7 @@ type TestOptions = z.infer<typeof TestOptionsSchema>
 const EXECUTABLE_NAME = getPlatform() === 'win' ? 'k6.exe' : 'k6'
 
 function getDefaultExecutablePath() {
-  // @ts-expect-error - fails because we're targeting node
+  // @ts-expect-error - import.meta doesn't exist because we're targeting CommonJS
   const resourcesPath = import.meta.env.DEV
     ? path.join(app.getAppPath(), 'resources', getPlatform())
     : process.resourcesPath
@@ -92,7 +94,7 @@ export class K6Client {
 
     if (code !== 0) {
       const parsedErrors = stderr
-        .map((line) => LogEntrySchema.safeParse(JSON.parse(line)))
+        .map((line) => parseJsonAsSchema(line, LogEntrySchema))
         .filter((entry) => entry.success)
         .map((entry) => entry.data)
 

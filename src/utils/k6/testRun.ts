@@ -141,7 +141,7 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
   }
 
   isRunning(): boolean {
-    return this.#process.pid != null && this.#process.exitCode === null
+    return this.#process.pid != undefined && this.#process.exitCode === null
   }
 
   stop(): Promise<void> {
