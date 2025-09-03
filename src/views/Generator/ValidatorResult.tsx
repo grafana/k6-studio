@@ -6,7 +6,7 @@ import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { K6Check, K6Log, ProxyData } from '@/types'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 
-interface ValidatorContentProps {
+interface ValidatorResult {
   script: string
   proxyData: ProxyData[]
   noDataElement: ReactNode
@@ -15,14 +15,14 @@ interface ValidatorContentProps {
   checks: K6Check[]
 }
 
-export function ValidatorContent({
+export function ValidatorResult({
   script,
   proxyData,
   isRunning,
   logs,
   checks,
   noDataElement,
-}: ValidatorContentProps) {
+}: ValidatorResult) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const groups = useProxyDataGroups(proxyData)
 

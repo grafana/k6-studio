@@ -9,12 +9,15 @@ import { ProxyData } from '@/types'
 import { RequestDetails } from './RequestDetails'
 import { ResponseDetails } from './ResponseDetails'
 
-interface DetailsProps {
+interface HttpRequestDetailsProps {
   selectedRequest: ProxyData | null
   onSelectRequest: (data: ProxyData | null) => void
 }
 
-export function Details({ selectedRequest, onSelectRequest }: DetailsProps) {
+export function HttpRequestDetails({
+  selectedRequest,
+  onSelectRequest,
+}: HttpRequestDetailsProps) {
   useEffect(() => {
     return () => {
       onSelectRequest(null)

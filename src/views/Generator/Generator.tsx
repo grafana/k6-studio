@@ -6,7 +6,7 @@ import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
-import { Details } from '@/components/WebLogView/Details'
+import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
@@ -179,7 +179,7 @@ export function Generator() {
         </Allotment.Pane>
 
         <Allotment.Pane minSize={300} visible={selectedRequest !== null}>
-          <Details
+          <HttpRequestDetails
             selectedRequest={selectedRequest}
             onSelectRequest={setSelectedRequest}
           />
