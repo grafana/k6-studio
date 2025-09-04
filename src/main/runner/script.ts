@@ -68,13 +68,15 @@ export const runScript = async ({
 
   const server = await createReportingServer()
 
-  server.on('begin', (ev) => {
-    console.log('Begint tracking event', ev)
-  })
+  // UNCOMMENT ME FOR TESTING!
+  //
+  // server.on('begin', (ev) => {
+  //   console.log('Begin tracking event', ev)
+  // })
 
-  server.on('end', (ev) => {
-    console.log('End tracking event', ev)
-  })
+  // server.on('end', (ev) => {
+  //   console.log('End tracking event', ev)
+  // })
 
   // 5. Run the test
   const client = new K6Client()
@@ -110,6 +112,10 @@ export const runScript = async ({
     log.error(error)
 
     browserWindow.webContents.send(ScriptHandler.Failed)
+  })
+
+  testRun.on('stop', () => {
+    server.dispose()
   })
 
   return testRun

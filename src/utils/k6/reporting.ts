@@ -67,14 +67,15 @@ export async function createReportingServer(): Promise<ReportingServer> {
     res.status(204).end()
   })
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     httpServer.listen()
 
     httpServer.on('listening', () => {
-      resolve({
-        port: getPort(httpServer.address()),
-        dispose: () => httpServer.close(),
-      })
+      console.log(
+        `reporting server has started on port ${reportingServer.port}`
+      )
+
+      resolve()
     })
 
     httpServer.on('error', reject)

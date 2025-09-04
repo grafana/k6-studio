@@ -12,7 +12,6 @@ export default defineConfig({
       preserveEntrySignatures: 'strict',
       input: {
         browser: 'src/main/runner/shims/browser/index.ts',
-        browser2: 'src/main/runner/shims/browser/index.ts',
       },
       output: {
         entryFileNames: '[name].js',

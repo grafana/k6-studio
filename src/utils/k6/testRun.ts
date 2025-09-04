@@ -92,6 +92,7 @@ interface TestRunEventMap {
   error: TestRunErrorEvent
   abort: TestRunAbortEvent
   done: TestRunDoneEvent
+  stop: void
   log: TestRunLogEvent
 }
 
@@ -138,6 +139,10 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
     })
 
     this.#process = process
+
+    this.on('done', this.#emitStop)
+    this.on('abort', this.#emitStop)
+    this.on('error', this.#emitStop)
   }
 
   isRunning(): boolean {
@@ -200,5 +205,9 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
         this.#handleError(new Error(`k6 exited with unhandled code ${code}`))
         break
     }
+  }
+
+  #emitStop = () => {
+    this.emit('stop', undefined)
   }
 }

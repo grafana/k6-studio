@@ -33,6 +33,8 @@ export const transformScript = async ({
   script,
   shims,
 }: InstrumentScriptOptions) => {
+  const browserShim = getShimPath('browser.js')
+
   const [groupAst, checksAst, scriptAst] = await Promise.all([
     parseScript(shims.group),
     parseScript(shims.checks),
@@ -63,6 +65,11 @@ export const transformScript = async ({
 
         case 'k6/browser':
           browserImport = node
+
+          // Replace the import source with our shim path.
+          browserImport.source.value = browserShim
+          browserImport.source.raw = JSON.stringify(browserShim)
+
           break
       }
     },
@@ -147,6 +154,15 @@ const getSnippetPath = (snippetName: string) => {
   }
 
   return path.join(process.resourcesPath, snippetName)
+}
+
+const getShimPath = (name: string) => {
+  // @ts-expect-error We are targeting CommonJS so import.meta is not available
+  if (!import.meta.env.PROD) {
+    return path.join(app.getAppPath(), 'resources', 'shims', name)
+  }
+
+  return path.join(process.resourcesPath, 'shims', name)
 }
 
 export const instrumentScriptFromPath = async (scriptPath: string) => {

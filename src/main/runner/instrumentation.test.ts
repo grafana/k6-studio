@@ -19,8 +19,8 @@ beforeAll(() => {
   vi.mock('electron', () => {
     return {
       app: {
-        getPath() {
-          return ''
+        getAppPath() {
+          return '/mock'
         },
       },
     }

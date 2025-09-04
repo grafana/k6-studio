@@ -11,6 +11,7 @@ type EventListeners<Events extends EventMap<Events>> = {
  */
 export class EventEmitter<Events extends EventMap<Events>> {
   #listeners: EventListeners<Events> = {}
+  #queue: Array<() => void> | null = null
 
   constructor() {
     this.#listeners = {}
@@ -39,14 +40,38 @@ export class EventEmitter<Events extends EventMap<Events>> {
   }
 
   emit<Type extends keyof Events>(type: Type, event: Events[Type]) {
-    const listeners = this.#listeners[type]
+    // The first to emit processes the queue. Subsequent emits while processing
+    // will be deferred until after the current event has finished processing.
+    if (this.#queue !== null) {
+      this.#queue.push(this.#defer(type, event))
 
-    if (listeners) {
-      for (const listener of listeners) {
-        try {
-          listener(event)
-        } catch (error) {
-          console.log('Error in event listener', error)
+      return
+    }
+
+    this.#queue = [this.#defer(type, event)]
+
+    while (this.#queue.length > 0) {
+      const fn = this.#queue.shift()
+
+      if (fn) {
+        fn()
+      }
+    }
+
+    this.#queue = null
+  }
+
+  #defer<Type extends keyof Events>(type: Type, event: Events[Type]) {
+    return () => {
+      const listeners = this.#listeners[type]
+
+      if (listeners) {
+        for (const listener of listeners) {
+          try {
+            listener(event)
+          } catch (error) {
+            console.log('Error in event listener', error)
+          }
         }
       }
     }
