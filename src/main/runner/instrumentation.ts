@@ -29,7 +29,7 @@ const parseScript = (input: string) => {
   })
 }
 
-export const transformScript = async ({
+export const instrumentScript = async ({
   script,
   shims,
 }: InstrumentScriptOptions) => {
@@ -172,7 +172,7 @@ export const instrumentScriptFromPath = async (scriptPath: string) => {
     readFile(scriptPath, { encoding: 'utf-8' }),
   ])
 
-  return transformScript({
+  return instrumentScript({
     script: scriptContent,
     shims: {
       group: groupSnippet,
