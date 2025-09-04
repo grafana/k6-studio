@@ -7,9 +7,9 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'path'
 
 import { ScriptHandler } from '@/handlers/script/types'
-import { ArchiveError, K6Client } from '@/utils/k6/client'
-
 import { ProxySettings } from '@/types/settings'
+import { ArchiveError, K6Client } from '@/utils/k6/client'
+import { createReportingServer } from '@/utils/k6/reporting'
 
 import {
   constDeclarator,
@@ -80,6 +80,16 @@ export const runScript = async ({
     prefix: '',
   })
 
+  const server = await createReportingServer()
+
+  server.on('begin', (ev) => {
+    console.log('Begint tracking event', ev)
+  })
+
+  server.on('end', (ev) => {
+    console.log('End tracking event', ev)
+  })
+
   // 5. Run the test
   const client = new K6Client()
 
@@ -92,6 +102,7 @@ export const runScript = async ({
       HTTP_PROXY: `http://localhost:${proxySettings.port}`,
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
+      K6_REPORTING_SERVER_PORT: String(server.port),
       K6_BROWSER_ARGS: proxyArgs.join(','),
     },
   })
