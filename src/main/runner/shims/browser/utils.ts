@@ -7,8 +7,8 @@ import {
   BrowserAction,
 } from '../../schema'
 
-const REPORTING_SERVER_URL = __ENV.K6_REPORTING_SERVER_PORT
-  ? `http://localhost:${__ENV.K6_REPORTING_SERVER_PORT}`
+const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
+  ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
   : null
 
 const nextId = (() => {
@@ -20,7 +20,7 @@ const nextId = (() => {
 })()
 
 function begin(action: BrowserAction | undefined) {
-  if (REPORTING_SERVER_URL === null) {
+  if (TRACKING_SERVER_URL === null) {
     return null
   }
 
@@ -37,7 +37,7 @@ function begin(action: BrowserAction | undefined) {
   try {
     const body = JSON.stringify(event)
 
-    http.post(`${REPORTING_SERVER_URL}/track/${event.eventId}/begin`, body, {
+    http.post(`${TRACKING_SERVER_URL}/track/${event.eventId}/begin`, body, {
       headers: { 'Content-Type': 'application/json' },
     })
   } catch {
@@ -62,7 +62,7 @@ function end(event: ActionBeginEvent | null, result: ActionResult) {
     } satisfies ActionEndEvent
 
     http.post(
-      `${REPORTING_SERVER_URL}/track/${event.eventId}/end`,
+      `${TRACKING_SERVER_URL}/track/${event.eventId}/end`,
       JSON.stringify(body),
       {
         headers: { 'Content-Type': 'application/json' },

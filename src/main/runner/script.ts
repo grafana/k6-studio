@@ -9,7 +9,7 @@ import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
-import { createReportingServer } from '@/utils/k6/reporting'
+import { createTrackingServer } from '@/utils/k6/tracking'
 
 import { instrumentScriptFromPath as instrumentScriptFromPath } from './instrumentation'
 
@@ -66,15 +66,15 @@ export const runScript = async ({
     prefix: '',
   })
 
-  const server = await createReportingServer()
+  const trackingServer = await createTrackingServer().catch(() => null)
 
   // UNCOMMENT ME FOR TESTING!
   //
-  // server.on('begin', (ev) => {
+  // trackingServer.on('begin', (ev) => {
   //   console.log('Begin tracking event', ev)
   // })
 
-  // server.on('end', (ev) => {
+  // trackingServer.on('end', (ev) => {
   //   console.log('End tracking event', ev)
   // })
 
@@ -90,7 +90,7 @@ export const runScript = async ({
       HTTP_PROXY: `http://localhost:${proxySettings.port}`,
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
-      K6_REPORTING_SERVER_PORT: String(server.port),
+      K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
       K6_BROWSER_ARGS: proxyArgs.join(','),
     },
   })
@@ -115,7 +115,7 @@ export const runScript = async ({
   })
 
   testRun.on('stop', () => {
-    server.dispose()
+    trackingServer?.dispose()
   })
 
   return testRun
