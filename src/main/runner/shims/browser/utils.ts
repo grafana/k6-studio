@@ -82,7 +82,17 @@ type Defined<T> = Exclude<T, undefined>
 type Unwrap<T> = T extends Promise<infer U> ? U : T
 
 export interface FunctionProxy<T extends AnyFunction> {
+  /**
+   * Called to create a tracking event that will be sent to
+   * k6 Studio. If omitted, no event will be sent.
+   */
   track?: (...args: Parameters<T>) => BrowserAction
+
+  /**
+   * Called to create a new proxy for the return value of the
+   * function. This allows you to proxy methods in the return
+   * value. If omitted, the return value is returned as-is.
+   */
   proxy?: (
     target: Unwrap<ReturnType<T>>,
     ...args: Parameters<T>
@@ -101,12 +111,14 @@ export function createProxy<T extends object>(
     get(target, property) {
       const original = target[property as keyof T]
 
-      if (property in proxies === false || typeof original !== 'function') {
+      if (typeof original !== 'function' || property in proxies === false) {
         return original
       }
 
       const { track, proxy } = proxies[property as keyof T] ?? {}
 
+      // A proxy function that takes care of sending events and proxying return
+      // values based on the provided configuration.
       return function (...args: Parameters<Defined<typeof track>>): unknown {
         const action = track?.(...args)
         const eventId = begin(action)
@@ -117,11 +129,13 @@ export function createProxy<T extends object>(
             returnValue: result,
           })
 
+          // It's only possible to proxy objects.
           if (typeof result !== 'object' || result === null) {
             return result
           }
 
           if (proxy !== undefined) {
+            // If proxy was supplied we need to wrap the return value in a proxy
             return createProxy(
               result,
               proxy(result as Parameters<typeof proxy>[0], ...args)
