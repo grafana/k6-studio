@@ -5,7 +5,7 @@ import path from 'path'
 
 import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'
-import { showScriptSelectDialog, runScript } from '@/main/runner/script'
+import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'

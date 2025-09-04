@@ -3,7 +3,7 @@ import { rm, writeFile } from 'fs/promises'
 import { basename, extname, isAbsolute, join } from 'path'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
-import { getTempScriptName } from '@/main/runner/script'
+import { getTempScriptName } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'

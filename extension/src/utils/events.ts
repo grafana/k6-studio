@@ -40,8 +40,8 @@ export class EventEmitter<Events extends EventMap<Events>> {
   }
 
   emit<Type extends keyof Events>(type: Type, event: Events[Type]) {
-    // The first to emit processes the queue. Subsequent emits while processing
-    // will be deferred until after the current event has finished processing.
+    // The first to emit processes the queue. Emits while processing will be
+    // deferred until after all listeners of the current event have been called.
     if (this.#queue !== null) {
       this.#queue.push(this.#defer(type, event))
 

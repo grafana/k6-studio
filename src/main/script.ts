@@ -11,7 +11,7 @@ import { ProxySettings } from '@/types/settings'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
 
-import { instrumentScriptFromPath as instrumentScriptFromPath } from './instrumentation'
+import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
