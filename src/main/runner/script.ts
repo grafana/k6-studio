@@ -6,26 +6,21 @@ import { readFile, writeFile, unlink } from 'fs/promises'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'path'
 
-import { ScriptHandler } from '@/handlers/script/types'
-import { ProxySettings } from '@/types/settings'
-import { ArchiveError, K6Client } from '@/utils/k6/client'
-import { createReportingServer } from '@/utils/k6/reporting'
-
 import {
   constDeclarator,
   declareConst,
   exportNamed,
   fromObjectLiteral,
   identifier,
-} from '../codegen/estree'
-import { NodeType } from '../codegen/estree/nodes'
-import { getExports, traverse } from '../codegen/estree/traverse'
-import {
-  TEMP_K6_ARCHIVE_PATH,
-  TEMP_SCRIPT_SUFFIX,
-} from '../constants/workspace'
-
-import { getProxyArguments } from './proxy'
+} from '@/codegen/estree'
+import { NodeType } from '@/codegen/estree/nodes'
+import { getExports, traverse } from '@/codegen/estree/traverse'
+import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
+import { ScriptHandler } from '@/handlers/script/types'
+import { getProxyArguments } from '@/main/proxy'
+import { ProxySettings } from '@/types/settings'
+import { ArchiveError, K6Client } from '@/utils/k6/client'
+import { createReportingServer } from '@/utils/k6/reporting'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
