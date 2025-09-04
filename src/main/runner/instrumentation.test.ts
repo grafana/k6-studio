@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, it, vi } from 'vitest'
 
-import { enhanceScript } from './script'
+import { transformScript } from './instrumentation'
 
 const shims = {
   group: `
@@ -43,7 +43,7 @@ describe('checks shim', () => {
       }
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/checks-shim/handle-summary-was-not-exported.js'
@@ -67,7 +67,7 @@ describe('checks shim', () => {
       }
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/checks-shim/handle-summary-was-exported.js'
@@ -87,7 +87,7 @@ describe('groups shim', () => {
       }
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/groups-shim/with-http-import.js'
@@ -101,7 +101,7 @@ describe('groups shim', () => {
       export default function() {}
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/groups-shim/without-http-import.js'
@@ -118,7 +118,7 @@ describe('groups shim', () => {
       export default function() {}
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/groups-shim/with-different-alias-for-execution-import.js'
@@ -134,7 +134,7 @@ describe('options export', () => {
       export default function() {}
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/options-export/options-export.js'
@@ -153,7 +153,7 @@ describe('options export', () => {
       export default function() {}
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/options-export/rename-existing-options-export.js'
@@ -176,7 +176,7 @@ describe('options export', () => {
       export default function() {}
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/options-export/rename-complex-existing-options-export.js'
@@ -195,7 +195,7 @@ describe('browser options', () => {
       }
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/browser-options/with-browser-import.js'
@@ -210,7 +210,7 @@ describe('browser options', () => {
       }
     `
 
-    const result = await enhanceScript({ script, shims })
+    const result = await transformScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
       './__snapshots__/script/browser-options/without-browser-import.js'
