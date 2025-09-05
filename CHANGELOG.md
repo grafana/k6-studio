@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.8.0](https://github.com/grafana/k6-studio/compare/v1.7.0...v1.8.0) (2025-09-05)
+
+
+### Features
+
+* Capture network traffic when running browser scripts ([#807](https://github.com/grafana/k6-studio/issues/807)) ([429f8ae](https://github.com/grafana/k6-studio/commit/429f8aeb73341196d4f528b7d57d8b352c52a8d7))
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump electron from 37.2.4 to 37.3.1 ([#810](https://github.com/grafana/k6-studio/issues/810)) ([1f7cbda](https://github.com/grafana/k6-studio/commit/1f7cbda8384feb610994b579369fc3f92004979c))
+
+
+### Code Refactoring
+
+* Separate validator components for script and generator views ([#808](https://github.com/grafana/k6-studio/issues/808)) ([7d2c020](https://github.com/grafana/k6-studio/commit/7d2c0202381b099aca9c72c107190dd1e5d4d3ba))
+* Use K6Client as interface for running scripts ([#809](https://github.com/grafana/k6-studio/issues/809)) ([b4fba08](https://github.com/grafana/k6-studio/commit/b4fba0863bca422641f929d3457ae51ecefdcfb6))
+
 ## [1.7.0](https://github.com/grafana/k6-studio/compare/v1.6.0...v1.7.0) (2025-08-28)
 
 
