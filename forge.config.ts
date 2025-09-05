@@ -101,6 +101,11 @@ const config: ForgeConfig = {
         {
           config: 'vite.extension.config.mts',
         },
+        {
+          // Entry doesn't really matter here.
+          entry: 'src/main/runner/shims/browser/index.ts',
+          config: 'vite.shims.config.ts',
+        },
       ],
       renderer: [
         {

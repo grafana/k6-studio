@@ -1,4 +1,4 @@
-import browser from "k6/browser";
+import browser from "/mock/resources/shims/browser.js";
 export default function () {}
 export function handleSummary() {
   console.log("This is the handleSummary shim");
