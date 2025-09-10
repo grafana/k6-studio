@@ -37,23 +37,13 @@ export function TestRuleContainer() {
         </Flex>
       </StickyPanelHeader>
       <SortableRuleList rules={rules} onSwapRules={swapRules} />
-      <Flex
-        py="3"
-        px="6"
-        align={shouldShowHelpMessage ? 'center' : 'start'}
-        direction="column"
-        gap="3"
-      >
-        {shouldShowHelpMessage ? (
-          <EmptyMessage
-            message="Configure your test logic by adding a new rule"
-            pb="2"
-            action={<NewRuleMenu variant="solid" size="2" color="orange" />}
-          />
-        ) : (
-          <NewRuleMenu />
-        )}
-      </Flex>
+      {shouldShowHelpMessage && (
+        <EmptyMessage
+          message="Configure your test logic by adding a new rule"
+          pb="2"
+          action={<NewRuleMenu variant="solid" size="2" color="orange" />}
+        />
+      )}
     </ScrollArea>
   )
 }
