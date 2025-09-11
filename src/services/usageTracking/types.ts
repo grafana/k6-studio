@@ -17,6 +17,7 @@ export enum UsageEventName {
   ScriptCopied = 'script_copied',
   ScriptExported = 'script_exported',
   ScriptValidated = 'script_validated',
+  ScriptOpenedExternal = 'script_opened_external',
   ScriptRunInCloud = 'script_run_in_cloud',
 }
 
@@ -73,6 +74,13 @@ interface ScriptExportedEvent {
 
 interface ScriptValidatedEvent {
   event: UsageEventName.ScriptValidated
+  payload: {
+    isExternal: boolean
+  }
+}
+
+interface ScriptOpenedExternalEvent {
+  event: UsageEventName.ScriptOpenedExternal
 }
 
 interface ScriptRunInCloudEvent {
@@ -89,6 +97,7 @@ export type UsageEvent =
   | ScriptCopiedEvent
   | ScriptExportedEvent
   | ScriptValidatedEvent
+  | ScriptOpenedExternalEvent
   | ScriptRunInCloudEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata
