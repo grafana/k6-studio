@@ -65,6 +65,9 @@ interface GeneratorUpdatedEvent {
 
 interface ScriptCopiedEvent {
   event: UsageEventName.ScriptCopied
+  payload: {
+    source: 'generator' | 'debugger'
+  }
 }
 
 interface ScriptExportedEvent {
