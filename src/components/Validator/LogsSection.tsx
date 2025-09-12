@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Text } from '@radix-ui/themes'
+import { useCallback } from 'react'
 
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { LogEntry } from '@/schemas/k6'
@@ -45,19 +46,22 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
   // order to autoscroll we need to get a ref to the table element. Ideally Radix
   // would provide a way to do this, but instead we have to get the ref to an
   // inner element and find the table element from there.
-  const getTableElement = (element: HTMLTableSectionElement | null) => {
-    if (element === null) {
-      return
-    }
+  const setTableRef = useCallback(
+    (element: HTMLTableSectionElement | null) => {
+      if (element === null) {
+        return
+      }
 
-    const table = findTableElement(element)
+      const table = findTableElement(element)
 
-    if (table === null) {
-      return
-    }
+      if (table === null) {
+        return
+      }
 
-    ref.current = table
-  }
+      ref.current = table
+    },
+    [ref]
+  )
 
   return (
     <Table.Root
@@ -71,7 +75,7 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
         }
       `}
     >
-      <Table.Header ref={getTableElement}>
+      <Table.Header ref={setTableRef}>
         <Table.Row>
           <Table.ColumnHeaderCell css={headerStyles} width="230px">
             Time
