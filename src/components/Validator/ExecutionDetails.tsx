@@ -41,7 +41,7 @@ export function ExecutionDetails({
     })
   }, [])
 
-  const handleCopy = useTrackScriptCopy(script)
+  const handleCopy = useTrackScriptCopy(script, 'validator')
 
   return (
     <Tabs.Root

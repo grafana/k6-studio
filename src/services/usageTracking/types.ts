@@ -66,7 +66,7 @@ interface GeneratorUpdatedEvent {
 interface ScriptCopiedEvent {
   event: UsageEventName.ScriptCopied
   payload: {
-    source: 'generator' | 'validator' | 'unknown'
+    source: 'generator' | 'validator'
   }
 }
 

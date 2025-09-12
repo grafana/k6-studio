@@ -34,7 +34,7 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
   const isScriptExportable = !error && !!preview
 
   const handleExportScript = useScriptExport(fileName)
-  const handleCopy = useTrackScriptCopy(preview)
+  const handleCopy = useTrackScriptCopy(preview, 'generator')
 
   return (
     <Flex direction="column" height="100%" position="relative">
