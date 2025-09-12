@@ -27,10 +27,9 @@ const colors: Record<LogEntry['level'], string> = {
   error: 'red',
 }
 
-const header = css`
+const headerStyles = css`
   position: sticky;
   top: 0;
-  z-index: 1;
   --table-row-background-color: var(--color-background);
 `
 
@@ -74,10 +73,12 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
     >
       <Table.Header ref={getTableElement}>
         <Table.Row>
-          <Table.ColumnHeaderCell css={header} width="230px">
+          <Table.ColumnHeaderCell css={headerStyles} width="230px">
             Time
           </Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell css={header}>Message</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell css={headerStyles}>
+            Message
+          </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
