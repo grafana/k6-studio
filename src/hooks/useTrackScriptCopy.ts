@@ -4,7 +4,7 @@ import { UsageEventName } from '@/services/usageTracking/types'
 
 export function useTrackScriptCopy(
   script: string,
-  source: 'generator' | 'validator'
+  source: 'generator' | 'debugger'
 ) {
   return useCallback(
     (event: ClipboardEvent) => {
