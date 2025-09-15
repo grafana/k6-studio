@@ -148,7 +148,7 @@ export type CheckChangeEvent = z.infer<typeof CheckChangeEventSchema>
 export type RadioChangeEvent = z.infer<typeof RadioChangeEventSchema>
 export type SelectChangeEvent = z.infer<typeof SelectChangeEventSchema>
 export type SubmitFormEvent = z.infer<typeof SubmitFormEventSchema>
-export type GrantPermissionEvent = z.infer<typeof GrantPermissionsEventSchema>
+export type GrantPermissionsEvent = z.infer<typeof GrantPermissionsEventSchema>
 export type AssertEvent = z.infer<typeof AssertEventSchema>
 
 export type TextAssertion = z.infer<typeof TextAssertionSchema>
