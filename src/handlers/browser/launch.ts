@@ -11,6 +11,7 @@ import os from 'os'
 import path from 'path'
 import { promisify } from 'util'
 
+import { getBrowserRecordingArgs } from '@/main/browser'
 import { getProxyArguments } from '@/main/proxy'
 import { ChromeDevtoolsClient } from '@/utils/cdp/client'
 import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
@@ -94,11 +95,6 @@ const FEATURES_TO_DISABLE = [
   'OptimizationHints',
 ]
 
-const BROWSER_RECORDING_ARGS = [
-  '--remote-debugging-pipe',
-  '--enable-unsafe-extension-debugging',
-]
-
 export const launchBrowser = async (
   browserWindow: BrowserWindow,
   browserServer: BrowserServer,
@@ -134,7 +130,7 @@ export const launchBrowser = async (
 
   const proxyArgs = await getProxyArguments(k6StudioState.appSettings.proxy)
 
-  const browserRecordingArgs = capture.browser ? BROWSER_RECORDING_ARGS : []
+  const browserRecordingArgs = capture.browser ? getBrowserRecordingArgs() : []
 
   const args = [
     '--new',
