@@ -5,15 +5,12 @@ import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useRunChecks } from '@/hooks/useRunChecks'
-import { useRunLogs } from '@/hooks/useRunLogs'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
-import { useScriptPath } from './Validator.hooks'
+import { useDebugSession, useScriptPath } from './Validator.hooks'
 import { ValidatorContent } from './ValidatorContent'
 import { ValidatorControls } from './ValidatorControls'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
@@ -26,13 +23,10 @@ export function Validator() {
   const [script, setScript] = useState('')
   const { scriptPath, isExternal } = useScriptPath()
 
-  const { checks, resetChecks } = useRunChecks()
-  const { logs, resetLogs } = useRunLogs()
-
   const navigate = useNavigate()
   const showToast = useToast()
 
-  const { proxyData, resetProxyData } = useListenProxyData()
+  const { session, resetSession } = useDebugSession()
 
   const file: StudioFile | undefined =
     !isExternal && scriptPath
@@ -86,9 +80,7 @@ export function Validator() {
       return
     }
 
-    resetProxyData()
-    resetLogs()
-    resetChecks()
+    resetSession()
     setIsRunning(true)
     await window.studio.script.runScript(scriptPath, isExternal)
   }
@@ -129,10 +121,8 @@ export function Validator() {
 
   useEffect(() => {
     // Reset requests, logs, and checks when script changes
-    resetProxyData()
-    resetLogs()
-    resetChecks()
-  }, [script, resetProxyData, resetLogs, resetChecks])
+    resetSession()
+  }, [script, resetSession])
 
   return (
     <View
@@ -154,10 +144,8 @@ export function Validator() {
     >
       <ValidatorContent
         script={script}
-        proxyData={proxyData}
+        session={session}
         isRunning={isRunning}
-        logs={logs}
-        checks={checks}
         noDataElement={
           <EmptyMessage
             message={
