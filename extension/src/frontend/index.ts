@@ -231,6 +231,17 @@ manager.capture('submit', (ev) => {
     return
   }
 
+  // We might have already recorded a click on the submit button. In the futre we might
+  // want to replace the previous click with the form submission, but for now we will
+  // just skip recording the submission.
+  const hasClickedSubmit = manager.history.some(
+    (prev) => prev.type === 'click' && prev.target === ev.submitter
+  )
+
+  if (hasClickedSubmit) {
+    return
+  }
+
   recordEvents({
     type: 'submit-form',
     eventId: crypto.randomUUID(),
