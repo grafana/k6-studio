@@ -12,6 +12,9 @@ type TimeoutHandle = ReturnType<typeof setTimeout>
 export class WindowEventManager {
   #blockedEvents: EventBlockerMap = {}
 
+  // The browser will execute sequences of events synchronously in a single event loop
+  // tick, so we can keep a history of the events that have happened before and check
+  // that if we need to selectively ignore some of them.
   #reset: TimeoutHandle | null = null
   #history: Array<Event> = []
 
@@ -77,6 +80,8 @@ export class WindowEventManager {
     this.#history.push(ev)
 
     if (this.#reset === null) {
+      // Clear the history on the next event loop tick, before
+      // any other events can happen.
       this.#reset = setTimeout(() => {
         this.#history = []
       }, 1)
