@@ -92,6 +92,7 @@ export const runScript = async ({
       NO_PROXY: 'jslib.k6.io',
       K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
       K6_BROWSER_ARGS: proxyArgs.join(','),
+      K6_TESTING_COLORIZE: 'false',
     },
   })
 
