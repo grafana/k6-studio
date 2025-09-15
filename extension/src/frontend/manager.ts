@@ -84,6 +84,7 @@ export class WindowEventManager {
       // any other events can happen.
       this.#reset = setTimeout(() => {
         this.#history = []
+        this.#reset = null
       }, 1)
     }
   }
