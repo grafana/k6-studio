@@ -7,7 +7,6 @@ import { updateElectronApp } from 'update-electron-app'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
 import { initializeDeepLinks } from './main/deepLinks'
-import { migrateJsonGenerator } from './main/generator'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
 import { configureApplicationMenu } from './main/menu'
@@ -194,7 +193,6 @@ app.whenReady().then(
     await createSplashWindow()
 
     await setupProjectStructure()
-    await migrateJsonGenerator()
     await initEventTracking()
     await createWindow()
   },
