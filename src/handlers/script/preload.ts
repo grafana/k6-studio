@@ -7,7 +7,7 @@ import { createListener } from '../utils'
 import { ScriptHandler } from './types'
 
 export function showScriptSelectDialog() {
-  return ipcRenderer.invoke('script:select') as Promise<string | void>
+  return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
 }
 
 export function openScript(scriptPath: string, absolute: boolean = false) {

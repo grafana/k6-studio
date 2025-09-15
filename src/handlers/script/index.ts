@@ -21,6 +21,12 @@ export function initialize() {
     const browserWindow = browserWindowFromEvent(event)
     const scriptPath = await showScriptSelectDialog(browserWindow)
 
+    if (scriptPath) {
+      trackEvent({
+        event: UsageEventName.ScriptOpenedExternal,
+      })
+    }
+
     return scriptPath
   })
 
@@ -62,6 +68,9 @@ export function initialize() {
 
       trackEvent({
         event: UsageEventName.ScriptValidated,
+        payload: {
+          isExternal: absolute,
+        },
       })
     }
   )
@@ -97,6 +106,9 @@ export function initialize() {
 
       trackEvent({
         event: UsageEventName.ScriptValidated,
+        payload: {
+          isExternal: false,
+        },
       })
 
       await unlink(TEMP_GENERATOR_SCRIPT_PATH)
