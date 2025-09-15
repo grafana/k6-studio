@@ -11,7 +11,6 @@ import { ProxySettings } from '@/types/settings'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
 
-import { getBrowserRecordingArgs } from './browser'
 import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
 
 export type K6Process = ChildProcessWithoutNullStreams
@@ -67,7 +66,11 @@ export const runScript = async ({
     prefix: '',
   })
 
-  const browserArgs = [...proxyArgs, ...getBrowserRecordingArgs({ prefix: '' })]
+  const browserArgs = [
+    ...proxyArgs,
+    `use-fake-device-for-media-stream`,
+    `use-fake-ui-for-media-stream`,
+  ]
 
   const trackingServer = await createTrackingServer().catch(() => null)
 
