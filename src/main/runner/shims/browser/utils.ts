@@ -29,8 +29,11 @@ function begin(action: BrowserAction | undefined) {
   }
 
   const event = {
+    type: 'begin',
     eventId: nextId(),
-    timestamp: Date.now(),
+    timestamp: {
+      started: Date.now(),
+    },
     action,
   } satisfies ActionBeginEvent
 
@@ -57,7 +60,11 @@ function end(event: ActionBeginEvent | null, result: ActionResult) {
   try {
     const body = {
       ...event,
-      timestamp: Date.now(),
+      type: 'end',
+      timestamp: {
+        ...event.timestamp,
+        ended: Date.now(),
+      },
       result,
     } satisfies ActionEndEvent
 

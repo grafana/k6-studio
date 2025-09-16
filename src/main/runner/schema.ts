@@ -15,10 +15,16 @@ export const BrowserActionSchema = z.discriminatedUnion('type', [
   ClickActionSchema,
 ])
 
-export const ActionBeginEventSchema = z.object({
+const ActionEventSchemaBase = z.object({
   eventId: z.string(),
-  timestamp: z.number(),
   action: BrowserActionSchema,
+})
+
+export const ActionBeginEventSchema = ActionEventSchemaBase.extend({
+  type: z.literal('begin'),
+  timestamp: z.object({
+    started: z.number(),
+  }),
 })
 
 export const ActionSuccessSchema = z.object({
@@ -36,12 +42,24 @@ export const ActionResult = z.discriminatedUnion('type', [
   ActionErrorSchema,
 ])
 
-export const ActionEndEventSchema = ActionBeginEventSchema.extend({
+export const ActionEndEventSchema = ActionEventSchemaBase.extend({
+  type: z.literal('end'),
+  timestamp: z.object({
+    started: z.number(),
+    ended: z.number(),
+  }),
   result: ActionResult,
 })
 
+export const BrowserActionEventSchema = z.discriminatedUnion('type', [
+  ActionBeginEventSchema,
+  ActionEndEventSchema,
+])
+
 export type ActionBeginEvent = z.infer<typeof ActionBeginEventSchema>
 export type ActionEndEvent = z.infer<typeof ActionEndEventSchema>
+
+export type BrowserActionEvent = z.infer<typeof BrowserActionEventSchema>
 
 export type ActionResult = z.infer<typeof ActionResult>
 

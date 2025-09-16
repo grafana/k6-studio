@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron'
 
+import { BrowserActionEvent } from '@/main/runner/schema'
 import { K6Log, K6Check } from '@/types'
 
 import { createListener } from '../utils'
@@ -63,4 +64,8 @@ export function onScriptFailed(callback: () => void) {
 
 export function onScriptCheck(callback: (data: K6Check[]) => void) {
   return createListener(ScriptHandler.Check, callback)
+}
+
+export function onBrowserAction(callback: (data: BrowserActionEvent) => void) {
+  return createListener(ScriptHandler.BrowserAction, callback)
 }

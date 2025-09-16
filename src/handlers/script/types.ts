@@ -10,4 +10,5 @@ export enum ScriptHandler {
   Failed = 'script:failed',
   Check = 'script:check',
   RunFromGenerator = 'script:run-from-generator',
+  BrowserAction = 'script:browser-action',
 }

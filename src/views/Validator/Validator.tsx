@@ -1,7 +1,15 @@
 import { css } from '@emotion/react'
-import { Flex, Reset, ScrollArea, Slot, Tabs } from '@radix-ui/themes'
+import {
+  Flex,
+  Reset,
+  ScrollArea,
+  Slot,
+  Spinner,
+  Table,
+  Tabs,
+} from '@radix-ui/themes'
 import { Allotment, AllotmentHandle, LayoutPriority } from 'allotment'
-import { TerminalIcon } from 'lucide-react'
+import { CheckCircleIcon, CircleXIcon, TerminalIcon } from 'lucide-react'
 import {
   forwardRef,
   ReactNode,
@@ -30,7 +38,11 @@ import { ValidatorContent } from './ValidatorContent'
 import { ValidatorControls } from './ValidatorControls'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
 
-type ValidatorTabs = 'script' | 'requests' | 'checks'
+function toDurationInSeconds(start: number, end: number) {
+  return ((end - start) / 1000).toFixed(1)
+}
+
+type ValidatorTabs = 'script' | 'requests' | 'checks' | 'browser'
 
 interface LogsTriggerProps {
   count: number
@@ -107,7 +119,12 @@ export function Validator() {
       : undefined
 
   const handleTabChange = (tab: string) => {
-    if (tab !== 'script' && tab !== 'requests' && tab !== 'checks') {
+    if (
+      tab !== 'script' &&
+      tab !== 'requests' &&
+      tab !== 'checks' &&
+      tab !== 'browser'
+    ) {
       return
     }
 
@@ -227,7 +244,7 @@ export function Validator() {
                       Requests ({session.requests.length})
                     </Tabs.Trigger>
                     <Tabs.Trigger value="browser" disabled={pending}>
-                      Browser (0)
+                      Browser ({session.browserActions.length})
                     </Tabs.Trigger>
                     <Tabs.Trigger value="checks" disabled={pending}>
                       Checks ({session.checks.length})
@@ -265,7 +282,57 @@ export function Validator() {
                 />
               </TabContent>
               <TabContent value="browser">
-                <EmptyMessage message="Browser logs are not yet supported." />
+                <Table.Root size="2" layout="fixed">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell width="28px"></Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell width="100px"></Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {session.browserActions.map((event) => {
+                      return (
+                        <Table.Row key={event.eventId}>
+                          <Table.Cell>
+                            <Flex align="center">
+                              {event.type === 'begin' ? (
+                                <Spinner />
+                              ) : event.result.type === 'success' ? (
+                                <CheckCircleIcon
+                                  display="block"
+                                  color="var(--green-11)"
+                                />
+                              ) : (
+                                <CircleXIcon
+                                  display="block"
+                                  color="var(--red-11)"
+                                />
+                              )}
+                            </Flex>
+                          </Table.Cell>
+                          <Table.Cell>
+                            {event.action.type === 'goto' && (
+                              <>Go to {event.action.url}</>
+                            )}
+                            {event.action.type === 'click' && (
+                              <>Click {event.action.selector}</>
+                            )}
+                          </Table.Cell>
+                          <Table.Cell align="right" pr="2">
+                            {toDurationInSeconds(
+                              event.timestamp.started,
+                              event.type === 'end'
+                                ? event.timestamp.ended
+                                : Date.now()
+                            )}
+                            s
+                          </Table.Cell>
+                        </Table.Row>
+                      )
+                    })}
+                  </Table.Body>
+                </Table.Root>
               </TabContent>
               <TabContent value="checks">
                 <ChecksSection isRunning={isRunning} checks={session.checks} />
