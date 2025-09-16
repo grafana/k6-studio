@@ -13,7 +13,12 @@ export default function AllowlistCheckGroup({
 }: AllowlistCheckGroupProps) {
   return (
     <Flex p="2" pr="4" asChild overflow="hidden">
-      {/* @ts-expect-error seems to be a bug in @radix-ui/themes: the docs clearly state that this component should have children */}
+      {/* 
+        Property 'children' does not exist on type 'IntrinsicAttributes & CheckboxGroupRootProps', 
+        but the Radix UI docs show that <CheckboxGroup.Root> should accept children.
+        See: https://www.radix-ui.com/themes/docs/components/checkbox-group#usage
+
+        @ts-expect-error see description above */}
       <CheckboxGroup.Root
         size="2"
         value={allowlist}
