@@ -1,6 +1,7 @@
 import { shouldSkipEvent } from './view/utils'
 
 type EventBlockerMap = Record<string, WeakSet<EventTarget>>
+type TimeoutHandle = ReturnType<typeof setTimeout>
 
 /**
  * Since we can't use `preventDefault`, `stopPropagation` or similar methods without
@@ -10,6 +11,16 @@ type EventBlockerMap = Record<string, WeakSet<EventTarget>>
  */
 export class WindowEventManager {
   #blockedEvents: EventBlockerMap = {}
+
+  // The browser will execute sequences of events synchronously in a single event loop
+  // tick, so we can keep a history of the events that have happened before and check
+  // that if we need to selectively ignore some of them.
+  #reset: TimeoutHandle | null = null
+  #history: Array<Event> = []
+
+  get history(): ReadonlyArray<Event> {
+    return this.#history
+  }
 
   /**
    * Blocks the next event of the given type on the given target. This is useful to
@@ -49,6 +60,8 @@ export class WindowEventManager {
     window.addEventListener(
       type,
       (ev) => {
+        this.#addToHistory(ev)
+
         if (shouldSkipEvent(ev)) {
           return
         }
@@ -61,6 +74,19 @@ export class WindowEventManager {
       },
       { capture: true }
     )
+  }
+
+  #addToHistory(ev: Event) {
+    this.#history.push(ev)
+
+    if (this.#reset === null) {
+      // Clear the history on the next event loop tick, before
+      // any other events can happen.
+      this.#reset = setTimeout(() => {
+        this.#history = []
+        this.#reset = null
+      }, 1)
+    }
   }
 
   #isBlocked(ev: Event) {
