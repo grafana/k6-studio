@@ -1,7 +1,42 @@
-import { Box, Flex } from '@radix-ui/themes'
-import { PropsWithChildren, ReactNode } from 'react'
+import { css } from '@emotion/react'
+import { Flex, Spinner } from '@radix-ui/themes'
+import { PropsWithChildren, ReactNode, useEffect, useState } from 'react'
 
 import { ViewHeading } from './ViewHeading'
+
+function LoadingSpinner() {
+  const [showSpinner, setShowSpinner] = useState(false)
+
+  useEffect(() => {
+    // Only show the spinner if loading takes more than 50ms to avoid flickering
+    const timeout = setTimeout(() => {
+      setShowSpinner(true)
+    }, 50)
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [])
+
+  return (
+    <Flex
+      css={css`
+        flex: 1 1 0;
+      `}
+      align="center"
+      justify="center"
+      maxHeight="800px"
+    >
+      {showSpinner && (
+        <Spinner
+          css={css`
+            transform: translateY(-50%);
+          `}
+        />
+      )}
+    </Flex>
+  )
+}
 
 interface ViewProps {
   title: string
@@ -22,7 +57,7 @@ export function View({
       <ViewHeading title={title} subTitle={subTitle}>
         {actions}
       </ViewHeading>
-      {loading ? <Box p="2">Loading...</Box> : children}
+      {loading ? <LoadingSpinner /> : children}
     </Flex>
   )
 }
