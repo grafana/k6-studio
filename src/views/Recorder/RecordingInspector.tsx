@@ -68,8 +68,8 @@ export function RecordingInspector({
                 margin-right: 0.25em;
               `}
               strokeWidth={1.5}
-            />{' '}
-            Browser events{' '}
+            />
+            Browser events
             <Badge
               radius="full"
               color="gray"
