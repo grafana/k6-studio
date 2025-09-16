@@ -1,5 +1,5 @@
 import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
-import { EllipsisVerticalIcon } from 'lucide-react'
+import { BugPlayIcon, EllipsisVerticalIcon } from 'lucide-react'
 
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
@@ -40,20 +40,21 @@ export function ValidatorControls({
       )}
       {!isRunning && (
         <>
-          <Button variant="outline" onClick={onRunInCloud}>
-            <GrafanaIcon /> Run in Grafana Cloud
-          </Button>
           <Tooltip
             content={`Proxy is ${proxyStatus}`}
             hidden={proxyStatus === 'online'}
           >
             <Button
+              variant="surface"
               disabled={!isScriptSelected || proxyStatus !== 'online'}
               onClick={onRunScript}
             >
-              Validate script
+              <BugPlayIcon /> Debug script
             </Button>
           </Tooltip>
+          <Button onClick={onRunInCloud}>
+            <GrafanaIcon /> Run in Grafana Cloud
+          </Button>
         </>
       )}
       <DropdownMenu.Root>

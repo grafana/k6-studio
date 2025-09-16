@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
@@ -16,7 +16,9 @@ export function useScriptPath() {
   }
 }
 
-export function useDebugSession() {
+export function useDebugSession(scriptPath: string) {
+  const [pending, setPending] = useState(true)
+
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
@@ -25,7 +27,21 @@ export function useDebugSession() {
     resetProxyData()
     resetLogs()
     resetChecks()
-  }, [resetProxyData, resetLogs, resetChecks])
+  }, [resetChecks, resetLogs, resetProxyData])
+
+  // Reset session when script path changes.
+  useEffect(() => {
+    setPending(true)
+    resetSession()
+  }, [scriptPath, resetSession])
+
+  const startDebugging = useCallback(async () => {
+    setPending(false)
+
+    resetSession()
+
+    await window.studio.script.runScript(scriptPath)
+  }, [scriptPath, resetSession])
 
   const session = useMemo(() => {
     return {
@@ -36,7 +52,8 @@ export function useDebugSession() {
   }, [checks, logs, proxyData])
 
   return {
+    pending,
     session,
-    resetSession,
+    startDebugging,
   }
 }

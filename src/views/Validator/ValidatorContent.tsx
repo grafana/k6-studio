@@ -1,6 +1,7 @@
+import { Box } from '@radix-ui/themes'
+import { Allotment } from 'allotment'
 import { ReactNode, useEffect, useState } from 'react'
 
-import { ValidatorLayout } from '@/components/Validator/ValidatorLayout'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { ProxyData } from '@/types'
@@ -43,21 +44,20 @@ export function ValidatorContent({
   )
 
   return (
-    <ValidatorLayout
-      isRunning={isRunning}
-      script={script}
-      logs={session.logs}
-      checks={session.checks}
-      details={details}
-    >
-      <RequestsSection
-        proxyData={session.requests}
-        autoScroll={isRunning}
-        selectedRequestId={selectedRequest?.id}
-        noDataElement={noDataElement}
-        onSelectRequest={setSelectedRequest}
-        groups={groups}
-      />
-    </ValidatorLayout>
+    <Allotment>
+      <Allotment.Pane minSize={250}>
+        <Box height="100%">
+          <RequestsSection
+            proxyData={session.requests}
+            autoScroll={isRunning}
+            selectedRequestId={selectedRequest?.id}
+            noDataElement={noDataElement}
+            onSelectRequest={setSelectedRequest}
+            groups={groups}
+          />
+        </Box>
+      </Allotment.Pane>
+      {selectedRequest !== null && <Allotment.Pane>{details}</Allotment.Pane>}
+    </Allotment>
   )
 }
