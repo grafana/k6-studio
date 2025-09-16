@@ -9,9 +9,13 @@ function LoadingSpinner() {
 
   useEffect(() => {
     // Only show the spinner if loading takes more than 50ms to avoid flickering
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setShowSpinner(true)
     }, 50)
+
+    return () => {
+      clearTimeout(timeout)
+    }
   }, [])
 
   return (
