@@ -1,7 +1,8 @@
 import { css } from '@emotion/react'
-import { Tabs } from '@radix-ui/themes'
+import { Badge, Tabs } from '@radix-ui/themes'
 import { FlaskConical } from 'lucide-react'
 
+import { Flex } from '@/components/primitives/Flex'
 import { BrowserEvent } from '@/schemas/recording'
 import { Group, ProxyData } from '@/types'
 
@@ -48,18 +49,35 @@ export function RecordingInspector({
     >
       <Tabs.List>
         <Tabs.Trigger value="requests">
-          Requests ({requests.length})
+          <Flex align="center" gap="1">
+            Requests
+            <Badge radius="full" color="gray" highContrast>
+              {requests.length}
+            </Badge>
+          </Flex>
         </Tabs.Trigger>
-        <Tabs.Trigger value="browser-events">
-          <FlaskConical
-            css={css`
-              width: 1em;
-              height: 1em;
-              margin-right: 0.25em;
-            `}
-            strokeWidth={1.5}
-          />{' '}
-          Browser events ({browserEvents.length})
+        <Tabs.Trigger
+          value="browser-events"
+          disabled={browserEvents.length === 0}
+        >
+          <Flex align="center" gap="1">
+            <FlaskConical
+              css={css`
+                width: 1em;
+                height: 1em;
+                margin-right: 0.25em;
+              `}
+              strokeWidth={1.5}
+            />
+            Browser events
+            <Badge
+              radius="full"
+              color="gray"
+              highContrast={browserEvents.length > 0}
+            >
+              {browserEvents.length}
+            </Badge>
+          </Flex>
         </Tabs.Trigger>
       </Tabs.List>
       <Tabs.Content value="requests" css={styles.content}>
