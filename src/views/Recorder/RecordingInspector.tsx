@@ -18,7 +18,6 @@ interface RecordingInspectorProps {
   onUpdateGroup?: (group: Group) => void
   onCreateGroup?: (name: string) => void
   onResetRecording?: () => void
-  onExportBrowserScript?: (fileName: string) => void
 }
 
 const styles = {
@@ -36,7 +35,6 @@ export function RecordingInspector({
   onUpdateGroup,
   onCreateGroup,
   onResetRecording,
-  onExportBrowserScript,
 }: RecordingInspectorProps) {
   return (
     <Tabs.Root
@@ -91,10 +89,7 @@ export function RecordingInspector({
         />
       </Tabs.Content>
       <Tabs.Content value="browser-events" css={styles.content}>
-        <BrowserEventLog
-          events={browserEvents}
-          onExportScript={onExportBrowserScript}
-        />
+        <BrowserEventLog events={browserEvents} />
       </Tabs.Content>
     </Tabs.Root>
   )
