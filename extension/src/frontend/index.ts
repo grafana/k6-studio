@@ -251,3 +251,74 @@ manager.capture('submit', (ev) => {
     tab: '',
   })
 })
+
+/**
+ * The list of permissions supported by k6/browser.
+ */
+type SupportedPermissionName =
+  | 'geolocation'
+  | 'midi'
+  | 'midi-sysex'
+  | 'notifications'
+  | 'camera'
+  | 'microphone'
+  | 'background-sync'
+  | 'ambient-light-sensor'
+  | 'accelerometer'
+  | 'gyroscope'
+  | 'magnetometer'
+  | 'accessibility-events'
+  | 'clipboard-read'
+  | 'clipboard-write'
+  | 'payment-handler'
+
+type PermissionMap = { [Key in SupportedPermissionName]: Key }
+
+const permissions: PermissionMap = {
+  geolocation: 'geolocation',
+  midi: 'midi',
+  'midi-sysex': 'midi-sysex',
+  notifications: 'notifications',
+  camera: 'camera',
+  microphone: 'microphone',
+  'background-sync': 'background-sync',
+  'ambient-light-sensor': 'ambient-light-sensor',
+  accelerometer: 'accelerometer',
+  gyroscope: 'gyroscope',
+  magnetometer: 'magnetometer',
+  'accessibility-events': 'accessibility-events',
+  'clipboard-read': 'clipboard-read',
+  'clipboard-write': 'clipboard-write',
+  'payment-handler': 'payment-handler',
+}
+
+async function capturePermissionChanges() {
+  for (const permission of Object.values(permissions)) {
+    try {
+      const status = await navigator.permissions.query({
+        name: permission as PermissionName,
+      })
+
+      status.addEventListener('change', function () {
+        if (this.state !== 'granted') {
+          return
+        }
+
+        recordEvents({
+          type: 'grant-permissions',
+          eventId: crypto.randomUUID(),
+          timestamp: Date.now(),
+          permissions: [permission],
+          origin: window.location.origin,
+          tab: '',
+        })
+      })
+    } catch {
+      console.log(`Couldn't query permission ${permission}. Ignoring...`)
+    }
+  }
+}
+
+capturePermissionChanges().catch((err) => {
+  console.error('Failed to capture permission changes:', err)
+})

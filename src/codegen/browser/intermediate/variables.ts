@@ -113,6 +113,24 @@ function substituteExpression(
         multiple: node.multiple,
       }
 
+    case 'PageContextExpression':
+      return {
+        type: 'PageContextExpression',
+        page: substituteExpression(node.page, substitutions),
+      }
+
+    case 'GrantPermissionsExpression':
+      return {
+        type: 'GrantPermissionsExpression',
+        context: substituteExpression(node.context, substitutions),
+        permissions: node.permissions.map((expression) =>
+          substituteExpression(expression, substitutions)
+        ),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
+      }
+
     case 'ExpectExpression':
       return {
         type: 'ExpectExpression',

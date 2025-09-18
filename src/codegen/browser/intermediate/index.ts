@@ -217,6 +217,34 @@ function emitAssertion(
   }
 }
 
+function emitGrantPermissionsNode(
+  context: IntermediateContext,
+  node: m.GrantPermissionsNode
+) {
+  const page = context.reference(node.inputs.page)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'GrantPermissionsExpression',
+      context: {
+        type: 'PageContextExpression',
+        page,
+      },
+      permissions: node.permissions.map((permission) => ({
+        type: 'StringLiteral',
+        value: permission,
+      })),
+      options: node.origin
+        ? {
+            type: 'StringLiteral',
+            value: node.origin,
+          }
+        : null,
+    },
+  })
+}
+
 function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
   const locator = context.reference(node.inputs.locator)
 
@@ -255,6 +283,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'select-options':
       return emitSelectOptionsNode(context, node)
+
+    case 'grant-permissions':
+      return emitGrantPermissionsNode(context, node)
 
     case 'assert':
       return emitAssertNode(context, node)

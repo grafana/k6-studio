@@ -151,6 +151,40 @@ function emitSelectOptionsExpression(
     .done()
 }
 
+function emitPageContextExpression(
+  context: ScenarioContext,
+  expression: ir.PageContextExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+
+  return new ExpressionBuilder(page).member('context').call([]).done()
+}
+
+function emitGrantPermissionsNode(
+  context: ScenarioContext,
+  expression: ir.GrantPermissionsExpression
+): ts.Expression {
+  const contextExpr = emitExpression(context, expression.context)
+
+  const permissions = fromArrayLiteral(
+    expression.permissions.map((perm) => emitExpression(context, perm))
+  )
+
+  const options =
+    expression.options !== null &&
+    fromObjectLiteral({
+      origin: emitExpression(context, expression.options),
+    })
+
+  const args = options ? [permissions, options] : [permissions]
+
+  return new ExpressionBuilder(contextExpr)
+    .member('grantPermissions')
+    .call(args)
+    .await(context)
+    .done()
+}
+
 function emitExpectExpression(
   context: ScenarioContext,
   expression: ir.ExpectExpression
@@ -288,6 +322,12 @@ function emitExpression(
 
     case 'SelectOptionsExpression':
       return emitSelectOptionsExpression(context, expression)
+
+    case 'PageContextExpression':
+      return emitPageContextExpression(context, expression)
+
+    case 'GrantPermissionsExpression':
+      return emitGrantPermissionsNode(context, expression)
 
     case 'ExpectExpression':
       return emitExpectExpression(context, expression)

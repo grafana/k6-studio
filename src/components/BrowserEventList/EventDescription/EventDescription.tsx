@@ -92,6 +92,14 @@ export function EventDescription({
         </>
       )
 
+    case 'grant-permissions':
+      return (
+        <>
+          Granted {formatOptions(event.permissions)} permissions to{' '}
+          {event.origin === '*' ? 'all origins' : <code>{event.origin}</code>}
+        </>
+      )
+
     case 'assert':
       return <AssertDescription event={event} onHighlight={onHighlight} />
 
