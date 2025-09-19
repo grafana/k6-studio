@@ -62,7 +62,7 @@ export const PanelResizeHandle = styled(Primitives.PanelResizeHandle)`
   }
 
   &[data-resize-handle-state]:not([data-resize-handle-state='inactive']) {
-    z-index: var(--resize-handle-size);
+    z-index: var(--layer-resize-handle);
 
     &:before {
       top: 0;
