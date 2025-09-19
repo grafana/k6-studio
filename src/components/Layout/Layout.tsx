@@ -68,6 +68,9 @@ export function Layout() {
       <PanelGroup direction="horizontal" autoSaveId="main-layout">
         <Panel
           ref={setSidebar}
+          css={css`
+            min-width: ${isSidebarExpanded ? '220px' : '0px'};
+          `}
           collapsible
           defaultSize={15}
           minSize={11}
