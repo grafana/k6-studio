@@ -31,7 +31,7 @@ export const PanelGroup = styled(Primitives.PanelGroup)`
 
     margin: calc(var(--resize-handle-size) / 2 * -1) 0;
 
-    :first-of-type {
+    &:first-of-type {
       margin-top: 0;
     }
 
