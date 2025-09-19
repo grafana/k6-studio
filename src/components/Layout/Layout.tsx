@@ -57,7 +57,7 @@ export function Layout() {
               top: var(--space-4);
               right: calc(var(--space-2) * -1);
               background-color: var(--color-background);
-              z-index: 10000;
+              z-index: var(--layer-expand-button);
             `}
             onClick={() => sidebar?.expand()}
           >

@@ -5,6 +5,11 @@ import 'allotment/dist/style.css'
 import InterVariable from '@/assets/fonts/Inter/InterVariable.woff2'
 
 export const globalStyles = css`
+  :root {
+    --layer-resize-handle: 1000;
+    --layer-expand-button: calc(var(--layer-resize-handle) + 1);
+  }
+
   @font-face {
     font-family: 'InterVariable';
     src: url(${InterVariable}) format('woff2');
