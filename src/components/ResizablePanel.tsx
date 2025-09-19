@@ -46,9 +46,7 @@ export const PanelGroup = styled(Primitives.PanelGroup)`
   }
 `
 
-export const Panel = styled(Primitives.Panel)`
-  margin: calc(var(--resize-handle-size) / 2 * -1);
-`
+export const Panel = styled(Primitives.Panel)``
 
 export const PanelResizeHandle = styled(Primitives.PanelResizeHandle)`
   position: relative;
