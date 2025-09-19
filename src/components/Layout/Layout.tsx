@@ -81,7 +81,7 @@ export function Layout() {
           />
         </Panel>
         <PanelResizeHandle />
-        <Panel defaultSize={85}>
+        <Panel>
           <Outlet />
         </Panel>
       </PanelGroup>
