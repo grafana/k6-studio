@@ -1,9 +1,8 @@
 import { css } from '@emotion/react'
 import { Flex, IconButton } from '@radix-ui/themes'
 import { PanelLeftOpenIcon } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { useLocalStorage } from 'react-use'
 
 import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
 
@@ -20,12 +19,8 @@ import { Sidebar } from './Sidebar'
 export function Layout() {
   const location = useLocation()
 
-  const sidebarRef = useRef<ImperativePanelHandle>(null)
-
-  const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(
-    'isSidebarExpanded',
-    true
-  )
+  const [sidebar, setSidebar] = useState<ImperativePanelHandle | null>(null)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
 
   useListenDeepLinks()
 
@@ -57,7 +52,6 @@ export function Layout() {
             size="1"
             variant="ghost"
             color="gray"
-            onClick={() => sidebarRef.current?.expand()}
             css={css`
               position: absolute;
               top: var(--space-4);
@@ -65,6 +59,7 @@ export function Layout() {
               background-color: var(--color-background);
               z-index: 10000;
             `}
+            onClick={() => sidebar?.expand()}
           >
             <PanelLeftOpenIcon />
           </IconButton>
@@ -72,16 +67,17 @@ export function Layout() {
       </div>
       <PanelGroup direction="horizontal" autoSaveId="main-layout">
         <Panel
-          ref={sidebarRef}
+          ref={setSidebar}
           collapsible
+          defaultSize={15}
           minSize={11}
           maxSize={16}
-          onCollapse={() => setIsSidebarExpanded(false)}
           onExpand={() => setIsSidebarExpanded(true)}
+          onCollapse={() => setIsSidebarExpanded(false)}
         >
           <Sidebar
             isExpanded={isSidebarExpanded}
-            onCollapseSidebar={() => sidebarRef.current?.collapse()}
+            onCollapseSidebar={() => sidebar?.collapse()}
           />
         </Panel>
         <PanelResizeHandle />
