@@ -2,20 +2,20 @@ import styled from '@emotion/styled'
 import * as Primitives from 'react-resizable-panels'
 
 export const PanelGroup = styled(Primitives.PanelGroup)`
-  --separator-border: 1px solid var(--gray-5);
-  --separator-size: 6px;
+  --resize-handle-border: 1px solid var(--gray-5);
+  --resize-handle-size: 6px;
 
   &[data-panel-group-direction='horizontal'] [data-panel] {
-    border-right: var(--separator-border);
+    border-right: var(--resize-handle-border);
 
-    margin: 0 calc(var(--separator-size) / 2 * -1);
+    margin: 0 calc(var(--resize-handle-size) / 2 * -1);
 
-    &:first-child,
+    &:first-of-type,
     &[data-panel-size='0.0'] {
       margin-left: 0;
     }
 
-    &:last-child,
+    &:last-of-type,
     &[data-panel-size='0.0'] {
       border-right: none;
       margin-right: 0;
@@ -27,15 +27,15 @@ export const PanelGroup = styled(Primitives.PanelGroup)`
   }
 
   &[data-panel-group-direction='vertical'] [data-panel] {
-    border-bottom: var(--separator-border);
+    border-bottom: var(--resize-handle-border);
 
-    margin: calc(var(--separator-size) / 2 * -1) 0;
+    margin: calc(var(--resize-handle-size) / 2 * -1) 0;
 
-    :first-child {
+    :first-of-type {
       margin-top: 0;
     }
 
-    &:last-child,
+    &:last-of-type,
     &[data-panel-size='0.0'] {
       border-bottom: none;
     }
@@ -47,7 +47,7 @@ export const PanelGroup = styled(Primitives.PanelGroup)`
 `
 
 export const Panel = styled(Primitives.Panel)`
-  margin: calc(var(--separator-size) / 2 * -1);
+  margin: calc(var(--resize-handle-size) / 2 * -1);
 `
 
 export const PanelResizeHandle = styled(Primitives.PanelResizeHandle)`
@@ -82,7 +82,7 @@ export const PanelResizeHandle = styled(Primitives.PanelResizeHandle)`
   }
 
   &[data-panel-group-direction='horizontal'] {
-    width: var(--separator-size);
+    width: var(--resize-handle-size);
 
     &:before {
       width: 0px;
@@ -90,7 +90,7 @@ export const PanelResizeHandle = styled(Primitives.PanelResizeHandle)`
   }
 
   &[data-panel-group-direction='vertical'] {
-    height: var(--separator-size);
+    height: var(--resize-handle-size);
 
     &:before {
       height: 0px;
