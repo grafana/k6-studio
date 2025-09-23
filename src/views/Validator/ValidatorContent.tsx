@@ -52,8 +52,8 @@ export function ValidatorContent({
             autoScroll={isRunning}
             selectedRequestId={selectedRequest?.id}
             noDataElement={noDataElement}
-            onSelectRequest={setSelectedRequest}
             groups={groups}
+            onSelectRequest={setSelectedRequest}
           />
         </Box>
       </Allotment.Pane>
