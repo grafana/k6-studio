@@ -91,13 +91,13 @@ export function RecordingPreviewControls({
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <MenuItem
-            label="Protocol-level test"
-            description="Turn the recorded HTTP requests into a protocol-level k6 test script by defining the test logic in a test generator"
+            label="HTTP test"
+            description="Set up a test generator to turn the recorded HTTP requests into a k6 script"
             onClick={handleCreateGenerator}
           />
           <MenuItem
-            label="Browser script"
-            description="Export a k6 browser test script to simulate user interactions in a real browser"
+            label="Browser test"
+            description="Export a k6 script simulating browser interactions"
             disabled={browserEvents.length === 0}
             onClick={() => setShowExportDialog(true)}
           />
