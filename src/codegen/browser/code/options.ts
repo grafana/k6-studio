@@ -31,7 +31,8 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'NewPageExpression':
       case 'GotoExpression':
       case 'ReloadExpression':
-      case 'NewLocatorExpression':
+      case 'NewCSSLocatorExpression':
+      case 'NewTestIdLocatorExpression':
       case 'ClickExpression':
       case 'ClickOptionsExpression':
       case 'FillTextExpression':

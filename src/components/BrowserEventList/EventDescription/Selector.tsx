@@ -44,7 +44,7 @@ export function Selector({ selector, onHighlight }: SelectorProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {selector.css}
+      {selector.testId ?? selector.css}
     </strong>
   )
 }

@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const ElementSelectorSchema = z.object({
   css: z.string(),
+  testId: z.string().optional(),
 })
 
 const BrowserEventBaseSchema = z.object({

@@ -31,14 +31,24 @@ function emitNewPageExpression(
     .done()
 }
 
-function emitNewLocatorExpression(
+function emitNewCSSLocatorExpression(
   context: ScenarioContext,
-  expression: ir.NewLocatorExpression
+  expression: ir.NewCSSLocatorExpression
 ): ts.Expression {
   const page = emitExpression(context, expression.page)
   const selector = emitExpression(context, expression.selector)
 
   return new ExpressionBuilder(page).member('locator').call([selector]).done()
+}
+
+function emitNewTestIdLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewTestIdLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const testId = emitExpression(context, expression.testId)
+
+  return new ExpressionBuilder(page).member('getByTestId').call([testId]).done()
 }
 
 function emitGotoExpression(
@@ -265,8 +275,11 @@ function emitExpression(
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
 
-    case 'NewLocatorExpression':
-      return emitNewLocatorExpression(context, expression)
+    case 'NewCSSLocatorExpression':
+      return emitNewCSSLocatorExpression(context, expression)
+
+    case 'NewTestIdLocatorExpression':
+      return emitNewTestIdLocatorExpression(context, expression)
 
     case 'GotoExpression':
       return emitGotoExpression(context, expression)

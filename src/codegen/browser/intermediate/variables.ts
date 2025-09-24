@@ -60,11 +60,18 @@ function substituteExpression(
         name: substitutions.get(node.name) ?? node.name,
       }
 
-    case 'NewLocatorExpression':
+    case 'NewCSSLocatorExpression':
       return {
-        type: 'NewLocatorExpression',
+        type: 'NewCSSLocatorExpression',
         page: substituteExpression(node.page, substitutions),
         selector: substituteExpression(node.selector, substitutions),
+      }
+
+    case 'NewTestIdLocatorExpression':
+      return {
+        type: 'NewTestIdLocatorExpression',
+        page: substituteExpression(node.page, substitutions),
+        testId: substituteExpression(node.testId, substitutions),
       }
 
     case 'GotoExpression':
