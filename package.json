@@ -117,6 +117,7 @@
     "country-flag-icons": "^1.5.18",
     "devtools-protocol": "^0.0.1468520",
     "diff": "^7.0.0",
+    "dom-accessibility-api": "^0.7.0",
     "electron-log": "^5.2.0",
     "electron-squirrel-startup": "^1.0.1",
     "express": "^5.1.0",

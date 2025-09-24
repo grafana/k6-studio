@@ -3,6 +3,7 @@ import './view'
 import { BrowserEvent } from '@/schemas/recording'
 
 import { generateSelector } from '../selectors'
+import { getAriaDetails } from '../utils/aria'
 import {
   findAssociatedElement,
   findInteractiveElement,
@@ -111,6 +112,7 @@ manager.capture('click', (ev, manager) => {
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
     selector: generateSelector(clickTarget),
+    aria: getAriaDetails(clickTarget),
     button,
     modifiers: {
       ctrl: ev.ctrlKey,
@@ -128,6 +130,7 @@ function handleSelectChange(target: HTMLSelectElement) {
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
     selector: generateSelector(target),
+    aria: getAriaDetails(target),
     selected: [...target.selectedOptions].map((option) => option.value),
     multiple: target.multiple,
     tab: '',
@@ -140,6 +143,7 @@ function handleTextAreaChange(target: HTMLTextAreaElement) {
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
     selector: generateSelector(target),
+    aria: getAriaDetails(target),
     value: target.value,
     sensitive: false,
     tab: '',
@@ -163,6 +167,7 @@ function handleInputChange(target: HTMLInputElement) {
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
       selector: generateSelector(target),
+      aria: getAriaDetails(target),
       checked: target.checked,
       tab: '',
     })
@@ -180,6 +185,7 @@ function handleInputChange(target: HTMLInputElement) {
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
       selector: generateSelector(target),
+      aria: getAriaDetails(target),
       name: target.name,
       value: target.value,
       tab: '',
@@ -193,6 +199,7 @@ function handleInputChange(target: HTMLInputElement) {
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
     selector: generateSelector(target),
+    aria: getAriaDetails(target),
     value: target.value,
     sensitive: target.type === 'password',
     tab: '',

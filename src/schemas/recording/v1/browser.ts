@@ -1,5 +1,11 @@
 import { z } from 'zod'
 
+const AriaDetailsSchema = z.object({
+  roles: z.array(z.string()),
+  labels: z.array(z.string()),
+  name: z.string().optional(),
+})
+
 const ElementSelectorSchema = z.object({
   css: z.string(),
 })
@@ -26,6 +32,7 @@ const ClickEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('click'),
   tab: z.string(),
   selector: ElementSelectorSchema,
+  aria: AriaDetailsSchema.optional(),
   button: z.union([z.literal('left'), z.literal('middle'), z.literal('right')]),
   modifiers: z.object({
     ctrl: z.boolean(),
@@ -39,6 +46,7 @@ const InputChangeEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('input-change'),
   tab: z.string(),
   selector: ElementSelectorSchema,
+  aria: AriaDetailsSchema.optional(),
   value: z.string(),
   sensitive: z.boolean(),
 })
@@ -47,6 +55,7 @@ const CheckChangeEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('check-change'),
   tab: z.string(),
   selector: ElementSelectorSchema,
+  aria: AriaDetailsSchema.optional(),
   checked: z.boolean(),
 })
 
@@ -54,6 +63,7 @@ const RadioChangeEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('radio-change'),
   tab: z.string(),
   selector: ElementSelectorSchema,
+  aria: AriaDetailsSchema.optional(),
   name: z.string(),
   value: z.string(),
 })
@@ -62,6 +72,7 @@ const SelectChangeEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('select-change'),
   tab: z.string(),
   selector: ElementSelectorSchema,
+  aria: AriaDetailsSchema.optional(),
   selected: z.array(z.string()),
   multiple: z.boolean(),
 })
@@ -129,6 +140,7 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   AssertEventSchema,
 ])
 
+export type AriaDetails = z.infer<typeof AriaDetailsSchema>
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 export type CheckState = z.infer<typeof CheckStateSchema>
 

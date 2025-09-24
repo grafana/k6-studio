@@ -3,8 +3,10 @@ import {
   AttributeConstraint,
   elementRoles,
 } from 'aria-query'
+import { computeAccessibleName } from 'dom-accessibility-api'
 import { groupBy } from 'lodash-es'
 
+import { AriaDetails } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
 export interface ElementRole {
@@ -133,4 +135,34 @@ export function getElementRoles(element: Element): Set<ElementRole> {
   const matchedRoles = possibleRoles?.filter((role) => role.match(element))
 
   return new Set(matchedRoles?.flatMap((role) => role.roles))
+}
+
+function getLabelTexts(element: Element): string[] {
+  if (
+    element instanceof HTMLInputElement === false &&
+    element instanceof HTMLTextAreaElement === false &&
+    element instanceof HTMLSelectElement === false
+  ) {
+    return []
+  }
+
+  if (element.labels === null) {
+    return []
+  }
+
+  return Array.from(element.labels)
+    .map((label) => label.textContent)
+    .filter((label) => label !== null)
+}
+
+export function getAriaDetails(element: Element): AriaDetails {
+  const roles = [...getElementRoles(element)].map((r) => r.role)
+  const labels = getLabelTexts(element)
+  const name = computeAccessibleName(element)
+
+  return {
+    roles,
+    labels,
+    name,
+  }
 }
