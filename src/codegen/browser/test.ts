@@ -86,14 +86,15 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     // await input.focus()
     // await input.type("Hello")
     // await input.press("Enter")
+
     if (
-      previousLocator?.selector !== selector.css ||
+      previousLocator?.selector.css !== selector.css ||
       previousLocator?.inputs.page.nodeId !== page.nodeId
     ) {
       previousLocator = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
-        selector: selector.css,
+        selector,
         inputs: {
           page,
         },
