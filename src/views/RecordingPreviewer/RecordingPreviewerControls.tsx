@@ -92,7 +92,7 @@ export function RecordingPreviewControls({
         <DropdownMenu.Content>
           <MenuItem
             label="HTTP test"
-            description="Set up a test generator to turn the recorded HTTP requests into a k6 script"
+            description="Generate a k6 script from HTTP requests using rules"
             onClick={handleCreateGenerator}
           />
           <MenuItem
