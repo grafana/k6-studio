@@ -39,6 +39,9 @@ export function BrowserEventList({
                   <EventIcon event={event} />
                   <div
                     css={css`
+                      display: flex;
+                      align-items: center;
+                      gap: 0.25rem;
                       flex: 1 1 0;
                       overflow: hidden;
                       white-space: nowrap;

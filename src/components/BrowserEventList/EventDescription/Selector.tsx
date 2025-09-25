@@ -1,4 +1,6 @@
 import { css } from '@emotion/react'
+import { Badge, Code } from '@radix-ui/themes'
+import { BracesIcon, TestTubeDiagonalIcon } from 'lucide-react'
 
 import { ElementSelector } from '@/schemas/recording'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
@@ -28,23 +30,25 @@ export function Selector({ selector, onHighlight }: SelectorProps) {
   }
 
   return (
-    <strong
+    <Badge
+      highContrast
+      color="gray"
       css={css`
-        font-weight: bold;
-        border-radius: var(--radius-2);
+        flex-shrink: 1;
+        overflow: hidden;
+        cursor: ${isRecording ? 'pointer' : 'default'};
 
-        ${isRecording &&
-        css`
-          &:hover {
-            cursor: pointer;
-            background-color: var(--gray-3);
-          }
-        `}
+        &:hover {
+          background-color: ${isRecording ? 'var(--gray-4)' : undefined};
+        }
       `}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {selector.testId ?? selector.css}
-    </strong>
+      {selector.testId ? <TestTubeDiagonalIcon /> : <BracesIcon />}
+      <Code variant="ghost" truncate>
+        {selector.testId ?? selector.css}
+      </Code>
+    </Badge>
   )
 }

@@ -87,7 +87,6 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     // await input.type("Hello")
     // await input.press("Enter")
 
-    // TODO: is it enough to compare just the CSS selector?
     if (
       previousLocator?.selector.css !== selector.css ||
       previousLocator?.inputs.page.nodeId !== page.nodeId
