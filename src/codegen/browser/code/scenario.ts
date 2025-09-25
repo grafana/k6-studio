@@ -33,7 +33,7 @@ function emitNewPageExpression(
 
 function emitNewCSSLocatorExpression(
   context: ScenarioContext,
-  expression: ir.NewCSSLocatorExpression
+  expression: ir.NewCssLocatorExpression
 ): ts.Expression {
   const page = emitExpression(context, expression.page)
   const selector = emitExpression(context, expression.selector)
@@ -275,7 +275,7 @@ function emitExpression(
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
 
-    case 'NewCSSLocatorExpression':
+    case 'NewCssLocatorExpression':
       return emitNewCSSLocatorExpression(context, expression)
 
     case 'NewTestIdLocatorExpression':

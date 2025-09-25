@@ -12,8 +12,8 @@ export interface NewPageExpression {
   type: 'NewPageExpression'
 }
 
-export interface NewCSSLocatorExpression {
-  type: 'NewCSSLocatorExpression'
+export interface NewCssLocatorExpression {
+  type: 'NewCssLocatorExpression'
   selector: Expression
   page: Expression
 }
@@ -122,7 +122,7 @@ export type Expression =
   | Identifier
   | StringLiteral
   | NewPageExpression
-  | NewCSSLocatorExpression
+  | NewCssLocatorExpression
   | NewTestIdLocatorExpression
   | GotoExpression
   | ReloadExpression

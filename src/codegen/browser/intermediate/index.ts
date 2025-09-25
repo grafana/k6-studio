@@ -68,7 +68,7 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
 
   // Default to CSS locator
   context.inline(node, {
-    type: 'NewCSSLocatorExpression',
+    type: 'NewCssLocatorExpression',
     selector: {
       type: 'StringLiteral',
       value: node.selector.css,
