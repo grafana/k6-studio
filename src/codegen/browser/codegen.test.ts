@@ -746,3 +746,30 @@ it('should assert that input has single value using toHaveValue', async ({
     '__snapshots__/browser/assertions/input/text-input-has-value.ts'
   )
 })
+
+it('should grant permissions for origin', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'grant-permissions',
+          nodeId: 'grant-permissions',
+          permissions: ['geolocation', 'midi'],
+          origin: 'https://example.com',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/grant-permissions-for-origin.ts'
+  )
+})

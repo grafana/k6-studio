@@ -38,6 +38,8 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'FillTextExpression':
       case 'CheckExpression':
       case 'SelectOptionsExpression':
+      case 'GrantPermissionsExpression':
+      case 'PageContextExpression':
         return true
 
       case 'Identifier':

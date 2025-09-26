@@ -66,6 +66,12 @@ export const runScript = async ({
     prefix: '',
   })
 
+  const browserArgs = [
+    ...proxyArgs,
+    `use-fake-device-for-media-stream`,
+    `use-fake-ui-for-media-stream`,
+  ]
+
   const trackingServer = await createTrackingServer().catch(() => null)
 
   // UNCOMMENT ME FOR TESTING!
@@ -91,7 +97,7 @@ export const runScript = async ({
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
       K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
-      K6_BROWSER_ARGS: proxyArgs.join(','),
+      K6_BROWSER_ARGS: browserArgs.join(','),
       K6_TESTING_COLORIZE: 'false',
     },
   })

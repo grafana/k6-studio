@@ -7,6 +7,7 @@ import {
   GlobeIcon,
   ListFilterPlusIcon,
   RefreshCwIcon,
+  ShieldCheckIcon,
   TargetIcon,
   TextCursorInputIcon,
 } from 'lucide-react'
@@ -43,6 +44,9 @@ export function EventIcon({ event }: EventIconProps) {
 
     case 'submit-form':
       return <ClipboardListIcon />
+
+    case 'grant-permissions':
+      return <ShieldCheckIcon />
 
     case 'assert':
       return <EyeIcon />

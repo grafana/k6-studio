@@ -70,6 +70,11 @@ function buildScenarioGraph(scenario: model.Scenario) {
         connectPrevious(graph, node)
         break
 
+      case 'grant-permissions':
+        graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        connectPrevious(graph, node)
+        break
+
       case 'assert':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
         connectPrevious(graph, node)
