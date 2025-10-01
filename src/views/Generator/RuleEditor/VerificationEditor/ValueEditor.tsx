@@ -1,4 +1,4 @@
-import { TextField } from '@radix-ui/themes'
+import { Flex, Grid, TextField } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
@@ -34,7 +34,12 @@ export function ValueEditor() {
     [target, hasVariables]
   )
 
-  const operatorOptions = useMemo(() => getOperatorOptions(target), [target])
+  const operatorOptions = useMemo(
+    () => getOperatorOptions(target, valueType),
+    [target, valueType]
+  )
+
+  console.log({ operatorOptions })
 
   const handleChangeValueType = useCallback(
     (value: VerificationRule['value']['type']) => {
@@ -44,11 +49,17 @@ export function ValueEditor() {
 
       if (value === 'number') {
         setValue('value.number', 200)
+        setValue('operator', 'equals')
       }
 
       if (value === 'string') {
         setValue('value.value', '')
         setValue('operator', 'contains')
+      }
+
+      if (value === 'regex') {
+        setValue('value.regex', '.*')
+        setValue('operator', 'matches')
       }
 
       setValue('value.type', value)
@@ -64,7 +75,7 @@ export function ValueEditor() {
 
   return (
     <>
-      <FieldGroup name="value.type" label="Compare with">
+      <FieldGroup name="value.type" label="Check against">
         <ControlledSelect
           control={control}
           name="value.type"
@@ -73,45 +84,59 @@ export function ValueEditor() {
         />
       </FieldGroup>
 
-      {valueType !== 'recordedValue' && (
-        <FieldGroup name="operator" errors={errors} label="Operator">
-          <ControlledSelect
-            name="operator"
+      <Grid gap="2" columns="auto 1fr">
+        {!['recordedValue', 'regex'].includes(valueType) && (
+          <FieldGroup name="operator" errors={errors} label="Operator">
+            <ControlledSelect
+              name="operator"
+              control={control}
+              options={operatorOptions}
+            />
+          </FieldGroup>
+        )}
+
+        {valueType === 'string' && (
+          <FieldGroup name="value.value" errors={errors} label="Value">
+            <TextField.Root
+              placeholder="Enter value"
+              {...register('value.value')}
+            />
+          </FieldGroup>
+        )}
+
+        {valueType === 'number' && (
+          <FieldGroup name="value.number" errors={errors} label="Value">
+            <TextField.Root
+              placeholder="Enter number"
+              type="number"
+              {...register('value.number', {
+                valueAsNumber: true,
+              })}
+            />
+          </FieldGroup>
+        )}
+
+        {valueType === 'regex' && (
+          <FieldGroup name="value.regex" errors={errors} label="Regex pattern">
+            <TextField.Root
+              placeholder="Enter regex pattern"
+              {...register('value.regex')}
+            >
+              <TextField.Slot>/</TextField.Slot>
+              <TextField.Slot>/</TextField.Slot>
+            </TextField.Root>
+          </FieldGroup>
+        )}
+
+        {valueType === 'variable' && (
+          <VariableSelect
             control={control}
-            options={operatorOptions}
+            errors={errors}
+            value={variableName}
+            name="value.variableName"
           />
-        </FieldGroup>
-      )}
-
-      {valueType === 'string' && (
-        <FieldGroup name="value.value" errors={errors} label="Value">
-          <TextField.Root
-            placeholder="Enter value"
-            {...register('value.value')}
-          />
-        </FieldGroup>
-      )}
-
-      {valueType === 'number' && (
-        <FieldGroup name="value.number" errors={errors} label="Value">
-          <TextField.Root
-            placeholder="Enter number"
-            type="number"
-            {...register('value.number', {
-              valueAsNumber: true,
-            })}
-          />
-        </FieldGroup>
-      )}
-
-      {valueType === 'variable' && (
-        <VariableSelect
-          control={control}
-          errors={errors}
-          value={variableName}
-          name="value.variableName"
-        />
-      )}
+        )}
+      </Grid>
     </>
   )
 }
