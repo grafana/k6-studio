@@ -11,6 +11,11 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'TextContainsAssertion':
       case 'IsVisibleAssertion':
       case 'IsHiddenAssertion':
+      case 'IsCheckedAssertion':
+      case 'IsNotCheckedAssertion':
+      case 'IsIndeterminateAssertion':
+      case 'IsAttributeEqualToAssertion':
+      case 'HasValueAssertion':
         return true
 
       default:
@@ -26,10 +31,11 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'NewPageExpression':
       case 'GotoExpression':
       case 'ReloadExpression':
-      case 'NewLocatorExpression':
+      case 'NewCssLocatorExpression':
+      case 'NewTestIdLocatorExpression':
       case 'ClickExpression':
       case 'ClickOptionsExpression':
-      case 'TypeTextExpression':
+      case 'FillTextExpression':
       case 'CheckExpression':
       case 'SelectOptionsExpression':
         return true

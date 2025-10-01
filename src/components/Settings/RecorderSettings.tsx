@@ -45,6 +45,7 @@ export const RecorderSettings = () => {
       'chromium.exe',
       '/chrome',
       '/chromium',
+      'org.chromium.chromium',
     ]
     return validPaths.some((validPath) => path.includes(validPath))
   }
@@ -80,7 +81,7 @@ export const RecorderSettings = () => {
       {!recorder.detectBrowserPath &&
         recorder.browserPath !== '' &&
         !isValidPath(recorder.browserPath?.toLocaleLowerCase()) && (
-          <Callout.Root color="amber">
+          <Callout.Root color="amber" mb="4">
             <Callout.Icon>
               <AlertTriangleIcon />
             </Callout.Icon>

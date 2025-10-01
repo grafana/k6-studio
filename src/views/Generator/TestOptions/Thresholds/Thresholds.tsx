@@ -38,7 +38,7 @@ export function Thresholds() {
       metric: 'http_req_duration',
       statistic: 'avg',
       condition: '<',
-      value: 100,
+      value: 0,
       stopTest: false,
     })
   }

@@ -1,5 +1,133 @@
 # Changelog
 
+## [1.7.0](https://github.com/grafana/k6-studio/compare/v1.6.0...v1.7.0) (2025-08-28)
+
+
+### Features
+
+* Add assertions of values in text inputs ([#770](https://github.com/grafana/k6-studio/issues/770)) ([a570e5d](https://github.com/grafana/k6-studio/commit/a570e5dda242be9e8c797ae2327e6b14a9920199))
+* Add assertions on checkbox/radio button state ([#738](https://github.com/grafana/k6-studio/issues/738)) ([89c0dcb](https://github.com/grafana/k6-studio/commit/89c0dcb88bdb8475767e5b3692cea48c036468b9))
+* Improved error handling when starting a recording ([#795](https://github.com/grafana/k6-studio/issues/795)) ([6483add](https://github.com/grafana/k6-studio/commit/6483add8ced2a72b6cc17a54b784faddad62702a))
+* Improved in-browser toolbar design ([#781](https://github.com/grafana/k6-studio/issues/781)) ([b685029](https://github.com/grafana/k6-studio/commit/b685029bbff9c039d0ccc5f35af007cc2d1caa3a))
+* Improved selector stability for click events ([#791](https://github.com/grafana/k6-studio/issues/791)) ([135d35c](https://github.com/grafana/k6-studio/commit/135d35c28e0198fbd600a34072b6bf09671e921b))
+
+
+### Bug Fixes
+
+* Clicking the label of a checkbox/radio records two events ([#798](https://github.com/grafana/k6-studio/issues/798)) ([994815a](https://github.com/grafana/k6-studio/commit/994815ae22e576919990a06dabd1463a57e53ff5))
+* Initial navigation event is sometimes not captured when starting a recording ([#769](https://github.com/grafana/k6-studio/issues/769)) ([1d26926](https://github.com/grafana/k6-studio/commit/1d2692648fb4c2bdc685f85f2c8ad2598bdafa4a))
+* Modals close when trying to interact with the toolbar ([#782](https://github.com/grafana/k6-studio/issues/782)) ([de03354](https://github.com/grafana/k6-studio/commit/de03354d8c63590c3f984c322e2eb26417b6ef74))
+* Navigation events are captures while typing in address bar ([#799](https://github.com/grafana/k6-studio/issues/799)) ([9245d7f](https://github.com/grafana/k6-studio/commit/9245d7fa48a890639716a201e40702654d0148dd))
+* Use `.fill()` instead of `.type()` when a text input has changed ([#788](https://github.com/grafana/k6-studio/issues/788)) ([86c06d0](https://github.com/grafana/k6-studio/commit/86c06d01fdb729fbdf1b5723c6382ac4e9346dfb))
+
+
+### Reverts
+
+* "chore(main): release 1.7.0 ([#776](https://github.com/grafana/k6-studio/issues/776))" ([#803](https://github.com/grafana/k6-studio/issues/803)) ([03d46b0](https://github.com/grafana/k6-studio/commit/03d46b0454f2d2e9fe8b3e8ead59ed148bba62f4))
+
+
+### Internal Changes
+
+* [POC] Render JSON suggestions ([#678](https://github.com/grafana/k6-studio/issues/678)) ([458f0fc](https://github.com/grafana/k6-studio/commit/458f0fc076a7198fad7c63dc7c9b70535018e1fd))
+* **fix:** Infinite loop when recording clicks ([#797](https://github.com/grafana/k6-studio/issues/797)) ([50469cc](https://github.com/grafana/k6-studio/commit/50469cc38f99b47479b1fc7cb102602cd6cae404))
+* Unwrap AggregateErrors before logging ([#794](https://github.com/grafana/k6-studio/issues/794)) ([b7b106e](https://github.com/grafana/k6-studio/commit/b7b106e0b688b649c665877826fb656f4cd48f6f))
+
+
+### Dependency Updates
+
+* Bump Electron version and [@electron-forge](https://github.com/electron-forge) packages ([#775](https://github.com/grafana/k6-studio/issues/775)) ([cad5ef5](https://github.com/grafana/k6-studio/commit/cad5ef5900d6042e3874e877065f8f8bae79332b))
+
+
+### Miscellaneous Chores
+
+* Additional usage collection ([#796](https://github.com/grafana/k6-studio/issues/796)) ([85b82c8](https://github.com/grafana/k6-studio/commit/85b82c8520643a5a0629ac913a50e53b654536ed))
+* **deps:** bump brace-expansion ([#800](https://github.com/grafana/k6-studio/issues/800)) ([b22a79e](https://github.com/grafana/k6-studio/commit/b22a79e0a4e1c3476cdc7d4651e02d0d651e9f56))
+* **main:** release 1.7.0 ([#776](https://github.com/grafana/k6-studio/issues/776)) ([ed0aa89](https://github.com/grafana/k6-studio/commit/ed0aa897b83d72a55cc6c456064b975416cbd3a0))
+* Pin get-vault-secrets action to a hash ([#777](https://github.com/grafana/k6-studio/issues/777)) ([a862ad3](https://github.com/grafana/k6-studio/commit/a862ad3cf93484c2a9bd8b852d5a38c2451c11d9))
+* update k6 version to v1.2.1 ([#783](https://github.com/grafana/k6-studio/issues/783)) ([d593ad2](https://github.com/grafana/k6-studio/commit/d593ad28ab4ec9c1b269410dd1e4044234fae4f6))
+
+
+### Build System
+
+* Rollback to electron-forge 7.4.0 due to build issues ([#802](https://github.com/grafana/k6-studio/issues/802)) ([0289d9a](https://github.com/grafana/k6-studio/commit/0289d9ae9320d4ba37233bf5d07a7216e75eef69))
+
+## [1.6.0](https://github.com/grafana/k6-studio/compare/v1.5.0...v1.6.0) (2025-07-28)
+
+
+### Features
+
+* Add custom protocol support ([#763](https://github.com/grafana/k6-studio/issues/763)) ([c2d6be4](https://github.com/grafana/k6-studio/commit/c2d6be44cbb1f941527e42b5563a8a4996d55a36))
+* Add JSON path explanation ([#759](https://github.com/grafana/k6-studio/issues/759)) ([df46dbf](https://github.com/grafana/k6-studio/commit/df46dbf36b47c6435020675ec5c0c8eb7d4b247e))
+* Allow in-browser toolbar to be re-positioned ([#765](https://github.com/grafana/k6-studio/issues/765)) ([3c397d7](https://github.com/grafana/k6-studio/commit/3c397d7f333a9377870a64c16044d99d1c913268))
+
+
+### Bug Fixes
+
+* windows build ([#762](https://github.com/grafana/k6-studio/issues/762)) ([87fba5b](https://github.com/grafana/k6-studio/commit/87fba5bacd74384424c5444b377b86a5c81ef518))
+
+
+### Internal Changes
+
+* Improved tools for developing the browser extension ([#766](https://github.com/grafana/k6-studio/issues/766)) ([7648d27](https://github.com/grafana/k6-studio/commit/7648d2722489c27529338d7f1aa3722d695c9e18))
+
+
+### Dependency Updates
+
+* Replace `papaparse` with `k6/experimental/csv` ([#758](https://github.com/grafana/k6-studio/issues/758)) ([fc48842](https://github.com/grafana/k6-studio/commit/fc488422eb7192d0cae5026f5003062fcbf4b5fb))
+
+
+### Miscellaneous Chores
+
+* Add more flexible usage tracking service ([#732](https://github.com/grafana/k6-studio/issues/732)) ([ff71b92](https://github.com/grafana/k6-studio/commit/ff71b92ed9491f2055395dc6c6d5baeae9d3497b))
+* Anonymous usage tracking for Recorder, Generator, Validator ([#771](https://github.com/grafana/k6-studio/issues/771)) ([96906c0](https://github.com/grafana/k6-studio/commit/96906c0acbc1e421680daa2e1f7163239be99bc4))
+* **deps:** bump form-data from 4.0.0 to 4.0.4 ([#772](https://github.com/grafana/k6-studio/issues/772)) ([317d44a](https://github.com/grafana/k6-studio/commit/317d44a068e80ea4afb7f5da35ccc331cbc5d228))
+
+## [1.5.0](https://github.com/grafana/k6-studio/compare/v1.4.0...v1.5.0) (2025-06-24)
+
+
+### Features
+
+* Display recent URLs in Recorder ([#748](https://github.com/grafana/k6-studio/issues/748)) ([815762f](https://github.com/grafana/k6-studio/commit/815762f2bf7bbbe1cc60efc88d7e344335c7255a))
+
+
+### Bug Fixes
+
+* Add support for Chromium path from Flatpak ([#750](https://github.com/grafana/k6-studio/issues/750)) ([b35b9ea](https://github.com/grafana/k6-studio/commit/b35b9eae4c811447f575856fcebbaaf25ce78ced))
+* Cloud sign-in fails when user is behind a network proxy ([#756](https://github.com/grafana/k6-studio/issues/756)) ([660399d](https://github.com/grafana/k6-studio/commit/660399dd77fc6fdff9c747b0ca7561e99c167a7d))
+* Threshold metric for http_req_failed ([#734](https://github.com/grafana/k6-studio/issues/734)) ([bc84b7e](https://github.com/grafana/k6-studio/commit/bc84b7eed5f172f2f617901efc5771ea397dc5b8))
+
+
+### Miscellaneous Chores
+
+* update k6 version to v1.0.0 ([#760](https://github.com/grafana/k6-studio/issues/760)) ([c8ad5ed](https://github.com/grafana/k6-studio/commit/c8ad5edb384c6805ce4cf7fd62bf6f475672bc71))
+
+## [1.4.0](https://github.com/grafana/k6-studio/compare/v1.3.0...v1.4.0) (2025-06-11)
+
+
+### Features
+
+* Display Rule preview in Rule editor ([#740](https://github.com/grafana/k6-studio/issues/740)) ([83ff7eb](https://github.com/grafana/k6-studio/commit/83ff7eb80ec86f8ddb1b7eab5cd7286e6399d4b0))
+* Implement proxy health check ([#716](https://github.com/grafana/k6-studio/issues/716)) ([f05ed08](https://github.com/grafana/k6-studio/commit/f05ed08a3226dec94014d29c90531ce0bdd89f3f))
+
+
+### Bug Fixes
+
+* **browser:** Extension doesn't load when starting a recording in Chrome ([#742](https://github.com/grafana/k6-studio/issues/742)) ([1ab1eaa](https://github.com/grafana/k6-studio/commit/1ab1eaaf4b684bb0322283a6c10f9592adc43282))
+* Running validator causes 'Maximum call stack size exceeded' error ([#746](https://github.com/grafana/k6-studio/issues/746)) ([cae2276](https://github.com/grafana/k6-studio/commit/cae22763342c2d9daa103c1757b9e2726486a92d))
+
+
+### Miscellaneous Chores
+
+* **deps:** bump tar-fs from 3.0.8 to 3.0.9 ([#739](https://github.com/grafana/k6-studio/issues/739)) ([150df5e](https://github.com/grafana/k6-studio/commit/150df5e93e8be0df4945dbe080b03027c9902887))
+* migrate secrets to vault ([#737](https://github.com/grafana/k6-studio/issues/737)) ([22fe5f5](https://github.com/grafana/k6-studio/commit/22fe5f5ba517c68f41ac16b6f27276ba5b257e76))
+* Set studio-specific User-Agent ([#733](https://github.com/grafana/k6-studio/issues/733)) ([8459ed4](https://github.com/grafana/k6-studio/commit/8459ed49ef0334b2a0bf3df149aa45fbc6b426a3))
+* Switch to Lucide icons ([#711](https://github.com/grafana/k6-studio/issues/711)) ([d81f19d](https://github.com/grafana/k6-studio/commit/d81f19da2a29ac9fddadf4b472781f190d0266a0))
+
+
+### Continuous Integration
+
+* Fix release please workflow ([#745](https://github.com/grafana/k6-studio/issues/745)) ([7d6f167](https://github.com/grafana/k6-studio/commit/7d6f1676f2e4ccc408b6a8331af3122c1bab9adf))
+
 ## [1.3.0](https://github.com/grafana/k6-studio/compare/v1.2.0...v1.3.0) (2025-05-14)
 
 

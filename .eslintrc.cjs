@@ -73,6 +73,7 @@ module.exports = {
         alphabetize: { order: 'asc' },
       },
     ],
+    'import/no-unresolved': ['error', { ignore: ['^k6'] }],
   },
 
   parserOptions: {

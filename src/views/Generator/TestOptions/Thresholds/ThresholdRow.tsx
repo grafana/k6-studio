@@ -100,6 +100,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
         <FieldGroup errors={errors} name={`thresholds.${index}.value`} mb="0">
           <TextField.Root
             type="number"
+            step="0.01"
             placeholder="value"
             {...register(`thresholds.${index}.value`, { valueAsNumber: true })}
           >

@@ -1,4 +1,4 @@
-import { JSLIB, K6_EXPORTS, REQUIRED_IMPORTS } from '@/constants/imports'
+import { K6_EXPORTS, REQUIRED_IMPORTS } from '@/constants/imports'
 import { getCustomCodeSnippet } from '@/rules/parameterization'
 import { applyRules } from '@/rules/rules'
 import { ProxyData, RequestSnippetSchema } from '@/types'
@@ -46,16 +46,20 @@ export function generateScript({
 }
 
 export function generateImports(generator: GeneratorFileData): string {
-  const hasDataFiles = generator.testData.files.length > 0
-  const hasCsvDataFiles = generator.testData.files.some(({ name }) =>
+  const hasCSVDataFiles = generator.testData.files.some(({ name }) =>
     name.toLowerCase().endsWith('csv')
+  )
+  const hasJSONDataFiles = generator.testData.files.some(({ name }) =>
+    name.toLowerCase().endsWith('json')
   )
   const imports = [
     ...REQUIRED_IMPORTS,
-    // Import SharedArray for data files
-    ...(hasDataFiles ? [K6_EXPORTS['k6/data']] : []),
-    // TODO: replace with k6/experimental/csv once we switch to k6@0.57.0 or higher
-    ...(hasCsvDataFiles ? [JSLIB['papaparse']] : []),
+    // Import SharedArray for JSON files
+    ...(hasJSONDataFiles ? [K6_EXPORTS['k6/data']] : []),
+    // Import k6/experimental/csv for CSV files
+    ...(hasCSVDataFiles
+      ? [K6_EXPORTS['k6/experimental/csv'], K6_EXPORTS['k6/experimental/fs']]
+      : []),
   ]
 
   return imports.map(generateImportStatement).join('\n')
@@ -82,17 +86,17 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
   const fileKeyValuePairs = files
     .map(({ name }) => {
       const displayName = getFileNameWithoutExtension(name)
-      const isCsv = name.toLowerCase().endsWith('csv')
+      const isCSV = name.toLowerCase().endsWith('csv')
+
+      if (isCSV) {
+        return `
+        "${displayName}": await csv.parse(await fs.open('../Data/${name}'), { asObjects: true })`
+      }
 
       return `
         "${displayName}": new SharedArray("${displayName}", () => {
-          ${
-            isCsv
-              ? `return Papa.parse(open('../Data/${name}'), { header: true }).data;`
-              : `
-              const data = JSON.parse(open('../Data/${name}'));
-              return Array.isArray(data) ? data : [data];`
-          }
+          const data = JSON.parse(open('../Data/${name}'));
+          return Array.isArray(data) ? data : [data];
         })`
     })
     .join(',\n')

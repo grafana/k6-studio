@@ -1,4 +1,4 @@
-import { tabs } from 'webextension-polyfill'
+import { runtime, tabs } from 'webextension-polyfill'
 
 import { BrowserEvent } from '@/schemas/recording'
 
@@ -6,13 +6,6 @@ import { BrowserExtensionEvent } from '../messaging'
 
 import { captureNavigationEvents } from './navigation'
 import { client } from './routing'
-
-captureNavigationEvents((events) => {
-  client.send({
-    type: 'record-events',
-    events: Array.isArray(events) ? events : [events],
-  })
-})
 
 const eventLog: BrowserEvent[] = []
 
@@ -49,6 +42,12 @@ client.on('load-events', () => {
   })
 })
 
+client.on('reload-extension', () => {
+  console.log('reloading extension...')
+
+  runtime.reload()
+})
+
 const logEvent = (event: BrowserExtensionEvent) => {
   console.log(`[background] ${event.data.type}:`, event.data)
 }
@@ -57,3 +56,10 @@ client.on('record-events', logEvent)
 client.on('highlight-elements', logEvent)
 client.on('events-recorded', logEvent)
 client.on('navigate', logEvent)
+
+captureNavigationEvents((events) => {
+  client.send({
+    type: 'record-events',
+    events: Array.isArray(events) ? events : [events],
+  })
+})

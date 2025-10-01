@@ -1,3 +1,4 @@
+import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
 
 import * as m from '../types'
@@ -50,19 +51,30 @@ function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
 function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
   const page = context.reference(node.inputs.page)
 
-  const expression: ir.NewLocatorExpression = {
-    type: 'NewLocatorExpression',
-    selector: {
-      type: 'StringLiteral',
-      value: node.selector,
-    },
-    page,
+  if (node.selector.testId) {
+    // We always inline locator nodes for readability. If we implement better
+    // logic for generating variable names, then we could consider declaring
+    // a variable for it if there are multiple references.
+    context.inline(node, {
+      type: 'NewTestIdLocatorExpression',
+      testId: {
+        type: 'StringLiteral',
+        value: node.selector.testId,
+      },
+      page,
+    })
+    return
   }
 
-  // We always inline locator nodes for readability. If we implement better
-  // logic for generating variable names, then we could consider declaring
-  // a variable for it if there are multiple references.
-  context.inline(node, expression)
+  // Default to CSS locator
+  context.inline(node, {
+    type: 'NewCssLocatorExpression',
+    selector: {
+      type: 'StringLiteral',
+      value: node.selector.css,
+    },
+    page,
+  })
 }
 
 function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {
@@ -104,7 +116,7 @@ function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
   context.emit({
     type: 'ExpressionStatement',
     expression: {
-      type: 'TypeTextExpression',
+      type: 'FillTextExpression',
       target: locator,
       value: {
         type: 'StringLiteral',
@@ -168,6 +180,48 @@ function emitAssertion(
       return assertion.visible
         ? { type: 'IsVisibleAssertion' }
         : { type: 'IsHiddenAssertion' }
+
+    case 'is-checked':
+      if (assertion.inputType === 'aria') {
+        return {
+          type: 'IsAttributeEqualToAssertion',
+          attribute: {
+            type: 'StringLiteral',
+            value: 'aria-checked',
+          },
+          value: {
+            type: 'StringLiteral',
+            value:
+              assertion.expected === 'checked'
+                ? 'true'
+                : assertion.expected === 'unchecked'
+                  ? 'false'
+                  : 'mixed',
+          },
+        }
+      }
+
+      if (assertion.expected === 'indeterminate') {
+        return { type: 'IsIndeterminateAssertion' }
+      }
+
+      if (assertion.expected === 'unchecked') {
+        return { type: 'IsNotCheckedAssertion' }
+      }
+
+      return { type: 'IsCheckedAssertion' }
+
+    case 'has-values': {
+      return {
+        type: 'HasValueAssertion',
+        expected: mapNonEmpty(assertion.expected, (value) => {
+          return {
+            type: 'StringLiteral',
+            value,
+          }
+        }),
+      }
+    }
 
     default:
       return exhaustive(assertion)

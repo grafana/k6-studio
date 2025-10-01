@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { EmptyMessage } from '@/components/EmptyMessage'
-import { Details } from '@/components/WebLogView/Details'
+import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { ProxyData, Group } from '@/types'
 
 import { RequestsSection } from './RequestsSection'
@@ -74,7 +74,7 @@ export function RequestLog({
       </Allotment.Pane>
       {selectedRequest && (
         <Allotment.Pane minSize={300}>
-          <Details
+          <HttpRequestDetails
             selectedRequest={selectedRequest}
             onSelectRequest={setSelectedRequest}
           />

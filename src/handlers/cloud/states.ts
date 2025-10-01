@@ -7,7 +7,7 @@ import { ProjectClient } from '@/services/k6/projects'
 import { TestClient } from '@/services/k6/tests'
 import { CloudCredentials } from '@/services/k6/types'
 import { isAbortError } from '@/utils/errors'
-import { K6Client } from '@/utils/k6Client'
+import { K6Client } from '@/utils/k6/client'
 import { exhaustive } from '@/utils/typescript'
 
 import { getProfileData } from '../auth/fs'

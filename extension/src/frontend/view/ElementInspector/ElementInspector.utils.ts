@@ -20,6 +20,19 @@ export function toAssertion(data: AssertionData): Assertion {
         },
       }
 
+    case 'check':
+      return {
+        type: 'check',
+        inputType: data.inputType,
+        expected: data.expected,
+      }
+
+    case 'text-input':
+      return {
+        type: 'text-input',
+        expected: data.expected,
+      }
+
     default:
       return exhaustive(data)
   }

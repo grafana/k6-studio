@@ -1,14 +1,19 @@
 import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as RadixToolbar from '@radix-ui/react-toolbar'
+import { forwardRef } from 'react'
 
 type RootProps = RadixToolbar.ToolbarProps & {
   size?: '1' | '2'
 }
 
-function Root({ size, ...props }: RootProps) {
+const Root = forwardRef<HTMLDivElement, RootProps>(function Root(
+  { size, ...props },
+  ref
+) {
   return (
     <RadixToolbar.Root
+      ref={ref}
       css={css`
         display: flex;
         gap: var(--studio-spacing-1);
@@ -28,7 +33,7 @@ function Root({ size, ...props }: RootProps) {
       data-size={size}
     />
   )
-}
+})
 
 const Button = styled(RadixToolbar.Button)`
   display: flex;
@@ -53,14 +58,15 @@ const Button = styled(RadixToolbar.Button)`
 const Link = styled(RadixToolbar.Link)``
 
 const Separator = styled(RadixToolbar.Separator)`
-  align-self: stretch;
+  align-self: center;
+  padding: 0 var(--studio-spacing-2);
 
   &:before {
     content: ' ';
     display: block;
-    background-color: var(--studio-border-color);
+    background-color: var(--gray-5);
     width: 1px;
-    height: 100%;
+    height: 12px;
   }
 
   &[data-orientation='horizontal']:before {
@@ -71,7 +77,6 @@ const Separator = styled(RadixToolbar.Separator)`
 
 const ToggleGroup = styled(RadixToolbar.ToggleGroup)`
   display: flex;
-  gap: var(--studio-spacing-1);
 `
 
 const ToggleItem = styled(RadixToolbar.ToggleItem)`
@@ -84,7 +89,8 @@ const ToggleItem = styled(RadixToolbar.ToggleItem)`
   border: none;
   padding: var(--studio-toolbar-button-padding);
 
-  &[data-state='on'] {
+  &[data-state='on'],
+  &:hover {
     background-color: var(--studio-toggle-bg-on);
   }
 `

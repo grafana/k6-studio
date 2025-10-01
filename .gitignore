@@ -110,3 +110,5 @@ resources/win/x86_64/k6
 
 # tests
 test-results
+# Shims
+resources/shims

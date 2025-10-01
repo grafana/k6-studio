@@ -1,19 +1,25 @@
 import { css } from '@emotion/react'
 import { ToolbarButtonProps } from '@radix-ui/react-toolbar'
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  CheckSquareIcon,
   EyeIcon,
-  SquareDashedMousePointerIcon,
+  TextCursorInputIcon,
   TypeIcon,
 } from 'lucide-react'
-import { ComponentProps } from 'react'
+import { ComponentProps, ReactNode } from 'react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
-import { Tooltip } from '@/components/primitives/Tooltip'
+import { ElementRole } from 'extension/src/utils/aria'
 
 import { TrackedElement } from './ElementInspector.hooks'
-import { AssertionData } from './assertions/types'
+import {
+  findAssociatedControl,
+  getCheckedState,
+  isNative,
+  LabeledControl,
+  getTextBoxValue,
+} from './ElementMenu.utils'
+import { AssertionData, CheckAssertionData } from './assertions/types'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
   return (
@@ -43,19 +49,147 @@ function ToolbarButton(props: ToolbarButtonProps) {
   )
 }
 
+interface CategoryProps {
+  heading: ReactNode
+  children: ReactNode
+}
+
+function MenuSection({ heading, children }: CategoryProps) {
+  return (
+    <>
+      <div
+        role="separator"
+        css={css`
+          font-size: var(--studio-font-size-1);
+          font-weight: var(--studio-font-weight-medium);
+          display: flex;
+          align-items: center;
+          gap: var(--studio-spacing-2);
+          padding: var(--studio-spacing-1);
+          padding-right: 0;
+        `}
+      >
+        {heading}
+      </div>
+      {children}
+    </>
+  )
+}
+
+interface CheckboxCategoryProps {
+  role: ElementRole
+  input: LabeledControl
+  onAddAssertion: (data: CheckAssertionData) => void
+}
+
+function CheckboxAssertion({
+  role,
+  input,
+  onAddAssertion,
+}: CheckboxCategoryProps) {
+  function handleAddCheckAssertion() {
+    onAddAssertion({
+      type: 'check',
+      selector: input.selector.css,
+      inputType: isNative(role, input.element) ? 'native' : 'aria',
+      expected: getCheckedState(input.element),
+    })
+  }
+
+  return (
+    <ToolbarButton onClick={handleAddCheckAssertion}>
+      <CheckSquareIcon /> <div>Add check assertion</div>
+    </ToolbarButton>
+  )
+}
+
+interface TextInputAssertionProps {
+  role: ElementRole
+  input: LabeledControl
+  onAddAssertion: (data: AssertionData) => void
+}
+
+function TextInputAssertion({
+  input,
+  onAddAssertion,
+}: TextInputAssertionProps) {
+  const handleAddAssertion = () => {
+    onAddAssertion({
+      type: 'text-input',
+      selector: input.selector.css,
+      multiline:
+        input.element instanceof HTMLTextAreaElement ||
+        input.element.getAttribute('aria-multiline') === 'true',
+      expected: getTextBoxValue(input.element),
+    })
+  }
+
+  return (
+    <ToolbarButton onClick={handleAddAssertion}>
+      <TextCursorInputIcon /> <div>Add value assertion</div>
+    </ToolbarButton>
+  )
+}
+
+function toRoleHeading(role: string) {
+  switch (role) {
+    case 'textbox':
+      return 'Text box'
+
+    case 'searchbox':
+      return 'Search box'
+
+    default:
+      return role.slice(0, 1).toUpperCase() + role.slice(1)
+  }
+}
+
+interface RoleCategoryProps {
+  role: ElementRole
+  input: LabeledControl
+  onAddAssertion: (assertion: AssertionData) => void
+}
+
+function RoleAssertions({ role, input, onAddAssertion }: RoleCategoryProps) {
+  switch (role.role) {
+    case 'radio':
+    case 'checkbox':
+    case 'switch':
+      return (
+        <MenuSection heading={toRoleHeading(role.role)}>
+          <CheckboxAssertion
+            role={role}
+            input={input}
+            onAddAssertion={onAddAssertion}
+          />
+        </MenuSection>
+      )
+
+    case 'textbox':
+    case 'searchbox':
+      return (
+        <MenuSection heading={toRoleHeading(role.role)}>
+          <TextInputAssertion
+            role={role}
+            input={input}
+            onAddAssertion={onAddAssertion}
+          />
+        </MenuSection>
+      )
+
+    default:
+      return null
+  }
+}
+
 interface ElementMenuProps {
   element: TrackedElement
   onSelectAssertion: (data: AssertionData) => void
-  onSelectionDecrease?: () => void
-  onSelectionIncrease?: () => void
 }
 
-export function ElementMenu({
-  element,
-  onSelectAssertion,
-  onSelectionDecrease,
-  onSelectionIncrease,
-}: ElementMenuProps) {
+export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
+  const associatedElement = findAssociatedControl(element)
+
   const handleAddVisibilityAssertion = () => {
     onSelectAssertion({
       type: 'visibility',
@@ -80,53 +214,25 @@ export function ElementMenu({
         gap: 0;
       `}
     >
-      <ToolbarButton onClick={handleAddVisibilityAssertion}>
-        <EyeIcon /> <div>Add visibility assertion</div>
-      </ToolbarButton>
-      <ToolbarButton onClick={handleAddTextAssertion}>
-        <TypeIcon /> <div>Add text assertion</div>
-      </ToolbarButton>
-      <Toolbar.Separator />
-      <div
-        css={css`
-          display: flex;
-          gap: var(--studio-spacing-1);
-          align-items: center;
-          padding: var(--studio-spacing-1) var(--studio-spacing-2);
-        `}
-      >
-        <div
-          css={css`
-            display: flex;
-            gap: var(--studio-spacing-2);
-            align-items: center;
-            flex: 1 1 0;
-          `}
-        >
-          <SquareDashedMousePointerIcon size={16} strokeWidth={1.5} />
-          Selection
-        </div>
-        <Tooltip asChild content="Select parent element">
-          <div>
-            <Toolbar.Button
-              disabled={onSelectionIncrease === undefined}
-              onClick={onSelectionIncrease}
-            >
-              <ChevronLeftIcon size={16} strokeWidth={1.5} />
-            </Toolbar.Button>
-          </div>
-        </Tooltip>
-        <Tooltip asChild content="Select child element">
-          <div>
-            <Toolbar.Button
-              disabled={onSelectionDecrease === undefined}
-              onClick={onSelectionDecrease}
-            >
-              <ChevronRightIcon size={16} strokeWidth={1.5} />
-            </Toolbar.Button>
-          </div>
-        </Tooltip>
-      </div>
+      {associatedElement?.roles.map((role) => {
+        return (
+          <RoleAssertions
+            key={role.role}
+            role={role}
+            input={associatedElement}
+            onAddAssertion={onSelectAssertion}
+          />
+        )
+      })}
+
+      <MenuSection heading="General">
+        <ToolbarButton onClick={handleAddVisibilityAssertion}>
+          <EyeIcon /> <div>Add visibility assertion</div>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleAddTextAssertion}>
+          <TypeIcon /> <div>Add text assertion</div>
+        </ToolbarButton>
+      </MenuSection>
     </ToolbarRoot>
   )
 }

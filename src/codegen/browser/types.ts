@@ -1,3 +1,5 @@
+import { CheckState, ElementSelector } from '@/schemas/recording'
+
 export type NodeId = string
 
 interface NodeBase {
@@ -14,7 +16,7 @@ export interface PageNode extends NodeBase {
 
 export interface LocatorNode extends NodeBase {
   type: 'locator'
-  selector: string
+  selector: ElementSelector
   inputs: {
     page: NodeRef
   }
@@ -90,7 +92,22 @@ export interface IsVisibleAssertion {
   visible: boolean
 }
 
-export type AssertionOperation = TextContainsAssertion | IsVisibleAssertion
+export interface IsCheckedAssertion {
+  type: 'is-checked'
+  inputType: 'aria' | 'native'
+  expected: CheckState
+}
+
+export interface HasValuesAssertion {
+  type: 'has-values'
+  expected: [string, ...string[]]
+}
+
+export type AssertionOperation =
+  | TextContainsAssertion
+  | IsVisibleAssertion
+  | IsCheckedAssertion
+  | HasValuesAssertion
 
 export interface AssertNode extends NodeBase {
   type: 'assert'

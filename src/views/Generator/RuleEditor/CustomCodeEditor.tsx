@@ -2,7 +2,7 @@ import { Box, Grid } from '@radix-ui/themes'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { ControlledSelect, FieldGroup } from '@/components/Form'
-import { CodeEditor } from '@/components/Monaco/CodeEditor'
+import { ReactMonacoEditor } from '@/components/Monaco/ReactMonacoEditor'
 
 import { FilterField } from './FilterField'
 
@@ -16,6 +16,7 @@ export function CustomCodeEditor() {
     control,
     formState: { errors },
   } = useFormContext()
+
   return (
     <Box>
       <Grid gap="2" columns="1fr 1fr">
@@ -34,10 +35,10 @@ export function CustomCodeEditor() {
           name="snippet"
           render={({ field }) => (
             <div css={{ height: 200 }}>
-              <CodeEditor
-                // TODO: https://github.com/grafana/k6-studio/issues/277
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                value={field.value}
+              <ReactMonacoEditor
+                showToolbar
+                defaultLanguage="javascript"
+                value={field.value as string}
                 onChange={(value = '') => {
                   field.onChange(value)
                 }}

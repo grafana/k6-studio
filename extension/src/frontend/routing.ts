@@ -12,6 +12,7 @@ frontend.forward('record-events', [background])
 frontend.forward('navigate', [background])
 frontend.forward('load-events', [background])
 frontend.forward('stop-recording', [background])
+frontend.forward('reload-extension', [background])
 
 background.forward('events-recorded', [frontend])
 background.forward('events-loaded', [frontend])

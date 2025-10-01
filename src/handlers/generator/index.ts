@@ -6,6 +6,8 @@ import invariant from 'tiny-invariant'
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
 import { GENERATORS_PATH } from '@/constants/workspace'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
+import { trackEvent } from '@/services/usageTracking'
+import { UsageEventName } from '@/services/usageTracking/types'
 import { GeneratorFileData } from '@/types/generator'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { createNewGeneratorFile } from '@/utils/generator'
@@ -23,6 +25,10 @@ export function initialize() {
       prefix: 'Generator',
     })
 
+    trackEvent({
+      event: UsageEventName.GeneratorCreated,
+    })
+
     return fileName
   })
 
@@ -36,6 +42,8 @@ export function initialize() {
         path.join(GENERATORS_PATH, fileName),
         JSON.stringify(generator, null, 2)
       )
+
+      trackGeneratorUpdated(generator)
     }
   )
 
@@ -51,4 +59,22 @@ export function initialize() {
       return GeneratorFileDataSchema.parse(JSON.parse(data))
     }
   )
+}
+
+function trackGeneratorUpdated({ rules }: GeneratorFileData) {
+  trackEvent({
+    event: UsageEventName.GeneratorUpdated,
+    payload: {
+      rules: {
+        correlation: rules.filter((rule) => rule.type === 'correlation').length,
+        parameterization: rules.filter(
+          (rule) => rule.type === 'parameterization'
+        ).length,
+        verification: rules.filter((rule) => rule.type === 'verification')
+          .length,
+        customCode: rules.filter((rule) => rule.type === 'customCode').length,
+        disabled: rules.filter((rule) => !rule.enabled).length,
+      },
+    },
+  })
 }

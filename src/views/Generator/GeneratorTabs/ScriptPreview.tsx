@@ -3,11 +3,12 @@ import { CircleCheckIcon, DownloadIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { GhostButton } from '@/components/GhostButton'
-import { CodeEditor } from '@/components/Monaco/CodeEditor'
+import { ReactMonacoEditor } from '@/components/Monaco/ReactMonacoEditor'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
+import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
 import { useGeneratorStore } from '@/store/generator'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
@@ -29,9 +30,11 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
     useState(false)
   const { preview, error } = useScriptPreview()
   const proxyStatus = useProxyStatus()
+
   const isScriptExportable = !error && !!preview
 
   const handleExportScript = useScriptExport(fileName)
+  const handleCopy = useTrackScriptCopy(preview, 'generator')
 
   return (
     <Flex direction="column" height="100%" position="relative">
@@ -67,7 +70,15 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
           }}
         />
       </Flex>
-      <CodeEditor readOnly value={preview} />
+      <ReactMonacoEditor
+        showToolbar
+        defaultLanguage="javascript"
+        options={{
+          readOnly: true,
+        }}
+        value={preview}
+        onCopy={handleCopy}
+      />
 
       {!!error && <ScriptPreviewError error={error} />}
 

@@ -1,7 +1,8 @@
 import { css } from '@emotion/react'
-import { Tabs } from '@radix-ui/themes'
+import { Badge, Tabs } from '@radix-ui/themes'
 import { FlaskConical } from 'lucide-react'
 
+import { Flex } from '@/components/primitives/Flex'
 import { BrowserEvent } from '@/schemas/recording'
 import { Group, ProxyData } from '@/types'
 
@@ -17,7 +18,6 @@ interface RecordingInspectorProps {
   onUpdateGroup?: (group: Group) => void
   onCreateGroup?: (name: string) => void
   onResetRecording?: () => void
-  onExportBrowserScript?: (fileName: string) => void
 }
 
 const styles = {
@@ -35,7 +35,6 @@ export function RecordingInspector({
   onUpdateGroup,
   onCreateGroup,
   onResetRecording,
-  onExportBrowserScript,
 }: RecordingInspectorProps) {
   return (
     <Tabs.Root
@@ -48,18 +47,35 @@ export function RecordingInspector({
     >
       <Tabs.List>
         <Tabs.Trigger value="requests">
-          Requests ({requests.length})
+          <Flex align="center" gap="1">
+            Requests
+            <Badge radius="full" color="gray" highContrast>
+              {requests.length}
+            </Badge>
+          </Flex>
         </Tabs.Trigger>
-        <Tabs.Trigger value="browser-events">
-          <FlaskConical
-            css={css`
-              width: 1em;
-              height: 1em;
-              margin-right: 0.25em;
-            `}
-            strokeWidth={1.5}
-          />{' '}
-          Browser events ({browserEvents.length})
+        <Tabs.Trigger
+          value="browser-events"
+          disabled={browserEvents.length === 0}
+        >
+          <Flex align="center" gap="1">
+            <FlaskConical
+              css={css`
+                width: 1em;
+                height: 1em;
+                margin-right: 0.25em;
+              `}
+              strokeWidth={1.5}
+            />
+            Browser events
+            <Badge
+              radius="full"
+              color="gray"
+              highContrast={browserEvents.length > 0}
+            >
+              {browserEvents.length}
+            </Badge>
+          </Flex>
         </Tabs.Trigger>
       </Tabs.List>
       <Tabs.Content value="requests" css={styles.content}>
@@ -73,10 +89,7 @@ export function RecordingInspector({
         />
       </Tabs.Content>
       <Tabs.Content value="browser-events" css={styles.content}>
-        <BrowserEventLog
-          events={browserEvents}
-          onExportScript={onExportBrowserScript}
-        />
+        <BrowserEventLog events={browserEvents} />
       </Tabs.Content>
     </Tabs.Root>
   )

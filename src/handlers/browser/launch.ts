@@ -2,25 +2,60 @@ import {
   computeSystemExecutablePath,
   Browser,
   ChromeReleaseChannel,
-  launch,
 } from '@puppeteer/browsers'
-import { exec, spawn } from 'child_process'
+import { ChildProcess, exec, spawn } from 'child_process'
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import { mkdtemp } from 'fs/promises'
+import { mkdir, mkdtemp, writeFile } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import { promisify } from 'util'
 
-import { getCertificateSPKI } from '@/main/proxy'
+import { getProxyArguments } from '@/main/proxy'
+import { ChromeDevtoolsClient } from '@/utils/cdp/client'
+import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
 
 import { BrowserServer } from '../../services/browser/server'
 import { getPlatform } from '../../utils/electron'
 
 import { BrowserHandler, LaunchBrowserOptions } from './types'
 
+const CHROME_DEV_PREFERENCES = JSON.stringify({
+  devtools: {
+    preferences: {
+      currentDockState: '"undocked"',
+      'navigator-view-selected-tab': '"navigator-content-scripts"',
+      'panel-selected-tab': '"sources"',
+    },
+    synced_preferences_sync_disabled: {
+      // This allows content scripts to be debugged via DevTools without
+      // having to whitelist them yourself.
+      'skip-content-scripts': 'false',
+    },
+  },
+})
+
 const createUserDataDir = async () => {
-  return mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
+  const userDataDir = await mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
+
+  // If we're in development mode, we create a default Chrome profile
+  // with some preferences that make developing the extension easier
+  // (e.g. whitelisting content scripts in the debugger).
+  //
+  // @ts-expect-error - Electron apps are built as CJS.
+  if (import.meta.env.DEV) {
+    try {
+      const defaultProfilePath = path.join(userDataDir, 'Default')
+      const preferencesPath = path.join(defaultProfilePath, 'Preferences')
+
+      await mkdir(defaultProfilePath, { recursive: true })
+      await writeFile(preferencesPath, CHROME_DEV_PREFERENCES, 'utf8')
+    } catch (error) {
+      console.error('Error creating Chrome profile:', error)
+    }
+  }
+
+  return userDataDir
 }
 
 export async function getBrowserPath() {
@@ -52,6 +87,18 @@ function getExtensionPath() {
   return path.join(process.resourcesPath, 'extension')
 }
 
+const FEATURES_TO_DISABLE = [
+  'OptimizationGuideModelDownloading',
+  'OptimizationHintsFetching',
+  'OptimizationTargetPrediction',
+  'OptimizationHints',
+]
+
+const BROWSER_RECORDING_ARGS = [
+  '--remote-debugging-pipe',
+  '--enable-unsafe-extension-debugging',
+]
+
 export const launchBrowser = async (
   browserWindow: BrowserWindow,
   browserServer: BrowserServer,
@@ -62,22 +109,9 @@ export const launchBrowser = async (
 
   const userDataDir = await createUserDataDir()
   console.log(userDataDir)
-  const certificateSPKI = await getCertificateSPKI()
-
-  const optimizationsToDisable = [
-    'OptimizationGuideModelDownloading',
-    'OptimizationHintsFetching',
-    'OptimizationTargetPrediction',
-    'OptimizationHints',
-  ]
-  const disableChromeOptimizations = `--disable-features=${optimizationsToDisable.join(',')}`
 
   const extensionPath = getExtensionPath()
   console.info(`extension path: ${extensionPath}`)
-
-  if (capture.browser) {
-    browserServer.start(browserWindow)
-  }
 
   const handleBrowserClose = (): Promise<void> => {
     browserServer.stop()
@@ -92,12 +126,15 @@ export const launchBrowser = async (
   const handleBrowserLaunchError = (error: Error) => {
     log.error(error)
     browserServer.stop()
-    browserWindow.webContents.send(BrowserHandler.Failed)
+    browserWindow.webContents.send(BrowserHandler.Error, {
+      reason: 'browser-launch',
+      fatal: true,
+    })
   }
 
-  const browserRecordingArgs = capture.browser
-    ? [`--load-extension=${extensionPath}`]
-    : []
+  const proxyArgs = await getProxyArguments(k6StudioState.appSettings.proxy)
+
+  const browserRecordingArgs = capture.browser ? BROWSER_RECORDING_ARGS : []
 
   const args = [
     '--new',
@@ -110,30 +147,79 @@ export const launchBrowser = async (
     '--disable-background-networking',
     '--disable-component-update',
     '--disable-search-engine-choice-screen',
-    `--proxy-server=http://localhost:${k6StudioState.appSettings.proxy.port}`,
-    `--ignore-certificate-errors-spki-list=${certificateSPKI}`,
+    `--disable-features=${FEATURES_TO_DISABLE.join(',')}`,
+    ...proxyArgs,
     ...browserRecordingArgs,
-    disableChromeOptimizations,
     url?.trim() || 'about:blank',
   ]
 
-  // if we are on linux we spawn the browser directly and attach the on exit callback
-  if (getPlatform() === 'linux') {
-    const browserProc = spawn(path, args)
+  if (capture.browser) {
+    try {
+      await browserServer.start(browserWindow)
 
-    browserProc.on('error', handleBrowserLaunchError)
-    browserProc.once('exit', handleBrowserClose)
-    return browserProc
+      const process = await new Promise<ChildProcess>((resolve, reject) => {
+        const process = spawn(path, args, {
+          stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
+        })
+
+        process.on('spawn', () => {
+          resolve(process)
+        })
+
+        process.on('error', (err) => {
+          reject(err)
+        })
+      })
+
+      try {
+        const client = ChromeDevtoolsClient.fromChildProcess(process)
+
+        const response = await client.call({
+          method: 'Extensions.loadUnpacked',
+          params: {
+            path: extensionPath,
+          },
+        })
+
+        log.log(`k6 Studio extension loaded`, response)
+      } catch (error) {
+        // If we fail to load the extension, we'll log the error and continue without it.
+        log.error('Failed to start browser recording: ', error)
+
+        browserWindow.webContents.send(BrowserHandler.Error, {
+          reason: 'extension-load',
+          fatal: false,
+        })
+      }
+
+      process.once('exit', handleBrowserClose)
+
+      return process
+    } catch (error) {
+      log.error('An error occurred while starting recording: ', error)
+
+      browserServer.stop()
+
+      browserWindow.webContents.send(BrowserHandler.Error, {
+        fatal: true,
+        reason:
+          error instanceof WebSocketServerError
+            ? 'websocket-server-error'
+            : 'browser-launch',
+      })
+
+      return null
+    }
   }
 
-  // macOS & windows
-  const browserProc = launch({
-    executablePath: path,
-    args: args,
-    onExit: handleBrowserClose,
+  const process = spawn(path, args, {
+    stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
   })
-  browserProc.nodeProcess.on('error', handleBrowserLaunchError)
-  return browserProc
+
+  process.on('error', handleBrowserLaunchError)
+  process.once('exit', handleBrowserClose)
+
+  return process
 }
 
 function getChromePath() {

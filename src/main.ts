@@ -6,7 +6,7 @@ import { updateElectronApp } from 'update-electron-app'
 
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
-import { migrateJsonGenerator } from './main/generator'
+import { initializeDeepLinks } from './main/deepLinks'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
 import { configureApplicationMenu } from './main/menu'
@@ -19,8 +19,9 @@ import { getSettings, initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { BrowserServer } from './services/browser/server'
+import { configureSystemProxy } from './services/http'
+import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
-import { sendReport } from './usageReport'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
@@ -55,6 +56,7 @@ handlers.initialize({
   browserServer,
 })
 mainState.initialize()
+initializeDeepLinks()
 
 const createSplashWindow = async () => {
   k6StudioState.splashscreenWindow = new BrowserWindow({
@@ -100,7 +102,7 @@ const createSplashWindow = async () => {
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
   if (getPlatform() === 'mac') {
-    app.dock.setIcon(icon)
+    app.dock?.setIcon(icon)
   }
   app.setName('Grafana k6 Studio')
 
@@ -135,6 +137,9 @@ const createWindow = async () => {
     k6StudioState.proxyStatus = status
     mainWindow.webContents.send(ProxyHandler.ChangeStatus, status)
   })
+
+  // Configure proxy settings for `fetch`.
+  await configureSystemProxy()
 
   // Start proxy
   k6StudioState.currentProxyProcess =
@@ -187,9 +192,8 @@ app.whenReady().then(
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
     await createSplashWindow()
 
-    await sendReport(k6StudioState.appSettings.telemetry.usageReport)
     await setupProjectStructure()
-    await migrateJsonGenerator()
+    await initEventTracking()
     await createWindow()
   },
   (error) => {

@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - id: get-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@get-vault-secrets-v1.2.0
+        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
         with:
           repo_secrets: |
             APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
@@ -74,10 +74,8 @@ jobs:
       - name: setup windows certificate
         if: startsWith(matrix.platform, 'windows-')
         run: |
-          $bytes = [Convert]::FromBase64String("${{ secrets.WINDOWS_CERTIFICATE }}")
+          $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
           [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
-        env:
-          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
 
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
@@ -113,7 +111,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
           WINDOWS_CERTIFICATE_PATH: ./certificate.pfx
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
           # sentry integration
           # sentry vite plugin integration during build
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}

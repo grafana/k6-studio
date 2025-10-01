@@ -1,4 +1,4 @@
-import { WebNavigation, webNavigation } from 'webextension-polyfill'
+import { tabs, WebNavigation, webNavigation } from 'webextension-polyfill'
 
 import { BrowserEvent } from '@/schemas/recording'
 
@@ -9,14 +9,7 @@ function isReload({ transitionType }: WebNavigation.OnCommittedDetailsType) {
 function isAddressBarNavigation({
   transitionType,
 }: WebNavigation.OnCommittedDetailsType) {
-  return (
-    transitionType === 'typed' ||
-    transitionType === 'generated' ||
-    transitionType === 'start_page' ||
-    transitionType === 'auto_bookmark' ||
-    transitionType === 'keyword' ||
-    transitionType === 'keyword_generated'
-  )
+  return transitionType === 'typed' || transitionType === 'start_page'
 }
 
 function isHistoryNavigation({
@@ -90,4 +83,36 @@ export function captureNavigationEvents(
       return
     }
   })
+
+  tabs
+    .query({ active: true, currentWindow: true })
+    .then((tabs) => {
+      for (const tab of tabs) {
+        // If the pendingUrl is set, it means that the navigation hasn't been
+        // comitted yet so the onCommited handler will record the navigation.
+        if (tab.pendingUrl !== undefined) {
+          continue
+        }
+
+        if (
+          tab.id === undefined ||
+          tab.url === undefined ||
+          tab.url.startsWith('chrome://')
+        ) {
+          continue
+        }
+
+        onCaptured({
+          type: 'navigate-to-page',
+          eventId: crypto.randomUUID(),
+          timestamp: Date.now(),
+          tab: tab.id.toString(),
+          url: tab.url,
+          source: 'address-bar',
+        })
+      }
+    })
+    .catch((error) => {
+      console.error('Error getting active tab:', error)
+    })
 }

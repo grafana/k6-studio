@@ -66,7 +66,7 @@ export default defineConfig((env) => {
                 js: ['extension/src/frontend/index.ts'],
               },
             ],
-            permissions: ['webNavigation'],
+            permissions: ['webNavigation', 'storage', 'tabs'],
           }
         },
       }),

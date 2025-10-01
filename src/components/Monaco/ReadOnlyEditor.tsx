@@ -14,10 +14,17 @@ const options: editor.IStandaloneEditorConstructionOptions = {
 interface Props extends ComponentProps<typeof Editor> {
   searchString?: string
   searchIndex?: number
+  showToolbar?: boolean
+  onCopy?: (event: ClipboardEvent) => void
 }
 
-export function ReadOnlyEditor(props: Props) {
+export function ReadOnlyEditor({ showToolbar = true, ...props }: Props) {
   return (
-    <ReactMonacoEditor height="100%" options={options} {...props} showToolbar />
+    <ReactMonacoEditor
+      height="100%"
+      options={options}
+      {...props}
+      showToolbar={showToolbar}
+    />
   )
 }
