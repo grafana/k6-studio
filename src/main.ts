@@ -25,7 +25,11 @@ import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
-if (process.env.NODE_ENV !== 'development') {
+if (process.env.NODE_ENV === 'test') {
+  import('wdio-electron-service')
+}
+
+if (!['development', 'test'].includes(process.env.NODE_ENV ?? '')) {
   // handle auto updates
   updateElectronApp()
 
@@ -65,6 +69,7 @@ const createSplashWindow = async () => {
     frame: false,
     show: false,
     alwaysOnTop: true,
+    title: 'Grafana k6 Studio - Splash Screen',
   })
 
   let splashscreenFile: string

@@ -147,3 +147,8 @@ jobs:
         if: startsWith(matrix.platform, 'windows-')
         run: |
           del certificate.pfx
+
+      - name: automated tests
+        if: startsWith(matrix.platform, 'macos-')
+        run: |
+          npm run wdio
