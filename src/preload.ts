@@ -15,8 +15,8 @@ import * as settings from './handlers/settings/preload'
 import * as ui from './handlers/ui/preload'
 import * as Sentry from './sentry'
 
-if (process.env.TEST === 'true') {
-  import('wdio-electron-service')
+if (process.env.NODE_ENV === 'test') {
+  require('wdio-electron-service')
 }
 
 const studio = {

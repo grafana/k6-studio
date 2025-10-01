@@ -26,7 +26,7 @@ import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV === 'test') {
-  import('wdio-electron-service')
+  require('wdio-electron-service')
 }
 
 if (!['development', 'test'].includes(process.env.NODE_ENV ?? '')) {
