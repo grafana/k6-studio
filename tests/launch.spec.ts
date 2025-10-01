@@ -10,10 +10,14 @@ test.beforeAll(async () => {
   const latestBuild = findLatestBuild()
   const appInfo = parseElectronApp(latestBuild)
 
+  console.log('Launching app...')
+
   electronApp = await electron.launch({
     args: [appInfo.main],
     executablePath: appInfo.executable,
   })
+
+  console.log('App launched')
 
   // splashscreen
   splashscreenWindow = await electronApp.firstWindow()
