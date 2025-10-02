@@ -42,21 +42,33 @@ describe('Start recording', () => {
     await startButton.click()
     console.log('✅ Started recording')
 
+    // Wait for the browser to launch and "Stop recording" button to appear
+    const stopButton = browser.$('button*=Stop recording')
+    await stopButton.waitForDisplayed({ timeout: 30000 })
+    console.log('✅ Browser launched (stop button visible)')
+
+    // Give the browser time to navigate and make initial requests
+    await browser.pause(5000)
+    console.log('✅ Waited 5s for initial requests')
+
     // Wait for at least one request to appear in the table
     await browser.waitUntil(
       async () => {
         const rows = await browser.$$('table tbody tr')
+        console.log(`Checking for requests... (${rows.length} rows found)`)
         if (rows.length > 0) {
-          console.log(`✅ Found ${rows.length} request(s) captured`)
+          // Log what requests we captured
+          const cells = await browser.$$('table tbody tr td')
+          const texts = await Promise.all(cells.slice(0, 5).map(c => c.getText()))
+          console.log('Sample cell texts:', texts)
           return true
         }
-        console.log('Waiting for requests to be captured...')
         return false
       },
       { 
-        timeout: 30000, 
-        timeoutMsg: 'No requests captured after 30 seconds',
-        interval: 2000 // Check every 2 seconds
+        timeout: 60000, 
+        timeoutMsg: 'No requests captured after 60 seconds',
+        interval: 3000 // Check every 3 seconds
       }
     )
     console.log('✅ Requests captured')
@@ -66,7 +78,7 @@ describe('Start recording', () => {
     expect(rows.length).toBeGreaterThan(0)
 
     // Verify "Stop recording" button is visible
-    const stopButton = browser.$('button*=Stop recording')
+    // const stopButton = browser.$('button*=Stop recording')
     expect(await stopButton.isDisplayed()).toBe(true)
     
     console.log('✅ Test passed!')
