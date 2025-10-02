@@ -29,12 +29,10 @@ describe('Start recording', () => {
 
     // Enter test URL
     const urlInput = browser.$('input[placeholder*="quickpizza"]')
-    console.log('url input', urlInput)
     await urlInput.setValue('https://quickpizza.grafana.com')
 
     // Click "Start recording" button
     const startButton = browser.$('button*=Start recording')
-    console.log('start button', startButton)
     await startButton.click()
 
     // Wait for at least one request to quickpizza to appear in the table
@@ -44,7 +42,6 @@ describe('Start recording', () => {
         for (const cell of cells) {
           const text = await cell.getText()
           if (text.includes('quickpizza.grafana.com')) {
-            console.log('Found request to quickpizza!')
             return true
           }
         }
@@ -59,7 +56,6 @@ describe('Start recording', () => {
 
     // Verify "Stop recording" button is visible
     const stopButton = browser.$('button*=Stop recording')
-    console.log('stop button', stopButton)
     expect(await stopButton.isDisplayed()).toBe(true)
   })
 })
