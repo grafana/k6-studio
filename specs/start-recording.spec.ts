@@ -33,8 +33,8 @@ describe('Start recording', () => {
     // Enter test URL
     const urlInput = browser.$('input[placeholder*="quickpizza"]')
     await urlInput.waitForDisplayed({ timeout: 5000 })
-    await urlInput.setValue('http://localhost:9999/test')
-    console.log('✅ URL entered: http://localhost:9999/test')
+    await urlInput.setValue('http://localhost:19999/test')
+    console.log('✅ URL entered: http://localhost:19999/test')
 
     // Click "Start recording" button
     const startButton = browser.$('button*=Start recording')
@@ -55,30 +55,25 @@ describe('Start recording', () => {
     await browser.waitUntil(
       async () => {
         const rows = await browser.$$('table tbody tr')
-        console.log(`Checking for requests... (${rows.length} rows found)`)
-        if (rows.length > 0) {
-          // Log what requests we captured
-          const cells = await browser.$$('table tbody tr td')
-          const texts = await Promise.all(cells.slice(0, 5).map(c => c.getText()))
-          console.log('Sample cell texts:', texts)
+        const rowCount = rows.length
+        if (rowCount > 0) {
+          console.log(`✅ Found ${rowCount} request(s) captured`)
           return true
         }
+        console.log('Waiting for requests...')
         return false
       },
       { 
         timeout: 60000, 
         timeoutMsg: 'No requests captured after 60 seconds',
-        interval: 3000 // Check every 3 seconds
       }
     )
-    console.log('✅ Requests captured')
 
     // Verify requests are being captured
-    const rows = await browser.$$('table tbody tr')
-    expect(rows.length).toBeGreaterThan(0)
+    const finalRows = await browser.$$('table tbody tr')
+    expect(finalRows.length).toBeGreaterThan(0)
 
     // Verify "Stop recording" button is visible
-    // const stopButton = browser.$('button*=Stop recording')
     expect(await stopButton.isDisplayed()).toBe(true)
     
     console.log('✅ Test passed!')

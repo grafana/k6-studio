@@ -141,6 +141,39 @@ export const config: WebdriverIO.Config = {
     timeout: 60000,
   },
 
+  // Global test server for capturing requests
+  onPrepare: async function () {
+    const http = await import('http')
+    
+    // @ts-expect-error - Store server on global
+    global.testServer = http.createServer((req, res) => {
+      console.log(`[Test Server] ${req.method} ${req.url}`)
+      res.writeHead(200, { 'Content-Type': 'text/html' })
+      res.end('<html><body><h1>Test Server</h1></body></html>')
+    })
+
+    await new Promise<void>((resolve) => {
+      // @ts-expect-error - Access global test server
+      global.testServer.listen(19999, () => {
+        console.log('✅ Test server listening on http://localhost:19999')
+        resolve()
+      })
+    })
+  },
+
+  onComplete: async function () {
+    // @ts-expect-error - Access global test server
+    if (global.testServer) {
+      await new Promise<void>((resolve) => {
+        // @ts-expect-error - Access global test server
+        global.testServer.close(() => {
+          console.log('✅ Test server closed')
+          resolve()
+        })
+      })
+    }
+  },
+
   //
   // =====
   // Hooks
