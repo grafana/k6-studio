@@ -87,7 +87,8 @@ export const matchRegex = (value: string, regexString: string) => {
   const regex = new RegExp(regexString)
   const match = value.match(regex)
   if (match) {
-    return match[1]
+    // If no capture groups, return the full match; otherwise return the first capture group
+    return match.length === 1 ? match[0] : match[1]
   }
 }
 

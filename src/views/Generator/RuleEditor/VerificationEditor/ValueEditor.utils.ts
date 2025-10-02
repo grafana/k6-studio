@@ -22,7 +22,7 @@ export const OPERATOR_LABELS = {
   matches: {
     label: 'Matches',
     icon: '.*',
-  },
+  } as const,
 }
 
 export function getAvailableOperators(

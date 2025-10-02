@@ -1,4 +1,4 @@
-import { Flex, Grid, TextField } from '@radix-ui/themes'
+import { Grid, TextField } from '@radix-ui/themes'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
@@ -38,8 +38,6 @@ export function ValueEditor() {
     () => getOperatorOptions(target, valueType),
     [target, valueType]
   )
-
-  console.log({ operatorOptions })
 
   const handleChangeValueType = useCallback(
     (value: VerificationRule['value']['type']) => {
