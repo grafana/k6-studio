@@ -106,11 +106,7 @@ function SelectorLabel({ selector }: { selector: ReplacerSelector }) {
         </>
       )
     case 'regex':
-      return (
-        <>
-          <Strong>(.*) {stringFallback(selector.regex)}</Strong>
-        </>
-      )
+      return <Strong>{new RegExp(selector.regex).toString()}</Strong>
     case 'header-name':
       return <Strong>{stringFallback(selector.name)}</Strong>
     case 'text':

@@ -188,7 +188,10 @@ function SelectorContent({
     case 'regex':
       return (
         <FieldGroup name={`${field}.regex`} errors={errors} label="Regex">
-          <TextField.Root {...register(`${field}.regex`)} />
+          <TextField.Root {...register(`${field}.regex`)}>
+            <TextField.Slot>/</TextField.Slot>
+            <TextField.Slot>/</TextField.Slot>
+          </TextField.Root>
         </FieldGroup>
       )
     case 'header-name':

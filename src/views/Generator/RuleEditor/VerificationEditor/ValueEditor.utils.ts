@@ -11,6 +11,7 @@ export const VALUE_LABELS: Record<VerificationRule['value']['type'], string> = {
   string: 'Text value',
   variable: 'Variable',
   number: 'Number',
+  regex: 'Regex pattern',
 }
 
 export const OPERATOR_LABELS = {
@@ -18,14 +19,29 @@ export const OPERATOR_LABELS = {
   notEquals: getLogicalOperatorLabelAndIcon('notEquals'),
   contains: getLogicalOperatorLabelAndIcon('contains'),
   notContains: getLogicalOperatorLabelAndIcon('notContains'),
+  matches: {
+    label: 'Matches',
+    icon: '.*',
+  } as const,
 }
 
-export function getAvailableOperators(target: VerificationRule['target']) {
+export function getAvailableOperators(
+  target: VerificationRule['target'],
+  valueType?: VerificationRule['value']['type']
+) {
+  if (valueType === 'regex') {
+    return [StatusVerificationRuleSchema.shape.operator.Values.matches]
+  }
+
   switch (target) {
     case 'status':
-      return StatusVerificationRuleSchema.shape.operator.options
+      return StatusVerificationRuleSchema.shape.operator.options.filter(
+        (op) => op !== 'matches'
+      )
     case 'body':
-      return BodyVerificationRuleSchema.shape.operator.options
+      return BodyVerificationRuleSchema.shape.operator.options.filter(
+        (op) => op !== 'matches'
+      )
     default:
       return exhaustive(target)
   }
@@ -57,8 +73,15 @@ export function getValueTypeOptions(
   }))
 }
 
-export function getOperatorOptions(target: VerificationRule['target']) {
-  return getAvailableOperators(target).map((val) => ({
+export function getOperatorOptions(
+  target: VerificationRule['target'],
+  valueType?: VerificationRule['value']['type']
+): Array<{
+  value: VerificationRule['operator']
+  label: string
+  icon: React.ReactNode
+}> {
+  return getAvailableOperators(target, valueType).map((val) => ({
     value: val,
     ...OPERATOR_LABELS[val],
   }))

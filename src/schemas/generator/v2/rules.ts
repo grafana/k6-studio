@@ -33,6 +33,21 @@ export const NumberValueSchema = z.object({
     .nonnegative({ message: 'Must be a positive number' }),
 })
 
+export const RegexValueSchema = z.object({
+  type: z.literal('regex'),
+  regex: z.string().refine(
+    (value) => {
+      try {
+        new RegExp(value)
+        return true
+      } catch {
+        return false
+      }
+    },
+    { message: 'Invalid regular expression' }
+  ),
+})
+
 export const FilterSchema = z.object({
   path: z.string(),
 })
@@ -142,6 +157,8 @@ const VerificationOperator = z.enum([
   'notEquals',
   'contains',
   'notContains',
+  // Regex only
+  'matches',
 ])
 
 const VerificationTarget = z.enum(['body', 'status'])
@@ -156,8 +173,13 @@ export const StatusVerificationRuleSchema = BaseVerificationRuleSchema.extend({
   operator: z.enum([
     VerificationOperator.enum.equals,
     VerificationOperator.enum.notEquals,
+    VerificationOperator.enum.matches,
   ]),
-  value: z.discriminatedUnion('type', [RecordedValueSchema, NumberValueSchema]),
+  value: z.discriminatedUnion('type', [
+    RecordedValueSchema,
+    NumberValueSchema,
+    RegexValueSchema,
+  ]),
 })
 
 export const BodyVerificationRuleSchema = BaseVerificationRuleSchema.extend({
@@ -166,6 +188,7 @@ export const BodyVerificationRuleSchema = BaseVerificationRuleSchema.extend({
   value: z.discriminatedUnion('type', [
     StringValueSchema,
     RecordedValueSchema,
+    RegexValueSchema,
     VariableValueSchema,
   ]),
 })

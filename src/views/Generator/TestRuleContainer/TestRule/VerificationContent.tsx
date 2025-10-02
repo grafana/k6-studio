@@ -26,6 +26,8 @@ function OperatorLabel({
       return 'does not contain'
     case 'notEquals':
       return 'does not equal'
+    case 'matches':
+      return 'matches'
     default:
       return exhaustive(operator)
   }
@@ -49,6 +51,8 @@ function ValueLabel({ rule }: { rule: VerificationRule }) {
           <Link2Icon /> {rule.value.variableName}
         </Strong>
       )
+    case 'regex':
+      return <Strong>{new RegExp(rule.value.regex).toString()}</Strong>
     default:
       return exhaustive(rule.value)
   }
