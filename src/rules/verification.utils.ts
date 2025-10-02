@@ -1,3 +1,5 @@
+import { escapeRegExp } from 'lodash-es'
+
 import { Response } from '@/types'
 import { VerificationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
@@ -13,7 +15,7 @@ export function getValueFromRule(rule: VerificationRule, response: Response) {
     case 'string':
       return `'${rule.value.value}'`
     case 'regex':
-      return `new RegExp(${JSON.stringify(rule.value.regex)})`
+      return `new RegExp('${escapeRegExp(rule.value.regex)}')`
     case 'variable':
       return `VARS['${rule.value.variableName}']`
     case 'number':
@@ -116,7 +118,7 @@ function getValueDescription(rule: VerificationRule, value: string | number) {
     case 'number':
       return rule.value.number
     case 'regex':
-      return new RegExp(rule.value.regex).toString()
+      return new RegExp(escapeRegExp(rule.value.regex)).toString()
     default:
       return exhaustive(rule.value)
   }
