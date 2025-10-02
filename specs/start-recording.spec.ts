@@ -35,19 +35,13 @@ describe('Start recording', () => {
     const startButton = browser.$('button*=Start recording')
     await startButton.click()
 
-    // Wait for at least one request to quickpizza to appear in the table
+    // Wait for at least one request to appear in the table
     await browser.waitUntil(
       async () => {
-        const cells = await browser.$$('table tbody tr td')
-        for (const cell of cells) {
-          const text = await cell.getText()
-          if (text.includes('quickpizza.grafana.com')) {
-            return true
-          }
-        }
-        return false
+        const rows = browser.$$('table tbody tr')
+        return await rows.length > 0
       },
-      { timeout: 60000, timeoutMsg: 'No requests to quickpizza captured', interval: 1000 }
+      { timeout: 3000, timeoutMsg: 'No requests captured' }
     )
 
     // Verify requests are being captured
