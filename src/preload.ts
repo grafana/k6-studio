@@ -14,11 +14,6 @@ import * as script from './handlers/script/preload'
 import * as settings from './handlers/settings/preload'
 import * as ui from './handlers/ui/preload'
 import * as Sentry from './sentry'
-
-if (process.env.NODE_ENV === 'test') {
-  require('wdio-electron-service')
-}
-
 const studio = {
   auth,
   proxy,

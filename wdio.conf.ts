@@ -23,7 +23,7 @@ export const config: WebdriverIO.Config = {
   // The path of the spec files will be resolved relative from the directory of
   // of the config file unless it's absolute.
   //
-  specs: ['./test/specs/**/*.ts'],
+  specs: ['./specs/**/*.ts'],
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -57,7 +57,7 @@ export const config: WebdriverIO.Config = {
       // see https://webdriver.io/docs/desktop-testing/electron/configuration/#service-options
       'wdio:electronServiceOptions': {
         // custom application args
-        appArgs: [],
+        appBinaryPath: '/Users/cristiano/Desktop/build/k6 Studio.app/Contents/MacOS/k6-studio',
       },
     },
   ],
@@ -69,7 +69,7 @@ export const config: WebdriverIO.Config = {
   // Define all options that are relevant for the WebdriverIO instance here
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: 'info',
+  logLevel: 'silent',
   //
   // Set specific log levels per logger
   // loggers:
