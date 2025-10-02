@@ -33,8 +33,8 @@ describe('Start recording', () => {
     // Enter test URL
     const urlInput = browser.$('input[placeholder*="quickpizza"]')
     await urlInput.waitForDisplayed({ timeout: 5000 })
-    await urlInput.setValue('https://quickpizza.grafana.com')
-    console.log('✅ URL entered')
+    await urlInput.setValue('http://localhost:9999/test')
+    console.log('✅ URL entered: http://localhost:9999/test')
 
     // Click "Start recording" button
     const startButton = browser.$('button*=Start recording')
@@ -46,12 +46,16 @@ describe('Start recording', () => {
     await browser.waitUntil(
       async () => {
         const rows = await browser.$$('table tbody tr')
-        console.log(`Waiting for requests... (${rows.length} rows found)`)
-        return rows.length > 0
+        if (rows.length > 0) {
+          console.log(`✅ Found ${rows.length} request(s) captured`)
+          return true
+        }
+        console.log('Waiting for requests to be captured...')
+        return false
       },
       { 
-        timeout: 60000, 
-        timeoutMsg: 'No requests captured after 60 seconds',
+        timeout: 30000, 
+        timeoutMsg: 'No requests captured after 30 seconds',
         interval: 2000 // Check every 2 seconds
       }
     )
