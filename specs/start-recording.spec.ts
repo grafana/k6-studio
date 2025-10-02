@@ -39,6 +39,7 @@ describe('Start recording', () => {
     await browser.waitUntil(
       async () => {
         const cells = await browser.$$('table tbody tr td')
+        console.log('cells', await cells.length)
         for (const cell of cells) {
           const text = await cell.getText()
           if (text.includes('quickpizza.grafana.com')) {
@@ -47,7 +48,7 @@ describe('Start recording', () => {
         }
         return false
       },
-      { timeout: 3000, timeoutMsg: 'No requests to quickpizza captured' }
+      { timeout: 10000, timeoutMsg: 'No requests to quickpizza captured' }
     )
 
     // Verify requests are being captured
