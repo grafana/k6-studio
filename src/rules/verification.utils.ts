@@ -116,7 +116,7 @@ function getValueDescription(rule: VerificationRule, value: string | number) {
     case 'number':
       return rule.value.number
     case 'regex':
-      return `/${rule.value.regex}/`
+      return new RegExp(rule.value.regex).toString()
     default:
       return exhaustive(rule.value)
   }

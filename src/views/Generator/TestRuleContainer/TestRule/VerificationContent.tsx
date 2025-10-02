@@ -52,7 +52,7 @@ function ValueLabel({ rule }: { rule: VerificationRule }) {
         </Strong>
       )
     case 'regex':
-      return <Strong>/{rule.value.regex}/</Strong>
+      return <Strong>{new RegExp(rule.value.regex).toString()}</Strong>
     default:
       return exhaustive(rule.value)
   }
