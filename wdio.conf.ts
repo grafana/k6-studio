@@ -57,7 +57,6 @@ export const config: WebdriverIO.Config = {
       // see https://webdriver.io/docs/desktop-testing/electron/configuration/#service-options
       'wdio:electronServiceOptions': {
         // custom application args
-        appBinaryPath: '/Users/cristiano/Desktop/build/k6 Studio.app/Contents/MacOS/k6-studio',
       },
     },
   ],
