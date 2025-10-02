@@ -12,6 +12,8 @@ export function getValueFromRule(rule: VerificationRule, response: Response) {
       return getRecordedValue(rule.target, response)
     case 'string':
       return `'${rule.value.value}'`
+    case 'regex':
+      return `new RegExp(${JSON.stringify(rule.value.regex)})`
     case 'variable':
       return `VARS['${rule.value.variableName}']`
     case 'number':
@@ -37,6 +39,8 @@ export function getCheckExpression(
       return `${target}.includes(${value})`
     case 'notContains':
       return `!${target}.includes(${value})`
+    case 'matches':
+      return `${value}.test(${target})`
     default:
       return exhaustive(operator)
   }
@@ -58,6 +62,8 @@ export function getCheckDescription(
       return `${rule.target} contains ${valueDescription}`
     case 'notContains':
       return `${rule.target} does not contain ${valueDescription}`
+    case 'matches':
+      return `${rule.target} matches ${valueDescription}`
     default:
       return exhaustive(operator)
   }
@@ -109,6 +115,8 @@ function getValueDescription(rule: VerificationRule, value: string | number) {
       return `variable "${rule.value.variableName}"`
     case 'number':
       return rule.value.number
+    case 'regex':
+      return `/${rule.value.regex}/`
     default:
       return exhaustive(rule.value)
   }
