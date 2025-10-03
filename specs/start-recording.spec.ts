@@ -36,11 +36,6 @@ describe('Start recording', () => {
     await urlInput.setValue('http://localhost:19999/test')
     console.log('✅ URL entered: http://localhost:19999/test')
 
-    // Disabled browser events
-    const browserEventsCheckbox = browser.$('button[role="checkbox"]')
-    await browserEventsCheckbox.click()
-    console.log('✅ Browser events disabled')
-
     // Click "Start recording" button
     const startButton = browser.$('button*=Start recording')
     await startButton.waitForDisplayed({ timeout: 5000 })   
@@ -75,6 +70,7 @@ describe('Start recording', () => {
 
     // Verify "Stop recording" button is visible
     expect(await stopButton.isDisplayed()).toBe(true)
+    await stopButton.click()
     
     console.log('✅ Test passed!')
   })
