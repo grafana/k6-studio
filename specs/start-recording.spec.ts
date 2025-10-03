@@ -37,9 +37,21 @@ describe('Start recording', () => {
     await urlInput.setValue('http://localhost:9999/test')
     console.log(`✅ URL entered: http://localhost:9999/test`)
 
-    // Click "Start recording" button
     const startButton = browser.$('button*=Start recording')
-    await startButton.waitForDisplayed({ timeout: 5000 })   
+    await startButton.waitForDisplayed({ timeout: 10000 })
+    
+    // Wait for button to be enabled, until proxy is ready
+    await browser.waitUntil(
+      async () => {
+        const isEnabled = await startButton.isEnabled()
+        return isEnabled === true
+      },
+      { 
+        timeout: 20000, 
+        timeoutMsg: 'Start recording button did not become enabled. Proxy likely did not start.' 
+      }
+    )
+    
     await startButton.click()
     console.log('✅ Started recording')
 
