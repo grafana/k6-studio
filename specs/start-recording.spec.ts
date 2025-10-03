@@ -30,44 +30,26 @@ describe('Start recording', () => {
     )
     console.log('✅ Recorder page loaded')
 
-    // Check if proxy is online before attempting to record
-    const proxyWarning = await browser.$('[data-testid="proxy-health-warning"]')
-    if (await proxyWarning.isExisting()) {
-      const warningText = await proxyWarning.getText()
-      console.error('⚠️  Proxy warning detected:', warningText)
-      throw new Error('Proxy is not online - cannot record')
-    }
-    console.log('✅ No proxy warnings detected')
-
     // Enter test URL
     const urlInput = browser.$('input[placeholder*="quickpizza"]')
     await urlInput.waitForDisplayed({ timeout: 5000 })
     await urlInput.setValue('http://localhost:19999/test')
     console.log('✅ URL entered: http://localhost:19999/test')
 
+    // Disabled browser events
+    const browserEventsCheckbox = browser.$('button[role="checkbox"]')
+    await browserEventsCheckbox.click()
+    console.log('✅ Browser events disabled')
+
     // Click "Start recording" button
     const startButton = browser.$('button*=Start recording')
-    await startButton.waitForDisplayed({ timeout: 5000 })
-    
-    // Check if button is enabled (it won't be if proxy is offline)
-    const isEnabled = await startButton.isEnabled()
-    if (!isEnabled) {
-      console.error('❌ Start recording button is disabled - proxy may be offline')
-      throw new Error('Cannot start recording - button is disabled')
-    }
-    console.log('✅ Start recording button is enabled')
-    
+    await startButton.waitForDisplayed({ timeout: 5000 })   
     await startButton.click()
-    console.log('✅ Clicked start recording')
+    console.log('✅ Started recording')
 
-    // Wait for the browser to launch and "Stop recording" button to appear
     const stopButton = browser.$('button*=Stop recording')
     await stopButton.waitForDisplayed({ timeout: 30000 })
-    console.log('✅ Browser launched (stop button visible)')
-
-    // Give the browser time to navigate and make initial requests
-    await browser.pause(5000)
-    console.log('✅ Waited 5s for initial requests')
+    console.log('✅ Stop recording button visible')
 
     // Wait for at least one request to appear in the table
     await browser.waitUntil(
@@ -88,8 +70,8 @@ describe('Start recording', () => {
     )
 
     // Verify requests are being captured
-    const finalRows = await browser.$$('table tbody tr')
-    expect(finalRows.length).toBeGreaterThan(0)
+    const rows = await browser.$$('table tbody tr')
+    expect(rows.length).toBeGreaterThan(0)
 
     // Verify "Stop recording" button is visible
     expect(await stopButton.isDisplayed()).toBe(true)
