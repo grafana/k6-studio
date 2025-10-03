@@ -30,6 +30,15 @@ describe('Start recording', () => {
     )
     console.log('✅ Recorder page loaded')
 
+    // Check if proxy is online before attempting to record
+    const proxyWarning = await browser.$('[data-testid="proxy-health-warning"]')
+    if (await proxyWarning.isExisting()) {
+      const warningText = await proxyWarning.getText()
+      console.error('⚠️  Proxy warning detected:', warningText)
+      throw new Error('Proxy is not online - cannot record')
+    }
+    console.log('✅ No proxy warnings detected')
+
     // Enter test URL
     const urlInput = browser.$('input[placeholder*="quickpizza"]')
     await urlInput.waitForDisplayed({ timeout: 5000 })
@@ -39,8 +48,17 @@ describe('Start recording', () => {
     // Click "Start recording" button
     const startButton = browser.$('button*=Start recording')
     await startButton.waitForDisplayed({ timeout: 5000 })
+    
+    // Check if button is enabled (it won't be if proxy is offline)
+    const isEnabled = await startButton.isEnabled()
+    if (!isEnabled) {
+      console.error('❌ Start recording button is disabled - proxy may be offline')
+      throw new Error('Cannot start recording - button is disabled')
+    }
+    console.log('✅ Start recording button is enabled')
+    
     await startButton.click()
-    console.log('✅ Started recording')
+    console.log('✅ Clicked start recording')
 
     // Wait for the browser to launch and "Stop recording" button to appear
     const stopButton = browser.$('button*=Stop recording')

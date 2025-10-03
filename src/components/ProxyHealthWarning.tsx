@@ -16,7 +16,7 @@ export function ProxyHealthWarning() {
       <Callout.Icon>
         <TriangleAlert />
       </Callout.Icon>
-      <Callout.Text>
+      <Callout.Text data-testid="proxy-health-warning">
         <strong>Proxy health check failed</strong>
         <br />
         Grafana k6 Studio cannot establish connection to the Internet. Unless
