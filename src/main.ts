@@ -27,7 +27,7 @@ import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
-  // updateElectronApp()
+  updateElectronApp()
 
   // initialize Sentry
   Sentry.init({

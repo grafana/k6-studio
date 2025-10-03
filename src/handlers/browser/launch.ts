@@ -125,7 +125,6 @@ export const launchBrowser = async (
 
   const handleBrowserLaunchError = (error: Error) => {
     log.error(error)
-    console.log('handleBrowserLaunchError', error)
     browserServer.stop()
     browserWindow.webContents.send(BrowserHandler.Error, {
       reason: 'browser-launch',
@@ -164,12 +163,10 @@ export const launchBrowser = async (
         })
 
         process.on('spawn', () => {
-          console.log('process spawned')
           resolve(process)
         })
 
         process.on('error', (err) => {
-          console.log('process error', err)
           reject(err)
         })
       })
@@ -199,7 +196,6 @@ export const launchBrowser = async (
 
       return process
     } catch (error) {
-      console.log('An error occurred while starting recording: ', error)
       log.error('An error occurred while starting recording: ', error)
 
       browserServer.stop()
@@ -221,9 +217,6 @@ export const launchBrowser = async (
   })
 
   process.on('error', handleBrowserLaunchError)
-  process.on('spawn', () => {
-    console.log('process spawned2')
-  })
   process.once('exit', handleBrowserClose)
 
   return process
