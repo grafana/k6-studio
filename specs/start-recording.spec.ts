@@ -32,9 +32,10 @@ describe('Start recording', () => {
 
     // Enter test URL
     const urlInput = browser.$('input[placeholder*="quickpizza"]')
-    await urlInput.waitForDisplayed({ timeout: 5000 })
-    await urlInput.setValue('http://localhost:19999/test')
-    console.log('✅ URL entered: http://localhost:19999/test')
+    await urlInput.waitForDisplayed({ timeout: 5000 })   
+
+    await urlInput.setValue('http://localhost:9999/test')
+    console.log(`✅ URL entered: http://localhost:9999/test`)
 
     // Click "Start recording" button
     const startButton = browser.$('button*=Start recording')

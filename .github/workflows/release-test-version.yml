@@ -71,11 +71,11 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
 
-      # - name: setup windows certificate
-      #   if: startsWith(matrix.platform, 'windows-')
-      #   run: |
-      #     $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
-      #     [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
+      - name: setup windows certificate
+        if: startsWith(matrix.platform, 'windows-')
+        run: |
+          $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
+          [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
 
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
@@ -91,51 +91,51 @@ jobs:
         run: |
           npm run publish
 
-      # - name: publish macOS x86_64
-      #   if: startsWith(matrix.platform, 'macos-13')
-      #   env:
-      #     NODE_OPTIONS: '--max_old_space_size=8192'
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     # apple notarization
-      #     APPLE_API_KEY: ./apple_api_key.p8
-      #     # sentry integration
-      #     # sentry vite plugin integration during build
-      #     SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-      #     SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-      #   run: |
-      #     npm run publish -- --arch=x64
+      - name: publish macOS x86_64
+        if: startsWith(matrix.platform, 'macos-13')
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # apple notarization
+          APPLE_API_KEY: ./apple_api_key.p8
+          # sentry integration
+          # sentry vite plugin integration during build
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: |
+          npm run publish -- --arch=x64
 
-      # - name: publish Windows
-      #   if: startsWith(matrix.platform, 'windows-')
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     # windows cert
-      #     WINDOWS_CERTIFICATE_PATH: ./certificate.pfx
-      #     # sentry integration
-      #     # sentry vite plugin integration during build
-      #     SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-      #     SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-      #   run: npm run publish
+      - name: publish Windows
+        if: startsWith(matrix.platform, 'windows-')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # windows cert
+          WINDOWS_CERTIFICATE_PATH: ./certificate.pfx
+          # sentry integration
+          # sentry vite plugin integration during build
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: npm run publish
 
-      # - name: publish Linux
-      #   if: startsWith(matrix.platform, 'ubuntu-')
-      #   env:
-      #     NODE_OPTIONS: '--max_old_space_size=8192'
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     # sentry integration
-      #     # sentry vite plugin integration during build
-      #     SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-      #     SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-      #   run: |
-      #     sudo apt install -y rpm
+      - name: publish Linux
+        if: startsWith(matrix.platform, 'ubuntu-')
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # sentry integration
+          # sentry vite plugin integration during build
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: |
+          sudo apt install -y rpm
 
-      #     # There is a bug on Ubuntu 22.04 (ubuntu-latest) regarding stripping a binary for a different architecture.
-      #     # https://github.com/electron/forge/issues/3102
-      #     # https://github.com/electron/forge/issues/3701
-      #     echo "%__strip /bin/true" >> ~/.rpmmacros
+          # There is a bug on Ubuntu 22.04 (ubuntu-latest) regarding stripping a binary for a different architecture.
+          # https://github.com/electron/forge/issues/3102
+          # https://github.com/electron/forge/issues/3701
+          echo "%__strip /bin/true" >> ~/.rpmmacros
 
-      #     npm run publish
-      #     npm run publish -- --arch=arm64
+          npm run publish
+          npm run publish -- --arch=arm64
 
       - name: cleanup macos certificates
         if: startsWith(matrix.platform, 'macos-')
@@ -143,12 +143,36 @@ jobs:
           rm apple_api_key.p8
           rm certificate.p12
 
-      # - name: cleanup windows certificates
-      #   if: startsWith(matrix.platform, 'windows-')
-      #   run: |
-      #     del certificate.pfx
+      - name: cleanup windows certificates
+        if: startsWith(matrix.platform, 'windows-')
+        run: |
+          del certificate.pfx
 
       - name: automated tests
-        if: startsWith(matrix.platform, 'macos-')
+        env:
+          APP_PATH_MACOS_LATEST: "${{ github.workspace }}/out/k6 Studio-darwin-arm64/k6 Studio.app/Contents/MacOS/k6-studio"
+          APP_PATH_MACOS_13: "${{ github.workspace }}/out/k6 Studio-darwin-x64/k6 Studio.app/Contents/MacOS/k6-studio"
+          APP_PATH_WINDOWS: "${{ github.workspace }}/out/k6 Studio-win32-x64/k6 Studio.exe"
+          APP_PATH_LINUX: "${{ github.workspace }}/out/k6 Studio-linux-x64/k6-studio"
         run: |
-          npm run wdio
+          case "${{ matrix.platform }}" in
+            "macos-latest")
+              APP_PATH="$APP_PATH_MACOS_LATEST"
+              ;;
+            "macos-13")
+              APP_PATH="$APP_PATH_MACOS_13"
+              ;;
+            "windows-latest")
+              APP_PATH="$APP_PATH_WINDOWS"
+              ;;
+            "ubuntu-latest")
+              APP_PATH="$APP_PATH_LINUX"
+              ;;
+            *)
+              echo "Unsupported platform: ${{ matrix.platform }}"
+              exit 1
+              ;;
+          esac
+
+          npm run wdio -- --app-path="$APP_PATH"
+        

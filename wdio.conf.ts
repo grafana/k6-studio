@@ -1,4 +1,22 @@
 /// <reference types="wdio-electron-service" />
+import type { Server } from 'http'
+declare global {
+  // eslint-disable-next-line no-var
+  var testServer: Server | undefined
+}
+
+const getAppBinaryPath = () => {
+  for (const arg of process.argv) {
+    if (arg.startsWith('--app-path=')) {
+      const path = arg.split('=')[1]
+      console.log('Binary path:', path)
+      return path
+    }
+  }
+  console.log('No binary argument found, using default binary path')
+  return './out/k6 Studio-darwin-arm64/k6 Studio.app/Contents/MacOS/k6-studio'
+}
+
 export const config: WebdriverIO.Config = {
   //
   // ====================
@@ -56,8 +74,8 @@ export const config: WebdriverIO.Config = {
       // Electron service options
       // see https://webdriver.io/docs/desktop-testing/electron/configuration/#service-options
       'wdio:electronServiceOptions': {
-        // custom application args
-        appBinaryPath: './out/k6 Studio-darwin-arm64/k6 Studio.app/Contents/MacOS/k6-studio',
+        // Dynamic app binary path based on platform and environment
+        appBinaryPath: getAppBinaryPath(),
       },
     },
   ],
@@ -69,7 +87,7 @@ export const config: WebdriverIO.Config = {
   // Define all options that are relevant for the WebdriverIO instance here
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: 'debug',
+  logLevel: 'silent',
   //
   // Set specific log levels per logger
   // loggers:
@@ -145,28 +163,28 @@ export const config: WebdriverIO.Config = {
   onPrepare: async function () {
     const http = await import('http')
     
-    // @ts-expect-error - Store server on global
-    global.testServer = http.createServer((req, res) => {
+    const server = http.createServer((req, res) => {
       console.log(`[Test Server] ${req.method} ${req.url}`)
       res.writeHead(200, { 'Content-Type': 'text/html' })
-      res.end('<html><body><h1>Test Server</h1></body></html>')
+      res.end('<html><body><h1>k6 Studio E2E Test Server</h1></body></html>')
     })
+    
+    global.testServer = server
 
     await new Promise<void>((resolve) => {
-      // @ts-expect-error - Access global test server
-      global.testServer.listen(19999, () => {
-        console.log('✅ Test server listening on http://localhost:19999')
+      const PORT = 9999
+      server.listen(PORT, () => {
+        console.log(`✅ Test server listening on http://localhost:${PORT}`)
         resolve()
       })
     })
   },
 
   onComplete: async function () {
-    // @ts-expect-error - Access global test server
-    if (global.testServer) {
+    const server = global.testServer
+    if (server) {
       await new Promise<void>((resolve) => {
-        // @ts-expect-error - Access global test server
-        global.testServer.close(() => {
+        server.close(() => {
           console.log('✅ Test server closed')
           resolve()
         })
