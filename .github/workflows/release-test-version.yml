@@ -19,7 +19,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, macos-13, windows-latest, ubuntu-latest]
+        include:
+          - platform: macos-latest
+            app-path: "out/k6 Studio-darwin-arm64/k6 Studio.app/Contents/MacOS/k6-studio"
+          - platform: macos-13
+            app-path: "out/k6 Studio-darwin-x64/k6 Studio.app/Contents/MacOS/k6-studio"
+          - platform: windows-latest
+            app-path: "out/k6 Studio-win32-x64/k6 Studio.exe"
+          - platform: ubuntu-latest
+            app-path: "out/k6 Studio-linux-x64/k6-studio"
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -61,7 +69,7 @@ jobs:
         run: npm ci
 
       - name: setup macos keychain
-        if: startsWith(matrix.platform, 'macos-')
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-13'
         run: |
           echo "$APPLE_API_KEY" > ./apple_api_key.p8
           echo $APPLE_CERTIFICATE_P12 | base64 --decode > certificate.p12
@@ -72,13 +80,13 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
 
       - name: setup windows certificate
-        if: startsWith(matrix.platform, 'windows-')
+        if: matrix.platform == 'windows-latest'
         run: |
           $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
           [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
 
       - name: publish macOS arm64
-        if: startsWith(matrix.platform, 'macos-latest')
+        if: matrix.platform == 'macos-latest'
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -92,7 +100,7 @@ jobs:
           npm run publish
 
       - name: publish macOS x86_64
-        if: startsWith(matrix.platform, 'macos-13')
+        if: matrix.platform == 'macos-13'
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -106,7 +114,7 @@ jobs:
           npm run publish -- --arch=x64
 
       - name: publish Windows
-        if: startsWith(matrix.platform, 'windows-')
+        if: matrix.platform == 'windows-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
@@ -118,7 +126,7 @@ jobs:
         run: npm run publish
 
       - name: publish Linux
-        if: startsWith(matrix.platform, 'ubuntu-')
+        if: matrix.platform == 'ubuntu-latest'
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -138,41 +146,19 @@ jobs:
           npm run publish -- --arch=arm64
 
       - name: cleanup macos certificates
-        if: startsWith(matrix.platform, 'macos-')
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-13'
         run: |
           rm apple_api_key.p8
           rm certificate.p12
 
       - name: cleanup windows certificates
-        if: startsWith(matrix.platform, 'windows-')
+        if: matrix.platform == 'windows-latest'
         run: |
           del certificate.pfx
 
       - name: automated tests
-        env:
-          APP_PATH_MACOS_LATEST: "${{ github.workspace }}/out/k6 Studio-darwin-arm64/k6 Studio.app/Contents/MacOS/k6-studio"
-          APP_PATH_MACOS_13: "${{ github.workspace }}/out/k6 Studio-darwin-x64/k6 Studio.app/Contents/MacOS/k6-studio"
-          APP_PATH_WINDOWS: "${{ github.workspace }}/out/k6 Studio-win32-x64/k6 Studio.exe"
-          APP_PATH_LINUX: "${{ github.workspace }}/out/k6 Studio-linux-x64/k6-studio"
         run: |
-          case "${{ matrix.platform }}" in
-            "macos-latest")
-              APP_PATH="$APP_PATH_MACOS_LATEST"
-              ;;
-            "macos-13")
-              APP_PATH="$APP_PATH_MACOS_13"
-              ;;
-            "windows-latest")
-              APP_PATH="$APP_PATH_WINDOWS"
-              ;;
-            "ubuntu-latest")
-              APP_PATH="$APP_PATH_LINUX"
-              ;;
-            *)
-              echo "Unsupported platform: ${{ matrix.platform }}"
-              exit 1
-              ;;
-          esac
-
-          npm run wdio -- --app-path="$APP_PATH"
+          echo "Running tests for platform: ${{ matrix.platform }}"
+          echo "Using app path: ${{ matrix.app-path }}"
+          npm run wdio -- --app-path="${{ github.workspace }}/${{ matrix.app-path }}"
         
