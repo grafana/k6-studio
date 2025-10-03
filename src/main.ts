@@ -24,9 +24,10 @@ import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
-if (!['development', 'test'].includes(process.env.NODE_ENV ?? '')) {
+
+if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
-  updateElectronApp()
+  // updateElectronApp()
 
   // initialize Sentry
   Sentry.init({
