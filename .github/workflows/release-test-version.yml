@@ -25,7 +25,7 @@ jobs:
           - platform: macos-13
             app-path: "out/k6 Studio-darwin-x64/k6 Studio.app/Contents/MacOS/k6-studio"
           - platform: windows-latest
-            app-path: "out\\k6 Studio-win32-x64\\k6 Studio.exe"
+            app-path: "out\\k6 Studio-win32-x64\\k6-studio.exe"
           - platform: ubuntu-latest
             app-path: "out/k6 Studio-linux-x64/k6-studio"
 
