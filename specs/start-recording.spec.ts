@@ -84,7 +84,39 @@ describe('Start recording', () => {
     // Verify "Stop recording" button is visible
     expect(await stopButton.isDisplayed()).toBe(true)
     await stopButton.click()
+
+    // Wait for the stop recording process to complete and check for HAR file download link
+    await browser.waitUntil(
+      async () => {
+        try {
+          // Look for an anchor element with href ending in .har
+          const harLinks = await browser.$$('a[href$=".har"]')
+          if (harLinks.length > 0) {
+            return true
+          }
+          
+          // Alternative: Check if stop button is no longer visible (indicating recording stopped)
+          const stopButton = browser.$('button*=Stop recording')
+          return !(await stopButton.isDisplayed())
+        } catch (error) {
+          return false
+        }
+      },
+      { 
+        timeout: 10000, 
+        timeoutMsg: 'HAR file link not found or recording did not stop properly' 
+      }
+    )
     
+    // Verify the HAR file link exists
+    const harLinks = await browser.$$('a[href$=".har"]')
+    expect(harLinks.length).toBeGreaterThan(0)
+    
+    const harLink = harLinks[0]
+    const harHref = await harLink.getAttribute('href')
+    console.log(`✅ HAR file link found: ${harHref}`)
+    
+    console.log('✅ Recording stopped and HAR file is available for download')
     console.log('✅ Test passed!')
   })
 })

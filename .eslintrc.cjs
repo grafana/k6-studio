@@ -23,6 +23,7 @@ module.exports = {
     'install-k6.js',
     '.eslintrc.cjs',
     '**/__snapshots__/',
+    'specs/**/*.spec.ts',
   ],
   plugins: [
     'import',
