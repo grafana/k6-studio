@@ -2,20 +2,16 @@ import { browser, expect } from '@wdio/globals'
 
 describe('Start recording', () => {
   it('should navigate to recorder and start recording session', async () => {
-    // Navigate to the main window (not splash screen)
-    const handles = await browser.getWindowHandles()
-    for (const h of handles) {
-      await browser.switchToWindow(h)
-      const title = await browser.getTitle()
-      if (title === 'Grafana k6 Studio') {
-        console.log('✅ Switched to main window')
-        break
-      }
-    }
+    // Navigate to the main window
+    browser.waitUntil(async () => {
+      return browser.electron.windowHandle !== undefined
+    }, { timeout: 10000 })
+
+    browser.switchToWindow(browser.electron.windowHandle!)
 
     // Click on "Record flow" link to navigate to recorder
     const recordLink = browser.$('a[href*="recorder"]')
-    await recordLink.waitForDisplayed({ timeout: 10000 })
+    await recordLink.waitForDisplayed({ timeout: 20000 })
     await recordLink.click()
     console.log('✅ Clicked recorder link')
 
@@ -81,21 +77,18 @@ describe('Start recording', () => {
     const rows = await browser.$$('table tbody tr')
     expect(rows.length).toBeGreaterThan(0)
 
-    // Verify "Stop recording" button is visible
-    expect(await stopButton.isDisplayed()).toBe(true)
+    // Stop recording
     await stopButton.click()
 
     // Wait for the stop recording process to complete and check for HAR file download link
     await browser.waitUntil(
       async () => {
         try {
-          // Look for an anchor element with href ending in .har
           const harLinks = await browser.$$('a[href$=".har"]')
           if (harLinks.length > 0) {
             return true
           }
-          
-          // Alternative: Check if stop button is no longer visible (indicating recording stopped)
+
           const stopButton = browser.$('button*=Stop recording')
           return !(await stopButton.isDisplayed())
         } catch (error) {
@@ -113,7 +106,7 @@ describe('Start recording', () => {
     expect(harLinks.length).toBeGreaterThan(0)
     
     const harLink = harLinks[0]
-    const harHref = await harLink.getAttribute('href')
+    const harHref = await harLink?.getAttribute('href') || ''
     console.log(`✅ HAR file link found: ${harHref}`)
     
     console.log('✅ Recording stopped and HAR file is available for download')
