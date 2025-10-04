@@ -58,8 +58,8 @@ describe('Start recording', () => {
     // Wait for at least one request to appear in the table
     await browser.waitUntil(
       async () => {
-        const rows = await browser.$$('table tbody tr')
-        const rowCount = rows.length
+        const rows = browser.$$('table tbody tr')
+        const rowCount = await rows.length
         if (rowCount > 0) {
           console.log(`✅ Found ${rowCount} request(s) captured`)
           return true
@@ -80,7 +80,7 @@ describe('Start recording', () => {
     // Stop recording
     await stopButton.click()
 
-    // Wait for the stop recording process to complete and check for HAR file download link
+    // Wait for the stop recording process to complete and check that the HAR file exists
     await browser.waitUntil(
       async () => {
         try {
@@ -101,15 +101,11 @@ describe('Start recording', () => {
       }
     )
     
-    // Verify the HAR file link exists
     const harLinks = await browser.$$('a[href$=".har"]')
     expect(harLinks.length).toBeGreaterThan(0)
     
     const harLink = harLinks[0]
     const harHref = await harLink?.getAttribute('href') || ''
-    console.log(`✅ HAR file link found: ${harHref}`)
-    
-    console.log('✅ Recording stopped and HAR file is available for download')
-    console.log('✅ Test passed!')
+    console.log(`✅ HAR file generated: ${harHref}`)
   })
 })
