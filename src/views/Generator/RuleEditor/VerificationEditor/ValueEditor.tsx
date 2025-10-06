@@ -82,8 +82,8 @@ export function ValueEditor() {
         />
       </FieldGroup>
 
-      <Grid gap="2" columns="auto 1fr">
-        {!['recordedValue', 'regex'].includes(valueType) && (
+      {!['recordedValue', 'regex'].includes(valueType) && (
+        <Grid gap="2" columns="auto 1fr">
           <FieldGroup name="operator" errors={errors} label="Operator">
             <ControlledSelect
               name="operator"
@@ -91,50 +91,50 @@ export function ValueEditor() {
               options={operatorOptions}
             />
           </FieldGroup>
-        )}
 
-        {valueType === 'string' && (
-          <FieldGroup name="value.value" errors={errors} label="Value">
-            <TextField.Root
-              placeholder="Enter value"
-              {...register('value.value')}
+          {valueType === 'string' && (
+            <FieldGroup name="value.value" errors={errors} label="Value">
+              <TextField.Root
+                placeholder="Enter value"
+                {...register('value.value')}
+              />
+            </FieldGroup>
+          )}
+
+          {valueType === 'number' && (
+            <FieldGroup name="value.number" errors={errors} label="Value">
+              <TextField.Root
+                placeholder="Enter number"
+                type="number"
+                {...register('value.number', {
+                  valueAsNumber: true,
+                })}
+              />
+            </FieldGroup>
+          )}
+
+          {valueType === 'variable' && (
+            <VariableSelect
+              control={control}
+              errors={errors}
+              value={variableName}
+              name="value.variableName"
             />
-          </FieldGroup>
-        )}
+          )}
+        </Grid>
+      )}
 
-        {valueType === 'number' && (
-          <FieldGroup name="value.number" errors={errors} label="Value">
-            <TextField.Root
-              placeholder="Enter number"
-              type="number"
-              {...register('value.number', {
-                valueAsNumber: true,
-              })}
-            />
-          </FieldGroup>
-        )}
-
-        {valueType === 'regex' && (
-          <FieldGroup name="value.regex" errors={errors} label="Regex pattern">
-            <TextField.Root
-              placeholder="Enter regex pattern"
-              {...register('value.regex')}
-            >
-              <TextField.Slot>/</TextField.Slot>
-              <TextField.Slot>/</TextField.Slot>
-            </TextField.Root>
-          </FieldGroup>
-        )}
-
-        {valueType === 'variable' && (
-          <VariableSelect
-            control={control}
-            errors={errors}
-            value={variableName}
-            name="value.variableName"
-          />
-        )}
-      </Grid>
+      {valueType === 'regex' && (
+        <FieldGroup name="value.regex" errors={errors} label="Regex pattern">
+          <TextField.Root
+            placeholder="Enter regex pattern"
+            {...register('value.regex')}
+          >
+            <TextField.Slot>/</TextField.Slot>
+            <TextField.Slot>/</TextField.Slot>
+          </TextField.Root>
+        </FieldGroup>
+      )}
     </>
   )
 }
