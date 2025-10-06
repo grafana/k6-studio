@@ -65,7 +65,6 @@ const createSplashWindow = async () => {
     frame: false,
     show: false,
     alwaysOnTop: true,
-    title: 'Splash Screen',
   })
 
   let splashscreenFile: string
