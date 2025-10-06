@@ -55,10 +55,6 @@ describe('Start recording', () => {
     await startButton.click()
     console.log('✅ Started recording')
 
-    const stopButton = browser.$('button*=Stop recording')
-    await stopButton.waitForDisplayed({ timeout: 30000 })
-    console.log('✅ Stop recording button visible')
-
     // Wait for at least one request to appear in the table
     await browser.waitUntil(
       async () => {
@@ -82,9 +78,11 @@ describe('Start recording', () => {
     expect(await rows.length).toBeGreaterThan(0)
 
     // Stop recording
+    const stopButton = browser.$('button*=Stop recording')
     await stopButton.click()
+    console.log('✅ Stopped recording')
 
-    // Wait for the stop recording process to complete and check that the HAR file exists
+    // Wait for the stop recording process to complete and check that the HAR file exists in the sidebar
     await browser.waitUntil(
       async () => {
         try {
@@ -93,7 +91,6 @@ describe('Start recording', () => {
             return true
           }
 
-          const stopButton = browser.$('button*=Stop recording')
           return !(await stopButton.isDisplayed())
         } catch (error) {
           return false
