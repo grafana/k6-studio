@@ -1,5 +1,6 @@
 /// <reference types="wdio-electron-service" />
 import type { Server } from 'http'
+
 declare global {
   // eslint-disable-next-line no-var
   var testServer: Server | undefined
@@ -14,7 +15,7 @@ const getAppBinaryPath = () => {
     }
   }
   console.log('No binary argument found, using default binary path')
-  return './out/k6 Studio-darwin-arm64/k6 Studio.app/Contents/MacOS/k6-studio'
+  return undefined
 }
 
 export const config: WebdriverIO.Config = {
@@ -53,13 +54,13 @@ export const config: WebdriverIO.Config = {
 
   onPrepare: async function () {
     const http = await import('http')
-    
+
     const server = http.createServer((req, res) => {
       console.log(`[Test Server] ${req.method} ${req.url}`)
       res.writeHead(200, { 'Content-Type': 'text/html' })
       res.end('<html><body><h1>k6 Studio E2E Test Server</h1></body></html>')
     })
-    
+
     global.testServer = server
 
     await new Promise<void>((resolve) => {
