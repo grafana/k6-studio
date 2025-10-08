@@ -12,7 +12,7 @@ import { LogsSection } from './LogsSection'
 
 interface ExecutionDetailsProps {
   isRunning: boolean
-  script: string
+  script?: string
   logs: K6Log[]
   checks: K6Check[]
 }
@@ -24,7 +24,7 @@ export function ExecutionDetails({
   checks,
 }: ExecutionDetailsProps) {
   const [selectedTab, setSelectedTab] = useState<'logs' | 'checks' | 'script'>(
-    'script'
+    script !== undefined ? 'script' : 'logs'
   )
 
   const handleTabChange = (value: string) => {
@@ -62,7 +62,9 @@ export function ExecutionDetails({
         <Tabs.Trigger value="checks" disabled={checks.length === 0}>
           Checks ({checks.length})
         </Tabs.Trigger>
-        <Tabs.Trigger value="script">Script</Tabs.Trigger>
+        {script !== undefined && (
+          <Tabs.Trigger value="script">Script</Tabs.Trigger>
+        )}
       </Tabs.List>
 
       <Tabs.Content
@@ -74,18 +76,20 @@ export function ExecutionDetails({
       >
         <LogsSection logs={logs} autoScroll={isRunning} />
       </Tabs.Content>
-      <Tabs.Content
-        value="script"
-        css={css`
-          flex: 1;
-        `}
-      >
-        <ReadOnlyEditor
-          language="javascript"
-          value={script}
-          onCopy={handleCopy}
-        />
-      </Tabs.Content>
+      {script !== undefined && (
+        <Tabs.Content
+          value="script"
+          css={css`
+            flex: 1;
+          `}
+        >
+          <ReadOnlyEditor
+            language="javascript"
+            value={script}
+            onCopy={handleCopy}
+          />
+        </Tabs.Content>
+      )}
       <Tabs.Content
         value="checks"
         css={css`

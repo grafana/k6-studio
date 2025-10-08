@@ -38,6 +38,12 @@ export function useDebugSession(scriptPath: string) {
     resetSession()
   }, [scriptPath, resetSession])
 
+  const stopDebugging = useCallback(() => {
+    window.studio.script.stopScript()
+
+    return Promise.resolve()
+  }, [])
+
   const startDebugging = useCallback(async () => {
     setPending(false)
 
@@ -59,5 +65,6 @@ export function useDebugSession(scriptPath: string) {
     pending,
     session,
     startDebugging,
+    stopDebugging,
   }
 }

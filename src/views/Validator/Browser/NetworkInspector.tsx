@@ -1,27 +1,25 @@
 import { Box } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
-import { ReactNode, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { ProxyData } from '@/types'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 
-import { DebugSession } from './types'
+import { DebugSession } from '../types'
 
-interface ValidatorContentProps {
+interface NetworkInspector {
   isRunning: boolean
   script: string
   session: DebugSession
-  noDataElement: ReactNode
 }
 
-export function ValidatorContent({
+export function NetworkInspector({
   script,
   session,
   isRunning,
-  noDataElement,
-}: ValidatorContentProps) {
+}: NetworkInspector) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const groups = useProxyDataGroups(session.requests)
 
@@ -36,13 +34,6 @@ export function ValidatorContent({
     }
   }, [isRunning])
 
-  const details = selectedRequest && (
-    <HttpRequestDetails
-      selectedRequest={selectedRequest}
-      onSelectRequest={setSelectedRequest}
-    />
-  )
-
   return (
     <Allotment>
       <Allotment.Pane minSize={250}>
@@ -51,13 +42,19 @@ export function ValidatorContent({
             proxyData={session.requests}
             autoScroll={isRunning}
             selectedRequestId={selectedRequest?.id}
-            noDataElement={noDataElement}
             groups={groups}
             onSelectRequest={setSelectedRequest}
           />
         </Box>
       </Allotment.Pane>
-      {selectedRequest !== null && <Allotment.Pane>{details}</Allotment.Pane>}
+      {selectedRequest !== null && (
+        <Allotment.Pane>
+          <HttpRequestDetails
+            selectedRequest={selectedRequest}
+            onSelectRequest={setSelectedRequest}
+          />
+        </Allotment.Pane>
+      )}
     </Allotment>
   )
 }
