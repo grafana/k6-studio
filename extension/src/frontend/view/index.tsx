@@ -4,6 +4,10 @@ import { createRoot } from 'react-dom/client'
 
 import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 import { Theme } from '@/components/primitives/Theme'
+import {
+  initializeSettingsStorage,
+  StorageBackend,
+} from 'extension/src/core/settings'
 
 import { BrowserExtensionClient } from '../../messaging'
 
@@ -14,7 +18,12 @@ import { isUsingTool } from './utils'
 
 let initialized = false
 
-export function initializeView(client: BrowserExtensionClient) {
+export function initializeView(
+  client: BrowserExtensionClient,
+  storage: StorageBackend
+) {
+  initializeSettingsStorage(storage)
+
   let shadowRoot: ShadowRoot | null = null
 
   function createMount() {
