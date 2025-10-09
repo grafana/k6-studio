@@ -3,8 +3,6 @@ import { useEffect, useState } from 'react'
 
 import { uuid } from '@/utils/uuid'
 
-import { client } from '../routing'
-
 import { ElementPopover } from './ElementInspector/ElementPopover'
 import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertionEditor'
 import { TextAssertionData } from './ElementInspector/assertions/types'
@@ -12,6 +10,7 @@ import { useGlobalClass } from './GlobalStyles'
 import { Overlay } from './Overlay'
 import { useTextSelection } from './TextSelectionPopover.hooks'
 import { TextSelection } from './TextSelectionPopover.types'
+import { useBrowserExtensionClient } from './hooks/useBrowserExtensionClient'
 import { useEscape } from './hooks/useEscape'
 import { usePreventClick } from './hooks/usePreventClick'
 
@@ -26,6 +25,8 @@ function TextSelectionPopoverContent({
   onAdd,
   onClose,
 }: TextSelectionPopoverContentProps) {
+  const client = useBrowserExtensionClient()
+
   const [assertion, setAssertion] = useState<TextAssertionData>({
     type: 'text',
     selector: selection.selector.css,
@@ -39,7 +40,7 @@ function TextSelectionPopoverContent({
         selector: null,
       })
     }
-  }, [])
+  }, [client])
 
   const handleChange = (assertion: TextAssertionData) => {
     setAssertion(assertion)
@@ -74,6 +75,8 @@ interface TextSelectionPopoverProps {
 
 export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
   const [selection, clearSelection] = useTextSelection()
+
+  const client = useBrowserExtensionClient()
 
   useGlobalClass('asserting-text')
   usePreventClick({

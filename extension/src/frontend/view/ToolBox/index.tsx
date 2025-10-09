@@ -22,7 +22,7 @@ import {
 import { Flex } from '@/components/primitives/Flex'
 import { Toolbar } from '@/components/primitives/Toolbar'
 
-import { client } from '../../routing'
+import { useBrowserExtensionClient } from '../hooks/useBrowserExtensionClient'
 import { useToolboxSettings } from '../settings'
 import { Tool } from '../types'
 
@@ -69,6 +69,7 @@ export function ToolBox({
 }: ToolBoxProps) {
   const [settings, setSettings] = useToolboxSettings()
 
+  const client = useBrowserExtensionClient()
   const mouse = useSensor(MouseSensor)
   const sensors = useSensors(mouse)
 

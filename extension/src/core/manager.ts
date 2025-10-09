@@ -1,4 +1,4 @@
-import { shouldSkipEvent } from './view/utils'
+import { shouldSkipEvent } from '../frontend/view/utils'
 
 type EventBlockerMap = Record<string, WeakSet<EventTarget>>
 type TimeoutHandle = ReturnType<typeof setTimeout>

@@ -9,9 +9,9 @@ import { Tooltip } from '@/components/primitives/Tooltip'
 import { uuid } from '@/utils/uuid'
 import { ElementRole } from 'extension/src/utils/aria'
 
-import { client } from '../../routing'
 import { Anchor } from '../Anchor'
 import { Overlay } from '../Overlay'
+import { useBrowserExtensionClient } from '../hooks/useBrowserExtensionClient'
 import { useEscape } from '../hooks/useEscape'
 
 import { useInspectedElement } from './ElementInspector.hooks'
@@ -97,6 +97,8 @@ interface ElementInspectorProps {
 }
 
 export function ElementInspector({ onClose }: ElementInspectorProps) {
+  const client = useBrowserExtensionClient()
+
   const { pinned, element, mousePosition, unpin, expand, contract } =
     useInspectedElement()
 
@@ -120,7 +122,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
         selector: element.selector.css,
       },
     })
-  }, [element])
+  }, [client, element])
 
   useEffect(() => {
     return () => {
@@ -129,7 +131,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
         selector: null,
       })
     }
-  }, [])
+  }, [client])
 
   const handleOpenChange = () => {
     setAssertion(null)

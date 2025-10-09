@@ -1,16 +1,17 @@
 import { useState } from 'react'
 
-import { client } from '../routing'
-
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
 import { TextSelectionPopover } from './TextSelectionPopover'
 import { ToolBox } from './ToolBox'
+import { useBrowserExtensionClient } from './hooks/useBrowserExtensionClient'
 import { useInBrowserUIStore } from './store'
 
 export function InBrowserControls() {
   const tool = useInBrowserUIStore((state) => state.tool)
+
+  const client = useBrowserExtensionClient()
   const selectTool = useInBrowserUIStore((state) => state.selectTool)
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
