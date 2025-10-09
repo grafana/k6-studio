@@ -7,6 +7,7 @@ import { Flex } from '@/components/primitives/Flex'
 import { IconButton } from '@/components/primitives/IconButton'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { uuid } from '@/utils/uuid'
+import { getTabId } from 'extension/src/core/utils'
 import { ElementRole } from 'extension/src/utils/aria'
 
 import { Anchor } from '../Anchor'
@@ -145,7 +146,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
           type: 'assert',
           eventId: uuid(),
           timestamp: Date.now(),
-          tab: '',
+          tab: getTabId(),
           selector: {
             css: assertion.selector,
           },

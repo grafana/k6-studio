@@ -6,13 +6,16 @@ import {
 import { ChildProcess, exec, spawn } from 'child_process'
 import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import { mkdir, mkdtemp, writeFile } from 'fs/promises'
+import { readFile, mkdir, mkdtemp, writeFile } from 'fs/promises'
 import os from 'os'
-import path from 'path'
+import path, { join } from 'path'
 import { promisify } from 'util'
 
 import { getProxyArguments } from '@/main/proxy'
+import { RecorderSettings } from '@/types/settings'
 import { ChromeDevtoolsClient } from '@/utils/cdp/client'
+import { getResourcesPath } from '@/utils/resources'
+import { uuid } from '@/utils/uuid'
 import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
 
 import { BrowserServer } from '../../services/browser/server'
@@ -94,12 +97,25 @@ const FEATURES_TO_DISABLE = [
   'OptimizationHints',
 ]
 
-const BROWSER_RECORDING_ARGS = [
+const EXTENSION_RECORDER_ARGS = [
   '--remote-debugging-pipe',
   '--enable-unsafe-extension-debugging',
 ]
 
+const REMOTE_DEBUGGING_PORT = 9222
+
+const REMOTE_RECORDER_ARGS = [
+  `--remote-debugging-port=${REMOTE_DEBUGGING_PORT}`,
+]
+
+function getBrowserRecordingArgs({
+  useExperimentalRemoteDebugging: useRemoteDebugging,
+}: RecorderSettings) {
+  return useRemoteDebugging ? REMOTE_RECORDER_ARGS : EXTENSION_RECORDER_ARGS
+}
+
 export const launchBrowser = async (
+  settings: RecorderSettings,
   browserWindow: BrowserWindow,
   browserServer: BrowserServer,
   { url, capture }: LaunchBrowserOptions
@@ -109,9 +125,6 @@ export const launchBrowser = async (
 
   const userDataDir = await createUserDataDir()
   console.log(userDataDir)
-
-  const extensionPath = getExtensionPath()
-  console.info(`extension path: ${extensionPath}`)
 
   const handleBrowserClose = (): Promise<void> => {
     browserServer.stop()
@@ -134,7 +147,9 @@ export const launchBrowser = async (
 
   const proxyArgs = await getProxyArguments(k6StudioState.appSettings.proxy)
 
-  const browserRecordingArgs = capture.browser ? BROWSER_RECORDING_ARGS : []
+  const browserRecordingArgs = capture.browser
+    ? getBrowserRecordingArgs(settings)
+    : []
 
   const args = [
     '--new',
@@ -172,16 +187,7 @@ export const launchBrowser = async (
       })
 
       try {
-        const client = ChromeDevtoolsClient.fromChildProcess(process)
-
-        const response = await client.call({
-          method: 'Extensions.loadUnpacked',
-          params: {
-            path: extensionPath,
-          },
-        })
-
-        log.log(`k6 Studio extension loaded`, response)
+        await startBrowserRecording(process, settings)
       } catch (error) {
         // If we fail to load the extension, we'll log the error and continue without it.
         log.error('Failed to start browser recording: ', error)
@@ -222,6 +228,20 @@ export const launchBrowser = async (
   return process
 }
 
+async function loadExtensionRecorder(process: ChildProcess) {
+  const extensionPath = getExtensionPath()
+
+  console.info(`extension path: ${extensionPath}`)
+
+  const client = ChromeDevtoolsClient.fromChildProcess(process)
+
+  const response = await client.call('Extensions.loadUnpacked', {
+    path: extensionPath,
+  })
+
+  log.log(`k6 Studio extension loaded`, response)
+}
+
 function getChromePath() {
   try {
     return computeSystemExecutablePath({
@@ -252,4 +272,57 @@ async function getChromiumPath() {
     log.error(error)
     return undefined
   }
+}
+
+function startBrowserRecording(
+  process: ChildProcess,
+  settings: RecorderSettings
+) {
+  if (settings.useExperimentalRemoteDebugging) {
+    return startRemoteBrowserRecording()
+  }
+
+  return loadExtensionRecorder(process)
+}
+
+async function startRemoteBrowserRecording() {
+  const baseUrl = `http://localhost:${REMOTE_DEBUGGING_PORT}`
+
+  const frontendScript = await readFile(
+    join(getResourcesPath(), 'browser', 'frontend.js'),
+    { encoding: 'utf8' }
+  )
+
+  const browser = await ChromeDevtoolsClient.discoverWebSocket(baseUrl)
+
+  browser.on('Target.attachedToTarget', async (event) => {
+    const tabId = uuid()
+
+    const page = await ChromeDevtoolsClient.connectToWebSocket(
+      new URL(`/devtools/page/${event.targetInfo.targetId}`, baseUrl).toString()
+    )
+
+    page.on('Page.frameNavigated', (event) => {
+      console.log('navigated', event.frame.url)
+    })
+
+    await page.call('Page.enable', {})
+
+    await page.call('Page.addScriptToEvaluateOnNewDocument', {
+      source: `window.__K6_STUDIO_TAB_ID__ = '${tabId}';`,
+      runImmediately: true,
+    })
+
+    await page.call('Page.addScriptToEvaluateOnNewDocument', {
+      source: frontendScript,
+      runImmediately: true,
+    })
+  })
+
+  await browser.call('Target.setAutoAttach', {
+    autoAttach: true,
+    waitForDebuggerOnStart: false,
+    flatten: true,
+    filter: [{ type: 'page', exclude: false }, { exclude: true }],
+  })
 }

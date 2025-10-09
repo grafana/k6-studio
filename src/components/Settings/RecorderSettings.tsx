@@ -116,7 +116,7 @@ export const RecorderSettings = () => {
         }
         hintType="text"
       >
-        <Flex>
+        <Flex direction="column" gap="2">
           <Controller
             control={control}
             name="recorder.enableBrowserRecorder"
@@ -130,6 +130,22 @@ export const RecorderSettings = () => {
                 Enable browser recording
               </Text>
             )}
+          />
+          <Controller
+            control={control}
+            name="recorder.useExperimentalRemoteDebugging"
+            render={({ field }) => {
+              return (
+                <Text size="2" as="label">
+                  <Checkbox
+                    {...register('recorder.useExperimentalRemoteDebugging')}
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />{' '}
+                  Use remote debugging protocol (experimental)
+                </Text>
+              )
+            }}
           />
         </Flex>
       </FieldGroup>

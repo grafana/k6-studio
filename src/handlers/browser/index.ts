@@ -17,6 +17,7 @@ export function initialize(browserServer: BrowserServer) {
 
       const browserWindow = browserWindowFromEvent(event)
       k6StudioState.currentBrowserProcess = await launchBrowser(
+        k6StudioState.appSettings.recorder,
         browserWindow,
         browserServer,
         options

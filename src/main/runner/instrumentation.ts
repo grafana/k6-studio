@@ -1,6 +1,5 @@
 import { parse, TSESTree as ts } from '@typescript-eslint/typescript-estree'
 import { generate } from 'astring'
-import { app } from 'electron'
 import { readFile } from 'fs/promises'
 import path from 'path'
 
@@ -13,6 +12,7 @@ import {
 } from '@/codegen/estree'
 import { NodeType } from '@/codegen/estree/nodes'
 import { getExports, traverse } from '@/codegen/estree/traverse'
+import { getResourcesPath } from '@/utils/resources'
 
 interface InstrumentScriptOptions {
   script: string
@@ -149,20 +149,11 @@ export const instrumentScript = async ({
 }
 
 const getSnippetPath = (snippetName: string) => {
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    return path.join(app.getAppPath(), 'resources', snippetName)
-  }
-
-  return path.join(process.resourcesPath, snippetName)
+  return path.join(getResourcesPath(), snippetName)
 }
 
 const getShimPath = (name: string) => {
-  // @ts-expect-error We are targeting CommonJS so import.meta is not available
-  if (!import.meta.env.PROD) {
-    return path.join(app.getAppPath(), 'resources', 'shims', name)
-  }
-
-  return path.join(process.resourcesPath, 'shims', name)
+  return path.join(getResourcesPath(), 'shims', name)
 }
 
 export const instrumentScriptFromPath = async (scriptPath: string) => {

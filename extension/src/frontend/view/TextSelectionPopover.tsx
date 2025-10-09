@@ -2,6 +2,7 @@ import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
 
 import { uuid } from '@/utils/uuid'
+import { getTabId } from 'extension/src/core/utils'
 
 import { ElementPopover } from './ElementInspector/ElementPopover'
 import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertionEditor'
@@ -91,7 +92,7 @@ export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
           eventId: uuid(),
           timestamp: Date.now(),
           type: 'assert',
-          tab: '',
+          tab: getTabId(),
           selector: {
             css: assertion.selector,
           },

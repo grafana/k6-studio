@@ -4,3 +4,11 @@
  * if we should open a websocket connection to k6 Studio.
  */
 declare const STANDALONE_EXTENSION: boolean
+
+declare global {
+  interface Window {
+    __K6_STUDIO_TAB_ID__: string | undefined
+  }
+}
+
+export {}

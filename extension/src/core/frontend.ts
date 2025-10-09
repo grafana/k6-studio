@@ -11,6 +11,7 @@ import {
 } from '../utils/dom'
 
 import { WindowEventManager } from './manager'
+import { getTabId } from './utils'
 
 export function initializeFrontendRecorder(client: BrowserExtensionClient) {
   function getButton(button: number) {
@@ -117,7 +118,7 @@ export function initializeFrontendRecorder(client: BrowserExtensionClient) {
         alt: ev.altKey,
         meta: ev.metaKey,
       },
-      tab: '',
+      tab: getTabId(),
     })
   })
 
@@ -129,7 +130,7 @@ export function initializeFrontendRecorder(client: BrowserExtensionClient) {
       selector: generateSelector(target),
       selected: [...target.selectedOptions].map((option) => option.value),
       multiple: target.multiple,
-      tab: '',
+      tab: getTabId(),
     })
   }
 
@@ -141,7 +142,7 @@ export function initializeFrontendRecorder(client: BrowserExtensionClient) {
       selector: generateSelector(target),
       value: target.value,
       sensitive: false,
-      tab: '',
+      tab: getTabId(),
     })
   }
 
@@ -163,7 +164,7 @@ export function initializeFrontendRecorder(client: BrowserExtensionClient) {
         timestamp: Date.now(),
         selector: generateSelector(target),
         checked: target.checked,
-        tab: '',
+        tab: getTabId(),
       })
 
       return
@@ -181,7 +182,7 @@ export function initializeFrontendRecorder(client: BrowserExtensionClient) {
         selector: generateSelector(target),
         name: target.name,
         value: target.value,
-        tab: '',
+        tab: getTabId(),
       })
 
       return
@@ -194,7 +195,7 @@ export function initializeFrontendRecorder(client: BrowserExtensionClient) {
       selector: generateSelector(target),
       value: target.value,
       sensitive: target.type === 'password',
-      tab: '',
+      tab: getTabId(),
     })
   }
 
@@ -247,7 +248,7 @@ export function initializeFrontendRecorder(client: BrowserExtensionClient) {
       timestamp: Date.now(),
       form: generateSelector(ev.target),
       submitter: generateSelector(ev.submitter),
-      tab: '',
+      tab: getTabId(),
     })
   })
 }

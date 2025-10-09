@@ -16,7 +16,89 @@ import { InBrowserControls } from './InBrowserControls'
 import { BrowserExtensionClientProvider } from './hooks/useBrowserExtensionClient'
 import { isUsingTool } from './utils'
 
-let initialized = false
+// It's possible that our scripts is loaded so early that the documentElement property
+// is actually null. In that case, we need to wait until it's available.
+function waitForDocumentElement(signal: AbortSignal) {
+  return new Promise<void>((resolve) => {
+    if (document.documentElement !== null) {
+      return resolve()
+    }
+
+    const mutationObserver = new MutationObserver(() => {
+      if (document.documentElement !== null) {
+        mutationObserver.disconnect()
+
+        resolve()
+      }
+    })
+
+    signal.addEventListener(
+      'abort',
+      () => {
+        mutationObserver.disconnect()
+      },
+      { once: true }
+    )
+
+    mutationObserver.observe(document, {
+      childList: true,
+    })
+  })
+}
+
+// Waits for the body element to be available so that we can append our mount to it
+// as soon as possible.
+function waitForBody(signal: AbortSignal) {
+  return waitForDocumentElement(signal).then(() => {
+    return new Promise<void>((resolve) => {
+      if (document.body) {
+        return document.body
+      }
+
+      const mutationObserver = new MutationObserver(() => {
+        if (document.body !== null) {
+          mutationObserver.disconnect()
+
+          resolve()
+        }
+      })
+
+      signal.addEventListener(
+        'abort',
+        () => {
+          mutationObserver.disconnect()
+        },
+        { once: true }
+      )
+
+      mutationObserver.observe(document.documentElement, {
+        childList: true,
+      })
+    })
+  })
+}
+
+function waitForDOMContentLoaded(signal: AbortSignal) {
+  return new Promise<void>((resolve) => {
+    if (document.readyState !== 'loading') {
+      return resolve()
+    }
+
+    const listener = () => {
+      resolve()
+    }
+
+    window.addEventListener('DOMContentLoaded', listener, { once: true })
+
+    signal.addEventListener(
+      'abort',
+      () => {
+        window.removeEventListener('DOMContentLoaded', listener)
+      },
+      { once: true }
+    )
+  })
+}
 
 export function initializeView(
   client: BrowserExtensionClient,
@@ -95,14 +177,16 @@ export function initializeView(
     return root
   }
 
+  const abortController = new AbortController()
+
   function initialize() {
     // We have multiple points in time when we try to inject the UI. This
     // makes sure we actually only do it once.
-    if (initialized) {
+    if (abortController.signal.aborted) {
       return
     }
 
-    initialized = true
+    abortController.abort()
 
     const mount = createMount()
     const root = createShadowRoot(mount)
@@ -144,33 +228,19 @@ export function initializeView(
   }
 
   if (document.readyState === 'loading') {
-    // We use a MutationObserver to try and load the UI as soon as the body
-    // element has been added. Otherwise we have to wait for content to be
-    // downloaded and scripts executed, making it quite noticeable that the
-    // UI is being injected.
-    const mutationObserver = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node instanceof HTMLBodyElement) {
-            mutationObserver.disconnect()
+    const signal = abortController.signal
 
-            initialize()
-            break
-          }
-        }
-      }
-    })
-
-    mutationObserver.observe(document.documentElement, {
-      childList: true,
-    })
-
-    // Worst case scenario, we initialize the UI when the DOM is ready.
-    window.addEventListener('DOMContentLoaded', () => {
-      mutationObserver.disconnect()
-
-      initialize()
-    })
+    // In order to mount our UI as fast as possible we monitor the document for
+    // the body element to be available. As soon as it's available, we continue
+    // with the initialization. We also listen for the DOMContentLoaded event just
+    // in case something weird is happening.
+    Promise.race([waitForBody(signal), waitForDOMContentLoaded(signal)])
+      .then(() => {
+        initialize()
+      })
+      .catch((err) => {
+        console.error('Error initializing k6 Studio in-browser UI:', err)
+      })
   } else {
     initialize()
   }
