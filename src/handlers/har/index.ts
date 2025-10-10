@@ -42,7 +42,7 @@ export function initialize() {
         flag: 'r',
       })
 
-      return RecordingSchema.parse(data)
+      return RecordingSchema.parse(JSON.parse(data))
     }
   )
 
