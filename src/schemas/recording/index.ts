@@ -1,19 +1,26 @@
-import invariant from 'tiny-invariant'
+import { z } from 'zod'
 
-import { migrate as migrateV1toV2 } from './v1/recording'
-import { Recording } from './v2/recording'
+import * as RecordingV1 from './v1/recording'
+import * as RecordingV2 from './v2/recording'
 
 export * from './v2/browser'
-export { Recording } from './v2/recording'
 
-export function parseRecording(data: string): Recording {
-  const recording = JSON.parse(data) as Recording
+const AnyRecordingSchema = z.union([
+  RecordingV1.RecordingSchema,
+  RecordingV2.RecordingSchema,
+])
 
-  invariant(recording.log, 'Invalid HAR: missing log property')
-
-  if (recording.log._browserEvents?.version === '2') {
-    return recording
+export function migrate(recording: z.infer<typeof AnyRecordingSchema>) {
+  if (
+    recording.log._browserEvents &&
+    'version' in recording.log._browserEvents &&
+    recording.log._browserEvents.version === '2'
+  ) {
+    return recording as RecordingV2.Recording
   }
 
-  return migrateV1toV2(recording)
+  return RecordingV1.migrate(recording as RecordingV1.Recording)
 }
+
+export const RecordingSchema = AnyRecordingSchema.transform(migrate)
+export type Recording = RecordingV2.Recording

@@ -1,17 +1,17 @@
 import type { Content, Entry, Header } from 'har-format'
 
 import { DEFAULT_GROUP_NAME } from '@/constants'
+import { Recording } from '@/schemas/recording'
 import { useFeaturesStore } from '@/store/features'
 import {
   generateJsonPaths,
   isJsonContentType,
 } from '@/store/generator/slices/recording.utils'
 import { Method, ProxyData, Request, Response } from '@/types'
-import { HarWithOptionalResponse } from '@/types/har'
 
 import { safeAtob } from './format'
 
-export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
+export function harToProxyData(har: Recording): ProxyData[] {
   return har.log.entries.map((entry) => {
     const request = parseRequest(entry.request)
     const response = entry.response ? parseResponse(entry.response) : undefined
