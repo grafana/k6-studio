@@ -45,7 +45,7 @@ export function RecordingPreviewer() {
       invariant(har, 'Failed to open file')
 
       setProxyData(harToProxyData(har))
-      setBrowserEvents(har.log._browserEvents ?? [])
+      setBrowserEvents(har.log._browserEvents?.events ?? [])
     })()
 
     return () => {

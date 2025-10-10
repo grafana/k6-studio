@@ -3,8 +3,6 @@ import { z } from 'zod'
 
 import { EntryWithOptionalResponse } from '@/types/har'
 
-import type { Recording as RecordingV2 } from '../v2/recording'
-
 import { BrowserEventSchema } from './browser'
 
 export const RecordingSchema = z.object({
@@ -18,21 +16,13 @@ export const RecordingSchema = z.object({
     entries: z
       .unknown()
       .transform((value) => value as EntryWithOptionalResponse[]),
-    _browserEvents: BrowserEventSchema.array().optional(),
+    _browserEvents: z
+      .object({
+        version: z.literal('2'),
+        events: BrowserEventSchema.array(),
+      })
+      .optional(),
   }),
 })
 
 export type Recording = z.infer<typeof RecordingSchema>
-
-export function migrate(recording: Recording): RecordingV2 {
-  return {
-    ...recording,
-    log: {
-      ...recording.log,
-      _browserEvents: {
-        version: '2',
-        events: recording.log._browserEvents ?? [],
-      },
-    },
-  }
-}
