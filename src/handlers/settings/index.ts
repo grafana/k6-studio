@@ -27,6 +27,12 @@ export function initialize() {
       // don't pass fields that are not submitted by the form
       const { windowState: _, ...settings } = data
       const modifiedSettings = await saveSettings(settings)
+
+      if ('openAIApiKey' in modifiedSettings) {
+        console.info('OpenAI API key changed, resetting AI client')
+        // TODO: reset AI client
+      }
+
       await applySettings(modifiedSettings, browserWindow)
 
       sendToast(browserWindow.webContents, {
