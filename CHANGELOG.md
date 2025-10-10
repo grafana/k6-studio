@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.9.0](https://github.com/grafana/k6-studio/compare/v1.8.0...v1.9.0) (2025-10-10)
+
+
+### Features
+
+* Add Regex support to Verification rule ([#853](https://github.com/grafana/k6-studio/issues/853)) ([4e2fdd4](https://github.com/grafana/k6-studio/commit/4e2fdd4b7af66dbe15046b17080c424054ac8a23))
+
+
+### Miscellaneous Chores
+
+* Update PR template ([#859](https://github.com/grafana/k6-studio/issues/859)) ([4adcd05](https://github.com/grafana/k6-studio/commit/4adcd05b762d84fd25b8137c0261dbc4c3638040))
+
 ## [1.8.0](https://github.com/grafana/k6-studio/compare/v1.7.0...v1.8.0) (2025-10-06)
 
 
