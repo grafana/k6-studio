@@ -20,7 +20,7 @@ export function proxyDataToHar(
 function createLog(
   pages: Page[],
   entries: EntryWithOptionalResponse[],
-  browserEvents: BrowserEvent[]
+  events: BrowserEvent[]
 ): HarWithOptionalResponse['log'] {
   return {
     version: '1.2',
@@ -30,7 +30,10 @@ function createLog(
     },
     pages,
     entries,
-    _browserEvents: browserEvents,
+    _browserEvents: {
+      version: '2',
+      events,
+    },
   }
 }
 
