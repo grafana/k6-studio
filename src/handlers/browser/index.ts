@@ -4,6 +4,7 @@ import { launchBrowser } from '@/handlers/browser/launch'
 import { waitForProxy } from '@/main/proxy'
 import { BrowserServer } from '@/services/browser/server'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { BrowserHandler, LaunchBrowserOptions } from './types'
 
@@ -40,5 +41,22 @@ export function initialize(browserServer: BrowserServer) {
 
   browserServer.on('stop-recording', () => {
     ipcMain.emit(BrowserHandler.Stop)
+  })
+
+  ipcMain.on(
+    BrowserHandler.HighlightElement,
+    (_event, selector: HighlightSelector | null) => {
+      browserServer.send({
+        type: 'highlight-elements',
+        selector,
+      })
+    }
+  )
+
+  ipcMain.on(BrowserHandler.NavigateTo, (_event, url: string) => {
+    browserServer.send({
+      type: 'navigate',
+      url,
+    })
   })
 }

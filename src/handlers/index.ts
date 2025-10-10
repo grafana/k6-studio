@@ -3,7 +3,6 @@ import { BrowserServer } from '@/services/browser/server'
 import * as app from './app'
 import * as auth from './auth'
 import * as browser from './browser'
-import * as browserRemote from './browserRemote'
 import * as cloud from './cloud'
 import * as dataFiles from './dataFiles'
 import * as generator from './generator'
@@ -19,7 +18,6 @@ interface Services {
 }
 
 export function initialize({ browserServer }: Services) {
-  browserRemote.initialize(browserServer)
   auth.initialize()
   cloud.initialize()
   har.initialize()
