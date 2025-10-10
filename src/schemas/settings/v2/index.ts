@@ -42,5 +42,8 @@ export function migrate(
       errorReport: true,
     },
     appearance: settings.appearance,
+    ai: {
+      provider: 'openai',
+    },
   }
 }

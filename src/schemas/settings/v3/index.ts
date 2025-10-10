@@ -13,6 +13,11 @@ const TelemetrySchema = z.object({
   errorReport: z.boolean(),
 })
 
+const AISettingsSchema = z.object({
+  provider: z.enum(['openai']).default('openai'),
+  apiKey: z.string().optional(),
+})
+
 export {
   AppearanceSchema,
   ProxySettingsSchema,
@@ -29,6 +34,7 @@ export const AppSettingsSchema = z.object({
   windowState: WindowStateSchema,
   telemetry: TelemetrySchema,
   appearance: AppearanceSchema,
+  ai: AISettingsSchema,
 })
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>
