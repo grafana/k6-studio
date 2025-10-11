@@ -74,6 +74,13 @@ const SubmitFormEventSchema = BrowserEventBaseSchema.extend({
   submitter: ElementSelectorSchema,
 })
 
+const GrantPermissionsEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('grant-permissions'),
+  tab: z.string(),
+  permissions: z.array(z.string()),
+  origin: z.string(),
+})
+
 const TextAssertionSchema = z.object({
   type: z.literal('text'),
   operation: z.object({
@@ -128,6 +135,7 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   SelectChangeEventSchema,
   SubmitFormEventSchema,
   AssertEventSchema,
+  GrantPermissionsEventSchema,
 ])
 
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
@@ -141,6 +149,7 @@ export type CheckChangeEvent = z.infer<typeof CheckChangeEventSchema>
 export type RadioChangeEvent = z.infer<typeof RadioChangeEventSchema>
 export type SelectChangeEvent = z.infer<typeof SelectChangeEventSchema>
 export type SubmitFormEvent = z.infer<typeof SubmitFormEventSchema>
+export type GrantPermissionsEvent = z.infer<typeof GrantPermissionsEventSchema>
 export type AssertEvent = z.infer<typeof AssertEventSchema>
 
 export type TextAssertion = z.infer<typeof TextAssertionSchema>

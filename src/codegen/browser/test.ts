@@ -204,6 +204,18 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
         }
 
+      case 'grant-permissions':
+        return {
+          type: 'grant-permissions',
+          nodeId: event.eventId,
+          permissions: event.permissions,
+          origin: event.origin,
+          inputs: {
+            previous,
+            page: getPage(event.tab),
+          },
+        }
+
       case 'assert': {
         return {
           type: 'assert',

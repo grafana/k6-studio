@@ -66,6 +66,18 @@ export interface SelectOptionsExpression {
   multiple: boolean
 }
 
+export interface PageContextExpression {
+  type: 'PageContextExpression'
+  page: Expression
+}
+
+export interface GrantPermissionsExpression {
+  type: 'GrantPermissionsExpression'
+  context: Expression
+  permissions: Expression[]
+  options: Expression | null
+}
+
 export interface TextContainsAssertion {
   type: 'TextContainsAssertion'
   text: Expression
@@ -131,6 +143,8 @@ export type Expression =
   | FillTextExpression
   | CheckExpression
   | SelectOptionsExpression
+  | PageContextExpression
+  | GrantPermissionsExpression
   | ExpectExpression
 
 export interface VariableDeclaration {

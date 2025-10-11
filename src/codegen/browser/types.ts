@@ -82,6 +82,16 @@ export interface CheckNode extends NodeBase {
   }
 }
 
+export interface GrantPermissionsNode extends NodeBase {
+  type: 'grant-permissions'
+  permissions: string[]
+  origin: string
+  inputs: {
+    previous?: NodeRef
+    page: NodeRef
+  }
+}
+
 export interface TextContainsAssertion {
   type: 'text-contains'
   value: string
@@ -127,6 +137,7 @@ export type TestNode =
   | TypeTextNode
   | SelectOptionsNode
   | CheckNode
+  | GrantPermissionsNode
   | AssertNode
 
 export interface Scenario {

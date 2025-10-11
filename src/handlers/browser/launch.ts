@@ -95,6 +95,8 @@ const FEATURES_TO_DISABLE = [
 ]
 
 const BROWSER_RECORDING_ARGS = [
+  `--use-fake-device-for-media-stream`,
+  `--use-fake-ui-for-media-stream`,
   '--remote-debugging-pipe',
   '--enable-unsafe-extension-debugging',
 ]
