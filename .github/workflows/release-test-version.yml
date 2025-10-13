@@ -118,11 +118,11 @@ jobs:
             TENANT_ID=azure-trusted-signing:tenant-id
 
       - name: Azure log in
-            uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
-            with:
-              client-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).client-id }}
-              subscription-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).subscription-id }}
-              tenant-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).tenant-id }}
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        with:
+          client-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).client-id }}
+          subscription-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).subscription-id }}
+          tenant-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).tenant-id }}
 
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')
