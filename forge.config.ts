@@ -11,6 +11,7 @@ import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
+import { windowsSign } from './windowsSign'
 
 function getPlatformSpecificResources() {
   // on mac we are using a single image to build both architectures so we
@@ -41,6 +42,7 @@ const config: ForgeConfig = {
       './resources/logo-splashscreen.svg',
       ...getPlatformSpecificResources(),
     ],
+    windowsSign,
     osxSign: {
       optionsForFile: () => {
         return {
@@ -63,10 +65,12 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
-      windowsSign: {
-        certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
-        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
-      },
+      // windowsSign: {
+      //   certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
+      //   certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
+      // },
+      // @ts-expect-error - incorrect types exported by MakerSquirrel
+      windowsSign,
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),

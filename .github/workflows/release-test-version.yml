@@ -19,7 +19,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, macos-13, windows-latest, ubuntu-latest]
+        # platform: [macos-latest, macos-13, windows-latest, ubuntu-latest]
+        platform: [windows-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -71,11 +72,11 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
 
-      - name: setup windows certificate
-        if: startsWith(matrix.platform, 'windows-')
-        run: |
-          $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
-          [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
+      # - name: setup windows certificate
+      #   if: startsWith(matrix.platform, 'windows-')
+      #   run: |
+      #     $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
+      #     [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
 
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
@@ -105,12 +106,33 @@ jobs:
         run: |
           npm run publish -- --arch=x64
 
+      - name: Get azure secrets
+        id: get-azure-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
+        if: startsWith(matrix.platform, 'windows-')
+        with:
+          export_env: false
+          repo_secrets: |
+            CLIENT_ID=azure-trusted-signing:client-id
+            SUBSCRIPTION_ID=azure-trusted-signing:subscription-id
+            TENANT_ID=azure-trusted-signing:tenant-id
+
+      - name: Azure log in
+            uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+            with:
+              client-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).client-id }}
+              subscription-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).subscription-id }}
+              tenant-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).tenant-id }}
+
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
-          WINDOWS_CERTIFICATE_PATH: ./certificate.pfx
+          # WINDOWS_CERTIFICATE_PATH: ./certificate.pfx
+          TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
+          TRUSTED_SIGNING_ENDPOINT: https://eus.codesigning.azure.net/
+          TRUSTED_SIGNING_PROFILE: grafana-production
           # sentry integration
           # sentry vite plugin integration during build
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
@@ -143,7 +165,7 @@ jobs:
           rm apple_api_key.p8
           rm certificate.p12
 
-      - name: cleanup windows certificates
-        if: startsWith(matrix.platform, 'windows-')
-        run: |
-          del certificate.pfx
+      # - name: cleanup windows certificates
+      #   if: startsWith(matrix.platform, 'windows-')
+      #   run: |
+      #     del certificate.pfx
