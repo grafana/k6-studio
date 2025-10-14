@@ -2,7 +2,7 @@ import { Fragment } from 'react'
 
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from 'extension/src/frontend/view/types'
 
 import { AssertDescription } from './AssertDescription'
 import { ClickDescription } from './ClickDescription'

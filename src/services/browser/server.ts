@@ -1,41 +1,64 @@
 import { BrowserWindow } from 'electron'
 
-import { BrowserExtensionClient } from 'extension/src/messaging'
-import { Sender } from 'extension/src/messaging/transports/transport'
-import { WebSocketServerTransport } from 'extension/src/messaging/transports/webSocketServer'
-import { BrowserExtensionMessage } from 'extension/src/messaging/types'
+import { BrowserHandler } from '@/handlers/browser/types'
+import {
+  browserToStudioEvents,
+  browserToStudioMethods,
+} from 'extension/src/core/clients/browserToStudio'
+import { serve } from 'extension/src/core/clients/messaging/server'
+import { WebSocketServerTransport } from 'extension/src/core/clients/messaging/transports/webSocketServer'
+import { StudioToBrowserClient } from 'extension/src/core/clients/studioToBrowser'
 import { EventEmitter } from 'extension/src/utils/events'
 
 type BrowserExtensionServerEvents = {
   'stop-recording': {
-    sender?: Sender
-    data: Extract<BrowserExtensionMessage, { type: 'stop-recording' }>
+    sender?: string
+    data: { type: 'stop-recording' }
   }
 }
 
 export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
-  #client: BrowserExtensionClient | null = null
+  #transport: WebSocketServerTransport | null = null
+  #server: Disposable | null = null
 
-  async start(browserWindow: BrowserWindow) {
-    const transport = await WebSocketServerTransport.create('localhost', 7554)
+  #client: StudioToBrowserClient | null = null
 
-    this.#client = new BrowserExtensionClient('studio-server', transport)
-
-    this.#client.on('events-recorded', (event) => {
-      browserWindow.webContents.send('browser:event', event.data.events)
-    })
-
-    this.#client.on('stop-recording', (event) => {
-      this.emit('stop-recording', event)
-    })
+  get client() {
+    return this.#client
   }
 
-  send(message: BrowserExtensionMessage) {
-    this.#client?.send(message)
+  async start(browserWindow: BrowserWindow) {
+    this.#transport = await WebSocketServerTransport.create('localhost', 7554)
+
+    this.#client = new StudioToBrowserClient(this.#transport)
+
+    this.#server = serve({
+      transport: this.#transport,
+      methods: browserToStudioMethods,
+      events: browserToStudioEvents,
+      handlers: {
+        stopRecording: () => {
+          this.emit('stop-recording', {
+            data: {
+              type: 'stop-recording',
+            },
+          })
+        },
+
+        recordEvents: (events) => {
+          browserWindow.webContents.send(BrowserHandler.BrowserEvent, events)
+        },
+      },
+    })
   }
 
   stop() {
-    this.#client?.dispose()
+    this.#transport?.[Symbol.dispose]()
+    this.#transport = null
+
+    this.#server?.[Symbol.dispose]()
+    this.#server = null
+
     this.#client = null
   }
 }

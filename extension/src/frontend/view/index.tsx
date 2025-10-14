@@ -4,16 +4,15 @@ import { createRoot } from 'react-dom/client'
 
 import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 import { Theme } from '@/components/primitives/Theme'
+import { BrowserToStudioClient } from 'extension/src/core/clients/browserToStudio'
 import {
   initializeSettingsStorage,
   StorageBackend,
 } from 'extension/src/core/settings'
 
-import { BrowserExtensionClient } from '../../messaging'
-
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
-import { BrowserExtensionClientProvider } from './hooks/useBrowserExtensionClient'
+import { StudioClientProvider } from './hooks/useBrowserExtensionClient'
 import { isUsingTool } from './utils'
 
 // It's possible that our scripts is loaded so early that the documentElement property
@@ -101,7 +100,7 @@ function waitForDOMContentLoaded(signal: AbortSignal) {
 }
 
 export function initializeView(
-  client: BrowserExtensionClient,
+  client: BrowserToStudioClient,
   storage: StorageBackend
 ) {
   initializeSettingsStorage(storage)
@@ -213,7 +212,7 @@ export function initializeView(
     })
 
     createRoot(root).render(
-      <BrowserExtensionClientProvider client={client}>
+      <StudioClientProvider client={client}>
         <CacheProvider value={globalCache}>
           <GlobalStyles />
           <ContainerProvider container={root}>
@@ -223,7 +222,7 @@ export function initializeView(
             </CacheProvider>
           </ContainerProvider>
         </CacheProvider>
-      </BrowserExtensionClientProvider>
+      </StudioClientProvider>
     )
   }
 

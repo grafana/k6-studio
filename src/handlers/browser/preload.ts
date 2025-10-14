@@ -6,7 +6,7 @@ import {
   LaunchBrowserError,
 } from '@/handlers/browser/types'
 import { BrowserEvent } from '@/schemas/recording'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from 'extension/src/frontend/view/types'
 
 import { createListener } from '../utils'
 

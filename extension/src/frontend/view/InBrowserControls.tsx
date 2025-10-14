@@ -5,13 +5,13 @@ import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
 import { TextSelectionPopover } from './TextSelectionPopover'
 import { ToolBox } from './ToolBox'
-import { useBrowserExtensionClient } from './hooks/useBrowserExtensionClient'
+import { useStudioClient } from './hooks/useBrowserExtensionClient'
 import { useInBrowserUIStore } from './store'
 
 export function InBrowserControls() {
   const tool = useInBrowserUIStore((state) => state.tool)
 
-  const client = useBrowserExtensionClient()
+  const client = useStudioClient()
   const selectTool = useInBrowserUIStore((state) => state.selectTool)
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -21,9 +21,7 @@ export function InBrowserControls() {
   }
 
   const handleStopRecording = () => {
-    client.send({
-      type: 'stop-recording',
-    })
+    client.stopRecording().catch(console.error)
   }
 
   return (

@@ -1,6 +1,5 @@
 import { BrowserEvent } from '@/schemas/recording'
 
-import { BrowserExtensionClient } from '../messaging'
 import { generateSelector } from '../selectors'
 import {
   findAssociatedElement,
@@ -10,10 +9,11 @@ import {
   isNativeRadio,
 } from '../utils/dom'
 
+import { BrowserToStudioClient } from './clients/browserToStudio'
 import { WindowEventManager } from './manager'
 import { getTabId } from './utils'
 
-export function initializeFrontendRecorder(client: BrowserExtensionClient) {
+export function initializeFrontendRecorder(client: BrowserToStudioClient) {
   function getButton(button: number) {
     switch (button) {
       case 0:
@@ -31,10 +31,11 @@ export function initializeFrontendRecorder(client: BrowserExtensionClient) {
   }
 
   function recordEvents(events: BrowserEvent[] | BrowserEvent) {
-    client.send({
-      type: 'record-events',
-      events: Array.isArray(events) ? events : [events],
-    })
+    client
+      .recordEvents(Array.isArray(events) ? events : [events])
+      .catch((error) => {
+        console.error('Failed to send recorded events to the extension:', error)
+      })
   }
 
   const manager = new WindowEventManager()

@@ -3,7 +3,7 @@ import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 
 import { InputChangeEvent } from '@/schemas/recording'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from 'extension/src/frontend/view/types'
 
 import { Selector } from './Selector'
 

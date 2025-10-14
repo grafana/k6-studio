@@ -11,6 +11,11 @@ type EventListeners<Events extends EventMap<Events>> = {
  */
 export class EventEmitter<Events extends EventMap<Events>> {
   #listeners: EventListeners<Events> = {}
+
+  #anyListeners: Array<
+    (type: keyof Events, event: Events[keyof Events]) => void
+  > = []
+
   #queue: Array<() => void> | null = null
 
   constructor() {
@@ -61,6 +66,18 @@ export class EventEmitter<Events extends EventMap<Events>> {
     this.#queue = null
   }
 
+  any(listener: (type: keyof Events, event: Events[keyof Events]) => void) {
+    this.#anyListeners.push(listener)
+
+    return () => {
+      this.none(listener)
+    }
+  }
+
+  none(listener: (type: keyof Events, event: Events[keyof Events]) => void) {
+    this.#anyListeners = this.#anyListeners.filter((l) => l !== listener)
+  }
+
   #defer<Type extends keyof Events>(type: Type, event: Events[Type]) {
     return () => {
       const listeners = this.#listeners[type]
@@ -72,6 +89,14 @@ export class EventEmitter<Events extends EventMap<Events>> {
           } catch (error) {
             console.log('Error in event listener', error)
           }
+        }
+      }
+
+      for (const listener of this.#anyListeners) {
+        try {
+          listener(type, event)
+        } catch (error) {
+          console.log('Error in event listener', error)
         }
       }
     }

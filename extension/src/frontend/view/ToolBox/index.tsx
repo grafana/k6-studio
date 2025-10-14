@@ -22,7 +22,7 @@ import {
 import { Flex } from '@/components/primitives/Flex'
 import { Toolbar } from '@/components/primitives/Toolbar'
 
-import { useBrowserExtensionClient } from '../hooks/useBrowserExtensionClient'
+import { useStudioClient } from '../hooks/useBrowserExtensionClient'
 import { useToolboxSettings } from '../settings'
 import { Tool } from '../types'
 
@@ -69,7 +69,7 @@ export function ToolBox({
 }: ToolBoxProps) {
   const [settings, setSettings] = useToolboxSettings()
 
-  const client = useBrowserExtensionClient()
+  const client = useStudioClient()
   const mouse = useSensor(MouseSensor)
   const sensors = useSensors(mouse)
 
@@ -170,9 +170,7 @@ export function ToolBox({
               <ToolBoxTooltip content="Reload extension (dev only)">
                 <Toolbar.Button
                   onClick={() => {
-                    client.send({
-                      type: 'reload-extension',
-                    })
+                    client.reload().catch(console.error)
 
                     setTimeout(() => {
                       window.location.reload()

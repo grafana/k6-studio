@@ -1,29 +1,29 @@
 import { createContext, useContext } from 'react'
 
-import { BrowserExtensionClient } from 'extension/src/messaging'
+import { BrowserToStudioClient } from 'extension/src/core/clients/browserToStudio'
 
-const context = createContext<BrowserExtensionClient | null>(null)
+const context = createContext<BrowserToStudioClient | null>(null)
 
-export function useBrowserExtensionClient() {
+export function useStudioClient() {
   const client = useContext(context)
 
   if (!client) {
     throw new Error(
-      'useBrowserExtensionClient must be used within a BrowserExtensionClientProvider'
+      'useStudioClient must be used within a StudioClientProvider'
     )
   }
 
   return client
 }
 
-interface BrowserExtensionClientProviderProps {
-  client: BrowserExtensionClient
+interface StudioClientProviderProps {
+  client: BrowserToStudioClient
   children: React.ReactNode
 }
 
-export function BrowserExtensionClientProvider({
+export function StudioClientProvider({
   client,
   children,
-}: BrowserExtensionClientProviderProps) {
+}: StudioClientProviderProps) {
   return <context.Provider value={client}>{children}</context.Provider>
 }

@@ -16,7 +16,7 @@ import { RecorderSettings } from '@/types/settings'
 import { ChromeDevtoolsClient } from '@/utils/cdp/client'
 import { getResourcesPath } from '@/utils/resources'
 import { uuid } from '@/utils/uuid'
-import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
+import { WebSocketServerError } from 'extension/src/core/clients/messaging/transports/webSocketServer'
 
 import { BrowserServer } from '../../services/browser/server'
 import { getPlatform } from '../../utils/electron'

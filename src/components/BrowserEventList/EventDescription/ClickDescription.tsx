@@ -1,7 +1,7 @@
 import { Kbd } from '@/components/primitives/Kbd'
 import { ClickEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from 'extension/src/frontend/view/types'
 
 import { Selector } from './Selector'
 

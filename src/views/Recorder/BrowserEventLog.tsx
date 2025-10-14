@@ -2,7 +2,7 @@ import { Flex, ScrollArea } from '@radix-ui/themes'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { BrowserEvent } from '@/schemas/recording'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from 'extension/src/frontend/view/types'
 
 interface BrowserEventLogProps {
   events: BrowserEvent[]

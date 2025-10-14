@@ -12,8 +12,9 @@ import { ElementRole } from 'extension/src/utils/aria'
 
 import { Anchor } from '../Anchor'
 import { Overlay } from '../Overlay'
-import { useBrowserExtensionClient } from '../hooks/useBrowserExtensionClient'
+import { useStudioClient } from '../hooks/useBrowserExtensionClient'
 import { useEscape } from '../hooks/useEscape'
+import { useHighlight } from '../store'
 
 import { useInspectedElement } from './ElementInspector.hooks'
 import { toAssertion } from './ElementInspector.utils'
@@ -98,7 +99,9 @@ interface ElementInspectorProps {
 }
 
 export function ElementInspector({ onClose }: ElementInspectorProps) {
-  const client = useBrowserExtensionClient()
+  const client = useStudioClient()
+
+  const highlight = useHighlight()
 
   const { pinned, element, mousePosition, unpin, expand, contract } =
     useInspectedElement()
@@ -116,32 +119,27 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
   }, [pinned, onClose])
 
   useEffect(() => {
-    client.send({
-      type: 'highlight-elements',
-      selector: element && {
+    highlight(
+      element && {
         type: 'css',
         selector: element.selector.css,
-      },
-    })
-  }, [client, element])
+      }
+    )
+  }, [highlight, element])
 
   useEffect(() => {
     return () => {
-      client.send({
-        type: 'highlight-elements',
-        selector: null,
-      })
+      highlight(null)
     }
-  }, [client])
+  }, [highlight])
 
   const handleOpenChange = () => {
     setAssertion(null)
   }
 
   const handleAssertionSubmit = (assertion: AssertionData) => {
-    client.send({
-      type: 'record-events',
-      events: [
+    client
+      .recordEvents([
         {
           type: 'assert',
           eventId: uuid(),
@@ -152,8 +150,8 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
           },
           assertion: toAssertion(assertion),
         },
-      ],
-    })
+      ])
+      .catch(console.error)
 
     onClose()
   }

@@ -1,8 +1,7 @@
+import { BrowserToStudioClient } from '../core/clients/browserToStudio'
+import { WebSocketTransport } from '../core/clients/messaging/transports/webSocket'
 import { initializeFrontendRecorder } from '../core/frontend'
-import { setupFrontendRouting } from '../core/routing'
 import { StorageBackend } from '../core/settings'
-import { BufferedTransport } from '../messaging/transports/buffered'
-import { WebSocketTransport } from '../messaging/transports/webSocket'
 
 import { initializeView } from './view'
 
@@ -22,8 +21,8 @@ const storage: StorageBackend = {
   },
 }
 
-const client = setupFrontendRouting(
-  new BufferedTransport(new WebSocketTransport('ws://localhost:7554'))
+const client = new BrowserToStudioClient(
+  new WebSocketTransport('ws://localhost:7554')
 )
 
 initializeFrontendRecorder(client)

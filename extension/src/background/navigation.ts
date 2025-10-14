@@ -2,9 +2,6 @@ import { tabs, WebNavigation, webNavigation } from 'webextension-polyfill'
 
 import { BrowserEvent } from '@/schemas/recording'
 
-import { NavigationEventMap } from '../core/types'
-import { EventEmitter } from '../utils/events'
-
 function isReload({ transitionType }: WebNavigation.OnCommittedDetailsType) {
   return transitionType === 'reload'
 }
@@ -118,16 +115,4 @@ export function captureNavigationEvents(
     .catch((error) => {
       console.error('Error getting active tab:', error)
     })
-}
-
-export class ExtensionNavigationListener extends EventEmitter<NavigationEventMap> {
-  constructor() {
-    super()
-
-    captureNavigationEvents((events) => {
-      this.emit('navigate', {
-        events: Array.isArray(events) ? events : [events],
-      })
-    })
-  }
 }
