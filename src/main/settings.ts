@@ -12,6 +12,7 @@ import { getPlatform } from '../utils/electron'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 
+import { encryptString, decryptString } from './encryption'
 import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
 
 export const defaultSettings: AppSettings = {
@@ -39,6 +40,9 @@ export const defaultSettings: AppSettings = {
   },
   appearance: {
     theme: 'system',
+  },
+  ai: {
+    provider: 'openai',
   },
 }
 
@@ -93,6 +97,9 @@ export async function getSettings() {
 export async function saveSettings(settings: Partial<AppSettings>) {
   const currentSettings = await getSettings()
   const newSettings = { ...currentSettings, ...settings }
+
+  newSettings.ai.apiKey = processApiKeyForStorage(newSettings.ai.apiKey)
+
   await writeFile(filePath, JSON.stringify(newSettings))
   return getSettingsDiff(currentSettings, settings)
 }
@@ -199,4 +206,34 @@ export async function applySettings(
     k6StudioState.appSettings.appearance = modifiedSettings.appearance
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
   }
+
+  if (modifiedSettings.ai) {
+    k6StudioState.appSettings.ai = modifiedSettings.ai
+    // TODO: re-initialize AI client with new settings
+  }
+}
+
+function processApiKeyForStorage(
+  apiKey: string | undefined
+): string | undefined {
+  if (apiKey === undefined || apiKey.trim() === '') {
+    return undefined
+  }
+
+  try {
+    return encryptString(apiKey)
+  } catch (error) {
+    log.error('Failed to encrypt API key during save:', error)
+    throw error
+  }
+}
+
+export async function getDecryptedAiKey() {
+  const settings = await getSettings()
+
+  if (!settings.ai.apiKey) {
+    return undefined
+  }
+
+  return decryptString(settings.ai.apiKey)
 }

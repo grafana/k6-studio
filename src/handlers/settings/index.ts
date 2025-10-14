@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 
+import { isEncryptionAvailable } from '@/main/encryption'
 import {
   applySettings,
   getSettings,
@@ -27,6 +28,7 @@ export function initialize() {
       // don't pass fields that are not submitted by the form
       const { windowState: _, ...settings } = data
       const modifiedSettings = await saveSettings(settings)
+
       await applySettings(modifiedSettings, browserWindow)
 
       sendToast(browserWindow.webContents, {
@@ -52,5 +54,9 @@ export function initialize() {
   ipcMain.handle(SettingsHandler.SelectUpstreamCertificate, async () => {
     console.info(`${SettingsHandler.SelectUpstreamCertificate} event received`)
     return selectUpstreamCertificate()
+  })
+
+  ipcMain.handle(SettingsHandler.IsEncryptionAvailable, () => {
+    return isEncryptionAvailable()
   })
 }
