@@ -29,11 +29,6 @@ export function initialize() {
       const { windowState: _, ...settings } = data
       const modifiedSettings = await saveSettings(settings)
 
-      if (modifiedSettings.ai && 'apiKey' in modifiedSettings.ai) {
-        console.info('OpenAI API key changed, resetting AI client')
-        // TODO: reset AI client
-      }
-
       await applySettings(modifiedSettings, browserWindow)
 
       sendToast(browserWindow.webContents, {

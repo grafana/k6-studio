@@ -209,6 +209,7 @@ export async function applySettings(
 
   if (modifiedSettings.ai) {
     k6StudioState.appSettings.ai = modifiedSettings.ai
+    // TODO: re-initialize AI client with new settings
   }
 }
 
