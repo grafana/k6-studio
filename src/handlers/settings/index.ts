@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 
+import { isEncryptionAvailable } from '@/main/encryption'
 import {
   applySettings,
   getSettings,
@@ -58,5 +59,9 @@ export function initialize() {
   ipcMain.handle(SettingsHandler.SelectUpstreamCertificate, async () => {
     console.info(`${SettingsHandler.SelectUpstreamCertificate} event received`)
     return selectUpstreamCertificate()
+  })
+
+  ipcMain.handle(SettingsHandler.IsEncryptionAvailable, () => {
+    return isEncryptionAvailable()
   })
 }

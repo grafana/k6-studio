@@ -12,7 +12,7 @@ import { getPlatform } from '../utils/electron'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 
-import { encrypString, decryptString } from './encryption'
+import { encryptString, decryptString } from './encryption'
 import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
 
 export const defaultSettings: AppSettings = {
@@ -220,9 +220,8 @@ function processApiKeyForStorage(
   }
 
   try {
-    return encrypString(apiKey)
+    return encryptString(apiKey)
   } catch (error) {
-    // TODO: show UI error when encryption is not available
     log.error('Failed to encrypt API key during save:', error)
     throw error
   }
