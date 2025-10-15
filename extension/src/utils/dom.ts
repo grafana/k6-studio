@@ -131,5 +131,21 @@ export function isNativeButton(element: Element) {
     return false
   }
 
-  return element.type === 'button' || element.type === 'submit'
+  return (
+    element.type === 'button' ||
+    element.type === 'submit' ||
+    element.type === 'reset'
+  )
+}
+
+export function isNonButtonInput(element: Element) {
+  if (element instanceof HTMLInputElement === false) {
+    return false
+  }
+
+  return (
+    element.type !== 'button' &&
+    element.type !== 'submit' &&
+    element.type !== 'reset'
+  )
 }
