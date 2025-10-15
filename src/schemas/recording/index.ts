@@ -1,7 +1,5 @@
-import type { Page } from 'har-format'
+import type { Entry, Page, Response } from 'har-format'
 import { z } from 'zod'
-
-import { EntryWithOptionalResponse } from '@/types/har'
 
 import * as v1 from './browser/v1'
 import * as v2 from './browser/v2'
@@ -25,6 +23,13 @@ function migrate(browserEvents: z.infer<typeof AnyBrowserEventsSchema>) {
 
 // The canonical schema for k6 Studio
 const BrowserEventsSchema = AnyBrowserEventsSchema.transform(migrate)
+
+// Response is required by HAR file spec, but we want
+// to keep non-completed requests to be able to
+// show them in the UI when loading HAR file
+interface EntryWithOptionalResponse extends Omit<Entry, 'response'> {
+  response?: Response
+}
 
 export const RecordingSchema = z.object({
   // HAR log format version 1.2

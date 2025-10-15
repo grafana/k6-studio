@@ -2,7 +2,6 @@ import type { Entry, Page } from 'har-format'
 
 import { BrowserEvent, Recording } from '@/schemas/recording'
 import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
-import { EntryWithOptionalResponse } from '@/types/har'
 
 import { groupProxyData } from './groups'
 import { getContentTypeWithCharsetHeader } from './headers'
@@ -19,7 +18,7 @@ export function proxyDataToHar(
 
 function createLog(
   pages: Page[],
-  entries: EntryWithOptionalResponse[],
+  entries: Recording['log']['entries'],
   events: BrowserEvent[]
 ): Recording['log'] {
   return {
@@ -46,7 +45,7 @@ function createPages(groups: GroupedProxyData): Page[] {
   }))
 }
 
-function createEntries(groups: GroupedProxyData): EntryWithOptionalResponse[] {
+function createEntries(groups: GroupedProxyData): Recording['log']['entries'] {
   return Object.entries(groups).flatMap(([group, data]) =>
     data.map((proxyData) => ({
       startedDateTime: timeStampToISO(proxyData.request.timestampStart),
