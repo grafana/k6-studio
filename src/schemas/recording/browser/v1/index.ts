@@ -139,7 +139,26 @@ export function migrate(
 ): z.infer<typeof BrowserEventsSchemaV2> {
   return {
     version: '2',
-    events: events ?? [],
+    events:
+      events?.map((event) => {
+        if ('selector' in event) {
+          const { selector, ...rest } = event
+          return {
+            ...rest,
+            target: { selectors: selector },
+          }
+        }
+
+        if (event.type === 'submit-form') {
+          return {
+            ...event,
+            form: { selectors: event.form },
+            submitter: { selectors: event.submitter },
+          }
+        }
+
+        return event
+      }) ?? [],
   }
 }
 
