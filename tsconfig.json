@@ -21,7 +21,9 @@
     "types": [
       "vite/client",
       "@emotion/react/types/css-prop",
-      "vitest/importMeta"
+      "vitest/importMeta",
+      "mocha",
+      "@wdio/globals/types"
     ]
   }
 }
