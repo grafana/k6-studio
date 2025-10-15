@@ -1,45 +1,47 @@
+import type { Page } from 'har-format'
 import { z } from 'zod'
 
-import { exhaustive } from '../../utils/typescript'
+import { EntryWithOptionalResponse } from '@/types/har'
 
-import * as RecordingV1 from './v1/recording'
-import * as RecordingV2 from './v2/recording'
+import * as v1 from './browser/v1'
+import * as v2 from './browser/v2'
 
-export * from './v2/browser'
+export * from './browser/v2'
 
-type AnyRecording = RecordingV1.Recording | RecordingV2.Recording
+// Schema for any version stored on disk
+const AnyBrowserEventsSchema = z.union([
+  v1.BrowserEventsSchema,
+  z.discriminatedUnion('version', [v2.BrowserEventsSchema]),
+])
 
-const AnyRecordingSchema = z.unknown().transform((data): AnyRecording => {
-  const v2Result = RecordingV2.RecordingSchema.safeParse(data)
-  if (v2Result.success) {
-    return v2Result.data
+function migrate(browserEvents: z.infer<typeof AnyBrowserEventsSchema>) {
+  // pre-v2 browser events do not have a version field
+  if ('version' in browserEvents === false) {
+    return migrate(v1.migrate(browserEvents))
   }
 
-  const v1Result = RecordingV1.RecordingSchema.safeParse(data)
-  if (v1Result.success) {
-    return v1Result.data
-  }
-
-  throw new z.ZodError(v2Result.error.issues)
-})
-
-function migrate(recording: AnyRecording): RecordingV2.Recording {
-  if (
-    recording.log._browserEvents &&
-    typeof recording.log._browserEvents === 'object' &&
-    'version' in recording.log._browserEvents
-  ) {
-    switch (recording.log._browserEvents.version) {
-      case '2':
-        return recording as RecordingV2.Recording
-      // Future versions would be handled here
-      default:
-        return exhaustive(recording.log._browserEvents.version)
-    }
-  }
-
-  return RecordingV1.migrate(recording as RecordingV1.Recording)
+  return browserEvents
 }
 
-export const RecordingSchema = AnyRecordingSchema.transform(migrate)
-export type Recording = RecordingV2.Recording
+// The canonical schema for k6 Studio
+const BrowserEventsSchema = AnyBrowserEventsSchema.transform(migrate)
+
+export const RecordingSchema = z.object({
+  // HAR log format version 1.2
+  log: z.object({
+    version: z.literal('1.2'),
+    creator: z.object({
+      name: z.literal('k6-studio'),
+      version: z.string(),
+    }),
+    pages: z.unknown().transform((value) => value as Page[]),
+    entries: z
+      .unknown()
+      .transform((value) => value as EntryWithOptionalResponse[]),
+
+    // _browserEvents is versioned individually from the HAR file
+    _browserEvents: BrowserEventsSchema.optional(),
+  }),
+})
+
+export type Recording = z.infer<typeof RecordingSchema>

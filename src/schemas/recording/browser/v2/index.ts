@@ -130,6 +130,11 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   AssertEventSchema,
 ])
 
+export const BrowserEventsSchema = z.object({
+  version: z.literal('2'),
+  events: BrowserEventSchema.array(),
+})
+
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 export type CheckState = z.infer<typeof CheckStateSchema>
 
