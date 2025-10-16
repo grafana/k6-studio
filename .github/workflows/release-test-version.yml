@@ -127,6 +127,33 @@ jobs:
           subscription-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).subscription-id }}
           tenant-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).tenant-id }}
 
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
+        if: startsWith(matrix.platform, 'windows-')
+        with:
+          # renovate: datasource=dotnet-version depName=dotnet-sdk
+          dotnet-version: "8.0.414"
+
+      - name: Install Sign CLI tool
+        id: install-sign-tool
+        if: startsWith(matrix.platform, 'windows-')
+        shell: pwsh
+        env:
+          # renovate: datasource=nuget depName=sign
+          DOTNET_SIGN_VERSION: "0.9.1-beta.25379.1"
+        run: |
+          $toolPath = Join-Path -Path ${env:RUNNER_TEMP} -ChildPath (New-Guid).ToString()
+          New-Item -ItemType Directory -Path $toolPath | Out-Null
+
+          dotnet tool install --tool-path $toolPath sign --version ${env:DOTNET_SIGN_VERSION}
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::error::Failed to install Sign CLI tool"
+            exit 1
+          }
+
+          "sign-tool=$toolPath" >> ${env:GITHUB_OUTPUT}
+
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')
         env:
@@ -136,6 +163,7 @@ jobs:
           TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
           TRUSTED_SIGNING_ENDPOINT: https://eus.codesigning.azure.net/
           TRUSTED_SIGNING_PROFILE: grafana-production
+          SIGNTOOL_PATH: ${{ steps.install-sign-tool.outputs.sign-tool }}
           # sentry integration
           # sentry vite plugin integration during build
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
