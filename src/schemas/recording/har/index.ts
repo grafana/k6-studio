@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+// Based on the historical knowledge collected in https://github.com/grafana/har-to-k6/blob/master/li-har.spec.md
+
 export const HarHeaderSchema = z.object({
   name: z.string(),
   value: z.string(),
