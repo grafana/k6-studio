@@ -13,6 +13,9 @@ permissions: {}
 
 jobs:
   publish-studio:
+    # required for Azure OIDC
+    environment:
+      name: azure-trusted-signing
     permissions:
       contents: write
       id-token: write
