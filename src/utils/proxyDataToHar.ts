@@ -86,7 +86,7 @@ function createResponse(response: Response): HarEntry['response'] {
     content: {
       size: response.contentLength,
       mimeType: getContentTypeWithCharsetHeader(response.headers) ?? '',
-      //
+      // Fallback to undefined if content is null to try and keep compatibility with other applications
       text: response.content ?? undefined,
       encoding: 'base64',
     },
