@@ -1,5 +1,3 @@
-import type { Content, Entry, Header } from 'har-format'
-
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { Recording } from '@/schemas/recording'
 import { useFeaturesStore } from '@/store/features'
@@ -8,6 +6,12 @@ import {
   isJsonContentType,
 } from '@/store/generator/slices/recording.utils'
 import { Method, ProxyData, Request, Response } from '@/types'
+import type {
+  HarContent,
+  HarEntry,
+  HarHeader,
+  HarResponse,
+} from '@/types/recording'
 
 import { safeAtob } from './format'
 
@@ -25,7 +29,7 @@ export function harToProxyData(har: Recording): ProxyData[] {
   })
 }
 
-function parseRequest(request: Entry['request']): Request {
+function parseRequest(request: HarEntry['request']): Request {
   let content = request.postData?.text ?? ''
   const postDataParams = request.postData?.params
 
@@ -69,7 +73,7 @@ function parseRequest(request: Entry['request']): Request {
   }
 }
 
-function parseResponse(response: Entry['response']): Response {
+function parseResponse(response: HarResponse): Response {
   const content = parseContent(response.content)
   const jsonPaths = parseJsonPaths(content, response.headers)
 
@@ -87,7 +91,7 @@ function parseResponse(response: Entry['response']): Response {
   }
 }
 
-function parseJsonPaths(content: string, headers: Header[]): string[] {
+function parseJsonPaths(content: string, headers: HarHeader[]): string[] {
   const isJsonPathsFeatureFlagTrue =
     useFeaturesStore.getState().features['typeahead-json']
   const isJsonPathsEnabled =
@@ -103,7 +107,7 @@ function isoToUnixTimestamp(isoString: string): number {
   return new Date(isoString).getTime() / 1000
 }
 
-function parseContent(content: Content): string {
+function parseContent(content: HarContent): string {
   if (!content.text) return ''
 
   if (content.encoding === 'base64') {
