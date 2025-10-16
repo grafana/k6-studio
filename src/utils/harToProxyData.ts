@@ -6,19 +6,14 @@ import {
   isJsonContentType,
 } from '@/store/generator/slices/recording.utils'
 import { Method, ProxyData, Request, Response } from '@/types'
-import type {
-  HarContent,
-  HarEntry,
-  HarHeader,
-  HarResponse,
-} from '@/types/recording'
+import type { HarContent, HarEntry, HarHeader } from '@/types/recording'
 
 import { safeAtob } from './format'
 
 export function harToProxyData(har: Recording): ProxyData[] {
-  return har.log.entries.map((entry) => {
-    const request = parseRequest(entry.request)
-    const response = entry.response ? parseResponse(entry.response) : undefined
+  return (har.log.entries ?? []).map((entry) => {
+    const request = harEntryToRequest(entry)
+    const response = harEntryToResponse(entry)
 
     return {
       id: self.crypto.randomUUID(),
@@ -29,7 +24,7 @@ export function harToProxyData(har: Recording): ProxyData[] {
   })
 }
 
-function parseRequest(request: HarEntry['request']): Request {
+function harEntryToRequest({ request, startedDateTime }: HarEntry): Request {
   let content = request.postData?.text ?? ''
   const postDataParams = request.postData?.params
 
@@ -45,26 +40,19 @@ function parseRequest(request: HarEntry['request']): Request {
     )
   }
 
-  const jsonPaths = parseJsonPaths(content, request.headers)
+  const jsonPaths = parseJsonPaths(content, request.headers ?? [])
   const url = new URL(request.url)
 
   return {
     method: request.method as Method,
     url: request.url,
-    httpVersion: request.httpVersion,
-    headers: request.headers.map((h) => [h.name, h.value]),
-    query: request.queryString.map((q) => [q.name, q.value]),
-    cookies: request.cookies.map((c) => [c.name, c.value]),
+    httpVersion: request.httpVersion ?? 'HTTP/1.1',
+    headers: (request.headers ?? []).map((h) => [h.name, h.value]),
+    query: (request.queryString ?? []).map((q) => [q.name, q.value]),
+    cookies: (request.cookies ?? []).map((c) => [c.name, c.value]),
     jsonPaths,
     content,
-    // TODO: add actual values
-    // @ts-expect-error incomplete type
-    timestampStart: request.startedDateTime
-      ? // TODO: https://github.com/grafana/k6-studio/issues/277
-        // @ts-expect-error incomplete type
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        isoToUnixTimestamp(request.startedDateTime)
-      : 0,
+    timestampStart: startedDateTime ? isoToUnixTimestamp(startedDateTime) : 0,
     timestampEnd: 0,
     scheme: url.protocol.replace(':', ''),
     host: url.hostname,
@@ -73,7 +61,11 @@ function parseRequest(request: HarEntry['request']): Request {
   }
 }
 
-function parseResponse(response: HarResponse): Response {
+function harEntryToResponse({ response }: HarEntry): Response | undefined {
+  if (!response) {
+    return undefined
+  }
+
   const content = parseContent(response.content)
   const jsonPaths = parseJsonPaths(content, response.headers)
 

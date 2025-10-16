@@ -1,4 +1,3 @@
-import type { Content, Entry, Page, Response, Request } from 'har-format'
 import { z } from 'zod'
 
 export const HarHeaderSchema = z.object({
@@ -16,58 +15,43 @@ const HarQueryParamSchema = z.object({
   value: z.string(),
 })
 
-const HarPostDataSchema = z.intersection(
-  z.object({
-    mimeType: z.string(),
-  }),
-  z.union([
-    z.object({ text: z.string() }),
-    z.object({
-      params: z.array(
-        z.object({
-          name: z.string(),
-          value: z.string().optional(),
-          fileName: z.string().optional(),
-          contentType: z.string().optional(),
-        })
-      ),
-    }),
-  ])
-)
+const HarPostDataSchema = z.object({
+  mimeType: z.string(),
+  text: z.string().optional(),
+  params: z
+    .array(
+      z.object({
+        name: z.string(),
+        value: z.string().optional(),
+        fileName: z.string().optional(),
+        contentType: z.string().optional(),
+      })
+    )
+    .optional(),
+})
 
-export const HarRequestSchema: z.ZodType<Request> = z
+export const HarRequestSchema = z
   .object({
     method: z.string(),
     url: z.string(),
-    httpVersion: z.string(),
-    headers: z.array(HarHeaderSchema),
-    queryString: z.array(HarQueryParamSchema),
+    httpVersion: z.string().optional(),
+    headers: z.array(HarHeaderSchema).optional(),
+    queryString: z.array(HarQueryParamSchema).optional(),
     postData: HarPostDataSchema.optional(),
-    cookies: z.array(HarCookieSchema),
-    headersSize: z.number(),
-    bodySize: z.number(),
+    cookies: z.array(HarCookieSchema).optional(),
+    headersSize: z.number().optional(),
+    bodySize: z.number().optional(),
   })
   .passthrough()
 
-// Despite `ProxyData` definition, `text` in the response content can be `null`
-// Additionally, `content` could be an empty object
-type OptionalContentWithNullableText = Partial<Omit<Content, 'text'>> & {
-  text?: string | null
-}
+export const HarContentSchema = z.object({
+  size: z.number().optional(),
+  mimeType: z.string().optional(),
+  text: z.string().nullable().optional(),
+  encoding: z.string().optional(),
+})
 
-export const HarContentSchema: z.ZodType<OptionalContentWithNullableText> =
-  z.object({
-    size: z.number().optional(),
-    mimeType: z.string().optional(),
-    text: z.string().nullable().optional(),
-    encoding: z.string().optional(),
-  })
-
-type ResponseWithNullableContent = Omit<Response, 'content'> & {
-  content: OptionalContentWithNullableText
-}
-
-export const HarResponseSchema: z.ZodType<ResponseWithNullableContent> = z
+export const HarResponseSchema = z
   .object({
     status: z.number(),
     statusText: z.string(),
@@ -81,26 +65,23 @@ export const HarResponseSchema: z.ZodType<ResponseWithNullableContent> = z
   })
   .passthrough()
 
-export const HarEntrySchema: z.ZodType<
-  Omit<Entry, 'response' | 'timings'> & {
-    response?: ResponseWithNullableContent
-  }
-> = z.object({
+export const HarEntrySchema = z.object({
   pageref: z.string().optional(),
-  startedDateTime: z.string().datetime({ offset: true }),
-  time: z.number().min(0),
-  timings: z.object({}).passthrough(),
+  comment: z.string().optional(),
+  startedDateTime: z.string().datetime({ offset: true }).optional(),
+  time: z.number().min(0).optional(),
+  timings: z.object({}).passthrough().optional(),
   request: HarRequestSchema,
   response: HarResponseSchema.optional(),
   cache: z.object({}).passthrough(),
 })
 
-export const HarPageSchema: z.ZodType<Page> = z
+export const HarPageSchema = z
   .object({
     id: z.string(),
     title: z.string(),
-    startedDateTime: z.string().datetime({ offset: true }),
-    pageTimings: z.object({}).passthrough(),
+    startedDateTime: z.string().datetime({ offset: true }).optional(),
+    pageTimings: z.object({}).passthrough().optional(),
   })
   .passthrough()
 
@@ -110,6 +91,6 @@ export const LogSchema = z.object({
     name: z.string(),
     version: z.string(),
   }),
-  pages: z.array(HarPageSchema),
-  entries: z.array(HarEntrySchema),
+  pages: z.array(HarPageSchema).optional(),
+  entries: z.array(HarEntrySchema).optional(),
 })
