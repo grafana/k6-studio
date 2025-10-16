@@ -163,7 +163,7 @@ jobs:
           TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
           TRUSTED_SIGNING_ENDPOINT: https://eus.codesigning.azure.net/
           TRUSTED_SIGNING_PROFILE: grafana-production
-          SIGNTOOL_PATH: ${{ steps.install-sign-tool.outputs.sign-tool }}
+          SIGNTOOL_PATH: ${{ steps.install-sign-tool.outputs.sign-tool }}\sign
           # sentry integration
           # sentry vite plugin integration during build
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
