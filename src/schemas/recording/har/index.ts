@@ -75,7 +75,7 @@ export const HarEntrySchema = z.object({
   timings: z.object({}).passthrough().optional(),
   request: HarRequestSchema,
   response: HarResponseSchema.optional(),
-  cache: z.object({}).passthrough(),
+  cache: z.object({}).passthrough().optional(),
 })
 
 export const HarPageSchema = z
