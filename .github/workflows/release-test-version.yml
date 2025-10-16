@@ -113,9 +113,9 @@ jobs:
         with:
           export_env: false
           repo_secrets: |
-            CLIENT_ID=azure-trusted-signing:client-id
-            SUBSCRIPTION_ID=azure-trusted-signing:subscription-id
-            TENANT_ID=azure-trusted-signing:tenant-id
+            client-id=azure-trusted-signing:client-id
+            subscription-id=azure-trusted-signing:subscription-id
+            tenant-id=azure-trusted-signing:tenant-id
 
       - name: Azure log in
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
