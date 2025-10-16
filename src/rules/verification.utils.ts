@@ -80,7 +80,10 @@ function getRecordedValue(
       return response.statusCode
     case 'body': {
       // Remove newlines when comparing the body to a recorded value
-      const singleLineContent = response.content.replace(NEWLINE_REGEX, '')
+      const singleLineContent = (response.content ?? '').replace(
+        NEWLINE_REGEX,
+        ''
+      )
       const escapedContent = escapeBackticksAndDollarSign(singleLineContent)
 
       return `String.raw\`${escapedContent}\``

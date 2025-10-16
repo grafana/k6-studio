@@ -1,5 +1,5 @@
 import { ElementSelector } from '@/schemas/recording'
-import { generateSelector } from 'extension/src/selectors'
+import { generateSelectors } from 'extension/src/selectors'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 import { findAssociatedElement } from 'extension/src/utils/dom'
 
@@ -57,7 +57,7 @@ export function findAssociatedControl({
 
   return {
     element: associatedElement,
-    selector: generateSelector(associatedElement),
+    selector: generateSelectors(associatedElement),
     roles: [...getElementRoles(associatedElement)],
   }
 }

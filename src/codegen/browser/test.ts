@@ -137,7 +137,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           modifiers: event.modifiers,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
       }
@@ -149,7 +149,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           value: event.value,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
 
@@ -160,7 +160,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           checked: event.checked,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
 
@@ -171,7 +171,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           checked: true,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
 
@@ -183,7 +183,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           multiple: event.multiple,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
 
@@ -200,7 +200,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.submitter),
+            locator: getLocator(event.tab, event.submitter.selectors),
           },
         }
 
@@ -211,7 +211,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           operation: toAssertionOperation(event.assertion),
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
       }

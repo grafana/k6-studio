@@ -63,7 +63,10 @@ export function EventDescription({
       return (
         <>
           {event.checked ? 'Checked' : 'Unchecked'} checkbox{' '}
-          <Selector selector={event.selector} onHighlight={onHighlight} />
+          <Selector
+            selector={event.target.selectors}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -72,7 +75,10 @@ export function EventDescription({
         <>
           Switched value of <strong>{event.name}</strong> to{' '}
           <code>{event.value}</code> from{' '}
-          <Selector selector={event.selector} onHighlight={onHighlight} />
+          <Selector
+            selector={event.target.selectors}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -80,7 +86,10 @@ export function EventDescription({
       return (
         <>
           Selected {formatOptions(event.selected)} from{' '}
-          <Selector selector={event.selector} onHighlight={onHighlight} />
+          <Selector
+            selector={event.target.selectors}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -88,7 +97,7 @@ export function EventDescription({
       return (
         <>
           Submitted form{' '}
-          <Selector selector={event.form} onHighlight={onHighlight} />
+          <Selector selector={event.form.selectors} onHighlight={onHighlight} />
         </>
       )
 

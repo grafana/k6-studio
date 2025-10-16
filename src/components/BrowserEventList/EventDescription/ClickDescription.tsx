@@ -60,7 +60,7 @@ export function ClickDescription({
   return (
     <>
       <Kbd>{clickedText}</Kbd> on element{' '}
-      <Selector selector={event.selector} onHighlight={onHighlight} />
+      <Selector selector={event.target.selectors} onHighlight={onHighlight} />
     </>
   )
 }
