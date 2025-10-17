@@ -1,15 +1,13 @@
 import { ChildProcess, spawn } from 'child_process'
-import { app, BrowserWindow } from 'electron'
+import { app } from 'electron'
 import log from 'electron-log/main'
 import path from 'path'
 
-import { BrowserServer, RecordEvent } from '@/services/browser/server'
+import { BrowserServer } from '@/services/browser/server'
 import { ChromeDevToolsClient } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { HighlightSelector } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
-
-import { BrowserHandler } from '../types'
 
 import {
   BrowserLaunchError,
@@ -39,6 +37,10 @@ class BrowserExtensionRecordingSession
 
     server.on('stop', () => {
       this.stop()
+    })
+
+    server.on('record', (event) => {
+      this.emit('record', event)
     })
   }
 
@@ -76,19 +78,12 @@ const BROWSER_RECORDING_ARGS = [
   '--enable-unsafe-extension-debugging',
 ]
 
-export const launchBrowserWithExtension = async (
-  browserWindow: BrowserWindow,
-  url: string | undefined
-) => {
+export const launchBrowserWithExtension = async (url: string | undefined) => {
   const { path, args } = await getBrowserLaunchArgs({
     url,
     settings: k6StudioState.appSettings,
     args: BROWSER_RECORDING_ARGS,
   })
-
-  const handleRecord = ({ events }: RecordEvent) => {
-    browserWindow.webContents.send(BrowserHandler.BrowserEvent, events)
-  }
 
   const browserServer = new BrowserServer()
 
@@ -99,8 +94,6 @@ export const launchBrowserWithExtension = async (
   }
 
   try {
-    browserServer.on('record', handleRecord)
-
     const {
       promise: initRecordingSession,
       resolve,

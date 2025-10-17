@@ -1,9 +1,12 @@
+import { BrowserEvent } from '@/schemas/recording'
 import { HighlightSelector } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
 import { LaunchBrowserErrorReason } from '../types'
 
 export interface RecordingSessionEventMap {
+  error: { error: unknown }
+  record: { events: BrowserEvent[] }
   stop: void
 }
 

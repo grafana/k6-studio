@@ -20,6 +20,7 @@ export type LaunchBrowserErrorReason =
   | 'websocket-server-error'
   | 'extension-load'
   | 'browser-launch'
+  | 'unknown'
 
 export interface LaunchBrowserError {
   fatal: boolean

@@ -19,12 +19,25 @@ export function initialize() {
       const browserWindow = browserWindowFromEvent(event)
 
       try {
-        k6StudioState.currentRecordingSession = await launchBrowser(
-          browserWindow,
-          options
-        )
+        k6StudioState.currentRecordingSession = await launchBrowser(options)
 
-        k6StudioState.currentRecordingSession?.on('stop', () => {
+        k6StudioState.currentRecordingSession.on('record', (event) => {
+          browserWindow.webContents.send(
+            BrowserHandler.BrowserEvent,
+            event.events
+          )
+        })
+
+        k6StudioState.currentRecordingSession.on('error', (error) => {
+          console.error('An error occured during recording: ', error)
+
+          browserWindow.webContents.send(BrowserHandler.Error, {
+            reason: 'recording-session',
+            fatal: false,
+          })
+        })
+
+        k6StudioState.currentRecordingSession.on('stop', () => {
           browserWindow.webContents.send(BrowserHandler.Closed)
         })
 
@@ -45,7 +58,7 @@ export function initialize() {
         }
 
         browserWindow.webContents.send(BrowserHandler.Error, {
-          reason: 'browser-launch',
+          reason: 'unknown',
           fatal: true,
         })
       }
