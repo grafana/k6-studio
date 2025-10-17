@@ -36,26 +36,21 @@ export function initialize(browserServer: BrowserServer) {
   ipcMain.on(
     BrowserHandler.HighlightElement,
     (_event, selector: HighlightSelector | null) => {
-      browserServer.send({
-        type: 'highlight-elements',
-        selector,
-      })
+      k6StudioState.currentRecordingSession?.highlightElement(selector)
     }
   )
 
   ipcMain.on(BrowserHandler.NavigateTo, (_event, url: string) => {
-    browserServer.send({
-      type: 'navigate',
-      url,
-    })
-  })
-
-  ipcMain.handle(BrowserHandler.OpenExternalLink, (_, url: string) => {
-    console.info(`${BrowserHandler.OpenExternalLink} event received`)
-    return shell.openExternal(url)
+    k6StudioState.currentRecordingSession?.navigateTo(url)
   })
 
   browserServer.on('stop', () => {
     ipcMain.emit(BrowserHandler.Stop)
+  })
+
+  // TODO: Move to app or ui. The other handlers in this file are related to recording.
+  ipcMain.handle(BrowserHandler.OpenExternalLink, (_, url: string) => {
+    console.info(`${BrowserHandler.OpenExternalLink} event received`)
+    return shell.openExternal(url)
   })
 }

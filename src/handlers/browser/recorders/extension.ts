@@ -7,6 +7,7 @@ import { BrowserServer, RecordEvent } from '@/services/browser/server'
 import { ChromeDevToolsClient } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { BrowserHandler } from '../types'
 
@@ -90,6 +91,20 @@ export const launchBrowserWithExtension = async (
     process.once('exit', handleBrowserClose)
 
     return {
+      highlightElement(selector: HighlightSelector | null) {
+        browserServer.send({
+          type: 'highlight-elements',
+          selector,
+        })
+      },
+
+      navigateTo(url: string) {
+        browserServer.send({
+          type: 'navigate',
+          url,
+        })
+      },
+
       stop() {
         process.kill()
 

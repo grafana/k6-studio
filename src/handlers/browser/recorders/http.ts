@@ -40,6 +40,9 @@ export async function launchBrowserWithHttpOnly(
   process.once('exit', handleBrowserClose)
 
   return {
+    highlightElement() {},
+    navigateTo() {},
+
     stop() {
       process.kill()
     },
