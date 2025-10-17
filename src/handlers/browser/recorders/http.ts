@@ -1,10 +1,6 @@
 import { ChildProcess, spawn } from 'child_process'
-import { BrowserWindow } from 'electron'
-import log from 'electron-log/main'
 
 import { EventEmitter } from 'extension/src/utils/events'
-
-import { BrowserHandler } from '../types'
 
 import { RecordingSession, RecordingSessionEventMap } from './types'
 import { getBrowserLaunchArgs } from './utils'
@@ -34,7 +30,6 @@ class HttpRecordingSession
 }
 
 export async function launchBrowserWithHttpOnly(
-  browserWindow: BrowserWindow,
   url: string | undefined
 ): Promise<RecordingSession> {
   const { path, args } = await getBrowserLaunchArgs({
@@ -42,19 +37,32 @@ export async function launchBrowserWithHttpOnly(
     settings: k6StudioState.appSettings,
   })
 
-  const handleBrowserLaunchError = (error: Error) => {
-    log.error(error)
-    browserWindow.webContents.send(BrowserHandler.Error, {
-      reason: 'browser-launch',
-      fatal: true,
-    })
-  }
+  const { promise, resolve, reject } =
+    Promise.withResolvers<HttpRecordingSession>()
+
+  let spawned = false
 
   const process = spawn(path, args, {
     stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
   })
 
-  process.on('error', handleBrowserLaunchError)
+  process.on('spawn', () => {
+    spawned = true
 
-  return new HttpRecordingSession(process)
+    resolve(new HttpRecordingSession(process))
+  })
+
+  process.on('error', (error) => {
+    reject(error)
+  })
+
+  process.once('exit', (code, signal) => {
+    if (spawned) {
+      return
+    }
+
+    reject(new Error(`Browser failed to spawn with code ${code ?? signal}`))
+  })
+
+  return promise
 }

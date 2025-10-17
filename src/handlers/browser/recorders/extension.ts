@@ -6,7 +6,6 @@ import path from 'path'
 import { BrowserServer, RecordEvent } from '@/services/browser/server'
 import { ChromeDevToolsClient } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
-import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
 import { HighlightSelector } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
@@ -14,6 +13,8 @@ import { BrowserHandler } from '../types'
 
 import { RecordingSession, RecordingSessionEventMap } from './types'
 import { getBrowserLaunchArgs } from './utils'
+
+type InitState = 'init' | 'spawned' | 'ready'
 
 class BrowserExtensionRecordingSession
   extends EventEmitter<RecordingSessionEventMap>
@@ -87,42 +88,66 @@ export const launchBrowserWithExtension = async (
 
     browserServer.on('record', handleRecord)
 
-    const process = await new Promise<ChildProcess>((resolve, reject) => {
-      const process = spawn(path, args, {
-        stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
-      })
+    const {
+      promise: initRecordingSession,
+      resolve,
+      reject,
+    } = Promise.withResolvers<BrowserExtensionRecordingSession>()
 
-      process.on('spawn', () => {
-        resolve(process)
-      })
+    let state: InitState = 'init'
 
-      process.on('error', (err) => {
-        reject(err)
-      })
-
-      process.on('exit', () => {
-        reject(new Error('Browser process exited unexpectedly'))
-      })
+    const process = spawn(path, args, {
+      stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'],
     })
 
-    try {
-      const transport = PipeTransport.fromChildProcess(process)
-      const client = new ChromeDevToolsClient(transport)
+    process.on('spawn', async () => {
+      state = 'spawned'
 
-      const response = await client.extensions.loadUnpacked(getExtensionPath())
+      try {
+        const transport = PipeTransport.fromChildProcess(process)
+        const client = new ChromeDevToolsClient(transport)
 
-      log.log(`k6 Studio extension loaded`, response)
-    } catch (error) {
-      // If we fail to load the extension, we'll log the error and continue without it.
-      log.error('Failed to start browser recording: ', error)
+        const response =
+          await client.extensions.loadUnpacked(getExtensionPath())
 
-      browserWindow.webContents.send(BrowserHandler.Error, {
-        reason: 'extension-load',
-        fatal: false,
-      })
-    }
+        log.log(`k6 Studio extension loaded`, response)
+      } catch (error) {
+        // If we fail to load the extension, we'll log the error and continue without it.
+        log.error('Failed to start browser recording: ', error)
 
-    const session = new BrowserExtensionRecordingSession(process, browserServer)
+        browserWindow.webContents.send(BrowserHandler.Error, {
+          reason: 'extension-load',
+          fatal: false,
+        })
+      }
+
+      state = 'ready'
+
+      resolve(new BrowserExtensionRecordingSession(process, browserServer))
+    })
+
+    process.on('error', (err) => {
+      reject(err)
+    })
+
+    process.once('exit', (code, signal) => {
+      const errorCode = code ?? signal
+
+      switch (state) {
+        case 'init':
+          reject(new Error(`Browser failed to spawn with code ${errorCode}`))
+          break
+
+        case 'spawned':
+          reject(new Error(`Browser exited during startup with ${errorCode}`))
+          break
+
+        default:
+          return
+      }
+    })
+
+    const session = await initRecordingSession
 
     session.on('stop', () => {
       browserServer.off('record', handleRecord)
@@ -130,19 +155,9 @@ export const launchBrowserWithExtension = async (
 
     return session
   } catch (error) {
-    log.error('An error occurred while starting recording: ', error)
-
     browserServer.off('record', handleRecord)
     browserServer.stop()
 
-    browserWindow.webContents.send(BrowserHandler.Error, {
-      fatal: true,
-      reason:
-        error instanceof WebSocketServerError
-          ? 'websocket-server-error'
-          : 'browser-launch',
-    })
-
-    return null
+    throw error
   }
 }
