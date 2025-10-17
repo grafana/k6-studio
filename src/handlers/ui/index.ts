@@ -12,9 +12,9 @@ import {
   TEMP_SCRIPT_SUFFIX,
   DATA_FILES_PATH,
 } from '@/constants/workspace'
-import { getBrowserPath } from '@/handlers/browser/launch'
 import { getFilePath, getStudioFileFromPath } from '@/main/file'
 import { StudioFile } from '@/types'
+import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
 import { isNodeJsErrnoException } from '@/utils/typescript'
@@ -30,7 +30,9 @@ export function initialize() {
   ipcMain.handle(UIHandler.DETECT_BROWSER, async () => {
     console.info(`${UIHandler.DETECT_BROWSER} event received`)
     try {
-      const browserPath = await getBrowserPath()
+      const browserPath = await getBrowserPath(
+        k6StudioState.appSettings.recorder
+      )
       return browserPath !== ''
     } catch {
       log.error('Failed to find browser executable')
