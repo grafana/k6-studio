@@ -70,7 +70,10 @@ const config: ForgeConfig = {
       //   certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
       // },
       // @ts-expect-error - incorrect types exported by MakerSquirrel
-      windowsSign,
+      // windowsSign,
+      windowsSign: {
+        hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
+      },
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
