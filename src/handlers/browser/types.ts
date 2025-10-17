@@ -5,6 +5,8 @@ export enum BrowserHandler {
   Error = 'browser:error',
   OpenExternalLink = 'browser:open:external:link',
   BrowserEvent = 'browser:event',
+  HighlightElement = 'browser:highlight-element',
+  NavigateTo = 'browser:navigate-to',
 }
 
 export interface LaunchBrowserOptions {

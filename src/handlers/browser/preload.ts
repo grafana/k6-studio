@@ -6,6 +6,7 @@ import {
   LaunchBrowserError,
 } from '@/handlers/browser/types'
 import { BrowserEvent } from '@/schemas/recording'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { createListener } from '../utils'
 
@@ -19,6 +20,14 @@ export function stopBrowser() {
 
 export function onBrowserClosed(callback: () => void) {
   return createListener(BrowserHandler.Closed, callback)
+}
+
+export function highlightElement(selector: HighlightSelector | null) {
+  ipcRenderer.send(BrowserHandler.HighlightElement, selector)
+}
+
+export function navigateTo(url: string) {
+  ipcRenderer.send(BrowserHandler.NavigateTo, url)
 }
 
 export function onBrowserLaunchError(
