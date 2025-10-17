@@ -33,7 +33,7 @@ function listenMacOsDeepLink() {
   })
 
   // Handle the case when the app is launched with a custom protocol link
-  ipcMain.on(AppHandler.SPLASHSCREEN_CLOSE, () => {
+  ipcMain.on(AppHandler.SplashscreenClose, () => {
     if (deepLinkUrl) {
       handleDeepLink(deepLinkUrl)
       deepLinkUrl = null
@@ -89,7 +89,7 @@ function handleDeepLink(url: string) {
 
   const path = parsedUrl.searchParams.get('path')
 
-  mainWindow.webContents.send(AppHandler.DEEP_LINK, path)
+  mainWindow.webContents.send(AppHandler.DeepLink, path)
 
   // Restore and focus the main window, needed for windows
   if (mainWindow.isMinimized()) {
