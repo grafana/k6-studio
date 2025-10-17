@@ -8,10 +8,50 @@ import { ChromeDevToolsClient } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
 import { HighlightSelector } from 'extension/src/messaging/types'
+import { EventEmitter } from 'extension/src/utils/events'
 
 import { BrowserHandler } from '../types'
 
+import { RecordingSession, RecordingSessionEventMap } from './types'
 import { getBrowserLaunchArgs } from './utils'
+
+class BrowserExtensionRecordingSession
+  extends EventEmitter<RecordingSessionEventMap>
+  implements RecordingSession
+{
+  #process: ChildProcess
+  #server: BrowserServer
+
+  constructor(process: ChildProcess, server: BrowserServer) {
+    super()
+
+    this.#process = process
+    this.#server = server
+
+    process.once('exit', () => {
+      this.emit('stop', undefined)
+    })
+  }
+
+  highlightElement(selector: HighlightSelector | null): void {
+    this.#server.send({
+      type: 'highlight-elements',
+      selector,
+    })
+  }
+
+  navigateTo(url: string): void {
+    this.#server.send({
+      type: 'navigate',
+      url,
+    })
+  }
+
+  stop(): void {
+    this.#process.kill()
+    this.#server.stop()
+  }
+}
 
 function getExtensionPath() {
   // @ts-expect-error - Electron apps are built as CJS.
@@ -38,16 +78,6 @@ export const launchBrowserWithExtension = async (
     args: BROWSER_RECORDING_ARGS,
   })
 
-  const handleBrowserClose = (): Promise<void> => {
-    browserServer.stop()
-
-    // we send the browser:stopped event when the browser is closed
-    // NOTE: on macos pressing the X button does not close the application so it won't be fired
-    browserWindow.webContents.send(BrowserHandler.Closed)
-
-    return Promise.resolve()
-  }
-
   const handleRecord = ({ events }: RecordEvent) => {
     browserWindow.webContents.send(BrowserHandler.BrowserEvent, events)
   }
@@ -69,6 +99,10 @@ export const launchBrowserWithExtension = async (
       process.on('error', (err) => {
         reject(err)
       })
+
+      process.on('exit', () => {
+        reject(new Error('Browser process exited unexpectedly'))
+      })
     })
 
     try {
@@ -88,30 +122,13 @@ export const launchBrowserWithExtension = async (
       })
     }
 
-    process.once('exit', handleBrowserClose)
+    const session = new BrowserExtensionRecordingSession(process, browserServer)
 
-    return {
-      highlightElement(selector: HighlightSelector | null) {
-        browserServer.send({
-          type: 'highlight-elements',
-          selector,
-        })
-      },
+    session.on('stop', () => {
+      browserServer.off('record', handleRecord)
+    })
 
-      navigateTo(url: string) {
-        browserServer.send({
-          type: 'navigate',
-          url,
-        })
-      },
-
-      stop() {
-        process.kill()
-
-        browserServer.off('record', handleRecord)
-        browserServer.stop()
-      },
-    }
+    return session
   } catch (error) {
     log.error('An error occurred while starting recording: ', error)
 

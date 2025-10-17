@@ -1,11 +1,37 @@
-import { spawn } from 'child_process'
+import { ChildProcess, spawn } from 'child_process'
 import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 
+import { EventEmitter } from 'extension/src/utils/events'
+
 import { BrowserHandler } from '../types'
 
-import { RecordingSession } from './types'
+import { RecordingSession, RecordingSessionEventMap } from './types'
 import { getBrowserLaunchArgs } from './utils'
+
+class HttpRecordingSession
+  extends EventEmitter<RecordingSessionEventMap>
+  implements RecordingSession
+{
+  #process: ChildProcess
+
+  constructor(process: ChildProcess) {
+    super()
+    this.#process = process
+
+    process.once('exit', () => {
+      this.emit('stop', undefined)
+    })
+  }
+
+  highlightElement(): void {}
+
+  navigateTo(): void {}
+
+  stop(): void {
+    this.#process.kill()
+  }
+}
 
 export async function launchBrowserWithHttpOnly(
   browserWindow: BrowserWindow,
@@ -15,14 +41,6 @@ export async function launchBrowserWithHttpOnly(
     url,
     settings: k6StudioState.appSettings,
   })
-
-  const handleBrowserClose = (): Promise<void> => {
-    // we send the browser:stopped event when the browser is closed
-    // NOTE: on macos pressing the X button does not close the application so it won't be fired
-    browserWindow.webContents.send(BrowserHandler.Closed)
-
-    return Promise.resolve()
-  }
 
   const handleBrowserLaunchError = (error: Error) => {
     log.error(error)
@@ -37,14 +55,6 @@ export async function launchBrowserWithHttpOnly(
   })
 
   process.on('error', handleBrowserLaunchError)
-  process.once('exit', handleBrowserClose)
 
-  return {
-    highlightElement() {},
-    navigateTo() {},
-
-    stop() {
-      process.kill()
-    },
-  }
+  return new HttpRecordingSession(process)
 }

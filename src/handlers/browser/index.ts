@@ -22,6 +22,11 @@ export function initialize(browserServer: BrowserServer) {
         browserServer,
         options
       )
+
+      k6StudioState.currentRecordingSession?.on('stop', () => {
+        browserWindow.webContents.send(BrowserHandler.Closed)
+      })
+
       console.info('browser started')
     }
   )
