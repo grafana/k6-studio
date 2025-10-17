@@ -1,5 +1,3 @@
-import { EmptyObject } from 'react-hook-form'
-
 import { BrowserEvent } from '@/schemas/recording'
 import { BrowserExtensionClient } from 'extension/src/messaging'
 import { WebSocketServerTransport } from 'extension/src/messaging/transports/webSocketServer'

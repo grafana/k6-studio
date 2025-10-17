@@ -2,14 +2,13 @@ import { ipcMain, shell } from 'electron'
 
 import { launchBrowser } from '@/handlers/browser/launch'
 import { waitForProxy } from '@/main/proxy'
-import { BrowserServer } from '@/services/browser/server'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
+import { BrowserLaunchError } from './recorders/types'
 import { BrowserHandler, LaunchBrowserOptions } from './types'
 
-export function initialize(browserServer: BrowserServer) {
+export function initialize() {
   ipcMain.handle(
     BrowserHandler.Start,
     async (event, options: LaunchBrowserOptions) => {
@@ -22,7 +21,6 @@ export function initialize(browserServer: BrowserServer) {
       try {
         k6StudioState.currentRecordingSession = await launchBrowser(
           browserWindow,
-          browserServer,
           options
         )
 
@@ -32,11 +30,14 @@ export function initialize(browserServer: BrowserServer) {
 
         console.info('browser started')
       } catch (error) {
-        console.error('Failed to launch browser:', error)
+        console.error(
+          'An unexpected error ocurred while starting recording: ',
+          error
+        )
 
-        if (error instanceof WebSocketServerError) {
+        if (error instanceof BrowserLaunchError) {
           browserWindow.webContents.send(BrowserHandler.Error, {
-            reason: 'websocket-server-error',
+            reason: error.source,
             fatal: true,
           })
 
@@ -67,10 +68,6 @@ export function initialize(browserServer: BrowserServer) {
 
   ipcMain.on(BrowserHandler.NavigateTo, (_event, url: string) => {
     k6StudioState.currentRecordingSession?.navigateTo(url)
-  })
-
-  browserServer.on('stop', () => {
-    ipcMain.emit(BrowserHandler.Stop)
   })
 
   // TODO: Move to app or ui. The other handlers in this file are related to recording.

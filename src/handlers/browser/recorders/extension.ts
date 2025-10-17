@@ -11,7 +11,11 @@ import { EventEmitter } from 'extension/src/utils/events'
 
 import { BrowserHandler } from '../types'
 
-import { RecordingSession, RecordingSessionEventMap } from './types'
+import {
+  BrowserLaunchError,
+  RecordingSession,
+  RecordingSessionEventMap,
+} from './types'
 import { getBrowserLaunchArgs } from './utils'
 
 type InitState = 'init' | 'spawned' | 'ready'
@@ -31,6 +35,10 @@ class BrowserExtensionRecordingSession
 
     process.once('exit', () => {
       this.emit('stop', undefined)
+    })
+
+    server.on('stop', () => {
+      this.stop()
     })
   }
 
@@ -70,7 +78,6 @@ const BROWSER_RECORDING_ARGS = [
 
 export const launchBrowserWithExtension = async (
   browserWindow: BrowserWindow,
-  browserServer: BrowserServer,
   url: string | undefined
 ) => {
   const { path, args } = await getBrowserLaunchArgs({
@@ -83,9 +90,15 @@ export const launchBrowserWithExtension = async (
     browserWindow.webContents.send(BrowserHandler.BrowserEvent, events)
   }
 
+  const browserServer = new BrowserServer()
+
   try {
     await browserServer.start()
+  } catch (error) {
+    throw new BrowserLaunchError('websocket-server-error', error)
+  }
 
+  try {
     browserServer.on('record', handleRecord)
 
     const {
@@ -112,13 +125,9 @@ export const launchBrowserWithExtension = async (
 
         log.log(`k6 Studio extension loaded`, response)
       } catch (error) {
-        // If we fail to load the extension, we'll log the error and continue without it.
-        log.error('Failed to start browser recording: ', error)
+        reject(new BrowserLaunchError('extension-load', error))
 
-        browserWindow.webContents.send(BrowserHandler.Error, {
-          reason: 'extension-load',
-          fatal: false,
-        })
+        return
       }
 
       state = 'ready'
@@ -126,8 +135,8 @@ export const launchBrowserWithExtension = async (
       resolve(new BrowserExtensionRecordingSession(process, browserServer))
     })
 
-    process.on('error', (err) => {
-      reject(err)
+    process.on('error', (error) => {
+      reject(new BrowserLaunchError('browser-launch', error))
     })
 
     process.once('exit', (code, signal) => {
@@ -135,11 +144,21 @@ export const launchBrowserWithExtension = async (
 
       switch (state) {
         case 'init':
-          reject(new Error(`Browser failed to spawn with code ${errorCode}`))
+          reject(
+            new BrowserLaunchError(
+              'browser-launch',
+              `Browser failed to spawn with code ${errorCode}`
+            )
+          )
           break
 
         case 'spawned':
-          reject(new Error(`Browser exited during startup with ${errorCode}`))
+          reject(
+            new BrowserLaunchError(
+              'browser-launch',
+              `Browser exited during startup with ${errorCode}`
+            )
+          )
           break
 
         default:
@@ -147,15 +166,8 @@ export const launchBrowserWithExtension = async (
       }
     })
 
-    const session = await initRecordingSession
-
-    session.on('stop', () => {
-      browserServer.off('record', handleRecord)
-    })
-
-    return session
+    return await initRecordingSession
   } catch (error) {
-    browserServer.off('record', handleRecord)
     browserServer.stop()
 
     throw error

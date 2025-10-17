@@ -2,7 +2,11 @@ import { ChildProcess, spawn } from 'child_process'
 
 import { EventEmitter } from 'extension/src/utils/events'
 
-import { RecordingSession, RecordingSessionEventMap } from './types'
+import {
+  BrowserLaunchError,
+  RecordingSession,
+  RecordingSessionEventMap,
+} from './types'
 import { getBrowserLaunchArgs } from './utils'
 
 class HttpRecordingSession
@@ -53,7 +57,7 @@ export async function launchBrowserWithHttpOnly(
   })
 
   process.on('error', (error) => {
-    reject(error)
+    reject(new BrowserLaunchError('browser-launch', error))
   })
 
   process.once('exit', (code, signal) => {
@@ -61,7 +65,12 @@ export async function launchBrowserWithHttpOnly(
       return
     }
 
-    reject(new Error(`Browser failed to spawn with code ${code ?? signal}`))
+    reject(
+      new BrowserLaunchError(
+        'browser-launch',
+        `Browser failed to spawn with code ${code ?? signal}`
+      )
+    )
   })
 
   return promise

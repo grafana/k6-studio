@@ -1,6 +1,8 @@
 import { HighlightSelector } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
+import { LaunchBrowserErrorReason } from '../types'
+
 export interface RecordingSessionEventMap {
   stop: void
 }
@@ -10,4 +12,21 @@ export interface RecordingSession
   highlightElement(selector: HighlightSelector | null): void
   navigateTo(url: string): void
   stop(): void
+}
+
+export class BrowserLaunchError extends Error {
+  source: LaunchBrowserErrorReason
+
+  constructor(source: LaunchBrowserErrorReason, cause: unknown) {
+    super(
+      typeof cause === 'string'
+        ? cause
+        : cause instanceof Error
+          ? cause.message
+          : 'An unknown error occurred'
+    )
+
+    this.cause = cause
+    this.source = source
+  }
 }
