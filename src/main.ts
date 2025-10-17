@@ -176,7 +176,7 @@ const createWindow = async () => {
 
     if (
       k6StudioState.currentClientRoute.startsWith('/recorder') &&
-      k6StudioState.currentBrowserProcess !== null
+      k6StudioState.currentRecordingSession !== null
     ) {
       event.preventDefault()
     }

@@ -1,32 +1,36 @@
-import { BrowserWindow } from 'electron'
+import { EmptyObject } from 'react-hook-form'
 
+import { BrowserEvent } from '@/schemas/recording'
 import { BrowserExtensionClient } from 'extension/src/messaging'
-import { Sender } from 'extension/src/messaging/transports/transport'
 import { WebSocketServerTransport } from 'extension/src/messaging/transports/webSocketServer'
 import { BrowserExtensionMessage } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
+export interface RecordEvent {
+  events: BrowserEvent[]
+}
+
 type BrowserExtensionServerEvents = {
-  'stop-recording': {
-    sender?: Sender
-    data: Extract<BrowserExtensionMessage, { type: 'stop-recording' }>
-  }
+  stop: EmptyObject
+  record: RecordEvent
 }
 
 export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
   #client: BrowserExtensionClient | null = null
 
-  async start(browserWindow: BrowserWindow) {
+  async start() {
     const transport = await WebSocketServerTransport.create('localhost', 7554)
 
     this.#client = new BrowserExtensionClient('studio-server', transport)
 
     this.#client.on('events-recorded', (event) => {
-      browserWindow.webContents.send('browser:event', event.data.events)
+      this.emit('record', {
+        events: event.data.events,
+      })
     })
 
-    this.#client.on('stop-recording', (event) => {
-      this.emit('stop-recording', event)
+    this.#client.on('stop-recording', () => {
+      this.emit('stop', {})
     })
   }
 

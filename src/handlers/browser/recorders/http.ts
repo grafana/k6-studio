@@ -4,12 +4,13 @@ import log from 'electron-log/main'
 
 import { BrowserHandler } from '../types'
 
+import { RecordingSession } from './types'
 import { getBrowserLaunchArgs } from './utils'
 
 export async function launchBrowserWithHttpOnly(
   browserWindow: BrowserWindow,
   url: string | undefined
-) {
+): Promise<RecordingSession> {
   const { path, args } = await getBrowserLaunchArgs({
     url,
     settings: k6StudioState.appSettings,
@@ -38,5 +39,9 @@ export async function launchBrowserWithHttpOnly(
   process.on('error', handleBrowserLaunchError)
   process.once('exit', handleBrowserClose)
 
-  return process
+  return {
+    stop() {
+      process.kill()
+    },
+  }
 }

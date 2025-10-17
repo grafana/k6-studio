@@ -3,7 +3,7 @@ import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import path from 'path'
 
-import { BrowserServer } from '@/services/browser/server'
+import { BrowserServer, RecordEvent } from '@/services/browser/server'
 import { ChromeDevToolsClient } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
@@ -47,8 +47,14 @@ export const launchBrowserWithExtension = async (
     return Promise.resolve()
   }
 
+  const handleRecord = ({ events }: RecordEvent) => {
+    browserWindow.webContents.send(BrowserHandler.BrowserEvent, events)
+  }
+
   try {
-    await browserServer.start(browserWindow)
+    await browserServer.start()
+
+    browserServer.on('record', handleRecord)
 
     const process = await new Promise<ChildProcess>((resolve, reject) => {
       const process = spawn(path, args, {
@@ -83,10 +89,18 @@ export const launchBrowserWithExtension = async (
 
     process.once('exit', handleBrowserClose)
 
-    return process
+    return {
+      stop() {
+        process.kill()
+
+        browserServer.off('record', handleRecord)
+        browserServer.stop()
+      },
+    }
   } catch (error) {
     log.error('An error occurred while starting recording: ', error)
 
+    browserServer.off('record', handleRecord)
     browserServer.stop()
 
     browserWindow.webContents.send(BrowserHandler.Error, {

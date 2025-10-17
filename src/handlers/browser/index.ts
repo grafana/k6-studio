@@ -16,7 +16,7 @@ export function initialize(browserServer: BrowserServer) {
       await waitForProxy()
 
       const browserWindow = browserWindowFromEvent(event)
-      k6StudioState.currentBrowserProcess = await launchBrowser(
+      k6StudioState.currentRecordingSession = await launchBrowser(
         browserWindow,
         browserServer,
         options
@@ -28,8 +28,8 @@ export function initialize(browserServer: BrowserServer) {
   ipcMain.on(BrowserHandler.Stop, () => {
     console.info(`${BrowserHandler.Stop} event received`)
 
-    k6StudioState.currentBrowserProcess?.kill()
-    k6StudioState.currentBrowserProcess = null
+    k6StudioState.currentRecordingSession?.stop()
+    k6StudioState.currentRecordingSession = null
   })
 
   ipcMain.handle(BrowserHandler.OpenExternalLink, (_, url: string) => {
@@ -37,7 +37,7 @@ export function initialize(browserServer: BrowserServer) {
     return shell.openExternal(url)
   })
 
-  browserServer.on('stop-recording', () => {
+  browserServer.on('stop', () => {
     ipcMain.emit(BrowserHandler.Stop)
   })
 }
