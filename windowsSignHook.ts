@@ -11,8 +11,6 @@ module.exports = function (filePath: string) {
   const args = [
     'code',
     'trusted-signing',
-    '/v',
-    '/debug',
     filePath,
     '-td', 'sha256',
     '-fd', 'sha256',
