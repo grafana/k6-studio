@@ -1,68 +1,69 @@
 import { ChildProcess } from 'child_process'
-import { Readable, Writable } from 'stream'
+
+import { EventEmitter } from 'extension/src/utils/events'
 
 import {
+  CDPTransport,
+  RemotePipeTransport,
+  WebsocketRemoteTransport,
+} from './transport'
+import {
+  ChromeEventMap,
   ChromeRequest,
   ChromeRequestMap,
   ChromeResponse,
-  ChromeResponseSchema,
+  ChromeMessageSchema,
+  ChromeEvent,
 } from './types'
 
-export class ChromeDevtoolsClient {
+export class ChromeDevtoolsClient extends EventEmitter<ChromeEventMap> {
   static fromChildProcess(process: ChildProcess): ChromeDevtoolsClient {
-    const send = process.stdio[3]
-    const receive = process.stdio[4]
+    return new ChromeDevtoolsClient(
+      RemotePipeTransport.fromChildProcess(process)
+    )
+  }
 
-    if (send instanceof Writable === false) {
-      throw new Error(
-        'File descriptor 3 must be writable to send commands over CDP to the browser.'
-      )
-    }
+  static async discoverWebSocket(
+    baseUrl: string
+  ): Promise<ChromeDevtoolsClient> {
+    return new ChromeDevtoolsClient(
+      await WebsocketRemoteTransport.discover(baseUrl)
+    )
+  }
 
-    if (receive instanceof Readable === false) {
-      throw new Error(
-        'File descriptor 4 must be readable to receive responses from CDP in the browser.'
-      )
-    }
-
-    return new ChromeDevtoolsClient(send, receive)
+  static async connectToWebSocket(url: string): Promise<ChromeDevtoolsClient> {
+    return new ChromeDevtoolsClient(await WebsocketRemoteTransport.connect(url))
   }
 
   #id: number = 0
 
-  #buffer: string = ''
-
-  #send: Writable
-  #receive: Readable
+  #transport: CDPTransport
 
   #pending = new Map<number, PromiseWithResolvers<unknown>>()
 
-  constructor(send: Writable, receive: Readable) {
-    this.#send = send
-    this.#receive = receive
+  constructor(transport: CDPTransport) {
+    super()
 
-    this.#receive.on('data', (data) => {
-      const string = String(data)
+    this.#transport = transport
 
-      const [first = '', rest] = string.split('\u0000')
-
-      this.#buffer += first
-
-      if (rest === undefined) {
-        return
-      }
-
-      const response = JSON.parse(this.#buffer) as unknown
-      const parsed = ChromeResponseSchema.safeParse(response)
-
-      this.#buffer = rest
+    this.#transport.on('message', ({ message }) => {
+      const response = JSON.parse(message) as unknown
+      const parsed = ChromeMessageSchema.safeParse(response)
 
       if (!parsed.success) {
-        console.error(
-          'Failed to parse response from browser:',
+        console.warn(
+          'Failed to parse message from browser:',
           response,
           parsed.error
         )
+
+        return
+      }
+
+      if ('method' in parsed.data) {
+        const event = parsed.data as unknown as ChromeEvent
+
+        this.emit(event.method, event.params)
 
         return
       }
@@ -83,21 +84,23 @@ export class ChromeDevtoolsClient {
     })
   }
 
-  call<K extends keyof ChromeRequestMap>(
-    command: ChromeRequest<K>
-  ): Promise<ChromeResponse<K>> {
-    const resolvers = Promise.withResolvers<ChromeResponse<K>>()
+  call<Method extends keyof ChromeRequestMap>(
+    method: Method,
+    params: ChromeRequest<Method>['params']
+  ): Promise<ChromeResponse<Method>> {
+    const resolvers = Promise.withResolvers<ChromeResponse<Method>>()
 
     const id = ++this.#id
 
     this.#pending.set(id, resolvers as PromiseWithResolvers<unknown>)
 
-    const data = JSON.stringify({
-      ...command,
-      id,
-    })
-
-    this.#send.write(data + '\u0000')
+    this.#transport.send(
+      JSON.stringify({
+        id,
+        method,
+        params,
+      })
+    )
 
     return resolvers.promise
   }

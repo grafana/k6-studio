@@ -22,7 +22,8 @@ import { BrowserServer } from './services/browser/server'
 import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
-import { getAppIcon, getPlatform } from './utils/electron'
+import { getPlatform } from './utils/electron'
+import { getAppIcon } from './utils/resources'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
@@ -100,10 +101,12 @@ const createSplashWindow = async () => {
 }
 
 const createWindow = async () => {
-  const icon = getAppIcon(process.env.NODE_ENV === 'development')
+  const icon = getAppIcon()
+
   if (getPlatform() === 'mac') {
     app.dock?.setIcon(icon)
   }
+
   app.setName('Grafana k6 Studio')
 
   // clean leftover proxies if any, this might happen on windows

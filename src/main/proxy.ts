@@ -9,6 +9,8 @@ import path from 'path'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
 
+import { getResourcesPath } from '@/utils/resources'
+
 import { ProxyHandler } from '../handlers/proxy/types'
 import { ProxyData } from '../types'
 import { ProxySettings } from '../types/settings'
@@ -33,22 +35,22 @@ export const launchProxy = (
   proxySettings: ProxySettings,
   { onReady, onFailure }: options = {}
 ): ProxyProcess => {
-  let proxyScript: string
-  let proxyPath: string
   const certificatesPath = getCertificatesPath()
+  const resourcesPath = getResourcesPath()
+
+  const proxyScript = path.join(resourcesPath, 'json_output.py')
+
+  let proxyPath: string
 
   // if we are in dev server we take resources directly, otherwise look in the app resources folder.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    proxyScript = path.join(app.getAppPath(), 'resources', 'json_output.py')
     proxyPath = path.join(
-      app.getAppPath(),
-      'resources',
+      resourcesPath,
       getPlatform(),
       getArch(),
       'k6-studio-proxy'
     )
   } else {
-    proxyScript = path.join(process.resourcesPath, 'json_output.py')
     // only the architecture directory will be in resources on the packaged app
     proxyPath = path.join(process.resourcesPath, getArch(), 'k6-studio-proxy')
   }

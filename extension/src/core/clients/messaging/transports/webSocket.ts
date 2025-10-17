@@ -28,12 +28,20 @@ export class WebSocketTransport extends Transport {
     socket.addEventListener('open', () => {
       console.log(`WebSocket connection opened to ${this.#url}`)
 
-      this.emit('connect', undefined)
+      this.emit('connect', {
+        transport: this,
+      })
     })
 
-    socket.addEventListener('message', (event: MessageEvent<string>) => {
+    socket.addEventListener('message', (event: MessageEvent<unknown>) => {
+      if (typeof event.data !== 'string') {
+        console.error('WebSocket message data is not a string', event.data)
+
+        return
+      }
+
       this.emit('message', {
-        sender: undefined,
+        transport: this,
         data: JSON.parse(event.data),
       })
     })
@@ -41,13 +49,17 @@ export class WebSocketTransport extends Transport {
     socket.addEventListener('error', (event) => {
       console.error('WebSocket error.', event)
 
-      this.emit('disconnect', undefined)
+      this.emit('disconnect', {
+        transport: this,
+      })
 
       this.#reconnect()
     })
 
     socket.addEventListener('close', () => {
-      this.emit('disconnect', undefined)
+      this.emit('disconnect', {
+        transport: this,
+      })
 
       this.#reconnect()
     })
@@ -65,7 +77,7 @@ export class WebSocketTransport extends Transport {
     }, 2000)
   }
 
-  dispose() {
+  [Symbol.dispose]() {
     this.#socket?.close()
     this.#socket = null
   }

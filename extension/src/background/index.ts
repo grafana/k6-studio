@@ -2,64 +2,91 @@ import { runtime, tabs } from 'webextension-polyfill'
 
 import { BrowserEvent } from '@/schemas/recording'
 
-import { BrowserExtensionEvent } from '../messaging'
+import {
+  BrowserToStudioClient,
+  browserToStudioEvents,
+  browserToStudioMethods,
+} from '../core/clients/browserToStudio'
+import { serve } from '../core/clients/messaging/server'
+import { BackgroundScriptTransport } from '../core/clients/messaging/transports/backgroundScript'
+import { WebSocketTransport } from '../core/clients/messaging/transports/webSocket'
+import {
+  StudioToBrowserClient,
+  studioToBrowserEvents,
+  studioToBrowserMethods,
+} from '../core/clients/studioToBrowser'
 
 import { captureNavigationEvents } from './navigation'
-import { client } from './routing'
 
-const eventLog: BrowserEvent[] = []
+const events: BrowserEvent[] = []
 
-client.on('record-events', ({ sender, data }) => {
-  const events = data.events.map((event) => {
-    return {
-      ...event,
-      tab: sender?.tab ?? event.tab,
-    }
-  })
+const backgroundTransport = new BackgroundScriptTransport()
+const studioWebSocketTransport = new WebSocketTransport('ws://localhost:7554')
 
-  eventLog.push(...events)
+const browserToStudioClient = new BrowserToStudioClient(
+  studioWebSocketTransport
+)
+const studioToBrowserClient = new StudioToBrowserClient(backgroundTransport)
 
-  client.send({
-    type: 'events-recorded',
-    events,
-  })
+// Serves requests coming from content scripts.
+const contentScriptServer = serve({
+  transport: backgroundTransport,
+  events: browserToStudioEvents,
+  methods: browserToStudioMethods,
+  handlers: {
+    loadEvents() {
+      return events
+    },
+
+    async recordEvents(newEvents: BrowserEvent[]) {
+      const eventsWithTabId = newEvents.map((event) => {
+        return {
+          ...event,
+          tab: this.sender ?? event.tab,
+        }
+      })
+
+      await browserToStudioClient.recordEvents(eventsWithTabId)
+
+      events.push(...eventsWithTabId)
+
+      this.emit('record', { events: eventsWithTabId })
+    },
+
+    async navigateTo(url: string) {
+      await tabs.update(undefined, { url })
+    },
+
+    stopRecording() {
+      return browserToStudioClient.stopRecording()
+    },
+
+    reload() {
+      runtime.reload()
+    },
+  },
 })
-
-client.on('navigate', async ({ data }) => {
-  const [tab] = await tabs.query({ active: true, currentWindow: true })
-
-  if (tab === undefined) {
-    return
-  }
-
-  await tabs.update(tab.id, { url: data.url })
-})
-
-client.on('load-events', () => {
-  client.send({
-    type: 'events-loaded',
-    events: eventLog,
-  })
-})
-
-client.on('reload-extension', () => {
-  console.log('reloading extension...')
-
-  runtime.reload()
-})
-
-const logEvent = (event: BrowserExtensionEvent) => {
-  console.log(`[background] ${event.data.type}:`, event.data)
-}
-
-client.on('record-events', logEvent)
-client.on('highlight-elements', logEvent)
-client.on('events-recorded', logEvent)
-client.on('navigate', logEvent)
 
 captureNavigationEvents((events) => {
-  client.send({
-    type: 'record-events',
-    events: Array.isArray(events) ? events : [events],
-  })
+  contentScriptServer.handlers
+    .recordEvents(Array.of(events).flat())
+    .catch((error) => {
+      console.error('Failed to record navigation events:', error)
+    })
+})
+
+// Serves requests coming from the Studio app.
+serve({
+  transport: studioWebSocketTransport,
+  events: studioToBrowserEvents,
+  methods: studioToBrowserMethods,
+  handlers: {
+    highlightElement(selector) {
+      return studioToBrowserClient.highlightElement(selector)
+    },
+
+    navigateTo(url) {
+      return contentScriptServer.handlers.navigateTo(url)
+    },
+  },
 })

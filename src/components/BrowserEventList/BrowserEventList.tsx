@@ -3,7 +3,7 @@ import { css } from '@emotion/react'
 import { Flex } from '@/components/primitives/Flex'
 import { Table } from '@/components/primitives/Table'
 import { BrowserEvent } from '@/schemas/recording'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from 'extension/src/frontend/view/types'
 
 import { EventDescription } from './EventDescription'
 import { EventIcon } from './EventIcon'

@@ -7,12 +7,14 @@ import { Flex } from '@/components/primitives/Flex'
 import { IconButton } from '@/components/primitives/IconButton'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { uuid } from '@/utils/uuid'
+import { getTabId } from 'extension/src/core/utils'
 import { ElementRole } from 'extension/src/utils/aria'
 
-import { client } from '../../routing'
 import { Anchor } from '../Anchor'
 import { Overlay } from '../Overlay'
+import { useStudioClient } from '../hooks/useBrowserExtensionClient'
 import { useEscape } from '../hooks/useEscape'
+import { useHighlight } from '../store'
 
 import { useInspectedElement } from './ElementInspector.hooks'
 import { toAssertion } from './ElementInspector.utils'
@@ -97,6 +99,10 @@ interface ElementInspectorProps {
 }
 
 export function ElementInspector({ onClose }: ElementInspectorProps) {
+  const client = useStudioClient()
+
+  const highlight = useHighlight()
+
   const { pinned, element, mousePosition, unpin, expand, contract } =
     useInspectedElement()
 
@@ -113,44 +119,39 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
   }, [pinned, onClose])
 
   useEffect(() => {
-    client.send({
-      type: 'highlight-elements',
-      selector: element && {
+    highlight(
+      element && {
         type: 'css',
         selector: element.selector.css,
-      },
-    })
-  }, [element])
+      }
+    )
+  }, [highlight, element])
 
   useEffect(() => {
     return () => {
-      client.send({
-        type: 'highlight-elements',
-        selector: null,
-      })
+      highlight(null)
     }
-  }, [])
+  }, [highlight])
 
   const handleOpenChange = () => {
     setAssertion(null)
   }
 
   const handleAssertionSubmit = (assertion: AssertionData) => {
-    client.send({
-      type: 'record-events',
-      events: [
+    client
+      .recordEvents([
         {
           type: 'assert',
           eventId: uuid(),
           timestamp: Date.now(),
-          tab: '',
+          tab: getTabId(),
           selector: {
             css: assertion.selector,
           },
           assertion: toAssertion(assertion),
         },
-      ],
-    })
+      ])
+      .catch(console.error)
 
     onClose()
   }

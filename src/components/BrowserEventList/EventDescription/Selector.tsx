@@ -3,7 +3,7 @@ import { BracesIcon, TestTubeDiagonalIcon } from 'lucide-react'
 
 import { ElementSelector } from '@/schemas/recording'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from 'extension/src/frontend/view/types'
 
 interface SelectorProps {
   selector: ElementSelector

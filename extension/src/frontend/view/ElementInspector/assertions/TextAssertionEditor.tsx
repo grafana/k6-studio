@@ -6,7 +6,7 @@ import { Input } from '@/components/primitives/Input'
 import { Label } from '@/components/primitives/Label'
 import { TextArea } from '@/components/primitives/TextArea'
 
-import { client } from '../../../routing'
+import { useHighlight } from '../../store'
 
 import { AssertionForm } from './AssertionForm'
 import { TextAssertionData } from './types'
@@ -26,42 +26,32 @@ export function TextAssertionEditor({
   onChange,
   onSubmit,
 }: TextAssertionEditorProps) {
+  const highlight = useHighlight()
+
   const selectorId = useId()
   const containsId = useId()
 
   useEffect(() => {
     return () => {
-      client.send({
-        type: 'highlight-elements',
-        selector: null,
-      })
+      highlight(null)
     }
-  }, [])
+  }, [highlight])
 
   const handleSelectorFocus = () => {
-    client.send({
-      type: 'highlight-elements',
-      selector: {
-        type: 'css',
-        selector: assertion.selector,
-      },
+    highlight({
+      type: 'css',
+      selector: assertion.selector,
     })
   }
 
   const handleSelectorBlur = () => {
-    client.send({
-      type: 'highlight-elements',
-      selector: null,
-    })
+    highlight(null)
   }
 
   const handleSelectorChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    client.send({
-      type: 'highlight-elements',
-      selector: {
-        type: 'css',
-        selector: ev.target.value,
-      },
+    highlight({
+      type: 'css',
+      selector: ev.target.value,
     })
 
     onChange({

@@ -4,6 +4,7 @@ import { launchBrowser } from '@/handlers/browser/launch'
 import { waitForProxy } from '@/main/proxy'
 import { BrowserServer } from '@/services/browser/server'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { HighlightSelector } from 'extension/src/frontend/view/types'
 
 import { BrowserHandler, LaunchBrowserOptions } from './types'
 
@@ -17,6 +18,7 @@ export function initialize(browserServer: BrowserServer) {
 
       const browserWindow = browserWindowFromEvent(event)
       k6StudioState.currentBrowserProcess = await launchBrowser(
+        k6StudioState.appSettings.recorder,
         browserWindow,
         browserServer,
         options
@@ -39,5 +41,20 @@ export function initialize(browserServer: BrowserServer) {
 
   browserServer.on('stop-recording', () => {
     ipcMain.emit(BrowserHandler.Stop)
+  })
+
+  ipcMain.on(
+    BrowserHandler.HighlightElement,
+    (_event, selector: HighlightSelector | null) => {
+      browserServer.client?.highlightElement(selector).catch((error) => {
+        console.error('Failed to highlight element:', error)
+      })
+    }
+  )
+
+  ipcMain.on(BrowserHandler.NavigateTo, (_event, url: string) => {
+    browserServer.client?.navigateTo(url).catch((error) => {
+      console.error('Failed to navigate:', error)
+    })
   })
 }

@@ -1,9 +1,9 @@
 import { css } from '@emotion/react'
 import { useEffect, useState } from 'react'
 
+import { AssertEvent } from '@/schemas/recording'
 import { uuid } from '@/utils/uuid'
-
-import { client } from '../routing'
+import { getTabId } from 'extension/src/core/utils'
 
 import { ElementPopover } from './ElementInspector/ElementPopover'
 import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertionEditor'
@@ -12,8 +12,10 @@ import { useGlobalClass } from './GlobalStyles'
 import { Overlay } from './Overlay'
 import { useTextSelection } from './TextSelectionPopover.hooks'
 import { TextSelection } from './TextSelectionPopover.types'
+import { useStudioClient } from './hooks/useBrowserExtensionClient'
 import { useEscape } from './hooks/useEscape'
 import { usePreventClick } from './hooks/usePreventClick'
+import { useHighlight } from './store'
 
 interface TextSelectionPopoverContentProps {
   selection: TextSelection
@@ -26,6 +28,8 @@ function TextSelectionPopoverContent({
   onAdd,
   onClose,
 }: TextSelectionPopoverContentProps) {
+  const highlight = useHighlight()
+
   const [assertion, setAssertion] = useState<TextAssertionData>({
     type: 'text',
     selector: selection.selector.css,
@@ -34,12 +38,9 @@ function TextSelectionPopoverContent({
 
   useEffect(() => {
     return () => {
-      client.send({
-        type: 'highlight-elements',
-        selector: null,
-      })
+      highlight(null)
     }
-  }, [])
+  }, [highlight])
 
   const handleChange = (assertion: TextAssertionData) => {
     setAssertion(assertion)
@@ -75,33 +76,32 @@ interface TextSelectionPopoverProps {
 export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
   const [selection, clearSelection] = useTextSelection()
 
+  const client = useStudioClient()
+
   useGlobalClass('asserting-text')
   usePreventClick({
     enabled: selection !== null,
   })
 
   const handleAdd = (assertion: TextAssertionData) => {
-    client.send({
-      type: 'record-events',
-      events: [
-        {
-          eventId: uuid(),
-          timestamp: Date.now(),
-          type: 'assert',
-          tab: '',
-          selector: {
-            css: assertion.selector,
-          },
-          assertion: {
-            type: 'text',
-            operation: {
-              type: 'contains',
-              value: assertion.text,
-            },
-          },
+    const event: AssertEvent = {
+      eventId: uuid(),
+      timestamp: Date.now(),
+      type: 'assert',
+      tab: getTabId(),
+      selector: {
+        css: assertion.selector,
+      },
+      assertion: {
+        type: 'text',
+        operation: {
+          type: 'contains',
+          value: assertion.text,
         },
-      ],
-    })
+      },
+    }
+
+    client.recordEvents([event]).catch(console.error)
 
     onClose()
   }

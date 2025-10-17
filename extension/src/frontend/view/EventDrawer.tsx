@@ -7,39 +7,37 @@ import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
-import { client } from '../routing'
+import { useStudioClient } from './hooks/useBrowserExtensionClient'
+import { useHighlight } from './store'
+import { HighlightSelector } from './types'
 
 function useRecordedEvents() {
+  const client = useStudioClient()
+
   const [events, setEvents] = useState<BrowserEvent[]>([])
 
   useEffect(() => {
-    return client.on('events-recorded', (event) => {
-      setEvents((prev) => [...prev, ...event.data.events])
+    return client.on('record', ({ events }) => {
+      setEvents((state) => [...state, ...events])
     })
-  }, [])
+  }, [client])
 
   useEffect(() => {
-    return client.on('events-loaded', (event) => {
-      setEvents(event.data.events)
-    })
-  }, [])
-
-  useEffect(() => {
-    client.send({
-      type: 'load-events',
-    })
-  }, [])
+    client
+      .loadEvents()
+      .then(setEvents)
+      .catch((err) => {
+        console.error('Failed to load recorded events', err)
+      })
+  }, [client])
 
   useEffect(() => {
     // We reload the list of events whenever the page is shown from the
     // back/forward cache to make sure we have the latest state.
     function handlePageShow(event: PageTransitionEvent) {
       if (event.persisted) {
-        client.send({
-          type: 'load-events',
-        })
+        client.loadEvents().then(setEvents).catch(console.error)
       }
     }
 
@@ -48,7 +46,7 @@ function useRecordedEvents() {
     return () => {
       window.removeEventListener('pageshow', handlePageShow)
     }
-  }, [])
+  }, [client])
 
   return events
 }
@@ -80,22 +78,19 @@ interface EventDrawerProps {
 }
 
 export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
+  const client = useStudioClient()
+  const highlight = useHighlight()
+
   const container = useContainerElement()
 
   const events = useRecordedEvents()
 
   const handleHighlight = (selector: HighlightSelector | null) => {
-    client.send({
-      type: 'highlight-elements',
-      selector,
-    })
+    highlight(selector)
   }
 
   const handleNavigate = (url: string) => {
-    client.send({
-      type: 'navigate',
-      url,
-    })
+    client.navigateTo(url).catch(console.error)
   }
 
   return (

@@ -1,7 +1,6 @@
-import { app, BrowserWindow, nativeImage, WebContents } from 'electron'
+import { BrowserWindow, WebContents } from 'electron'
 import net from 'net'
 import { platform, arch } from 'os'
-import path from 'path'
 
 import { Arch, Platform } from '@/types/electron'
 import { AddToastPayload } from '@/types/toast'
@@ -62,14 +61,6 @@ export const findOpenPort = (startPort: number = 3000): Promise<number> => {
         .catch(reject)
     })
   })
-}
-
-export function getAppIcon(isDev: boolean) {
-  const iconPath = isDev
-    ? path.join(app.getAppPath(), 'resources', 'icons', 'logo.png')
-    : path.join(process.resourcesPath, 'icons', 'logo.png')
-
-  return nativeImage.createFromPath(iconPath)
 }
 
 export const browserWindowFromEvent = (

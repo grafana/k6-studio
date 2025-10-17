@@ -33,6 +33,7 @@ const config: ForgeConfig = {
     extraResource: [
       '.vite/build/extension',
       './resources/shims',
+      './resources/browser',
       './resources/json_output.py',
       './resources/group_snippet.js',
       './resources/checks_snippet.js',
@@ -101,6 +102,11 @@ const config: ForgeConfig = {
         },
         {
           config: 'vite.extension.config.mts',
+        },
+        {
+          // Entry doesn't really matter here.
+          entry: 'extension/src/frontend/cdp.ts',
+          config: 'vite.browser.config.mts',
         },
         {
           // Entry doesn't really matter here.
