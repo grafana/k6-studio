@@ -20,7 +20,10 @@ module.exports = function (filePath: string) {
     '--trusted-signing-endpoint', process.env.TRUSTED_SIGNING_ENDPOINT!
   ]
 
-  const signingProc = spawn(signToolPath, args)
+  const signingProc = spawn(signToolPath, args, {
+    env: process.env,
+    cwd: process.cwd(),
+  })
 
   signingProc.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
