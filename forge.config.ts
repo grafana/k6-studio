@@ -69,8 +69,6 @@ const config: ForgeConfig = {
       //   certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
       //   certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
       // },
-      // @ts-expect-error - incorrect types exported by MakerSquirrel
-      // windowsSign,
       windowsSign: {
         hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
       },
