@@ -13,6 +13,7 @@ module.exports = function (filePath: string) {
     'trusted-signing',
     '/v',
     '/debug',
+    filePath,
     '-td', 'sha256',
     '-fd', 'sha256',
     '--trusted-signing-account', process.env.TRUSTED_SIGNING_ACCOUNT!,
