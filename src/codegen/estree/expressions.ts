@@ -7,6 +7,8 @@ import { NodeOptions } from './types'
 
 type LiteralOrExpression = ts.Expression | string | number | boolean | null
 
+export const unknown = Symbol('unknown')
+
 function fromLiteralOrExpression(value: LiteralOrExpression): ts.Expression {
   switch (typeof value) {
     case 'string':
@@ -207,6 +209,26 @@ export function fromArrayLiteral(elements: LiteralOrExpression[]) {
   })
 }
 
+function coerceType(type: ts.TypeNode | string | typeof unknown): ts.TypeNode {
+  if (type === unknown) {
+    return {
+      ...baseProps,
+      type: NodeType.TSUnknownKeyword,
+    }
+  }
+
+  if (typeof type === 'string') {
+    return {
+      ...baseProps,
+      type: NodeType.TSTypeReference,
+      typeName: identifier(type),
+      typeArguments: undefined,
+    }
+  }
+
+  return type
+}
+
 interface AwaitedContext {
   awaited(): void
 }
@@ -272,6 +294,34 @@ export class ExpressionBuilder<Expr extends ts.Expression> {
     return new ExpressionBuilder(expression)
   }
 
+  new(options: NodeOptions<ts.NewExpression, 'callee'> | ts.Expression[]) {
+    const { arguments: args = [], typeArguments } = Array.isArray(options)
+      ? {
+          arguments: options,
+          typeArguments: undefined,
+        }
+      : options
+
+    const expression: ts.NewExpression = {
+      ...baseProps,
+      type: NodeType.NewExpression,
+      callee: this.expression,
+      arguments: args,
+      typeArguments,
+    }
+
+    return new ExpressionBuilder(expression)
+  }
+
+  as(type: ts.TypeNode | string | typeof unknown) {
+    return new ExpressionBuilder({
+      ...baseProps,
+      type: NodeType.TSAsExpression,
+      expression: this.expression,
+      typeAnnotation: coerceType(type),
+    })
+  }
+
   await(context: AwaitedContext) {
     context.awaited()
 
@@ -286,12 +336,20 @@ export class ExpressionBuilder<Expr extends ts.Expression> {
     return this.expression
   }
 
-  asStatement(): ts.ExpressionStatement {
+  statement(): ts.ExpressionStatement {
     return {
       ...baseProps,
       type: NodeType.ExpressionStatement,
       directive: undefined,
       expression: this.expression,
+    }
+  }
+
+  returned(): ts.ReturnStatement {
+    return {
+      ...baseProps,
+      type: NodeType.ReturnStatement,
+      argument: this.expression,
     }
   }
 }

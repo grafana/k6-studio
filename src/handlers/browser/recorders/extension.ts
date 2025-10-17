@@ -4,7 +4,8 @@ import log from 'electron-log/main'
 import path from 'path'
 
 import { BrowserServer } from '@/services/browser/server'
-import { ChromeDevtoolsClient } from '@/utils/cdp/client'
+import { ChromeDevToolsClient } from '@/utils/cdp/client'
+import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketServerError } from 'extension/src/messaging/transports/webSocketServer'
 
 import { BrowserHandler } from '../types'
@@ -36,9 +37,6 @@ export const launchBrowserWithExtension = async (
     args: BROWSER_RECORDING_ARGS,
   })
 
-  const extensionPath = getExtensionPath()
-  console.info(`extension path: ${extensionPath}`)
-
   const handleBrowserClose = (): Promise<void> => {
     browserServer.stop()
 
@@ -67,14 +65,10 @@ export const launchBrowserWithExtension = async (
     })
 
     try {
-      const client = ChromeDevtoolsClient.fromChildProcess(process)
+      const transport = PipeTransport.fromChildProcess(process)
+      const client = new ChromeDevToolsClient(transport)
 
-      const response = await client.call({
-        method: 'Extensions.loadUnpacked',
-        params: {
-          path: extensionPath,
-        },
-      })
+      const response = await client.extensions.loadUnpacked(getExtensionPath())
 
       log.log(`k6 Studio extension loaded`, response)
     } catch (error) {
