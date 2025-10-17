@@ -9,25 +9,25 @@ import { AppHandler } from './types'
 export const platform = process.platform
 
 export function closeSplashscreen() {
-  ipcRenderer.send(AppHandler.SPLASHSCREEN_CLOSE)
+  ipcRenderer.send(AppHandler.SplashscreenClose)
 }
 
 export function onApplicationClose(callback: () => void) {
-  return createListener(AppHandler.CLOSE, callback)
+  return createListener(AppHandler.Close, callback)
 }
 
 export function closeApplication() {
-  ipcRenderer.send(AppHandler.CLOSE)
+  ipcRenderer.send(AppHandler.Close)
 }
 
 export function changeRoute(route: string) {
-  return ipcRenderer.send(AppHandler.CHANGE_ROUTE, route)
+  return ipcRenderer.send(AppHandler.ChangeRoute, route)
 }
 
 export function trackEvent(event: UsageEvent) {
-  return ipcRenderer.send(AppHandler.TRACK_EVENT, event)
+  return ipcRenderer.send(AppHandler.TrackEvent, event)
 }
 
 export function onDeepLink(callback: (url: string) => void) {
-  return createListener(AppHandler.DEEP_LINK, callback)
+  return createListener(AppHandler.DeepLink, callback)
 }
