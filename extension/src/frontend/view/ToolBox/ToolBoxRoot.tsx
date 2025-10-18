@@ -3,8 +3,8 @@ import { css } from '@emotion/react'
 import { GripVerticalIcon } from 'lucide-react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
+import { InBrowserSettings } from 'extension/src/frontend/view/SettingsProvider'
 
-import { InBrowserSettings } from '../settings'
 import { useInBrowserUIStore } from '../store'
 
 interface ToolBoxRootProps {
