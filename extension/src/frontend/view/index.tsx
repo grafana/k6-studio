@@ -12,11 +12,69 @@ import { SettingsProvider, SettingsStorage } from './SettingsProvider'
 import { StudioClientProvider } from './StudioClientProvider'
 import { isUsingTool } from './utils'
 
+// We use a MutationObservers to try and load the UI as soon as the body
+// element has been added. Otherwise we have to wait for content to be
+// downloaded and scripts executed, making it quite noticeable that the
+// UI is being injected.
+//
+// In the case of CDP, the script is injected so early that not even the
+// documentElement is present, so we have to wait for that as well.
+function waitForDocumentElement(signal: AbortSignal): Promise<void> {
+  if (document.documentElement) {
+    return Promise.resolve()
+  }
+
+  const { promise, resolve } = Promise.withResolvers<void>()
+
+  const observer = new MutationObserver(() => {
+    if (document.documentElement) {
+      observer.disconnect()
+      resolve()
+    }
+  })
+
+  signal.addEventListener('abort', () => {
+    observer.disconnect()
+  })
+
+  observer.observe(document, {
+    childList: true,
+  })
+
+  return promise
+}
+
+function waitForBodyElement(signal: AbortSignal): Promise<void> {
+  if (document.body) {
+    return Promise.resolve()
+  }
+
+  const { promise, resolve } = Promise.withResolvers<void>()
+
+  const observer = new MutationObserver(() => {
+    if (document.body) {
+      observer.disconnect()
+
+      resolve()
+    }
+  })
+
+  signal.addEventListener('abort', () => {
+    observer.disconnect()
+  })
+
+  observer.observe(document.documentElement, {
+    childList: true,
+  })
+
+  return promise
+}
+
 export function initializeView(
   client: BrowserExtensionClient,
   storage: SettingsStorage
 ) {
-  let initialized = false
+  const abortController = new AbortController()
 
   let shadowRoot: ShadowRoot | null = null
 
@@ -92,11 +150,11 @@ export function initializeView(
   function initialize() {
     // We have multiple points in time when we try to inject the UI. This
     // makes sure we actually only do it once.
-    if (initialized) {
+    if (abortController.signal.aborted) {
       return
     }
 
-    initialized = true
+    abortController.abort()
 
     const mount = createMount()
     const root = createShadowRoot(mount)
@@ -140,31 +198,17 @@ export function initializeView(
   }
 
   if (document.readyState === 'loading') {
-    // We use a MutationObserver to try and load the UI as soon as the body
-    // element has been added. Otherwise we have to wait for content to be
-    // downloaded and scripts executed, making it quite noticeable that the
-    // UI is being injected.
-    const mutationObserver = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node instanceof HTMLBodyElement) {
-            mutationObserver.disconnect()
-
-            initialize()
-            break
-          }
-        }
-      }
-    })
-
-    mutationObserver.observe(document.documentElement, {
-      childList: true,
-    })
+    waitForDocumentElement(abortController.signal)
+      .then(() => waitForBodyElement(abortController.signal))
+      .then(() => {
+        initialize()
+      })
+      .catch((err) => {
+        console.error('An error occurred when initialzing in-browser UI', err)
+      })
 
     // Worst case scenario, we initialize the UI when the DOM is ready.
     window.addEventListener('DOMContentLoaded', () => {
-      mutationObserver.disconnect()
-
       initialize()
     })
   } else {

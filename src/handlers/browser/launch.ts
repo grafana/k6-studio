@@ -1,5 +1,5 @@
-// import { launchBrowserWithDevToolsProtocol } from './recorders/cdp'
-import { launchBrowserWithExtension } from './recorders/extension'
+import { launchBrowserWithDevToolsProtocol } from './recorders/cdp'
+// import { launchBrowserWithExtension } from './recorders/extension'
 import { launchBrowserWithHttpOnly } from './recorders/http'
 import { RecordingSession } from './recorders/types'
 import { LaunchBrowserOptions } from './types'
@@ -14,8 +14,8 @@ export const launchBrowser = async ({
   capture,
 }: LaunchBrowserOptions): Promise<RecordingSession> => {
   if (capture.browser) {
-    // return launchBrowserWithDevToolsProtocol(url)
-    return launchBrowserWithExtension(url)
+    return launchBrowserWithDevToolsProtocol(url)
+    // return launchBrowserWithExtension(url)
   }
 
   return launchBrowserWithHttpOnly(url)

@@ -14,6 +14,7 @@ export default defineConfig((env) => {
     base: './',
     define: {
       TARGET_PLATFORM: JSON.stringify(process.platform),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
     },
     build: {
       outDir: `resources/browser`,
