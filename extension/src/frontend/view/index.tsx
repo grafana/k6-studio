@@ -4,13 +4,18 @@ import { createRoot } from 'react-dom/client'
 
 import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 import { Theme } from '@/components/primitives/Theme'
+import { BrowserExtensionClient } from 'extension/src/messaging'
 
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'
 import { SettingsProvider, SettingsStorage } from './SettingsProvider'
+import { StudioClientProvider } from './StudioClientProvider'
 import { isUsingTool } from './utils'
 
-export function initializeView(storage: SettingsStorage) {
+export function initializeView(
+  client: BrowserExtensionClient,
+  storage: SettingsStorage
+) {
   let initialized = false
 
   let shadowRoot: ShadowRoot | null = null
@@ -120,14 +125,16 @@ export function initializeView(storage: SettingsStorage) {
     createRoot(root).render(
       <CacheProvider value={globalCache}>
         <GlobalStyles />
-        <SettingsProvider storage={storage}>
-          <ContainerProvider container={root}>
-            <CacheProvider value={shadowCache}>
-              <Theme root={false} includeColors />
-              <InBrowserControls />
-            </CacheProvider>
-          </ContainerProvider>
-        </SettingsProvider>
+        <StudioClientProvider client={client}>
+          <SettingsProvider storage={storage}>
+            <ContainerProvider container={root}>
+              <CacheProvider value={shadowCache}>
+                <Theme root={false} includeColors />
+                <InBrowserControls />
+              </CacheProvider>
+            </ContainerProvider>
+          </SettingsProvider>
+        </StudioClientProvider>
       </CacheProvider>
     )
   }

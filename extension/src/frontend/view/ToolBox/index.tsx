@@ -22,7 +22,7 @@ import {
 import { Flex } from '@/components/primitives/Flex'
 import { Toolbar } from '@/components/primitives/Toolbar'
 
-import { client } from '../../routing'
+import { useStudioClient } from '../StudioClientProvider'
 import { Tool } from '../types'
 
 import { ToolBoxLogo } from './ToolBoxLogo'
@@ -68,6 +68,8 @@ export function ToolBox({
   onToggleDrawer,
 }: ToolBoxProps) {
   const [settings, setSettings] = useToolboxSettings()
+
+  const client = useStudioClient()
 
   const mouse = useSensor(MouseSensor)
   const sensors = useSensors(mouse)
