@@ -40,4 +40,8 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
     this.#client?.dispose()
     this.#client = null
   }
+
+  [Symbol.dispose]() {
+    this.stop()
+  }
 }

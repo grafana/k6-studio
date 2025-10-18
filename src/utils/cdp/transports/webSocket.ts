@@ -23,6 +23,10 @@ async function retry<T>(
         break
       }
 
+      const key = err instanceof Error ? err.message : String(err)
+
+      errors.set(key, err)
+
       await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
@@ -108,9 +112,9 @@ export class WebSocketTransport implements Transport {
     port,
     host = 'localhost',
     retries = 50,
-    delay = 100,
+    delay = 500,
   }: ConnectOptions): Promise<WebSocketTransport> {
-    const url = `ws://${host}:${port}/json/version`
+    const url = `http://${host}:${port}/json/version`
 
     const info = await retry(retries, delay, async () => {
       return fetch(url)
