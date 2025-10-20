@@ -7,6 +7,7 @@ import { MakerZIP } from '@electron-forge/maker-zip'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
 import type { ForgeConfig } from '@electron-forge/shared-types'
+import { spawn } from 'node:child_process'
 import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
@@ -28,16 +29,65 @@ function getPlatformSpecificResources() {
 
 const config: ForgeConfig = {
   hooks: {
-    postMake: (forgeConfig, options) => {
+    postMake: async (forgeConfig, options) => {
       const artifactPaths = options.flatMap((o) => o.artifacts)
 
-      for (const filePath of artifactPaths) {
-        console.log('**********')
-        console.log('**********')
-        console.log('**********')
-        console.log(filePath)
-      }
-      return Promise.resolve(options)
+      const signingPromises = artifactPaths.map((filePath) => {
+        return new Promise<void>((resolve, reject) => {
+          console.log('**********')
+          console.log('**********')
+          console.log('**********')
+          console.log(filePath)
+
+          const signToolPath = process.env.SIGNTOOL_PATH
+          if (!signToolPath) {
+            reject(new Error('SIGNTOOL_PATH environment variable is not set'))
+            return
+          }
+
+          const args = [
+            'code',
+            'trusted-signing',
+            filePath,
+            '-td',
+            'sha256',
+            '-fd',
+            'sha256',
+            '--trusted-signing-account',
+            process.env.TRUSTED_SIGNING_ACCOUNT!,
+            '--trusted-signing-certificate-profile',
+            process.env.TRUSTED_SIGNING_PROFILE!,
+            '--trusted-signing-endpoint',
+            process.env.TRUSTED_SIGNING_ENDPOINT!,
+          ]
+
+          const signingProc = spawn(signToolPath, args, {
+            env: process.env,
+            cwd: process.cwd(),
+            stdio: 'inherit',
+          })
+
+          signingProc.on('close', (code) => {
+            if (code === 0) {
+              console.log(`Successfully signed: ${filePath}`)
+              resolve()
+            } else {
+              reject(
+                new Error(`Signing failed with code ${code} for ${filePath}`)
+              )
+            }
+          })
+
+          signingProc.on('error', (error) => {
+            reject(
+              new Error(`Failed to spawn signing process: ${error.message}`)
+            )
+          })
+        })
+      })
+
+      await Promise.all(signingPromises)
+      return options
     },
   },
   packagerConfig: {
