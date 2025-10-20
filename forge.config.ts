@@ -43,7 +43,21 @@ const config: ForgeConfig = {
       ...getPlatformSpecificResources(),
     ],
     // @ts-expect-error bug in electron, value needs to be in top level instead of windowsSign options
-    hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
+    signToolPath: process.env.SIGNTOOL_PATH,
+    signWithParams: [
+      'code',
+      'trusted-signing',
+      '-td',
+      'sha256',
+      '-fd',
+      'sha256',
+      '--trusted-signing-account',
+      process.env.TRUSTED_SIGNING_ACCOUNT!,
+      '--trusted-signing-certificate-profile',
+      process.env.TRUSTED_SIGNING_PROFILE!,
+      '--trusted-signing-endpoint',
+      process.env.TRUSTED_SIGNING_ENDPOINT!,
+    ],
     // windowsSign,
     osxSign: {
       optionsForFile: () => {
@@ -71,9 +85,9 @@ const config: ForgeConfig = {
       //   certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
       //   certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
       // },
-      windowsSign: {
-        hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
-      },
+      // windowsSign: {
+      //   hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
+      // },
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
