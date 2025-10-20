@@ -27,6 +27,19 @@ function getPlatformSpecificResources() {
 }
 
 const config: ForgeConfig = {
+  hooks: {
+    postMake: (forgeConfig, options) => {
+      const artifactPaths = options.flatMap((o) => o.artifacts)
+
+      for (const filePath of artifactPaths) {
+        console.log('**********')
+        console.log('**********')
+        console.log('**********')
+        console.log(filePath)
+      }
+      return Promise.resolve(options)
+    },
+  },
   packagerConfig: {
     executableName: 'k6-studio',
     icon: './resources/icons/logo',
@@ -73,11 +86,6 @@ const config: ForgeConfig = {
       //   hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
       // },
       //
-      windowsSign: {
-        debug: true,
-        signToolPath: process.env.SIGNTOOL_PATH,
-        signWithParams: `code trusted-signing -td sha256 -fd sha256 --trusted-signing-account ${process.env.TRUSTED_SIGNING_ACCOUNT} --trusted-signing-certificate-profile ${process.env.TRUSTED_SIGNING_PROFILE} --trusted-signing-endpoint ${process.env.TRUSTED_SIGNING_ENDPOINT}`,
-      },
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
