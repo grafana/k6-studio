@@ -11,7 +11,7 @@ import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
-// import { windowsSign } from './windowsSign'
+import { windowsSign } from './windowsSign'
 
 function getPlatformSpecificResources() {
   // on mac we are using a single image to build both architectures so we
@@ -42,23 +42,7 @@ const config: ForgeConfig = {
       './resources/logo-splashscreen.svg',
       ...getPlatformSpecificResources(),
     ],
-    // @ts-expect-error bug in electron, value needs to be in top level instead of windowsSign options
-    signToolPath: process.env.SIGNTOOL_PATH,
-    signWithParams: [
-      'code',
-      'trusted-signing',
-      '-td',
-      'sha256',
-      '-fd',
-      'sha256',
-      '--trusted-signing-account',
-      process.env.TRUSTED_SIGNING_ACCOUNT!,
-      '--trusted-signing-certificate-profile',
-      process.env.TRUSTED_SIGNING_PROFILE!,
-      '--trusted-signing-endpoint',
-      process.env.TRUSTED_SIGNING_ENDPOINT!,
-    ],
-    // windowsSign,
+    windowsSign,
     osxSign: {
       optionsForFile: () => {
         return {
@@ -89,9 +73,11 @@ const config: ForgeConfig = {
       //   hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
       // },
       //
-      // @ts-expect-error bug in electron, value needs to be in top level instead of windowsSign options
-      signToolPath: process.env.SIGNTOOL_PATH,
-      signWithParams: `code trusted-signing /v /debug -td sha256 -fd sha256 --trusted-signing-account ${process.env.TRUSTED_SIGNING_ACCOUNT} --trusted-signing-certificate-profile ${process.env.TRUSTED_SIGNING_PROFILE} --trusted-signing-endpoint ${process.env.TRUSTED_SIGNING_ENDPOINT}`,
+      windowsSign: {
+        debug: true,
+        signToolPath: process.env.SIGNTOOL_PATH,
+        signWithParams: `code trusted-signing -td sha256 -fd sha256 --trusted-signing-account ${process.env.TRUSTED_SIGNING_ACCOUNT} --trusted-signing-certificate-profile ${process.env.TRUSTED_SIGNING_PROFILE} --trusted-signing-endpoint ${process.env.TRUSTED_SIGNING_ENDPOINT}`,
+      },
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
