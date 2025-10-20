@@ -88,6 +88,10 @@ const config: ForgeConfig = {
       // windowsSign: {
       //   hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
       // },
+      //
+      // @ts-expect-error bug in electron, value needs to be in top level instead of windowsSign options
+      signToolPath: process.env.SIGNTOOL_PATH,
+      signWithParams: `code trusted-signing /v /debug -td sha256 -fd sha256 --trusted-signing-account ${process.env.TRUSTED_SIGNING_ACCOUNT} --trusted-signing-certificate-profile ${process.env.TRUSTED_SIGNING_PROFILE} --trusted-signing-endpoint ${process.env.TRUSTED_SIGNING_ENDPOINT}`,
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
