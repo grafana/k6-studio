@@ -11,7 +11,7 @@ import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
-import { windowsSign } from './windowsSign'
+// import { windowsSign } from './windowsSign'
 
 function getPlatformSpecificResources() {
   // on mac we are using a single image to build both architectures so we
@@ -42,7 +42,9 @@ const config: ForgeConfig = {
       './resources/logo-splashscreen.svg',
       ...getPlatformSpecificResources(),
     ],
-    windowsSign,
+    // @ts-expect-error bug in electron, value needs to be in top level instead of windowsSign options
+    hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
+    // windowsSign,
     osxSign: {
       optionsForFile: () => {
         return {
