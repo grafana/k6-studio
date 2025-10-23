@@ -11,7 +11,8 @@ interface FeaturesStore {
 export const defaultFeatures: Record<Feature, boolean> = {
   'dummy-feature': false,
   'typeahead-json': false,
-  'auto-correlation': false,
+  // TODO: change to false before mergin
+  'auto-correlation': true,
 }
 
 export const useFeaturesStore = create<FeaturesStore>()(

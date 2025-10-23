@@ -19,3 +19,16 @@ export function Feature({
 
   return <>{children}</>
 }
+
+export function FeatureDisabled({
+  children,
+  feature,
+}: PropsWithChildren<FeatureProps>) {
+  const isDisabled = !useFeaturesStore((state) => state.features[feature])
+
+  if (!isDisabled) {
+    return null
+  }
+
+  return <>{children}</>
+}
