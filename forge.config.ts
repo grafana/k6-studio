@@ -6,7 +6,7 @@ import { MakerSquirrel } from '@electron-forge/maker-squirrel'
 import { MakerZIP } from '@electron-forge/maker-zip'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
-import type { ForgeConfig } from '@electron-forge/shared-types'
+import type { ForgeConfig, ForgeMakeResult } from '@electron-forge/shared-types'
 import { spawn } from 'node:child_process'
 import path from 'path'
 
@@ -27,65 +27,74 @@ function getPlatformSpecificResources() {
   return [path.join('./resources/', getPlatform(), getArch())]
 }
 
-const config: ForgeConfig = {
-  hooks: {
-    postMake: async (forgeConfig, options) => {
-      const artifactPaths = options.flatMap((o) => o.artifacts)
+function getPostMakeHook() {
+  // we use the hook function only on windows to sign the binary so in
+  // all other cases we just return an empty object
+  if (getPlatform() !== 'win') {
+    return (forgeConfig: ForgeConfig, options: ForgeMakeResult[]) =>
+      Promise.resolve(options)
+  }
 
-      const signingPromises = artifactPaths.map((filePath) => {
-        return new Promise<void>((resolve, reject) => {
-          console.log(`File to sign post make: ${filePath}`)
+  return async (forgeConfig: ForgeConfig, options: ForgeMakeResult[]) => {
+    const artifactPaths = options.flatMap((o) => o.artifacts)
 
-          const signToolPath = process.env.SIGNTOOL_PATH
-          if (!signToolPath) {
-            reject(new Error('SIGNTOOL_PATH environment variable is not set'))
-            return
-          }
+    const signingPromises = artifactPaths.map((filePath) => {
+      return new Promise<void>((resolve, reject) => {
+        console.log(`File to sign post make: ${filePath}`)
 
-          const args = [
-            'code',
-            'trusted-signing',
-            filePath,
-            '-td',
-            'sha256',
-            '-fd',
-            'sha256',
-            '--trusted-signing-account',
-            process.env.TRUSTED_SIGNING_ACCOUNT!,
-            '--trusted-signing-certificate-profile',
-            process.env.TRUSTED_SIGNING_PROFILE!,
-            '--trusted-signing-endpoint',
-            process.env.TRUSTED_SIGNING_ENDPOINT!,
-          ]
+        const signToolPath = process.env.SIGNTOOL_PATH
+        if (!signToolPath) {
+          reject(new Error('SIGNTOOL_PATH environment variable is not set'))
+          return
+        }
 
-          const signingProc = spawn(signToolPath, args, {
-            env: process.env,
-            cwd: process.cwd(),
-            stdio: 'inherit',
-          })
+        const args = [
+          'code',
+          'trusted-signing',
+          filePath,
+          '-td',
+          'sha256',
+          '-fd',
+          'sha256',
+          '--trusted-signing-account',
+          process.env.TRUSTED_SIGNING_ACCOUNT!,
+          '--trusted-signing-certificate-profile',
+          process.env.TRUSTED_SIGNING_PROFILE!,
+          '--trusted-signing-endpoint',
+          process.env.TRUSTED_SIGNING_ENDPOINT!,
+        ]
 
-          signingProc.on('close', (code) => {
-            if (code === 0) {
-              console.log(`Successfully signed: ${filePath}`)
-              resolve()
-            } else {
-              reject(
-                new Error(`Signing failed with code ${code} for ${filePath}`)
-              )
-            }
-          })
+        const signingProc = spawn(signToolPath, args, {
+          env: process.env,
+          cwd: process.cwd(),
+          stdio: 'inherit',
+        })
 
-          signingProc.on('error', (error) => {
+        signingProc.on('close', (code) => {
+          if (code === 0) {
+            console.log(`Successfully signed: ${filePath}`)
+            resolve()
+          } else {
             reject(
-              new Error(`Failed to spawn signing process: ${error.message}`)
+              new Error(`Signing failed with code ${code} for ${filePath}`)
             )
-          })
+          }
+        })
+
+        signingProc.on('error', (error) => {
+          reject(new Error(`Failed to spawn signing process: ${error.message}`))
         })
       })
+    })
 
-      await Promise.all(signingPromises)
-      return options
-    },
+    await Promise.all(signingPromises)
+    return options
+  }
+}
+
+const config: ForgeConfig = {
+  hooks: {
+    postMake: getPostMakeHook(),
   },
   packagerConfig: {
     executableName: 'k6-studio',
