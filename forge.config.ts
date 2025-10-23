@@ -34,10 +34,7 @@ const config: ForgeConfig = {
 
       const signingPromises = artifactPaths.map((filePath) => {
         return new Promise<void>((resolve, reject) => {
-          console.log('**********')
-          console.log('**********')
-          console.log('**********')
-          console.log(filePath)
+          console.log(`File to sign post make: ${filePath}`)
 
           const signToolPath = process.env.SIGNTOOL_PATH
           if (!signToolPath) {
@@ -128,14 +125,6 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
-      // windowsSign: {
-      //   certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
-      //   certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
-      // },
-      // windowsSign: {
-      //   hookModulePath: path.join(__dirname, 'windowsSignHook.ts'),
-      // },
-      //
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),

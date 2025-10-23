@@ -1,9 +1,6 @@
 import { spawn } from 'node:child_process'
 
 module.exports = function (filePath: string) {
-  console.log('*************')
-  console.log('*************')
-  console.log('*************')
   console.log(`Path to file to sign: ${filePath}`)
 
   const signToolPath = process.env.SIGNTOOL_PATH
