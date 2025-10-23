@@ -153,7 +153,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
-          # WINDOWS_CERTIFICATE_PATH: ./certificate.pfx
           TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
           TRUSTED_SIGNING_ENDPOINT: https://eus.codesigning.azure.net/
           TRUSTED_SIGNING_PROFILE: grafana-production
