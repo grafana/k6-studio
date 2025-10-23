@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.9.0](https://github.com/grafana/k6-studio/compare/v1.8.0...v1.9.0) (2025-10-23)
+
+
+### Features
+
+* Add Regex support to Verification rule ([#853](https://github.com/grafana/k6-studio/issues/853)) ([4e2fdd4](https://github.com/grafana/k6-studio/commit/4e2fdd4b7af66dbe15046b17080c424054ac8a23))
+
+
+### Internal Changes
+
+* Add ability to manage AI API key ([#860](https://github.com/grafana/k6-studio/issues/860)) ([a547a81](https://github.com/grafana/k6-studio/commit/a547a81a6b26f909148063163a499ede1128cf6b))
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump vite from 5.4.20 to 5.4.21 ([#867](https://github.com/grafana/k6-studio/issues/867)) ([b0a3ac7](https://github.com/grafana/k6-studio/commit/b0a3ac7339e3dccaa7a7e47530b59ecf79906c3c))
+* Update PR template ([#859](https://github.com/grafana/k6-studio/issues/859)) ([4adcd05](https://github.com/grafana/k6-studio/commit/4adcd05b762d84fd25b8137c0261dbc4c3638040))
+
+
+### Code Refactoring
+
+* Use consistent naming for enum members ([#866](https://github.com/grafana/k6-studio/issues/866)) ([8aabe85](https://github.com/grafana/k6-studio/commit/8aabe85b701d60fe618243b241f594bcc2db670f))
+
 ## [1.8.0](https://github.com/grafana/k6-studio/compare/v1.7.0...v1.8.0) (2025-10-06)
 
 
