@@ -74,12 +74,6 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
 
-      # - name: setup windows certificate
-      #   if: startsWith(matrix.platform, 'windows-')
-      #   run: |
-      #     $bytes = [Convert]::FromBase64String("$env:WINDOWS_CERTIFICATE")
-      #     [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
-
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
         env:
@@ -195,8 +189,3 @@ jobs:
         run: |
           rm apple_api_key.p8
           rm certificate.p12
-
-      # - name: cleanup windows certificates
-      #   if: startsWith(matrix.platform, 'windows-')
-      #   run: |
-      #     del certificate.pfx
