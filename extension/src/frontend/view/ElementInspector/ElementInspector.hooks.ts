@@ -5,7 +5,7 @@ import { ElementSelector } from '@/schemas/recording'
 import { uuid } from '@/utils/uuid'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 
-import { generateSelector } from '../../../selectors'
+import { generateSelectors } from '../../../selectors'
 import { useGlobalClass } from '../GlobalStyles'
 import { useHighlightDebounce } from '../hooks/useHighlightDebounce'
 import { usePreventClick } from '../hooks/usePreventClick'
@@ -81,7 +81,7 @@ function toTrackedElement(element: Element): TrackedElement {
   return {
     id: uuid(),
     roles: [...roles],
-    selector: generateSelector(element),
+    selector: generateSelectors(element),
     target: element,
     bounds: getElementBounds(element),
   }
