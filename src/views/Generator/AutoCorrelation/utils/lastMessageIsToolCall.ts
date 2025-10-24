@@ -5,7 +5,7 @@ import { Message } from '../types'
 // Modified version of https://github.com/vercel/ai/blob/eb55677dd6fe7ced7dcd39640106e39f75faf089/packages/ai/src/ui/last-assistant-message-is-complete-with-tool-calls.ts
 // Checks if last assistant message is complete with tool calls,
 // but exclude the "finish" tool to prevent auto-sending after completion
-export function lastMesssageIsToolCall({
+export function lastMessageIsToolCall({
   messages,
 }: {
   messages: Message[]

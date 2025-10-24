@@ -17,7 +17,7 @@ import { generateScriptPreview } from '../Generator.utils'
 import { systemPrompt } from './constants'
 import { CorrelationStatus, Message, ToolCall } from './types'
 import { IPCChatTransport } from './utils/IPCChatTransport'
-import { lastMesssageIsToolCall } from './utils/lastMessageIsToolCall'
+import { lastMessageIsToolCall } from './utils/lastMessageIsToolCall'
 import { prepareRequestsForAI } from './utils/stripRequestData'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
@@ -41,7 +41,7 @@ export const useGenerateRules = ({
     useChat<Message>({
       transport: new IPCChatTransport(),
       // Keep calling tools without user input
-      sendAutomaticallyWhen: lastMesssageIsToolCall,
+      sendAutomaticallyWhen: lastMessageIsToolCall,
       onError: (error) => {
         setCorrelationStatus('error')
         console.error(error)
