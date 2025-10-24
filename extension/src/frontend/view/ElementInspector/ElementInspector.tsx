@@ -9,6 +9,7 @@ import { Tooltip } from '@/components/primitives/Tooltip'
 import { uuid } from '@/utils/uuid'
 import { ElementRole } from 'extension/src/utils/aria'
 
+import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'
 import { Overlay } from '../Overlay'
 import { useStudioClient } from '../StudioClientProvider'
@@ -145,7 +146,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
           type: 'assert',
           eventId: uuid(),
           timestamp: Date.now(),
-          tab: '',
+          tab: getTabId(),
           selector: {
             css: assertion.selector,
           },

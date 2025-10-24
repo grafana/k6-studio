@@ -6,7 +6,7 @@ import { EventEmitter } from 'extension/src/utils/events'
 
 import { ChromeCommand, ChromeEvent, Transport } from '../client'
 
-import { ChromeCallResult, ChromeResponseSchema } from './schema'
+import { ChromeResponseSchema } from './schema'
 import { RequestSynchronizer } from './synchronization'
 
 export class PipeTransport implements Transport {
@@ -28,8 +28,6 @@ export class PipeTransport implements Transport {
 
     return new PipeTransport(send, receive)
   }
-
-  #pending = new Map<number, (value: ChromeCallResult) => void>()
 
   #buffer: string = ''
 
@@ -106,5 +104,10 @@ export class PipeTransport implements Transport {
     }
 
     this.#requests.complete(message)
+  }
+
+  dispose(): void {
+    this.#send.end()
+    this.#receive.destroy()
   }
 }

@@ -1,10 +1,21 @@
 import { ChildProcess, spawn } from 'child_process'
+import logger from 'electron-log/main'
 
-import { BrowserEvent } from '@/schemas/recording'
+import {
+  BrowserEvent,
+  NavigateToPageEvent,
+  ReloadPageEvent,
+} from '@/schemas/recording'
 import { BrowserServer } from '@/services/browser/server'
-import { ChromeDevToolsClient } from '@/utils/cdp/client'
+import {
+  ChromeDevToolsClient,
+  Page as CdpPage,
+  Target,
+  ChromeEvent,
+} from '@/utils/cdp/client'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
 import { readResource } from '@/utils/resources'
+import { uuid } from '@/utils/uuid'
 import { HighlightSelector } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
@@ -19,7 +30,32 @@ type InitState = 'init' | 'spawned' | 'ready'
 
 const DEBUGGER_PORT = 9222
 
-const BROWSER_CDP_ARGS = [`--remote-debugging-port=${DEBUGGER_PORT}`]
+const BROWSER_CDP_ARGS = [
+  `--remote-debugging-port=${DEBUGGER_PORT}`,
+  '--disable-back-forward-cache',
+]
+
+function toNavigationSource(
+  event: CdpPage.FrameStartedNavigatingEvent
+): NavigateToPageEvent['source'] | null {
+  switch (event.navigationType) {
+    case 'differentDocument':
+      return 'address-bar'
+
+    case 'historyDifferentDocument':
+      return 'history'
+
+    default:
+      return null
+  }
+}
+
+function isReload(event: CdpPage.FrameStartedNavigatingEvent): boolean {
+  return (
+    event.navigationType === 'reload' ||
+    event.navigationType === 'reloadBypassingCache'
+  )
+}
 
 class CDPRecordingSession
   extends EventEmitter<RecordingSessionEventMap>
@@ -29,12 +65,18 @@ class CDPRecordingSession
 
   #process: ChildProcess
   #server: BrowserServer
+  #session: BrowserSession
 
-  constructor(process: ChildProcess, server: BrowserServer) {
+  constructor(
+    process: ChildProcess,
+    server: BrowserServer,
+    session: BrowserSession
+  ) {
     super()
 
     this.#process = process
     this.#server = server
+    this.#session = session
 
     this.#process.on('exit', () => {
       this.emit('stop', undefined)
@@ -49,14 +91,7 @@ class CDPRecordingSession
     })
 
     this.#server.on('record', (event) => {
-      this.#events.push(...event.events)
-
-      this.#server.send({
-        type: 'events-recorded',
-        events: event.events,
-      })
-
-      this.emit('record', event)
+      this.#record(event.events)
     })
 
     this.#server.on('stop', () => {
@@ -68,6 +103,10 @@ class CDPRecordingSession
         type: 'events-loaded',
         events: this.#events,
       })
+    })
+
+    this.#session.on('navigate', ({ event }) => {
+      this.#record([event])
     })
   }
 
@@ -84,9 +123,225 @@ class CDPRecordingSession
     this.#process.kill()
     this.#server.stop()
   }
+
+  #record(events: BrowserEvent[]) {
+    this.#events.push(...events)
+
+    this.#server.send({
+      type: 'events-recorded',
+      events,
+    })
+
+    this.emit('record', { events })
+  }
 }
 
-async function connectToDebugger(port: number): Promise<ChromeDevToolsClient> {
+interface PageEventMap {
+  navigate: {
+    event: NavigateToPageEvent | ReloadPageEvent
+  }
+}
+
+class BrowserSession extends EventEmitter<PageEventMap> {
+  #client: ChromeDevToolsClient
+  #script: string
+
+  #sessions = new Map<string, Page>()
+
+  constructor(client: ChromeDevToolsClient, script: string) {
+    super()
+
+    this.#client = client
+    this.#script = script
+
+    this.#client.target.on('attachedToTarget', this.#handleAttachedToTarget)
+    this.#client.target.on('detachedFromTarget', this.#handleDetachedFromTarget)
+  }
+
+  async attach() {
+    await this.#client.target.setAutoAttach(true, true, true, [
+      { type: 'page', exclude: false },
+      { exclude: true },
+    ])
+
+    return this
+  }
+
+  #handleAttachedToTarget = async ({
+    data,
+  }: ChromeEvent<Target.AttachedToTargetEvent>) => {
+    if (data.targetInfo.type !== 'page') {
+      return
+    }
+
+    const page = new Page(
+      data.targetInfo.targetId,
+      this.#client.withSession(data.sessionId)
+    )
+
+    page.on('navigate', (ev) => {
+      this.emit('navigate', ev)
+    })
+
+    this.#sessions.set(data.sessionId, page)
+
+    await page.attach(this.#script)
+  }
+
+  #handleDetachedFromTarget = ({
+    data,
+  }: ChromeEvent<Target.DetachedFromTargetEvent>) => {
+    this.#sessions.delete(data.sessionId)
+  }
+
+  dispose() {
+    this.#client.dispose()
+  }
+}
+
+class Page extends EventEmitter<PageEventMap> {
+  #id: string
+  #client: ChromeDevToolsClient
+
+  #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
+  #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
+
+  constructor(id: string, client: ChromeDevToolsClient) {
+    super()
+
+    this.#id = id
+    this.#client = client
+
+    this.#client.page.on('frameRequestedNavigation', ({ data }) => {
+      if (data.frameId !== this.#id) {
+        return
+      }
+
+      this.#requestedNavigation = data
+    })
+
+    this.#client.page.on('frameStartedNavigating', ({ data }) => {
+      if (data.frameId !== this.#id) {
+        return
+      }
+
+      this.#startedNavigation = data
+    })
+
+    this.#client.page.on('frameNavigated', ({ data }) => {
+      if (data.frame.id !== this.#id) {
+        return
+      }
+
+      // Ignore navigations caused by something happening with the page (user interaction, script, etc)
+      if (this.#requestedNavigation !== null) {
+        return
+      }
+
+      if (this.#startedNavigation === null) {
+        logger.warn(
+          'Received frameNavigated event without prior navigation events'
+        )
+
+        return
+      }
+
+      if (isReload(this.#startedNavigation)) {
+        this.emit('navigate', {
+          event: {
+            type: 'reload-page',
+            eventId: uuid(),
+            timestamp: Date.now(),
+            tab: this.#id,
+            url: data.frame.url,
+          },
+        })
+
+        this.#reset()
+
+        return
+      }
+
+      const source = toNavigationSource(this.#startedNavigation)
+
+      if (source === null) {
+        this.#reset()
+
+        return
+      }
+
+      this.emit('navigate', {
+        event: {
+          type: 'navigate-to-page',
+          eventId: uuid(),
+          timestamp: Date.now(),
+          source,
+          url: data.frame.url,
+          tab: this.#id,
+        },
+      })
+
+      this.#reset()
+    })
+
+    this.#client.page.on('frameStoppedLoading', ({ data }) => {
+      if (data.frameId !== this.#id) {
+        return
+      }
+
+      this.#reset()
+    })
+  }
+
+  async attach(script: string) {
+    await this.#client.page.enable()
+    await this.#client.page.setBypassCSP(true)
+
+    await this.#client.page.addScriptToEvaluateOnNewDocument(
+      `window.__K6_STUDIO_TAB_ID__ = "${this.#id}";`,
+      undefined,
+      undefined,
+      true
+    )
+
+    await this.#client.page.addScriptToEvaluateOnNewDocument(
+      script,
+      undefined,
+      undefined,
+      true
+    )
+
+    await this.#client.runtime.runIfWaitingForDebugger()
+
+    return this
+  }
+
+  #reset() {
+    this.#requestedNavigation = null
+    this.#startedNavigation = null
+  }
+
+  /**
+   * Convencience method to log page events for debugging purposes
+   */
+  #trace() {
+    const events: Array<keyof CdpPage.EventMap> = [
+      'frameRequestedNavigation',
+      'frameStartedNavigating',
+      'frameNavigated',
+      'frameStartedLoading',
+      'frameStoppedLoading',
+    ]
+
+    for (const eventName of events) {
+      this.#client.page.on(eventName, ({ data }) => {
+        console.log(eventName, data)
+      })
+    }
+  }
+}
+
+async function connectToDebugger(port: number): Promise<BrowserSession> {
   const script = await readResource('browser-script')
 
   const transport = await WebSocketTransport.connect({
@@ -95,83 +350,7 @@ async function connectToDebugger(port: number): Promise<ChromeDevToolsClient> {
 
   const client = new ChromeDevToolsClient(transport)
 
-  client.target.on('attachedToTarget', async ({ data }) => {
-    if (data.targetInfo.type !== 'page') {
-      return
-    }
-
-    console.log('Target attached: ', data)
-
-    try {
-      const pageFrameId = data.targetInfo.targetId
-
-      const sessionClient = client.withSession(data.sessionId)
-
-      await sessionClient.page.enable()
-
-      await sessionClient.page.addScriptToEvaluateOnNewDocument(
-        script,
-        undefined,
-        undefined,
-        true
-      )
-
-      sessionClient.page.on('frameRequestedNavigation', ({ data }) => {
-        if (pageFrameId !== data.frameId) {
-          return
-        }
-
-        console.log('frameRequestedNavigation: ', data)
-      })
-
-      sessionClient.page.on('frameNavigated', ({ data }) => {
-        if (pageFrameId !== data.frame.id) {
-          return
-        }
-
-        console.log('frameNavigated: ', data)
-      })
-
-      sessionClient.page.on('frameStartedNavigating', ({ data }) => {
-        if (pageFrameId !== data.frameId) {
-          return
-        }
-
-        console.log('frameStartedNavigating: ', data)
-      })
-
-      sessionClient.page.on('frameStartedLoading', ({ data }) => {
-        if (pageFrameId !== data.frameId) {
-          return
-        }
-
-        console.log('frameStartedLoading: ', data)
-      })
-
-      sessionClient.page.on('frameStoppedLoading', ({ data }) => {
-        if (pageFrameId !== data.frameId) {
-          return
-        }
-
-        console.log('frameStoppedLoading: ', data)
-      })
-
-      await sessionClient.runtime.runIfWaitingForDebugger()
-    } catch (error) {
-      console.error('Failed to initialize page session: ', error)
-    }
-  })
-
-  client.target.on('detachedFromTarget', ({ data }) => {
-    console.log('Target detached: ', data)
-  })
-
-  await client.target.setAutoAttach(true, true, true, [
-    { type: 'page', exclude: false },
-    { exclude: true },
-  ])
-
-  return client
+  return new BrowserSession(client, script).attach()
 }
 
 export async function launchBrowserWithDevToolsProtocol(
@@ -208,10 +387,10 @@ export async function launchBrowserWithDevToolsProtocol(
       state = 'spawned'
 
       connectToDebugger(DEBUGGER_PORT)
-        .then(() => {
+        .then((session) => {
           state = 'ready'
 
-          resolve(new CDPRecordingSession(process, server))
+          resolve(new CDPRecordingSession(process, server, session))
         })
         .catch((error) => {
           process.kill()

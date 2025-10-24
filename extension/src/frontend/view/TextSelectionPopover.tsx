@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 
 import { uuid } from '@/utils/uuid'
 
+import { getTabId } from '../utils'
+
 import { ElementPopover } from './ElementInspector/ElementPopover'
 import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertionEditor'
 import { TextAssertionData } from './ElementInspector/assertions/types'
@@ -91,7 +93,7 @@ export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
           eventId: uuid(),
           timestamp: Date.now(),
           type: 'assert',
-          tab: '',
+          tab: getTabId(),
           selector: {
             css: assertion.selector,
           },

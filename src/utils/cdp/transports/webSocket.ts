@@ -193,4 +193,8 @@ export class WebSocketTransport implements Transport {
   off(event: string, listener: (event: ChromeEvent<unknown>) => void): void {
     return this.#events.off(event, listener)
   }
+
+  dispose(): void {
+    this.#ws.close()
+  }
 }

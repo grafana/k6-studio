@@ -13,6 +13,7 @@ export interface Transport {
   call<Return>(command: ChromeCommand): Promise<Return>
   on(event: string, listener: ChromeEventListener): DisposeFn
   off(event: string, listener: ChromeEventListener): void
+  dispose(): void
 }
 export interface ChromeCommand {
   id: number
@@ -181,7 +182,7 @@ export namespace Animation {
     playbackRate: number
     startTime: number
     currentTime: number
-    type: string
+    type: 'CSSTransition' | 'CSSAnimation' | 'WebAnimation'
     source?: AnimationEffect
     cssId?: string
     viewOrScrollTimeline?: ViewOrScrollTimeline
@@ -885,7 +886,7 @@ export namespace Browser {
     guid: string
     totalBytes: number
     receivedBytes: number
-    state: string
+    state: 'inProgress' | 'completed' | 'canceled'
     filePath: string
   }
   export interface EventMap {
@@ -1005,7 +1006,7 @@ export namespace CSS {
   }
   export type CSSMedia = {
     text: string
-    source: string
+    source: 'mediaRule' | 'importRule' | 'linkedSheet' | 'inlineSheet'
     sourceURL?: string
     range?: SourceRange
     styleSheetId?: StyleSheetId
@@ -1799,13 +1800,20 @@ export namespace Emulation {
     right?: number
     rightMax?: number
   }
-  export type ScreenOrientation = { type: string; angle: number }
+  export type ScreenOrientation = {
+    type:
+      | 'portraitPrimary'
+      | 'portraitSecondary'
+      | 'landscapePrimary'
+      | 'landscapeSecondary'
+    angle: number
+  }
   export type DisplayFeature = {
-    orientation: string
+    orientation: 'vertical' | 'horizontal'
     offset: number
     maskLength: number
   }
-  export type DevicePosture = { type: string }
+  export type DevicePosture = { type: 'continuous' | 'folded' }
   export type MediaFeature = { name: string; value: string }
   export type VirtualTimePolicy =
     | 'advance'
@@ -1871,7 +1879,7 @@ export namespace Emulation {
 }
 export namespace HeadlessExperimental {
   export type ScreenshotParams = {
-    format?: string
+    format?: 'jpeg' | 'png' | 'webp'
     quality?: number
     optimizeForSpeed?: boolean
   }
@@ -1931,7 +1939,7 @@ export namespace IndexedDB {
     multiEntry: boolean
   }
   export type Key = {
-    type: string
+    type: 'number' | 'string' | 'date' | 'array'
     number?: number
     string?: string
     date?: number
@@ -1948,7 +1956,11 @@ export namespace IndexedDB {
     primaryKey: Runtime.RemoteObject
     value: Runtime.RemoteObject
   }
-  export type KeyPath = { type: string; string?: string; array?: string[] }
+  export type KeyPath = {
+    type: 'null' | 'string' | 'array'
+    string?: string
+    array?: string[]
+  }
   export interface RequestDataResult {
     objectStoreDataEntries: DataEntry[]
     hasMore: boolean
@@ -2020,7 +2032,10 @@ export namespace Inspector {
 export namespace LayerTree {
   export type LayerId = string
   export type SnapshotId = string
-  export type ScrollRect = { rect: DOM.Rect; type: string }
+  export type ScrollRect = {
+    rect: DOM.Rect
+    type: 'RepaintsOnScroll' | 'TouchEventHandler' | 'WheelEventHandler'
+  }
   export type StickyPositionConstraint = {
     stickyBoxRect: DOM.Rect
     containingBlockRect: DOM.Rect
@@ -2080,10 +2095,23 @@ export namespace LayerTree {
 }
 export namespace Log {
   export type LogEntry = {
-    source: string
-    level: string
+    source:
+      | 'xml'
+      | 'javascript'
+      | 'network'
+      | 'storage'
+      | 'appcache'
+      | 'rendering'
+      | 'security'
+      | 'deprecation'
+      | 'worker'
+      | 'violation'
+      | 'intervention'
+      | 'recommendation'
+      | 'other'
+    level: 'verbose' | 'info' | 'warning' | 'error'
     text: string
-    category?: string
+    category?: 'cors'
     timestamp: Runtime.Timestamp
     url?: string
     lineNumber?: number
@@ -2092,7 +2120,17 @@ export namespace Log {
     workerId?: string
     args?: Runtime.RemoteObject[]
   }
-  export type ViolationSetting = { name: string; threshold: number }
+  export type ViolationSetting = {
+    name:
+      | 'longTask'
+      | 'longLayout'
+      | 'blockedEvent'
+      | 'blockedParser'
+      | 'discouragedAPIUse'
+      | 'handler'
+      | 'recurringHandler'
+    threshold: number
+  }
   export interface EntryAddedEvent {
     entry: LogEntry
   }
@@ -2231,7 +2269,15 @@ export namespace Network {
     postDataEntries?: PostDataEntry[]
     mixedContentType?: Security.MixedContentType
     initialPriority: ResourcePriority
-    referrerPolicy: string
+    referrerPolicy:
+      | 'unsafe-url'
+      | 'no-referrer-when-downgrade'
+      | 'no-referrer'
+      | 'origin'
+      | 'origin-when-cross-origin'
+      | 'same-origin'
+      | 'strict-origin'
+      | 'strict-origin-when-cross-origin'
     isLinkPreload?: boolean
     trustTokenParams?: TrustTokenParams
     isSameSite?: boolean
@@ -2331,7 +2377,7 @@ export namespace Network {
     | 'network'
   export type TrustTokenParams = {
     operation: TrustTokenOperationType
-    refreshPolicy: string
+    refreshPolicy: 'UseCached' | 'Refresh'
     issuers?: string[]
   }
   export type TrustTokenOperationType = 'Issuance' | 'Redemption' | 'Signing'
@@ -2405,7 +2451,13 @@ export namespace Network {
     bodySize: number
   }
   export type Initiator = {
-    type: string
+    type:
+      | 'parser'
+      | 'script'
+      | 'preload'
+      | 'SignedExchange'
+      | 'preflight'
+      | 'other'
     stack?: Runtime.StackTrace
     url?: string
     lineNumber?: number
@@ -2521,13 +2573,13 @@ export namespace Network {
     partitionKey?: CookiePartitionKey
   }
   export type AuthChallenge = {
-    source?: string
+    source?: 'Server' | 'Proxy'
     origin: string
     scheme: string
     realm: string
   }
   export type AuthChallengeResponse = {
-    response: string
+    response: 'Default' | 'CancelAuth' | 'ProvideCredentials'
     username?: string
     password?: string
   }
@@ -2941,7 +2993,20 @@ export namespace Network {
     headers: Headers
   }
   export interface TrustTokenOperationDoneEvent {
-    status: string
+    status:
+      | 'Ok'
+      | 'InvalidArgument'
+      | 'MissingIssuerKeys'
+      | 'FailedPrecondition'
+      | 'ResourceExhausted'
+      | 'AlreadyExists'
+      | 'ResourceLimited'
+      | 'Unauthorized'
+      | 'BadResponse'
+      | 'InternalError'
+      | 'UnknownError'
+      | 'FulfilledLocally'
+      | 'SiteIssuerLimit'
     type: TrustTokenOperationType
     requestId: RequestId
     topLevelOrigin: string
@@ -3067,7 +3132,7 @@ export namespace Overlay {
     baseSizeBorder?: LineStyle
     flexibilityArrow?: LineStyle
   }
-  export type LineStyle = { color?: DOM.RGBA; pattern?: string }
+  export type LineStyle = { color?: DOM.RGBA; pattern?: 'dashed' | 'dotted' }
   export type BoxStyle = { fillColor?: DOM.RGBA; hatchColor?: DOM.RGBA }
   export type ContrastAlgorithm = 'aa' | 'aaa' | 'apca'
   export type HighlightConfig = {
@@ -3801,7 +3866,7 @@ export namespace Page {
   }
   export interface FileChooserOpenedEvent {
     frameId: FrameId
-    mode: string
+    mode: 'selectSingle' | 'selectMultiple'
     backendNodeId: DOM.BackendNodeId
   }
   export interface FrameAttachedEvent {
@@ -3814,7 +3879,7 @@ export namespace Page {
   }
   export interface FrameDetachedEvent {
     frameId: FrameId
-    reason: string
+    reason: 'remove' | 'swap'
   }
   export interface FrameSubtreeWillBeDetachedEvent {
     frameId: FrameId
@@ -3831,7 +3896,15 @@ export namespace Page {
     frameId: FrameId
     url: string
     loaderId: Network.LoaderId
-    navigationType: string
+    navigationType:
+      | 'reload'
+      | 'reloadBypassingCache'
+      | 'restore'
+      | 'restoreWithPost'
+      | 'historySameDocument'
+      | 'historyDifferentDocument'
+      | 'sameDocument'
+      | 'differentDocument'
   }
   export interface FrameRequestedNavigationEvent {
     frameId: FrameId
@@ -3861,7 +3934,7 @@ export namespace Page {
     guid: string
     totalBytes: number
     receivedBytes: number
-    state: string
+    state: 'inProgress' | 'completed' | 'canceled'
   }
   export interface InterstitialHiddenEvent {}
   export interface InterstitialShownEvent {}
@@ -3896,7 +3969,7 @@ export namespace Page {
   export interface NavigatedWithinDocumentEvent {
     frameId: FrameId
     url: string
-    navigationType: string
+    navigationType: 'fragment' | 'historyApi' | 'other'
   }
   export interface ScreencastFrameEvent {
     data: string
@@ -4711,7 +4784,11 @@ export namespace Tethering {
 export namespace Tracing {
   export type MemoryDumpConfig = Record<string, unknown>
   export type TraceConfig = {
-    recordMode?: string
+    recordMode?:
+      | 'recordUntilFull'
+      | 'recordContinuously'
+      | 'recordAsMuchAsPossible'
+      | 'echoToConsole'
     traceBufferSizeInKb?: number
     enableSampling?: boolean
     enableSystrace?: boolean
@@ -4762,13 +4839,13 @@ export namespace Fetch {
   }
   export type HeaderEntry = { name: string; value: string }
   export type AuthChallenge = {
-    source?: string
+    source?: 'Server' | 'Proxy'
     origin: string
     scheme: string
     realm: string
   }
   export type AuthChallengeResponse = {
-    response: string
+    response: 'Default' | 'CancelAuth' | 'ProvideCredentials'
     username?: string
     password?: string
   }
@@ -5000,7 +5077,10 @@ export namespace WebAuthn {
 export namespace Media {
   export type PlayerId = string
   export type Timestamp = number
-  export type PlayerMessage = { level: string; message: string }
+  export type PlayerMessage = {
+    level: 'error' | 'warning' | 'info' | 'debug'
+    message: string
+  }
   export type PlayerProperty = { name: string; value: string }
   export type PlayerEvent = { timestamp: Timestamp; value: string }
   export type PlayerErrorSourceLocation = { file: string; line: number }
@@ -5370,8 +5450,19 @@ export namespace BluetoothEmulation {
 }
 export namespace Console {
   export type ConsoleMessage = {
-    source: string
-    level: string
+    source:
+      | 'xml'
+      | 'javascript'
+      | 'network'
+      | 'console-api'
+      | 'storage'
+      | 'appcache'
+      | 'rendering'
+      | 'security'
+      | 'other'
+      | 'deprecation'
+      | 'worker'
+    level: 'log' | 'warning' | 'error' | 'debug' | 'info'
     text: string
     url?: string
     line?: number
@@ -5410,7 +5501,17 @@ export namespace Debugger {
     canBeRestarted?: boolean
   }
   export type Scope = {
-    type: string
+    type:
+      | 'global'
+      | 'local'
+      | 'with'
+      | 'closure'
+      | 'catch'
+      | 'block'
+      | 'script'
+      | 'eval'
+      | 'module'
+      | 'wasm-expression-stack'
     object: Runtime.RemoteObject
     name?: string
     startLocation?: Location
@@ -5421,14 +5522,17 @@ export namespace Debugger {
     scriptId: Runtime.ScriptId
     lineNumber: number
     columnNumber?: number
-    type?: string
+    type?: 'debuggerStatement' | 'call' | 'return'
   }
   export type WasmDisassemblyChunk = {
     lines: string[]
     bytecodeOffsets: number[]
   }
   export type ScriptLanguage = 'JavaScript' | 'WebAssembly'
-  export type DebugSymbols = { type: string; externalURL?: string }
+  export type DebugSymbols = {
+    type: 'SourceMap' | 'EmbeddedDWARF' | 'ExternalDWARF'
+    externalURL?: string
+  }
   export type ResolvedBreakpoint = {
     breakpointId: BreakpointId
     location: Location
@@ -5489,7 +5593,12 @@ export namespace Debugger {
     stackChanged: boolean
     asyncStackTrace: Runtime.StackTrace
     asyncStackTraceId: Runtime.StackTraceId
-    status: string
+    status:
+      | 'Ok'
+      | 'CompileError'
+      | 'BlockedByActiveGenerator'
+      | 'BlockedByActiveFunction'
+      | 'BlockedByTopLevelEsModuleChange'
     exceptionDetails: Runtime.ExceptionDetails
   }
   export interface BreakpointResolvedEvent {
@@ -5498,7 +5607,20 @@ export namespace Debugger {
   }
   export interface PausedEvent {
     callFrames: CallFrame[]
-    reason: string
+    reason:
+      | 'ambiguous'
+      | 'assert'
+      | 'CSPViolation'
+      | 'debugCommand'
+      | 'DOM'
+      | 'EventListener'
+      | 'exception'
+      | 'instrumentation'
+      | 'OOM'
+      | 'other'
+      | 'promiseRejection'
+      | 'XHR'
+      | 'step'
     data: Record<string, unknown>
     hitBreakpoints: string[]
     asyncStackTrace: Runtime.StackTrace
@@ -5680,12 +5802,36 @@ export namespace Profiler {
 export namespace Runtime {
   export type ScriptId = string
   export type SerializationOptions = {
-    serialization: string
+    serialization: 'deep' | 'json' | 'idOnly'
     maxDepth?: number
     additionalParameters?: Record<string, unknown>
   }
   export type DeepSerializedValue = {
-    type: string
+    type:
+      | 'undefined'
+      | 'null'
+      | 'string'
+      | 'number'
+      | 'boolean'
+      | 'bigint'
+      | 'regexp'
+      | 'date'
+      | 'symbol'
+      | 'array'
+      | 'object'
+      | 'function'
+      | 'map'
+      | 'set'
+      | 'weakmap'
+      | 'weakset'
+      | 'error'
+      | 'proxy'
+      | 'promise'
+      | 'typedarray'
+      | 'arraybuffer'
+      | 'node'
+      | 'window'
+      | 'generator'
     value?: unknown
     objectId?: string
     weakLocalObjectReference?: number
@@ -5693,8 +5839,35 @@ export namespace Runtime {
   export type RemoteObjectId = string
   export type UnserializableValue = string
   export type RemoteObject = {
-    type: string
-    subtype?: string
+    type:
+      | 'object'
+      | 'function'
+      | 'undefined'
+      | 'string'
+      | 'number'
+      | 'boolean'
+      | 'symbol'
+      | 'bigint'
+    subtype?:
+      | 'array'
+      | 'null'
+      | 'node'
+      | 'regexp'
+      | 'date'
+      | 'map'
+      | 'set'
+      | 'weakmap'
+      | 'weakset'
+      | 'iterator'
+      | 'generator'
+      | 'error'
+      | 'proxy'
+      | 'promise'
+      | 'typedarray'
+      | 'arraybuffer'
+      | 'dataview'
+      | 'webassemblymemory'
+      | 'wasmvalue'
     className?: string
     value?: unknown
     unserializableValue?: UnserializableValue
@@ -5706,8 +5879,35 @@ export namespace Runtime {
   }
   export type CustomPreview = { header: string; bodyGetterId?: RemoteObjectId }
   export type ObjectPreview = {
-    type: string
-    subtype?: string
+    type:
+      | 'object'
+      | 'function'
+      | 'undefined'
+      | 'string'
+      | 'number'
+      | 'boolean'
+      | 'symbol'
+      | 'bigint'
+    subtype?:
+      | 'array'
+      | 'null'
+      | 'node'
+      | 'regexp'
+      | 'date'
+      | 'map'
+      | 'set'
+      | 'weakmap'
+      | 'weakset'
+      | 'iterator'
+      | 'generator'
+      | 'error'
+      | 'proxy'
+      | 'promise'
+      | 'typedarray'
+      | 'arraybuffer'
+      | 'dataview'
+      | 'webassemblymemory'
+      | 'wasmvalue'
     description?: string
     overflow: boolean
     properties: PropertyPreview[]
@@ -5715,10 +5915,38 @@ export namespace Runtime {
   }
   export type PropertyPreview = {
     name: string
-    type: string
+    type:
+      | 'object'
+      | 'function'
+      | 'undefined'
+      | 'string'
+      | 'number'
+      | 'boolean'
+      | 'symbol'
+      | 'accessor'
+      | 'bigint'
     value?: string
     valuePreview?: ObjectPreview
-    subtype?: string
+    subtype?:
+      | 'array'
+      | 'null'
+      | 'node'
+      | 'regexp'
+      | 'date'
+      | 'map'
+      | 'set'
+      | 'weakmap'
+      | 'weakset'
+      | 'iterator'
+      | 'generator'
+      | 'error'
+      | 'proxy'
+      | 'promise'
+      | 'typedarray'
+      | 'arraybuffer'
+      | 'dataview'
+      | 'webassemblymemory'
+      | 'wasmvalue'
   }
   export type EntryPreview = { key?: ObjectPreview; value: ObjectPreview }
   export type PropertyDescriptor = {
@@ -5835,7 +6063,25 @@ export namespace Runtime {
     executionContextId: ExecutionContextId
   }
   export interface ConsoleAPICalledEvent {
-    type: string
+    type:
+      | 'log'
+      | 'debug'
+      | 'info'
+      | 'error'
+      | 'warning'
+      | 'dir'
+      | 'dirxml'
+      | 'table'
+      | 'trace'
+      | 'clear'
+      | 'startGroup'
+      | 'startGroupCollapsed'
+      | 'endGroup'
+      | 'assert'
+      | 'profile'
+      | 'profileEnd'
+      | 'count'
+      | 'timeEnd'
     args: RemoteObject[]
     executionContextId: ExecutionContextId
     timestamp: Timestamp
@@ -6165,7 +6411,7 @@ class AuditsClient {
   }
   getEncodedResponse(
     requestId: Network.RequestId,
-    encoding: string,
+    encoding: 'webp' | 'jpeg' | 'png',
     quality?: number,
     sizeOnly?: boolean
   ): Promise<Audits.GetEncodedResponseResult> {
@@ -6523,7 +6769,7 @@ class BrowserClient {
     })
   }
   setDownloadBehavior(
-    behavior: string,
+    behavior: 'deny' | 'allow' | 'allowAndName' | 'default',
     browserContextId?: Browser.BrowserContextID,
     downloadPath?: string,
     eventsEnabled?: boolean
@@ -7389,7 +7635,7 @@ class DOMClient {
       params: { searchId: searchId },
     })
   }
-  enable(includeWhitespace?: string): Promise<void> {
+  enable(includeWhitespace?: 'none' | 'all'): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -7661,7 +7907,7 @@ class DOMClient {
   }
   getElementByRelation(
     nodeId: DOM.NodeId,
-    relation: string
+    relation: 'PopoverTarget' | 'InterestTarget' | 'CommandFor'
   ): Promise<DOM.GetElementByRelationResult> {
     return this.transport.call<DOM.GetElementByRelationResult>({
       id: generateId(),
@@ -8439,7 +8685,7 @@ class EmulationClient {
   }
   setEmitTouchEventsForMouse(
     enabled: boolean,
-    configuration?: string
+    configuration?: 'mobile' | 'desktop'
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
@@ -8459,7 +8705,16 @@ class EmulationClient {
       params: { media: media, features: features },
     })
   }
-  setEmulatedVisionDeficiency(type: string): Promise<void> {
+  setEmulatedVisionDeficiency(
+    type:
+      | 'none'
+      | 'blurredVision'
+      | 'reducedContrast'
+      | 'achromatopsia'
+      | 'deuteranopia'
+      | 'protanopia'
+      | 'tritanopia'
+  ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -9028,7 +9283,7 @@ class InputClient {
     this.listeners = new WeakMap()
   }
   dispatchDragEvent(
-    type: string,
+    type: 'dragEnter' | 'dragOver' | 'drop' | 'dragCancel',
     x: number,
     y: number,
     data: Input.DragData,
@@ -9042,7 +9297,7 @@ class InputClient {
     })
   }
   dispatchKeyEvent(
-    type: string,
+    type: 'keyDown' | 'keyUp' | 'rawKeyDown' | 'char',
     modifiers?: number,
     timestamp?: Input.TimeSinceEpoch,
     text?: string,
@@ -9110,7 +9365,7 @@ class InputClient {
     })
   }
   dispatchMouseEvent(
-    type: string,
+    type: 'mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel',
     x: number,
     y: number,
     modifiers?: number,
@@ -9125,7 +9380,7 @@ class InputClient {
     twist?: number,
     deltaX?: number,
     deltaY?: number,
-    pointerType?: string
+    pointerType?: 'mouse' | 'pen'
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
@@ -9152,7 +9407,7 @@ class InputClient {
     })
   }
   dispatchTouchEvent(
-    type: string,
+    type: 'touchStart' | 'touchEnd' | 'touchMove' | 'touchCancel',
     touchPoints: Input.TouchPoint[],
     modifiers?: number,
     timestamp?: Input.TimeSinceEpoch
@@ -9178,7 +9433,7 @@ class InputClient {
     })
   }
   emulateTouchFromMouseEvent(
-    type: string,
+    type: 'mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel',
     x: number,
     y: number,
     button: Input.MouseButton,
@@ -10563,7 +10818,7 @@ class PageClient {
     })
   }
   captureScreenshot(
-    format?: string,
+    format?: 'jpeg' | 'png' | 'webp',
     quality?: number,
     clip?: Page.Viewport,
     fromSurface?: boolean,
@@ -10584,7 +10839,7 @@ class PageClient {
       },
     })
   }
-  captureSnapshot(format?: string): Promise<Page.CaptureSnapshotResult> {
+  captureSnapshot(format?: 'mhtml'): Promise<Page.CaptureSnapshotResult> {
     return this.transport.call<Page.CaptureSnapshotResult>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -10800,7 +11055,7 @@ class PageClient {
     headerTemplate?: string,
     footerTemplate?: string,
     preferCSSPageSize?: boolean,
-    transferMode?: string,
+    transferMode?: 'ReturnAsBase64' | 'ReturnAsStream',
     generateTaggedPDF?: boolean,
     generateDocumentOutline?: boolean
   ): Promise<Page.PrintToPDFResult> {
@@ -11000,7 +11255,10 @@ class PageClient {
       params: { frameId: frameId, html: html },
     })
   }
-  setDownloadBehavior(behavior: string, downloadPath?: string): Promise<void> {
+  setDownloadBehavior(
+    behavior: 'deny' | 'allow' | 'default',
+    downloadPath?: string
+  ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -11030,7 +11288,7 @@ class PageClient {
   }
   setTouchEmulationEnabled(
     enabled: boolean,
-    configuration?: string
+    configuration?: 'mobile' | 'desktop'
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
@@ -11040,7 +11298,7 @@ class PageClient {
     })
   }
   startScreencast(
-    format?: string,
+    format?: 'jpeg' | 'png',
     quality?: number,
     maxWidth?: number,
     maxHeight?: number,
@@ -11083,7 +11341,7 @@ class PageClient {
       params: {},
     })
   }
-  setWebLifecycleState(state: string): Promise<void> {
+  setWebLifecycleState(state: 'frozen' | 'active'): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -11221,7 +11479,7 @@ class PerformanceClient {
       params: {},
     })
   }
-  enable(timeDomain?: string): Promise<void> {
+  enable(timeDomain?: 'timeTicks' | 'threadTicks'): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -11229,7 +11487,7 @@ class PerformanceClient {
       params: { timeDomain: timeDomain },
     })
   }
-  setTimeDomain(timeDomain: string): Promise<void> {
+  setTimeDomain(timeDomain: 'timeTicks' | 'threadTicks'): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -12353,7 +12611,7 @@ class TracingClient {
     categories?: string,
     options?: string,
     bufferUsageReportingInterval?: number,
-    transferMode?: string,
+    transferMode?: 'ReportEvents' | 'ReturnAsStream',
     streamFormat?: Tracing.StreamFormat,
     streamCompression?: Tracing.StreamCompression,
     traceConfig?: Tracing.TraceConfig,
@@ -13498,7 +13756,7 @@ class DebuggerClient {
   }
   continueToLocation(
     location: Debugger.Location,
-    targetCallFrames?: string
+    targetCallFrames?: 'any' | 'current'
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
@@ -13643,7 +13901,7 @@ class DebuggerClient {
   }
   restartFrame(
     callFrameId: Debugger.CallFrameId,
-    mode?: string
+    mode?: 'StepInto'
   ): Promise<Debugger.RestartFrameResult> {
     return this.transport.call<Debugger.RestartFrameResult>({
       id: generateId(),
@@ -13728,7 +13986,9 @@ class DebuggerClient {
     })
   }
   setInstrumentationBreakpoint(
-    instrumentation: string
+    instrumentation:
+      | 'beforeScriptExecution'
+      | 'beforeScriptWithSourceMapExecution'
   ): Promise<Debugger.SetInstrumentationBreakpointResult> {
     return this.transport.call<Debugger.SetInstrumentationBreakpointResult>({
       id: generateId(),
@@ -13778,7 +14038,9 @@ class DebuggerClient {
       params: { active: active },
     })
   }
-  setPauseOnExceptions(state: string): Promise<void> {
+  setPauseOnExceptions(
+    state: 'none' | 'caught' | 'uncaught' | 'all'
+  ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -14699,5 +14961,8 @@ export class ChromeDevToolsClient {
   }
   withSession(sessionId: Target.SessionID) {
     return new ChromeDevToolsClient(this.transport, sessionId)
+  }
+  dispose() {
+    this.transport.dispose()
   }
 }

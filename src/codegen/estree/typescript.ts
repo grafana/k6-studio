@@ -1,6 +1,6 @@
 import { TSESTree as ts } from '@typescript-eslint/types'
 
-import { identifier } from './expressions'
+import { identifier, string } from './expressions'
 import { baseProps, NodeType } from './nodes'
 
 export type TypeConstructor<Params extends Record<string, ts.TypeNode>> =
@@ -193,7 +193,15 @@ export const t = {
       type: NodeType.TSUndefinedKeyword,
     }
   },
-  string(): ts.TSStringKeyword {
+  string(literal?: string): ts.TSStringKeyword | ts.TSLiteralType {
+    if (literal !== undefined) {
+      return {
+        ...baseProps,
+        type: NodeType.TSLiteralType,
+        literal: string(literal),
+      }
+    }
+
     return {
       ...baseProps,
       type: NodeType.TSStringKeyword,

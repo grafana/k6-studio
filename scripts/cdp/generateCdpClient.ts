@@ -43,6 +43,8 @@ const BASE_DEFINITIONS = parse(`
  
     on(event: string, listener: ChromeEventListener): DisposeFn
     off(event: string, listener: ChromeEventListener): void
+
+    dispose(): void
   } 
 
   export interface ChromeCommand {
@@ -109,6 +111,10 @@ function escape(name: string): string {
   }
 }
 
+/**
+ * Takes a potentially qualified name (e.g. Page.Frame) and creates a type reference. If a domain is provided
+ * it is used as a fallback for unqualified names (e.g. Frame with domain Page becomes Page.Frame).
+ */
 function toQualifiedName(
   name: string,
   domain: string | undefined
@@ -179,6 +185,10 @@ function toTypeWithRef(
 
   if (property.type === 'object') {
     return t.record(t.string(), t.unknown())
+  }
+
+  if (property.type === 'string' && property.enum !== undefined) {
+    return t.union(property.enum.map((literal) => t.string(literal)))
   }
 
   return toPrimitiveType(property.type)
@@ -624,6 +634,14 @@ async function generate() {
             .new([self.transport, params.sessionId])
             .returned(),
         ])
+    })
+    .method('dispose', (b, self) => {
+      return b.body(() => [
+        new ExpressionBuilder(self.transport)
+          .member('dispose')
+          .call([])
+          .statement(),
+      ])
     })
     .declare(CLIENT_CLASS_NAME)
 
