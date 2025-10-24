@@ -9,6 +9,7 @@ export interface RecordEvent {
 }
 
 type BrowserExtensionServerEvents = {
+  load: EmptyObject
   stop: EmptyObject
   record: RecordEvent
 }
@@ -21,7 +22,11 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
 
     this.#client = new BrowserExtensionClient('studio-server', transport)
 
-    this.#client.on('events-recorded', (event) => {
+    this.#client.on('load-events', () => {
+      this.emit('load', {})
+    })
+
+    this.#client.on('record-events', (event) => {
       this.emit('record', {
         events: event.data.events,
       })

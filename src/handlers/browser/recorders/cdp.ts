@@ -1,5 +1,6 @@
 import { ChildProcess, spawn } from 'child_process'
 
+import { BrowserEvent } from '@/schemas/recording'
 import { BrowserServer } from '@/services/browser/server'
 import { ChromeDevToolsClient } from '@/utils/cdp/client'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
@@ -24,6 +25,8 @@ class CDPRecordingSession
   extends EventEmitter<RecordingSessionEventMap>
   implements RecordingSession
 {
+  #events: BrowserEvent[] = []
+
   #process: ChildProcess
   #server: BrowserServer
 
@@ -44,13 +47,43 @@ class CDPRecordingSession
 
       this.#server.stop()
     })
+
+    this.#server.on('record', (event) => {
+      this.#events.push(...event.events)
+
+      this.#server.send({
+        type: 'events-recorded',
+        events: event.events,
+      })
+
+      this.emit('record', event)
+    })
+
+    this.#server.on('stop', () => {
+      this.stop()
+    })
+
+    this.#server.on('load', () => {
+      this.#server.send({
+        type: 'events-loaded',
+        events: this.#events,
+      })
+    })
   }
 
-  highlightElement(_selector: HighlightSelector | null): void {}
+  highlightElement(selector: HighlightSelector | null): void {
+    this.#server.send({
+      type: 'highlight-elements',
+      selector,
+    })
+  }
 
   navigateTo(_url: string): void {}
 
-  stop(): void {}
+  stop(): void {
+    this.#process.kill()
+    this.#server.stop()
+  }
 }
 
 async function connectToDebugger(port: number): Promise<ChromeDevToolsClient> {
@@ -67,10 +100,15 @@ async function connectToDebugger(port: number): Promise<ChromeDevToolsClient> {
       return
     }
 
+    console.log('Target attached: ', data)
+
     try {
+      const pageFrameId = data.targetInfo.targetId
+
       const sessionClient = client.withSession(data.sessionId)
 
       await sessionClient.page.enable()
+
       await sessionClient.page.addScriptToEvaluateOnNewDocument(
         script,
         undefined,
@@ -78,10 +116,54 @@ async function connectToDebugger(port: number): Promise<ChromeDevToolsClient> {
         true
       )
 
+      sessionClient.page.on('frameRequestedNavigation', ({ data }) => {
+        if (pageFrameId !== data.frameId) {
+          return
+        }
+
+        console.log('frameRequestedNavigation: ', data)
+      })
+
+      sessionClient.page.on('frameNavigated', ({ data }) => {
+        if (pageFrameId !== data.frame.id) {
+          return
+        }
+
+        console.log('frameNavigated: ', data)
+      })
+
+      sessionClient.page.on('frameStartedNavigating', ({ data }) => {
+        if (pageFrameId !== data.frameId) {
+          return
+        }
+
+        console.log('frameStartedNavigating: ', data)
+      })
+
+      sessionClient.page.on('frameStartedLoading', ({ data }) => {
+        if (pageFrameId !== data.frameId) {
+          return
+        }
+
+        console.log('frameStartedLoading: ', data)
+      })
+
+      sessionClient.page.on('frameStoppedLoading', ({ data }) => {
+        if (pageFrameId !== data.frameId) {
+          return
+        }
+
+        console.log('frameStoppedLoading: ', data)
+      })
+
       await sessionClient.runtime.runIfWaitingForDebugger()
     } catch (error) {
       console.error('Failed to initialize page session: ', error)
     }
+  })
+
+  client.target.on('detachedFromTarget', ({ data }) => {
+    console.log('Target detached: ', data)
   })
 
   await client.target.setAutoAttach(true, true, true, [
