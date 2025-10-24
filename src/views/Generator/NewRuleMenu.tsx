@@ -6,7 +6,11 @@ import { useGeneratorStore } from '@/store/generator'
 import { TestRule } from '@/types/rules'
 import { createEmptyRule } from '@/utils/rules'
 
-export function NewRuleMenu(props: ComponentProps<typeof Button>) {
+interface NewRuleMenuProps extends ComponentProps<typeof Button> {
+  text?: string
+}
+
+export function NewRuleMenu({ text = 'Add rule', ...props }: NewRuleMenuProps) {
   const addRule = useGeneratorStore((store) => store.addRule)
 
   const createRule = (type: TestRule['type']) => {
@@ -19,7 +23,7 @@ export function NewRuleMenu(props: ComponentProps<typeof Button>) {
       <DropdownMenu.Trigger>
         <Button variant="ghost" size="1" color="gray" {...props}>
           <CirclePlusIcon />
-          Add rule
+          {text}
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
