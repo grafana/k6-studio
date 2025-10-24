@@ -11,7 +11,19 @@ const mockRecording: Recording = {
     },
     entries: [
       {
+        startedDateTime: '2024-01-01T12:00:00.000Z',
+        time: 200,
+        cache: {},
+        timings: {
+          send: 20,
+          wait: 150,
+          receive: 30,
+        },
+
         request: {
+          httpVersion: 'HTTP/1.1',
+          cookies: [],
+          queryString: [],
           method: 'POST',
           url: 'http://quickpizza.grafana.com/login',
           headers: [
@@ -20,6 +32,8 @@ const mockRecording: Recording = {
               value: 'application/json',
             },
           ],
+          headersSize: 150,
+          bodySize: 45,
           postData: {
             mimeType: 'application/json',
             text: '{"user":"admin","password":"123"}',
