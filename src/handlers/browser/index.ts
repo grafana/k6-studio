@@ -39,6 +39,8 @@ export function initialize() {
 
         k6StudioState.currentRecordingSession.on('stop', () => {
           browserWindow.webContents.send(BrowserHandler.Closed)
+
+          k6StudioState.currentRecordingSession = null
         })
 
         console.info('browser started')

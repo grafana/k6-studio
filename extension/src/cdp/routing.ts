@@ -14,6 +14,7 @@ frontend.forward('navigate', [studio])
 frontend.forward('load-events', [studio])
 frontend.forward('stop-recording', [studio])
 frontend.forward('reload-extension', [studio])
+frontend.forward('focus-tab', [studio])
 
 studio.forward('events-recorded', [frontend])
 studio.forward('events-loaded', [frontend])

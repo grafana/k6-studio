@@ -12,6 +12,7 @@ type BrowserExtensionServerEvents = {
   load: EmptyObject
   stop: EmptyObject
   record: RecordEvent
+  focus: { tab: string }
 }
 
 export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
@@ -34,6 +35,10 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
 
     this.#client.on('stop-recording', () => {
       this.emit('stop', {})
+    })
+
+    this.#client.on('focus-tab', (event) => {
+      this.emit('focus', { tab: event.data.tab })
     })
   }
 

@@ -44,6 +44,11 @@ export const StopRecordingSchema = z.object({
   type: z.literal('stop-recording'),
 })
 
+export const FocusTabSchema = z.object({
+  type: z.literal('focus-tab'),
+  tab: z.string(),
+})
+
 export const ReloadExtensionSchema = z.object({
   type: z.literal('reload-extension'),
 })
@@ -57,6 +62,7 @@ export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   HighlightElementsSchema,
   NavigateSchema,
   StopRecordingSchema,
+  FocusTabSchema,
 
   ReloadExtensionSchema,
 ])
@@ -67,6 +73,8 @@ export type HighlightSelector = z.infer<typeof HighlightSelectorSchema>
 export type HighlightElements = z.infer<typeof HighlightElementsSchema>
 export type Navigate = z.infer<typeof NavigateSchema>
 export type StopRecording = z.infer<typeof StopRecordingSchema>
+export type FocusTab = z.infer<typeof FocusTabSchema>
+export type ReloadExtension = z.infer<typeof ReloadExtensionSchema>
 
 export type BrowserExtensionMessage = z.infer<
   typeof BrowserExtensionMessageSchema

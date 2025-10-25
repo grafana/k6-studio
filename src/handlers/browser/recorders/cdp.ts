@@ -63,6 +63,8 @@ class CDPRecordingSession
 {
   #events: BrowserEvent[] = []
 
+  #currentTab: string | null = null
+
   #process: ChildProcess
   #server: BrowserServer
   #session: BrowserSession
@@ -105,6 +107,10 @@ class CDPRecordingSession
       })
     })
 
+    this.#server.on('focus', ({ tab }) => {
+      this.#currentTab = tab
+    })
+
     this.#session.on('navigate', ({ event }) => {
       this.#record([event])
     })
@@ -117,11 +123,23 @@ class CDPRecordingSession
     })
   }
 
-  navigateTo(_url: string): void {}
+  navigateTo(url: string): void {
+    if (this.#currentTab === null) {
+      return
+    }
+
+    this.#session.getPage(this.#currentTab)?.navigateTo(url)
+  }
 
   stop(): void {
     this.#process.kill()
     this.#server.stop()
+  }
+
+  reloadScript() {
+    this.#session.reloadScript().catch((error) => {
+      logger.warn('Failed to reload browser script:', error)
+    })
   }
 
   #record(events: BrowserEvent[]) {
@@ -136,6 +154,65 @@ class CDPRecordingSession
   }
 }
 
+interface ScriptEventMap {
+  reload: EmptyObject
+}
+
+interface ScriptSession {
+  client: ChromeDevToolsClient
+  scriptId: string
+}
+
+class Script extends EventEmitter<ScriptEventMap> {
+  #content: string
+  #sessions: ScriptSession[] = []
+
+  constructor(content: string) {
+    super()
+
+    this.#content = content
+  }
+
+  async inject(client: ChromeDevToolsClient, runImmediately = true) {
+    const { identifier } = await client.page.addScriptToEvaluateOnNewDocument(
+      this.#content,
+      undefined,
+      undefined,
+      runImmediately
+    )
+
+    this.#sessions.push({
+      client,
+      scriptId: identifier,
+    })
+  }
+
+  async remove(client: ChromeDevToolsClient) {
+    const session = this.#sessions.find((s) => s.client === client)
+
+    if (session === undefined) {
+      return
+    }
+
+    await client.page.removeScriptToEvaluateOnNewDocument(session.scriptId)
+
+    this.#sessions = this.#sessions.filter((s) => s !== session)
+  }
+
+  async reload(newContent: string) {
+    this.#content = newContent
+
+    await Promise.allSettled(
+      this.#sessions.map(async (session) => {
+        await this.remove(session.client)
+        await this.inject(session.client, false)
+      })
+    )
+
+    this.emit('reload', {})
+  }
+}
+
 interface PageEventMap {
   navigate: {
     event: NavigateToPageEvent | ReloadPageEvent
@@ -144,11 +221,11 @@ interface PageEventMap {
 
 class BrowserSession extends EventEmitter<PageEventMap> {
   #client: ChromeDevToolsClient
-  #script: string
+  #script: Script
 
   #sessions = new Map<string, Page>()
 
-  constructor(client: ChromeDevToolsClient, script: string) {
+  constructor(client: ChromeDevToolsClient, script: Script) {
     super()
 
     this.#client = client
@@ -167,6 +244,16 @@ class BrowserSession extends EventEmitter<PageEventMap> {
     return this
   }
 
+  getPage(tabId: string) {
+    return this.#sessions.get(tabId)
+  }
+
+  async reloadScript() {
+    const newScript = await readResource('browser-script')
+
+    await this.#script.reload(newScript)
+  }
+
   #handleAttachedToTarget = async ({
     data,
   }: ChromeEvent<Target.AttachedToTargetEvent>) => {
@@ -176,22 +263,31 @@ class BrowserSession extends EventEmitter<PageEventMap> {
 
     const page = new Page(
       data.targetInfo.targetId,
-      this.#client.withSession(data.sessionId)
+      this.#client.withSession(data.sessionId),
+      this.#script
     )
 
     page.on('navigate', (ev) => {
       this.emit('navigate', ev)
     })
 
-    this.#sessions.set(data.sessionId, page)
+    this.#sessions.set(data.targetInfo.targetId, page)
 
-    await page.attach(this.#script)
+    await page.attach()
   }
 
   #handleDetachedFromTarget = ({
     data,
   }: ChromeEvent<Target.DetachedFromTargetEvent>) => {
-    this.#sessions.delete(data.sessionId)
+    const page = this.#sessions.get(data.targetId)
+
+    if (page === undefined) {
+      return
+    }
+
+    page.dispose()
+
+    this.#sessions.delete(data.targetId)
   }
 
   dispose() {
@@ -202,15 +298,17 @@ class BrowserSession extends EventEmitter<PageEventMap> {
 class Page extends EventEmitter<PageEventMap> {
   #id: string
   #client: ChromeDevToolsClient
+  #script: Script
 
   #requestedNavigation: CdpPage.FrameRequestedNavigationEvent | null = null
   #startedNavigation: CdpPage.FrameStartedNavigatingEvent | null = null
 
-  constructor(id: string, client: ChromeDevToolsClient) {
+  constructor(id: string, client: ChromeDevToolsClient, script: Script) {
     super()
 
     this.#id = id
     this.#client = client
+    this.#script = script
 
     this.#client.page.on('frameRequestedNavigation', ({ data }) => {
       if (data.frameId !== this.#id) {
@@ -291,9 +389,15 @@ class Page extends EventEmitter<PageEventMap> {
 
       this.#reset()
     })
+
+    this.#script.on('reload', () => {
+      this.#client.page.reload().catch((error) => {
+        logger.error('Failed to reload page:', error)
+      })
+    })
   }
 
-  async attach(script: string) {
+  async attach() {
     await this.#client.page.enable()
     await this.#client.page.setBypassCSP(true)
 
@@ -304,16 +408,17 @@ class Page extends EventEmitter<PageEventMap> {
       true
     )
 
-    await this.#client.page.addScriptToEvaluateOnNewDocument(
-      script,
-      undefined,
-      undefined,
-      true
-    )
+    await this.#script.inject(this.#client)
 
     await this.#client.runtime.runIfWaitingForDebugger()
 
     return this
+  }
+
+  navigateTo(url: string) {
+    this.#client.page.navigate(url, undefined, 'other').catch((error) => {
+      logger.error('Failed to navigate page:', error)
+    })
   }
 
   #reset() {
@@ -339,6 +444,13 @@ class Page extends EventEmitter<PageEventMap> {
       })
     }
   }
+
+  dispose() {
+    this.#script.remove(this.#client).catch(() => {
+      // Let's just assume we got here because the session was already
+      // closed or the script was already removed.
+    })
+  }
 }
 
 async function connectToDebugger(port: number): Promise<BrowserSession> {
@@ -350,7 +462,7 @@ async function connectToDebugger(port: number): Promise<BrowserSession> {
 
   const client = new ChromeDevToolsClient(transport)
 
-  return new BrowserSession(client, script).attach()
+  return new BrowserSession(client, new Script(script)).attach()
 }
 
 export async function launchBrowserWithDevToolsProtocol(

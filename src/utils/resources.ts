@@ -10,12 +10,12 @@ const RESOURCE_INDEX = {
   'browser-script': 'browser/index.js',
 }
 
-type ResourceKey = keyof typeof RESOURCE_INDEX
+export type ResourceName = keyof typeof RESOURCE_INDEX
 
-function getResourcePath(resource: ResourceKey): string {
+function getResourcePath(resource: ResourceName): string {
   return path.join(RESOURCES_ROOT_PATH, RESOURCE_INDEX[resource])
 }
 
-export function readResource(resource: ResourceKey) {
+export function readResource(resource: ResourceName) {
   return readFile(getResourcePath(resource), { encoding: 'utf-8' })
 }

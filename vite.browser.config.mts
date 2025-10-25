@@ -17,6 +17,7 @@ export default defineConfig((env) => {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
     },
     build: {
+      target: 'esnext',
       outDir: `resources/browser`,
       sourcemap: 'inline',
       lib: {
@@ -24,6 +25,14 @@ export default defineConfig((env) => {
         formats: ['iife'],
         name: '__k6_studio_cdp__',
         fileName: () => 'index.js',
+      },
+      rollupOptions: {
+        output: {
+          preserveModules: false,
+          minifyInternalExports: false,
+        },
+        treeshake: 'safest',
+        preserveEntrySignatures: 'strict',
       },
     },
     plugins: [
