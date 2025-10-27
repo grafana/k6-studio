@@ -374,6 +374,16 @@ export class ExpressionBuilder<Expr extends ts.Expression> {
     })
   }
 
+  nullish(fallback: ExpressionLike) {
+    return new ExpressionBuilder({
+      ...baseProps,
+      type: NodeType.LogicalExpression,
+      operator: '??',
+      left: this.expression,
+      right: coerceExpression(fallback),
+    })
+  }
+
   as(type: ts.TypeNode | string | typeof unknown) {
     return new ExpressionBuilder({
       ...baseProps,
@@ -416,6 +426,22 @@ export class ExpressionBuilder<Expr extends ts.Expression> {
 }
 
 export class ObjectBuilder {
+  static empty() {
+    return new ObjectBuilder().done()
+  }
+
+  static from(obj: Record<string, LiteralOrExpression | undefined>) {
+    return new ObjectBuilder()
+      .reduce(Object.entries(obj), (acc, [key, value]) => {
+        if (value === undefined) {
+          return acc
+        }
+
+        return acc.property(key, fromLiteralOrExpression(value))
+      })
+      .done()
+  }
+
   #properties: ts.Property[]
 
   constructor(properties: ts.Property[] = []) {

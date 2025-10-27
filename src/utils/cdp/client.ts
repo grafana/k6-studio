@@ -19,7 +19,7 @@ export interface ChromeCommand {
   id: number
   sessionId: string | undefined
   method: string
-  params: Record<string, unknown>
+  params: object
 }
 export interface ChromeEvent<Event = unknown> {
   sessionId?: string
@@ -144,6 +144,32 @@ export namespace Accessibility {
     backendDOMNodeId?: DOM.BackendNodeId
     frameId?: Page.FrameId
   }
+  export interface GetPartialAXTreeArgs {
+    nodeId?: DOM.NodeId
+    backendNodeId?: DOM.BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+    fetchRelatives?: boolean
+  }
+  export interface GetFullAXTreeArgs {
+    depth?: number
+    frameId?: Page.FrameId
+  }
+  export interface GetAXNodeAndAncestorsArgs {
+    nodeId?: DOM.NodeId
+    backendNodeId?: DOM.BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+  }
+  export interface GetChildAXNodesArgs {
+    id: AXNodeId
+    frameId?: Page.FrameId
+  }
+  export interface QueryAXTreeArgs {
+    nodeId?: DOM.NodeId
+    backendNodeId?: DOM.BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+    accessibleName?: string
+    role?: string
+  }
   export interface GetPartialAXTreeResult {
     nodes: AXNode[]
   }
@@ -208,6 +234,19 @@ export namespace Animation {
   }
   export type KeyframesRule = { name?: string; keyframes: KeyframeStyle[] }
   export type KeyframeStyle = { offset: string; easing: string }
+  export interface SeekAnimationsArgs {
+    animations: string[]
+    currentTime: number
+  }
+  export interface SetPausedArgs {
+    animations: string[]
+    paused: boolean
+  }
+  export interface SetTimingArgs {
+    animationId: string
+    duration: number
+    delay: number
+  }
   export interface GetCurrentTimeResult {
     currentTime: number
   }
@@ -698,6 +737,12 @@ export namespace Audits {
     details: InspectorIssueDetails
     issueId?: IssueId
   }
+  export interface GetEncodedResponseArgs {
+    requestId: Network.RequestId
+    encoding: 'webp' | 'jpeg' | 'png'
+    quality?: number
+    sizeOnly?: boolean
+  }
   export interface GetEncodedResponseResult {
     body: string
     originalSize: number
@@ -715,6 +760,25 @@ export namespace Audits {
 }
 export namespace Extensions {
   export type StorageArea = 'session' | 'local' | 'sync' | 'managed'
+  export interface GetStorageItemsArgs {
+    id: string
+    storageArea: StorageArea
+    keys?: string[]
+  }
+  export interface RemoveStorageItemsArgs {
+    id: string
+    storageArea: StorageArea
+    keys: string[]
+  }
+  export interface ClearStorageItemsArgs {
+    id: string
+    storageArea: StorageArea
+  }
+  export interface SetStorageItemsArgs {
+    id: string
+    storageArea: StorageArea
+    values: Record<string, unknown>
+  }
   export interface LoadUnpackedResult {
     id: string
   }
@@ -745,6 +809,11 @@ export namespace Autofill {
     frameId: Page.FrameId
     fieldId: DOM.BackendNodeId
   }
+  export interface TriggerArgs {
+    fieldId: DOM.BackendNodeId
+    frameId?: Page.FrameId
+    card: CreditCard
+  }
   export interface AddressFormFilledEvent {
     filledFields: FilledField[]
     addressUi: AddressUI
@@ -771,6 +840,10 @@ export namespace BackgroundService {
     instanceId: string
     eventMetadata: EventMetadata[]
     storageKey: string
+  }
+  export interface SetRecordingArgs {
+    shouldRecord: boolean
+    service: ServiceName
   }
   export interface RecordingStateChangedEvent {
     isRecording: boolean
@@ -853,6 +926,49 @@ export namespace Browser {
   export type PrivacySandboxAPI =
     | 'BiddingAndAuctionServices'
     | 'TrustedKeyValue'
+  export interface SetPermissionArgs {
+    permission: PermissionDescriptor
+    setting: PermissionSetting
+    origin?: string
+    browserContextId?: BrowserContextID
+  }
+  export interface GrantPermissionsArgs {
+    permissions: PermissionType[]
+    origin?: string
+    browserContextId?: BrowserContextID
+  }
+  export interface SetDownloadBehaviorArgs {
+    behavior: 'deny' | 'allow' | 'allowAndName' | 'default'
+    browserContextId?: BrowserContextID
+    downloadPath?: string
+    eventsEnabled?: boolean
+  }
+  export interface CancelDownloadArgs {
+    guid: string
+    browserContextId?: BrowserContextID
+  }
+  export interface GetHistogramsArgs {
+    query?: string
+    delta?: boolean
+  }
+  export interface GetHistogramArgs {
+    name: string
+    delta?: boolean
+  }
+  export interface SetWindowBoundsArgs {
+    windowId: WindowID
+    bounds: Bounds
+  }
+  export interface SetDockTileArgs {
+    badgeLabel?: string
+    image?: string
+  }
+  export interface AddPrivacySandboxCoordinatorKeyConfigArgs {
+    api: PrivacySandboxAPI
+    coordinatorOrigin: string
+    keyConfig: string
+    browserContextId?: BrowserContextID
+  }
   export interface GetVersionResult {
     protocolVersion: string
     product: string
@@ -1146,6 +1262,87 @@ export namespace CSS {
     range: SourceRange
     text: string
   }
+  export interface AddRuleArgs {
+    styleSheetId: StyleSheetId
+    ruleText: string
+    location: SourceRange
+    nodeForPropertySyntaxValidation?: DOM.NodeId
+  }
+  export interface CreateStyleSheetArgs {
+    frameId: Page.FrameId
+    force?: boolean
+  }
+  export interface ForcePseudoStateArgs {
+    nodeId: DOM.NodeId
+    forcedPseudoClasses: string[]
+  }
+  export interface ForceStartingStyleArgs {
+    nodeId: DOM.NodeId
+    forced: boolean
+  }
+  export interface ResolveValuesArgs {
+    values: string[]
+    nodeId: DOM.NodeId
+    propertyName?: string
+    pseudoType?: DOM.PseudoType
+    pseudoIdentifier?: string
+  }
+  export interface GetLonghandPropertiesArgs {
+    shorthandName: string
+    value: string
+  }
+  export interface GetLocationForSelectorArgs {
+    styleSheetId: StyleSheetId
+    selectorText: string
+  }
+  export interface SetEffectivePropertyValueForNodeArgs {
+    nodeId: DOM.NodeId
+    propertyName: string
+    value: string
+  }
+  export interface SetPropertyRulePropertyNameArgs {
+    styleSheetId: StyleSheetId
+    range: SourceRange
+    propertyName: string
+  }
+  export interface SetKeyframeKeyArgs {
+    styleSheetId: StyleSheetId
+    range: SourceRange
+    keyText: string
+  }
+  export interface SetMediaTextArgs {
+    styleSheetId: StyleSheetId
+    range: SourceRange
+    text: string
+  }
+  export interface SetContainerQueryTextArgs {
+    styleSheetId: StyleSheetId
+    range: SourceRange
+    text: string
+  }
+  export interface SetSupportsTextArgs {
+    styleSheetId: StyleSheetId
+    range: SourceRange
+    text: string
+  }
+  export interface SetScopeTextArgs {
+    styleSheetId: StyleSheetId
+    range: SourceRange
+    text: string
+  }
+  export interface SetRuleSelectorArgs {
+    styleSheetId: StyleSheetId
+    range: SourceRange
+    selector: string
+  }
+  export interface SetStyleSheetTextArgs {
+    styleSheetId: StyleSheetId
+    text: string
+  }
+  export interface SetStyleTextsArgs {
+    edits: StyleDeclarationEdit[]
+    nodeForPropertySyntaxValidation?: DOM.NodeId
+  }
   export interface AddRuleResult {
     rule: CSSRule
   }
@@ -1299,6 +1496,26 @@ export namespace CacheStorage {
   }
   export type Header = { name: string; value: string }
   export type CachedResponse = { body: string }
+  export interface DeleteEntryArgs {
+    cacheId: CacheId
+    request: string
+  }
+  export interface RequestCacheNamesArgs {
+    securityOrigin?: string
+    storageKey?: string
+    storageBucket?: Storage.StorageBucket
+  }
+  export interface RequestCachedResponseArgs {
+    cacheId: CacheId
+    requestURL: string
+    requestHeaders: Header[]
+  }
+  export interface RequestEntriesArgs {
+    cacheId: CacheId
+    skipCount?: number
+    pageSize?: number
+    pathFilter?: string
+  }
   export interface RequestCacheNamesResult {
     caches: Cache[]
   }
@@ -1434,6 +1651,143 @@ export namespace DOM {
   }
   export type Rect = { x: number; y: number; width: number; height: number }
   export type CSSComputedStyleProperty = { name: string; value: string }
+  export interface CopyToArgs {
+    nodeId: NodeId
+    targetNodeId: NodeId
+    insertBeforeNodeId?: NodeId
+  }
+  export interface DescribeNodeArgs {
+    nodeId?: NodeId
+    backendNodeId?: BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+    depth?: number
+    pierce?: boolean
+  }
+  export interface ScrollIntoViewIfNeededArgs {
+    nodeId?: NodeId
+    backendNodeId?: BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+    rect?: Rect
+  }
+  export interface FocusArgs {
+    nodeId?: NodeId
+    backendNodeId?: BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+  }
+  export interface GetBoxModelArgs {
+    nodeId?: NodeId
+    backendNodeId?: BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+  }
+  export interface GetContentQuadsArgs {
+    nodeId?: NodeId
+    backendNodeId?: BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+  }
+  export interface GetDocumentArgs {
+    depth?: number
+    pierce?: boolean
+  }
+  export interface GetFlattenedDocumentArgs {
+    depth?: number
+    pierce?: boolean
+  }
+  export interface GetNodesForSubtreeByStyleArgs {
+    nodeId: NodeId
+    computedStyles: CSSComputedStyleProperty[]
+    pierce?: boolean
+  }
+  export interface GetNodeForLocationArgs {
+    x: number
+    y: number
+    includeUserAgentShadowDOM?: boolean
+    ignorePointerEventsNone?: boolean
+  }
+  export interface GetOuterHTMLArgs {
+    nodeId?: NodeId
+    backendNodeId?: BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+  }
+  export interface GetSearchResultsArgs {
+    searchId: string
+    fromIndex: number
+    toIndex: number
+  }
+  export interface MoveToArgs {
+    nodeId: NodeId
+    targetNodeId: NodeId
+    insertBeforeNodeId?: NodeId
+  }
+  export interface PerformSearchArgs {
+    query: string
+    includeUserAgentShadowDOM?: boolean
+  }
+  export interface QuerySelectorArgs {
+    nodeId: NodeId
+    selector: string
+  }
+  export interface QuerySelectorAllArgs {
+    nodeId: NodeId
+    selector: string
+  }
+  export interface GetElementByRelationArgs {
+    nodeId: NodeId
+    relation: 'PopoverTarget' | 'InterestTarget' | 'CommandFor'
+  }
+  export interface RemoveAttributeArgs {
+    nodeId: NodeId
+    name: string
+  }
+  export interface RequestChildNodesArgs {
+    nodeId: NodeId
+    depth?: number
+    pierce?: boolean
+  }
+  export interface ResolveNodeArgs {
+    nodeId?: NodeId
+    backendNodeId?: DOM.BackendNodeId
+    objectGroup?: string
+    executionContextId?: Runtime.ExecutionContextId
+  }
+  export interface SetAttributeValueArgs {
+    nodeId: NodeId
+    name: string
+    value: string
+  }
+  export interface SetAttributesAsTextArgs {
+    nodeId: NodeId
+    text: string
+    name?: string
+  }
+  export interface SetFileInputFilesArgs {
+    files: string[]
+    nodeId?: NodeId
+    backendNodeId?: BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+  }
+  export interface SetNodeNameArgs {
+    nodeId: NodeId
+    name: string
+  }
+  export interface SetNodeValueArgs {
+    nodeId: NodeId
+    value: string
+  }
+  export interface SetOuterHTMLArgs {
+    nodeId: NodeId
+    outerHTML: string
+  }
+  export interface GetContainerForNodeArgs {
+    nodeId: NodeId
+    containerName?: string
+    physicalAxes?: PhysicalAxes
+    logicalAxes?: LogicalAxes
+    queriesScrollState?: boolean
+  }
+  export interface GetAnchorElementArgs {
+    nodeId: NodeId
+    anchorSpecifier?: string
+  }
   export interface CollectClassNamesFromSubtreeResult {
     classNames: string[]
   }
@@ -1629,6 +1983,27 @@ export namespace DOMDebugger {
     originalHandler?: Runtime.RemoteObject
     backendNodeId?: DOM.BackendNodeId
   }
+  export interface GetEventListenersArgs {
+    objectId: Runtime.RemoteObjectId
+    depth?: number
+    pierce?: boolean
+  }
+  export interface RemoveDOMBreakpointArgs {
+    nodeId: DOM.NodeId
+    type: DOMBreakpointType
+  }
+  export interface RemoveEventListenerBreakpointArgs {
+    eventName: string
+    targetName?: string
+  }
+  export interface SetDOMBreakpointArgs {
+    nodeId: DOM.NodeId
+    type: DOMBreakpointType
+  }
+  export interface SetEventListenerBreakpointArgs {
+    eventName: string
+    targetName?: string
+  }
   export interface GetEventListenersResult {
     listeners: EventListener[]
   }
@@ -1742,6 +2117,19 @@ export namespace DOMSnapshot {
     start: number[]
     length: number[]
   }
+  export interface GetSnapshotArgs {
+    computedStyleWhitelist: string[]
+    includeEventListeners?: boolean
+    includePaintOrder?: boolean
+    includeUserAgentShadowTree?: boolean
+  }
+  export interface CaptureSnapshotArgs {
+    computedStyles: string[]
+    includePaintOrder?: boolean
+    includeDOMRects?: boolean
+    includeBlendedBackgroundColors?: boolean
+    includeTextColorOpacities?: boolean
+  }
   export interface GetSnapshotResult {
     domNodes: DOMNode[]
     layoutTreeNodes: LayoutTreeNode[]
@@ -1760,6 +2148,15 @@ export namespace DOMStorage {
     isLocalStorage: boolean
   }
   export type Item = string[]
+  export interface RemoveDOMStorageItemArgs {
+    storageId: StorageId
+    key: string
+  }
+  export interface SetDOMStorageItemArgs {
+    storageId: StorageId
+    key: string
+    value: string
+  }
   export interface GetDOMStorageItemsResult {
     entries: Item[]
   }
@@ -1788,7 +2185,13 @@ export namespace DOMStorage {
     domStorageItemsCleared: DomStorageItemsClearedEvent
   }
 }
-export namespace DeviceOrientation {}
+export namespace DeviceOrientation {
+  export interface SetDeviceOrientationOverrideArgs {
+    alpha: number
+    beta: number
+    gamma: number
+  }
+}
 export namespace Emulation {
   export type SafeAreaInsets = {
     top?: number
@@ -1863,6 +2266,86 @@ export namespace Emulation {
   export type PressureState = 'nominal' | 'fair' | 'serious' | 'critical'
   export type PressureMetadata = { available?: boolean }
   export type DisabledImageType = 'avif' | 'webp'
+  export interface SetDeviceMetricsOverrideArgs {
+    width: number
+    height: number
+    deviceScaleFactor: number
+    mobile: boolean
+    scale?: number
+    screenWidth?: number
+    screenHeight?: number
+    positionX?: number
+    positionY?: number
+    dontSetVisibleSize?: boolean
+    screenOrientation?: ScreenOrientation
+    viewport?: Page.Viewport
+    displayFeature?: DisplayFeature
+    devicePosture?: DevicePosture
+  }
+  export interface SetEmitTouchEventsForMouseArgs {
+    enabled: boolean
+    configuration?: 'mobile' | 'desktop'
+  }
+  export interface SetEmulatedMediaArgs {
+    media?: string
+    features?: MediaFeature[]
+  }
+  export interface SetGeolocationOverrideArgs {
+    latitude?: number
+    longitude?: number
+    accuracy?: number
+    altitude?: number
+    altitudeAccuracy?: number
+    heading?: number
+    speed?: number
+  }
+  export interface SetSensorOverrideEnabledArgs {
+    enabled: boolean
+    type: SensorType
+    metadata?: SensorMetadata
+  }
+  export interface SetSensorOverrideReadingsArgs {
+    type: SensorType
+    reading: SensorReading
+  }
+  export interface SetPressureSourceOverrideEnabledArgs {
+    enabled: boolean
+    source: PressureSource
+    metadata?: PressureMetadata
+  }
+  export interface SetPressureStateOverrideArgs {
+    source: PressureSource
+    state: PressureState
+  }
+  export interface SetPressureDataOverrideArgs {
+    source: PressureSource
+    state: PressureState
+    ownContributionEstimate?: number
+  }
+  export interface SetIdleOverrideArgs {
+    isUserActive: boolean
+    isScreenUnlocked: boolean
+  }
+  export interface SetTouchEmulationEnabledArgs {
+    enabled: boolean
+    maxTouchPoints?: number
+  }
+  export interface SetVirtualTimePolicyArgs {
+    policy: VirtualTimePolicy
+    budget?: number
+    maxVirtualTimeTaskStarvationCount?: number
+    initialVirtualTime?: Network.TimeSinceEpoch
+  }
+  export interface SetVisibleSizeArgs {
+    width: number
+    height: number
+  }
+  export interface SetUserAgentOverrideArgs {
+    userAgent: string
+    acceptLanguage?: string
+    platform?: string
+    userAgentMetadata?: UserAgentMetadata
+  }
   export interface CanEmulateResult {
     result: boolean
   }
@@ -1883,6 +2366,12 @@ export namespace HeadlessExperimental {
     quality?: number
     optimizeForSpeed?: boolean
   }
+  export interface BeginFrameArgs {
+    frameTimeTicks?: number
+    interval?: number
+    noDisplayUpdates?: boolean
+    screenshot?: ScreenshotParams
+  }
   export interface BeginFrameResult {
     hasDamage: boolean
     screenshotData: string
@@ -1890,6 +2379,11 @@ export namespace HeadlessExperimental {
 }
 export namespace IO {
   export type StreamHandle = string
+  export interface ReadArgs {
+    handle: StreamHandle
+    offset?: number
+    size?: number
+  }
   export interface ReadResult {
     base64Encoded: boolean
     data: string
@@ -1961,6 +2455,56 @@ export namespace IndexedDB {
     string?: string
     array?: string[]
   }
+  export interface ClearObjectStoreArgs {
+    securityOrigin?: string
+    storageKey?: string
+    storageBucket?: Storage.StorageBucket
+    databaseName: string
+    objectStoreName: string
+  }
+  export interface DeleteDatabaseArgs {
+    securityOrigin?: string
+    storageKey?: string
+    storageBucket?: Storage.StorageBucket
+    databaseName: string
+  }
+  export interface DeleteObjectStoreEntriesArgs {
+    securityOrigin?: string
+    storageKey?: string
+    storageBucket?: Storage.StorageBucket
+    databaseName: string
+    objectStoreName: string
+    keyRange: KeyRange
+  }
+  export interface RequestDataArgs {
+    securityOrigin?: string
+    storageKey?: string
+    storageBucket?: Storage.StorageBucket
+    databaseName: string
+    objectStoreName: string
+    indexName: string
+    skipCount: number
+    pageSize: number
+    keyRange?: KeyRange
+  }
+  export interface GetMetadataArgs {
+    securityOrigin?: string
+    storageKey?: string
+    storageBucket?: Storage.StorageBucket
+    databaseName: string
+    objectStoreName: string
+  }
+  export interface RequestDatabaseArgs {
+    securityOrigin?: string
+    storageKey?: string
+    storageBucket?: Storage.StorageBucket
+    databaseName: string
+  }
+  export interface RequestDatabaseNamesArgs {
+    securityOrigin?: string
+    storageKey?: string
+    storageBucket?: Storage.StorageBucket
+  }
   export interface RequestDataResult {
     objectStoreDataEntries: DataEntry[]
     hasMore: boolean
@@ -2009,6 +2553,100 @@ export namespace Input {
     items: DragDataItem[]
     files?: string[]
     dragOperationsMask: number
+  }
+  export interface DispatchDragEventArgs {
+    type: 'dragEnter' | 'dragOver' | 'drop' | 'dragCancel'
+    x: number
+    y: number
+    data: DragData
+    modifiers?: number
+  }
+  export interface DispatchKeyEventArgs {
+    type: 'keyDown' | 'keyUp' | 'rawKeyDown' | 'char'
+    modifiers?: number
+    timestamp?: TimeSinceEpoch
+    text?: string
+    unmodifiedText?: string
+    keyIdentifier?: string
+    code?: string
+    key?: string
+    windowsVirtualKeyCode?: number
+    nativeVirtualKeyCode?: number
+    autoRepeat?: boolean
+    isKeypad?: boolean
+    isSystemKey?: boolean
+    location?: number
+    commands?: string[]
+  }
+  export interface ImeSetCompositionArgs {
+    text: string
+    selectionStart: number
+    selectionEnd: number
+    replacementStart?: number
+    replacementEnd?: number
+  }
+  export interface DispatchMouseEventArgs {
+    type: 'mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel'
+    x: number
+    y: number
+    modifiers?: number
+    timestamp?: TimeSinceEpoch
+    button?: MouseButton
+    buttons?: number
+    clickCount?: number
+    force?: number
+    tangentialPressure?: number
+    tiltX?: number
+    tiltY?: number
+    twist?: number
+    deltaX?: number
+    deltaY?: number
+    pointerType?: 'mouse' | 'pen'
+  }
+  export interface DispatchTouchEventArgs {
+    type: 'touchStart' | 'touchEnd' | 'touchMove' | 'touchCancel'
+    touchPoints: TouchPoint[]
+    modifiers?: number
+    timestamp?: TimeSinceEpoch
+  }
+  export interface EmulateTouchFromMouseEventArgs {
+    type: 'mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel'
+    x: number
+    y: number
+    button: MouseButton
+    timestamp?: TimeSinceEpoch
+    deltaX?: number
+    deltaY?: number
+    modifiers?: number
+    clickCount?: number
+  }
+  export interface SynthesizePinchGestureArgs {
+    x: number
+    y: number
+    scaleFactor: number
+    relativeSpeed?: number
+    gestureSourceType?: GestureSourceType
+  }
+  export interface SynthesizeScrollGestureArgs {
+    x: number
+    y: number
+    xDistance?: number
+    yDistance?: number
+    xOverscroll?: number
+    yOverscroll?: number
+    preventFling?: boolean
+    speed?: number
+    gestureSourceType?: GestureSourceType
+    repeatCount?: number
+    repeatDelayMs?: number
+    interactionMarkerName?: string
+  }
+  export interface SynthesizeTapGestureArgs {
+    x: number
+    y: number
+    duration?: number
+    tapCount?: number
+    gestureSourceType?: GestureSourceType
   }
   export interface DragInterceptedEvent {
     data: DragData
@@ -2062,6 +2700,18 @@ export namespace LayerTree {
     stickyPositionConstraint?: StickyPositionConstraint
   }
   export type PaintProfile = number[]
+  export interface ProfileSnapshotArgs {
+    snapshotId: SnapshotId
+    minRepeatCount?: number
+    minDuration?: number
+    clipRect?: DOM.Rect
+  }
+  export interface ReplaySnapshotArgs {
+    snapshotId: SnapshotId
+    fromStep?: number
+    toStep?: number
+    scale?: number
+  }
   export interface CompositingReasonsResult {
     compositingReasons: string[]
     compositingReasonIds: string[]
@@ -2156,6 +2806,10 @@ export namespace Memory {
     size: number
   }
   export type DOMCounter = { name: string; count: number }
+  export interface StartSamplingArgs {
+    samplingInterval?: number
+    suppressRandomness?: boolean
+  }
   export interface GetDOMCountersResult {
     documents: number
     nodes: number
@@ -2728,6 +3382,77 @@ export namespace Network {
     disableCache: boolean
     includeCredentials: boolean
   }
+  export interface ContinueInterceptedRequestArgs {
+    interceptionId: InterceptionId
+    errorReason?: ErrorReason
+    rawResponse?: string
+    url?: string
+    method?: string
+    postData?: string
+    headers?: Headers
+    authChallengeResponse?: AuthChallengeResponse
+  }
+  export interface DeleteCookiesArgs {
+    name: string
+    url?: string
+    domain?: string
+    path?: string
+    partitionKey?: CookiePartitionKey
+  }
+  export interface EmulateNetworkConditionsArgs {
+    offline: boolean
+    latency: number
+    downloadThroughput: number
+    uploadThroughput: number
+    connectionType?: ConnectionType
+    packetLoss?: number
+    packetQueueLength?: number
+    packetReordering?: boolean
+  }
+  export interface EnableArgs {
+    maxTotalBufferSize?: number
+    maxResourceBufferSize?: number
+    maxPostDataSize?: number
+    reportDirectSocketTraffic?: boolean
+  }
+  export interface SearchInResponseBodyArgs {
+    requestId: RequestId
+    query: string
+    caseSensitive?: boolean
+    isRegex?: boolean
+  }
+  export interface SetCookieArgs {
+    name: string
+    value: string
+    url?: string
+    domain?: string
+    path?: string
+    secure?: boolean
+    httpOnly?: boolean
+    sameSite?: CookieSameSite
+    expires?: TimeSinceEpoch
+    priority?: CookiePriority
+    sameParty?: boolean
+    sourceScheme?: CookieSourceScheme
+    sourcePort?: number
+    partitionKey?: CookiePartitionKey
+  }
+  export interface SetUserAgentOverrideArgs {
+    userAgent: string
+    acceptLanguage?: string
+    platform?: string
+    userAgentMetadata?: Emulation.UserAgentMetadata
+  }
+  export interface LoadNetworkResourceArgs {
+    frameId?: Page.FrameId
+    url: string
+    options: LoadNetworkResourceOptions
+  }
+  export interface SetCookieControlsArgs {
+    enableThirdPartyCookieRestriction: boolean
+    disableThirdPartyCookieMetadata: boolean
+    disableThirdPartyCookieHeuristics: boolean
+  }
   export interface CanClearBrowserCacheResult {
     result: boolean
   }
@@ -3208,6 +3933,48 @@ export namespace Overlay {
     | 'captureAreaScreenshot'
     | 'showDistances'
     | 'none'
+  export interface GetHighlightObjectForTestArgs {
+    nodeId: DOM.NodeId
+    includeDistance?: boolean
+    includeStyle?: boolean
+    colorFormat?: ColorFormat
+    showAccessibilityInfo?: boolean
+  }
+  export interface HighlightFrameArgs {
+    frameId: Page.FrameId
+    contentColor?: DOM.RGBA
+    contentOutlineColor?: DOM.RGBA
+  }
+  export interface HighlightNodeArgs {
+    highlightConfig: HighlightConfig
+    nodeId?: DOM.NodeId
+    backendNodeId?: DOM.BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+    selector?: string
+  }
+  export interface HighlightQuadArgs {
+    quad: DOM.Quad
+    color?: DOM.RGBA
+    outlineColor?: DOM.RGBA
+  }
+  export interface HighlightRectArgs {
+    x: number
+    y: number
+    width: number
+    height: number
+    color?: DOM.RGBA
+    outlineColor?: DOM.RGBA
+  }
+  export interface HighlightSourceOrderArgs {
+    sourceOrderConfig: SourceOrderConfig
+    nodeId?: DOM.NodeId
+    backendNodeId?: DOM.BackendNodeId
+    objectId?: Runtime.RemoteObjectId
+  }
+  export interface SetInspectModeArgs {
+    mode: InspectMode
+    highlightConfig?: HighlightConfig
+  }
   export interface GetHighlightObjectForTestResult {
     highlight: Record<string, unknown>
   }
@@ -3786,6 +4553,134 @@ export namespace Page {
     explanations: BackForwardCacheNotRestoredExplanation[]
     children: BackForwardCacheNotRestoredExplanationTree[]
   }
+  export interface AddScriptToEvaluateOnNewDocumentArgs {
+    source: string
+    worldName?: string
+    includeCommandLineAPI?: boolean
+    runImmediately?: boolean
+  }
+  export interface CaptureScreenshotArgs {
+    format?: 'jpeg' | 'png' | 'webp'
+    quality?: number
+    clip?: Viewport
+    fromSurface?: boolean
+    captureBeyondViewport?: boolean
+    optimizeForSpeed?: boolean
+  }
+  export interface CreateIsolatedWorldArgs {
+    frameId: FrameId
+    worldName?: string
+    grantUniveralAccess?: boolean
+  }
+  export interface DeleteCookieArgs {
+    cookieName: string
+    url: string
+  }
+  export interface GetResourceContentArgs {
+    frameId: FrameId
+    url: string
+  }
+  export interface HandleJavaScriptDialogArgs {
+    accept: boolean
+    promptText?: string
+  }
+  export interface NavigateArgs {
+    url: string
+    referrer?: string
+    transitionType?: TransitionType
+    frameId?: FrameId
+    referrerPolicy?: ReferrerPolicy
+  }
+  export interface PrintToPDFArgs {
+    landscape?: boolean
+    displayHeaderFooter?: boolean
+    printBackground?: boolean
+    scale?: number
+    paperWidth?: number
+    paperHeight?: number
+    marginTop?: number
+    marginBottom?: number
+    marginLeft?: number
+    marginRight?: number
+    pageRanges?: string
+    headerTemplate?: string
+    footerTemplate?: string
+    preferCSSPageSize?: boolean
+    transferMode?: 'ReturnAsBase64' | 'ReturnAsStream'
+    generateTaggedPDF?: boolean
+    generateDocumentOutline?: boolean
+  }
+  export interface ReloadArgs {
+    ignoreCache?: boolean
+    scriptToEvaluateOnLoad?: string
+    loaderId?: Network.LoaderId
+  }
+  export interface SearchInResourceArgs {
+    frameId: FrameId
+    url: string
+    query: string
+    caseSensitive?: boolean
+    isRegex?: boolean
+  }
+  export interface SetDeviceMetricsOverrideArgs {
+    width: number
+    height: number
+    deviceScaleFactor: number
+    mobile: boolean
+    scale?: number
+    screenWidth?: number
+    screenHeight?: number
+    positionX?: number
+    positionY?: number
+    dontSetVisibleSize?: boolean
+    screenOrientation?: Emulation.ScreenOrientation
+    viewport?: Viewport
+  }
+  export interface SetDeviceOrientationOverrideArgs {
+    alpha: number
+    beta: number
+    gamma: number
+  }
+  export interface SetFontFamiliesArgs {
+    fontFamilies: FontFamilies
+    forScripts?: ScriptFontFamilies[]
+  }
+  export interface SetDocumentContentArgs {
+    frameId: FrameId
+    html: string
+  }
+  export interface SetDownloadBehaviorArgs {
+    behavior: 'deny' | 'allow' | 'default'
+    downloadPath?: string
+  }
+  export interface SetGeolocationOverrideArgs {
+    latitude?: number
+    longitude?: number
+    accuracy?: number
+  }
+  export interface SetTouchEmulationEnabledArgs {
+    enabled: boolean
+    configuration?: 'mobile' | 'desktop'
+  }
+  export interface StartScreencastArgs {
+    format?: 'jpeg' | 'png'
+    quality?: number
+    maxWidth?: number
+    maxHeight?: number
+    everyNthFrame?: number
+  }
+  export interface AddCompilationCacheArgs {
+    url: string
+    data: string
+  }
+  export interface GenerateTestReportArgs {
+    message: string
+    group?: string
+  }
+  export interface SetInterceptFileChooserDialogArgs {
+    enabled: boolean
+    cancel?: boolean
+  }
   export interface AddScriptToEvaluateOnLoadResult {
     identifier: ScriptIdentifier
   }
@@ -4129,6 +5024,10 @@ export namespace Security {
     displayedInsecureContentStyle: SecurityState
   }
   export type CertificateErrorAction = 'continue' | 'cancel'
+  export interface HandleCertificateErrorArgs {
+    eventId: number
+    action: CertificateErrorAction
+  }
   export interface CertificateErrorEvent {
     eventId: number
     errorType: string
@@ -4188,6 +5087,22 @@ export namespace ServiceWorker {
     sourceURL: string
     lineNumber: number
     columnNumber: number
+  }
+  export interface DeliverPushMessageArgs {
+    origin: string
+    registrationId: RegistrationID
+    data: string
+  }
+  export interface DispatchSyncEventArgs {
+    origin: string
+    registrationId: RegistrationID
+    tag: string
+    lastChance: boolean
+  }
+  export interface DispatchPeriodicSyncEventArgs {
+    origin: string
+    registrationId: RegistrationID
+    tag: string
   }
   export interface WorkerErrorReportedEvent {
     errorMessage: ServiceWorkerErrorMessage
@@ -4495,6 +5410,49 @@ export namespace Storage {
     associatedSites: string[]
     serviceSites: string[]
   }
+  export interface ClearDataForOriginArgs {
+    origin: string
+    storageTypes: string
+  }
+  export interface ClearDataForStorageKeyArgs {
+    storageKey: string
+    storageTypes: string
+  }
+  export interface SetCookiesArgs {
+    cookies: Network.CookieParam[]
+    browserContextId?: Browser.BrowserContextID
+  }
+  export interface OverrideQuotaForOriginArgs {
+    origin: string
+    quotaSize?: number
+  }
+  export interface GetInterestGroupDetailsArgs {
+    ownerOrigin: string
+    name: string
+  }
+  export interface SetSharedStorageEntryArgs {
+    ownerOrigin: string
+    key: string
+    value: string
+    ignoreIfPresent?: boolean
+  }
+  export interface DeleteSharedStorageEntryArgs {
+    ownerOrigin: string
+    key: string
+  }
+  export interface SetStorageBucketTrackingArgs {
+    storageKey: string
+    enable: boolean
+  }
+  export interface GetAffectedUrlsForThirdPartyCookieMetadataArgs {
+    firstPartyUrl: string
+    thirdPartyUrls: string[]
+  }
+  export interface SetProtectedAudienceKAnonymityArgs {
+    owner: string
+    name: string
+    hashes: string[]
+  }
   export interface GetStorageKeyForFrameResult {
     storageKey: SerializedStorageKey
   }
@@ -4710,6 +5668,59 @@ export namespace Target {
   export type TargetFilter = FilterEntry[]
   export type RemoteLocation = { host: string; port: number }
   export type WindowState = 'normal' | 'minimized' | 'maximized' | 'fullscreen'
+  export interface AttachToTargetArgs {
+    targetId: TargetID
+    flatten?: boolean
+  }
+  export interface ExposeDevToolsProtocolArgs {
+    targetId: TargetID
+    bindingName?: string
+    inheritPermissions?: boolean
+  }
+  export interface CreateBrowserContextArgs {
+    disposeOnDetach?: boolean
+    proxyServer?: string
+    proxyBypassList?: string
+    originsWithUniversalNetworkAccess?: string[]
+  }
+  export interface CreateTargetArgs {
+    url: string
+    left?: number
+    top?: number
+    width?: number
+    height?: number
+    windowState?: WindowState
+    browserContextId?: Browser.BrowserContextID
+    enableBeginFrameControl?: boolean
+    newWindow?: boolean
+    background?: boolean
+    forTab?: boolean
+    hidden?: boolean
+  }
+  export interface DetachFromTargetArgs {
+    sessionId?: SessionID
+    targetId?: TargetID
+  }
+  export interface SendMessageToTargetArgs {
+    message: string
+    sessionId?: SessionID
+    targetId?: TargetID
+  }
+  export interface SetAutoAttachArgs {
+    autoAttach: boolean
+    waitForDebuggerOnStart: boolean
+    flatten?: boolean
+    filter?: TargetFilter
+  }
+  export interface AutoAttachRelatedArgs {
+    targetId: TargetID
+    waitForDebuggerOnStart: boolean
+    filter?: TargetFilter
+  }
+  export interface SetDiscoverTargetsArgs {
+    discover: boolean
+    filter?: TargetFilter
+  }
   export interface AttachToTargetResult {
     sessionId: SessionID
   }
@@ -4802,6 +5813,21 @@ export namespace Tracing {
   export type StreamCompression = 'none' | 'gzip'
   export type MemoryDumpLevelOfDetail = 'background' | 'light' | 'detailed'
   export type TracingBackend = 'auto' | 'chrome' | 'system'
+  export interface RequestMemoryDumpArgs {
+    deterministic?: boolean
+    levelOfDetail?: MemoryDumpLevelOfDetail
+  }
+  export interface StartArgs {
+    categories?: string
+    options?: string
+    bufferUsageReportingInterval?: number
+    transferMode?: 'ReportEvents' | 'ReturnAsStream'
+    streamFormat?: StreamFormat
+    streamCompression?: StreamCompression
+    traceConfig?: TraceConfig
+    perfettoConfig?: string
+    tracingBackend?: TracingBackend
+  }
   export interface GetCategoriesResult {
     categories: string[]
   }
@@ -4848,6 +5874,41 @@ export namespace Fetch {
     response: 'Default' | 'CancelAuth' | 'ProvideCredentials'
     username?: string
     password?: string
+  }
+  export interface EnableArgs {
+    patterns?: RequestPattern[]
+    handleAuthRequests?: boolean
+  }
+  export interface FailRequestArgs {
+    requestId: RequestId
+    errorReason: Network.ErrorReason
+  }
+  export interface FulfillRequestArgs {
+    requestId: RequestId
+    responseCode: number
+    responseHeaders?: HeaderEntry[]
+    binaryResponseHeaders?: string
+    body?: string
+    responsePhrase?: string
+  }
+  export interface ContinueRequestArgs {
+    requestId: RequestId
+    url?: string
+    method?: string
+    postData?: string
+    headers?: HeaderEntry[]
+    interceptResponse?: boolean
+  }
+  export interface ContinueWithAuthArgs {
+    requestId: RequestId
+    authChallengeResponse: AuthChallengeResponse
+  }
+  export interface ContinueResponseArgs {
+    requestId: RequestId
+    responseCode?: number
+    responsePhrase?: string
+    responseHeaders?: HeaderEntry[]
+    binaryResponseHeaders?: string
   }
   export interface GetResponseBodyResult {
     body: string
@@ -5042,6 +6103,38 @@ export namespace WebAuthn {
     userName?: string
     userDisplayName?: string
   }
+  export interface SetResponseOverrideBitsArgs {
+    authenticatorId: AuthenticatorId
+    isBogusSignature?: boolean
+    isBadUV?: boolean
+    isBadUP?: boolean
+  }
+  export interface AddCredentialArgs {
+    authenticatorId: AuthenticatorId
+    credential: Credential
+  }
+  export interface GetCredentialArgs {
+    authenticatorId: AuthenticatorId
+    credentialId: string
+  }
+  export interface RemoveCredentialArgs {
+    authenticatorId: AuthenticatorId
+    credentialId: string
+  }
+  export interface SetUserVerifiedArgs {
+    authenticatorId: AuthenticatorId
+    isUserVerified: boolean
+  }
+  export interface SetAutomaticPresenceSimulationArgs {
+    authenticatorId: AuthenticatorId
+    enabled: boolean
+  }
+  export interface SetCredentialPropertiesArgs {
+    authenticatorId: AuthenticatorId
+    credentialId: string
+    backupEligibility?: boolean
+    backupState?: boolean
+  }
   export interface AddVirtualAuthenticatorResult {
     authenticatorId: AuthenticatorId
   }
@@ -5122,6 +6215,10 @@ export namespace DeviceAccess {
   export type RequestId = string
   export type DeviceId = string
   export type PromptDevice = { id: DeviceId; name: string }
+  export interface SelectPromptArgs {
+    id: RequestId
+    deviceId: DeviceId
+  }
   export interface DeviceRequestPromptedEvent {
     id: RequestId
     devices: PromptDevice[]
@@ -5345,6 +6442,23 @@ export namespace FedCm {
     termsOfServiceUrl?: string
     privacyPolicyUrl?: string
   }
+  export interface SelectAccountArgs {
+    dialogId: string
+    accountIndex: number
+  }
+  export interface ClickDialogButtonArgs {
+    dialogId: string
+    dialogButton: DialogButton
+  }
+  export interface OpenUrlArgs {
+    dialogId: string
+    accountIndex: number
+    accountUrlType: AccountUrlType
+  }
+  export interface DismissDialogArgs {
+    dialogId: string
+    triggerCooldown?: boolean
+  }
   export interface DialogShownEvent {
     dialogId: string
     dialogType: DialogType
@@ -5371,6 +6485,23 @@ export namespace PWA {
     displayName: string
   }
   export type DisplayMode = 'standalone' | 'browser'
+  export interface InstallArgs {
+    manifestId: string
+    installUrlOrBundleUrl?: string
+  }
+  export interface LaunchArgs {
+    manifestId: string
+    url?: string
+  }
+  export interface LaunchFilesInAppArgs {
+    manifestId: string
+    files: string[]
+  }
+  export interface ChangeAppUserSettingsArgs {
+    manifestId: string
+    linkCapturing?: boolean
+    displayMode?: DisplayMode
+  }
   export interface GetOsAppStateResult {
     badgeCount: number
     fileHandlers: FileHandler[]
@@ -5417,6 +6548,46 @@ export namespace BluetoothEmulation {
     indicate?: boolean
     authenticatedSignedWrites?: boolean
     extendedProperties?: boolean
+  }
+  export interface EnableArgs {
+    state: CentralState
+    leSupported: boolean
+  }
+  export interface SimulatePreconnectedPeripheralArgs {
+    address: string
+    name: string
+    manufacturerData: ManufacturerData[]
+    knownServiceUuids: string[]
+  }
+  export interface SimulateGATTOperationResponseArgs {
+    address: string
+    type: GATTOperationType
+    code: number
+  }
+  export interface SimulateCharacteristicOperationResponseArgs {
+    characteristicId: string
+    type: CharacteristicOperationType
+    code: number
+    data?: string
+  }
+  export interface SimulateDescriptorOperationResponseArgs {
+    descriptorId: string
+    type: DescriptorOperationType
+    code: number
+    data?: string
+  }
+  export interface AddServiceArgs {
+    address: string
+    serviceUuid: string
+  }
+  export interface AddCharacteristicArgs {
+    serviceId: string
+    characteristicUuid: string
+    properties: CharacteristicProperties
+  }
+  export interface AddDescriptorArgs {
+    characteristicId: string
+    descriptorUuid: string
   }
   export interface AddServiceResult {
     serviceId: string
@@ -5536,6 +6707,76 @@ export namespace Debugger {
   export type ResolvedBreakpoint = {
     breakpointId: BreakpointId
     location: Location
+  }
+  export interface ContinueToLocationArgs {
+    location: Location
+    targetCallFrames?: 'any' | 'current'
+  }
+  export interface EvaluateOnCallFrameArgs {
+    callFrameId: CallFrameId
+    expression: string
+    objectGroup?: string
+    includeCommandLineAPI?: boolean
+    silent?: boolean
+    returnByValue?: boolean
+    generatePreview?: boolean
+    throwOnSideEffect?: boolean
+    timeout?: Runtime.TimeDelta
+  }
+  export interface GetPossibleBreakpointsArgs {
+    start: Location
+    end?: Location
+    restrictToFunction?: boolean
+  }
+  export interface RestartFrameArgs {
+    callFrameId: CallFrameId
+    mode?: 'StepInto'
+  }
+  export interface SearchInContentArgs {
+    scriptId: Runtime.ScriptId
+    query: string
+    caseSensitive?: boolean
+    isRegex?: boolean
+  }
+  export interface SetBlackboxPatternsArgs {
+    patterns: string[]
+    skipAnonymous?: boolean
+  }
+  export interface SetBlackboxedRangesArgs {
+    scriptId: Runtime.ScriptId
+    positions: ScriptPosition[]
+  }
+  export interface SetBreakpointArgs {
+    location: Location
+    condition?: string
+  }
+  export interface SetBreakpointByUrlArgs {
+    lineNumber: number
+    url?: string
+    urlRegex?: string
+    scriptHash?: string
+    columnNumber?: number
+    condition?: string
+  }
+  export interface SetBreakpointOnFunctionCallArgs {
+    objectId: Runtime.RemoteObjectId
+    condition?: string
+  }
+  export interface SetScriptSourceArgs {
+    scriptId: Runtime.ScriptId
+    scriptSource: string
+    dryRun?: boolean
+    allowTopFrameEditing?: boolean
+  }
+  export interface SetVariableValueArgs {
+    scopeNumber: number
+    variableName: string
+    newValue: Runtime.CallArgument
+    callFrameId: CallFrameId
+  }
+  export interface StepIntoArgs {
+    breakOnAsyncCall?: boolean
+    skipList?: LocationRange[]
   }
   export interface EnableResult {
     debuggerId: Runtime.UniqueDebuggerId
@@ -5696,6 +6937,27 @@ export namespace HeapProfiler {
     head: SamplingHeapProfileNode
     samples: SamplingHeapProfileSample[]
   }
+  export interface GetObjectByHeapObjectIdArgs {
+    objectId: HeapSnapshotObjectId
+    objectGroup?: string
+  }
+  export interface StartSamplingArgs {
+    samplingInterval?: number
+    includeObjectsCollectedByMajorGC?: boolean
+    includeObjectsCollectedByMinorGC?: boolean
+  }
+  export interface StopTrackingHeapObjectsArgs {
+    reportProgress?: boolean
+    treatGlobalObjectsAsRoots?: boolean
+    captureNumericValue?: boolean
+    exposeInternals?: boolean
+  }
+  export interface TakeHeapSnapshotArgs {
+    reportProgress?: boolean
+    treatGlobalObjectsAsRoots?: boolean
+    captureNumericValue?: boolean
+    exposeInternals?: boolean
+  }
   export interface GetHeapObjectIdResult {
     heapSnapshotObjectId: HeapSnapshotObjectId
   }
@@ -5763,6 +7025,11 @@ export namespace Profiler {
     scriptId: Runtime.ScriptId
     url: string
     functions: FunctionCoverage[]
+  }
+  export interface StartPreciseCoverageArgs {
+    callCount?: boolean
+    detailed?: boolean
+    allowTriggeredUpdates?: boolean
   }
   export interface GetBestEffortCoverageResult {
     result: ScriptCoverage[]
@@ -6013,6 +7280,76 @@ export namespace Runtime {
   }
   export type UniqueDebuggerId = string
   export type StackTraceId = { id: string; debuggerId?: UniqueDebuggerId }
+  export interface AwaitPromiseArgs {
+    promiseObjectId: RemoteObjectId
+    returnByValue?: boolean
+    generatePreview?: boolean
+  }
+  export interface CallFunctionOnArgs {
+    functionDeclaration: string
+    objectId?: RemoteObjectId
+    arguments?: CallArgument[]
+    silent?: boolean
+    returnByValue?: boolean
+    generatePreview?: boolean
+    userGesture?: boolean
+    awaitPromise?: boolean
+    executionContextId?: ExecutionContextId
+    objectGroup?: string
+    throwOnSideEffect?: boolean
+    uniqueContextId?: string
+    serializationOptions?: SerializationOptions
+  }
+  export interface CompileScriptArgs {
+    expression: string
+    sourceURL: string
+    persistScript: boolean
+    executionContextId?: ExecutionContextId
+  }
+  export interface EvaluateArgs {
+    expression: string
+    objectGroup?: string
+    includeCommandLineAPI?: boolean
+    silent?: boolean
+    contextId?: ExecutionContextId
+    returnByValue?: boolean
+    generatePreview?: boolean
+    userGesture?: boolean
+    awaitPromise?: boolean
+    throwOnSideEffect?: boolean
+    timeout?: TimeDelta
+    disableBreaks?: boolean
+    replMode?: boolean
+    allowUnsafeEvalBlockedByCSP?: boolean
+    uniqueContextId?: string
+    serializationOptions?: SerializationOptions
+  }
+  export interface GetPropertiesArgs {
+    objectId: RemoteObjectId
+    ownProperties?: boolean
+    accessorPropertiesOnly?: boolean
+    generatePreview?: boolean
+    nonIndexedPropertiesOnly?: boolean
+  }
+  export interface QueryObjectsArgs {
+    prototypeObjectId: RemoteObjectId
+    objectGroup?: string
+  }
+  export interface RunScriptArgs {
+    scriptId: ScriptId
+    executionContextId?: ExecutionContextId
+    objectGroup?: string
+    silent?: boolean
+    includeCommandLineAPI?: boolean
+    returnByValue?: boolean
+    generatePreview?: boolean
+    awaitPromise?: boolean
+  }
+  export interface AddBindingArgs {
+    name: string
+    executionContextId?: ExecutionContextId
+    executionContextName?: string
+  }
   export interface AwaitPromiseResult {
     result: RemoteObject
     exceptionDetails: ExceptionDetails
@@ -6152,32 +7489,23 @@ class AccessibilityClient {
     })
   }
   getPartialAXTree(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId,
-    fetchRelatives?: boolean
+    args?: Accessibility.GetPartialAXTreeArgs
   ): Promise<Accessibility.GetPartialAXTreeResult> {
     return this.transport.call<Accessibility.GetPartialAXTreeResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Accessibility.getPartialAXTree',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-        fetchRelatives: fetchRelatives,
-      },
+      params: args ?? {},
     })
   }
   getFullAXTree(
-    depth?: number,
-    frameId?: Page.FrameId
+    args?: Accessibility.GetFullAXTreeArgs
   ): Promise<Accessibility.GetFullAXTreeResult> {
     return this.transport.call<Accessibility.GetFullAXTreeResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Accessibility.getFullAXTree',
-      params: { depth: depth, frameId: frameId },
+      params: args ?? {},
     })
   }
   getRootAXNode(
@@ -6191,50 +7519,33 @@ class AccessibilityClient {
     })
   }
   getAXNodeAndAncestors(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId
+    args?: Accessibility.GetAXNodeAndAncestorsArgs
   ): Promise<Accessibility.GetAXNodeAndAncestorsResult> {
     return this.transport.call<Accessibility.GetAXNodeAndAncestorsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Accessibility.getAXNodeAndAncestors',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-      },
+      params: args ?? {},
     })
   }
   getChildAXNodes(
-    id: Accessibility.AXNodeId,
-    frameId?: Page.FrameId
+    args: Accessibility.GetChildAXNodesArgs
   ): Promise<Accessibility.GetChildAXNodesResult> {
     return this.transport.call<Accessibility.GetChildAXNodesResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Accessibility.getChildAXNodes',
-      params: { id: id, frameId: frameId },
+      params: args,
     })
   }
   queryAXTree(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId,
-    accessibleName?: string,
-    role?: string
+    args?: Accessibility.QueryAXTreeArgs
   ): Promise<Accessibility.QueryAXTreeResult> {
     return this.transport.call<Accessibility.QueryAXTreeResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Accessibility.queryAXTree',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-        accessibleName: accessibleName,
-        role: role,
-      },
+      params: args ?? {},
     })
   }
   on<K extends keyof Accessibility.EventMap>(
@@ -6330,20 +7641,20 @@ class AnimationClient {
       params: { animationId: animationId },
     })
   }
-  seekAnimations(animations: string[], currentTime: number): Promise<void> {
+  seekAnimations(args: Animation.SeekAnimationsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Animation.seekAnimations',
-      params: { animations: animations, currentTime: currentTime },
+      params: args,
     })
   }
-  setPaused(animations: string[], paused: boolean): Promise<void> {
+  setPaused(args: Animation.SetPausedArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Animation.setPaused',
-      params: { animations: animations, paused: paused },
+      params: args,
     })
   }
   setPlaybackRate(playbackRate: number): Promise<void> {
@@ -6354,16 +7665,12 @@ class AnimationClient {
       params: { playbackRate: playbackRate },
     })
   }
-  setTiming(
-    animationId: string,
-    duration: number,
-    delay: number
-  ): Promise<void> {
+  setTiming(args: Animation.SetTimingArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Animation.setTiming',
-      params: { animationId: animationId, duration: duration, delay: delay },
+      params: args,
     })
   }
   on<K extends keyof Animation.EventMap>(
@@ -6410,21 +7717,13 @@ class AuditsClient {
     this.listeners = new WeakMap()
   }
   getEncodedResponse(
-    requestId: Network.RequestId,
-    encoding: 'webp' | 'jpeg' | 'png',
-    quality?: number,
-    sizeOnly?: boolean
+    args: Audits.GetEncodedResponseArgs
   ): Promise<Audits.GetEncodedResponseResult> {
     return this.transport.call<Audits.GetEncodedResponseResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Audits.getEncodedResponse',
-      params: {
-        requestId: requestId,
-        encoding: encoding,
-        quality: quality,
-        sizeOnly: sizeOnly,
-      },
+      params: args,
     })
   }
   disable(): Promise<void> {
@@ -6513,50 +7812,37 @@ class ExtensionsClient {
     })
   }
   getStorageItems(
-    id: string,
-    storageArea: Extensions.StorageArea,
-    keys?: string[]
+    args: Extensions.GetStorageItemsArgs
   ): Promise<Extensions.GetStorageItemsResult> {
     return this.transport.call<Extensions.GetStorageItemsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Extensions.getStorageItems',
-      params: { id: id, storageArea: storageArea, keys: keys },
+      params: args,
     })
   }
-  removeStorageItems(
-    id: string,
-    storageArea: Extensions.StorageArea,
-    keys: string[]
-  ): Promise<void> {
+  removeStorageItems(args: Extensions.RemoveStorageItemsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Extensions.removeStorageItems',
-      params: { id: id, storageArea: storageArea, keys: keys },
+      params: args,
     })
   }
-  clearStorageItems(
-    id: string,
-    storageArea: Extensions.StorageArea
-  ): Promise<void> {
+  clearStorageItems(args: Extensions.ClearStorageItemsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Extensions.clearStorageItems',
-      params: { id: id, storageArea: storageArea },
+      params: args,
     })
   }
-  setStorageItems(
-    id: string,
-    storageArea: Extensions.StorageArea,
-    values: Record<string, unknown>
-  ): Promise<void> {
+  setStorageItems(args: Extensions.SetStorageItemsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Extensions.setStorageItems',
-      params: { id: id, storageArea: storageArea, values: values },
+      params: args,
     })
   }
 }
@@ -6569,16 +7855,12 @@ class AutofillClient {
     this.sessionId = sessionId
     this.listeners = new WeakMap()
   }
-  trigger(
-    fieldId: DOM.BackendNodeId,
-    card: Autofill.CreditCard,
-    frameId?: Page.FrameId
-  ): Promise<void> {
+  trigger(args: Autofill.TriggerArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Autofill.trigger',
-      params: { fieldId: fieldId, card: card, frameId: frameId },
+      params: args,
     })
   }
   setAddresses(addresses: Autofill.Address[]): Promise<void> {
@@ -6664,15 +7946,12 @@ class BackgroundServiceClient {
       params: { service: service },
     })
   }
-  setRecording(
-    shouldRecord: boolean,
-    service: BackgroundService.ServiceName
-  ): Promise<void> {
+  setRecording(args: BackgroundService.SetRecordingArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BackgroundService.setRecording',
-      params: { shouldRecord: shouldRecord, service: service },
+      params: args,
     })
   }
   clearEvents(service: BackgroundService.ServiceName): Promise<void> {
@@ -6726,38 +8005,20 @@ class BrowserClient {
     this.sessionId = sessionId
     this.listeners = new WeakMap()
   }
-  setPermission(
-    permission: Browser.PermissionDescriptor,
-    setting: Browser.PermissionSetting,
-    origin?: string,
-    browserContextId?: Browser.BrowserContextID
-  ): Promise<void> {
+  setPermission(args: Browser.SetPermissionArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.setPermission',
-      params: {
-        permission: permission,
-        setting: setting,
-        origin: origin,
-        browserContextId: browserContextId,
-      },
+      params: args,
     })
   }
-  grantPermissions(
-    permissions: Browser.PermissionType[],
-    origin?: string,
-    browserContextId?: Browser.BrowserContextID
-  ): Promise<void> {
+  grantPermissions(args: Browser.GrantPermissionsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.grantPermissions',
-      params: {
-        permissions: permissions,
-        origin: origin,
-        browserContextId: browserContextId,
-      },
+      params: args,
     })
   }
   resetPermissions(browserContextId?: Browser.BrowserContextID): Promise<void> {
@@ -6768,33 +8029,20 @@ class BrowserClient {
       params: { browserContextId: browserContextId },
     })
   }
-  setDownloadBehavior(
-    behavior: 'deny' | 'allow' | 'allowAndName' | 'default',
-    browserContextId?: Browser.BrowserContextID,
-    downloadPath?: string,
-    eventsEnabled?: boolean
-  ): Promise<void> {
+  setDownloadBehavior(args: Browser.SetDownloadBehaviorArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.setDownloadBehavior',
-      params: {
-        behavior: behavior,
-        browserContextId: browserContextId,
-        downloadPath: downloadPath,
-        eventsEnabled: eventsEnabled,
-      },
+      params: args,
     })
   }
-  cancelDownload(
-    guid: string,
-    browserContextId?: Browser.BrowserContextID
-  ): Promise<void> {
+  cancelDownload(args: Browser.CancelDownloadArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.cancelDownload',
-      params: { guid: guid, browserContextId: browserContextId },
+      params: args,
     })
   }
   close(): Promise<void> {
@@ -6838,25 +8086,23 @@ class BrowserClient {
     })
   }
   getHistograms(
-    query?: string,
-    delta?: boolean
+    args?: Browser.GetHistogramsArgs
   ): Promise<Browser.GetHistogramsResult> {
     return this.transport.call<Browser.GetHistogramsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.getHistograms',
-      params: { query: query, delta: delta },
+      params: args ?? {},
     })
   }
   getHistogram(
-    name: string,
-    delta?: boolean
+    args: Browser.GetHistogramArgs
   ): Promise<Browser.GetHistogramResult> {
     return this.transport.call<Browser.GetHistogramResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.getHistogram',
-      params: { name: name, delta: delta },
+      params: args,
     })
   }
   getWindowBounds(
@@ -6879,23 +8125,20 @@ class BrowserClient {
       params: { targetId: targetId },
     })
   }
-  setWindowBounds(
-    windowId: Browser.WindowID,
-    bounds: Browser.Bounds
-  ): Promise<void> {
+  setWindowBounds(args: Browser.SetWindowBoundsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.setWindowBounds',
-      params: { windowId: windowId, bounds: bounds },
+      params: args,
     })
   }
-  setDockTile(badgeLabel?: string, image?: string): Promise<void> {
+  setDockTile(args?: Browser.SetDockTileArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.setDockTile',
-      params: { badgeLabel: badgeLabel, image: image },
+      params: args ?? {},
     })
   }
   executeBrowserCommand(commandId: Browser.BrowserCommandId): Promise<void> {
@@ -6915,21 +8158,13 @@ class BrowserClient {
     })
   }
   addPrivacySandboxCoordinatorKeyConfig(
-    api: Browser.PrivacySandboxAPI,
-    coordinatorOrigin: string,
-    keyConfig: string,
-    browserContextId?: Browser.BrowserContextID
+    args: Browser.AddPrivacySandboxCoordinatorKeyConfigArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Browser.addPrivacySandboxCoordinatorKeyConfig',
-      params: {
-        api: api,
-        coordinatorOrigin: coordinatorOrigin,
-        keyConfig: keyConfig,
-        browserContextId: browserContextId,
-      },
+      params: args,
     })
   }
   on<K extends keyof Browser.EventMap>(
@@ -6972,22 +8207,12 @@ class CSSClient {
     this.sessionId = sessionId
     this.listeners = new WeakMap()
   }
-  addRule(
-    styleSheetId: CSS.StyleSheetId,
-    ruleText: string,
-    location: CSS.SourceRange,
-    nodeForPropertySyntaxValidation?: DOM.NodeId
-  ): Promise<CSS.AddRuleResult> {
+  addRule(args: CSS.AddRuleArgs): Promise<CSS.AddRuleResult> {
     return this.transport.call<CSS.AddRuleResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.addRule',
-      params: {
-        styleSheetId: styleSheetId,
-        ruleText: ruleText,
-        location: location,
-        nodeForPropertySyntaxValidation: nodeForPropertySyntaxValidation,
-      },
+      params: args,
     })
   }
   collectClassNames(
@@ -7001,14 +8226,13 @@ class CSSClient {
     })
   }
   createStyleSheet(
-    frameId: Page.FrameId,
-    force?: boolean
+    args: CSS.CreateStyleSheetArgs
   ): Promise<CSS.CreateStyleSheetResult> {
     return this.transport.call<CSS.CreateStyleSheetResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.createStyleSheet',
-      params: { frameId: frameId, force: force },
+      params: args,
     })
   }
   disable(): Promise<void> {
@@ -7027,23 +8251,20 @@ class CSSClient {
       params: {},
     })
   }
-  forcePseudoState(
-    nodeId: DOM.NodeId,
-    forcedPseudoClasses: string[]
-  ): Promise<void> {
+  forcePseudoState(args: CSS.ForcePseudoStateArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.forcePseudoState',
-      params: { nodeId: nodeId, forcedPseudoClasses: forcedPseudoClasses },
+      params: args,
     })
   }
-  forceStartingStyle(nodeId: DOM.NodeId, forced: boolean): Promise<void> {
+  forceStartingStyle(args: CSS.ForceStartingStyleArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.forceStartingStyle',
-      params: { nodeId: nodeId, forced: forced },
+      params: args,
     })
   }
   getBackgroundColors(
@@ -7066,35 +8287,22 @@ class CSSClient {
       params: { nodeId: nodeId },
     })
   }
-  resolveValues(
-    values: string[],
-    nodeId: DOM.NodeId,
-    propertyName?: string,
-    pseudoType?: DOM.PseudoType,
-    pseudoIdentifier?: string
-  ): Promise<CSS.ResolveValuesResult> {
+  resolveValues(args: CSS.ResolveValuesArgs): Promise<CSS.ResolveValuesResult> {
     return this.transport.call<CSS.ResolveValuesResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.resolveValues',
-      params: {
-        values: values,
-        nodeId: nodeId,
-        propertyName: propertyName,
-        pseudoType: pseudoType,
-        pseudoIdentifier: pseudoIdentifier,
-      },
+      params: args,
     })
   }
   getLonghandProperties(
-    shorthandName: string,
-    value: string
+    args: CSS.GetLonghandPropertiesArgs
   ): Promise<CSS.GetLonghandPropertiesResult> {
     return this.transport.call<CSS.GetLonghandPropertiesResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.getLonghandProperties',
-      params: { shorthandName: shorthandName, value: value },
+      params: args,
     })
   }
   getInlineStylesForNode(
@@ -7164,14 +8372,13 @@ class CSSClient {
     })
   }
   getLocationForSelector(
-    styleSheetId: CSS.StyleSheetId,
-    selectorText: string
+    args: CSS.GetLocationForSelectorArgs
   ): Promise<CSS.GetLocationForSelectorResult> {
     return this.transport.call<CSS.GetLocationForSelectorResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.getLocationForSelector',
-      params: { styleSheetId: styleSheetId, selectorText: selectorText },
+      params: args,
     })
   }
   trackComputedStyleUpdatesForNode(nodeId?: DOM.NodeId): Promise<void> {
@@ -7201,128 +8408,97 @@ class CSSClient {
     })
   }
   setEffectivePropertyValueForNode(
-    nodeId: DOM.NodeId,
-    propertyName: string,
-    value: string
+    args: CSS.SetEffectivePropertyValueForNodeArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setEffectivePropertyValueForNode',
-      params: { nodeId: nodeId, propertyName: propertyName, value: value },
+      params: args,
     })
   }
   setPropertyRulePropertyName(
-    styleSheetId: CSS.StyleSheetId,
-    range: CSS.SourceRange,
-    propertyName: string
+    args: CSS.SetPropertyRulePropertyNameArgs
   ): Promise<CSS.SetPropertyRulePropertyNameResult> {
     return this.transport.call<CSS.SetPropertyRulePropertyNameResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setPropertyRulePropertyName',
-      params: {
-        styleSheetId: styleSheetId,
-        range: range,
-        propertyName: propertyName,
-      },
+      params: args,
     })
   }
   setKeyframeKey(
-    styleSheetId: CSS.StyleSheetId,
-    range: CSS.SourceRange,
-    keyText: string
+    args: CSS.SetKeyframeKeyArgs
   ): Promise<CSS.SetKeyframeKeyResult> {
     return this.transport.call<CSS.SetKeyframeKeyResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setKeyframeKey',
-      params: { styleSheetId: styleSheetId, range: range, keyText: keyText },
+      params: args,
     })
   }
-  setMediaText(
-    styleSheetId: CSS.StyleSheetId,
-    range: CSS.SourceRange,
-    text: string
-  ): Promise<CSS.SetMediaTextResult> {
+  setMediaText(args: CSS.SetMediaTextArgs): Promise<CSS.SetMediaTextResult> {
     return this.transport.call<CSS.SetMediaTextResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setMediaText',
-      params: { styleSheetId: styleSheetId, range: range, text: text },
+      params: args,
     })
   }
   setContainerQueryText(
-    styleSheetId: CSS.StyleSheetId,
-    range: CSS.SourceRange,
-    text: string
+    args: CSS.SetContainerQueryTextArgs
   ): Promise<CSS.SetContainerQueryTextResult> {
     return this.transport.call<CSS.SetContainerQueryTextResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setContainerQueryText',
-      params: { styleSheetId: styleSheetId, range: range, text: text },
+      params: args,
     })
   }
   setSupportsText(
-    styleSheetId: CSS.StyleSheetId,
-    range: CSS.SourceRange,
-    text: string
+    args: CSS.SetSupportsTextArgs
   ): Promise<CSS.SetSupportsTextResult> {
     return this.transport.call<CSS.SetSupportsTextResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setSupportsText',
-      params: { styleSheetId: styleSheetId, range: range, text: text },
+      params: args,
     })
   }
-  setScopeText(
-    styleSheetId: CSS.StyleSheetId,
-    range: CSS.SourceRange,
-    text: string
-  ): Promise<CSS.SetScopeTextResult> {
+  setScopeText(args: CSS.SetScopeTextArgs): Promise<CSS.SetScopeTextResult> {
     return this.transport.call<CSS.SetScopeTextResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setScopeText',
-      params: { styleSheetId: styleSheetId, range: range, text: text },
+      params: args,
     })
   }
   setRuleSelector(
-    styleSheetId: CSS.StyleSheetId,
-    range: CSS.SourceRange,
-    selector: string
+    args: CSS.SetRuleSelectorArgs
   ): Promise<CSS.SetRuleSelectorResult> {
     return this.transport.call<CSS.SetRuleSelectorResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setRuleSelector',
-      params: { styleSheetId: styleSheetId, range: range, selector: selector },
+      params: args,
     })
   }
   setStyleSheetText(
-    styleSheetId: CSS.StyleSheetId,
-    text: string
+    args: CSS.SetStyleSheetTextArgs
   ): Promise<CSS.SetStyleSheetTextResult> {
     return this.transport.call<CSS.SetStyleSheetTextResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setStyleSheetText',
-      params: { styleSheetId: styleSheetId, text: text },
+      params: args,
     })
   }
-  setStyleTexts(
-    edits: CSS.StyleDeclarationEdit[],
-    nodeForPropertySyntaxValidation?: DOM.NodeId
-  ): Promise<CSS.SetStyleTextsResult> {
+  setStyleTexts(args: CSS.SetStyleTextsArgs): Promise<CSS.SetStyleTextsResult> {
     return this.transport.call<CSS.SetStyleTextsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CSS.setStyleTexts',
-      params: {
-        edits: edits,
-        nodeForPropertySyntaxValidation: nodeForPropertySyntaxValidation,
-      },
+      params: args,
     })
   }
   startRuleUsageTracking(): Promise<void> {
@@ -7402,62 +8578,42 @@ class CacheStorageClient {
       params: { cacheId: cacheId },
     })
   }
-  deleteEntry(cacheId: CacheStorage.CacheId, request: string): Promise<void> {
+  deleteEntry(args: CacheStorage.DeleteEntryArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CacheStorage.deleteEntry',
-      params: { cacheId: cacheId, request: request },
+      params: args,
     })
   }
   requestCacheNames(
-    securityOrigin?: string,
-    storageKey?: string,
-    storageBucket?: Storage.StorageBucket
+    args?: CacheStorage.RequestCacheNamesArgs
   ): Promise<CacheStorage.RequestCacheNamesResult> {
     return this.transport.call<CacheStorage.RequestCacheNamesResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CacheStorage.requestCacheNames',
-      params: {
-        securityOrigin: securityOrigin,
-        storageKey: storageKey,
-        storageBucket: storageBucket,
-      },
+      params: args ?? {},
     })
   }
   requestCachedResponse(
-    cacheId: CacheStorage.CacheId,
-    requestURL: string,
-    requestHeaders: CacheStorage.Header[]
+    args: CacheStorage.RequestCachedResponseArgs
   ): Promise<CacheStorage.RequestCachedResponseResult> {
     return this.transport.call<CacheStorage.RequestCachedResponseResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CacheStorage.requestCachedResponse',
-      params: {
-        cacheId: cacheId,
-        requestURL: requestURL,
-        requestHeaders: requestHeaders,
-      },
+      params: args,
     })
   }
   requestEntries(
-    cacheId: CacheStorage.CacheId,
-    skipCount?: number,
-    pageSize?: number,
-    pathFilter?: string
+    args: CacheStorage.RequestEntriesArgs
   ): Promise<CacheStorage.RequestEntriesResult> {
     return this.transport.call<CacheStorage.RequestEntriesResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'CacheStorage.requestEntries',
-      params: {
-        cacheId: cacheId,
-        skipCount: skipCount,
-        pageSize: pageSize,
-        pathFilter: pathFilter,
-      },
+      params: args,
     })
   }
 }
@@ -7565,58 +8721,28 @@ class DOMClient {
       params: { nodeId: nodeId },
     })
   }
-  copyTo(
-    nodeId: DOM.NodeId,
-    targetNodeId: DOM.NodeId,
-    insertBeforeNodeId?: DOM.NodeId
-  ): Promise<DOM.CopyToResult> {
+  copyTo(args: DOM.CopyToArgs): Promise<DOM.CopyToResult> {
     return this.transport.call<DOM.CopyToResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.copyTo',
-      params: {
-        nodeId: nodeId,
-        targetNodeId: targetNodeId,
-        insertBeforeNodeId: insertBeforeNodeId,
-      },
+      params: args,
     })
   }
-  describeNode(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId,
-    depth?: number,
-    pierce?: boolean
-  ): Promise<DOM.DescribeNodeResult> {
+  describeNode(args?: DOM.DescribeNodeArgs): Promise<DOM.DescribeNodeResult> {
     return this.transport.call<DOM.DescribeNodeResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.describeNode',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-        depth: depth,
-        pierce: pierce,
-      },
+      params: args ?? {},
     })
   }
-  scrollIntoViewIfNeeded(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId,
-    rect?: DOM.Rect
-  ): Promise<void> {
+  scrollIntoViewIfNeeded(args?: DOM.ScrollIntoViewIfNeededArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.scrollIntoViewIfNeeded',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-        rect: rect,
-      },
+      params: args ?? {},
     })
   }
   disable(): Promise<void> {
@@ -7643,20 +8769,12 @@ class DOMClient {
       params: { includeWhitespace: includeWhitespace },
     })
   }
-  focus(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId
-  ): Promise<void> {
+  focus(args?: DOM.FocusArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.focus',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-      },
+      params: args ?? {},
     })
   }
   getAttributes(nodeId: DOM.NodeId): Promise<DOM.GetAttributesResult> {
@@ -7667,108 +8785,68 @@ class DOMClient {
       params: { nodeId: nodeId },
     })
   }
-  getBoxModel(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId
-  ): Promise<DOM.GetBoxModelResult> {
+  getBoxModel(args?: DOM.GetBoxModelArgs): Promise<DOM.GetBoxModelResult> {
     return this.transport.call<DOM.GetBoxModelResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getBoxModel',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-      },
+      params: args ?? {},
     })
   }
   getContentQuads(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId
+    args?: DOM.GetContentQuadsArgs
   ): Promise<DOM.GetContentQuadsResult> {
     return this.transport.call<DOM.GetContentQuadsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getContentQuads',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-      },
+      params: args ?? {},
     })
   }
-  getDocument(
-    depth?: number,
-    pierce?: boolean
-  ): Promise<DOM.GetDocumentResult> {
+  getDocument(args?: DOM.GetDocumentArgs): Promise<DOM.GetDocumentResult> {
     return this.transport.call<DOM.GetDocumentResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getDocument',
-      params: { depth: depth, pierce: pierce },
+      params: args ?? {},
     })
   }
   getFlattenedDocument(
-    depth?: number,
-    pierce?: boolean
+    args?: DOM.GetFlattenedDocumentArgs
   ): Promise<DOM.GetFlattenedDocumentResult> {
     return this.transport.call<DOM.GetFlattenedDocumentResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getFlattenedDocument',
-      params: { depth: depth, pierce: pierce },
+      params: args ?? {},
     })
   }
   getNodesForSubtreeByStyle(
-    nodeId: DOM.NodeId,
-    computedStyles: DOM.CSSComputedStyleProperty[],
-    pierce?: boolean
+    args: DOM.GetNodesForSubtreeByStyleArgs
   ): Promise<DOM.GetNodesForSubtreeByStyleResult> {
     return this.transport.call<DOM.GetNodesForSubtreeByStyleResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getNodesForSubtreeByStyle',
-      params: {
-        nodeId: nodeId,
-        computedStyles: computedStyles,
-        pierce: pierce,
-      },
+      params: args,
     })
   }
   getNodeForLocation(
-    x: number,
-    y: number,
-    includeUserAgentShadowDOM?: boolean,
-    ignorePointerEventsNone?: boolean
+    args: DOM.GetNodeForLocationArgs
   ): Promise<DOM.GetNodeForLocationResult> {
     return this.transport.call<DOM.GetNodeForLocationResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getNodeForLocation',
-      params: {
-        x: x,
-        y: y,
-        includeUserAgentShadowDOM: includeUserAgentShadowDOM,
-        ignorePointerEventsNone: ignorePointerEventsNone,
-      },
+      params: args,
     })
   }
-  getOuterHTML(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId
-  ): Promise<DOM.GetOuterHTMLResult> {
+  getOuterHTML(args?: DOM.GetOuterHTMLArgs): Promise<DOM.GetOuterHTMLResult> {
     return this.transport.call<DOM.GetOuterHTMLResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getOuterHTML',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-      },
+      params: args ?? {},
     })
   }
   getRelayoutBoundary(
@@ -7782,15 +8860,13 @@ class DOMClient {
     })
   }
   getSearchResults(
-    searchId: string,
-    fromIndex: number,
-    toIndex: number
+    args: DOM.GetSearchResultsArgs
   ): Promise<DOM.GetSearchResultsResult> {
     return this.transport.call<DOM.GetSearchResultsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getSearchResults',
-      params: { searchId: searchId, fromIndex: fromIndex, toIndex: toIndex },
+      params: args,
     })
   }
   hideHighlight(): Promise<void> {
@@ -7825,34 +8901,20 @@ class DOMClient {
       params: {},
     })
   }
-  moveTo(
-    nodeId: DOM.NodeId,
-    targetNodeId: DOM.NodeId,
-    insertBeforeNodeId?: DOM.NodeId
-  ): Promise<DOM.MoveToResult> {
+  moveTo(args: DOM.MoveToArgs): Promise<DOM.MoveToResult> {
     return this.transport.call<DOM.MoveToResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.moveTo',
-      params: {
-        nodeId: nodeId,
-        targetNodeId: targetNodeId,
-        insertBeforeNodeId: insertBeforeNodeId,
-      },
+      params: args,
     })
   }
-  performSearch(
-    query: string,
-    includeUserAgentShadowDOM?: boolean
-  ): Promise<DOM.PerformSearchResult> {
+  performSearch(args: DOM.PerformSearchArgs): Promise<DOM.PerformSearchResult> {
     return this.transport.call<DOM.PerformSearchResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.performSearch',
-      params: {
-        query: query,
-        includeUserAgentShadowDOM: includeUserAgentShadowDOM,
-      },
+      params: args,
     })
   }
   pushNodeByPathToFrontend(
@@ -7875,26 +8937,22 @@ class DOMClient {
       params: { backendNodeIds: backendNodeIds },
     })
   }
-  querySelector(
-    nodeId: DOM.NodeId,
-    selector: string
-  ): Promise<DOM.QuerySelectorResult> {
+  querySelector(args: DOM.QuerySelectorArgs): Promise<DOM.QuerySelectorResult> {
     return this.transport.call<DOM.QuerySelectorResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.querySelector',
-      params: { nodeId: nodeId, selector: selector },
+      params: args,
     })
   }
   querySelectorAll(
-    nodeId: DOM.NodeId,
-    selector: string
+    args: DOM.QuerySelectorAllArgs
   ): Promise<DOM.QuerySelectorAllResult> {
     return this.transport.call<DOM.QuerySelectorAllResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.querySelectorAll',
-      params: { nodeId: nodeId, selector: selector },
+      params: args,
     })
   }
   getTopLayerElements(): Promise<DOM.GetTopLayerElementsResult> {
@@ -7906,14 +8964,13 @@ class DOMClient {
     })
   }
   getElementByRelation(
-    nodeId: DOM.NodeId,
-    relation: 'PopoverTarget' | 'InterestTarget' | 'CommandFor'
+    args: DOM.GetElementByRelationArgs
   ): Promise<DOM.GetElementByRelationResult> {
     return this.transport.call<DOM.GetElementByRelationResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getElementByRelation',
-      params: { nodeId: nodeId, relation: relation },
+      params: args,
     })
   }
   redo(): Promise<void> {
@@ -7924,12 +8981,12 @@ class DOMClient {
       params: {},
     })
   }
-  removeAttribute(nodeId: DOM.NodeId, name: string): Promise<void> {
+  removeAttribute(args: DOM.RemoveAttributeArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.removeAttribute',
-      params: { nodeId: nodeId, name: name },
+      params: args,
     })
   }
   removeNode(nodeId: DOM.NodeId): Promise<void> {
@@ -7940,16 +8997,12 @@ class DOMClient {
       params: { nodeId: nodeId },
     })
   }
-  requestChildNodes(
-    nodeId: DOM.NodeId,
-    depth?: number,
-    pierce?: boolean
-  ): Promise<void> {
+  requestChildNodes(args: DOM.RequestChildNodesArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.requestChildNodes',
-      params: { nodeId: nodeId, depth: depth, pierce: pierce },
+      params: args,
     })
   }
   requestNode(
@@ -7962,64 +9015,36 @@ class DOMClient {
       params: { objectId: objectId },
     })
   }
-  resolveNode(
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectGroup?: string,
-    executionContextId?: Runtime.ExecutionContextId
-  ): Promise<DOM.ResolveNodeResult> {
+  resolveNode(args?: DOM.ResolveNodeArgs): Promise<DOM.ResolveNodeResult> {
     return this.transport.call<DOM.ResolveNodeResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.resolveNode',
-      params: {
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectGroup: objectGroup,
-        executionContextId: executionContextId,
-      },
+      params: args ?? {},
     })
   }
-  setAttributeValue(
-    nodeId: DOM.NodeId,
-    name: string,
-    value: string
-  ): Promise<void> {
+  setAttributeValue(args: DOM.SetAttributeValueArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.setAttributeValue',
-      params: { nodeId: nodeId, name: name, value: value },
+      params: args,
     })
   }
-  setAttributesAsText(
-    nodeId: DOM.NodeId,
-    text: string,
-    name?: string
-  ): Promise<void> {
+  setAttributesAsText(args: DOM.SetAttributesAsTextArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.setAttributesAsText',
-      params: { nodeId: nodeId, text: text, name: name },
+      params: args,
     })
   }
-  setFileInputFiles(
-    files: string[],
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId
-  ): Promise<void> {
+  setFileInputFiles(args: DOM.SetFileInputFilesArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.setFileInputFiles',
-      params: {
-        files: files,
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-      },
+      params: args,
     })
   }
   setNodeStackTracesEnabled(enable: boolean): Promise<void> {
@@ -8066,31 +9091,28 @@ class DOMClient {
       params: { nodeId: nodeId },
     })
   }
-  setNodeName(
-    nodeId: DOM.NodeId,
-    name: string
-  ): Promise<DOM.SetNodeNameResult> {
+  setNodeName(args: DOM.SetNodeNameArgs): Promise<DOM.SetNodeNameResult> {
     return this.transport.call<DOM.SetNodeNameResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.setNodeName',
-      params: { nodeId: nodeId, name: name },
+      params: args,
     })
   }
-  setNodeValue(nodeId: DOM.NodeId, value: string): Promise<void> {
+  setNodeValue(args: DOM.SetNodeValueArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.setNodeValue',
-      params: { nodeId: nodeId, value: value },
+      params: args,
     })
   }
-  setOuterHTML(nodeId: DOM.NodeId, outerHTML: string): Promise<void> {
+  setOuterHTML(args: DOM.SetOuterHTMLArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.setOuterHTML',
-      params: { nodeId: nodeId, outerHTML: outerHTML },
+      params: args,
     })
   }
   undo(): Promise<void> {
@@ -8110,23 +9132,13 @@ class DOMClient {
     })
   }
   getContainerForNode(
-    nodeId: DOM.NodeId,
-    containerName?: string,
-    physicalAxes?: DOM.PhysicalAxes,
-    logicalAxes?: DOM.LogicalAxes,
-    queriesScrollState?: boolean
+    args: DOM.GetContainerForNodeArgs
   ): Promise<DOM.GetContainerForNodeResult> {
     return this.transport.call<DOM.GetContainerForNodeResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getContainerForNode',
-      params: {
-        nodeId: nodeId,
-        containerName: containerName,
-        physicalAxes: physicalAxes,
-        logicalAxes: logicalAxes,
-        queriesScrollState: queriesScrollState,
-      },
+      params: args,
     })
   }
   getQueryingDescendantsForContainer(
@@ -8140,14 +9152,13 @@ class DOMClient {
     })
   }
   getAnchorElement(
-    nodeId: DOM.NodeId,
-    anchorSpecifier?: string
+    args: DOM.GetAnchorElementArgs
   ): Promise<DOM.GetAnchorElementResult> {
     return this.transport.call<DOM.GetAnchorElementResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOM.getAnchorElement',
-      params: { nodeId: nodeId, anchorSpecifier: anchorSpecifier },
+      params: args,
     })
   }
   on<K extends keyof DOM.EventMap>(
@@ -8188,37 +9199,33 @@ class DOMDebuggerClient {
     this.listeners = new WeakMap()
   }
   getEventListeners(
-    objectId: Runtime.RemoteObjectId,
-    depth?: number,
-    pierce?: boolean
+    args: DOMDebugger.GetEventListenersArgs
   ): Promise<DOMDebugger.GetEventListenersResult> {
     return this.transport.call<DOMDebugger.GetEventListenersResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMDebugger.getEventListeners',
-      params: { objectId: objectId, depth: depth, pierce: pierce },
+      params: args,
     })
   }
   removeDOMBreakpoint(
-    nodeId: DOM.NodeId,
-    type: DOMDebugger.DOMBreakpointType
+    args: DOMDebugger.RemoveDOMBreakpointArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMDebugger.removeDOMBreakpoint',
-      params: { nodeId: nodeId, type: type },
+      params: args,
     })
   }
   removeEventListenerBreakpoint(
-    eventName: string,
-    targetName?: string
+    args: DOMDebugger.RemoveEventListenerBreakpointArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMDebugger.removeEventListenerBreakpoint',
-      params: { eventName: eventName, targetName: targetName },
+      params: args,
     })
   }
   removeInstrumentationBreakpoint(eventName: string): Promise<void> {
@@ -8247,26 +9254,22 @@ class DOMDebuggerClient {
       params: { violationTypes: violationTypes },
     })
   }
-  setDOMBreakpoint(
-    nodeId: DOM.NodeId,
-    type: DOMDebugger.DOMBreakpointType
-  ): Promise<void> {
+  setDOMBreakpoint(args: DOMDebugger.SetDOMBreakpointArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMDebugger.setDOMBreakpoint',
-      params: { nodeId: nodeId, type: type },
+      params: args,
     })
   }
   setEventListenerBreakpoint(
-    eventName: string,
-    targetName?: string
+    args: DOMDebugger.SetEventListenerBreakpointArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMDebugger.setEventListenerBreakpoint',
-      params: { eventName: eventName, targetName: targetName },
+      params: args,
     })
   }
   setInstrumentationBreakpoint(eventName: string): Promise<void> {
@@ -8346,41 +9349,23 @@ class DOMSnapshotClient {
     })
   }
   getSnapshot(
-    computedStyleWhitelist: string[],
-    includeEventListeners?: boolean,
-    includePaintOrder?: boolean,
-    includeUserAgentShadowTree?: boolean
+    args: DOMSnapshot.GetSnapshotArgs
   ): Promise<DOMSnapshot.GetSnapshotResult> {
     return this.transport.call<DOMSnapshot.GetSnapshotResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMSnapshot.getSnapshot',
-      params: {
-        computedStyleWhitelist: computedStyleWhitelist,
-        includeEventListeners: includeEventListeners,
-        includePaintOrder: includePaintOrder,
-        includeUserAgentShadowTree: includeUserAgentShadowTree,
-      },
+      params: args,
     })
   }
   captureSnapshot(
-    computedStyles: string[],
-    includePaintOrder?: boolean,
-    includeDOMRects?: boolean,
-    includeBlendedBackgroundColors?: boolean,
-    includeTextColorOpacities?: boolean
+    args: DOMSnapshot.CaptureSnapshotArgs
   ): Promise<DOMSnapshot.CaptureSnapshotResult> {
     return this.transport.call<DOMSnapshot.CaptureSnapshotResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMSnapshot.captureSnapshot',
-      params: {
-        computedStyles: computedStyles,
-        includePaintOrder: includePaintOrder,
-        includeDOMRects: includeDOMRects,
-        includeBlendedBackgroundColors: includeBlendedBackgroundColors,
-        includeTextColorOpacities: includeTextColorOpacities,
-      },
+      params: args,
     })
   }
 }
@@ -8428,26 +9413,21 @@ class DOMStorageClient {
     })
   }
   removeDOMStorageItem(
-    storageId: DOMStorage.StorageId,
-    key: string
+    args: DOMStorage.RemoveDOMStorageItemArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMStorage.removeDOMStorageItem',
-      params: { storageId: storageId, key: key },
+      params: args,
     })
   }
-  setDOMStorageItem(
-    storageId: DOMStorage.StorageId,
-    key: string,
-    value: string
-  ): Promise<void> {
+  setDOMStorageItem(args: DOMStorage.SetDOMStorageItemArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DOMStorage.setDOMStorageItem',
-      params: { storageId: storageId, key: key, value: value },
+      params: args,
     })
   }
   on<K extends keyof DOMStorage.EventMap>(
@@ -8502,15 +9482,13 @@ class DeviceOrientationClient {
     })
   }
   setDeviceOrientationOverride(
-    alpha: number,
-    beta: number,
-    gamma: number
+    args: DeviceOrientation.SetDeviceOrientationOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DeviceOrientation.setDeviceOrientationOverride',
-      params: { alpha: alpha, beta: beta, gamma: gamma },
+      params: args,
     })
   }
 }
@@ -8596,41 +9574,13 @@ class EmulationClient {
     })
   }
   setDeviceMetricsOverride(
-    width: number,
-    height: number,
-    deviceScaleFactor: number,
-    mobile: boolean,
-    scale?: number,
-    screenWidth?: number,
-    screenHeight?: number,
-    positionX?: number,
-    positionY?: number,
-    dontSetVisibleSize?: boolean,
-    screenOrientation?: Emulation.ScreenOrientation,
-    viewport?: Page.Viewport,
-    displayFeature?: Emulation.DisplayFeature,
-    devicePosture?: Emulation.DevicePosture
+    args: Emulation.SetDeviceMetricsOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setDeviceMetricsOverride',
-      params: {
-        width: width,
-        height: height,
-        deviceScaleFactor: deviceScaleFactor,
-        mobile: mobile,
-        scale: scale,
-        screenWidth: screenWidth,
-        screenHeight: screenHeight,
-        positionX: positionX,
-        positionY: positionY,
-        dontSetVisibleSize: dontSetVisibleSize,
-        screenOrientation: screenOrientation,
-        viewport: viewport,
-        displayFeature: displayFeature,
-        devicePosture: devicePosture,
-      },
+      params: args,
     })
   }
   setDevicePostureOverride(posture: Emulation.DevicePosture): Promise<void> {
@@ -8684,25 +9634,21 @@ class EmulationClient {
     })
   }
   setEmitTouchEventsForMouse(
-    enabled: boolean,
-    configuration?: 'mobile' | 'desktop'
+    args: Emulation.SetEmitTouchEventsForMouseArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setEmitTouchEventsForMouse',
-      params: { enabled: enabled, configuration: configuration },
+      params: args,
     })
   }
-  setEmulatedMedia(
-    media?: string,
-    features?: Emulation.MediaFeature[]
-  ): Promise<void> {
+  setEmulatedMedia(args?: Emulation.SetEmulatedMediaArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setEmulatedMedia',
-      params: { media: media, features: features },
+      params: args ?? {},
     })
   }
   setEmulatedVisionDeficiency(
@@ -8723,27 +9669,13 @@ class EmulationClient {
     })
   }
   setGeolocationOverride(
-    latitude?: number,
-    longitude?: number,
-    accuracy?: number,
-    altitude?: number,
-    altitudeAccuracy?: number,
-    heading?: number,
-    speed?: number
+    args?: Emulation.SetGeolocationOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setGeolocationOverride',
-      params: {
-        latitude: latitude,
-        longitude: longitude,
-        accuracy: accuracy,
-        altitude: altitude,
-        altitudeAccuracy: altitudeAccuracy,
-        heading: heading,
-        speed: speed,
-      },
+      params: args ?? {},
     })
   }
   getOverriddenSensorInformation(
@@ -8757,79 +9689,61 @@ class EmulationClient {
     })
   }
   setSensorOverrideEnabled(
-    enabled: boolean,
-    type: Emulation.SensorType,
-    metadata?: Emulation.SensorMetadata
+    args: Emulation.SetSensorOverrideEnabledArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setSensorOverrideEnabled',
-      params: { enabled: enabled, type: type, metadata: metadata },
+      params: args,
     })
   }
   setSensorOverrideReadings(
-    type: Emulation.SensorType,
-    reading: Emulation.SensorReading
+    args: Emulation.SetSensorOverrideReadingsArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setSensorOverrideReadings',
-      params: { type: type, reading: reading },
+      params: args,
     })
   }
   setPressureSourceOverrideEnabled(
-    enabled: boolean,
-    source: Emulation.PressureSource,
-    metadata?: Emulation.PressureMetadata
+    args: Emulation.SetPressureSourceOverrideEnabledArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setPressureSourceOverrideEnabled',
-      params: { enabled: enabled, source: source, metadata: metadata },
+      params: args,
     })
   }
   setPressureStateOverride(
-    source: Emulation.PressureSource,
-    state: Emulation.PressureState
+    args: Emulation.SetPressureStateOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setPressureStateOverride',
-      params: { source: source, state: state },
+      params: args,
     })
   }
   setPressureDataOverride(
-    source: Emulation.PressureSource,
-    state: Emulation.PressureState,
-    ownContributionEstimate?: number
+    args: Emulation.SetPressureDataOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setPressureDataOverride',
-      params: {
-        source: source,
-        state: state,
-        ownContributionEstimate: ownContributionEstimate,
-      },
+      params: args,
     })
   }
-  setIdleOverride(
-    isUserActive: boolean,
-    isScreenUnlocked: boolean
-  ): Promise<void> {
+  setIdleOverride(args: Emulation.SetIdleOverrideArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setIdleOverride',
-      params: {
-        isUserActive: isUserActive,
-        isScreenUnlocked: isScreenUnlocked,
-      },
+      params: args,
     })
   }
   clearIdleOverride(): Promise<void> {
@@ -8865,32 +9779,23 @@ class EmulationClient {
     })
   }
   setTouchEmulationEnabled(
-    enabled: boolean,
-    maxTouchPoints?: number
+    args: Emulation.SetTouchEmulationEnabledArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setTouchEmulationEnabled',
-      params: { enabled: enabled, maxTouchPoints: maxTouchPoints },
+      params: args,
     })
   }
   setVirtualTimePolicy(
-    policy: Emulation.VirtualTimePolicy,
-    budget?: number,
-    maxVirtualTimeTaskStarvationCount?: number,
-    initialVirtualTime?: Network.TimeSinceEpoch
+    args: Emulation.SetVirtualTimePolicyArgs
   ): Promise<Emulation.SetVirtualTimePolicyResult> {
     return this.transport.call<Emulation.SetVirtualTimePolicyResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setVirtualTimePolicy',
-      params: {
-        policy: policy,
-        budget: budget,
-        maxVirtualTimeTaskStarvationCount: maxVirtualTimeTaskStarvationCount,
-        initialVirtualTime: initialVirtualTime,
-      },
+      params: args,
     })
   }
   setLocaleOverride(locale?: string): Promise<void> {
@@ -8909,12 +9814,12 @@ class EmulationClient {
       params: { timezoneId: timezoneId },
     })
   }
-  setVisibleSize(width: number, height: number): Promise<void> {
+  setVisibleSize(args: Emulation.SetVisibleSizeArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setVisibleSize',
-      params: { width: width, height: height },
+      params: args,
     })
   }
   setDisabledImageTypes(
@@ -8936,21 +9841,13 @@ class EmulationClient {
     })
   }
   setUserAgentOverride(
-    userAgent: string,
-    acceptLanguage?: string,
-    platform?: string,
-    userAgentMetadata?: Emulation.UserAgentMetadata
+    args: Emulation.SetUserAgentOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Emulation.setUserAgentOverride',
-      params: {
-        userAgent: userAgent,
-        acceptLanguage: acceptLanguage,
-        platform: platform,
-        userAgentMetadata: userAgentMetadata,
-      },
+      params: args,
     })
   }
   setAutomationOverride(enabled: boolean): Promise<void> {
@@ -9013,21 +9910,13 @@ class HeadlessExperimentalClient {
     this.listeners = new WeakMap()
   }
   beginFrame(
-    frameTimeTicks?: number,
-    interval?: number,
-    noDisplayUpdates?: boolean,
-    screenshot?: HeadlessExperimental.ScreenshotParams
+    args?: HeadlessExperimental.BeginFrameArgs
   ): Promise<HeadlessExperimental.BeginFrameResult> {
     return this.transport.call<HeadlessExperimental.BeginFrameResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'HeadlessExperimental.beginFrame',
-      params: {
-        frameTimeTicks: frameTimeTicks,
-        interval: interval,
-        noDisplayUpdates: noDisplayUpdates,
-        screenshot: screenshot,
-      },
+      params: args ?? {},
     })
   }
   disable(): Promise<void> {
@@ -9064,16 +9953,12 @@ class IOClient {
       params: { handle: handle },
     })
   }
-  read(
-    handle: IO.StreamHandle,
-    offset?: number,
-    size?: number
-  ): Promise<IO.ReadResult> {
+  read(args: IO.ReadArgs): Promise<IO.ReadResult> {
     return this.transport.call<IO.ReadResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'IO.read',
-      params: { handle: handle, offset: offset, size: size },
+      params: args,
     })
   }
   resolveBlob(objectId: Runtime.RemoteObjectId): Promise<IO.ResolveBlobResult> {
@@ -9114,64 +9999,30 @@ class IndexedDBClient {
     this.sessionId = sessionId
     this.listeners = new WeakMap()
   }
-  clearObjectStore(
-    databaseName: string,
-    objectStoreName: string,
-    securityOrigin?: string,
-    storageKey?: string,
-    storageBucket?: Storage.StorageBucket
-  ): Promise<void> {
+  clearObjectStore(args: IndexedDB.ClearObjectStoreArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'IndexedDB.clearObjectStore',
-      params: {
-        databaseName: databaseName,
-        objectStoreName: objectStoreName,
-        securityOrigin: securityOrigin,
-        storageKey: storageKey,
-        storageBucket: storageBucket,
-      },
+      params: args,
     })
   }
-  deleteDatabase(
-    databaseName: string,
-    securityOrigin?: string,
-    storageKey?: string,
-    storageBucket?: Storage.StorageBucket
-  ): Promise<void> {
+  deleteDatabase(args: IndexedDB.DeleteDatabaseArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'IndexedDB.deleteDatabase',
-      params: {
-        databaseName: databaseName,
-        securityOrigin: securityOrigin,
-        storageKey: storageKey,
-        storageBucket: storageBucket,
-      },
+      params: args,
     })
   }
   deleteObjectStoreEntries(
-    databaseName: string,
-    objectStoreName: string,
-    keyRange: IndexedDB.KeyRange,
-    securityOrigin?: string,
-    storageKey?: string,
-    storageBucket?: Storage.StorageBucket
+    args: IndexedDB.DeleteObjectStoreEntriesArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'IndexedDB.deleteObjectStoreEntries',
-      params: {
-        databaseName: databaseName,
-        objectStoreName: objectStoreName,
-        keyRange: keyRange,
-        securityOrigin: securityOrigin,
-        storageKey: storageKey,
-        storageBucket: storageBucket,
-      },
+      params: args,
     })
   }
   disable(): Promise<void> {
@@ -9191,85 +10042,43 @@ class IndexedDBClient {
     })
   }
   requestData(
-    databaseName: string,
-    objectStoreName: string,
-    indexName: string,
-    skipCount: number,
-    pageSize: number,
-    securityOrigin?: string,
-    storageKey?: string,
-    storageBucket?: Storage.StorageBucket,
-    keyRange?: IndexedDB.KeyRange
+    args: IndexedDB.RequestDataArgs
   ): Promise<IndexedDB.RequestDataResult> {
     return this.transport.call<IndexedDB.RequestDataResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'IndexedDB.requestData',
-      params: {
-        databaseName: databaseName,
-        objectStoreName: objectStoreName,
-        indexName: indexName,
-        skipCount: skipCount,
-        pageSize: pageSize,
-        securityOrigin: securityOrigin,
-        storageKey: storageKey,
-        storageBucket: storageBucket,
-        keyRange: keyRange,
-      },
+      params: args,
     })
   }
   getMetadata(
-    databaseName: string,
-    objectStoreName: string,
-    securityOrigin?: string,
-    storageKey?: string,
-    storageBucket?: Storage.StorageBucket
+    args: IndexedDB.GetMetadataArgs
   ): Promise<IndexedDB.GetMetadataResult> {
     return this.transport.call<IndexedDB.GetMetadataResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'IndexedDB.getMetadata',
-      params: {
-        databaseName: databaseName,
-        objectStoreName: objectStoreName,
-        securityOrigin: securityOrigin,
-        storageKey: storageKey,
-        storageBucket: storageBucket,
-      },
+      params: args,
     })
   }
   requestDatabase(
-    databaseName: string,
-    securityOrigin?: string,
-    storageKey?: string,
-    storageBucket?: Storage.StorageBucket
+    args: IndexedDB.RequestDatabaseArgs
   ): Promise<IndexedDB.RequestDatabaseResult> {
     return this.transport.call<IndexedDB.RequestDatabaseResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'IndexedDB.requestDatabase',
-      params: {
-        databaseName: databaseName,
-        securityOrigin: securityOrigin,
-        storageKey: storageKey,
-        storageBucket: storageBucket,
-      },
+      params: args,
     })
   }
   requestDatabaseNames(
-    securityOrigin?: string,
-    storageKey?: string,
-    storageBucket?: Storage.StorageBucket
+    args?: IndexedDB.RequestDatabaseNamesArgs
   ): Promise<IndexedDB.RequestDatabaseNamesResult> {
     return this.transport.call<IndexedDB.RequestDatabaseNamesResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'IndexedDB.requestDatabaseNames',
-      params: {
-        securityOrigin: securityOrigin,
-        storageKey: storageKey,
-        storageBucket: storageBucket,
-      },
+      params: args ?? {},
     })
   }
 }
@@ -9282,58 +10091,20 @@ class InputClient {
     this.sessionId = sessionId
     this.listeners = new WeakMap()
   }
-  dispatchDragEvent(
-    type: 'dragEnter' | 'dragOver' | 'drop' | 'dragCancel',
-    x: number,
-    y: number,
-    data: Input.DragData,
-    modifiers?: number
-  ): Promise<void> {
+  dispatchDragEvent(args: Input.DispatchDragEventArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.dispatchDragEvent',
-      params: { type: type, x: x, y: y, data: data, modifiers: modifiers },
+      params: args,
     })
   }
-  dispatchKeyEvent(
-    type: 'keyDown' | 'keyUp' | 'rawKeyDown' | 'char',
-    modifiers?: number,
-    timestamp?: Input.TimeSinceEpoch,
-    text?: string,
-    unmodifiedText?: string,
-    keyIdentifier?: string,
-    code?: string,
-    key?: string,
-    windowsVirtualKeyCode?: number,
-    nativeVirtualKeyCode?: number,
-    autoRepeat?: boolean,
-    isKeypad?: boolean,
-    isSystemKey?: boolean,
-    location?: number,
-    commands?: string[]
-  ): Promise<void> {
+  dispatchKeyEvent(args: Input.DispatchKeyEventArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.dispatchKeyEvent',
-      params: {
-        type: type,
-        modifiers: modifiers,
-        timestamp: timestamp,
-        text: text,
-        unmodifiedText: unmodifiedText,
-        keyIdentifier: keyIdentifier,
-        code: code,
-        key: key,
-        windowsVirtualKeyCode: windowsVirtualKeyCode,
-        nativeVirtualKeyCode: nativeVirtualKeyCode,
-        autoRepeat: autoRepeat,
-        isKeypad: isKeypad,
-        isSystemKey: isSystemKey,
-        location: location,
-        commands: commands,
-      },
+      params: args,
     })
   }
   insertText(text: string): Promise<void> {
@@ -9344,84 +10115,28 @@ class InputClient {
       params: { text: text },
     })
   }
-  imeSetComposition(
-    text: string,
-    selectionStart: number,
-    selectionEnd: number,
-    replacementStart?: number,
-    replacementEnd?: number
-  ): Promise<void> {
+  imeSetComposition(args: Input.ImeSetCompositionArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.imeSetComposition',
-      params: {
-        text: text,
-        selectionStart: selectionStart,
-        selectionEnd: selectionEnd,
-        replacementStart: replacementStart,
-        replacementEnd: replacementEnd,
-      },
+      params: args,
     })
   }
-  dispatchMouseEvent(
-    type: 'mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel',
-    x: number,
-    y: number,
-    modifiers?: number,
-    timestamp?: Input.TimeSinceEpoch,
-    button?: Input.MouseButton,
-    buttons?: number,
-    clickCount?: number,
-    force?: number,
-    tangentialPressure?: number,
-    tiltX?: number,
-    tiltY?: number,
-    twist?: number,
-    deltaX?: number,
-    deltaY?: number,
-    pointerType?: 'mouse' | 'pen'
-  ): Promise<void> {
+  dispatchMouseEvent(args: Input.DispatchMouseEventArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.dispatchMouseEvent',
-      params: {
-        type: type,
-        x: x,
-        y: y,
-        modifiers: modifiers,
-        timestamp: timestamp,
-        button: button,
-        buttons: buttons,
-        clickCount: clickCount,
-        force: force,
-        tangentialPressure: tangentialPressure,
-        tiltX: tiltX,
-        tiltY: tiltY,
-        twist: twist,
-        deltaX: deltaX,
-        deltaY: deltaY,
-        pointerType: pointerType,
-      },
+      params: args,
     })
   }
-  dispatchTouchEvent(
-    type: 'touchStart' | 'touchEnd' | 'touchMove' | 'touchCancel',
-    touchPoints: Input.TouchPoint[],
-    modifiers?: number,
-    timestamp?: Input.TimeSinceEpoch
-  ): Promise<void> {
+  dispatchTouchEvent(args: Input.DispatchTouchEventArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.dispatchTouchEvent',
-      params: {
-        type: type,
-        touchPoints: touchPoints,
-        modifiers: modifiers,
-        timestamp: timestamp,
-      },
+      params: args,
     })
   }
   cancelDragging(): Promise<void> {
@@ -9433,31 +10148,13 @@ class InputClient {
     })
   }
   emulateTouchFromMouseEvent(
-    type: 'mousePressed' | 'mouseReleased' | 'mouseMoved' | 'mouseWheel',
-    x: number,
-    y: number,
-    button: Input.MouseButton,
-    timestamp?: Input.TimeSinceEpoch,
-    deltaX?: number,
-    deltaY?: number,
-    modifiers?: number,
-    clickCount?: number
+    args: Input.EmulateTouchFromMouseEventArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.emulateTouchFromMouseEvent',
-      params: {
-        type: type,
-        x: x,
-        y: y,
-        button: button,
-        timestamp: timestamp,
-        deltaX: deltaX,
-        deltaY: deltaY,
-        modifiers: modifiers,
-        clickCount: clickCount,
-      },
+      params: args,
     })
   }
   setIgnoreInputEvents(ignore: boolean): Promise<void> {
@@ -9477,77 +10174,31 @@ class InputClient {
     })
   }
   synthesizePinchGesture(
-    x: number,
-    y: number,
-    scaleFactor: number,
-    relativeSpeed?: number,
-    gestureSourceType?: Input.GestureSourceType
+    args: Input.SynthesizePinchGestureArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.synthesizePinchGesture',
-      params: {
-        x: x,
-        y: y,
-        scaleFactor: scaleFactor,
-        relativeSpeed: relativeSpeed,
-        gestureSourceType: gestureSourceType,
-      },
+      params: args,
     })
   }
   synthesizeScrollGesture(
-    x: number,
-    y: number,
-    xDistance?: number,
-    yDistance?: number,
-    xOverscroll?: number,
-    yOverscroll?: number,
-    preventFling?: boolean,
-    speed?: number,
-    gestureSourceType?: Input.GestureSourceType,
-    repeatCount?: number,
-    repeatDelayMs?: number,
-    interactionMarkerName?: string
+    args: Input.SynthesizeScrollGestureArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.synthesizeScrollGesture',
-      params: {
-        x: x,
-        y: y,
-        xDistance: xDistance,
-        yDistance: yDistance,
-        xOverscroll: xOverscroll,
-        yOverscroll: yOverscroll,
-        preventFling: preventFling,
-        speed: speed,
-        gestureSourceType: gestureSourceType,
-        repeatCount: repeatCount,
-        repeatDelayMs: repeatDelayMs,
-        interactionMarkerName: interactionMarkerName,
-      },
+      params: args,
     })
   }
-  synthesizeTapGesture(
-    x: number,
-    y: number,
-    duration?: number,
-    tapCount?: number,
-    gestureSourceType?: Input.GestureSourceType
-  ): Promise<void> {
+  synthesizeTapGesture(args: Input.SynthesizeTapGestureArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Input.synthesizeTapGesture',
-      params: {
-        x: x,
-        y: y,
-        duration: duration,
-        tapCount: tapCount,
-        gestureSourceType: gestureSourceType,
-      },
+      params: args,
     })
   }
   on<K extends keyof Input.EventMap>(
@@ -9693,21 +10344,13 @@ class LayerTreeClient {
     })
   }
   profileSnapshot(
-    snapshotId: LayerTree.SnapshotId,
-    minRepeatCount?: number,
-    minDuration?: number,
-    clipRect?: DOM.Rect
+    args: LayerTree.ProfileSnapshotArgs
   ): Promise<LayerTree.ProfileSnapshotResult> {
     return this.transport.call<LayerTree.ProfileSnapshotResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'LayerTree.profileSnapshot',
-      params: {
-        snapshotId: snapshotId,
-        minRepeatCount: minRepeatCount,
-        minDuration: minDuration,
-        clipRect: clipRect,
-      },
+      params: args,
     })
   }
   releaseSnapshot(snapshotId: LayerTree.SnapshotId): Promise<void> {
@@ -9719,21 +10362,13 @@ class LayerTreeClient {
     })
   }
   replaySnapshot(
-    snapshotId: LayerTree.SnapshotId,
-    fromStep?: number,
-    toStep?: number,
-    scale?: number
+    args: LayerTree.ReplaySnapshotArgs
   ): Promise<LayerTree.ReplaySnapshotResult> {
     return this.transport.call<LayerTree.ReplaySnapshotResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'LayerTree.replaySnapshot',
-      params: {
-        snapshotId: snapshotId,
-        fromStep: fromStep,
-        toStep: toStep,
-        scale: scale,
-      },
+      params: args,
     })
   }
   snapshotCommandLog(
@@ -9914,18 +10549,12 @@ class MemoryClient {
       params: { level: level },
     })
   }
-  startSampling(
-    samplingInterval?: number,
-    suppressRandomness?: boolean
-  ): Promise<void> {
+  startSampling(args?: Memory.StartSamplingArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Memory.startSampling',
-      params: {
-        samplingInterval: samplingInterval,
-        suppressRandomness: suppressRandomness,
-      },
+      params: args ?? {},
     })
   }
   stopSampling(): Promise<void> {
@@ -10027,49 +10656,21 @@ class NetworkClient {
     })
   }
   continueInterceptedRequest(
-    interceptionId: Network.InterceptionId,
-    errorReason?: Network.ErrorReason,
-    rawResponse?: string,
-    url?: string,
-    method?: string,
-    postData?: string,
-    headers?: Network.Headers,
-    authChallengeResponse?: Network.AuthChallengeResponse
+    args: Network.ContinueInterceptedRequestArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.continueInterceptedRequest',
-      params: {
-        interceptionId: interceptionId,
-        errorReason: errorReason,
-        rawResponse: rawResponse,
-        url: url,
-        method: method,
-        postData: postData,
-        headers: headers,
-        authChallengeResponse: authChallengeResponse,
-      },
+      params: args,
     })
   }
-  deleteCookies(
-    name: string,
-    url?: string,
-    domain?: string,
-    path?: string,
-    partitionKey?: Network.CookiePartitionKey
-  ): Promise<void> {
+  deleteCookies(args: Network.DeleteCookiesArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.deleteCookies',
-      params: {
-        name: name,
-        url: url,
-        domain: domain,
-        path: path,
-        partitionKey: partitionKey,
-      },
+      params: args,
     })
   }
   disable(): Promise<void> {
@@ -10081,47 +10682,21 @@ class NetworkClient {
     })
   }
   emulateNetworkConditions(
-    offline: boolean,
-    latency: number,
-    downloadThroughput: number,
-    uploadThroughput: number,
-    connectionType?: Network.ConnectionType,
-    packetLoss?: number,
-    packetQueueLength?: number,
-    packetReordering?: boolean
+    args: Network.EmulateNetworkConditionsArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.emulateNetworkConditions',
-      params: {
-        offline: offline,
-        latency: latency,
-        downloadThroughput: downloadThroughput,
-        uploadThroughput: uploadThroughput,
-        connectionType: connectionType,
-        packetLoss: packetLoss,
-        packetQueueLength: packetQueueLength,
-        packetReordering: packetReordering,
-      },
+      params: args,
     })
   }
-  enable(
-    maxTotalBufferSize?: number,
-    maxResourceBufferSize?: number,
-    maxPostDataSize?: number,
-    reportDirectSocketTraffic?: boolean
-  ): Promise<void> {
+  enable(args?: Network.EnableArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.enable',
-      params: {
-        maxTotalBufferSize: maxTotalBufferSize,
-        maxResourceBufferSize: maxResourceBufferSize,
-        maxPostDataSize: maxPostDataSize,
-        reportDirectSocketTraffic: reportDirectSocketTraffic,
-      },
+      params: args ?? {},
     })
   }
   getAllCookies(): Promise<Network.GetAllCookiesResult> {
@@ -10199,21 +10774,13 @@ class NetworkClient {
     })
   }
   searchInResponseBody(
-    requestId: Network.RequestId,
-    query: string,
-    caseSensitive?: boolean,
-    isRegex?: boolean
+    args: Network.SearchInResponseBodyArgs
   ): Promise<Network.SearchInResponseBodyResult> {
     return this.transport.call<Network.SearchInResponseBodyResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.searchInResponseBody',
-      params: {
-        requestId: requestId,
-        query: query,
-        caseSensitive: caseSensitive,
-        isRegex: isRegex,
-      },
+      params: args,
     })
   }
   setBlockedURLs(urls: string[]): Promise<void> {
@@ -10240,42 +10807,12 @@ class NetworkClient {
       params: { cacheDisabled: cacheDisabled },
     })
   }
-  setCookie(
-    name: string,
-    value: string,
-    url?: string,
-    domain?: string,
-    path?: string,
-    secure?: boolean,
-    httpOnly?: boolean,
-    sameSite?: Network.CookieSameSite,
-    expires?: Network.TimeSinceEpoch,
-    priority?: Network.CookiePriority,
-    sameParty?: boolean,
-    sourceScheme?: Network.CookieSourceScheme,
-    sourcePort?: number,
-    partitionKey?: Network.CookiePartitionKey
-  ): Promise<Network.SetCookieResult> {
+  setCookie(args: Network.SetCookieArgs): Promise<Network.SetCookieResult> {
     return this.transport.call<Network.SetCookieResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.setCookie',
-      params: {
-        name: name,
-        value: value,
-        url: url,
-        domain: domain,
-        path: path,
-        secure: secure,
-        httpOnly: httpOnly,
-        sameSite: sameSite,
-        expires: expires,
-        priority: priority,
-        sameParty: sameParty,
-        sourceScheme: sourceScheme,
-        sourcePort: sourcePort,
-        partitionKey: partitionKey,
-      },
+      params: args,
     })
   }
   setCookies(cookies: Network.CookieParam[]): Promise<void> {
@@ -10310,22 +10847,12 @@ class NetworkClient {
       params: { patterns: patterns },
     })
   }
-  setUserAgentOverride(
-    userAgent: string,
-    acceptLanguage?: string,
-    platform?: string,
-    userAgentMetadata?: Emulation.UserAgentMetadata
-  ): Promise<void> {
+  setUserAgentOverride(args: Network.SetUserAgentOverrideArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.setUserAgentOverride',
-      params: {
-        userAgent: userAgent,
-        acceptLanguage: acceptLanguage,
-        platform: platform,
-        userAgentMetadata: userAgentMetadata,
-      },
+      params: args,
     })
   }
   streamResourceContent(
@@ -10357,31 +10884,21 @@ class NetworkClient {
     })
   }
   loadNetworkResource(
-    url: string,
-    options: Network.LoadNetworkResourceOptions,
-    frameId?: Page.FrameId
+    args: Network.LoadNetworkResourceArgs
   ): Promise<Network.LoadNetworkResourceResult> {
     return this.transport.call<Network.LoadNetworkResourceResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.loadNetworkResource',
-      params: { url: url, options: options, frameId: frameId },
+      params: args,
     })
   }
-  setCookieControls(
-    enableThirdPartyCookieRestriction: boolean,
-    disableThirdPartyCookieMetadata: boolean,
-    disableThirdPartyCookieHeuristics: boolean
-  ): Promise<void> {
+  setCookieControls(args: Network.SetCookieControlsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.setCookieControls',
-      params: {
-        enableThirdPartyCookieRestriction: enableThirdPartyCookieRestriction,
-        disableThirdPartyCookieMetadata: disableThirdPartyCookieMetadata,
-        disableThirdPartyCookieHeuristics: disableThirdPartyCookieHeuristics,
-      },
+      params: args,
     })
   }
   on<K extends keyof Network.EventMap>(
@@ -10441,23 +10958,13 @@ class OverlayClient {
     })
   }
   getHighlightObjectForTest(
-    nodeId: DOM.NodeId,
-    includeDistance?: boolean,
-    includeStyle?: boolean,
-    colorFormat?: Overlay.ColorFormat,
-    showAccessibilityInfo?: boolean
+    args: Overlay.GetHighlightObjectForTestArgs
   ): Promise<Overlay.GetHighlightObjectForTestResult> {
     return this.transport.call<Overlay.GetHighlightObjectForTestResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Overlay.getHighlightObjectForTest',
-      params: {
-        nodeId: nodeId,
-        includeDistance: includeDistance,
-        includeStyle: includeStyle,
-        colorFormat: colorFormat,
-        showAccessibilityInfo: showAccessibilityInfo,
-      },
+      params: args,
     })
   }
   getGridHighlightObjectsForTest(
@@ -10490,103 +10997,52 @@ class OverlayClient {
       params: {},
     })
   }
-  highlightFrame(
-    frameId: Page.FrameId,
-    contentColor?: DOM.RGBA,
-    contentOutlineColor?: DOM.RGBA
-  ): Promise<void> {
+  highlightFrame(args: Overlay.HighlightFrameArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Overlay.highlightFrame',
-      params: {
-        frameId: frameId,
-        contentColor: contentColor,
-        contentOutlineColor: contentOutlineColor,
-      },
+      params: args,
     })
   }
-  highlightNode(
-    highlightConfig: Overlay.HighlightConfig,
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId,
-    selector?: string
-  ): Promise<void> {
+  highlightNode(args: Overlay.HighlightNodeArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Overlay.highlightNode',
-      params: {
-        highlightConfig: highlightConfig,
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-        selector: selector,
-      },
+      params: args,
     })
   }
-  highlightQuad(
-    quad: DOM.Quad,
-    color?: DOM.RGBA,
-    outlineColor?: DOM.RGBA
-  ): Promise<void> {
+  highlightQuad(args: Overlay.HighlightQuadArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Overlay.highlightQuad',
-      params: { quad: quad, color: color, outlineColor: outlineColor },
+      params: args,
     })
   }
-  highlightRect(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    color?: DOM.RGBA,
-    outlineColor?: DOM.RGBA
-  ): Promise<void> {
+  highlightRect(args: Overlay.HighlightRectArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Overlay.highlightRect',
-      params: {
-        x: x,
-        y: y,
-        width: width,
-        height: height,
-        color: color,
-        outlineColor: outlineColor,
-      },
+      params: args,
     })
   }
-  highlightSourceOrder(
-    sourceOrderConfig: Overlay.SourceOrderConfig,
-    nodeId?: DOM.NodeId,
-    backendNodeId?: DOM.BackendNodeId,
-    objectId?: Runtime.RemoteObjectId
-  ): Promise<void> {
+  highlightSourceOrder(args: Overlay.HighlightSourceOrderArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Overlay.highlightSourceOrder',
-      params: {
-        sourceOrderConfig: sourceOrderConfig,
-        nodeId: nodeId,
-        backendNodeId: backendNodeId,
-        objectId: objectId,
-      },
+      params: args,
     })
   }
-  setInspectMode(
-    mode: Overlay.InspectMode,
-    highlightConfig?: Overlay.HighlightConfig
-  ): Promise<void> {
+  setInspectMode(args: Overlay.SetInspectModeArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Overlay.setInspectMode',
-      params: { mode: mode, highlightConfig: highlightConfig },
+      params: args,
     })
   }
   setShowAdHighlights(show: boolean): Promise<void> {
@@ -10792,21 +11248,13 @@ class PageClient {
     })
   }
   addScriptToEvaluateOnNewDocument(
-    source: string,
-    worldName?: string,
-    includeCommandLineAPI?: boolean,
-    runImmediately?: boolean
+    args: Page.AddScriptToEvaluateOnNewDocumentArgs
   ): Promise<Page.AddScriptToEvaluateOnNewDocumentResult> {
     return this.transport.call<Page.AddScriptToEvaluateOnNewDocumentResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.addScriptToEvaluateOnNewDocument',
-      params: {
-        source: source,
-        worldName: worldName,
-        includeCommandLineAPI: includeCommandLineAPI,
-        runImmediately: runImmediately,
-      },
+      params: args,
     })
   }
   bringToFront(): Promise<void> {
@@ -10818,25 +11266,13 @@ class PageClient {
     })
   }
   captureScreenshot(
-    format?: 'jpeg' | 'png' | 'webp',
-    quality?: number,
-    clip?: Page.Viewport,
-    fromSurface?: boolean,
-    captureBeyondViewport?: boolean,
-    optimizeForSpeed?: boolean
+    args?: Page.CaptureScreenshotArgs
   ): Promise<Page.CaptureScreenshotResult> {
     return this.transport.call<Page.CaptureScreenshotResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.captureScreenshot',
-      params: {
-        format: format,
-        quality: quality,
-        clip: clip,
-        fromSurface: fromSurface,
-        captureBeyondViewport: captureBeyondViewport,
-        optimizeForSpeed: optimizeForSpeed,
-      },
+      params: args ?? {},
     })
   }
   captureSnapshot(format?: 'mhtml'): Promise<Page.CaptureSnapshotResult> {
@@ -10872,27 +11308,21 @@ class PageClient {
     })
   }
   createIsolatedWorld(
-    frameId: Page.FrameId,
-    worldName?: string,
-    grantUniveralAccess?: boolean
+    args: Page.CreateIsolatedWorldArgs
   ): Promise<Page.CreateIsolatedWorldResult> {
     return this.transport.call<Page.CreateIsolatedWorldResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.createIsolatedWorld',
-      params: {
-        frameId: frameId,
-        worldName: worldName,
-        grantUniveralAccess: grantUniveralAccess,
-      },
+      params: args,
     })
   }
-  deleteCookie(cookieName: string, url: string): Promise<void> {
+  deleteCookie(args: Page.DeleteCookieArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.deleteCookie',
-      params: { cookieName: cookieName, url: url },
+      params: args,
     })
   }
   disable(): Promise<void> {
@@ -10986,14 +11416,13 @@ class PageClient {
     })
   }
   getResourceContent(
-    frameId: Page.FrameId,
-    url: string
+    args: Page.GetResourceContentArgs
   ): Promise<Page.GetResourceContentResult> {
     return this.transport.call<Page.GetResourceContentResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.getResourceContent',
-      params: { frameId: frameId, url: url },
+      params: args,
     })
   }
   getResourceTree(): Promise<Page.GetResourceTreeResult> {
@@ -11004,32 +11433,20 @@ class PageClient {
       params: {},
     })
   }
-  handleJavaScriptDialog(accept: boolean, promptText?: string): Promise<void> {
+  handleJavaScriptDialog(args: Page.HandleJavaScriptDialogArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.handleJavaScriptDialog',
-      params: { accept: accept, promptText: promptText },
+      params: args,
     })
   }
-  navigate(
-    url: string,
-    referrer?: string,
-    transitionType?: Page.TransitionType,
-    frameId?: Page.FrameId,
-    referrerPolicy?: Page.ReferrerPolicy
-  ): Promise<Page.NavigateResult> {
+  navigate(args: Page.NavigateArgs): Promise<Page.NavigateResult> {
     return this.transport.call<Page.NavigateResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.navigate',
-      params: {
-        url: url,
-        referrer: referrer,
-        transitionType: transitionType,
-        frameId: frameId,
-        referrerPolicy: referrerPolicy,
-      },
+      params: args,
     })
   }
   navigateToHistoryEntry(entryId: number): Promise<void> {
@@ -11040,64 +11457,20 @@ class PageClient {
       params: { entryId: entryId },
     })
   }
-  printToPDF(
-    landscape?: boolean,
-    displayHeaderFooter?: boolean,
-    printBackground?: boolean,
-    scale?: number,
-    paperWidth?: number,
-    paperHeight?: number,
-    marginTop?: number,
-    marginBottom?: number,
-    marginLeft?: number,
-    marginRight?: number,
-    pageRanges?: string,
-    headerTemplate?: string,
-    footerTemplate?: string,
-    preferCSSPageSize?: boolean,
-    transferMode?: 'ReturnAsBase64' | 'ReturnAsStream',
-    generateTaggedPDF?: boolean,
-    generateDocumentOutline?: boolean
-  ): Promise<Page.PrintToPDFResult> {
+  printToPDF(args?: Page.PrintToPDFArgs): Promise<Page.PrintToPDFResult> {
     return this.transport.call<Page.PrintToPDFResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.printToPDF',
-      params: {
-        landscape: landscape,
-        displayHeaderFooter: displayHeaderFooter,
-        printBackground: printBackground,
-        scale: scale,
-        paperWidth: paperWidth,
-        paperHeight: paperHeight,
-        marginTop: marginTop,
-        marginBottom: marginBottom,
-        marginLeft: marginLeft,
-        marginRight: marginRight,
-        pageRanges: pageRanges,
-        headerTemplate: headerTemplate,
-        footerTemplate: footerTemplate,
-        preferCSSPageSize: preferCSSPageSize,
-        transferMode: transferMode,
-        generateTaggedPDF: generateTaggedPDF,
-        generateDocumentOutline: generateDocumentOutline,
-      },
+      params: args ?? {},
     })
   }
-  reload(
-    ignoreCache?: boolean,
-    scriptToEvaluateOnLoad?: string,
-    loaderId?: Network.LoaderId
-  ): Promise<void> {
+  reload(args?: Page.ReloadArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.reload',
-      params: {
-        ignoreCache: ignoreCache,
-        scriptToEvaluateOnLoad: scriptToEvaluateOnLoad,
-        loaderId: loaderId,
-      },
+      params: args ?? {},
     })
   }
   removeScriptToEvaluateOnLoad(
@@ -11129,23 +11502,13 @@ class PageClient {
     })
   }
   searchInResource(
-    frameId: Page.FrameId,
-    url: string,
-    query: string,
-    caseSensitive?: boolean,
-    isRegex?: boolean
+    args: Page.SearchInResourceArgs
   ): Promise<Page.SearchInResourceResult> {
     return this.transport.call<Page.SearchInResourceResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.searchInResource',
-      params: {
-        frameId: frameId,
-        url: url,
-        query: query,
-        caseSensitive: caseSensitive,
-        isRegex: isRegex,
-      },
+      params: args,
     })
   }
   setAdBlockingEnabled(enabled: boolean): Promise<void> {
@@ -11183,60 +11546,31 @@ class PageClient {
     })
   }
   setDeviceMetricsOverride(
-    width: number,
-    height: number,
-    deviceScaleFactor: number,
-    mobile: boolean,
-    scale?: number,
-    screenWidth?: number,
-    screenHeight?: number,
-    positionX?: number,
-    positionY?: number,
-    dontSetVisibleSize?: boolean,
-    screenOrientation?: Emulation.ScreenOrientation,
-    viewport?: Page.Viewport
+    args: Page.SetDeviceMetricsOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.setDeviceMetricsOverride',
-      params: {
-        width: width,
-        height: height,
-        deviceScaleFactor: deviceScaleFactor,
-        mobile: mobile,
-        scale: scale,
-        screenWidth: screenWidth,
-        screenHeight: screenHeight,
-        positionX: positionX,
-        positionY: positionY,
-        dontSetVisibleSize: dontSetVisibleSize,
-        screenOrientation: screenOrientation,
-        viewport: viewport,
-      },
+      params: args,
     })
   }
   setDeviceOrientationOverride(
-    alpha: number,
-    beta: number,
-    gamma: number
+    args: Page.SetDeviceOrientationOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.setDeviceOrientationOverride',
-      params: { alpha: alpha, beta: beta, gamma: gamma },
+      params: args,
     })
   }
-  setFontFamilies(
-    fontFamilies: Page.FontFamilies,
-    forScripts?: Page.ScriptFontFamilies[]
-  ): Promise<void> {
+  setFontFamilies(args: Page.SetFontFamiliesArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.setFontFamilies',
-      params: { fontFamilies: fontFamilies, forScripts: forScripts },
+      params: args,
     })
   }
   setFontSizes(fontSizes: Page.FontSizes): Promise<void> {
@@ -11247,35 +11581,30 @@ class PageClient {
       params: { fontSizes: fontSizes },
     })
   }
-  setDocumentContent(frameId: Page.FrameId, html: string): Promise<void> {
+  setDocumentContent(args: Page.SetDocumentContentArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.setDocumentContent',
-      params: { frameId: frameId, html: html },
+      params: args,
     })
   }
-  setDownloadBehavior(
-    behavior: 'deny' | 'allow' | 'default',
-    downloadPath?: string
-  ): Promise<void> {
+  setDownloadBehavior(args: Page.SetDownloadBehaviorArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.setDownloadBehavior',
-      params: { behavior: behavior, downloadPath: downloadPath },
+      params: args,
     })
   }
   setGeolocationOverride(
-    latitude?: number,
-    longitude?: number,
-    accuracy?: number
+    args?: Page.SetGeolocationOverrideArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.setGeolocationOverride',
-      params: { latitude: latitude, longitude: longitude, accuracy: accuracy },
+      params: args ?? {},
     })
   }
   setLifecycleEventsEnabled(enabled: boolean): Promise<void> {
@@ -11287,34 +11616,21 @@ class PageClient {
     })
   }
   setTouchEmulationEnabled(
-    enabled: boolean,
-    configuration?: 'mobile' | 'desktop'
+    args: Page.SetTouchEmulationEnabledArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.setTouchEmulationEnabled',
-      params: { enabled: enabled, configuration: configuration },
+      params: args,
     })
   }
-  startScreencast(
-    format?: 'jpeg' | 'png',
-    quality?: number,
-    maxWidth?: number,
-    maxHeight?: number,
-    everyNthFrame?: number
-  ): Promise<void> {
+  startScreencast(args?: Page.StartScreencastArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.startScreencast',
-      params: {
-        format: format,
-        quality: quality,
-        maxWidth: maxWidth,
-        maxHeight: maxHeight,
-        everyNthFrame: everyNthFrame,
-      },
+      params: args ?? {},
     })
   }
   stopLoading(): Promise<void> {
@@ -11367,12 +11683,12 @@ class PageClient {
       params: { scripts: scripts },
     })
   }
-  addCompilationCache(url: string, data: string): Promise<void> {
+  addCompilationCache(args: Page.AddCompilationCacheArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.addCompilationCache',
-      params: { url: url, data: data },
+      params: args,
     })
   }
   clearCompilationCache(): Promise<void> {
@@ -11399,12 +11715,12 @@ class PageClient {
       params: { mode: mode },
     })
   }
-  generateTestReport(message: string, group?: string): Promise<void> {
+  generateTestReport(args: Page.GenerateTestReportArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.generateTestReport',
-      params: { message: message, group: group },
+      params: args,
     })
   }
   waitForDebugger(): Promise<void> {
@@ -11416,14 +11732,13 @@ class PageClient {
     })
   }
   setInterceptFileChooserDialog(
-    enabled: boolean,
-    cancel?: boolean
+    args: Page.SetInterceptFileChooserDialogArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Page.setInterceptFileChooserDialog',
-      params: { enabled: enabled, cancel: cancel },
+      params: args,
     })
   }
   setPrerenderingAllowed(isAllowed: boolean): Promise<void> {
@@ -11622,14 +11937,13 @@ class SecurityClient {
     })
   }
   handleCertificateError(
-    eventId: number,
-    action: Security.CertificateErrorAction
+    args: Security.HandleCertificateErrorArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Security.handleCertificateError',
-      params: { eventId: eventId, action: action },
+      params: args,
     })
   }
   setOverrideCertificateErrors(override: boolean): Promise<void> {
@@ -11684,15 +11998,13 @@ class ServiceWorkerClient {
     this.listeners = new WeakMap()
   }
   deliverPushMessage(
-    origin: string,
-    registrationId: ServiceWorker.RegistrationID,
-    data: string
+    args: ServiceWorker.DeliverPushMessageArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'ServiceWorker.deliverPushMessage',
-      params: { origin: origin, registrationId: registrationId, data: data },
+      params: args,
     })
   }
   disable(): Promise<void> {
@@ -11703,34 +12015,22 @@ class ServiceWorkerClient {
       params: {},
     })
   }
-  dispatchSyncEvent(
-    origin: string,
-    registrationId: ServiceWorker.RegistrationID,
-    tag: string,
-    lastChance: boolean
-  ): Promise<void> {
+  dispatchSyncEvent(args: ServiceWorker.DispatchSyncEventArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'ServiceWorker.dispatchSyncEvent',
-      params: {
-        origin: origin,
-        registrationId: registrationId,
-        tag: tag,
-        lastChance: lastChance,
-      },
+      params: args,
     })
   }
   dispatchPeriodicSyncEvent(
-    origin: string,
-    registrationId: ServiceWorker.RegistrationID,
-    tag: string
+    args: ServiceWorker.DispatchPeriodicSyncEventArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'ServiceWorker.dispatchPeriodicSyncEvent',
-      params: { origin: origin, registrationId: registrationId, tag: tag },
+      params: args,
     })
   }
   enable(): Promise<void> {
@@ -11858,23 +12158,22 @@ class StorageClient {
       params: { frameId: frameId },
     })
   }
-  clearDataForOrigin(origin: string, storageTypes: string): Promise<void> {
+  clearDataForOrigin(args: Storage.ClearDataForOriginArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.clearDataForOrigin',
-      params: { origin: origin, storageTypes: storageTypes },
+      params: args,
     })
   }
   clearDataForStorageKey(
-    storageKey: string,
-    storageTypes: string
+    args: Storage.ClearDataForStorageKeyArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.clearDataForStorageKey',
-      params: { storageKey: storageKey, storageTypes: storageTypes },
+      params: args,
     })
   }
   getCookies(
@@ -11887,15 +12186,12 @@ class StorageClient {
       params: { browserContextId: browserContextId },
     })
   }
-  setCookies(
-    cookies: Network.CookieParam[],
-    browserContextId?: Browser.BrowserContextID
-  ): Promise<void> {
+  setCookies(args: Storage.SetCookiesArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.setCookies',
-      params: { cookies: cookies, browserContextId: browserContextId },
+      params: args,
     })
   }
   clearCookies(browserContextId?: Browser.BrowserContextID): Promise<void> {
@@ -11914,12 +12210,14 @@ class StorageClient {
       params: { origin: origin },
     })
   }
-  overrideQuotaForOrigin(origin: string, quotaSize?: number): Promise<void> {
+  overrideQuotaForOrigin(
+    args: Storage.OverrideQuotaForOriginArgs
+  ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.overrideQuotaForOrigin',
-      params: { origin: origin, quotaSize: quotaSize },
+      params: args,
     })
   }
   trackCacheStorageForOrigin(origin: string): Promise<void> {
@@ -12005,14 +12303,13 @@ class StorageClient {
     })
   }
   getInterestGroupDetails(
-    ownerOrigin: string,
-    name: string
+    args: Storage.GetInterestGroupDetailsArgs
   ): Promise<Storage.GetInterestGroupDetailsResult> {
     return this.transport.call<Storage.GetInterestGroupDetailsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.getInterestGroupDetails',
-      params: { ownerOrigin: ownerOrigin, name: name },
+      params: args,
     })
   }
   setInterestGroupTracking(enable: boolean): Promise<void> {
@@ -12052,29 +12349,23 @@ class StorageClient {
     })
   }
   setSharedStorageEntry(
-    ownerOrigin: string,
-    key: string,
-    value: string,
-    ignoreIfPresent?: boolean
+    args: Storage.SetSharedStorageEntryArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.setSharedStorageEntry',
-      params: {
-        ownerOrigin: ownerOrigin,
-        key: key,
-        value: value,
-        ignoreIfPresent: ignoreIfPresent,
-      },
+      params: args,
     })
   }
-  deleteSharedStorageEntry(ownerOrigin: string, key: string): Promise<void> {
+  deleteSharedStorageEntry(
+    args: Storage.DeleteSharedStorageEntryArgs
+  ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.deleteSharedStorageEntry',
-      params: { ownerOrigin: ownerOrigin, key: key },
+      params: args,
     })
   }
   clearSharedStorageEntries(ownerOrigin: string): Promise<void> {
@@ -12101,12 +12392,14 @@ class StorageClient {
       params: { enable: enable },
     })
   }
-  setStorageBucketTracking(storageKey: string, enable: boolean): Promise<void> {
+  setStorageBucketTracking(
+    args: Storage.SetStorageBucketTrackingArgs
+  ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.setStorageBucketTracking',
-      params: { storageKey: storageKey, enable: enable },
+      params: args,
     })
   }
   deleteStorageBucket(bucket: Storage.StorageBucket): Promise<void> {
@@ -12158,31 +12451,25 @@ class StorageClient {
     })
   }
   getAffectedUrlsForThirdPartyCookieMetadata(
-    firstPartyUrl: string,
-    thirdPartyUrls: string[]
+    args: Storage.GetAffectedUrlsForThirdPartyCookieMetadataArgs
   ): Promise<Storage.GetAffectedUrlsForThirdPartyCookieMetadataResult> {
     return this.transport.call<Storage.GetAffectedUrlsForThirdPartyCookieMetadataResult>(
       {
         id: generateId(),
         sessionId: this.sessionId,
         method: 'Storage.getAffectedUrlsForThirdPartyCookieMetadata',
-        params: {
-          firstPartyUrl: firstPartyUrl,
-          thirdPartyUrls: thirdPartyUrls,
-        },
+        params: args,
       }
     )
   }
   setProtectedAudienceKAnonymity(
-    owner: string,
-    name: string,
-    hashes: string[]
+    args: Storage.SetProtectedAudienceKAnonymityArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.setProtectedAudienceKAnonymity',
-      params: { owner: owner, name: name, hashes: hashes },
+      params: args,
     })
   }
   on<K extends keyof Storage.EventMap>(
@@ -12270,14 +12557,13 @@ class TargetClient {
     })
   }
   attachToTarget(
-    targetId: Target.TargetID,
-    flatten?: boolean
+    args: Target.AttachToTargetArgs
   ): Promise<Target.AttachToTargetResult> {
     return this.transport.call<Target.AttachToTargetResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.attachToTarget',
-      params: { targetId: targetId, flatten: flatten },
+      params: args,
     })
   }
   attachToBrowserTarget(): Promise<Target.AttachToBrowserTargetResult> {
@@ -12297,37 +12583,23 @@ class TargetClient {
     })
   }
   exposeDevToolsProtocol(
-    targetId: Target.TargetID,
-    bindingName?: string,
-    inheritPermissions?: boolean
+    args: Target.ExposeDevToolsProtocolArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.exposeDevToolsProtocol',
-      params: {
-        targetId: targetId,
-        bindingName: bindingName,
-        inheritPermissions: inheritPermissions,
-      },
+      params: args,
     })
   }
   createBrowserContext(
-    disposeOnDetach?: boolean,
-    proxyServer?: string,
-    proxyBypassList?: string,
-    originsWithUniversalNetworkAccess?: string[]
+    args?: Target.CreateBrowserContextArgs
   ): Promise<Target.CreateBrowserContextResult> {
     return this.transport.call<Target.CreateBrowserContextResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.createBrowserContext',
-      params: {
-        disposeOnDetach: disposeOnDetach,
-        proxyServer: proxyServer,
-        proxyBypassList: proxyBypassList,
-        originsWithUniversalNetworkAccess: originsWithUniversalNetworkAccess,
-      },
+      params: args ?? {},
     })
   }
   getBrowserContexts(): Promise<Target.GetBrowserContextsResult> {
@@ -12339,48 +12611,21 @@ class TargetClient {
     })
   }
   createTarget(
-    url: string,
-    left?: number,
-    top?: number,
-    width?: number,
-    height?: number,
-    windowState?: Target.WindowState,
-    browserContextId?: Browser.BrowserContextID,
-    enableBeginFrameControl?: boolean,
-    newWindow?: boolean,
-    background?: boolean,
-    forTab?: boolean,
-    hidden?: boolean
+    args: Target.CreateTargetArgs
   ): Promise<Target.CreateTargetResult> {
     return this.transport.call<Target.CreateTargetResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.createTarget',
-      params: {
-        url: url,
-        left: left,
-        top: top,
-        width: width,
-        height: height,
-        windowState: windowState,
-        browserContextId: browserContextId,
-        enableBeginFrameControl: enableBeginFrameControl,
-        newWindow: newWindow,
-        background: background,
-        forTab: forTab,
-        hidden: hidden,
-      },
+      params: args,
     })
   }
-  detachFromTarget(
-    sessionId?: Target.SessionID,
-    targetId?: Target.TargetID
-  ): Promise<void> {
+  detachFromTarget(args?: Target.DetachFromTargetArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.detachFromTarget',
-      params: { sessionId: sessionId, targetId: targetId },
+      params: args ?? {},
     })
   }
   disposeBrowserContext(
@@ -12411,61 +12656,36 @@ class TargetClient {
       params: { filter: filter },
     })
   }
-  sendMessageToTarget(
-    message: string,
-    sessionId?: Target.SessionID,
-    targetId?: Target.TargetID
-  ): Promise<void> {
+  sendMessageToTarget(args: Target.SendMessageToTargetArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.sendMessageToTarget',
-      params: { message: message, sessionId: sessionId, targetId: targetId },
+      params: args,
     })
   }
-  setAutoAttach(
-    autoAttach: boolean,
-    waitForDebuggerOnStart: boolean,
-    flatten?: boolean,
-    filter?: Target.TargetFilter
-  ): Promise<void> {
+  setAutoAttach(args: Target.SetAutoAttachArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.setAutoAttach',
-      params: {
-        autoAttach: autoAttach,
-        waitForDebuggerOnStart: waitForDebuggerOnStart,
-        flatten: flatten,
-        filter: filter,
-      },
+      params: args,
     })
   }
-  autoAttachRelated(
-    targetId: Target.TargetID,
-    waitForDebuggerOnStart: boolean,
-    filter?: Target.TargetFilter
-  ): Promise<void> {
+  autoAttachRelated(args: Target.AutoAttachRelatedArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.autoAttachRelated',
-      params: {
-        targetId: targetId,
-        waitForDebuggerOnStart: waitForDebuggerOnStart,
-        filter: filter,
-      },
+      params: args,
     })
   }
-  setDiscoverTargets(
-    discover: boolean,
-    filter?: Target.TargetFilter
-  ): Promise<void> {
+  setDiscoverTargets(args: Target.SetDiscoverTargetsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Target.setDiscoverTargets',
-      params: { discover: discover, filter: filter },
+      params: args,
     })
   }
   setRemoteLocations(locations: Target.RemoteLocation[]): Promise<void> {
@@ -12597,42 +12817,21 @@ class TracingClient {
     })
   }
   requestMemoryDump(
-    deterministic?: boolean,
-    levelOfDetail?: Tracing.MemoryDumpLevelOfDetail
+    args?: Tracing.RequestMemoryDumpArgs
   ): Promise<Tracing.RequestMemoryDumpResult> {
     return this.transport.call<Tracing.RequestMemoryDumpResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Tracing.requestMemoryDump',
-      params: { deterministic: deterministic, levelOfDetail: levelOfDetail },
+      params: args ?? {},
     })
   }
-  start(
-    categories?: string,
-    options?: string,
-    bufferUsageReportingInterval?: number,
-    transferMode?: 'ReportEvents' | 'ReturnAsStream',
-    streamFormat?: Tracing.StreamFormat,
-    streamCompression?: Tracing.StreamCompression,
-    traceConfig?: Tracing.TraceConfig,
-    perfettoConfig?: string,
-    tracingBackend?: Tracing.TracingBackend
-  ): Promise<void> {
+  start(args?: Tracing.StartArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Tracing.start',
-      params: {
-        categories: categories,
-        options: options,
-        bufferUsageReportingInterval: bufferUsageReportingInterval,
-        transferMode: transferMode,
-        streamFormat: streamFormat,
-        streamCompression: streamCompression,
-        traceConfig: traceConfig,
-        perfettoConfig: perfettoConfig,
-        tracingBackend: tracingBackend,
-      },
+      params: args ?? {},
     })
   }
   on<K extends keyof Tracing.EventMap>(
@@ -12683,104 +12882,52 @@ class FetchClient {
       params: {},
     })
   }
-  enable(
-    patterns?: Fetch.RequestPattern[],
-    handleAuthRequests?: boolean
-  ): Promise<void> {
+  enable(args?: Fetch.EnableArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Fetch.enable',
-      params: { patterns: patterns, handleAuthRequests: handleAuthRequests },
+      params: args ?? {},
     })
   }
-  failRequest(
-    requestId: Fetch.RequestId,
-    errorReason: Network.ErrorReason
-  ): Promise<void> {
+  failRequest(args: Fetch.FailRequestArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Fetch.failRequest',
-      params: { requestId: requestId, errorReason: errorReason },
+      params: args,
     })
   }
-  fulfillRequest(
-    requestId: Fetch.RequestId,
-    responseCode: number,
-    responseHeaders?: Fetch.HeaderEntry[],
-    binaryResponseHeaders?: string,
-    body?: string,
-    responsePhrase?: string
-  ): Promise<void> {
+  fulfillRequest(args: Fetch.FulfillRequestArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Fetch.fulfillRequest',
-      params: {
-        requestId: requestId,
-        responseCode: responseCode,
-        responseHeaders: responseHeaders,
-        binaryResponseHeaders: binaryResponseHeaders,
-        body: body,
-        responsePhrase: responsePhrase,
-      },
+      params: args,
     })
   }
-  continueRequest(
-    requestId: Fetch.RequestId,
-    url?: string,
-    method?: string,
-    postData?: string,
-    headers?: Fetch.HeaderEntry[],
-    interceptResponse?: boolean
-  ): Promise<void> {
+  continueRequest(args: Fetch.ContinueRequestArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Fetch.continueRequest',
-      params: {
-        requestId: requestId,
-        url: url,
-        method: method,
-        postData: postData,
-        headers: headers,
-        interceptResponse: interceptResponse,
-      },
+      params: args,
     })
   }
-  continueWithAuth(
-    requestId: Fetch.RequestId,
-    authChallengeResponse: Fetch.AuthChallengeResponse
-  ): Promise<void> {
+  continueWithAuth(args: Fetch.ContinueWithAuthArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Fetch.continueWithAuth',
-      params: {
-        requestId: requestId,
-        authChallengeResponse: authChallengeResponse,
-      },
+      params: args,
     })
   }
-  continueResponse(
-    requestId: Fetch.RequestId,
-    responseCode?: number,
-    responsePhrase?: string,
-    responseHeaders?: Fetch.HeaderEntry[],
-    binaryResponseHeaders?: string
-  ): Promise<void> {
+  continueResponse(args: Fetch.ContinueResponseArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Fetch.continueResponse',
-      params: {
-        requestId: requestId,
-        responseCode: responseCode,
-        responsePhrase: responsePhrase,
-        responseHeaders: responseHeaders,
-        binaryResponseHeaders: binaryResponseHeaders,
-      },
+      params: args,
     })
   }
   getResponseBody(
@@ -12936,21 +13083,13 @@ class WebAuthnClient {
     })
   }
   setResponseOverrideBits(
-    authenticatorId: WebAuthn.AuthenticatorId,
-    isBogusSignature?: boolean,
-    isBadUV?: boolean,
-    isBadUP?: boolean
+    args: WebAuthn.SetResponseOverrideBitsArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'WebAuthn.setResponseOverrideBits',
-      params: {
-        authenticatorId: authenticatorId,
-        isBogusSignature: isBogusSignature,
-        isBadUV: isBadUV,
-        isBadUP: isBadUP,
-      },
+      params: args,
     })
   }
   removeVirtualAuthenticator(
@@ -12963,26 +13102,22 @@ class WebAuthnClient {
       params: { authenticatorId: authenticatorId },
     })
   }
-  addCredential(
-    authenticatorId: WebAuthn.AuthenticatorId,
-    credential: WebAuthn.Credential
-  ): Promise<void> {
+  addCredential(args: WebAuthn.AddCredentialArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'WebAuthn.addCredential',
-      params: { authenticatorId: authenticatorId, credential: credential },
+      params: args,
     })
   }
   getCredential(
-    authenticatorId: WebAuthn.AuthenticatorId,
-    credentialId: string
+    args: WebAuthn.GetCredentialArgs
   ): Promise<WebAuthn.GetCredentialResult> {
     return this.transport.call<WebAuthn.GetCredentialResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'WebAuthn.getCredential',
-      params: { authenticatorId: authenticatorId, credentialId: credentialId },
+      params: args,
     })
   }
   getCredentials(
@@ -12995,15 +13130,12 @@ class WebAuthnClient {
       params: { authenticatorId: authenticatorId },
     })
   }
-  removeCredential(
-    authenticatorId: WebAuthn.AuthenticatorId,
-    credentialId: string
-  ): Promise<void> {
+  removeCredential(args: WebAuthn.RemoveCredentialArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'WebAuthn.removeCredential',
-      params: { authenticatorId: authenticatorId, credentialId: credentialId },
+      params: args,
     })
   }
   clearCredentials(authenticatorId: WebAuthn.AuthenticatorId): Promise<void> {
@@ -13014,47 +13146,32 @@ class WebAuthnClient {
       params: { authenticatorId: authenticatorId },
     })
   }
-  setUserVerified(
-    authenticatorId: WebAuthn.AuthenticatorId,
-    isUserVerified: boolean
-  ): Promise<void> {
+  setUserVerified(args: WebAuthn.SetUserVerifiedArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'WebAuthn.setUserVerified',
-      params: {
-        authenticatorId: authenticatorId,
-        isUserVerified: isUserVerified,
-      },
+      params: args,
     })
   }
   setAutomaticPresenceSimulation(
-    authenticatorId: WebAuthn.AuthenticatorId,
-    enabled: boolean
+    args: WebAuthn.SetAutomaticPresenceSimulationArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'WebAuthn.setAutomaticPresenceSimulation',
-      params: { authenticatorId: authenticatorId, enabled: enabled },
+      params: args,
     })
   }
   setCredentialProperties(
-    authenticatorId: WebAuthn.AuthenticatorId,
-    credentialId: string,
-    backupEligibility?: boolean,
-    backupState?: boolean
+    args: WebAuthn.SetCredentialPropertiesArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'WebAuthn.setCredentialProperties',
-      params: {
-        authenticatorId: authenticatorId,
-        credentialId: credentialId,
-        backupEligibility: backupEligibility,
-        backupState: backupState,
-      },
+      params: args,
     })
   }
   on<K extends keyof WebAuthn.EventMap>(
@@ -13169,15 +13286,12 @@ class DeviceAccessClient {
       params: {},
     })
   }
-  selectPrompt(
-    id: DeviceAccess.RequestId,
-    deviceId: DeviceAccess.DeviceId
-  ): Promise<void> {
+  selectPrompt(args: DeviceAccess.SelectPromptArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'DeviceAccess.selectPrompt',
-      params: { id: id, deviceId: deviceId },
+      params: args,
     })
   }
   cancelPrompt(id: DeviceAccess.RequestId): Promise<void> {
@@ -13303,47 +13417,36 @@ class FedCmClient {
       params: {},
     })
   }
-  selectAccount(dialogId: string, accountIndex: number): Promise<void> {
+  selectAccount(args: FedCm.SelectAccountArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'FedCm.selectAccount',
-      params: { dialogId: dialogId, accountIndex: accountIndex },
+      params: args,
     })
   }
-  clickDialogButton(
-    dialogId: string,
-    dialogButton: FedCm.DialogButton
-  ): Promise<void> {
+  clickDialogButton(args: FedCm.ClickDialogButtonArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'FedCm.clickDialogButton',
-      params: { dialogId: dialogId, dialogButton: dialogButton },
+      params: args,
     })
   }
-  openUrl(
-    dialogId: string,
-    accountIndex: number,
-    accountUrlType: FedCm.AccountUrlType
-  ): Promise<void> {
+  openUrl(args: FedCm.OpenUrlArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'FedCm.openUrl',
-      params: {
-        dialogId: dialogId,
-        accountIndex: accountIndex,
-        accountUrlType: accountUrlType,
-      },
+      params: args,
     })
   }
-  dismissDialog(dialogId: string, triggerCooldown?: boolean): Promise<void> {
+  dismissDialog(args: FedCm.DismissDialogArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'FedCm.dismissDialog',
-      params: { dialogId: dialogId, triggerCooldown: triggerCooldown },
+      params: args,
     })
   }
   resetCooldown(): Promise<void> {
@@ -13399,15 +13502,12 @@ class PWAClient {
       params: { manifestId: manifestId },
     })
   }
-  install(manifestId: string, installUrlOrBundleUrl?: string): Promise<void> {
+  install(args: PWA.InstallArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'PWA.install',
-      params: {
-        manifestId: manifestId,
-        installUrlOrBundleUrl: installUrlOrBundleUrl,
-      },
+      params: args,
     })
   }
   uninstall(manifestId: string): Promise<void> {
@@ -13418,23 +13518,22 @@ class PWAClient {
       params: { manifestId: manifestId },
     })
   }
-  launch(manifestId: string, url?: string): Promise<PWA.LaunchResult> {
+  launch(args: PWA.LaunchArgs): Promise<PWA.LaunchResult> {
     return this.transport.call<PWA.LaunchResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'PWA.launch',
-      params: { manifestId: manifestId, url: url },
+      params: args,
     })
   }
   launchFilesInApp(
-    manifestId: string,
-    files: string[]
+    args: PWA.LaunchFilesInAppArgs
   ): Promise<PWA.LaunchFilesInAppResult> {
     return this.transport.call<PWA.LaunchFilesInAppResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'PWA.launchFilesInApp',
-      params: { manifestId: manifestId, files: files },
+      params: args,
     })
   }
   openCurrentPageInApp(manifestId: string): Promise<void> {
@@ -13445,20 +13544,12 @@ class PWAClient {
       params: { manifestId: manifestId },
     })
   }
-  changeAppUserSettings(
-    manifestId: string,
-    linkCapturing?: boolean,
-    displayMode?: PWA.DisplayMode
-  ): Promise<void> {
+  changeAppUserSettings(args: PWA.ChangeAppUserSettingsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'PWA.changeAppUserSettings',
-      params: {
-        manifestId: manifestId,
-        linkCapturing: linkCapturing,
-        displayMode: displayMode,
-      },
+      params: args,
     })
   }
 }
@@ -13471,15 +13562,12 @@ class BluetoothEmulationClient {
     this.sessionId = sessionId
     this.listeners = new WeakMap()
   }
-  enable(
-    state: BluetoothEmulation.CentralState,
-    leSupported: boolean
-  ): Promise<void> {
+  enable(args: BluetoothEmulation.EnableArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BluetoothEmulation.enable',
-      params: { state: state, leSupported: leSupported },
+      params: args,
     })
   }
   setSimulatedCentralState(
@@ -13501,21 +13589,13 @@ class BluetoothEmulationClient {
     })
   }
   simulatePreconnectedPeripheral(
-    address: string,
-    name: string,
-    manufacturerData: BluetoothEmulation.ManufacturerData[],
-    knownServiceUuids: string[]
+    args: BluetoothEmulation.SimulatePreconnectedPeripheralArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BluetoothEmulation.simulatePreconnectedPeripheral',
-      params: {
-        address: address,
-        name: name,
-        manufacturerData: manufacturerData,
-        knownServiceUuids: knownServiceUuids,
-      },
+      params: args,
     })
   }
   simulateAdvertisement(entry: BluetoothEmulation.ScanEntry): Promise<void> {
@@ -13527,62 +13607,43 @@ class BluetoothEmulationClient {
     })
   }
   simulateGATTOperationResponse(
-    address: string,
-    type: BluetoothEmulation.GATTOperationType,
-    code: number
+    args: BluetoothEmulation.SimulateGATTOperationResponseArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BluetoothEmulation.simulateGATTOperationResponse',
-      params: { address: address, type: type, code: code },
+      params: args,
     })
   }
   simulateCharacteristicOperationResponse(
-    characteristicId: string,
-    type: BluetoothEmulation.CharacteristicOperationType,
-    code: number,
-    data?: string
+    args: BluetoothEmulation.SimulateCharacteristicOperationResponseArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BluetoothEmulation.simulateCharacteristicOperationResponse',
-      params: {
-        characteristicId: characteristicId,
-        type: type,
-        code: code,
-        data: data,
-      },
+      params: args,
     })
   }
   simulateDescriptorOperationResponse(
-    descriptorId: string,
-    type: BluetoothEmulation.DescriptorOperationType,
-    code: number,
-    data?: string
+    args: BluetoothEmulation.SimulateDescriptorOperationResponseArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BluetoothEmulation.simulateDescriptorOperationResponse',
-      params: {
-        descriptorId: descriptorId,
-        type: type,
-        code: code,
-        data: data,
-      },
+      params: args,
     })
   }
   addService(
-    address: string,
-    serviceUuid: string
+    args: BluetoothEmulation.AddServiceArgs
   ): Promise<BluetoothEmulation.AddServiceResult> {
     return this.transport.call<BluetoothEmulation.AddServiceResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BluetoothEmulation.addService',
-      params: { address: address, serviceUuid: serviceUuid },
+      params: args,
     })
   }
   removeService(serviceId: string): Promise<void> {
@@ -13594,19 +13655,13 @@ class BluetoothEmulationClient {
     })
   }
   addCharacteristic(
-    serviceId: string,
-    characteristicUuid: string,
-    properties: BluetoothEmulation.CharacteristicProperties
+    args: BluetoothEmulation.AddCharacteristicArgs
   ): Promise<BluetoothEmulation.AddCharacteristicResult> {
     return this.transport.call<BluetoothEmulation.AddCharacteristicResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BluetoothEmulation.addCharacteristic',
-      params: {
-        serviceId: serviceId,
-        characteristicUuid: characteristicUuid,
-        properties: properties,
-      },
+      params: args,
     })
   }
   removeCharacteristic(characteristicId: string): Promise<void> {
@@ -13618,17 +13673,13 @@ class BluetoothEmulationClient {
     })
   }
   addDescriptor(
-    characteristicId: string,
-    descriptorUuid: string
+    args: BluetoothEmulation.AddDescriptorArgs
   ): Promise<BluetoothEmulation.AddDescriptorResult> {
     return this.transport.call<BluetoothEmulation.AddDescriptorResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'BluetoothEmulation.addDescriptor',
-      params: {
-        characteristicId: characteristicId,
-        descriptorUuid: descriptorUuid,
-      },
+      params: args,
     })
   }
   removeDescriptor(descriptorId: string): Promise<void> {
@@ -13754,15 +13805,12 @@ class DebuggerClient {
     this.sessionId = sessionId
     this.listeners = new WeakMap()
   }
-  continueToLocation(
-    location: Debugger.Location,
-    targetCallFrames?: 'any' | 'current'
-  ): Promise<void> {
+  continueToLocation(args: Debugger.ContinueToLocationArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.continueToLocation',
-      params: { location: location, targetCallFrames: targetCallFrames },
+      params: args,
     })
   }
   disable(): Promise<void> {
@@ -13782,47 +13830,23 @@ class DebuggerClient {
     })
   }
   evaluateOnCallFrame(
-    callFrameId: Debugger.CallFrameId,
-    expression: string,
-    objectGroup?: string,
-    includeCommandLineAPI?: boolean,
-    silent?: boolean,
-    returnByValue?: boolean,
-    generatePreview?: boolean,
-    throwOnSideEffect?: boolean,
-    timeout?: Runtime.TimeDelta
+    args: Debugger.EvaluateOnCallFrameArgs
   ): Promise<Debugger.EvaluateOnCallFrameResult> {
     return this.transport.call<Debugger.EvaluateOnCallFrameResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.evaluateOnCallFrame',
-      params: {
-        callFrameId: callFrameId,
-        expression: expression,
-        objectGroup: objectGroup,
-        includeCommandLineAPI: includeCommandLineAPI,
-        silent: silent,
-        returnByValue: returnByValue,
-        generatePreview: generatePreview,
-        throwOnSideEffect: throwOnSideEffect,
-        timeout: timeout,
-      },
+      params: args,
     })
   }
   getPossibleBreakpoints(
-    start: Debugger.Location,
-    end?: Debugger.Location,
-    restrictToFunction?: boolean
+    args: Debugger.GetPossibleBreakpointsArgs
   ): Promise<Debugger.GetPossibleBreakpointsResult> {
     return this.transport.call<Debugger.GetPossibleBreakpointsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.getPossibleBreakpoints',
-      params: {
-        start: start,
-        end: end,
-        restrictToFunction: restrictToFunction,
-      },
+      params: args,
     })
   }
   getScriptSource(
@@ -13900,14 +13924,13 @@ class DebuggerClient {
     })
   }
   restartFrame(
-    callFrameId: Debugger.CallFrameId,
-    mode?: 'StepInto'
+    args: Debugger.RestartFrameArgs
   ): Promise<Debugger.RestartFrameResult> {
     return this.transport.call<Debugger.RestartFrameResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.restartFrame',
-      params: { callFrameId: callFrameId, mode: mode },
+      params: args,
     })
   }
   resume(terminateOnResume?: boolean): Promise<void> {
@@ -13919,21 +13942,13 @@ class DebuggerClient {
     })
   }
   searchInContent(
-    scriptId: Runtime.ScriptId,
-    query: string,
-    caseSensitive?: boolean,
-    isRegex?: boolean
+    args: Debugger.SearchInContentArgs
   ): Promise<Debugger.SearchInContentResult> {
     return this.transport.call<Debugger.SearchInContentResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.searchInContent',
-      params: {
-        scriptId: scriptId,
-        query: query,
-        caseSensitive: caseSensitive,
-        isRegex: isRegex,
-      },
+      params: args,
     })
   }
   setAsyncCallStackDepth(maxDepth: number): Promise<void> {
@@ -13952,37 +13967,30 @@ class DebuggerClient {
       params: { uniqueIds: uniqueIds },
     })
   }
-  setBlackboxPatterns(
-    patterns: string[],
-    skipAnonymous?: boolean
-  ): Promise<void> {
+  setBlackboxPatterns(args: Debugger.SetBlackboxPatternsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.setBlackboxPatterns',
-      params: { patterns: patterns, skipAnonymous: skipAnonymous },
+      params: args,
     })
   }
-  setBlackboxedRanges(
-    scriptId: Runtime.ScriptId,
-    positions: Debugger.ScriptPosition[]
-  ): Promise<void> {
+  setBlackboxedRanges(args: Debugger.SetBlackboxedRangesArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.setBlackboxedRanges',
-      params: { scriptId: scriptId, positions: positions },
+      params: args,
     })
   }
   setBreakpoint(
-    location: Debugger.Location,
-    condition?: string
+    args: Debugger.SetBreakpointArgs
   ): Promise<Debugger.SetBreakpointResult> {
     return this.transport.call<Debugger.SetBreakpointResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.setBreakpoint',
-      params: { location: location, condition: condition },
+      params: args,
     })
   }
   setInstrumentationBreakpoint(
@@ -13998,36 +14006,23 @@ class DebuggerClient {
     })
   }
   setBreakpointByUrl(
-    lineNumber: number,
-    url?: string,
-    urlRegex?: string,
-    scriptHash?: string,
-    columnNumber?: number,
-    condition?: string
+    args: Debugger.SetBreakpointByUrlArgs
   ): Promise<Debugger.SetBreakpointByUrlResult> {
     return this.transport.call<Debugger.SetBreakpointByUrlResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.setBreakpointByUrl',
-      params: {
-        lineNumber: lineNumber,
-        url: url,
-        urlRegex: urlRegex,
-        scriptHash: scriptHash,
-        columnNumber: columnNumber,
-        condition: condition,
-      },
+      params: args,
     })
   }
   setBreakpointOnFunctionCall(
-    objectId: Runtime.RemoteObjectId,
-    condition?: string
+    args: Debugger.SetBreakpointOnFunctionCallArgs
   ): Promise<Debugger.SetBreakpointOnFunctionCallResult> {
     return this.transport.call<Debugger.SetBreakpointOnFunctionCallResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.setBreakpointOnFunctionCall',
-      params: { objectId: objectId, condition: condition },
+      params: args,
     })
   }
   setBreakpointsActive(active: boolean): Promise<void> {
@@ -14057,21 +14052,13 @@ class DebuggerClient {
     })
   }
   setScriptSource(
-    scriptId: Runtime.ScriptId,
-    scriptSource: string,
-    dryRun?: boolean,
-    allowTopFrameEditing?: boolean
+    args: Debugger.SetScriptSourceArgs
   ): Promise<Debugger.SetScriptSourceResult> {
     return this.transport.call<Debugger.SetScriptSourceResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.setScriptSource',
-      params: {
-        scriptId: scriptId,
-        scriptSource: scriptSource,
-        dryRun: dryRun,
-        allowTopFrameEditing: allowTopFrameEditing,
-      },
+      params: args,
     })
   }
   setSkipAllPauses(skip: boolean): Promise<void> {
@@ -14082,33 +14069,20 @@ class DebuggerClient {
       params: { skip: skip },
     })
   }
-  setVariableValue(
-    scopeNumber: number,
-    variableName: string,
-    newValue: Runtime.CallArgument,
-    callFrameId: Debugger.CallFrameId
-  ): Promise<void> {
+  setVariableValue(args: Debugger.SetVariableValueArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.setVariableValue',
-      params: {
-        scopeNumber: scopeNumber,
-        variableName: variableName,
-        newValue: newValue,
-        callFrameId: callFrameId,
-      },
+      params: args,
     })
   }
-  stepInto(
-    breakOnAsyncCall?: boolean,
-    skipList?: Debugger.LocationRange[]
-  ): Promise<void> {
+  stepInto(args?: Debugger.StepIntoArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Debugger.stepInto',
-      params: { breakOnAsyncCall: breakOnAsyncCall, skipList: skipList },
+      params: args ?? {},
     })
   }
   stepOut(): Promise<void> {
@@ -14215,14 +14189,13 @@ class HeapProfilerClient {
     })
   }
   getObjectByHeapObjectId(
-    objectId: HeapProfiler.HeapSnapshotObjectId,
-    objectGroup?: string
+    args: HeapProfiler.GetObjectByHeapObjectIdArgs
   ): Promise<HeapProfiler.GetObjectByHeapObjectIdResult> {
     return this.transport.call<HeapProfiler.GetObjectByHeapObjectIdResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'HeapProfiler.getObjectByHeapObjectId',
-      params: { objectId: objectId, objectGroup: objectGroup },
+      params: args,
     })
   }
   getSamplingProfile(): Promise<HeapProfiler.GetSamplingProfileResult> {
@@ -14233,20 +14206,12 @@ class HeapProfilerClient {
       params: {},
     })
   }
-  startSampling(
-    samplingInterval?: number,
-    includeObjectsCollectedByMajorGC?: boolean,
-    includeObjectsCollectedByMinorGC?: boolean
-  ): Promise<void> {
+  startSampling(args?: HeapProfiler.StartSamplingArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'HeapProfiler.startSampling',
-      params: {
-        samplingInterval: samplingInterval,
-        includeObjectsCollectedByMajorGC: includeObjectsCollectedByMajorGC,
-        includeObjectsCollectedByMinorGC: includeObjectsCollectedByMinorGC,
-      },
+      params: args ?? {},
     })
   }
   startTrackingHeapObjects(trackAllocations?: boolean): Promise<void> {
@@ -14266,39 +14231,21 @@ class HeapProfilerClient {
     })
   }
   stopTrackingHeapObjects(
-    reportProgress?: boolean,
-    treatGlobalObjectsAsRoots?: boolean,
-    captureNumericValue?: boolean,
-    exposeInternals?: boolean
+    args?: HeapProfiler.StopTrackingHeapObjectsArgs
   ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'HeapProfiler.stopTrackingHeapObjects',
-      params: {
-        reportProgress: reportProgress,
-        treatGlobalObjectsAsRoots: treatGlobalObjectsAsRoots,
-        captureNumericValue: captureNumericValue,
-        exposeInternals: exposeInternals,
-      },
+      params: args ?? {},
     })
   }
-  takeHeapSnapshot(
-    reportProgress?: boolean,
-    treatGlobalObjectsAsRoots?: boolean,
-    captureNumericValue?: boolean,
-    exposeInternals?: boolean
-  ): Promise<void> {
+  takeHeapSnapshot(args?: HeapProfiler.TakeHeapSnapshotArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'HeapProfiler.takeHeapSnapshot',
-      params: {
-        reportProgress: reportProgress,
-        treatGlobalObjectsAsRoots: treatGlobalObjectsAsRoots,
-        captureNumericValue: captureNumericValue,
-        exposeInternals: exposeInternals,
-      },
+      params: args ?? {},
     })
   }
   on<K extends keyof HeapProfiler.EventMap>(
@@ -14385,19 +14332,13 @@ class ProfilerClient {
     })
   }
   startPreciseCoverage(
-    callCount?: boolean,
-    detailed?: boolean,
-    allowTriggeredUpdates?: boolean
+    args?: Profiler.StartPreciseCoverageArgs
   ): Promise<Profiler.StartPreciseCoverageResult> {
     return this.transport.call<Profiler.StartPreciseCoverageResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Profiler.startPreciseCoverage',
-      params: {
-        callCount: callCount,
-        detailed: detailed,
-        allowTriggeredUpdates: allowTriggeredUpdates,
-      },
+      params: args ?? {},
     })
   }
   stop(): Promise<Profiler.StopResult> {
@@ -14468,73 +14409,33 @@ class RuntimeClient {
     this.listeners = new WeakMap()
   }
   awaitPromise(
-    promiseObjectId: Runtime.RemoteObjectId,
-    returnByValue?: boolean,
-    generatePreview?: boolean
+    args: Runtime.AwaitPromiseArgs
   ): Promise<Runtime.AwaitPromiseResult> {
     return this.transport.call<Runtime.AwaitPromiseResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Runtime.awaitPromise',
-      params: {
-        promiseObjectId: promiseObjectId,
-        returnByValue: returnByValue,
-        generatePreview: generatePreview,
-      },
+      params: args,
     })
   }
   callFunctionOn(
-    functionDeclaration: string,
-    objectId?: Runtime.RemoteObjectId,
-    arguments_?: Runtime.CallArgument[],
-    silent?: boolean,
-    returnByValue?: boolean,
-    generatePreview?: boolean,
-    userGesture?: boolean,
-    awaitPromise?: boolean,
-    executionContextId?: Runtime.ExecutionContextId,
-    objectGroup?: string,
-    throwOnSideEffect?: boolean,
-    uniqueContextId?: string,
-    serializationOptions?: Runtime.SerializationOptions
+    args: Runtime.CallFunctionOnArgs
   ): Promise<Runtime.CallFunctionOnResult> {
     return this.transport.call<Runtime.CallFunctionOnResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Runtime.callFunctionOn',
-      params: {
-        functionDeclaration: functionDeclaration,
-        objectId: objectId,
-        arguments_: arguments_,
-        silent: silent,
-        returnByValue: returnByValue,
-        generatePreview: generatePreview,
-        userGesture: userGesture,
-        awaitPromise: awaitPromise,
-        executionContextId: executionContextId,
-        objectGroup: objectGroup,
-        throwOnSideEffect: throwOnSideEffect,
-        uniqueContextId: uniqueContextId,
-        serializationOptions: serializationOptions,
-      },
+      params: args,
     })
   }
   compileScript(
-    expression: string,
-    sourceURL: string,
-    persistScript: boolean,
-    executionContextId?: Runtime.ExecutionContextId
+    args: Runtime.CompileScriptArgs
   ): Promise<Runtime.CompileScriptResult> {
     return this.transport.call<Runtime.CompileScriptResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Runtime.compileScript',
-      params: {
-        expression: expression,
-        sourceURL: sourceURL,
-        persistScript: persistScript,
-        executionContextId: executionContextId,
-      },
+      params: args,
     })
   }
   disable(): Promise<void> {
@@ -14561,46 +14462,12 @@ class RuntimeClient {
       params: {},
     })
   }
-  evaluate(
-    expression: string,
-    objectGroup?: string,
-    includeCommandLineAPI?: boolean,
-    silent?: boolean,
-    contextId?: Runtime.ExecutionContextId,
-    returnByValue?: boolean,
-    generatePreview?: boolean,
-    userGesture?: boolean,
-    awaitPromise?: boolean,
-    throwOnSideEffect?: boolean,
-    timeout?: Runtime.TimeDelta,
-    disableBreaks?: boolean,
-    replMode?: boolean,
-    allowUnsafeEvalBlockedByCSP?: boolean,
-    uniqueContextId?: string,
-    serializationOptions?: Runtime.SerializationOptions
-  ): Promise<Runtime.EvaluateResult> {
+  evaluate(args: Runtime.EvaluateArgs): Promise<Runtime.EvaluateResult> {
     return this.transport.call<Runtime.EvaluateResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Runtime.evaluate',
-      params: {
-        expression: expression,
-        objectGroup: objectGroup,
-        includeCommandLineAPI: includeCommandLineAPI,
-        silent: silent,
-        contextId: contextId,
-        returnByValue: returnByValue,
-        generatePreview: generatePreview,
-        userGesture: userGesture,
-        awaitPromise: awaitPromise,
-        throwOnSideEffect: throwOnSideEffect,
-        timeout: timeout,
-        disableBreaks: disableBreaks,
-        replMode: replMode,
-        allowUnsafeEvalBlockedByCSP: allowUnsafeEvalBlockedByCSP,
-        uniqueContextId: uniqueContextId,
-        serializationOptions: serializationOptions,
-      },
+      params: args,
     })
   }
   getIsolateId(): Promise<Runtime.GetIsolateIdResult> {
@@ -14620,23 +14487,13 @@ class RuntimeClient {
     })
   }
   getProperties(
-    objectId: Runtime.RemoteObjectId,
-    ownProperties?: boolean,
-    accessorPropertiesOnly?: boolean,
-    generatePreview?: boolean,
-    nonIndexedPropertiesOnly?: boolean
+    args: Runtime.GetPropertiesArgs
   ): Promise<Runtime.GetPropertiesResult> {
     return this.transport.call<Runtime.GetPropertiesResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Runtime.getProperties',
-      params: {
-        objectId: objectId,
-        ownProperties: ownProperties,
-        accessorPropertiesOnly: accessorPropertiesOnly,
-        generatePreview: generatePreview,
-        nonIndexedPropertiesOnly: nonIndexedPropertiesOnly,
-      },
+      params: args,
     })
   }
   globalLexicalScopeNames(
@@ -14650,17 +14507,13 @@ class RuntimeClient {
     })
   }
   queryObjects(
-    prototypeObjectId: Runtime.RemoteObjectId,
-    objectGroup?: string
+    args: Runtime.QueryObjectsArgs
   ): Promise<Runtime.QueryObjectsResult> {
     return this.transport.call<Runtime.QueryObjectsResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Runtime.queryObjects',
-      params: {
-        prototypeObjectId: prototypeObjectId,
-        objectGroup: objectGroup,
-      },
+      params: args,
     })
   }
   releaseObject(objectId: Runtime.RemoteObjectId): Promise<void> {
@@ -14687,30 +14540,12 @@ class RuntimeClient {
       params: {},
     })
   }
-  runScript(
-    scriptId: Runtime.ScriptId,
-    executionContextId?: Runtime.ExecutionContextId,
-    objectGroup?: string,
-    silent?: boolean,
-    includeCommandLineAPI?: boolean,
-    returnByValue?: boolean,
-    generatePreview?: boolean,
-    awaitPromise?: boolean
-  ): Promise<Runtime.RunScriptResult> {
+  runScript(args: Runtime.RunScriptArgs): Promise<Runtime.RunScriptResult> {
     return this.transport.call<Runtime.RunScriptResult>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Runtime.runScript',
-      params: {
-        scriptId: scriptId,
-        executionContextId: executionContextId,
-        objectGroup: objectGroup,
-        silent: silent,
-        includeCommandLineAPI: includeCommandLineAPI,
-        returnByValue: returnByValue,
-        generatePreview: generatePreview,
-        awaitPromise: awaitPromise,
-      },
+      params: args,
     })
   }
   setAsyncCallStackDepth(maxDepth: number): Promise<void> {
@@ -14745,20 +14580,12 @@ class RuntimeClient {
       params: {},
     })
   }
-  addBinding(
-    name: string,
-    executionContextId?: Runtime.ExecutionContextId,
-    executionContextName?: string
-  ): Promise<void> {
+  addBinding(args: Runtime.AddBindingArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Runtime.addBinding',
-      params: {
-        name: name,
-        executionContextId: executionContextId,
-        executionContextName: executionContextName,
-      },
+      params: args,
     })
   }
   removeBinding(name: string): Promise<void> {

@@ -177,12 +177,10 @@ class Script extends EventEmitter<ScriptEventMap> {
   }
 
   async inject(client: ChromeDevToolsClient, runImmediately = true) {
-    const { identifier } = await client.page.addScriptToEvaluateOnNewDocument(
-      this.#content,
-      undefined,
-      undefined,
-      runImmediately
-    )
+    const { identifier } = await client.page.addScriptToEvaluateOnNewDocument({
+      source: this.#content,
+      runImmediately,
+    })
 
     this.#sessions.push({
       client,
@@ -239,10 +237,12 @@ class BrowserSession extends EventEmitter<PageEventMap> {
   }
 
   async attach() {
-    await this.#client.target.setAutoAttach(true, true, true, [
-      { type: 'page', exclude: false },
-      { exclude: true },
-    ])
+    await this.#client.target.setAutoAttach({
+      autoAttach: true,
+      waitForDebuggerOnStart: true,
+      flatten: true,
+      filter: [{ type: 'page', exclude: false }, { exclude: true }],
+    })
 
     return this
   }
@@ -394,7 +394,7 @@ class Page extends EventEmitter<PageEventMap> {
     })
 
     this.#script.on('reload', () => {
-      this.#client.page.reload().catch((error) => {
+      this.#client.page.reload({}).catch((error) => {
         logger.error('Failed to reload page:', error)
       })
     })
@@ -404,12 +404,10 @@ class Page extends EventEmitter<PageEventMap> {
     await this.#client.page.enable()
     await this.#client.page.setBypassCSP(true)
 
-    await this.#client.page.addScriptToEvaluateOnNewDocument(
-      `window.__K6_STUDIO_TAB_ID__ = "${this.#id}";`,
-      undefined,
-      undefined,
-      true
-    )
+    await this.#client.page.addScriptToEvaluateOnNewDocument({
+      source: `window.__K6_STUDIO_TAB_ID__ = "${this.#id}";`,
+      runImmediately: true,
+    })
 
     await this.#script.inject(this.#client)
 
@@ -419,9 +417,11 @@ class Page extends EventEmitter<PageEventMap> {
   }
 
   navigateTo(url: string) {
-    this.#client.page.navigate(url, undefined, 'other').catch((error) => {
-      logger.error('Failed to navigate page:', error)
-    })
+    this.#client.page
+      .navigate({ url, transitionType: 'other' })
+      .catch((error) => {
+        logger.error('Failed to navigate page:', error)
+      })
   }
 
   #reset() {

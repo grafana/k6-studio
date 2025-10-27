@@ -26,6 +26,10 @@ export function toEventTypeName(event: cdp.Event): string {
   return pascalCase(event.name) + 'Event'
 }
 
+export function toArgInterfaceName(command: cdp.Command) {
+  return pascalCase(command.name) + 'Args'
+}
+
 export function toResultTypeName(command: cdp.Command) {
   return pascalCase(command.name) + 'Result'
 }
