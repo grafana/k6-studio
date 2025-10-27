@@ -33,6 +33,9 @@ const DEBUGGER_PORT = 9222
 const BROWSER_CDP_ARGS = [
   `--remote-debugging-port=${DEBUGGER_PORT}`,
   '--disable-back-forward-cache',
+  // Disable web security to allow our script to be executed in sandboxed iframes.
+  '--disable-web-security',
+  '--allow-running-insecure-content',
 ]
 
 function toNavigationSource(
