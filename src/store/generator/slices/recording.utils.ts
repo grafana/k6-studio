@@ -1,7 +1,7 @@
-import type { Header } from 'har-format'
 import { uniq } from 'lodash-es'
 
 import { ProxyData } from '@/types'
+import type { HarHeader } from '@/types/recording'
 
 export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
@@ -130,7 +130,7 @@ function parseToJsonPaths(content: string): string[] {
 /**
  * Takes a set of headers and determines if its of json content type
  */
-export function isJsonContentType(headerValues: Header[]): boolean {
+export function isJsonContentType(headerValues: HarHeader[]): boolean {
   return headerValues.some((header) => {
     const name = header.name
     const value = header.value
