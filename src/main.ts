@@ -64,7 +64,6 @@ const createSplashWindow = async () => {
     height: 400,
     frame: false,
     show: false,
-    alwaysOnTop: true,
   })
 
   let splashscreenFile: string
