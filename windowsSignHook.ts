@@ -37,8 +37,6 @@ export default function (filePath: string) {
     trustedSigningProfile,
     '--trusted-signing-endpoint',
     trustedSigningEndpoint,
-    '--azure-credential',
-    'AzureCli',
   ]
 
   const signingProc = spawn(signToolPath, args, {
