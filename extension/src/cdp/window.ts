@@ -30,6 +30,6 @@ export function trackTabFocus(client: BrowserExtensionClient) {
     true
   )
 
-  setInterval(checkFocus, 5000)
+  setInterval(checkFocus, 200)
   checkFocus()
 }
