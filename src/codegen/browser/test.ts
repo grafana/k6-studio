@@ -106,13 +106,17 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     return toNodeRef(previousLocator)
   }
 
-  function toNode(event: BrowserEvent): TestNode | null {
+  function toNode(
+    event: BrowserEvent,
+    nextEvent?: BrowserEvent
+  ): TestNode | null {
     switch (event.type) {
       case 'navigate-to-page':
         return {
           type: 'goto',
           nodeId: event.eventId,
           url: event.url,
+          source: event.source,
           inputs: {
             previous,
             page: getPage(event.tab),
@@ -130,14 +134,20 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
 
       case 'click': {
+        const triggersNavigation =
+          nextEvent?.type === 'navigate-to-page' &&
+          nextEvent.source === 'implicit'
+
         return {
           type: 'click',
           nodeId: event.eventId,
           button: event.button,
           modifiers: event.modifiers,
+          triggersNavigation,
           inputs: {
             previous,
             locator: getLocator(event.tab, event.target.selectors),
+            page: getPage(event.tab),
           },
         }
       }
@@ -201,6 +211,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           inputs: {
             previous,
             locator: getLocator(event.tab, event.submitter.selectors),
+            page: getPage(event.tab),
           },
         }
 
@@ -223,8 +234,9 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
 
   let previous: TestNode | undefined = undefined
 
-  for (const event of events) {
-    const node = toNode(event)
+  for (const [index, event] of events.entries()) {
+    const nextEvent = events[index + 1]
+    const node = toNode(event, nextEvent)
 
     if (node === null) {
       continue

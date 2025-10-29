@@ -66,6 +66,16 @@ export interface SelectOptionsExpression {
   multiple: boolean
 }
 
+export interface WaitForNavigationExpression {
+  type: 'WaitForNavigationExpression'
+  target: Expression
+}
+
+export interface PromiseAllExpression {
+  type: 'PromiseAllExpression'
+  expressions: Expression[]
+}
+
 export interface TextContainsAssertion {
   type: 'TextContainsAssertion'
   text: Expression
@@ -132,6 +142,8 @@ export type Expression =
   | CheckExpression
   | SelectOptionsExpression
   | ExpectExpression
+  | WaitForNavigationExpression
+  | PromiseAllExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

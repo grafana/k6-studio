@@ -21,6 +21,17 @@ function isHistoryNavigation({
   )
 }
 
+function isImplicitNavigation({
+  transitionType,
+  transitionQualifiers,
+}: WebNavigation.OnCommittedDetailsType) {
+  return (
+    (transitionType === 'link' &&
+      !transitionQualifiers.includes('forward_back')) ||
+    transitionType === 'form_submit'
+  )
+}
+
 function getNavigationSource(details: WebNavigation.OnCommittedDetailsType) {
   if (isHistoryNavigation(details)) {
     return 'history'
@@ -28,6 +39,10 @@ function getNavigationSource(details: WebNavigation.OnCommittedDetailsType) {
 
   if (isAddressBarNavigation(details)) {
     return 'address-bar'
+  }
+
+  if (isImplicitNavigation(details)) {
+    return 'implicit'
   }
 
   return null
