@@ -6,9 +6,12 @@ If you're simply adding new options to the settings file, a migration is not nee
 
 ## Creating a new migration
 
-Let say you're adding a new `v3` schema.
+Let's say the current version is `v2` and you want to add a `v3` schema.
 
-1. Copy the `v2` directory and rename the copy to `v3`
+1. Create a copy of the `v2` directory and rename the copy to `v3`
+  
+   > NOTE: it's important to work with a copy the *entire* schema, otherwise you might accidentally make breaking changes to previous versions of the schema.
+
 2. Make the necessary changes to the schema in `v3`.
 3. In `/v2/index.ts`, implement a `migrate` function that takes a `v2` schema and returns a `v3` schema.
 4. Update `/schemas/settings/index.ts` to use the new version:

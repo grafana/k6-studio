@@ -7,8 +7,6 @@ import { NodeOptions } from './types'
 
 type LiteralOrExpression = ts.Expression | string | number | boolean | null
 
-export const unknown = Symbol('unknown')
-
 function fromLiteralOrExpression(value: LiteralOrExpression): ts.Expression {
   switch (typeof value) {
     case 'string':
@@ -213,14 +211,7 @@ export function fromArrayLiteral(elements: LiteralOrExpression[]) {
   })
 }
 
-function coerceType(type: ts.TypeNode | string | typeof unknown): ts.TypeNode {
-  if (type === unknown) {
-    return {
-      ...baseProps,
-      type: NodeType.TSUnknownKeyword,
-    }
-  }
-
+function coerceType(type: ts.TypeNode | string): ts.TypeNode {
   if (typeof type === 'string') {
     return {
       ...baseProps,
@@ -384,7 +375,7 @@ export class ExpressionBuilder<Expr extends ts.Expression> {
     })
   }
 
-  as(type: ts.TypeNode | string | typeof unknown) {
+  as(type: ts.TypeNode | string) {
     return new ExpressionBuilder({
       ...baseProps,
       type: NodeType.TSAsExpression,
