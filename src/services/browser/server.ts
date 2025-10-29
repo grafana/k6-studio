@@ -5,6 +5,7 @@ import { BrowserExtensionMessage } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
 export interface RecordEvent {
+  source: 'record-events' | 'events-recorded'
   events: BrowserEvent[]
 }
 
@@ -29,7 +30,15 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
 
     this.#client.on('record-events', (event) => {
       this.emit('record', {
+        source: 'record-events',
         events: event.data.events,
+      })
+    })
+
+    this.#client.on('events-recorded', ({ data }) => {
+      this.emit('record', {
+        source: 'events-recorded',
+        events: data.events,
       })
     })
 

@@ -1,3 +1,4 @@
+import logger from 'electron-log/main'
 import { z } from 'zod'
 
 import { safeJsonParse } from '@/utils/json'
@@ -139,7 +140,7 @@ export class WebSocketTransport implements Transport {
 
     this.#ws.onmessage = (event) => {
       if (typeof event.data !== 'string') {
-        console.warn(
+        logger.error(
           'Received non-string message from CDP WebSocket:',
           event.data
         )
@@ -150,7 +151,7 @@ export class WebSocketTransport implements Transport {
       const parsed = safeJsonParse(event.data)
 
       if (parsed === undefined) {
-        console.warn('Failed to parse CDP message as JSON: ', event.data)
+        logger.error('Failed to parse CDP message as JSON: ', event.data)
 
         return
       }
@@ -158,7 +159,7 @@ export class WebSocketTransport implements Transport {
       const { success, data: message } = ChromeResponseSchema.safeParse(parsed)
 
       if (!success) {
-        console.warn('Received invalid CDP message:', parsed)
+        logger.error('Received invalid CDP message:', parsed)
 
         return
       }

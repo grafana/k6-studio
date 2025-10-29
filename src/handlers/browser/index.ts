@@ -19,7 +19,10 @@ export function initialize() {
       const browserWindow = browserWindowFromEvent(event)
 
       try {
-        k6StudioState.currentRecordingSession = await launchBrowser(options)
+        k6StudioState.currentRecordingSession = await launchBrowser({
+          ...options,
+          settings: k6StudioState.appSettings.recorder,
+        })
 
         k6StudioState.currentRecordingSession.on('record', (event) => {
           browserWindow.webContents.send(

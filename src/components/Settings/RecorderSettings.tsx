@@ -1,4 +1,4 @@
-import { Flex, Text, Checkbox, Callout } from '@radix-ui/themes'
+import { Flex, Text, Checkbox, Callout, RadioGroup } from '@radix-ui/themes'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
@@ -104,14 +104,13 @@ export const RecorderSettings = () => {
             </span>
           </Flex>
         }
-        name="recorder.enableBrowserRecorder"
+        name="recorder.browserRecording"
         errors={errors}
         hint={
           <>
-            Enables the browser recording feature. With this feature enabled
-            user interactions in the browser are recorded alongside network
-            requests. The recorded interactions can be exported as a k6 browser
-            script.
+            k6 Studio can record user interactions using a browser extension or
+            the Chrome DevTools Protocol (CDP). Try switching between these
+            methods if you encounter issues with one of them.
           </>
         }
         hintType="text"
@@ -119,16 +118,26 @@ export const RecorderSettings = () => {
         <Flex>
           <Controller
             control={control}
-            name="recorder.enableBrowserRecorder"
+            name="recorder.browserRecording"
             render={({ field }) => (
-              <Text size="2" as="label">
-                <Checkbox
-                  {...register('recorder.enableBrowserRecorder')}
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />{' '}
-                Enable browser recording
-              </Text>
+              <>
+                <RadioGroup.Root
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <RadioGroup.Item value="extension">
+                    Browser extension
+                  </RadioGroup.Item>
+                  <RadioGroup.Item value="cdp-ws">
+                    CDP over WebSocket
+                  </RadioGroup.Item>
+                  <RadioGroup.Item value="cdp-pipe">
+                    CDP over IO pipe
+                  </RadioGroup.Item>
+                  <RadioGroup.Item value="disabled">Disabled</RadioGroup.Item>
+                </RadioGroup.Root>
+              </>
             )}
           />
         </Flex>

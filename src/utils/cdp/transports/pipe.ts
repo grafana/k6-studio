@@ -1,4 +1,5 @@
 import { ChildProcess } from 'child_process'
+import logger from 'electron-log/main'
 import { Writable, Readable } from 'stream'
 
 import { safeJsonParse } from '@/utils/json'
@@ -42,19 +43,18 @@ export class PipeTransport implements Transport {
     this.#receive = receive
 
     this.#receive.on('data', (data) => {
-      const string = String(data)
+      this.#buffer += String(data)
 
-      const [first = '', rest] = string.split('\u0000')
+      let boundary = this.#buffer.indexOf('\u0000')
 
-      this.#buffer += first
+      while (boundary !== -1) {
+        const message = this.#buffer.slice(0, boundary)
 
-      if (rest === undefined) {
-        return
+        this.#handleMessage(message)
+
+        this.#buffer = this.#buffer.slice(boundary + 1)
+        boundary = this.#buffer.indexOf('\u0000')
       }
-
-      this.#handleMessage(this.#buffer)
-
-      this.#buffer = rest
     })
   }
 
@@ -78,7 +78,7 @@ export class PipeTransport implements Transport {
     const parsed = safeJsonParse(data)
 
     if (parsed === undefined) {
-      console.warn('Failed to parse CDP message as JSON: ', data)
+      logger.error('Failed to parse CDP message as JSON: ', data)
 
       return
     }
@@ -88,7 +88,7 @@ export class PipeTransport implements Transport {
     )
 
     if (!success) {
-      console.warn('Received invalid CDP message:', parsed)
+      logger.error('Received invalid CDP message:', parsed)
 
       return
     }
