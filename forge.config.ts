@@ -7,11 +7,11 @@ import { MakerZIP } from '@electron-forge/maker-zip'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
 import type { ForgeConfig, ForgeMakeResult } from '@electron-forge/shared-types'
-import { spawn } from 'node:child_process'
 import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
+import { spawnSignFile } from './src/utils/signing'
 import { windowsSign } from './windowsSign'
 
 function getPlatformSpecificResources() {
@@ -39,78 +39,7 @@ function getPostMakeHook() {
     const artifactPaths = makeResults.flatMap((o) => o.artifacts)
 
     const signingPromises = artifactPaths.map((filePath) => {
-      return new Promise<void>((resolve, reject) => {
-        console.log(`File to sign post make: ${filePath}`)
-
-        const signToolPath = process.env.SIGNTOOL_PATH
-        if (!signToolPath) {
-          reject(new Error('SIGNTOOL_PATH environment variable is not set'))
-          return
-        }
-
-        const trustedSigningAccount = process.env.TRUSTED_SIGNING_ACCOUNT
-        if (!trustedSigningAccount) {
-          reject(
-            new Error('TRUSTED_SIGNING_ACCOUNT environment variable is not set')
-          )
-          return
-        }
-
-        const trustedSigningProfile = process.env.TRUSTED_SIGNING_PROFILE
-        if (!trustedSigningProfile) {
-          reject(
-            new Error('TRUSTED_SIGNING_PROFILE environment variable is not set')
-          )
-          return
-        }
-
-        const trustedSigningEndpoint = process.env.TRUSTED_SIGNING_ENDPOINT
-        if (!trustedSigningEndpoint) {
-          reject(
-            new Error(
-              'TRUSTED_SIGNING_ENDPOINT environment variable is not set'
-            )
-          )
-          return
-        }
-
-        const args = [
-          'code',
-          'trusted-signing',
-          filePath,
-          '-td',
-          'sha256',
-          '-fd',
-          'sha256',
-          '--trusted-signing-account',
-          trustedSigningAccount,
-          '--trusted-signing-certificate-profile',
-          trustedSigningProfile,
-          '--trusted-signing-endpoint',
-          trustedSigningEndpoint,
-        ]
-
-        const signingProc = spawn(signToolPath, args, {
-          env: process.env,
-          cwd: process.cwd(),
-          stdio: 'inherit',
-        })
-
-        signingProc.on('close', (code) => {
-          if (code === 0) {
-            console.log(`Successfully signed: ${filePath}`)
-            resolve()
-          } else {
-            reject(
-              new Error(`Signing failed with code ${code} for ${filePath}`)
-            )
-          }
-        })
-
-        signingProc.on('error', (error) => {
-          reject(new Error(`Failed to spawn signing process: ${error.message}`))
-        })
-      })
+      return spawnSignFile(filePath)
     })
 
     await Promise.all(signingPromises)
