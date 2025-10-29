@@ -16,8 +16,12 @@ frontend.forward('stop-recording', [studio])
 frontend.forward('reload-extension', [studio])
 frontend.forward('focus-tab', [studio])
 
+frontend.forward('load-settings', [studio])
+frontend.forward('save-settings', [studio])
+
 studio.forward('events-recorded', [frontend])
 studio.forward('events-loaded', [frontend])
 studio.forward('highlight-elements', [frontend])
+studio.forward('sync-settings', [frontend])
 
 export { frontend as client }

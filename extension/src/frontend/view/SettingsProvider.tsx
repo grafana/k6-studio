@@ -5,19 +5,10 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { z } from 'zod'
+
+import { InBrowserSettings } from 'extension/src/messaging/types'
 
 const context = createContext<SettingsStorage | null>(null)
-
-export const InBrowserSettingsSchema = z.object({
-  toolbox: z.object({
-    position: z.object({
-      left: z.number(),
-    }),
-  }),
-})
-
-export type InBrowserSettings = z.infer<typeof InBrowserSettingsSchema>
 
 export const DEFAULT_SETTINGS: InBrowserSettings = {
   toolbox: {
@@ -28,10 +19,13 @@ export const DEFAULT_SETTINGS: InBrowserSettings = {
   },
 }
 
+export type OnSettingsUpdateEventHandler = (settings: InBrowserSettings) => void
+
 export interface SettingsStorage {
   initial: InBrowserSettings
   load(): Promise<InBrowserSettings>
   save(settings: Partial<InBrowserSettings>): Promise<void>
+  onUpdate(callback: (settings: InBrowserSettings) => void): void
 }
 
 function useSettingsStorage(): SettingsStorage {
@@ -59,6 +53,10 @@ export function useInBrowserSettings() {
       .catch((err) => {
         console.error('Failed to load in-browser settings', err)
       })
+  }, [storage])
+
+  useEffect(() => {
+    return storage.onUpdate(setSettings)
   }, [storage])
 
   function setSettingsWithSync(

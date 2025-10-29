@@ -1,7 +1,5 @@
-import {
-  InBrowserSettings,
-  useInBrowserSettings,
-} from 'extension/src/frontend/view/SettingsProvider'
+import { useInBrowserSettings } from 'extension/src/frontend/view/SettingsProvider'
+import { InBrowserSettings } from 'extension/src/messaging/types'
 
 export function useToolboxSettings() {
   const [settings, setSettings] = useInBrowserSettings()

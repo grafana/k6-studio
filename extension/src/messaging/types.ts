@@ -2,6 +2,14 @@ import { z } from 'zod'
 
 import { BrowserEventSchema } from '@/schemas/recording'
 
+export const InBrowserSettingsSchema = z.object({
+  toolbox: z.object({
+    position: z.object({
+      left: z.number(),
+    }),
+  }),
+})
+
 export const LoadEventsSchema = z.object({
   type: z.literal('load-events'),
 })
@@ -53,6 +61,23 @@ export const ReloadExtensionSchema = z.object({
   type: z.literal('reload-extension'),
 })
 
+export const SyncSettingsSchema = z.object({
+  type: z.literal('sync-settings'),
+  settings: InBrowserSettingsSchema.nullable(),
+  tab: z.string(),
+})
+
+export const LoadSettingsSchema = z.object({
+  type: z.literal('load-settings'),
+  tab: z.string(),
+})
+
+export const SaveSettingsSchema = z.object({
+  type: z.literal('save-settings'),
+  settings: InBrowserSettingsSchema,
+  tab: z.string(),
+})
+
 export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   LoadEventsSchema,
 
@@ -64,8 +89,14 @@ export const BrowserExtensionMessageSchema = z.discriminatedUnion('type', [
   StopRecordingSchema,
   FocusTabSchema,
 
+  LoadSettingsSchema,
+  SyncSettingsSchema,
+  SaveSettingsSchema,
+
   ReloadExtensionSchema,
 ])
+
+export type InBrowserSettings = z.infer<typeof InBrowserSettingsSchema>
 
 export type RecordEvents = z.infer<typeof RecordEventsSchema>
 export type EventsRecorded = z.infer<typeof EventsRecordedSchema>

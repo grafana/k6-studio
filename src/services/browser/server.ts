@@ -1,7 +1,10 @@
 import { BrowserEvent } from '@/schemas/recording'
 import { BrowserExtensionClient } from 'extension/src/messaging'
 import { WebSocketServerTransport } from 'extension/src/messaging/transports/webSocketServer'
-import { BrowserExtensionMessage } from 'extension/src/messaging/types'
+import {
+  BrowserExtensionMessage,
+  InBrowserSettings,
+} from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
 export interface RecordEvent {
@@ -18,6 +21,8 @@ type BrowserExtensionServerEvents = {
 
 export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
   #client: BrowserExtensionClient
+
+  #settings = new Map<string, InBrowserSettings>()
 
   static async start() {
     const transport = await WebSocketServerTransport.create('localhost', 7554)
@@ -56,6 +61,26 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
 
     this.#client.on('focus-tab', (event) => {
       this.emit('focus', { tab: event.data.tab })
+    })
+
+    this.#client.on('load-settings', ({ data }) => {
+      const settings = this.#settings.get(data.tab)
+
+      this.#client.send({
+        type: 'sync-settings',
+        settings: settings ?? null,
+        tab: data.tab,
+      })
+    })
+
+    this.#client.on('save-settings', ({ data }) => {
+      this.#settings.set(data.tab, data.settings)
+
+      this.#client.send({
+        type: 'sync-settings',
+        settings: data.settings,
+        tab: data.tab,
+      })
     })
   }
 

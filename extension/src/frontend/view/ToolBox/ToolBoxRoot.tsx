@@ -3,7 +3,7 @@ import { css } from '@emotion/react'
 import { GripVerticalIcon } from 'lucide-react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
-import { InBrowserSettings } from 'extension/src/frontend/view/SettingsProvider'
+import { InBrowserSettings } from 'extension/src/messaging/types'
 
 import { useInBrowserUIStore } from '../store'
 
