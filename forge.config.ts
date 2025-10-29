@@ -31,12 +31,12 @@ function getPostMakeHook() {
   // we use the hook function only on windows to sign the binary so in
   // all other cases we just return an empty object
   if (getPlatform() !== 'win') {
-    return (forgeConfig: ForgeConfig, makeResults: ForgeMakeResult[]) =>
-      Promise.resolve(makeResults)
+    return (forgeConfig: ForgeConfig, options: ForgeMakeResult[]) =>
+      Promise.resolve(options)
   }
 
-  return async (forgeConfig: ForgeConfig, makeResults: ForgeMakeResult[]) => {
-    const artifactPaths = makeResults.flatMap((o) => o.artifacts)
+  return async (forgeConfig: ForgeConfig, options: ForgeMakeResult[]) => {
+    const artifactPaths = options.flatMap((o) => o.artifacts)
 
     const signingPromises = artifactPaths.map((filePath) => {
       return new Promise<void>((resolve, reject) => {
@@ -45,32 +45,6 @@ function getPostMakeHook() {
         const signToolPath = process.env.SIGNTOOL_PATH
         if (!signToolPath) {
           reject(new Error('SIGNTOOL_PATH environment variable is not set'))
-          return
-        }
-
-        const trustedSigningAccount = process.env.TRUSTED_SIGNING_ACCOUNT
-        if (!trustedSigningAccount) {
-          reject(
-            new Error('TRUSTED_SIGNING_ACCOUNT environment variable is not set')
-          )
-          return
-        }
-
-        const trustedSigningProfile = process.env.TRUSTED_SIGNING_PROFILE
-        if (!trustedSigningProfile) {
-          reject(
-            new Error('TRUSTED_SIGNING_PROFILE environment variable is not set')
-          )
-          return
-        }
-
-        const trustedSigningEndpoint = process.env.TRUSTED_SIGNING_ENDPOINT
-        if (!trustedSigningEndpoint) {
-          reject(
-            new Error(
-              'TRUSTED_SIGNING_ENDPOINT environment variable is not set'
-            )
-          )
           return
         }
 
@@ -83,11 +57,11 @@ function getPostMakeHook() {
           '-fd',
           'sha256',
           '--trusted-signing-account',
-          trustedSigningAccount,
+          process.env.TRUSTED_SIGNING_ACCOUNT!,
           '--trusted-signing-certificate-profile',
-          trustedSigningProfile,
+          process.env.TRUSTED_SIGNING_PROFILE!,
           '--trusted-signing-endpoint',
-          trustedSigningEndpoint,
+          process.env.TRUSTED_SIGNING_ENDPOINT!,
         ]
 
         const signingProc = spawn(signToolPath, args, {
@@ -114,12 +88,11 @@ function getPostMakeHook() {
     })
 
     await Promise.all(signingPromises)
-    return makeResults
+    return options
   }
 }
 
 const config: ForgeConfig = {
-  // this is an hack for signing windows binaries: https://github.com/grafana/k6-studio/pull/869#discussion_r2454584477
   hooks: {
     postMake: getPostMakeHook(),
   },
