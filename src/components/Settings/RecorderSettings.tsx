@@ -127,12 +127,12 @@ export const RecorderSettings = () => {
                   onValueChange={field.onChange}
                 >
                   <RadioGroup.Item value="extension">
-                    Browser extension
+                    Using browser extension
                   </RadioGroup.Item>
                   <RadioGroup.Item value="cdp">
-                    Chrome DevTools Protocol
+                    Using Chrome DevTools Protocol
                   </RadioGroup.Item>
-                  <RadioGroup.Item value="disabled">Disabled</RadioGroup.Item>
+                  <RadioGroup.Item value="disabled">Disable</RadioGroup.Item>
                 </RadioGroup.Root>
               </>
             )}

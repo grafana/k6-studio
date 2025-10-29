@@ -17,12 +17,20 @@ type BrowserExtensionServerEvents = {
 }
 
 export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
-  #client: BrowserExtensionClient | null = null
+  #client: BrowserExtensionClient
 
-  async start() {
+  static async start() {
     const transport = await WebSocketServerTransport.create('localhost', 7554)
 
-    this.#client = new BrowserExtensionClient('studio-server', transport)
+    return new BrowserServer(
+      new BrowserExtensionClient('studio-server', transport)
+    )
+  }
+
+  constructor(client: BrowserExtensionClient) {
+    super()
+
+    this.#client = client
 
     this.#client.on('load-events', () => {
       this.emit('load', {})
@@ -52,12 +60,11 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
   }
 
   send(message: BrowserExtensionMessage) {
-    this.#client?.send(message)
+    this.#client.send(message)
   }
 
   stop() {
-    this.#client?.dispose()
-    this.#client = null
+    this.#client.dispose()
   }
 
   [Symbol.dispose]() {

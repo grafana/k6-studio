@@ -176,10 +176,10 @@ export async function launchBrowserWithDevToolsProtocol(
       transport === 'ws' ? BROWSER_CDP_WEBSOCKET_ARGS : BROWSER_CDP_PIPE_ARGS,
   })
 
-  const server = new BrowserServer()
+  let server: BrowserServer
 
   try {
-    await server.start()
+    server = await BrowserServer.start()
   } catch (error) {
     throw new BrowserLaunchError('websocket-server-error', error)
   }

@@ -85,10 +85,10 @@ export const launchBrowserWithExtension = async (url: string | undefined) => {
     args: BROWSER_RECORDING_ARGS,
   })
 
-  const browserServer = new BrowserServer()
+  let browserServer: BrowserServer
 
   try {
-    await browserServer.start()
+    browserServer = await BrowserServer.start()
   } catch (error) {
     throw new BrowserLaunchError('websocket-server-error', error)
   }
