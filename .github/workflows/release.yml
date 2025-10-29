@@ -29,8 +29,6 @@ jobs:
             APPLE_API_KEY_ID=apple-certificates:APPLE_API_KEY_ID
             APPLE_API_ISSUER=apple-certificates:APPLE_API_ISSUER
             APPLE_API_KEY=apple-certificates:APPLE_API_KEY
-            WINDOWS_CERTIFICATE=windows-certificates:WINDOWS_CERTIFICATE
-            WINDOWS_CERTIFICATE_PASSWORD=windows-certificates:WINDOWS_CERTIFICATE_PASSWORD
             SENTRY_DSN=sentry:SENTRY_DSN
             SENTRY_AUTH_TOKEN=sentry:SENTRY_AUTH_TOKEN
       - uses: actions/checkout@v4
