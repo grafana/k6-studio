@@ -129,11 +129,8 @@ export const RecorderSettings = () => {
                   <RadioGroup.Item value="extension">
                     Browser extension
                   </RadioGroup.Item>
-                  <RadioGroup.Item value="cdp-ws">
-                    CDP over WebSocket
-                  </RadioGroup.Item>
-                  <RadioGroup.Item value="cdp-pipe">
-                    CDP over IO pipe
+                  <RadioGroup.Item value="cdp">
+                    Chrome DevTools Protocol
                   </RadioGroup.Item>
                   <RadioGroup.Item value="disabled">Disabled</RadioGroup.Item>
                 </RadioGroup.Root>

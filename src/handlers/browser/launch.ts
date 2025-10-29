@@ -30,10 +30,7 @@ function launchWithBrowserRecording({ url, settings }: LaunchBrowserArgs) {
     case 'extension':
       return launchBrowserWithExtension(url)
 
-    case 'cdp-ws':
-      return launchBrowserWithDevToolsProtocol('ws', url)
-
-    case 'cdp-pipe':
+    case 'cdp':
       return launchBrowserWithDevToolsProtocol('pipe', url)
 
     case 'disabled':

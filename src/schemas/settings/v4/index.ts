@@ -62,8 +62,7 @@ const RecorderDetectBrowserPathSchema = z.object({
   detectBrowserPath: z.literal(true),
   browserRecording: z.union([
     z.literal('extension'),
-    z.literal('cdp-ws'),
-    z.literal('cdp-pipe'),
+    z.literal('cdp'),
     z.literal('disabled'),
   ]),
 })
