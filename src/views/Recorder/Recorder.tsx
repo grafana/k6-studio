@@ -71,7 +71,10 @@ export function Recorder() {
         await startRecording(options)
       } catch (error) {
         setRecorderState('idle')
-        showToast({ title: 'Failed to start recording', status: 'error' })
+        showToast({
+          title: 'Failed to start recording',
+          status: 'error',
+        })
         log.error(error)
       }
     },
@@ -111,7 +114,10 @@ export function Recorder() {
           name: DEFAULT_GROUP_NAME,
         }
 
-        return { ...data, group: group.name }
+        return {
+          ...data,
+          group: group.name,
+        }
       })
 
       const har = proxyDataToHar(grouped, browserEvents)
@@ -186,13 +192,18 @@ export function Recorder() {
         return
       }
 
-      showToast({ title: 'Recording stopped', status: 'success' })
+      showToast({
+        title: 'Recording stopped',
+        status: 'success',
+      })
 
       navigate(
         getRoutePath('recordingPreviewer', {
           fileName: encodeURIComponent(fileName),
         }),
-        { state: { discardable: true } }
+        {
+          state: { discardable: true },
+        }
       )
     })
   }, [validateAndSaveHarFile, showToast, navigate, blocker.state, isAppClosing])
@@ -270,12 +281,22 @@ function createGroupOrEditLast(
   if (isLastGroupEmpty) {
     return groups.map((group) => {
       if (lastGroup?.id === group.id) {
-        return { ...group, isEditing: true }
+        return {
+          ...group,
+          isEditing: true,
+        }
       }
 
       return group
     })
   }
 
-  return [...groups, { id: crypto.randomUUID(), name, isEditing: true }]
+  return [
+    ...groups,
+    {
+      id: crypto.randomUUID(),
+      name,
+      isEditing: true,
+    },
+  ]
 }
