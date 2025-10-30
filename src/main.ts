@@ -18,7 +18,6 @@ import {
 import { getSettings, initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
-import { BrowserServer } from './services/browser/server'
 import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
@@ -44,17 +43,13 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-const browserServer = new BrowserServer()
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit()
 }
 
 initializeLogger()
-handlers.initialize({
-  browserServer,
-})
+handlers.initialize()
 mainState.initialize()
 initializeDeepLinks()
 
@@ -176,7 +171,7 @@ const createWindow = async () => {
 
     if (
       k6StudioState.currentClientRoute.startsWith('/recorder') &&
-      k6StudioState.currentBrowserProcess !== null
+      k6StudioState.currentRecordingSession !== null
     ) {
       event.preventDefault()
     }

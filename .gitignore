@@ -110,3 +110,4 @@ resources/win/x86_64/k6
 
 # Shims
 resources/shims
+resources/browser 

@@ -7,6 +7,7 @@ import {
   WindowStateSchema,
   type UpstreamProxySettings,
 } from '../v1'
+import * as v4 from '../v4'
 
 const TelemetrySchema = z.object({
   usageReport: z.boolean(),
@@ -39,7 +40,17 @@ export const AppSettingsSchema = z.object({
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>
 
-// TODO: Migrate settings to the next version
-export function migrate(settings: z.infer<typeof AppSettingsSchema>) {
-  return { ...settings }
+export function migrate(
+  settings: z.infer<typeof AppSettingsSchema>
+): v4.AppSettings {
+  return {
+    ...settings,
+    version: '4.0',
+    recorder: {
+      ...settings.recorder,
+      browserRecording: settings.recorder.enableBrowserRecorder
+        ? 'extension'
+        : 'disabled',
+    },
+  }
 }

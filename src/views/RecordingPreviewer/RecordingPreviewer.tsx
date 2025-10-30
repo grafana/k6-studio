@@ -26,8 +26,9 @@ export function RecordingPreviewer() {
   const { fileName } = useParams()
   const navigate = useNavigate()
 
-  const isBrowserRecorderEnabled =
-    settings?.recorder.enableBrowserRecorder ?? false
+  const browserRecorderSetting =
+    settings?.recorder.browserRecording ?? 'disabled'
+
   invariant(fileName, 'fileName is required')
   const file: StudioFile = {
     fileName,
@@ -65,7 +66,7 @@ export function RecordingPreviewer() {
         <RecordingPreviewControls file={file} browserEvents={browserEvents} />
       }
     >
-      {!isLoading && isBrowserRecorderEnabled && (
+      {!isLoading && browserRecorderSetting !== 'disabled' && (
         <RecordingInspector
           groups={groups}
           requests={proxyData}
@@ -73,7 +74,7 @@ export function RecordingPreviewer() {
         />
       )}
 
-      {!isLoading && !isBrowserRecorderEnabled && (
+      {!isLoading && browserRecorderSetting === 'disabled' && (
         <RequestLog groups={groups} requests={proxyData} />
       )}
     </View>

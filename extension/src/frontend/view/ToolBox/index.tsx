@@ -22,12 +22,12 @@ import {
 import { Flex } from '@/components/primitives/Flex'
 import { Toolbar } from '@/components/primitives/Toolbar'
 
-import { client } from '../../routing'
-import { useToolboxSettings } from '../settings'
+import { useStudioClient } from '../StudioClientProvider'
 import { Tool } from '../types'
 
 import { ToolBoxLogo } from './ToolBoxLogo'
 import { ToolBoxRoot } from './ToolBoxRoot'
+import { useToolboxSettings } from './ToolBoxRoot.hooks'
 import { ToolBoxTooltip } from './ToolBoxTooltip'
 
 const restrictToolBoxToWindowEdges: Modifier = ({
@@ -68,6 +68,8 @@ export function ToolBox({
   onToggleDrawer,
 }: ToolBoxProps) {
   const [settings, setSettings] = useToolboxSettings()
+
+  const client = useStudioClient()
 
   const mouse = useSensor(MouseSensor)
   const sensors = useSensors(mouse)

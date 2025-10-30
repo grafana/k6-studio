@@ -1,15 +1,16 @@
 import { useState } from 'react'
 
-import { client } from '../routing'
-
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
+import { useStudioClient } from './StudioClientProvider'
 import { TextSelectionPopover } from './TextSelectionPopover'
 import { ToolBox } from './ToolBox'
 import { useInBrowserUIStore } from './store'
 
 export function InBrowserControls() {
+  const client = useStudioClient()
+
   const tool = useInBrowserUIStore((state) => state.tool)
   const selectTool = useInBrowserUIStore((state) => state.selectTool)
 
