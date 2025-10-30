@@ -31,7 +31,7 @@ export function initialize() {
         })
 
         k6StudioState.currentRecordingSession.on('error', (error) => {
-          console.error('An error occured during recording: ', error)
+          console.error('An error occurred during recording: ', error)
 
           browserWindow.webContents.send(BrowserHandler.Error, {
             reason: 'recording-session',
@@ -48,7 +48,7 @@ export function initialize() {
         console.info('browser started')
       } catch (error) {
         console.error(
-          'An unexpected error ocurred while starting recording: ',
+          'An unexpected error occurred while starting recording: ',
           error
         )
 

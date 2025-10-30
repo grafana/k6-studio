@@ -165,7 +165,7 @@ export class Page extends EventEmitter<PageEventMap> {
   }
 
   /**
-   * Convencience method to log page events for debugging purposes
+   * Convenience method to log page events for debugging purposes
    */
   #trace() {
     const events: Array<keyof CdpPage.EventMap> = [

@@ -204,7 +204,7 @@ export function initializeView(
         initialize()
       })
       .catch((err) => {
-        console.error('An error occurred when initialzing in-browser UI', err)
+        console.error('An error occurred when initializing in-browser UI', err)
       })
 
     // Worst case scenario, we initialize the UI when the DOM is ready.
