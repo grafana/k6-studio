@@ -44,10 +44,13 @@ export class Script extends EventEmitter<ScriptEventMap> {
   async reload(newContent: string) {
     this.#content = newContent
 
-    await Promise.allSettled(
-      this.#sessions.map(async (session) => {
-        await this.remove(session.client)
-        await this.inject(session.client, false)
+    await Promise.all(
+      this.#sessions.map((session) => {
+        return this.remove(session.client)
+          .then(() => this.inject(session.client, false))
+          .catch(() => {
+            // Reloading the script isn't critical, so we can ignore errors here.
+          })
       })
     )
 
