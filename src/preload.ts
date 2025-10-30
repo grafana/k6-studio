@@ -3,6 +3,7 @@ import { contextBridge } from 'electron'
 import * as app from './handlers/app/preload'
 import * as auth from './handlers/auth/preload'
 import * as browser from './handlers/browser/preload'
+import * as browserRemote from './handlers/browserRemote/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as data from './handlers/dataFiles/preload'
 import * as generator from './handlers/generator/preload'
@@ -26,6 +27,7 @@ const studio = {
   app,
   log,
   settings,
+  browserRemote,
   cloud,
 } as const
 

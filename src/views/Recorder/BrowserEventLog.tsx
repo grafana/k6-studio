@@ -10,11 +10,11 @@ interface BrowserEventLogProps {
 
 export function BrowserEventLog({ events }: BrowserEventLogProps) {
   const handleNavigate = (url: string) => {
-    window.studio.browser.navigateTo(url)
+    window.studio.browserRemote.navigateTo(url)
   }
 
   const handleHighlight = (selector: HighlightSelector | null) => {
-    window.studio.browser.highlightElement(selector)
+    window.studio.browserRemote.highlightElement(selector)
   }
 
   return (

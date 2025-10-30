@@ -3,7 +3,6 @@ import { ipcMain, shell } from 'electron'
 import { launchBrowser } from '@/handlers/browser/launch'
 import { waitForProxy } from '@/main/proxy'
 import { browserWindowFromEvent } from '@/utils/electron'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { BrowserLaunchError } from './recorders/types'
 import { BrowserHandler, LaunchBrowserOptions } from './types'
@@ -75,17 +74,6 @@ export function initialize() {
 
     k6StudioState.currentRecordingSession?.stop()
     k6StudioState.currentRecordingSession = null
-  })
-
-  ipcMain.on(
-    BrowserHandler.HighlightElement,
-    (_event, selector: HighlightSelector | null) => {
-      k6StudioState.currentRecordingSession?.highlightElement(selector)
-    }
-  )
-
-  ipcMain.on(BrowserHandler.NavigateTo, (_event, url: string) => {
-    k6StudioState.currentRecordingSession?.navigateTo(url)
   })
 
   // TODO: Move to app or ui. The other handlers in this file are related to recording.
