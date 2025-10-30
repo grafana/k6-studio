@@ -1,8 +1,6 @@
-import type { Entry, Page } from 'har-format'
-
-import { BrowserEvent } from '@/schemas/recording'
+import { BrowserEvent, Recording } from '@/schemas/recording'
 import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
-import { EntryWithOptionalResponse, HarWithOptionalResponse } from '@/types/har'
+import { HarEntry, HarPage } from '@/types/recording'
 
 import { groupProxyData } from './groups'
 import { getContentTypeWithCharsetHeader } from './headers'
@@ -10,7 +8,7 @@ import { getContentTypeWithCharsetHeader } from './headers'
 export function proxyDataToHar(
   data: ProxyData[],
   browserEvents: BrowserEvent[]
-): HarWithOptionalResponse {
+): Recording {
   const groups = groupProxyData(data)
   return {
     log: createLog(createPages(groups), createEntries(groups), browserEvents),
@@ -18,10 +16,10 @@ export function proxyDataToHar(
 }
 
 function createLog(
-  pages: Page[],
-  entries: EntryWithOptionalResponse[],
-  browserEvents: BrowserEvent[]
-): HarWithOptionalResponse['log'] {
+  pages: HarPage[],
+  entries: HarEntry[],
+  events: BrowserEvent[]
+): Recording['log'] {
   return {
     version: '1.2',
     creator: {
@@ -30,11 +28,14 @@ function createLog(
     },
     pages,
     entries,
-    _browserEvents: browserEvents,
+    _browserEvents: {
+      version: '2',
+      events,
+    },
   }
 }
 
-function createPages(groups: GroupedProxyData): Page[] {
+function createPages(groups: GroupedProxyData): HarPage[] {
   return Object.entries(groups).map(([group, data]) => ({
     id: group,
     title: group,
@@ -43,7 +44,7 @@ function createPages(groups: GroupedProxyData): Page[] {
   }))
 }
 
-function createEntries(groups: GroupedProxyData): EntryWithOptionalResponse[] {
+function createEntries(groups: GroupedProxyData): HarEntry[] {
   return Object.entries(groups).flatMap(([group, data]) =>
     data.map((proxyData) => ({
       startedDateTime: timeStampToISO(proxyData.request.timestampStart),
@@ -61,7 +62,7 @@ function createEntries(groups: GroupedProxyData): EntryWithOptionalResponse[] {
   )
 }
 
-function createRequest(request: Request): Entry['request'] {
+function createRequest(request: Request): HarEntry['request'] {
   return {
     method: request.method,
     url: request.url,
@@ -76,7 +77,7 @@ function createRequest(request: Request): Entry['request'] {
   }
 }
 
-function createResponse(response: Response): Entry['response'] {
+function createResponse(response: Response): HarEntry['response'] {
   return {
     status: response.statusCode,
     statusText: response.reason,
@@ -85,7 +86,8 @@ function createResponse(response: Response): Entry['response'] {
     content: {
       size: response.contentLength,
       mimeType: getContentTypeWithCharsetHeader(response.headers) ?? '',
-      text: response.content,
+      // Fallback to undefined if content is null to try and keep compatibility with other applications
+      text: response.content ?? undefined,
       encoding: 'base64',
     },
     cookies: response.cookies.map(([name, value]) => ({ name, value })),
@@ -96,7 +98,7 @@ function createResponse(response: Response): Entry['response'] {
   }
 }
 
-function createPostData(request: Request): Entry['request']['postData'] {
+function createPostData(request: Request): HarEntry['request']['postData'] {
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
     return
   }

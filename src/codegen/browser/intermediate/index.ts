@@ -51,19 +51,30 @@ function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
 function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
   const page = context.reference(node.inputs.page)
 
-  const expression: ir.NewLocatorExpression = {
-    type: 'NewLocatorExpression',
-    selector: {
-      type: 'StringLiteral',
-      value: node.selector,
-    },
-    page,
+  if (node.selector.testId) {
+    // We always inline locator nodes for readability. If we implement better
+    // logic for generating variable names, then we could consider declaring
+    // a variable for it if there are multiple references.
+    context.inline(node, {
+      type: 'NewTestIdLocatorExpression',
+      testId: {
+        type: 'StringLiteral',
+        value: node.selector.testId,
+      },
+      page,
+    })
+    return
   }
 
-  // We always inline locator nodes for readability. If we implement better
-  // logic for generating variable names, then we could consider declaring
-  // a variable for it if there are multiple references.
-  context.inline(node, expression)
+  // Default to CSS locator
+  context.inline(node, {
+    type: 'NewCssLocatorExpression',
+    selector: {
+      type: 'StringLiteral',
+      value: node.selector.css,
+    },
+    page,
+  })
 }
 
 function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {

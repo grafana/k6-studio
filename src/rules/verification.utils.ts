@@ -1,3 +1,5 @@
+import { escapeRegExp } from 'lodash-es'
+
 import { Response } from '@/types'
 import { VerificationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
@@ -12,6 +14,8 @@ export function getValueFromRule(rule: VerificationRule, response: Response) {
       return getRecordedValue(rule.target, response)
     case 'string':
       return `'${rule.value.value}'`
+    case 'regex':
+      return `new RegExp('${escapeRegExp(rule.value.regex)}')`
     case 'variable':
       return `VARS['${rule.value.variableName}']`
     case 'number':
@@ -37,6 +41,8 @@ export function getCheckExpression(
       return `${target}.includes(${value})`
     case 'notContains':
       return `!${target}.includes(${value})`
+    case 'matches':
+      return `${value}.test(${target})`
     default:
       return exhaustive(operator)
   }
@@ -58,6 +64,8 @@ export function getCheckDescription(
       return `${rule.target} contains ${valueDescription}`
     case 'notContains':
       return `${rule.target} does not contain ${valueDescription}`
+    case 'matches':
+      return `${rule.target} matches ${valueDescription}`
     default:
       return exhaustive(operator)
   }
@@ -72,7 +80,10 @@ function getRecordedValue(
       return response.statusCode
     case 'body': {
       // Remove newlines when comparing the body to a recorded value
-      const singleLineContent = response.content.replace(NEWLINE_REGEX, '')
+      const singleLineContent = (response.content ?? '').replace(
+        NEWLINE_REGEX,
+        ''
+      )
       const escapedContent = escapeBackticksAndDollarSign(singleLineContent)
 
       return `String.raw\`${escapedContent}\``
@@ -109,6 +120,8 @@ function getValueDescription(rule: VerificationRule, value: string | number) {
       return `variable "${rule.value.variableName}"`
     case 'number':
       return rule.value.number
+    case 'regex':
+      return new RegExp(escapeRegExp(rule.value.regex)).toString()
     default:
       return exhaustive(rule.value)
   }

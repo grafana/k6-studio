@@ -44,7 +44,7 @@ export function getArch(): Arch {
  * Show a toast in React
  */
 export function sendToast(webContents: WebContents, toast: AddToastPayload) {
-  webContents.send(UIHandler.TOAST, toast)
+  webContents.send(UIHandler.Toast, toast)
 }
 
 export const findOpenPort = (startPort: number = 3000): Promise<number> => {

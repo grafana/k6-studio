@@ -26,3 +26,9 @@ export function selectUpstreamCertificate() {
     SettingsHandler.SelectUpstreamCertificate
   ) as Promise<Electron.OpenDialogReturnValue>
 }
+
+export function isEncryptionAvailable() {
+  return ipcRenderer.invoke(
+    SettingsHandler.IsEncryptionAvailable
+  ) as Promise<boolean>
+}
