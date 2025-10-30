@@ -1,10 +1,7 @@
 import { css } from '@emotion/react'
 import { upperFirst } from 'lodash-es'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { Flex } from '@/components/primitives/Flex'
-import { IconButton } from '@/components/primitives/IconButton'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { uuid } from '@/utils/uuid'
 import { ElementRole } from 'extension/src/utils/aria'
@@ -20,6 +17,7 @@ import { ElementMenu } from './ElementMenu'
 import { ElementPopover } from './ElementPopover'
 import { AssertionEditor } from './assertions/AssertionEditor'
 import { AssertionData } from './assertions/types'
+import { useElementHighlight } from './hooks'
 
 function getHeader(assertion: AssertionData | null) {
   switch (assertion?.type) {
@@ -50,40 +48,6 @@ function getHeader(assertion: AssertionData | null) {
   }
 }
 
-interface ElementSelectorProps {
-  selector: string
-  onExpand?: () => void
-  onContract?: () => void
-}
-
-function ElementSelector({
-  selector,
-  onExpand,
-  onContract,
-}: ElementSelectorProps) {
-  return (
-    <Flex align="center" gap="1">
-      <Tooltip asChild content="Select parent element">
-        <IconButton disabled={onExpand === undefined} onClick={onExpand}>
-          <ChevronLeftIcon />
-        </IconButton>
-      </Tooltip>
-      <ElementPopover.Heading
-        css={css`
-          flex: 1 1 0;
-        `}
-      >
-        {selector}
-      </ElementPopover.Heading>
-      <Tooltip asChild content="Select child element">
-        <IconButton disabled={onContract === undefined} onClick={onContract}>
-          <ChevronRightIcon />
-        </IconButton>
-      </Tooltip>
-    </Flex>
-  )
-}
-
 function formatRoles(roles: ElementRole[]) {
   if (roles.length === 0) {
     return 'None'
@@ -97,39 +61,22 @@ interface ElementInspectorProps {
 }
 
 export function ElementInspector({ onClose }: ElementInspectorProps) {
-  const { pinned, element, mousePosition, unpin, expand, contract } =
+  const { pinned, element, mousePosition, reset, expand, contract } =
     useInspectedElement()
 
   const [assertion, setAssertion] = useState<AssertionData | null>(null)
 
+  useElementHighlight(element)
+
   useEscape(() => {
     if (pinned) {
-      unpin()
+      reset()
 
       return
     }
 
     onClose()
   }, [pinned, onClose])
-
-  useEffect(() => {
-    client.send({
-      type: 'highlight-elements',
-      selector: element && {
-        type: 'css',
-        selector: element.selector.css,
-      },
-    })
-  }, [element])
-
-  useEffect(() => {
-    return () => {
-      client.send({
-        type: 'highlight-elements',
-        selector: null,
-      })
-    }
-  }, [])
 
   const handleOpenChange = () => {
     setAssertion(null)
@@ -201,8 +148,8 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
       anchor={<Anchor position={mousePosition} />}
       header={
         getHeader(assertion) ?? (
-          <ElementSelector
-            selector={element.selector.css}
+          <ElementPopover.Selector
+            element={element}
             onContract={contract}
             onExpand={expand}
           />

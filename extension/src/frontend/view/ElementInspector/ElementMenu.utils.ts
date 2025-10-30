@@ -3,8 +3,8 @@ import { generateSelectors } from 'extension/src/selectors'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 import { findAssociatedElement } from 'extension/src/utils/dom'
 
-import { TrackedElement } from './ElementInspector.hooks'
 import { CheckAssertionData } from './assertions/types'
+import { TrackedElement } from './utils'
 
 function* getAncestors(element: Element) {
   let currentElement: Element | null = element

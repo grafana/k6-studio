@@ -11,7 +11,6 @@ import { ComponentProps, ReactNode } from 'react'
 import { Toolbar } from '@/components/primitives/Toolbar'
 import { ElementRole } from 'extension/src/utils/aria'
 
-import { TrackedElement } from './ElementInspector.hooks'
 import {
   findAssociatedControl,
   getCheckedState,
@@ -20,6 +19,7 @@ import {
   getTextBoxValue,
 } from './ElementMenu.utils'
 import { AssertionData, CheckAssertionData } from './assertions/types'
+import { TrackedElement } from './utils'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
   return (
