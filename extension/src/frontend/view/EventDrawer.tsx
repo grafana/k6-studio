@@ -106,15 +106,14 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
 
               /* Default closed state */
               transform: translateX(100%);
+              transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 
               &[data-state='open'] {
                 transform: translateX(0);
-                transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
               }
 
               &[data-state='closed'] {
                 transform: translateX(100%);
-                transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
               }
 
               @media (prefers-reduced-motion: reduce) {
