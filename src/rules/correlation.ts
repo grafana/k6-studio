@@ -322,7 +322,7 @@ const extractCorrelationBeginEndBody = (
   }
 
   const extractedValue = matchBeginEnd(
-    response.content,
+    response.content ?? '',
     selector.begin,
     selector.end
   )
@@ -455,7 +455,7 @@ const extractCorrelationRegexBody = (
     throw new Error('no response to extract from')
   }
 
-  const extractedValue = matchRegex(response.content, selector.regex)
+  const extractedValue = matchRegex(response.content ?? '', selector.regex)
 
   if (!extractedValue) {
     return noCorrelationResult
@@ -555,7 +555,10 @@ const extractCorrelationJsonBody = (
 
   // TODO: https://github.com/grafana/k6-studio/issues/277
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const extractedValue = getJsonObjectFromPath(response.content, selector.path)
+  const extractedValue = getJsonObjectFromPath(
+    response.content ?? '',
+    selector.path
+  )
 
   if (
     extractedValue === undefined ||

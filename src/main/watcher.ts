@@ -27,7 +27,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
       return
     }
 
-    browserWindow.webContents.send(UIHandler.ADD_FILE, file)
+    browserWindow.webContents.send(UIHandler.AddFile, file)
   })
 
   k6StudioState.watcher.on('unlink', (filePath) => {
@@ -37,7 +37,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
       return
     }
 
-    browserWindow.webContents.send(UIHandler.REMOVE_FILE, file)
+    browserWindow.webContents.send(UIHandler.RemoveFile, file)
   })
 }
 

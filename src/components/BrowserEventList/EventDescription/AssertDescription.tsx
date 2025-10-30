@@ -11,14 +11,15 @@ interface AssertDescriptionProps {
 }
 
 export function AssertDescription({
-  event: { selector, assertion },
+  event: { target, assertion },
   onHighlight,
 }: AssertDescriptionProps) {
   switch (assertion.type) {
     case 'text':
       return (
         <>
-          Assert that <Selector selector={selector} onHighlight={onHighlight} />{' '}
+          Assert that{' '}
+          <Selector selector={target.selectors} onHighlight={onHighlight} />{' '}
           contains the text{' '}
           <Tooltip asChild content={assertion.operation.value}>
             <em>{`"${assertion.operation.value}"`}</em>
@@ -29,8 +30,9 @@ export function AssertDescription({
     case 'visibility':
       return (
         <>
-          Assert that <Selector selector={selector} onHighlight={onHighlight} />{' '}
-          is {assertion.visible ? 'visible' : 'hidden'}
+          Assert that{' '}
+          <Selector selector={target.selectors} onHighlight={onHighlight} /> is{' '}
+          {assertion.visible ? 'visible' : 'hidden'}
         </>
       )
 
@@ -38,7 +40,7 @@ export function AssertDescription({
       return (
         <>
           Assert that the checked state of{' '}
-          <Selector selector={selector} onHighlight={onHighlight} /> is{' '}
+          <Selector selector={target.selectors} onHighlight={onHighlight} /> is{' '}
           <code>{assertion.expected}</code>
         </>
       )
@@ -47,8 +49,8 @@ export function AssertDescription({
       return (
         <>
           Assert that the input{' '}
-          <Selector selector={selector} onHighlight={onHighlight} /> has the
-          value{' '}
+          <Selector selector={target.selectors} onHighlight={onHighlight} /> has
+          the value{' '}
           <Tooltip asChild content={assertion.expected}>
             <em>{`"${assertion.expected}"`}</em>
           </Tooltip>

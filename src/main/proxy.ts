@@ -98,6 +98,7 @@ export const launchProxy = (
       return
     }
 
+    // TODO: add zod schema validation
     const proxyData = safeJsonParse<ProxyData>(data)
     if (proxyData) {
       browserWindow.webContents.send(ProxyHandler.Data, proxyData)

@@ -1,20 +1,19 @@
-import type { Content, Entry, Header } from 'har-format'
-
 import { DEFAULT_GROUP_NAME } from '@/constants'
+import { Recording } from '@/schemas/recording'
 import { useFeaturesStore } from '@/store/features'
 import {
   generateJsonPaths,
   isJsonContentType,
 } from '@/store/generator/slices/recording.utils'
 import { Method, ProxyData, Request, Response } from '@/types'
-import { HarWithOptionalResponse } from '@/types/har'
+import type { HarContent, HarEntry, HarHeader } from '@/types/recording'
 
 import { safeAtob } from './format'
 
-export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
-  return har.log.entries.map((entry) => {
-    const request = parseRequest(entry.request)
-    const response = entry.response ? parseResponse(entry.response) : undefined
+export function harToProxyData(har: Recording): ProxyData[] {
+  return (har.log.entries ?? []).map((entry) => {
+    const request = harEntryToRequest(entry)
+    const response = harEntryToResponse(entry)
 
     return {
       id: self.crypto.randomUUID(),
@@ -25,7 +24,7 @@ export function harToProxyData(har: HarWithOptionalResponse): ProxyData[] {
   })
 }
 
-function parseRequest(request: Entry['request']): Request {
+function harEntryToRequest({ request, startedDateTime }: HarEntry): Request {
   let content = request.postData?.text ?? ''
   const postDataParams = request.postData?.params
 
@@ -41,26 +40,19 @@ function parseRequest(request: Entry['request']): Request {
     )
   }
 
-  const jsonPaths = parseJsonPaths(content, request.headers)
+  const jsonPaths = parseJsonPaths(content, request.headers ?? [])
   const url = new URL(request.url)
 
   return {
     method: request.method as Method,
     url: request.url,
-    httpVersion: request.httpVersion,
-    headers: request.headers.map((h) => [h.name, h.value]),
-    query: request.queryString.map((q) => [q.name, q.value]),
-    cookies: request.cookies.map((c) => [c.name, c.value]),
+    httpVersion: request.httpVersion ?? 'HTTP/1.1',
+    headers: (request.headers ?? []).map((h) => [h.name, h.value]),
+    query: (request.queryString ?? []).map((q) => [q.name, q.value]),
+    cookies: (request.cookies ?? []).map((c) => [c.name, c.value]),
     jsonPaths,
     content,
-    // TODO: add actual values
-    // @ts-expect-error incomplete type
-    timestampStart: request.startedDateTime
-      ? // TODO: https://github.com/grafana/k6-studio/issues/277
-        // @ts-expect-error incomplete type
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        isoToUnixTimestamp(request.startedDateTime)
-      : 0,
+    timestampStart: startedDateTime ? isoToUnixTimestamp(startedDateTime) : 0,
     timestampEnd: 0,
     scheme: url.protocol.replace(':', ''),
     host: url.hostname,
@@ -69,7 +61,11 @@ function parseRequest(request: Entry['request']): Request {
   }
 }
 
-function parseResponse(response: Entry['response']): Response {
+function harEntryToResponse({ response }: HarEntry): Response | undefined {
+  if (!response) {
+    return undefined
+  }
+
   const content = parseContent(response.content)
   const jsonPaths = parseJsonPaths(content, response.headers)
 
@@ -87,7 +83,7 @@ function parseResponse(response: Entry['response']): Response {
   }
 }
 
-function parseJsonPaths(content: string, headers: Header[]): string[] {
+function parseJsonPaths(content: string, headers: HarHeader[]): string[] {
   const isJsonPathsFeatureFlagTrue =
     useFeaturesStore.getState().features['typeahead-json']
   const isJsonPathsEnabled =
@@ -103,7 +99,7 @@ function isoToUnixTimestamp(isoString: string): number {
   return new Date(isoString).getTime() / 1000
 }
 
-function parseContent(content: Content): string {
+function parseContent(content: HarContent): string {
   if (!content.text) return ''
 
   if (content.encoding === 'base64') {

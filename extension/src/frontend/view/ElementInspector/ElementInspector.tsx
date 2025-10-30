@@ -147,8 +147,10 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
           eventId: uuid(),
           timestamp: Date.now(),
           tab: getTabId(),
-          selector: {
-            css: assertion.selector,
+          target: {
+            selectors: {
+              css: assertion.selector,
+            },
           },
           assertion: toAssertion(assertion),
         },

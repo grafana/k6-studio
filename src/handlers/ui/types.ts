@@ -8,15 +8,15 @@ export interface GetFilesResponse {
 }
 
 export enum UIHandler {
-  TOGGLE_THEME = 'ui:toggle-theme',
-  DETECT_BROWSER = 'ui:detect-browser',
-  OPEN_FOLDER = 'ui:open-folder',
-  OPEN_FILE_IN_DEFAULT_APP = 'ui:open-file-in-default-app',
-  DELETE_FILE = 'ui:delete-file',
-  GET_FILES = 'ui:get-files',
-  RENAME_FILE = 'ui:rename-file',
-  REPORT_ISSUE = 'ui:report-issue',
-  ADD_FILE = 'ui:add-file',
-  REMOVE_FILE = 'ui:remove-file',
-  TOAST = 'ui:toast',
+  ToggleTheme = 'ui:toggle-theme',
+  DetectBrowser = 'ui:detect-browser',
+  OpenFolder = 'ui:open-folder',
+  OpenFileInDefaultApp = 'ui:open-file-in-default-app',
+  DeleteFile = 'ui:delete-file',
+  GetFiles = 'ui:get-files',
+  RenameFile = 'ui:rename-file',
+  ReportIssue = 'ui:report-issue',
+  AddFile = 'ui:add-file',
+  RemoveFile = 'ui:remove-file',
+  Toast = 'ui:toast',
 }

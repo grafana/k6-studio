@@ -94,8 +94,10 @@ export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
           timestamp: Date.now(),
           type: 'assert',
           tab: getTabId(),
-          selector: {
-            css: assertion.selector,
+          target: {
+            selectors: {
+              css: assertion.selector,
+            },
           },
           assertion: {
             type: 'text',

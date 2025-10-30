@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
-import { generateSelector } from 'extension/src/selectors'
+import { generateSelectors } from 'extension/src/selectors'
 
 import { TextSelection } from './TextSelectionPopover.types'
 import { getElementBounds, toBounds } from './utils'
@@ -79,7 +79,7 @@ export function useTextSelection() {
 
       setSelection({
         text: range.toString(),
-        selector: generateSelector(commonAncestor),
+        selector: generateSelectors(commonAncestor),
         range,
         ...measureRange(range),
       })
