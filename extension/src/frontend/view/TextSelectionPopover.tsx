@@ -31,7 +31,7 @@ function TextSelectionPopoverContent({
 
   const [assertion, setAssertion] = useState<TextAssertionData>({
     type: 'text',
-    selector: selection.element.selector.css,
+    target: selection.element.target,
     text: selection.text,
   })
 
@@ -46,7 +46,7 @@ function TextSelectionPopoverContent({
   const handleSubmit = (assertion: TextAssertionData) => {
     onAdd({
       ...assertion,
-      selector: targetElement.selector.css,
+      target: targetElement.target,
     })
 
     onClose()
@@ -96,11 +96,7 @@ export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
           timestamp: Date.now(),
           type: 'assert',
           tab: '',
-          target: {
-            selectors: {
-              css: assertion.selector,
-            },
-          },
+          target: assertion.target,
           assertion: {
             type: 'text',
             operation: {

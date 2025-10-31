@@ -1,7 +1,8 @@
-import { ElementSelector } from '@/schemas/recording'
-import { generateSelectors } from 'extension/src/selectors'
+import { BrowserEventTarget } from '@/schemas/recording'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 import { findAssociatedElement } from 'extension/src/utils/dom'
+
+import { getEventTarget } from '../../target'
 
 import { CheckAssertionData } from './assertions/types'
 import { TrackedElement } from './utils'
@@ -18,30 +19,30 @@ function* getAncestors(element: Element) {
 
 export interface LabeledControl {
   element: Element
-  selector: ElementSelector
+  target: BrowserEventTarget
   roles: ElementRole[]
 }
 
 export function findAssociatedControl({
+  element,
   target,
-  selector,
   roles,
 }: TrackedElement): LabeledControl | null {
   // If the target is already a control, then we don't need to do a search.
   if (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLButtonElement ||
-    target instanceof HTMLSelectElement ||
-    target instanceof HTMLTextAreaElement
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLButtonElement ||
+    element instanceof HTMLSelectElement ||
+    element instanceof HTMLTextAreaElement
   ) {
     return {
-      element: target,
-      selector,
+      element,
+      target,
       roles,
     }
   }
 
-  const label = [...getAncestors(target)].find(
+  const label = [...getAncestors(element)].find(
     (ancestor) => ancestor instanceof HTMLLabelElement
   )
 
@@ -57,7 +58,7 @@ export function findAssociatedControl({
 
   return {
     element: associatedElement,
-    selector: generateSelectors(associatedElement),
+    target: getEventTarget(associatedElement),
     roles: [...getElementRoles(associatedElement)],
   }
 }

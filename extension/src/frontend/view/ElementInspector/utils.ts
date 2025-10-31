@@ -1,16 +1,16 @@
-import { ElementSelector } from '@/schemas/recording'
+import { BrowserEventTarget } from '@/schemas/recording'
 import { uuid } from '@/utils/uuid'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 
-import { generateSelectors } from '../../../selectors'
+import { getEventTarget } from '../../target'
 import { Bounds } from '../types'
 import { getElementBounds } from '../utils'
 
 export interface TrackedElement {
   id: string
   roles: ElementRole[]
-  selector: ElementSelector
-  target: Element
+  target: BrowserEventTarget
+  element: Element
   bounds: Bounds
 }
 
@@ -20,8 +20,8 @@ export function toTrackedElement(element: Element): TrackedElement {
   return {
     id: uuid(),
     roles: [...roles],
-    selector: generateSelectors(element),
-    target: element,
+    target: getEventTarget(element),
+    element: element,
     bounds: getElementBounds(element),
   }
 }

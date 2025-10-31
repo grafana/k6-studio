@@ -2,7 +2,6 @@ import './view'
 
 import { BrowserEvent } from '@/schemas/recording'
 
-import { generateSelectors } from '../selectors'
 import {
   findAssociatedElement,
   findInteractiveElement,
@@ -13,6 +12,7 @@ import {
 
 import { WindowEventManager } from './manager'
 import { client } from './routing'
+import { getEventTarget } from './target'
 
 function getButton(button: number) {
   switch (button) {
@@ -110,7 +110,7 @@ manager.capture('click', (ev, manager) => {
     type: 'click',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
-    target: { selectors: generateSelectors(clickTarget) },
+    target: getEventTarget(clickTarget),
     button,
     modifiers: {
       ctrl: ev.ctrlKey,
@@ -127,7 +127,7 @@ function handleSelectChange(target: HTMLSelectElement) {
     type: 'select-change',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
-    target: { selectors: generateSelectors(target) },
+    target: getEventTarget(target),
     selected: [...target.selectedOptions].map((option) => option.value),
     multiple: target.multiple,
     tab: '',
@@ -139,7 +139,7 @@ function handleTextAreaChange(target: HTMLTextAreaElement) {
     type: 'input-change',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
-    target: { selectors: generateSelectors(target) },
+    target: getEventTarget(target),
     value: target.value,
     sensitive: false,
     tab: '',
@@ -162,7 +162,7 @@ function handleInputChange(target: HTMLInputElement) {
       type: 'check-change',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
-      target: { selectors: generateSelectors(target) },
+      target: getEventTarget(target),
       checked: target.checked,
       tab: '',
     })
@@ -179,7 +179,7 @@ function handleInputChange(target: HTMLInputElement) {
       type: 'radio-change',
       eventId: crypto.randomUUID(),
       timestamp: Date.now(),
-      target: { selectors: generateSelectors(target) },
+      target: getEventTarget(target),
       name: target.name,
       value: target.value,
       tab: '',
@@ -192,7 +192,7 @@ function handleInputChange(target: HTMLInputElement) {
     type: 'input-change',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
-    target: { selectors: generateSelectors(target) },
+    target: getEventTarget(target),
     value: target.value,
     sensitive: target.type === 'password',
     tab: '',
@@ -246,8 +246,8 @@ manager.capture('submit', (ev) => {
     type: 'submit-form',
     eventId: crypto.randomUUID(),
     timestamp: Date.now(),
-    form: { selectors: generateSelectors(ev.target) },
-    submitter: { selectors: generateSelectors(ev.submitter) },
+    form: getEventTarget(ev.target),
+    submitter: getEventTarget(ev.submitter),
     tab: '',
   })
 })

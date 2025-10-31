@@ -25,7 +25,7 @@ export function usePinnedElement(element?: TrackedElement | undefined) {
       return undefined
     }
 
-    const parent = head.target.parentElement
+    const parent = head.element.parentElement
 
     if (parent === null || parent === document.documentElement) {
       return undefined
@@ -69,7 +69,7 @@ export function useElementHighlight(element: TrackedElement | null) {
       type: 'highlight-elements',
       selector: element && {
         type: 'css',
-        selector: element.selector.css,
+        selector: element.target.selectors.css,
       },
     })
   }, [element])

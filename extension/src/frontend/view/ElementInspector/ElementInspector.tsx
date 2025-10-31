@@ -91,11 +91,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
           eventId: uuid(),
           timestamp: Date.now(),
           tab: '',
-          target: {
-            selectors: {
-              css: assertion.selector,
-            },
-          },
+          target: assertion.target,
           assertion: toAssertion(assertion),
         },
       ],
@@ -129,9 +125,9 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
               `}
             >
               <div>Tag</div>
-              <div>{element.target.tagName.toLowerCase()}</div>
+              <div>{element.element.tagName.toLowerCase()}</div>
               <div>Selector</div>
-              <div>{element.selector.css}</div>
+              <div>{element.target.selectors.css}</div>
               <div>Roles</div>
               <div>{formatRoles(element.roles)}</div>
             </div>
