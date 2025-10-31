@@ -6,11 +6,13 @@ import { MakerSquirrel } from '@electron-forge/maker-squirrel'
 import { MakerZIP } from '@electron-forge/maker-zip'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
-import type { ForgeConfig } from '@electron-forge/shared-types'
+import type { ForgeConfig, ForgeMakeResult } from '@electron-forge/shared-types'
 import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
+import { spawnSignFile } from './src/utils/signing'
+import { windowsSign } from './windowsSign'
 
 function getPlatformSpecificResources() {
   // on mac we are using a single image to build both architectures so we
@@ -25,7 +27,31 @@ function getPlatformSpecificResources() {
   return [path.join('./resources/', getPlatform(), getArch())]
 }
 
+function getPostMakeHook() {
+  // we use the hook function only on windows to sign the binary so in
+  // all other cases we just return an empty object
+  if (getPlatform() !== 'win') {
+    return (forgeConfig: ForgeConfig, makeResults: ForgeMakeResult[]) =>
+      Promise.resolve(makeResults)
+  }
+
+  return async (forgeConfig: ForgeConfig, makeResults: ForgeMakeResult[]) => {
+    const artifactPaths = makeResults.flatMap((o) => o.artifacts)
+
+    const signingPromises = artifactPaths.map((filePath) => {
+      return spawnSignFile(filePath)
+    })
+
+    await Promise.all(signingPromises)
+    return makeResults
+  }
+}
+
 const config: ForgeConfig = {
+  // this is an hack for signing windows binaries: https://github.com/grafana/k6-studio/pull/869#discussion_r2454584477
+  hooks: {
+    postMake: getPostMakeHook(),
+  },
   packagerConfig: {
     executableName: 'k6-studio',
     icon: './resources/icons/logo',
@@ -41,6 +67,7 @@ const config: ForgeConfig = {
       './resources/logo-splashscreen.svg',
       ...getPlatformSpecificResources(),
     ],
+    windowsSign,
     osxSign: {
       optionsForFile: () => {
         return {
@@ -63,10 +90,6 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
-      windowsSign: {
-        certificateFile: process.env.WINDOWS_CERTIFICATE_PATH,
-        certificatePassword: process.env.WINDOWS_CERTIFICATE_PASSWORD,
-      },
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
     }),
