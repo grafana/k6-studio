@@ -4,7 +4,11 @@ import { useState } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { Feature, FeatureDisabled } from '@/components/Feature'
-import { selectSelectedRule, useGeneratorStore } from '@/store/generator'
+import {
+  selectFilteredRequests,
+  selectSelectedRule,
+  useGeneratorStore,
+} from '@/store/generator'
 
 import { AutoCorrelationDialog } from '../AutoCorrelation/AutoCorrelationDialog'
 import { NewRuleMenu } from '../NewRuleMenu'
@@ -18,6 +22,7 @@ export function TestRuleContainer() {
   const rules = useGeneratorStore((store) => store.rules)
   const swapRules = useGeneratorStore((store) => store.swapRules)
   const selectedRule = useGeneratorStore(selectSelectedRule)
+  const requests = useGeneratorStore(selectFilteredRequests)
   const [isAutoCorrelationDialogOpen, setIsAutoCorrelationDialogOpen] =
     useState(false)
 
@@ -29,6 +34,8 @@ export function TestRuleContainer() {
   if (selectedRule) {
     return <RuleEditor rule={selectedRule} />
   }
+
+  const isAutocorrelationButtonDisabled = requests.length === 0
 
   return (
     <>
@@ -47,6 +54,7 @@ export function TestRuleContainer() {
                 size="1"
                 color="gray"
                 onClick={() => setIsAutoCorrelationDialogOpen(true)}
+                disabled={isAutocorrelationButtonDisabled}
               >
                 <WandSparkles />
                 Autocorrelate
@@ -73,6 +81,7 @@ export function TestRuleContainer() {
                   <Flex gap="2" align="center">
                     <Button
                       onClick={() => setIsAutoCorrelationDialogOpen(true)}
+                      disabled={isAutocorrelationButtonDisabled}
                     >
                       <WandSparkles />
                       Autocorrelate
