@@ -1,5 +1,6 @@
 import { BrowserServer } from '@/services/browser/server'
 
+import * as ai from './ai'
 import * as app from './app'
 import * as auth from './auth'
 import * as browser from './browser'
@@ -32,4 +33,5 @@ export function initialize({ browserServer }: Services) {
   dataFiles.initialize()
   log.initialize()
   app.initialize()
+  ai.initialize()
 }

@@ -50,6 +50,7 @@ export function createGeneratorState(
       responseJsonPaths: [],
     },
     addRule: vi.fn(),
+    setRules: vi.fn(),
     cloneRule: vi.fn(),
     deleteRule: vi.fn(),
     toggleEnableRule: vi.fn(),

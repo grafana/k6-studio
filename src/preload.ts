@@ -1,5 +1,6 @@
 import { contextBridge } from 'electron'
 
+import * as ai from './handlers/ai/preload'
 import * as app from './handlers/app/preload'
 import * as auth from './handlers/auth/preload'
 import * as browser from './handlers/browser/preload'
@@ -29,6 +30,7 @@ const studio = {
   settings,
   browserRemote,
   cloud,
+  ai,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)
