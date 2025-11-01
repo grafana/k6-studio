@@ -6,9 +6,15 @@ const AriaDetailsSchema = z.object({
   name: z.string().optional(),
 })
 
+const RoleElementSelectorSchema = z.object({
+  role: z.string(),
+  name: z.string(),
+})
+
 const ElementSelectorSchema = z.object({
   css: z.string(),
   testId: z.string().optional(),
+  role: RoleElementSelectorSchema.optional(),
 })
 
 const BrowserEventTargetSchema = z.object({
@@ -149,6 +155,7 @@ export const BrowserEventsSchema = z.object({
 export type AriaDetails = z.infer<typeof AriaDetailsSchema>
 export type BrowserEventTarget = z.infer<typeof BrowserEventTargetSchema>
 
+export type RoleElementSelector = z.infer<typeof RoleElementSelectorSchema>
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 export type CheckState = z.infer<typeof CheckStateSchema>
 

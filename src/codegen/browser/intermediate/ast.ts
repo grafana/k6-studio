@@ -24,6 +24,13 @@ export interface NewTestIdLocatorExpression {
   page: Expression
 }
 
+export interface NewRoleLocatorExpression {
+  type: 'NewRoleLocatorExpression'
+  role: Expression
+  name: Expression
+  page: Expression
+}
+
 export interface GotoExpression {
   type: 'GotoExpression'
   target: Expression
@@ -122,6 +129,7 @@ export type Expression =
   | Identifier
   | StringLiteral
   | NewPageExpression
+  | NewRoleLocatorExpression
   | NewCssLocatorExpression
   | NewTestIdLocatorExpression
   | GotoExpression

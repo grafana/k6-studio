@@ -2,6 +2,7 @@ import './view'
 
 import { BrowserEvent } from '@/schemas/recording'
 
+import { getEventTarget } from '../target'
 import {
   findAssociatedElement,
   findInteractiveElement,
@@ -12,7 +13,6 @@ import {
 
 import { WindowEventManager } from './manager'
 import { client } from './routing'
-import { getEventTarget } from './target'
 
 function getButton(button: number) {
   switch (button) {

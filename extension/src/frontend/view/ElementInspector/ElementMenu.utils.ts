@@ -1,8 +1,7 @@
 import { BrowserEventTarget } from '@/schemas/recording'
+import { getEventTarget } from 'extension/src/target'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 import { findAssociatedElement } from 'extension/src/utils/dom'
-
-import { getEventTarget } from '../../target'
 
 import { CheckAssertionData } from './assertions/types'
 import { TrackedElement } from './utils'

@@ -2,12 +2,17 @@ import {
   ARIARoleRelationConceptAttribute,
   AttributeConstraint,
   elementRoles,
+  roles,
 } from 'aria-query'
 import { computeAccessibleName } from 'dom-accessibility-api'
 import { groupBy } from 'lodash-es'
 
 import { AriaDetails } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
+
+const ABSTRACT_ROLES: ReadonlySet<string> = new Set(
+  [...roles.entries()].filter(([, role]) => role.abstract).map(([name]) => name)
+)
 
 export interface ElementRole {
   type: 'intrinsic' | 'explicit'
@@ -156,7 +161,10 @@ function getLabelTexts(element: Element): string[] {
 }
 
 export function getAriaDetails(element: Element): AriaDetails {
-  const roles = [...getElementRoles(element)].map((r) => r.role)
+  const roles = [...getElementRoles(element)]
+    .filter((r) => !ABSTRACT_ROLES.has(r.role))
+    .map((r) => r.role)
+
   const labels = getLabelTexts(element)
   const name = computeAccessibleName(element)
 

@@ -1,8 +1,8 @@
 import { BrowserEventTarget } from '@/schemas/recording'
 import { uuid } from '@/utils/uuid'
+import { getEventTarget } from 'extension/src/target'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 
-import { getEventTarget } from '../../target'
 import { Bounds } from '../types'
 import { getElementBounds } from '../utils'
 

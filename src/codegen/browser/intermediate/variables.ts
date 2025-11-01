@@ -60,6 +60,14 @@ function substituteExpression(
         name: substitutions.get(node.name) ?? node.name,
       }
 
+    case 'NewRoleLocatorExpression':
+      return {
+        type: 'NewRoleLocatorExpression',
+        role: substituteExpression(node.role, substitutions),
+        name: substituteExpression(node.name, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
     case 'NewCssLocatorExpression':
       return {
         type: 'NewCssLocatorExpression',
