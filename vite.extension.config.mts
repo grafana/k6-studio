@@ -20,6 +20,7 @@ export default defineConfig((env) => {
   ]
 
   const build: BuildOptions = {
+    minify: false,
     outDir: `.vite/build/extension`,
     sourcemap: 'inline',
   }
