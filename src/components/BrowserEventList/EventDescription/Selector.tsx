@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { BracesIcon, TestTubeDiagonalIcon } from 'lucide-react'
+import { BracesIcon, ImageIcon, TestTubeDiagonalIcon } from 'lucide-react'
 
 import { getNodeSelector, NodeSelector } from '@/codegen/browser/selectors'
 import { ElementSelector } from '@/schemas/recording'
@@ -21,6 +21,9 @@ function SelectorIcon({ selector }: SelectorComponentProps) {
     case 'test-id':
       return <TestTubeDiagonalIcon />
 
+    case 'alt':
+      return <ImageIcon />
+
     case 'role':
       return <RoleSelectorIcon selector={selector} />
 
@@ -36,6 +39,9 @@ function SelectorText({ selector }: SelectorComponentProps) {
 
     case 'test-id':
       return <code>{selector.testId}</code>
+
+    case 'alt':
+      return <code>{`"${selector.text}"`}</code>
 
     case 'role':
       return (

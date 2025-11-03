@@ -1,6 +1,7 @@
 import { AriaRole } from 'react'
 
 import { ElementSelector } from '@/schemas/recording'
+import { exhaustive } from '@/utils/typescript'
 
 export interface CssSelector {
   type: 'css'
@@ -13,12 +14,21 @@ export interface GetByRoleSelector {
   name: string
 }
 
-export interface GetByTestIdSelector {
+interface GetByAltTextSelector {
+  type: 'alt'
+  text: string
+}
+
+interface GetByTestIdSelector {
   type: 'test-id'
   testId: string
 }
 
-export type NodeSelector = CssSelector | GetByRoleSelector | GetByTestIdSelector
+export type NodeSelector =
+  | CssSelector
+  | GetByRoleSelector
+  | GetByAltTextSelector
+  | GetByTestIdSelector
 
 function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
   if (selectors.role === undefined) {
@@ -29,6 +39,19 @@ function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
     type: 'role',
     role: selectors.role.role,
     name: selectors.role.name,
+  }
+}
+
+function getAltTextSelector(
+  selectors: ElementSelector
+): GetByAltTextSelector | null {
+  if (selectors.alt === undefined) {
+    return null
+  }
+
+  return {
+    type: 'alt',
+    text: selectors.alt,
   }
 }
 
@@ -55,6 +78,7 @@ function getCssSelector(selectors: ElementSelector): CssSelector {
 export function getNodeSelector(selector: ElementSelector): NodeSelector {
   return (
     getRoleSelector(selector) ??
+    getAltTextSelector(selector) ??
     getTestIdSelector(selector) ??
     getCssSelector(selector)
   )
@@ -71,7 +95,10 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
     case 'role':
       return b.type === 'role' && a.role === b.role && a.name === b.name
 
+    case 'alt':
+      return b.type === 'alt' && a.text === b.text
+
     default:
-      return false
+      return exhaustive(a)
   }
 }

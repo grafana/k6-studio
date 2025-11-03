@@ -75,6 +75,13 @@ function substituteExpression(
         selector: substituteExpression(node.selector, substitutions),
       }
 
+    case 'NewAltTextLocatorExpression':
+      return {
+        type: 'NewAltTextLocatorExpression',
+        page: substituteExpression(node.page, substitutions),
+        text: substituteExpression(node.text, substitutions),
+      }
+
     case 'NewTestIdLocatorExpression':
       return {
         type: 'NewTestIdLocatorExpression',

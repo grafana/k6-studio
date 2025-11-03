@@ -14,6 +14,7 @@ const RoleElementSelectorSchema = z.object({
 const ElementSelectorSchema = z.object({
   css: z.string(),
   testId: z.string().optional(),
+  alt: z.string().optional(),
   role: RoleElementSelectorSchema.optional(),
 })
 
