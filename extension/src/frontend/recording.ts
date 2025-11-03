@@ -1,3 +1,5 @@
+import { nanoid } from 'nanoid'
+
 import { BrowserEvent } from '@/schemas/recording'
 
 import { BrowserExtensionClient } from '../messaging'
@@ -108,7 +110,7 @@ export function startRecording(client: BrowserExtensionClient) {
 
     recordEvents({
       type: 'click',
-      eventId: crypto.randomUUID(),
+      eventId: nanoid(),
       timestamp: Date.now(),
       target: { selectors: generateSelectors(clickTarget) },
       button,
@@ -125,7 +127,7 @@ export function startRecording(client: BrowserExtensionClient) {
   function handleSelectChange(target: HTMLSelectElement) {
     recordEvents({
       type: 'select-change',
-      eventId: crypto.randomUUID(),
+      eventId: nanoid(),
       timestamp: Date.now(),
       target: { selectors: generateSelectors(target) },
       selected: [...target.selectedOptions].map((option) => option.value),
@@ -137,7 +139,7 @@ export function startRecording(client: BrowserExtensionClient) {
   function handleTextAreaChange(target: HTMLTextAreaElement) {
     recordEvents({
       type: 'input-change',
-      eventId: crypto.randomUUID(),
+      eventId: nanoid(),
       timestamp: Date.now(),
       target: { selectors: generateSelectors(target) },
       value: target.value,
@@ -160,7 +162,7 @@ export function startRecording(client: BrowserExtensionClient) {
     if (target.type === 'checkbox') {
       recordEvents({
         type: 'check-change',
-        eventId: crypto.randomUUID(),
+        eventId: nanoid(),
         timestamp: Date.now(),
         target: { selectors: generateSelectors(target) },
         checked: target.checked,
@@ -177,7 +179,7 @@ export function startRecording(client: BrowserExtensionClient) {
 
       recordEvents({
         type: 'radio-change',
-        eventId: crypto.randomUUID(),
+        eventId: nanoid(),
         timestamp: Date.now(),
         target: { selectors: generateSelectors(target) },
         name: target.name,
@@ -190,7 +192,7 @@ export function startRecording(client: BrowserExtensionClient) {
 
     recordEvents({
       type: 'input-change',
-      eventId: crypto.randomUUID(),
+      eventId: nanoid(),
       timestamp: Date.now(),
       target: { selectors: generateSelectors(target) },
       value: target.value,
@@ -244,7 +246,7 @@ export function startRecording(client: BrowserExtensionClient) {
 
     recordEvents({
       type: 'submit-form',
-      eventId: crypto.randomUUID(),
+      eventId: nanoid(),
       timestamp: Date.now(),
       form: { selectors: generateSelectors(ev.target) },
       submitter: { selectors: generateSelectors(ev.submitter) },

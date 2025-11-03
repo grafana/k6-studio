@@ -1,7 +1,6 @@
 import { css } from '@emotion/react'
+import { nanoid } from 'nanoid'
 import { useEffect, useState } from 'react'
-
-import { uuid } from '@/utils/uuid'
 
 import { getTabId } from '../utils'
 
@@ -90,7 +89,7 @@ export function TextSelectionPopover({ onClose }: TextSelectionPopoverProps) {
       type: 'record-events',
       events: [
         {
-          eventId: uuid(),
+          eventId: nanoid(),
           timestamp: Date.now(),
           type: 'assert',
           tab: getTabId(),

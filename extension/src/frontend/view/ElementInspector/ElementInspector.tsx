@@ -1,12 +1,12 @@
 import { css } from '@emotion/react'
 import { upperFirst } from 'lodash-es'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { nanoid } from 'nanoid'
 import { useEffect, useState } from 'react'
 
 import { Flex } from '@/components/primitives/Flex'
 import { IconButton } from '@/components/primitives/IconButton'
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { uuid } from '@/utils/uuid'
 import { ElementRole } from 'extension/src/utils/aria'
 
 import { getTabId } from '../../utils'
@@ -144,7 +144,7 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
       events: [
         {
           type: 'assert',
-          eventId: uuid(),
+          eventId: nanoid(),
           timestamp: Date.now(),
           tab: getTabId(),
           target: {
