@@ -41,7 +41,7 @@ function emitNewRoleLocatorExpression(
 
   return new ExpressionBuilder(page)
     .member('getByRole')
-    .call([role, fromObjectLiteral({ name })])
+    .call([role, fromObjectLiteral({ name, exact: true })])
     .done()
 }
 

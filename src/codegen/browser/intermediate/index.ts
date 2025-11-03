@@ -64,7 +64,10 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         },
         name: {
           type: 'StringLiteral',
-          value: node.selector.name,
+          // getByRole creates an internal selector, e.g. internal:role=link[name='Hello's] that is passed
+          // to the browser. Since the string literal value is wrapped in single quotes, we need to escape
+          // any single quotes in the name. Bug report: https://github.com/grafana/k6/issues/5360
+          value: node.selector.name.replaceAll("'", "\\'"),
         },
         page,
       })

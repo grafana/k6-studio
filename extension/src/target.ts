@@ -29,7 +29,7 @@ function generateRoleSelector(
   }
 
   const [selector] = applicableRoles.flatMap((role) => {
-    const matches = queryAllByRole(document.body, role, { name: name })
+    const matches = queryAllByRole(document.body, role, { name })
 
     if (!matches.includes(element)) {
       return []

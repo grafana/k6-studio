@@ -14,5 +14,5 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.getByRole("button", { name: "Submit" }).click();
+  await page.getByRole("button", { name: "Submit", exact: true }).click();
 }
