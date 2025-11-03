@@ -1,12 +1,13 @@
 import { css } from '@emotion/react'
 import { nanoid } from 'nanoid'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { getTabId } from '../utils'
 
 import { ElementPopover } from './ElementInspector/ElementPopover'
 import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertionEditor'
 import { TextAssertionData } from './ElementInspector/assertions/types'
+import { useElementHighlight, usePinnedElement } from './ElementInspector/hooks'
 import { useGlobalClass } from './GlobalStyles'
 import { Overlay } from './Overlay'
 import { useStudioClient } from './StudioClientProvider'
@@ -26,29 +27,28 @@ function TextSelectionPopoverContent({
   onAdd,
   onClose,
 }: TextSelectionPopoverContentProps) {
-  const client = useStudioClient()
+  const { selected, expand, contract } = usePinnedElement(selection.element)
 
   const [assertion, setAssertion] = useState<TextAssertionData>({
     type: 'text',
-    selector: selection.selector.css,
+    selector: selection.element.selector.css,
     text: selection.text,
   })
 
-  useEffect(() => {
-    return () => {
-      client.send({
-        type: 'highlight-elements',
-        selector: null,
-      })
-    }
-  }, [client])
+  const targetElement = selected ?? selection.element
+
+  useElementHighlight(targetElement)
 
   const handleChange = (assertion: TextAssertionData) => {
     setAssertion(assertion)
   }
 
   const handleSubmit = (assertion: TextAssertionData) => {
-    onAdd(assertion)
+    onAdd({
+      ...assertion,
+      selector: targetElement.selector.css,
+    })
+
     onClose()
   }
 
@@ -56,11 +56,16 @@ function TextSelectionPopoverContent({
     <ElementPopover
       open
       anchor={<Overlay bounds={selection.bounds} />}
-      header="Add text assertion"
+      header={
+        <ElementPopover.Selector
+          element={targetElement}
+          onExpand={expand}
+          onContract={contract}
+        />
+      }
       onOpenChange={onClose}
     >
       <TextAssertionEditor
-        canEditSelector
         assertion={assertion}
         onCancel={onClose}
         onChange={handleChange}

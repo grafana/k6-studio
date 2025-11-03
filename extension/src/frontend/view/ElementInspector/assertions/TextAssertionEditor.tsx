@@ -2,7 +2,6 @@ import { css } from '@emotion/react'
 import { ChangeEvent, useEffect, useId } from 'react'
 
 import { Flex } from '@/components/primitives/Flex'
-import { Input } from '@/components/primitives/Input'
 import { Label } from '@/components/primitives/Label'
 import { TextArea } from '@/components/primitives/TextArea'
 
@@ -13,7 +12,6 @@ import { TextAssertionData } from './types'
 
 interface TextAssertionEditorProps {
   assertion: TextAssertionData
-  canEditSelector?: boolean
   onCancel: () => void
   onChange: (assertion: TextAssertionData) => void
   onSubmit: (assertion: TextAssertionData) => void
@@ -21,14 +19,12 @@ interface TextAssertionEditorProps {
 
 export function TextAssertionEditor({
   assertion,
-  canEditSelector = false,
   onCancel,
   onChange,
   onSubmit,
 }: TextAssertionEditorProps) {
   const client = useStudioClient()
 
-  const selectorId = useId()
   const containsId = useId()
 
   useEffect(() => {
@@ -39,38 +35,6 @@ export function TextAssertionEditor({
       })
     }
   }, [client])
-
-  const handleSelectorFocus = () => {
-    client.send({
-      type: 'highlight-elements',
-      selector: {
-        type: 'css',
-        selector: assertion.selector,
-      },
-    })
-  }
-
-  const handleSelectorBlur = () => {
-    client.send({
-      type: 'highlight-elements',
-      selector: null,
-    })
-  }
-
-  const handleSelectorChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    client.send({
-      type: 'highlight-elements',
-      selector: {
-        type: 'css',
-        selector: ev.target.value,
-      },
-    })
-
-    onChange({
-      ...assertion,
-      selector: ev.target.value,
-    })
-  }
 
   const handleTextChange = (ev: ChangeEvent<HTMLTextAreaElement>) => {
     onChange({
@@ -85,21 +49,6 @@ export function TextAssertionEditor({
 
   return (
     <AssertionForm onCancel={onCancel} onSubmit={handleSubmit}>
-      {canEditSelector && (
-        <Flex direction="column" align="stretch" gap="1">
-          <Label htmlFor={selectorId} size="1">
-            Selector
-          </Label>
-          <Input
-            id={selectorId}
-            size="1"
-            value={assertion.selector}
-            onFocus={handleSelectorFocus}
-            onBlur={handleSelectorBlur}
-            onChange={handleSelectorChange}
-          />
-        </Flex>
-      )}
       <Flex direction="column" align="stretch" gap="1">
         <Label htmlFor={containsId} size="1">
           Assert that element contains text
