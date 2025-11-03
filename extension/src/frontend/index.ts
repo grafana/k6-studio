@@ -9,6 +9,7 @@ import {
   isNativeButton,
   isNativeCheckbox,
   isNativeRadio,
+  isNonButtonInput,
 } from '../utils/dom'
 
 import { WindowEventManager } from './manager'
@@ -62,7 +63,7 @@ manager.capture('click', (ev, manager) => {
   // We don't want to capture clicks on form elements since they will be
   // interacted with using e.g. the `selectOption` or `type` functions.
   if (
-    clickTarget instanceof HTMLInputElement ||
+    isNonButtonInput(clickTarget) ||
     clickTarget instanceof HTMLTextAreaElement ||
     clickTarget instanceof HTMLSelectElement ||
     clickTarget instanceof HTMLOptionElement
