@@ -424,6 +424,57 @@ it('should emit waitForNavigation on a link click', async ({ expect }) => {
   )
 })
 
+it('should emit waitForNavigation on a form submit', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'submitLocator',
+          selector: { css: 'button[type="submit"]' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'submitClick',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          triggersNavigation: true,
+          inputs: {
+            locator: { nodeId: 'submitLocator' },
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          source: 'implicit',
+          url: 'https://example.com',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/form-submit-with-navigation.ts'
+  )
+})
+
 it('should assert that element contains text', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
