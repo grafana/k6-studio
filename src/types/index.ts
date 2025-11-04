@@ -49,7 +49,7 @@ export interface Response extends Metadata {
   cookies: Cookie[]
   reason: string
   statusCode: number
-  content: string
+  content: string | null
   path: string
   timestampStart: number
   httpVersion: string

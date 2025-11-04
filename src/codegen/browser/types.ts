@@ -1,4 +1,4 @@
-import { CheckState } from '@/schemas/recording'
+import { CheckState, ElementSelector } from '@/schemas/recording'
 
 export type NodeId = string
 
@@ -16,7 +16,7 @@ export interface PageNode extends NodeBase {
 
 export interface LocatorNode extends NodeBase {
   type: 'locator'
-  selector: string
+  selector: ElementSelector
   inputs: {
     page: NodeRef
   }

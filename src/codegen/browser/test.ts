@@ -86,14 +86,15 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     // await input.focus()
     // await input.type("Hello")
     // await input.press("Enter")
+
     if (
-      previousLocator?.selector !== selector.css ||
+      previousLocator?.selector.css !== selector.css ||
       previousLocator?.inputs.page.nodeId !== page.nodeId
     ) {
       previousLocator = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
-        selector: selector.css,
+        selector,
         inputs: {
           page,
         },
@@ -136,7 +137,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           modifiers: event.modifiers,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
       }
@@ -148,7 +149,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           value: event.value,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
 
@@ -159,7 +160,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           checked: event.checked,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
 
@@ -170,7 +171,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           checked: true,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
 
@@ -182,7 +183,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           multiple: event.multiple,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
 
@@ -199,7 +200,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           },
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.submitter),
+            locator: getLocator(event.tab, event.submitter.selectors),
           },
         }
 
@@ -210,7 +211,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           operation: toAssertionOperation(event.assertion),
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target.selectors),
           },
         }
       }

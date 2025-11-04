@@ -1,4 +1,5 @@
 import { css } from '@emotion/react'
+import { BracesIcon, TestTubeDiagonalIcon } from 'lucide-react'
 
 import { ElementSelector } from '@/schemas/recording'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
@@ -28,23 +29,42 @@ export function Selector({ selector, onHighlight }: SelectorProps) {
   }
 
   return (
-    <strong
+    <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       css={css`
-        font-weight: bold;
-        border-radius: var(--radius-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: calc(var(--studio-spacing-1) * 1.5);
+        flex-shrink: 1;
+        padding: calc(var(--studio-spacing-1) * 0.5)
+          calc(var(--studio-spacing-1) * 1.5);
+        overflow: hidden;
+        background-color: var(--gray-3);
+        color: var(--gray-12);
+        border-radius: 3px;
+        font-size: var(--studio-font-size-1);
 
         ${isRecording &&
         css`
           &:hover {
             cursor: pointer;
-            background-color: var(--gray-3);
+            background-color: var(--gray-4);
           }
         `}
       `}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
-      {selector.css}
-    </strong>
+      {selector.testId ? <TestTubeDiagonalIcon /> : <BracesIcon />}
+      <code
+        css={css`
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        `}
+      >
+        {selector.testId ?? selector.css}
+      </code>
+    </div>
   )
 }
