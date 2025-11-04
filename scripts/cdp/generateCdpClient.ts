@@ -1,4 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
+/**
+ * By generating the client we can detect breaking changes in CDP by:
+ 
+ *  1. Updating the devtools-protocol package to the latest version
+ *  2. Generating a new client
+ * 
+ * If CDP has breaking changes impacting the methods we're using, then we'll get type errors because the client will be different.
+*/
 import { parse, TSESTree as ts } from '@typescript-eslint/typescript-estree'
 import dedent from 'dedent'
 import { readFile } from 'fs/promises'

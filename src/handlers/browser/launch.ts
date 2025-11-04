@@ -2,7 +2,6 @@ import { RecorderSettings } from '@/types/settings'
 import { exhaustive } from '@/utils/typescript'
 
 import { launchBrowserWithDevToolsProtocol } from './recorders/cdp'
-// import { launchBrowserWithExtension } from './recorders/extension'
 import { launchBrowserWithExtension } from './recorders/extension'
 import { launchBrowserWithHttpOnly } from './recorders/http'
 import { RecordingSession } from './recorders/types'
