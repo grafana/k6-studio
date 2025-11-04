@@ -157,5 +157,8 @@
       "prettier --ignore-unknown --write",
       "bash -c 'tsc --noEmit'"
     ]
+  },
+  "overrides": {
+    "esbuild": "^0.25.0"
   }
 }
