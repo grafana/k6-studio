@@ -1,10 +1,9 @@
-import { ElementSelector } from '@/schemas/recording'
-
+import { TrackedElement } from './ElementInspector/utils'
 import { Bounds } from './types'
 
 export interface TextSelection {
   text: string
-  selector: ElementSelector
+  element: TrackedElement
   range: Range
   bounds: Bounds
   highlights: Bounds[]

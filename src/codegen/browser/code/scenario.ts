@@ -24,7 +24,7 @@ function emitNewPageExpression(
 ): ts.Expression {
   context.import(['browser'], 'k6/browser')
 
-  return new ExpressionBuilder(identifier({ name: 'browser' }))
+  return new ExpressionBuilder(identifier('browser'))
     .member('newPage')
     .call([])
     .await(context)
@@ -169,7 +169,7 @@ function emitExpectExpression(
 
   const locator = emitExpression(context, expression.actual)
 
-  const expect = new ExpressionBuilder(identifier({ name: 'expect' }))
+  const expect = new ExpressionBuilder(identifier('expect'))
     .call([locator])
     .done()
 
@@ -283,7 +283,7 @@ function emitPromiseAllExpression(
     new ExpressionBuilder(emitExpression(context, expr)).removeAwait().done()
   )
 
-  return new ExpressionBuilder(identifier({ name: 'Promise' }))
+  return new ExpressionBuilder(identifier('Promise'))
     .member('all')
     .call([fromArrayLiteral(expressions)])
     .await(context)
@@ -299,7 +299,7 @@ function emitExpression(
       return string(expression.value)
 
     case 'Identifier':
-      return identifier({ name: expression.name })
+      return identifier(expression.name)
 
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
@@ -359,7 +359,7 @@ function emitStatement(
       return declareConst({
         declarations: [
           constDeclarator({
-            id: identifier({ name: statement.name }),
+            id: identifier(statement.name),
             init: emitExpression(context, statement.value),
           }),
         ],
