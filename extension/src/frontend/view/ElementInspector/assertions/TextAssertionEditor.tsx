@@ -5,7 +5,7 @@ import { Flex } from '@/components/primitives/Flex'
 import { Label } from '@/components/primitives/Label'
 import { TextArea } from '@/components/primitives/TextArea'
 
-import { client } from '../../../routing'
+import { useStudioClient } from '../../StudioClientProvider'
 
 import { AssertionForm } from './AssertionForm'
 import { TextAssertionData } from './types'
@@ -23,6 +23,8 @@ export function TextAssertionEditor({
   onChange,
   onSubmit,
 }: TextAssertionEditorProps) {
+  const client = useStudioClient()
+
   const containsId = useId()
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export function TextAssertionEditor({
         selector: null,
       })
     }
-  }, [])
+  }, [client])
 
   const handleTextChange = (ev: ChangeEvent<HTMLTextAreaElement>) => {
     onChange({

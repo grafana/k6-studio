@@ -1,7 +1,8 @@
 import { css, Global } from '@emotion/react'
+import { nanoid } from 'nanoid'
 import { useEffect } from 'react'
 
-const uuid = crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+const uuid = nanoid()
 
 type GlobalClass = 'inspecting' | 'asserting-text'
 
