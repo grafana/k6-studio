@@ -70,7 +70,7 @@ export function PageNavigationDescription({
       return <>Navigated to {url} using the browser history</>
 
     case 'implicit':
-      return null
+      return <>Navigated to {url} after a user action</>
 
     default:
       return exhaustive(event.source)
