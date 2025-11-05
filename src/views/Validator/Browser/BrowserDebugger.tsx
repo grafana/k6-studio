@@ -11,6 +11,7 @@ import { exhaustive } from '@/utils/typescript'
 
 import { DebugSession } from '../types'
 
+import { BrowserActionLocator } from './BrowserActionLocator'
 import { NetworkInspector } from './NetworkInspector'
 
 function TabContent({
@@ -49,9 +50,6 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
           }
         }
       `}
-      p="1"
-      pt="0"
-      pb="0"
       overflow="hidden"
       direction="column"
     >
@@ -67,35 +65,7 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
         >
           <Allotment.Pane snap minSize={400}>
             <Allotment>
-              <Allotment.Pane
-                minSize={300}
-                css={css`
-                  display: flex;
-                  height: 100%;
-                `}
-              >
-                <Flex
-                  p="2"
-                  justify="center"
-                  align="center"
-                  width="100%"
-                  height="100%"
-                >
-                  <Flex
-                    css={css`
-                      aspect-ratio: 16 / 9;
-                      height: 100%;
-                      max-width: 100%;
-                      background-color: var(--gray-4);
-                    `}
-                    direction="column"
-                    align="center"
-                    justify="center"
-                  >
-                    TODO: A replay of the browser session
-                  </Flex>
-                </Flex>
-              </Allotment.Pane>
+              {/* <SessionReplay /> */}
               <Allotment.Pane minSize={400} preferredSize={600}>
                 <Box
                   py="2"
@@ -188,7 +158,11 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
       return `Navigate to ${action.url}`
 
     case 'click':
-      return `Click element ${action.selector}`
+      return (
+        <>
+          Click element <BrowserActionLocator locator={action.locator} />
+        </>
+      )
 
     default:
       return exhaustive(action)
@@ -213,7 +187,7 @@ function BrowserActionItem({ event }: BrowserActionItemProps) {
 
     const interval = setInterval(() => {
       setEnded(Date.now())
-    }, 100)
+    }, 50)
 
     return () => clearInterval(interval)
   }, [event])

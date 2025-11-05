@@ -116,10 +116,7 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
 
     ;(async () => {
       setIsLoading(true)
-      const fileContent = await window.studio.script.openScript(
-        scriptPath,
-        isExternal
-      )
+      const fileContent = await window.studio.script.openScript(scriptPath)
       setIsLoading(false)
       setScript(fileContent)
     })()

@@ -11,12 +11,8 @@ export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
 }
 
-export function openScript(scriptPath: string, absolute: boolean = false) {
-  return ipcRenderer.invoke(
-    ScriptHandler.Open,
-    scriptPath,
-    absolute
-  ) as Promise<string>
+export function openScript(scriptPath: string) {
+  return ipcRenderer.invoke(ScriptHandler.Open, scriptPath) as Promise<string>
 }
 
 export function runScriptFromGenerator(script: string) {

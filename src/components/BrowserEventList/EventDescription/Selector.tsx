@@ -1,70 +1,35 @@
-import { css } from '@emotion/react'
-import { BracesIcon, TestTubeDiagonalIcon } from 'lucide-react'
-
+import { getNodeSelector } from '@/codegen/browser/selectors'
+import { Locator } from '@/components/Browser/Locator'
 import { ElementSelector } from '@/schemas/recording'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
 interface SelectorProps {
-  selector: ElementSelector
+  selectors: ElementSelector
   onHighlight: (selector: HighlightSelector | null) => void
 }
 
-export function Selector({ selector, onHighlight }: SelectorProps) {
+export function Selector({ selectors, onHighlight }: SelectorProps) {
   const isRecording = useIsRecording()
+  const nodeSelector = getNodeSelector(selectors)
 
-  const handleMouseEnter = () => {
-    if (isRecording) {
-      onHighlight({
-        type: 'css',
-        selector: selector.css,
-      })
-    }
-  }
-
-  const handleMouseLeave = () => {
-    if (isRecording) {
+  const handleHighlightChange = (highlighted: boolean) => {
+    if (!highlighted) {
       onHighlight(null)
+
+      return
     }
+
+    onHighlight({
+      type: 'css',
+      selector: selectors.css,
+    })
   }
 
   return (
-    <div
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      css={css`
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: calc(var(--studio-spacing-1) * 1.5);
-        flex-shrink: 1;
-        padding: calc(var(--studio-spacing-1) * 0.5)
-          calc(var(--studio-spacing-1) * 1.5);
-        overflow: hidden;
-        background-color: var(--gray-3);
-        color: var(--gray-12);
-        border-radius: 3px;
-        font-size: var(--studio-font-size-1);
-
-        ${isRecording &&
-        css`
-          &:hover {
-            cursor: pointer;
-            background-color: var(--gray-4);
-          }
-        `}
-      `}
-    >
-      {selector.testId ? <TestTubeDiagonalIcon /> : <BracesIcon />}
-      <code
-        css={css`
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        `}
-      >
-        {selector.testId ?? selector.css}
-      </code>
-    </div>
+    <Locator
+      locator={nodeSelector}
+      onHighlightChange={isRecording ? handleHighlightChange : undefined}
+    />
   )
 }

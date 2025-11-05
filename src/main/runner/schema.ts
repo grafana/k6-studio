@@ -1,13 +1,66 @@
 import { z } from 'zod'
 
-export const GotoActionSchema = z.object({
+const CssLocatorSchema = z.object({
+  type: z.literal('css'),
+  selector: z.string(),
+})
+
+const GetByRoleLocatorSchema = z.object({
+  type: z.literal('role'),
+  role: z.string(),
+  options: z.object({
+    name: z.string().optional(),
+  }),
+})
+
+const GetByTestIdLocatorSchema = z.object({
+  type: z.literal('testid'),
+  testId: z.string(),
+})
+
+const GetByAltTextLocatorSchema = z.object({
+  type: z.literal('alt'),
+  text: z.string(),
+})
+
+const GetByLabelLocatorSchema = z.object({
+  type: z.literal('label'),
+  label: z.string(),
+})
+
+const GetByPlaceholderLocatorSchema = z.object({
+  type: z.literal('placeholder'),
+  placeholder: z.string(),
+})
+const GetByTitleLocatorSchema = z.object({
+  type: z.literal('title'),
+  title: z.string(),
+})
+
+const GetByTextLocatorSchema = z.object({
+  type: z.literal('text'),
+  text: z.string(),
+})
+
+const ActionLocatorSchema = z.discriminatedUnion('type', [
+  CssLocatorSchema,
+  GetByRoleLocatorSchema,
+  GetByTestIdLocatorSchema,
+  GetByAltTextLocatorSchema,
+  GetByLabelLocatorSchema,
+  GetByPlaceholderLocatorSchema,
+  GetByTitleLocatorSchema,
+  GetByTextLocatorSchema,
+])
+
+const GotoActionSchema = z.object({
   type: z.literal('goto'),
   url: z.string(),
 })
 
-export const ClickActionSchema = z.object({
+const ClickActionSchema = z.object({
   type: z.literal('click'),
-  selector: z.string(),
+  locator: ActionLocatorSchema,
 })
 
 export const BrowserActionSchema = z.discriminatedUnion('type', [
@@ -55,6 +108,8 @@ export const BrowserActionEventSchema = z.discriminatedUnion('type', [
   ActionBeginEventSchema,
   ActionEndEventSchema,
 ])
+
+export type ActionLocator = z.infer<typeof ActionLocatorSchema>
 
 export type ActionBeginEvent = z.infer<typeof ActionBeginEventSchema>
 export type ActionEndEvent = z.infer<typeof ActionEndEventSchema>
