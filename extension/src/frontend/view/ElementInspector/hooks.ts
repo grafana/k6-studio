@@ -1,7 +1,7 @@
 import { last } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { client } from '../../routing'
+import { useStudioClient } from '../StudioClientProvider'
 
 import { toTrackedElement, TrackedElement } from './utils'
 
@@ -64,6 +64,8 @@ export function usePinnedElement(element?: TrackedElement | undefined) {
 }
 
 export function useElementHighlight(element: TrackedElement | null) {
+  const client = useStudioClient()
+
   useEffect(() => {
     client.send({
       type: 'highlight-elements',
@@ -72,7 +74,7 @@ export function useElementHighlight(element: TrackedElement | null) {
         selector: element.selector.css,
       },
     })
-  }, [element])
+  }, [client, element])
 
   useEffect(() => {
     return () => {
@@ -81,5 +83,5 @@ export function useElementHighlight(element: TrackedElement | null) {
         selector: null,
       })
     }
-  }, [])
+  }, [client])
 }

@@ -1,5 +1,6 @@
+import { nanoid } from 'nanoid'
+
 import { ElementSelector } from '@/schemas/recording'
-import { uuid } from '@/utils/uuid'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 
 import { generateSelectors } from '../../../selectors'
@@ -18,7 +19,7 @@ export function toTrackedElement(element: Element): TrackedElement {
   const roles = getElementRoles(element)
 
   return {
-    id: uuid(),
+    id: nanoid(),
     roles: [...roles],
     selector: generateSelectors(element),
     target: element,

@@ -21,7 +21,8 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "format": "prettier --ignore-unknown --write \"./**/*\"",
-    "prepare": "husky && husky install"
+    "prepare": "husky && husky install",
+    "gen:cdp": "ts-node --transpileOnly scripts/cdp/generateCdpClient.ts > src/utils/cdp/client.ts"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
@@ -52,6 +53,7 @@
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
     "@typescript-eslint/types": "^8.21.0",
+    "dedent": "^1.7.0",
     "dotenv": "^16.4.7",
     "electron": "37.3.1",
     "eslint": "^8.57.0",
@@ -64,7 +66,8 @@
     "husky": "^9.0.11",
     "jsdom": "^25.0.0",
     "lint-staged": "^15.2.5",
-    "ts-node": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "vite": "^5.4.21",
     "vite-plugin-web-extension": "^4.3.1",
     "vite-tsconfig-paths": "^4.3.2",
@@ -129,6 +132,7 @@
     "lodash-es": "^4.17.21",
     "lucide-react": "^0.539.0",
     "monaco-editor": "^0.50.0",
+    "nanoid": "^5.1.6",
     "node-forge": "^1.3.1",
     "openid-client": "^6.1.7",
     "papaparse": "^5.5.1",
@@ -158,5 +162,8 @@
       "prettier --ignore-unknown --write",
       "bash -c 'tsc --noEmit'"
     ]
+  },
+  "overrides": {
+    "esbuild": "^0.25.0"
   }
 }
