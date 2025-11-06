@@ -4,7 +4,7 @@ import {
   ActionBeginEvent,
   ActionEndEvent,
   ActionResult,
-  BrowserAction,
+  AnyBrowserAction,
 } from '../../schema'
 
 const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
@@ -19,12 +19,12 @@ const nextId = (() => {
   }
 })()
 
-function begin(action: BrowserAction | undefined) {
+function begin(action: AnyBrowserAction | undefined | null) {
   if (TRACKING_SERVER_URL === null) {
     return null
   }
 
-  if (action === undefined) {
+  if (action === undefined || action === null) {
     return null
   }
 
@@ -85,49 +85,59 @@ function end(event: ActionBeginEvent | null, result: ActionResult) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => any
 
-type Defined<T> = Exclude<T, undefined>
 type Unwrap<T> = T extends Promise<infer U> ? U : T
 
-export interface FunctionProxy<T extends AnyFunction> {
-  /**
-   * Called to create a tracking event that will be sent to
-   * k6 Studio. If omitted, no event will be sent.
-   */
-  track?: (...args: Parameters<T>) => BrowserAction
+type ArgsOf<T> = T extends AnyFunction ? Parameters<T> : never
 
-  /**
-   * Called to create a new proxy for the return value of the
-   * function. This allows you to proxy methods in the return
-   * value. If omitted, the return value is returned as-is.
-   */
-  proxy?: (
-    target: Unwrap<ReturnType<T>>,
-    ...args: Parameters<T>
-  ) => ProxiedMethods<Unwrap<ReturnType<T>>>
+type TrackingFn<T extends AnyFunction> = (
+  ...args: Parameters<T>
+) => AnyBrowserAction
+
+type ProxyFn<T extends AnyFunction> = (
+  target: Unwrap<ReturnType<T>>,
+  ...args: Parameters<T>
+) => ProxyOptions<Unwrap<ReturnType<T>>> | null
+
+export interface ProxyOptions<T extends object> {
+  target: T
+  tracking: {
+    [P in keyof T]?: T[P] extends AnyFunction ? TrackingFn<T[P]> : never
+  } & {
+    $default?: (
+      method: keyof T,
+      ...args: ArgsOf<T[keyof T]>
+    ) => AnyBrowserAction | null
+  }
+  proxies: {
+    [P in keyof T]?: T[P] extends AnyFunction ? ProxyFn<T[P]> : never
+  }
 }
 
-export type ProxiedMethods<T> = {
-  [P in keyof T]?: T[P] extends AnyFunction ? FunctionProxy<T[P]> : never
-}
-
-export function createProxy<T extends object>(
-  target: T,
-  proxies: ProxiedMethods<T>
-): T {
+export function createProxy<T extends object>({
+  target,
+  tracking,
+  proxies,
+}: ProxyOptions<T>): T {
   return new Proxy(target, {
     get(target, property) {
-      const original = target[property as keyof T]
+      const method = property as keyof T
+      const original = target[method]
 
-      if (typeof original !== 'function' || property in proxies === false) {
+      if (typeof original !== 'function') {
         return original
       }
 
-      const { track, proxy } = proxies[property as keyof T] ?? {}
+      const track = tracking[method]
+      const proxy = proxies[method]
+
+      if (track === undefined && proxy === undefined) {
+        return original
+      }
 
       // A proxy function that takes care of sending events and proxying return
       // values based on the provided configuration.
-      return function (...args: Parameters<Defined<typeof track>>): unknown {
-        const action = track?.(...args)
+      return function (...args: ArgsOf<T[keyof T]>): unknown {
+        const action = track?.(...args) ?? tracking.$default?.(method, ...args)
         const eventId = begin(action)
 
         const handleSuccess = (result: unknown) => {
@@ -142,11 +152,17 @@ export function createProxy<T extends object>(
           }
 
           if (proxy !== undefined) {
-            // If proxy was supplied we need to wrap the return value in a proxy
-            return createProxy(
-              result,
-              proxy(result as Parameters<typeof proxy>[0], ...args)
+            const options = proxy(
+              result as Parameters<typeof proxy>[0],
+              ...args
             )
+
+            if (options === null) {
+              return result
+            }
+
+            // If proxy was supplied we need to wrap the return value in a proxy
+            return createProxy(options)
           }
 
           return result
