@@ -56,30 +56,53 @@ function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
 function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
   const page = context.reference(node.inputs.page)
 
-  if (node.selector.testId) {
-    // We always inline locator nodes for readability. If we implement better
-    // logic for generating variable names, then we could consider declaring
-    // a variable for it if there are multiple references.
-    context.inline(node, {
-      type: 'NewTestIdLocatorExpression',
-      testId: {
-        type: 'StringLiteral',
-        value: node.selector.testId,
-      },
-      page,
-    })
-    return
-  }
+  // We always inline locator nodes for readability. If we implement better
+  // logic for generating variable names, then we could consider declaring
+  // a variable for it if there are multiple references.
+  switch (node.selector.type) {
+    case 'role':
+      context.inline(node, {
+        type: 'NewRoleLocatorExpression',
+        role: {
+          type: 'StringLiteral',
+          value: node.selector.role,
+        },
+        name: {
+          type: 'StringLiteral',
+          // getByRole creates an internal selector, e.g. internal:role=link[name='Hello's] that is passed
+          // to the browser. Since the string literal value is wrapped in single quotes, we need to escape
+          // any single quotes in the name. Bug report: https://github.com/grafana/k6/issues/5360
+          value: node.selector.name.replaceAll("'", "\\'"),
+        },
+        page,
+      })
+      break
 
-  // Default to CSS locator
-  context.inline(node, {
-    type: 'NewCssLocatorExpression',
-    selector: {
-      type: 'StringLiteral',
-      value: node.selector.css,
-    },
-    page,
-  })
+    case 'test-id':
+      context.inline(node, {
+        type: 'NewTestIdLocatorExpression',
+        testId: {
+          type: 'StringLiteral',
+          value: node.selector.testId,
+        },
+        page,
+      })
+      break
+
+    case 'css':
+      context.inline(node, {
+        type: 'NewCssLocatorExpression',
+        selector: {
+          type: 'StringLiteral',
+          value: node.selector.selector,
+        },
+        page,
+      })
+      break
+
+    default:
+      exhaustive(node.selector)
+  }
 }
 
 function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {

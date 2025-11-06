@@ -1,28 +1,28 @@
-import { CheckState } from '@/schemas/recording'
+import { BrowserEventTarget, CheckState } from '@/schemas/recording'
 
 export interface CheckAssertionData {
   type: 'check'
-  selector: string
+  target: BrowserEventTarget
   inputType: 'aria' | 'native'
   expected: CheckState
 }
 
 export interface VisibilityAssertionData {
   type: 'visibility'
-  selector: string
+  target: BrowserEventTarget
   state: 'visible' | 'hidden'
 }
 
 export interface TextInputAssertionData {
   type: 'text-input'
-  selector: string
+  target: BrowserEventTarget
   multiline: boolean
   expected: string
 }
 
 export interface TextAssertionData {
   type: 'text'
-  selector: string
+  target: BrowserEventTarget
   text: string
 }
 
