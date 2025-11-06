@@ -39,10 +39,12 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'FillTextExpression':
       case 'CheckExpression':
       case 'SelectOptionsExpression':
+      case 'WaitForNavigationExpression':
         return true
 
       case 'Identifier':
       case 'StringLiteral':
+      case 'PromiseAllExpression':
         return false
 
       case 'VariableDeclaration':

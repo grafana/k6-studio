@@ -31,7 +31,11 @@ const NavigateToPageEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('navigate-to-page'),
   tab: z.string(),
   url: z.string(),
-  source: z.union([z.literal('address-bar'), z.literal('history')]),
+  source: z.union([
+    z.literal('address-bar'),
+    z.literal('history'),
+    z.literal('implicit'),
+  ]),
 })
 
 const ReloadPageEventSchema = BrowserEventBaseSchema.extend({
