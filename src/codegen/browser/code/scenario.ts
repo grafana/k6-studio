@@ -261,6 +261,35 @@ function emitExpectExpression(
   }
 }
 
+function emitWaitForNavigationExpression(
+  context: ScenarioContext,
+  expression: ir.WaitForNavigationExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  return new ExpressionBuilder(target)
+    .member('waitForNavigation')
+    .call([])
+    .await(context)
+    .done()
+}
+
+function emitPromiseAllExpression(
+  context: ScenarioContext,
+  expression: ir.PromiseAllExpression
+): ts.Expression {
+  const expressions = expression.expressions.map((expr) =>
+    // No need to await inside Promise.all
+    new ExpressionBuilder(emitExpression(context, expr)).removeAwait().done()
+  )
+
+  return new ExpressionBuilder(identifier('Promise'))
+    .member('all')
+    .call([fromArrayLiteral(expressions)])
+    .await(context)
+    .done()
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -304,6 +333,12 @@ function emitExpression(
 
     case 'ExpectExpression':
       return emitExpectExpression(context, expression)
+
+    case 'WaitForNavigationExpression':
+      return emitWaitForNavigationExpression(context, expression)
+
+    case 'PromiseAllExpression':
+      return emitPromiseAllExpression(context, expression)
 
     default:
       return exhaustive(expression)

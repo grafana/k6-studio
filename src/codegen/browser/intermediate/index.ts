@@ -23,6 +23,11 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
 function emitGotoNode(context: IntermediateContext, node: m.GotoNode) {
   const page = context.reference(node.inputs.page)
 
+  // Skip goto for implicit navigation, as it will be triggered by preceding action
+  if (node.source === 'implicit') {
+    return
+  }
+
   context.emit({
     type: 'ExpressionStatement',
     expression: {
@@ -96,17 +101,44 @@ function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {
   }
 }
 
+function wrapWithWaitForNavigation(
+  expression: ir.Expression,
+  page: ir.Expression
+): ir.Statement {
+  return {
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'PromiseAllExpression',
+      expressions: [
+        {
+          type: 'WaitForNavigationExpression',
+          target: page,
+        },
+        expression,
+      ],
+    },
+  }
+}
+
 function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
   const locator = context.reference(node.inputs.locator)
   const options = getClickOptions(node)
+  const page = context.reference(node.inputs.page)
+
+  const expression: ir.ClickExpression = {
+    type: 'ClickExpression',
+    locator,
+    options,
+  }
+
+  if (node.triggersNavigation) {
+    context.emit(wrapWithWaitForNavigation(expression, page))
+    return
+  }
 
   context.emit({
     type: 'ExpressionStatement',
-    expression: {
-      type: 'ClickExpression',
-      locator,
-      options,
-    },
+    expression,
   })
 }
 
