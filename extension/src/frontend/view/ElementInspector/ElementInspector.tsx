@@ -1,14 +1,15 @@
 import { css } from '@emotion/react'
 import { upperFirst } from 'lodash-es'
+import { nanoid } from 'nanoid'
 import { useState } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { uuid } from '@/utils/uuid'
 import { ElementRole } from 'extension/src/utils/aria'
 
-import { client } from '../../routing'
+import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'
 import { Overlay } from '../Overlay'
+import { useStudioClient } from '../StudioClientProvider'
 import { useEscape } from '../hooks/useEscape'
 
 import { useInspectedElement } from './ElementInspector.hooks'
@@ -61,6 +62,8 @@ interface ElementInspectorProps {
 }
 
 export function ElementInspector({ onClose }: ElementInspectorProps) {
+  const client = useStudioClient()
+
   const { pinned, element, mousePosition, reset, expand, contract } =
     useInspectedElement()
 
@@ -88,9 +91,9 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
       events: [
         {
           type: 'assert',
-          eventId: uuid(),
+          eventId: nanoid(),
           timestamp: Date.now(),
-          tab: '',
+          tab: getTabId(),
           target: assertion.target,
           assertion: toAssertion(assertion),
         },

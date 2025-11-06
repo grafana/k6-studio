@@ -1,5 +1,6 @@
+import { nanoid } from 'nanoid'
+
 import { BrowserEventTarget } from '@/schemas/recording'
-import { uuid } from '@/utils/uuid'
 import { getEventTarget } from 'extension/src/target'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
 
@@ -18,7 +19,7 @@ export function toTrackedElement(element: Element): TrackedElement {
   const roles = getElementRoles(element)
 
   return {
-    id: uuid(),
+    id: nanoid(),
     roles: [...roles],
     target: getEventTarget(element),
     element: element,
