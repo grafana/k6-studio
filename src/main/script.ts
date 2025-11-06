@@ -114,6 +114,8 @@ export const runScript = async ({
   })
 
   testRun.on('stop', () => {
+    browserWindow.webContents.send(ScriptHandler.Stopped)
+
     trackingServer?.dispose()
   })
 

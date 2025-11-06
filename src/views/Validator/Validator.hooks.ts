@@ -17,8 +17,10 @@ export function useScriptPath() {
   }
 }
 
+type DebuggerState = 'pending' | 'running' | 'stopped'
+
 export function useDebugSession(scriptPath: string) {
-  const [pending, setPending] = useState(true)
+  const [state, setState] = useState<DebuggerState>('pending')
 
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
@@ -34,36 +36,46 @@ export function useDebugSession(scriptPath: string) {
 
   // Reset session when script path changes.
   useEffect(() => {
-    setPending(true)
+    setState('pending')
     resetSession()
+  }, [scriptPath, resetSession])
+
+  const startDebugging = useCallback(async () => {
+    setState('running')
+
+    resetSession()
+
+    await window.studio.script.runScript(scriptPath).catch(() => {
+      setState('stopped')
+    })
   }, [scriptPath, resetSession])
 
   const stopDebugging = useCallback(() => {
     window.studio.script.stopScript()
 
+    setState('stopped')
+
     return Promise.resolve()
   }, [])
 
-  const startDebugging = useCallback(async () => {
-    setPending(false)
-
-    resetSession()
-
-    await window.studio.script.runScript(scriptPath)
-  }, [scriptPath, resetSession])
+  useEffect(() => {
+    return window.studio.script.onScriptStopped(() => {
+      setState('stopped')
+    })
+  }, [])
 
   const session = useMemo(() => {
     return {
+      running: state === 'running',
       requests: proxyData,
       browserActions,
       logs,
       checks,
     }
-  }, [checks, logs, proxyData, browserActions])
+  }, [state, checks, logs, proxyData, browserActions])
 
   return {
-    pending,
-    session,
+    session: state !== 'pending' ? session : null,
     startDebugging,
     stopDebugging,
   }

@@ -1,10 +1,8 @@
 import { css } from '@emotion/react'
-import { Box, Button, Flex, Tabs } from '@radix-ui/themes'
-import { BugPlayIcon } from 'lucide-react'
+import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
@@ -13,12 +11,11 @@ import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { K6TestOptions } from '@/utils/k6/schema'
 
-import { BrowserDebugger } from './Browser/BrowserDebugger'
-import { HttpDebugger } from './HTTP/HttpDebugger'
+import { Debugger } from './Debugger'
 import { useDebugSession, useScriptPath } from './Validator.hooks'
 import { ValidatorControls } from './ValidatorControls'
-import { DebugSession } from './types'
 
 function TabContent({
   children,
@@ -65,12 +62,14 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
 
   const [isLoading, setIsLoading] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+
   const [script, setScript] = useState('')
+  const [options, setOptions] = useState<K6TestOptions>({})
 
   const navigate = useNavigate()
   const showToast = useToast()
 
-  const { pending, session, startDebugging, stopDebugging } = useDebugSession(
+  const { session, startDebugging, stopDebugging } = useDebugSession(
     scriptPath ?? ''
   )
 
@@ -114,13 +113,25 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
       return
     }
 
-    ;(async () => {
-      setIsLoading(true)
-      const fileContent = await window.studio.script.openScript(scriptPath)
-      setIsLoading(false)
-      setScript(fileContent)
-    })()
-  }, [scriptPath, isExternal])
+    setIsLoading(true)
+
+    window.studio.script
+      .openScript(scriptPath)
+      .then(({ script, options }) => {
+        setScript(script)
+        setOptions(options)
+      })
+      .catch(() => {
+        showToast({
+          status: 'error',
+          title: 'Failed to open the script',
+          description: 'An error occurred while opening the script.',
+        })
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [scriptPath, isExternal, showToast])
 
   async function handleDeleteScript() {
     if (!file) {
@@ -219,10 +230,11 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
               `}
               justify="center"
             >
-              {pending && (
-                <DebuggerEmptyState onDebugScript={handleDebugScript} />
-              )}
-              {!pending && <Debugger session={session} />}
+              <Debugger
+                options={options}
+                session={session}
+                onDebugScript={handleDebugScript}
+              />
             </Flex>
           </TabContent>
         </Flex>
@@ -239,40 +251,4 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
       )}
     </View>
   )
-}
-
-interface DebuggerEmptyStateProps {
-  onDebugScript: () => void
-}
-
-function DebuggerEmptyState({ onDebugScript }: DebuggerEmptyStateProps) {
-  return (
-    <EmptyMessage
-      message="Inspect what your script is doing while it runs."
-      action={
-        <Button onClick={onDebugScript}>
-          <BugPlayIcon /> Debug script
-        </Button>
-      }
-      justify="center"
-      maxHeight="800px"
-      illustration={undefined}
-    />
-  )
-}
-
-interface DebuggerProps {
-  session: DebugSession
-}
-
-function Debugger({ session }: DebuggerProps) {
-  if (session.browserActions.length > 0) {
-    return <BrowserDebugger session={session} />
-  }
-
-  if (session.requests.length > 0) {
-    return <HttpDebugger session={session} />
-  }
-
-  return null
 }

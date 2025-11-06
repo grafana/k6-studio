@@ -9,6 +9,7 @@ import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
+import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
 
 import { ScriptHandler } from './types'
@@ -44,7 +45,14 @@ export function initialize() {
       flag: 'r',
     })
 
-    return script
+    const options = await new K6Client()
+      .inspect({ scriptPath: resolvedScriptPath })
+      .catch(() => ({}))
+
+    return {
+      script,
+      options: options ?? {},
+    }
   })
 
   ipcMain.handle(ScriptHandler.Run, async (event, scriptPath: string) => {

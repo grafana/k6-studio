@@ -18,14 +18,12 @@ export function HttpDebugger({ session }: HttpDebuggerProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const groups = useProxyDataGroups(session.requests)
 
-  const isRunning = false
-
   // Clear selected request when starting a new run
   useEffect(() => {
-    if (isRunning) {
+    if (session.running) {
       setSelectedRequest(null)
     }
-  }, [isRunning])
+  }, [session.running])
 
   return (
     <Allotment defaultSizes={[3, 2]}>
@@ -34,7 +32,7 @@ export function HttpDebugger({ session }: HttpDebuggerProps) {
           <Allotment.Pane>
             <RequestsSection
               proxyData={session.requests}
-              autoScroll={isRunning}
+              autoScroll={session.running}
               selectedRequestId={selectedRequest?.id}
               onSelectRequest={setSelectedRequest}
               groups={groups}
@@ -43,7 +41,7 @@ export function HttpDebugger({ session }: HttpDebuggerProps) {
           <Allotment.Pane minSize={250}>
             <Box height="100%">
               <ExecutionDetails
-                isRunning={isRunning}
+                isRunning={session.running}
                 logs={session.logs}
                 checks={session.checks}
               />

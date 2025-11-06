@@ -1,3 +1,5 @@
+import { K6TestOptions } from '@/utils/k6/schema'
+
 export enum ScriptHandler {
   Select = 'script:select',
   Open = 'script:open',
@@ -11,4 +13,9 @@ export enum ScriptHandler {
   Check = 'script:check',
   RunFromGenerator = 'script:run-from-generator',
   BrowserAction = 'script:browser-action',
+}
+
+export interface OpenScriptResult {
+  script: string
+  options: K6TestOptions
 }
