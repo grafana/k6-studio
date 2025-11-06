@@ -38,6 +38,7 @@ it('should goto a url', async ({ expect }) => {
           type: 'goto',
           nodeId: 'goto',
           url: 'https://example.com',
+          source: 'address-bar',
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -103,6 +104,7 @@ it('should emit click on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
           },
         },
       ],
@@ -143,6 +145,7 @@ it('should emit right-click on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
           },
         },
       ],
@@ -183,6 +186,7 @@ it('should emit click with modifier keys on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
           },
         },
       ],
@@ -366,6 +370,108 @@ it('should emit select with multiple options on element', async ({
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/select-multiple-options-on-element.ts'
+  )
+})
+
+it('should emit waitForNavigation on a link click', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: { css: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'click',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          triggersNavigation: true,
+          inputs: {
+            locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          source: 'implicit',
+          url: 'https://example.com/login',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/click-with-navigation.ts'
+  )
+})
+
+it('should emit waitForNavigation on a form submit', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'submitLocator',
+          selector: { css: 'button[type="submit"]' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'submitClick',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          triggersNavigation: true,
+          inputs: {
+            locator: { nodeId: 'submitLocator' },
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          source: 'implicit',
+          url: 'https://example.com',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/form-submit-with-navigation.ts'
   )
 })
 

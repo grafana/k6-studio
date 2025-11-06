@@ -69,11 +69,6 @@ export class Page extends EventEmitter<PageEventMap> {
         return
       }
 
-      // Ignore navigations caused by something happening with the page (user interaction, script, etc)
-      if (this.#requestedNavigation !== null) {
-        return
-      }
-
       if (this.#startedNavigation === null) {
         logger.warn(
           'Received frameNavigated event without prior navigation events'
@@ -98,7 +93,12 @@ export class Page extends EventEmitter<PageEventMap> {
         return
       }
 
-      const source = toNavigationSource(this.#startedNavigation)
+      // Navigations caused by something happening with the page (user interaction, script, etc)
+      const isImplicitNavigation = this.#requestedNavigation !== null
+
+      const source = isImplicitNavigation
+        ? 'implicit'
+        : toNavigationSource(this.#startedNavigation)
 
       if (source === null) {
         this.#reset()

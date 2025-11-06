@@ -127,6 +127,20 @@ function substituteExpression(
         expected: substituteAssertion(node.expected, substitutions),
       }
 
+    case 'PromiseAllExpression':
+      return {
+        type: 'PromiseAllExpression',
+        expressions: node.expressions.map((expression) =>
+          substituteExpression(expression, substitutions)
+        ),
+      }
+
+    case 'WaitForNavigationExpression':
+      return {
+        type: 'WaitForNavigationExpression',
+        target: substituteExpression(node.target, substitutions),
+      }
+
     default:
       return exhaustive(node)
   }

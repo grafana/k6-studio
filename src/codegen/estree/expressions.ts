@@ -394,6 +394,14 @@ export class ExpressionBuilder<Expr extends ts.Expression> {
     })
   }
 
+  removeAwait() {
+    if (this.expression.type !== NodeType.AwaitExpression) {
+      return this
+    }
+
+    return new ExpressionBuilder(this.expression.argument)
+  }
+
   done() {
     return this.expression
   }
