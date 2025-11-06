@@ -1,17 +1,19 @@
+import { AriaRole } from 'react'
+
 import { ElementSelector } from '@/schemas/recording'
 
-interface CssSelector {
+export interface CssSelector {
   type: 'css'
   selector: string
 }
 
-interface GetByRoleSelector {
+export interface GetByRoleSelector {
   type: 'role'
-  role: string
+  role: AriaRole
   name: string
 }
 
-interface GetByTestIdSelector {
+export interface GetByTestIdSelector {
   type: 'test-id'
   testId: string
 }
