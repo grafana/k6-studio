@@ -97,7 +97,7 @@ ElementPopover.Selector = function ElementSelector({
           flex: 1 1 0;
         `}
       >
-        {element.selector.css}
+        {element.target.selectors.css}
       </ElementPopover.Heading>
       <Tooltip asChild content="Select child element">
         <IconButton disabled={onContract === undefined} onClick={onContract}>

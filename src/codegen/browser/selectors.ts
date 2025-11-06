@@ -1,43 +1,45 @@
+import { AriaRole } from 'react'
+
 import { ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
-interface CssSelector {
+export interface CssSelector {
   type: 'css'
   selector: string
 }
 
-interface GetByRoleSelector {
+export interface GetByRoleSelector {
   type: 'role'
-  role: string
+  role: AriaRole
   name: string
 }
 
-interface GetByAltTextSelector {
+export interface GetByAltTextSelector {
   type: 'alt'
   text: string
 }
 
-interface GetByLabelSelector {
+export interface GetByLabelSelector {
   type: 'label'
   label: string
 }
 
-interface GetByPlaceholderSelector {
+export interface GetByPlaceholderSelector {
   type: 'placeholder'
   placeholder: string
 }
 
-interface GetByTextSelector {
+export interface GetByTextSelector {
   type: 'text'
   text: string
 }
 
-interface GetByTitleSelector {
+export interface GetByTitleSelector {
   type: 'title'
   title: string
 }
 
-interface GetByTestIdSelector {
+export interface GetByTestIdSelector {
   type: 'test-id'
   testId: string
 }
@@ -51,6 +53,18 @@ export type NodeSelector =
   | GetByPlaceholderSelector
   | GetByTextSelector
   | GetByTitleSelector
+
+function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
+  if (selectors.role === undefined) {
+    return null
+  }
+
+  return {
+    type: 'role',
+    role: selectors.role.role,
+    name: selectors.role.name,
+  }
+}
 
 function getTestIdSelector(
   selectors: ElementSelector
@@ -73,7 +87,11 @@ function getCssSelector(selectors: ElementSelector): CssSelector {
 }
 
 export function getNodeSelector(selector: ElementSelector): NodeSelector {
-  return getTestIdSelector(selector) ?? getCssSelector(selector)
+  return (
+    getRoleSelector(selector) ??
+    getTestIdSelector(selector) ??
+    getCssSelector(selector)
+  )
 }
 
 export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {

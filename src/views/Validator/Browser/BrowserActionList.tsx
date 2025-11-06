@@ -59,7 +59,7 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
     case 'locator.fill':
       return (
         <>
-          Fill element <BrowserActionLocator locator={action.locator} /> with
+          Fill element <BrowserActionLocator locator={action.locator} /> with{' '}
           {`"${action.value}"`}
         </>
       )

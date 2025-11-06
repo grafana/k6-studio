@@ -1,12 +1,25 @@
 import { z } from 'zod'
 
+const AriaDetailsSchema = z.object({
+  roles: z.array(z.string()),
+  labels: z.array(z.string()),
+  name: z.string().optional(),
+})
+
+const RoleElementSelectorSchema = z.object({
+  role: z.string(),
+  name: z.string(),
+})
+
 const ElementSelectorSchema = z.object({
   css: z.string(),
   testId: z.string().optional(),
+  role: RoleElementSelectorSchema.optional(),
 })
 
-const EventTargetSchema = z.object({
+const BrowserEventTargetSchema = z.object({
   selectors: ElementSelectorSchema,
+  aria: AriaDetailsSchema.optional(),
 })
 
 const BrowserEventBaseSchema = z.object({
@@ -34,7 +47,7 @@ const ReloadPageEventSchema = BrowserEventBaseSchema.extend({
 const ClickEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('click'),
   tab: z.string(),
-  target: EventTargetSchema,
+  target: BrowserEventTargetSchema,
   button: z.union([z.literal('left'), z.literal('middle'), z.literal('right')]),
   modifiers: z.object({
     ctrl: z.boolean(),
@@ -47,7 +60,7 @@ const ClickEventSchema = BrowserEventBaseSchema.extend({
 const InputChangeEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('input-change'),
   tab: z.string(),
-  target: EventTargetSchema,
+  target: BrowserEventTargetSchema,
   value: z.string(),
   sensitive: z.boolean(),
 })
@@ -55,14 +68,14 @@ const InputChangeEventSchema = BrowserEventBaseSchema.extend({
 const CheckChangeEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('check-change'),
   tab: z.string(),
-  target: EventTargetSchema,
+  target: BrowserEventTargetSchema,
   checked: z.boolean(),
 })
 
 const RadioChangeEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('radio-change'),
   tab: z.string(),
-  target: EventTargetSchema,
+  target: BrowserEventTargetSchema,
   name: z.string(),
   value: z.string(),
 })
@@ -70,7 +83,7 @@ const RadioChangeEventSchema = BrowserEventBaseSchema.extend({
 const SelectChangeEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('select-change'),
   tab: z.string(),
-  target: EventTargetSchema,
+  target: BrowserEventTargetSchema,
   selected: z.array(z.string()),
   multiple: z.boolean(),
 })
@@ -78,8 +91,8 @@ const SelectChangeEventSchema = BrowserEventBaseSchema.extend({
 const SubmitFormEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('submit-form'),
   tab: z.string(),
-  form: EventTargetSchema,
-  submitter: EventTargetSchema,
+  form: BrowserEventTargetSchema,
+  submitter: BrowserEventTargetSchema,
 })
 
 const TextAssertionSchema = z.object({
@@ -122,7 +135,7 @@ const AssertionSchema = z.discriminatedUnion('type', [
 const AssertEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('assert'),
   tab: z.string(),
-  target: EventTargetSchema,
+  target: BrowserEventTargetSchema,
   assertion: AssertionSchema,
 })
 
@@ -143,6 +156,10 @@ export const BrowserEventsSchema = z.object({
   events: BrowserEventSchema.array(),
 })
 
+export type AriaDetails = z.infer<typeof AriaDetailsSchema>
+export type BrowserEventTarget = z.infer<typeof BrowserEventTargetSchema>
+
+export type RoleElementSelector = z.infer<typeof RoleElementSelectorSchema>
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 export type CheckState = z.infer<typeof CheckStateSchema>
 

@@ -31,6 +31,20 @@ function emitNewPageExpression(
     .done()
 }
 
+function emitNewRoleLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewRoleLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const role = emitExpression(context, expression.role)
+  const name = emitExpression(context, expression.name)
+
+  return new ExpressionBuilder(page)
+    .member('getByRole')
+    .call([role, fromObjectLiteral({ name, exact: true })])
+    .done()
+}
+
 function emitNewCSSLocatorExpression(
   context: ScenarioContext,
   expression: ir.NewCssLocatorExpression
@@ -303,6 +317,9 @@ function emitExpression(
 
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
+
+    case 'NewRoleLocatorExpression':
+      return emitNewRoleLocatorExpression(context, expression)
 
     case 'NewCssLocatorExpression':
       return emitNewCSSLocatorExpression(context, expression)

@@ -6,13 +6,14 @@ import {
   ImageIcon,
   LucideProps,
   SpaceIcon,
-  SpeechIcon,
   TagIcon,
   TestTubeDiagonalIcon,
 } from 'lucide-react'
 
 import { NodeSelector } from '@/codegen/browser/selectors'
 import { exhaustive } from '@/utils/typescript'
+
+import { RoleLocatorIcon } from './RoleSelectorIcon'
 
 interface LocatorComponentProps extends LucideProps {
   locator: NodeSelector
@@ -27,7 +28,7 @@ function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
       return <TestTubeDiagonalIcon {...props} />
 
     case 'role':
-      return <SpeechIcon {...props} />
+      return <RoleLocatorIcon selector={locator} {...props} />
 
     case 'alt':
       return <ImageIcon {...props} />
