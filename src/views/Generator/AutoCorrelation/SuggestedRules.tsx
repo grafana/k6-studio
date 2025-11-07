@@ -1,5 +1,4 @@
 import { Box, Checkbox, CheckboxGroup, Flex, Text } from '@radix-ui/themes'
-import { useEffect } from 'react'
 
 import { Label } from '@/components/Label'
 import { CorrelationRule } from '@/types/rules'
@@ -14,7 +13,7 @@ interface SuggestedRulesProps {
   suggestedRules: CorrelationRule[]
   isLoading: boolean
   checkedRuleIds: string[]
-  setCheckedRuleIds: (ruleIds: string[]) => void
+  onCheckRules: (ruleIds: string[]) => void
   correlationStatus: CorrelationStatus
 }
 
@@ -22,22 +21,17 @@ export function SuggestedRules({
   suggestedRules,
   isLoading,
   checkedRuleIds,
-  setCheckedRuleIds,
+  onCheckRules,
   correlationStatus,
 }: SuggestedRulesProps) {
-  useEffect(() => {
-    // Suggested rules checked by default
-    setCheckedRuleIds(suggestedRules.map((rule) => rule.id))
-  }, [suggestedRules, setCheckedRuleIds])
-
   const allChecked =
     suggestedRules.length > 0 && checkedRuleIds.length === suggestedRules.length
 
   const handleToggleAll = () => {
     if (allChecked) {
-      setCheckedRuleIds([])
+      onCheckRules([])
     } else {
-      setCheckedRuleIds(suggestedRules.map((rule) => rule.id))
+      onCheckRules(suggestedRules.map((rule) => rule.id))
     }
   }
 
@@ -69,10 +63,7 @@ export function SuggestedRules({
         <Text size="2">Select all</Text>
       </Label>
 
-      <CheckboxGroup.Root
-        onValueChange={setCheckedRuleIds}
-        value={checkedRuleIds}
-      >
+      <CheckboxGroup.Root onValueChange={onCheckRules} value={checkedRuleIds}>
         {suggestedRules.map((rule) => (
           <Label key={rule.id} mb="1" css={{ animation: fadeIn }}>
             <CheckboxGroup.Item disabled={isLoading} value={rule.id} />

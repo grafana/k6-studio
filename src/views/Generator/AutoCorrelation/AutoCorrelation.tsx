@@ -50,6 +50,11 @@ export function AutoCorrelation({
     onCorrelationStatusChange(correlationStatus)
   }, [correlationStatus, onCorrelationStatusChange])
 
+  useEffect(() => {
+    // Suggested rules checked by default
+    setCheckedRuleIds(suggestedRules.map((rule) => rule.id))
+  }, [suggestedRules, setCheckedRuleIds])
+
   const handleAccept = () => {
     const checkedRules = suggestedRules.filter((rule) =>
       checkedRuleIds.includes(rule.id)
@@ -78,7 +83,7 @@ export function AutoCorrelation({
                 <SuggestedRules
                   suggestedRules={suggestedRules}
                   isLoading={isLoading}
-                  setCheckedRuleIds={setCheckedRuleIds}
+                  onCheckRules={setCheckedRuleIds}
                   checkedRuleIds={checkedRuleIds}
                   correlationStatus={correlationStatus}
                 />
