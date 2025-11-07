@@ -29,7 +29,6 @@ export function AutoCorrelation({
   const {
     start,
     suggestedRules,
-    isValid,
     isLoading,
     correlationStatus,
     outcomeReason,
@@ -131,8 +130,8 @@ export function AutoCorrelation({
           </Box>
         </Flex>
       </Box>
-      <Flex css={{ flex: 1 }} position="relative">
-        <ValidationResults requests={validationRequests} isSuccess={isValid} />
+      <Flex css={{ flex: 1 }}>
+        <ValidationResults requests={validationRequests} />
       </Flex>
     </Flex>
   )
