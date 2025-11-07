@@ -11,15 +11,15 @@ import { StreamChatRequest, StreamChatChunk } from '@/handlers/ai/types'
  * Custom ChatTransport implementation that uses Electron IPC for communication
  * between renderer and main process for AI streaming responses.
  */
-export class IPCChatTransport<UI_MESSAGE extends UIMessage>
-  implements ChatTransport<UI_MESSAGE>
+export class IPCChatTransport<Message extends UIMessage>
+  implements ChatTransport<Message>
 {
   sendMessages(
     options: {
       trigger: 'submit-message' | 'regenerate-message'
       chatId: string
       messageId: string | undefined
-      messages: UI_MESSAGE[]
+      messages: Message[]
       abortSignal: AbortSignal | undefined
     } & ChatRequestOptions
   ): Promise<ReadableStream<UIMessageChunk>> {
