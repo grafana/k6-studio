@@ -1,4 +1,5 @@
-import { Box, Button, Dialog, Flex } from '@radix-ui/themes'
+import { Box, Dialog, Flex, IconButton } from '@radix-ui/themes'
+import { XIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { AutoCorrelation } from './AutoCorrelation'
@@ -35,7 +36,16 @@ export function AutoCorrelationDialog({
               </Flex>
               <Flex gap="3" justify="end" align="center">
                 <Dialog.Close>
-                  <Button variant="outline">Close</Button>
+                  <IconButton
+                    variant="ghost"
+                    css={{
+                      position: 'absolute',
+                      top: 'var(--space-4)',
+                      right: 'var(--space-4)',
+                    }}
+                  >
+                    <XIcon />
+                  </IconButton>
                 </Dialog.Close>
               </Flex>
             </Flex>
@@ -46,7 +56,6 @@ export function AutoCorrelationDialog({
             mx="-4"
             mb="-4"
             css={{
-              borderTop: '1px solid var(--gray-5)',
               minHeight: 0,
             }}
           >

@@ -74,7 +74,12 @@ export function AutoCorrelation({
   const showRuleControls = suggestedRules.length > 0 && !isLoading
 
   return (
-    <Flex height="100%">
+    <Flex
+      css={{
+        height: '100%',
+        borderTop: '1px solid var(--gray-5)',
+      }}
+    >
       <Box css={{ width: '50%', borderRight: '1px solid var(--gray-5)' }}>
         <Flex direction="column" height="100%">
           <Box css={{ flex: 1 }}>
