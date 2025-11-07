@@ -11,8 +11,8 @@ import {
 import { Allotment } from 'allotment'
 import { useState } from 'react'
 
+import { AutoScrollArea } from '@/components/AutoScrollArea'
 import { Label } from '@/components/Label'
-import { LogArea } from '@/components/LogArea'
 import { ChecksSection } from '@/components/Validator/ChecksSection'
 import { LogsSection } from '@/components/Validator/LogsSection'
 
@@ -112,13 +112,13 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
                   )}
                 </Flex>
               </Flex>
-              <LogArea
+              <AutoScrollArea
                 tail={session.running && tailActions}
                 items={session.browserActions.length}
                 onScrollBack={handleActionsScrollBack}
               >
                 <BrowserActionList actions={session.browserActions} />
-              </LogArea>
+              </AutoScrollArea>
             </Flex>
           </Allotment.Pane>
           <Allotment.Pane minSize={40} maxSize={40}>

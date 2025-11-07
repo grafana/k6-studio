@@ -3,20 +3,20 @@ import { ReactNode, UIEvent, useRef } from 'react'
 
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 
-interface LogAreaProps extends Omit<ScrollAreaProps, 'onScroll'> {
+interface AutoScrollAreaProps extends Omit<ScrollAreaProps, 'onScroll'> {
   tail?: boolean
   items?: number
   children?: ReactNode
   onScrollBack?: () => void
 }
 
-export function LogArea({
+export function AutoScrollArea({
   tail = false,
   items,
   children,
   onScrollBack,
   ...props
-}: LogAreaProps) {
+}: AutoScrollAreaProps) {
   const ref = useAutoScroll(items, tail)
   const scrollTop = useRef<number>(0)
 
