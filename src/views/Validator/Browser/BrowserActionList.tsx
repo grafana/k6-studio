@@ -3,6 +3,8 @@ import { Box, Flex, Reset, Spinner, Text } from '@radix-ui/themes'
 import { CircleCheckIcon, CircleXIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { ClickText } from '@/components/Browser/ClickText'
+import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { AnyBrowserAction, BrowserActionEvent } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
@@ -35,58 +37,64 @@ interface BrowserActionTextProps {
 function BrowserActionText({ action }: BrowserActionTextProps) {
   switch (action.type) {
     case 'browserContext.*':
-      return `Performed action ${action.method} on browser context`
+      return <>Performed action {action.method} on browser context</>
 
     case 'page.goto':
-      return `Navigate to ${action.url}`
+      return (
+        <>
+          Navigate to <strong>{action.url}</strong>
+        </>
+      )
 
     case 'page.reload':
-      return `Reload page`
-
-    case 'page.*':
-      return `Performed action ${action.method} on page`
+      return <>Reload page</>
 
     case 'page.waitForNavigation':
       return <>Waiting for page navigation</>
 
+    case 'page.*':
+      return <>Performed action {action.method} on page</>
+
     case 'locator.click':
       return (
         <>
-          Click element <BrowserActionLocator locator={action.locator} />
+          <ClickText
+            details={{
+              button: 'left',
+              modifiers: { alt: false, ctrl: false, meta: false, shift: false },
+            }}
+          />{' '}
+          on <BrowserActionLocator locator={action.locator} />
         </>
       )
 
     case 'locator.fill':
       return (
         <>
-          Fill element <BrowserActionLocator locator={action.locator} /> with{' '}
-          {`"${action.value}"`}
+          Type <code>{`"${action.value}"`}</code> into{' '}
+          <BrowserActionLocator locator={action.locator} />
         </>
       )
 
     case 'locator.check':
       return (
         <>
-          Check element <BrowserActionLocator locator={action.locator} />
+          Check <BrowserActionLocator locator={action.locator} />
         </>
       )
 
     case 'locator.uncheck':
       return (
         <>
-          Uncheck element <BrowserActionLocator locator={action.locator} />
+          Uncheck <BrowserActionLocator locator={action.locator} />
         </>
       )
 
     case 'locator.selectOption':
       return (
         <>
-          Select options [
-          {action.values
-            .map((v) => v.value ?? v.index ?? v.label ?? '')
-            .map((v) => `"${v}"`)
-            .join(', ')}
-          ] on <BrowserActionLocator locator={action.locator} />
+          Select options <SelectOptions options={action.values} /> on{' '}
+          <BrowserActionLocator locator={action.locator} />
         </>
       )
 

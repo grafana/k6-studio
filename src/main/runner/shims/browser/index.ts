@@ -80,6 +80,12 @@ function pageProxy(target: Page): ProxyOptions<Page> {
         }
       },
 
+      waitForNavigation() {
+        return {
+          type: 'page.waitForNavigation',
+        }
+      },
+
       $default() {
         return null
       },
