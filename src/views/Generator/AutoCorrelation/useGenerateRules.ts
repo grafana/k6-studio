@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react'
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { applyRules } from '@/rules/rules'
 import {
@@ -37,7 +37,13 @@ export const useGenerateRules = ({
 
   suggestedRulesRef.current = suggestedRules
 
-  const { sendMessage, error, addToolResult, status, stop } = useChat<Message>({
+  const {
+    sendMessage,
+    error,
+    addToolResult,
+    status,
+    stop: stopGeneration,
+  } = useChat<Message>({
     transport: new IPCChatTransport(),
     // Keep calling tools without user input
     sendAutomaticallyWhen: lastMessageIsToolCall,
@@ -156,6 +162,11 @@ export const useGenerateRules = ({
       text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
     })
   }
+  function stop() {
+    window.studio.script.stopScript()
+    void stopGeneration()
+    setCorrelationStatus('aborted')
+  }
 
   return {
     start,
@@ -166,7 +177,7 @@ export const useGenerateRules = ({
     isLoading,
     correlationStatus,
     outcomeReason,
-    stop,
+    stop: useCallback(stop, [stopGeneration]),
   }
 }
 

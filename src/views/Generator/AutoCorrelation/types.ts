@@ -17,3 +17,4 @@ export type CorrelationStatus =
   | 'partial-success'
   | 'failure'
   | 'error'
+  | 'aborted'

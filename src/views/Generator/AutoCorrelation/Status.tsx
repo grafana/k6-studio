@@ -81,6 +81,14 @@ export function Status({
           color="red"
         />
       )
+    case 'aborted':
+      return (
+        <StatusContent
+          text="Autocorrelation stopped"
+          icon={<CircleX />}
+          color="gray"
+        />
+      )
     default:
       return exhaustive(correlationStatus)
   }

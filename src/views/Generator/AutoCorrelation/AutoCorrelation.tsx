@@ -40,7 +40,6 @@ export function AutoCorrelation({
   // Abort streaming on unmount
   useEffect(() => {
     return () => {
-      window.studio.script.stopScript()
       void stop()
     }
   }, [stop])
@@ -78,60 +77,76 @@ export function AutoCorrelation({
         height: '100%',
         borderTop: '1px solid var(--gray-5)',
       }}
+      direction="column"
     >
-      <Box css={{ width: '50%', borderRight: '1px solid var(--gray-5)' }}>
-        <Flex direction="column" height="100%">
-          <Box css={{ flex: 1 }}>
-            <Flex direction="column" height="100%">
-              <ScrollArea css={{ flex: 1 }}>
-                <SuggestedRules
-                  suggestedRules={suggestedRules}
-                  isLoading={isLoading}
-                  onCheckRules={setCheckedRuleIds}
-                  checkedRuleIds={checkedRuleIds}
-                  correlationStatus={correlationStatus}
-                />
-                {outcomeReason !== '' && (
-                  <Box px="3" pt="2">
-                    <Text color="gray" size="2">
-                      {outcomeReason}
-                    </Text>
-                  </Box>
-                )}
-              </ScrollArea>
-
-              {showRuleControls && (
-                <Flex
-                  gap="3"
-                  justify="end"
-                  p="3"
-                  css={{
-                    borderTop: '1px solid var(--gray-5)',
-                  }}
-                >
-                  <Button
-                    variant="outline"
-                    onClick={handleDiscard}
-                    disabled={isLoading}
-                    size="2"
-                  >
-                    Discard
-                  </Button>
-                  <Button
-                    onClick={handleAccept}
-                    disabled={isLoading || checkedRuleIds.length === 0}
-                    size="2"
-                  >
-                    Accept ({checkedRuleIds.length})
-                  </Button>
-                </Flex>
-              )}
-            </Flex>
-          </Box>
+      <Flex css={{ flex: 1, minHeight: 0 }}>
+        <Box css={{ width: '50%', borderRight: '1px solid var(--gray-5)' }}>
+          <Flex direction="column" height="100%">
+            <Box css={{ flex: 1 }}>
+              <Flex direction="column" height="100%">
+                <ScrollArea css={{ flex: 1 }}>
+                  <SuggestedRules
+                    suggestedRules={suggestedRules}
+                    isLoading={isLoading}
+                    onCheckRules={setCheckedRuleIds}
+                    checkedRuleIds={checkedRuleIds}
+                    correlationStatus={correlationStatus}
+                  />
+                  {outcomeReason !== '' && (
+                    <Box px="3" pt="2">
+                      <Text color="gray" size="2">
+                        {outcomeReason}
+                      </Text>
+                    </Box>
+                  )}
+                </ScrollArea>
+              </Flex>
+            </Box>
+          </Flex>
+        </Box>
+        <Flex css={{ flex: 1 }}>
+          <ValidationResults requests={validationRequests} />
         </Flex>
-      </Box>
-      <Flex css={{ flex: 1 }}>
-        <ValidationResults requests={validationRequests} />
+      </Flex>
+
+      <Flex
+        gap="3"
+        justify="end"
+        p="3"
+        css={{
+          borderTop: '1px solid var(--gray-5)',
+        }}
+      >
+        {isLoading && (
+          <Button
+            variant="outline"
+            onClick={stop}
+            disabled={!isLoading}
+            size="2"
+            color="red"
+          >
+            Stop
+          </Button>
+        )}
+        {showRuleControls && (
+          <>
+            <Button
+              variant="outline"
+              onClick={handleDiscard}
+              disabled={isLoading}
+              size="2"
+            >
+              Discard
+            </Button>
+            <Button
+              onClick={handleAccept}
+              disabled={isLoading || checkedRuleIds.length === 0}
+              size="2"
+            >
+              Accept ({checkedRuleIds.length})
+            </Button>
+          </>
+        )}
       </Flex>
     </Flex>
   )
