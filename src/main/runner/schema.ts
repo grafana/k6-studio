@@ -32,6 +32,7 @@ const GetByPlaceholderLocatorSchema = z.object({
   type: z.literal('placeholder'),
   placeholder: z.string(),
 })
+
 const GetByTitleLocatorSchema = z.object({
   type: z.literal('title'),
   title: z.string(),
