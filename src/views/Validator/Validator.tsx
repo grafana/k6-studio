@@ -116,7 +116,7 @@ export function Validator() {
     resetProxyData()
     resetLogs()
     resetChecks()
-  }, [data, resetProxyData, resetLogs, resetChecks])
+  }, [scriptPath, resetProxyData, resetLogs, resetChecks])
 
   return (
     <View

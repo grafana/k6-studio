@@ -41,7 +41,7 @@ function LoadingSpinner() {
 interface ViewProps {
   title: string
   subTitle?: ReactNode
-  actions?: ReactNode
+  actions: ReactNode
   loading?: boolean
 }
 
