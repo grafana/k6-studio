@@ -21,6 +21,30 @@ export function useBrowserActions() {
     })
   }, [])
 
+  useEffect(() => {
+    return window.studio.script.onScriptStopped(() => {
+      setBrowserActions((actions) =>
+        actions.map((action) => {
+          if (action.type !== 'begin') {
+            return action
+          }
+
+          return {
+            ...action,
+            type: 'end',
+            timestamp: {
+              ...action.timestamp,
+              ended: Date.now(),
+            },
+            result: {
+              type: 'aborted',
+            },
+          }
+        })
+      )
+    })
+  }, [])
+
   const resetBrowserActions = useCallback(() => {
     setBrowserActions([])
   }, [])

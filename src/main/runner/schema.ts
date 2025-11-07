@@ -160,9 +160,14 @@ export const ActionErrorSchema = z.object({
   error: z.string(),
 })
 
+export const ActionAbortedSchema = z.object({
+  type: z.literal('aborted'),
+})
+
 export const ActionResult = z.discriminatedUnion('type', [
   ActionSuccessSchema,
   ActionErrorSchema,
+  ActionAbortedSchema,
 ])
 
 export const ActionEndEventSchema = ActionEventSchemaBase.extend({

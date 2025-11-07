@@ -76,55 +76,50 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
             border-bottom: none;
           `}
         >
-          <Allotment.Pane snap minSize={400}>
-            <Allotment>
-              {/* <SessionReplay /> */}
-              <Allotment.Pane minSize={400} preferredSize={600}>
-                <Flex direction="column" height="100%">
-                  <Flex
-                    justify="between"
-                    pr="2"
+          <Allotment.Pane minSize={400}>
+            <Flex direction="column" height="100%">
+              <Flex
+                justify="between"
+                pr="2"
+                css={css`
+                  border-bottom: 1px solid var(--gray-a5);
+                `}
+              >
+                <Flex align="center" gap="1">
+                  <Heading
                     css={css`
-                      border-bottom: 1px solid var(--gray-a5);
+                      font-size: 15px;
+                      line-height: 24px;
+                      font-weight: 500;
+                      padding: var(--space-2);
+                      display: flex;
+                      align-items: center;
                     `}
                   >
-                    <Flex align="center" gap="1">
-                      <Heading
-                        css={css`
-                          font-size: 15px;
-                          line-height: 24px;
-                          font-weight: 500;
-                          padding: var(--space-2);
-                          display: flex;
-                          align-items: center;
-                        `}
-                      >
-                        Browser actions ({session.browserActions.length})
-                      </Heading>
-                    </Flex>
-
-                    <Flex gap="2" align="center">
-                      {session.running && (
-                        <Label>
-                          <Text size="2">Tail log</Text>
-                          <Switch
-                            checked={tailActions}
-                            onCheckedChange={setTailActions}
-                          />
-                        </Label>
-                      )}
-                    </Flex>
-                  </Flex>
-                  <LogArea
-                    tail={session.running && tailActions}
-                    items={session.browserActions.length}
-                    onScrollBack={handleActionsScrollBack}
-                  >
-                    <BrowserActionList actions={session.browserActions} />
-                  </LogArea>
+                    Browser actions ({session.browserActions.length})
+                  </Heading>
                 </Flex>
-              </Allotment.Pane>
-            </Allotment>
+
+                <Flex gap="2" align="center">
+                  {session.running && (
+                    <Label>
+                      <Text size="2">Tail log</Text>
+                      <Switch
+                        checked={tailActions}
+                        onCheckedChange={setTailActions}
+                      />
+                    </Label>
+                  )}
+                </Flex>
+              </Flex>
+              <LogArea
+                tail={session.running && tailActions}
+                items={session.browserActions.length}
+                onScrollBack={handleActionsScrollBack}
+              >
+                <BrowserActionList actions={session.browserActions} />
+              </LogArea>
+            </Flex>
           </Allotment.Pane>
           <Allotment.Pane minSize={40} maxSize={40}>
             <TabNav.Root>
@@ -141,7 +136,7 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
               </Tabs.List>
             </TabNav.Root>
           </Allotment.Pane>
-          <Allotment.Pane snap minSize={150} preferredSize={0}>
+          <Allotment.Pane snap minSize={150} preferredSize={300}>
             <Box height="100%" width="100%">
               <Flex
                 direction="column"
