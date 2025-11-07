@@ -1,21 +1,21 @@
 import { ipcRenderer } from 'electron'
 
+import { BrowserActionEvent } from '@/main/runner/schema'
 import { K6Log, K6Check } from '@/types'
 
 import { createListener } from '../utils'
 
-import { ScriptHandler } from './types'
+import { OpenScriptResult, ScriptHandler } from './types'
 
 export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
 }
 
-export function openScript(scriptPath: string, absolute: boolean = false) {
+export function openScript(scriptPath: string) {
   return ipcRenderer.invoke(
     ScriptHandler.Open,
-    scriptPath,
-    absolute
-  ) as Promise<string>
+    scriptPath
+  ) as Promise<OpenScriptResult>
 }
 
 export function runScriptFromGenerator(script: string) {
@@ -63,4 +63,8 @@ export function onScriptFailed(callback: () => void) {
 
 export function onScriptCheck(callback: (data: K6Check[]) => void) {
   return createListener(ScriptHandler.Check, callback)
+}
+
+export function onBrowserAction(callback: (data: BrowserActionEvent) => void) {
+  return createListener(ScriptHandler.BrowserAction, callback)
 }

@@ -100,6 +100,13 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
       })
       break
 
+    case 'alt':
+    case 'label':
+    case 'text':
+    case 'placeholder':
+    case 'title':
+      throw new Error('Not implemented yet.')
+
     default:
       exhaustive(node.selector)
   }

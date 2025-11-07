@@ -40,20 +40,21 @@ export function ValidatorControls({
       )}
       {!isRunning && (
         <>
-          <Button variant="outline" onClick={onRunInCloud}>
-            <GrafanaIcon /> Run in Grafana Cloud
-          </Button>
           <Tooltip
             content={`Proxy is ${proxyStatus}`}
             hidden={proxyStatus === 'online'}
           >
             <Button
+              variant="surface"
               disabled={!isScriptSelected || proxyStatus !== 'online'}
               onClick={onRunScript}
             >
-              Validate script
+              Debug script
             </Button>
           </Tooltip>
+          <Button onClick={onRunInCloud}>
+            <GrafanaIcon /> Run in Grafana Cloud
+          </Button>
         </>
       )}
       <DropdownMenu.Root>

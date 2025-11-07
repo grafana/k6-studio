@@ -1,18 +1,46 @@
 import { css } from '@emotion/react'
 import { Button, Flex, Grid, Heading, Text } from '@radix-ui/themes'
+import log from 'electron-log/renderer'
 import { CircleCheckIcon, CirclePlusIcon, DiscIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { generatePath, Link, useNavigate } from 'react-router-dom'
 
 import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { getRoutePath } from '@/routeMap'
+import { getRoutePath, routes } from '@/routeMap'
+import { useToast } from '@/store/ui/useToast'
 
 import { NavigationCard } from './NavigationCard'
 
 export function Home() {
+  const showToast = useToast()
+  const navigate = useNavigate()
+
   const createNewGenerator = useCreateGenerator()
 
-  const handleCreateNewGenerator = () => createNewGenerator()
+  const handleCreateNewGenerator = () => {
+    createNewGenerator().catch((err) => {
+      log.error('Failed to create new generator', err)
+
+      showToast({
+        status: 'error',
+        title: 'Failed to create new generator',
+        description:
+          'An error occurred while creating a new generator. Please try again.',
+      })
+    })
+  }
+
+  const handleOpenScript = async () => {
+    const path = await window.studio.script.showScriptSelectDialog()
+
+    if (path === undefined) {
+      return
+    }
+
+    navigate(
+      generatePath(routes.validator, { fileName: encodeURIComponent(path) })
+    )
+  }
 
   return (
     <Flex direction="column" height="100%">
@@ -73,11 +101,9 @@ export function Home() {
             title="Validator"
             description="Debug and validate your k6 script"
           >
-            <Button variant="ghost" asChild>
-              <Link to={getRoutePath('validator', {})}>
-                <CircleCheckIcon />
-                Validate script
-              </Link>
+            <Button variant="ghost" onClick={handleOpenScript}>
+              <CircleCheckIcon />
+              Open script
             </Button>
           </NavigationCard>
         </Grid>

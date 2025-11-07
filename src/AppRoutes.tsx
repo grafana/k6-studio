@@ -13,7 +13,7 @@ import { Generator } from '@/views/Generator/Generator'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
 import { RecordingPreviewer } from '@/views/RecordingPreviewer'
-import { Validator } from '@/views/Validator'
+import { ValidatorView } from '@/views/Validator'
 
 import { ErrorElement } from './ErrorElement'
 import { routeMap } from './routeMap'
@@ -33,7 +33,7 @@ const router = createHashRouter(
         element={<RecordingPreviewer />}
       />
       <Route path={routeMap.generator} element={<Generator />} />
-      <Route path={routeMap.validator} element={<Validator />} />
+      <Route path={routeMap.validator} element={<ValidatorView />} />
       <Route path={routeMap.dataFilePreviewer} element={<DataFile />} />
       <Route path="*" element={<NoRouteFound />} />
     </Route>
