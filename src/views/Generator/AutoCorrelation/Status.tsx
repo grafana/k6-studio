@@ -23,7 +23,78 @@ export function Status({
 }: {
   correlationStatus: CorrelationStatus
 }) {
-  const { icon, text, color } = statusContent(correlationStatus)
+  switch (correlationStatus) {
+    case 'not-started':
+      return <StatusContent text="" icon={null} color="gray" />
+
+    case 'correlation-not-needed':
+      return (
+        <StatusContent
+          text="Correlation not needed"
+          icon={<CircleCheckIcon />}
+          color="grass"
+        />
+      )
+    case 'validating':
+    case 'analyzing':
+    case 'creating-rules':
+    case 'finalizing':
+      return (
+        <StatusContent
+          text={LOADING_MESSAGES[correlationStatus] || 'Loading...'}
+          icon={<Spinner />}
+          color="gray"
+        />
+      )
+    case 'success':
+      return (
+        <StatusContent
+          text="Autocorrelation completed"
+          icon={<CircleCheckIcon />}
+          color="grass"
+        />
+      )
+
+    case 'partial-success':
+      return (
+        <StatusContent
+          text="Partially correlated"
+          icon={<CircleAlert />}
+          color="yellow"
+        />
+      )
+
+    case 'failure':
+      return (
+        <StatusContent
+          text="Autocorrelation failed"
+          icon={<CircleX />}
+          color="red"
+        />
+      )
+
+    case 'error':
+      return (
+        <StatusContent
+          text="An error occurred during autocorrelation"
+          icon={<AlertCircleIcon />}
+          color="red"
+        />
+      )
+    default:
+      return exhaustive(correlationStatus)
+  }
+}
+
+function StatusContent({
+  color,
+  text,
+  icon,
+}: {
+  text: string
+  icon: ReactNode
+  color: ComponentProps<typeof Text>['color']
+}) {
   return (
     <Flex align="center" gap="2">
       <Text size="5" color={color} asChild>
@@ -34,60 +105,4 @@ export function Status({
       </Text>
     </Flex>
   )
-}
-
-function statusContent(correlationStatus: CorrelationStatus): {
-  text: string
-  icon: ReactNode
-  color: ComponentProps<typeof Text>['color']
-} {
-  switch (correlationStatus) {
-    case 'not-started':
-      return { text: '', icon: null, color: 'gray' }
-    case 'correlation-not-needed':
-      return {
-        text: 'Correlation not needed',
-        icon: <CircleCheckIcon />,
-        color: 'grass',
-      }
-    case 'validating':
-    case 'analyzing':
-    case 'creating-rules':
-    case 'finalizing':
-      return {
-        text: LOADING_MESSAGES[correlationStatus] || 'Loading...',
-        icon: <Spinner />,
-        color: 'gray',
-      }
-    case 'success':
-      return {
-        text: 'Autocorrelation completed',
-        icon: <CircleCheckIcon />,
-        color: 'grass',
-      }
-
-    case 'partial-success':
-      return {
-        text: 'Partially correlated',
-        icon: <CircleAlert />,
-        color: 'yellow',
-      }
-
-    case 'failure':
-      return {
-        text: 'Autocorrelation failed',
-        icon: <CircleX />,
-        color: 'red',
-      }
-
-    case 'error':
-      return {
-        text: 'An error occurred during autocorrelation',
-        icon: <AlertCircleIcon />,
-        color: 'red',
-      }
-
-    default:
-      return exhaustive(correlationStatus)
-  }
 }
