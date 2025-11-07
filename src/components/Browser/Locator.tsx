@@ -13,7 +13,7 @@ import {
 import { NodeSelector } from '@/codegen/browser/selectors'
 import { exhaustive } from '@/utils/typescript'
 
-import { RoleLocatorIcon } from './RoleSelectorIcon'
+import { RoleLocatorIcon } from './RoleLocatorIcon'
 
 interface LocatorComponentProps extends LucideProps {
   locator: NodeSelector
