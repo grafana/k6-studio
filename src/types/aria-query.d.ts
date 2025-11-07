@@ -392,4 +392,6 @@ declare module 'aria-query' {
     ARIARoleRelationConcept,
     Set<ARIARoleDefinitionKey>
   >
+
+  export const roles: Map<ARIARoleDefinitionKey, ARIARoleDefinition>
 }

@@ -60,6 +60,14 @@ function substituteExpression(
         name: substitutions.get(node.name) ?? node.name,
       }
 
+    case 'NewRoleLocatorExpression':
+      return {
+        type: 'NewRoleLocatorExpression',
+        role: substituteExpression(node.role, substitutions),
+        name: substituteExpression(node.name, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
     case 'NewCssLocatorExpression':
       return {
         type: 'NewCssLocatorExpression',
@@ -125,6 +133,20 @@ function substituteExpression(
         type: 'ExpectExpression',
         actual: substituteExpression(node.actual, substitutions),
         expected: substituteAssertion(node.expected, substitutions),
+      }
+
+    case 'PromiseAllExpression':
+      return {
+        type: 'PromiseAllExpression',
+        expressions: node.expressions.map((expression) =>
+          substituteExpression(expression, substitutions)
+        ),
+      }
+
+    case 'WaitForNavigationExpression':
+      return {
+        type: 'WaitForNavigationExpression',
+        target: substituteExpression(node.target, substitutions),
       }
 
     default:

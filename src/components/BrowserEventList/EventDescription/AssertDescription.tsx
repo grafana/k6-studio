@@ -19,7 +19,7 @@ export function AssertDescription({
       return (
         <>
           Assert that{' '}
-          <Selector selector={target.selectors} onHighlight={onHighlight} />{' '}
+          <Selector selectors={target.selectors} onHighlight={onHighlight} />{' '}
           contains the text{' '}
           <Tooltip asChild content={assertion.operation.value}>
             <em>{`"${assertion.operation.value}"`}</em>
@@ -31,7 +31,7 @@ export function AssertDescription({
       return (
         <>
           Assert that{' '}
-          <Selector selector={target.selectors} onHighlight={onHighlight} /> is{' '}
+          <Selector selectors={target.selectors} onHighlight={onHighlight} /> is{' '}
           {assertion.visible ? 'visible' : 'hidden'}
         </>
       )
@@ -40,7 +40,7 @@ export function AssertDescription({
       return (
         <>
           Assert that the checked state of{' '}
-          <Selector selector={target.selectors} onHighlight={onHighlight} /> is{' '}
+          <Selector selectors={target.selectors} onHighlight={onHighlight} /> is{' '}
           <code>{assertion.expected}</code>
         </>
       )
@@ -49,8 +49,8 @@ export function AssertDescription({
       return (
         <>
           Assert that the input{' '}
-          <Selector selector={target.selectors} onHighlight={onHighlight} /> has
-          the value{' '}
+          <Selector selectors={target.selectors} onHighlight={onHighlight} />{' '}
+          has the value{' '}
           <Tooltip asChild content={assertion.expected}>
             <em>{`"${assertion.expected}"`}</em>
           </Tooltip>

@@ -79,7 +79,7 @@ export function InputChangeDescription({
   return (
     <>
       Changed input of{' '}
-      <Selector selector={event.target.selectors} onHighlight={onHighlight} />{' '}
+      <Selector selectors={event.target.selectors} onHighlight={onHighlight} />{' '}
       to{' '}
       <code>
         <MaskedValue sensitive={event.sensitive} value={event.value} />

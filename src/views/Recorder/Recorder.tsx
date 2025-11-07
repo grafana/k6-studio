@@ -1,6 +1,6 @@
 import { Button } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
-import { SettingsIcon, StopCircle } from 'lucide-react'
+import { StopCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
@@ -12,14 +12,13 @@ import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useSettings } from '@/hooks/useSettings'
 import { getRoutePath } from '@/routeMap'
-import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
 import { Group, ProxyData } from '@/types'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
-import { exhaustive } from '@/utils/typescript'
 
 import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
 import { EmptyState } from './EmptyState'
+import { useRecordingErrorToast } from './Recorder.hooks'
 import {
   getHostNameFromURL,
   startRecording,
@@ -32,10 +31,7 @@ import { RequestLog } from './RequestLog'
 import { RecorderState } from './types'
 
 const INITIAL_GROUPS: Group[] = [
-  {
-    id: crypto.randomUUID(),
-    name: DEFAULT_GROUP_NAME,
-  },
+  { id: crypto.randomUUID(), name: DEFAULT_GROUP_NAME },
 ]
 
 export function Recorder() {
@@ -43,9 +39,7 @@ export function Recorder() {
 
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
-  const openSettingsDialog = useStudioUIStore(
-    (state) => state.openSettingsDialog
-  )
+
   const [isAppClosing, setIsAppClosing] = useState(false)
 
   const group = useMemo(() => groups[groups.length - 1], [groups])
@@ -174,61 +168,15 @@ export function Recorder() {
     setGroups(INITIAL_GROUPS)
   }
 
+  useRecordingErrorToast()
+
   useEffect(() => {
     return window.studio.browser.onBrowserLaunchError((error) => {
       if (error.fatal) {
         setRecorderState('idle')
       }
-
-      switch (error.reason) {
-        case 'websocket-server-error':
-          showToast({
-            status: 'error',
-            title: 'Failed to start recording',
-            description:
-              'An error occurred while initializing browser recording.',
-            action: (
-              <Button onClick={() => openSettingsDialog('logs')}>
-                Open log file
-              </Button>
-            ),
-          })
-          break
-
-        case 'browser-launch':
-          showToast({
-            status: 'error',
-            title: 'Failed to launch browser',
-            description: 'Please check your browser path and try again.',
-            action: (
-              <Button onClick={() => openSettingsDialog('recorder')}>
-                <SettingsIcon />
-                Open settings
-              </Button>
-            ),
-          })
-          break
-
-        case 'extension-load':
-          showToast({
-            status: 'error',
-            title: 'Failed to load extension',
-            description:
-              'Loading the browser extension failed. Browser recording will not be available.',
-            action: (
-              <Button onClick={() => openSettingsDialog('logs')}>
-                Open log file
-              </Button>
-            ),
-          })
-          break
-
-        default:
-          exhaustive(error.reason)
-          break
-      }
     })
-  }, [openSettingsDialog, showToast])
+  }, [])
 
   useEffect(() => {
     return window.studio.browser.onBrowserClosed(async () => {
@@ -284,7 +232,7 @@ export function Recorder() {
         )}
 
         {recorderState !== 'idle' &&
-          settings?.recorder.enableBrowserRecorder && (
+          settings?.recorder.browserRecording !== 'disabled' && (
             <RecordingInspector
               recorderState={recorderState}
               groups={groups}
@@ -297,7 +245,7 @@ export function Recorder() {
           )}
 
         {recorderState !== 'idle' &&
-          !settings?.recorder.enableBrowserRecorder && (
+          settings?.recorder.browserRecording === 'disabled' && (
             <RequestLog
               recorderState={recorderState}
               groups={groups}

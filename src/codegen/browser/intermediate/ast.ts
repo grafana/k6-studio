@@ -24,6 +24,13 @@ export interface NewTestIdLocatorExpression {
   page: Expression
 }
 
+export interface NewRoleLocatorExpression {
+  type: 'NewRoleLocatorExpression'
+  role: Expression
+  name: Expression
+  page: Expression
+}
+
 export interface GotoExpression {
   type: 'GotoExpression'
   target: Expression
@@ -64,6 +71,16 @@ export interface SelectOptionsExpression {
   locator: Expression
   selected: Expression[]
   multiple: boolean
+}
+
+export interface WaitForNavigationExpression {
+  type: 'WaitForNavigationExpression'
+  target: Expression
+}
+
+export interface PromiseAllExpression {
+  type: 'PromiseAllExpression'
+  expressions: Expression[]
 }
 
 export interface TextContainsAssertion {
@@ -122,6 +139,7 @@ export type Expression =
   | Identifier
   | StringLiteral
   | NewPageExpression
+  | NewRoleLocatorExpression
   | NewCssLocatorExpression
   | NewTestIdLocatorExpression
   | GotoExpression
@@ -132,6 +150,8 @@ export type Expression =
   | CheckExpression
   | SelectOptionsExpression
   | ExpectExpression
+  | WaitForNavigationExpression
+  | PromiseAllExpression
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'

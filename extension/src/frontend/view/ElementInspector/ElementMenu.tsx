@@ -11,7 +11,6 @@ import { ComponentProps, ReactNode } from 'react'
 import { Toolbar } from '@/components/primitives/Toolbar'
 import { ElementRole } from 'extension/src/utils/aria'
 
-import { TrackedElement } from './ElementInspector.hooks'
 import {
   findAssociatedControl,
   getCheckedState,
@@ -20,6 +19,7 @@ import {
   getTextBoxValue,
 } from './ElementMenu.utils'
 import { AssertionData, CheckAssertionData } from './assertions/types'
+import { TrackedElement } from './utils'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
   return (
@@ -90,7 +90,7 @@ function CheckboxAssertion({
   function handleAddCheckAssertion() {
     onAddAssertion({
       type: 'check',
-      selector: input.selector.css,
+      target: input.target,
       inputType: isNative(role, input.element) ? 'native' : 'aria',
       expected: getCheckedState(input.element),
     })
@@ -116,7 +116,7 @@ function TextInputAssertion({
   const handleAddAssertion = () => {
     onAddAssertion({
       type: 'text-input',
-      selector: input.selector.css,
+      target: input.target,
       multiline:
         input.element instanceof HTMLTextAreaElement ||
         input.element.getAttribute('aria-multiline') === 'true',
@@ -193,7 +193,7 @@ export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
   const handleAddVisibilityAssertion = () => {
     onSelectAssertion({
       type: 'visibility',
-      selector: element.selector.css,
+      target: element.target,
       state: 'visible',
     })
   }
@@ -201,8 +201,8 @@ export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
   const handleAddTextAssertion = () => {
     onSelectAssertion({
       type: 'text',
-      selector: element.selector.css,
-      text: element.target.textContent ?? '',
+      target: element.target,
+      text: element.element.textContent ?? '',
     })
   }
 

@@ -17,34 +17,18 @@ import { encryptString, decryptString } from './encryption'
 import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
 
 export const defaultSettings: AppSettings = {
-  version: '3.0',
+  version: '4.0',
   proxy: {
     mode: 'regular',
     port: 6000,
     automaticallyFindPort: true,
     sslInsecure: false,
   },
-  recorder: {
-    detectBrowserPath: true,
-    enableBrowserRecorder: true,
-  },
-  windowState: {
-    width: 1200,
-    height: 800,
-    x: 0,
-    y: 0,
-    isMaximized: true,
-  },
-  telemetry: {
-    usageReport: true,
-    errorReport: true,
-  },
-  appearance: {
-    theme: 'system',
-  },
-  ai: {
-    provider: 'openai',
-  },
+  recorder: { detectBrowserPath: true, browserRecording: 'extension' },
+  windowState: { width: 1200, height: 800, x: 0, y: 0, isMaximized: true },
+  telemetry: { usageReport: true, errorReport: true },
+  appearance: { theme: 'system' },
+  ai: { provider: 'openai' },
 }
 
 const fileName =
@@ -75,10 +59,7 @@ export async function getSettings() {
     const currentSettings = JSON.parse(settings)
     // TODO: https://github.com/grafana/k6-studio/issues/277
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const allSettings = {
-      ...defaultSettings,
-      ...currentSettings,
-    }
+    const allSettings = { ...defaultSettings, ...currentSettings }
     return AppSettingsSchema.parse(allSettings)
   } catch (error) {
     log.error('Failed to parse settings file', error)
@@ -142,11 +123,7 @@ function isSettingsJsonObject() {
 }
 
 export async function selectBrowserExecutable() {
-  const extensions = {
-    mac: ['app'],
-    win: ['exe'],
-    linux: ['*'],
-  }
+  const extensions = { mac: ['app'], win: ['exe'], linux: ['*'] }
 
   const { canceled, filePaths, bookmarks } = await dialog.showOpenDialog({
     title: 'Select browser executable',
@@ -168,11 +145,7 @@ export async function selectBrowserExecutable() {
     return filePaths
   }
 
-  return {
-    canceled,
-    bookmarks,
-    filePaths: getFilePaths(),
-  }
+  return { canceled, bookmarks, filePaths: getFilePaths() }
 }
 
 export async function selectUpstreamCertificate() {
