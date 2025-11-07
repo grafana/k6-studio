@@ -1,7 +1,7 @@
 import { tool, ToolSet } from 'ai'
 import { z } from 'zod'
 
-import { AiCorrelationRuleSchema } from '@/types/auto-correlation'
+import { AiCorrelationRuleSchema } from '@/types/autoCorrelation'
 
 export const tools = {
   runValidation: tool({

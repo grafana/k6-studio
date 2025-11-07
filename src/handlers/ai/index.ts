@@ -3,7 +3,7 @@ import { convertToModelMessages, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
 
 import { setupAiModel } from './model'
-import { streamMessages } from './stream-messages'
+import { streamMessages } from './streamMessages'
 import { tools } from './tools'
 import { AiHandler, StreamChatRequest } from './types'
 

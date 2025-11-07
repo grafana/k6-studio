@@ -7,7 +7,7 @@ import {
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
-import { AiCorrelationRule } from '@/types/auto-correlation'
+import { AiCorrelationRule } from '@/types/autoCorrelation'
 import { CorrelationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { validateScript } from '@/utils/validateScript'
