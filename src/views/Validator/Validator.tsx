@@ -13,18 +13,19 @@ import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
-import { useScriptPath } from './Validator.hooks'
+import { useScript, useScriptPath } from './Validator.hooks'
 import { ValidatorContent } from './ValidatorContent'
 import { ValidatorControls } from './ValidatorControls'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
 
 export function Validator() {
+  const scriptPath = useScriptPath()
+
+  const { data, isLoading } = useScript(scriptPath)
+
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
-  const [isLoading, setIsLoading] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
-  const [script, setScript] = useState('')
-  const { scriptPath, isExternal } = useScriptPath()
 
   const { checks, resetChecks } = useRunChecks()
   const { logs, resetLogs } = useRunLogs()
@@ -34,43 +35,25 @@ export function Validator() {
 
   const { proxyData, resetProxyData } = useListenProxyData()
 
-  const file: StudioFile | undefined =
-    !isExternal && scriptPath
-      ? {
-          type: 'script',
-          fileName: scriptPath,
-          displayName: getFileNameWithoutExtension(scriptPath),
-        }
-      : undefined
+  const file: StudioFile = {
+    type: 'script',
+    fileName: scriptPath,
+    displayName: getFileNameWithoutExtension(scriptPath),
+  }
 
   const handleSelectExternalScript = useCallback(async () => {
-    const externalScriptPath =
-      await window.studio.script.showScriptSelectDialog()
+    const newScriptPath = await window.studio.script.showScriptSelectDialog()
 
-    if (!externalScriptPath) {
+    if (!newScriptPath) {
       return
     }
 
-    navigate(getRoutePath('validator', {}), {
-      state: { externalScriptPath },
-    })
+    navigate(
+      getRoutePath('validator', {
+        fileName: encodeURIComponent(newScriptPath),
+      })
+    )
   }, [navigate])
-
-  useEffect(() => {
-    if (!scriptPath) {
-      return
-    }
-
-    ;(async () => {
-      setIsLoading(true)
-      const fileContent = await window.studio.script.openScript(
-        scriptPath,
-        isExternal
-      )
-      setIsLoading(false)
-      setScript(fileContent)
-    })()
-  }, [scriptPath, isExternal])
 
   async function handleDeleteScript() {
     if (!file) {
@@ -90,7 +73,8 @@ export function Validator() {
     resetLogs()
     resetChecks()
     setIsRunning(true)
-    await window.studio.script.runScript(scriptPath, isExternal)
+
+    await window.studio.script.runScript(scriptPath)
   }
 
   function handleRunInCloud() {
@@ -132,17 +116,16 @@ export function Validator() {
     resetProxyData()
     resetLogs()
     resetChecks()
-  }, [script, resetProxyData, resetLogs, resetChecks])
+  }, [data, resetProxyData, resetLogs, resetChecks])
 
   return (
     <View
       title="Validator"
-      subTitle={file ? <FileNameHeader file={file} /> : null}
+      subTitle={<FileNameHeader file={file} canRename={!data?.isExternal} />}
       actions={
         <ValidatorControls
           isRunning={isRunning}
-          isExternal={isExternal}
-          isScriptSelected={Boolean(scriptPath)}
+          canDelete={data !== undefined && !data.isExternal}
           onDeleteScript={handleDeleteScript}
           onRunScript={handleRunScript}
           onRunInCloud={handleRunInCloud}
@@ -152,25 +135,27 @@ export function Validator() {
       }
       loading={isLoading}
     >
-      <ValidatorContent
-        script={script}
-        proxyData={proxyData}
-        isRunning={isRunning}
-        logs={logs}
-        checks={checks}
-        noDataElement={
-          <EmptyMessage
-            message={
-              <ValidatorEmptyState
-                isRunning={isRunning}
-                isScriptSelected={Boolean(scriptPath)}
-                onRunScript={handleRunScript}
-                onSelectScript={handleSelectExternalScript}
-              />
-            }
-          />
-        }
-      />
+      {data && (
+        <ValidatorContent
+          script={data.script}
+          proxyData={proxyData}
+          isRunning={isRunning}
+          logs={logs}
+          checks={checks}
+          noDataElement={
+            <EmptyMessage
+              message={
+                <ValidatorEmptyState
+                  isRunning={isRunning}
+                  isScriptSelected={Boolean(scriptPath)}
+                  onRunScript={handleRunScript}
+                  onSelectScript={handleSelectExternalScript}
+                />
+              }
+            />
+          }
+        />
+      )}
       {scriptPath !== undefined && (
         <RunInCloudDialog
           open={showRunInCloudDialog}

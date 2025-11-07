@@ -7,8 +7,7 @@ import { useProxyStatus } from '@/hooks/useProxyStatus'
 
 interface ValidatorControlsProps {
   isRunning: boolean
-  isScriptSelected: boolean
-  isExternal: boolean
+  canDelete: boolean
   onDeleteScript: () => void
   onRunScript: () => void
   onRunInCloud: () => void
@@ -18,8 +17,7 @@ interface ValidatorControlsProps {
 
 export function ValidatorControls({
   isRunning,
-  isScriptSelected,
-  isExternal,
+  canDelete,
   onDeleteScript,
   onRunScript,
   onRunInCloud,
@@ -47,10 +45,7 @@ export function ValidatorControls({
             content={`Proxy is ${proxyStatus}`}
             hidden={proxyStatus === 'online'}
           >
-            <Button
-              disabled={!isScriptSelected || proxyStatus !== 'online'}
-              onClick={onRunScript}
-            >
+            <Button disabled={proxyStatus !== 'online'} onClick={onRunScript}>
               Validate script
             </Button>
           </Tooltip>
@@ -71,7 +66,7 @@ export function ValidatorControls({
               Open external script
             </DropdownMenu.Item>
           </Tooltip>
-          {isScriptSelected && !isExternal && (
+          {canDelete && (
             <DropdownMenu.Item color="red" onClick={onDeleteScript}>
               Delete
             </DropdownMenu.Item>

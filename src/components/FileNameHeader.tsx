@@ -28,12 +28,14 @@ const FileTypeToLabel: Record<StudioFile['type'], string> = {
 
 interface FileNameHeaderProps {
   file: StudioFile
+  canRename?: boolean
   isDirty?: boolean
   showExt?: boolean
 }
 
 export function FileNameHeader({
   file,
+  canRename = true,
   isDirty = false,
   showExt = false,
 }: FileNameHeaderProps) {
@@ -61,7 +63,7 @@ export function FileNameHeader({
         </Tooltip>
       )}
 
-      <RenameFileDialog file={file} />
+      {canRename && <RenameFileDialog file={file} />}
 
       {showExt && !!fileExtension && (
         <Badge color="gray" size="1">
