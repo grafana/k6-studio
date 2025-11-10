@@ -11,7 +11,6 @@ import { NavigationCard } from './NavigationCard'
 
 export function Home() {
   const navigate = useNavigate()
-
   const createNewGenerator = useCreateGenerator()
 
   const handleCreateNewGenerator = () => createNewGenerator()
