@@ -147,9 +147,7 @@ export function Validator() {
               message={
                 <ValidatorEmptyState
                   isRunning={isRunning}
-                  isScriptSelected={Boolean(scriptPath)}
                   onRunScript={handleRunScript}
-                  onSelectScript={handleSelectExternalScript}
                 />
               }
             />
