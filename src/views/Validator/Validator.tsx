@@ -5,15 +5,12 @@ import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useRunChecks } from '@/hooks/useRunChecks'
-import { useRunLogs } from '@/hooks/useRunLogs'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
-import { useScript, useScriptPath } from './Validator.hooks'
+import { useDebugSession, useScript, useScriptPath } from './Validator.hooks'
 import { ValidatorContent } from './ValidatorContent'
 import { ValidatorControls } from './ValidatorControls'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
@@ -29,13 +26,10 @@ function Content({ scriptPath }: ValidatorProps) {
 
   const [isRunning, setIsRunning] = useState(false)
 
-  const { checks, resetChecks } = useRunChecks()
-  const { logs, resetLogs } = useRunLogs()
-
   const navigate = useNavigate()
   const showToast = useToast()
 
-  const { proxyData, resetProxyData } = useListenProxyData()
+  const { session, startDebugging, stopDebugging } = useDebugSession(scriptPath)
 
   const file: StudioFile = {
     type: 'script',
@@ -66,25 +60,23 @@ function Content({ scriptPath }: ValidatorProps) {
     navigate(getRoutePath('home'))
   }
 
-  async function handleRunScript() {
+  async function handleDebugScript() {
     if (!scriptPath) {
       return
     }
 
-    resetProxyData()
-    resetLogs()
-    resetChecks()
     setIsRunning(true)
 
-    await window.studio.script.runScript(scriptPath)
+    await startDebugging()
   }
 
   function handleRunInCloud() {
     setShowRunInCloudDialog(true)
   }
 
-  function handleStopScript() {
-    window.studio.script.stopScript()
+  async function handleStopScript() {
+    await stopDebugging()
+
     setIsRunning(false)
     showToast({
       title: 'Script execution stopped',
@@ -122,7 +114,7 @@ function Content({ scriptPath }: ValidatorProps) {
           isRunning={isRunning}
           canDelete={data !== undefined && !data.isExternal}
           onDeleteScript={handleDeleteScript}
-          onRunScript={handleRunScript}
+          onRunScript={handleDebugScript}
           onRunInCloud={handleRunInCloud}
           onSelectScript={handleSelectExternalScript}
           onStopScript={handleStopScript}
@@ -133,16 +125,14 @@ function Content({ scriptPath }: ValidatorProps) {
       {data && (
         <ValidatorContent
           script={data.script}
-          proxyData={proxyData}
+          session={session}
           isRunning={isRunning}
-          logs={logs}
-          checks={checks}
           noDataElement={
             <EmptyMessage
               message={
                 <ValidatorEmptyState
                   isRunning={isRunning}
-                  onRunScript={handleRunScript}
+                  onRunScript={handleDebugScript}
                 />
               }
             />

@@ -3,28 +3,26 @@ import { ReactNode, useEffect, useState } from 'react'
 import { ValidatorLayout } from '@/components/Validator/ValidatorLayout'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { K6Check, K6Log, ProxyData } from '@/types'
+import { ProxyData } from '@/types'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
+
+import { DebugSession } from './types'
 
 interface ValidatorContentProps {
   script: string
-  proxyData: ProxyData[]
+  session: DebugSession | null
   noDataElement: ReactNode
   isRunning: boolean
-  logs: K6Log[]
-  checks: K6Check[]
 }
 
 export function ValidatorContent({
   script,
-  proxyData,
+  session,
   isRunning,
-  logs,
-  checks,
   noDataElement,
 }: ValidatorContentProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
-  const groups = useProxyDataGroups(proxyData)
+  const groups = useProxyDataGroups(session?.requests ?? [])
 
   useEffect(() => {
     setSelectedRequest(null)
@@ -48,12 +46,12 @@ export function ValidatorContent({
     <ValidatorLayout
       isRunning={isRunning}
       script={script}
-      logs={logs}
-      checks={checks}
+      logs={session?.logs ?? []}
+      checks={session?.checks ?? []}
       details={details}
     >
       <RequestsSection
-        proxyData={proxyData}
+        proxyData={session?.requests ?? []}
         autoScroll={isRunning}
         selectedRequestId={selectedRequest?.id}
         noDataElement={noDataElement}
