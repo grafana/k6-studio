@@ -18,9 +18,11 @@ import { ValidatorContent } from './ValidatorContent'
 import { ValidatorControls } from './ValidatorControls'
 import { ValidatorEmptyState } from './ValidatorEmptyState'
 
-export function Validator() {
-  const scriptPath = useScriptPath()
+interface ValidatorProps {
+  scriptPath: string
+}
 
+function Validator({ scriptPath }: ValidatorProps) {
   const { data, isLoading } = useScript(scriptPath)
 
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
@@ -111,13 +113,6 @@ export function Validator() {
     })
   }, [showToast])
 
-  useEffect(() => {
-    // Reset requests, logs, and checks when script changes
-    resetProxyData()
-    resetLogs()
-    resetChecks()
-  }, [scriptPath, resetProxyData, resetLogs, resetChecks])
-
   return (
     <View
       title="Validator"
@@ -166,4 +161,10 @@ export function Validator() {
       )}
     </View>
   )
+}
+
+export function ValidatorView() {
+  const scriptPath = useScriptPath()
+
+  return <Validator key={scriptPath} scriptPath={scriptPath} />
 }
