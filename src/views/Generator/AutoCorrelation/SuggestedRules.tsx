@@ -36,7 +36,7 @@ export function SuggestedRules({
   }
 
   if (
-    ['not-started', 'correlation-not-needed', 'error', 'failure'].includes(
+    ['not-started', 'correlation-not-needed', 'error'].includes(
       correlationStatus
     )
   ) {
