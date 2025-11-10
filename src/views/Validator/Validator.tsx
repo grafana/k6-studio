@@ -22,7 +22,7 @@ interface ValidatorProps {
   scriptPath: string
 }
 
-function Validator({ scriptPath }: ValidatorProps) {
+function Content({ scriptPath }: ValidatorProps) {
   const { data, isLoading } = useScript(scriptPath)
 
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
@@ -163,8 +163,8 @@ function Validator({ scriptPath }: ValidatorProps) {
   )
 }
 
-export function ValidatorView() {
+export function Validator() {
   const scriptPath = useScriptPath()
 
-  return <Validator key={scriptPath} scriptPath={scriptPath} />
+  return <Content key={scriptPath} scriptPath={scriptPath} />
 }
