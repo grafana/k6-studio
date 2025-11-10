@@ -9,24 +9,15 @@ export async function validateScript(script: string): Promise<ProxyData[]> {
   let collectedData: ProxyData[] = []
 
   return new Promise((resolve, reject) => {
-    let unsubscribeProxyData: (() => void) | null = null
-    let unsubscribeScriptFinished: (() => void) | null = null
-    let unsubscribeScriptFailed: (() => void) | null = null
+    let unsubscribeProxyData = () => {}
+    let unsubscribeScriptFinished = () => {}
+    let unsubscribeScriptFailed = () => {}
 
     // Cleanup function to remove all listeners
     const cleanup = () => {
-      if (unsubscribeProxyData) {
-        unsubscribeProxyData()
-        unsubscribeProxyData = null
-      }
-      if (unsubscribeScriptFinished) {
-        unsubscribeScriptFinished()
-        unsubscribeScriptFinished = null
-      }
-      if (unsubscribeScriptFailed) {
-        unsubscribeScriptFailed()
-        unsubscribeScriptFailed = null
-      }
+      unsubscribeProxyData()
+      unsubscribeScriptFinished()
+      unsubscribeScriptFailed()
     }
 
     // Set up proxy data listener
