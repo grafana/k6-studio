@@ -74,7 +74,7 @@ function generateAltTextSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAllByAltText(document.body, alt)
+  const matches = queryAllByAltText(document.body, alt, { exact: true })
 
   if (matches.length !== 1) {
     return undefined

@@ -66,7 +66,10 @@ function emitNewAltTextLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
-  return new ExpressionBuilder(page).member('getByAltText').call([text]).done()
+  return new ExpressionBuilder(page)
+    .member('getByAltText')
+    .call([text, ObjectBuilder.from({ exact: true })])
+    .done()
 }
 
 function emitNewPlaceholderLocatorExpression(
