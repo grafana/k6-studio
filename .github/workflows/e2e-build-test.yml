@@ -97,8 +97,7 @@ jobs:
           # sentry vite plugin integration during build
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-        run: |
-          npm run ${BUILD_COMMAND}
+        run: npm run ${{ env.BUILD_COMMAND }}
 
       - name: build macOS x86_64
         if: matrix.platform == 'macos-13'
@@ -111,8 +110,7 @@ jobs:
           # sentry vite plugin integration during build
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-        run: |
-          npm run ${BUILD_COMMAND} -- --arch=x64
+        run: npm run ${{ env.BUILD_COMMAND }} -- --arch=x64
 
       - name: Get azure secrets
         id: get-azure-secrets
@@ -173,7 +171,7 @@ jobs:
           # sentry vite plugin integration during build
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
-        run: npm run ${BUILD_COMMAND}
+        run: npm run ${{ env.BUILD_COMMAND }}
 
       - name: build Linux
         if: matrix.platform == 'ubuntu-latest'
@@ -192,8 +190,8 @@ jobs:
           # https://github.com/electron/forge/issues/3701
           echo "%__strip /bin/true" >> ~/.rpmmacros
 
-          npm run ${BUILD_COMMAND}
-          npm run ${BUILD_COMMAND} -- --arch=arm64
+          npm run ${{ env.BUILD_COMMAND }}
+          npm run ${{ env.BUILD_COMMAND }} -- --arch=arm64
 
       - name: cleanup macos certificates
         if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-13'
