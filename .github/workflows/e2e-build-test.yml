@@ -86,7 +86,7 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
 
-      - name: ${{ BUILD_COMMAND }} macOS arm64
+      - name: build macOS arm64
         if: matrix.platform == 'macos-latest'
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
@@ -100,7 +100,7 @@ jobs:
         run: |
           npm run ${BUILD_COMMAND}
 
-      - name: ${{ BUILD_COMMAND }} macOS x86_64
+      - name: build macOS x86_64
         if: matrix.platform == 'macos-13'
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
@@ -160,7 +160,7 @@ jobs:
 
           "sign-tool=$toolPath" >> ${env:GITHUB_OUTPUT}
 
-      - name: ${{ BUILD_COMMAND }} Windows
+      - name: build Windows
         if: matrix.platform == 'windows-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -175,7 +175,7 @@ jobs:
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: npm run ${BUILD_COMMAND}
 
-      - name: ${{ BUILD_COMMAND }} Linux
+      - name: build Linux
         if: matrix.platform == 'ubuntu-latest'
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
