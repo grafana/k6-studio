@@ -194,3 +194,9 @@ jobs:
         run: |
           rm apple_api_key.p8
           rm certificate.p12
+
+      - name: automated tests
+        run: |
+          echo "Running tests for platform: ${{ matrix.platform }}"
+          echo "Using app path: ${{ matrix.app-path }}"
+          npm run wdio -- --app-path="${{ github.workspace }}/${{ matrix.app-path }}"
