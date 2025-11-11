@@ -4,9 +4,7 @@ describe('Start recording', () => {
   it('should navigate to recorder and start recording session', async () => {
     // Navigate to the main window
     const handles = await browser.getWindowHandles()
-    console.log('handles', handles)
-    const mainHandle = handles[0]!
-    await browser.switchToWindow(mainHandle!)
+    await browser.switchToWindow(handles[0]!)
 
     // Click on "Record flow" link to navigate to recorder
     const recordLink = browser.$('a[href*="recorder"]')
