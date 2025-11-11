@@ -1,22 +1,18 @@
-name: 'Manual Release Test Version'
+name: Release Please E2E Tests
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Specify a version suffix for the test release (limit to 20 characters or windows build will fail)"
-        required: true
-        type: string
-        default: "test-version"
+  pull_request:
+    branches:
+      - main
 
 permissions: {}
 
 jobs:
-  publish-studio:
+  e2e-tests:
+    if: startsWith(github.head_ref, 'release-please--')
     uses: ./.github/workflows/e2e-build-test.yml
     with:
-      version: ${{ inputs.version }}
-      build-command: publish
+      build-command: package
     secrets:
       APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
       CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
