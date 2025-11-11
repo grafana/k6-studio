@@ -1,7 +1,4 @@
 import { ipcMain, IpcMainEvent, ipcRenderer, IpcRendererEvent } from 'electron'
-import path from 'node:path'
-
-import { SCRIPTS_PATH } from '@/constants/workspace'
 
 // Create listener and return clean up function to be used in useEffect
 export function createListener<T>(
@@ -55,8 +52,4 @@ export function waitFor<T>({ event, signal, timeout }: WaitForOptions) {
 
     ipcMain.once(event, handleMessage)
   })
-}
-
-export function isExternalScript(scriptPath: string) {
-  return path.dirname(scriptPath) !== path.normalize(SCRIPTS_PATH)
 }

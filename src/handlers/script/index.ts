@@ -10,8 +10,7 @@ import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 import { TestRun } from '@/utils/k6/testRun'
-
-import { isExternalScript } from '../utils'
+import { isExternalScript } from '@/utils/workspace'
 
 import { ScriptHandler } from './types'
 
