@@ -20,14 +20,3 @@ jobs:
     with:
       version: ${{ inputs.version }}
       build-command: publish
-    secrets:
-      APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
-      CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
-      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-      APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-      APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
-      TRUSTED_SIGNING_ENDPOINT: https://eus.codesigning.azure.net/
-      TRUSTED_SIGNING_PROFILE: grafana-production
