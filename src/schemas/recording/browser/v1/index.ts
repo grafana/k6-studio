@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { BrowserEventsSchema as BrowserEventsSchemaV2 } from '../v2'
+
 const ElementSelectorSchema = z.object({
   css: z.string(),
   testId: z.string().optional(),
@@ -129,6 +131,36 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   SubmitFormEventSchema,
   AssertEventSchema,
 ])
+
+export const BrowserEventsSchema = BrowserEventSchema.array()
+
+export function migrate(
+  events: z.infer<typeof BrowserEventsSchema>
+): z.infer<typeof BrowserEventsSchemaV2> {
+  return {
+    version: '2',
+    events:
+      events?.map((event) => {
+        if ('selector' in event) {
+          const { selector, ...rest } = event
+          return {
+            ...rest,
+            target: { selectors: selector },
+          }
+        }
+
+        if (event.type === 'submit-form') {
+          return {
+            ...event,
+            form: { selectors: event.form },
+            submitter: { selectors: event.submitter },
+          }
+        }
+
+        return event
+      }) ?? [],
+  }
+}
 
 export type ElementSelector = z.infer<typeof ElementSelectorSchema>
 export type CheckState = z.infer<typeof CheckStateSchema>

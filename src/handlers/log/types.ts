@@ -1,5 +1,5 @@
 export enum LogHandler {
-  OPEN = 'log:open',
-  READ = 'log:read',
-  CHANGE = 'log:change',
+  Open = 'log:open',
+  Read = 'log:read',
+  Change = 'log:change',
 }

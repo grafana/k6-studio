@@ -41,9 +41,7 @@ interface EmptyStateProps {
   onStart: (options: LaunchBrowserOptions) => void
 }
 
-const RecorderEmptyStateSchema = z.object({
-  url: z.string(),
-})
+const RecorderEmptyStateSchema = z.object({ url: z.string() })
 
 type RecorderEmptyStateFields = z.infer<typeof RecorderEmptyStateSchema>
 
@@ -58,7 +56,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     true
   )
 
-  const canCaptureBrowser = settings?.recorder.enableBrowserRecorder ?? false
+  const browserRecorder = settings?.recorder.browserRecording ?? 'disabled'
 
   const {
     register,
@@ -67,9 +65,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     setValue,
   } = useForm<RecorderEmptyStateFields>({
     resolver: zodResolver(RecorderEmptyStateSchema),
-    defaultValues: {
-      url: '',
-    },
+    defaultValues: { url: '' },
     shouldFocusError: false,
   })
 
@@ -86,9 +82,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
 
     onStart({
       url,
-      capture: {
-        browser: canCaptureBrowser && captureBrowser,
-      },
+      capture: { browser: browserRecorder !== 'disabled' && captureBrowser },
     })
   }
 
@@ -182,7 +176,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
             />
           </div>
 
-          {canCaptureBrowser && (
+          {browserRecorder !== 'disabled' && (
             <BrowserEventsSection>
               <Text as="label" size="2">
                 <Flex gap="2" align="center">

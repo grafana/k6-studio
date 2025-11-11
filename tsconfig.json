@@ -25,5 +25,8 @@
       "mocha",
       "@wdio/globals/types"
     ]
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
   }
 }

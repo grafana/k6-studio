@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { HighlightSelector } from 'extension/src/messaging/types'
 
-import { client } from '../routing'
-
+import { useStudioClient } from './StudioClientProvider'
 import { useHighlightDebounce } from './hooks/useHighlightDebounce'
 import { Bounds } from './types'
 import { getElementBounds } from './utils'
@@ -15,6 +14,7 @@ interface Highlight {
 }
 
 export function useHighlightedElements() {
+  const client = useStudioClient()
   const idCounter = useRef(0)
 
   const [selector, setSelector] = useState<HighlightSelector | null>(null)
@@ -24,7 +24,7 @@ export function useHighlightedElements() {
     return client.on('highlight-elements', ({ data }) => {
       setSelector(data.selector)
     })
-  }, [])
+  }, [client])
 
   useEffect(() => {
     if (selector === null) {

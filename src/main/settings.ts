@@ -12,34 +12,22 @@ import { getPlatform } from '../utils/electron'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 
+import { encryptString, decryptString } from './encryption'
 import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
 
 export const defaultSettings: AppSettings = {
-  version: '3.0',
+  version: '4.0',
   proxy: {
     mode: 'regular',
     port: 6000,
     automaticallyFindPort: true,
     sslInsecure: false,
   },
-  recorder: {
-    detectBrowserPath: true,
-    enableBrowserRecorder: true,
-  },
-  windowState: {
-    width: 1200,
-    height: 800,
-    x: 0,
-    y: 0,
-    isMaximized: true,
-  },
-  telemetry: {
-    usageReport: true,
-    errorReport: true,
-  },
-  appearance: {
-    theme: 'system',
-  },
+  recorder: { detectBrowserPath: true, browserRecording: 'extension' },
+  windowState: { width: 1200, height: 800, x: 0, y: 0, isMaximized: true },
+  telemetry: { usageReport: true, errorReport: true },
+  appearance: { theme: 'system' },
+  ai: { provider: 'openai' },
 }
 
 const fileName =
@@ -70,10 +58,7 @@ export async function getSettings() {
     const currentSettings = JSON.parse(settings)
     // TODO: https://github.com/grafana/k6-studio/issues/277
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const allSettings = {
-      ...defaultSettings,
-      ...currentSettings,
-    }
+    const allSettings = { ...defaultSettings, ...currentSettings }
     return AppSettingsSchema.parse(allSettings)
   } catch (error) {
     log.error('Failed to parse settings file', error)
@@ -93,6 +78,9 @@ export async function getSettings() {
 export async function saveSettings(settings: Partial<AppSettings>) {
   const currentSettings = await getSettings()
   const newSettings = { ...currentSettings, ...settings }
+
+  newSettings.ai.apiKey = processApiKeyForStorage(newSettings.ai.apiKey)
+
   await writeFile(filePath, JSON.stringify(newSettings))
   return getSettingsDiff(currentSettings, settings)
 }
@@ -132,11 +120,7 @@ function isSettingsJsonObject() {
 }
 
 export async function selectBrowserExecutable() {
-  const extensions = {
-    mac: ['app'],
-    win: ['exe'],
-    linux: ['*'],
-  }
+  const extensions = { mac: ['app'], win: ['exe'], linux: ['*'] }
 
   const { canceled, filePaths, bookmarks } = await dialog.showOpenDialog({
     title: 'Select browser executable',
@@ -158,11 +142,7 @@ export async function selectBrowserExecutable() {
     return filePaths
   }
 
-  return {
-    canceled,
-    bookmarks,
-    filePaths: getFilePaths(),
-  }
+  return { canceled, bookmarks, filePaths: getFilePaths() }
 }
 
 export async function selectUpstreamCertificate() {
@@ -199,4 +179,34 @@ export async function applySettings(
     k6StudioState.appSettings.appearance = modifiedSettings.appearance
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
   }
+
+  if (modifiedSettings.ai) {
+    k6StudioState.appSettings.ai = modifiedSettings.ai
+    // TODO: re-initialize AI client with new settings
+  }
+}
+
+function processApiKeyForStorage(
+  apiKey: string | undefined
+): string | undefined {
+  if (apiKey === undefined || apiKey.trim() === '') {
+    return undefined
+  }
+
+  try {
+    return encryptString(apiKey)
+  } catch (error) {
+    log.error('Failed to encrypt API key during save:', error)
+    throw error
+  }
+}
+
+export async function getDecryptedAiKey() {
+  const settings = await getSettings()
+
+  if (!settings.ai.apiKey) {
+    return undefined
+  }
+
+  return decryptString(settings.ai.apiKey)
 }

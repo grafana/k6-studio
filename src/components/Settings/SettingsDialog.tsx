@@ -13,36 +13,8 @@ import { AppSettings } from '@/types/settings'
 
 import { ButtonWithTooltip } from '../ButtonWithTooltip'
 
-import { AppearanceSettings } from './AppearanceSettings'
-import { LogsSettings } from './LogsSettings'
-import { ProxySettings } from './ProxySettings'
-import { RecorderSettings } from './RecorderSettings'
-import { TelemetrySettings } from './TelemetrySettings'
 import { SettingsTabValue } from './types'
-
-const tabs: Array<{
-  label: string
-  value: SettingsTabValue
-  component: () => React.ReactNode
-}> = [
-  { label: 'Proxy', value: 'proxy', component: ProxySettings },
-  { label: 'Recorder', value: 'recorder', component: RecorderSettings },
-  {
-    label: 'Telemetry',
-    value: 'usageReport',
-    component: TelemetrySettings,
-  },
-  {
-    label: 'Appearance',
-    value: 'appearance',
-    component: AppearanceSettings,
-  },
-  {
-    label: 'Logs',
-    value: 'logs',
-    component: LogsSettings,
-  },
-]
+import { useEnabledTabs } from './useEnabledTabs'
 
 export const SettingsDialog = () => {
   const { data: settings } = useSettings()
@@ -55,6 +27,7 @@ export const SettingsDialog = () => {
     closeSettingsDialog()
   })
   const [selectedTab, setSelectedTab] = useState(selectedSettingsTab)
+  const tabs = useEnabledTabs()
 
   useEffect(() => {
     setSelectedTab(selectedSettingsTab)

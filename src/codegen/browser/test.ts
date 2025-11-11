@@ -1,6 +1,11 @@
-import { Assertion, BrowserEvent, ElementSelector } from '@/schemas/recording'
+import {
+  Assertion,
+  BrowserEvent,
+  BrowserEventTarget,
+} from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
+import { isSelectorEqual, getNodeSelector } from './selectors'
 import {
   TestNode,
   PageNode,
@@ -75,7 +80,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     return toNodeRef(page)
   }
 
-  function getLocator(tab: string, selector: ElementSelector): NodeRef {
+  function getLocator(tab: string, target: BrowserEventTarget): NodeRef {
     const page = getPage(tab)
 
     // Group sequential locators together, so that we reuse the same locator
@@ -87,9 +92,12 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     // await input.type("Hello")
     // await input.press("Enter")
 
+    const selector = getNodeSelector(target.selectors)
+
     if (
-      previousLocator?.selector.css !== selector.css ||
-      previousLocator?.inputs.page.nodeId !== page.nodeId
+      previousLocator === null ||
+      !isSelectorEqual(selector, previousLocator.selector) ||
+      previousLocator.inputs.page.nodeId !== page.nodeId
     ) {
       previousLocator = {
         type: 'locator',
@@ -106,13 +114,17 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
     return toNodeRef(previousLocator)
   }
 
-  function toNode(event: BrowserEvent): TestNode | null {
+  function toNode(
+    event: BrowserEvent,
+    nextEvent?: BrowserEvent
+  ): TestNode | null {
     switch (event.type) {
       case 'navigate-to-page':
         return {
           type: 'goto',
           nodeId: event.eventId,
           url: event.url,
+          source: event.source,
           inputs: {
             previous,
             page: getPage(event.tab),
@@ -130,14 +142,20 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
 
       case 'click': {
+        const triggersNavigation =
+          nextEvent?.type === 'navigate-to-page' &&
+          nextEvent.source === 'implicit'
+
         return {
           type: 'click',
           nodeId: event.eventId,
           button: event.button,
           modifiers: event.modifiers,
+          triggersNavigation,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target),
+            page: getPage(event.tab),
           },
         }
       }
@@ -149,7 +167,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           value: event.value,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target),
           },
         }
 
@@ -160,7 +178,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           checked: event.checked,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target),
           },
         }
 
@@ -171,7 +189,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           checked: true,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target),
           },
         }
 
@@ -183,7 +201,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           multiple: event.multiple,
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target),
           },
         }
 
@@ -201,6 +219,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           inputs: {
             previous,
             locator: getLocator(event.tab, event.submitter),
+            page: getPage(event.tab),
           },
         }
 
@@ -211,7 +230,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
           operation: toAssertionOperation(event.assertion),
           inputs: {
             previous,
-            locator: getLocator(event.tab, event.selector),
+            locator: getLocator(event.tab, event.target),
           },
         }
       }
@@ -223,8 +242,9 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
 
   let previous: TestNode | undefined = undefined
 
-  for (const event of events) {
-    const node = toNode(event)
+  for (const [index, event] of events.entries()) {
+    const nextEvent = events[index + 1]
+    const node = toNode(event, nextEvent)
 
     if (node === null) {
       continue

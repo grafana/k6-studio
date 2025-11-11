@@ -24,10 +24,24 @@ function emitNewPageExpression(
 ): ts.Expression {
   context.import(['browser'], 'k6/browser')
 
-  return new ExpressionBuilder(identifier({ name: 'browser' }))
+  return new ExpressionBuilder(identifier('browser'))
     .member('newPage')
     .call([])
     .await(context)
+    .done()
+}
+
+function emitNewRoleLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewRoleLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const role = emitExpression(context, expression.role)
+  const name = emitExpression(context, expression.name)
+
+  return new ExpressionBuilder(page)
+    .member('getByRole')
+    .call([role, fromObjectLiteral({ name, exact: true })])
     .done()
 }
 
@@ -169,7 +183,7 @@ function emitExpectExpression(
 
   const locator = emitExpression(context, expression.actual)
 
-  const expect = new ExpressionBuilder(identifier({ name: 'expect' }))
+  const expect = new ExpressionBuilder(identifier('expect'))
     .call([locator])
     .done()
 
@@ -261,6 +275,35 @@ function emitExpectExpression(
   }
 }
 
+function emitWaitForNavigationExpression(
+  context: ScenarioContext,
+  expression: ir.WaitForNavigationExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  return new ExpressionBuilder(target)
+    .member('waitForNavigation')
+    .call([])
+    .await(context)
+    .done()
+}
+
+function emitPromiseAllExpression(
+  context: ScenarioContext,
+  expression: ir.PromiseAllExpression
+): ts.Expression {
+  const expressions = expression.expressions.map((expr) =>
+    // No need to await inside Promise.all
+    new ExpressionBuilder(emitExpression(context, expr)).removeAwait().done()
+  )
+
+  return new ExpressionBuilder(identifier('Promise'))
+    .member('all')
+    .call([fromArrayLiteral(expressions)])
+    .await(context)
+    .done()
+}
+
 function emitExpression(
   context: ScenarioContext,
   expression: ir.Expression
@@ -270,10 +313,13 @@ function emitExpression(
       return string(expression.value)
 
     case 'Identifier':
-      return identifier({ name: expression.name })
+      return identifier(expression.name)
 
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
+
+    case 'NewRoleLocatorExpression':
+      return emitNewRoleLocatorExpression(context, expression)
 
     case 'NewCssLocatorExpression':
       return emitNewCSSLocatorExpression(context, expression)
@@ -305,6 +351,12 @@ function emitExpression(
     case 'ExpectExpression':
       return emitExpectExpression(context, expression)
 
+    case 'WaitForNavigationExpression':
+      return emitWaitForNavigationExpression(context, expression)
+
+    case 'PromiseAllExpression':
+      return emitPromiseAllExpression(context, expression)
+
     default:
       return exhaustive(expression)
   }
@@ -324,7 +376,7 @@ function emitStatement(
       return declareConst({
         declarations: [
           constDeclarator({
-            id: identifier({ name: statement.name }),
+            id: identifier(statement.name),
             init: emitExpression(context, statement.value),
           }),
         ],

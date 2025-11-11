@@ -1,23 +1,68 @@
 import { css } from '@emotion/react'
 import { BracesIcon, TestTubeDiagonalIcon } from 'lucide-react'
 
+import { getNodeSelector, NodeSelector } from '@/codegen/browser/selectors'
 import { ElementSelector } from '@/schemas/recording'
+import { exhaustive } from '@/utils/typescript'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
+import { RoleSelectorIcon } from './RoleSelectorIcon'
+
+interface SelectorComponentProps {
+  selector: NodeSelector
+}
+
+function SelectorIcon({ selector }: SelectorComponentProps) {
+  switch (selector.type) {
+    case 'css':
+      return <BracesIcon />
+
+    case 'test-id':
+      return <TestTubeDiagonalIcon />
+
+    case 'role':
+      return <RoleSelectorIcon selector={selector} />
+
+    default:
+      return exhaustive(selector)
+  }
+}
+
+function SelectorText({ selector }: SelectorComponentProps) {
+  switch (selector.type) {
+    case 'css':
+      return <code>{selector.selector}</code>
+
+    case 'test-id':
+      return <code>{selector.testId}</code>
+
+    case 'role':
+      return (
+        <>
+          <strong>{selector.role}</strong> {`"${selector.name}"`}
+        </>
+      )
+
+    default:
+      return exhaustive(selector)
+  }
+}
+
 interface SelectorProps {
-  selector: ElementSelector
+  selectors: ElementSelector
   onHighlight: (selector: HighlightSelector | null) => void
 }
 
-export function Selector({ selector, onHighlight }: SelectorProps) {
+export function Selector({ selectors, onHighlight }: SelectorProps) {
   const isRecording = useIsRecording()
+  const nodeSelector = getNodeSelector(selectors)
 
   const handleMouseEnter = () => {
     if (isRecording) {
       onHighlight({
         type: 'css',
-        selector: selector.css,
+        selector: selectors.css,
       })
     }
   }
@@ -30,8 +75,6 @@ export function Selector({ selector, onHighlight }: SelectorProps) {
 
   return (
     <div
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       css={css`
         display: flex;
         align-items: center;
@@ -54,8 +97,10 @@ export function Selector({ selector, onHighlight }: SelectorProps) {
           }
         `}
       `}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {selector.testId ? <TestTubeDiagonalIcon /> : <BracesIcon />}
+      <SelectorIcon selector={nodeSelector} />
       <code
         css={css`
           overflow: hidden;
@@ -63,7 +108,7 @@ export function Selector({ selector, onHighlight }: SelectorProps) {
           white-space: nowrap;
         `}
       >
-        {selector.testId ?? selector.css}
+        <SelectorText selector={nodeSelector} />
       </code>
     </div>
   )

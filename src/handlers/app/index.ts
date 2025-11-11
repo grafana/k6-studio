@@ -8,12 +8,12 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { AppHandler } from './types'
 
 export function initialize() {
-  ipcMain.on(AppHandler.CHANGE_ROUTE, (_, route: string) => {
+  ipcMain.on(AppHandler.ChangeRoute, (_, route: string) => {
     k6StudioState.currentClientRoute = route
   })
 
-  ipcMain.on(AppHandler.CLOSE, (event) => {
-    console.log(`${AppHandler.CLOSE} event received`)
+  ipcMain.on(AppHandler.Close, (event) => {
+    console.log(`${AppHandler.Close} event received`)
 
     k6StudioState.wasAppClosedByClient = true
     if (k6StudioState.appShuttingDown) {
@@ -24,8 +24,8 @@ export function initialize() {
     browserWindow.close()
   })
 
-  ipcMain.on(AppHandler.SPLASHSCREEN_CLOSE, (event) => {
-    console.log(`${AppHandler.SPLASHSCREEN_CLOSE} event received`)
+  ipcMain.on(AppHandler.SplashscreenClose, (event) => {
+    console.log(`${AppHandler.SplashscreenClose} event received`)
 
     const browserWindow = browserWindowFromEvent(event)
 
@@ -38,7 +38,7 @@ export function initialize() {
     }
   })
 
-  ipcMain.on(AppHandler.TRACK_EVENT, (_, event: UsageEvent) => {
+  ipcMain.on(AppHandler.TrackEvent, (_, event: UsageEvent) => {
     trackEvent(event)
   })
 }

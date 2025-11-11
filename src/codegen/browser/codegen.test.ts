@@ -38,6 +38,7 @@ it('should goto a url', async ({ expect }) => {
           type: 'goto',
           nodeId: 'goto',
           url: 'https://example.com',
+          source: 'address-bar',
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -86,7 +87,7 @@ it('should emit click on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'button' },
+          selector: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -103,6 +104,7 @@ it('should emit click on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
           },
         },
       ],
@@ -126,7 +128,7 @@ it('should emit right-click on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'button' },
+          selector: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -143,6 +145,7 @@ it('should emit right-click on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
           },
         },
       ],
@@ -166,7 +169,7 @@ it('should emit click with modifier keys on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'button' },
+          selector: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -183,6 +186,7 @@ it('should emit click with modifier keys on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
           },
         },
       ],
@@ -206,7 +210,7 @@ it('should emit type text on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'input' },
+          selector: { type: 'css', selector: 'input' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -240,7 +244,7 @@ it('should emit check on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'input[type="checkbox"]' },
+          selector: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -274,7 +278,7 @@ it('should emit uncheck on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'input[type="checkbox"]' },
+          selector: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -308,7 +312,7 @@ it('should emit select single option on element', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'select' },
+          selector: { type: 'css', selector: 'select' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -345,7 +349,7 @@ it('should emit select with multiple options on element', async ({
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'select' },
+          selector: { type: 'css', selector: 'select' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -369,6 +373,108 @@ it('should emit select with multiple options on element', async ({
   )
 })
 
+it('should emit waitForNavigation on a link click', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: { type: 'css', selector: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'click',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          triggersNavigation: true,
+          inputs: {
+            locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          source: 'implicit',
+          url: 'https://example.com/login',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/click-with-navigation.ts'
+  )
+})
+
+it('should emit waitForNavigation on a form submit', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'submitLocator',
+          selector: { type: 'css', selector: 'button[type="submit"]' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'submitClick',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          triggersNavigation: true,
+          inputs: {
+            locator: { nodeId: 'submitLocator' },
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          source: 'implicit',
+          url: 'https://example.com',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/form-submit-with-navigation.ts'
+  )
+})
+
 it('should assert that element contains text', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
@@ -380,7 +486,7 @@ it('should assert that element contains text', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'button' },
+          selector: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -417,7 +523,7 @@ it('should assert that element is visible', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'button' },
+          selector: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -454,7 +560,7 @@ it('should assert that element is hidden', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'button' },
+          selector: { type: 'css', selector: 'button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -491,7 +597,7 @@ it('should assert that html input is checked', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'input[type="checkbox"]' },
+          selector: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -529,7 +635,7 @@ it('should assert that html input is not checked', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'input[type="checkbox"]' },
+          selector: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -567,7 +673,7 @@ it('should assert that html input is indeterminate', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'input[type="checkbox"]' },
+          selector: { type: 'css', selector: 'input[type="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -605,7 +711,7 @@ it('should assert that aria input is checked', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: '[role="checkbox"]' },
+          selector: { type: 'css', selector: '[role="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -643,7 +749,7 @@ it('should assert that aria input is not checked', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: '[role="checkbox"]' },
+          selector: { type: 'css', selector: '[role="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -681,7 +787,7 @@ it('should assert that aria input is indeterminate', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: '[role="checkbox"]' },
+          selector: { type: 'css', selector: '[role="checkbox"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -721,7 +827,7 @@ it('should assert that input has single value using toHaveValue', async ({
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { css: 'input[type="text"]' },
+          selector: { type: 'css', selector: 'input[type="text"]' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -744,5 +850,131 @@ it('should assert that input has single value using toHaveValue', async ({
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/assertions/input/text-input-has-value.ts'
+  )
+})
+
+it('should emit a getByTestId locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: { type: 'test-id', testId: 'submit-button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
+          },
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/get-by-test-id.ts'
+  )
+})
+
+it('should emit a getByRole locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'role',
+            role: 'button',
+            name: 'Submit',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
+          },
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/get-by-role.ts'
+  )
+})
+
+it('should emit a css locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'css',
+            selector: 'button.submit-btn',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
+          },
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/css-locator.ts'
   )
 })

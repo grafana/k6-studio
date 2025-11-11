@@ -12,9 +12,9 @@ import {
   TEMP_SCRIPT_SUFFIX,
   DATA_FILES_PATH,
 } from '@/constants/workspace'
-import { getBrowserPath } from '@/handlers/browser/launch'
 import { getFilePath, getStudioFileFromPath } from '@/main/file'
 import { StudioFile } from '@/types'
+import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
 import { isNodeJsErrnoException } from '@/utils/typescript'
@@ -22,15 +22,17 @@ import { isNodeJsErrnoException } from '@/utils/typescript'
 import { UIHandler } from './types'
 
 export function initialize() {
-  ipcMain.on(UIHandler.TOGGLE_THEME, () => {
-    console.info(`${UIHandler.TOGGLE_THEME} event received`)
+  ipcMain.on(UIHandler.ToggleTheme, () => {
+    console.info(`${UIHandler.ToggleTheme} event received`)
     nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
   })
 
-  ipcMain.handle(UIHandler.DETECT_BROWSER, async () => {
-    console.info(`${UIHandler.DETECT_BROWSER} event received`)
+  ipcMain.handle(UIHandler.DetectBrowser, async () => {
+    console.info(`${UIHandler.DetectBrowser} event received`)
     try {
-      const browserPath = await getBrowserPath()
+      const browserPath = await getBrowserPath(
+        k6StudioState.appSettings.recorder
+      )
       return browserPath !== ''
     } catch {
       log.error('Failed to find browser executable')
@@ -39,27 +41,27 @@ export function initialize() {
     return false
   })
 
-  ipcMain.handle(UIHandler.DELETE_FILE, async (_, file: StudioFile) => {
-    console.info(`${UIHandler.DELETE_FILE} event received`)
+  ipcMain.handle(UIHandler.DeleteFile, async (_, file: StudioFile) => {
+    console.info(`${UIHandler.DeleteFile} event received`)
 
     const filePath = getFilePath(file)
     return unlink(filePath)
   })
 
-  ipcMain.on(UIHandler.OPEN_FOLDER, (_, file: StudioFile) => {
-    console.info(`${UIHandler.OPEN_FOLDER} event received`)
+  ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {
+    console.info(`${UIHandler.OpenFolder} event received`)
     const filePath = getFilePath(file)
     return shell.showItemInFolder(filePath)
   })
 
-  ipcMain.handle(UIHandler.OPEN_FILE_IN_DEFAULT_APP, (_, file: StudioFile) => {
-    console.info(`${UIHandler.OPEN_FILE_IN_DEFAULT_APP} event received`)
+  ipcMain.handle(UIHandler.OpenFileInDefaultApp, (_, file: StudioFile) => {
+    console.info(`${UIHandler.OpenFileInDefaultApp} event received`)
     const filePath = getFilePath(file)
     return shell.openPath(filePath)
   })
 
-  ipcMain.handle(UIHandler.GET_FILES, async () => {
-    console.info(`${UIHandler.GET_FILES} event received`)
+  ipcMain.handle(UIHandler.GetFiles, async () => {
+    console.info(`${UIHandler.GetFiles} event received`)
     const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
       .filter((f) => f.isFile())
       .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
@@ -88,20 +90,20 @@ export function initialize() {
     }
   })
 
-  ipcMain.handle(UIHandler.REPORT_ISSUE, () => {
-    console.info(`${UIHandler.REPORT_ISSUE} event received`)
+  ipcMain.handle(UIHandler.ReportIssue, () => {
+    console.info(`${UIHandler.ReportIssue} event received`)
     return reportNewIssue()
   })
 
   ipcMain.handle(
-    UIHandler.RENAME_FILE,
+    UIHandler.RenameFile,
     async (
       e,
       oldFileName: string,
       newFileName: string,
       type: StudioFile['type']
     ) => {
-      console.info(`${UIHandler.RENAME_FILE} event received`)
+      console.info(`${UIHandler.RenameFile} event received`)
       const browserWindow = BrowserWindow.fromWebContents(e.sender)
 
       try {
