@@ -89,6 +89,17 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
       })
       break
 
+    case 'placeholder':
+      context.inline(node, {
+        type: 'NewPlaceholderLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
     case 'alt':
       context.inline(node, {
         type: 'NewAltTextLocatorExpression',

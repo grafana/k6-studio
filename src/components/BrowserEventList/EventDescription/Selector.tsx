@@ -4,6 +4,7 @@ import {
   ImageIcon,
   TagIcon,
   TestTubeDiagonalIcon,
+  WholeWordIcon,
 } from 'lucide-react'
 
 import { getNodeSelector, NodeSelector } from '@/codegen/browser/selectors'
@@ -36,6 +37,9 @@ function SelectorIcon({ selector }: SelectorComponentProps) {
     case 'label':
       return <TagIcon />
 
+    case 'placeholder':
+      return <WholeWordIcon />
+
     case 'role':
       return <RoleSelectorIcon selector={selector} />
 
@@ -53,6 +57,9 @@ function SelectorText({ selector }: SelectorComponentProps) {
       return <code>{selector.testId}</code>
 
     case 'label':
+      return <code>{quote(selector.text)}</code>
+
+    case 'placeholder':
       return <code>{quote(selector.text)}</code>
 
     case 'alt':

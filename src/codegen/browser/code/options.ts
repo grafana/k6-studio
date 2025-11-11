@@ -35,6 +35,7 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'NewLabelLocatorExpression':
       case 'NewCssLocatorExpression':
       case 'NewAltTextLocatorExpression':
+      case 'NewPlaceholderLocatorExpression':
       case 'NewTestIdLocatorExpression':
       case 'ClickExpression':
       case 'ClickOptionsExpression':

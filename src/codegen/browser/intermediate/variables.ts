@@ -89,6 +89,13 @@ function substituteExpression(
         text: substituteExpression(node.text, substitutions),
       }
 
+    case 'NewPlaceholderLocatorExpression':
+      return {
+        type: 'NewPlaceholderLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
     case 'NewTestIdLocatorExpression':
       return {
         type: 'NewTestIdLocatorExpression',

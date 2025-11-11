@@ -36,6 +36,12 @@ export interface NewLabelLocatorExpression {
   page: Expression
 }
 
+export interface NewPlaceholderLocatorExpression {
+  type: 'NewPlaceholderLocatorExpression'
+  text: Expression
+  page: Expression
+}
+
 export interface NewRoleLocatorExpression {
   type: 'NewRoleLocatorExpression'
   role: Expression
@@ -153,6 +159,7 @@ export type Expression =
   | NewPageExpression
   | NewRoleLocatorExpression
   | NewLabelLocatorExpression
+  | NewPlaceholderLocatorExpression
   | NewAltTextLocatorExpression
   | NewCssLocatorExpression
   | NewTestIdLocatorExpression

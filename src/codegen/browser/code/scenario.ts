@@ -69,6 +69,19 @@ function emitNewAltTextLocatorExpression(
   return new ExpressionBuilder(page).member('getByAltText').call([text]).done()
 }
 
+function emitNewPlaceholderLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewPlaceholderLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const text = emitExpression(context, expression.text)
+
+  return new ExpressionBuilder(page)
+    .member('getByPlaceholder')
+    .call([text, ObjectBuilder.from({ exact: true })])
+    .done()
+}
+
 function emitNewCSSLocatorExpression(
   context: ScenarioContext,
   expression: ir.NewCssLocatorExpression
@@ -350,6 +363,9 @@ function emitExpression(
 
     case 'NewAltTextLocatorExpression':
       return emitNewAltTextLocatorExpression(context, expression)
+
+    case 'NewPlaceholderLocatorExpression':
+      return emitNewPlaceholderLocatorExpression(context, expression)
 
     case 'NewCssLocatorExpression':
       return emitNewCSSLocatorExpression(context, expression)

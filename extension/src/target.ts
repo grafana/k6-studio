@@ -2,6 +2,7 @@ import { finder } from '@medv/finder'
 import {
   queryAllByAltText,
   queryAllByLabelText,
+  queryAllByPlaceholderText,
   queryAllByRole,
   queryAllByTestId,
 } from '@testing-library/dom'
@@ -110,6 +111,35 @@ function generateLabelSelector(
   return undefined
 }
 
+function generatePlaceholderSelector(element: Element): string | undefined {
+  if (
+    element instanceof HTMLInputElement === false &&
+    element instanceof HTMLTextAreaElement === false
+  ) {
+    return undefined
+  }
+
+  const placeholder = element.placeholder.trim()
+
+  if (placeholder === '') {
+    return undefined
+  }
+
+  const matches = queryAllByPlaceholderText(document.body, placeholder, {
+    exact: true,
+  })
+
+  if (matches.length !== 1) {
+    return undefined
+  }
+
+  if (!matches.includes(element)) {
+    return undefined
+  }
+
+  return placeholder
+}
+
 function generateTestIdSelector(element: Element): string | undefined {
   if (element instanceof HTMLElement === false) {
     return undefined
@@ -139,6 +169,7 @@ function generateSelectors(
     testId: generateTestIdSelector(element),
     alt: generateAltTextSelector(element),
     label: generateLabelSelector(element, aria),
+    placeholder: generatePlaceholderSelector(element),
     role: generateRoleSelector(element, aria),
   }
 }

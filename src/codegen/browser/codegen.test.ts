@@ -1055,3 +1055,38 @@ it('should emit a getByLabel locator', async ({ expect }) => {
     '__snapshots__/browser/locators/get-by-label.ts'
   )
 })
+
+it('should emit a getByPlaceholder locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'placeholder',
+            text: 'Enter your email',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'type-text',
+          nodeId: 'type-text',
+          value: 'test@example.com',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/get-by-placeholder.ts'
+  )
+})
