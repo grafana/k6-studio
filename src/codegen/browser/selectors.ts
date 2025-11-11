@@ -14,13 +14,13 @@ export interface GetByRoleSelector {
   name: string
 }
 
-interface GetByAltTextSelector {
+export interface GetByAltTextSelector {
   type: 'alt'
   text: string
 }
 
-interface GetByAltTextSelector {
-  type: 'alt'
+export interface GetByLabelSelector {
+  type: 'label'
   text: string
 }
 
@@ -33,6 +33,7 @@ export type NodeSelector =
   | CssSelector
   | GetByRoleSelector
   | GetByAltTextSelector
+  | GetByLabelSelector
   | GetByTestIdSelector
 
 function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
@@ -60,6 +61,19 @@ function getAltTextSelector(
   }
 }
 
+function getLabelSelector(
+  selectors: ElementSelector
+): GetByLabelSelector | null {
+  if (selectors.label === undefined) {
+    return null
+  }
+
+  return {
+    type: 'label',
+    text: selectors.label,
+  }
+}
+
 function getTestIdSelector(
   selectors: ElementSelector
 ): GetByTestIdSelector | null {
@@ -83,6 +97,7 @@ function getCssSelector(selectors: ElementSelector): CssSelector {
 export function getNodeSelector(selector: ElementSelector): NodeSelector {
   return (
     getRoleSelector(selector) ??
+    getLabelSelector(selector) ??
     getAltTextSelector(selector) ??
     getTestIdSelector(selector) ??
     getCssSelector(selector)
@@ -102,6 +117,9 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
 
     case 'alt':
       return b.type === 'alt' && a.text === b.text
+
+    case 'label':
+      return b.type === 'label' && a.text === b.text
 
     default:
       return exhaustive(a)

@@ -9,6 +9,7 @@ import {
   constDeclarator,
   fromArrayLiteral,
   fromObjectLiteral,
+  ObjectBuilder,
 } from '@/codegen/estree'
 import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
@@ -42,6 +43,19 @@ function emitNewRoleLocatorExpression(
   return new ExpressionBuilder(page)
     .member('getByRole')
     .call([role, fromObjectLiteral({ name, exact: true })])
+    .done()
+}
+
+function emitNewLabelLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewLabelLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const text = emitExpression(context, expression.text)
+
+  return new ExpressionBuilder(page)
+    .member('getByLabel')
+    .call([text, ObjectBuilder.from({ exact: true })])
     .done()
 }
 
@@ -330,6 +344,9 @@ function emitExpression(
 
     case 'NewRoleLocatorExpression':
       return emitNewRoleLocatorExpression(context, expression)
+
+    case 'NewLabelLocatorExpression':
+      return emitNewLabelLocatorExpression(context, expression)
 
     case 'NewAltTextLocatorExpression':
       return emitNewAltTextLocatorExpression(context, expression)

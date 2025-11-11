@@ -68,6 +68,13 @@ function substituteExpression(
         page: substituteExpression(node.page, substitutions),
       }
 
+    case 'NewLabelLocatorExpression':
+      return {
+        type: 'NewLabelLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
     case 'NewCssLocatorExpression':
       return {
         type: 'NewCssLocatorExpression',

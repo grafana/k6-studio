@@ -1020,3 +1020,38 @@ it('should emit a getByAltText locator', async ({ expect }) => {
     '__snapshots__/browser/locators/get-by-alt-text.ts'
   )
 })
+
+it('should emit a getByLabel locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'label',
+            text: 'Username',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'type-text',
+          nodeId: 'type-text',
+          value: 'my-username',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/get-by-label.ts'
+  )
+})

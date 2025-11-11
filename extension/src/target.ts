@@ -1,6 +1,7 @@
 import { finder } from '@medv/finder'
 import {
   queryAllByAltText,
+  queryAllByLabelText,
   queryAllByRole,
   queryAllByTestId,
 } from '@testing-library/dom'
@@ -77,7 +78,36 @@ function generateAltTextSelector(element: Element): string | undefined {
     return undefined
   }
 
-  return element.alt
+  return alt
+}
+
+function generateLabelSelector(
+  element: Element,
+  { labels }: AriaDetails
+): string | undefined {
+  if (element instanceof HTMLElement === false) {
+    return undefined
+  }
+
+  for (const label of labels) {
+    const trimmed = label.trim()
+
+    const matches = queryAllByLabelText(document.body, trimmed, {
+      exact: true,
+    })
+
+    if (!matches.includes(element)) {
+      continue
+    }
+
+    if (matches.length > 1) {
+      continue
+    }
+
+    return trimmed
+  }
+
+  return undefined
 }
 
 function generateTestIdSelector(element: Element): string | undefined {
@@ -108,6 +138,7 @@ function generateSelectors(
     css: finder(element, {}),
     testId: generateTestIdSelector(element),
     alt: generateAltTextSelector(element),
+    label: generateLabelSelector(element, aria),
     role: generateRoleSelector(element, aria),
   }
 }
