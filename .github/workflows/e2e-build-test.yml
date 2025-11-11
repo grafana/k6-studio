@@ -1,4 +1,4 @@
-name: Reusable Build & E2E Test Matrix
+name: Reusable Build & E2E Test Workflow
 
 on:
   workflow_call:
