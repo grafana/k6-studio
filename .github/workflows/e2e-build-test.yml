@@ -38,7 +38,7 @@ permissions: {}
 
 jobs:
   build-test:
-    name: Build & test (${{ inputs.build-command }})
+    name: Build & test ${{ matrix.platform }} (${{ inputs.build-command }})
     environment: azure-trusted-signing
     permissions:
       contents: write
