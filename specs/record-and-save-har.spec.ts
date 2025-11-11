@@ -3,14 +3,8 @@ import { browser, expect } from '@wdio/globals'
 describe('Start recording', () => {
   it('should navigate to recorder and start recording session', async () => {
     // Navigate to the main window
-    browser.waitUntil(
-      async () => {
-        return browser.electron.windowHandle !== undefined
-      },
-      { timeout: 10000 }
-    )
-
-    browser.switchToWindow(browser.electron.windowHandle!)
+    const [mainHandle] = await browser.getWindowHandles()
+    await browser.switchToWindow(mainHandle!)
 
     // Click on "Record flow" link to navigate to recorder
     const recordLink = browser.$('a[href*="recorder"]')
