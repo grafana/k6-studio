@@ -81,4 +81,14 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
   },
+
+  overrides: [
+    {
+      files: ['specs/**/*.spec.ts'],
+      rules: {
+        '@typescript-eslint/no-floating-promises': 'off',
+        '@typescript-eslint/no-misused-promises': 'off',
+      },
+    },
+  ],
 }
