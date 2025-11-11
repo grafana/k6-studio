@@ -29,6 +29,11 @@ export interface GetByPlaceholderSelector {
   text: string
 }
 
+export interface GetByTitleSelector {
+  type: 'title'
+  text: string
+}
+
 export interface GetByTestIdSelector {
   type: 'test-id'
   testId: string
@@ -40,6 +45,7 @@ export type NodeSelector =
   | GetByAltTextSelector
   | GetByLabelSelector
   | GetByPlaceholderSelector
+  | GetByTitleSelector
   | GetByTestIdSelector
 
 function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
@@ -93,6 +99,19 @@ function getPlaceholderSelector(
   }
 }
 
+function getTitleSelector(
+  selectors: ElementSelector
+): GetByTitleSelector | null {
+  if (selectors.title === undefined) {
+    return null
+  }
+
+  return {
+    type: 'title',
+    text: selectors.title,
+  }
+}
+
 function getTestIdSelector(
   selectors: ElementSelector
 ): GetByTestIdSelector | null {
@@ -119,6 +138,7 @@ export function getNodeSelector(selector: ElementSelector): NodeSelector {
     getLabelSelector(selector) ??
     getAltTextSelector(selector) ??
     getPlaceholderSelector(selector) ??
+    getTitleSelector(selector) ??
     getTestIdSelector(selector) ??
     getCssSelector(selector)
   )
@@ -143,6 +163,9 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
 
     case 'placeholder':
       return b.type === 'placeholder' && a.text === b.text
+
+    case 'title':
+      return b.type === 'title' && a.text === b.text
 
     default:
       return exhaustive(a)

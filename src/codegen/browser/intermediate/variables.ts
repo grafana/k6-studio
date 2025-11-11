@@ -96,6 +96,13 @@ function substituteExpression(
         page: substituteExpression(node.page, substitutions),
       }
 
+    case 'NewTitleLocatorExpression':
+      return {
+        type: 'NewTitleLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
     case 'NewTestIdLocatorExpression':
       return {
         type: 'NewTestIdLocatorExpression',

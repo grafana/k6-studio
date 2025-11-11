@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
 import {
   BracesIcon,
+  CaptionsIcon,
   ImageIcon,
   TagIcon,
   TestTubeDiagonalIcon,
@@ -40,6 +41,9 @@ function SelectorIcon({ selector }: SelectorComponentProps) {
     case 'placeholder':
       return <WholeWordIcon />
 
+    case 'title':
+      return <CaptionsIcon />
+
     case 'role':
       return <RoleSelectorIcon selector={selector} />
 
@@ -60,6 +64,9 @@ function SelectorText({ selector }: SelectorComponentProps) {
       return <code>{quote(selector.text)}</code>
 
     case 'placeholder':
+      return <code>{quote(selector.text)}</code>
+
+    case 'title':
       return <code>{quote(selector.text)}</code>
 
     case 'alt':

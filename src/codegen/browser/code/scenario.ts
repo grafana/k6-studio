@@ -82,6 +82,19 @@ function emitNewPlaceholderLocatorExpression(
     .done()
 }
 
+function emitNewTitleLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewTitleLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const text = emitExpression(context, expression.text)
+
+  return new ExpressionBuilder(page)
+    .member('getByTitle')
+    .call([text, ObjectBuilder.from({ exact: true })])
+    .done()
+}
+
 function emitNewCSSLocatorExpression(
   context: ScenarioContext,
   expression: ir.NewCssLocatorExpression
@@ -366,6 +379,9 @@ function emitExpression(
 
     case 'NewPlaceholderLocatorExpression':
       return emitNewPlaceholderLocatorExpression(context, expression)
+
+    case 'NewTitleLocatorExpression':
+      return emitNewTitleLocatorExpression(context, expression)
 
     case 'NewCssLocatorExpression':
       return emitNewCSSLocatorExpression(context, expression)

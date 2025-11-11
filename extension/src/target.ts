@@ -5,6 +5,7 @@ import {
   queryAllByPlaceholderText,
   queryAllByRole,
   queryAllByTestId,
+  queryAllByTitle,
 } from '@testing-library/dom'
 
 import {
@@ -140,6 +141,30 @@ function generatePlaceholderSelector(element: Element): string | undefined {
   return placeholder
 }
 
+function generateTitleSelector(element: Element): string | undefined {
+  if (element instanceof HTMLElement === false) {
+    return undefined
+  }
+
+  const title = element.title.trim()
+
+  if (title === '') {
+    return undefined
+  }
+
+  const matches = queryAllByTitle(document.body, title, { exact: true })
+
+  if (matches.length !== 1) {
+    return undefined
+  }
+
+  if (!matches.includes(element)) {
+    return undefined
+  }
+
+  return title
+}
+
 function generateTestIdSelector(element: Element): string | undefined {
   if (element instanceof HTMLElement === false) {
     return undefined
@@ -170,6 +195,7 @@ function generateSelectors(
     alt: generateAltTextSelector(element),
     label: generateLabelSelector(element, aria),
     placeholder: generatePlaceholderSelector(element),
+    title: generateTitleSelector(element),
     role: generateRoleSelector(element, aria),
   }
 }
