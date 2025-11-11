@@ -45,6 +45,16 @@ function emitNewRoleLocatorExpression(
     .done()
 }
 
+function emitNewAltTextLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewAltTextLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const text = emitExpression(context, expression.text)
+
+  return new ExpressionBuilder(page).member('getByAltText').call([text]).done()
+}
+
 function emitNewCSSLocatorExpression(
   context: ScenarioContext,
   expression: ir.NewCssLocatorExpression
@@ -320,6 +330,9 @@ function emitExpression(
 
     case 'NewRoleLocatorExpression':
       return emitNewRoleLocatorExpression(context, expression)
+
+    case 'NewAltTextLocatorExpression':
+      return emitNewAltTextLocatorExpression(context, expression)
 
     case 'NewCssLocatorExpression':
       return emitNewCSSLocatorExpression(context, expression)

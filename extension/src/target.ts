@@ -1,5 +1,9 @@
 import { finder } from '@medv/finder'
-import { queryAllByRole, queryAllByTestId } from '@testing-library/dom'
+import {
+  queryAllByAltText,
+  queryAllByRole,
+  queryAllByTestId,
+} from '@testing-library/dom'
 
 import {
   AriaDetails,
@@ -48,6 +52,34 @@ function generateRoleSelector(
   return selector
 }
 
+function generateAltTextSelector(element: Element): string | undefined {
+  if (
+    element instanceof HTMLImageElement === false &&
+    element instanceof HTMLAreaElement === false &&
+    element instanceof HTMLInputElement === false
+  ) {
+    return undefined
+  }
+
+  if (element instanceof HTMLInputElement && element.type !== 'image') {
+    return undefined
+  }
+
+  const alt = element.alt.trim()
+
+  if (alt === '') {
+    return undefined
+  }
+
+  const matches = queryAllByAltText(document.body, alt)
+
+  if (matches.length !== 1) {
+    return undefined
+  }
+
+  return element.alt
+}
+
 function generateTestIdSelector(element: Element): string | undefined {
   if (element instanceof HTMLElement === false) {
     return undefined
@@ -75,6 +107,7 @@ function generateSelectors(
   return {
     css: finder(element, {}),
     testId: generateTestIdSelector(element),
+    alt: generateAltTextSelector(element),
     role: generateRoleSelector(element, aria),
   }
 }
