@@ -1,12 +1,26 @@
-import { useLocation, useParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
+import invariant from 'tiny-invariant'
 
 export function useScriptPath() {
   const { fileName } = useParams()
-  // TODO(router): useLocation is not type-safe. Refactor this route to avoid using it.
-  const { state } = useLocation() as { state: { externalScriptPath: string } }
 
-  return {
-    scriptPath: state?.externalScriptPath ? state.externalScriptPath : fileName,
-    isExternal: Boolean(state?.externalScriptPath),
-  }
+  invariant(fileName, 'fileName param is required')
+
+  return fileName
+}
+
+export function useScript(fileName: string) {
+  invariant(fileName, 'fileName param is required')
+
+  return useQuery({
+    queryKey: ['script', fileName],
+    queryFn: async () => {
+      return window.studio.script.openScript(fileName)
+    },
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+  })
 }

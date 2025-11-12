@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import { existsSync, readFileSync } from 'fs'
 import { writeFile, open } from 'fs/promises'
-import path from 'node:path'
+import path from 'path'
 
 import { configureSystemProxy } from '@/services/http'
 
