@@ -68,11 +68,39 @@ function substituteExpression(
         page: substituteExpression(node.page, substitutions),
       }
 
+    case 'NewLabelLocatorExpression':
+      return {
+        type: 'NewLabelLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
     case 'NewCssLocatorExpression':
       return {
         type: 'NewCssLocatorExpression',
         page: substituteExpression(node.page, substitutions),
         selector: substituteExpression(node.selector, substitutions),
+      }
+
+    case 'NewAltTextLocatorExpression':
+      return {
+        type: 'NewAltTextLocatorExpression',
+        page: substituteExpression(node.page, substitutions),
+        text: substituteExpression(node.text, substitutions),
+      }
+
+    case 'NewPlaceholderLocatorExpression':
+      return {
+        type: 'NewPlaceholderLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
+    case 'NewTitleLocatorExpression':
+      return {
+        type: 'NewTitleLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
       }
 
     case 'NewTestIdLocatorExpression':
