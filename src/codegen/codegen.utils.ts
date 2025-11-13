@@ -90,6 +90,13 @@ export function mergeRedirects(recording: ProxyData[]) {
 
     let finalResponse: ProxyData['response'] = response
     let nextUrl = getRedirectUrl(request, response)
+    const redirectSetCookieHeaders: Array<[string, string]> = []
+
+    // Collect Set-Cookie headers from the redirect response
+    const setCookies = response.headers.filter(
+      ([key]) => canonicalHeaderKey(key) === 'Set-Cookie'
+    )
+    redirectSetCookieHeaders.push(...setCookies)
 
     // Find the final response by following the redirect chain
     while (nextUrl) {
@@ -100,15 +107,31 @@ export function mergeRedirects(recording: ProxyData[]) {
       if (nextRequest) {
         processed.add(nextRequest.id)
         finalResponse = nextRequest.response
+        
+        // Collect Set-Cookie headers from intermediate redirects as well
+        if (finalResponse && isRedirect(finalResponse)) {
+          const intermediateCookies = finalResponse.headers.filter(
+            ([key]) => canonicalHeaderKey(key) === 'Set-Cookie'
+          )
+          redirectSetCookieHeaders.push(...intermediateCookies)
+        }
+        
         nextUrl = getRedirectUrl(request, finalResponse)
       } else {
         break
       }
     }
 
+    // Merge the redirect response with the final response, preserving Set-Cookie headers
+    const mergedResponse = finalResponse ? {
+      ...finalResponse,
+      // Prepend Set-Cookie headers from redirects to preserve correlation data
+      headers: [...redirectSetCookieHeaders, ...finalResponse.headers],
+    } : finalResponse
+
     result.push({
       ...item,
-      response: finalResponse,
+      response: mergedResponse,
     })
 
     processed.add(id)

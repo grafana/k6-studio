@@ -431,6 +431,105 @@ describe('Code generation', () => {
           )
         ).toBe(expectedResult)
       })
+
+      it('should extract cookie values from redirect Set-Cookie headers', async () => {
+        // Test for issue where Set-Cookie headers from redirect responses
+        // were lost during mergeRedirects, causing extraction to fail
+        const recording: ProxyData[] = [
+          createProxyData({
+            id: '1',
+            request: createRequest({
+              method: 'GET',
+              url: 'http://example.com/login',
+              path: '/login',
+            }),
+            response: {
+              statusCode: 302,
+              path: '/login',
+              reason: 'Found',
+              httpVersion: '1.1',
+              headers: [
+                ['Location', '/dashboard'],
+                ['Set-Cookie', 'sessionid=abc123; Path=/; HttpOnly'],
+              ],
+              cookies: [],
+              content: '',
+              contentLength: 0,
+              timestampStart: 0,
+            },
+          }),
+          createProxyData({
+            id: '2',
+            request: createRequest({
+              method: 'GET',
+              url: 'http://example.com/dashboard',
+              path: '/dashboard',
+            }),
+            response: {
+              statusCode: 200,
+              path: '/dashboard',
+              reason: 'OK',
+              httpVersion: '1.1',
+              headers: [['Content-Type', 'text/html']],
+              cookies: [],
+              content: '<html></html>',
+              contentLength: 0,
+              timestampStart: 0,
+            },
+          }),
+          createProxyData({
+            id: '3',
+            request: createRequest({
+              method: 'GET',
+              url: 'http://example.com/api/data',
+              path: '/api/data',
+              cookies: [['sessionid', 'abc123']],
+            }),
+            response: {
+              statusCode: 200,
+              path: '/api/data',
+              reason: 'OK',
+              httpVersion: '1.1',
+              headers: [['Content-Type', 'application/json']],
+              cookies: [],
+              content: '{"data":"value"}',
+              contentLength: 0,
+              timestampStart: 0,
+            },
+          }),
+        ]
+
+        const cookieRule: TestRule = {
+          type: 'correlation',
+          id: '1',
+          enabled: true,
+          extractor: {
+            filter: { path: '/login' },
+            selector: {
+              type: 'begin-end',
+              from: 'headers',
+              begin: 'sessionid=',
+              end: ';',
+            },
+            extractionMode: 'single',
+          },
+        }
+
+        const result = await prettify(
+          generateVUCode(recording, [cookieRule], thinkTime)
+        )
+
+        // Check that extraction logic is present
+        expect(result).toContain('correlation_vars')
+        expect(result).toContain('sessionid=')
+        expect(result).toMatch(/regex\s*=\s*new RegExp/)
+        expect(result).toMatch(/correlation_vars\[["']correlation_\d+["']\]\s*=\s*match\[1\]/)
+
+        // Check that cookie replacement is present in the third request
+        expect(result).toContain('sessionid:')
+        expect(result).toMatch(/sessionid:[\s\S]*correlation_vars/)
+        expect(result).toMatch(/replace:\s*true/)
+      })
     })
 
     it('should generate checks', () => {
