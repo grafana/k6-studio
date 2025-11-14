@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.9.0](https://github.com/grafana/k6-studio/compare/v1.8.0...v1.9.0) (2025-11-14)
+
+
+### Features
+
+* Add Regex support to Verification rule ([#853](https://github.com/grafana/k6-studio/issues/853)) ([4e2fdd4](https://github.com/grafana/k6-studio/commit/4e2fdd4b7af66dbe15046b17080c424054ac8a23))
+* Add waitForNavigation on link clicks and form submissions ([#879](https://github.com/grafana/k6-studio/issues/879)) ([871b16a](https://github.com/grafana/k6-studio/commit/871b16ac35bc305bd5edba5a9a7af5b0f7676ea8))
+* **browser:** Expand selection to parent elements when adding text assertions ([3d8fc89](https://github.com/grafana/k6-studio/commit/3d8fc898e8cac117b2c93f8832fda957ab84280c))
+* **browser:** Generate `getByAltText`, `getByLabel`, `getByPlaceholder` and `getByTitle` selectors ([#886](https://github.com/grafana/k6-studio/issues/886)) ([2a14290](https://github.com/grafana/k6-studio/commit/2a1429000afaccb622097f2ea09d65c2bdb835b5))
+* **browser:** Generate getByRole selectors ([#877](https://github.com/grafana/k6-studio/issues/877)) ([9404fda](https://github.com/grafana/k6-studio/commit/9404fda33ac3f16c7ca426e957de3beb55abe688))
+* **browser:** Record browser interactions over Chrome DevTools Protocol (experimental) ([#871](https://github.com/grafana/k6-studio/issues/871)) ([af4dc07](https://github.com/grafana/k6-studio/commit/af4dc0751d30184969d33173f50f274eff0fa836))
+
+
+### Bug Fixes
+
+* **browser:** Clicks are not recorded on inputs with type button, submit or reset ([a3d6607](https://github.com/grafana/k6-studio/commit/a3d66077973404151495071ec85174f32582db85))
+* discrepancy with chrome handling of whitespace in header ([#892](https://github.com/grafana/k6-studio/issues/892)) ([90466bb](https://github.com/grafana/k6-studio/commit/90466bb1a7e4278855facfd88498a7e0c8205d24))
+
+
+### Internal Changes
+
+* Add ability to manage AI API key ([#860](https://github.com/grafana/k6-studio/issues/860)) ([a547a81](https://github.com/grafana/k6-studio/commit/a547a81a6b26f909148063163a499ede1128cf6b))
+
+
+### Miscellaneous Chores
+
+* Azure trusted signing for windows binaries ([#869](https://github.com/grafana/k6-studio/issues/869)) ([56893f4](https://github.com/grafana/k6-studio/commit/56893f4e44c20346b2ae8499612f3d97d3f22f20))
+* Browser events schema v2 ([#861](https://github.com/grafana/k6-studio/issues/861)) ([b6496a1](https://github.com/grafana/k6-studio/commit/b6496a1d0b5c63c7a1a45276957da4bac4deeb45))
+* Bump esbuild to address CVE ([#878](https://github.com/grafana/k6-studio/issues/878)) ([7e97780](https://github.com/grafana/k6-studio/commit/7e977807c6b242bf77db08c0d7859255538ceaff))
+* **deps-dev:** bump vite from 5.4.20 to 5.4.21 ([#867](https://github.com/grafana/k6-studio/issues/867)) ([b0a3ac7](https://github.com/grafana/k6-studio/commit/b0a3ac7339e3dccaa7a7e47530b59ecf79906c3c))
+* Update PR template ([#859](https://github.com/grafana/k6-studio/issues/859)) ([4adcd05](https://github.com/grafana/k6-studio/commit/4adcd05b762d84fd25b8137c0261dbc4c3638040))
+
+
+### Code Refactoring
+
+* Simplify code when opening scripts ([#883](https://github.com/grafana/k6-studio/issues/883)) ([c2008c3](https://github.com/grafana/k6-studio/commit/c2008c3cbd98c450067f1912585ecc03aa19c793))
+* Use consistent naming for enum members ([#866](https://github.com/grafana/k6-studio/issues/866)) ([8aabe85](https://github.com/grafana/k6-studio/commit/8aabe85b701d60fe618243b241f594bcc2db670f))
+
 ## [1.8.0](https://github.com/grafana/k6-studio/compare/v1.7.0...v1.8.0) (2025-10-06)
 
 
