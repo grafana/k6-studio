@@ -16,6 +16,7 @@ interface Actions {
   swapRules: (idA: string, idB: string) => void
   setSelectedRuleId: (id: string | null) => void
   setPreviewOriginalRequests: (apply: boolean) => void
+  setRules: (rules: TestRule[]) => void
 }
 
 export type RulesSliceStore = State & Actions
@@ -76,5 +77,9 @@ export const createRulesSlice: ImmerStateCreator<RulesSliceStore> = (set) => ({
   setPreviewOriginalRequests: (enable) =>
     set((state) => {
       state.previewOriginalRequests = enable
+    }),
+  setRules: (rules) =>
+    set((state) => {
+      state.rules = rules
     }),
 })

@@ -78,7 +78,7 @@ export function AiSettings() {
                 <TextField.Root
                   placeholder="sk-..."
                   type={showApiKey ? 'text' : 'password'}
-                  value={field.value}
+                  value={field.value || ''}
                   onChange={field.onChange}
                   disabled={isApiKeyConfigured}
                   css={{ flex: 1 }}

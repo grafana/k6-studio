@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron'
-import _ from 'lodash'
 
 import { HighlightSelector } from 'extension/src/messaging/types'
 
