@@ -1,5 +1,12 @@
 import { css } from '@emotion/react'
-import { BracesIcon, TestTubeDiagonalIcon } from 'lucide-react'
+import {
+  BracesIcon,
+  CaptionsIcon,
+  ImageIcon,
+  TagIcon,
+  TestTubeDiagonalIcon,
+  WholeWordIcon,
+} from 'lucide-react'
 
 import { getNodeSelector, NodeSelector } from '@/codegen/browser/selectors'
 import { ElementSelector } from '@/schemas/recording'
@@ -8,6 +15,10 @@ import { useIsRecording } from '@/views/Recorder/RecordingContext'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { RoleSelectorIcon } from './RoleSelectorIcon'
+
+function quote(str: string) {
+  return `"${str}"`
+}
 
 interface SelectorComponentProps {
   selector: NodeSelector
@@ -20,6 +31,18 @@ function SelectorIcon({ selector }: SelectorComponentProps) {
 
     case 'test-id':
       return <TestTubeDiagonalIcon />
+
+    case 'alt':
+      return <ImageIcon />
+
+    case 'label':
+      return <TagIcon />
+
+    case 'placeholder':
+      return <WholeWordIcon />
+
+    case 'title':
+      return <CaptionsIcon />
 
     case 'role':
       return <RoleSelectorIcon selector={selector} />
@@ -37,10 +60,22 @@ function SelectorText({ selector }: SelectorComponentProps) {
     case 'test-id':
       return <code>{selector.testId}</code>
 
+    case 'label':
+      return <code>{quote(selector.text)}</code>
+
+    case 'placeholder':
+      return <code>{quote(selector.text)}</code>
+
+    case 'title':
+      return <code>{quote(selector.text)}</code>
+
+    case 'alt':
+      return <code>{quote(selector.text)}</code>
+
     case 'role':
       return (
         <>
-          <strong>{selector.role}</strong> {`"${selector.name}"`}
+          <strong>{selector.role}</strong> {quote(selector.name)}
         </>
       )
 

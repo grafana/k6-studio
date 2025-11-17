@@ -1,5 +1,6 @@
 import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
+import path from 'path'
 
 import {
   DATA_FILES_PATH,
@@ -34,4 +35,8 @@ export const setupProjectStructure = async () => {
   if (!existsSync(DATA_FILES_PATH)) {
     await mkdir(DATA_FILES_PATH)
   }
+}
+
+export function isExternalScript(scriptPath: string) {
+  return path.dirname(scriptPath) !== path.normalize(SCRIPTS_PATH)
 }

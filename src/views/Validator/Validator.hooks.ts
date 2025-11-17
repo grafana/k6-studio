@@ -16,8 +16,6 @@ export function useScriptPath() {
 }
 
 export function useScript(fileName: string) {
-  invariant(fileName, 'fileName param is required')
-
   return useQuery({
     queryKey: ['script', fileName],
     queryFn: async () => {

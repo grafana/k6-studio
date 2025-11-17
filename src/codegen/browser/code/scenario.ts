@@ -9,6 +9,7 @@ import {
   constDeclarator,
   fromArrayLiteral,
   fromObjectLiteral,
+  ObjectBuilder,
 } from '@/codegen/estree'
 import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
@@ -42,6 +43,58 @@ function emitNewRoleLocatorExpression(
   return new ExpressionBuilder(page)
     .member('getByRole')
     .call([role, fromObjectLiteral({ name, exact: true })])
+    .done()
+}
+
+function emitNewLabelLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewLabelLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const text = emitExpression(context, expression.text)
+
+  return new ExpressionBuilder(page)
+    .member('getByLabel')
+    .call([text, ObjectBuilder.from({ exact: true })])
+    .done()
+}
+
+function emitNewAltTextLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewAltTextLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const text = emitExpression(context, expression.text)
+
+  return new ExpressionBuilder(page)
+    .member('getByAltText')
+    .call([text, ObjectBuilder.from({ exact: true })])
+    .done()
+}
+
+function emitNewPlaceholderLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewPlaceholderLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const text = emitExpression(context, expression.text)
+
+  return new ExpressionBuilder(page)
+    .member('getByPlaceholder')
+    .call([text, ObjectBuilder.from({ exact: true })])
+    .done()
+}
+
+function emitNewTitleLocatorExpression(
+  context: ScenarioContext,
+  expression: ir.NewTitleLocatorExpression
+): ts.Expression {
+  const page = emitExpression(context, expression.page)
+  const text = emitExpression(context, expression.text)
+
+  return new ExpressionBuilder(page)
+    .member('getByTitle')
+    .call([text, ObjectBuilder.from({ exact: true })])
     .done()
 }
 
@@ -320,6 +373,18 @@ function emitExpression(
 
     case 'NewRoleLocatorExpression':
       return emitNewRoleLocatorExpression(context, expression)
+
+    case 'NewLabelLocatorExpression':
+      return emitNewLabelLocatorExpression(context, expression)
+
+    case 'NewAltTextLocatorExpression':
+      return emitNewAltTextLocatorExpression(context, expression)
+
+    case 'NewPlaceholderLocatorExpression':
+      return emitNewPlaceholderLocatorExpression(context, expression)
+
+    case 'NewTitleLocatorExpression':
+      return emitNewTitleLocatorExpression(context, expression)
 
     case 'NewCssLocatorExpression':
       return emitNewCSSLocatorExpression(context, expression)

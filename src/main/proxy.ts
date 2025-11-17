@@ -66,6 +66,8 @@ export const launchProxy = (
     `${proxySettings.port}`,
     '--mode',
     getProxyMode(proxySettings),
+    '--set',
+    'validate_inbound_headers=false',
   ]
 
   if (proxySettings.sslInsecure) {

@@ -10,6 +10,7 @@ import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 import { TestRun } from '@/utils/k6/testRun'
+import { isExternalScript } from '@/utils/workspace'
 
 import { ScriptHandler } from './types'
 
@@ -45,7 +46,7 @@ export function initialize() {
 
     return {
       script,
-      isExternal: path.dirname(resolvedScriptPath) !== SCRIPTS_PATH,
+      isExternal: isExternalScript(resolvedScriptPath),
     }
   })
 
@@ -70,7 +71,7 @@ export function initialize() {
     trackEvent({
       event: UsageEventName.ScriptValidated,
       payload: {
-        isExternal: path.dirname(resolvedScriptPath) !== SCRIPTS_PATH,
+        isExternal: isExternalScript(resolvedScriptPath),
       },
     })
   })
