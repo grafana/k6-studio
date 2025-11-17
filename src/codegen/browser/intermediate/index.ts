@@ -23,6 +23,11 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
 function emitGotoNode(context: IntermediateContext, node: m.GotoNode) {
   const page = context.reference(node.inputs.page)
 
+  // Skip goto for implicit navigation, as it will be triggered by preceding action
+  if (node.source === 'implicit') {
+    return
+  }
+
   context.emit({
     type: 'ExpressionStatement',
     expression: {
@@ -51,30 +56,97 @@ function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
 function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
   const page = context.reference(node.inputs.page)
 
-  if (node.selector.testId) {
-    // We always inline locator nodes for readability. If we implement better
-    // logic for generating variable names, then we could consider declaring
-    // a variable for it if there are multiple references.
-    context.inline(node, {
-      type: 'NewTestIdLocatorExpression',
-      testId: {
-        type: 'StringLiteral',
-        value: node.selector.testId,
-      },
-      page,
-    })
-    return
-  }
+  // We always inline locator nodes for readability. If we implement better
+  // logic for generating variable names, then we could consider declaring
+  // a variable for it if there are multiple references.
+  switch (node.selector.type) {
+    case 'role':
+      context.inline(node, {
+        type: 'NewRoleLocatorExpression',
+        role: {
+          type: 'StringLiteral',
+          value: node.selector.role,
+        },
+        name: {
+          type: 'StringLiteral',
+          // getByRole creates an internal selector, e.g. internal:role=link[name='Hello's] that is passed
+          // to the browser. Since the string literal value is wrapped in single quotes, we need to escape
+          // any single quotes in the name. Bug report: https://github.com/grafana/k6/issues/5360
+          value: node.selector.name.replaceAll("'", "\\'"),
+        },
+        page,
+      })
+      break
 
-  // Default to CSS locator
-  context.inline(node, {
-    type: 'NewCssLocatorExpression',
-    selector: {
-      type: 'StringLiteral',
-      value: node.selector.css,
-    },
-    page,
-  })
+    case 'label':
+      context.inline(node, {
+        type: 'NewLabelLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
+    case 'placeholder':
+      context.inline(node, {
+        type: 'NewPlaceholderLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
+    case 'title':
+      context.inline(node, {
+        type: 'NewTitleLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
+    case 'alt':
+      context.inline(node, {
+        type: 'NewAltTextLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
+    case 'test-id':
+      context.inline(node, {
+        type: 'NewTestIdLocatorExpression',
+        testId: {
+          type: 'StringLiteral',
+          value: node.selector.testId,
+        },
+        page,
+      })
+      break
+
+    case 'css':
+      context.inline(node, {
+        type: 'NewCssLocatorExpression',
+        selector: {
+          type: 'StringLiteral',
+          value: node.selector.selector,
+        },
+        page,
+      })
+      break
+
+    default:
+      exhaustive(node.selector)
+  }
 }
 
 function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {
@@ -96,17 +168,44 @@ function getClickOptions(node: m.ClickNode): ir.ClickOptionsExpression | null {
   }
 }
 
+function wrapWithWaitForNavigation(
+  expression: ir.Expression,
+  page: ir.Expression
+): ir.Statement {
+  return {
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'PromiseAllExpression',
+      expressions: [
+        {
+          type: 'WaitForNavigationExpression',
+          target: page,
+        },
+        expression,
+      ],
+    },
+  }
+}
+
 function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
   const locator = context.reference(node.inputs.locator)
   const options = getClickOptions(node)
+  const page = context.reference(node.inputs.page)
+
+  const expression: ir.ClickExpression = {
+    type: 'ClickExpression',
+    locator,
+    options,
+  }
+
+  if (node.triggersNavigation) {
+    context.emit(wrapWithWaitForNavigation(expression, page))
+    return
+  }
 
   context.emit({
     type: 'ExpressionStatement',
-    expression: {
-      type: 'ClickExpression',
-      locator,
-      options,
-    },
+    expression,
   })
 }
 

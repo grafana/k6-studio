@@ -60,11 +60,47 @@ function substituteExpression(
         name: substitutions.get(node.name) ?? node.name,
       }
 
+    case 'NewRoleLocatorExpression':
+      return {
+        type: 'NewRoleLocatorExpression',
+        role: substituteExpression(node.role, substitutions),
+        name: substituteExpression(node.name, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
+    case 'NewLabelLocatorExpression':
+      return {
+        type: 'NewLabelLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
     case 'NewCssLocatorExpression':
       return {
         type: 'NewCssLocatorExpression',
         page: substituteExpression(node.page, substitutions),
         selector: substituteExpression(node.selector, substitutions),
+      }
+
+    case 'NewAltTextLocatorExpression':
+      return {
+        type: 'NewAltTextLocatorExpression',
+        page: substituteExpression(node.page, substitutions),
+        text: substituteExpression(node.text, substitutions),
+      }
+
+    case 'NewPlaceholderLocatorExpression':
+      return {
+        type: 'NewPlaceholderLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+      }
+
+    case 'NewTitleLocatorExpression':
+      return {
+        type: 'NewTitleLocatorExpression',
+        text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
       }
 
     case 'NewTestIdLocatorExpression':
@@ -125,6 +161,20 @@ function substituteExpression(
         type: 'ExpectExpression',
         actual: substituteExpression(node.actual, substitutions),
         expected: substituteAssertion(node.expected, substitutions),
+      }
+
+    case 'PromiseAllExpression':
+      return {
+        type: 'PromiseAllExpression',
+        expressions: node.expressions.map((expression) =>
+          substituteExpression(expression, substitutions)
+        ),
+      }
+
+    case 'WaitForNavigationExpression':
+      return {
+        type: 'WaitForNavigationExpression',
+        target: substituteExpression(node.target, substitutions),
       }
 
     default:

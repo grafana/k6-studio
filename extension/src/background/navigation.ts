@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid'
 import { tabs, WebNavigation, webNavigation } from 'webextension-polyfill'
 
 import { BrowserEvent } from '@/schemas/recording'
@@ -21,6 +22,17 @@ function isHistoryNavigation({
   )
 }
 
+function isImplicitNavigation({
+  transitionType,
+  transitionQualifiers,
+}: WebNavigation.OnCommittedDetailsType) {
+  return (
+    (transitionType === 'link' &&
+      !transitionQualifiers.includes('forward_back')) ||
+    transitionType === 'form_submit'
+  )
+}
+
 function getNavigationSource(details: WebNavigation.OnCommittedDetailsType) {
   if (isHistoryNavigation(details)) {
     return 'history'
@@ -28,6 +40,10 @@ function getNavigationSource(details: WebNavigation.OnCommittedDetailsType) {
 
   if (isAddressBarNavigation(details)) {
     return 'address-bar'
+  }
+
+  if (isImplicitNavigation(details)) {
+    return 'implicit'
   }
 
   return null
@@ -42,7 +58,7 @@ export function captureNavigationEvents(
     if (isReload(details)) {
       onCaptured({
         type: 'reload-page',
-        eventId: crypto.randomUUID(),
+        eventId: nanoid(),
         timestamp: details.timeStamp,
         tab: details.tabId.toString(),
         url: details.url ?? '',
@@ -59,7 +75,7 @@ export function captureNavigationEvents(
 
     onCaptured({
       type: 'navigate-to-page',
-      eventId: crypto.randomUUID(),
+      eventId: nanoid(),
       timestamp: details.timeStamp,
       tab: details.tabId.toString(),
       url: details.url ?? '',
@@ -73,7 +89,7 @@ export function captureNavigationEvents(
     if (isHistoryNavigation(details)) {
       onCaptured({
         type: 'navigate-to-page',
-        eventId: crypto.randomUUID(),
+        eventId: nanoid(),
         timestamp: details.timeStamp,
         tab: details.tabId.toString(),
         url: details.url ?? '',
@@ -104,7 +120,7 @@ export function captureNavigationEvents(
 
         onCaptured({
           type: 'navigate-to-page',
-          eventId: crypto.randomUUID(),
+          eventId: nanoid(),
           timestamp: Date.now(),
           tab: tab.id.toString(),
           url: tab.url,

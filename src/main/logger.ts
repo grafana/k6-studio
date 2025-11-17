@@ -3,7 +3,7 @@ import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import fs from 'fs/promises'
 import { spawn } from 'node:child_process'
-import path from 'node:path'
+import path from 'path'
 
 import { getPlatform } from '../utils/electron'
 

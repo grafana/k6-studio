@@ -9,28 +9,30 @@ import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
-import { client } from '../routing'
+import { useStudioClient } from './StudioClientProvider'
 
 function useRecordedEvents() {
+  const client = useStudioClient()
+
   const [events, setEvents] = useState<BrowserEvent[]>([])
 
   useEffect(() => {
     return client.on('events-recorded', (event) => {
       setEvents((prev) => [...prev, ...event.data.events])
     })
-  }, [])
+  }, [client])
 
   useEffect(() => {
     return client.on('events-loaded', (event) => {
       setEvents(event.data.events)
     })
-  }, [])
+  }, [client])
 
   useEffect(() => {
     client.send({
       type: 'load-events',
     })
-  }, [])
+  }, [client])
 
   useEffect(() => {
     // We reload the list of events whenever the page is shown from the
@@ -48,7 +50,7 @@ function useRecordedEvents() {
     return () => {
       window.removeEventListener('pageshow', handlePageShow)
     }
-  }, [])
+  }, [client])
 
   return events
 }
@@ -60,6 +62,7 @@ interface EventDrawerProps {
 }
 
 export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
+  const client = useStudioClient()
   const container = useContainerElement()
 
   const events = useRecordedEvents()

@@ -11,3 +11,8 @@ export enum ScriptHandler {
   Check = 'script:check',
   RunFromGenerator = 'script:run-from-generator',
 }
+
+export interface OpenScriptResult {
+  script: string
+  isExternal: boolean
+}

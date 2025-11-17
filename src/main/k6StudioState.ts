@@ -1,7 +1,8 @@
-import { ChildProcess } from 'child_process'
 import { FSWatcher } from 'chokidar'
 import { BrowserWindow } from 'electron'
 import eventEmitter from 'events'
+
+import { RecordingSession } from '@/handlers/browser/recorders/types'
 
 import { ProxyStatus } from '../types'
 import { AppSettings } from '../types/settings'
@@ -10,7 +11,7 @@ import { type ProxyProcess } from './proxy'
 import { defaultSettings } from './settings'
 
 export type k6StudioState = {
-  currentBrowserProcess: ChildProcess | null
+  currentRecordingSession: RecordingSession | null
   proxyStatus: ProxyStatus
   proxyEmitter: eventEmitter
   appSettings: AppSettings
@@ -26,7 +27,7 @@ export type k6StudioState = {
 
 export function initialize() {
   globalThis.k6StudioState = {
-    currentBrowserProcess: null,
+    currentRecordingSession: null,
     proxyStatus: 'offline',
     proxyEmitter: new eventEmitter<{
       'status:change': [ProxyStatus]

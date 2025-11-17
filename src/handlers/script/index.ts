@@ -10,6 +10,7 @@ import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 import { TestRun } from '@/utils/k6/testRun'
+import { isExternalScript } from '@/utils/workspace'
 
 import { ScriptHandler } from './types'
 
@@ -30,50 +31,50 @@ export function initialize() {
     return scriptPath
   })
 
-  ipcMain.handle(
-    ScriptHandler.Open,
-    async (_, scriptPath: string, absolute: boolean = false) => {
-      console.log(`${ScriptHandler.Open} event received`)
-      const resolvedScriptPath = absolute
-        ? scriptPath
-        : path.join(SCRIPTS_PATH, scriptPath)
+  ipcMain.handle(ScriptHandler.Open, async (_, scriptPath: string) => {
+    console.log(`${ScriptHandler.Open} event received`)
 
-      const script = await readFile(resolvedScriptPath, {
-        encoding: 'utf-8',
-        flag: 'r',
-      })
+    const absolute = path.isAbsolute(scriptPath)
+    const resolvedScriptPath = absolute
+      ? scriptPath
+      : path.join(SCRIPTS_PATH, scriptPath)
 
-      return script
+    const script = await readFile(resolvedScriptPath, {
+      encoding: 'utf-8',
+      flag: 'r',
+    })
+
+    return {
+      script,
+      isExternal: isExternalScript(resolvedScriptPath),
     }
-  )
+  })
 
-  ipcMain.handle(
-    ScriptHandler.Run,
-    async (event, scriptPath: string, absolute: boolean = false) => {
-      console.info(`${ScriptHandler.Run} event received`)
-      await waitForProxy()
+  ipcMain.handle(ScriptHandler.Run, async (event, scriptPath: string) => {
+    console.info(`${ScriptHandler.Run} event received`)
+    await waitForProxy()
 
-      const browserWindow = browserWindowFromEvent(event)
+    const browserWindow = browserWindowFromEvent(event)
 
-      const resolvedScriptPath = absolute
-        ? scriptPath
-        : path.join(SCRIPTS_PATH, scriptPath)
+    const absolute = path.isAbsolute(scriptPath)
+    const resolvedScriptPath = absolute
+      ? scriptPath
+      : path.join(SCRIPTS_PATH, scriptPath)
 
-      currentTestRun = await runScript({
-        browserWindow,
-        scriptPath: resolvedScriptPath,
-        proxySettings: k6StudioState.appSettings.proxy,
-        usageReport: k6StudioState.appSettings.telemetry.usageReport,
-      })
+    currentTestRun = await runScript({
+      browserWindow,
+      scriptPath: resolvedScriptPath,
+      proxySettings: k6StudioState.appSettings.proxy,
+      usageReport: k6StudioState.appSettings.telemetry.usageReport,
+    })
 
-      trackEvent({
-        event: UsageEventName.ScriptValidated,
-        payload: {
-          isExternal: absolute,
-        },
-      })
-    }
-  )
+    trackEvent({
+      event: UsageEventName.ScriptValidated,
+      payload: {
+        isExternal: isExternalScript(resolvedScriptPath),
+      },
+    })
+  })
 
   ipcMain.on(ScriptHandler.Stop, (event) => {
     console.info(`${ScriptHandler.Stop} event received`)

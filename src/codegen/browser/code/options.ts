@@ -31,17 +31,24 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'NewPageExpression':
       case 'GotoExpression':
       case 'ReloadExpression':
+      case 'NewRoleLocatorExpression':
+      case 'NewLabelLocatorExpression':
       case 'NewCssLocatorExpression':
+      case 'NewAltTextLocatorExpression':
+      case 'NewPlaceholderLocatorExpression':
+      case 'NewTitleLocatorExpression':
       case 'NewTestIdLocatorExpression':
       case 'ClickExpression':
       case 'ClickOptionsExpression':
       case 'FillTextExpression':
       case 'CheckExpression':
       case 'SelectOptionsExpression':
+      case 'WaitForNavigationExpression':
         return true
 
       case 'Identifier':
       case 'StringLiteral':
+      case 'PromiseAllExpression':
         return false
 
       case 'VariableDeclaration':

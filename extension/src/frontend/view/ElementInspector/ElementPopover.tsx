@@ -1,7 +1,13 @@
 import { css } from '@emotion/react'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
+import { Flex } from '@/components/primitives/Flex'
+import { IconButton } from '@/components/primitives/IconButton'
 import { Popover } from '@/components/primitives/Popover'
+import { Tooltip } from '@/components/primitives/Tooltip'
+
+import { TrackedElement } from './utils'
 
 interface ElementPopoverProps {
   open?: boolean
@@ -47,14 +53,14 @@ export function ElementPopover({
 }
 
 interface PopoverHeadingProps {
+  className?: string
   children: ReactNode
 }
 
-ElementPopover.Heading = function PopoverHeading({
-  children,
-}: PopoverHeadingProps) {
+ElementPopover.Heading = function PopoverHeading(props: PopoverHeadingProps) {
   return (
     <h1
+      {...props}
       css={css`
         display: flex;
         align-self: stretch;
@@ -64,8 +70,40 @@ ElementPopover.Heading = function PopoverHeading({
         padding: var(--studio-spacing-1);
         font-size: var(--studio-font-size-1);
       `}
-    >
-      {children}
-    </h1>
+    />
+  )
+}
+
+interface ElementSelectorProps {
+  element: TrackedElement
+  onExpand?: () => void
+  onContract?: () => void
+}
+
+ElementPopover.Selector = function ElementSelector({
+  element,
+  onExpand,
+  onContract,
+}: ElementSelectorProps) {
+  return (
+    <Flex align="center" gap="1">
+      <Tooltip asChild content="Select parent element">
+        <IconButton disabled={onExpand === undefined} onClick={onExpand}>
+          <ChevronLeftIcon />
+        </IconButton>
+      </Tooltip>
+      <ElementPopover.Heading
+        css={css`
+          flex: 1 1 0;
+        `}
+      >
+        {element.target.selectors.css}
+      </ElementPopover.Heading>
+      <Tooltip asChild content="Select child element">
+        <IconButton disabled={onContract === undefined} onClick={onContract}>
+          <ChevronRightIcon />
+        </IconButton>
+      </Tooltip>
+    </Flex>
   )
 }

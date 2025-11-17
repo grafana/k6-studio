@@ -4,18 +4,17 @@ import { K6Log, K6Check } from '@/types'
 
 import { createListener } from '../utils'
 
-import { ScriptHandler } from './types'
+import { OpenScriptResult, ScriptHandler } from './types'
 
 export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
 }
 
-export function openScript(scriptPath: string, absolute: boolean = false) {
+export function openScript(scriptPath: string) {
   return ipcRenderer.invoke(
     ScriptHandler.Open,
-    scriptPath,
-    absolute
-  ) as Promise<string>
+    scriptPath
+  ) as Promise<OpenScriptResult>
 }
 
 export function runScriptFromGenerator(script: string) {
@@ -33,12 +32,8 @@ export function saveScript(script: string, fileName: string) {
   ) as Promise<void>
 }
 
-export function runScript(scriptPath: string, absolute: boolean = false) {
-  return ipcRenderer.invoke(
-    ScriptHandler.Run,
-    scriptPath,
-    absolute
-  ) as Promise<void>
+export function runScript(scriptPath: string) {
+  return ipcRenderer.invoke(ScriptHandler.Run, scriptPath) as Promise<void>
 }
 
 export function stopScript() {
