@@ -5,10 +5,14 @@ import { ipcMain, IpcMainEvent } from 'electron'
 import { setupAiModel } from './model'
 import { streamMessages } from './streamMessages'
 import { tools } from './tools'
-import { AiHandler, StreamChatRequest } from './types'
+import { AiHandler, StreamChatRequest, AbortStreamChatRequest } from './types'
+
+// Store active AbortControllers indexed by request ID
+const activeAbortControllers = new Map<string, AbortController>()
 
 export function initialize() {
   ipcMain.on(AiHandler.StreamChat, handleStreamChat)
+  ipcMain.on(AiHandler.AbortStreamChat, handleAbortStreamChat)
 }
 
 async function handleStreamChat(
@@ -18,17 +22,40 @@ async function handleStreamChat(
   const aiModel = await setupAiModel()
   const messages = convertToModelMessages(request.messages)
 
-  const response = streamText({
-    model: aiModel,
-    toolChoice: 'required',
-    messages,
-    tools,
-    providerOptions: {
-      openai: {
-        parallelToolCalls: false,
-      } satisfies OpenAIResponsesProviderOptions,
-    },
-  })
+  const abortController = new AbortController()
+  activeAbortControllers.set(request.id, abortController)
 
-  await streamMessages(event.sender, response, request.id)
+  try {
+    const response = streamText({
+      model: aiModel,
+      toolChoice: 'required',
+      messages,
+      tools,
+      abortSignal: abortController.signal,
+      providerOptions: {
+        openai: {
+          parallelToolCalls: false,
+        } satisfies OpenAIResponsesProviderOptions,
+      },
+    })
+
+    await streamMessages(event.sender, response, request.id)
+  } finally {
+    // Clean up the AbortController after streaming completes or fails
+    activeAbortControllers.delete(request.id)
+  }
+}
+
+function handleAbortStreamChat(
+  _event: IpcMainEvent,
+  request: AbortStreamChatRequest
+) {
+  const abortController = activeAbortControllers.get(request.id)
+
+  if (!abortController) {
+    return
+  }
+
+  abortController.abort()
+  activeAbortControllers.delete(request.id)
 }

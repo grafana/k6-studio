@@ -63,7 +63,10 @@ export class IPCChatTransport<Message extends UIMessage>
           // Handle abort signal
           if (options.abortSignal) {
             options.abortSignal.addEventListener('abort', () => {
-              controller.error(new Error('Aborted'))
+              stream.abort()
+              // Need to call error to stop the stream immediately,
+              // calling close would still proccess enqueued chunks
+              controller.error()
               cleanup()
             })
           }

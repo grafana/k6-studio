@@ -6,6 +6,7 @@ import {
   StreamChatChunk,
   StreamChatEnd,
   StreamChatError,
+  AbortStreamChatRequest,
 } from './types'
 
 export function streamChat(request: StreamChatRequest) {
@@ -53,6 +54,11 @@ export function streamChat(request: StreamChatRequest) {
       ipcRenderer.on(AiHandler.StreamChatError, handler)
       return () =>
         ipcRenderer.removeListener(AiHandler.StreamChatError, handler)
+    },
+
+    abort: () => {
+      const abortRequest: AbortStreamChatRequest = { id: request.id }
+      ipcRenderer.send(AiHandler.AbortStreamChat, abortRequest)
     },
   }
 }

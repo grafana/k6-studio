@@ -5,6 +5,7 @@ export enum AiHandler {
   StreamChatChunk = 'ai:streamChatChunk',
   StreamChatEnd = 'ai:streamChatEnd',
   StreamChatError = 'ai:streamChatError',
+  AbortStreamChat = 'ai:abortStreamChat',
 }
 
 export interface StreamChatRequest {
@@ -28,4 +29,8 @@ export interface StreamChatEnd {
 export interface StreamChatError {
   id: string
   error: string
+}
+
+export interface AbortStreamChatRequest {
+  id: string
 }
