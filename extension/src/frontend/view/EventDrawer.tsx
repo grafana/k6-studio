@@ -84,9 +84,10 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
   return (
     <RecordingContext recording>
       <Dialog.Root modal={false} open={open} onOpenChange={onOpenChange}>
-        <Dialog.Portal container={container}>
+        <Dialog.Portal container={container} forceMount>
           <Dialog.Overlay />
           <Dialog.Content
+            forceMount
             css={css`
               position: fixed;
               top: 0;
