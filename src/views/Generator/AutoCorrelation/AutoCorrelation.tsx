@@ -69,8 +69,6 @@ export function AutoCorrelation({
     return <IntroductionMessage onStart={start} />
   }
 
-  const showRuleControls = suggestedRules.length > 0 && !isLoading
-
   return (
     <Flex
       css={{
@@ -117,36 +115,30 @@ export function AutoCorrelation({
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        {isLoading && (
-          <Button
-            variant="outline"
-            onClick={stop}
-            disabled={!isLoading}
-            size="2"
-            color="red"
-          >
-            Stop
-          </Button>
-        )}
-        {showRuleControls && (
-          <>
-            <Button
-              variant="outline"
-              onClick={handleDiscard}
-              disabled={isLoading}
-              size="2"
-            >
-              Discard
-            </Button>
-            <Button
-              onClick={handleAccept}
-              disabled={isLoading || checkedRuleIds.length === 0}
-              size="2"
-            >
-              Accept ({checkedRuleIds.length})
-            </Button>
-          </>
-        )}
+        <Button
+          variant="outline"
+          onClick={stop}
+          disabled={!isLoading}
+          size="2"
+          color="red"
+        >
+          Stop
+        </Button>
+        <Button
+          variant="outline"
+          onClick={handleDiscard}
+          disabled={isLoading}
+          size="2"
+        >
+          Discard
+        </Button>
+        <Button
+          onClick={handleAccept}
+          disabled={isLoading || checkedRuleIds.length === 0}
+          size="2"
+        >
+          Accept
+        </Button>
       </Flex>
     </Flex>
   )
