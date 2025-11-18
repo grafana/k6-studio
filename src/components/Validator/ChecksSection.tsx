@@ -5,13 +5,13 @@ import { useMemo } from 'react'
 
 import { CollapsibleSection } from '@/components/CollapsibleSection'
 import { Table } from '@/components/Table'
-import { K6Check } from '@/types'
+import { Check } from '@/schemas/k6'
 
 import { CheckRow } from './CheckRow'
 import { groupChecksByPath } from './ChecksSection.utils'
 
 interface ChecksSectionProps {
-  checks: K6Check[]
+  checks: Check[]
   isRunning: boolean
 }
 

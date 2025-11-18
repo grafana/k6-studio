@@ -2,8 +2,8 @@ import { renderHook } from '@testing-library/react'
 import { act } from 'react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { LogEntry } from '@/schemas/k6'
 import { createK6Log } from '@/test/factories/k6Log'
-import { K6Log } from '@/types'
 
 import { useRunLogs } from './useRunLogs'
 
@@ -40,7 +40,7 @@ describe('useRunLogs', () => {
 
   it('should update logs when onScriptLog is called', () => {
     const mockLog = createK6Log()
-    onScriptLog.mockImplementation((callback: (log: K6Log) => void) => {
+    onScriptLog.mockImplementation((callback: (log: LogEntry) => void) => {
       callback(mockLog)
       return () => {}
     })

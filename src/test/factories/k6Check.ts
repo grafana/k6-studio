@@ -1,6 +1,6 @@
-import { K6Check } from '@/types'
+import { Check } from '@/schemas/k6'
 
-export function createK6Check(check?: Partial<K6Check>): K6Check {
+export function createK6Check(check?: Partial<Check>): Check {
   return {
     id: '1',
     name: 'Check',

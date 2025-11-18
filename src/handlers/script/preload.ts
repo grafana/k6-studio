@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-import { K6Log, K6Check } from '@/types'
+import { Check, LogEntry } from '@/schemas/k6'
 
 import { createListener } from '../utils'
 
@@ -40,7 +40,7 @@ export function stopScript() {
   ipcRenderer.send(ScriptHandler.Stop)
 }
 
-export function onScriptLog(callback: (data: K6Log) => void) {
+export function onScriptLog(callback: (data: LogEntry) => void) {
   return createListener(ScriptHandler.Log, callback)
 }
 
@@ -56,6 +56,6 @@ export function onScriptFailed(callback: () => void) {
   return createListener(ScriptHandler.Failed, callback)
 }
 
-export function onScriptCheck(callback: (data: K6Check[]) => void) {
+export function onScriptCheck(callback: (data: Check[]) => void) {
   return createListener(ScriptHandler.Check, callback)
 }

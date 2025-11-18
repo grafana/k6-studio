@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { K6Check } from '@/types'
+import { Check } from '@/schemas/k6'
 
 import {
   getPassPercentage,
@@ -8,7 +8,7 @@ import {
   hasFailures,
 } from './ChecksSection.utils'
 
-function buildCheck(data?: Partial<K6Check>) {
+function buildCheck(data?: Partial<Check>) {
   return {
     id: self.crypto.randomUUID(),
     name: 'test check',

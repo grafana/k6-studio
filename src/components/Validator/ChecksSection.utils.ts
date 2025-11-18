@@ -1,7 +1,7 @@
-import { K6Check } from '@/types'
+import { Check } from '@/schemas/k6'
 
-export function groupChecksByPath(checks: K6Check[]) {
-  const result: Record<string, K6Check[]> = {
+export function groupChecksByPath(checks: Check[]) {
+  const result: Record<string, Check[]> = {
     default: [],
   }
 
@@ -24,11 +24,11 @@ export function groupChecksByPath(checks: K6Check[]) {
   return result
 }
 
-export function hasFailures(check: K6Check) {
+export function hasFailures(check: Check) {
   return check.fails > 0
 }
 
-export function getPassPercentage(check: K6Check) {
+export function getPassPercentage(check: Check) {
   const total = check.passes + check.fails
   if (total === 0) {
     return 0
