@@ -1,4 +1,4 @@
-import { css, keyframes } from '@emotion/react'
+import { css } from '@emotion/react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -55,26 +55,6 @@ function useRecordedEvents() {
   return events
 }
 
-const slideIn = keyframes`
-  from {
-    transform: translateX(100%);
-    
-    }
-  to {
-      transform: translateX(0);
-  }
-`
-
-const slideOut = keyframes`
-  from {
-    transform: translateX(0);
-    
-    }
-  to {
-      transform: translateX(100%);
-  }
-`
-
 interface EventDrawerProps {
   open: boolean
   editing: boolean
@@ -104,9 +84,10 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
   return (
     <RecordingContext recording>
       <Dialog.Root modal={false} open={open} onOpenChange={onOpenChange}>
-        <Dialog.Portal container={container}>
+        <Dialog.Portal container={container} forceMount>
           <Dialog.Overlay />
           <Dialog.Content
+            forceMount
             css={css`
               position: fixed;
               top: 0;
@@ -126,16 +107,20 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
               overflow-y: hidden;
               overscroll-behavior: contain;
 
+              /* Default closed state */
+              transform: translateX(100%);
+              transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+
               &[data-state='open'] {
-                animation: ${slideIn} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+                transform: translateX(0);
               }
 
               &[data-state='closed'] {
-                animation: ${slideOut} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+                transform: translateX(100%);
               }
 
               @media (prefers-reduced-motion: reduce) {
-                animation: none;
+                transition: none;
               }
             `}
             onEscapeKeyDown={(event) => {
