@@ -35,7 +35,7 @@ function TabContent({
   )
 }
 
-type ValidatorTabs = 'script' | 'debugger' | 'network' | 'browser'
+type ValidatorTabs = 'script' | 'debugger'
 
 interface ValidatorProps {
   scriptPath: string
@@ -61,12 +61,7 @@ function Content({ scriptPath }: ValidatorProps) {
   }
 
   const handleTabChange = (tab: string) => {
-    if (
-      tab !== 'script' &&
-      tab !== 'debugger' &&
-      tab !== 'network' &&
-      tab !== 'browser'
-    ) {
+    if (tab !== 'script' && tab !== 'debugger') {
       return
     }
 
