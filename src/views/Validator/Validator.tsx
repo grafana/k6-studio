@@ -135,7 +135,6 @@ function Content({ scriptPath }: ValidatorProps) {
 
   return (
     <View
-      key={scriptPath}
       title="Validator"
       subTitle={<FileNameHeader file={file} canRename={!data?.isExternal} />}
       actions={
