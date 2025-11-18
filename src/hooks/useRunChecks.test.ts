@@ -2,8 +2,8 @@ import { renderHook } from '@testing-library/react'
 import { act } from 'react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { Check } from '@/schemas/k6'
 import { createK6Check } from '@/test/factories/k6Check'
-import { K6Check } from '@/types'
 
 import { useRunChecks } from './useRunChecks'
 
@@ -39,11 +39,11 @@ describe('useRunChecks', () => {
   })
 
   it('should update checks when onScriptCheck is called', () => {
-    const mockChecks: K6Check[] = [
+    const mockChecks: Check[] = [
       createK6Check({ id: '1', name: 'Check 1' }),
       createK6Check({ id: '2', name: 'Check 2' }),
     ]
-    onScriptCheck.mockImplementation((callback: (data: K6Check[]) => void) => {
+    onScriptCheck.mockImplementation((callback: (data: Check[]) => void) => {
       callback(mockChecks)
       return () => {}
     })

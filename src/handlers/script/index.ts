@@ -11,6 +11,7 @@ import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
+import { isExternalScript } from '@/utils/workspace'
 
 import { ScriptHandler } from './types'
 
@@ -52,6 +53,7 @@ export function initialize() {
     return {
       script,
       options: options ?? {},
+      isExternal: isExternalScript(resolvedScriptPath),
     }
   })
 
@@ -59,9 +61,9 @@ export function initialize() {
     console.info(`${ScriptHandler.Run} event received`)
     await waitForProxy()
 
-    const absolute = path.isAbsolute(scriptPath)
     const browserWindow = browserWindowFromEvent(event)
 
+    const absolute = path.isAbsolute(scriptPath)
     const resolvedScriptPath = absolute
       ? scriptPath
       : path.join(SCRIPTS_PATH, scriptPath)
@@ -76,7 +78,7 @@ export function initialize() {
     trackEvent({
       event: UsageEventName.ScriptValidated,
       payload: {
-        isExternal: !resolvedScriptPath.startsWith(SCRIPTS_PATH),
+        isExternal: isExternalScript(resolvedScriptPath),
       },
     })
   })

@@ -3,7 +3,8 @@ import { ReactNode, useEffect, useState } from 'react'
 import { ValidatorLayout } from '@/components/Validator/ValidatorLayout'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { K6Check, K6Log, ProxyData } from '@/types'
+import { Check, LogEntry } from '@/schemas/k6'
+import { ProxyData } from '@/types'
 import { RequestsSection } from '@/views/Recorder/RequestsSection'
 
 interface ValidatorResult {
@@ -11,8 +12,8 @@ interface ValidatorResult {
   proxyData: ProxyData[]
   noDataElement: ReactNode
   isRunning: boolean
-  logs: K6Log[]
-  checks: K6Check[]
+  logs: LogEntry[]
+  checks: Check[]
 }
 
 export function ValidatorResult({

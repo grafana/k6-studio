@@ -3,7 +3,7 @@ import { Tabs } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
 import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
-import { K6Check, K6Log } from '@/types'
+import { Check, LogEntry } from '@/schemas/k6'
 
 import { ReadOnlyEditor } from '../Monaco/ReadOnlyEditor'
 
@@ -13,8 +13,8 @@ import { LogsSection } from './LogsSection'
 interface ExecutionDetailsProps {
   isRunning: boolean
   script?: string
-  logs: K6Log[]
-  checks: K6Check[]
+  logs: LogEntry[]
+  checks: Check[]
 }
 
 export function ExecutionDetails({

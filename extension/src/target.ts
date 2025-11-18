@@ -1,5 +1,12 @@
 import { finder } from '@medv/finder'
-import { queryAllByRole, queryAllByTestId } from '@testing-library/dom'
+import {
+  queryAllByAltText,
+  queryAllByLabelText,
+  queryAllByPlaceholderText,
+  queryAllByRole,
+  queryAllByTestId,
+  queryAllByTitle,
+} from '@testing-library/dom'
 
 import {
   AriaDetails,
@@ -48,6 +55,116 @@ function generateRoleSelector(
   return selector
 }
 
+function generateAltTextSelector(element: Element): string | undefined {
+  if (
+    element instanceof HTMLImageElement === false &&
+    element instanceof HTMLAreaElement === false &&
+    element instanceof HTMLInputElement === false
+  ) {
+    return undefined
+  }
+
+  if (element instanceof HTMLInputElement && element.type !== 'image') {
+    return undefined
+  }
+
+  const alt = element.alt.trim()
+
+  if (alt === '') {
+    return undefined
+  }
+
+  const matches = queryAllByAltText(document.body, alt, { exact: true })
+
+  if (matches.length !== 1) {
+    return undefined
+  }
+
+  return alt
+}
+
+function generateLabelSelector(
+  element: Element,
+  { labels }: AriaDetails
+): string | undefined {
+  if (element instanceof HTMLElement === false) {
+    return undefined
+  }
+
+  for (const label of labels) {
+    const trimmed = label.trim()
+
+    const matches = queryAllByLabelText(document.body, trimmed, {
+      exact: true,
+    })
+
+    if (!matches.includes(element)) {
+      continue
+    }
+
+    if (matches.length > 1) {
+      continue
+    }
+
+    return trimmed
+  }
+
+  return undefined
+}
+
+function generatePlaceholderSelector(element: Element): string | undefined {
+  if (
+    element instanceof HTMLInputElement === false &&
+    element instanceof HTMLTextAreaElement === false
+  ) {
+    return undefined
+  }
+
+  const placeholder = element.placeholder.trim()
+
+  if (placeholder === '') {
+    return undefined
+  }
+
+  const matches = queryAllByPlaceholderText(document.body, placeholder, {
+    exact: true,
+  })
+
+  if (matches.length !== 1) {
+    return undefined
+  }
+
+  if (!matches.includes(element)) {
+    return undefined
+  }
+
+  return placeholder
+}
+
+function generateTitleSelector(element: Element): string | undefined {
+  if (element instanceof HTMLElement === false) {
+    return undefined
+  }
+
+  const title = element.title.trim()
+
+  if (title === '') {
+    return undefined
+  }
+
+  const matches = queryAllByTitle(document.body, title, { exact: true })
+
+  if (matches.length !== 1) {
+    return undefined
+  }
+
+  if (!matches.includes(element)) {
+    return undefined
+  }
+
+  return title
+}
+
 function generateTestIdSelector(element: Element): string | undefined {
   if (element instanceof HTMLElement === false) {
     return undefined
@@ -75,6 +192,10 @@ function generateSelectors(
   return {
     css: finder(element, {}),
     testId: generateTestIdSelector(element),
+    alt: generateAltTextSelector(element),
+    label: generateLabelSelector(element, aria),
+    placeholder: generatePlaceholderSelector(element),
+    title: generateTitleSelector(element),
     role: generateRoleSelector(element, aria),
   }
 }

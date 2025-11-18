@@ -78,6 +78,50 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
       })
       break
 
+    case 'label':
+      context.inline(node, {
+        type: 'NewLabelLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
+    case 'placeholder':
+      context.inline(node, {
+        type: 'NewPlaceholderLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
+    case 'title':
+      context.inline(node, {
+        type: 'NewTitleLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
+    case 'alt':
+      context.inline(node, {
+        type: 'NewAltTextLocatorExpression',
+        text: {
+          type: 'StringLiteral',
+          value: node.selector.text,
+        },
+        page,
+      })
+      break
+
     case 'test-id':
       context.inline(node, {
         type: 'NewTestIdLocatorExpression',
@@ -100,11 +144,7 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
       })
       break
 
-    case 'alt':
-    case 'label':
     case 'text':
-    case 'placeholder':
-    case 'title':
       throw new Error('Not implemented yet.')
 
     default:

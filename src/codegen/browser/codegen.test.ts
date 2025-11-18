@@ -978,3 +978,157 @@ it('should emit a css locator', async ({ expect }) => {
     '__snapshots__/browser/locators/css-locator.ts'
   )
 })
+
+it('should emit a getByAltText locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'alt',
+            text: 'Grot is happy',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
+          },
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/get-by-alt-text.ts'
+  )
+})
+
+it('should emit a getByLabel locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'label',
+            text: 'Username',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'type-text',
+          nodeId: 'type-text',
+          value: 'my-username',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/get-by-label.ts'
+  )
+})
+
+it('should emit a getByPlaceholder locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'placeholder',
+            text: 'Enter your email',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'type-text',
+          nodeId: 'type-text',
+          value: 'test@example.com',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/get-by-placeholder.ts'
+  )
+})
+
+it('should emit a getByTitle locator', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'title',
+            text: 'Submit your form',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          inputs: {
+            locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
+          },
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/locators/get-by-title.ts'
+  )
+})

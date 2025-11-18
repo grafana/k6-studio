@@ -17,5 +17,6 @@ export enum ScriptHandler {
 
 export interface OpenScriptResult {
   script: string
+  isExternal: boolean
   options: K6TestOptions
 }

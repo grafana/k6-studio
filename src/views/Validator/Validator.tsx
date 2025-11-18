@@ -11,10 +11,9 @@ import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
-import { K6TestOptions } from '@/utils/k6/schema'
 
 import { Debugger } from './Debugger'
-import { useDebugSession, useScriptPath } from './Validator.hooks'
+import { useDebugSession, useScript, useScriptPath } from './Validator.hooks'
 import { ValidatorControls } from './ValidatorControls'
 
 function TabContent({
@@ -38,49 +37,28 @@ function TabContent({
 
 type ValidatorTabs = 'script' | 'debugger' | 'network' | 'browser'
 
-export function ValidatorView() {
-  const { scriptPath, isExternal } = useScriptPath()
-
-  return (
-    <Validator
-      key={scriptPath}
-      scriptPath={scriptPath ?? ''}
-      isExternal={isExternal}
-    />
-  )
-}
-
 interface ValidatorProps {
   scriptPath: string
-  isExternal: boolean
 }
 
-function Validator({ scriptPath, isExternal }: ValidatorProps) {
+function Content({ scriptPath }: ValidatorProps) {
+  const { data, isLoading } = useScript(scriptPath)
+
   const [currentTab, setCurrentTab] = useState<ValidatorTabs>('script')
-
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
-
-  const [isLoading, setIsLoading] = useState(false)
-  const [isRunning, setIsRunning] = useState(false)
-
-  const [script, setScript] = useState('')
-  const [options, setOptions] = useState<K6TestOptions>({})
 
   const navigate = useNavigate()
   const showToast = useToast()
 
-  const { session, startDebugging, stopDebugging } = useDebugSession(
-    scriptPath ?? ''
-  )
+  const { session, startDebugging, stopDebugging } = useDebugSession(scriptPath)
 
-  const file: StudioFile | undefined =
-    !isExternal && scriptPath
-      ? {
-          type: 'script',
-          fileName: scriptPath,
-          displayName: getFileNameWithoutExtension(scriptPath),
-        }
-      : undefined
+  const isRunning = session?.state === 'running'
+
+  const file: StudioFile = {
+    type: 'script',
+    fileName: scriptPath,
+    displayName: getFileNameWithoutExtension(scriptPath),
+  }
 
   const handleTabChange = (tab: string) => {
     if (
@@ -96,42 +74,18 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
   }
 
   const handleSelectExternalScript = useCallback(async () => {
-    const externalScriptPath =
-      await window.studio.script.showScriptSelectDialog()
+    const newScriptPath = await window.studio.script.showScriptSelectDialog()
 
-    if (!externalScriptPath) {
+    if (!newScriptPath) {
       return
     }
 
-    navigate(getRoutePath('validator', {}), {
-      state: { externalScriptPath },
-    })
+    navigate(
+      getRoutePath('validator', {
+        fileName: encodeURIComponent(newScriptPath),
+      })
+    )
   }, [navigate])
-
-  useEffect(() => {
-    if (!scriptPath) {
-      return
-    }
-
-    setIsLoading(true)
-
-    window.studio.script
-      .openScript(scriptPath)
-      .then(({ script, options }) => {
-        setScript(script)
-        setOptions(options)
-      })
-      .catch(() => {
-        showToast({
-          status: 'error',
-          title: 'Failed to open the script',
-          description: 'An error occurred while opening the script.',
-        })
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }, [scriptPath, isExternal, showToast])
 
   async function handleDeleteScript() {
     if (!file) {
@@ -147,7 +101,6 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
       return
     }
 
-    setIsRunning(true)
     setCurrentTab('debugger')
 
     await startDebugging()
@@ -160,7 +113,6 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
   async function handleStopScript() {
     await stopDebugging()
 
-    setIsRunning(false)
     showToast({
       title: 'Script execution stopped',
       description: 'The script execution was stopped by the user',
@@ -169,7 +121,6 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
 
   useEffect(() => {
     return window.studio.script.onScriptFinished(() => {
-      setIsRunning(false)
       showToast({
         title: 'Script execution finished',
         status: 'success',
@@ -179,7 +130,6 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
 
   useEffect(() => {
     return window.studio.script.onScriptFailed(() => {
-      setIsRunning(false)
       showToast({
         title: 'Script execution finished',
         description: 'The script finished running with errors',
@@ -192,13 +142,11 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
     <View
       key={scriptPath}
       title="Validator"
-      subTitle={file ? <FileNameHeader file={file} /> : null}
-      loading={isLoading}
+      subTitle={<FileNameHeader file={file} canRename={!data?.isExternal} />}
       actions={
         <ValidatorControls
           isRunning={isRunning}
-          isExternal={isExternal}
-          isScriptSelected={Boolean(scriptPath)}
+          canDelete={data !== undefined && !data.isExternal}
           onDeleteScript={handleDeleteScript}
           onRunScript={handleDebugScript}
           onRunInCloud={handleRunInCloud}
@@ -206,6 +154,7 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
           onStopScript={handleStopScript}
         />
       }
+      loading={isLoading}
     >
       <Tabs.Root
         key={scriptPath}
@@ -220,7 +169,7 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
           </Tabs.List>
           <TabContent value="script">
             <Box position="absolute" inset="0">
-              <ReadOnlyEditor value={script} language="javascript" />
+              <ReadOnlyEditor value={data?.script} language="javascript" />
             </Box>
           </TabContent>
           <TabContent value="debugger">
@@ -231,7 +180,7 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
               justify="center"
             >
               <Debugger
-                options={options}
+                options={data?.options ?? {}}
                 session={session}
                 onDebugScript={handleDebugScript}
               />
@@ -251,4 +200,10 @@ function Validator({ scriptPath, isExternal }: ValidatorProps) {
       )}
     </View>
   )
+}
+
+export function Validator() {
+  const scriptPath = useScriptPath()
+
+  return <Content key={scriptPath} scriptPath={scriptPath} />
 }

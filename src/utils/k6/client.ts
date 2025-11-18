@@ -3,8 +3,7 @@ import { app } from 'electron'
 import path from 'path'
 import readline from 'readline/promises'
 
-import { LogEntrySchema } from '@/schemas/k6'
-import { K6Log } from '@/types'
+import { LogEntry, LogEntrySchema } from '@/schemas/k6'
 import { getArch, getPlatform } from '@/utils/electron'
 
 import { parseJsonAsSchema } from '../json'
@@ -53,9 +52,9 @@ interface RunArgs {
 
 export class ArchiveError extends Error {
   code: number | null
-  stderr: K6Log[]
+  stderr: LogEntry[]
 
-  constructor(code: number | null, stderr: K6Log[]) {
+  constructor(code: number | null, stderr: LogEntry[]) {
     super('Failed to archive script')
 
     this.code = code

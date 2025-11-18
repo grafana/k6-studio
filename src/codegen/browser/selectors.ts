@@ -21,12 +21,12 @@ export interface GetByAltTextSelector {
 
 export interface GetByLabelSelector {
   type: 'label'
-  label: string
+  text: string
 }
 
 export interface GetByPlaceholderSelector {
   type: 'placeholder'
-  placeholder: string
+  text: string
 }
 
 export interface GetByTextSelector {
@@ -36,7 +36,7 @@ export interface GetByTextSelector {
 
 export interface GetByTitleSelector {
   type: 'title'
-  title: string
+  text: string
 }
 
 export interface GetByTestIdSelector {
@@ -66,6 +66,58 @@ function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
   }
 }
 
+function getAltTextSelector(
+  selectors: ElementSelector
+): GetByAltTextSelector | null {
+  if (selectors.alt === undefined) {
+    return null
+  }
+
+  return {
+    type: 'alt',
+    text: selectors.alt,
+  }
+}
+
+function getLabelSelector(
+  selectors: ElementSelector
+): GetByLabelSelector | null {
+  if (selectors.label === undefined) {
+    return null
+  }
+
+  return {
+    type: 'label',
+    text: selectors.label,
+  }
+}
+
+function getPlaceholderSelector(
+  selectors: ElementSelector
+): GetByPlaceholderSelector | null {
+  if (selectors.placeholder === undefined) {
+    return null
+  }
+
+  return {
+    type: 'placeholder',
+    text: selectors.placeholder,
+  }
+}
+
+function getTitleSelector(
+  selectors: ElementSelector
+): GetByTitleSelector | null {
+  if (selectors.title === undefined) {
+    return null
+  }
+
+  return {
+    type: 'title',
+    text: selectors.title,
+  }
+}
+
 function getTestIdSelector(
   selectors: ElementSelector
 ): GetByTestIdSelector | null {
@@ -89,6 +141,10 @@ function getCssSelector(selectors: ElementSelector): CssSelector {
 export function getNodeSelector(selector: ElementSelector): NodeSelector {
   return (
     getRoleSelector(selector) ??
+    getLabelSelector(selector) ??
+    getAltTextSelector(selector) ??
+    getPlaceholderSelector(selector) ??
+    getTitleSelector(selector) ??
     getTestIdSelector(selector) ??
     getCssSelector(selector)
   )
@@ -109,16 +165,16 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
       return b.type === 'alt' && a.text === b.text
 
     case 'label':
-      return b.type === 'label' && a.label === b.label
+      return b.type === 'label' && a.text === b.text
 
     case 'placeholder':
-      return b.type === 'placeholder' && a.placeholder === b.placeholder
+      return b.type === 'placeholder' && a.text === b.text
 
     case 'text':
       return b.type === 'text' && a.text === b.text
 
     case 'title':
-      return b.type === 'title' && a.title === b.title
+      return b.type === 'title' && a.text === b.text
 
     default:
       return exhaustive(a)

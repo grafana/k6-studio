@@ -1,13 +1,13 @@
 import { css } from '@emotion/react'
 import {
   BracesIcon,
+  CaptionsIcon,
   CaseSensitiveIcon,
-  HashIcon,
   ImageIcon,
   LucideProps,
-  SpaceIcon,
   TagIcon,
   TestTubeDiagonalIcon,
+  WholeWordIcon,
 } from 'lucide-react'
 
 import { NodeSelector } from '@/codegen/browser/selectors'
@@ -19,6 +19,10 @@ interface LocatorComponentProps extends LucideProps {
   locator: NodeSelector
 }
 
+function quote(str: string) {
+  return `"${str}"`
+}
+
 function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
   switch (locator.type) {
     case 'css':
@@ -27,23 +31,23 @@ function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
     case 'test-id':
       return <TestTubeDiagonalIcon {...props} />
 
-    case 'role':
-      return <RoleLocatorIcon selector={locator} {...props} />
-
     case 'alt':
       return <ImageIcon {...props} />
 
     case 'label':
       return <TagIcon {...props} />
 
+    case 'placeholder':
+      return <WholeWordIcon {...props} />
+
+    case 'title':
+      return <CaptionsIcon {...props} />
+
     case 'text':
       return <CaseSensitiveIcon {...props} />
 
-    case 'placeholder':
-      return <SpaceIcon {...props} />
-
-    case 'title':
-      return <HashIcon {...props} />
+    case 'role':
+      return <RoleLocatorIcon selector={locator} {...props} />
 
     default:
       return exhaustive(locator)
@@ -58,27 +62,27 @@ function LocatorText({ locator }: LocatorComponentProps) {
     case 'test-id':
       return <code>{locator.testId}</code>
 
-    case 'role':
-      return (
-        <>
-          <strong>{locator.role}</strong> {`"${locator.name}"`}
-        </>
-      )
+    case 'label':
+      return <code>{quote(locator.text)}</code>
+
+    case 'placeholder':
+      return <code>{quote(locator.text)}</code>
+
+    case 'title':
+      return <code>{quote(locator.text)}</code>
 
     case 'alt':
-      return <code>{locator.text}</code>
-
-    case 'label':
-      return <code>{locator.label}</code>
+      return <code>{quote(locator.text)}</code>
 
     case 'text':
       return <code>{locator.text}</code>
 
-    case 'placeholder':
-      return <code>{locator.placeholder}</code>
-
-    case 'title':
-      return <code>{locator.title}</code>
+    case 'role':
+      return (
+        <>
+          <strong>{locator.role}</strong> {quote(locator.name)}
+        </>
+      )
 
     default:
       return exhaustive(locator)

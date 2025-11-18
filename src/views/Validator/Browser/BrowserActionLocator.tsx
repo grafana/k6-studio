@@ -33,13 +33,13 @@ function toNodeSelector(locator: ActionLocator): NodeSelector {
     case 'label':
       return {
         type: 'label',
-        label: locator.label,
+        text: locator.label,
       }
 
     case 'placeholder':
       return {
         type: 'placeholder',
-        placeholder: locator.placeholder,
+        text: locator.placeholder,
       }
 
     case 'text':
@@ -51,7 +51,7 @@ function toNodeSelector(locator: ActionLocator): NodeSelector {
     case 'title':
       return {
         type: 'title',
-        title: locator.title,
+        text: locator.title,
       }
 
     default:

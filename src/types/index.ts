@@ -66,22 +66,6 @@ export interface ProxyData {
 
 export type ProxyDataWithResponse = ProxyData & { response: Response }
 
-export interface K6Log {
-  level: 'info' | 'debug' | 'warning' | 'error'
-  msg: string
-  source?: string
-  time: string
-  error?: string
-}
-
-export interface K6Check {
-  id: string
-  name: string
-  path: string
-  passes: number
-  fails: number
-}
-
 export interface Group {
   id: string
   name: string

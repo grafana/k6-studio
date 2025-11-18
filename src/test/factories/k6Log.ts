@@ -1,6 +1,6 @@
-import { K6Log } from '@/types'
+import { LogEntry } from '@/schemas/k6'
 
-export function createK6Log(log?: Partial<K6Log>): K6Log {
+export function createK6Log(log?: Partial<LogEntry>): LogEntry {
   return {
     error: '',
     msg: 'Log',

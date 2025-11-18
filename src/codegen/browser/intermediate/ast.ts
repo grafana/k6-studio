@@ -24,6 +24,30 @@ export interface NewTestIdLocatorExpression {
   page: Expression
 }
 
+export interface NewAltTextLocatorExpression {
+  type: 'NewAltTextLocatorExpression'
+  text: Expression
+  page: Expression
+}
+
+export interface NewLabelLocatorExpression {
+  type: 'NewLabelLocatorExpression'
+  text: Expression
+  page: Expression
+}
+
+export interface NewPlaceholderLocatorExpression {
+  type: 'NewPlaceholderLocatorExpression'
+  text: Expression
+  page: Expression
+}
+
+export interface NewTitleLocatorExpression {
+  type: 'NewTitleLocatorExpression'
+  text: Expression
+  page: Expression
+}
+
 export interface NewRoleLocatorExpression {
   type: 'NewRoleLocatorExpression'
   role: Expression
@@ -140,6 +164,10 @@ export type Expression =
   | StringLiteral
   | NewPageExpression
   | NewRoleLocatorExpression
+  | NewLabelLocatorExpression
+  | NewPlaceholderLocatorExpression
+  | NewTitleLocatorExpression
+  | NewAltTextLocatorExpression
   | NewCssLocatorExpression
   | NewTestIdLocatorExpression
   | GotoExpression

@@ -1,23 +1,35 @@
+import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import invariant from 'tiny-invariant'
 
 import { useBrowserActions } from '@/hooks/useBrowserActions'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
 
+import { DebuggerState } from './types'
+
 export function useScriptPath() {
   const { fileName } = useParams()
-  // TODO(router): useLocation is not type-safe. Refactor this route to avoid using it.
-  const { state } = useLocation() as { state: { externalScriptPath: string } }
 
-  return {
-    scriptPath: state?.externalScriptPath ? state.externalScriptPath : fileName,
-    isExternal: Boolean(state?.externalScriptPath),
-  }
+  invariant(fileName, 'fileName param is required')
+
+  return fileName
 }
 
-type DebuggerState = 'pending' | 'running' | 'stopped'
+export function useScript(fileName: string) {
+  return useQuery({
+    queryKey: ['script', fileName],
+    queryFn: async () => {
+      return window.studio.script.openScript(fileName)
+    },
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+  })
+}
 
 export function useDebugSession(scriptPath: string) {
   const [state, setState] = useState<DebuggerState>('pending')
@@ -59,14 +71,14 @@ export function useDebugSession(scriptPath: string) {
   }, [])
 
   useEffect(() => {
-    return window.studio.script.onScriptStopped(() => {
+    return window.studio.script.onScriptFinished(() => {
       setState('stopped')
     })
   }, [])
 
   const session = useMemo(() => {
     return {
-      running: state === 'running',
+      state,
       requests: proxyData,
       browserActions,
       logs,

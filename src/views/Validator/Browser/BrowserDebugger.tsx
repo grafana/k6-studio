@@ -101,7 +101,7 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
                 </Flex>
 
                 <Flex gap="2" align="center">
-                  {session.running && (
+                  {session.state === 'running' && (
                     <Label>
                       <Text size="2">Tail log</Text>
                       <Switch
@@ -113,7 +113,7 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
                 </Flex>
               </Flex>
               <AutoScrollArea
-                tail={session.running && tailActions}
+                tail={session.state === 'running' && tailActions}
                 items={session.browserActions.length}
                 onScrollBack={handleActionsScrollBack}
               >
