@@ -1,5 +1,3 @@
-import { LogEntry, Check as CheckFromSchema } from '@/schemas/k6'
-
 import { Match } from './fuse'
 
 // TODO: modify json_output.py to use CamelCase instead of snake_case
@@ -67,16 +65,6 @@ export interface ProxyData {
 }
 
 export type ProxyDataWithResponse = ProxyData & { response: Response }
-
-/**
- * @deprecated Use LogEntry from '@/schemas/k6' instead.
- */
-export type K6Log = LogEntry
-
-/**
- * @deprecated Use Check from '@/schemas/k6' instead.
- */
-export type K6Check = CheckFromSchema
 
 export interface Group {
   id: string

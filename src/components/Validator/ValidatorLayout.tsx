@@ -3,13 +3,13 @@ import { Allotment } from 'allotment'
 import { ReactNode } from 'react'
 
 import { ExecutionDetails } from '@/components/Validator/ExecutionDetails'
-import { K6Check, K6Log } from '@/types'
+import { Check, LogEntry } from '@/schemas/k6'
 
 interface ValidatorLayoutProps {
   isRunning: boolean
   script: string
-  logs: K6Log[]
-  checks: K6Check[]
+  logs: LogEntry[]
+  checks: Check[]
   details: ReactNode
   children: ReactNode
 }

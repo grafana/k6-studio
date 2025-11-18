@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { K6Log } from '@/types'
+import { LogEntry } from '@/schemas/k6'
 
 export function useRunLogs() {
-  const [logs, setLogs] = useState<K6Log[]>([])
+  const [logs, setLogs] = useState<LogEntry[]>([])
 
   const resetLogs = useCallback(() => {
     setLogs([])

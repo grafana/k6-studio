@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { K6Check } from '@/types'
+import { Check } from '@/schemas/k6'
 
 export function useRunChecks() {
-  const [checks, setChecks] = useState<K6Check[]>([])
+  const [checks, setChecks] = useState<Check[]>([])
 
   const resetChecks = useCallback(() => {
     setChecks([])

@@ -1,11 +1,11 @@
 import { Table } from '@radix-ui/themes'
 import { CircleCheckIcon, CircleXIcon } from 'lucide-react'
 
-import { K6Check } from '@/types'
+import { Check } from '@/schemas/k6'
 
 import { hasFailures, getPassPercentage } from './ChecksSection.utils'
 
-export function CheckRow({ check }: { check: K6Check }) {
+export function CheckRow({ check }: { check: Check }) {
   return (
     <Table.Row key={check.id}>
       <Table.RowHeaderCell>
