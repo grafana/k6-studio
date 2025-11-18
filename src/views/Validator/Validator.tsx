@@ -24,12 +24,12 @@ function Content({ scriptPath }: ValidatorProps) {
 
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
-  const [isRunning, setIsRunning] = useState(false)
-
   const navigate = useNavigate()
   const showToast = useToast()
 
   const { session, startDebugging, stopDebugging } = useDebugSession(scriptPath)
+
+  const isRunning = session?.state === 'running'
 
   const file: StudioFile = {
     type: 'script',
@@ -65,8 +65,6 @@ function Content({ scriptPath }: ValidatorProps) {
       return
     }
 
-    setIsRunning(true)
-
     await startDebugging()
   }
 
@@ -77,7 +75,6 @@ function Content({ scriptPath }: ValidatorProps) {
   async function handleStopScript() {
     await stopDebugging()
 
-    setIsRunning(false)
     showToast({
       title: 'Script execution stopped',
       description: 'The script execution was stopped by the user',
@@ -86,7 +83,6 @@ function Content({ scriptPath }: ValidatorProps) {
 
   useEffect(() => {
     return window.studio.script.onScriptFinished(() => {
-      setIsRunning(false)
       showToast({
         title: 'Script execution finished',
         status: 'success',
@@ -96,7 +92,6 @@ function Content({ scriptPath }: ValidatorProps) {
 
   useEffect(() => {
     return window.studio.script.onScriptFailed(() => {
-      setIsRunning(false)
       showToast({
         title: 'Script execution finished',
         description: 'The script finished running with errors',
@@ -126,7 +121,6 @@ function Content({ scriptPath }: ValidatorProps) {
         <ValidatorContent
           script={data.script}
           session={session}
-          isRunning={isRunning}
           noDataElement={
             <EmptyMessage
               message={

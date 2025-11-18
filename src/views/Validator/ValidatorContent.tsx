@@ -12,17 +12,17 @@ interface ValidatorContentProps {
   script: string
   session: DebugSession | null
   noDataElement: ReactNode
-  isRunning: boolean
 }
 
 export function ValidatorContent({
   script,
   session,
-  isRunning,
   noDataElement,
 }: ValidatorContentProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const groups = useProxyDataGroups(session?.requests ?? [])
+
+  const isRunning = session?.state === 'running'
 
   useEffect(() => {
     setSelectedRequest(null)

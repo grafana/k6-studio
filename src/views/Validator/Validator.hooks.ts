@@ -7,6 +7,8 @@ import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
 
+import { DebuggerState } from './types'
+
 export function useScriptPath() {
   const { fileName } = useParams()
 
@@ -27,8 +29,6 @@ export function useScript(fileName: string) {
     staleTime: 0,
   })
 }
-
-type DebuggerState = 'pending' | 'running' | 'stopped'
 
 export function useDebugSession(scriptPath: string) {
   const [state, setState] = useState<DebuggerState>('pending')
@@ -68,14 +68,14 @@ export function useDebugSession(scriptPath: string) {
   }, [])
 
   useEffect(() => {
-    return window.studio.script.onScriptStopped(() => {
+    return window.studio.script.onScriptFinished(() => {
       setState('stopped')
     })
   }, [])
 
   const session = useMemo(() => {
     return {
-      running: state === 'running',
+      state,
       requests: proxyData,
       logs,
       checks,
