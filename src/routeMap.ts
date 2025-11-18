@@ -1,6 +1,6 @@
-import { generatePath as baseGeneratePath } from 'react-router-dom'
+import { generatePath } from 'react-router-dom'
 
-export const routes = {
+const routes = {
   home: '/',
   recorder: '/recorder',
   recordingPreviewer: '/recording-previewer/:fileName',
@@ -19,7 +19,7 @@ export function getRoutePath(
   name: RouteName,
   params?: Record<string, string | number> | 0 | false | null
 ) {
-  return params ? baseGeneratePath(getRoute(name), params) : getRoute(name)
+  return params ? generatePath(getRoute(name), params) : getRoute(name)
 }
 
 export const routeMap = {
