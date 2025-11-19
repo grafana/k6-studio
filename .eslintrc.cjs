@@ -23,6 +23,7 @@ module.exports = {
     'install-k6.js',
     '.eslintrc.cjs',
     '**/__snapshots__/',
+    'specs/**/*.spec.ts',
   ],
   plugins: [
     'import',
@@ -80,4 +81,14 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
   },
+
+  overrides: [
+    {
+      files: ['specs/**/*.spec.ts'],
+      rules: {
+        '@typescript-eslint/no-floating-promises': 'off',
+        '@typescript-eslint/no-misused-promises': 'off',
+      },
+    },
+  ],
 }

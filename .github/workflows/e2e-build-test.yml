@@ -1,0 +1,207 @@
+name: Reusable Build & E2E Test Workflow
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version suffix to apply before building
+        required: false
+        type: string
+        default: "e2e"
+      build-command:
+        description: npm script to execute (publish/package)
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  build-test:
+    name: Build & test ${{ matrix.platform }} (${{ inputs.build-command }})
+    environment: azure-trusted-signing
+    permissions:
+      contents: write
+      id-token: write
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            app-path: "out/k6 Studio-darwin-arm64/k6 Studio.app/Contents/MacOS/k6-studio"
+          - platform: macos-13
+            app-path: "out/k6 Studio-darwin-x64/k6 Studio.app/Contents/MacOS/k6-studio"
+          - platform: windows-latest
+            app-path: "out\\k6 Studio-win32-x64\\k6-studio.exe"
+          - platform: ubuntu-latest
+            app-path: "out/k6 Studio-linux-x64/k6-studio"
+    env:
+      BUILD_COMMAND: ${{ inputs.build-command }}
+
+    steps:
+      - id: get-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
+        with:
+          repo_secrets: |
+            APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
+            CERTIFICATE_PASSWORD=apple-certificates:APPLE_CERTIFICATE_P12_PASSWORD
+            APPLE_API_KEY_ID=apple-certificates:APPLE_API_KEY_ID
+            APPLE_API_ISSUER=apple-certificates:APPLE_API_ISSUER
+            APPLE_API_KEY=apple-certificates:APPLE_API_KEY
+            SENTRY_DSN=sentry:SENTRY_DSN
+            SENTRY_AUTH_TOKEN=sentry:SENTRY_AUTH_TOKEN
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set version for test release
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
+        run: python update_version.py
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # try earlier python version for appdmg
+      # https://github.com/electron/forge/issues/3371#issuecomment-2105195302
+      - name: Install Python 3.11.4
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11.4'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: setup macos keychain
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-13'
+        run: |
+          echo "$APPLE_API_KEY" > ./apple_api_key.p8
+          echo $APPLE_CERTIFICATE_P12 | base64 --decode > certificate.p12
+          security create-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$CERTIFICATE_PASSWORD" build.keychain
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
+
+      - name: build macOS arm64
+        if: matrix.platform == 'macos-latest'
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # apple notarization
+          APPLE_API_KEY: ./apple_api_key.p8
+          # sentry integration
+          # sentry vite plugin integration during build
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: npm run ${{ env.BUILD_COMMAND }}
+
+      - name: build macOS x86_64
+        if: matrix.platform == 'macos-13'
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # apple notarization
+          APPLE_API_KEY: ./apple_api_key.p8
+          # sentry integration
+          # sentry vite plugin integration during build
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: npm run ${{ env.BUILD_COMMAND }} -- --arch=x64
+
+      - name: Get azure secrets
+        id: get-azure-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
+        if: matrix.platform == 'windows-latest'
+        with:
+          export_env: false
+          repo_secrets: |
+            client-id=azure-trusted-signing:client-id
+            subscription-id=azure-trusted-signing:subscription-id
+            tenant-id=azure-trusted-signing:tenant-id
+
+      - name: Azure log in
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        if: matrix.platform == 'windows-latest'
+        with:
+          client-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).client-id }}
+          subscription-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).subscription-id }}
+          tenant-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).tenant-id }}
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
+        if: matrix.platform == 'windows-latest'
+        with:
+          # renovate: datasource=dotnet-version depName=dotnet-sdk
+          dotnet-version: "8.0.414"
+
+      - name: Install Sign CLI tool
+        id: install-sign-tool
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        env:
+          # renovate: datasource=nuget depName=sign
+          DOTNET_SIGN_VERSION: "0.9.1-beta.25379.1"
+        run: |
+          $toolPath = Join-Path -Path ${env:RUNNER_TEMP} -ChildPath (New-Guid).ToString()
+          New-Item -ItemType Directory -Path $toolPath | Out-Null
+
+          dotnet tool install --tool-path $toolPath sign --version ${env:DOTNET_SIGN_VERSION}
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Output "::error::Failed to install Sign CLI tool"
+            exit 1
+          }
+
+          "sign-tool=$toolPath" >> ${env:GITHUB_OUTPUT}
+
+      - name: build Windows
+        if: matrix.platform == 'windows-latest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # windows cert
+          TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
+          TRUSTED_SIGNING_ENDPOINT: https://eus.codesigning.azure.net/
+          TRUSTED_SIGNING_PROFILE: grafana-production
+          SIGNTOOL_PATH: ${{ steps.install-sign-tool.outputs.sign-tool }}\sign
+          # sentry integration
+          # sentry vite plugin integration during build
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: npm run ${{ env.BUILD_COMMAND }}
+
+      - name: build Linux
+        if: matrix.platform == 'ubuntu-latest'
+        env:
+          NODE_OPTIONS: '--max_old_space_size=8192'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # sentry integration
+          # sentry vite plugin integration during build
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: |
+          sudo apt install -y rpm
+
+          # There is a bug on Ubuntu 22.04 (ubuntu-latest) regarding stripping a binary for a different architecture.
+          # https://github.com/electron/forge/issues/3102
+          # https://github.com/electron/forge/issues/3701
+          echo "%__strip /bin/true" >> ~/.rpmmacros
+
+          npm run ${{ env.BUILD_COMMAND }}
+          npm run ${{ env.BUILD_COMMAND }} -- --arch=arm64
+
+      - name: cleanup macos certificates
+        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-13'
+        run: |
+          rm apple_api_key.p8
+          rm certificate.p12
+
+      - name: E2E tests
+        run: |
+          echo "Running tests for platform: ${{ matrix.platform }}"
+          echo "Using app path: ${{ matrix.app-path }}"
+          npm run wdio -- --app-path="${{ github.workspace }}/${{ matrix.app-path }}"
+
