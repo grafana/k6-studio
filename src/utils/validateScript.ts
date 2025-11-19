@@ -5,7 +5,10 @@ import { processProxyData } from './proxyData'
 /**
  * Validates a k6 script by running it and collecting proxy data
  */
-export async function validateScript(script: string): Promise<ProxyData[]> {
+export async function validateScript(
+  script: string,
+  signal?: AbortSignal
+): Promise<ProxyData[]> {
   let collectedData: ProxyData[] = []
 
   return new Promise((resolve, reject) => {
@@ -18,6 +21,15 @@ export async function validateScript(script: string): Promise<ProxyData[]> {
       unsubscribeProxyData()
       unsubscribeScriptFinished()
       unsubscribeScriptFailed()
+    }
+
+    // Handle abort signal
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        cleanup()
+        window.studio.script.stopScript()
+        reject(new DOMException('Aborted', 'AbortError'))
+      })
     }
 
     // Set up proxy data listener

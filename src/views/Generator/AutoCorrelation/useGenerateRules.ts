@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { applyRules } from '@/rules/rules'
 import {
@@ -32,6 +32,7 @@ export const useGenerateRules = ({
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
   const suggestedRulesRef = useRef(suggestedRules)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
 
@@ -129,7 +130,10 @@ export const useGenerateRules = ({
       recording
     )
 
-    const validationResult = await validateScript(script)
+    const validationResult = await validateScript(
+      script,
+      abortControllerRef.current?.signal
+    )
 
     const result = validationMatchesRecording(recording, validationResult)
     setIsValidationSuccessful(result.success)
@@ -147,26 +151,42 @@ export const useGenerateRules = ({
     setIsValidationSuccessful(false)
     setCorrelationStatus('validating')
 
-    const validationResult = await runValidation()
+    try {
+      const validationResult = await runValidation()
 
-    if (validationResult.success) {
-      setCorrelationStatus('correlation-not-needed')
-      setOutcomeReason(
-        'The script validation passed successfully. The current generator configuration is sufficient to handle all requests in the recording, so no additional auto-generated correlation rules are required.'
-      )
-      return
+      if (validationResult.success) {
+        setCorrelationStatus('correlation-not-needed')
+        setOutcomeReason(
+          'The script validation passed successfully. The current generator configuration is sufficient to handle all requests in the recording, so no additional auto-generated correlation rules are required.'
+        )
+        return
+      }
+
+      // TODO: we are sending just one failing request for context, should we send all?
+      return sendMessage({
+        text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
+      })
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return
+      }
+      console.error(error)
+      setCorrelationStatus('error')
+      setOutcomeReason('An error occurred during auto-correlation.')
     }
-
-    // TODO: we are sending just one failing request for context, should we send all?
-    return sendMessage({
-      text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
-    })
   }
   function stop() {
-    window.studio.script.stopScript()
     void stopGeneration()
     setCorrelationStatus('aborted')
+    abortControllerRef.current?.abort()
   }
+
+  useEffect(() => {
+    abortControllerRef.current = new AbortController()
+    return () => {
+      abortControllerRef.current?.abort()
+    }
+  }, [])
 
   return {
     start,
