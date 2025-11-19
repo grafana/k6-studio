@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'fs'
 import { writeFile, open } from 'fs/promises'
 import path from 'path'
 
+import { resetAiModel } from '@/handlers/ai/model'
 import { configureSystemProxy } from '@/services/http'
 
 import { AppSettingsSchema } from '../schemas/settings'
@@ -79,7 +80,9 @@ export async function saveSettings(settings: Partial<AppSettings>) {
   const currentSettings = await getSettings()
   const newSettings = { ...currentSettings, ...settings }
 
-  newSettings.ai.apiKey = processApiKeyForStorage(newSettings.ai.apiKey)
+  if (currentSettings.ai.apiKey !== newSettings.ai.apiKey) {
+    newSettings.ai.apiKey = processApiKeyForStorage(newSettings.ai.apiKey)
+  }
 
   await writeFile(filePath, JSON.stringify(newSettings))
   return getSettingsDiff(currentSettings, settings)
@@ -182,7 +185,7 @@ export async function applySettings(
 
   if (modifiedSettings.ai) {
     k6StudioState.appSettings.ai = modifiedSettings.ai
-    // TODO: re-initialize AI client with new settings
+    resetAiModel()
   }
 }
 
