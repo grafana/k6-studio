@@ -47,12 +47,12 @@ export interface GetByTestIdSelector {
 export type NodeSelector =
   | CssSelector
   | GetByRoleSelector
-  | GetByTestIdSelector
   | GetByAltTextSelector
   | GetByLabelSelector
   | GetByPlaceholderSelector
   | GetByTextSelector
   | GetByTitleSelector
+  | GetByTestIdSelector
 
 function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
   if (selectors.role === undefined) {

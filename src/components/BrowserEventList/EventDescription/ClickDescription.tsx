@@ -1,4 +1,4 @@
-import { ClickText } from '@/components/Browser/ClickText'
+import { ClickPill } from '@/components/Browser/ClickPill'
 import { ClickEvent } from '@/schemas/recording'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
@@ -15,7 +15,7 @@ export function ClickDescription({
 }: ClickDescriptionProps) {
   return (
     <>
-      <ClickText pastTense details={event} /> on element{' '}
+      <ClickPill pastTense details={event} /> on element{' '}
       <Selector selectors={event.target.selectors} onHighlight={onHighlight} />
     </>
   )

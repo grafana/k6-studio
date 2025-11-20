@@ -50,12 +50,12 @@ function getButtonDescription(
   }
 }
 
-interface ClickTextProps {
+interface ClickPillProps {
   pastTense?: boolean
   details: ClickDetails
 }
 
-export function ClickText({ pastTense = false, details }: ClickTextProps) {
+export function ClickPill({ pastTense = false, details }: ClickPillProps) {
   const clickedText = getModifierKeys(details.modifiers)
     .concat(getButtonDescription(details.button, pastTense))
     .join(' + ')

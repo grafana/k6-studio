@@ -1,4 +1,4 @@
-import { ClickText } from '@/components/Browser/ClickText'
+import { ClickPill } from '@/components/Browser/ClickPill'
 import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
@@ -33,7 +33,7 @@ export function BrowserActionText({ action }: BrowserActionTextProps) {
     case 'locator.click':
       return (
         <>
-          <ClickText
+          <ClickPill
             details={{
               button: 'left',
               modifiers: { alt: false, ctrl: false, meta: false, shift: false },
