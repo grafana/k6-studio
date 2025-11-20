@@ -1,7 +1,7 @@
 const { execSync } = require('child_process')
 const { existsSync } = require('fs')
 
-const K6_VERSION = 'v1.4.0'
+const K6_VERSION = 'v1.2.1'
 const K6_PATH_MAC_AMD = `k6-${K6_VERSION}-macos-amd64`
 const K6_PATH_MAC_ARM = `k6-${K6_VERSION}-macos-arm64`
 const K6_PATH_WIN_AMD = `k6-${K6_VERSION}-windows-amd64`
