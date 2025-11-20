@@ -41,6 +41,7 @@ module.exports = {
   rules: {
     'react/no-unknown-property': ['error', { ignore: ['css'] }],
     'no-param-reassign': 'error',
+    'unused-imports/no-unused-imports': 'warn',
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
