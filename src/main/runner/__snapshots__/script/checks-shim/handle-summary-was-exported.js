@@ -8,6 +8,7 @@ export default function () {
   });
 }
 export const options = {
+  maxRedirects: 0,
   scenarios: {
     default: {
       executor: "shared-iterations",

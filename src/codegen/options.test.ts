@@ -24,6 +24,7 @@ describe('Code generation - options', () => {
     }
 
     const expectedResult = `{
+      maxRedirects: 0,
       vus: 1,
       iterations: 1
     }`
@@ -48,6 +49,7 @@ describe('Code generation - options', () => {
     }
 
     const expectedResult = `{
+      maxRedirects: 0,
       stages: [
         {
           duration: '1',
