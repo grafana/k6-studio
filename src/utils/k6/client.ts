@@ -2,25 +2,14 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app } from 'electron'
 import path from 'path'
 import readline from 'readline/promises'
-import { z } from 'zod'
 
 import { LogEntry, LogEntrySchema } from '@/schemas/k6'
 import { getArch, getPlatform } from '@/utils/electron'
 
 import { parseJsonAsSchema } from '../json'
 
+import { K6TestOptions, TestOptionsSchema } from './schema'
 import { TestRun } from './testRun'
-
-const TestOptionsSchema = z.object({
-  cloud: z
-    .object({
-      name: z.string().nullish(),
-      projectID: z.number().nullish(),
-    })
-    .nullish(),
-})
-
-type TestOptions = z.infer<typeof TestOptionsSchema>
 
 const EXECUTABLE_NAME = getPlatform() === 'win' ? 'k6.exe' : 'k6'
 
@@ -101,7 +90,7 @@ export class K6Client {
     }
   }
 
-  async inspect({ scriptPath }: InspectArgs): Promise<TestOptions | null> {
+  async inspect({ scriptPath }: InspectArgs): Promise<K6TestOptions | null> {
     const process = this.#spawn('inspect', {
       args: [scriptPath],
     })
