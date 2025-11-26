@@ -7,6 +7,12 @@ import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
 import { DataFile, Variable } from '@/types/testData'
 import { ThinkTime } from '@/types/testOptions'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import {
+  containsBinaryData,
+  isBase64,
+  safeAtob,
+  safeBtoa,
+} from '@/utils/format'
 import { groupProxyData } from '@/utils/groups'
 import { getContentTypeWithCharsetHeader } from '@/utils/headers'
 import { exhaustive } from '@/utils/typescript'
@@ -31,7 +37,7 @@ export function generateScript({
   return `
     // ${generateScriptHeader()}
     
-    ${generateImports(generator)}
+    ${generateImports(generator, recording)}
 
     export const options = ${generateOptions(generator.options)}
 
@@ -45,13 +51,18 @@ export function generateScript({
   `
 }
 
-export function generateImports(generator: GeneratorFileData): string {
+export function generateImports(
+  generator: GeneratorFileData,
+  recording: ProxyData[]
+): string {
   const hasCSVDataFiles = generator.testData.files.some(({ name }) =>
     name.toLowerCase().endsWith('csv')
   )
   const hasJSONDataFiles = generator.testData.files.some(({ name }) =>
     name.toLowerCase().endsWith('json')
   )
+  const hasBinaryData = recordingHasBinaryData(recording)
+
   const imports = [
     ...REQUIRED_IMPORTS,
     // Import SharedArray for JSON files
@@ -60,9 +71,34 @@ export function generateImports(generator: GeneratorFileData): string {
     ...(hasCSVDataFiles
       ? [K6_EXPORTS['k6/experimental/csv'], K6_EXPORTS['k6/experimental/fs']]
       : []),
+    // Import encoding for binary multipart data
+    ...(hasBinaryData ? [K6_EXPORTS['k6/encoding']] : []),
   ]
 
   return imports.map(generateImportStatement).join('\n')
+}
+
+/**
+ * Check if recording contains binary data in multipart/form-data requests
+ */
+function recordingHasBinaryData(recording: ProxyData[]): boolean {
+  return recording.some((proxyData) => {
+    const contentTypeHeader = getContentTypeWithCharsetHeader(
+      proxyData.request.headers
+    )
+    if (
+      contentTypeHeader?.includes('multipart/form-data') &&
+      proxyData.request.content
+    ) {
+      // Content might be base64 or already decoded depending on the processing pipeline
+      const isContentBase64 = isBase64(proxyData.request.content)
+      const decodedContent = isContentBase64
+        ? safeAtob(proxyData.request.content)
+        : proxyData.request.content
+      return containsBinaryData(decodedContent)
+    }
+    return false
+  })
 }
 
 export function generateVariableDeclarations(variables: Variable[]): string {
@@ -222,19 +258,38 @@ export function generateSingleRequestSnippet(
 
   try {
     if (request.content) {
-      const escapedContent = escapeBackticks(request.content)
-      content = `\`${escapedContent}\``
-
-      // if we have postData parameters we need to pass an object to the k6 post function because if it receives
-      // a stringified json it won't correctly post the data.
       const contentTypeHeader =
         getContentTypeWithCharsetHeader(request.headers) ?? ''
-      if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
-        content = `JSON.parse(\`${escapedContent}\`)`
-      }
 
+      // Check if content is base64 or already decoded
+      const isContentBase64 = isBase64(request.content)
+      const decodedContent = isContentBase64
+        ? safeAtob(request.content)
+        : request.content
+
+      // Handle multipart/form-data with binary content
       if (contentTypeHeader.includes('multipart/form-data')) {
-        content = `\`${escapedContent.replace(/(?:\r\n|\r|\n)/g, '\\r\\n')}\``
+        if (containsBinaryData(decodedContent)) {
+          // Re-encode to base64 if needed and use encoding.b64decode at runtime
+          const base64Content = isContentBase64
+            ? request.content
+            : safeBtoa(decodedContent)
+          content = `encoding.b64decode('${base64Content}')`
+        } else {
+          // Safe to embed as string literal
+          const escapedContent = escapeBackticks(decodedContent)
+          content = `\`${escapedContent.replace(/(?:\r\n|\r|\n)/g, '\\r\\n')}\``
+        }
+      } else {
+        // For non-multipart content, decode and embed
+        const escapedContent = escapeBackticks(decodedContent)
+        content = `\`${escapedContent}\``
+
+        // if we have postData parameters we need to pass an object to the k6 post function because if it receives
+        // a stringified json it won't correctly post the data.
+        if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
+          content = `JSON.parse(\`${escapedContent}\`)`
+        }
       }
     }
   } catch (error) {

@@ -157,7 +157,9 @@ describe('Code generation', () => {
         import execution from "k6/execution";
       `)
 
-      expect(await prettify(generateImports(generator))).toBe(expectedResult)
+      expect(await prettify(generateImports(generator, []))).toBe(
+        expectedResult
+      )
     })
 
     it('should generate imports with data files', async () => {
@@ -173,13 +175,16 @@ describe('Code generation', () => {
 
       expect(
         await prettify(
-          generateImports({
-            ...generator,
-            testData: {
-              ...generator.testData,
-              files,
+          generateImports(
+            {
+              ...generator,
+              testData: {
+                ...generator.testData,
+                files,
+              },
             },
-          })
+            []
+          )
         )
       ).toBe(expectedResult)
     })
@@ -727,6 +732,240 @@ describe('Code generation', () => {
           `function getParameterizationValue0() { ${customCodeReplaceProjectId.value.code} }`
         )
       )
+    })
+  })
+
+  describe('Binary file upload handling', () => {
+    it('should handle binary multipart/form-data with base64-encoded content', () => {
+      // Create a binary data buffer with null bytes and unprintable characters
+      const binaryData = new Uint8Array([
+        0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+      ])
+      const binaryString = String.fromCharCode(...binaryData)
+      const base64Content = btoa(binaryString)
+
+      const recording: ProxyData[] = [
+        {
+          id: '1',
+          request: {
+            method: 'POST',
+            url: '/api/upload',
+            headers: [
+              [
+                'content-type',
+                'multipart/form-data; boundary=----WebKitFormBoundary',
+              ],
+            ],
+            cookies: [],
+            query: [],
+            scheme: 'https',
+            host: 'example.com',
+            content: base64Content,
+            path: '/api/upload',
+            timestampStart: 0,
+            timestampEnd: 0,
+            contentLength: binaryString.length,
+            httpVersion: '1.1',
+          },
+        },
+      ]
+
+      const rules: TestRule[] = []
+      const snippets = generateRequestSnippets(recording, rules, thinkTime)
+
+      // Should use encoding.b64decode instead of embedding binary data directly
+      expect(snippets[0]?.snippet).toContain('encoding.b64decode')
+      expect(snippets[0]?.snippet).toContain(base64Content)
+    })
+
+    it('should handle binary multipart/form-data with already-decoded content', () => {
+      // Create a binary data buffer - this simulates content that has been decoded
+      // by stripRequestData before reaching codegen
+      const binaryData = new Uint8Array([
+        0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+      ])
+      const binaryString = String.fromCharCode(...binaryData)
+
+      const recording: ProxyData[] = [
+        {
+          id: '1',
+          request: {
+            method: 'POST',
+            url: '/api/upload',
+            headers: [
+              [
+                'content-type',
+                'multipart/form-data; boundary=----WebKitFormBoundary',
+              ],
+            ],
+            cookies: [],
+            query: [],
+            scheme: 'https',
+            host: 'example.com',
+            content: binaryString, // Already decoded, not base64
+            path: '/api/upload',
+            timestampStart: 0,
+            timestampEnd: 0,
+            contentLength: binaryString.length,
+            httpVersion: '1.1',
+          },
+        },
+      ]
+
+      const rules: TestRule[] = []
+      const snippets = generateRequestSnippets(recording, rules, thinkTime)
+
+      // Should use encoding.b64decode with re-encoded base64
+      expect(snippets[0]?.snippet).toContain('encoding.b64decode')
+      // Content should be re-encoded to base64
+      expect(snippets[0]?.snippet).toMatch(
+        /encoding\.b64decode\('[A-Za-z0-9+/=]+'\)/
+      )
+    })
+
+    it('should handle non-binary multipart/form-data as string literal', () => {
+      const textContent =
+        '------WebKitFormBoundary\r\nContent-Disposition: form-data; name="field"\r\n\r\nvalue\r\n------WebKitFormBoundary--'
+      const base64Content = btoa(textContent)
+
+      const recording: ProxyData[] = [
+        {
+          id: '1',
+          request: {
+            method: 'POST',
+            url: '/api/upload',
+            headers: [
+              [
+                'content-type',
+                'multipart/form-data; boundary=----WebKitFormBoundary',
+              ],
+            ],
+            cookies: [],
+            query: [],
+            scheme: 'https',
+            host: 'example.com',
+            content: base64Content,
+            path: '/api/upload',
+            timestampStart: 0,
+            timestampEnd: 0,
+            contentLength: textContent.length,
+            httpVersion: '1.1',
+          },
+        },
+      ]
+
+      const rules: TestRule[] = []
+      const snippets = generateRequestSnippets(recording, rules, thinkTime)
+
+      // Should use string literal with escaped newlines for text-based multipart data
+      expect(snippets[0]?.snippet).not.toContain('encoding.b64decode')
+      expect(snippets[0]?.snippet).toContain('\\r\\n')
+    })
+
+    it('should include encoding import when recording has binary data', () => {
+      const binaryData = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10])
+      const binaryString = String.fromCharCode(...binaryData)
+      const base64Content = btoa(binaryString)
+
+      const recording: ProxyData[] = [
+        {
+          id: '1',
+          request: {
+            method: 'POST',
+            url: '/api/upload',
+            headers: [['content-type', 'multipart/form-data']],
+            cookies: [],
+            query: [],
+            scheme: 'https',
+            host: 'example.com',
+            content: base64Content,
+            path: '/api/upload',
+            timestampStart: 0,
+            timestampEnd: 0,
+            contentLength: binaryString.length,
+            httpVersion: '1.1',
+          },
+        },
+      ]
+
+      const generator: GeneratorFileData = {
+        version: '2.0',
+        recordingPath: 'test',
+        options: {
+          loadProfile: {
+            executor: 'shared-iterations',
+            vus: 1,
+            iterations: 1,
+          },
+          thinkTime: {
+            sleepType: 'iterations',
+            timing: { type: 'fixed', value: 1 },
+          },
+          thresholds: [],
+          cloud: {
+            loadZones: { distribution: 'even', zones: [] },
+          },
+        },
+        testData: { variables: [], files: [] },
+        rules: [],
+        allowlist: [],
+        includeStaticAssets: false,
+        scriptName: 'my-script.js',
+      }
+
+      const imports = generateImports(generator, recording)
+      expect(imports).toContain('k6/encoding')
+    })
+
+    it('should not include encoding import when recording has no binary data', () => {
+      const recording: ProxyData[] = [
+        {
+          id: '1',
+          request: {
+            method: 'POST',
+            url: '/api/data',
+            headers: [['content-type', 'application/json']],
+            cookies: [],
+            query: [],
+            scheme: 'https',
+            host: 'example.com',
+            content: btoa('{"key": "value"}'),
+            path: '/api/data',
+            timestampStart: 0,
+            timestampEnd: 0,
+            contentLength: 16,
+            httpVersion: '1.1',
+          },
+        },
+      ]
+
+      const generator: GeneratorFileData = {
+        version: '2.0',
+        recordingPath: 'test',
+        options: {
+          loadProfile: {
+            executor: 'shared-iterations',
+            vus: 1,
+            iterations: 1,
+          },
+          thinkTime: {
+            sleepType: 'iterations',
+            timing: { type: 'fixed', value: 1 },
+          },
+          thresholds: [],
+          cloud: {
+            loadZones: { distribution: 'even', zones: [] },
+          },
+        },
+        testData: { variables: [], files: [] },
+        rules: [],
+        allowlist: [],
+        includeStaticAssets: false,
+        scriptName: 'my-script.js',
+      }
+
+      const imports = generateImports(generator, recording)
+      expect(imports).not.toContain('k6/encoding')
     })
   })
 })
