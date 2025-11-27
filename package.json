@@ -138,7 +138,7 @@
     "lucide-react": "^0.539.0",
     "monaco-editor": "^0.50.0",
     "nanoid": "^5.1.6",
-    "node-forge": "^1.3.1",
+    "node-forge": "^1.3.2",
     "openid-client": "^6.1.7",
     "papaparse": "^5.5.1",
     "plist": "^3.1.0",
