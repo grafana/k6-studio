@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.1](https://github.com/grafana/k6-studio/compare/v1.9.0...v1.9.1) (2025-11-27)
+
+
+### Miscellaneous Chores
+
+* **deps:** bump body-parser from 2.2.0 to 2.2.1 ([#909](https://github.com/grafana/k6-studio/issues/909)) ([9619732](https://github.com/grafana/k6-studio/commit/9619732bb773658a89e0f2b6f24a5331ae689220))
+* **deps:** bump node-forge from 1.3.1 to 1.3.2 ([#911](https://github.com/grafana/k6-studio/issues/911)) ([d17b188](https://github.com/grafana/k6-studio/commit/d17b188fc360596dcf0f02671731c80b251bf546))
+
 ## [1.9.0](https://github.com/grafana/k6-studio/compare/v1.8.0...v1.9.0) (2025-11-25)
 
 
