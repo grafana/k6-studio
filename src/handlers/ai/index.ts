@@ -1,6 +1,7 @@
 import { OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
 import { convertToModelMessages, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
+import log from 'electron-log/main'
 
 import { setupAiModel } from './model'
 import { streamMessages } from './streamMessages'
@@ -32,6 +33,11 @@ async function handleStreamChat(
       messages,
       tools,
       abortSignal: abortController.signal,
+      onFinish: ({ usage }) => {
+        log.info(
+          `Total: ${usage.totalTokens}, reasoning: ${usage.reasoningTokens}.`
+        )
+      },
       providerOptions: {
         openai: {
           parallelToolCalls: false,

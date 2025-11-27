@@ -12,7 +12,7 @@ export async function setupAiModel() {
 
   const apiKey = await getDecryptedAiKey()
   const provider = createOpenAI({ apiKey })
-  model = provider('gpt-4.1')
+  model = provider('gpt-5.1')
 
   return model
 }
