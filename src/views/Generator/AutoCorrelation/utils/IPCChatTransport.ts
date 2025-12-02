@@ -5,7 +5,15 @@ import {
   UIMessageChunk,
 } from 'ai'
 
-import { StreamChatRequest, StreamChatChunk } from '@/handlers/ai/types'
+import {
+  StreamChatRequest,
+  StreamChatChunk,
+  TokenUsage,
+} from '@/handlers/ai/types'
+
+export interface IPCChatTransportOptions {
+  onUsage?: (usage: TokenUsage) => void
+}
 
 /**
  * Custom ChatTransport implementation that uses Electron IPC for communication
@@ -14,6 +22,11 @@ import { StreamChatRequest, StreamChatChunk } from '@/handlers/ai/types'
 export class IPCChatTransport<Message extends UIMessage>
   implements ChatTransport<Message>
 {
+  private onUsage?: (usage: TokenUsage) => void
+
+  constructor(options?: IPCChatTransportOptions) {
+    this.onUsage = options?.onUsage
+  }
   sendMessages(
     options: {
       trigger: 'submit-message' | 'regenerate-message'
@@ -37,6 +50,9 @@ export class IPCChatTransport<Message extends UIMessage>
       body: options.body,
     }
 
+    // Capture callback reference for use inside start()
+    const onUsageCallback = this.onUsage
+
     // Create a ReadableStream that will receive chunks via IPC
     return Promise.resolve(
       new ReadableStream<UIMessageChunk>({
@@ -50,7 +66,10 @@ export class IPCChatTransport<Message extends UIMessage>
             }
           )
 
-          const removeEndListener = stream.onEnd(() => {
+          const removeEndListener = stream.onEnd((usage) => {
+            if (usage && onUsageCallback) {
+              onUsageCallback(usage)
+            }
             controller.close()
             cleanup()
           })

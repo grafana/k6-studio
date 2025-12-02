@@ -32,6 +32,7 @@ export function AutoCorrelation({
     isLoading,
     correlationStatus,
     outcomeReason,
+    tokenUsage,
     stop,
   } = useGenerateRules({
     clearValidation: clearValidation,
@@ -109,36 +110,49 @@ export function AutoCorrelation({
 
       <Flex
         gap="3"
-        justify="end"
+        justify="between"
+        align="center"
         p="3"
         css={{
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        <Button
-          variant="outline"
-          onClick={stop}
-          disabled={!isLoading}
-          size="2"
-          color="red"
-        >
-          Stop
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleDiscard}
-          disabled={isLoading}
-          size="2"
-        >
-          Discard
-        </Button>
-        <Button
-          onClick={handleAccept}
-          disabled={isLoading || checkedRuleIds.length === 0}
-          size="2"
-        >
-          Accept
-        </Button>
+        <Flex align="center">
+          {tokenUsage?.totalTokens && (
+            <Text size="1" color="gray">
+              Tokens:{' '}
+              {Intl.NumberFormat('en', { notation: 'compact' }).format(
+                tokenUsage.totalTokens
+              )}
+            </Text>
+          )}
+        </Flex>
+        <Flex gap="3">
+          <Button
+            variant="outline"
+            onClick={stop}
+            disabled={!isLoading}
+            size="2"
+            color="red"
+          >
+            Stop
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleDiscard}
+            disabled={isLoading}
+            size="2"
+          >
+            Discard
+          </Button>
+          <Button
+            onClick={handleAccept}
+            disabled={isLoading || checkedRuleIds.length === 0}
+            size="2"
+          >
+            Accept
+          </Button>
+        </Flex>
       </Flex>
     </Flex>
   )

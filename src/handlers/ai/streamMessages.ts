@@ -30,9 +30,11 @@ export async function streamMessages<Tools extends ToolSet, PARTIAL_OUTPUT>(
       done = result.done || false
 
       if (done) {
-        // Send end event
+        const usageData = await response.usage
+
         webContents.send(AiHandler.StreamChatEnd, {
           id: requestId,
+          usage: usageData,
         } satisfies StreamChatEnd)
         break
       }

@@ -1,6 +1,7 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { TokenUsage } from '@/handlers/ai/types'
 import { applyRules } from '@/rules/rules'
 import {
   selectFilteredRequests,
@@ -36,6 +37,7 @@ export const useGenerateRules = ({
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
+  const [tokenUsage, setTokenUsage] = useState<TokenUsage | null>(null)
   const suggestedRulesRef = useRef(suggestedRules)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
@@ -50,7 +52,7 @@ export const useGenerateRules = ({
     status,
     stop: stopGeneration,
   } = useChat<Message>({
-    transport: new IPCChatTransport(),
+    transport: new IPCChatTransport({ onUsage: setTokenUsage }),
     // Keep calling tools without user input
     sendAutomaticallyWhen: lastMessageIsToolCall,
     onError: (error) => {
@@ -215,6 +217,7 @@ export const useGenerateRules = ({
     isLoading,
     correlationStatus,
     outcomeReason,
+    tokenUsage,
     stop: useCallback(stop, [stopGeneration]),
   }
 }
