@@ -6,6 +6,7 @@ import { useGeneratorStore } from '@/store/generator'
 
 import { IntroductionMessage } from './IntroductionMessage'
 import { SuggestedRules } from './SuggestedRules'
+import { TokenUsageIndicator } from './TokenUsageIndicator'
 import { ValidationResults } from './ValidationResults'
 import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
@@ -118,14 +119,7 @@ export function AutoCorrelation({
         }}
       >
         <Flex align="center">
-          {tokenUsage?.totalTokens && (
-            <Text size="1" color="gray">
-              Tokens:{' '}
-              {Intl.NumberFormat('en', { notation: 'compact' }).format(
-                tokenUsage.totalTokens
-              )}
-            </Text>
-          )}
+          <TokenUsageIndicator tokenUsage={tokenUsage} />
         </Flex>
         <Flex gap="3">
           <Button

@@ -37,7 +37,7 @@ export const useGenerateRules = ({
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
-  const [tokenUsage, setTokenUsage] = useState<TokenUsage | null>(null)
+  const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
   const suggestedRulesRef = useRef(suggestedRules)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
