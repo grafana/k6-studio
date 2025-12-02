@@ -1,3 +1,5 @@
+import { flow } from 'lodash-es'
+
 import { canonicalHeaderKey } from '@/rules/utils'
 import { ProxyData } from '@/types'
 import { getLocationHeader, getUpgradeHeader } from '@/utils/headers'
@@ -122,7 +124,7 @@ export const removeWebsocketRequests = (recording: ProxyData[]) => {
 }
 
 export function cleanupRecording(recording: ProxyData[]) {
-  return removeWebsocketRequests(recording)
+  return flow(removeWebsocketRequests, mergeRedirects)(recording)
 }
 
 export function shouldIncludeHeaderInScript(key: string) {

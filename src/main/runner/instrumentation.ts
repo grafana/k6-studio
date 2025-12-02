@@ -122,7 +122,6 @@ export const instrumentScript = async ({
       : null
 
   const options = fromObjectLiteral({
-    maxRedirects: 0,
     scenarios: fromObjectLiteral({
       default: fromObjectLiteral({
         executor: 'shared-iterations',
