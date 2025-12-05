@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 
 import { queryClient } from '@/utils/query'
 
@@ -31,4 +32,19 @@ export function useBrowserCheck() {
     queryKey: ['settings', 'browserCheck'],
     queryFn: window.studio.ui.detectBrowser,
   })
+}
+
+export function useSettingsChanged(onChanged: () => void) {
+  const { data } = useSettings()
+  const prevDataRef = useRef(data)
+
+  useEffect(() => {
+    if (!data) {
+      return
+    }
+
+    if (prevDataRef.current !== data) {
+      onChanged()
+    }
+  }, [data, onChanged])
 }

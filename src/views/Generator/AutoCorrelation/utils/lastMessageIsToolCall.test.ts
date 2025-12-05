@@ -4,12 +4,15 @@ import type { Message } from '../types'
 
 import { lastMessageIsToolCall } from './lastMessageIsToolCall'
 
-function createAssistantMessage(parts: unknown[]): Message {
-  return { role: 'assistant', parts } as unknown as Message
+type MessageParts = Message['parts']
+type MessagePart = MessageParts[number]
+
+function createAssistantMessage(parts: Partial<MessagePart>[]): Message {
+  return { role: 'assistant', id: '1', parts } as Message
 }
 
-function createUserMessage(parts: unknown[]): Message {
-  return { role: 'user', parts } as unknown as Message
+function createUserMessage(parts: MessageParts): Message {
+  return { role: 'user', id: '1', parts }
 }
 
 describe('lastMessageIsToolCall', () => {
@@ -30,7 +33,7 @@ describe('lastMessageIsToolCall', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
-        { type: 'text', content: 'some content' },
+        { type: 'text', text: 'some content' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
@@ -41,8 +44,8 @@ describe('lastMessageIsToolCall', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
-        { type: 'tool-call', state: 'output-available', isTool: true },
-        { type: 'tool-call', state: 'in-progress', isTool: true },
+        { type: 'tool-addRule', state: 'input-available' },
+        { type: 'tool-runValidation', state: 'output-available' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
@@ -53,8 +56,8 @@ describe('lastMessageIsToolCall', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
-        { type: 'tool-call', state: 'output-available', isTool: true },
-        { type: 'tool-finish', state: 'output-available', isTool: true },
+        { type: 'tool-runValidation', state: 'output-available' },
+        { type: 'tool-finish', state: 'output-available' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
@@ -65,8 +68,8 @@ describe('lastMessageIsToolCall', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
-        { type: 'tool-call', state: 'output-available', isTool: true },
-        { type: 'tool-result', state: 'output-available', isTool: true },
+        { type: 'tool-runValidation', state: 'output-available' },
+        { type: 'tool-addRule', state: 'output-available' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
@@ -78,11 +81,23 @@ describe('lastMessageIsToolCall', () => {
       createAssistantMessage([
         // First step - incomplete tool call
         { type: 'step-start' },
-        { type: 'tool-call', state: 'in-progress', isTool: true },
+        { type: 'tool-runValidation', state: 'input-streaming' },
         // Second (last) step - complete tool calls
         { type: 'step-start' },
-        { type: 'tool-call', state: 'output-available', isTool: true },
-        { type: 'tool-result', state: 'output-available', isTool: true },
+        { type: 'tool-runValidation', state: 'output-available' },
+        { type: 'tool-addRule', state: 'output-available' },
+      ]),
+    ]
+    const result = lastMessageIsToolCall({ messages })
+    expect(result).toBe(true)
+  })
+
+  it('returns true when last tool call was not successful', () => {
+    const messages = [
+      createAssistantMessage([
+        { type: 'step-start' },
+        { type: 'tool-runValidation', state: 'output-available' },
+        { type: 'tool-addRule', state: 'output-error' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })

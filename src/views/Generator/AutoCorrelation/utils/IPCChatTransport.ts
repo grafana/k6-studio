@@ -1,13 +1,13 @@
 import {
-  ChatTransport,
   ChatRequestOptions,
+  ChatTransport,
   UIMessage,
   UIMessageChunk,
 } from 'ai'
 
 import {
-  StreamChatRequest,
   StreamChatChunk,
+  StreamChatRequest,
   TokenUsage,
 } from '@/handlers/ai/types'
 
@@ -63,6 +63,11 @@ export class IPCChatTransport<Message extends UIMessage>
           const removeChunkListener = stream.onChunk(
             (data: StreamChatChunk) => {
               controller.enqueue(data.chunk)
+
+              if (data.chunk?.type === 'error') {
+                controller.close()
+                cleanup()
+              }
             }
           )
 
@@ -71,11 +76,6 @@ export class IPCChatTransport<Message extends UIMessage>
               onUsageCallback(usage)
             }
             controller.close()
-            cleanup()
-          })
-
-          const removeErrorListener = stream.onError((error) => {
-            controller.error(new Error(error))
             cleanup()
           })
 
@@ -93,7 +93,6 @@ export class IPCChatTransport<Message extends UIMessage>
           const cleanup = () => {
             removeChunkListener()
             removeEndListener()
-            removeErrorListener()
           }
         },
       })
