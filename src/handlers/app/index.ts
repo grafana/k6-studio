@@ -24,17 +24,18 @@ export function initialize() {
     browserWindow.close()
   })
 
-  ipcMain.on(AppHandler.SplashscreenClose, (event) => {
+  ipcMain.on(AppHandler.SplashscreenClose, () => {
     console.log(`${AppHandler.SplashscreenClose} event received`)
-
-    const browserWindow = browserWindowFromEvent(event)
 
     if (
       k6StudioState.splashscreenWindow &&
       !k6StudioState.splashscreenWindow.isDestroyed()
     ) {
       k6StudioState.splashscreenWindow.close()
-      showWindow(browserWindow)
+    }
+
+    if (k6StudioState.mainWindow && !k6StudioState.mainWindow.isDestroyed()) {
+      showWindow(k6StudioState.mainWindow)
     }
   })
 
