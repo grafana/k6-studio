@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { getRoutePath } from '@/routeMap'
@@ -37,14 +38,10 @@ export function GeneratorControls({
   const isScriptExportable = !hasError && !!preview
   const navigate = useNavigate()
 
-  const handleDeleteGenerator = async () => {
-    await window.studio.ui.deleteFile({
-      type: 'generator',
-      fileName,
-      displayName: getFileNameWithoutExtension(fileName),
-    })
-
-    navigate(getRoutePath('home'))
+  const file = {
+    type: 'generator' as const,
+    fileName,
+    displayName: getFileNameWithoutExtension(fileName),
   }
 
   const handleExportScript = useScriptExport(fileName)
@@ -80,9 +77,15 @@ export function GeneratorControls({
               Export script
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
-            <DropdownMenu.Item onSelect={handleDeleteGenerator} color="red">
-              Delete generator
-            </DropdownMenu.Item>
+            <DeleteFileDialog
+              file={file}
+              onDeleted={() => navigate(getRoutePath('home'))}
+              trigger={
+                <DropdownMenu.Item color="red">
+                  Delete generator
+                </DropdownMenu.Item>
+              }
+            />
           </DropdownMenu.Content>
         </DropdownMenu.Root>
         {isScriptExportable && (
