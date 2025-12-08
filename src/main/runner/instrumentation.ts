@@ -164,7 +164,7 @@ const getShimPath = (name: string) => {
       .join(app.getAppPath(), 'resources', 'shims', name)
   }
 
-  return path.join(process.resourcesPath, 'shims', name).replace(/\\/g, '/')
+  return path.posix.join(process.resourcesPath, 'shims', name);
 }
 
 export const instrumentScriptFromPath = async (scriptPath: string) => {
