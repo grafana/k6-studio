@@ -159,12 +159,10 @@ const getSnippetPath = (snippetName: string) => {
 const getShimPath = (name: string) => {
   // @ts-expect-error We are targeting CommonJS so import.meta is not available
   if (!import.meta.env.PROD) {
-    return path
-      .join(app.getAppPath(), 'resources', 'shims', name)
-      .replace(/\\/g, '/')
+    return path.join(app.getAppPath(), 'resources', 'shims', name)
   }
 
-  return path.join(process.resourcesPath, 'shims', name).replace(/\\/g, '/')
+  return path.join(process.resourcesPath, 'shims', name)
 }
 
 export const instrumentScriptFromPath = async (scriptPath: string) => {
