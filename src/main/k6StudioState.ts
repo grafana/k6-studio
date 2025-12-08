@@ -22,6 +22,7 @@ export type k6StudioState = {
   currentClientRoute: string
   wasAppClosedByClient: boolean
   splashscreenWindow: BrowserWindow | null
+  mainWindow: BrowserWindow | null
   watcher: FSWatcher | null
 }
 
@@ -45,6 +46,7 @@ export function initialize() {
     wasAppClosedByClient: false,
 
     splashscreenWindow: null,
+    mainWindow: null,
     watcher: null,
   }
 }
