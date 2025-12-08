@@ -19,6 +19,12 @@ export enum UsageEventName {
   ScriptValidated = 'script_validated',
   ScriptOpenedExternal = 'script_opened_external',
   ScriptRunInCloud = 'script_run_in_cloud',
+
+  AutoCorrelationDialogOpened = 'autocorrelation_dialog_opened',
+  AutocorrelationStarted = 'autocorrelation_started',
+  AutocorrelationSucceeded = 'autocorrelation_succeeded',
+  AutocorrelationPartiallySucceeded = 'autocorrelation_partially_succeeded',
+  AutocorrelationFailed = 'autocorrelation_failed',
 }
 
 export interface UsageEventMetadata {
@@ -90,6 +96,26 @@ interface ScriptRunInCloudEvent {
   event: UsageEventName.ScriptRunInCloud
 }
 
+interface AutoCorrelationDialogOpenedEvent {
+  event: UsageEventName.AutoCorrelationDialogOpened
+}
+
+interface AutoCorrelationStartedEvent {
+  event: UsageEventName.AutocorrelationStarted
+}
+
+interface AutoCorrelationSucceededEvent {
+  event: UsageEventName.AutocorrelationSucceeded
+}
+
+interface AutoCorrelationPartiallySucceededEvent {
+  event: UsageEventName.AutocorrelationPartiallySucceeded
+}
+
+interface AutoCorrelationFailedEvent {
+  event: UsageEventName.AutocorrelationFailed
+}
+
 export type UsageEvent =
   | AppInstalledEvent
   | UserLoggedInEvent
@@ -102,5 +128,10 @@ export type UsageEvent =
   | ScriptValidatedEvent
   | ScriptOpenedExternalEvent
   | ScriptRunInCloudEvent
+  | AutoCorrelationDialogOpenedEvent
+  | AutoCorrelationStartedEvent
+  | AutoCorrelationSucceededEvent
+  | AutoCorrelationPartiallySucceededEvent
+  | AutoCorrelationFailedEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

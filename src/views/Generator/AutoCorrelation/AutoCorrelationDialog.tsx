@@ -1,6 +1,8 @@
 import { Box, Dialog, Flex, IconButton } from '@radix-ui/themes'
 import { XIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import { UsageEventName } from '@/services/usageTracking/types'
 
 import { AutoCorrelation } from './AutoCorrelation'
 import { Status } from './Status'
@@ -17,6 +19,14 @@ export function AutoCorrelationDialog({
 }: AutoCorrelationDialogProps) {
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
+
+  useEffect(() => {
+    if (open) {
+      window.studio.app.trackEvent({
+        event: UsageEventName.AutoCorrelationDialogOpened,
+      })
+    }
+  }, [open])
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content
