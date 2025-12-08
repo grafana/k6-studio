@@ -3,6 +3,7 @@ import { EllipsisIcon } from 'lucide-react'
 import { PropsWithChildren } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { getRoutePath } from '@/routeMap'
 import { StudioFile } from '@/types'
 
@@ -25,15 +26,22 @@ export function FileContextMenu({
       <ContextMenu.Trigger>{children}</ContextMenu.Trigger>
 
       <ContextMenu.Content size="1">
-        {items.map((item) => (
-          <ContextMenu.Item
-            key={item.label}
-            onClick={item.onClick}
-            color={item.destructive ? 'red' : undefined}
-          >
-            {item.label}
-          </ContextMenu.Item>
-        ))}
+        {items.map((item) =>
+          item.destructive ? (
+            <DeleteFileDialog
+              key={item.label}
+              file={file}
+              onDeleted={item.onDeleted}
+              trigger={
+                <ContextMenu.Item color="red">{item.label}</ContextMenu.Item>
+              }
+            />
+          ) : (
+            <ContextMenu.Item key={item.label} onClick={item.onClick}>
+              {item.label}
+            </ContextMenu.Item>
+          )
+        )}
       </ContextMenu.Content>
     </ContextMenu.Root>
   )
@@ -55,15 +63,22 @@ export function FileActionsMenu({
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content size="1">
-        {items.map((item) => (
-          <DropdownMenu.Item
-            key={item.label}
-            onClick={item.onClick}
-            color={item.destructive ? 'red' : undefined}
-          >
-            {item.label}
-          </DropdownMenu.Item>
-        ))}
+        {items.map((item) =>
+          item.destructive ? (
+            <DeleteFileDialog
+              key={item.label}
+              file={file}
+              onDeleted={item.onDeleted}
+              trigger={
+                <DropdownMenu.Item color="red">{item.label}</DropdownMenu.Item>
+              }
+            />
+          ) : (
+            <DropdownMenu.Item key={item.label} onClick={item.onClick}>
+              {item.label}
+            </DropdownMenu.Item>
+          )
+        )}
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )
@@ -85,8 +100,8 @@ function useFileContextMenuItems({
   const handleOpenFolder = () => {
     window.studio.ui.openContainingFolder(file)
   }
-  const handleDelete = async () => {
-    await window.studio.ui.deleteFile(file)
+
+  const handleAfterDelete = () => {
     if (isSelected) {
       navigate(getRoutePath('home'))
     }
@@ -95,12 +110,17 @@ function useFileContextMenuItems({
   return [
     { label: 'Rename', onClick: onRename },
     { label: 'Open containing folder', onClick: handleOpenFolder },
-    { label: 'Delete', onClick: handleDelete, destructive: true },
+    {
+      label: 'Delete',
+      destructive: true,
+      onDeleted: handleAfterDelete,
+    },
   ]
 }
 
 type FileContextMenuItem = {
   label: string
-  onClick: () => void
+  onClick?: () => void
+  onDeleted?: () => void
   destructive?: boolean
 }
