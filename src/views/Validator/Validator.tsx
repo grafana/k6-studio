@@ -52,9 +52,6 @@ function Content({ scriptPath }: ValidatorProps) {
   }, [navigate])
 
   const handleDeletedScript = () => {
-    if (!file) {
-      return
-    }
     navigate(getRoutePath('home'))
   }
 
