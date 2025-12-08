@@ -20,7 +20,7 @@ export enum UsageEventName {
   ScriptOpenedExternal = 'script_opened_external',
   ScriptRunInCloud = 'script_run_in_cloud',
 
-  AutoCorrelationDialogOpened = 'autocorrelation_dialog_opened',
+  AutocorrelationDialogOpened = 'autocorrelation_dialog_opened',
   AutocorrelationStarted = 'autocorrelation_started',
   AutocorrelationSucceeded = 'autocorrelation_succeeded',
   AutocorrelationPartiallySucceeded = 'autocorrelation_partially_succeeded',
@@ -96,23 +96,23 @@ interface ScriptRunInCloudEvent {
   event: UsageEventName.ScriptRunInCloud
 }
 
-interface AutoCorrelationDialogOpenedEvent {
-  event: UsageEventName.AutoCorrelationDialogOpened
+interface AutocorrelationDialogOpenedEvent {
+  event: UsageEventName.AutocorrelationDialogOpened
 }
 
-interface AutoCorrelationStartedEvent {
+interface AutocorrelationStartedEvent {
   event: UsageEventName.AutocorrelationStarted
 }
 
-interface AutoCorrelationSucceededEvent {
+interface AutocorrelationSucceededEvent {
   event: UsageEventName.AutocorrelationSucceeded
 }
 
-interface AutoCorrelationPartiallySucceededEvent {
+interface AutocorrelationPartiallySucceededEvent {
   event: UsageEventName.AutocorrelationPartiallySucceeded
 }
 
-interface AutoCorrelationFailedEvent {
+interface AutocorrelationFailedEvent {
   event: UsageEventName.AutocorrelationFailed
 }
 
@@ -128,10 +128,10 @@ export type UsageEvent =
   | ScriptValidatedEvent
   | ScriptOpenedExternalEvent
   | ScriptRunInCloudEvent
-  | AutoCorrelationDialogOpenedEvent
-  | AutoCorrelationStartedEvent
-  | AutoCorrelationSucceededEvent
-  | AutoCorrelationPartiallySucceededEvent
-  | AutoCorrelationFailedEvent
+  | AutocorrelationDialogOpenedEvent
+  | AutocorrelationStartedEvent
+  | AutocorrelationSucceededEvent
+  | AutocorrelationPartiallySucceededEvent
+  | AutocorrelationFailedEvent
 
 export type UsageEventWithMetadata = UsageEvent & UsageEventMetadata

@@ -23,7 +23,7 @@ export function AutoCorrelationDialog({
   useEffect(() => {
     if (open) {
       window.studio.app.trackEvent({
-        event: UsageEventName.AutoCorrelationDialogOpened,
+        event: UsageEventName.AutocorrelationDialogOpened,
       })
     }
   }, [open])
