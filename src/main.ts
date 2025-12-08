@@ -189,7 +189,7 @@ app.whenReady().then(
 
     await setupProjectStructure()
     await initEventTracking()
-    await createWindow()
+    k6StudioState.mainWindow = await createWindow()
   },
   (error) => {
     log.error(error)
