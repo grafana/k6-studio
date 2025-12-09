@@ -45,6 +45,7 @@ export function useSettingsChanged(onChanged: () => void) {
 
     if (prevDataRef.current !== data) {
       onChanged()
+      prevDataRef.current = data
     }
   }, [data, onChanged])
 }
