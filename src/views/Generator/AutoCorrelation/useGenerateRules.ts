@@ -2,6 +2,7 @@ import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { applyRules } from '@/rules/rules'
+import { UsageEventName } from '@/services/usageTracking/types'
 import {
   selectFilteredRequests,
   selectGeneratorData,
@@ -95,6 +96,23 @@ export const useGenerateRules = ({
       }
 
       case 'finish':
+        if (toolCall.input.outcome === 'success') {
+          window.studio.app.trackEvent({
+            event: UsageEventName.AutocorrelationSucceeded,
+          })
+        }
+
+        if (toolCall.input.outcome === 'partial-success') {
+          window.studio.app.trackEvent({
+            event: UsageEventName.AutocorrelationPartiallySucceeded,
+          })
+        }
+
+        if (toolCall.input.outcome === 'failure') {
+          window.studio.app.trackEvent({
+            event: UsageEventName.AutocorrelationFailed,
+          })
+        }
         setOutcomeReason(toolCall.input.reason)
         return
 
@@ -148,6 +166,9 @@ export const useGenerateRules = ({
   ].includes(correlationStatus)
 
   async function start() {
+    window.studio.app.trackEvent({
+      event: UsageEventName.AutocorrelationStarted,
+    })
     setIsValidationSuccessful(false)
     setCorrelationStatus('validating')
 
