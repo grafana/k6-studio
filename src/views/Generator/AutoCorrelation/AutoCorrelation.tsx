@@ -6,6 +6,7 @@ import { useGeneratorStore } from '@/store/generator'
 
 import { IntroductionMessage } from './IntroductionMessage'
 import { SuggestedRules } from './SuggestedRules'
+import { TokenUsageIndicator } from './TokenUsageIndicator'
 import { ValidationResults } from './ValidationResults'
 import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
@@ -32,6 +33,7 @@ export function AutoCorrelation({
     isLoading,
     correlationStatus,
     outcomeReason,
+    tokenUsage,
     stop,
   } = useGenerateRules({
     clearValidation: clearValidation,
@@ -109,36 +111,42 @@ export function AutoCorrelation({
 
       <Flex
         gap="3"
-        justify="end"
+        justify="between"
+        align="center"
         p="3"
         css={{
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        <Button
-          variant="outline"
-          onClick={stop}
-          disabled={!isLoading}
-          size="2"
-          color="red"
-        >
-          Stop
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleDiscard}
-          disabled={isLoading}
-          size="2"
-        >
-          Discard
-        </Button>
-        <Button
-          onClick={handleAccept}
-          disabled={isLoading || checkedRuleIds.length === 0}
-          size="2"
-        >
-          Accept
-        </Button>
+        <Flex align="center">
+          <TokenUsageIndicator tokenUsage={tokenUsage} />
+        </Flex>
+        <Flex gap="3">
+          <Button
+            variant="outline"
+            onClick={stop}
+            disabled={!isLoading}
+            size="2"
+            color="red"
+          >
+            Stop
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleDiscard}
+            disabled={isLoading}
+            size="2"
+          >
+            Discard
+          </Button>
+          <Button
+            onClick={handleAccept}
+            disabled={isLoading || checkedRuleIds.length === 0}
+            size="2"
+          >
+            Accept
+          </Button>
+        </Flex>
       </Flex>
     </Flex>
   )

@@ -1,6 +1,7 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { TokenUsage } from '@/handlers/ai/types'
 import { applyRules } from '@/rules/rules'
 import { UsageEventName } from '@/services/usageTracking/types'
 import {
@@ -19,6 +20,11 @@ import { systemPrompt } from './constants'
 import { CorrelationStatus, Message, ToolCall } from './types'
 import { IPCChatTransport } from './utils/IPCChatTransport'
 import { lastMessageIsToolCall } from './utils/lastMessageIsToolCall'
+import {
+  getRequestDetails,
+  getRequestsMetadata,
+  searchRequests,
+} from './utils/searchTools'
 import { prepareRequestsForAI } from './utils/stripRequestData'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
@@ -32,6 +38,7 @@ export const useGenerateRules = ({
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
+  const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
   const suggestedRulesRef = useRef(suggestedRules)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
@@ -42,11 +49,11 @@ export const useGenerateRules = ({
   const {
     sendMessage,
     error,
-    addToolResult,
+    addToolOutput,
     status,
     stop: stopGeneration,
   } = useChat<Message>({
-    transport: new IPCChatTransport(),
+    transport: new IPCChatTransport({ onUsage: setTokenUsage }),
     // Keep calling tools without user input
     sendAutomaticallyWhen: lastMessageIsToolCall,
     onError: (error) => {
@@ -68,7 +75,7 @@ export const useGenerateRules = ({
       setCorrelationStatus(toolCallToStep(toolCallWithType))
       const toolResult = await handleToolCall(toolCallWithType)
 
-      void addToolResult({
+      void addToolOutput({
         tool: toolCall.toolName,
         toolCallId: toolCall.toolCallId,
         output: toolResult,
@@ -84,11 +91,19 @@ export const useGenerateRules = ({
         return addRule(toolCall.input.rule)
       }
 
-      case 'getRecording': {
-        const { startIndex, endIndex } = toolCall.input
-        const recordingSlice = recording.slice(startIndex, endIndex)
+      case 'searchRequests': {
+        const { query, limit } = toolCall.input
+        return searchRequests(recording, query, limit ?? 20)
+      }
 
-        return prepareRequestsForAI(recordingSlice)
+      case 'getRequestsMetadata': {
+        const { startIndex, endIndex } = toolCall.input
+        return getRequestsMetadata(recording, startIndex ?? 0, endIndex)
+      }
+
+      case 'getRequestDetails': {
+        const { requestIds, fields } = toolCall.input
+        return getRequestDetails(recording, requestIds, fields)
       }
 
       case 'runValidation': {
@@ -153,8 +168,13 @@ export const useGenerateRules = ({
       abortControllerRef.current?.signal
     )
 
-    const result = validationMatchesRecording(recording, validationResult)
+    const result = validationMatchesRecording(
+      prepareRequestsForAI(recording),
+      prepareRequestsForAI(validationResult)
+    )
+
     setIsValidationSuccessful(result.success)
+
     return result
   }
 
@@ -183,7 +203,7 @@ export const useGenerateRules = ({
         return
       }
 
-      // TODO: we are sending just one failing request for context, should we send all?
+      setCorrelationStatus('analyzing')
       return sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
       })
@@ -218,6 +238,7 @@ export const useGenerateRules = ({
     isLoading,
     correlationStatus,
     outcomeReason,
+    tokenUsage,
     stop: useCallback(stop, [stopGeneration]),
   }
 }
@@ -227,7 +248,9 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
   switch (toolName) {
     case 'runValidation':
       return 'validating'
-    case 'getRecording':
+    case 'searchRequests':
+    case 'getRequestsMetadata':
+    case 'getRequestDetails':
       return 'analyzing'
     case 'addRule':
       return 'creating-rules'
