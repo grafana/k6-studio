@@ -71,6 +71,7 @@ export function initialize() {
     trackEvent({
       event: UsageEventName.ScriptValidated,
       payload: {
+        source: 'debugger',
         isExternal: isExternalScript(resolvedScriptPath),
       },
     })
@@ -92,7 +93,11 @@ export function initialize() {
 
   ipcMain.handle(
     ScriptHandler.RunFromGenerator,
-    async (event, script: string) => {
+    async (
+      event,
+      script: string,
+      source: 'generator' | 'autocorrelation' = 'generator'
+    ) => {
       console.info(`${ScriptHandler.RunFromGenerator} event received`)
       await writeFile(TEMP_GENERATOR_SCRIPT_PATH, script)
 
@@ -108,6 +113,7 @@ export function initialize() {
       trackEvent({
         event: UsageEventName.ScriptValidated,
         payload: {
+          source,
           isExternal: false,
         },
       })

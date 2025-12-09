@@ -84,6 +84,7 @@ interface ScriptExportedEvent {
 interface ScriptValidatedEvent {
   event: UsageEventName.ScriptValidated
   payload: {
+    source: 'generator' | 'debugger' | 'autocorrelation'
     isExternal: boolean
   }
 }

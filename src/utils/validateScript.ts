@@ -7,7 +7,8 @@ import { processProxyData } from './proxyData'
  */
 export async function validateScript(
   script: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  source?: 'generator' | 'autocorrelation'
 ): Promise<ProxyData[]> {
   let collectedData: ProxyData[] = []
 
@@ -51,9 +52,11 @@ export async function validateScript(
     })
 
     // Run the script
-    window.studio.script.runScriptFromGenerator(script).catch((error) => {
-      cleanup()
-      reject(error)
-    })
+    window.studio.script
+      .runScriptFromGenerator(script, source)
+      .catch((error) => {
+        cleanup()
+        reject(error)
+      })
   })
 }
