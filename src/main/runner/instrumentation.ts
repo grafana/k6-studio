@@ -160,8 +160,7 @@ const getShimPath = (name: string) => {
   // @ts-expect-error We are targeting CommonJS so import.meta is not available
   if (!import.meta.env.PROD) {
     // Module specifiers are URL-like and must always use forward slashes (/) regardless of OS
-    return path.posix.
-      .join(app.getAppPath(), 'resources', 'shims', name)
+    return path.posix.join(app.getAppPath(), 'resources', 'shims', name)
   }
 
   return path.posix.join(process.resourcesPath, 'shims', name)
