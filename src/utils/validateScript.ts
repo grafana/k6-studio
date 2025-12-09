@@ -8,7 +8,7 @@ import { processProxyData } from './proxyData'
 export async function validateScript(
   script: string,
   signal?: AbortSignal,
-  source?: 'generator' | 'autocorrelation'
+  shouldTrack = true
 ): Promise<ProxyData[]> {
   let collectedData: ProxyData[] = []
 
@@ -53,7 +53,7 @@ export async function validateScript(
 
     // Run the script
     window.studio.script
-      .runScriptFromGenerator(script, source)
+      .runScriptFromGenerator(script, shouldTrack)
       .catch((error) => {
         cleanup()
         reject(error)

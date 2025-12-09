@@ -71,7 +71,6 @@ export function initialize() {
     trackEvent({
       event: UsageEventName.ScriptValidated,
       payload: {
-        source: 'debugger',
         isExternal: isExternalScript(resolvedScriptPath),
       },
     })
@@ -93,11 +92,7 @@ export function initialize() {
 
   ipcMain.handle(
     ScriptHandler.RunFromGenerator,
-    async (
-      event,
-      script: string,
-      source: 'generator' | 'autocorrelation' = 'generator'
-    ) => {
+    async (event, script: string, shouldTrack = true) => {
       console.info(`${ScriptHandler.RunFromGenerator} event received`)
       await writeFile(TEMP_GENERATOR_SCRIPT_PATH, script)
 
@@ -110,13 +105,14 @@ export function initialize() {
         usageReport: k6StudioState.appSettings.telemetry.usageReport,
       })
 
-      trackEvent({
-        event: UsageEventName.ScriptValidated,
-        payload: {
-          source,
-          isExternal: false,
-        },
-      })
+      if (shouldTrack) {
+        trackEvent({
+          event: UsageEventName.ScriptValidated,
+          payload: {
+            isExternal: false,
+          },
+        })
+      }
 
       await unlink(TEMP_GENERATOR_SCRIPT_PATH)
     }

@@ -17,14 +17,11 @@ export function openScript(scriptPath: string) {
   ) as Promise<OpenScriptResult>
 }
 
-export function runScriptFromGenerator(
-  script: string,
-  source: 'generator' | 'autocorrelation' = 'generator'
-) {
+export function runScriptFromGenerator(script: string, shouldTrack = true) {
   return ipcRenderer.invoke(
     ScriptHandler.RunFromGenerator,
     script,
-    source
+    shouldTrack
   ) as Promise<void>
 }
 
