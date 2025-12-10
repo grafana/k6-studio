@@ -1,3 +1,4 @@
+import exec from 'k6/execution'
 ;(function () {
   // saving the original values
   const httpRequest = http.request
@@ -43,8 +44,10 @@
 
   function instrumentArguments(args) {
     const [body = null, params = {}] = args
+    const tag = exec?.vu?.metrics?.tags?.group || ''
+
     const groupHeaders = {
-      'X-k6-group': trimAndRemovePrefix(execution.vu.tags.group),
+      'X-k6-group': trimAndRemovePrefix(tag),
     }
 
     const updatedParams = Object.assign({}, params, {
