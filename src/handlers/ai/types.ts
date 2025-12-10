@@ -4,7 +4,6 @@ export enum AiHandler {
   StreamChat = 'ai:streamChat',
   StreamChatChunk = 'ai:streamChatChunk',
   StreamChatEnd = 'ai:streamChatEnd',
-  StreamChatError = 'ai:streamChatError',
   AbortStreamChat = 'ai:abortStreamChat',
 }
 
@@ -27,11 +26,6 @@ export type TokenUsage = LanguageModelUsage
 export interface StreamChatEnd {
   id: string
   usage?: TokenUsage
-}
-
-export interface StreamChatError {
-  id: string
-  error: string
 }
 
 export interface AbortStreamChatRequest {

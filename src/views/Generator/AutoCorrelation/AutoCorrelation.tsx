@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useGeneratorStore } from '@/store/generator'
 
+import { ErrorMessage } from './ErrorMessage'
 import { IntroductionMessage } from './IntroductionMessage'
 import { SuggestedRules } from './SuggestedRules'
 import { TokenUsageIndicator } from './TokenUsageIndicator'
@@ -34,7 +35,9 @@ export function AutoCorrelation({
     correlationStatus,
     outcomeReason,
     tokenUsage,
+    error,
     stop,
+    restart,
   } = useGenerateRules({
     clearValidation: clearValidation,
   })
@@ -71,6 +74,10 @@ export function AutoCorrelation({
     return <IntroductionMessage onStart={start} />
   }
 
+  if (error) {
+    return <ErrorMessage error={error} onRetry={restart} />
+  }
+
   return (
     <Flex
       css={{
@@ -90,7 +97,6 @@ export function AutoCorrelation({
                     isLoading={isLoading}
                     onCheckRules={setCheckedRuleIds}
                     checkedRuleIds={checkedRuleIds}
-                    correlationStatus={correlationStatus}
                   />
                   {outcomeReason !== '' && (
                     <Box px="3" pt="2">
