@@ -111,3 +111,8 @@ resources/win/x86_64/k6
 # Shims
 resources/shims
 resources/browser 
+
+
+# Temporary k6 script validation runs for external scripts
+*.tmp-k6studio__.js
+.*__tmp-k6studio__.js
