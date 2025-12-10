@@ -45,7 +45,7 @@ export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
     return (
       <MessageContent
         title="Incorrect API key"
-        message="The OpenAI API key is incorrect or has been revoked. Please check your API key in settings."
+        message="The OpenAI API key is incorrect or has been revoked. Check your API key in settings."
       >
         {openSettingsButton}
       </MessageContent>
@@ -65,7 +65,7 @@ export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
     return (
       <MessageContent
         title="Too many requests"
-        message="You have exceeded the API rate limit. Please wait a moment and try again."
+        message="You have exceeded the API rate limit. Wait a moment and try again."
       >
         {retryButton}
       </MessageContent>
