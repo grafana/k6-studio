@@ -165,7 +165,8 @@ export const useGenerateRules = ({
 
     const validationResult = await validateScript(
       script,
-      abortControllerRef.current?.signal
+      abortControllerRef.current?.signal,
+      false
     )
 
     const result = validationMatchesRecording(
