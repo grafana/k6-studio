@@ -328,6 +328,20 @@ function emitExpectExpression(
   }
 }
 
+function emitWaitForExpression(
+  context: ScenarioContext,
+  expression: ir.WaitForExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+  const args = expression.options ? [fromObjectLiteral(expression.options)] : []
+
+  return new ExpressionBuilder(target)
+    .member('waitFor')
+    .call(args)
+    .await(context)
+    .done()
+}
+
 function emitWaitForNavigationExpression(
   context: ScenarioContext,
   expression: ir.WaitForNavigationExpression
@@ -415,6 +429,9 @@ function emitExpression(
 
     case 'ExpectExpression':
       return emitExpectExpression(context, expression)
+
+    case 'WaitForExpression':
+      return emitWaitForExpression(context, expression)
 
     case 'WaitForNavigationExpression':
       return emitWaitForNavigationExpression(context, expression)

@@ -4,6 +4,7 @@ import {
   CheckSquareIcon,
   EyeIcon,
   TextCursorInputIcon,
+  TimerIcon,
   TypeIcon,
 } from 'lucide-react'
 import { ComponentProps, ReactNode } from 'react'
@@ -20,6 +21,7 @@ import {
 } from './ElementMenu.utils'
 import { AssertionData, CheckAssertionData } from './assertions/types'
 import { TrackedElement } from './utils'
+import { WaitForData } from './waitConditions/types'
 
 function ToolbarRoot(props: ComponentProps<typeof Toolbar.Root>) {
   return (
@@ -185,9 +187,14 @@ function RoleAssertions({ role, input, onAddAssertion }: RoleCategoryProps) {
 interface ElementMenuProps {
   element: TrackedElement
   onSelectAssertion: (data: AssertionData) => void
+  onAddWaitFor: (data: WaitForData) => void
 }
 
-export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
+export function ElementMenu({
+  element,
+  onSelectAssertion,
+  onAddWaitFor,
+}: ElementMenuProps) {
   const associatedElement = findAssociatedControl(element)
 
   const handleAddVisibilityAssertion = () => {
@@ -203,6 +210,12 @@ export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
       type: 'text',
       target: element.target,
       text: element.element.textContent ?? '',
+    })
+  }
+
+  const handleAddWaitFor = () => {
+    onAddWaitFor({
+      target: element.target,
     })
   }
 
@@ -231,6 +244,9 @@ export function ElementMenu({ element, onSelectAssertion }: ElementMenuProps) {
         </ToolbarButton>
         <ToolbarButton onClick={handleAddTextAssertion}>
           <TypeIcon /> <div>Add text assertion</div>
+        </ToolbarButton>
+        <ToolbarButton onClick={handleAddWaitFor}>
+          <TimerIcon /> <div>Add wait condition</div>
         </ToolbarButton>
       </MenuSection>
     </ToolbarRoot>

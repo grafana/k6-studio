@@ -97,6 +97,15 @@ export interface SelectOptionsExpression {
   multiple: boolean
 }
 
+export interface WaitForExpression {
+  type: 'WaitForExpression'
+  target: Expression
+  options?: {
+    timeout?: number
+    state?: 'attached' | 'detached' | 'visible' | 'hidden'
+  }
+}
+
 export interface WaitForNavigationExpression {
   type: 'WaitForNavigationExpression'
   target: Expression
@@ -178,6 +187,7 @@ export type Expression =
   | CheckExpression
   | SelectOptionsExpression
   | ExpectExpression
+  | WaitForExpression
   | WaitForNavigationExpression
   | PromiseAllExpression
 

@@ -123,6 +123,14 @@ export interface AssertNode extends NodeBase {
   }
 }
 
+export interface WaitForNode extends NodeBase {
+  type: 'wait-for'
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
+  }
+}
+
 export type TestNode =
   | PageNode
   | GotoNode
@@ -133,6 +141,7 @@ export type TestNode =
   | SelectOptionsNode
   | CheckNode
   | AssertNode
+  | WaitForNode
 
 export interface Scenario {
   nodes: TestNode[]
