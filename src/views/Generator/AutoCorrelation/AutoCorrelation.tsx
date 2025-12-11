@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useGeneratorStore } from '@/store/generator'
 
+import { ErrorMessage } from './ErrorMessage'
 import { IntroductionMessage } from './IntroductionMessage'
 import { SuggestedRules } from './SuggestedRules'
+import { TokenUsageIndicator } from './TokenUsageIndicator'
 import { ValidationResults } from './ValidationResults'
 import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
@@ -32,7 +34,10 @@ export function AutoCorrelation({
     isLoading,
     correlationStatus,
     outcomeReason,
+    tokenUsage,
+    error,
     stop,
+    restart,
   } = useGenerateRules({
     clearValidation: clearValidation,
   })
@@ -69,6 +74,10 @@ export function AutoCorrelation({
     return <IntroductionMessage onStart={start} />
   }
 
+  if (error) {
+    return <ErrorMessage error={error} onRetry={restart} />
+  }
+
   return (
     <Flex
       css={{
@@ -88,7 +97,6 @@ export function AutoCorrelation({
                     isLoading={isLoading}
                     onCheckRules={setCheckedRuleIds}
                     checkedRuleIds={checkedRuleIds}
-                    correlationStatus={correlationStatus}
                   />
                   {outcomeReason !== '' && (
                     <Box px="3" pt="2">
@@ -109,36 +117,42 @@ export function AutoCorrelation({
 
       <Flex
         gap="3"
-        justify="end"
+        justify="between"
+        align="center"
         p="3"
         css={{
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        <Button
-          variant="outline"
-          onClick={stop}
-          disabled={!isLoading}
-          size="2"
-          color="red"
-        >
-          Stop
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleDiscard}
-          disabled={isLoading}
-          size="2"
-        >
-          Discard
-        </Button>
-        <Button
-          onClick={handleAccept}
-          disabled={isLoading || checkedRuleIds.length === 0}
-          size="2"
-        >
-          Accept
-        </Button>
+        <Flex align="center">
+          <TokenUsageIndicator tokenUsage={tokenUsage} />
+        </Flex>
+        <Flex gap="3">
+          <Button
+            variant="outline"
+            onClick={stop}
+            disabled={!isLoading}
+            size="2"
+            color="red"
+          >
+            Stop
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleDiscard}
+            disabled={isLoading}
+            size="2"
+          >
+            Discard
+          </Button>
+          <Button
+            onClick={handleAccept}
+            disabled={isLoading || checkedRuleIds.length === 0}
+            size="2"
+          >
+            Accept
+          </Button>
+        </Flex>
       </Flex>
     </Flex>
   )

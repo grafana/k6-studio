@@ -60,7 +60,7 @@ function hasCompletedTools(toolParts: ToolPart[]) {
 }
 
 function isToolComplete(tool: ToolPart) {
-  return tool.state === 'output-available'
+  return tool.state === 'output-available' || tool.state === 'output-error'
 }
 
 function endsWithFinishTool(toolParts: ToolPart[]) {

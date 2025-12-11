@@ -1,12 +1,12 @@
 import { ipcRenderer } from 'electron'
 
 import {
+  AbortStreamChatRequest,
   AiHandler,
-  StreamChatRequest,
   StreamChatChunk,
   StreamChatEnd,
-  StreamChatError,
-  AbortStreamChatRequest,
+  StreamChatRequest,
+  TokenUsage,
 } from './types'
 
 export function streamChat(request: StreamChatRequest) {
@@ -29,31 +29,17 @@ export function streamChat(request: StreamChatRequest) {
         ipcRenderer.removeListener(AiHandler.StreamChatChunk, handler)
     },
 
-    onEnd: (callback: () => void) => {
+    onEnd: (callback: (usage?: TokenUsage) => void) => {
       const handler = (
         _event: Electron.IpcRendererEvent,
         data: StreamChatEnd
       ) => {
         if (data.id === request.id) {
-          callback()
+          callback(data.usage)
         }
       }
       ipcRenderer.on(AiHandler.StreamChatEnd, handler)
       return () => ipcRenderer.removeListener(AiHandler.StreamChatEnd, handler)
-    },
-
-    onError: (callback: (error: string) => void) => {
-      const handler = (
-        _event: Electron.IpcRendererEvent,
-        data: StreamChatError
-      ) => {
-        if (data.id === request.id) {
-          callback(data.error)
-        }
-      }
-      ipcRenderer.on(AiHandler.StreamChatError, handler)
-      return () =>
-        ipcRenderer.removeListener(AiHandler.StreamChatError, handler)
     },
 
     abort: () => {

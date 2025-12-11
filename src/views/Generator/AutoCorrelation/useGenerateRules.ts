@@ -1,7 +1,9 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { TokenUsage } from '@/handlers/ai/types'
 import { applyRules } from '@/rules/rules'
+import { UsageEventName } from '@/services/usageTracking/types'
 import {
   selectFilteredRequests,
   selectGeneratorData,
@@ -18,6 +20,11 @@ import { systemPrompt } from './constants'
 import { CorrelationStatus, Message, ToolCall } from './types'
 import { IPCChatTransport } from './utils/IPCChatTransport'
 import { lastMessageIsToolCall } from './utils/lastMessageIsToolCall'
+import {
+  getRequestDetails,
+  getRequestsMetadata,
+  searchRequests,
+} from './utils/searchTools'
 import { prepareRequestsForAI } from './utils/stripRequestData'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
@@ -27,10 +34,10 @@ export const useGenerateRules = ({
   clearValidation: () => void
 }) => {
   const [suggestedRules, setSuggestedRules] = useState<CorrelationRule[]>([])
-  const [isValidationSuccessful, setIsValidationSuccessful] = useState(false)
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
+  const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
   const suggestedRulesRef = useRef(suggestedRules)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
@@ -41,16 +48,17 @@ export const useGenerateRules = ({
   const {
     sendMessage,
     error,
-    addToolResult,
+    addToolOutput,
     status,
     stop: stopGeneration,
+    clearError,
+    setMessages,
   } = useChat<Message>({
-    transport: new IPCChatTransport(),
+    transport: new IPCChatTransport({ onUsage: setTokenUsage }),
     // Keep calling tools without user input
     sendAutomaticallyWhen: lastMessageIsToolCall,
     onError: (error) => {
       setCorrelationStatus('error')
-      setOutcomeReason('An error occurred during auto-correlation.')
       console.error(error)
     },
     onToolCall: async ({ toolCall }) => {
@@ -67,7 +75,7 @@ export const useGenerateRules = ({
       setCorrelationStatus(toolCallToStep(toolCallWithType))
       const toolResult = await handleToolCall(toolCallWithType)
 
-      void addToolResult({
+      void addToolOutput({
         tool: toolCall.toolName,
         toolCallId: toolCall.toolCallId,
         output: toolResult,
@@ -83,11 +91,19 @@ export const useGenerateRules = ({
         return addRule(toolCall.input.rule)
       }
 
-      case 'getRecording': {
-        const { startIndex, endIndex } = toolCall.input
-        const recordingSlice = recording.slice(startIndex, endIndex)
+      case 'searchRequests': {
+        const { query, limit } = toolCall.input
+        return searchRequests(recording, query, limit ?? 20)
+      }
 
-        return prepareRequestsForAI(recordingSlice)
+      case 'getRequestsMetadata': {
+        const { startIndex, endIndex } = toolCall.input
+        return getRequestsMetadata(recording, startIndex ?? 0, endIndex)
+      }
+
+      case 'getRequestDetails': {
+        const { requestIds, fields } = toolCall.input
+        return getRequestDetails(recording, requestIds, fields)
       }
 
       case 'runValidation': {
@@ -95,6 +111,23 @@ export const useGenerateRules = ({
       }
 
       case 'finish':
+        if (toolCall.input.outcome === 'success') {
+          window.studio.app.trackEvent({
+            event: UsageEventName.AutocorrelationSucceeded,
+          })
+        }
+
+        if (toolCall.input.outcome === 'partial-success') {
+          window.studio.app.trackEvent({
+            event: UsageEventName.AutocorrelationPartiallySucceeded,
+          })
+        }
+
+        if (toolCall.input.outcome === 'failure') {
+          window.studio.app.trackEvent({
+            event: UsageEventName.AutocorrelationFailed,
+          })
+        }
         setOutcomeReason(toolCall.input.reason)
         return
 
@@ -132,11 +165,15 @@ export const useGenerateRules = ({
 
     const validationResult = await validateScript(
       script,
-      abortControllerRef.current?.signal
+      abortControllerRef.current?.signal,
+      false
     )
 
-    const result = validationMatchesRecording(recording, validationResult)
-    setIsValidationSuccessful(result.success)
+    const result = validationMatchesRecording(
+      prepareRequestsForAI(recording),
+      prepareRequestsForAI(validationResult)
+    )
+
     return result
   }
 
@@ -148,8 +185,11 @@ export const useGenerateRules = ({
   ].includes(correlationStatus)
 
   async function start() {
-    setIsValidationSuccessful(false)
+    window.studio.app.trackEvent({
+      event: UsageEventName.AutocorrelationStarted,
+    })
     setCorrelationStatus('validating')
+    clearError()
 
     try {
       const validationResult = await runValidation()
@@ -162,7 +202,7 @@ export const useGenerateRules = ({
         return
       }
 
-      // TODO: we are sending just one failing request for context, should we send all?
+      setCorrelationStatus('analyzing')
       return sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
       })
@@ -172,13 +212,20 @@ export const useGenerateRules = ({
       }
       console.error(error)
       setCorrelationStatus('error')
-      setOutcomeReason('An error occurred during auto-correlation.')
     }
   }
+
   function stop() {
     void stopGeneration()
     setCorrelationStatus('aborted')
     abortControllerRef.current?.abort()
+  }
+
+  function restart() {
+    setSuggestedRules([])
+    setMessages([])
+    clearError()
+    return start()
   }
 
   useEffect(() => {
@@ -193,10 +240,11 @@ export const useGenerateRules = ({
     error,
     status,
     suggestedRules,
-    isValid: isValidationSuccessful,
     isLoading,
     correlationStatus,
     outcomeReason,
+    tokenUsage,
+    restart,
     stop: useCallback(stop, [stopGeneration]),
   }
 }
@@ -206,7 +254,9 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
   switch (toolName) {
     case 'runValidation':
       return 'validating'
-    case 'getRecording':
+    case 'searchRequests':
+    case 'getRequestsMetadata':
+    case 'getRequestDetails':
       return 'analyzing'
     case 'addRule':
       return 'creating-rules'

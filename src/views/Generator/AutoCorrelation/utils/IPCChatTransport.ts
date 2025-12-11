@@ -1,11 +1,19 @@
 import {
-  ChatTransport,
   ChatRequestOptions,
+  ChatTransport,
   UIMessage,
   UIMessageChunk,
 } from 'ai'
 
-import { StreamChatRequest, StreamChatChunk } from '@/handlers/ai/types'
+import {
+  StreamChatChunk,
+  StreamChatRequest,
+  TokenUsage,
+} from '@/handlers/ai/types'
+
+export interface IPCChatTransportOptions {
+  onUsage?: (usage: TokenUsage) => void
+}
 
 /**
  * Custom ChatTransport implementation that uses Electron IPC for communication
@@ -14,6 +22,11 @@ import { StreamChatRequest, StreamChatChunk } from '@/handlers/ai/types'
 export class IPCChatTransport<Message extends UIMessage>
   implements ChatTransport<Message>
 {
+  private onUsage?: (usage: TokenUsage) => void
+
+  constructor(options?: IPCChatTransportOptions) {
+    this.onUsage = options?.onUsage
+  }
   sendMessages(
     options: {
       trigger: 'submit-message' | 'regenerate-message'
@@ -37,6 +50,9 @@ export class IPCChatTransport<Message extends UIMessage>
       body: options.body,
     }
 
+    // Capture callback reference for use inside start()
+    const onUsageCallback = this.onUsage
+
     // Create a ReadableStream that will receive chunks via IPC
     return Promise.resolve(
       new ReadableStream<UIMessageChunk>({
@@ -47,16 +63,19 @@ export class IPCChatTransport<Message extends UIMessage>
           const removeChunkListener = stream.onChunk(
             (data: StreamChatChunk) => {
               controller.enqueue(data.chunk)
+
+              if (data.chunk?.type === 'error') {
+                controller.close()
+                cleanup()
+              }
             }
           )
 
-          const removeEndListener = stream.onEnd(() => {
+          const removeEndListener = stream.onEnd((usage) => {
+            if (usage && onUsageCallback) {
+              onUsageCallback(usage)
+            }
             controller.close()
-            cleanup()
-          })
-
-          const removeErrorListener = stream.onError((error) => {
-            controller.error(new Error(error))
             cleanup()
           })
 
@@ -74,7 +93,6 @@ export class IPCChatTransport<Message extends UIMessage>
           const cleanup = () => {
             removeChunkListener()
             removeEndListener()
-            removeErrorListener()
           }
         },
       })

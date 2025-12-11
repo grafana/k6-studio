@@ -5,6 +5,8 @@ import { ProxyData } from '@/types'
 import { safeAtob } from '@/utils/format'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 
+export type StrippedProxyData = ReturnType<typeof stripUnnecessaryData>
+
 export function prepareRequestsForAI(requests: ProxyData[]) {
   return requests
     .filter(
@@ -62,7 +64,9 @@ function filterRequestProperties(data: ProxyData) {
 function filterRequestHeaders(data: ProxyData) {
   return produce(data, (draft) => {
     draft.request.headers = draft.request.headers.filter(
-      ([key]) => !key.toLowerCase().includes('sec-')
+      ([key]) =>
+        !key.toLowerCase().includes('sec-') &&
+        !key.toLowerCase().includes('content-security')
     )
   })
 }
@@ -70,9 +74,8 @@ function filterRequestHeaders(data: ProxyData) {
 function filterResponseHeaders(data: ProxyData) {
   return produce(data, (draft) => {
     if (draft.response) {
-      // TODO: research what other headers may contain relevant info
-      draft.response.headers = draft.response.headers.filter(([key]) =>
-        key.toLowerCase().includes('cookie')
+      draft.response.headers = draft.response.headers.filter(
+        ([key]) => !key.toLowerCase().includes('content-security')
       )
     }
   })
