@@ -16,42 +16,55 @@ function locatorProxy(
   return {
     target,
     tracking: {
-      click() {
+      click(options) {
         return {
           type: 'locator.click',
           locator,
+          options,
         }
       },
 
-      fill(value: string) {
+      fill(value: string, options) {
         return {
           type: 'locator.fill',
           locator,
           value,
+          options,
         }
       },
 
-      check() {
+      check(options) {
         return {
           type: 'locator.check',
           locator,
+          options,
         }
       },
 
-      uncheck() {
+      uncheck(options) {
         return {
           type: 'locator.uncheck',
           locator,
+          options,
         }
       },
 
-      selectOption(values) {
+      selectOption(values, options) {
         return {
           type: 'locator.selectOption',
           locator,
           values: Array.of(values)
             .flat()
             .map((value) => (typeof value === 'string' ? { value } : value)),
+          options,
+        }
+      },
+
+      waitFor(options) {
+        return {
+          type: 'locator.waitFor',
+          locator,
+          options,
         }
       },
 

@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+// Generic options schema to allow any options object. Should be refined later.
+const GenericOptions = z.unknown()
+
 const CssLocatorSchema = z.object({
   type: z.literal('css'),
   selector: z.string(),
@@ -57,14 +60,17 @@ const ActionLocatorSchema = z.discriminatedUnion('type', [
 const PageGotoActionSchema = z.object({
   type: z.literal('page.goto'),
   url: z.string(),
+  options: GenericOptions.optional(),
 })
 
 const PageReloadActionSchema = z.object({
   type: z.literal('page.reload'),
+  options: GenericOptions.optional(),
 })
 
 const PageWaitForNavigationActionSchema = z.object({
   type: z.literal('page.waitForNavigation'),
+  options: GenericOptions.optional(),
 })
 
 const GenericPageActionSchema = z.object({
@@ -76,22 +82,26 @@ const GenericPageActionSchema = z.object({
 const LocatorClickActionSchema = z.object({
   type: z.literal('locator.click'),
   locator: ActionLocatorSchema,
+  options: GenericOptions.optional(),
 })
 
 const LocatorFillActionSchema = z.object({
   type: z.literal('locator.fill'),
   locator: ActionLocatorSchema,
   value: z.string(),
+  options: GenericOptions.optional(),
 })
 
 const LocatorCheckActionSchema = z.object({
   type: z.literal('locator.check'),
   locator: ActionLocatorSchema,
+  options: GenericOptions.optional(),
 })
 
 const LocatorUncheckActionSchema = z.object({
   type: z.literal('locator.uncheck'),
   locator: ActionLocatorSchema,
+  options: GenericOptions.optional(),
 })
 
 const LocatorSelectOptionActionSchema = z.object({
@@ -104,6 +114,13 @@ const LocatorSelectOptionActionSchema = z.object({
       index: z.number().optional(),
     })
   ),
+  options: GenericOptions.optional(),
+})
+
+const LocatorWaitForActionSchema = z.object({
+  type: z.literal('locator.waitFor'),
+  locator: ActionLocatorSchema,
+  options: GenericOptions.optional(),
 })
 
 const GenericLocatorActionSchema = z.object({
@@ -135,6 +152,7 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('type', [
   LocatorCheckActionSchema,
   LocatorUncheckActionSchema,
   LocatorSelectOptionActionSchema,
+  LocatorWaitForActionSchema,
   GenericLocatorActionSchema,
 ])
 
@@ -207,6 +225,7 @@ export type LocatorUncheckAction = z.infer<typeof LocatorUncheckActionSchema>
 export type LocatorSelectOptionAction = z.infer<
   typeof LocatorSelectOptionActionSchema
 >
+export type LocatorWaitForAction = z.infer<typeof LocatorWaitForActionSchema>
 export type GenericLocatorAction = z.infer<typeof GenericLocatorActionSchema>
 
 export type GenericBrowserContextAction = z.infer<

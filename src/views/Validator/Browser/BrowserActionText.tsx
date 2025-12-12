@@ -73,6 +73,13 @@ export function BrowserActionText({ action }: BrowserActionTextProps) {
         </>
       )
 
+    case 'locator.waitFor':
+      return (
+        <>
+          Wait for element <BrowserActionLocator locator={action.locator} />
+        </>
+      )
+
     case 'locator.*':
       return (
         <>
