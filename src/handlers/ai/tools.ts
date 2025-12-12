@@ -9,17 +9,65 @@ export const tools = {
     inputSchema: z.object({}),
   }),
 
-  getRecording: tool({
-    description: 'Get the original recording, query in batches of 10',
+  searchRequests: tool({
+    description:
+      'Search for requests in the recording using a query string. Returns metadata only (id, method, url, statusCode) without full request/response bodies. Use this to find specific requests efficiently before fetching full details.',
     inputSchema: z.object({
-      startIndex: z.number(),
-      endIndex: z.number(),
+      query: z
+        .string()
+        .describe(
+          'Search query - can match against URL, method, path, host, status code. Examples: "login", "POST", "/api/users", "401"'
+        ),
+      limit: z
+        .number()
+        .optional()
+        .default(20)
+        .describe('Maximum number of results to return (default: 20)'),
+    }),
+  }),
+
+  getRequestsMetadata: tool({
+    description:
+      'Get lightweight metadata for all requests in the recording (id, method, url, statusCode, hasRequestBody, hasResponseBody). Use this to get an overview of the recording without loading full request/response data.',
+    inputSchema: z.object({
+      startIndex: z.number().optional().default(0),
+      endIndex: z
+        .number()
+        .optional()
+        .describe(
+          'End index (exclusive). If not provided, returns all requests from startIndex to end.'
+        ),
+    }),
+  }),
+
+  getRequestDetails: tool({
+    description:
+      'Get full details for specific requests by their IDs. Only returns the requested fields to minimize token usage.',
+    inputSchema: z.object({
+      requestIds: z
+        .array(z.string())
+        .describe('Array of request IDs to fetch details for'),
+      fields: z
+        .array(
+          z.enum([
+            'headers',
+            'body',
+            'cookies',
+            'responseHeaders',
+            'responseBody',
+            'responseCookies',
+          ])
+        )
+        .optional()
+        .describe(
+          'Optional array of fields to include. If not specified, returns all fields.'
+        ),
     }),
   }),
 
   addRule: tool({
     description:
-      'Create a correlation rule. It will return array of matches request ids. If no requests matched rule will not be added and you need to create another one.',
+      'Create a correlation rule. It will return array of matched request ids. If no requests matched, rule will not be added and you need to create another one.',
     inputSchema: z.object({ rule: AiCorrelationRuleSchema }),
   }),
 

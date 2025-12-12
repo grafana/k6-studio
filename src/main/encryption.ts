@@ -11,5 +11,15 @@ export function decryptString(encrypted: string): string {
 }
 
 export function isEncryptionAvailable(): boolean {
-  return safeStorage.isEncryptionAvailable()
+  const isEncryptionAvailable = safeStorage.isEncryptionAvailable()
+
+  if (process.platform === 'linux') {
+    return isEncryptionAvailable && isLinuxEncryptionSecure()
+  }
+
+  return isEncryptionAvailable
+}
+
+function isLinuxEncryptionSecure() {
+  return safeStorage.getSelectedStorageBackend() !== 'basic_text'
 }

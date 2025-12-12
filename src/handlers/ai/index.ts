@@ -35,6 +35,8 @@ async function handleStreamChat(
       providerOptions: {
         openai: {
           parallelToolCalls: false,
+          reasoningEffort: 'low',
+          textVerbosity: 'low',
         } satisfies OpenAIResponsesProviderOptions,
       },
     })
