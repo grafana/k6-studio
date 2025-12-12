@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron'
 
+import { BrowserActionEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 
 import { createListener } from '../utils'
@@ -59,4 +60,8 @@ export function onScriptFailed(callback: () => void) {
 
 export function onScriptCheck(callback: (data: Check[]) => void) {
   return createListener(ScriptHandler.Check, callback)
+}
+
+export function onBrowserAction(callback: (data: BrowserActionEvent) => void) {
+  return createListener(ScriptHandler.BrowserAction, callback)
 }

@@ -3,11 +3,15 @@ import { useCallback } from 'react'
 import { UsageEventName } from '@/services/usageTracking/types'
 
 export function useTrackScriptCopy(
-  script: string,
+  script: string | undefined,
   source: 'generator' | 'debugger'
 ) {
   return useCallback(
     (event: ClipboardEvent) => {
+      if (script === undefined) {
+        return
+      }
+
       const copiedText = event.clipboardData?.getData('text/plain')
 
       if (copiedText?.trim() === script.trim()) {

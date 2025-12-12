@@ -1,24 +1,153 @@
 import { z } from 'zod'
 
-export const GotoActionSchema = z.object({
-  type: z.literal('goto'),
-  url: z.string(),
-})
-
-export const ClickActionSchema = z.object({
-  type: z.literal('click'),
+const CssLocatorSchema = z.object({
+  type: z.literal('css'),
   selector: z.string(),
 })
 
-export const BrowserActionSchema = z.discriminatedUnion('type', [
-  GotoActionSchema,
-  ClickActionSchema,
+const GetByRoleLocatorSchema = z.object({
+  type: z.literal('role'),
+  role: z.string(),
+  options: z.object({
+    name: z.string().optional(),
+  }),
+})
+
+const GetByTestIdLocatorSchema = z.object({
+  type: z.literal('testid'),
+  testId: z.string(),
+})
+
+const GetByAltTextLocatorSchema = z.object({
+  type: z.literal('alt'),
+  text: z.string(),
+})
+
+const GetByLabelLocatorSchema = z.object({
+  type: z.literal('label'),
+  label: z.string(),
+})
+
+const GetByPlaceholderLocatorSchema = z.object({
+  type: z.literal('placeholder'),
+  placeholder: z.string(),
+})
+
+const GetByTitleLocatorSchema = z.object({
+  type: z.literal('title'),
+  title: z.string(),
+})
+
+const GetByTextLocatorSchema = z.object({
+  type: z.literal('text'),
+  text: z.string(),
+})
+
+const ActionLocatorSchema = z.discriminatedUnion('type', [
+  CssLocatorSchema,
+  GetByRoleLocatorSchema,
+  GetByTestIdLocatorSchema,
+  GetByAltTextLocatorSchema,
+  GetByLabelLocatorSchema,
+  GetByPlaceholderLocatorSchema,
+  GetByTitleLocatorSchema,
+  GetByTextLocatorSchema,
 ])
 
-export const ActionBeginEventSchema = z.object({
+const PageGotoActionSchema = z.object({
+  type: z.literal('page.goto'),
+  url: z.string(),
+})
+
+const PageReloadActionSchema = z.object({
+  type: z.literal('page.reload'),
+})
+
+const PageWaitForNavigationActionSchema = z.object({
+  type: z.literal('page.waitForNavigation'),
+})
+
+const GenericPageActionSchema = z.object({
+  type: z.literal('page.*'),
+  method: z.string(),
+  args: z.array(z.unknown()),
+})
+
+const LocatorClickActionSchema = z.object({
+  type: z.literal('locator.click'),
+  locator: ActionLocatorSchema,
+})
+
+const LocatorFillActionSchema = z.object({
+  type: z.literal('locator.fill'),
+  locator: ActionLocatorSchema,
+  value: z.string(),
+})
+
+const LocatorCheckActionSchema = z.object({
+  type: z.literal('locator.check'),
+  locator: ActionLocatorSchema,
+})
+
+const LocatorUncheckActionSchema = z.object({
+  type: z.literal('locator.uncheck'),
+  locator: ActionLocatorSchema,
+})
+
+const LocatorSelectOptionActionSchema = z.object({
+  type: z.literal('locator.selectOption'),
+  locator: ActionLocatorSchema,
+  values: z.array(
+    z.object({
+      value: z.string().optional(),
+      label: z.string().optional(),
+      index: z.number().optional(),
+    })
+  ),
+})
+
+const GenericLocatorActionSchema = z.object({
+  type: z.literal('locator.*'),
+  method: z.string(),
+  locator: ActionLocatorSchema,
+  args: z.array(z.unknown()),
+})
+
+const GenericBrowserContextActionSchema = z.object({
+  type: z.literal('browserContext.*'),
+  method: z.string(),
+  args: z.array(z.unknown()),
+})
+
+export const AnyBrowserActionSchema = z.discriminatedUnion('type', [
+  // BrowserContext actions
+  GenericBrowserContextActionSchema,
+
+  // Page actions
+  PageGotoActionSchema,
+  PageReloadActionSchema,
+  PageWaitForNavigationActionSchema,
+  GenericPageActionSchema,
+
+  // Locator actions
+  LocatorClickActionSchema,
+  LocatorFillActionSchema,
+  LocatorCheckActionSchema,
+  LocatorUncheckActionSchema,
+  LocatorSelectOptionActionSchema,
+  GenericLocatorActionSchema,
+])
+
+const ActionEventSchemaBase = z.object({
   eventId: z.string(),
-  timestamp: z.number(),
-  action: BrowserActionSchema,
+  action: AnyBrowserActionSchema,
+})
+
+export const ActionBeginEventSchema = ActionEventSchemaBase.extend({
+  type: z.literal('begin'),
+  timestamp: z.object({
+    started: z.number(),
+  }),
 })
 
 export const ActionSuccessSchema = z.object({
@@ -31,20 +160,57 @@ export const ActionErrorSchema = z.object({
   error: z.string(),
 })
 
+export const ActionAbortedSchema = z.object({
+  type: z.literal('aborted'),
+})
+
 export const ActionResult = z.discriminatedUnion('type', [
   ActionSuccessSchema,
   ActionErrorSchema,
+  ActionAbortedSchema,
 ])
 
-export const ActionEndEventSchema = ActionBeginEventSchema.extend({
+export const ActionEndEventSchema = ActionEventSchemaBase.extend({
+  type: z.literal('end'),
+  timestamp: z.object({
+    started: z.number(),
+    ended: z.number(),
+  }),
   result: ActionResult,
 })
+
+export const BrowserActionEventSchema = z.discriminatedUnion('type', [
+  ActionBeginEventSchema,
+  ActionEndEventSchema,
+])
+
+export type ActionLocator = z.infer<typeof ActionLocatorSchema>
 
 export type ActionBeginEvent = z.infer<typeof ActionBeginEventSchema>
 export type ActionEndEvent = z.infer<typeof ActionEndEventSchema>
 
+export type BrowserActionEvent = z.infer<typeof BrowserActionEventSchema>
+
 export type ActionResult = z.infer<typeof ActionResult>
 
-export type GotoAction = z.infer<typeof GotoActionSchema>
-export type ClickAction = z.infer<typeof ClickActionSchema>
-export type BrowserAction = z.infer<typeof BrowserActionSchema>
+export type PageGotoAction = z.infer<typeof PageGotoActionSchema>
+export type PageReloadAction = z.infer<typeof PageReloadActionSchema>
+export type PageWaitForNavigationAction = z.infer<
+  typeof PageWaitForNavigationActionSchema
+>
+export type GenericPageAction = z.infer<typeof GenericPageActionSchema>
+
+export type LocatorClickAction = z.infer<typeof LocatorClickActionSchema>
+export type LocatorFillAction = z.infer<typeof LocatorFillActionSchema>
+export type LocatorCheckAction = z.infer<typeof LocatorCheckActionSchema>
+export type LocatorUncheckAction = z.infer<typeof LocatorUncheckActionSchema>
+export type LocatorSelectOptionAction = z.infer<
+  typeof LocatorSelectOptionActionSchema
+>
+export type GenericLocatorAction = z.infer<typeof GenericLocatorActionSchema>
+
+export type GenericBrowserContextAction = z.infer<
+  typeof GenericBrowserContextActionSchema
+>
+
+export type AnyBrowserAction = z.infer<typeof AnyBrowserActionSchema>

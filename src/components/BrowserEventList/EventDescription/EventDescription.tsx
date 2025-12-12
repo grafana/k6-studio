@@ -1,5 +1,4 @@
-import { Fragment } from 'react'
-
+import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import { HighlightSelector } from 'extension/src/messaging/types'
@@ -9,31 +8,6 @@ import { ClickDescription } from './ClickDescription'
 import { InputChangeDescription } from './InputChangeDescription'
 import { PageNavigationDescription } from './PageNavigationDescription'
 import { Selector } from './Selector'
-
-function formatOptions(options: string[]) {
-  if (options.length === 1) {
-    return <code>{options[0]}</code>
-  }
-
-  const last = options[options.length - 1]
-
-  if (last === undefined) {
-    return ''
-  }
-
-  return (
-    <>
-      {options.slice(0, -1).map((option, index) => {
-        return (
-          <Fragment key={index}>
-            <code>{option}</code>,{' '}
-          </Fragment>
-        )
-      })}{' '}
-      and <code>{last}</code>
-    </>
-  )
-}
 
 interface EventDescriptionProps {
   event: BrowserEvent
@@ -85,7 +59,7 @@ export function EventDescription({
     case 'select-change':
       return (
         <>
-          Selected {formatOptions(event.selected)} from{' '}
+          Selected <SelectOptions options={event.selected} /> from{' '}
           <Selector
             selectors={event.target.selectors}
             onHighlight={onHighlight}
