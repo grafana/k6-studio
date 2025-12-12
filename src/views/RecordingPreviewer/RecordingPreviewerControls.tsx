@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
+import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
@@ -38,15 +39,8 @@ export function RecordingPreviewControls({
 
   const handleCreateGenerator = () => createTestGenerator(fileName)
 
-  const handleDeleteRecording = async () => {
-    await window.studio.ui.deleteFile(file)
-    navigate(getRoutePath('home'))
-  }
-
-  const handleDiscard = async () => {
-    await window.studio.ui.deleteFile(file)
-    navigate(getRoutePath('recorder'))
-  }
+  const navigateHome = () => navigate(getRoutePath('home'))
+  const navigateRecorder = () => navigate(getRoutePath('recorder'))
 
   const handleExportBrowserScript = (fileName: string) => {
     const test = convertToTest({
@@ -75,9 +69,17 @@ export function RecordingPreviewControls({
   return (
     <>
       {isDiscardable ? (
-        <Button onClick={handleDiscard} variant="outline" color="red">
-          Discard
-        </Button>
+        <DeleteFileDialog
+          file={file}
+          actionLabel="Discard"
+          description="Discard this recording? This cannot be undone."
+          onDeleted={navigateRecorder}
+          trigger={
+            <Button variant="outline" color="red">
+              Discard
+            </Button>
+          }
+        />
       ) : (
         <Button variant="outline" asChild>
           <Link to={getRoutePath('recorder')}>New recording</Link>
@@ -110,9 +112,11 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
-            Delete
-          </DropdownMenu.Item>
+          <DeleteFileDialog
+            file={file}
+            onDeleted={navigateHome}
+            trigger={<DropdownMenu.Item color="red">Delete</DropdownMenu.Item>}
+          />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       <ExportScriptDialog

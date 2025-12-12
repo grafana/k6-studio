@@ -2,6 +2,7 @@ import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { EllipsisVerticalIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
+import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useOpenInDefaultApp } from '@/hooks/useOpenInDefaultApp'
 import { getRoutePath } from '@/routeMap'
 import { StudioFile } from '@/types'
@@ -26,10 +27,7 @@ export function DataFileControls({ fileName }: DataFileControlsProps) {
 
   const handleOpenInDefaultApp = useOpenInDefaultApp(file)
 
-  const handleDeleteFile = async () => {
-    await window.studio.ui.deleteFile(file)
-    navigate(getRoutePath('home'))
-  }
+  const navigateHome = () => navigate(getRoutePath('home'))
 
   return (
     <>
@@ -47,9 +45,11 @@ export function DataFileControls({ fileName }: DataFileControlsProps) {
             Open containing folder
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
-          <DropdownMenu.Item color="red" onClick={handleDeleteFile}>
-            Delete
-          </DropdownMenu.Item>
+          <DeleteFileDialog
+            file={file}
+            onDeleted={navigateHome}
+            trigger={<DropdownMenu.Item color="red">Delete</DropdownMenu.Item>}
+          />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     </>
