@@ -171,6 +171,12 @@ function substituteExpression(
         ),
       }
 
+    case 'WaitForExpression':
+      return {
+        type: 'WaitForExpression',
+        target: substituteExpression(node.target, substitutions),
+      }
+
     case 'WaitForNavigationExpression':
       return {
         type: 'WaitForNavigationExpression',

@@ -9,6 +9,7 @@ import { ClickDescription } from './ClickDescription'
 import { InputChangeDescription } from './InputChangeDescription'
 import { PageNavigationDescription } from './PageNavigationDescription'
 import { Selector } from './Selector'
+import { WaitForDescription } from './WaitForDescription'
 
 function formatOptions(options: string[]) {
   if (options.length === 1) {
@@ -106,6 +107,9 @@ export function EventDescription({
 
     case 'assert':
       return <AssertDescription event={event} onHighlight={onHighlight} />
+
+    case 'wait-for':
+      return <WaitForDescription event={event} onHighlight={onHighlight} />
 
     default:
       return exhaustive(event)

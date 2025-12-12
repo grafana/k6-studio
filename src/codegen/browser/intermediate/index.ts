@@ -340,6 +340,18 @@ function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
   })
 }
 
+function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'WaitForExpression',
+      target: locator,
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -368,6 +380,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'assert':
       return emitAssertNode(context, node)
+
+    case 'wait-for':
+      return emitWaitForNode(context, node)
 
     default:
       return exhaustive(node)

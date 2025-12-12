@@ -143,6 +143,25 @@ const AssertEventSchema = BrowserEventBaseSchema.extend({
   assertion: AssertionSchema,
 })
 
+const WaitForEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('wait-for'),
+  tab: z.string(),
+  target: BrowserEventTargetSchema,
+  options: z
+    .object({
+      timeout: z.number().int().optional(),
+      state: z
+        .union([
+          z.literal('attached'),
+          z.literal('detached'),
+          z.literal('visible'),
+          z.literal('hidden'),
+        ])
+        .optional(),
+    })
+    .optional(),
+})
+
 export const BrowserEventSchema = z.discriminatedUnion('type', [
   NavigateToPageEventSchema,
   ReloadPageEventSchema,
@@ -153,6 +172,7 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   SelectChangeEventSchema,
   SubmitFormEventSchema,
   AssertEventSchema,
+  WaitForEventSchema,
 ])
 
 export const BrowserEventsSchema = z.object({
@@ -176,6 +196,7 @@ export type RadioChangeEvent = z.infer<typeof RadioChangeEventSchema>
 export type SelectChangeEvent = z.infer<typeof SelectChangeEventSchema>
 export type SubmitFormEvent = z.infer<typeof SubmitFormEventSchema>
 export type AssertEvent = z.infer<typeof AssertEventSchema>
+export type WaitForEvent = z.infer<typeof WaitForEventSchema>
 
 export type TextAssertion = z.infer<typeof TextAssertionSchema>
 export type VisibilityAssertion = z.infer<typeof VisibilityAssertionSchema>
