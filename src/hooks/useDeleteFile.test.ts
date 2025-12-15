@@ -1,0 +1,94 @@
+import { renderHook } from '@testing-library/react'
+import { act } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { vi, beforeEach, describe, it, expect } from 'vitest'
+
+import { getRoutePath } from '@/routeMap'
+import { useToast } from '@/store/ui/useToast'
+import { StudioFile } from '@/types'
+
+import { useDeleteFile } from './useDeleteFile'
+
+vi.mock('react-router-dom', () => ({ useNavigate: vi.fn() }))
+vi.mock('@/store/ui/useToast', () => ({ useToast: vi.fn() }))
+vi.mock('@/routeMap', () => ({ getRoutePath: vi.fn() }))
+
+describe('useDeleteFile', () => {
+  const navigate = vi.fn()
+  const showToast = vi.fn()
+  const file: StudioFile = {
+    type: 'data-file',
+    fileName: 'file-name',
+    displayName: 'test-file',
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(useNavigate).mockReturnValue(navigate)
+    vi.mocked(useToast).mockReturnValue(showToast)
+    vi.stubGlobal('studio', {
+      ui: { deleteFile: vi.fn().mockResolvedValue(undefined) },
+    })
+    vi.mocked(getRoutePath).mockReturnValue('/home')
+  })
+
+  it('should show success toast when deletion succeeds', async () => {
+    const { result } = renderHook(() =>
+      useDeleteFile({ file, navigateHomeOnDelete: false })
+    )
+
+    await act(async () => {
+      await result.current()
+    })
+
+    expect(window.studio.ui.deleteFile).toHaveBeenCalledWith(file)
+    expect(showToast).toHaveBeenCalledWith({
+      title: 'data-file deleted',
+      description: 'test-file',
+      status: 'success',
+    })
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it('should navigate home if navigateHomeOnDelete is true', async () => {
+    const { result } = renderHook(() =>
+      useDeleteFile({ file, navigateHomeOnDelete: true })
+    )
+
+    await act(async () => {
+      await result.current()
+    })
+
+    expect(navigate).toHaveBeenCalledWith('/home')
+  })
+
+  it('should show error toast if deletion fails', async () => {
+    // So there is a try catch from my useDeleteFile hook
+    // and the expected error is printed via console.error inside the hook. So I am testing this bit
+    // Vitest prints it to stderr even if the test passes,
+    // because the hook calls console.error during the simulated failure.
+    // Suppressing this with spyOn
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    const error = new Error('delete failed')
+    window.studio.ui.deleteFile = vi.fn().mockRejectedValue(error)
+
+    const { result } = renderHook(() =>
+      useDeleteFile({ file, navigateHomeOnDelete: false })
+    )
+
+    await act(async () => {
+      await result.current()
+    })
+
+    expect(showToast).toHaveBeenCalledWith({
+      title: 'Failed to delete file',
+      description: 'test-file',
+      status: 'error',
+    })
+
+    consoleErrorSpy.mockRestore()
+  })
+})
