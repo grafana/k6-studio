@@ -14,7 +14,11 @@ interface BrowserActionTextProps {
 export function BrowserActionText({ action }: BrowserActionTextProps) {
   switch (action.method) {
     case 'browserContext.*':
-      return <>Performed action {action.method} on browser context</>
+      return (
+        <>
+          Call <code>{action.name}</code> on browser context
+        </>
+      )
 
     case 'page.goto':
       return (
@@ -30,7 +34,11 @@ export function BrowserActionText({ action }: BrowserActionTextProps) {
       return <>Waiting for page navigation</>
 
     case 'page.*':
-      return <>Performed action {action.method} on page</>
+      return (
+        <>
+          Call <code>{action.name}</code> on page
+        </>
+      )
 
     case 'locator.check':
       return (
@@ -140,7 +148,7 @@ export function BrowserActionText({ action }: BrowserActionTextProps) {
     case 'locator.*':
       return (
         <>
-          Performed action {action.method} on{' '}
+          Call <code>{action.name}</code> on{' '}
           <BrowserActionLocator locator={action.locator} />
         </>
       )

@@ -113,6 +113,34 @@ export interface ProxyOptions<T extends object> {
   }
 }
 
+function getProxyMethod<T extends object>(
+  method: keyof T,
+  proxies: ProxyOptions<T>['proxies']
+) {
+  return proxies[method]
+}
+
+function getTrackingMethod<T extends object>(
+  method: keyof T,
+  tracking: ProxyOptions<T>['tracking']
+) {
+  const trackMethod = tracking[method]
+
+  if (trackMethod !== undefined) {
+    return trackMethod
+  }
+
+  const defaultTrack = tracking.$default
+
+  if (defaultTrack !== undefined) {
+    return (...args: ArgsOf<T[keyof T]>) => {
+      return defaultTrack(method, ...args)
+    }
+  }
+
+  return undefined
+}
+
 export function createProxy<T extends object>({
   target,
   tracking,
@@ -127,8 +155,8 @@ export function createProxy<T extends object>({
         return original
       }
 
-      const track = tracking[method]
-      const proxy = proxies[method]
+      const proxy = getProxyMethod(method, proxies)
+      const track = getTrackingMethod(method, tracking)
 
       if (track === undefined && proxy === undefined) {
         return original
@@ -137,7 +165,7 @@ export function createProxy<T extends object>({
       // A proxy function that takes care of sending events and proxying return
       // values based on the provided configuration.
       return function (...args: ArgsOf<T[keyof T]>): unknown {
-        const action = track?.(...args) ?? tracking.$default?.(method, ...args)
+        const action = track?.(...args)
         const eventId = begin(action)
 
         const handleSuccess = (result: unknown) => {

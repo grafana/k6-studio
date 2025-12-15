@@ -3,6 +3,7 @@ import { Page } from 'k6/browser'
 import { ProxyOptions } from '../utils'
 
 import { locatorProxy } from './locator'
+import { isLocatorMethod } from './utils'
 
 export function pageProxy(target: Page): ProxyOptions<Page> {
   return {
@@ -27,8 +28,16 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         }
       },
 
-      $default() {
-        return null
+      $default(method, ...args) {
+        if (isLocatorMethod(method)) {
+          return null
+        }
+
+        return {
+          method: `page.*`,
+          name: method,
+          args,
+        }
       },
     },
     proxies: {

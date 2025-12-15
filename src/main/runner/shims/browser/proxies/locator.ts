@@ -4,6 +4,8 @@ import { ActionLocator } from '@/main/runner/schema'
 
 import { ProxyOptions } from '../utils'
 
+import { isLocatorMethod } from './utils'
+
 export function locatorProxy(
   target: Locator,
   locator: ActionLocator
@@ -134,8 +136,17 @@ export function locatorProxy(
         }
       },
 
-      $default() {
-        return null
+      $default(method, ...args) {
+        if (isLocatorMethod(method)) {
+          return null
+        }
+
+        return {
+          method: `locator.*`,
+          name: method,
+          locator,
+          args,
+        }
       },
     },
     proxies: {},
