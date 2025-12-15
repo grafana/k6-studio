@@ -1,10 +1,9 @@
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { EllipsisVerticalIcon } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useOpenInDefaultApp } from '@/hooks/useOpenInDefaultApp'
-import { getRoutePath } from '@/routeMap'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
@@ -13,8 +12,6 @@ interface DataFileControlsProps {
 }
 
 export function DataFileControls({ fileName }: DataFileControlsProps) {
-  const navigate = useNavigate()
-
   const file: StudioFile = {
     type: 'data-file',
     fileName,
@@ -27,7 +24,10 @@ export function DataFileControls({ fileName }: DataFileControlsProps) {
 
   const handleOpenInDefaultApp = useOpenInDefaultApp(file)
 
-  const navigateHome = () => navigate(getRoutePath('home'))
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: true,
+  })
 
   return (
     <>
@@ -47,8 +47,15 @@ export function DataFileControls({ fileName }: DataFileControlsProps) {
           <DropdownMenu.Separator />
           <DeleteFileDialog
             file={file}
-            onDeleted={navigateHome}
-            trigger={<DropdownMenu.Item color="red">Delete</DropdownMenu.Item>}
+            onConfirm={handleDelete}
+            trigger={
+              <DropdownMenu.Item
+                color="red"
+                onClick={(e) => e.preventDefault()}
+              >
+                Delete
+              </DropdownMenu.Item>
+            }
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>

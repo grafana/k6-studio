@@ -1,10 +1,9 @@
 import { ContextMenu, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { EllipsisIcon } from 'lucide-react'
 import { PropsWithChildren } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
-import { getRoutePath } from '@/routeMap'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { StudioFile } from '@/types'
 
 interface FileContextMenuProps {
@@ -31,9 +30,11 @@ export function FileContextMenu({
             <DeleteFileDialog
               key={item.label}
               file={file}
-              onDeleted={item.onDeleted}
+              onConfirm={item.onClick}
               trigger={
-                <ContextMenu.Item color="red">{item.label}</ContextMenu.Item>
+                <div style={{ color: 'red', cursor: 'pointer' }}>
+                  {item.label}
+                </div>
               }
             />
           ) : (
@@ -68,9 +69,11 @@ export function FileActionsMenu({
             <DeleteFileDialog
               key={item.label}
               file={file}
-              onDeleted={item.onDeleted}
+              onConfirm={item.onClick}
               trigger={
-                <DropdownMenu.Item color="red">{item.label}</DropdownMenu.Item>
+                <div style={{ color: 'red', cursor: 'pointer' }}>
+                  {item.label}
+                </div>
               }
             />
           ) : (
@@ -95,32 +98,24 @@ function useFileContextMenuItems({
   isSelected,
   onRename,
 }: UseFileContextMenuItemsArgs): FileContextMenuItem[] {
-  const navigate = useNavigate()
-
   const handleOpenFolder = () => {
     window.studio.ui.openContainingFolder(file)
   }
 
-  const handleAfterDelete = () => {
-    if (isSelected) {
-      navigate(getRoutePath('home'))
-    }
-  }
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: isSelected,
+  })
 
   return [
     { label: 'Rename', onClick: onRename },
     { label: 'Open containing folder', onClick: handleOpenFolder },
-    {
-      label: 'Delete',
-      destructive: true,
-      onDeleted: handleAfterDelete,
-    },
+    { label: 'Delete', destructive: true, onClick: handleDelete },
   ]
 }
 
 type FileContextMenuItem = {
   label: string
-  onClick?: () => void
-  onDeleted?: () => void
+  onClick: () => void | Promise<void>
   destructive?: boolean
 }

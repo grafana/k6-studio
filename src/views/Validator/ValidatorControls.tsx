@@ -4,6 +4,7 @@ import { EllipsisVerticalIcon } from 'lucide-react'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { StudioFile } from '@/types'
 
@@ -29,6 +30,16 @@ export function ValidatorControls({
   onAfterDelete,
 }: ValidatorControlsProps) {
   const proxyStatus = useProxyStatus()
+
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: false,
+  })
+
+  const handleConfirmDelete = async () => {
+    await handleDelete()
+    onAfterDelete()
+  }
 
   return (
     <>
@@ -73,9 +84,17 @@ export function ValidatorControls({
           {canDelete && (
             <DeleteFileDialog
               file={file}
-              onDeleted={onAfterDelete}
+              onConfirm={handleConfirmDelete}
               trigger={
-                <DropdownMenu.Item color="red">Delete</DropdownMenu.Item>
+                <div
+                  style={{
+                    color: 'red',
+                    cursor: 'pointer',
+                  }}
+                  onClick={(e) => e.preventDefault()}
+                >
+                  Delete
+                </div>
               }
             />
           )}

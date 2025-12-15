@@ -1,13 +1,12 @@
 import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
 import { EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore } from '@/store/generator'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
@@ -36,7 +35,6 @@ export function GeneratorControls({
   const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
-  const navigate = useNavigate()
 
   const file = {
     type: 'generator' as const,
@@ -45,6 +43,11 @@ export function GeneratorControls({
   }
 
   const handleExportScript = useScriptExport(fileName)
+
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: true,
+  })
 
   return (
     <>
@@ -79,9 +82,12 @@ export function GeneratorControls({
             <DropdownMenu.Separator />
             <DeleteFileDialog
               file={file}
-              onDeleted={() => navigate(getRoutePath('home'))}
+              onConfirm={handleDelete}
               trigger={
-                <DropdownMenu.Item color="red">
+                <DropdownMenu.Item
+                  color="red"
+                  onClick={(e) => e.preventDefault()}
+                >
                   Delete generator
                 </DropdownMenu.Item>
               }
