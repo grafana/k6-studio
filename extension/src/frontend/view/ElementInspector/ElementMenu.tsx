@@ -245,8 +245,10 @@ export function ElementMenu({
         <ToolbarButton onClick={handleAddTextAssertion}>
           <TypeIcon /> <div>Add text assertion</div>
         </ToolbarButton>
+      </MenuSection>
+      <MenuSection heading="Timing">
         <ToolbarButton onClick={handleAddWaitFor}>
-          <TimerIcon /> <div>Add wait condition</div>
+          <TimerIcon /> <div>Wait for element</div>
         </ToolbarButton>
       </MenuSection>
     </ToolbarRoot>
