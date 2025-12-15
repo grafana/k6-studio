@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+/**
+ * Creates a fault-tolerant schema that returns `undefined` on failure. This is used
+ * to guard against the user passing invalid options that would otherwise cause the entire
+ * schema to fail.
+ */
 function safe<T>(schema: z.ZodType<T>) {
   return schema.optional().catch(undefined)
 }
