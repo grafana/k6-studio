@@ -122,6 +122,8 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
         },
       ],
     })
+
+    onClose()
   }
 
   if (element === null) {
