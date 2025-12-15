@@ -8,6 +8,7 @@ import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { useToast } from '@/store/ui/useToast'
@@ -39,8 +40,12 @@ export function RecordingPreviewControls({
 
   const handleCreateGenerator = () => createTestGenerator(fileName)
 
-  const navigateHome = () => navigate(getRoutePath('home'))
   const navigateRecorder = () => navigate(getRoutePath('recorder'))
+
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: true,
+  })
 
   const handleExportBrowserScript = (fileName: string) => {
     const test = convertToTest({
@@ -73,7 +78,7 @@ export function RecordingPreviewControls({
           file={file}
           actionLabel="Discard"
           description="Discard this recording? This cannot be undone."
-          onDeleted={navigateRecorder}
+          onConfirm={navigateRecorder}
           trigger={
             <Button variant="outline" color="red">
               Discard
@@ -114,8 +119,15 @@ export function RecordingPreviewControls({
         <DropdownMenu.Content>
           <DeleteFileDialog
             file={file}
-            onDeleted={navigateHome}
-            trigger={<DropdownMenu.Item color="red">Delete</DropdownMenu.Item>}
+            onConfirm={handleDelete}
+            trigger={
+              <DropdownMenu.Item
+                color="red"
+                onClick={(e) => e.preventDefault()}
+              >
+                Delete
+              </DropdownMenu.Item>
+            }
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
