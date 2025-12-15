@@ -48,9 +48,13 @@ export function Layout() {
           css={css`
             position: absolute;
             top: var(--space-4);
-            left: 64px;
-            transform: translateX(-50%);
+            left: calc(64px - var(--space-2));
+            background-color: var(--color-background);
             z-index: 10000;
+
+            &:hover {
+              background-color: var(--accent-3);
+            }
           `}
         >
           <PanelLeftOpenIcon />
