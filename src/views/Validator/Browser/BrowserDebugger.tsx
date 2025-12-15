@@ -1,44 +1,15 @@
 import { css } from '@emotion/react'
-import {
-  Box,
-  Flex,
-  Heading,
-  Switch,
-  TabNav,
-  Tabs,
-  Text,
-} from '@radix-ui/themes'
+import { Box, Flex, Heading, Switch, Tabs, Text } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { useState } from 'react'
 
 import { AutoScrollArea } from '@/components/AutoScrollArea'
 import { Label } from '@/components/Label'
-import { ChecksSection } from '@/components/Validator/ChecksSection'
-import { LogsSection } from '@/components/Validator/LogsSection'
 
 import { DebugSession } from '../types'
 
 import { BrowserActionList } from './BrowserActionList'
-import { NetworkInspector } from './NetworkInspector'
-
-function TabContent({
-  children,
-  ...props
-}: Omit<Tabs.ContentProps, 'asChild'>) {
-  return (
-    <Tabs.Content asChild {...props}>
-      <Flex
-        css={css`
-          flex: 1 1 0;
-        `}
-        align="stretch"
-        direction="column"
-      >
-        {children}
-      </Flex>
-    </Tabs.Content>
-  )
-}
+import { BrowserDebugDrawer } from './BrowserDebugDrawer'
 
 interface BrowserDebuggerProps {
   session: DebugSession
@@ -122,49 +93,11 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
             </Flex>
           </Allotment.Pane>
           <Allotment.Pane minSize={40} maxSize={40}>
-            <TabNav.Root>
-              <Tabs.List>
-                <Tabs.Trigger value="network">
-                  Network ({session.requests.length})
-                </Tabs.Trigger>
-                <Tabs.Trigger value="checks">
-                  Checks ({session.checks.length})
-                </Tabs.Trigger>
-                <Tabs.Trigger value="console">
-                  Console ({session.logs.length})
-                </Tabs.Trigger>
-              </Tabs.List>
-            </TabNav.Root>
+            <BrowserDebugDrawer.List session={session} />
           </Allotment.Pane>
           <Allotment.Pane snap minSize={150} preferredSize={300}>
             <Box height="100%" width="100%">
-              <Flex
-                direction="column"
-                align="stretch"
-                height="100%"
-                overflow="hidden"
-              >
-                <TabContent value="console">
-                  <LogsSection autoScroll={false} logs={session.logs} />
-                </TabContent>
-                <Tabs.Content asChild value="network">
-                  <div
-                    css={css`
-                      overflow: hidden;
-                      flex: 1 1 0;
-                    `}
-                  >
-                    <NetworkInspector
-                      script=""
-                      session={session}
-                      isRunning={false}
-                    />
-                  </div>
-                </Tabs.Content>
-                <TabContent value="checks">
-                  <ChecksSection isRunning={false} checks={session.checks} />
-                </TabContent>
-              </Flex>
+              <BrowserDebugDrawer.Content session={session} />
             </Box>
           </Allotment.Pane>
         </Allotment>
