@@ -71,7 +71,13 @@ export function FileActionsMenu({
               file={file}
               onConfirm={item.onClick}
               trigger={
-                <div style={{ color: 'red', cursor: 'pointer' }}>
+                <div
+                  style={{
+                    color: 'red',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                  }}
+                >
                   {item.label}
                 </div>
               }

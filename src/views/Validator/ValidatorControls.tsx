@@ -90,6 +90,7 @@ export function ValidatorControls({
                   style={{
                     color: 'red',
                     cursor: 'pointer',
+                    padding: '4px 6px',
                   }}
                   onClick={(e) => e.preventDefault()}
                 >
