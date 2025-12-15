@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { nanoid } from 'nanoid'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
@@ -34,6 +35,7 @@ export function useScript(fileName: string) {
 
 export function useDebugSession(scriptPath: string) {
   const [state, setState] = useState<DebuggerState>('pending')
+  const [sessionId, setSessionId] = useState(nanoid)
 
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
@@ -41,6 +43,8 @@ export function useDebugSession(scriptPath: string) {
   const { browserActions, resetBrowserActions } = useBrowserActions()
 
   const resetSession = useCallback(() => {
+    setSessionId(nanoid())
+
     resetProxyData()
     resetBrowserActions()
     resetLogs()
@@ -79,13 +83,14 @@ export function useDebugSession(scriptPath: string) {
 
   const session = useMemo(() => {
     return {
+      id: sessionId,
       state,
       requests: proxyData,
       browserActions,
       logs,
       checks,
     }
-  }, [state, checks, logs, proxyData, browserActions])
+  }, [sessionId, state, checks, logs, proxyData, browserActions])
 
   return {
     session: state !== 'pending' ? session : null,

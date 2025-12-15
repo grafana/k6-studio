@@ -1,6 +1,6 @@
 import { Box } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
@@ -10,29 +10,12 @@ import { RequestsSection } from '@/views/Recorder/RequestsSection'
 import { DebugSession } from '../types'
 
 interface NetworkInspector {
-  isRunning: boolean
-  script: string
   session: DebugSession
 }
 
-export function NetworkInspector({
-  script,
-  session,
-  isRunning,
-}: NetworkInspector) {
+export function NetworkInspector({ session }: NetworkInspector) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const groups = useProxyDataGroups(session.requests)
-
-  useEffect(() => {
-    setSelectedRequest(null)
-  }, [script])
-
-  // Clear selected request when starting a new run
-  useEffect(() => {
-    if (isRunning) {
-      setSelectedRequest(null)
-    }
-  }, [isRunning])
 
   return (
     <Allotment>
@@ -40,7 +23,7 @@ export function NetworkInspector({
         <Box height="100%">
           <RequestsSection
             proxyData={session.requests}
-            autoScroll={isRunning}
+            autoScroll={session.state === 'running'}
             selectedRequestId={selectedRequest?.id}
             groups={groups}
             onSelectRequest={setSelectedRequest}

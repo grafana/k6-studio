@@ -60,7 +60,7 @@ function Content({ session }: BrowserDebugDrawerProps) {
             flex: 1 1 0;
           `}
         >
-          <NetworkInspector script="" session={session} isRunning={false} />
+          <NetworkInspector session={session} />
         </div>
       </Tabs.Content>
       <TabContent value="checks">

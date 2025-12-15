@@ -174,6 +174,7 @@ function Content({ scriptPath }: ValidatorProps) {
               justify="center"
             >
               <Debugger
+                key={session?.id}
                 options={data?.options ?? {}}
                 session={session}
                 onDebugScript={handleDebugScript}
