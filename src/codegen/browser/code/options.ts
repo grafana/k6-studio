@@ -44,6 +44,7 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'CheckExpression':
       case 'SelectOptionsExpression':
       case 'WaitForExpression':
+      case 'WaitForOptionsExpression':
       case 'WaitForNavigationExpression':
         return true
 

@@ -243,6 +243,7 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
             previous,
             locator: getLocator(event.tab, event.target),
           },
+          options: event.options,
         }
       }
 

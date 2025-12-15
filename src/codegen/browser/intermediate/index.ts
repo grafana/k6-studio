@@ -340,6 +340,23 @@ function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
   })
 }
 
+function getWaitForOptions(
+  node: m.WaitForNode
+): ir.WaitForOptionsExpression | null {
+  if (
+    typeof node.options?.state === 'undefined' &&
+    typeof node.options?.timeout === 'undefined'
+  ) {
+    return null
+  }
+
+  return {
+    type: 'WaitForOptionsExpression',
+    timeout: node.options?.timeout,
+    state: node.options?.state,
+  }
+}
+
 function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
   const locator = context.reference(node.inputs.locator)
 
@@ -348,6 +365,7 @@ function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
     expression: {
       type: 'WaitForExpression',
       target: locator,
+      options: getWaitForOptions(node),
     },
   })
 }

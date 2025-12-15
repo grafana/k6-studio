@@ -10,6 +10,7 @@ import {
   fromArrayLiteral,
   fromObjectLiteral,
   ObjectBuilder,
+  literal,
 } from '@/codegen/estree'
 import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
@@ -333,13 +334,34 @@ function emitWaitForExpression(
   expression: ir.WaitForExpression
 ): ts.Expression {
   const target = emitExpression(context, expression.target)
-  const args = expression.options ? [fromObjectLiteral(expression.options)] : []
+  const args =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
 
   return new ExpressionBuilder(target)
     .member('waitFor')
     .call(args)
     .await(context)
     .done()
+}
+
+function emitWaitForOptionsExpression(
+  _context: ScenarioContext,
+  expression: ir.WaitForOptionsExpression
+): ts.Expression {
+  const timeout = typeof expression.timeout !== 'undefined' && {
+    timeout: literal({ value: expression.timeout }),
+  }
+
+  const state = typeof expression.state !== 'undefined' && {
+    state: string(expression.state),
+  }
+
+  return fromObjectLiteral({
+    ...timeout,
+    ...state,
+  })
 }
 
 function emitWaitForNavigationExpression(
@@ -432,6 +454,9 @@ function emitExpression(
 
     case 'WaitForExpression':
       return emitWaitForExpression(context, expression)
+
+    case 'WaitForOptionsExpression':
+      return emitWaitForOptionsExpression(context, expression)
 
     case 'WaitForNavigationExpression':
       return emitWaitForNavigationExpression(context, expression)

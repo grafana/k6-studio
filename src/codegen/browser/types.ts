@@ -129,6 +129,10 @@ export interface WaitForNode extends NodeBase {
     previous?: NodeRef
     locator: NodeRef
   }
+  options?: {
+    timeout?: number
+    state?: 'attached' | 'detached' | 'visible' | 'hidden'
+  }
 }
 
 export type TestNode =
