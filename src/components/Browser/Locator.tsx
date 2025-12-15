@@ -148,7 +148,7 @@ export function Locator({ locator, onHighlightChange }: LocatorProps) {
           text-overflow: ellipsis;
           white-space: nowrap;
           max-width: 300px;
-          font-size: calc(1em * 0.9);
+          font-size: 0.9em;
         `}
       >
         <LocatorText locator={locator} />

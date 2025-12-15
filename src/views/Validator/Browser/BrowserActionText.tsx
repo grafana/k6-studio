@@ -1,5 +1,6 @@
 import { ClickPill, DoubleClickPill } from '@/components/Browser/ClickPill'
 import { SelectOptions } from '@/components/Browser/SelectOptions'
+import { Kbd } from '@/components/primitives/Kbd'
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
@@ -86,7 +87,7 @@ export function BrowserActionText({ action }: BrowserActionTextProps) {
     case 'locator.press':
       return (
         <>
-          Press key <code>{`"${action.key}"`}</code> on{' '}
+          Press key <Kbd>{`"${action.key}"`}</Kbd> on{' '}
           <BrowserActionLocator locator={action.locator} />
         </>
       )
