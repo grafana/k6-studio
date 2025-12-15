@@ -15,7 +15,7 @@ function BrowserActionItem({ event }: BrowserActionItemProps) {
   const result = event.type === 'end' ? event.result : null
 
   return (
-    <Text asChild size="2">
+    <Text asChild size="1">
       <li
         css={css`
           display: grid;

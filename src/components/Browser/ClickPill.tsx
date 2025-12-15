@@ -2,7 +2,7 @@ import { Kbd } from '@/components/primitives/Kbd'
 import { ClickEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
-interface ClickDetails {
+export interface ClickDetails {
   button: ClickEvent['button']
   modifiers: ClickEvent['modifiers']
 }
@@ -29,21 +29,36 @@ function getModifierKeys(modifiers: ClickEvent['modifiers']) {
   return keys
 }
 
-function getButtonDescription(
-  button: ClickEvent['button'],
-  pastTense: boolean
-) {
-  const conjugation = pastTense ? 'ed' : ''
+function conjugate(pastTense: boolean, verb: string) {
+  return pastTense ? verb + 'ed' : verb
+}
 
+function getButtonDescription(button: ClickEvent['button']) {
   switch (button) {
     case 'left':
-      return 'Click' + conjugation
+      return 'Click'
 
     case 'middle':
-      return 'Middle-click' + conjugation
+      return 'Middle-click'
 
     case 'right':
-      return 'Right-click' + conjugation
+      return 'Right-click'
+
+    default:
+      return exhaustive(button)
+  }
+}
+
+function getDoubleClickButtonDescription(button: ClickEvent['button']) {
+  switch (button) {
+    case 'left':
+      return 'Double-click'
+
+    case 'middle':
+      return 'Middle-double-click'
+
+    case 'right':
+      return 'Right-double-click'
 
     default:
       return exhaustive(button)
@@ -56,8 +71,29 @@ interface ClickPillProps {
 }
 
 export function ClickPill({ pastTense = false, details }: ClickPillProps) {
+  const buttonDescription = conjugate(
+    pastTense,
+    getButtonDescription(details.button)
+  )
+
   const clickedText = getModifierKeys(details.modifiers)
-    .concat(getButtonDescription(details.button, pastTense))
+    .concat(buttonDescription)
+    .join(' + ')
+
+  return <Kbd>{clickedText}</Kbd>
+}
+
+export function DoubleClickPill({
+  pastTense = false,
+  details,
+}: ClickPillProps) {
+  const buttonDescription = conjugate(
+    pastTense,
+    getDoubleClickButtonDescription(details.button)
+  )
+
+  const clickedText = getModifierKeys(details.modifiers)
+    .concat(buttonDescription)
     .join(' + ')
 
   return <Kbd>{clickedText}</Kbd>

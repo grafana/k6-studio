@@ -46,6 +46,7 @@ export function BrowserEventList({
                       overflow: hidden;
                       white-space: nowrap;
                       text-overflow: ellipsis;
+                      font-size: var(--studio-font-size-1);
                     `}
                   >
                     <EventDescription

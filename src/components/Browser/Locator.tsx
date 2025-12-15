@@ -57,25 +57,25 @@ function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
 function LocatorText({ locator }: LocatorComponentProps) {
   switch (locator.type) {
     case 'css':
-      return <code>{locator.selector}</code>
+      return locator.selector
 
     case 'test-id':
-      return <code>{locator.testId}</code>
+      return locator.testId
 
     case 'label':
-      return <code>{quote(locator.text)}</code>
+      return quote(locator.text)
 
     case 'placeholder':
-      return <code>{quote(locator.text)}</code>
+      return quote(locator.text)
 
     case 'title':
-      return <code>{quote(locator.text)}</code>
+      return quote(locator.text)
 
     case 'alt':
-      return <code>{quote(locator.text)}</code>
+      return quote(locator.text)
 
     case 'text':
-      return <code>{locator.text}</code>
+      return locator.text
 
     case 'role':
       return (
@@ -133,6 +133,12 @@ export function Locator({ locator, onHighlightChange }: LocatorProps) {
       <LocatorIcon
         css={css`
           align-self: center;
+          && {
+            width: 12px;
+            height: 12px;
+            min-width: 12px;
+            min-height: 12px;
+          }
         `}
         locator={locator}
       />
@@ -142,6 +148,7 @@ export function Locator({ locator, onHighlightChange }: LocatorProps) {
           text-overflow: ellipsis;
           white-space: nowrap;
           max-width: 300px;
+          font-size: calc(1em * 0.9);
         `}
       >
         <LocatorText locator={locator} />
