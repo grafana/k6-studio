@@ -75,7 +75,7 @@ function LocatorText({ locator }: LocatorComponentProps) {
       return quote(locator.text)
 
     case 'text':
-      return locator.text
+      return quote(locator.text)
 
     case 'role':
       return (

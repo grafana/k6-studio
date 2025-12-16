@@ -20,9 +20,11 @@ const CssLocatorSchema = z.object({
 const GetByRoleLocatorSchema = z.object({
   type: z.literal('role'),
   role: z.string(),
-  options: z.object({
-    name: z.string().optional(),
-  }),
+  options: z
+    .object({
+      name: z.string().optional(),
+    })
+    .optional(),
 })
 
 const GetByTestIdLocatorSchema = z.object({
@@ -89,24 +91,21 @@ const GenericPageActionSchema = z.object({
 })
 
 const LocatorClickOptionSchema = z
-  .object(
-    {
-      button: safe(
-        z.union([z.literal('left'), z.literal('middle'), z.literal('right')])
-      ),
-      modifiers: safe(
-        z.array(
-          z.union([
-            z.literal('Alt'),
-            z.literal('Control'),
-            z.literal('Meta'),
-            z.literal('Shift'),
-          ])
-        )
-      ),
-    },
-    z.record(z.unknown())
-  )
+  .object({
+    button: safe(
+      z.union([z.literal('left'), z.literal('middle'), z.literal('right')])
+    ),
+    modifiers: safe(
+      z.array(
+        z.union([
+          z.literal('Alt'),
+          z.literal('Control'),
+          z.literal('Meta'),
+          z.literal('Shift'),
+        ])
+      )
+    ),
+  })
   .passthrough()
 
 const LocatorClickActionSchema = z.object({

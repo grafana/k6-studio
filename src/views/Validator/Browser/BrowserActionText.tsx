@@ -112,7 +112,7 @@ export function BrowserActionText({ action }: BrowserActionTextProps) {
       return (
         <>
           Set {'"checked"'} to <code>{action.checked.toString()}</code> on{' '}
-          <BrowserActionLocator locator={action.locator} /> to
+          <BrowserActionLocator locator={action.locator} />
         </>
       )
 

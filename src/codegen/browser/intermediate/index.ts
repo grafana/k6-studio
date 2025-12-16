@@ -145,7 +145,9 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
       break
 
     case 'text':
-      throw new Error('Not implemented yet.')
+      throw new Error(
+        'Code generation for getByText locator is not implemented yet.'
+      )
 
     default:
       exhaustive(node.selector)

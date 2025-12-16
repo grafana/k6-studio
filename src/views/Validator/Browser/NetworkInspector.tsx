@@ -9,11 +9,11 @@ import { RequestsSection } from '@/views/Recorder/RequestsSection'
 
 import { DebugSession } from '../types'
 
-interface NetworkInspector {
+interface NetworkInspectorProps {
   session: DebugSession
 }
 
-export function NetworkInspector({ session }: NetworkInspector) {
+export function NetworkInspector({ session }: NetworkInspectorProps) {
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const groups = useProxyDataGroups(session.requests)
 

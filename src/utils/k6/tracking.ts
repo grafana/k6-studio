@@ -62,6 +62,8 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     const parsed = ActionBeginEventSchema.safeParse(req.body)
 
     if (!parsed.success) {
+      log.warn('Received invalid begin action event: ', parsed.error.format())
+
       res.status(400).end()
 
       return
@@ -76,6 +78,8 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     const parsed = ActionEndEventSchema.safeParse(req.body)
 
     if (!parsed.success) {
+      log.warn('Received invalid end action event: ', parsed.error.format())
+
       res.status(400).end()
 
       return
