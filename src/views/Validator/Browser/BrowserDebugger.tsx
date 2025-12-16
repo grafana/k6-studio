@@ -37,7 +37,7 @@ export function BrowserDebugger({ session }: BrowserDebuggerProps) {
       overflow="hidden"
       direction="column"
     >
-      <Tabs.Root asChild defaultValue="network">
+      <Tabs.Root asChild defaultValue="console">
         <Allotment
           vertical
           css={css`

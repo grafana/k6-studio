@@ -1,7 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
 
-import { ChecksSection } from '@/components/Validator/ChecksSection'
 import { LogsSection } from '@/components/Validator/LogsSection'
 
 import { DebugSession } from '../types'
@@ -34,14 +33,11 @@ interface BrowserDebugDrawerProps {
 function List({ session }: BrowserDebugDrawerProps) {
   return (
     <Tabs.List>
-      <Tabs.Trigger value="network">
-        Network ({session.requests.length})
-      </Tabs.Trigger>
-      <Tabs.Trigger value="checks">
-        Checks ({session.checks.length})
-      </Tabs.Trigger>
       <Tabs.Trigger value="console">
         Console ({session.logs.length})
+      </Tabs.Trigger>
+      <Tabs.Trigger value="network">
+        Network ({session.requests.length})
       </Tabs.Trigger>
     </Tabs.List>
   )
@@ -63,9 +59,6 @@ function Content({ session }: BrowserDebugDrawerProps) {
           <NetworkInspector session={session} />
         </div>
       </Tabs.Content>
-      <TabContent value="checks">
-        <ChecksSection isRunning={false} checks={session.checks} />
-      </TabContent>
     </Flex>
   )
 }
