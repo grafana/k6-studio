@@ -140,7 +140,7 @@ export function ToolBox({
           value={tool ?? ''}
           onValueChange={handleToolChange}
         >
-          <ToolBoxTooltip content="Pick an element to add assertions to it">
+          <ToolBoxTooltip content="Pick an element to add assertions or wait conditions to it">
             <Toolbar.ToggleItem value="inspect">
               <SquareDashedMousePointerIcon />
             </Toolbar.ToggleItem>

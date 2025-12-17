@@ -9,6 +9,7 @@ import {
   RefreshCwIcon,
   TargetIcon,
   TextCursorInputIcon,
+  TimerIcon,
 } from 'lucide-react'
 
 import { BrowserEvent } from '@/schemas/recording'
@@ -46,6 +47,9 @@ export function EventIcon({ event }: EventIconProps) {
 
     case 'assert':
       return <EyeIcon />
+
+    case 'wait-for':
+      return <TimerIcon />
 
     default:
       return exhaustive(event)

@@ -235,6 +235,18 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
       }
 
+      case 'wait-for': {
+        return {
+          type: 'wait-for',
+          nodeId: event.eventId,
+          inputs: {
+            previous,
+            locator: getLocator(event.tab, event.target),
+          },
+          options: event.options,
+        }
+      }
+
       default:
         return exhaustive(event)
     }
