@@ -19,6 +19,7 @@ import { ElementPopover } from './ElementPopover'
 import { AssertionEditor } from './assertions/AssertionEditor'
 import { AssertionData } from './assertions/types'
 import { useElementHighlight } from './hooks'
+import { WaitForData } from './waitConditions/types'
 
 function getHeader(assertion: AssertionData | null) {
   switch (assertion?.type) {
@@ -107,6 +108,24 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
     setAssertion(null)
   }
 
+  const handleAddWaitFor = (data: WaitForData) => {
+    client.send({
+      type: 'record-events',
+      events: [
+        {
+          type: 'wait-for',
+          eventId: nanoid(),
+          timestamp: Date.now(),
+          tab: getTabId(),
+          target: data.target,
+          options: data.options,
+        },
+      ],
+    })
+
+    onClose()
+  }
+
   if (element === null) {
     return null
   }
@@ -157,7 +176,11 @@ export function ElementInspector({ onClose }: ElementInspectorProps) {
       onOpenChange={handleOpenChange}
     >
       {assertion === null && (
-        <ElementMenu element={element} onSelectAssertion={setAssertion} />
+        <ElementMenu
+          element={element}
+          onSelectAssertion={setAssertion}
+          onAddWaitFor={handleAddWaitFor}
+        />
       )}
 
       {assertion !== null && (
