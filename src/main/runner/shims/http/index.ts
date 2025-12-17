@@ -1,94 +1,84 @@
-import nativeHttp from 'k6/http'
+import http from 'k6/http'
 
 import { instrumentParams } from './utils'
 
 // Store original methods before mutation
-const originalRequest = nativeHttp.request
-const originalAsyncRequest = nativeHttp.asyncRequest
-const originalGet = nativeHttp.get
-const originalHead = nativeHttp.head
-const originalPost = nativeHttp.post
-const originalPut = nativeHttp.put
-const originalPatch = nativeHttp.patch
-const originalDel = nativeHttp.del
-const originalOptions = nativeHttp.options
+const originalRequest = http.request
+const originalAsyncRequest = http.asyncRequest
 
 interface HttpURL {
   __brand: 'http-url'
 }
 
 // Mutate the native http module to add instrumentation
-nativeHttp.request = (
+http.request = function <RT extends http.ResponseType | undefined>(
   method: string,
   url: string | HttpURL,
-  body?: unknown,
-  params?: unknown
-) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return originalRequest(method, url, body, instrumentParams(params))
+  body?: http.RequestBody | null,
+  params?: http.RefinedParams<RT> | null
+) {
+  return originalRequest<RT>(method, url, body, instrumentParams(params))
 }
 
-nativeHttp.asyncRequest = (
+http.asyncRequest = function <RT extends http.ResponseType | undefined>(
   method: string,
   url: string | HttpURL,
-  body?: unknown,
-  params?: unknown
-) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  body?: http.RequestBody | null,
+  params?: http.RefinedParams<RT> | null
+) {
   return originalAsyncRequest(method, url, body, instrumentParams(params))
 }
 
-nativeHttp.get = (url: string | HttpURL, params?: unknown) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return originalGet(url, instrumentParams(params))
-}
-
-nativeHttp.head = (url: string | HttpURL, params?: unknown) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return originalHead(url, instrumentParams(params))
-}
-
-nativeHttp.post = (url: string | HttpURL, body?: unknown, params?: unknown) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return originalPost(url, body, instrumentParams(params))
-}
-
-nativeHttp.put = (url: string | HttpURL, body?: unknown, params?: unknown) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return originalPut(url, body, instrumentParams(params))
-}
-
-nativeHttp.patch = (
+http.get = function <RT extends http.ResponseType | undefined>(
   url: string | HttpURL,
-  body?: unknown,
-  params?: unknown
-) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return originalPatch(url, body, instrumentParams(params))
+  params?: http.RefinedParams<RT> | null
+) {
+  return http.request('GET', url, null, instrumentParams(params))
 }
 
-nativeHttp.del = (url: string | HttpURL, body?: unknown, params?: unknown) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return originalDel(url, body, instrumentParams(params))
-}
-
-nativeHttp.options = (
+http.head = function <RT extends http.ResponseType | undefined>(
   url: string | HttpURL,
-  body?: unknown,
-  params?: unknown
-) => {
-  // @ts-expect-error - Dynamic method call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return originalOptions(url, body, instrumentParams(params))
+  params?: http.RefinedParams<RT> | null
+) {
+  return http.request('HEAD', url, null, instrumentParams(params))
 }
 
-// Export for testing purposes
-export default nativeHttp
+http.post = function <RT extends http.ResponseType | undefined>(
+  url: string | HttpURL,
+  body?: http.RequestBody | null,
+  params?: http.RefinedParams<RT> | null
+) {
+  return http.request('POST', url, body, instrumentParams(params))
+}
+
+http.put = function <RT extends http.ResponseType | undefined>(
+  url: string | HttpURL,
+  body?: http.RequestBody | null,
+  params?: http.RefinedParams<RT> | null
+) {
+  return http.request('PUT', url, body, instrumentParams(params))
+}
+
+http.patch = function <RT extends http.ResponseType | undefined>(
+  url: string | HttpURL,
+  body?: http.RequestBody | null,
+  params?: http.RefinedParams<RT> | null
+) {
+  return http.request('PATCH', url, body, instrumentParams(params))
+}
+
+http.del = function <RT extends http.ResponseType | undefined>(
+  url: string | HttpURL,
+  body?: http.RequestBody | null,
+  params?: http.RefinedParams<RT> | null
+) {
+  return http.request('DELETE', url, body, instrumentParams(params))
+}
+
+http.options = function <RT extends http.ResponseType | undefined>(
+  url: string | HttpURL,
+  body?: http.RequestBody | null,
+  params?: http.RefinedParams<RT> | null
+) {
+  return http.request('OPTIONS', url, body, instrumentParams(params))
+}
