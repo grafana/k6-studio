@@ -17,7 +17,6 @@ import { getExports, traverse } from '@/codegen/estree/traverse'
 interface InstrumentScriptOptions {
   script: string
   shims: {
-    group: string
     checks: string
   }
 }
@@ -34,16 +33,12 @@ export const instrumentScript = async ({
   shims,
 }: InstrumentScriptOptions) => {
   const browserShim = getShimPath('browser.js')
+  const httpShim = getShimPath('http.js')
 
-  const [groupAst, checksAst, scriptAst] = await Promise.all([
-    parseScript(shims.group),
+  const [checksAst, scriptAst] = await Promise.all([
     parseScript(shims.checks),
     parseScript(script),
   ])
-
-  if (groupAst === undefined) {
-    throw new Error('Failed to parse group snippet')
-  }
 
   if (checksAst === undefined) {
     throw new Error('Failed to parse checks snippet')
@@ -61,6 +56,11 @@ export const instrumentScript = async ({
       switch (node.source.value) {
         case 'k6/http':
           httpImport = node
+
+          // Replace the import source with our shim path.
+          httpImport.source.value = httpShim
+          httpImport.source.raw = JSON.stringify(httpShim)
+
           break
 
         case 'k6/browser':
@@ -74,13 +74,6 @@ export const instrumentScript = async ({
       }
     },
   })
-
-  if (httpImport !== null) {
-    // Insert the group shim right after the http import.
-    scriptAst.body = scriptAst.body.flatMap((statement) =>
-      statement === httpImport ? [httpImport, ...groupAst.body] : statement
-    )
-  }
 
   const exports = getExports(scriptAst)
 
@@ -167,8 +160,7 @@ const getShimPath = (name: string) => {
 }
 
 export const instrumentScriptFromPath = async (scriptPath: string) => {
-  const [groupSnippet, checksSnippet, scriptContent] = await Promise.all([
-    readFile(getSnippetPath('group_snippet.js'), { encoding: 'utf-8' }),
+  const [checksSnippet, scriptContent] = await Promise.all([
     readFile(getSnippetPath('checks_snippet.js'), { encoding: 'utf-8' }),
     readFile(scriptPath, { encoding: 'utf-8' }),
   ])
@@ -176,7 +168,6 @@ export const instrumentScriptFromPath = async (scriptPath: string) => {
   return instrumentScript({
     script: scriptContent,
     shims: {
-      group: groupSnippet,
       checks: checksSnippet,
     },
   })
