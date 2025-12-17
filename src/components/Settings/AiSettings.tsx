@@ -145,7 +145,7 @@ function DisclaimerTerms() {
       </Callout.Icon>
       <Callout.Text size="2">
         <Text as="p" weight="bold" mb="3">
-          Disclaimer: Use of Your Own OpenAI API Key
+          Disclaimer: Use of your own OpenAI API Key
         </Text>
         <Box>
           <Text>
