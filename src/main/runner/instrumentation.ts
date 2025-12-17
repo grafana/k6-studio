@@ -12,7 +12,7 @@ import {
   identifier,
 } from '@/codegen/estree'
 import { NodeType } from '@/codegen/estree/nodes'
-import { getExports, traverse } from '@/codegen/estree/traverse'
+import { traverse } from '@/codegen/estree/traverse'
 
 interface InstrumentScriptOptions {
   entryScript: string
@@ -63,26 +63,6 @@ export const instrumentScript = async ({
       }
     },
   })
-
-  // Update options export based on whether it's a browser test
-  const exports = getExports(entryAst)
-
-  const optionsExport = exports.find(
-    (e) => e.type === 'named' && e.name === 'options'
-  )
-
-  if (optionsExport) {
-    traverse(entryAst, {
-      [NodeType.Identifier](node) {
-        if (node.name === 'options') {
-          // It's easier to just rename the options export than to
-          // remove the node itself. This is just some UUID that I
-          // generated. Should be pretty unique.
-          node.name = '$c26e2908c2e948ef883369abc050ce2f'
-        }
-      },
-    })
-  }
 
   const browserOptions = isBrowserTest
     ? {

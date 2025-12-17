@@ -6,17 +6,6 @@ import './shims/browser'
 // eslint-disable-next-line import/no-unresolved
 import * as userScript from '__USER_SCRIPT_PATH__'
 
-// Our custom options, perhaps merged with user options?
-export const options = {
-  scenarios: {
-    default: {
-      executor: 'shared-iterations',
-      vus: 1,
-      iterations: 1,
-    },
-  },
-}
-
 export default function () {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   userScript['default']()
