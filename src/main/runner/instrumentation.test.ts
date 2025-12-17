@@ -3,11 +3,6 @@ import { afterAll, beforeAll, describe, it, vi } from 'vitest'
 import { instrumentScript } from './instrumentation'
 
 const shims = {
-  group: `
-    (function() {
-      console.log("This is the groups shim")
-    })()
-  `,
   checks: ` 
     export function handleSummary() {
       console.log("This is the handleSummary shim")
@@ -75,8 +70,8 @@ describe('checks shim', () => {
   })
 })
 
-describe('groups shim', () => {
-  it('should inject groups shim when http module is imported', async ({
+describe('http shim', () => {
+  it('should replace k6/http import with http shim path', async ({
     expect,
   }) => {
     const script = `
@@ -90,38 +85,56 @@ describe('groups shim', () => {
     const result = await instrumentScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
-      './__snapshots__/script/groups-shim/with-http-import.js'
+      './__snapshots__/script/http-shim/with-http-import.js'
     )
   })
 
-  it('should not inject groups shim when http module is not imported', async ({
-    expect,
-  }) => {
+  it('should replace k6/http import with named imports', async ({ expect }) => {
     const script = `
-      export default function() {}
+      import { get, post } from "k6/http"
+
+      export default function() {
+        get("http://test.k6.io")
+        post("http://test.k6.io", JSON.stringify({ data: 'test' }))
+      }
     `
 
     const result = await instrumentScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
-      './__snapshots__/script/groups-shim/without-http-import.js'
+      './__snapshots__/script/http-shim/with-named-imports.js'
     )
   })
 
-  it('should keep existing execution import if it has a different name', async ({
-    expect,
-  }) => {
+  it('should replace k6/http import with alias', async ({ expect }) => {
     const script = `
-      import http from "k6/http"
-      import myExec from "k6/execution"
+      import myHttp from "k6/http"
 
-      export default function() {}
+      export default function() {
+        myHttp.get("http://test.k6.io")
+      }
     `
 
     const result = await instrumentScript({ script, shims })
 
     await expect(result).toMatchFileSnapshot(
-      './__snapshots__/script/groups-shim/with-different-alias-for-execution-import.js'
+      './__snapshots__/script/http-shim/with-http-alias.js'
+    )
+  })
+
+  it('should not replace import when http module is not imported', async ({
+    expect,
+  }) => {
+    const script = `
+      export default function() {
+        console.log("No http import")
+      }
+    `
+
+    const result = await instrumentScript({ script, shims })
+
+    await expect(result).toMatchFileSnapshot(
+      './__snapshots__/script/http-shim/without-http-import.js'
     )
   })
 })
