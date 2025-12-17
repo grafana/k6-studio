@@ -3,6 +3,7 @@ import {
   AlertTriangleIcon,
   EyeIcon,
   EyeOffIcon,
+  InfoIcon,
   KeyIcon,
   TrashIcon,
 } from 'lucide-react'
@@ -62,6 +63,7 @@ export function AiSettings() {
 
   return (
     <SettingsSection>
+      <DisclaimerTerms />
       <FieldGroup
         name="ai.apiKey"
         label="OpenAI API Key"
@@ -132,5 +134,54 @@ export function AiSettings() {
         </Flex>
       </FieldGroup>
     </SettingsSection>
+  )
+}
+
+function DisclaimerTerms() {
+  return (
+    <Callout.Root color="gray" mb="3" variant="soft">
+      <Callout.Icon>
+        <InfoIcon />
+      </Callout.Icon>
+      <Callout.Text size="2">
+        <Text as="p" weight="bold" mb="3">
+          Disclaimer: Use of Your Own OpenAI API Key
+        </Text>
+        <Box>
+          <Text>
+            By adding your OpenAI key, you acknowledge and agree to the
+            following:
+          </Text>
+          <ul
+            css={{
+              paddingLeft: 'var(--space-5)',
+              marginBottom: 0,
+              marginTop: 'var(--space-2)',
+              li: { marginBottom: 'var(--space-1)' },
+            }}
+          >
+            <li>
+              Use of your OpenAI key will be subject to your separate OpenAI
+              agreement and any associated billing with respect to such usage.
+            </li>
+            <li>
+              Output is generated through artificial intelligence processes,
+              including technology provided by OpenAI, who will process your
+              data. More detail can be found in the product documentation.
+            </li>
+            <li>
+              Grafana Labs does not warrant any output to have been tested,
+              verified, endorsed, or guaranteed to be accurate, complete, or
+              current.
+            </li>
+            <li>
+              You are responsible for the security, management, and activities
+              associated with your API key. Your OpenAI key is not transmitted
+              to Grafana Labs and Grafana Labs does not store your OpenAI key.
+            </li>
+          </ul>
+        </Box>
+      </Callout.Text>
+    </Callout.Root>
   )
 }
