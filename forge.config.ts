@@ -58,11 +58,9 @@ const config: ForgeConfig = {
     asar: true,
     extraResource: [
       '.vite/build/extension',
-      './resources/shims',
       './resources/browser',
       './resources/json_output.py',
-      './resources/group_snippet.js',
-      './resources/checks_snippet.js',
+      './resources/entrypoint.js',
       './resources/splashscreen.html',
       './resources/logo-splashscreen-dark.svg',
       './resources/logo-splashscreen.svg',
@@ -133,8 +131,8 @@ const config: ForgeConfig = {
         },
         {
           // Entry doesn't really matter here.
-          entry: 'src/main/runner/shims/browser/index.ts',
-          config: 'vite.shims.config.ts',
+          entry: 'src/main/runner/entrypoint.ts',
+          config: 'vite.script.config.ts',
         },
       ],
       renderer: [

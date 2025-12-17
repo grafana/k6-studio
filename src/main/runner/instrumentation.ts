@@ -1,4 +1,4 @@
-import { parse, TSESTree as ts } from '@typescript-eslint/typescript-estree'
+import { parse } from '@typescript-eslint/typescript-estree'
 import { generate } from 'astring'
 import { app } from 'electron'
 import { readFile } from 'fs/promises'
@@ -15,10 +15,8 @@ import { NodeType } from '@/codegen/estree/nodes'
 import { getExports, traverse } from '@/codegen/estree/traverse'
 
 interface InstrumentScriptOptions {
-  script: string
-  shims: {
-    checks: string
-  }
+  entryScript: string
+  scriptPath: string
 }
 
 const parseScript = (input: string) => {
@@ -29,69 +27,52 @@ const parseScript = (input: string) => {
 }
 
 export const instrumentScript = async ({
-  script,
-  shims,
+  entryScript,
+  scriptPath,
 }: InstrumentScriptOptions) => {
-  const browserShim = getShimPath('browser.js')
-  const httpShim = getShimPath('http.js')
+  const entryAst = parseScript(entryScript)
 
-  const [checksAst, scriptAst] = await Promise.all([
-    parseScript(shims.checks),
-    parseScript(script),
-  ])
-
-  if (checksAst === undefined) {
-    throw new Error('Failed to parse checks snippet')
+  if (entryAst === undefined) {
+    throw new Error('Failed to parse entry script')
   }
 
-  if (scriptAst === undefined) {
-    throw new Error('Failed to parse script content')
+  const userScriptContent = await readFile(scriptPath, {
+    encoding: 'utf-8',
+  })
+  const userScriptAst = parseScript(userScriptContent)
+
+  if (userScriptAst === undefined) {
+    throw new Error('Failed to parse user script')
   }
 
-  let browserImport: ts.ImportDeclaration | null = null
-  let httpImport: ts.ImportDeclaration | null = null
+  let isBrowserTest = false
 
-  traverse(scriptAst, {
+  traverse(userScriptAst, {
     [NodeType.ImportDeclaration](node) {
-      switch (node.source.value) {
-        case 'k6/http':
-          httpImport = node
-
-          // Replace the import source with our shim path.
-          httpImport.source.value = httpShim
-          httpImport.source.raw = JSON.stringify(httpShim)
-
-          break
-
-        case 'k6/browser':
-          browserImport = node
-
-          // Replace the import source with our shim path.
-          browserImport.source.value = browserShim
-          browserImport.source.raw = JSON.stringify(browserShim)
-
-          break
+      if (node.source.value === 'k6/browser') {
+        isBrowserTest = true
       }
     },
   })
 
-  const exports = getExports(scriptAst)
+  traverse(entryAst, {
+    [NodeType.ImportDeclaration](node) {
+      if (node.source.value === '__USER_SCRIPT_PATH__') {
+        node.source.value = scriptPath
+        node.source.raw = JSON.stringify(scriptPath)
+      }
+    },
+  })
 
-  const hasHandleSummary = exports.some(
-    (e) => e.type === 'named' && e.name === 'handleSummary'
-  )
+  // Update options export based on whether it's a browser test
+  const exports = getExports(entryAst)
 
-  if (!hasHandleSummary) {
-    scriptAst.body.push(...checksAst.body)
-  }
-
-  // Find any existing options export and replace it with our own.
   const optionsExport = exports.find(
     (e) => e.type === 'named' && e.name === 'options'
   )
 
   if (optionsExport) {
-    traverse(scriptAst, {
+    traverse(entryAst, {
       [NodeType.Identifier](node) {
         if (node.name === 'options') {
           // It's easier to just rename the options export than to
@@ -103,16 +84,15 @@ export const instrumentScript = async ({
     })
   }
 
-  const browserOptions =
-    browserImport !== null
-      ? {
-          options: fromObjectLiteral({
-            browser: fromObjectLiteral({
-              type: 'chromium',
-            }),
+  const browserOptions = isBrowserTest
+    ? {
+        options: fromObjectLiteral({
+          browser: fromObjectLiteral({
+            type: 'chromium',
           }),
-        }
-      : null
+        }),
+      }
+    : null
 
   const options = fromObjectLiteral({
     scenarios: fromObjectLiteral({
@@ -125,7 +105,7 @@ export const instrumentScript = async ({
     }),
   })
 
-  scriptAst.body.push(
+  entryAst.body.push(
     exportNamed({
       declaration: declareConst({
         declarations: [
@@ -138,37 +118,19 @@ export const instrumentScript = async ({
     })
   )
 
-  return generate(scriptAst)
-}
-
-const getSnippetPath = (snippetName: string) => {
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    return path.join(app.getAppPath(), 'resources', snippetName)
-  }
-
-  return path.join(process.resourcesPath, snippetName)
-}
-
-const getShimPath = (name: string) => {
-  // @ts-expect-error We are targeting CommonJS so import.meta is not available
-  if (!import.meta.env.PROD) {
-    // Module specifiers are URL-like and must always use forward slashes (/) regardless of OS
-    return path.posix.join(app.getAppPath(), 'resources', 'shims', name)
-  }
-
-  return path.posix.join(process.resourcesPath, 'shims', name)
+  return generate(entryAst)
 }
 
 export const instrumentScriptFromPath = async (scriptPath: string) => {
-  const [checksSnippet, scriptContent] = await Promise.all([
-    readFile(getSnippetPath('checks_snippet.js'), { encoding: 'utf-8' }),
-    readFile(scriptPath, { encoding: 'utf-8' }),
-  ])
+  // @ts-expect-error We are targeting CommonJS so import.meta is not available
+  const entryScriptPath = !import.meta.env.PROD
+    ? path.join(app.getAppPath(), 'resources', 'entrypoint.js')
+    : path.join(process.resourcesPath, 'entrypoint.js')
+
+  const entryScript = await readFile(entryScriptPath, { encoding: 'utf-8' })
 
   return instrumentScript({
-    script: scriptContent,
-    shims: {
-      checks: checksSnippet,
-    },
+    entryScript,
+    scriptPath,
   })
 }

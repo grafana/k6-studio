@@ -1,7 +1,16 @@
-export function handleSummary(data) {
-  const checks = []
+import type { Check } from '@/schemas/k6'
 
-  function traverseGroup(group) {
+interface Group {
+  checks: Check[]
+  groups: Group[]
+}
+
+export function handleSummary(data: {
+  root_group: { checks: Check[]; groups: Group[] }
+}) {
+  const checks: Check[] = []
+
+  function traverseGroup(group: Group) {
     if (group.checks) {
       group.checks.forEach((check) => {
         checks.push(check)
