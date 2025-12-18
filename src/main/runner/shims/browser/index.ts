@@ -21,6 +21,7 @@ const locatorProxy = (
 export const browser = createProxy(nativeBrowser, {
   newPage: {
     proxy: (_target) => {
+      console.log('Shimmed!')
       return {
         goto: {
           track(url) {

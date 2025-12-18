@@ -4,13 +4,6 @@ import { app } from 'electron'
 import { readFile } from 'fs/promises'
 import path from 'path'
 
-import {
-  constDeclarator,
-  declareConst,
-  exportNamed,
-  fromObjectLiteral,
-  identifier,
-} from '@/codegen/estree'
 import { NodeType } from '@/codegen/estree/nodes'
 import { traverse } from '@/codegen/estree/traverse'
 
@@ -26,7 +19,7 @@ const parseScript = (input: string) => {
   })
 }
 
-export const instrumentScript = async ({
+export const instrumentScript = ({
   entryScript,
   scriptPath,
 }: InstrumentScriptOptions) => {
@@ -36,25 +29,6 @@ export const instrumentScript = async ({
     throw new Error('Failed to parse entry script')
   }
 
-  const userScriptContent = await readFile(scriptPath, {
-    encoding: 'utf-8',
-  })
-  const userScriptAst = parseScript(userScriptContent)
-
-  if (userScriptAst === undefined) {
-    throw new Error('Failed to parse user script')
-  }
-
-  let isBrowserTest = false
-
-  traverse(userScriptAst, {
-    [NodeType.ImportDeclaration](node) {
-      if (node.source.value === 'k6/browser') {
-        isBrowserTest = true
-      }
-    },
-  })
-
   traverse(entryAst, {
     [NodeType.ImportDeclaration](node) {
       if (node.source.value === '__USER_SCRIPT_PATH__') {
@@ -63,40 +37,6 @@ export const instrumentScript = async ({
       }
     },
   })
-
-  const browserOptions = isBrowserTest
-    ? {
-        options: fromObjectLiteral({
-          browser: fromObjectLiteral({
-            type: 'chromium',
-          }),
-        }),
-      }
-    : null
-
-  const options = fromObjectLiteral({
-    scenarios: fromObjectLiteral({
-      default: fromObjectLiteral({
-        executor: 'shared-iterations',
-        vus: 1,
-        iterations: 1,
-        ...browserOptions,
-      }),
-    }),
-  })
-
-  entryAst.body.push(
-    exportNamed({
-      declaration: declareConst({
-        declarations: [
-          constDeclarator({
-            id: identifier('options'),
-            init: options,
-          }),
-        ],
-      }),
-    })
-  )
 
   return generate(entryAst)
 }
