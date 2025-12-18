@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, macos-13, windows-latest, ubuntu-latest]
+        platform: [macos-latest, macos-15, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -76,7 +76,7 @@ jobs:
           npm run publish
 
       - name: publish macOS x86_64
-        if: startsWith(matrix.platform, 'macos-13')
+        if: startsWith(matrix.platform, 'macos-15')
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
