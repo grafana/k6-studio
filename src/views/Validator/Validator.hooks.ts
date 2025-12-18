@@ -93,7 +93,7 @@ export function useDebugSession(scriptPath: string) {
   }, [sessionId, state, checks, logs, proxyData, browserActions])
 
   return {
-    session: state !== 'pending' ? session : null,
+    session,
     startDebugging,
     stopDebugging,
   }

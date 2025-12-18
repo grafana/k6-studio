@@ -1,11 +1,9 @@
-import { css } from '@emotion/react'
-import { Box, Flex, Tabs } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
@@ -16,27 +14,6 @@ import { Debugger } from './Debugger'
 import { useDebugSession, useScript, useScriptPath } from './Validator.hooks'
 import { ValidatorControls } from './ValidatorControls'
 
-function TabContent({
-  children,
-  ...props
-}: Omit<Tabs.ContentProps, 'asChild'>) {
-  return (
-    <Tabs.Content asChild {...props}>
-      <Flex
-        css={css`
-          flex: 1 1 0;
-        `}
-        align="stretch"
-        direction="column"
-      >
-        {children}
-      </Flex>
-    </Tabs.Content>
-  )
-}
-
-type ValidatorTabs = 'script' | 'debugger'
-
 interface ValidatorProps {
   scriptPath: string
 }
@@ -44,7 +21,6 @@ interface ValidatorProps {
 function Content({ scriptPath }: ValidatorProps) {
   const { data, isLoading } = useScript(scriptPath)
 
-  const [currentTab, setCurrentTab] = useState<ValidatorTabs>('script')
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
   const navigate = useNavigate()
@@ -58,14 +34,6 @@ function Content({ scriptPath }: ValidatorProps) {
     type: 'script',
     fileName: scriptPath,
     displayName: getFileNameWithoutExtension(scriptPath),
-  }
-
-  const handleTabChange = (tab: string) => {
-    if (tab !== 'script' && tab !== 'debugger') {
-      return
-    }
-
-    setCurrentTab(tab)
   }
 
   const handleSelectExternalScript = useCallback(async () => {
@@ -95,8 +63,6 @@ function Content({ scriptPath }: ValidatorProps) {
     if (!scriptPath) {
       return
     }
-
-    setCurrentTab('debugger')
 
     await startDebugging()
   }
@@ -150,39 +116,14 @@ function Content({ scriptPath }: ValidatorProps) {
       }
       loading={isLoading}
     >
-      <Tabs.Root
-        key={scriptPath}
-        asChild
-        value={currentTab}
-        onValueChange={handleTabChange}
-      >
-        <Flex flexGrow="1" direction="column" align="stretch">
-          <Tabs.List>
-            <Tabs.Trigger value="script">Script</Tabs.Trigger>
-            <Tabs.Trigger value="debugger">Debugger</Tabs.Trigger>
-          </Tabs.List>
-          <TabContent value="script">
-            <Box position="absolute" inset="0">
-              <ReadOnlyEditor value={data?.script} language="javascript" />
-            </Box>
-          </TabContent>
-          <TabContent value="debugger">
-            <Flex
-              css={css`
-                flex: 1 1 0;
-              `}
-              justify="center"
-            >
-              <Debugger
-                key={session?.id}
-                options={data?.options ?? {}}
-                session={session}
-                onDebugScript={handleDebugScript}
-              />
-            </Flex>
-          </TabContent>
-        </Flex>
-      </Tabs.Root>
+      <Flex flexGrow="1" direction="column" align="stretch">
+        <Debugger
+          script={data?.script ?? ''}
+          options={data?.options ?? {}}
+          session={session}
+          onDebugScript={handleDebugScript}
+        />
+      </Flex>
       {scriptPath !== undefined && (
         <RunInCloudDialog
           open={showRunInCloudDialog}

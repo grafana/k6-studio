@@ -12,6 +12,7 @@ import { BrowserActionList } from './BrowserActionList'
 import { BrowserDebugDrawer } from './BrowserDebugDrawer'
 
 interface BrowserDebuggerProps {
+  script: string
   session: DebugSession
 }
 
