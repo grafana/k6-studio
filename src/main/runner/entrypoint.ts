@@ -14,7 +14,7 @@ const DEFAULT_SCENARIOS: Options['scenarios'] = {
   },
 }
 
-const scenarios: Options['scenarios'] = Object.fromEntries(
+const scenarios: Required<Options>['scenarios'] = Object.fromEntries(
   Object.entries(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (userScript.options as Options)?.scenarios ?? DEFAULT_SCENARIOS
@@ -41,12 +41,9 @@ export const options: Options = {
 export default async function () {
   // Always prefer the 'default' export if configured, otherwise fallback to the
   // first scenario.
-  const exec = Object.values(scenarios ?? {}).find(
-    ({ exec }) => exec === 'default'
-  )
+  const exec = Object.values(scenarios).find(({ exec }) => exec === 'default')
     ? 'default'
-    : Object.values(scenarios ?? {})[0]?.exec
-
+    : Object.values(scenarios)[0]?.exec
   if (exec === undefined) {
     throw new Error('No scenario found to execute')
   }
