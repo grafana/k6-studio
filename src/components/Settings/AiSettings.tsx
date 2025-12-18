@@ -148,7 +148,7 @@ function DisclaimerTerms() {
           Disclaimer: Use of your own OpenAI API Key
         </Text>
         <Box>
-          <Text>
+          <Text size="1">
             By adding your OpenAI key, you acknowledge and agree to the
             following:
           </Text>
@@ -157,6 +157,7 @@ function DisclaimerTerms() {
               paddingLeft: 'var(--space-5)',
               marginBottom: 0,
               marginTop: 'var(--space-2)',
+              fontSize: 'var(--font-size-1)',
               li: { marginBottom: 'var(--space-1)' },
             }}
           >
