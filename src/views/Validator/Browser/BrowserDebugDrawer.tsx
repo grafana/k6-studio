@@ -43,6 +43,10 @@ function List({ session }: BrowserDebugDrawerProps) {
   )
 }
 
+interface BrowserDebugDrawerProps {
+  session: DebugSession
+}
+
 function Content({ session }: BrowserDebugDrawerProps) {
   return (
     <Flex direction="column" align="stretch" height="100%" overflow="hidden">
