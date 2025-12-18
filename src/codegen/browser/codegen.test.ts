@@ -1132,3 +1132,41 @@ it('should emit a getByTitle locator', async ({ expect }) => {
     '__snapshots__/browser/locators/get-by-title.ts'
   )
 })
+
+it('should emit a waitFor statement', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: {
+            type: 'title',
+            text: 'Submit your form',
+          },
+          inputs: { page: { nodeId: 'page' } },
+        },
+        {
+          type: 'wait-for',
+          nodeId: 'wait-for',
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+          options: {
+            timeout: 5000,
+            state: 'hidden',
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/wait-for-statement.ts'
+  )
+})

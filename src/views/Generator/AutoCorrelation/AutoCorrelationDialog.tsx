@@ -36,6 +36,8 @@ export function AutoCorrelationDialog({
         asChild
         width="calc(100vw - 100px)"
         height="calc(100vh - 100px)"
+        // Prevent closing the dialog when clicking outside
+        onInteractOutside={(e) => e.preventDefault()}
       >
         <Flex direction="column" height="100%">
           <Dialog.Title>
