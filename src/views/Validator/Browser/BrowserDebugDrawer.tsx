@@ -27,47 +27,52 @@ function TabContent({
 }
 
 interface BrowserDebugDrawerProps {
+  className?: string
   session: DebugSession
+  onExpand: () => void
 }
 
-function List({ session }: BrowserDebugDrawerProps) {
+export function BrowserDebugDrawer({
+  className,
+  session,
+  onExpand,
+}: BrowserDebugDrawerProps) {
   return (
-    <Tabs.List>
-      <Tabs.Trigger value="console">
-        Console ({session.logs.length})
-      </Tabs.Trigger>
-      <Tabs.Trigger value="network">
-        Network ({session.requests.length})
-      </Tabs.Trigger>
-    </Tabs.List>
-  )
-}
-
-interface BrowserDebugDrawerProps {
-  session: DebugSession
-}
-
-function Content({ session }: BrowserDebugDrawerProps) {
-  return (
-    <Flex direction="column" align="stretch" height="100%" overflow="hidden">
-      <TabContent value="console">
-        <LogsSection autoScroll={false} logs={session.logs} />
-      </TabContent>
-      <Tabs.Content asChild value="network">
-        <div
+    <Tabs.Root asChild className={className} defaultValue="console">
+      <Flex direction="column">
+        <Tabs.List
           css={css`
-            overflow: hidden;
-            flex: 1 1 0;
+            flex-shrink: 0;
           `}
         >
-          <NetworkInspector session={session} />
-        </div>
-      </Tabs.Content>
-    </Flex>
+          <Tabs.Trigger value="console" onClick={onExpand}>
+            Console ({session.logs.length})
+          </Tabs.Trigger>
+          <Tabs.Trigger value="network" onClick={onExpand}>
+            Network ({session.requests.length})
+          </Tabs.Trigger>
+        </Tabs.List>
+        <Flex
+          direction="column"
+          align="stretch"
+          height="100%"
+          overflow="hidden"
+        >
+          <TabContent value="console">
+            <LogsSection autoScroll={false} logs={session.logs} />
+          </TabContent>
+          <Tabs.Content asChild value="network">
+            <div
+              css={css`
+                overflow: hidden;
+                flex: 1 1 0;
+              `}
+            >
+              <NetworkInspector session={session} />
+            </div>
+          </Tabs.Content>
+        </Flex>
+      </Flex>
+    </Tabs.Root>
   )
-}
-
-export const BrowserDebugDrawer = {
-  List,
-  Content,
 }

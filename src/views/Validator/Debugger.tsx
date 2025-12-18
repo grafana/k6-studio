@@ -24,7 +24,13 @@ export function Debugger({
   onDebugScript,
 }: DebuggerProps) {
   if (isBrowserTest(options)) {
-    return <BrowserDebugger script={script} session={session} />
+    return (
+      <BrowserDebugger
+        script={script}
+        session={session}
+        onDebugScript={onDebugScript}
+      />
+    )
   }
 
   return (
