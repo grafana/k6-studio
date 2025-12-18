@@ -33,13 +33,19 @@ const TABS: Array<{
     label: 'AI',
     value: 'ai',
     component: AiSettings,
-    featureToggle: 'auto-correlation',
   },
   {
     label: 'Logs',
     value: 'logs',
     component: LogsSettings,
   },
+  // Example of a feature-toggle controlled tab
+  // {
+  // label: 'Dummy Feature',
+  // value: 'dummyFeature',
+  // component: DummyFeature,
+  // featureToggle: 'dummy-feature',
+  // }
 ]
 
 export function useEnabledTabs() {

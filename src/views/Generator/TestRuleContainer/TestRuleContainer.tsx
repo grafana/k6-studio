@@ -3,7 +3,6 @@ import { WandSparkles } from 'lucide-react'
 import { useState } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
-import { Feature, FeatureDisabled } from '@/components/Feature'
 import {
   selectFilteredRequests,
   selectSelectedRule,
@@ -48,64 +47,50 @@ export function TestRuleContainer() {
               Test rules ({rules.length})
             </Heading>
             <NewRuleMenu />
-            <Feature feature="auto-correlation">
-              <Button
-                variant="ghost"
-                size="1"
-                color="gray"
-                onClick={() => setIsAutoCorrelationDialogOpen(true)}
-                disabled={isAutocorrelationButtonDisabled}
-              >
-                <WandSparkles />
-                Autocorrelate
-              </Button>
-            </Feature>
+            <Button
+              variant="ghost"
+              size="1"
+              color="gray"
+              onClick={() => setIsAutoCorrelationDialogOpen(true)}
+              disabled={isAutocorrelationButtonDisabled}
+            >
+              <WandSparkles />
+              Autocorrelate
+            </Button>
           </Flex>
         </StickyPanelHeader>
         <SortableRuleList rules={rules} onSwapRules={swapRules} />
         {shouldShowHelpMessage && (
           <>
-            <FeatureDisabled feature="auto-correlation">
-              <EmptyMessage
-                message="Configure your test logic by adding a new rule"
-                pb="2"
-                action={<NewRuleMenu variant="solid" size="2" color="orange" />}
-              />
-            </FeatureDisabled>
-
-            <Feature feature="auto-correlation">
-              <EmptyMessage
-                message="Configure your test logic by adding a new rule"
-                pb="2"
-                action={
-                  <Flex gap="2" align="center">
-                    <Button
-                      onClick={() => setIsAutoCorrelationDialogOpen(true)}
-                      disabled={isAutocorrelationButtonDisabled}
-                    >
-                      <WandSparkles />
-                      Autocorrelate
-                    </Button>{' '}
-                    <NewRuleMenu
-                      variant="solid"
-                      size="2"
-                      color="orange"
-                      text="Add rule manually"
-                    />
-                  </Flex>
-                }
-              />
-            </Feature>
+            <EmptyMessage
+              message="Configure your test logic by adding a new rule"
+              pb="2"
+              action={
+                <Flex gap="2" align="center">
+                  <Button
+                    onClick={() => setIsAutoCorrelationDialogOpen(true)}
+                    disabled={isAutocorrelationButtonDisabled}
+                  >
+                    <WandSparkles />
+                    Autocorrelate
+                  </Button>{' '}
+                  <NewRuleMenu
+                    variant="solid"
+                    size="2"
+                    color="orange"
+                    text="Add rule manually"
+                  />
+                </Flex>
+              }
+            />
           </>
         )}
       </ScrollArea>
 
-      <Feature feature="auto-correlation">
-        <AutoCorrelationDialog
-          open={isAutoCorrelationDialogOpen}
-          onOpenChange={setIsAutoCorrelationDialogOpen}
-        />
-      </Feature>
+      <AutoCorrelationDialog
+        open={isAutoCorrelationDialogOpen}
+        onOpenChange={setIsAutoCorrelationDialogOpen}
+      />
     </>
   )
 }

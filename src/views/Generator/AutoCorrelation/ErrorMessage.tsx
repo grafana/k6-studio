@@ -75,7 +75,7 @@ export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
   return (
     <MessageContent
       title="Something went wrong"
-      message="An unexpected error occurred during auto-correlation. Click retry to try again or report an issue if problem persists."
+      message="An unexpected error occurred during autocorrelation. Click retry to try again or report an issue if problem persists."
     >
       {retryButton}
       {reportIssueButton}
