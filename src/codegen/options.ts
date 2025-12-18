@@ -11,6 +11,7 @@ export function generateOptions({
 }: TestOptions): string {
   const options = omit(loadProfile, ['executor'])
   const data = {
+    maxRedirects: 0,
     ...options,
     ...(cloud && generateCloudOptions(cloud)),
     ...(thresholds.length > 0 && {

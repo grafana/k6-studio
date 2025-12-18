@@ -3,6 +3,7 @@ export function handleSummary() {
   console.log("This is the handleSummary shim");
 }
 export const options = {
+  maxRedirects: 0,
   scenarios: {
     default: {
       executor: "shared-iterations",
