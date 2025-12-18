@@ -6,9 +6,9 @@ import './shims/browser'
 // eslint-disable-next-line import/no-unresolved
 import * as userScript from '__USER_SCRIPT_PATH__'
 
-export default function () {
+export default async function () {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  userScript['default']()
+  await userScript['default']()
 }
 
 export { handleSummary } from './summary'

@@ -5,9 +5,7 @@ interface Group {
   groups: Group[]
 }
 
-export function handleSummary(data: {
-  root_group: { checks: Check[]; groups: Group[] }
-}) {
+export function handleSummary(data: { root_group: Group }) {
   const checks: Check[] = []
 
   function traverseGroup(group: Group) {
@@ -23,12 +21,7 @@ export function handleSummary(data: {
     }
   }
 
-  data.root_group.checks.forEach((check) => {
-    checks.push(check)
-  })
-  data.root_group.groups.forEach((group) => {
-    traverseGroup(group)
-  })
+  traverseGroup(data.root_group)
 
   return {
     stdout: JSON.stringify(checks),
