@@ -1,7 +1,17 @@
 import { BrowserContext, browser } from 'k6/browser'
 
 import { pageProxy } from './proxies/page'
-import { createProxy, ProxyOptions } from './utils'
+import { createProxy, ProxyOptions, TRACKING_SERVER_URL } from './utils'
+
+const SESSION_REPLAY_SCRIPT = ''
+
+async function injectSessionReplayScript(context: BrowserContext) {
+  await context.addInitScript(
+    `window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__ = ${JSON.stringify(TRACKING_SERVER_URL)};`
+  )
+
+  await context.addInitScript(SESSION_REPLAY_SCRIPT)
+}
 
 function browserContextProxy(
   target: BrowserContext
@@ -24,11 +34,15 @@ const nativeContext = browser.context.bind(browser)
 browser.newPage = async function (...args) {
   const page = await nativeNewPage(...args)
 
+  await injectSessionReplayScript(page.context())
+
   return createProxy(pageProxy(page))
 }
 
 browser.newContext = async function (...args) {
   const context = await nativeNewContext(...args)
+
+  await injectSessionReplayScript(context)
 
   return createProxy(browserContextProxy(context))
 }

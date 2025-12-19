@@ -10,6 +10,7 @@ import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
+import { getResourcePath } from '@/utils/resources'
 
 import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
 
@@ -89,6 +90,7 @@ export const runScript = async ({
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
       K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
+      K6_SESSION_REPLAY_SCRIPT_PATH: getResourcePath('replay-script'),
       K6_BROWSER_ARGS: proxyArgs.join(','),
       K6_TESTING_COLORIZE: 'false',
     },

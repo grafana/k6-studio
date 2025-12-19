@@ -17,6 +17,7 @@ export default defineConfig((env) => {
         preserveEntrySignatures: 'strict',
         input: {
           entrypoint: 'src/main/runner/entrypoint.ts',
+          replay: 'src/main/runner/shims/browser/replay.ts',
         },
         output: {
           entryFileNames: '[name].js',

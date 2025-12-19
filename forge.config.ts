@@ -61,6 +61,7 @@ const config: ForgeConfig = {
       './resources/browser',
       './resources/json_output.py',
       './resources/entrypoint.js',
+      './resources/replay.js',
       './resources/splashscreen.html',
       './resources/logo-splashscreen-dark.svg',
       './resources/logo-splashscreen.svg',

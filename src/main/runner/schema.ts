@@ -1,3 +1,4 @@
+import type { eventWithTime } from '@rrweb/types'
 import { z } from 'zod'
 
 /**
@@ -283,6 +284,12 @@ export const ActionEndEventSchema = ActionEventSchemaBase.extend({
     ended: z.number(),
   }),
   result: ActionResult,
+})
+
+export const SessionReplayEventSchema = z.object({
+  // We don't bother parsing the events themselves and instead assume that
+  // rrweb will send valid data.
+  events: z.array(z.unknown().transform((ev) => ev as eventWithTime)),
 })
 
 export const BrowserActionEventSchema = z.discriminatedUnion('type', [

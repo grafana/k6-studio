@@ -7,7 +7,7 @@ import {
   AnyBrowserAction,
 } from '../../schema'
 
-const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
+export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
   ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
   : null
 
