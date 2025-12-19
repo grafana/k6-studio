@@ -2,6 +2,8 @@ import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import path from 'path'
 
+import { verifyDocumentsAccess } from '@/main/permissions'
+
 import {
   DATA_FILES_PATH,
   PROJECT_PATH,
@@ -12,6 +14,11 @@ import {
 } from '../constants/workspace'
 
 export const setupProjectStructure = async () => {
+  const hasAccess = await verifyDocumentsAccess()
+  if (!hasAccess) {
+    throw new Error('Documents folder access denied')
+  }
+
   if (!existsSync(PROJECT_PATH)) {
     await mkdir(PROJECT_PATH)
   }
