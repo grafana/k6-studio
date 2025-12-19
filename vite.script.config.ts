@@ -8,19 +8,26 @@ export default defineConfig((env) => {
     plugins: [tsconfigPaths()],
     mode: env.mode,
     build: {
+      sourcemap: false,
       target: 'esnext',
-      outDir: 'resources/shims',
+      outDir: 'resources',
       rollupOptions: {
         // By default, Vite will remove any top-level exports for entry files. This
         // disabled that behavior.
         preserveEntrySignatures: 'strict',
         input: {
-          browser: 'src/main/runner/shims/browser/index.ts',
+          entrypoint: 'src/main/runner/entrypoint.ts',
         },
         output: {
           entryFileNames: '[name].js',
         },
-        external: ['k6', 'k6/http', 'k6/browser'],
+        external: [
+          'k6',
+          'k6/http',
+          'k6/browser',
+          'k6/execution',
+          '__USER_SCRIPT_PATH__',
+        ],
       },
     },
   })
