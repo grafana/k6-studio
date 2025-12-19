@@ -1,50 +1,5 @@
 # Changelog
 
-## [1.10.0](https://github.com/grafana/k6-studio/compare/v1.9.0...v1.10.0) (2025-12-18)
-
-
-### Features
-
-* Autocorrelation public preview ([#947](https://github.com/grafana/k6-studio/issues/947)) ([c640920](https://github.com/grafana/k6-studio/commit/c640920460c34483221d0108a23efe5a7b5870f1))
-* **browser:** Add support for waiting for Element to appear ([#941](https://github.com/grafana/k6-studio/issues/941)) ([c4890ae](https://github.com/grafana/k6-studio/commit/c4890aebe3984862b4dcb22891a4aa5e253c5804))
-* Improve autocorrelation error handling ([#933](https://github.com/grafana/k6-studio/issues/933)) ([63726a8](https://github.com/grafana/k6-studio/commit/63726a8f7d972899632061d30d860b0ce0910ee0))
-
-
-### Bug Fixes
-
-* Border can be seen though Sidebar expand button ([#943](https://github.com/grafana/k6-studio/issues/943)) ([37b3201](https://github.com/grafana/k6-studio/commit/37b32015354da0c29e1b5fa6c9c80d325893bc12))
-
-
-### Internal Changes
-
-* Add AI usage disclaimer ([#944](https://github.com/grafana/k6-studio/issues/944)) ([61079d3](https://github.com/grafana/k6-studio/commit/61079d3ba5fa4ec1ff025a8988fe89b98bdfe2da))
-* Add autocorrelation usage tracking ([#926](https://github.com/grafana/k6-studio/issues/926)) ([bd6186a](https://github.com/grafana/k6-studio/commit/bd6186a5bf09a6d11021afd00235c21c56f9997e))
-* Don't track script_validated event when validation is triggered automatically  ([#930](https://github.com/grafana/k6-studio/issues/930)) ([aad1da1](https://github.com/grafana/k6-studio/commit/aad1da12b30ebecc5b3954151af19d5f62099147))
-* Improve correlation prompts and tools ([#920](https://github.com/grafana/k6-studio/issues/920)) ([03a5c68](https://github.com/grafana/k6-studio/commit/03a5c6822fc330baaadca0f8d57465e445b3af53))
-* Prevent autocorrelation dialog closing by clicking outside ([#945](https://github.com/grafana/k6-studio/issues/945)) ([65ee05a](https://github.com/grafana/k6-studio/commit/65ee05aacfe5893bb34096bfe4a65b7c97fd17d1))
-* Sum token usage and show input/output separately ([#949](https://github.com/grafana/k6-studio/issues/949)) ([ff8fa3f](https://github.com/grafana/k6-studio/commit/ff8fa3f504fc145c53ac799e3ab67b02651d6f63))
-* Update autocorrelation copy, add feature preview badge ([#948](https://github.com/grafana/k6-studio/issues/948)) ([2f83a07](https://github.com/grafana/k6-studio/commit/2f83a07f4238a07401d0d9b500b95908f333cef2))
-
-
-### Miscellaneous Chores
-
-* **deps:** bump body-parser from 2.2.0 to 2.2.1 ([#909](https://github.com/grafana/k6-studio/issues/909)) ([9619732](https://github.com/grafana/k6-studio/commit/9619732bb773658a89e0f2b6f24a5331ae689220))
-* **deps:** bump express ([#918](https://github.com/grafana/k6-studio/issues/918)) ([2c020b8](https://github.com/grafana/k6-studio/commit/2c020b897a7ff5ba604fa688703a5d0e45f8ccc9))
-* **deps:** bump node-forge from 1.3.1 to 1.3.2 ([#911](https://github.com/grafana/k6-studio/issues/911)) ([d17b188](https://github.com/grafana/k6-studio/commit/d17b188fc360596dcf0f02671731c80b251bf546))
-* **deps:** pin dependencies ([#913](https://github.com/grafana/k6-studio/issues/913)) ([fcd6cf7](https://github.com/grafana/k6-studio/commit/fcd6cf77792f58bf42722512abd2d1587dcb0198))
-* **deps:** update actions/setup-dotnet action to v5.0.1 ([#915](https://github.com/grafana/k6-studio/issues/915)) ([7f2973a](https://github.com/grafana/k6-studio/commit/7f2973a5af6c00ecc8ae40f8c6f472477668b989))
-* **deps:** update dependency @ai-sdk/openai to v2.0.86 ([#916](https://github.com/grafana/k6-studio/issues/916)) ([7f24ab3](https://github.com/grafana/k6-studio/commit/7f24ab35e95588d5e6f2d5d57ebf16ec8d7c8517))
-* **deps:** update dependency @ai-sdk/react to v2.0.107 ([#927](https://github.com/grafana/k6-studio/issues/927)) ([94eae5d](https://github.com/grafana/k6-studio/commit/94eae5db2b2cae9df5a6a45516fbde90bc3dfbf8))
-* **deps:** update dependency @ai-sdk/react to v2.0.108 ([#931](https://github.com/grafana/k6-studio/issues/931)) ([1ec3173](https://github.com/grafana/k6-studio/commit/1ec317375ea7c9da14a6a46fa66d8f9664f97c01))
-* **deps:** update dependency @ai-sdk/react to v2.0.109 ([#937](https://github.com/grafana/k6-studio/issues/937)) ([70ca787](https://github.com/grafana/k6-studio/commit/70ca7873db1bcfb4b98b380fb7ecc11aeb08336a))
-* **deps:** update dependency @sentry/vite-plugin to v2.23.1 ([#929](https://github.com/grafana/k6-studio/issues/929)) ([478d92e](https://github.com/grafana/k6-studio/commit/478d92e7547a980c69cfcfa10ba9448960d4b605))
-* **deps:** update dependency @types/webextension-polyfill to ^0.12.3 ([#932](https://github.com/grafana/k6-studio/issues/932)) ([2798f9c](https://github.com/grafana/k6-studio/commit/2798f9c1222d71689cbce9853e84d25110d8ea1a))
-* **deps:** update dependency allotment to v1.20.4 ([#935](https://github.com/grafana/k6-studio/issues/935)) ([cda68e8](https://github.com/grafana/k6-studio/commit/cda68e86168e65add0f7d70ded3eb74e81a159a6))
-* **deps:** update dependency dom-accessibility-api to v0.7.1 ([#936](https://github.com/grafana/k6-studio/issues/936)) ([3348017](https://github.com/grafana/k6-studio/commit/3348017b95370480553211dd6cfcf0a0c70d240d))
-* **deps:** update dependency find-process to v1.4.11 ([#938](https://github.com/grafana/k6-studio/issues/938)) ([83c0514](https://github.com/grafana/k6-studio/commit/83c0514fb45f57f00bc6ae922e28fd9cee8cf669))
-* Don't allow to use basic-text encryption on linux ([#940](https://github.com/grafana/k6-studio/issues/940)) ([b8790c6](https://github.com/grafana/k6-studio/commit/b8790c69fb0a224401fa1a6f065b50e9d3c23535))
-* Fix shim import path generation on Windows ([#925](https://github.com/grafana/k6-studio/issues/925)) ([d5a163f](https://github.com/grafana/k6-studio/commit/d5a163fca0585e06618381720689a6c5fd7d90c2))
-
 ## [1.9.0](https://github.com/grafana/k6-studio/compare/v1.8.0...v1.9.0) (2025-11-25)
 
 
