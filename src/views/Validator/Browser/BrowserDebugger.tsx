@@ -10,7 +10,6 @@ import {
   Panel,
   Separator,
   useDefaultLayout,
-  usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
 
 import { DebuggerEmptyState } from '../DebuggerEmptyState'
@@ -32,7 +31,7 @@ export function BrowserDebugger({
 }: BrowserDebuggerProps) {
   const [tailActions, setTailActions] = useState(true)
 
-  const [drawer, setDrawer] = usePanelCallbackRef()
+  // const [drawer, setDrawer] = usePanelCallbackRef()
 
   const drawerLayout = useDefaultLayout({
     groupId: 'browser-debugger-drawer',
@@ -49,7 +48,13 @@ export function BrowserDebugger({
   }
 
   const handleTabClick = () => {
-    drawer?.expand()
+    // There appears to be a bug with expanding panels when using `useDefaultLayout`.
+    // I think persisting the layout is the more important feature here, so I'm disabling
+    // the click-to-expand for now.
+    //
+    // Issue: https://github.com/bvaughn/react-resizable-panels/issues/546
+    //
+    // drawer?.expand()
   }
 
   return (
@@ -61,6 +66,7 @@ export function BrowserDebugger({
     >
       <Group
         {...drawerLayout}
+        id="drawer"
         css={css`
           flex: 1 1 0;
         `}
@@ -69,6 +75,7 @@ export function BrowserDebugger({
         <Panel id="main">
           <Group
             {...mainLayout}
+            id="main"
             css={css`
               height: 100%;
             `}
@@ -112,7 +119,7 @@ export function BrowserDebugger({
               </Tabs.Root>
             </Panel>
             <Separator />
-            <Panel id="actions" minSize="400px">
+            <Panel id="actions" minSize={400}>
               <Flex direction="column" height="100%">
                 <Flex
                   justify="between"
@@ -168,16 +175,21 @@ export function BrowserDebugger({
         </Panel>
         <Separator />
         <Panel
-          panelRef={setDrawer}
           id="drawer"
+          // panelRef={setDrawer}
+          css={css`
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          `}
           collapsible
-          collapsedSize="40px"
-          minSize="200px"
-          defaultSize="0px"
+          collapsedSize={40}
+          minSize={200}
+          defaultSize={39}
         >
           <BrowserDebugDrawer
             css={css`
-              height: 100%;
+              flex: 1 1 0;
             `}
             session={session}
             onExpand={handleTabClick}
