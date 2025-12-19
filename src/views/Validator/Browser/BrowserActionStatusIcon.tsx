@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import { Spinner } from '@radix-ui/themes'
 import { CircleCheckIcon, CircleMinusIcon, CircleXIcon } from 'lucide-react'
 
@@ -12,8 +13,26 @@ export function BrowserActionStatusIcon({
   event,
 }: BrowserActionStatusIconProps) {
   if (event.type === 'begin') {
-    return <Spinner />
+    return (
+      <div
+        css={css`
+          /* 
+          * Together with the width and height, this makes a total size 
+          * of 20px which matches the size of the status icons.
+          */
+          padding: 2px;
+        `}
+      >
+        <Spinner
+          css={css`
+            width: 16px;
+            height: 16px;
+          `}
+        />
+      </div>
+    )
   }
+
   switch (event.result.type) {
     case 'success':
       return <CircleCheckIcon color="var(--green-11)" />

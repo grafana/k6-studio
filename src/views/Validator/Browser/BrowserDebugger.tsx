@@ -155,20 +155,20 @@ export function BrowserDebugger({
                     </Flex>
                   )}
                 </Flex>
-                {session.state === 'pending' && (
-                  <DebuggerEmptyState onDebugScript={onDebugScript}>
-                    Debug the script to inspect browser actions.
-                  </DebuggerEmptyState>
-                )}
-                {session.state !== 'pending' && (
-                  <AutoScrollArea
-                    tail={session.state === 'running' && tailActions}
-                    items={session.browserActions.length}
-                    onScrollBack={handleActionsScrollBack}
-                  >
+                <AutoScrollArea
+                  tail={session.state === 'running' && tailActions}
+                  items={session.browserActions.length}
+                  onScrollBack={handleActionsScrollBack}
+                >
+                  {session.state === 'pending' && (
+                    <DebuggerEmptyState onDebugScript={onDebugScript}>
+                      Debug the script to inspect browser actions.
+                    </DebuggerEmptyState>
+                  )}
+                  {session.state !== 'pending' && (
                     <BrowserActionList actions={session.browserActions} />
-                  </AutoScrollArea>
-                )}
+                  )}
+                </AutoScrollArea>
               </Flex>
             </Panel>
           </Group>
