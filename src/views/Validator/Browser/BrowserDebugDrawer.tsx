@@ -17,6 +17,7 @@ function TabContent({
         css={css`
           flex: 1 1 0;
         `}
+        overflow="hidden"
         align="stretch"
         direction="column"
       >
