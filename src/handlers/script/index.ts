@@ -9,6 +9,7 @@ import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
+import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
 import { isExternalScript } from '@/utils/workspace'
 
@@ -35,6 +36,7 @@ export function initialize() {
     console.log(`${ScriptHandler.Open} event received`)
 
     const absolute = path.isAbsolute(scriptPath)
+
     const resolvedScriptPath = absolute
       ? scriptPath
       : path.join(SCRIPTS_PATH, scriptPath)
@@ -44,8 +46,13 @@ export function initialize() {
       flag: 'r',
     })
 
+    const options = await new K6Client()
+      .inspect({ scriptPath: resolvedScriptPath })
+      .catch(() => ({}))
+
     return {
       script,
+      options: options ?? {},
       isExternal: isExternalScript(resolvedScriptPath),
     }
   })

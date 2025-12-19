@@ -66,17 +66,15 @@ export const runScript = async ({
     prefix: '',
   })
 
-  const trackingServer = await createTrackingServer().catch(() => null)
+  const trackingServer = await createTrackingServer()
 
-  // UNCOMMENT ME FOR TESTING!
-  //
-  // trackingServer.on('begin', (ev) => {
-  //   console.log('Begin tracking event', ev)
-  // })
+  trackingServer.on('begin', (ev) => {
+    browserWindow.webContents.send(ScriptHandler.BrowserAction, ev)
+  })
 
-  // trackingServer.on('end', (ev) => {
-  //   console.log('End tracking event', ev)
-  // })
+  trackingServer.on('end', (ev) => {
+    browserWindow.webContents.send(ScriptHandler.BrowserAction, ev)
+  })
 
   // 5. Run the test
   const client = new K6Client()
@@ -116,6 +114,8 @@ export const runScript = async ({
   })
 
   testRun.on('stop', () => {
+    browserWindow.webContents.send(ScriptHandler.Stopped)
+
     trackingServer?.dispose()
   })
 

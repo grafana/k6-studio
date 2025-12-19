@@ -3,6 +3,12 @@ import express, { json } from 'express'
 import { Server } from 'http'
 import { AddressInfo } from 'net'
 
+import {
+  ActionBeginEvent,
+  ActionBeginEventSchema,
+  ActionEndEvent,
+  ActionEndEventSchema,
+} from '@/main/runner/schema'
 import { EventEmitter } from 'extension/src/utils/events'
 
 function getPort(address: AddressInfo | string | null): number {
@@ -17,13 +23,9 @@ function getPort(address: AddressInfo | string | null): number {
   return address.port
 }
 
-interface TrackingEvent {
-  action: unknown
-}
-
 interface ReportingServerEventMap {
-  begin: TrackingEvent
-  end: TrackingEvent
+  begin: ActionBeginEvent
+  end: ActionEndEvent
 }
 
 class TestRunTrackingServer extends EventEmitter<ReportingServerEventMap> {
@@ -57,17 +59,33 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
   app.use(json())
 
   app.post('/track/:id/begin', (req, res) => {
-    trackingServer.emit('begin', {
-      action: req.body,
-    })
+    const parsed = ActionBeginEventSchema.safeParse(req.body)
+
+    if (!parsed.success) {
+      log.warn('Received invalid begin action event: ', parsed.error.format())
+
+      res.status(400).end()
+
+      return
+    }
+
+    trackingServer.emit('begin', parsed.data)
 
     res.status(204).end()
   })
 
   app.post('/track/:id/end', (req, res) => {
-    trackingServer.emit('end', {
-      action: req.body,
-    })
+    const parsed = ActionEndEventSchema.safeParse(req.body)
+
+    if (!parsed.success) {
+      log.warn('Received invalid end action event: ', parsed.error.format())
+
+      res.status(400).end()
+
+      return
+    }
+
+    trackingServer.emit('end', parsed.data)
 
     res.status(204).end()
   })

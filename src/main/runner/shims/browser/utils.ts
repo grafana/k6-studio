@@ -4,12 +4,19 @@ import {
   ActionBeginEvent,
   ActionEndEvent,
   ActionResult,
-  BrowserAction,
+  AnyBrowserAction,
 } from '../../schema'
 
 const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
   ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
   : null
+
+/**
+ * Never proxy actions originating from the k6-testing library.
+ */
+function isTestingLibrary() {
+  return new Error().stack?.includes('k6-testing') ?? false
+}
 
 const nextId = (() => {
   let currentId = 0
@@ -19,18 +26,21 @@ const nextId = (() => {
   }
 })()
 
-function begin(action: BrowserAction | undefined) {
+function begin(action: AnyBrowserAction | undefined | null) {
   if (TRACKING_SERVER_URL === null) {
     return null
   }
 
-  if (action === undefined) {
+  if (action === undefined || action === null) {
     return null
   }
 
   const event = {
+    type: 'begin',
     eventId: nextId(),
-    timestamp: Date.now(),
+    timestamp: {
+      started: Date.now(),
+    },
     action,
   } satisfies ActionBeginEvent
 
@@ -57,7 +67,11 @@ function end(event: ActionBeginEvent | null, result: ActionResult) {
   try {
     const body = {
       ...event,
-      timestamp: Date.now(),
+      type: 'end',
+      timestamp: {
+        ...event.timestamp,
+        ended: Date.now(),
+      },
       result,
     } satisfies ActionEndEvent
 
@@ -78,48 +92,86 @@ function end(event: ActionBeginEvent | null, result: ActionResult) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => any
 
-type Defined<T> = Exclude<T, undefined>
 type Unwrap<T> = T extends Promise<infer U> ? U : T
 
-export interface FunctionProxy<T extends AnyFunction> {
-  /**
-   * Called to create a tracking event that will be sent to
-   * k6 Studio. If omitted, no event will be sent.
-   */
-  track?: (...args: Parameters<T>) => BrowserAction
+type ArgsOf<T> = T extends AnyFunction ? Parameters<T> : never
 
-  /**
-   * Called to create a new proxy for the return value of the
-   * function. This allows you to proxy methods in the return
-   * value. If omitted, the return value is returned as-is.
-   */
-  proxy?: (
-    target: Unwrap<ReturnType<T>>,
-    ...args: Parameters<T>
-  ) => ProxiedMethods<Unwrap<ReturnType<T>>>
+type TrackingFn<T extends AnyFunction> = (
+  ...args: Parameters<T>
+) => AnyBrowserAction
+
+type ProxyFn<T extends AnyFunction> = (
+  target: Unwrap<ReturnType<T>>,
+  ...args: Parameters<T>
+) => ProxyOptions<Unwrap<ReturnType<T>>> | null
+
+export interface ProxyOptions<T extends object> {
+  target: T
+  tracking: {
+    [P in keyof T]?: T[P] extends AnyFunction ? TrackingFn<T[P]> : never
+  } & {
+    $default?: (
+      method: keyof T,
+      ...args: ArgsOf<T[keyof T]>
+    ) => AnyBrowserAction | null
+  }
+  proxies: {
+    [P in keyof T]?: T[P] extends AnyFunction ? ProxyFn<T[P]> : never
+  }
 }
 
-export type ProxiedMethods<T> = {
-  [P in keyof T]?: T[P] extends AnyFunction ? FunctionProxy<T[P]> : never
+function getProxyMethod<T extends object>(
+  method: keyof T,
+  proxies: ProxyOptions<T>['proxies']
+) {
+  return proxies[method]
 }
 
-export function createProxy<T extends object>(
-  target: T,
-  proxies: ProxiedMethods<T>
-): T {
+function getTrackingMethod<T extends object>(
+  method: keyof T,
+  tracking: ProxyOptions<T>['tracking']
+) {
+  const trackMethod = tracking[method]
+
+  if (trackMethod !== undefined) {
+    return trackMethod
+  }
+
+  const defaultTrack = tracking.$default
+
+  if (defaultTrack !== undefined) {
+    return (...args: ArgsOf<T[keyof T]>) => {
+      return defaultTrack(method, ...args)
+    }
+  }
+
+  return undefined
+}
+
+export function createProxy<T extends object>({
+  target,
+  tracking,
+  proxies,
+}: ProxyOptions<T>): T {
   return new Proxy(target, {
     get(target, property) {
-      const original = target[property as keyof T]
+      const method = property as keyof T
+      const original = target[method]
 
-      if (typeof original !== 'function' || property in proxies === false) {
+      if (typeof original !== 'function' || isTestingLibrary()) {
         return original
       }
 
-      const { track, proxy } = proxies[property as keyof T] ?? {}
+      const proxy = getProxyMethod(method, proxies)
+      const track = getTrackingMethod(method, tracking)
+
+      if (track === undefined && proxy === undefined) {
+        return original
+      }
 
       // A proxy function that takes care of sending events and proxying return
       // values based on the provided configuration.
-      return function (...args: Parameters<Defined<typeof track>>): unknown {
+      return function (...args: ArgsOf<T[keyof T]>): unknown {
         const action = track?.(...args)
         const eventId = begin(action)
 
@@ -135,11 +187,17 @@ export function createProxy<T extends object>(
           }
 
           if (proxy !== undefined) {
-            // If proxy was supplied we need to wrap the return value in a proxy
-            return createProxy(
-              result,
-              proxy(result as Parameters<typeof proxy>[0], ...args)
+            const options = proxy(
+              result as Parameters<typeof proxy>[0],
+              ...args
             )
+
+            if (options === null) {
+              return result
+            }
+
+            // If proxy was supplied we need to wrap the return value in a proxy
+            return createProxy(options)
           }
 
           return result
