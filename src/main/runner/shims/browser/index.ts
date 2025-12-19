@@ -1,4 +1,4 @@
-import { BrowserContext, browser as nativeBrowser } from 'k6/browser'
+import { BrowserContext, browser } from 'k6/browser'
 
 import { pageProxy } from './proxies/page'
 import { createProxy, ProxyOptions } from './utils'
@@ -17,22 +17,28 @@ function browserContextProxy(
   }
 }
 
-export const browser = createProxy({
-  target: nativeBrowser,
-  tracking: {},
-  proxies: {
-    newPage(target) {
-      return pageProxy(target)
-    },
-    newContext(target) {
-      return browserContextProxy(target)
-    },
-    context(target) {
-      if (target === null) {
-        return null
-      }
+const nativeNewPage = browser.newPage.bind(browser)
+const nativeNewContext = browser.newContext.bind(browser)
+const nativeContext = browser.context.bind(browser)
 
-      return browserContextProxy(target)
-    },
-  },
-})
+browser.newPage = async function (...args) {
+  const page = await nativeNewPage(...args)
+
+  return createProxy(pageProxy(page))
+}
+
+browser.newContext = async function (...args) {
+  const context = await nativeNewContext(...args)
+
+  return createProxy(browserContextProxy(context))
+}
+
+browser.context = function (...args) {
+  const context = nativeContext(...args)
+
+  if (context === null) {
+    return null
+  }
+
+  return createProxy(browserContextProxy(context))
+}

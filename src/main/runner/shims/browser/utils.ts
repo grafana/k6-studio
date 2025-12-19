@@ -11,6 +11,13 @@ const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
   ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
   : null
 
+/**
+ * Never proxy actions originating from the k6-testing library.
+ */
+function isTestingLibrary() {
+  return new Error().stack?.includes('k6-testing') ?? false
+}
+
 const nextId = (() => {
   let currentId = 0
 
@@ -151,7 +158,7 @@ export function createProxy<T extends object>({
       const method = property as keyof T
       const original = target[method]
 
-      if (typeof original !== 'function') {
+      if (typeof original !== 'function' || isTestingLibrary()) {
         return original
       }
 
