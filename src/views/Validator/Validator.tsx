@@ -50,15 +50,6 @@ function Content({ scriptPath }: ValidatorProps) {
     )
   }, [navigate])
 
-  async function handleDeleteScript() {
-    if (!file) {
-      return
-    }
-
-    await window.studio.ui.deleteFile(file)
-    navigate(getRoutePath('home'))
-  }
-
   async function handleDebugScript() {
     if (!scriptPath) {
       return
@@ -105,9 +96,9 @@ function Content({ scriptPath }: ValidatorProps) {
       subTitle={<FileNameHeader file={file} canRename={!data?.isExternal} />}
       actions={
         <ValidatorControls
+          file={file}
           isRunning={isRunning}
           canDelete={data !== undefined && !data.isExternal}
-          onDeleteScript={handleDeleteScript}
           onRunScript={handleDebugScript}
           onRunInCloud={handleRunInCloud}
           onSelectScript={handleSelectExternalScript}

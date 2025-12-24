@@ -1,14 +1,17 @@
 import { Button, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 import { EllipsisVerticalIcon } from 'lucide-react'
 
+import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
+import { StudioFile } from '@/types'
 
 interface ValidatorControlsProps {
+  file: StudioFile
   isRunning: boolean
   canDelete: boolean
-  onDeleteScript: () => void
   onRunScript: () => void
   onRunInCloud: () => void
   onSelectScript: () => void
@@ -16,15 +19,20 @@ interface ValidatorControlsProps {
 }
 
 export function ValidatorControls({
+  file,
   isRunning,
   canDelete,
-  onDeleteScript,
   onRunScript,
   onRunInCloud,
   onSelectScript,
   onStopScript,
 }: ValidatorControlsProps) {
   const proxyStatus = useProxyStatus()
+
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: true,
+  })
 
   return (
     <>
@@ -71,9 +79,18 @@ export function ValidatorControls({
             </DropdownMenu.Item>
           </Tooltip>
           {canDelete && (
-            <DropdownMenu.Item color="red" onClick={onDeleteScript}>
-              Delete
-            </DropdownMenu.Item>
+            <DeleteFileDialog
+              file={file}
+              onConfirm={handleDelete}
+              trigger={
+                <DropdownMenu.Item
+                  color="red"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  Delete
+                </DropdownMenu.Item>
+              }
+            />
           )}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
