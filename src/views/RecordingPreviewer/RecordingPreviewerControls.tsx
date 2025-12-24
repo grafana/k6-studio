@@ -40,12 +40,20 @@ export function RecordingPreviewControls({
 
   const handleCreateGenerator = () => createTestGenerator(fileName)
 
-  const navigateRecorder = () => navigate(getRoutePath('recorder'))
-
   const handleDelete = useDeleteFile({
     file,
-    navigateHomeOnDelete: true,
+    navigateHomeOnDelete: false,
   })
+
+  const handleDiscardConfirm = async () => {
+    await handleDelete()
+    navigate(getRoutePath('recorder'))
+  }
+
+  const handleDeleteRecordingConfirm = async () => {
+    await handleDelete()
+    navigate(getRoutePath('home'))
+  }
 
   const handleExportBrowserScript = (fileName: string) => {
     const test = convertToTest({
@@ -78,7 +86,7 @@ export function RecordingPreviewControls({
           file={file}
           actionLabel="Discard"
           description="Discard this recording? This cannot be undone."
-          onConfirm={navigateRecorder}
+          onConfirm={handleDiscardConfirm}
           trigger={
             <Button variant="outline" color="red">
               Discard
@@ -119,7 +127,7 @@ export function RecordingPreviewControls({
         <DropdownMenu.Content>
           <DeleteFileDialog
             file={file}
-            onConfirm={handleDelete}
+            onConfirm={handleDeleteRecordingConfirm}
             trigger={
               <DropdownMenu.Item
                 color="red"

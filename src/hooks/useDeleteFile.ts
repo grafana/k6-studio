@@ -28,7 +28,6 @@ export function useDeleteFile({
         navigate(getRoutePath('home'))
       }
     } catch (error) {
-      console.error('Failed to delete file', error)
       showToast({
         title: 'Failed to delete file',
         description: file.displayName,

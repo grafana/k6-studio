@@ -51,10 +51,6 @@ function Content({ scriptPath }: ValidatorProps) {
     )
   }, [navigate])
 
-  const handleDeletedScript = () => {
-    navigate(getRoutePath('home'))
-  }
-
   async function handleDebugScript() {
     if (!scriptPath) {
       return
@@ -104,7 +100,6 @@ function Content({ scriptPath }: ValidatorProps) {
           file={file}
           isRunning={isRunning}
           canDelete={data !== undefined && !data.isExternal}
-          onAfterDelete={handleDeletedScript}
           onRunScript={handleDebugScript}
           onRunInCloud={handleRunInCloud}
           onSelectScript={handleSelectExternalScript}

@@ -63,15 +63,6 @@ describe('useDeleteFile', () => {
   })
 
   it('should show error toast if deletion fails', async () => {
-    // So there is a try catch from my useDeleteFile hook
-    // and the expected error is printed via console.error inside the hook. So I am testing this bit
-    // Vitest prints it to stderr even if the test passes,
-    // because the hook calls console.error during the simulated failure.
-    // Suppressing this with spyOn
-    const consoleErrorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {})
-
     const error = new Error('delete failed')
     window.studio.ui.deleteFile = vi.fn().mockRejectedValue(error)
 
@@ -88,7 +79,5 @@ describe('useDeleteFile', () => {
       description: 'test-file',
       status: 'error',
     })
-
-    consoleErrorSpy.mockRestore()
   })
 })

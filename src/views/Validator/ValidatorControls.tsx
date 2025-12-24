@@ -16,7 +16,6 @@ interface ValidatorControlsProps {
   onRunInCloud: () => void
   onSelectScript: () => void
   onStopScript: () => void
-  onAfterDelete: () => void
 }
 
 export function ValidatorControls({
@@ -27,19 +26,13 @@ export function ValidatorControls({
   onRunInCloud,
   onSelectScript,
   onStopScript,
-  onAfterDelete,
 }: ValidatorControlsProps) {
   const proxyStatus = useProxyStatus()
 
   const handleDelete = useDeleteFile({
     file,
-    navigateHomeOnDelete: false,
+    navigateHomeOnDelete: true,
   })
-
-  const handleConfirmDelete = async () => {
-    await handleDelete()
-    onAfterDelete()
-  }
 
   return (
     <>
@@ -84,18 +77,14 @@ export function ValidatorControls({
           {canDelete && (
             <DeleteFileDialog
               file={file}
-              onConfirm={handleConfirmDelete}
+              onConfirm={handleDelete}
               trigger={
-                <div
-                  style={{
-                    color: 'red',
-                    cursor: 'pointer',
-                    padding: '4px 6px',
-                  }}
+                <DropdownMenu.Item
+                  color="red"
                   onClick={(e) => e.preventDefault()}
                 >
                   Delete
-                </div>
+                </DropdownMenu.Item>
               }
             />
           )}
