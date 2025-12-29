@@ -43,7 +43,7 @@ const replaceBeginEnd = (
   selector: BeginEndSelector,
   request: Request,
   variableName: string
-) => {
+): Request | undefined => {
   switch (selector.from) {
     case 'body':
       return replaceBeginEndBody(selector, request, variableName)
@@ -60,7 +60,7 @@ const replaceRegex = (
   selector: RegexSelector,
   request: Request,
   variableName: string
-) => {
+): Request | undefined => {
   switch (selector.from) {
     case 'body':
       return replaceRegexBody(selector, request, variableName)
@@ -133,7 +133,7 @@ const replaceBeginEndBody = (
   selector: BeginEndSelector,
   request: Request,
   variableName: string
-) => {
+): Request | undefined => {
   const valueToReplace = matchBeginEnd(
     request.content ?? '',
     selector.begin,
@@ -154,7 +154,7 @@ const replaceBeginEndHeaders = (
   selector: BeginEndSelector,
   request: Request,
   variableName: string
-) => {
+): Request | undefined => {
   for (const [key, value] of request.headers) {
     const valueToReplace = matchBeginEnd(value, selector.begin, selector.end)
     if (valueToReplace) {
@@ -164,9 +164,11 @@ const replaceBeginEndHeaders = (
         selector.end,
         variableName
       )
-      const headers = request.headers.map(([k, v]) =>
+
+      const headers: Header[] = request.headers.map(([k, v]) =>
         k === key && v === value ? [k, replacedValue] : [k, v]
-      ) as Header[]
+      )
+
       return { ...request, headers }
     }
   }
@@ -178,7 +180,7 @@ const replaceBeginEndUrl = (
   selector: BeginEndSelector,
   request: Request,
   variableName: string
-) => {
+): Request | undefined => {
   const valueToReplace = matchBeginEnd(
     request.url,
     selector.begin,
@@ -211,7 +213,7 @@ const replaceRegexBody = (
   selector: RegexSelector,
   request: Request,
   variableName: string
-) => {
+): Request | undefined => {
   const valueToReplace = matchRegex(request.content ?? '', selector.regex)
   if (!valueToReplace) return
 
@@ -227,7 +229,7 @@ const replaceRegexHeaders = (
   selector: RegexSelector,
   request: Request,
   variableName: string
-) => {
+): Request | undefined => {
   for (const [key, value] of request.headers) {
     const valueToReplace = matchRegex(value, selector.regex)
     if (valueToReplace) {
@@ -236,9 +238,11 @@ const replaceRegexHeaders = (
         selector.regex,
         variableName
       )
-      const headers = request.headers.map(([k, v]) =>
+
+      const headers: Header[] = request.headers.map(([k, v]) =>
         k === key && v === value ? [k, replacedValue] : [k, v]
-      ) as Header[]
+      )
+
       return { ...request, headers }
     }
   }
@@ -250,7 +254,7 @@ const replaceRegexUrl = (
   selector: RegexSelector,
   request: Request,
   variableName: string
-) => {
+): Request | undefined => {
   const valueToReplace = matchRegex(request.url, selector.regex)
   if (!valueToReplace) return
 
@@ -264,7 +268,7 @@ const replaceJsonBody = (
   selector: JsonSelector,
   request: Request,
   value: string
-) => {
+): Request | undefined => {
   if (!isJsonReqResp(request) || !request.content) {
     return
   }
