@@ -35,11 +35,11 @@ export function replaceCorrelatedValues({
   })
 }
 
-const replaceAllTextMatches = (
+function replaceAllTextMatches(
   request: Request,
   oldValue: string,
   newValue: string
-) => {
+) {
   const replaceAll: (
     request: Request,
     oldValue: string,
