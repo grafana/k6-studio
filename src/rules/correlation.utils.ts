@@ -1,12 +1,14 @@
-import { Cookie, Header, Request } from '@/types'
+import { flow } from 'lodash-es'
+
+import { Request } from '@/types'
 import { CorrelationRule } from '@/types/rules'
 
 import {
-  replaceContent,
-  replaceCookies,
-  replaceHeaders,
+  replaceAllBody,
+  replaceAllCookies,
+  replaceAllHeader,
+  replaceAllUrl,
   replaceRequestValues,
-  replaceUrl,
 } from './shared'
 
 export function replaceCorrelatedValues({
@@ -33,33 +35,21 @@ export function replaceCorrelatedValues({
   })
 }
 
-function replaceAllTextMatches(
+const replaceAllTextMatches = (
   request: Request,
-  extractedValue: string,
-  variableName: string
-): Request {
-  const content = replaceContent(request.content, extractedValue, variableName)
-  const url = replaceUrl(request.url, extractedValue, variableName)
-  const path = replaceUrl(request.path, extractedValue, variableName)
-  const host = replaceUrl(request.host, extractedValue, variableName)
-  const headers: Header[] = replaceHeaders(
-    request.headers,
-    extractedValue,
-    variableName
-  )
-  const cookies: Cookie[] = replaceCookies(
-    request.cookies,
-    extractedValue,
-    variableName
-  )
+  oldValue: string,
+  newValue: string
+) => {
+  const replaceAll: (
+    request: Request,
+    oldValue: string,
+    newValue: string
+  ) => Request = flow([
+    (request: Request) => replaceAllBody(request, oldValue, newValue),
+    (request: Request) => replaceAllUrl(request, oldValue, newValue),
+    (request: Request) => replaceAllCookies(request, oldValue, newValue),
+    (request: Request) => replaceAllHeader(request, oldValue, newValue),
+  ])
 
-  return {
-    ...request,
-    content,
-    url,
-    path,
-    host,
-    headers,
-    cookies,
-  }
+  return replaceAll(request, oldValue, newValue)
 }

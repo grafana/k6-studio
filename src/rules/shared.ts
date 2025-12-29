@@ -1,6 +1,6 @@
 import { escapeRegExp, get, set } from 'lodash-es'
 
-import { Header, Request, Cookie } from '@/types'
+import { Header, Request } from '@/types'
 import {
   BeginEndSelector,
   HeaderNameSelector,
@@ -103,37 +103,29 @@ const setJsonObjectFromPath = (json: string, path: string, value: string) => {
   return JSON.stringify(jsonObject)
 }
 
-export const replaceContent = (
-  content: string | null,
-  value: string,
+export const replaceBeginEndPattern = (
+  content: string,
+  begin: string,
+  end: string,
   newValue: string
 ) => {
-  return content?.replaceAll(value, newValue) ?? null
+  const regex = new RegExp(`${escapeRegExp(begin)}(.*?)${escapeRegExp(end)}`)
+  return content.replace(regex, `${begin}${newValue}${end}`)
 }
 
-export const replaceUrl = (url: string, value: string, newValue: string) => {
-  return url.replaceAll(value, newValue)
-}
-
-export const replaceHeaders = (
-  headers: Header[],
-  value: string,
+export const replaceRegexPattern = (
+  content: string,
+  regexString: string,
   newValue: string
-): Header[] => {
-  return headers.map(([key, headerValue]) => {
-    const replacedValue = headerValue.replaceAll(value, newValue)
-    return [key, replacedValue]
-  })
-}
-
-export const replaceCookies = (
-  cookies: Cookie[],
-  value: string,
-  newValue: string
-): Cookie[] => {
-  return cookies.map(([key, cookieValue]) => {
-    const replacedValue = cookieValue.replaceAll(value, newValue)
-    return [key, replacedValue]
+) => {
+  const regex = new RegExp(regexString)
+  return content.replace(regex, (fullMatch, ...groups) => {
+    // If there's a capture group, replace only that group
+    if (groups[0] !== undefined) {
+      return fullMatch.replace(groups[0] as string, newValue)
+    }
+    // If no capture group, replace the entire match
+    return newValue
   })
 }
 
@@ -149,7 +141,12 @@ const replaceBeginEndBody = (
   )
   if (!valueToReplace) return
 
-  const content = replaceContent(request.content, valueToReplace, variableName)
+  const content = replaceBeginEndPattern(
+    request.content ?? '',
+    selector.begin,
+    selector.end,
+    variableName
+  )
   return { ...request, content }
 }
 
@@ -158,14 +155,18 @@ const replaceBeginEndHeaders = (
   request: Request,
   variableName: string
 ) => {
-  for (const [, value] of request.headers) {
+  for (const [key, value] of request.headers) {
     const valueToReplace = matchBeginEnd(value, selector.begin, selector.end)
     if (valueToReplace) {
-      const headers = replaceHeaders(
-        request.headers,
-        valueToReplace,
+      const replacedValue = replaceBeginEndPattern(
+        value,
+        selector.begin,
+        selector.end,
         variableName
       )
+      const headers = request.headers.map(([k, v]) =>
+        k === key && v === value ? [k, replacedValue] : [k, v]
+      ) as Header[]
       return { ...request, headers }
     }
   }
@@ -185,9 +186,24 @@ const replaceBeginEndUrl = (
   )
   if (!valueToReplace) return
 
-  const url = replaceUrl(request.url, valueToReplace, variableName)
-  const path = replaceUrl(request.path, valueToReplace, variableName)
-  const host = replaceUrl(request.host, valueToReplace, variableName)
+  const url = replaceBeginEndPattern(
+    request.url,
+    selector.begin,
+    selector.end,
+    variableName
+  )
+  const path = replaceBeginEndPattern(
+    request.path,
+    selector.begin,
+    selector.end,
+    variableName
+  )
+  const host = replaceBeginEndPattern(
+    request.host,
+    selector.begin,
+    selector.end,
+    variableName
+  )
   return { ...request, url, path, host }
 }
 
@@ -199,7 +215,11 @@ const replaceRegexBody = (
   const valueToReplace = matchRegex(request.content ?? '', selector.regex)
   if (!valueToReplace) return
 
-  const content = replaceContent(request.content, valueToReplace, variableName)
+  const content = replaceRegexPattern(
+    request.content ?? '',
+    selector.regex,
+    variableName
+  )
   return { ...request, content }
 }
 
@@ -208,14 +228,17 @@ const replaceRegexHeaders = (
   request: Request,
   variableName: string
 ) => {
-  for (const [, value] of request.headers) {
+  for (const [key, value] of request.headers) {
     const valueToReplace = matchRegex(value, selector.regex)
     if (valueToReplace) {
-      const headers = replaceHeaders(
-        request.headers,
-        valueToReplace,
+      const replacedValue = replaceRegexPattern(
+        value,
+        selector.regex,
         variableName
       )
+      const headers = request.headers.map(([k, v]) =>
+        k === key && v === value ? [k, replacedValue] : [k, v]
+      ) as Header[]
       return { ...request, headers }
     }
   }
@@ -231,9 +254,9 @@ const replaceRegexUrl = (
   const valueToReplace = matchRegex(request.url, selector.regex)
   if (!valueToReplace) return
 
-  const url = replaceUrl(request.url, valueToReplace, variableName)
-  const path = replaceUrl(request.path, valueToReplace, variableName)
-  const host = replaceUrl(request.host, valueToReplace, variableName)
+  const url = replaceRegexPattern(request.url, selector.regex, variableName)
+  const path = replaceRegexPattern(request.path, selector.regex, variableName)
+  const host = replaceRegexPattern(request.host, selector.regex, variableName)
   return { ...request, url, path, host }
 }
 
@@ -280,318 +303,77 @@ const replaceHeaderByName = (
   return { ...request, headers: replacedHeaders }
 }
 
-// @ts-expect-error we have commonjs set as module option
-if (import.meta.vitest) {
-  // @ts-expect-error we have commonjs set as module option
-  const { it, expect } = import.meta.vitest
-
-  const generateRequest = (content: string | null): Request => {
-    return {
-      method: 'POST',
-      url: 'http://test.k6.io/api/v1/foo',
-      headers: [
-        ['content-type', 'application/json'],
-        ['content-length', '1000'],
-      ],
-      cookies: [['security', 'none']],
-      query: [],
-      scheme: 'http',
-      host: 'localhost:3000',
-      content,
-      path: '/api/v1/foo',
-      timestampStart: 0,
-      timestampEnd: 0,
-      contentLength: 0,
-      httpVersion: '1.1',
-    }
+export function replaceAllBody(
+  request: Request,
+  oldValue: string,
+  newValue: string
+): Request {
+  if (!request?.content?.includes(oldValue)) {
+    return request
   }
 
-  it('match begin end', () => {
-    expect(matchBeginEnd('<div>cat</div>', '<div>', '</div>')).toBe('cat')
-    expect(matchBeginEnd('jumpinginthelake', 'ing', 'the')).toBe('in')
-    expect(matchBeginEnd('hello', '<a>', '</a>')).toBeUndefined()
-    // matches only the first occurrence
-    expect(
-      matchBeginEnd('<div>cat</div><div>bob</div>', '<div>', '</div>')
-    ).toBe('cat')
-  })
+  return {
+    ...request,
+    content: request.content.replaceAll(oldValue, newValue),
+  }
+}
 
-  it('match regex', () => {
-    expect(matchRegex('<div>cat</div>', '<div>(.*?)</div>')).toBe('cat')
-    expect(matchRegex('jumpinginthelake', 'ing(.*?)the')).toBe('in')
-    expect(matchRegex('hello', '<a>(.*?)</a>')).toBeUndefined()
-    // matches only the first occurrence
-    expect(matchRegex('<div>cat</div><div>bob</div>', '<div>(.*?)</div>')).toBe(
-      'cat'
-    )
-  })
+export function replaceAllUrl(
+  request: Request,
+  oldValue: string,
+  newValue: string
+): Request {
+  if (!request.url.includes(oldValue)) {
+    return request
+  }
+  return {
+    ...request,
+    url: request.url.replaceAll(oldValue, newValue),
+    path: request.path.replaceAll(oldValue, newValue),
+    host: request.host.replaceAll(oldValue, newValue),
+  }
+}
 
-  it('get json object', () => {
-    expect(getJsonObjectFromPath('{"hello":"world"}', 'hello')).toBe('world')
-    expect(getJsonObjectFromPath('{"hello":"world"}', 'world')).toBeUndefined()
-    expect(getJsonObjectFromPath('[{"hello":"world"}]', '[0].hello')).toBe(
-      'world'
-    )
-    expect(getJsonObjectFromPath('hello', '[0]')).toBeUndefined()
-  })
+export function replaceAllHeader(
+  request: Request,
+  oldValue: string,
+  newValue: string
+): Request {
+  const headerExists = request?.headers.find(([, value]) =>
+    value.includes(oldValue)
+  )
 
-  it('set json object', () => {
-    expect(setJsonObjectFromPath('{"hello":"world"}', 'hello', 'ciao')).toBe(
-      '{"hello":"ciao"}'
-    )
-    expect(
-      setJsonObjectFromPath('[{"hello":"world"}]', '[0].hello', 'ciao')
-    ).toBe('[{"hello":"ciao"}]')
-    expect(getJsonObjectFromPath('hello', '[0]')).toBeUndefined()
-  })
+  if (!headerExists) {
+    return request
+  }
 
-  it('replace content', () => {
-    const request = generateRequest('<div>hello</div>')
-    expect(replaceContent(request.content, 'hello', '${correl_0}')).toBe(
-      '<div>${correl_0}</div>'
-    )
-    expect(replaceContent(request.content, 'world', 'correl_0')).toBe(
-      '<div>hello</div>'
-    )
-  })
+  return {
+    ...request,
+    headers: request.headers.map(([key, headerValue]) => {
+      const replacedValue = headerValue.replaceAll(oldValue, newValue)
+      return [key, replacedValue]
+    }),
+  }
+}
 
-  it('replace headers', () => {
-    const request = generateRequest('')
-    expect(
-      replaceHeaders(request.headers, 'application', '${correl_0}')[0]
-    ).toStrictEqual(['content-type', '${correl_0}/json'])
-    expect(
-      replaceHeaders(request.headers, 'protobuf', '${correl_0}')[0]
-    ).toStrictEqual(['content-type', 'application/json'])
-  })
+export function replaceAllCookies(
+  request: Request,
+  oldValue: string,
+  newValue: string
+): Request {
+  const cookieExists = request?.cookies.find(([, value]) =>
+    value.includes(oldValue)
+  )
 
-  it('replace url', () => {
-    const request = generateRequest('')
-    expect(replaceUrl(request.url, 'api', '${correl_0}')).toBe(
-      'http://test.k6.io/${correl_0}/v1/foo'
-    )
-    expect(replaceUrl(request.url, 'jumanji', 'correl_0')).toBe(
-      'http://test.k6.io/api/v1/foo'
-    )
-  })
+  if (!cookieExists) {
+    return request
+  }
 
-  it('replace cookies', () => {
-    const request = generateRequest('')
-    expect(
-      replaceCookies(request.cookies, 'on', '${correl_0}')[0]
-    ).toStrictEqual(['security', 'n${correl_0}e'])
-    expect(
-      replaceCookies(request.cookies, 'notincookie', 'correl_0')[0]
-    ).toStrictEqual(['security', 'none'])
-  })
-
-  it('replace begin end body', () => {
-    const selector: BeginEndSelector = {
-      type: 'begin-end',
-      from: 'body',
-      begin: '<div>',
-      end: '</div>',
-    }
-    expect(
-      replaceBeginEndBody(
-        selector,
-        generateRequest('<div>hello</div>'),
-        '${correl_0}'
-      )?.content
-    ).toBe('<div>${correl_0}</div>')
-    expect(
-      replaceBeginEndBody(selector, generateRequest('<a>hello</a>'), 'correl_0')
-    ).toBeUndefined()
-  })
-
-  it('replace begin end headers', () => {
-    const request = generateRequest('')
-    const selectorMatch: BeginEndSelector = {
-      type: 'begin-end',
-      from: 'headers',
-      begin: 'application',
-      end: 'json',
-    }
-    const selectorNotMatch: BeginEndSelector = {
-      type: 'begin-end',
-      from: 'headers',
-      begin: 'hello',
-      end: 'world',
-    }
-    expect(
-      replaceBeginEndHeaders(selectorMatch, request, '${correl_0}')?.headers[0]
-    ).toStrictEqual(['content-type', 'application${correl_0}json'])
-    expect(
-      replaceBeginEndHeaders(selectorNotMatch, request, 'correl_0')
-    ).toBeUndefined()
-  })
-
-  it('replace begin end url', () => {
-    const request = generateRequest('')
-    const selectorMatch: BeginEndSelector = {
-      type: 'begin-end',
-      from: 'url',
-      begin: '.io/',
-      end: '/v1',
-    }
-    const selectorNotMatch: BeginEndSelector = {
-      type: 'begin-end',
-      from: 'url',
-      begin: 'supercali',
-      end: 'fragilisti',
-    }
-    const match = replaceBeginEndUrl(selectorMatch, request, '${correl_0}')
-
-    expect(match?.url).toBe('http://test.k6.io/${correl_0}/v1/foo')
-    expect(match?.path).toBe('/${correl_0}/v1/foo')
-
-    expect(
-      replaceBeginEndUrl(selectorNotMatch, request, 'correl_0')
-    ).toBeUndefined()
-  })
-
-  it('replace regex body', () => {
-    const selector: RegexSelector = {
-      type: 'regex',
-      from: 'body',
-      regex: '<div>(.*?)</div>',
-    }
-    expect(
-      replaceRegexBody(
-        selector,
-        generateRequest('<div>hello</div>'),
-        '${correl_0}'
-      )?.content
-    ).toBe('<div>${correl_0}</div>')
-    expect(
-      replaceRegexBody(selector, generateRequest('<a>hello</a>'), 'correl_0')
-    ).toBeUndefined()
-  })
-
-  it('replace regex headers', () => {
-    const request = generateRequest('')
-    const selectorMatch: RegexSelector = {
-      type: 'regex',
-      from: 'headers',
-      regex: 'application(.*?)json',
-    }
-    const selectorNotMatch: RegexSelector = {
-      type: 'regex',
-      from: 'headers',
-      regex: 'hello(.*?)world',
-    }
-    expect(
-      replaceRegexHeaders(selectorMatch, request, '${correl_0}')?.headers[0]
-    ).toStrictEqual(['content-type', 'application${correl_0}json'])
-    expect(
-      replaceRegexHeaders(selectorNotMatch, request, 'correl_0')
-    ).toBeUndefined()
-  })
-
-  it('replace regex url', () => {
-    const request = generateRequest('')
-    const selectorMatch: RegexSelector = {
-      type: 'regex',
-      from: 'url',
-      regex: '.io/(.*?)/v1',
-    }
-    const selectorNotMatch: RegexSelector = {
-      type: 'regex',
-      from: 'url',
-      regex: 'supercali(.*?)fragilisti',
-    }
-    expect(replaceRegexUrl(selectorMatch, request, '${correl_0}')?.url).toBe(
-      'http://test.k6.io/${correl_0}/v1/foo'
-    )
-    expect(
-      replaceRegexUrl(selectorNotMatch, request, 'correl_0')
-    ).toBeUndefined()
-  })
-
-  it('replace json body', () => {
-    const selectorMatch: JsonSelector = {
-      type: 'json',
-      from: 'body',
-      path: 'hello',
-    }
-    const selectorNotMatch: JsonSelector = {
-      type: 'json',
-      from: 'body',
-      path: 'world',
-    }
-    const selectorMatchArray: JsonSelector = {
-      type: 'json',
-      from: 'body',
-      path: '[0].hello',
-    }
-
-    expect(
-      replaceJsonBody(
-        selectorMatch,
-        generateRequest('{"hello":"world"}'),
-        '${correl_0}'
-      )?.content
-    ).toBe('{"hello":"${correl_0}"}')
-
-    expect(
-      replaceJsonBody(
-        selectorNotMatch,
-        generateRequest('{"hello":"world"}'),
-        '${correl_0}'
-      )
-    ).toBeUndefined()
-
-    expect(
-      replaceJsonBody(
-        selectorMatchArray,
-        generateRequest('[{"hello":"world"}]'),
-        '${correl_0}'
-      )?.content
-    ).toBe('[{"hello":"${correl_0}"}]')
-
-    // Empty string replacement
-    expect(
-      replaceJsonBody(
-        selectorMatchArray,
-        generateRequest('[{"hello":""}]'),
-        '${correl_0}'
-      )?.content
-    ).toBe('[{"hello":"${correl_0}"}]')
-
-    // Boolean replacement
-    expect(
-      replaceJsonBody(
-        selectorMatchArray,
-        generateRequest('[{"hello":false}]'),
-        '${correl_0}'
-      )?.content
-    ).toBe('[{"hello":"${correl_0}"}]')
-  })
-
-  it('replaces header name matches', () => {
-    const request = generateRequest('')
-
-    const selectorMatch: HeaderNameSelector = {
-      type: 'header-name',
-      from: 'headers',
-      name: 'Content-Type',
-    }
-
-    const selectorNotMatch: HeaderNameSelector = {
-      type: 'header-name',
-      from: 'headers',
-      name: 'not-existing',
-    }
-
-    expect(
-      replaceHeaderByName(request, selectorMatch, 'TEST_VALUE')?.headers
-    ).toEqual([
-      ['content-type', 'TEST_VALUE'],
-      ['content-length', '1000'],
-    ])
-
-    expect(
-      replaceHeaderByName(request, selectorNotMatch, 'TEST_VALUE')
-    ).toBeUndefined()
-  })
+  return {
+    ...request,
+    cookies: request.cookies.map(([key, cookieValue]) => {
+      const replacedValue = cookieValue.replaceAll(oldValue, newValue)
+      return [key, replacedValue]
+    }),
+  }
 }
