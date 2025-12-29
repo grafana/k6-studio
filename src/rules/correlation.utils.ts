@@ -21,7 +21,7 @@ export function replaceCorrelatedValues({
   request: Request
 }) {
   const varName = `\${correlation_vars['correlation_${uniqueId}']}`
-  // Default behaviour replaces all occurences of the string
+  // Default behavior replaces all occurrences of the string
   if (!rule.replacer?.selector) {
     return replaceAllTextMatches(request, extractedValue, varName)
   }

@@ -97,11 +97,7 @@ export const getJsonObjectFromPath = (json: string, path: string) => {
   return get(safeJsonParse(json), path)
 }
 
-export const setJsonObjectFromPath = (
-  json: string,
-  path: string,
-  value: string
-) => {
+const setJsonObjectFromPath = (json: string, path: string, value: string) => {
   const jsonObject = safeJsonParse(json)
   set(jsonObject ?? {}, path, value)
   return JSON.stringify(jsonObject)
@@ -141,7 +137,7 @@ export const replaceCookies = (
   })
 }
 
-export const replaceBeginEndBody = (
+const replaceBeginEndBody = (
   selector: BeginEndSelector,
   request: Request,
   variableName: string
@@ -157,7 +153,7 @@ export const replaceBeginEndBody = (
   return { ...request, content }
 }
 
-export const replaceBeginEndHeaders = (
+const replaceBeginEndHeaders = (
   selector: BeginEndSelector,
   request: Request,
   variableName: string
@@ -177,7 +173,7 @@ export const replaceBeginEndHeaders = (
   return
 }
 
-export const replaceBeginEndUrl = (
+const replaceBeginEndUrl = (
   selector: BeginEndSelector,
   request: Request,
   variableName: string
@@ -195,7 +191,7 @@ export const replaceBeginEndUrl = (
   return { ...request, url, path, host }
 }
 
-export const replaceRegexBody = (
+const replaceRegexBody = (
   selector: RegexSelector,
   request: Request,
   variableName: string
@@ -207,7 +203,7 @@ export const replaceRegexBody = (
   return { ...request, content }
 }
 
-export const replaceRegexHeaders = (
+const replaceRegexHeaders = (
   selector: RegexSelector,
   request: Request,
   variableName: string
@@ -227,7 +223,7 @@ export const replaceRegexHeaders = (
   return
 }
 
-export const replaceRegexUrl = (
+const replaceRegexUrl = (
   selector: RegexSelector,
   request: Request,
   variableName: string
@@ -241,7 +237,7 @@ export const replaceRegexUrl = (
   return { ...request, url, path, host }
 }
 
-export const replaceJsonBody = (
+const replaceJsonBody = (
   selector: JsonSelector,
   request: Request,
   value: string
