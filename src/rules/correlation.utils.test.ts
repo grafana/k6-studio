@@ -52,14 +52,9 @@ describe('replaceCorrelatedValues', () => {
     expect(result.url).toBe(
       "http://test.k6.io/api/v1/hello${correlation_vars['correlation_0']}"
     )
-    expect(result.headers[0]![1]).toBe(
-      'world'.replace('world', "${correlation_vars['correlation_0']}")
-    )
+    expect(result.headers[0]![1]).toBe("${correlation_vars['correlation_0']}")
     expect(result.cookies[0]![1]).toBe(
-      'helloworld'.replace(
-        'helloworld',
-        "hello${correlation_vars['correlation_0']}"
-      )
+      "hello${correlation_vars['correlation_0']}"
     )
   })
 })

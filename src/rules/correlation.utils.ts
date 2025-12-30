@@ -40,16 +40,12 @@ function replaceAllTextMatches(
   oldValue: string,
   newValue: string
 ) {
-  const replaceAll: (
-    request: Request,
-    oldValue: string,
-    newValue: string
-  ) => Request = flow([
+  const replaceAll: (request: Request) => Request = flow([
     (request: Request) => replaceAllBody(request, oldValue, newValue),
     (request: Request) => replaceAllUrl(request, oldValue, newValue),
     (request: Request) => replaceAllCookies(request, oldValue, newValue),
     (request: Request) => replaceAllHeader(request, oldValue, newValue),
   ])
 
-  return replaceAll(request, oldValue, newValue)
+  return replaceAll(request)
 }

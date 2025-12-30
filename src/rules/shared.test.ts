@@ -87,6 +87,22 @@ describe('replaceRequestValues', () => {
       })
       expect(result).toBeUndefined()
     })
+
+    it('should replace only the content between begin-end when captured value appears multiple times', () => {
+      const selector: Selector = {
+        type: 'begin-end',
+        from: 'body',
+        begin: 'admin_',
+        end: '_suffix',
+      }
+      const request = generateRequest('admin_admin_suffix')
+      const result = replaceRequestValues({
+        request,
+        selector,
+        value: '${correl_0}',
+      })?.content
+      expect(result).toBe('admin_${correl_0}_suffix')
+    })
   })
 
   describe('Regex selector', () => {
@@ -160,6 +176,98 @@ describe('replaceRequestValues', () => {
         value: '${correl_0}',
       })
       expect(result).toBeUndefined()
+    })
+
+    it('should replace only the first captured group when captured value appears multiple times', () => {
+      const selector: Selector = {
+        type: 'regex',
+        from: 'body',
+        regex: 'admin_(admin)_suffix',
+      }
+      const request = generateRequest('admin_admin_suffix')
+      const result = replaceRequestValues({
+        request,
+        selector,
+        value: '${correl_0}',
+      })?.content
+      expect(result).toBe('admin_${correl_0}_suffix')
+    })
+
+    it('should replace only the first capture group when there are multiple capture groups', () => {
+      const selector: Selector = {
+        type: 'regex',
+        from: 'body',
+        regex: '(admin)_(user)_suffix',
+      }
+      const request = generateRequest('admin_user_suffix')
+      const result = replaceRequestValues({
+        request,
+        selector,
+        value: '${correl_0}',
+      })?.content
+      // Only the first capture group should be replaced
+      expect(result).toBe('${correl_0}_user_suffix')
+    })
+
+    it('should replace entire match when regex has no capture groups', () => {
+      const selector: Selector = {
+        type: 'regex',
+        from: 'body',
+        regex: 'admin_user',
+      }
+      const request = generateRequest('prefix_admin_user_suffix')
+      const result = replaceRequestValues({
+        request,
+        selector,
+        value: '${correl_0}',
+      })?.content
+      expect(result).toBe('prefix_${correl_0}_suffix')
+    })
+
+    it('should handle empty capture group', () => {
+      const selector: Selector = {
+        type: 'regex',
+        from: 'body',
+        regex: 'admin_()_suffix',
+      }
+      const request = generateRequest('admin__suffix')
+      const result = replaceRequestValues({
+        request,
+        selector,
+        value: '${correl_0}',
+      })?.content
+      expect(result).toBe('admin_${correl_0}_suffix')
+    })
+
+    it('should handle unicode characters in captured group', () => {
+      const selector: Selector = {
+        type: 'regex',
+        from: 'body',
+        regex: 'user_(.*?)_end',
+      }
+      const request = generateRequest('user_José_end')
+      const result = replaceRequestValues({
+        request,
+        selector,
+        value: '${correl_0}',
+      })?.content
+      expect(result).toBe('user_${correl_0}_end')
+    })
+
+    it('should only replace first occurrence when pattern appears multiple times', () => {
+      const selector: Selector = {
+        type: 'regex',
+        from: 'body',
+        regex: 'test_(.*?)_end',
+      }
+      const request = generateRequest('test_first_end and test_second_end')
+      const result = replaceRequestValues({
+        request,
+        selector,
+        value: '${correl_0}',
+      })?.content
+      // Only first match should be replaced
+      expect(result).toBe('test_${correl_0}_end and test_second_end')
     })
   })
 

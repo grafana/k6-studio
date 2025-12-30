@@ -87,7 +87,8 @@ export const matchRegex = (value: string, regexString: string) => {
   const regex = new RegExp(regexString)
   const match = value.match(regex)
   if (match) {
-    return match[1]
+    // Return the capture group if it exists (even if empty), otherwise return the full match
+    return match[1] !== undefined ? match[1] : match[0]
   }
 }
 
@@ -118,15 +119,29 @@ export const replaceRegexPattern = (
   regexString: string,
   newValue: string
 ) => {
-  const regex = new RegExp(regexString)
-  return content.replace(regex, (fullMatch, ...groups) => {
-    // If there's a capture group, replace only that group
-    if (groups[0] !== undefined) {
-      return fullMatch.replace(groups[0] as string, newValue)
-    }
-    // If no capture group, replace the entire match
-    return newValue
-  })
+  // Getting match indices requires the 'd' flag
+  const regex = new RegExp(regexString, 'd')
+  const match = regex.exec(content)
+
+  if (!match) {
+    return content
+  }
+
+  // If there's a capture group, replace only that group using its position
+  if (match[1] !== undefined && match.indices?.[1]) {
+    const [groupStart, groupEnd] = match.indices[1]
+    return (
+      content.substring(0, groupStart) + newValue + content.substring(groupEnd)
+    )
+  }
+
+  // If no capture group, replace the entire match
+  const matchStart = match.index
+  const matchEnd = matchStart + match[0].length
+  // const [matchStart, matchEnd] = match.indices[0]
+  return (
+    content.substring(0, matchStart) + newValue + content.substring(matchEnd)
+  )
 }
 
 const replaceBeginEndBody = (
@@ -134,12 +149,12 @@ const replaceBeginEndBody = (
   request: Request,
   variableName: string
 ): Request | undefined => {
-  const valueToReplace = matchBeginEnd(
+  const match = matchBeginEnd(
     request.content ?? '',
     selector.begin,
     selector.end
   )
-  if (!valueToReplace) return
+  if (match === undefined) return
 
   const content = replaceBeginEndPattern(
     request.content ?? '',
@@ -156,21 +171,22 @@ const replaceBeginEndHeaders = (
   variableName: string
 ): Request | undefined => {
   for (const [key, value] of request.headers) {
-    const valueToReplace = matchBeginEnd(value, selector.begin, selector.end)
-    if (valueToReplace) {
-      const replacedValue = replaceBeginEndPattern(
-        value,
-        selector.begin,
-        selector.end,
-        variableName
-      )
+    const match = matchBeginEnd(value, selector.begin, selector.end)
 
-      const headers: Header[] = request.headers.map(([k, v]) =>
-        k === key && v === value ? [k, replacedValue] : [k, v]
-      )
+    if (match === undefined) continue
 
-      return { ...request, headers }
-    }
+    const replacedValue = replaceBeginEndPattern(
+      value,
+      selector.begin,
+      selector.end,
+      variableName
+    )
+
+    const headers: Header[] = request.headers.map(([k, v]) =>
+      k === key && v === value ? [k, replacedValue] : [k, v]
+    )
+
+    return { ...request, headers }
   }
 
   return
@@ -181,12 +197,8 @@ const replaceBeginEndUrl = (
   request: Request,
   variableName: string
 ): Request | undefined => {
-  const valueToReplace = matchBeginEnd(
-    request.url,
-    selector.begin,
-    selector.end
-  )
-  if (!valueToReplace) return
+  const match = matchBeginEnd(request.url, selector.begin, selector.end)
+  if (match === undefined) return
 
   const url = replaceBeginEndPattern(
     request.url,
@@ -214,8 +226,8 @@ const replaceRegexBody = (
   request: Request,
   variableName: string
 ): Request | undefined => {
-  const valueToReplace = matchRegex(request.content ?? '', selector.regex)
-  if (!valueToReplace) return
+  const match = matchRegex(request.content ?? '', selector.regex)
+  if (match === undefined) return
 
   const content = replaceRegexPattern(
     request.content ?? '',
@@ -231,20 +243,20 @@ const replaceRegexHeaders = (
   variableName: string
 ): Request | undefined => {
   for (const [key, value] of request.headers) {
-    const valueToReplace = matchRegex(value, selector.regex)
-    if (valueToReplace) {
-      const replacedValue = replaceRegexPattern(
-        value,
-        selector.regex,
-        variableName
-      )
+    const match = matchRegex(value, selector.regex)
+    if (match === undefined) continue
 
-      const headers: Header[] = request.headers.map(([k, v]) =>
-        k === key && v === value ? [k, replacedValue] : [k, v]
-      )
+    const replacedValue = replaceRegexPattern(
+      value,
+      selector.regex,
+      variableName
+    )
 
-      return { ...request, headers }
-    }
+    const headers: Header[] = request.headers.map(([k, v]) =>
+      k === key && v === value ? [k, replacedValue] : [k, v]
+    )
+
+    return { ...request, headers }
   }
 
   return
@@ -255,8 +267,8 @@ const replaceRegexUrl = (
   request: Request,
   variableName: string
 ): Request | undefined => {
-  const valueToReplace = matchRegex(request.url, selector.regex)
-  if (!valueToReplace) return
+  const match = matchRegex(request.url, selector.regex)
+  if (match === undefined) return
 
   const url = replaceRegexPattern(request.url, selector.regex, variableName)
   const path = replaceRegexPattern(request.path, selector.regex, variableName)
@@ -277,8 +289,8 @@ const replaceJsonBody = (
   // exists before setting it
   // TODO: https://github.com/grafana/k6-studio/issues/277
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const valueToReplace = getJsonObjectFromPath(request.content, selector.path)
-  if (valueToReplace === undefined) return
+  const match = getJsonObjectFromPath(request.content, selector.path)
+  if (match === undefined) return
 
   const content = setJsonObjectFromPath(request.content, selector.path, value)
   return { ...request, content }
