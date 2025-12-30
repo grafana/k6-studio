@@ -45,7 +45,7 @@ describe('replaceCorrelatedValues', () => {
       rule,
       extractedValue: 'world',
       uniqueId: 0,
-    })!
+    })
 
     expect(result).toBeDefined()
     expect(result.content).toBe("hello ${correlation_vars['correlation_0']}")

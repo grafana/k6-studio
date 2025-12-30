@@ -3,13 +3,13 @@ import { flow } from 'lodash-es'
 import { Request } from '@/types'
 import { CorrelationRule } from '@/types/rules'
 
+import { replaceRequestValues } from './selectors'
 import {
   replaceAllBody,
   replaceAllCookies,
   replaceAllHeader,
   replaceAllUrl,
-  replaceRequestValues,
-} from './shared'
+} from './selectors/text'
 
 export function replaceCorrelatedValues({
   rule,
@@ -21,7 +21,7 @@ export function replaceCorrelatedValues({
   extractedValue: string
   uniqueId: number
   request: Request
-}) {
+}): Request {
   const varName = `\${correlation_vars['correlation_${uniqueId}']}`
   // Default behavior replaces all occurrences of the string
   if (!rule.replacer?.selector) {
@@ -39,7 +39,7 @@ function replaceAllTextMatches(
   request: Request,
   oldValue: string,
   newValue: string
-) {
+): Request {
   const replaceAll: (request: Request) => Request = flow([
     (request: Request) => replaceAllBody(request, oldValue, newValue),
     (request: Request) => replaceAllUrl(request, oldValue, newValue),

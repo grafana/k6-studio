@@ -1,4 +1,4 @@
-import { cloneDeep, escapeRegExp, isEqual } from 'lodash-es'
+import { cloneDeep, escapeRegExp } from 'lodash-es'
 
 import {
   createProxyData,
@@ -18,7 +18,9 @@ import {
 import { exhaustive } from '@/utils/typescript'
 
 import { replaceCorrelatedValues } from './correlation.utils'
-import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
+import { matchBeginEnd } from './selectors/beginEnd'
+import { getJsonObjectFromPath } from './selectors/json'
+import { matchRegex } from './selectors/regex'
 import {
   canonicalHeaderKey,
   matchFilter,
@@ -87,10 +89,7 @@ function applyRule({
     })
 
     // Keep track of modified requests to display in preview
-    if (
-      replacedRequest &&
-      !isEqual(replacedRequest, requestSnippetSchema.data.request)
-    ) {
+    if (replacedRequest !== requestSnippetSchema.data.request) {
       snippetSchemaReturnValue.data.request = replacedRequest
 
       setState({

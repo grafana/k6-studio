@@ -7,7 +7,7 @@ import {
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { exhaustive } from '@/utils/typescript'
 
-import { replaceRequestValues } from './shared'
+import { replaceRequestValues } from './selectors'
 import { matchFilter } from './utils'
 
 export function createParameterizationRuleInstance(
@@ -48,7 +48,7 @@ export function createParameterizationRuleInstance(
       })
 
       // Rule didn't match, return original request
-      if (updatedRequest === undefined) {
+      if (updatedRequest === requestSnippet.data.request) {
         return requestSnippet
       }
 
