@@ -74,6 +74,8 @@ const replaceRegex = (
 }
 
 export const matchBeginEnd = (value: string, begin: string, end: string) => {
+  if (begin === '' || end === '') return undefined
+
   // matches only the first occurrence
   const regex = new RegExp(`${escapeRegExp(begin)}(.*?)${escapeRegExp(end)}`)
   const match = value.match(regex)

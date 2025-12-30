@@ -103,6 +103,50 @@ describe('replaceRequestValues', () => {
       })?.content
       expect(result).toBe('admin_${correl_0}_suffix')
     })
+
+    it('should not replace anything if begin-end substrings are missing', () => {
+      const request = generateRequest('hello world')
+      const selector: Selector = {
+        type: 'begin-end',
+        from: 'body',
+        begin: '<span>',
+        end: '</span>',
+      }
+      const result = replaceRequestValues({
+        request,
+        selector,
+        value: '${correl_0}',
+      })
+      expect(result).toBeUndefined()
+    })
+
+    it('should not replace anything if begin or end strings are empty', () => {
+      const request = generateRequest('hello world')
+      const selectorBeginEmpty: Selector = {
+        type: 'begin-end',
+        from: 'body',
+        begin: '',
+        end: 'world',
+      }
+      const selectorEndEmpty: Selector = {
+        type: 'begin-end',
+        from: 'body',
+        begin: 'hello',
+        end: '',
+      }
+      const resultBeginEmpty = replaceRequestValues({
+        request,
+        selector: selectorBeginEmpty,
+        value: '${correl_0}',
+      })
+      const resultEndEmpty = replaceRequestValues({
+        request,
+        selector: selectorEndEmpty,
+        value: '${correl_0}',
+      })
+      expect(resultBeginEmpty).toBeUndefined()
+      expect(resultEndEmpty).toBeUndefined()
+    })
   })
 
   describe('Regex selector', () => {
@@ -402,6 +446,11 @@ describe('replaceRequestValues', () => {
       expect(
         matchBeginEnd('<div>cat</div><div>bob</div>', '<div>', '</div>')
       ).toBe('cat')
+    })
+
+    it('should not extract when begin-end substrings are missing', () => {
+      expect(matchBeginEnd('hello world', '<span>', '</span>')).toBeUndefined()
+      expect(matchBeginEnd('test string', 'test', 'end')).toBeUndefined()
     })
 
     it('should extract content using regex', () => {
