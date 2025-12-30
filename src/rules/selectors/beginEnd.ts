@@ -7,15 +7,15 @@ import { exhaustive } from '@/utils/typescript'
 export function replaceBeginEnd(
   selector: BeginEndSelector,
   request: Request,
-  variableName: string
+  newValue: string
 ): Request {
   switch (selector.from) {
     case 'body':
-      return replaceBeginEndBody(selector, request, variableName)
+      return replaceBeginEndBody(selector, request, newValue)
     case 'headers':
-      return replaceBeginEndHeaders(selector, request, variableName)
+      return replaceBeginEndHeaders(selector, request, newValue)
     case 'url':
-      return replaceBeginEndUrl(selector, request, variableName)
+      return replaceBeginEndUrl(selector, request, newValue)
     default:
       return exhaustive(selector.from)
   }
@@ -46,7 +46,7 @@ function replaceBeginEndPattern(
 function replaceBeginEndBody(
   selector: BeginEndSelector,
   request: Request,
-  variableName: string
+  newValue: string
 ): Request {
   const match = matchBeginEnd(
     request.content ?? '',
@@ -59,7 +59,7 @@ function replaceBeginEndBody(
     request.content ?? '',
     selector.begin,
     selector.end,
-    variableName
+    newValue
   )
   return { ...request, content }
 }
@@ -67,7 +67,7 @@ function replaceBeginEndBody(
 function replaceBeginEndHeaders(
   selector: BeginEndSelector,
   request: Request,
-  variableName: string
+  newValue: string
 ): Request {
   for (const [key, value] of request.headers) {
     const match = matchBeginEnd(value, selector.begin, selector.end)
@@ -78,7 +78,7 @@ function replaceBeginEndHeaders(
       value,
       selector.begin,
       selector.end,
-      variableName
+      newValue
     )
 
     const headers: Header[] = request.headers.map(([k, v]) =>
@@ -94,7 +94,7 @@ function replaceBeginEndHeaders(
 function replaceBeginEndUrl(
   selector: BeginEndSelector,
   request: Request,
-  variableName: string
+  newValue: string
 ): Request {
   const match = matchBeginEnd(request.url, selector.begin, selector.end)
   if (match === undefined) return request
@@ -103,19 +103,19 @@ function replaceBeginEndUrl(
     request.url,
     selector.begin,
     selector.end,
-    variableName
+    newValue
   )
   const path = replaceBeginEndPattern(
     request.path,
     selector.begin,
     selector.end,
-    variableName
+    newValue
   )
   const host = replaceBeginEndPattern(
     request.host,
     selector.begin,
     selector.end,
-    variableName
+    newValue
   )
   return { ...request, url, path, host }
 }

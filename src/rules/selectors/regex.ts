@@ -5,15 +5,15 @@ import { exhaustive } from '@/utils/typescript'
 export function replaceRegex(
   selector: RegexSelector,
   request: Request,
-  variableName: string
+  newValue: string
 ): Request {
   switch (selector.from) {
     case 'body':
-      return replaceRegexBody(selector, request, variableName)
+      return replaceRegexBody(selector, request, newValue)
     case 'headers':
-      return replaceRegexHeaders(selector, request, variableName)
+      return replaceRegexHeaders(selector, request, newValue)
     case 'url':
-      return replaceRegexUrl(selector, request, variableName)
+      return replaceRegexUrl(selector, request, newValue)
     default:
       return exhaustive(selector.from)
   }
@@ -35,7 +35,7 @@ export function matchRegex(value: string, regexString: string) {
 function replaceRegexBody(
   selector: RegexSelector,
   request: Request,
-  variableName: string
+  newValue: string
 ): Request {
   const match = matchRegex(request.content ?? '', selector.regex)
   if (match === undefined) return request
@@ -43,7 +43,7 @@ function replaceRegexBody(
   const content = replaceRegexPattern(
     request.content ?? '',
     selector.regex,
-    variableName
+    newValue
   )
   return { ...request, content }
 }
@@ -51,17 +51,13 @@ function replaceRegexBody(
 function replaceRegexHeaders(
   selector: RegexSelector,
   request: Request,
-  variableName: string
+  newValue: string
 ): Request {
   for (const [key, value] of request.headers) {
     const match = matchRegex(value, selector.regex)
     if (match === undefined) continue
 
-    const replacedValue = replaceRegexPattern(
-      value,
-      selector.regex,
-      variableName
-    )
+    const replacedValue = replaceRegexPattern(value, selector.regex, newValue)
 
     const headers: Header[] = request.headers.map(([k, v]) =>
       k === key && v === value ? [k, replacedValue] : [k, v]
@@ -76,14 +72,14 @@ function replaceRegexHeaders(
 function replaceRegexUrl(
   selector: RegexSelector,
   request: Request,
-  variableName: string
+  newValue: string
 ): Request {
   const match = matchRegex(request.url, selector.regex)
   if (match === undefined) return request
 
-  const url = replaceRegexPattern(request.url, selector.regex, variableName)
-  const path = replaceRegexPattern(request.path, selector.regex, variableName)
-  const host = replaceRegexPattern(request.host, selector.regex, variableName)
+  const url = replaceRegexPattern(request.url, selector.regex, newValue)
+  const path = replaceRegexPattern(request.path, selector.regex, newValue)
+  const host = replaceRegexPattern(request.host, selector.regex, newValue)
   return { ...request, url, path, host }
 }
 
