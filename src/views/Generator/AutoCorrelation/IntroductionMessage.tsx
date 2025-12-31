@@ -1,7 +1,8 @@
-import { Badge, Button, Flex, Text } from '@radix-ui/themes'
+import { Badge, Button, Flex, Text, Tooltip } from '@radix-ui/themes'
 import { CheckCircleIcon, KeyIcon, WandSparkles } from 'lucide-react'
 
 import grotIllustration from '@/assets/grot-magic.svg'
+import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useSettings } from '@/hooks/useSettings'
 import { useStudioUIStore } from '@/store/ui'
 
@@ -15,6 +16,8 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
   )
   const { data: settings } = useSettings()
   const isAiConfigured = !!settings?.ai.apiKey
+
+  const proxyStatus = useProxyStatus()
 
   return (
     <Flex
@@ -56,10 +59,19 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
         </Flex>
 
         {isAiConfigured && (
-          <Button onClick={onStart} size="3">
-            <WandSparkles />
-            Analyze recording
-          </Button>
+          <Tooltip
+            content={`Proxy is ${proxyStatus}`}
+            hidden={proxyStatus === 'online'}
+          >
+            <Button
+              onClick={onStart}
+              size="3"
+              disabled={proxyStatus !== 'online'}
+            >
+              <WandSparkles />
+              Analyze recording
+            </Button>
+          </Tooltip>
         )}
         {!isAiConfigured && (
           <>
