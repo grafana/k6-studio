@@ -2,78 +2,102 @@ import { Request } from '@/types'
 import { TextSelector } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 
-import { replaceContent, replaceUrl, replaceHeaders } from '../shared'
-
 export function replaceText(
   request: Request,
   selector: TextSelector,
   value: string
-): Request | undefined {
+): Request {
   if (selector.value.trim() === '') {
-    return
+    return request
   }
 
   switch (selector.from) {
     case 'body':
-      return replaceTextBody(request, selector, value)
+      return replaceAllBody(request, selector.value, value)
 
     case 'headers':
-      return replaceTextHeader(request, selector, value)
+      return replaceAllHeader(request, selector.value, value)
 
     case 'url':
-      return replaceTextUrl(request, selector, value)
+      return replaceAllUrl(request, selector.value, value)
 
     default:
       return exhaustive(selector.from)
   }
 }
 
-function replaceTextBody(
+export function replaceAllBody(
   request: Request,
-  selector: TextSelector,
-  value: string
-): Request | undefined {
-  if (!request?.content?.includes(selector.value)) {
-    return
+  oldValue: string,
+  newValue: string
+): Request {
+  if (!request?.content?.includes(oldValue)) {
+    return request
   }
 
   return {
     ...request,
-    content: replaceContent(request.content, selector.value, value),
+    content: request.content.replaceAll(oldValue, newValue),
   }
 }
 
-function replaceTextUrl(
+export function replaceAllUrl(
   request: Request,
-  selector: TextSelector,
-  value: string
-): Request | undefined {
-  if (!request.url.includes(selector.value)) {
-    return
+  oldValue: string,
+  newValue: string
+): Request {
+  if (!request.url.includes(oldValue)) {
+    return request
   }
+
   return {
     ...request,
-    url: replaceUrl(request.url, selector.value, value),
-    path: replaceUrl(request.path, selector.value, value),
-    host: replaceUrl(request.host, selector.value, value),
+    url: request.url.replaceAll(oldValue, newValue),
+    path: request.path.replaceAll(oldValue, newValue),
+    host: request.host.replaceAll(oldValue, newValue),
   }
 }
 
-function replaceTextHeader(
+export function replaceAllHeader(
   request: Request,
-  selector: TextSelector,
-  value: string
-): Request | undefined {
+  oldValue: string,
+  newValue: string
+): Request {
   const headerExists = request?.headers.find(([, value]) =>
-    value.includes(selector.value)
+    value.includes(oldValue)
   )
 
   if (!headerExists) {
-    return
+    return request
   }
 
   return {
     ...request,
-    headers: replaceHeaders(request.headers, selector.value, value),
+    headers: request.headers.map(([key, headerValue]) => {
+      const replacedValue = headerValue.replaceAll(oldValue, newValue)
+      return [key, replacedValue]
+    }),
+  }
+}
+
+export function replaceAllCookies(
+  request: Request,
+  oldValue: string,
+  newValue: string
+): Request {
+  const cookieExists = request?.cookies.find(([, value]) =>
+    value.includes(oldValue)
+  )
+
+  if (!cookieExists) {
+    return request
+  }
+
+  return {
+    ...request,
+    cookies: request.cookies.map(([key, cookieValue]) => {
+      const replacedValue = cookieValue.replaceAll(oldValue, newValue)
+      return [key, replacedValue]
+    }),
   }
 }

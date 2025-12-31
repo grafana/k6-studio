@@ -31,7 +31,9 @@ describe('replaceText', () => {
       '/api/v1/TEST_VALUE'
     )
 
-    expect(replaceText(request, selectorNotMatch, 'TEST_VALUE')).toBeUndefined()
+    expect(replaceText(request, selectorNotMatch, 'TEST_VALUE')).toEqual(
+      request
+    )
   })
 
   it('replaces text matches in body', () => {
@@ -55,7 +57,9 @@ describe('replaceText', () => {
       'foo TEST_VALUE baz'
     )
 
-    expect(replaceText(request, selectorNotMatch, 'TEST_VALUE')).toBeUndefined()
+    expect(replaceText(request, selectorNotMatch, 'TEST_VALUE')).toEqual(
+      request
+    )
   })
 
   it('replaces text matches in headers', () => {
@@ -79,6 +83,8 @@ describe('replaceText', () => {
       ['content-type', 'TEST_VALUE'],
     ])
 
-    expect(replaceText(request, selectorNotMatch, 'TEST_VALUE')).toBeUndefined()
+    expect(replaceText(request, selectorNotMatch, 'TEST_VALUE')).toEqual(
+      request
+    )
   })
 })

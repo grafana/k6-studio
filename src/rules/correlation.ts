@@ -1,4 +1,4 @@
-import { cloneDeep, escapeRegExp, isEqual } from 'lodash-es'
+import { cloneDeep, escapeRegExp } from 'lodash-es'
 
 import {
   createProxyData,
@@ -18,7 +18,9 @@ import {
 import { exhaustive } from '@/utils/typescript'
 
 import { replaceCorrelatedValues } from './correlation.utils'
-import { matchBeginEnd, matchRegex, getJsonObjectFromPath } from './shared'
+import { matchBeginEnd } from './selectors/beginEnd'
+import { getJsonObjectFromPath } from './selectors/json'
+import { matchRegex } from './selectors/regex'
 import {
   canonicalHeaderKey,
   matchFilter,
@@ -87,10 +89,7 @@ function applyRule({
     })
 
     // Keep track of modified requests to display in preview
-    if (
-      replacedRequest &&
-      !isEqual(replacedRequest, requestSnippetSchema.data.request)
-    ) {
+    if (replacedRequest !== requestSnippetSchema.data.request) {
       snippetSchemaReturnValue.data.request = replacedRequest
 
       setState({
@@ -1063,6 +1062,63 @@ correlation_vars['correlation_1'] = resp.json().user_id`
 
     expect(requestSnippets[1]?.data.request.url).toEqual(
       "http://test.k6.io/api/v1/login?user_id=${correlation_vars['correlation_0']}"
+    )
+  })
+
+  it('applies replacer when replacer selector is present', () => {
+    const recording = [
+      createProxyData({
+        response: createResponse({
+          content: JSON.stringify({ user: 'test' }),
+        }),
+      }),
+      createProxyData({
+        request: createRequest({
+          url: 'https://quickpizza.grafana.com/api/admin/login?user=admin&password=admin',
+        }),
+        response: createResponse({
+          content: JSON.stringify({ user: 'test' }),
+        }),
+      }),
+    ]
+    const sequentialIdGenerator = generateSequentialInt()
+
+    const rule: CorrelationRule = {
+      type: 'correlation',
+      id: '1',
+      enabled: true,
+      extractor: {
+        filter: { path: '' },
+        selector: {
+          type: 'json',
+          from: 'body',
+          path: 'user',
+        },
+        extractionMode: 'single',
+      },
+
+      replacer: {
+        filter: { path: '/login' },
+        selector: {
+          type: 'begin-end',
+          from: 'url',
+          begin: 'user=',
+          end: '&',
+        },
+      },
+    }
+
+    const ruleInstance = createCorrelationRuleInstance(
+      rule,
+      sequentialIdGenerator
+    )
+
+    const requestSnippets = recording.map((data) =>
+      ruleInstance.apply({ data, before: [], after: [], checks: [] })
+    )
+
+    expect(requestSnippets[1]?.data.request.url).toEqual(
+      "https://quickpizza.grafana.com/api/admin/login?user=${correlation_vars['correlation_0']}&password=admin"
     )
   })
 }
