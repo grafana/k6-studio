@@ -37,6 +37,8 @@ async function handleStreamChat(
           parallelToolCalls: false,
           reasoningEffort: 'low',
           textVerbosity: 'low',
+          // Disable storing of conversations, required for orgs with zero data retention
+          store: false,
         } satisfies OpenAIResponsesProviderOptions,
       },
     })
