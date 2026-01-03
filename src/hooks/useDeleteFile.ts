@@ -4,6 +4,13 @@ import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
+const FileTypeToLabel: Record<StudioFile['type'], string> = {
+  recording: 'Recording',
+  generator: 'Generator',
+  script: 'Script',
+  'data-file': 'Data file',
+}
+
 interface UseDeleteFileArgs {
   file: StudioFile
   navigateHomeOnDelete?: boolean
@@ -20,7 +27,7 @@ export function useDeleteFile({
     try {
       await window.studio.ui.deleteFile(file)
       showToast({
-        title: `${file.type} deleted`,
+        title: `${FileTypeToLabel[file.type]} deleted`,
         description: file.displayName,
         status: 'success',
       })
