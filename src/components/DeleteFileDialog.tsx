@@ -1,0 +1,71 @@
+import { AlertDialog, Button, Flex, Text } from '@radix-ui/themes'
+import { useState, type ReactNode } from 'react'
+
+import { StudioFile } from '@/types'
+
+const FileTypeToLabel: Record<StudioFile['type'], string> = {
+  recording: 'recording',
+  generator: 'generator',
+  script: 'script',
+  'data-file': 'data file',
+}
+
+interface DeleteFileDialogProps {
+  file: StudioFile
+  trigger: ReactNode
+  actionLabel?: string
+  description?: string
+  onConfirm: () => void | Promise<void>
+}
+
+export function DeleteFileDialog({
+  file,
+  trigger,
+  actionLabel = 'Delete',
+  description,
+  onConfirm,
+}: DeleteFileDialogProps) {
+  const [open, setOpen] = useState(false)
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen)
+  }
+
+  const handleConfirm = async () => {
+    await onConfirm()
+    setOpen(false)
+  }
+
+  return (
+    <AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
+      <AlertDialog.Trigger onClick={() => setOpen(true)}>
+        {trigger}
+      </AlertDialog.Trigger>
+      <AlertDialog.Content size="2" maxWidth="480px">
+        <AlertDialog.Title size="3">
+          Delete {FileTypeToLabel[file.type]}
+        </AlertDialog.Title>
+        <AlertDialog.Description size="2" mb="3">
+          {description ?? 'This action cannot be undone.'}
+        </AlertDialog.Description>
+
+        <Text size="2" color="gray" mb="3" as="div">
+          {file.displayName}
+        </Text>
+
+        <Flex gap="3" mt="4" justify="end">
+          <AlertDialog.Cancel>
+            <Button variant="soft" color="gray">
+              Cancel
+            </Button>
+          </AlertDialog.Cancel>
+          <AlertDialog.Action>
+            <Button variant="solid" color="red" onClick={handleConfirm}>
+              {actionLabel}
+            </Button>
+          </AlertDialog.Action>
+        </Flex>
+      </AlertDialog.Content>
+    </AlertDialog.Root>
+  )
+}

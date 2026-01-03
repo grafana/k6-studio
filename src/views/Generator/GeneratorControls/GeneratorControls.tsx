@@ -1,12 +1,12 @@
 import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
 import { EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
+import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
-import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore } from '@/store/generator'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
@@ -35,19 +35,19 @@ export function GeneratorControls({
   const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
-  const navigate = useNavigate()
 
-  const handleDeleteGenerator = async () => {
-    await window.studio.ui.deleteFile({
-      type: 'generator',
-      fileName,
-      displayName: getFileNameWithoutExtension(fileName),
-    })
-
-    navigate(getRoutePath('home'))
+  const file = {
+    type: 'generator' as const,
+    fileName,
+    displayName: getFileNameWithoutExtension(fileName),
   }
 
   const handleExportScript = useScriptExport(fileName)
+
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: true,
+  })
 
   return (
     <>
@@ -80,9 +80,18 @@ export function GeneratorControls({
               Export script
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
-            <DropdownMenu.Item onSelect={handleDeleteGenerator} color="red">
-              Delete generator
-            </DropdownMenu.Item>
+            <DeleteFileDialog
+              file={file}
+              onConfirm={handleDelete}
+              trigger={
+                <DropdownMenu.Item
+                  color="red"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  Delete generator
+                </DropdownMenu.Item>
+              }
+            />
           </DropdownMenu.Content>
         </DropdownMenu.Root>
         {isScriptExportable && (
