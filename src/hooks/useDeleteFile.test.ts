@@ -17,7 +17,7 @@ describe('useDeleteFile', () => {
   const navigate = vi.fn()
   const showToast = vi.fn()
   const file: StudioFile = {
-    type: 'data-file',
+    type: 'recording',
     fileName: 'file-name',
     displayName: 'test-file',
   }
@@ -32,7 +32,7 @@ describe('useDeleteFile', () => {
     vi.mocked(getRoutePath).mockReturnValue('/home')
   })
 
-  it('should show success toast when deletion succeeds', async () => {
+  it('should show success toast when recording deletion succeeds', async () => {
     const { result } = renderHook(() =>
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
@@ -43,14 +43,14 @@ describe('useDeleteFile', () => {
 
     expect(window.studio.ui.deleteFile).toHaveBeenCalledWith(file)
     expect(showToast).toHaveBeenCalledWith({
-      title: 'data-file deleted',
+      title: 'Recording deleted',
       description: 'test-file',
       status: 'success',
     })
     expect(navigate).not.toHaveBeenCalled()
   })
 
-  it('should navigate home if navigateHomeOnDelete is true', async () => {
+  it('should navigate home when navigateHomeOnDelete is true', async () => {
     const { result } = renderHook(() =>
       useDeleteFile({ file, navigateHomeOnDelete: true })
     )
@@ -62,7 +62,7 @@ describe('useDeleteFile', () => {
     expect(navigate).toHaveBeenCalledWith('/home')
   })
 
-  it('should show error toast if deletion fails', async () => {
+  it('should show error toast when recording deletion fails', async () => {
     const error = new Error('delete failed')
     window.studio.ui.deleteFile = vi.fn().mockRejectedValue(error)
 
