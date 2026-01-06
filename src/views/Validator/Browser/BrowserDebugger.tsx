@@ -31,8 +31,6 @@ export function BrowserDebugger({
 }: BrowserDebuggerProps) {
   const [tailActions, setTailActions] = useState(true)
 
-  // const [drawer, setDrawer] = usePanelCallbackRef()
-
   const drawerLayout = useDefaultLayout({
     groupId: 'browser-debugger-drawer',
     storage: localStorage,
@@ -176,7 +174,6 @@ export function BrowserDebugger({
         <Separator />
         <Panel
           id="drawer"
-          // panelRef={setDrawer}
           css={css`
             overflow: hidden;
             display: flex;
