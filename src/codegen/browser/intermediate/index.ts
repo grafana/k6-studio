@@ -144,6 +144,11 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
       })
       break
 
+    case 'text':
+      throw new Error(
+        'Code generation for getByText locator is not implemented yet.'
+      )
+
     default:
       exhaustive(node.selector)
   }
@@ -340,6 +345,36 @@ function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
   })
 }
 
+function getWaitForOptions(
+  node: m.WaitForNode
+): ir.WaitForOptionsExpression | null {
+  if (
+    typeof node.options?.state === 'undefined' &&
+    typeof node.options?.timeout === 'undefined'
+  ) {
+    return null
+  }
+
+  return {
+    type: 'WaitForOptionsExpression',
+    timeout: node.options?.timeout,
+    state: node.options?.state,
+  }
+}
+
+function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'WaitForExpression',
+      target: locator,
+      options: getWaitForOptions(node),
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -368,6 +403,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'assert':
       return emitAssertNode(context, node)
+
+    case 'wait-for':
+      return emitWaitForNode(context, node)
 
     default:
       return exhaustive(node)

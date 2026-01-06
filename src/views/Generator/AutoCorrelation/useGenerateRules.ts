@@ -26,6 +26,7 @@ import {
   searchRequests,
 } from './utils/searchTools'
 import { prepareRequestsForAI } from './utils/stripRequestData'
+import { sumTokenUsage } from './utils/sumTokenUsage'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
 export const useGenerateRules = ({
@@ -54,7 +55,11 @@ export const useGenerateRules = ({
     clearError,
     setMessages,
   } = useChat<Message>({
-    transport: new IPCChatTransport({ onUsage: setTokenUsage }),
+    transport: new IPCChatTransport({
+      onUsage: (usage) => {
+        setTokenUsage((prev) => sumTokenUsage(prev, usage))
+      },
+    }),
     // Keep calling tools without user input
     sendAutomaticallyWhen: lastMessageIsToolCall,
     onError: (error) => {
@@ -225,6 +230,7 @@ export const useGenerateRules = ({
     setSuggestedRules([])
     setMessages([])
     clearError()
+    setTokenUsage(undefined)
     return start()
   }
 

@@ -29,6 +29,11 @@ export interface GetByPlaceholderSelector {
   text: string
 }
 
+export interface GetByTextSelector {
+  type: 'text'
+  text: string
+}
+
 export interface GetByTitleSelector {
   type: 'title'
   text: string
@@ -45,6 +50,7 @@ export type NodeSelector =
   | GetByAltTextSelector
   | GetByLabelSelector
   | GetByPlaceholderSelector
+  | GetByTextSelector
   | GetByTitleSelector
   | GetByTestIdSelector
 
@@ -163,6 +169,9 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
 
     case 'placeholder':
       return b.type === 'placeholder' && a.text === b.text
+
+    case 'text':
+      return b.type === 'text' && a.text === b.text
 
     case 'title':
       return b.type === 'title' && a.text === b.text

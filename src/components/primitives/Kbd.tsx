@@ -7,6 +7,7 @@ export const Kbd = styled.kbd`
   font-size: 0.9em;
   color: var(--gray-12);
   padding: 0.2em 0.4em;
+  z-index: 0;
 
   &::before {
     content: ' ';

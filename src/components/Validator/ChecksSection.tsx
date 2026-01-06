@@ -44,7 +44,7 @@ export function ChecksSection({ checks, isRunning }: ChecksSectionProps) {
                 >
                   <Table.Header>
                     <Table.Row>
-                      <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell width="20px"></Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell align="right">
                         Success rate

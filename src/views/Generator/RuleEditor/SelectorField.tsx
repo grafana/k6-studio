@@ -1,4 +1,4 @@
-import { Box, Flex, TextField } from '@radix-ui/themes'
+import { Box, Code, Flex, Text, TextField } from '@radix-ui/themes'
 import { useFormContext } from 'react-hook-form'
 
 import { ControlledSelect, FieldGroup } from '@/components/Form'
@@ -187,7 +187,17 @@ function SelectorContent({
       )
     case 'regex':
       return (
-        <FieldGroup name={`${field}.regex`} errors={errors} label="Regex">
+        <FieldGroup
+          name={`${field}.regex`}
+          errors={errors}
+          label="Regex"
+          hint={
+            <Text size="1">
+              First match only. Use a capture group (e.g.,{' '}
+              <Code size="1">id=(.+?)&</Code>) for more precise selection.
+            </Text>
+          }
+        >
           <TextField.Root {...register(`${field}.regex`)}>
             <TextField.Slot>/</TextField.Slot>
             <TextField.Slot>/</TextField.Slot>

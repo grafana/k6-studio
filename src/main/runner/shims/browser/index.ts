@@ -1,39 +1,44 @@
-import { Locator, browser as nativeBrowser } from 'k6/browser'
+import { BrowserContext, browser } from 'k6/browser'
 
-import { createProxy, ProxiedMethods } from './utils'
+import { pageProxy } from './proxies/page'
+import { createProxy, ProxyOptions } from './utils'
 
-const locatorProxy = (
-  _target: Locator,
-  selector: string
-): ProxiedMethods<Locator> => {
+function browserContextProxy(
+  target: BrowserContext
+): ProxyOptions<BrowserContext> {
   return {
-    click: {
-      track: () => {
-        return {
-          type: 'click',
-          selector,
-        }
+    target,
+    tracking: {},
+    proxies: {
+      newPage(target) {
+        return pageProxy(target)
       },
     },
   }
 }
 
-export const browser = createProxy(nativeBrowser, {
-  newPage: {
-    proxy: (_target) => {
-      return {
-        goto: {
-          track(url) {
-            return {
-              type: 'goto',
-              url,
-            }
-          },
-        },
-        locator: {
-          proxy: locatorProxy,
-        },
-      }
-    },
-  },
-})
+const nativeNewPage = browser.newPage.bind(browser)
+const nativeNewContext = browser.newContext.bind(browser)
+const nativeContext = browser.context.bind(browser)
+
+browser.newPage = async function (...args) {
+  const page = await nativeNewPage(...args)
+
+  return createProxy(pageProxy(page))
+}
+
+browser.newContext = async function (...args) {
+  const context = await nativeNewContext(...args)
+
+  return createProxy(browserContextProxy(context))
+}
+
+browser.context = function (...args) {
+  const context = nativeContext(...args)
+
+  if (context === null) {
+    return null
+  }
+
+  return createProxy(browserContextProxy(context))
+}

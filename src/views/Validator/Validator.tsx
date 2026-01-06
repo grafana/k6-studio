@@ -1,7 +1,7 @@
+import { Flex } from '@radix-ui/themes'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
@@ -10,10 +10,9 @@ import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
+import { Debugger } from './Debugger'
 import { useDebugSession, useScript, useScriptPath } from './Validator.hooks'
-import { ValidatorContent } from './ValidatorContent'
 import { ValidatorControls } from './ValidatorControls'
-import { ValidatorEmptyState } from './ValidatorEmptyState'
 
 interface ValidatorProps {
   scriptPath: string
@@ -108,22 +107,14 @@ function Content({ scriptPath }: ValidatorProps) {
       }
       loading={isLoading}
     >
-      {data && (
-        <ValidatorContent
-          script={data.script}
+      <Flex flexGrow="1" direction="column" align="stretch">
+        <Debugger
+          script={data?.script ?? ''}
+          options={data?.options ?? {}}
           session={session}
-          noDataElement={
-            <EmptyMessage
-              message={
-                <ValidatorEmptyState
-                  isRunning={isRunning}
-                  onRunScript={handleDebugScript}
-                />
-              }
-            />
-          }
+          onDebugScript={handleDebugScript}
         />
-      )}
+      </Flex>
       {scriptPath !== undefined && (
         <RunInCloudDialog
           open={showRunInCloudDialog}

@@ -1,6 +1,6 @@
 # Contributing to Grafana k6 Studio
 
-Thank you for your interest in contributing to Grafana k6 Studio! We welcome all people who want to contribute in a healthy and constructive manner within our community. To help us create a safe and positive community experience for all, we require all participants to adhere to the [Code of Conduct](.github/CODE_OF_CONDUCT.md).
+Thank you for your interest in contributing to Grafana k6 Studio! We welcome all people who want to contribute in a healthy and constructive manner within our community. To help us create a safe and positive community experience for all, we require all participants to adhere to the [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 If you want to chat with the team or the community, you can [join our community forums](https://community.grafana.com/c/grafana-k6/k6-studio/)
 

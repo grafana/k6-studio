@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { nanoid } from 'nanoid'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
+import { useBrowserActions } from '@/hooks/useBrowserActions'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
@@ -33,16 +35,21 @@ export function useScript(fileName: string) {
 
 export function useDebugSession(scriptPath: string) {
   const [state, setState] = useState<DebuggerState>('pending')
+  const [sessionId, setSessionId] = useState(nanoid)
 
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
+  const { browserActions, resetBrowserActions } = useBrowserActions()
 
   const resetSession = useCallback(() => {
+    setSessionId(nanoid())
+
     resetProxyData()
+    resetBrowserActions()
     resetLogs()
     resetChecks()
-  }, [resetChecks, resetLogs, resetProxyData])
+  }, [resetChecks, resetLogs, resetProxyData, resetBrowserActions])
 
   // Reset session when script path changes.
   useEffect(() => {
@@ -76,15 +83,17 @@ export function useDebugSession(scriptPath: string) {
 
   const session = useMemo(() => {
     return {
+      id: sessionId,
       state,
       requests: proxyData,
+      browserActions,
       logs,
       checks,
     }
-  }, [state, checks, logs, proxyData])
+  }, [sessionId, state, checks, logs, proxyData, browserActions])
 
   return {
-    session: state !== 'pending' ? session : null,
+    session,
     startDebugging,
     stopDebugging,
   }
