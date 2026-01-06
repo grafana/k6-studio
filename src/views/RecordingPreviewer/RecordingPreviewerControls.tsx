@@ -6,7 +6,9 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
+import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { useToast } from '@/store/ui/useToast'
@@ -38,14 +40,19 @@ export function RecordingPreviewControls({
 
   const handleCreateGenerator = () => createTestGenerator(fileName)
 
-  const handleDeleteRecording = async () => {
-    await window.studio.ui.deleteFile(file)
-    navigate(getRoutePath('home'))
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: false,
+  })
+
+  const handleDiscardConfirm = async () => {
+    await handleDelete()
+    navigate(getRoutePath('recorder'))
   }
 
-  const handleDiscard = async () => {
-    await window.studio.ui.deleteFile(file)
-    navigate(getRoutePath('recorder'))
+  const handleDeleteRecordingConfirm = async () => {
+    await handleDelete()
+    navigate(getRoutePath('home'))
   }
 
   const handleExportBrowserScript = (fileName: string) => {
@@ -75,9 +82,17 @@ export function RecordingPreviewControls({
   return (
     <>
       {isDiscardable ? (
-        <Button onClick={handleDiscard} variant="outline" color="red">
-          Discard
-        </Button>
+        <DeleteFileDialog
+          file={file}
+          actionLabel="Discard"
+          description="Discard this recording? This cannot be undone."
+          onConfirm={handleDiscardConfirm}
+          trigger={
+            <Button variant="outline" color="red">
+              Discard
+            </Button>
+          }
+        />
       ) : (
         <Button variant="outline" asChild>
           <Link to={getRoutePath('recorder')}>New recording</Link>
@@ -110,9 +125,18 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item color="red" onClick={handleDeleteRecording}>
-            Delete
-          </DropdownMenu.Item>
+          <DeleteFileDialog
+            file={file}
+            onConfirm={handleDeleteRecordingConfirm}
+            trigger={
+              <DropdownMenu.Item
+                color="red"
+                onClick={(e) => e.preventDefault()}
+              >
+                Delete
+              </DropdownMenu.Item>
+            }
+          />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       <ExportScriptDialog
