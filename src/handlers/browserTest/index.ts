@@ -4,10 +4,9 @@ import { z } from 'zod'
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
 import { BROWSER_TESTS_PATH } from '@/constants/workspace'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
+import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
-
-import { trackEvent } from '../app/preload'
 
 import { BrowserTestHandler } from './types'
 
