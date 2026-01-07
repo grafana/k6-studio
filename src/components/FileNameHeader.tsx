@@ -12,19 +12,13 @@ import { PencilIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { FileTypeToLabel } from '@/constants/files'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useRenameFile } from '@/hooks/useRenameFile'
 import { StudioFile } from '@/types'
 import { getFileExtension } from '@/utils/file'
 
 import { FieldGroup } from './Form'
-
-const FileTypeToLabel: Record<StudioFile['type'], string> = {
-  recording: 'recording',
-  generator: 'generator',
-  script: 'script',
-  'data-file': 'data file',
-}
 
 interface FileNameHeaderProps {
   file: StudioFile

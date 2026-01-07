@@ -5,6 +5,7 @@ export interface GetFilesResponse {
   generators: StudioFile[]
   scripts: StudioFile[]
   dataFiles: StudioFile[]
+  browserTests: StudioFile[]
 }
 
 export enum UIHandler {

@@ -4,6 +4,7 @@ import path from 'path'
 export const PROJECT_PATH = path.join(app.getPath('documents'), 'k6-studio')
 export const RECORDINGS_PATH = path.join(PROJECT_PATH, 'Recordings')
 export const GENERATORS_PATH = path.join(PROJECT_PATH, 'Generators')
+export const BROWSER_TESTS_PATH = path.join(PROJECT_PATH, 'Browser')
 export const SCRIPTS_PATH = path.join(PROJECT_PATH, 'Scripts')
 export const DATA_FILES_PATH = path.join(PROJECT_PATH, 'Data')
 
