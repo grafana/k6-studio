@@ -1,0 +1,11 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "packageRules": [
+    {
+      // This will get stuck forever in the minimumReleaseAge check because
+      // its datasource doesn't have a timestamp, so we disable that check.
+      "matchPackageNames": ["amannn/action-semantic-pull-request"],
+      "minimumReleaseAge": null
+    }
+  ]
+}
