@@ -1,5 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [":preserveSemverRanges"],
   "packageRules": [
     {
       // This will get stuck forever in the minimumReleaseAge check because
