@@ -162,6 +162,12 @@ const WaitForEventSchema = BrowserEventBaseSchema.extend({
     .optional(),
 })
 
+const CommentEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('comment'),
+  tab: z.string(),
+  text: z.string(),
+})
+
 export const BrowserEventSchema = z.discriminatedUnion('type', [
   NavigateToPageEventSchema,
   ReloadPageEventSchema,
@@ -173,6 +179,7 @@ export const BrowserEventSchema = z.discriminatedUnion('type', [
   SubmitFormEventSchema,
   AssertEventSchema,
   WaitForEventSchema,
+  CommentEventSchema,
 ])
 
 export const BrowserEventsSchema = z.object({
@@ -197,6 +204,7 @@ export type SelectChangeEvent = z.infer<typeof SelectChangeEventSchema>
 export type SubmitFormEvent = z.infer<typeof SubmitFormEventSchema>
 export type AssertEvent = z.infer<typeof AssertEventSchema>
 export type WaitForEvent = z.infer<typeof WaitForEventSchema>
+export type CommentEvent = z.infer<typeof CommentEventSchema>
 
 export type TextAssertion = z.infer<typeof TextAssertionSchema>
 export type VisibilityAssertion = z.infer<typeof VisibilityAssertionSchema>

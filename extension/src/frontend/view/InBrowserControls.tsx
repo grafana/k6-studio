@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { Comment } from './Comment'
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
 import { RemoteHighlights } from './RemoteHighlights'
@@ -33,6 +34,7 @@ export function InBrowserControls() {
       {tool === 'assert-text' && (
         <TextSelectionPopover onClose={handleDeselectTool} />
       )}
+      {tool === 'add-comment' && <Comment onClose={handleDeselectTool} />}
       <ToolBox
         isDrawerOpen={isDrawerOpen}
         tool={tool}

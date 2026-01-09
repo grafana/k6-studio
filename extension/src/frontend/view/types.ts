@@ -8,4 +8,4 @@ export interface Bounds extends Position {
   height: number
 }
 
-export type Tool = 'inspect' | 'assert-text'
+export type Tool = 'inspect' | 'assert-text' | 'add-comment'

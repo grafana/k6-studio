@@ -247,6 +247,17 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
         }
       }
 
+      case 'comment': {
+        return {
+          type: 'comment',
+          nodeId: event.eventId,
+          text: event.text,
+          inputs: {
+            previous,
+          },
+        }
+      }
+
       default:
         return exhaustive(event)
     }
