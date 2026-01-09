@@ -24,7 +24,7 @@ import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
-if (app.isPackaged) {
+if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
   updateElectronApp()
 
