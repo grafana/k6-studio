@@ -303,6 +303,7 @@ export type ActionBeginEvent = z.infer<typeof ActionBeginEventSchema>
 export type ActionEndEvent = z.infer<typeof ActionEndEventSchema>
 
 export type BrowserActionEvent = z.infer<typeof BrowserActionEventSchema>
+export type BrowserReplayEvent = eventWithTime
 
 export type ActionResult = z.infer<typeof ActionResult>
 

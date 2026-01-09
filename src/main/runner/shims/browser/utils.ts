@@ -1,5 +1,7 @@
 import http from 'k6/http'
 
+import { LogEntry } from '@/schemas/k6'
+
 import {
   ActionBeginEvent,
   ActionEndEvent,
@@ -25,6 +27,23 @@ const nextId = (() => {
     return String(currentId++)
   }
 })()
+
+export function trackLog(entry: LogEntry) {
+  if (TRACKING_SERVER_URL === null) {
+    return
+  }
+
+  try {
+    const body = JSON.stringify({ entry } satisfies { entry: LogEntry })
+
+    http.post(`${TRACKING_SERVER_URL}/log`, body, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  } catch {
+    // We don't want to interfere with the script execution so
+    // we swallow all errors here.
+  }
+}
 
 function begin(action: AnyBrowserAction | undefined | null) {
   if (TRACKING_SERVER_URL === null) {

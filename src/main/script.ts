@@ -77,6 +77,14 @@ export const runScript = async ({
     browserWindow.webContents.send(ScriptHandler.BrowserAction, ev)
   })
 
+  trackingServer.on('log', (ev) => {
+    browserWindow.webContents.send(ScriptHandler.Log, ev.entry)
+  })
+
+  trackingServer.on('replay', (ev) => {
+    browserWindow.webContents.send(ScriptHandler.BrowserReplay, ev.events)
+  })
+
   // 5. Run the test
   const client = new K6Client()
 

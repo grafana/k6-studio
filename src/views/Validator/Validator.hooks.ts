@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { useBrowserActions } from '@/hooks/useBrowserActions'
+import { useBrowserReplay } from '@/hooks/useBrowserSession'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
@@ -40,16 +41,25 @@ export function useDebugSession(scriptPath: string) {
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
+
   const { browserActions, resetBrowserActions } = useBrowserActions()
+  const { browserReplay, resetBrowserReplay } = useBrowserReplay()
 
   const resetSession = useCallback(() => {
     setSessionId(nanoid())
 
     resetProxyData()
     resetBrowserActions()
+    resetBrowserReplay()
     resetLogs()
     resetChecks()
-  }, [resetChecks, resetLogs, resetProxyData, resetBrowserActions])
+  }, [
+    resetChecks,
+    resetLogs,
+    resetProxyData,
+    resetBrowserActions,
+    resetBrowserReplay,
+  ])
 
   // Reset session when script path changes.
   useEffect(() => {
@@ -86,11 +96,14 @@ export function useDebugSession(scriptPath: string) {
       id: sessionId,
       state,
       requests: proxyData,
-      browserActions,
+      browser: {
+        actions: browserActions,
+        replay: browserReplay,
+      },
       logs,
       checks,
     }
-  }, [sessionId, state, checks, logs, proxyData, browserActions])
+  }, [sessionId, state, checks, logs, proxyData, browserActions, browserReplay])
 
   return {
     session,

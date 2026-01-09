@@ -9,44 +9,48 @@ declare global {
 
 const trackingServerUrl = window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__
 
-let buffer: eventWithTime[] = []
-let pending: NodeJS.Timeout | null = null
+function isTopLevelFrame() {
+  try {
+    return window.parent === window
+  } catch {
+    return false
+  }
+}
 
-if (trackingServerUrl !== null) {
+if (trackingServerUrl !== null && isTopLevelFrame()) {
+  console.log('Session replay script loaded.', window.location.href)
+
+  let buffer: eventWithTime[] = []
+
+  setInterval(async () => {
+    if (buffer.length === 0) {
+      return
+    }
+
+    const events = buffer
+
+    buffer = []
+
+    try {
+      const url = `${trackingServerUrl}/session-replay`
+
+      await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ events }),
+      })
+    } catch (err) {
+      // Swallow errors to not interfere with the main script
+    }
+  }, 200)
+
+  console.log('Starting session replay recording.')
+
   record({
     emit(event) {
       buffer.push(event)
-
-      if (pending !== null) {
-        return
-      }
-
-      pending = setTimeout(async () => {
-        if (trackingServerUrl === null) {
-          return
-        }
-
-        const events = buffer
-
-        buffer = []
-        pending = null
-
-        try {
-          const url = `${trackingServerUrl}/session-replay`
-
-          await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ events }),
-          })
-        } catch (err) {
-          // Swallow errors to not interfere with the main script
-        }
-      }, 200)
     },
   })
 }
-
-export {}

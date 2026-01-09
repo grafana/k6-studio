@@ -9,8 +9,10 @@ import {
   ActionBeginEventSchema,
   ActionEndEvent,
   ActionEndEventSchema,
+  BrowserReplayEvent,
   SessionReplayEventSchema,
 } from '@/main/runner/schema'
+import { LogEntry, LogEntrySchema } from '@/schemas/k6'
 import { EventEmitter } from 'extension/src/utils/events'
 
 function getPort(address: AddressInfo | string | null): number {
@@ -28,6 +30,12 @@ function getPort(address: AddressInfo | string | null): number {
 interface ReportingServerEventMap {
   begin: ActionBeginEvent
   end: ActionEndEvent
+  replay: {
+    events: BrowserReplayEvent[]
+  }
+  log: {
+    entry: LogEntry
+  }
 }
 
 class TestRunTrackingServer extends EventEmitter<ReportingServerEventMap> {
@@ -98,6 +106,20 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     res.status(204).end()
   })
 
+  app.post('/log', (req, res) => {
+    const parsed = LogEntrySchema.safeParse(req.body)
+
+    if (!parsed.success) {
+      log.warn('Received invalid log entry: ', parsed.error.format())
+
+      res.status(400).end()
+
+      return
+    }
+
+    trackingServer.emit('log', { entry: parsed.data })
+  })
+
   app.post('/session-replay', (req, res) => {
     const parsed = SessionReplayEventSchema.safeParse(req.body)
 
@@ -108,6 +130,10 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
 
       return
     }
+
+    trackingServer.emit('replay', {
+      events: parsed.data.events,
+    })
 
     res.status(204).end()
   })

@@ -13,6 +13,7 @@ export enum ScriptHandler {
   Check = 'script:check',
   RunFromGenerator = 'script:run-from-generator',
   BrowserAction = 'script:browser-action',
+  BrowserReplay = 'script:browser-replay',
 }
 
 export interface OpenScriptResult {

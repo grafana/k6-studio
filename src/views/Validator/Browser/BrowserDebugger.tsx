@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Label } from '@radix-ui/react-label'
-import { Flex, Heading, Switch, Tabs, Text } from '@radix-ui/themes'
+import { Box, Flex, Heading, Switch, Tabs, Text } from '@radix-ui/themes'
 import { useState } from 'react'
 
 import { AutoScrollArea } from '@/components/AutoScrollArea'
@@ -17,6 +17,7 @@ import { DebugSession } from '../types'
 
 import { BrowserActionList } from './BrowserActionList'
 import { BrowserDebugDrawer } from './BrowserDebugDrawer'
+import { SessionPlayer } from './SessionPlayer'
 
 interface BrowserDebuggerProps {
   script: string
@@ -83,25 +84,17 @@ export function BrowserDebugger({
             <Panel id="main">
               <Tabs.Root asChild defaultValue="script">
                 <Flex direction="column" height="100%">
-                  <Tabs.List>
-                    <Tabs.Trigger
-                      disabled
-                      css={css`
-                        /* 
-                        * Since we currently only have a single tab, we disable the
-                        * hover styling. This should be removed once we have more tabs.
-                        */
-                        cursor: default;
-
-                        &:hover .rt-TabsTriggerInner {
-                          background-color: transparent;
-                        }
-                      `}
-                      value="script"
-                    >
-                      Script
-                    </Tabs.Trigger>
-                  </Tabs.List>
+                  <Box asChild flexShrink="0">
+                    <Tabs.List>
+                      <Tabs.Trigger value="script">Script</Tabs.Trigger>
+                      <Tabs.Trigger
+                        value="replay"
+                        disabled={session.state === 'pending'}
+                      >
+                        Replay
+                      </Tabs.Trigger>
+                    </Tabs.List>
+                  </Box>
                   <Tabs.Content
                     css={css`
                       flex: 1 1 0;
@@ -114,6 +107,15 @@ export function BrowserDebugger({
                       showToolbar={false}
                       language="typescript"
                     />
+                  </Tabs.Content>
+                  <Tabs.Content
+                    css={css`
+                      flex: 1 1 0;
+                      overflow: hidden;
+                    `}
+                    value="replay"
+                  >
+                    <SessionPlayer session={session} />
                   </Tabs.Content>
                 </Flex>
               </Tabs.Root>
@@ -139,7 +141,7 @@ export function BrowserDebugger({
                         align-items: center;
                       `}
                     >
-                      Browser actions ({session.browserActions.length})
+                      Browser actions ({session.browser.actions.length})
                     </Heading>
                   </Flex>
 
@@ -157,7 +159,7 @@ export function BrowserDebugger({
                 </Flex>
                 <AutoScrollArea
                   tail={session.state === 'running' && tailActions}
-                  items={session.browserActions.length}
+                  items={session.browser.actions.length}
                   onScrollBack={handleActionsScrollBack}
                 >
                   {session.state === 'pending' && (
@@ -166,7 +168,7 @@ export function BrowserDebugger({
                     </DebuggerEmptyState>
                   )}
                   {session.state !== 'pending' && (
-                    <BrowserActionList actions={session.browserActions} />
+                    <BrowserActionList actions={session.browser.actions} />
                   )}
                 </AutoScrollArea>
               </Flex>
