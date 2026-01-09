@@ -5,6 +5,7 @@ import * as app from './handlers/app/preload'
 import * as auth from './handlers/auth/preload'
 import * as browser from './handlers/browser/preload'
 import * as browserRemote from './handlers/browserRemote/preload'
+import * as browserTest from './handlers/browserTest/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as data from './handlers/dataFiles/preload'
 import * as generator from './handlers/generator/preload'
@@ -25,6 +26,7 @@ const studio = {
   har,
   ui,
   generator,
+  browserTest,
   app,
   log,
   settings,

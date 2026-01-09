@@ -5,8 +5,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { FileTree } from '@/components/FileTree'
+import { NewTestMenu } from '@/components/NewTestMenu'
 import { SearchField } from '@/components/SearchField'
-import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { getRoutePath } from '@/routeMap'
 
@@ -20,7 +20,6 @@ interface SidebarProps {
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, generators, scripts, dataFiles } = useFiles(searchTerm)
-  const handleCreateNewGenerator = useCreateGenerator()
   const handleImportDataFile = useImportDataFile()
 
   return (
@@ -82,19 +81,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               label="Test generators"
               files={generators}
               noFilesMessage="No generators found"
-              actions={
-                <Tooltip content="New generator" side="right">
-                  <IconButton
-                    aria-label="New generator"
-                    variant="ghost"
-                    size="1"
-                    onClick={() => handleCreateNewGenerator()}
-                    css={{ cursor: 'pointer' }}
-                  >
-                    <PlusIcon />
-                  </IconButton>
-                </Tooltip>
-              }
+              actions={<NewTestMenu />}
             />
             <FileTree
               label="Scripts"

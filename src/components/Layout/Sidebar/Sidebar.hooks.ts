@@ -33,6 +33,7 @@ function useFolderContent() {
         generators: toFileMap(files.generators),
         scripts: toFileMap(files.scripts),
         dataFiles: toFileMap(files.dataFiles),
+        browserTests: toFileMap(files.browserTests),
       })
     })()
   }, [setFolderContent])

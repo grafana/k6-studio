@@ -9,31 +9,24 @@ import {
   GENERATORS_PATH,
   SCRIPTS_PATH,
   TEMP_PATH,
+  BROWSER_TESTS_PATH,
 } from '../constants/workspace'
 
+const REQUIRED_FOLDERS = [
+  PROJECT_PATH,
+  RECORDINGS_PATH,
+  GENERATORS_PATH,
+  SCRIPTS_PATH,
+  TEMP_PATH,
+  DATA_FILES_PATH,
+  BROWSER_TESTS_PATH,
+]
+
 export const setupProjectStructure = async () => {
-  if (!existsSync(PROJECT_PATH)) {
-    await mkdir(PROJECT_PATH)
-  }
-
-  if (!existsSync(RECORDINGS_PATH)) {
-    await mkdir(RECORDINGS_PATH)
-  }
-
-  if (!existsSync(GENERATORS_PATH)) {
-    await mkdir(GENERATORS_PATH)
-  }
-
-  if (!existsSync(SCRIPTS_PATH)) {
-    await mkdir(SCRIPTS_PATH)
-  }
-
-  if (!existsSync(TEMP_PATH)) {
-    await mkdir(TEMP_PATH)
-  }
-
-  if (!existsSync(DATA_FILES_PATH)) {
-    await mkdir(DATA_FILES_PATH)
+  for (const folder of REQUIRED_FOLDERS) {
+    if (!existsSync(folder)) {
+      await mkdir(folder)
+    }
   }
 }
 

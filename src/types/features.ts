@@ -1,1 +1,1 @@
-export type Feature = 'dummy-feature' | 'typeahead-json'
+export type Feature = 'dummy-feature' | 'typeahead-json' | 'browser-test-editor'

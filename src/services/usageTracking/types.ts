@@ -13,6 +13,10 @@ export enum UsageEventName {
   GeneratorCreated = 'generator_created',
   GeneratorUpdated = 'generator_updated',
 
+  // Browser test
+  BrowserTestCreated = 'browser_test_created',
+  BrowserTestUpdated = 'browser_test_updated',
+
   // Script
   ScriptCopied = 'script_copied',
   ScriptExported = 'script_exported',
@@ -70,6 +74,14 @@ interface GeneratorUpdatedEvent {
   }
 }
 
+interface BrowserTestCreatedEvent {
+  event: UsageEventName.BrowserTestCreated
+}
+
+interface BrowserTestUpdatedEvent {
+  event: UsageEventName.BrowserTestUpdated
+}
+
 interface ScriptCopiedEvent {
   event: UsageEventName.ScriptCopied
   payload: {
@@ -123,6 +135,8 @@ export type UsageEvent =
   | RecordingImportedEvent
   | GeneratorCreatedEvent
   | GeneratorUpdatedEvent
+  | BrowserTestCreatedEvent
+  | BrowserTestUpdatedEvent
   | ScriptCopiedEvent
   | ScriptExportedEvent
   | ScriptValidatedEvent
