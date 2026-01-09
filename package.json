@@ -136,7 +136,7 @@
     "keyboardjs": "^2.7.0",
     "lodash-es": "^4.17.21",
     "lucide-react": "^0.562.0",
-    "monaco-editor": "^0.50.0",
+    "monaco-editor": "^0.55.0",
     "nanoid": "^5.1.6",
     "node-forge": "^1.3.2",
     "openid-client": "^6.1.7",
