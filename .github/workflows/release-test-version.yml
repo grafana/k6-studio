@@ -90,7 +90,6 @@ jobs:
         if: startsWith(matrix.platform, 'macos-15-intel')
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
-          DEBUG: 'electron-rebuild*,electron-forge*'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
