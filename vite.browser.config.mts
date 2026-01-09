@@ -43,6 +43,8 @@ export default defineConfig((env) => {
     ],
     resolve: {
       preserveSymlinks: true,
+      // Force vite to use browser-specific package exports
+      conditions: ['browser', 'import', 'module', 'default'],
     },
     clearScreen: false,
   } as UserConfig
