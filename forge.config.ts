@@ -122,6 +122,7 @@ const config: ForgeConfig = {
           config: 'vite.preload.config.ts',
         },
         {
+          entry: 'extension/src/background/index.ts',
           config: 'vite.extension.config.mts',
         },
         {
