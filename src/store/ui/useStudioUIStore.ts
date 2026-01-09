@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 
 import { SettingsTabValue } from '@/components/Settings/types'
 import { FolderContent, ProxyStatus, StudioFile } from '@/types'
+import { exhaustive } from '@/utils/typescript'
 
 interface State extends FolderContent {
   proxyStatus: ProxyStatus
@@ -52,26 +53,41 @@ export const useStudioUIStore = create<StudioUIStore>()(
       }),
     removeFile: (file) =>
       set((state) => {
+        switch (file.type) {
+          case 'recording':
+            state.recordings.delete(file.fileName)
+            break
+          case 'generator':
+            state.generators.delete(file.fileName)
+            break
+          case 'browser-test':
+            state.browserTests.delete(file.fileName)
+            break
+          case 'script':
+            state.scripts.delete(file.fileName)
+            break
+          case 'data-file':
+            state.dataFiles.delete(file.fileName)
+            break
+          default:
+            exhaustive(file.type)
+        }
+
         if (file.type === 'recording') {
           state.recordings.delete(file.fileName)
         }
-
-        if (file.type === 'generator') {
-          state.generators.delete(file.fileName)
-        }
-
-        if (file.type === 'script') {
-          state.scripts.delete(file.fileName)
-        }
-
-        if (file.type === 'data-file') {
-          state.dataFiles.delete(file.fileName)
-        }
       }),
-    setFolderContent: ({ recordings, generators, scripts, dataFiles }) =>
+    setFolderContent: ({
+      recordings,
+      generators,
+      browserTests,
+      scripts,
+      dataFiles,
+    }) =>
       set((state) => {
         state.recordings = recordings
         state.generators = generators
+        state.browserTests = browserTests
         state.scripts = scripts
         state.dataFiles = dataFiles
       }),

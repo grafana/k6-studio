@@ -1,4 +1,6 @@
 import { ipcMain } from 'electron'
+import { readFile } from 'fs/promises'
+import path from 'path'
 import { z } from 'zod'
 
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
@@ -12,7 +14,7 @@ import { BrowserTestHandler } from './types'
 
 export function initialize() {
   ipcMain.handle(BrowserTestHandler.Create, async () => {
-    console.log(`${BrowserTestHandler.Create} event received`)
+    console.info(`${BrowserTestHandler.Create} event received`)
 
     const emptyBrowserTest: z.infer<typeof BrowserTestFileSchema> = {
       version: '1.0',
@@ -31,5 +33,16 @@ export function initialize() {
     })
 
     return fileName
+  })
+
+  ipcMain.handle(BrowserTestHandler.Open, async (_, fileName: string) => {
+    console.info(`${BrowserTestHandler.Open} event received`)
+
+    const data = await readFile(path.join(BROWSER_TESTS_PATH, fileName), {
+      encoding: 'utf-8',
+      flag: 'r',
+    })
+
+    return BrowserTestFileSchema.parse(JSON.parse(data))
   })
 }

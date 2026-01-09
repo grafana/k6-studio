@@ -6,13 +6,29 @@ import {
   Separator,
   useDefaultLayout,
 } from 'react-resizable-panels'
+import { useParams } from 'react-router-dom'
+import invariant from 'tiny-invariant'
 
+import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { StudioFile } from '@/types'
+import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { BrowserActionList } from '../Validator/Browser/BrowserActionList'
 
+import {
+  useBrowserScriptPreview,
+  useBrowserTest,
+} from './BrowserTestEditor.hooks'
+
 export function BrowserTestEditor() {
+  const { fileName } = useParams()
+  invariant(fileName, 'fileName is required')
+
+  const { data, isLoading } = useBrowserTest(fileName)
+  const script = useBrowserScriptPreview(data?.actions ?? [])
+
   const drawerLayout = useDefaultLayout({
     groupId: 'browser-editor-drawer',
     storage: localStorage,
@@ -23,8 +39,19 @@ export function BrowserTestEditor() {
     storage: localStorage,
   })
 
+  const file: StudioFile = {
+    fileName,
+    displayName: getFileNameWithoutExtension(fileName),
+    type: 'browser-test',
+  }
+
   return (
-    <View title="Browser test" actions={<></>}>
+    <View
+      title="Browser test"
+      subTitle={<FileNameHeader file={file} />}
+      loading={isLoading}
+      actions={<></>}
+    >
       <Flex flexGrow="1" direction="column" align="stretch">
         <Flex
           css={css`
@@ -78,7 +105,7 @@ export function BrowserTestEditor() {
                         value="script"
                       >
                         <ReadOnlyEditor
-                          value={''}
+                          value={script}
                           showToolbar={false}
                           language="typescript"
                         />
@@ -107,7 +134,7 @@ export function BrowserTestEditor() {
                             align-items: center;
                           `}
                         >
-                          Browser actions (X)
+                          Browser actions ({data?.actions.length ?? 0})
                         </Heading>
                       </Flex>
                     </Flex>
