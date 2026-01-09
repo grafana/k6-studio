@@ -7,6 +7,7 @@ import { useGeneratorStore } from '@/store/generator'
 import type { Selector, TestRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { Typeahead } from '@/views/Generator/RuleEditor/Typeahead'
+import { TypeaheadGetOptions } from '@/views/Generator/RuleEditor/Typeahead/Typeahead'
 
 import { HeaderSelect } from './HeaderSelect'
 import { JsonSelectorHint } from './JsonSelectorHint'
@@ -24,12 +25,15 @@ export function SelectorField({
     formState: { errors },
   } = useFormContext<TestRule>()
 
-  const options = useGeneratorStore((state): string[] => {
-    if (field === 'extractor.selector' || field === 'replacer.selector') {
-      return state.metadata.responseJsonPaths
+  const getJsonOptions = useGeneratorStore((state): TypeaheadGetOptions => {
+    const isResponseSelector =
+      field === 'extractor.selector' || field === 'replacer.selector'
+    if (isResponseSelector) {
+      return state.getResponseJsonPathSuggestion
     }
-    return state.metadata.requestJsonPaths
+    return state.getRequestJsonPathSuggestion
   })
+
   const selector = watch(field)
 
   if (!selector) {
@@ -119,17 +123,21 @@ export function SelectorField({
           </FieldGroup>
         </Box>
       </Flex>
-      <SelectorContent selector={selector} options={options} field={field} />
+      <SelectorContent
+        selector={selector}
+        getJsonOptions={getJsonOptions}
+        field={field}
+      />
     </>
   )
 }
 
 function SelectorContent({
-  options,
+  getJsonOptions,
   selector,
   field,
 }: {
-  options?: string[]
+  getJsonOptions?: TypeaheadGetOptions
   selector: Selector
   field: 'extractor.selector' | 'replacer.selector' | 'selector'
 }) {
@@ -151,12 +159,12 @@ function SelectorContent({
           label="JSON property path"
           hint={<JsonSelectorHint />}
         >
-          {typeaheadEnabled ? (
+          {typeaheadEnabled && getJsonOptions ? (
             <Typeahead
               placeholder="Search for JSON key paths"
               defaultValue={selector.path}
-              mode="onDot"
-              options={options || []}
+              mode="onFirstKey"
+              getOptions={getJsonOptions}
               {...register(`${field}.path`)}
             />
           ) : (
