@@ -33,6 +33,13 @@ class BrowserExtensionRecordingSession
 
     process.once('exit', () => {
       this.emit('stop', undefined)
+      // Ensure the WebSocket server is disposed when the browser exits
+      this.#server.stop()
+    })
+
+    this.#process.on('error', (error) => {
+      this.emit('error', { error })
+      this.#server.stop()
     })
 
     server.on('stop', () => {
