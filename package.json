@@ -38,7 +38,7 @@
     "@electron/fuses": "^1.8.0",
     "@tanstack/eslint-plugin-query": "^5.53.0",
     "@testing-library/react": "^16.0.1",
-    "@types/chrome": "^0.0.287",
+    "@types/chrome": "^0.1.0",
     "@types/diff": "^7.0.2",
     "@types/express": "^5.0.3",
     "@types/har-format": "^1.2.16",
