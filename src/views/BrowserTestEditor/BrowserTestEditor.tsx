@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
-import { Flex, Heading, ScrollArea, Tabs } from '@radix-ui/themes'
+import { Flex, Heading, Tabs } from '@radix-ui/themes'
+import { useState } from 'react'
 import {
   Group,
   Panel,
@@ -9,25 +10,36 @@ import {
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
+import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
-import { BrowserActionList } from '../Validator/Browser/BrowserActionList'
+import { BrowserDebugDrawer } from '../Validator/Browser/BrowserDebugDrawer'
+import { useDebugSession } from '../Validator/Validator.hooks'
 
 import {
   useBrowserScriptPreview,
   useBrowserTest,
 } from './BrowserTestEditor.hooks'
+import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 
 export function BrowserTestEditor() {
   const { fileName } = useParams()
   invariant(fileName, 'fileName is required')
 
+  const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const { data, isLoading } = useBrowserTest(fileName)
-  const script = useBrowserScriptPreview(data?.actions ?? [])
+
+  const preview = useBrowserScriptPreview(data?.actions ?? [])
+  const { session, startDebugging } = useDebugSession({
+    type: 'code',
+    scriptCode: preview,
+  })
 
   const drawerLayout = useDefaultLayout({
     groupId: 'browser-editor-drawer',
@@ -45,12 +57,34 @@ export function BrowserTestEditor() {
     type: 'browser-test',
   }
 
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: true,
+  })
+
+  const handleRunInCloud = () => {
+    setIsRunInCloudDialogOpen(true)
+  }
+
+  const handleExportScript = (scriptName: string) => {
+    void window.studio.script.saveScript(preview, scriptName)
+  }
+
   return (
     <View
       title="Browser test"
       subTitle={<FileNameHeader file={file} />}
       loading={isLoading}
-      actions={<></>}
+      actions={
+        <BrowserTestEditorControls
+          file={file}
+          session={session}
+          onDelete={handleDelete}
+          onExportScript={handleExportScript}
+          onRunInCloud={handleRunInCloud}
+          onStartDebugging={startDebugging}
+        />
+      }
     >
       <Flex flexGrow="1" direction="column" align="stretch">
         <Flex
@@ -105,9 +139,18 @@ export function BrowserTestEditor() {
                         value="script"
                       >
                         <ReadOnlyEditor
-                          value={script}
+                          value={preview}
                           showToolbar={false}
                           language="typescript"
+                        />
+                        <RunInCloudDialog
+                          open={isRunInCloudDialogOpen}
+                          script={{
+                            type: 'raw',
+                            name: fileName,
+                            content: preview,
+                          }}
+                          onOpenChange={setIsRunInCloudDialogOpen}
                         />
                       </Tabs.Content>
                     </Flex>
@@ -138,9 +181,7 @@ export function BrowserTestEditor() {
                         </Heading>
                       </Flex>
                     </Flex>
-                    <ScrollArea>
-                      <BrowserActionList actions={[]} />
-                    </ScrollArea>
+                    <EmptyMessage message="No browser actions available." />
                   </Flex>
                 </Panel>
               </Group>
@@ -158,13 +199,13 @@ export function BrowserTestEditor() {
               minSize={200}
               defaultSize={39}
             >
-              {/* <BrowserDebugDrawer
-              css={css`
-                flex: 1 1 0;
-              `}
-              session={session}
-              onExpand={handleTabClick}
-            /> */}
+              <BrowserDebugDrawer
+                css={css`
+                  flex: 1 1 0;
+                `}
+                session={session}
+                onExpand={() => {}}
+              />
             </Panel>
           </Group>
         </Flex>

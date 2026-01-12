@@ -21,8 +21,6 @@ function useFolderContent() {
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
   const dataFiles = useStudioUIStore((s) => orderByFileName(s.dataFiles))
 
-  console.log('tests', browserTests)
-
   const addFile = useStudioUIStore((s) => s.addFile)
   const removeFile = useStudioUIStore((s) => s.removeFile)
   const setFolderContent = useStudioUIStore((s) => s.setFolderContent)

@@ -33,7 +33,17 @@ export function useScript(fileName: string) {
   })
 }
 
-export function useDebugSession(scriptPath: string) {
+type UseDebugSessionParams =
+  | {
+      type: 'file'
+      scriptPath: string
+    }
+  | {
+      type: 'code'
+      scriptCode: string
+    }
+
+export function useDebugSession(params: UseDebugSessionParams) {
   const [state, setState] = useState<DebuggerState>('pending')
   const [sessionId, setSessionId] = useState(nanoid)
 
@@ -41,6 +51,8 @@ export function useDebugSession(scriptPath: string) {
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
   const { browserActions, resetBrowserActions } = useBrowserActions()
+  const scriptInput =
+    params.type === 'file' ? params.scriptPath : params.scriptCode
 
   const resetSession = useCallback(() => {
     setSessionId(nanoid())
@@ -51,21 +63,30 @@ export function useDebugSession(scriptPath: string) {
     resetChecks()
   }, [resetChecks, resetLogs, resetProxyData, resetBrowserActions])
 
-  // Reset session when script path changes.
+  // Reset session when script or script path changes.
   useEffect(() => {
     setState('pending')
     resetSession()
-  }, [scriptPath, resetSession])
+  }, [scriptInput, resetSession])
 
   const startDebugging = useCallback(async () => {
     setState('running')
 
     resetSession()
 
-    await window.studio.script.runScript(scriptPath).catch(() => {
+    if (params.type === 'code') {
+      await window.studio.script
+        .runScriptFromGenerator(scriptInput)
+        .catch(() => {
+          setState('stopped')
+        })
+      return
+    }
+
+    await window.studio.script.runScript(scriptInput).catch(() => {
       setState('stopped')
     })
-  }, [scriptPath, resetSession])
+  }, [resetSession, params.type, scriptInput])
 
   const stopDebugging = useCallback(() => {
     window.studio.script.stopScript()
