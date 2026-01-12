@@ -35,20 +35,24 @@ export const useStudioUIStore = create<StudioUIStore>()(
 
     addFile: (file) =>
       set((state) => {
-        if (file.type === 'recording') {
-          state.recordings.set(file.fileName, file)
-        }
-
-        if (file.type === 'generator') {
-          state.generators.set(file.fileName, file)
-        }
-
-        if (file.type === 'script') {
-          state.scripts.set(file.fileName, file)
-        }
-
-        if (file.type === 'data-file') {
-          state.dataFiles.set(file.fileName, file)
+        switch (file.type) {
+          case 'recording':
+            state.recordings.set(file.fileName, file)
+            break
+          case 'generator':
+            state.generators.set(file.fileName, file)
+            break
+          case 'browser-test':
+            state.browserTests.set(file.fileName, file)
+            break
+          case 'script':
+            state.scripts.set(file.fileName, file)
+            break
+          case 'data-file':
+            state.dataFiles.set(file.fileName, file)
+            break
+          default:
+            exhaustive(file.type)
         }
       }),
     removeFile: (file) =>
@@ -71,10 +75,6 @@ export const useStudioUIStore = create<StudioUIStore>()(
             break
           default:
             exhaustive(file.type)
-        }
-
-        if (file.type === 'recording') {
-          state.recordings.delete(file.fileName)
         }
       }),
     setFolderContent: ({

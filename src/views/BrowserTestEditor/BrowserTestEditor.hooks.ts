@@ -46,7 +46,5 @@ export function useBrowserScriptPreview(actions: BrowserTestFile['actions']) {
     void generatePreview()
   }, [actions])
 
-  console.log('Generated browser script preview:', preview)
-
   return preview
 }
