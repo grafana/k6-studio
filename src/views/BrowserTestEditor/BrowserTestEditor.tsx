@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Flex, Heading, Tabs } from '@radix-ui/themes'
+import { Button, Flex, Heading, Tabs } from '@radix-ui/themes'
 import { useState } from 'react'
 import {
   Group,
@@ -181,7 +181,10 @@ export function BrowserTestEditor() {
                         </Heading>
                       </Flex>
                     </Flex>
-                    <EmptyMessage message="No browser actions available." />
+                    <EmptyMessage
+                      message="Build your browser test by adding actions."
+                      action={<Button disabled>Add action</Button>}
+                    />
                   </Flex>
                 </Panel>
               </Group>
