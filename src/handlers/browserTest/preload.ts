@@ -14,3 +14,11 @@ export function open(fileName: string) {
     fileName
   ) as Promise<BrowserTestFile>
 }
+
+export function save(fileName: string, data: BrowserTestFile) {
+  return ipcRenderer.invoke(
+    BrowserTestHandler.Save,
+    fileName,
+    data
+  ) as Promise<void>
+}

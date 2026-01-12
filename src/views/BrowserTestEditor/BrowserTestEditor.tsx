@@ -7,8 +7,6 @@ import {
   Separator,
   useDefaultLayout,
 } from 'react-resizable-panels'
-import { useParams } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileNameHeader } from '@/components/FileNameHeader'
@@ -16,8 +14,6 @@ import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { BrowserDebugDrawer } from '../Validator/Browser/BrowserDebugDrawer'
 import { useDebugSession } from '../Validator/Validator.hooks'
@@ -25,15 +21,15 @@ import { useDebugSession } from '../Validator/Validator.hooks'
 import {
   useBrowserScriptPreview,
   useBrowserTest,
+  useBrowserTestFile,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 
 export function BrowserTestEditor() {
-  const { fileName } = useParams()
-  invariant(fileName, 'fileName is required')
+  const file = useBrowserTestFile()
 
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
-  const { data, isLoading } = useBrowserTest(fileName)
+  const { data, isLoading } = useBrowserTest(file.fileName)
 
   const preview = useBrowserScriptPreview(data?.actions ?? [])
   const { session, startDebugging } = useDebugSession({
@@ -51,12 +47,6 @@ export function BrowserTestEditor() {
     storage: localStorage,
   })
 
-  const file: StudioFile = {
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-    type: 'browser-test',
-  }
-
   const handleDelete = useDeleteFile({
     file,
     navigateHomeOnDelete: true,
@@ -68,6 +58,15 @@ export function BrowserTestEditor() {
 
   const handleExportScript = (scriptName: string) => {
     void window.studio.script.saveScript(preview, scriptName)
+  }
+
+  // TODO: currently re-saves the opened file without changes.
+  // Replace with actual save logic when adding browser actions is implemented.
+  const handleSave = () => {
+    if (!data) {
+      return
+    }
+    void window.studio.browserTest.save(file.fileName, data)
   }
 
   return (
@@ -82,6 +81,7 @@ export function BrowserTestEditor() {
           onDelete={handleDelete}
           onExportScript={handleExportScript}
           onRunInCloud={handleRunInCloud}
+          onSave={handleSave}
           onStartDebugging={startDebugging}
         />
       }
@@ -147,7 +147,7 @@ export function BrowserTestEditor() {
                           open={isRunInCloudDialogOpen}
                           script={{
                             type: 'raw',
-                            name: fileName,
+                            name: file.fileName,
                             content: preview,
                           }}
                           onOpenChange={setIsRunInCloudDialogOpen}

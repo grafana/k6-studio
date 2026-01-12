@@ -15,6 +15,7 @@ interface BrowserTestEditorControlsProps {
   onDelete: () => void
   onExportScript: (scriptName: string) => void
   onRunInCloud: () => void
+  onSave: () => void
   onStartDebugging: () => void
 }
 
@@ -24,13 +25,14 @@ export function BrowserTestEditorControls({
   onDelete,
   onExportScript,
   onRunInCloud,
+  onSave,
   onStartDebugging,
 }: BrowserTestEditorControlsProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
 
   return (
     <Flex align="center" gap="2">
-      <Button variant="outline" disabled>
+      <Button variant="outline" onClick={onSave}>
         Save
       </Button>
       <Button
