@@ -1,18 +1,18 @@
 import { css } from '@emotion/react'
 import { Button, Flex, Heading, Tabs } from '@radix-ui/themes'
 import { useState } from 'react'
-import {
-  Group,
-  Panel,
-  Separator,
-  useDefaultLayout,
-} from 'react-resizable-panels'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
+import {
+  Group,
+  Panel,
+  Separator,
+  useDefaultLayout,
+} from '@/components/primitives/ResizablePanel'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 
 import { BrowserDebugDrawer } from '../Validator/Browser/BrowserDebugDrawer'
