@@ -43,7 +43,7 @@ export function CommentPopover({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter') {
       e.preventDefault()
       handleSubmit()
     }
@@ -52,7 +52,7 @@ export function CommentPopover({
   return (
     <div
       css={css`
-        position: fixed;
+        position: absolute;
         top: ${position?.top ?? 20}px;
         left: ${position?.left ?? 20}px;
         width: 320px;
@@ -75,6 +75,7 @@ export function CommentPopover({
             background: transparent;
             padding: 0;
             margin: 0;
+            border: none;
 
             > input {
               padding: 13px;
@@ -84,7 +85,6 @@ export function CommentPopover({
               &:focus {
                 outline: none;
                 box-shadow: none;
-                border: none;
               }
             }
           `}

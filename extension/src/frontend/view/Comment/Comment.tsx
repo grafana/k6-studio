@@ -35,7 +35,6 @@ export function Comment({ onClose }: CommentProps) {
         left: ev.clientX + window.scrollX,
       })
     },
-    dependencies: [],
   })
 
   const handleSubmit = useCallback(
