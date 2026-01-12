@@ -27,6 +27,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
     generators: new Map(),
     scripts: new Map(),
     dataFiles: new Map(),
+    browserTests: new Map(),
     proxyStatus: 'offline',
     isSettingsDialogOpen: false,
     selectedSettingsTab: 'proxy',
