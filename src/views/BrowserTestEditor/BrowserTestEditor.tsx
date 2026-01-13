@@ -31,7 +31,7 @@ export function BrowserTestEditor() {
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const { data, isLoading } = useBrowserTest(file.fileName)
 
-  const preview = useBrowserScriptPreview(data?.actions ?? [])
+  const preview = useBrowserScriptPreview()
   const { session, startDebugging } = useDebugSession({
     type: 'code',
     scriptCode: preview,

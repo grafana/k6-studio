@@ -5,7 +5,6 @@ import invariant from 'tiny-invariant'
 
 import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
-import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
@@ -29,7 +28,8 @@ export function useBrowserTest(fileName: string) {
   })
 }
 
-export function useBrowserScriptPreview(actions: BrowserTestFile['actions']) {
+// TODO: Use actions to generate the script
+export function useBrowserScriptPreview() {
   const [preview, setPreview] = useState('')
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export function useBrowserScriptPreview(actions: BrowserTestFile['actions']) {
     }
 
     void generatePreview()
-  }, [actions])
+  }, [])
 
   return preview
 }

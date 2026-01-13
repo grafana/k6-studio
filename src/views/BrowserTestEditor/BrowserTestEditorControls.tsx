@@ -63,14 +63,14 @@ export function BrowserTestEditorControls({
                 color="red"
                 onClick={(e) => e.preventDefault()}
               >
-                Delete generator
+                Delete browser test
               </DropdownMenu.Item>
             }
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       <ExportScriptDialog
-        scriptName={'my-browser-test.js'}
+        scriptName={`${file.displayName}.js`}
         onExport={onExportScript}
         open={isExportDialogOpen}
         onOpenChange={setIsExportDialogOpen}
