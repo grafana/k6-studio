@@ -33,14 +33,17 @@ export function useBrowserScriptPreview(actions: BrowserTestFile['actions']) {
   const [preview, setPreview] = useState('')
 
   useEffect(() => {
-    // Add error handling?
     async function generatePreview() {
-      const test = convertToTest({
-        browserEvents: [],
-      })
+      try {
+        const test = convertToTest({
+          browserEvents: [],
+        })
 
-      const script = await emitScript(test)
-      setPreview(script)
+        const script = await emitScript(test)
+        setPreview(script)
+      } catch (error) {
+        setPreview(`// Failed to generate preview: ${(error as Error).message}`)
+      }
     }
 
     void generatePreview()

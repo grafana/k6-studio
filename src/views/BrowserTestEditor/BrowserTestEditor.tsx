@@ -47,6 +47,8 @@ export function BrowserTestEditor() {
     storage: localStorage,
   })
 
+  console.log(mainLayout)
+
   const handleDelete = useDeleteFile({
     file,
     navigateHomeOnDelete: true,
@@ -109,7 +111,7 @@ export function BrowserTestEditor() {
                   height: 100%;
                 `}
               >
-                <Panel id="main">
+                <Panel id="main" minSize={200}>
                   <Tabs.Root asChild defaultValue="script">
                     <Flex direction="column" height="100%" width="100%">
                       <Tabs.List>
@@ -117,9 +119,9 @@ export function BrowserTestEditor() {
                           disabled
                           css={css`
                             /* 
-                        * Since we currently only have a single tab, we disable the
-                        * hover styling. This should be removed once we have more tabs.
-                        */
+                             * Since we currently only have a single tab, we disable the
+                             * hover styling. This should be removed once we have more tabs.
+                             */
                             cursor: default;
 
                             &:hover .rt-TabsTriggerInner {
