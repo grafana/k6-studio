@@ -14,7 +14,12 @@ export default defineConfig((env) => {
     base: './',
     define: {
       TARGET_PLATFORM: JSON.stringify(process.platform),
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+      process: JSON.stringify({
+        env: {
+          NODE_ENV: process.env.NODE_ENV || 'production',
+        },
+      }),
     },
     build: {
       target: 'esnext',
