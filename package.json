@@ -56,7 +56,7 @@
     "dedent": "^1.7.0",
     "dotenv": "^16.4.7",
     "electron": "37.3.1",
-    "eslint": "^8.57.0",
+    "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
