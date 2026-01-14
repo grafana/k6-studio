@@ -19,8 +19,8 @@ export const Separator = styled(SeparatorPrimitive)`
     height: 100%;
   }
 
-  &[data-separator='hover']::before,
-  &[data-separator='active']::before {
+  &[data-separator='hover']:not([data-disabled])::before,
+  &[data-separator='active']:not([data-disabled])::before {
     --separator-size: 2px;
     background-color: var(--focus-border);
   }
