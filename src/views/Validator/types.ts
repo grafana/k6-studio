@@ -7,6 +7,7 @@ import { ProxyData } from '@/types'
 export type DebuggerState = 'pending' | 'running' | 'stopped'
 
 export interface DebugSession {
+  id: string
   state: DebuggerState
   requests: ProxyData[]
   browser: {

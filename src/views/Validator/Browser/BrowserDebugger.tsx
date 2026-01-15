@@ -113,7 +113,7 @@ export function BrowserDebugger({
                       `}
                       value="replay"
                     >
-                      <SessionPlayer session={session} />
+                      <SessionPlayer key={session.id} session={session} />
                     </Tabs.Content>
                   </Flex>
                 </Tabs.Root>

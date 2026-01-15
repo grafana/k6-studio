@@ -1,12 +1,60 @@
 import 'node_modules/rrweb/dist/style.min.css'
 
 import { css } from '@emotion/react'
-import { Flex, IconButton, Slider } from '@radix-ui/themes'
+import { Flex, IconButton, Slider, Text } from '@radix-ui/themes'
 import { PauseIcon, PlayIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Replayer, ReplayerEvents } from 'rrweb'
 
 import { DebugSession } from '../types'
+
+function useThrottleGate(delay: number) {
+  const lastRunRef = useRef<number>(0)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const canRun = () => {
+    const now = Date.now()
+
+    if (now - lastRunRef.current >= delay) {
+      lastRunRef.current = now
+      return true
+    }
+
+    return false
+  }
+
+  const runWhenPossible = (callback: () => void) => {
+    if (canRun()) {
+      callback()
+      return
+    }
+
+    if (timeoutRef.current !== null) {
+      return
+    }
+
+    const timeToNextRun = delay - (Date.now() - lastRunRef.current)
+
+    timeoutRef.current = setTimeout(() => {
+      lastRunRef.current = Date.now()
+      timeoutRef.current = null
+      callback()
+    }, timeToNextRun)
+  }
+
+  return runWhenPossible
+}
+
+function formatTime(milliseconds: number) {
+  const totalSeconds = Math.floor(milliseconds / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+
+  const minutesStr = minutes.toString().padStart(2, '0')
+  const secondsStr = seconds.toString().padStart(2, '0')
+
+  return `${minutesStr}:${secondsStr}`
+}
 
 interface SessionPlayerProps {
   session: DebugSession
@@ -25,6 +73,8 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
     total: 0,
   })
 
+  const throttle = useThrottleGate(500)
+
   useEffect(() => {
     if (mount === null || playerRef.current !== null) {
       return
@@ -39,30 +89,23 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
       liveMode: true,
     })
 
-    player.startLive()
-
     player.on(ReplayerEvents.Finish, () => {
-      console.log('Replay finished')
-    })
-
-    player.on(ReplayerEvents.Pause, () => {
-      console.log('Replay paused')
       setPlaying(false)
     })
 
-    player.on(ReplayerEvents.PlayBack, () => {
-      console.log('Replay playback')
+    player.on(ReplayerEvents.Pause, () => {
+      setPlaying(false)
     })
 
     player.on(ReplayerEvents.Resume, () => {
-      console.log('Replay resumed')
       setPlaying(true)
     })
 
     player.on(ReplayerEvents.Start, () => {
-      console.log('Replay started')
       setPlaying(true)
     })
+
+    player.play()
 
     playerRef.current = player
     lastIndexRef.current = session.browser.replay.length
@@ -98,30 +141,54 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
     lastIndexRef.current = session.browser.replay.length
   }, [session.browser.replay])
 
-  // useEffect(() => {
-  //   if (!playing) {
-  //     return
-  //   }
+  useEffect(() => {
+    if (!playing) {
+      return
+    }
 
-  //   const handle = setInterval(() => {
-  //     const currentTime = replayerRef.current?.getCurrentTime() ?? 0
-  //     const { totalTime = 0 } = replayerRef.current?.getMetaData() ?? {}
+    let frame = requestAnimationFrame(function tick() {
+      const currentTime = playerRef.current?.getCurrentTime() ?? 0
+      const { totalTime = 0 } = playerRef.current?.getMetaData() ?? {}
 
-  //     setCurrentTime({
-  //       current: Math.min(currentTime, totalTime),
-  //       total: totalTime,
-  //     })
-  //   }, 200)
+      setCurrentTime({
+        current: currentTime,
+        total: totalTime,
+      })
 
-  //   return () => {
-  //     clearInterval(handle)
-  //   }
-  // }, [playing])
+      frame = requestAnimationFrame(tick)
+    })
 
-  const handleSeek = ([newTime = 0]: number[]) => {
-    playerRef.current?.play(newTime)
+    return () => {
+      cancelAnimationFrame(frame)
+    }
+  }, [playing])
 
-    setPlaying(true)
+  const handlePositionChange = ([newTime]: number[]) => {
+    if (newTime === undefined) {
+      return
+    }
+
+    throttle(() => {
+      playerRef.current?.pause(newTime)
+    })
+
+    setCurrentTime({
+      current: newTime,
+      total: currentTime.total,
+    })
+  }
+
+  const handlePositionCommit = ([newTime]: number[]) => {
+    if (newTime === undefined) {
+      return
+    }
+
+    if (playing) {
+      playerRef.current?.play(newTime)
+    } else {
+      playerRef.current?.pause(newTime)
+    }
+
     setCurrentTime({
       current: newTime,
       total: currentTime.total,
@@ -143,10 +210,39 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
           }
         `}
       >
-        <div ref={setMount}></div>
+        <div
+          css={css`
+            border: 1px solid var(--gray-a5);
+          `}
+          ref={setMount}
+        ></div>
       </div>
-      <Flex p="2" align="center" gap="4">
+      <Flex
+        css={css`
+          background-color: var(--gray-2);
+          border-top: 1px solid var(--gray-a5);
+        `}
+        py="2"
+        px="4"
+        align="center"
+        gap="4"
+      >
         <IconButton
+          css={css`
+            svg {
+              fill: var(--accent-11);
+              width: 14px !important;
+              height: 14px !important;
+              min-width: 14px !important;
+              min-height: 14px !important;
+              stroke-width: 3 !important;
+              stroke-linecap: butt !important;
+              stroke-linejoin: round;
+            }
+          `}
+          variant="ghost"
+          size="1"
+          radius="full"
           onClick={() => {
             if (playing) {
               playerRef.current?.pause()
@@ -161,11 +257,25 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
           {!playing && <PlayIcon />}
         </IconButton>
         <Slider
+          size="1"
           value={[currentTime.current]}
+          step={0.001}
           min={0}
-          max={10000}
-          onValueChange={handleSeek}
+          max={currentTime.total}
+          onValueChange={handlePositionChange}
+          onValueCommit={handlePositionCommit}
         />
+        <Text
+          asChild
+          size="1"
+          css={css`
+            white-space: nowrap;
+          `}
+        >
+          <Flex align="center" justify="end" minWidth="80px">
+            {formatTime(currentTime.current)} / {formatTime(currentTime.total)}
+          </Flex>
+        </Text>
       </Flex>
     </Flex>
   )
