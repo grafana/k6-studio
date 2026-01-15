@@ -25,6 +25,7 @@ function getDefaultExecutablePath() {
 interface SpawnArgs {
   args: Array<string[] | string | null | undefined | false>
   env?: NodeJS.ProcessEnv
+  cwd?: string
 }
 
 interface SpawnResult {
@@ -36,6 +37,7 @@ interface SpawnResult {
 interface ArchiveArgs {
   scriptPath: string
   outputPath?: string
+  cwd?: string
 }
 
 interface InspectArgs {
@@ -69,13 +71,14 @@ export class K6Client {
     this.#executablePath = executablePath
   }
 
-  async archive({ scriptPath, outputPath }: ArchiveArgs): Promise<void> {
+  async archive({ scriptPath, outputPath, cwd }: ArchiveArgs): Promise<void> {
     const process = this.#spawn('archive', {
       args: [
         outputPath && ['--archive-out', outputPath],
         ['--log-format', 'json'],
         scriptPath,
       ],
+      cwd,
     })
 
     const { code, stderr } = await this.#wait(process)
@@ -171,13 +174,14 @@ export class K6Client {
 
   #spawn(
     command: string,
-    { args, env }: SpawnArgs
+    { args, env, cwd }: SpawnArgs
   ): ChildProcessWithoutNullStreams {
     const flattenedArgs = args
       .filter((arg) => arg !== null && arg !== undefined && arg !== false)
       .flat()
 
     return spawn(this.#executablePath, [command, ...flattenedArgs], {
+      cwd,
       env: {
         ...process.env,
         ...env,
