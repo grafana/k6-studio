@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
+import { Script } from '@/handlers/cloud/types'
 import { useBrowserActions } from '@/hooks/useBrowserActions'
 import { useBrowserReplay } from '@/hooks/useBrowserSession'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
@@ -34,7 +35,7 @@ export function useScript(fileName: string) {
   })
 }
 
-export function useDebugSession(scriptPath: string) {
+export function useDebugSession(script: Script) {
   const [state, setState] = useState<DebuggerState>('pending')
   const [sessionId, setSessionId] = useState(nanoid)
 
@@ -44,6 +45,8 @@ export function useDebugSession(scriptPath: string) {
 
   const { browserActions, resetBrowserActions } = useBrowserActions()
   const { browserReplay, resetBrowserReplay } = useBrowserReplay()
+
+  const input = script.type === 'file' ? script.path : script.content
 
   const resetSession = useCallback(() => {
     setSessionId(nanoid())
@@ -61,21 +64,28 @@ export function useDebugSession(scriptPath: string) {
     resetBrowserReplay,
   ])
 
-  // Reset session when script path changes.
+  // Reset session when script or script path changes.
   useEffect(() => {
     setState('pending')
     resetSession()
-  }, [scriptPath, resetSession])
+  }, [input, resetSession])
 
   const startDebugging = useCallback(async () => {
     setState('running')
 
     resetSession()
 
-    await window.studio.script.runScript(scriptPath).catch(() => {
+    if (script.type === 'raw') {
+      await window.studio.script.runScriptFromGenerator(input).catch(() => {
+        setState('stopped')
+      })
+      return
+    }
+
+    await window.studio.script.runScript(input).catch(() => {
       setState('stopped')
     })
-  }, [scriptPath, resetSession])
+  }, [resetSession, script.type, input])
 
   const stopDebugging = useCallback(() => {
     window.studio.script.stopScript()

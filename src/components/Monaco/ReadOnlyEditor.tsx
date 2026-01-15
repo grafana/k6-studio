@@ -22,8 +22,8 @@ export function ReadOnlyEditor({ showToolbar = true, ...props }: Props) {
   return (
     <ReactMonacoEditor
       height="100%"
-      options={options}
       {...props}
+      options={{ ...props.options, ...options }}
       showToolbar={showToolbar}
     />
   )
