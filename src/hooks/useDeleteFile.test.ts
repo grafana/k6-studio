@@ -1,9 +1,11 @@
 import { renderHook } from '@testing-library/react'
 import { act } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { vi, beforeEach, describe, it, expect } from 'vitest'
+import { vi, beforeEach, afterEach, describe, it, expect } from 'vitest'
 
+import { TOAST_DURATION_MS } from '@/constants/ui'
 import { getRoutePath } from '@/routeMap'
+import { useStudioUIStore, StudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
@@ -12,10 +14,15 @@ import { useDeleteFile } from './useDeleteFile'
 vi.mock('react-router-dom', () => ({ useNavigate: vi.fn() }))
 vi.mock('@/store/ui/useToast', () => ({ useToast: vi.fn() }))
 vi.mock('@/routeMap', () => ({ getRoutePath: vi.fn() }))
+vi.mock('@/store/ui', () => ({
+  useStudioUIStore: vi.fn(),
+}))
 
 describe('useDeleteFile', () => {
   const navigate = vi.fn()
   const showToast = vi.fn()
+  const addFile = vi.fn()
+  const removeFile = vi.fn()
   const file: StudioFile = {
     type: 'recording',
     fileName: 'file-name',
@@ -23,13 +30,24 @@ describe('useDeleteFile', () => {
   }
 
   beforeEach(() => {
+    vi.useFakeTimers()
     vi.clearAllMocks()
     vi.mocked(useNavigate).mockReturnValue(navigate)
     vi.mocked(useToast).mockReturnValue(showToast)
+    vi.mocked(useStudioUIStore).mockImplementation(
+      <T>(selector: (state: StudioUIStore) => T): T => {
+        const state = { addFile, removeFile } as unknown as StudioUIStore
+        return selector(state)
+      }
+    )
     vi.stubGlobal('studio', {
       ui: { deleteFile: vi.fn().mockResolvedValue(undefined) },
     })
     vi.mocked(getRoutePath).mockReturnValue('/home')
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('should show success toast when recording deletion succeeds', async () => {
@@ -37,29 +55,44 @@ describe('useDeleteFile', () => {
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
 
-    await act(async () => {
-      await result.current()
+    act(() => {
+      result.current()
     })
 
-    expect(window.studio.ui.deleteFile).toHaveBeenCalledWith(file)
+    expect(removeFile).toHaveBeenCalledWith(file)
     expect(showToast).toHaveBeenCalledWith({
       title: 'Recording deleted',
       description: 'test-file',
       status: 'success',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      action: expect.anything(),
     })
     expect(navigate).not.toHaveBeenCalled()
+
+    // Advance timers to trigger the actual deletion
+    await act(async () => {
+      vi.advanceTimersByTime(TOAST_DURATION_MS)
+      await vi.runAllTimersAsync()
+    })
+
+    expect(window.studio.ui.deleteFile).toHaveBeenCalledWith(file)
   })
 
-  it('should navigate home when navigateHomeOnDelete is true', async () => {
+  it('should navigate home when navigateHomeOnDelete is true', () => {
     const { result } = renderHook(() =>
       useDeleteFile({ file, navigateHomeOnDelete: true })
     )
 
-    await act(async () => {
-      await result.current()
+    act(() => {
+      result.current()
     })
 
     expect(navigate).toHaveBeenCalledWith('/home')
+
+    // Clean up timer
+    act(() => {
+      vi.advanceTimersByTime(TOAST_DURATION_MS)
+    })
   })
 
   it('should show error toast when recording deletion fails', async () => {
@@ -70,10 +103,19 @@ describe('useDeleteFile', () => {
       useDeleteFile({ file, navigateHomeOnDelete: false })
     )
 
-    await act(async () => {
-      await result.current()
+    act(() => {
+      result.current()
     })
 
+    expect(removeFile).toHaveBeenCalledWith(file)
+
+    // Advance timers to trigger the actual deletion
+    await act(async () => {
+      vi.advanceTimersByTime(TOAST_DURATION_MS)
+      await vi.runAllTimersAsync()
+    })
+
+    expect(addFile).toHaveBeenCalledWith(file)
     expect(showToast).toHaveBeenCalledWith({
       title: 'Failed to delete recording',
       description: 'test-file',
