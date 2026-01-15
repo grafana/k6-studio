@@ -1,7 +1,6 @@
 import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { EllipsisVerticalIcon } from 'lucide-react'
 
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useOpenInDefaultApp } from '@/hooks/useOpenInDefaultApp'
 import { StudioFile } from '@/types'
@@ -45,18 +44,9 @@ export function DataFileControls({ fileName }: DataFileControlsProps) {
             Open containing folder
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
-          <DeleteFileDialog
-            file={file}
-            onConfirm={handleDelete}
-            trigger={
-              <DropdownMenu.Item
-                color="red"
-                onClick={(e) => e.preventDefault()}
-              >
-                Delete
-              </DropdownMenu.Item>
-            }
-          />
+          <DropdownMenu.Item color="red" onClick={handleDelete}>
+            Delete
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     </>

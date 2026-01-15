@@ -6,7 +6,6 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath } from '@/routeMap'
@@ -45,13 +44,13 @@ export function RecordingPreviewControls({
     navigateHomeOnDelete: false,
   })
 
-  const handleDiscardConfirm = async () => {
-    await handleDelete()
+  const handleDiscardConfirm = () => {
+    handleDelete()
     navigate(getRoutePath('recorder'))
   }
 
-  const handleDeleteRecordingConfirm = async () => {
-    await handleDelete()
+  const handleDeleteRecordingConfirm = () => {
+    handleDelete()
     navigate(getRoutePath('home'))
   }
 
@@ -82,16 +81,9 @@ export function RecordingPreviewControls({
   return (
     <>
       {isDiscardable ? (
-        <DeleteFileDialog
-          file={file}
-          actionLabel="Discard"
-          onConfirm={handleDiscardConfirm}
-          trigger={
-            <Button variant="outline" color="red">
-              Discard
-            </Button>
-          }
-        />
+        <Button variant="outline" color="red" onClick={handleDiscardConfirm}>
+          Discard
+        </Button>
       ) : (
         <Button variant="outline" asChild>
           <Link to={getRoutePath('recorder')}>New recording</Link>
@@ -124,18 +116,9 @@ export function RecordingPreviewControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DeleteFileDialog
-            file={file}
-            onConfirm={handleDeleteRecordingConfirm}
-            trigger={
-              <DropdownMenu.Item
-                color="red"
-                onClick={(e) => e.preventDefault()}
-              >
-                Delete
-              </DropdownMenu.Item>
-            }
-          />
+          <DropdownMenu.Item color="red" onClick={handleDeleteRecordingConfirm}>
+            Delete
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       <ExportScriptDialog

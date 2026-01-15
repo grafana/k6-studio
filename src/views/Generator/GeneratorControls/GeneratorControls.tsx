@@ -3,7 +3,6 @@ import { EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
@@ -80,18 +79,9 @@ export function GeneratorControls({
               Export script
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
-            <DeleteFileDialog
-              file={file}
-              onConfirm={handleDelete}
-              trigger={
-                <DropdownMenu.Item
-                  color="red"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  Delete generator
-                </DropdownMenu.Item>
-              }
-            />
+            <DropdownMenu.Item color="red" onClick={handleDelete}>
+              Delete generator
+            </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
         {isScriptExportable && (
