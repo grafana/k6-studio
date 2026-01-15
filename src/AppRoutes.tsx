@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom'
 
 import { Layout } from '@/components/Layout/Layout'
-import { Generator } from '@/views/Generator/Generator'
+import { BrowserTestEditor } from '@/views/BrowserTestEditor'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
 import { RecordingPreviewer } from '@/views/RecordingPreviewer'
@@ -18,6 +18,7 @@ import { Validator } from '@/views/Validator'
 import { ErrorElement } from './ErrorElement'
 import { routeMap } from './routeMap'
 import { DataFile } from './views/DataFile'
+import { Generator } from './views/Generator'
 
 const router = createHashRouter(
   createRoutesFromChildren(
@@ -33,6 +34,10 @@ const router = createHashRouter(
         element={<RecordingPreviewer />}
       />
       <Route path={routeMap.generator} element={<Generator />} />
+      <Route
+        path={routeMap.browserTestEditor}
+        element={<BrowserTestEditor />}
+      />
       <Route path={routeMap.validator} element={<Validator />} />
       <Route path={routeMap.dataFilePreviewer} element={<DataFile />} />
       <Route path="*" element={<NoRouteFound />} />

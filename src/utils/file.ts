@@ -23,7 +23,7 @@ export function getViewPath(type: StudioFileType, fileName: string) {
       return getRoutePath('generator', { fileName: encodedFileName })
 
     case 'browser-test':
-      throw new Error('Not implemented yet')
+      return getRoutePath('browserTestEditor', { fileName: encodedFileName })
 
     case 'script':
       return getRoutePath('validator', { fileName: encodedFileName })

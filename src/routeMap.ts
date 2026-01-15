@@ -6,6 +6,7 @@ const routes = {
   recordingPreviewer: '/recording-previewer/:fileName',
   validator: '/validator/:fileName?',
   generator: '/generator/:fileName',
+  browserTestEditor: '/editor/:fileName',
   dataFilePreviewer: '/data-file/:fileName',
 }
 
@@ -27,6 +28,7 @@ export const routeMap = {
   recorder: getRoutePath('recorder'),
   recordingPreviewer: getRoutePath('recordingPreviewer'),
   generator: getRoutePath('generator'),
+  browserTestEditor: getRoutePath('browserTestEditor'),
   validator: getRoutePath('validator'),
   dataFilePreviewer: getRoutePath('dataFilePreviewer'),
 }

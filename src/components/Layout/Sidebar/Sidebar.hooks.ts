@@ -17,6 +17,7 @@ function toFileMap(files: StudioFile[]) {
 function useFolderContent() {
   const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
   const generators = useStudioUIStore((s) => orderByFileName(s.generators))
+  const browserTests = useStudioUIStore((s) => orderByFileName(s.browserTests))
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
   const dataFiles = useStudioUIStore((s) => orderByFileName(s.dataFiles))
 
@@ -54,7 +55,9 @@ function useFolderContent() {
 
   return {
     recordings,
-    generators,
+    tests: [...generators, ...browserTests].sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    ),
     scripts,
     dataFiles,
   }
@@ -78,7 +81,7 @@ export function useFiles(searchTerm: string) {
 
     return {
       recordings: new Fuse(files.recordings, options),
-      generators: new Fuse(files.generators, options),
+      tests: new Fuse(files.tests, options),
       scripts: new Fuse(files.scripts, options),
       dataFiles: new Fuse(files.dataFiles, options),
     }
@@ -91,7 +94,7 @@ export function useFiles(searchTerm: string) {
 
     return {
       recordings: searchIndex.recordings.search(searchTerm).map(withMatches),
-      generators: searchIndex.generators.search(searchTerm).map(withMatches),
+      tests: searchIndex.tests.search(searchTerm).map(withMatches),
       scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
       dataFiles: searchIndex.dataFiles.search(searchTerm).map(withMatches),
     }

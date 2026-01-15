@@ -9,6 +9,7 @@ import { NewTestMenu } from '@/components/NewTestMenu'
 import { SearchField } from '@/components/SearchField'
 import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { getRoutePath } from '@/routeMap'
+import { useFeaturesStore } from '@/store/features'
 
 import { useFiles } from './Sidebar.hooks'
 
@@ -19,8 +20,11 @@ interface SidebarProps {
 
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const { recordings, generators, scripts, dataFiles } = useFiles(searchTerm)
+  const { recordings, tests, scripts, dataFiles } = useFiles(searchTerm)
   const handleImportDataFile = useImportDataFile()
+  const isBrowserEditorEnabled = useFeaturesStore(
+    (state) => state.features['browser-test-editor']
+  )
 
   return (
     <Box
@@ -78,9 +82,13 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               }
             />
             <FileTree
-              label="Test generators"
-              files={generators}
-              noFilesMessage="No generators found"
+              label={isBrowserEditorEnabled ? 'Tests' : 'Test generators'}
+              files={tests}
+              noFilesMessage={
+                isBrowserEditorEnabled
+                  ? 'No tests found'
+                  : 'No generators found'
+              }
               actions={<NewTestMenu />}
             />
             <FileTree
