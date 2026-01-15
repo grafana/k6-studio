@@ -1,5 +1,6 @@
 import { parse } from '@typescript-eslint/typescript-estree'
 import { generate } from 'astring'
+import path from 'path'
 
 import { baseProps, NodeType } from '@/codegen/estree/nodes'
 import { traverse } from '@/codegen/estree/traverse'
@@ -29,11 +30,15 @@ export const instrumentScript = ({
     throw new Error('Failed to parse entry script')
   }
 
+  // Use relative import path with ./ prefix for cross-platform compatibility
+  const scriptBasename = path.basename(scriptPath)
+  const relativePath = `./${scriptBasename}`
+
   traverse(entryAst, {
     [NodeType.ImportDeclaration](node) {
       if (node.source.value === '__USER_SCRIPT_PATH__') {
-        node.source.value = scriptPath
-        node.source.raw = JSON.stringify(scriptPath)
+        node.source.value = relativePath
+        node.source.raw = JSON.stringify(relativePath)
       }
     },
     [NodeType.VariableDeclarator](node) {

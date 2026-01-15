@@ -87,7 +87,7 @@ export interface RequestSnippetSchema {
 }
 
 export interface StudioFile {
-  type: 'recording' | 'generator' | 'script' | 'data-file'
+  type: 'recording' | 'generator' | 'script' | 'data-file' | 'browser-test'
   displayName: string
   fileName: string
 }
@@ -97,6 +97,7 @@ export type StudioFileType = StudioFile['type']
 export interface FolderContent {
   recordings: Map<string, StudioFile>
   generators: Map<string, StudioFile>
+  browserTests: Map<string, StudioFile>
   scripts: Map<string, StudioFile>
   dataFiles: Map<string, StudioFile>
 }

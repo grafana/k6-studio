@@ -75,7 +75,7 @@ describe('useDeleteFile', () => {
     })
 
     expect(showToast).toHaveBeenCalledWith({
-      title: 'Failed to delete file',
+      title: 'Failed to delete recording',
       description: 'test-file',
       status: 'error',
     })

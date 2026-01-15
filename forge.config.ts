@@ -11,8 +11,8 @@ import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
 import { getPlatform, getArch } from './src/utils/electron'
-import { spawnSignFile } from './src/utils/signing'
 import { windowsSign } from './windowsSign'
+import { spawnSignFile } from './windowsSignHook'
 
 function getPlatformSpecificResources() {
   // on mac we are using a single image to build both architectures so we
@@ -123,6 +123,7 @@ const config: ForgeConfig = {
           config: 'vite.preload.config.ts',
         },
         {
+          entry: 'extension/src/background/index.ts',
           config: 'vite.extension.config.mts',
         },
         {

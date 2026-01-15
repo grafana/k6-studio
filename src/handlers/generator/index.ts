@@ -3,7 +3,10 @@ import { writeFile, readFile } from 'fs/promises'
 import path from 'path'
 import invariant from 'tiny-invariant'
 
-import { INVALID_FILENAME_CHARS } from '@/constants/files'
+import {
+  INVALID_FILENAME_CHARS,
+  K6_GENERATOR_FILE_EXTENSION,
+} from '@/constants/files'
 import { GENERATORS_PATH } from '@/constants/workspace'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { trackEvent } from '@/services/usageTracking'
@@ -21,7 +24,7 @@ export function initialize() {
     const fileName = await createFileWithUniqueName({
       data: JSON.stringify(generator, null, 2),
       directory: GENERATORS_PATH,
-      ext: '.k6g',
+      ext: K6_GENERATOR_FILE_EXTENSION,
       prefix: 'Generator',
     })
 

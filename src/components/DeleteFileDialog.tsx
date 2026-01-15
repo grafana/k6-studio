@@ -1,14 +1,8 @@
 import { AlertDialog, Button, Flex, Text } from '@radix-ui/themes'
 import { useState, type ReactNode } from 'react'
 
+import { FileTypeToLabel } from '@/constants/files'
 import { StudioFile } from '@/types'
-
-const FileTypeToLabel: Record<StudioFile['type'], string> = {
-  recording: 'recording',
-  generator: 'generator',
-  script: 'script',
-  'data-file': 'data file',
-}
 
 interface DeleteFileDialogProps {
   file: StudioFile

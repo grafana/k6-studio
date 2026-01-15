@@ -6,7 +6,7 @@ const frontend = new BrowserExtensionClient('frontend')
 
 const studio = new BrowserExtensionClient(
   'recorder',
-  new BufferedTransport(new WebSocketTransport('ws://localhost:7554'))
+  new BufferedTransport(new WebSocketTransport('ws://127.0.0.1:7554'))
 )
 
 frontend.forward('record-events', [studio])
