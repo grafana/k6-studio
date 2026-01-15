@@ -7,6 +7,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'renderer'>
   const { root, mode } = forgeEnv
+  const nodeEnv = process.env.NODE_ENV || 'production'
 
   return {
     root,
@@ -14,7 +15,13 @@ export default defineConfig((env) => {
     base: './',
     define: {
       TARGET_PLATFORM: JSON.stringify(process.platform),
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      'process.env.NODE_ENV': JSON.stringify(nodeEnv),
+      // fix for react-is lib in packaged mode
+      process: JSON.stringify({
+        env: {
+          NODE_ENV: nodeEnv
+        },
+      }),
     },
     build: {
       target: 'esnext',
@@ -43,6 +50,8 @@ export default defineConfig((env) => {
     ],
     resolve: {
       preserveSymlinks: true,
+      // Force vite to use browser-specific package exports
+      conditions: ['browser', 'import', 'module', 'default'],
     },
     clearScreen: false,
   } as UserConfig

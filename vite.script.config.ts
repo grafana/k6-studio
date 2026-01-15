@@ -1,4 +1,4 @@
-import { ConfigEnv, defineConfig, mergeConfig } from 'vite'
+import { ConfigEnv, defineConfig, mergeConfig, UserConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { getBuildConfig } from './vite.base.config'
@@ -10,17 +10,15 @@ export default defineConfig((env) => {
     build: {
       sourcemap: false,
       target: 'esnext',
+      lib: {
+        entry: 'src/main/runner/entrypoint.ts',
+        fileName: () => 'entrypoint.js',
+        formats: ['es'],
+      },
       outDir: 'resources',
       rollupOptions: {
         // By default, Vite will remove any top-level exports for entry files. This
         // disabled that behavior.
-        preserveEntrySignatures: 'strict',
-        input: {
-          entrypoint: 'src/main/runner/entrypoint.ts',
-        },
-        output: {
-          entryFileNames: '[name].js',
-        },
         external: [
           'k6',
           'k6/http',
@@ -30,5 +28,5 @@ export default defineConfig((env) => {
         ],
       },
     },
-  })
+  } satisfies UserConfig)
 })
