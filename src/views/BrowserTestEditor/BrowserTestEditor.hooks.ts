@@ -42,7 +42,9 @@ export function useBrowserScriptPreview() {
         const script = await emitScript(test)
         setPreview(script)
       } catch (error) {
-        setPreview(`// Failed to generate preview: ${(error as Error).message}`)
+        setPreview(
+          `// Failed to generate preview: ${error instanceof Error ? error.message : String(error)}`
+        )
       }
     }
 

@@ -28,7 +28,7 @@ function Content({ scriptPath }: ValidatorProps) {
 
   const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'file',
-    scriptPath,
+    path: scriptPath,
   })
 
   const isRunning = session?.state === 'running'

@@ -55,7 +55,9 @@ function useFolderContent() {
 
   return {
     recordings,
-    tests: [...generators, ...browserTests],
+    tests: [...generators, ...browserTests].sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    ),
     scripts,
     dataFiles,
   }

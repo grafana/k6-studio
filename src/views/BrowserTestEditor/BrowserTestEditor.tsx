@@ -35,8 +35,9 @@ export function BrowserTestEditor() {
 
   const preview = useBrowserScriptPreview()
   const { session, startDebugging } = useDebugSession({
-    type: 'code',
-    scriptCode: preview,
+    type: 'raw',
+    content: preview,
+    name: file.fileName,
   })
 
   const [drawer, setDrawer] = usePanelCallbackRef()
