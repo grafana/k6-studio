@@ -2,7 +2,6 @@ import { Button, DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
 import { EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
 
-import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { StudioFile } from '@/types'
 
@@ -55,18 +54,9 @@ export function BrowserTestEditorControls({
           <DropdownMenu.Item onClick={() => setIsExportDialogOpen(true)}>
             Export script
           </DropdownMenu.Item>
-          <DeleteFileDialog
-            file={file}
-            onConfirm={onDelete}
-            trigger={
-              <DropdownMenu.Item
-                color="red"
-                onClick={(e) => e.preventDefault()}
-              >
-                Delete browser test
-              </DropdownMenu.Item>
-            }
-          />
+          <DropdownMenu.Item color="red" onClick={onDelete}>
+            Delete browser test
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
       <ExportScriptDialog
