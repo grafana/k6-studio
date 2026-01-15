@@ -18,35 +18,32 @@ function isTopLevelFrame() {
 }
 
 if (trackingServerUrl !== null && isTopLevelFrame()) {
-  console.log('Session replay script loaded.', window.location.href)
-
   let buffer: eventWithTime[] = []
 
-  setInterval(async () => {
-    if (buffer.length === 0) {
-      return
+  setTimeout(async function send() {
+    if (buffer.length > 0) {
+      const events = buffer
+
+      buffer = []
+
+      try {
+        const url = `${trackingServerUrl}/session-replay`
+
+        await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ events }),
+        })
+      } catch (err) {
+        // Put events back in the buffer and retry later
+        buffer = [...events, ...buffer]
+      }
     }
 
-    const events = buffer
-
-    buffer = []
-
-    try {
-      const url = `${trackingServerUrl}/session-replay`
-
-      await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ events }),
-      })
-    } catch (err) {
-      // Swallow errors to not interfere with the main script
-    }
+    setTimeout(send, 200)
   }, 200)
-
-  console.log('Starting session replay recording.')
 
   record({
     emit(event) {

@@ -72,7 +72,11 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     })
   )
 
-  app.use(json())
+  app.use(
+    json({
+      limit: '100mb',
+    })
+  )
 
   app.post('/track/:id/begin', (req, res) => {
     const parsed = ActionBeginEventSchema.safeParse(req.body)

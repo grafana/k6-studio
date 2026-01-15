@@ -34,7 +34,7 @@ export function trackLog(entry: LogEntry) {
   }
 
   try {
-    const body = JSON.stringify({ entry } satisfies { entry: LogEntry })
+    const body = JSON.stringify(entry)
 
     http.post(`${TRACKING_SERVER_URL}/log`, body, {
       headers: { 'Content-Type': 'application/json' },
