@@ -8,7 +8,6 @@ interface DeleteFileDialogProps {
   file: StudioFile
   trigger: ReactNode
   actionLabel?: string
-  description?: string
   onConfirm: () => void | Promise<void>
 }
 
@@ -16,7 +15,6 @@ export function DeleteFileDialog({
   file,
   trigger,
   actionLabel = 'Delete',
-  description,
   onConfirm,
 }: DeleteFileDialogProps) {
   const [open, setOpen] = useState(false)
@@ -37,11 +35,8 @@ export function DeleteFileDialog({
       </AlertDialog.Trigger>
       <AlertDialog.Content size="2" maxWidth="480px">
         <AlertDialog.Title size="3">
-          Delete {FileTypeToLabel[file.type]}
+          Delete {FileTypeToLabel[file.type]}?
         </AlertDialog.Title>
-        <AlertDialog.Description size="2" mb="3">
-          {description ?? 'This action cannot be undone.'}
-        </AlertDialog.Description>
 
         <Text size="2" color="gray" mb="3" as="div">
           {file.displayName}

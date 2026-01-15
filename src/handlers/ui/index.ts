@@ -46,7 +46,13 @@ export function initialize() {
     console.info(`${UIHandler.DeleteFile} event received`)
 
     const filePath = getFilePath(file)
-    return unlink(filePath)
+
+    try {
+      await shell.trashItem(filePath)
+    } catch (error) {
+      log.error('Failed to move file to trash, deleting permanently', error)
+      await unlink(filePath)
+    }
   })
 
   ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {

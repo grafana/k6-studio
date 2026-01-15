@@ -84,8 +84,7 @@ export function RecordingPreviewControls({
       {isDiscardable ? (
         <DeleteFileDialog
           file={file}
-          actionLabel="Discard"
-          description="Discard this recording? This cannot be undone."
+          actionLabel="Discard this recording"
           onConfirm={handleDiscardConfirm}
           trigger={
             <Button variant="outline" color="red">
