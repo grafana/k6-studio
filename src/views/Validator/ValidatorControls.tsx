@@ -30,7 +30,6 @@ export function ValidatorControls({
 
   const handleDelete = useDeleteFile({
     file,
-    navigateHomeOnDelete: true,
   })
 
   return (

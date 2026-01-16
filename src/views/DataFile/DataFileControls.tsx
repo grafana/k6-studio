@@ -25,7 +25,6 @@ export function DataFileControls({ fileName }: DataFileControlsProps) {
 
   const handleDelete = useDeleteFile({
     file,
-    navigateHomeOnDelete: true,
   })
 
   return (

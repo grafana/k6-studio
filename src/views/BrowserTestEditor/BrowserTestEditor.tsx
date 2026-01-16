@@ -54,7 +54,6 @@ export function BrowserTestEditor() {
 
   const handleDelete = useDeleteFile({
     file,
-    navigateHomeOnDelete: true,
   })
 
   const handleRunInCloud = () => {

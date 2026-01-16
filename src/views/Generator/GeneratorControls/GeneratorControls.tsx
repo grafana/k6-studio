@@ -45,7 +45,6 @@ export function GeneratorControls({
 
   const handleDelete = useDeleteFile({
     file,
-    navigateHomeOnDelete: true,
   })
 
   return (

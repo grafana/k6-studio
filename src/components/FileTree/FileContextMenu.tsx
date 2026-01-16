@@ -7,17 +7,15 @@ import { StudioFile } from '@/types'
 
 interface FileContextMenuProps {
   file: StudioFile
-  isSelected: boolean
   onRename: () => void
 }
 
 export function FileContextMenu({
   file,
   children,
-  isSelected,
   onRename,
 }: PropsWithChildren<FileContextMenuProps>) {
-  const items = useFileContextMenuItems({ file, isSelected, onRename })
+  const items = useFileContextMenuItems({ file, onRename })
 
   return (
     <ContextMenu.Root>
@@ -32,12 +30,8 @@ export function FileContextMenu({
   )
 }
 
-export function FileActionsMenu({
-  file,
-  isSelected,
-  onRename,
-}: FileContextMenuProps) {
-  const items = useFileContextMenuItems({ file, isSelected, onRename })
+export function FileActionsMenu({ file, onRename }: FileContextMenuProps) {
+  const items = useFileContextMenuItems({ file, onRename })
 
   return (
     <DropdownMenu.Root>
@@ -58,13 +52,11 @@ export function FileActionsMenu({
 
 interface UseFileContextMenuItemsArgs {
   file: StudioFile
-  isSelected: boolean
   onRename: () => void
 }
 
 function useFileContextMenuItems({
   file,
-  isSelected,
   onRename,
 }: UseFileContextMenuItemsArgs): FileContextMenuItem[] {
   const handleOpenFolder = () => {
@@ -73,7 +65,6 @@ function useFileContextMenuItems({
 
   const handleDelete = useDeleteFile({
     file,
-    navigateHomeOnDelete: isSelected,
   })
 
   return [

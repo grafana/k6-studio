@@ -1,5 +1,6 @@
 import { Box, IconButton } from '@radix-ui/themes'
 import { CircleCheckIcon, CircleXIcon, XIcon } from 'lucide-react'
+import { useEffect } from 'react'
 
 import { Toast as ToastProps } from '@/types/toast'
 import { exhaustive } from '@/utils/typescript'
@@ -14,6 +15,12 @@ import {
 } from './Toast.styles'
 
 export function Toast({ toast }: { toast: ToastProps }) {
+  useEffect(() => {
+    return () => {
+      toast.onClose?.()
+    }
+  }, [toast])
+
   return (
     <ToastRoot>
       {toast.status !== 'default' && (

@@ -41,7 +41,6 @@ export function RecordingPreviewControls({
 
   const handleDelete = useDeleteFile({
     file,
-    navigateHomeOnDelete: false,
   })
 
   const handleDiscardConfirm = () => {

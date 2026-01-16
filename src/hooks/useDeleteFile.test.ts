@@ -51,9 +51,7 @@ describe('useDeleteFile', () => {
   })
 
   it('should show success toast when recording deletion succeeds', async () => {
-    const { result } = renderHook(() =>
-      useDeleteFile({ file, navigateHomeOnDelete: false })
-    )
+    const { result } = renderHook(() => useDeleteFile({ file }))
 
     act(() => {
       result.current()
@@ -79,9 +77,7 @@ describe('useDeleteFile', () => {
   })
 
   it('should navigate home when navigateHomeOnDelete is true', () => {
-    const { result } = renderHook(() =>
-      useDeleteFile({ file, navigateHomeOnDelete: true })
-    )
+    const { result } = renderHook(() => useDeleteFile({ file }))
 
     act(() => {
       result.current()
@@ -99,9 +95,7 @@ describe('useDeleteFile', () => {
     const error = new Error('delete failed')
     window.studio.ui.deleteFile = vi.fn().mockRejectedValue(error)
 
-    const { result } = renderHook(() =>
-      useDeleteFile({ file, navigateHomeOnDelete: false })
-    )
+    const { result } = renderHook(() => useDeleteFile({ file }))
 
     act(() => {
       result.current()

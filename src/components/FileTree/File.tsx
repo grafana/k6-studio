@@ -31,11 +31,7 @@ export function File({ file, isSelected }: FileProps) {
   const [editMode, setEditMode] = useBoolean(false)
 
   return (
-    <FileContextMenu
-      file={file}
-      isSelected={isSelected}
-      onRename={() => setEditMode(true)}
-    >
+    <FileContextMenu file={file} onRename={() => setEditMode(true)}>
       <Grid
         columns="1fr auto"
         align="center"
@@ -62,11 +58,7 @@ export function File({ file, isSelected }: FileProps) {
           editMode={editMode}
           setEditMode={setEditMode}
         />
-        <FileActionsMenu
-          file={file}
-          isSelected={isSelected}
-          onRename={() => setEditMode(true)}
-        />
+        <FileActionsMenu file={file} onRename={() => setEditMode(true)} />
       </Grid>
     </FileContextMenu>
   )
