@@ -22,6 +22,7 @@ module.exports = {
     'resources/*.js',
     'install-k6.js',
     '.eslintrc.cjs',
+    'eslint.config.js',
     '**/__snapshots__/',
   ],
   plugins: [
@@ -59,6 +60,10 @@ module.exports = {
       'error',
       { checksVoidReturn: false },
     ],
+    '@typescript-eslint/no-unused-expressions': [
+      'error',
+      { allowShortCircuit: true, allowTernary: true, allowTaggedTemplates: true },
+    ],
     'import/order': [
       'warn',
       {
@@ -74,6 +79,9 @@ module.exports = {
       },
     ],
     'import/no-unresolved': ['error', { ignore: ['^k6'] }],
+    'react-hooks/set-state-in-effect': 'off',
+    'react-hooks/purity': 'off',
+    'react-hooks/incompatible-library': 'off',
   },
 
   parserOptions: {
