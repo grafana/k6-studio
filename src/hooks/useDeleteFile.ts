@@ -29,7 +29,7 @@ export function useDeleteFile({
       if (navigateHomeOnDelete) {
         navigate(getRoutePath('home'))
       }
-    } catch (error) {
+    } catch {
       showToast({
         title: `Failed to delete ${FileTypeToLabel[file.type]}`,
         description: file.displayName,

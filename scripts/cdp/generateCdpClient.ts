@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 /**
  * By generating the client we can detect breaking changes in CDP by:
  
@@ -39,6 +37,7 @@ const SCRIPT_BANNER = dedent`
 
   /* eslint-disable @typescript-eslint/no-namespace */
   /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
+  /* eslint-disable @typescript-eslint/no-empty-object-type */
 `
 
 const BASE_DEFINITIONS = parse(`

@@ -70,12 +70,14 @@ interface FailedTestResult {
 
 type TestResult = PassedTestResult | FailedTestResult
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TestRunStartEvent {}
 
 export interface TestRunErrorEvent {
   error: Error
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TestRunAbortEvent {}
 
 export interface TestRunDoneEvent {

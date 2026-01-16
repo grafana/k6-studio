@@ -44,7 +44,9 @@ export const useGenerateRules = ({
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
 
-  suggestedRulesRef.current = suggestedRules
+  useEffect(() => {
+    suggestedRulesRef.current = suggestedRules
+  }, [suggestedRules])
 
   const {
     sendMessage,
@@ -220,11 +222,11 @@ export const useGenerateRules = ({
     }
   }
 
-  function stop() {
+  const stop = useCallback(() => {
     void stopGeneration()
     setCorrelationStatus('aborted')
     abortControllerRef.current?.abort()
-  }
+  }, [stopGeneration])
 
   function restart() {
     setSuggestedRules([])
@@ -251,7 +253,7 @@ export const useGenerateRules = ({
     outcomeReason,
     tokenUsage,
     restart,
-    stop: useCallback(stop, [stopGeneration]),
+    stop,
   }
 }
 

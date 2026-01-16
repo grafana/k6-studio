@@ -37,7 +37,11 @@ export function waitFor<T>({ event, signal, timeout }: WaitForOptions) {
 
       ipcMain.removeListener(event, handleMessage)
 
-      reject(signal.reason)
+      reject(
+        signal.reason instanceof Error
+          ? signal.reason
+          : new Error(String(signal.reason))
+      )
     }
 
     const handleMessage = (_: IpcMainEvent, data: T) => {
