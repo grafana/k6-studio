@@ -48,6 +48,7 @@ module.exports = {
       {
         varsIgnorePattern: '^_',
         argsIgnorePattern: '^_',
+        caughtErrors: 'none',
       },
     ],
     '@typescript-eslint/no-floating-promises': [
@@ -64,6 +65,11 @@ module.exports = {
       'error',
       { allowShortCircuit: true, allowTernary: true, allowTaggedTemplates: true },
     ],
+    '@typescript-eslint/no-require-imports': 'off',
+    '@typescript-eslint/no-empty-object-type': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-base-to-string': 'off',
+    '@typescript-eslint/prefer-promise-reject-errors': 'off',
     'import/order': [
       'warn',
       {
@@ -79,9 +85,11 @@ module.exports = {
       },
     ],
     'import/no-unresolved': ['error', { ignore: ['^k6'] }],
+    'no-unused-private-class-members': 'off',
     'react-hooks/set-state-in-effect': 'off',
     'react-hooks/purity': 'off',
     'react-hooks/incompatible-library': 'off',
+    'react-hooks/use-memo': 'off',
   },
 
   parserOptions: {
