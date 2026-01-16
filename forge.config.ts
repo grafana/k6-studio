@@ -3,10 +3,12 @@ import { MakerDeb } from '@electron-forge/maker-deb'
 import { MakerDMG } from '@electron-forge/maker-dmg'
 import { MakerRpm } from '@electron-forge/maker-rpm'
 import { MakerSquirrel } from '@electron-forge/maker-squirrel'
+import { MakerWix } from '@electron-forge/maker-wix'
 import { MakerZIP } from '@electron-forge/maker-zip'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
 import type { ForgeConfig, ForgeMakeResult } from '@electron-forge/shared-types'
+import { execSync } from 'child_process'
 import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
@@ -91,6 +93,39 @@ const config: ForgeConfig = {
     new MakerSquirrel({
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
+    }),
+    new MakerWix({
+      windowsSign: {
+        hookFunction: (filePath: string) => {
+          const certificateFile = process.env.WINDOWS_CERTIFICATE_PATH
+          const certificatePassword = process.env.WINDOWS_CERTIFICATE_PASSWORD
+
+          if (!certificateFile || !certificatePassword) {
+            console.log('Skipping signing: No certificate configured')
+            return
+          }
+
+          const command = `node_modules\\@electron\\windows-sign\\vendor\\signtool.exe sign /f "${certificateFile}" /p "${certificatePassword}" /fd sha256 /tr http://timestamp.digicert.com /td sha256 "${filePath}"`
+
+          try {
+            execSync(command, { stdio: 'inherit' })
+            console.log(`Successfully signed: ${filePath}`)
+          } catch (error) {
+            console.error(`Failed to sign ${filePath}:`, error)
+            throw error
+          }
+        },
+      },
+      manufacturer: 'Grafana Labs',
+      icon: './resources/icons/logo.ico',
+      features: {
+        autoUpdate: true,
+        autoLaunch: false,
+      },
+      ui: {
+        chooseDirectory: true,
+      },
+      nestedFolderName: 'k6-Studio',
     }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG(

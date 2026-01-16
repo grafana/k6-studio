@@ -1,7 +1,7 @@
 {
   "name": "k6-studio",
   "productName": "k6 Studio",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "k6 Studio",
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
@@ -30,6 +30,7 @@
     "@electron-forge/maker-dmg": "^7.10.2",
     "@electron-forge/maker-rpm": "^7.10.2",
     "@electron-forge/maker-squirrel": "^7.10.2",
+    "@electron-forge/maker-wix": "^7.11.1",
     "@electron-forge/maker-zip": "^7.10.2",
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
     "@electron-forge/plugin-fuses": "^7.10.2",
