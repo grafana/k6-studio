@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.10.1](https://github.com/grafana/k6-studio/compare/v1.10.0...v1.10.1) (2026-01-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency devtools-protocol to ^0.0.1568225 ([#992](https://github.com/grafana/k6-studio/issues/992)) ([b7e98e6](https://github.com/grafana/k6-studio/commit/b7e98e6a7ce09cc37fe3bd07b85a396a6226e5fc))
+
+
+### Internal Changes
+
+* **browser:** Add browser test editor UI ([#1005](https://github.com/grafana/k6-studio/issues/1005)) ([ec89b04](https://github.com/grafana/k6-studio/commit/ec89b042d6af79f1e03f5c1d21c372025e26a143))
+
+
+### Miscellaneous Chores
+
+* **deps:** update actions/checkout action to v6 ([#1001](https://github.com/grafana/k6-studio/issues/1001)) ([0cd6bfb](https://github.com/grafana/k6-studio/commit/0cd6bfb572b35fcddf817443cc1843d66639582f))
+* **deps:** update actions/create-github-app-token action to v2 ([#1002](https://github.com/grafana/k6-studio/issues/1002)) ([cb92991](https://github.com/grafana/k6-studio/commit/cb9299149f6cf8a55f8a7eb25dd4965ff899b00d))
+* **deps:** update actions/setup-node action to v5 ([#1018](https://github.com/grafana/k6-studio/issues/1018)) ([39370f1](https://github.com/grafana/k6-studio/commit/39370f16db09d4aaa53c8de0d2be5f6b1c12453e))
+* **deps:** update actions/setup-python action to v6 ([#1019](https://github.com/grafana/k6-studio/issues/1019)) ([cccdb97](https://github.com/grafana/k6-studio/commit/cccdb9765818675d81882914ed42207ca174a718))
+* **deps:** update dependency dotenv to v17 ([#1021](https://github.com/grafana/k6-studio/issues/1021)) ([5dc68b0](https://github.com/grafana/k6-studio/commit/5dc68b046e70c70bcad9f671d4b374e187586635))
+* **deps:** update dependency esbuild to ^0.27.0 ([#996](https://github.com/grafana/k6-studio/issues/996)) ([3a7d5fa](https://github.com/grafana/k6-studio/commit/3a7d5fa66bdb4d73592b2327c0242e0a98f93820))
+* **deps:** update dependency undici to v7.18.2 [security] ([#1012](https://github.com/grafana/k6-studio/issues/1012)) ([ce37d0d](https://github.com/grafana/k6-studio/commit/ce37d0dd21a6f0de2708e9d3114cda0ec7200be8))
+* **deps:** update grafana/shared-workflows/get-vault-secrets action to v1.3.0 ([#998](https://github.com/grafana/k6-studio/issues/998)) ([d8e330c](https://github.com/grafana/k6-studio/commit/d8e330c0b6fd8bf06ce6da42f9d25b1dd88ebe8b))
+* **deps:** update react monorepo ([#991](https://github.com/grafana/k6-studio/issues/991)) ([43999ca](https://github.com/grafana/k6-studio/commit/43999ca17bcd6ab98b308f12006915b253d8f508))
+
 ## [1.10.0](https://github.com/grafana/k6-studio/compare/v1.9.0...v1.10.0) (2026-01-15)
 
 
