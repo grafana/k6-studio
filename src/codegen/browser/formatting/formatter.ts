@@ -1,4 +1,4 @@
-/* eslint-disable import/default */
+/* eslint-disable import-x/default */
 import type { TSESTree as ts } from '@typescript-eslint/types'
 import {
   AstPath,
