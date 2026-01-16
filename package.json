@@ -65,7 +65,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-unused-imports": "^3.2.0",
     "husky": "^9.0.11",
-    "jsdom": "^25.0.0",
+    "jsdom": "^27.0.0",
     "lint-staged": "^15.2.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
