@@ -97,6 +97,7 @@ resources/certificates
 # k6 binary
 resources/mac/arm64/k6
 resources/mac/x86_64/k6
+resources/linux/arm64/k6
 resources/linux/x86_64/k6
 resources/win/x86_64/k6.exe
 
