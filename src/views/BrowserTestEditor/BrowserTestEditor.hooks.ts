@@ -1,10 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
+import {
+  useDefaultLayout,
+  usePanelCallbackRef,
+} from '@/components/primitives/ResizablePanel'
+import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
@@ -26,6 +31,35 @@ export function useBrowserTest(fileName: string) {
       return window.studio.browserTest.open(fileName)
     },
   })
+}
+
+export function useSaveBrowserTest(fileName: string) {
+  return useMutation({
+    mutationFn: (data: BrowserTestFile) => {
+      return window.studio.browserTest.save(fileName, data)
+    },
+  })
+}
+
+export function useBrowserTestEditorLayout() {
+  const [drawer, setDrawer] = usePanelCallbackRef()
+
+  const drawerLayout = useDefaultLayout({
+    groupId: 'browser-editor-drawer',
+    storage: localStorage,
+  })
+  const mainLayout = useDefaultLayout({
+    groupId: 'browser-editor-main',
+    storage: localStorage,
+  })
+
+  function onTabClick() {
+    if (drawer?.isCollapsed()) {
+      drawer?.resize(300)
+    }
+  }
+
+  return { drawerLayout, mainLayout, setDrawer, onTabClick }
 }
 
 // TODO: Use actions to generate the script

@@ -1,21 +1,13 @@
 import { css } from '@emotion/react'
-import { Button, Flex, Heading, Tabs } from '@radix-ui/themes'
-import { useState } from 'react'
+import { Flex, Tabs } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 
-import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
-import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { LogsSection } from '@/components/Validator/LogsSection'
-import {
-  Group,
-  Panel,
-  Separator,
-  useDefaultLayout,
-  usePanelCallbackRef,
-} from '@/components/primitives/ResizablePanel'
-import { useDeleteFile } from '@/hooks/useDeleteFile'
+import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { AnyBrowserAction } from '@/main/runner/schema'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
 import { useDebugSession } from '../Validator/Validator.hooks'
@@ -23,15 +15,33 @@ import { useDebugSession } from '../Validator/Validator.hooks'
 import {
   useBrowserScriptPreview,
   useBrowserTest,
+  useBrowserTestEditorLayout,
   useBrowserTestFile,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
+import { EditableBrowserActionList } from './EditableBrowserActionList'
 
 export function BrowserTestEditor() {
+  const { drawerLayout, mainLayout, setDrawer, onTabClick } =
+    useBrowserTestEditorLayout()
   const file = useBrowserTestFile()
 
-  const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const { data, isLoading } = useBrowserTest(file.fileName)
+
+  const [actions, setActions] = useState<AnyBrowserAction[]>(
+    data?.actions || []
+  )
+
+  // Keep actions in sync when data changes
+  useEffect(() => {
+    if (data) {
+      setActions(data.actions)
+    }
+  }, [data])
+
+  const handleAddAction = (action: AnyBrowserAction) => {
+    setActions((prevActions) => [...prevActions, action])
+  }
 
   const preview = useBrowserScriptPreview()
   const { session, startDebugging } = useDebugSession({
@@ -40,61 +50,21 @@ export function BrowserTestEditor() {
     name: file.fileName,
   })
 
-  const [drawer, setDrawer] = usePanelCallbackRef()
-  const drawerLayout = useDefaultLayout({
-    groupId: 'browser-editor-drawer',
-    storage: localStorage,
-  })
-  const mainLayout = useDefaultLayout({
-    groupId: 'browser-editor-main',
-    storage: localStorage,
-  })
-
-  console.log(mainLayout)
-
-  const handleDelete = useDeleteFile({
-    file,
-    navigateHomeOnDelete: true,
-  })
-
-  const handleRunInCloud = () => {
-    setIsRunInCloudDialogOpen(true)
-  }
-
-  const handleExportScript = (scriptName: string) => {
-    void window.studio.script.saveScript(preview, scriptName)
-  }
-
-  // TODO: currently re-saves the opened file without changes.
-  // Replace with actual save logic when adding browser actions is implemented.
-  const handleSave = () => {
-    if (!data) {
-      return
-    }
-    void window.studio.browserTest.save(file.fileName, data)
-  }
-
-  const handleTabClick = () => {
-    if (drawer?.isCollapsed()) {
-      drawer?.resize(300)
-    }
-  }
-
   return (
     <View
       title="Browser test"
       subTitle={<FileNameHeader file={file} />}
       loading={isLoading}
       actions={
-        <BrowserTestEditorControls
-          file={file}
-          session={session}
-          onDelete={handleDelete}
-          onExportScript={handleExportScript}
-          onRunInCloud={handleRunInCloud}
-          onSave={handleSave}
-          onStartDebugging={startDebugging}
-        />
+        data ? (
+          <BrowserTestEditorControls
+            data={data}
+            file={file}
+            preview={preview}
+            session={session}
+            onStartDebugging={startDebugging}
+          />
+        ) : null
       }
     >
       <Flex flexGrow="1" direction="column" align="stretch">
@@ -155,58 +125,25 @@ export function BrowserTestEditor() {
                             showToolbar={false}
                             language="typescript"
                           />
-                          <RunInCloudDialog
-                            open={isRunInCloudDialogOpen}
-                            script={{
-                              type: 'raw',
-                              name: file.fileName,
-                              content: preview,
-                            }}
-                            onOpenChange={setIsRunInCloudDialogOpen}
-                          />
                         </Tabs.Content>
                       </Flex>
                     </Tabs.Root>
                   </Panel>
                   <Separator />
                   <Panel id="actions" minSize={400}>
-                    <Flex direction="column" height="100%">
-                      <Flex
-                        justify="between"
-                        pr="2"
-                        css={css`
-                          border-bottom: 1px solid var(--gray-a5);
-                        `}
-                      >
-                        <Flex align="center" gap="1">
-                          <Heading
-                            size="2"
-                            weight="medium"
-                            css={css`
-                              min-height: 40px;
-                              padding: 0 var(--space-2);
-                              display: flex;
-                              align-items: center;
-                            `}
-                          >
-                            Browser actions ({data?.actions.length ?? 0})
-                          </Heading>
-                        </Flex>
-                      </Flex>
-                      <EmptyMessage
-                        message="Build your browser test by adding actions."
-                        action={<Button disabled>Add action</Button>}
-                      />
-                    </Flex>
+                    <EditableBrowserActionList
+                      actions={actions}
+                      onAddAction={handleAddAction}
+                    />
                   </Panel>
                 </Group>
               </Panel>
               <Separator />
               <Tabs.List>
-                <Tabs.Trigger value="console" onClick={handleTabClick}>
+                <Tabs.Trigger value="console" onClick={onTabClick}>
                   Console ({session.logs.length})
                 </Tabs.Trigger>
-                <Tabs.Trigger value="network" onClick={handleTabClick}>
+                <Tabs.Trigger value="network" onClick={onTabClick}>
                   Network ({session.requests.length})
                 </Tabs.Trigger>
               </Tabs.List>
