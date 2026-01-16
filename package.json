@@ -55,7 +55,7 @@
     "@typescript-eslint/parser": "^7.16.1",
     "@typescript-eslint/types": "^8.21.0",
     "dedent": "^1.7.0",
-    "dotenv": "^16.4.7",
+    "dotenv": "^17.0.0",
     "electron": "37.3.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
