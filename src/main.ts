@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/electron/main'
 import { app, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
+import electronSquirrelStartup from 'electron-squirrel-startup'
 import path from 'path'
 import { updateElectronApp } from 'update-electron-app'
 
@@ -44,7 +45,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+if (electronSquirrelStartup) {
   app.quit()
 }
 

@@ -48,7 +48,7 @@ export const isJsonReqResp = (reqResp: Request | Response) => {
   // check content
   try {
     JSON.parse(reqResp.content ?? '')
-  } catch (error) {
+  } catch (_error) {
     return false
   }
 
@@ -59,7 +59,7 @@ export function urlToQueryParams(url: string): Query[] {
   try {
     const urlObj = new URL(url)
     return Array.from(urlObj.searchParams.entries())
-  } catch (error) {
+  } catch (_error) {
     return []
   }
 }

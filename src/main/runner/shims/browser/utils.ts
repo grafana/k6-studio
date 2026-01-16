@@ -213,7 +213,8 @@ export function createProxy<T extends object>({
         }
 
         try {
-          const result: unknown = original(...args)
+          const callable = original as (...args: ArgsOf<T[keyof T]>) => unknown
+          const result: unknown = callable(...args)
 
           // We can't use await here because it would make the proxy function
           // async whereas the original function might not have been.

@@ -37,7 +37,21 @@ export function waitFor<T>({ event, signal, timeout }: WaitForOptions) {
 
       ipcMain.removeListener(event, handleMessage)
 
-      reject(signal.reason)
+      const abortReason = signal.reason
+
+      if (abortReason instanceof Error) {
+        reject(abortReason)
+
+        return
+      }
+
+      reject(
+        new Error(
+          typeof abortReason === 'string'
+            ? abortReason
+            : 'Abort signal triggered'
+        )
+      )
     }
 
     const handleMessage = (_: IpcMainEvent, data: T) => {

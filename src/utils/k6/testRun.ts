@@ -70,13 +70,13 @@ interface FailedTestResult {
 
 type TestResult = PassedTestResult | FailedTestResult
 
-export interface TestRunStartEvent {}
+export type TestRunStartEvent = Record<string, never>
 
 export interface TestRunErrorEvent {
   error: Error
 }
 
-export interface TestRunAbortEvent {}
+export type TestRunAbortEvent = Record<string, never>
 
 export interface TestRunDoneEvent {
   result: TestResult

@@ -56,7 +56,7 @@ export async function validateScript(
       .runScriptFromGenerator(script, shouldTrack)
       .catch((error) => {
         cleanup()
-        reject(error)
+        reject(error instanceof Error ? error : new Error('Script validation failed'))
       })
   })
 }

@@ -164,25 +164,6 @@ export class Page extends EventEmitter<PageEventMap> {
     this.#startedNavigation = null
   }
 
-  /**
-   * Convenience method to log page events for debugging purposes
-   */
-  #trace() {
-    const events: Array<keyof CdpPage.EventMap> = [
-      'frameRequestedNavigation',
-      'frameStartedNavigating',
-      'frameNavigated',
-      'frameStartedLoading',
-      'frameStoppedLoading',
-    ]
-
-    for (const eventName of events) {
-      this.#client.page.on(eventName, ({ data }) => {
-        console.log(eventName, data)
-      })
-    }
-  }
-
   dispose() {
     this.#script.remove(this.#client).catch(() => {
       // Let's just assume we got here because the session was already

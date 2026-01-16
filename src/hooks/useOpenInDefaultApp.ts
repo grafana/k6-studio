@@ -15,7 +15,7 @@ export function useOpenInDefaultApp(file: StudioFile) {
       if (error) {
         throw new Error(error)
       }
-    } catch (error) {
+    } catch (_error) {
       showToast({
         title: `Failed to open file`,
         status: 'error',
