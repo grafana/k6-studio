@@ -43,8 +43,9 @@ export const useGenerateRules = ({
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
-
-  suggestedRulesRef.current = suggestedRules
+  useEffect(() => {
+    suggestedRulesRef.current = suggestedRules
+  }, [suggestedRules])
 
   const {
     sendMessage,
