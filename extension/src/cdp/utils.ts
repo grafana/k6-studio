@@ -1,7 +1,7 @@
 export function isInFrame() {
   try {
     return window.self !== window.top
-  } catch (e) {
+  } catch (_error) {
     return true
   }
 }

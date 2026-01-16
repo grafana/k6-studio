@@ -55,10 +55,19 @@ module.exports = {
         ignoreIIFE: true,
       },
     ],
+    '@typescript-eslint/no-unused-expressions': [
+      'error',
+      {
+        allowShortCircuit: true,
+        allowTernary: true,
+      },
+    ],
     '@typescript-eslint/no-misused-promises': [
       'error',
       { checksVoidReturn: false },
     ],
+    'react-hooks/set-state-in-effect': 'off',
+    'react-hooks/purity': 'off',
     'import/order': [
       'warn',
       {
