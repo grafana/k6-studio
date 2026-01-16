@@ -162,6 +162,10 @@ export function createProxy<T extends object>({
         return original
       }
 
+      const originalMethod = original as (
+        ...args: ArgsOf<T[keyof T]>
+      ) => unknown
+
       const proxy = getProxyMethod(method, proxies)
       const track = getTrackingMethod(method, tracking)
 
@@ -213,7 +217,7 @@ export function createProxy<T extends object>({
         }
 
         try {
-          const result: unknown = original(...args)
+          const result: unknown = originalMethod(...args)
 
           // We can't use await here because it would make the proxy function
           // async whereas the original function might not have been.

@@ -1,10 +1,14 @@
 import styled from '@emotion/styled'
 import * as RadixTooltip from '@radix-ui/react-tooltip'
+import type {
+  TooltipPortalProps,
+  TooltipProps as RadixTooltipProps,
+} from '@radix-ui/react-tooltip'
 import { ReactNode } from 'react'
 
 import { useContainerElement } from './ContainerProvider'
 
-function Root(props: RadixTooltip.TooltipProps) {
+function Root(props: RadixTooltipProps) {
   return (
     <RadixTooltip.TooltipProvider>
       <RadixTooltip.Root {...props} />
@@ -12,7 +16,7 @@ function Root(props: RadixTooltip.TooltipProps) {
   )
 }
 
-function Portal(props: Omit<RadixTooltip.TooltipPortalProps, 'container'>) {
+function Portal(props: Omit<TooltipPortalProps, 'container'>) {
   const container = useContainerElement()
 
   return <RadixTooltip.Portal container={container} {...props} />
@@ -40,7 +44,7 @@ const Arrow = styled(RadixTooltip.Arrow)`
   fill: var(--studio-foreground);
 `
 
-export interface TooltipProps extends RadixTooltip.TooltipProps {
+export interface TooltipProps extends RadixTooltipProps {
   asChild?: boolean
   content: string
   children: ReactNode

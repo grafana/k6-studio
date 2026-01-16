@@ -22,6 +22,7 @@ module.exports = {
     'resources/*.js',
     'install-k6.js',
     '.eslintrc.cjs',
+    'eslint.config.*',
     '**/__snapshots__/',
   ],
   plugins: [
@@ -42,6 +43,20 @@ module.exports = {
     'react/no-unknown-property': ['error', { ignore: ['css'] }],
     'no-param-reassign': 'error',
     'unused-imports/no-unused-imports': 'warn',
+    // eslint-plugin-import + ESLint v9 can overflow stack on circular export maps
+    'import/no-named-as-default': 'off',
+    'import/no-named-as-default-member': 'off',
+    // Keep lint surface stable across eslint-plugin-react-hooks major upgrades.
+    'react-hooks/set-state-in-effect': 'off',
+    'react-hooks/purity': 'off',
+    'react-hooks/incompatible-library': 'off',
+    'react-hooks/use-memo': 'off',
+    '@typescript-eslint/no-unused-expressions': [
+      'error',
+      { allowShortCircuit: true, allowTernary: true, allowTaggedTemplates: true },
+    ],
+    '@typescript-eslint/no-empty-object-type': 'off',
+    'no-unused-private-class-members': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
@@ -79,6 +94,5 @@ module.exports = {
   parserOptions: {
     projectService: true,
     tsconfigRootDir: __dirname,
-    project: ['./tsconfig.json'],
   },
 }

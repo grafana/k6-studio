@@ -3,7 +3,7 @@ import { z } from 'zod'
 export function safeJsonParse<T extends object>(value: string) {
   try {
     return JSON.parse(value) as T
-  } catch (error) {
+  } catch {
     return undefined
   }
 }
