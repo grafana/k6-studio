@@ -4,7 +4,7 @@ import { useFeaturesStore } from '@/store/features'
 import {
   generateJsonPaths,
   isJsonContentType,
-} from '@/store/generator/slices/recording.utils'
+} from '@/store/generator/slices/json.utils'
 import { Method, ProxyData, Request, Response } from '@/types'
 import type { HarContent, HarEntry, HarHeader } from '@/types/recording'
 
