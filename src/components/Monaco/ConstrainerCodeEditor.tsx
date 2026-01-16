@@ -1,5 +1,4 @@
 import { EditorProps } from '@monaco-editor/react'
-// eslint-disable-next-line import/no-named-as-default
 import constrainedEditor, {
   ConstrainedEditorInstance,
   RestrictionObject,

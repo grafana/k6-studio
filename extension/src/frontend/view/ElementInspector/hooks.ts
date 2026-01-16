@@ -5,7 +5,7 @@ import { useStudioClient } from '../StudioClientProvider'
 
 import { toTrackedElement, TrackedElement } from './utils'
 
-export function usePinnedElement(element?: TrackedElement | undefined) {
+export function usePinnedElement(element?: TrackedElement  ) {
   const [elements, setElements] = useState<TrackedElement[]>(
     element !== undefined ? [element] : []
   )

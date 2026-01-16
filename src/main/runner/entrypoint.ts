@@ -3,7 +3,6 @@ import './shims/http'
 import './shims/browser'
 
 // @ts-expect-error - Path will be replaced at runtime
-// eslint-disable-next-line import/no-unresolved
 import * as userScript from '__USER_SCRIPT_PATH__'
 import type { Options } from 'k6/options'
 
