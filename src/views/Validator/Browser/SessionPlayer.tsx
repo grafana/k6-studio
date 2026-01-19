@@ -56,6 +56,9 @@ function formatTime(milliseconds: number) {
   return `${minutesStr}:${secondsStr}`
 }
 
+type PlayerState = 'playing' | 'paused' | 'ended'
+type PlayMode = 'streaming' | 'normal'
+
 interface SessionPlayerProps {
   session: DebugSession
 }
@@ -63,15 +66,21 @@ interface SessionPlayerProps {
 export function SessionPlayer({ session }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
 
+  const [mode, setMode] = useState<PlayMode>(
+    session.state === 'running' ? 'streaming' : 'normal'
+  )
+
+  const [state, setState] = useState<PlayerState>(
+    session.state === 'running' ? 'playing' : 'paused'
+  )
+
   const playerRef = useRef<Replayer | null>(null)
   const lastIndexRef = useRef(0)
 
-  const [playing, setPlaying] = useState(false)
+  const offset = useRef(0)
 
-  const [currentTime, setCurrentTime] = useState({
-    current: 0,
-    total: 0,
-  })
+  const [currentTime, setCurrentTime] = useState(0)
+  const [totalTime, setTotalTime] = useState(0)
 
   const throttle = useThrottleGate(500)
 
@@ -87,41 +96,45 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
     const player = new Replayer(session.browser.replay, {
       root: mount,
       liveMode: true,
+      mouseTail: false,
     })
 
     player.on(ReplayerEvents.Finish, () => {
-      setPlaying(false)
+      setState('ended')
     })
 
     player.on(ReplayerEvents.Pause, () => {
-      setPlaying(false)
+      setState('paused')
     })
 
     player.on(ReplayerEvents.Resume, () => {
-      setPlaying(true)
+      setState('playing')
     })
 
     player.on(ReplayerEvents.Start, () => {
-      setPlaying(true)
+      setState('playing')
     })
 
     player.play()
 
     playerRef.current = player
     lastIndexRef.current = session.browser.replay.length
-
-    setPlaying(true)
   }, [session.browser.replay, mount])
 
   useEffect(() => {
-    if (session.state !== 'stopped') {
+    if (mode === 'streaming' && session.state === 'stopped') {
       playerRef.current?.setConfig({
         liveMode: false,
       })
 
-      playerRef.current?.pause()
+      playerRef.current?.pause(totalTime - offset.current)
+
+      setCurrentTime(totalTime - offset.current)
+
+      setMode('normal')
+      setState('ended')
     }
-  }, [session.state])
+  }, [mode, totalTime, session.state])
 
   useEffect(() => {
     if (playerRef.current === null) {
@@ -142,18 +155,14 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
   }, [session.browser.replay])
 
   useEffect(() => {
-    if (!playing) {
+    if (state !== 'playing') {
       return
     }
 
     let frame = requestAnimationFrame(function tick() {
       const currentTime = playerRef.current?.getCurrentTime() ?? 0
-      const { totalTime = 0 } = playerRef.current?.getMetaData() ?? {}
 
-      setCurrentTime({
-        current: currentTime,
-        total: totalTime,
-      })
+      setCurrentTime(currentTime)
 
       frame = requestAnimationFrame(tick)
     })
@@ -161,10 +170,38 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
     return () => {
       cancelAnimationFrame(frame)
     }
-  }, [playing])
+  }, [state])
+
+  useEffect(() => {
+    if (session.state !== 'running') {
+      return
+    }
+
+    let frame = requestAnimationFrame(function tick() {
+      const { totalTime = 0 } = playerRef.current?.getMetaData() ?? {}
+
+      setTotalTime(totalTime)
+
+      if (state === 'playing') {
+        setCurrentTime(totalTime - offset.current)
+      }
+
+      frame = requestAnimationFrame(tick)
+    })
+
+    return () => {
+      cancelAnimationFrame(frame)
+    }
+  }, [session.state, state])
 
   const handlePositionChange = ([newTime]: number[]) => {
     if (newTime === undefined) {
+      return
+    }
+
+    if (session.state === 'running') {
+      offset.current = totalTime - newTime
+
       return
     }
 
@@ -172,10 +209,7 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
       playerRef.current?.pause(newTime)
     })
 
-    setCurrentTime({
-      current: newTime,
-      total: currentTime.total,
-    })
+    setCurrentTime(newTime)
   }
 
   const handlePositionCommit = ([newTime]: number[]) => {
@@ -183,20 +217,23 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
       return
     }
 
-    if (playing) {
+    if (session.state === 'running') {
+      offset.current = totalTime - newTime
+
+      return
+    }
+
+    if (state === 'playing') {
       playerRef.current?.play(newTime)
     } else {
       playerRef.current?.pause(newTime)
     }
 
-    setCurrentTime({
-      current: newTime,
-      total: currentTime.total,
-    })
+    setCurrentTime(newTime)
   }
 
   return (
-    <Flex direction="column" height="100%">
+    <Flex direction="column" height="100%" width="100%">
       <div
         css={css`
           display: flex;
@@ -244,24 +281,24 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
           size="1"
           radius="full"
           onClick={() => {
-            if (playing) {
+            if (state !== 'paused') {
               playerRef.current?.pause()
 
               return
             }
 
-            playerRef.current?.play(currentTime.current)
+            playerRef.current?.play(currentTime)
           }}
         >
-          {playing && <PauseIcon />}
-          {!playing && <PlayIcon />}
+          {state !== 'paused' && <PauseIcon />}
+          {state === 'paused' && <PlayIcon />}
         </IconButton>
         <Slider
           size="1"
-          value={[currentTime.current]}
+          value={[currentTime]}
           step={0.001}
           min={0}
-          max={currentTime.total}
+          max={totalTime}
           onValueChange={handlePositionChange}
           onValueCommit={handlePositionCommit}
         />
@@ -273,7 +310,7 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
           `}
         >
           <Flex align="center" justify="end" minWidth="80px">
-            {formatTime(currentTime.current)} / {formatTime(currentTime.total)}
+            {formatTime(currentTime)} / {formatTime(totalTime)}
           </Flex>
         </Text>
       </Flex>
