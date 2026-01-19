@@ -1,9 +1,11 @@
 import { css } from '@emotion/react'
-import { Flex, Heading } from '@radix-ui/themes'
+import { Button, Flex, Heading, ScrollArea } from '@radix-ui/themes'
+import { CirclePlusIcon } from 'lucide-react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { AnyBrowserAction } from '@/main/runner/schema'
 
+import { EditableAction } from './EditableAction'
 import { NewActionMenu } from './NewActionMenu'
 
 interface EditableBrowserActionListProps {
@@ -29,18 +31,40 @@ export function EditableBrowserActionList({
         `}
       >
         Browser actions ({actions.length})
+        {actions.length !== 0 && (
+          <Flex px="4" py="2">
+            <NewActionMenu
+              onAddAction={onAddAction}
+              trigger={
+                <Button variant="ghost" color="gray">
+                  <CirclePlusIcon /> Add action
+                </Button>
+              }
+            />
+          </Flex>
+        )}
       </Heading>
-      {actions.map((action, index) => (
-        <pre key={index}>{JSON.stringify(action, null, 2)}</pre>
-      ))}
-      {actions.length === 0 ? (
-        <EmptyMessage
-          message="Build your browser test by adding actions."
-          action={<NewActionMenu onAddAction={onAddAction} />}
-        />
-      ) : (
-        <NewActionMenu onAddAction={onAddAction} />
-      )}
+      <ScrollArea>
+        {actions.length === 0 ? (
+          <EmptyMessage
+            message="Build your browser test by adding actions."
+            action={
+              <NewActionMenu
+                onAddAction={onAddAction}
+                trigger={
+                  <Button>
+                    <CirclePlusIcon /> Add action
+                  </Button>
+                }
+              />
+            }
+          />
+        ) : (
+          actions.map((action, index) => (
+            <EditableAction key={index} action={action} />
+          ))
+        )}
+      </ScrollArea>
     </Flex>
   )
 }

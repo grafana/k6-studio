@@ -1,20 +1,16 @@
-import { Button, DropdownMenu } from '@radix-ui/themes'
-import { CirclePlusIcon } from 'lucide-react'
+import { DropdownMenu } from '@radix-ui/themes'
 
 import { AnyBrowserAction } from '@/main/runner/schema'
 
 interface NewActionMenuProps {
   onAddAction: (action: AnyBrowserAction) => void
+  trigger: React.ReactNode
 }
 
-export function NewActionMenu({ onAddAction }: NewActionMenuProps) {
+export function NewActionMenu({ onAddAction, trigger }: NewActionMenuProps) {
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <Button>
-          <CirclePlusIcon /> Add action
-        </Button>
-      </DropdownMenu.Trigger>
+      <DropdownMenu.Trigger>{trigger}</DropdownMenu.Trigger>
       <DropdownMenu.Content>
         <DropdownMenu.Item
           onClick={() => {
