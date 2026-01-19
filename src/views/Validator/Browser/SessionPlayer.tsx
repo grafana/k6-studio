@@ -8,6 +8,8 @@ import { Replayer, ReplayerEvents } from 'rrweb'
 
 import { DebugSession } from '../types'
 
+import { useViewportScale } from './SessionPlayer.hooks'
+
 function useThrottleGate(delay: number) {
   const lastRunRef = useRef<number>(0)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -83,6 +85,8 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
   const [totalTime, setTotalTime] = useState(0)
 
   const throttle = useThrottleGate(500)
+
+  const scale = useViewportScale(mount)
 
   useEffect(() => {
     if (mount === null || playerRef.current !== null) {
@@ -236,6 +240,7 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
     <Flex direction="column" height="100%" width="100%">
       <div
         css={css`
+          position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -252,6 +257,13 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
             border: 1px solid var(--gray-a5);
           `}
           ref={setMount}
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: `scale(${scale}) translate(-50%, -50%)`,
+            transformOrigin: 'top left',
+          }}
         ></div>
       </div>
       <Flex

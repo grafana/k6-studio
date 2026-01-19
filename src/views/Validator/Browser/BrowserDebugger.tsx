@@ -61,7 +61,7 @@ export function BrowserDebugger({
           `}
           orientation="vertical"
         >
-          <Panel id="main">
+          <Panel id="main" minSize={400}>
             <Group
               {...mainLayout}
               id="main"
@@ -69,7 +69,7 @@ export function BrowserDebugger({
                 height: 100%;
               `}
             >
-              <Panel id="main">
+              <Panel id="main" minSize={400}>
                 <BrowserOverviewPanel script={script} session={session} />
               </Panel>
               <Separator />
