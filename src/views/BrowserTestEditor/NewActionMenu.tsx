@@ -1,13 +1,13 @@
-import { DropdownMenu } from '@radix-ui/themes'
+import { Button, DropdownMenu } from '@radix-ui/themes'
+import { CirclePlusIcon } from 'lucide-react'
 
 import { BrowserActionWithId } from './types'
 
 interface NewActionMenuProps {
   onAddAction: (action: BrowserActionWithId) => void
-  trigger: React.ReactNode
 }
 
-export function NewActionMenu({ onAddAction, trigger }: NewActionMenuProps) {
+export function NewActionMenu({ onAddAction }: NewActionMenuProps) {
   const handleAddAction = () => {
     onAddAction({
       action: {
@@ -20,7 +20,11 @@ export function NewActionMenu({ onAddAction, trigger }: NewActionMenuProps) {
 
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger>{trigger}</DropdownMenu.Trigger>
+      <DropdownMenu.Trigger>
+        <Button variant="ghost" size="1" color="gray">
+          <CirclePlusIcon /> Add action
+        </Button>
+      </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         <DropdownMenu.Item
           onClick={() => {

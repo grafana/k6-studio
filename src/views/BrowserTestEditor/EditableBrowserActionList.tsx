@@ -1,6 +1,5 @@
 import { css } from '@emotion/react'
-import { Button, Flex, Heading, ScrollArea } from '@radix-ui/themes'
-import { CirclePlusIcon } from 'lucide-react'
+import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 
@@ -32,19 +31,12 @@ export function EditableBrowserActionList({
           border-bottom: 1px solid var(--gray-a5);
           display: flex;
           align-items: center;
+          gap: var(--space-3);
+          box-sizing: border-box;
         `}
       >
         Browser actions ({actions.length})
-        <Flex px="4" py="2">
-          <NewActionMenu
-            onAddAction={onAddAction}
-            trigger={
-              <Button variant="ghost" color="gray">
-                <CirclePlusIcon /> Add action
-              </Button>
-            }
-          />
-        </Flex>
+        <NewActionMenu onAddAction={onAddAction} />
       </Heading>
       <ScrollArea>
         {actions.length === 0 ? (
