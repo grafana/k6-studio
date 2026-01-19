@@ -4,14 +4,16 @@ import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { emitScript } from '@/codegen/browser'
-import { convertToTest } from '@/codegen/browser/test'
+import { convertActionsToTest } from '@/codegen/browser/test'
 import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
+import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { queryClient } from '@/utils/query'
 
 export function useBrowserTestFile(): StudioFile {
   const { fileName } = useParams()
@@ -38,6 +40,11 @@ export function useSaveBrowserTest(fileName: string) {
     mutationFn: (data: BrowserTestFile) => {
       return window.studio.browserTest.save(fileName, data)
     },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['browserTest', fileName],
+      })
+    },
   })
 }
 
@@ -62,15 +69,14 @@ export function useBrowserTestEditorLayout() {
   return { drawerLayout, mainLayout, setDrawer, onTabClick }
 }
 
-// TODO: Use actions to generate the script
-export function useBrowserScriptPreview() {
+export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
   const [preview, setPreview] = useState('')
 
   useEffect(() => {
     async function generatePreview() {
       try {
-        const test = convertToTest({
-          browserEvents: [],
+        const test = convertActionsToTest({
+          browserActions,
         })
 
         const script = await emitScript(test)
@@ -83,7 +89,7 @@ export function useBrowserScriptPreview() {
     }
 
     void generatePreview()
-  }, [])
+  }, [browserActions])
 
   return preview
 }

@@ -1,3 +1,4 @@
+import { AnyBrowserAction } from '@/main/runner/schema'
 import {
   Assertion,
   BrowserEvent,
@@ -57,7 +58,7 @@ function toAssertionOperation(assertion: Assertion): AssertionOperation {
   }
 }
 
-function buildBrowserNodeGraph(events: BrowserEvent[]) {
+function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   const pages = new Map<string, PageNode>()
 
   let previousLocator: LocatorNode | null = null
@@ -270,10 +271,102 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
   return nodes
 }
 
-export function convertToTest({ browserEvents }: Recording): Test {
+function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
+  const nodes: TestNode[] = []
+
+  // TODO: Add support for multiple pages
+  const pageNode: TestNode = {
+    type: 'page',
+    nodeId: crypto.randomUUID(),
+  }
+
+  nodes.push(pageNode)
+  const page = toNodeRef(pageNode)
+
+  function toNode(action: AnyBrowserAction): TestNode {
+    switch (action.method) {
+      case 'page.goto':
+        return {
+          type: 'goto',
+          nodeId: crypto.randomUUID(),
+          url: action.url,
+          source: 'address-bar',
+          inputs: {
+            page,
+          },
+        }
+      case 'page.reload':
+        throw new Error('Not implemented.')
+      case 'page.waitForNavigation':
+        throw new Error('Not implemented.')
+      case 'page.*':
+        throw new Error('Not implemented.')
+
+      case 'locator.click':
+        throw new Error('Not implemented.')
+      case 'locator.dblclick':
+        throw new Error('Not implemented.')
+      case 'locator.fill':
+        throw new Error('Not implemented.')
+      case 'locator.type':
+        throw new Error('Not implemented.')
+      case 'locator.check':
+        throw new Error('Not implemented.')
+      case 'locator.uncheck':
+        throw new Error('Not implemented.')
+      case 'locator.selectOption':
+        throw new Error('Not implemented.')
+      case 'locator.waitFor':
+        throw new Error('Not implemented.')
+      case 'locator.hover':
+        throw new Error('Not implemented.')
+      case 'locator.setChecked':
+        throw new Error('Not implemented.')
+      case 'locator.tap':
+        throw new Error('Not implemented.')
+      case 'locator.clear':
+        throw new Error('Not implemented.')
+      case 'locator.press':
+        throw new Error('Not implemented.')
+      case 'locator.focus':
+        throw new Error('Not implemented.')
+      case 'locator.*':
+        throw new Error('Not implemented.')
+
+      case 'browserContext.*':
+        throw new Error('Not implemented.')
+
+      default:
+        return exhaustive(action)
+    }
+  }
+
+  browserActions.forEach((action) => {
+    const node = toNode(action)
+
+    nodes.push(node)
+  })
+
+  return nodes
+}
+
+export function convertEventsToTest({ browserEvents }: Recording): Test {
   return {
     defaultScenario: {
-      nodes: buildBrowserNodeGraph(browserEvents),
+      nodes: buildBrowserNodeGraphFromEvents(browserEvents),
+    },
+    scenarios: {},
+  }
+}
+
+export function convertActionsToTest({
+  browserActions,
+}: {
+  browserActions: AnyBrowserAction[]
+}): Test {
+  return {
+    defaultScenario: {
+      nodes: buildBrowserNodeGraphFromActions(browserActions),
     },
     scenarios: {},
   }

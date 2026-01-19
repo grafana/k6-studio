@@ -43,7 +43,7 @@ export function BrowserTestEditor() {
     setActions((prevActions) => [...prevActions, action])
   }
 
-  const preview = useBrowserScriptPreview()
+  const preview = useBrowserScriptPreview(actions)
   const { session, startDebugging } = useDebugSession({
     type: 'raw',
     content: preview,
