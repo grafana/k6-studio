@@ -129,6 +129,23 @@ export namespace Accessibility {
     | 'labelledby'
     | 'owns'
     | 'url'
+    | 'activeFullscreenElement'
+    | 'activeModalDialog'
+    | 'activeAriaModalDialog'
+    | 'ariaHiddenElement'
+    | 'ariaHiddenSubtree'
+    | 'emptyAlt'
+    | 'emptyText'
+    | 'inertElement'
+    | 'inertSubtree'
+    | 'labelContainer'
+    | 'labelFor'
+    | 'notRendered'
+    | 'notVisible'
+    | 'presentationalRole'
+    | 'probablyPresentational'
+    | 'inactiveCarouselTabContent'
+    | 'uninteresting'
   export type AXNode = {
     nodeId: AXNodeId
     ignored: boolean
@@ -224,7 +241,7 @@ export namespace Animation {
     delay: number
     endDelay: number
     iterationStart: number
-    iterations: number
+    iterations?: number
     duration: number
     direction: string
     fill: string
@@ -468,8 +485,10 @@ export namespace Audits {
     | 'WriteErrorInsufficientResources'
     | 'WriteErrorInvalidMatchField'
     | 'WriteErrorInvalidStructuredHeader'
+    | 'WriteErrorInvalidTTLField'
     | 'WriteErrorNavigationRequest'
     | 'WriteErrorNoMatchField'
+    | 'WriteErrorNonIntegerTTLField'
     | 'WriteErrorNonListMatchDestField'
     | 'WriteErrorNonSecureContext'
     | 'WriteErrorNonStringIdField'
@@ -502,6 +521,11 @@ export namespace Audits {
     | 'ValidationFailedInvalidLength'
     | 'ValidationFailedSignatureMismatch'
     | 'ValidationFailedIntegrityMismatch'
+  export type UnencodedDigestError =
+    | 'MalformedDictionary'
+    | 'UnknownAlgorithm'
+    | 'IncorrectDigestType'
+    | 'IncorrectDigestLength'
   export type AttributionReportingIssueDetails = {
     violationType: AttributionReportingIssueType
     request?: AffectedRequest
@@ -529,18 +553,26 @@ export namespace Audits {
     integrityAssertions: string[]
     request: AffectedRequest
   }
+  export type UnencodedDigestIssueDetails = {
+    error: UnencodedDigestError
+    request: AffectedRequest
+  }
   export type GenericIssueErrorType =
     | 'FormLabelForNameError'
     | 'FormDuplicateIdForInputError'
     | 'FormInputWithNoLabelError'
     | 'FormAutocompleteAttributeEmptyError'
     | 'FormEmptyIdAndNameAttributesForInputError'
-    | 'FormAriaLabelledByToNonExistingId'
+    | 'FormAriaLabelledByToNonExistingIdError'
     | 'FormInputAssignedAutocompleteValueToIdOrNameAttributeError'
-    | 'FormLabelHasNeitherForNorNestedInput'
+    | 'FormLabelHasNeitherForNorNestedInputError'
     | 'FormLabelForMatchesNonExistingIdError'
     | 'FormInputHasWrongButWellIntendedAutocompleteValueError'
     | 'ResponseWasBlockedByORB'
+    | 'NavigationEntryMarkedSkippable'
+    | 'AutofillAndManualTextPolicyControlledFeaturesInfo'
+    | 'AutofillPolicyControlledFeatureInfo'
+    | 'ManualTextPolicyControlledFeatureInfo'
   export type GenericIssueDetails = {
     errorType: GenericIssueErrorType
     frameId?: Page.FrameId
@@ -644,15 +676,16 @@ export namespace Audits {
     url: string
     partitioningBlobURLInfo: PartitioningBlobURLInfo
   }
-  export type SelectElementAccessibilityIssueReason =
+  export type ElementAccessibilityIssueReason =
     | 'DisallowedSelectChild'
     | 'DisallowedOptGroupChild'
     | 'NonPhrasingContentOptionChild'
     | 'InteractiveContentOptionChild'
     | 'InteractiveContentLegendChild'
-  export type SelectElementAccessibilityIssueDetails = {
+    | 'InteractiveContentSummaryDescendant'
+  export type ElementAccessibilityIssueDetails = {
     nodeId: DOM.BackendNodeId
-    selectElementAccessibilityIssueReason: SelectElementAccessibilityIssueReason
+    elementAccessibilityIssueReason: ElementAccessibilityIssueReason
     hasDisallowedAttributes: boolean
   }
   export type StyleSheetLoadingIssueReason = 'LateImportRule' | 'RequestFailed'
@@ -674,9 +707,43 @@ export namespace Audits {
   export type UserReidentificationIssueType =
     | 'BlockedFrameNavigation'
     | 'BlockedSubresource'
+    | 'NoisedCanvasReadback'
   export type UserReidentificationIssueDetails = {
     type: UserReidentificationIssueType
     request?: AffectedRequest
+    sourceCodeLocation?: SourceCodeLocation
+  }
+  export type PermissionElementIssueType =
+    | 'InvalidType'
+    | 'FencedFrameDisallowed'
+    | 'CspFrameAncestorsMissing'
+    | 'PermissionsPolicyBlocked'
+    | 'PaddingRightUnsupported'
+    | 'PaddingBottomUnsupported'
+    | 'InsetBoxShadowUnsupported'
+    | 'RequestInProgress'
+    | 'UntrustedEvent'
+    | 'RegistrationFailed'
+    | 'TypeNotSupported'
+    | 'InvalidTypeActivation'
+    | 'SecurityChecksFailed'
+    | 'ActivationDisabled'
+    | 'GeolocationDeprecated'
+    | 'InvalidDisplayStyle'
+    | 'NonOpaqueColor'
+    | 'LowContrast'
+    | 'FontSizeTooSmall'
+    | 'FontSizeTooLarge'
+    | 'InvalidSizeValue'
+  export type PermissionElementIssueDetails = {
+    issueType: PermissionElementIssueType
+    type?: string
+    nodeId?: DOM.BackendNodeId
+    isWarning?: boolean
+    permissionName?: string
+    occluderNodeInfo?: string
+    occluderParentNodeInfo?: string
+    disableReason?: string
   }
   export type InspectorIssueCode =
     | 'CookieIssue'
@@ -701,9 +768,11 @@ export namespace Audits {
     | 'FederatedAuthUserInfoRequestIssue'
     | 'PropertyRuleIssue'
     | 'SharedDictionaryIssue'
-    | 'SelectElementAccessibilityIssue'
+    | 'ElementAccessibilityIssue'
     | 'SRIMessageSignatureIssue'
+    | 'UnencodedDigestIssue'
     | 'UserReidentificationIssue'
+    | 'PermissionElementIssue'
   export type InspectorIssueDetails = {
     cookieIssueDetails?: CookieIssueDetails
     mixedContentIssueDetails?: MixedContentIssueDetails
@@ -727,9 +796,11 @@ export namespace Audits {
     propertyRuleIssueDetails?: PropertyRuleIssueDetails
     federatedAuthUserInfoRequestIssueDetails?: FederatedAuthUserInfoRequestIssueDetails
     sharedDictionaryIssueDetails?: SharedDictionaryIssueDetails
-    selectElementAccessibilityIssueDetails?: SelectElementAccessibilityIssueDetails
+    elementAccessibilityIssueDetails?: ElementAccessibilityIssueDetails
     sriMessageSignatureIssueDetails?: SRIMessageSignatureIssueDetails
+    unencodedDigestIssueDetails?: UnencodedDigestIssueDetails
     userReidentificationIssueDetails?: UserReidentificationIssueDetails
+    permissionElementIssueDetails?: PermissionElementIssueDetails
   }
   export type IssueId = string
   export type InspectorIssue = {
@@ -758,34 +829,6 @@ export namespace Audits {
     issueAdded: IssueAddedEvent
   }
 }
-export namespace Extensions {
-  export type StorageArea = 'session' | 'local' | 'sync' | 'managed'
-  export interface GetStorageItemsArgs {
-    id: string
-    storageArea: StorageArea
-    keys?: string[]
-  }
-  export interface RemoveStorageItemsArgs {
-    id: string
-    storageArea: StorageArea
-    keys: string[]
-  }
-  export interface ClearStorageItemsArgs {
-    id: string
-    storageArea: StorageArea
-  }
-  export interface SetStorageItemsArgs {
-    id: string
-    storageArea: StorageArea
-    values: Record<string, unknown>
-  }
-  export interface LoadUnpackedResult {
-    id: string
-  }
-  export interface GetStorageItemsResult {
-    data: Record<string, unknown>
-  }
-}
 export namespace Autofill {
   export type CreditCard = {
     number: string
@@ -812,7 +855,8 @@ export namespace Autofill {
   export interface TriggerArgs {
     fieldId: DOM.BackendNodeId
     frameId?: Page.FrameId
-    card: CreditCard
+    card?: CreditCard
+    address?: Address
   }
   export interface AddressFormFilledEvent {
     filledFields: FilledField[]
@@ -857,6 +901,112 @@ export namespace BackgroundService {
     backgroundServiceEventReceived: BackgroundServiceEventReceivedEvent
   }
 }
+export namespace BluetoothEmulation {
+  export type CentralState = 'absent' | 'powered-off' | 'powered-on'
+  export type GATTOperationType = 'connection' | 'discovery'
+  export type CharacteristicWriteType =
+    | 'write-default-deprecated'
+    | 'write-with-response'
+    | 'write-without-response'
+  export type CharacteristicOperationType =
+    | 'read'
+    | 'write'
+    | 'subscribe-to-notifications'
+    | 'unsubscribe-from-notifications'
+  export type DescriptorOperationType = 'read' | 'write'
+  export type ManufacturerData = { key: number; data: string }
+  export type ScanRecord = {
+    name?: string
+    uuids?: string[]
+    appearance?: number
+    txPower?: number
+    manufacturerData?: ManufacturerData[]
+  }
+  export type ScanEntry = {
+    deviceAddress: string
+    rssi: number
+    scanRecord: ScanRecord
+  }
+  export type CharacteristicProperties = {
+    broadcast?: boolean
+    read?: boolean
+    writeWithoutResponse?: boolean
+    write?: boolean
+    notify?: boolean
+    indicate?: boolean
+    authenticatedSignedWrites?: boolean
+    extendedProperties?: boolean
+  }
+  export interface EnableArgs {
+    state: CentralState
+    leSupported: boolean
+  }
+  export interface SimulatePreconnectedPeripheralArgs {
+    address: string
+    name: string
+    manufacturerData: ManufacturerData[]
+    knownServiceUuids: string[]
+  }
+  export interface SimulateGATTOperationResponseArgs {
+    address: string
+    type: GATTOperationType
+    code: number
+  }
+  export interface SimulateCharacteristicOperationResponseArgs {
+    characteristicId: string
+    type: CharacteristicOperationType
+    code: number
+    data?: string
+  }
+  export interface SimulateDescriptorOperationResponseArgs {
+    descriptorId: string
+    type: DescriptorOperationType
+    code: number
+    data?: string
+  }
+  export interface AddServiceArgs {
+    address: string
+    serviceUuid: string
+  }
+  export interface AddCharacteristicArgs {
+    serviceId: string
+    characteristicUuid: string
+    properties: CharacteristicProperties
+  }
+  export interface AddDescriptorArgs {
+    characteristicId: string
+    descriptorUuid: string
+  }
+  export interface AddServiceResult {
+    serviceId: string
+  }
+  export interface AddCharacteristicResult {
+    characteristicId: string
+  }
+  export interface AddDescriptorResult {
+    descriptorId: string
+  }
+  export interface GattOperationReceivedEvent {
+    address: string
+    type: GATTOperationType
+  }
+  export interface CharacteristicOperationReceivedEvent {
+    characteristicId: string
+    type: CharacteristicOperationType
+    data: string
+    writeType: CharacteristicWriteType
+  }
+  export interface DescriptorOperationReceivedEvent {
+    descriptorId: string
+    type: DescriptorOperationType
+    data: string
+  }
+  export interface EventMap {
+    gattOperationReceived: GattOperationReceivedEvent
+    characteristicOperationReceived: CharacteristicOperationReceivedEvent
+    descriptorOperationReceived: DescriptorOperationReceivedEvent
+  }
+}
 export namespace Browser {
   export type BrowserContextID = string
   export type WindowID = number
@@ -885,7 +1035,9 @@ export namespace Browser {
     | 'idleDetection'
     | 'keyboardLock'
     | 'localFonts'
+    | 'localNetwork'
     | 'localNetworkAccess'
+    | 'loopbackNetwork'
     | 'midi'
     | 'midiSysex'
     | 'nfc'
@@ -930,6 +1082,7 @@ export namespace Browser {
     permission: PermissionDescriptor
     setting: PermissionSetting
     origin?: string
+    embeddedOrigin?: string
     browserContextId?: BrowserContextID
   }
   export interface GrantPermissionsArgs {
@@ -958,6 +1111,11 @@ export namespace Browser {
   export interface SetWindowBoundsArgs {
     windowId: WindowID
     bounds: Bounds
+  }
+  export interface SetContentsSizeArgs {
+    windowId: WindowID
+    width?: number
+    height?: number
   }
   export interface SetDockTileArgs {
     badgeLabel?: string
@@ -1011,7 +1169,6 @@ export namespace Browser {
   }
 }
 export namespace CSS {
-  export type StyleSheetId = string
   export type StyleSheetOrigin =
     | 'injected'
     | 'user-agent'
@@ -1043,7 +1200,7 @@ export namespace CSS {
   export type Specificity = { a: number; b: number; c: number }
   export type SelectorList = { selectors: Value[]; text: string }
   export type CSSStyleSheetHeader = {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     frameId: Page.FrameId
     sourceURL: string
     sourceMapURL?: string
@@ -1063,11 +1220,12 @@ export namespace CSS {
     loadingFailed?: boolean
   }
   export type CSSRule = {
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     selectorList: SelectorList
     nestingSelectors?: string[]
     origin: StyleSheetOrigin
     style: CSSStyle
+    originTreeScopeNodeId?: DOM.BackendNodeId
     media?: CSSMedia[]
     containerQueries?: CSSContainerQuery[]
     supports?: CSSSupports[]
@@ -1085,7 +1243,7 @@ export namespace CSS {
     | 'StyleRule'
     | 'StartingStyleRule'
   export type RuleUsage = {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     startOffset: number
     endOffset: number
     used: boolean
@@ -1102,8 +1260,9 @@ export namespace CSS {
     important?: boolean
   }
   export type CSSComputedStyleProperty = { name: string; value: string }
+  export type ComputedStyleExtraFields = { isAppearanceBase: boolean }
   export type CSSStyle = {
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     cssProperties: CSSProperty[]
     shorthandEntries: ShorthandEntry[]
     cssText?: string
@@ -1125,7 +1284,7 @@ export namespace CSS {
     source: 'mediaRule' | 'importRule' | 'linkedSheet' | 'inlineSheet'
     sourceURL?: string
     range?: SourceRange
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     mediaList?: MediaQuery[]
   }
   export type MediaQuery = {
@@ -1142,31 +1301,32 @@ export namespace CSS {
   export type CSSContainerQuery = {
     text: string
     range?: SourceRange
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     name?: string
     physicalAxes?: DOM.PhysicalAxes
     logicalAxes?: DOM.LogicalAxes
     queriesScrollState?: boolean
+    queriesAnchored?: boolean
   }
   export type CSSSupports = {
     text: string
     active: boolean
     range?: SourceRange
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
   }
   export type CSSScope = {
     text: string
     range?: SourceRange
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
   }
   export type CSSLayer = {
     text: string
     range?: SourceRange
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
   }
   export type CSSStartingStyle = {
     range?: SourceRange
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
   }
   export type CSSLayerData = {
     name: string
@@ -1199,13 +1359,13 @@ export namespace CSS {
     fontVariationAxes?: FontVariationAxis[]
   }
   export type CSSTryRule = {
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     origin: StyleSheetOrigin
     style: CSSStyle
   }
   export type CSSPositionTryRule = {
     name: Value
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     origin: StyleSheetOrigin
     style: CSSStyle
     active: boolean
@@ -1220,14 +1380,22 @@ export namespace CSS {
     inherits: boolean
     syntax: string
   }
-  export type CSSFontPaletteValuesRule = {
-    styleSheetId?: StyleSheetId
+  export type CSSAtRule = {
+    type: 'font-face' | 'font-feature-values' | 'font-palette-values'
+    subsection?:
+      | 'swash'
+      | 'annotation'
+      | 'ornaments'
+      | 'stylistic'
+      | 'styleset'
+      | 'character-variant'
+    name?: Value
+    styleSheetId?: DOM.StyleSheetId
     origin: StyleSheetOrigin
-    fontPaletteName: Value
     style: CSSStyle
   }
   export type CSSPropertyRule = {
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     origin: StyleSheetOrigin
     propertyName: Value
     style: CSSStyle
@@ -1246,24 +1414,24 @@ export namespace CSS {
   }
   export type CSSFunctionRule = {
     name: Value
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     origin: StyleSheetOrigin
     parameters: CSSFunctionParameter[]
     children: CSSFunctionNode[]
   }
   export type CSSKeyframeRule = {
-    styleSheetId?: StyleSheetId
+    styleSheetId?: DOM.StyleSheetId
     origin: StyleSheetOrigin
     keyText: Value
     style: CSSStyle
   }
   export type StyleDeclarationEdit = {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     range: SourceRange
     text: string
   }
   export interface AddRuleArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     ruleText: string
     location: SourceRange
     nodeForPropertySyntaxValidation?: DOM.NodeId
@@ -1292,7 +1460,7 @@ export namespace CSS {
     value: string
   }
   export interface GetLocationForSelectorArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     selectorText: string
   }
   export interface SetEffectivePropertyValueForNodeArgs {
@@ -1301,42 +1469,42 @@ export namespace CSS {
     value: string
   }
   export interface SetPropertyRulePropertyNameArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     range: SourceRange
     propertyName: string
   }
   export interface SetKeyframeKeyArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     range: SourceRange
     keyText: string
   }
   export interface SetMediaTextArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     range: SourceRange
     text: string
   }
   export interface SetContainerQueryTextArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     range: SourceRange
     text: string
   }
   export interface SetSupportsTextArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     range: SourceRange
     text: string
   }
   export interface SetScopeTextArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     range: SourceRange
     text: string
   }
   export interface SetRuleSelectorArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     range: SourceRange
     selector: string
   }
   export interface SetStyleSheetTextArgs {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
     text: string
   }
   export interface SetStyleTextsArgs {
@@ -1350,7 +1518,7 @@ export namespace CSS {
     classNames: string[]
   }
   export interface CreateStyleSheetResult {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
   }
   export interface GetBackgroundColorsResult {
     backgroundColors: string[]
@@ -1359,6 +1527,7 @@ export namespace CSS {
   }
   export interface GetComputedStyleForNodeResult {
     computedStyle: CSSComputedStyleProperty[]
+    extraFields: ComputedStyleExtraFields
   }
   export interface ResolveValuesResult {
     results: string[]
@@ -1387,9 +1556,12 @@ export namespace CSS {
     activePositionFallbackIndex: number
     cssPropertyRules: CSSPropertyRule[]
     cssPropertyRegistrations: CSSPropertyRegistration[]
-    cssFontPaletteValuesRule: CSSFontPaletteValuesRule
+    cssAtRules: CSSAtRule[]
     parentLayoutNodeId: DOM.NodeId
     cssFunctionRules: CSSFunctionRule[]
+  }
+  export interface GetEnvironmentVariablesResult {
+    environmentVariables: Record<string, unknown>
   }
   export interface GetMediaQueriesResult {
     medias: CSSMedia[]
@@ -1451,10 +1623,10 @@ export namespace CSS {
     header: CSSStyleSheetHeader
   }
   export interface StyleSheetChangedEvent {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
   }
   export interface StyleSheetRemovedEvent {
-    styleSheetId: StyleSheetId
+    styleSheetId: DOM.StyleSheetId
   }
   export interface ComputedStyleUpdatedEvent {
     nodeId: DOM.NodeId
@@ -1543,6 +1715,7 @@ export namespace Cast {
 export namespace DOM {
   export type NodeId = number
   export type BackendNodeId = number
+  export type StyleSheetId = string
   export type BackendNode = {
     nodeType: number
     nodeName: string
@@ -1555,6 +1728,7 @@ export namespace DOM {
     | 'before'
     | 'after'
     | 'picker-icon'
+    | 'interest-hint'
     | 'marker'
     | 'backdrop'
     | 'column'
@@ -1587,6 +1761,7 @@ export namespace DOM {
     | 'details-content'
     | 'picker'
     | 'permission-icon'
+    | 'overscroll-area-parent'
   export type ShadowRootType = 'user-agent' | 'open' | 'closed'
   export type CompatibilityMode =
     | 'QuirksMode'
@@ -1628,6 +1803,8 @@ export namespace DOM {
     compatibilityMode?: CompatibilityMode
     assignedSlot?: BackendNode
     isScrollable?: boolean
+    affectedByStartingStyles?: boolean
+    adoptedStyleSheets?: StyleSheetId[]
   }
   export type DetachedElementInfo = {
     treeNode: Node
@@ -1707,6 +1884,7 @@ export namespace DOM {
     nodeId?: NodeId
     backendNodeId?: BackendNodeId
     objectId?: Runtime.RemoteObjectId
+    includeShadowDOM?: boolean
   }
   export interface GetSearchResultsArgs {
     searchId: string
@@ -1783,10 +1961,15 @@ export namespace DOM {
     physicalAxes?: PhysicalAxes
     logicalAxes?: LogicalAxes
     queriesScrollState?: boolean
+    queriesAnchored?: boolean
   }
   export interface GetAnchorElementArgs {
     nodeId: NodeId
     anchorSpecifier?: string
+  }
+  export interface ForceShowPopoverArgs {
+    nodeId: NodeId
+    enable: boolean
   }
   export interface CollectClassNamesFromSubtreeResult {
     classNames: string[]
@@ -1885,10 +2068,17 @@ export namespace DOM {
   export interface GetAnchorElementResult {
     nodeId: NodeId
   }
+  export interface ForceShowPopoverResult {
+    nodeIds: NodeId[]
+  }
   export interface AttributeModifiedEvent {
     nodeId: NodeId
     name: string
     value: string
+  }
+  export interface AdoptedStyleSheetsModifiedEvent {
+    nodeId: NodeId
+    adoptedStyleSheets: StyleSheetId[]
   }
   export interface AttributeRemovedEvent {
     nodeId: NodeId
@@ -1928,6 +2118,10 @@ export namespace DOM {
     nodeId: DOM.NodeId
     isScrollable: boolean
   }
+  export interface AffectedByStartingStylesFlagUpdatedEvent {
+    nodeId: DOM.NodeId
+    affectedByStartingStyles: boolean
+  }
   export interface PseudoElementRemovedEvent {
     parentId: NodeId
     pseudoElementId: NodeId
@@ -1946,6 +2140,7 @@ export namespace DOM {
   }
   export interface EventMap {
     attributeModified: AttributeModifiedEvent
+    adoptedStyleSheetsModified: AdoptedStyleSheetsModifiedEvent
     attributeRemoved: AttributeRemovedEvent
     characterDataModified: CharacterDataModifiedEvent
     childNodeCountUpdated: ChildNodeCountUpdatedEvent
@@ -1957,6 +2152,7 @@ export namespace DOM {
     pseudoElementAdded: PseudoElementAddedEvent
     topLayerElementsUpdated: TopLayerElementsUpdatedEvent
     scrollableFlagUpdated: ScrollableFlagUpdatedEvent
+    affectedByStartingStylesFlagUpdated: AffectedByStartingStylesFlagUpdatedEvent
     pseudoElementRemoved: PseudoElementRemovedEvent
     setChildNodes: SetChildNodesEvent
     shadowRootPopped: ShadowRootPoppedEvent
@@ -2008,7 +2204,6 @@ export namespace DOMDebugger {
     listeners: EventListener[]
   }
 }
-export namespace EventBreakpoints {}
 export namespace DOMSnapshot {
   export type DOMNode = {
     nodeType: number
@@ -2185,6 +2380,22 @@ export namespace DOMStorage {
     domStorageItemsCleared: DomStorageItemsClearedEvent
   }
 }
+export namespace DeviceAccess {
+  export type RequestId = string
+  export type DeviceId = string
+  export type PromptDevice = { id: DeviceId; name: string }
+  export interface SelectPromptArgs {
+    id: RequestId
+    deviceId: DeviceId
+  }
+  export interface DeviceRequestPromptedEvent {
+    id: RequestId
+    devices: PromptDevice[]
+  }
+  export interface EventMap {
+    deviceRequestPrompted: DeviceRequestPromptedEvent
+  }
+}
 export namespace DeviceOrientation {
   export interface SetDeviceOrientationOverrideArgs {
     alpha: number
@@ -2234,6 +2445,7 @@ export namespace Emulation {
     mobile: boolean
     bitness?: string
     wow64?: boolean
+    formFactors?: string[]
   }
   export type SensorType =
     | 'absolute-orientation'
@@ -2265,6 +2477,31 @@ export namespace Emulation {
   export type PressureSource = 'cpu'
   export type PressureState = 'nominal' | 'fair' | 'serious' | 'critical'
   export type PressureMetadata = { available?: boolean }
+  export type WorkAreaInsets = {
+    top?: number
+    left?: number
+    bottom?: number
+    right?: number
+  }
+  export type ScreenId = string
+  export type ScreenInfo = {
+    left: number
+    top: number
+    width: number
+    height: number
+    availLeft: number
+    availTop: number
+    availWidth: number
+    availHeight: number
+    devicePixelRatio: number
+    orientation: ScreenOrientation
+    colorDepth: number
+    isExtended: boolean
+    isInternal: boolean
+    isPrimary: boolean
+    label: string
+    id: ScreenId
+  }
   export type DisabledImageType = 'avif' | 'webp'
   export interface SetDeviceMetricsOverrideArgs {
     width: number
@@ -2346,6 +2583,18 @@ export namespace Emulation {
     platform?: string
     userAgentMetadata?: UserAgentMetadata
   }
+  export interface AddScreenArgs {
+    left: number
+    top: number
+    width: number
+    height: number
+    workAreaInsets?: WorkAreaInsets
+    devicePixelRatio?: number
+    rotation?: number
+    colorDepth?: number
+    label?: string
+    isInternal?: boolean
+  }
   export interface CanEmulateResult {
     result: boolean
   }
@@ -2355,9 +2604,207 @@ export namespace Emulation {
   export interface SetVirtualTimePolicyResult {
     virtualTimeTicksBase: number
   }
+  export interface GetScreenInfosResult {
+    screenInfos: ScreenInfo[]
+  }
+  export interface AddScreenResult {
+    screenInfo: ScreenInfo
+  }
   export interface VirtualTimeBudgetExpiredEvent {}
   export interface EventMap {
     virtualTimeBudgetExpired: VirtualTimeBudgetExpiredEvent
+  }
+}
+export namespace EventBreakpoints {}
+export namespace Extensions {
+  export type StorageArea = 'session' | 'local' | 'sync' | 'managed'
+  export interface GetStorageItemsArgs {
+    id: string
+    storageArea: StorageArea
+    keys?: string[]
+  }
+  export interface RemoveStorageItemsArgs {
+    id: string
+    storageArea: StorageArea
+    keys: string[]
+  }
+  export interface ClearStorageItemsArgs {
+    id: string
+    storageArea: StorageArea
+  }
+  export interface SetStorageItemsArgs {
+    id: string
+    storageArea: StorageArea
+    values: Record<string, unknown>
+  }
+  export interface LoadUnpackedResult {
+    id: string
+  }
+  export interface GetStorageItemsResult {
+    data: Record<string, unknown>
+  }
+}
+export namespace FedCm {
+  export type LoginState = 'SignIn' | 'SignUp'
+  export type DialogType =
+    | 'AccountChooser'
+    | 'AutoReauthn'
+    | 'ConfirmIdpLogin'
+    | 'Error'
+  export type DialogButton =
+    | 'ConfirmIdpLoginContinue'
+    | 'ErrorGotIt'
+    | 'ErrorMoreDetails'
+  export type AccountUrlType = 'TermsOfService' | 'PrivacyPolicy'
+  export type Account = {
+    accountId: string
+    email: string
+    name: string
+    givenName: string
+    pictureUrl: string
+    idpConfigUrl: string
+    idpLoginUrl: string
+    loginState: LoginState
+    termsOfServiceUrl?: string
+    privacyPolicyUrl?: string
+  }
+  export interface SelectAccountArgs {
+    dialogId: string
+    accountIndex: number
+  }
+  export interface ClickDialogButtonArgs {
+    dialogId: string
+    dialogButton: DialogButton
+  }
+  export interface OpenUrlArgs {
+    dialogId: string
+    accountIndex: number
+    accountUrlType: AccountUrlType
+  }
+  export interface DismissDialogArgs {
+    dialogId: string
+    triggerCooldown?: boolean
+  }
+  export interface DialogShownEvent {
+    dialogId: string
+    dialogType: DialogType
+    accounts: Account[]
+    title: string
+    subtitle: string
+  }
+  export interface DialogClosedEvent {
+    dialogId: string
+  }
+  export interface EventMap {
+    dialogShown: DialogShownEvent
+    dialogClosed: DialogClosedEvent
+  }
+}
+export namespace Fetch {
+  export type RequestId = string
+  export type RequestStage = 'Request' | 'Response'
+  export type RequestPattern = {
+    urlPattern?: string
+    resourceType?: Network.ResourceType
+    requestStage?: RequestStage
+  }
+  export type HeaderEntry = { name: string; value: string }
+  export type AuthChallenge = {
+    source?: 'Server' | 'Proxy'
+    origin: string
+    scheme: string
+    realm: string
+  }
+  export type AuthChallengeResponse = {
+    response: 'Default' | 'CancelAuth' | 'ProvideCredentials'
+    username?: string
+    password?: string
+  }
+  export interface EnableArgs {
+    patterns?: RequestPattern[]
+    handleAuthRequests?: boolean
+  }
+  export interface FailRequestArgs {
+    requestId: RequestId
+    errorReason: Network.ErrorReason
+  }
+  export interface FulfillRequestArgs {
+    requestId: RequestId
+    responseCode: number
+    responseHeaders?: HeaderEntry[]
+    binaryResponseHeaders?: string
+    body?: string
+    responsePhrase?: string
+  }
+  export interface ContinueRequestArgs {
+    requestId: RequestId
+    url?: string
+    method?: string
+    postData?: string
+    headers?: HeaderEntry[]
+    interceptResponse?: boolean
+  }
+  export interface ContinueWithAuthArgs {
+    requestId: RequestId
+    authChallengeResponse: AuthChallengeResponse
+  }
+  export interface ContinueResponseArgs {
+    requestId: RequestId
+    responseCode?: number
+    responsePhrase?: string
+    responseHeaders?: HeaderEntry[]
+    binaryResponseHeaders?: string
+  }
+  export interface GetResponseBodyResult {
+    body: string
+    base64Encoded: boolean
+  }
+  export interface TakeResponseBodyAsStreamResult {
+    stream: IO.StreamHandle
+  }
+  export interface RequestPausedEvent {
+    requestId: RequestId
+    request: Network.Request
+    frameId: Page.FrameId
+    resourceType: Network.ResourceType
+    responseErrorReason: Network.ErrorReason
+    responseStatusCode: number
+    responseStatusText: string
+    responseHeaders: HeaderEntry[]
+    networkId: Network.RequestId
+    redirectedRequestId: RequestId
+  }
+  export interface AuthRequiredEvent {
+    requestId: RequestId
+    request: Network.Request
+    frameId: Page.FrameId
+    resourceType: Network.ResourceType
+    authChallenge: AuthChallenge
+  }
+  export interface EventMap {
+    requestPaused: RequestPausedEvent
+    authRequired: AuthRequiredEvent
+  }
+}
+export namespace FileSystem {
+  export type File = {
+    name: string
+    lastModified: Network.TimeSinceEpoch
+    size: number
+    type: string
+  }
+  export type Directory = {
+    name: string
+    nestedDirectories: string[]
+    nestedFiles: File[]
+  }
+  export type BucketFileSystemLocator = {
+    storageKey: Storage.SerializedStorageKey
+    bucketName?: string
+    pathComponents: string[]
+  }
+  export interface GetDirectoryResult {
+    directory: Directory
   }
 }
 export namespace HeadlessExperimental {
@@ -2391,27 +2838,6 @@ export namespace IO {
   }
   export interface ResolveBlobResult {
     uuid: string
-  }
-}
-export namespace FileSystem {
-  export type File = {
-    name: string
-    lastModified: Network.TimeSinceEpoch
-    size: number
-    type: string
-  }
-  export type Directory = {
-    name: string
-    nestedDirectories: string[]
-    nestedFiles: File[]
-  }
-  export type BucketFileSystemLocator = {
-    storageKey: Storage.SerializedStorageKey
-    bucketName?: string
-    pathComponents: string[]
-  }
-  export interface GetDirectoryResult {
-    directory: Directory
   }
 }
 export namespace IndexedDB {
@@ -2482,7 +2908,7 @@ export namespace IndexedDB {
     storageBucket?: Storage.StorageBucket
     databaseName: string
     objectStoreName: string
-    indexName: string
+    indexName?: string
     skipCount: number
     pageSize: number
     keyRange?: KeyRange
@@ -2661,10 +3087,12 @@ export namespace Inspector {
   }
   export interface TargetCrashedEvent {}
   export interface TargetReloadedAfterCrashEvent {}
+  export interface WorkerScriptLoadedEvent {}
   export interface EventMap {
     detached: DetachedEvent
     targetCrashed: TargetCrashedEvent
     targetReloadedAfterCrash: TargetReloadedAfterCrashEvent
+    workerScriptLoaded: WorkerScriptLoadedEvent
   }
 }
 export namespace LayerTree {
@@ -2786,6 +3214,51 @@ export namespace Log {
   }
   export interface EventMap {
     entryAdded: EntryAddedEvent
+  }
+}
+export namespace Media {
+  export type PlayerId = string
+  export type Timestamp = number
+  export type PlayerMessage = {
+    level: 'error' | 'warning' | 'info' | 'debug'
+    message: string
+  }
+  export type PlayerProperty = { name: string; value: string }
+  export type PlayerEvent = { timestamp: Timestamp; value: string }
+  export type PlayerErrorSourceLocation = { file: string; line: number }
+  export type PlayerError = {
+    errorType: string
+    code: number
+    stack: PlayerErrorSourceLocation[]
+    cause: PlayerError[]
+    data: Record<string, unknown>
+  }
+  export type Player = { playerId: PlayerId; domNodeId?: DOM.BackendNodeId }
+  export interface PlayerPropertiesChangedEvent {
+    playerId: PlayerId
+    properties: PlayerProperty[]
+  }
+  export interface PlayerEventsAddedEvent {
+    playerId: PlayerId
+    events: PlayerEvent[]
+  }
+  export interface PlayerMessagesLoggedEvent {
+    playerId: PlayerId
+    messages: PlayerMessage[]
+  }
+  export interface PlayerErrorsRaisedEvent {
+    playerId: PlayerId
+    errors: PlayerError[]
+  }
+  export interface PlayerCreatedEvent {
+    player: Player
+  }
+  export interface EventMap {
+    playerPropertiesChanged: PlayerPropertiesChangedEvent
+    playerEventsAdded: PlayerEventsAddedEvent
+    playerMessagesLogged: PlayerMessagesLoggedEvent
+    playerErrorsRaised: PlayerErrorsRaisedEvent
+    playerCreated: PlayerCreatedEvent
   }
 }
 export namespace Memory {
@@ -2912,6 +3385,12 @@ export namespace Network {
     | 'Medium'
     | 'High'
     | 'VeryHigh'
+  export type RenderBlockingBehavior =
+    | 'Blocking'
+    | 'InBodyParserBlocking'
+    | 'NonBlocking'
+    | 'NonBlockingDynamic'
+    | 'PotentiallyBlocking'
   export type PostDataEntry = { bytes?: string }
   export type Request = {
     url: string
@@ -2935,6 +3414,7 @@ export namespace Network {
     isLinkPreload?: boolean
     trustTokenParams?: TrustTokenParams
     isSameSite?: boolean
+    isAdRelated?: boolean
   }
   export type SignedCertificateTimestamp = {
     status: string
@@ -3111,6 +3591,7 @@ export namespace Network {
       | 'preload'
       | 'SignedExchange'
       | 'preflight'
+      | 'FedCM'
       | 'other'
     stack?: Runtime.StackTrace
     url?: string
@@ -3275,11 +3756,23 @@ export namespace Network {
   }
   export type SignedExchangeInfo = {
     outerResponse: Response
+    hasExtraInfo: boolean
     header?: SignedExchangeHeader
     securityDetails?: SecurityDetails
     errors?: SignedExchangeError[]
   }
   export type ContentEncoding = 'deflate' | 'gzip' | 'br' | 'zstd'
+  export type NetworkConditions = {
+    urlPattern: string
+    latency: number
+    downloadThroughput: number
+    uploadThroughput: number
+    connectionType?: ConnectionType
+    packetLoss?: number
+    packetQueueLength?: number
+    packetReordering?: boolean
+  }
+  export type BlockPattern = { urlPattern: string; block: boolean }
   export type DirectSocketDnsQueryType = 'ipv4' | 'ipv6'
   export type DirectTCPSocketOptions = {
     noDelay: boolean
@@ -3296,6 +3789,9 @@ export namespace Network {
     dnsQueryType?: DirectSocketDnsQueryType
     sendBufferSize?: number
     receiveBufferSize?: number
+    multicastLoopback?: boolean
+    multicastTimeToLive?: number
+    multicastAllowAddressSharing?: boolean
   }
   export type DirectUDPMessage = {
     data: string
@@ -3306,11 +3802,9 @@ export namespace Network {
     | 'Allow'
     | 'BlockFromInsecureToMorePrivate'
     | 'WarnFromInsecureToMorePrivate'
-    | 'PreflightBlock'
-    | 'PreflightWarn'
     | 'PermissionBlock'
     | 'PermissionWarn'
-  export type IPAddressSpace = 'Local' | 'Private' | 'Public' | 'Unknown'
+  export type IPAddressSpace = 'Loopback' | 'Local' | 'Public' | 'Unknown'
   export type ConnectTiming = { requestTime: number }
   export type ClientSecurityState = {
     initiatorIsSecureContext: boolean
@@ -3370,6 +3864,140 @@ export namespace Network {
     status: ReportStatus
   }
   export type ReportingApiEndpoint = { url: string; groupName: string }
+  export type DeviceBoundSessionKey = { site: string; id: string }
+  export type DeviceBoundSessionCookieCraving = {
+    name: string
+    domain: string
+    path: string
+    secure: boolean
+    httpOnly: boolean
+    sameSite?: CookieSameSite
+  }
+  export type DeviceBoundSessionUrlRule = {
+    ruleType: 'Exclude' | 'Include'
+    hostPattern: string
+    pathPrefix: string
+  }
+  export type DeviceBoundSessionInclusionRules = {
+    origin: string
+    includeSite: boolean
+    urlRules: DeviceBoundSessionUrlRule[]
+  }
+  export type DeviceBoundSession = {
+    key: DeviceBoundSessionKey
+    refreshUrl: string
+    inclusionRules: DeviceBoundSessionInclusionRules
+    cookieCravings: DeviceBoundSessionCookieCraving[]
+    expiryDate: Network.TimeSinceEpoch
+    cachedChallenge?: string
+    allowedRefreshInitiators: string[]
+  }
+  export type DeviceBoundSessionEventId = string
+  export type DeviceBoundSessionFetchResult =
+    | 'Success'
+    | 'KeyError'
+    | 'SigningError'
+    | 'ServerRequestedTermination'
+    | 'InvalidSessionId'
+    | 'InvalidChallenge'
+    | 'TooManyChallenges'
+    | 'InvalidFetcherUrl'
+    | 'InvalidRefreshUrl'
+    | 'TransientHttpError'
+    | 'ScopeOriginSameSiteMismatch'
+    | 'RefreshUrlSameSiteMismatch'
+    | 'MismatchedSessionId'
+    | 'MissingScope'
+    | 'NoCredentials'
+    | 'SubdomainRegistrationWellKnownUnavailable'
+    | 'SubdomainRegistrationUnauthorized'
+    | 'SubdomainRegistrationWellKnownMalformed'
+    | 'SessionProviderWellKnownUnavailable'
+    | 'RelyingPartyWellKnownUnavailable'
+    | 'FederatedKeyThumbprintMismatch'
+    | 'InvalidFederatedSessionUrl'
+    | 'InvalidFederatedKey'
+    | 'TooManyRelyingOriginLabels'
+    | 'BoundCookieSetForbidden'
+    | 'NetError'
+    | 'ProxyError'
+    | 'EmptySessionConfig'
+    | 'InvalidCredentialsConfig'
+    | 'InvalidCredentialsType'
+    | 'InvalidCredentialsEmptyName'
+    | 'InvalidCredentialsCookie'
+    | 'PersistentHttpError'
+    | 'RegistrationAttemptedChallenge'
+    | 'InvalidScopeOrigin'
+    | 'ScopeOriginContainsPath'
+    | 'RefreshInitiatorNotString'
+    | 'RefreshInitiatorInvalidHostPattern'
+    | 'InvalidScopeSpecification'
+    | 'MissingScopeSpecificationType'
+    | 'EmptyScopeSpecificationDomain'
+    | 'EmptyScopeSpecificationPath'
+    | 'InvalidScopeSpecificationType'
+    | 'InvalidScopeIncludeSite'
+    | 'MissingScopeIncludeSite'
+    | 'FederatedNotAuthorizedByProvider'
+    | 'FederatedNotAuthorizedByRelyingParty'
+    | 'SessionProviderWellKnownMalformed'
+    | 'SessionProviderWellKnownHasProviderOrigin'
+    | 'RelyingPartyWellKnownMalformed'
+    | 'RelyingPartyWellKnownHasRelyingOrigins'
+    | 'InvalidFederatedSessionProviderSessionMissing'
+    | 'InvalidFederatedSessionWrongProviderOrigin'
+    | 'InvalidCredentialsCookieCreationTime'
+    | 'InvalidCredentialsCookieName'
+    | 'InvalidCredentialsCookieParsing'
+    | 'InvalidCredentialsCookieUnpermittedAttribute'
+    | 'InvalidCredentialsCookieInvalidDomain'
+    | 'InvalidCredentialsCookiePrefix'
+    | 'InvalidScopeRulePath'
+    | 'InvalidScopeRuleHostPattern'
+    | 'ScopeRuleOriginScopedHostPatternMismatch'
+    | 'ScopeRuleSiteScopedHostPatternMismatch'
+    | 'SigningQuotaExceeded'
+    | 'InvalidConfigJson'
+    | 'InvalidFederatedSessionProviderFailedToRestoreKey'
+    | 'FailedToUnwrapKey'
+    | 'SessionDeletedDuringRefresh'
+  export type CreationEventDetails = {
+    fetchResult: DeviceBoundSessionFetchResult
+    newSession?: DeviceBoundSession
+  }
+  export type RefreshEventDetails = {
+    refreshResult:
+      | 'Refreshed'
+      | 'InitializedService'
+      | 'Unreachable'
+      | 'ServerError'
+      | 'RefreshQuotaExceeded'
+      | 'FatalError'
+      | 'SigningQuotaExceeded'
+    fetchResult?: DeviceBoundSessionFetchResult
+    newSession?: DeviceBoundSession
+    wasFullyProactiveRefresh: boolean
+  }
+  export type TerminationEventDetails = {
+    deletionReason:
+      | 'Expired'
+      | 'FailedToRestoreKey'
+      | 'FailedToUnwrapKey'
+      | 'StoragePartitionCleared'
+      | 'ClearBrowsingData'
+      | 'ServerRequested'
+      | 'InvalidSessionParams'
+      | 'RefreshFatalError'
+  }
+  export type ChallengeEventDetails = {
+    challengeResult:
+      | 'Success'
+      | 'NoSessionId'
+      | 'NoSessionMatch'
+      | 'CantSetBoundCookie'
+    challenge: string
+  }
   export type LoadNetworkResourcePageResult = {
     success: boolean
     netError?: number
@@ -3409,17 +4037,37 @@ export namespace Network {
     packetQueueLength?: number
     packetReordering?: boolean
   }
+  export interface EmulateNetworkConditionsByRuleArgs {
+    offline: boolean
+    matchedNetworkConditions: NetworkConditions[]
+  }
+  export interface OverrideNetworkStateArgs {
+    offline: boolean
+    latency: number
+    downloadThroughput: number
+    uploadThroughput: number
+    connectionType?: ConnectionType
+  }
   export interface EnableArgs {
     maxTotalBufferSize?: number
     maxResourceBufferSize?: number
     maxPostDataSize?: number
     reportDirectSocketTraffic?: boolean
+    enableDurableMessages?: boolean
+  }
+  export interface ConfigureDurableMessagesArgs {
+    maxTotalBufferSize?: number
+    maxResourceBufferSize?: number
   }
   export interface SearchInResponseBodyArgs {
     requestId: RequestId
     query: string
     caseSensitive?: boolean
     isRegex?: boolean
+  }
+  export interface SetBlockedURLsArgs {
+    urlPatterns?: BlockPattern[]
+    urls?: string[]
   }
   export interface SetCookieArgs {
     name: string
@@ -3462,6 +4110,9 @@ export namespace Network {
   export interface CanEmulateNetworkConditionsResult {
     result: boolean
   }
+  export interface EmulateNetworkConditionsByRuleResult {
+    ruleIds: string[]
+  }
   export interface GetAllCookiesResult {
     cookies: Cookie[]
   }
@@ -3477,6 +4128,7 @@ export namespace Network {
   }
   export interface GetRequestPostDataResult {
     postData: string
+    base64Encoded: boolean
   }
   export interface GetResponseBodyForInterceptionResult {
     body: string
@@ -3496,6 +4148,9 @@ export namespace Network {
   }
   export interface GetSecurityIsolationStatusResult {
     status: SecurityIsolationStatus
+  }
+  export interface FetchSchemefulSiteResult {
+    schemefulSite: string
   }
   export interface LoadNetworkResourceResult {
     resource: LoadNetworkResourcePageResult
@@ -3558,6 +4213,7 @@ export namespace Network {
     type: ResourceType
     frameId: Page.FrameId
     hasUserGesture: boolean
+    renderBlockingBehavior: RenderBlockingBehavior
   }
   export interface ResourceChangedPriorityEvent {
     requestId: RequestId
@@ -3661,6 +4317,14 @@ export namespace Network {
     data: string
     timestamp: MonotonicTime
   }
+  export interface DirectUDPSocketJoinedMulticastGroupEvent {
+    identifier: RequestId
+    IPAddress: string
+  }
+  export interface DirectUDPSocketLeftMulticastGroupEvent {
+    identifier: RequestId
+    IPAddress: string
+  }
   export interface DirectUDPSocketCreatedEvent {
     identifier: RequestId
     options: DirectUDPSocketOptions
@@ -3701,6 +4365,7 @@ export namespace Network {
     connectTiming: ConnectTiming
     clientSecurityState: ClientSecurityState
     siteHasCookieInOtherPartition: boolean
+    appliedNetworkConditionsId: string
   }
   export interface ResponseReceivedExtraInfoEvent {
     requestId: RequestId
@@ -3739,25 +4404,6 @@ export namespace Network {
     issuedTokenCount: number
   }
   export interface PolicyUpdatedEvent {}
-  export interface SubresourceWebBundleMetadataReceivedEvent {
-    requestId: RequestId
-    urls: string[]
-  }
-  export interface SubresourceWebBundleMetadataErrorEvent {
-    requestId: RequestId
-    errorMessage: string
-  }
-  export interface SubresourceWebBundleInnerResponseParsedEvent {
-    innerRequestId: RequestId
-    innerRequestURL: string
-    bundleRequestId: RequestId
-  }
-  export interface SubresourceWebBundleInnerResponseErrorEvent {
-    innerRequestId: RequestId
-    innerRequestURL: string
-    errorMessage: string
-    bundleRequestId: RequestId
-  }
   export interface ReportingApiReportAddedEvent {
     report: ReportingApiReport
   }
@@ -3767,6 +4413,19 @@ export namespace Network {
   export interface ReportingApiEndpointsChangedForOriginEvent {
     origin: string
     endpoints: ReportingApiEndpoint[]
+  }
+  export interface DeviceBoundSessionsAddedEvent {
+    sessions: DeviceBoundSession[]
+  }
+  export interface DeviceBoundSessionEventOccurredEvent {
+    eventId: DeviceBoundSessionEventId
+    site: string
+    succeeded: boolean
+    sessionId: string
+    creationEventDetails: CreationEventDetails
+    refreshEventDetails: RefreshEventDetails
+    terminationEventDetails: TerminationEventDetails
+    challengeEventDetails: ChallengeEventDetails
   }
   export interface EventMap {
     dataReceived: DataReceivedEvent
@@ -3795,6 +4454,8 @@ export namespace Network {
     directTCPSocketClosed: DirectTCPSocketClosedEvent
     directTCPSocketChunkSent: DirectTCPSocketChunkSentEvent
     directTCPSocketChunkReceived: DirectTCPSocketChunkReceivedEvent
+    directUDPSocketJoinedMulticastGroup: DirectUDPSocketJoinedMulticastGroupEvent
+    directUDPSocketLeftMulticastGroup: DirectUDPSocketLeftMulticastGroupEvent
     directUDPSocketCreated: DirectUDPSocketCreatedEvent
     directUDPSocketOpened: DirectUDPSocketOpenedEvent
     directUDPSocketAborted: DirectUDPSocketAbortedEvent
@@ -3806,13 +4467,11 @@ export namespace Network {
     responseReceivedEarlyHints: ResponseReceivedEarlyHintsEvent
     trustTokenOperationDone: TrustTokenOperationDoneEvent
     policyUpdated: PolicyUpdatedEvent
-    subresourceWebBundleMetadataReceived: SubresourceWebBundleMetadataReceivedEvent
-    subresourceWebBundleMetadataError: SubresourceWebBundleMetadataErrorEvent
-    subresourceWebBundleInnerResponseParsed: SubresourceWebBundleInnerResponseParsedEvent
-    subresourceWebBundleInnerResponseError: SubresourceWebBundleInnerResponseErrorEvent
     reportingApiReportAdded: ReportingApiReportAddedEvent
     reportingApiReportUpdated: ReportingApiReportUpdatedEvent
     reportingApiEndpointsChangedForOrigin: ReportingApiEndpointsChangedForOriginEvent
+    deviceBoundSessionsAdded: DeviceBoundSessionsAddedEvent
+    deviceBoundSessionEventOccurred: DeviceBoundSessionEventOccurredEvent
   }
 }
 export namespace Overlay {
@@ -3931,7 +4590,6 @@ export namespace Overlay {
     | 'searchForNode'
     | 'searchForUAShadowDOM'
     | 'captureAreaScreenshot'
-    | 'showDistances'
     | 'none'
   export interface GetHighlightObjectForTestArgs {
     nodeId: DOM.NodeId
@@ -4001,6 +4659,45 @@ export namespace Overlay {
     inspectModeCanceled: InspectModeCanceledEvent
   }
 }
+export namespace PWA {
+  export type FileHandlerAccept = {
+    mediaType: string
+    fileExtensions: string[]
+  }
+  export type FileHandler = {
+    action: string
+    accepts: FileHandlerAccept[]
+    displayName: string
+  }
+  export type DisplayMode = 'standalone' | 'browser'
+  export interface InstallArgs {
+    manifestId: string
+    installUrlOrBundleUrl?: string
+  }
+  export interface LaunchArgs {
+    manifestId: string
+    url?: string
+  }
+  export interface LaunchFilesInAppArgs {
+    manifestId: string
+    files: string[]
+  }
+  export interface ChangeAppUserSettingsArgs {
+    manifestId: string
+    linkCapturing?: boolean
+    displayMode?: DisplayMode
+  }
+  export interface GetOsAppStateResult {
+    badgeCount: number
+    fileHandlers: FileHandler[]
+  }
+  export interface LaunchResult {
+    targetId: Target.TargetID
+  }
+  export interface LaunchFilesInAppResult {
+    targetIds: Target.TargetID[]
+  }
+}
 export namespace Page {
   export type FrameId = string
   export type AdFrameType = 'none' | 'child' | 'root'
@@ -4038,7 +4735,9 @@ export namespace Page {
     | 'accelerometer'
     | 'all-screens-capture'
     | 'ambient-light-sensor'
+    | 'aria-notify'
     | 'attribution-reporting'
+    | 'autofill'
     | 'autoplay'
     | 'bluetooth'
     | 'browsing-topics'
@@ -4076,8 +4775,10 @@ export namespace Page {
     | 'deferred-fetch'
     | 'deferred-fetch-minimal'
     | 'device-attributes'
+    | 'digital-credentials-create'
     | 'digital-credentials-get'
     | 'direct-sockets'
+    | 'direct-sockets-multicast'
     | 'direct-sockets-private'
     | 'display-capture'
     | 'document-domain'
@@ -4098,9 +4799,13 @@ export namespace Page {
     | 'join-ad-interest-group'
     | 'keyboard-map'
     | 'language-detector'
+    | 'language-model'
     | 'local-fonts'
+    | 'local-network'
     | 'local-network-access'
+    | 'loopback-network'
     | 'magnetometer'
+    | 'manual-text'
     | 'media-playback-while-not-visible'
     | 'microphone'
     | 'midi'
@@ -4108,7 +4813,6 @@ export namespace Page {
     | 'otp-credentials'
     | 'payment'
     | 'picture-in-picture'
-    | 'popins'
     | 'private-aggregation'
     | 'private-state-token-issuance'
     | 'private-state-token-redemption'
@@ -4119,7 +4823,6 @@ export namespace Page {
     | 'run-ad-auction'
     | 'screen-wake-lock'
     | 'serial'
-    | 'shared-autofill'
     | 'shared-storage'
     | 'shared-storage-select-url'
     | 'smart-card'
@@ -4383,11 +5086,6 @@ export namespace Page {
     startUrl?: string
     themeColor?: string
   }
-  export type AutoResponseMode =
-    | 'none'
-    | 'autoAccept'
-    | 'autoReject'
-    | 'autoOptOut'
   export type NavigationType = 'Navigation' | 'BackForwardCacheRestore'
   export type BackForwardCacheNotRestoredReason =
     | 'NotPrimaryMainFrame'
@@ -4470,8 +5168,11 @@ export namespace Page {
     | 'BroadcastChannel'
     | 'WebXR'
     | 'SharedWorker'
+    | 'SharedWorkerMessage'
+    | 'SharedWorkerWithNoActiveClient'
     | 'WebLocks'
     | 'WebHID'
+    | 'WebBluetooth'
     | 'WebShare'
     | 'RequestedStorageAccessGrant'
     | 'WebNfc'
@@ -4494,9 +5195,9 @@ export namespace Page {
     | 'IndexedDBEvent'
     | 'Dummy'
     | 'JsNetworkRequestReceivedCacheControlNoStoreResource'
-    | 'WebRTCSticky'
-    | 'WebTransportSticky'
-    | 'WebSocketSticky'
+    | 'WebRTCUsedWithCCNS'
+    | 'WebTransportUsedWithCCNS'
+    | 'WebSocketUsedWithCCNS'
     | 'SmartCard'
     | 'LiveMediaStreamTrack'
     | 'UnloadHandler'
@@ -4742,6 +5443,7 @@ export namespace Page {
     frameId: FrameId
     loaderId: Network.LoaderId
     errorText: string
+    isDownload: boolean
   }
   export interface PrintToPDFResult {
     data: string
@@ -4755,6 +5457,9 @@ export namespace Page {
   }
   export interface GetOriginTrialsResult {
     originTrials: OriginTrial[]
+  }
+  export interface GetAnnotatedPageContentResult {
+    content: string
   }
   export interface DomContentEventFiredEvent {
     timestamp: Network.MonotonicTime
@@ -4962,6 +5667,205 @@ export namespace PerformanceTimeline {
   }
   export interface EventMap {
     timelineEventAdded: TimelineEventAddedEvent
+  }
+}
+export namespace Preload {
+  export type RuleSetId = string
+  export type RuleSet = {
+    id: RuleSetId
+    loaderId: Network.LoaderId
+    sourceText: string
+    backendNodeId?: DOM.BackendNodeId
+    url?: string
+    requestId?: Network.RequestId
+    errorType?: RuleSetErrorType
+    errorMessage?: string
+    tag?: string
+  }
+  export type RuleSetErrorType =
+    | 'SourceIsNotJsonObject'
+    | 'InvalidRulesSkipped'
+    | 'InvalidRulesetLevelTag'
+  export type SpeculationAction =
+    | 'Prefetch'
+    | 'Prerender'
+    | 'PrerenderUntilScript'
+  export type SpeculationTargetHint = 'Blank' | 'Self'
+  export type PreloadingAttemptKey = {
+    loaderId: Network.LoaderId
+    action: SpeculationAction
+    url: string
+    targetHint?: SpeculationTargetHint
+  }
+  export type PreloadingAttemptSource = {
+    key: PreloadingAttemptKey
+    ruleSetIds: RuleSetId[]
+    nodeIds: DOM.BackendNodeId[]
+  }
+  export type PreloadPipelineId = string
+  export type PrerenderFinalStatus =
+    | 'Activated'
+    | 'Destroyed'
+    | 'LowEndDevice'
+    | 'InvalidSchemeRedirect'
+    | 'InvalidSchemeNavigation'
+    | 'NavigationRequestBlockedByCsp'
+    | 'MojoBinderPolicy'
+    | 'RendererProcessCrashed'
+    | 'RendererProcessKilled'
+    | 'Download'
+    | 'TriggerDestroyed'
+    | 'NavigationNotCommitted'
+    | 'NavigationBadHttpStatus'
+    | 'ClientCertRequested'
+    | 'NavigationRequestNetworkError'
+    | 'CancelAllHostsForTesting'
+    | 'DidFailLoad'
+    | 'Stop'
+    | 'SslCertificateError'
+    | 'LoginAuthRequested'
+    | 'UaChangeRequiresReload'
+    | 'BlockedByClient'
+    | 'AudioOutputDeviceRequested'
+    | 'MixedContent'
+    | 'TriggerBackgrounded'
+    | 'MemoryLimitExceeded'
+    | 'DataSaverEnabled'
+    | 'TriggerUrlHasEffectiveUrl'
+    | 'ActivatedBeforeStarted'
+    | 'InactivePageRestriction'
+    | 'StartFailed'
+    | 'TimeoutBackgrounded'
+    | 'CrossSiteRedirectInInitialNavigation'
+    | 'CrossSiteNavigationInInitialNavigation'
+    | 'SameSiteCrossOriginRedirectNotOptInInInitialNavigation'
+    | 'SameSiteCrossOriginNavigationNotOptInInInitialNavigation'
+    | 'ActivationNavigationParameterMismatch'
+    | 'ActivatedInBackground'
+    | 'EmbedderHostDisallowed'
+    | 'ActivationNavigationDestroyedBeforeSuccess'
+    | 'TabClosedByUserGesture'
+    | 'TabClosedWithoutUserGesture'
+    | 'PrimaryMainFrameRendererProcessCrashed'
+    | 'PrimaryMainFrameRendererProcessKilled'
+    | 'ActivationFramePolicyNotCompatible'
+    | 'PreloadingDisabled'
+    | 'BatterySaverEnabled'
+    | 'ActivatedDuringMainFrameNavigation'
+    | 'PreloadingUnsupportedByWebContents'
+    | 'CrossSiteRedirectInMainFrameNavigation'
+    | 'CrossSiteNavigationInMainFrameNavigation'
+    | 'SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation'
+    | 'SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation'
+    | 'MemoryPressureOnTrigger'
+    | 'MemoryPressureAfterTriggered'
+    | 'PrerenderingDisabledByDevTools'
+    | 'SpeculationRuleRemoved'
+    | 'ActivatedWithAuxiliaryBrowsingContexts'
+    | 'MaxNumOfRunningEagerPrerendersExceeded'
+    | 'MaxNumOfRunningNonEagerPrerendersExceeded'
+    | 'MaxNumOfRunningEmbedderPrerendersExceeded'
+    | 'PrerenderingUrlHasEffectiveUrl'
+    | 'RedirectedPrerenderingUrlHasEffectiveUrl'
+    | 'ActivationUrlHasEffectiveUrl'
+    | 'JavaScriptInterfaceAdded'
+    | 'JavaScriptInterfaceRemoved'
+    | 'AllPrerenderingCanceled'
+    | 'WindowClosed'
+    | 'SlowNetwork'
+    | 'OtherPrerenderedPageActivated'
+    | 'V8OptimizerDisabled'
+    | 'PrerenderFailedDuringPrefetch'
+    | 'BrowsingDataRemoved'
+    | 'PrerenderHostReused'
+  export type PreloadingStatus =
+    | 'Pending'
+    | 'Running'
+    | 'Ready'
+    | 'Success'
+    | 'Failure'
+    | 'NotSupported'
+  export type PrefetchStatus =
+    | 'PrefetchAllowed'
+    | 'PrefetchFailedIneligibleRedirect'
+    | 'PrefetchFailedInvalidRedirect'
+    | 'PrefetchFailedMIMENotSupported'
+    | 'PrefetchFailedNetError'
+    | 'PrefetchFailedNon2XX'
+    | 'PrefetchEvictedAfterBrowsingDataRemoved'
+    | 'PrefetchEvictedAfterCandidateRemoved'
+    | 'PrefetchEvictedForNewerPrefetch'
+    | 'PrefetchHeldback'
+    | 'PrefetchIneligibleRetryAfter'
+    | 'PrefetchIsPrivacyDecoy'
+    | 'PrefetchIsStale'
+    | 'PrefetchNotEligibleBrowserContextOffTheRecord'
+    | 'PrefetchNotEligibleDataSaverEnabled'
+    | 'PrefetchNotEligibleExistingProxy'
+    | 'PrefetchNotEligibleHostIsNonUnique'
+    | 'PrefetchNotEligibleNonDefaultStoragePartition'
+    | 'PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy'
+    | 'PrefetchNotEligibleSchemeIsNotHttps'
+    | 'PrefetchNotEligibleUserHasCookies'
+    | 'PrefetchNotEligibleUserHasServiceWorker'
+    | 'PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler'
+    | 'PrefetchNotEligibleRedirectFromServiceWorker'
+    | 'PrefetchNotEligibleRedirectToServiceWorker'
+    | 'PrefetchNotEligibleBatterySaverEnabled'
+    | 'PrefetchNotEligiblePreloadingDisabled'
+    | 'PrefetchNotFinishedInTime'
+    | 'PrefetchNotStarted'
+    | 'PrefetchNotUsedCookiesChanged'
+    | 'PrefetchProxyNotAvailable'
+    | 'PrefetchResponseUsed'
+    | 'PrefetchSuccessfulButNotUsed'
+    | 'PrefetchNotUsedProbeFailed'
+  export type PrerenderMismatchedHeaders = {
+    headerName: string
+    initialValue?: string
+    activationValue?: string
+  }
+  export interface RuleSetUpdatedEvent {
+    ruleSet: RuleSet
+  }
+  export interface RuleSetRemovedEvent {
+    id: RuleSetId
+  }
+  export interface PreloadEnabledStateUpdatedEvent {
+    disabledByPreference: boolean
+    disabledByDataSaver: boolean
+    disabledByBatterySaver: boolean
+    disabledByHoldbackPrefetchSpeculationRules: boolean
+    disabledByHoldbackPrerenderSpeculationRules: boolean
+  }
+  export interface PrefetchStatusUpdatedEvent {
+    key: PreloadingAttemptKey
+    pipelineId: PreloadPipelineId
+    initiatingFrameId: Page.FrameId
+    prefetchUrl: string
+    status: PreloadingStatus
+    prefetchStatus: PrefetchStatus
+    requestId: Network.RequestId
+  }
+  export interface PrerenderStatusUpdatedEvent {
+    key: PreloadingAttemptKey
+    pipelineId: PreloadPipelineId
+    status: PreloadingStatus
+    prerenderStatus: PrerenderFinalStatus
+    disallowedMojoInterface: string
+    mismatchedHeaders: PrerenderMismatchedHeaders[]
+  }
+  export interface PreloadingAttemptSourcesUpdatedEvent {
+    loaderId: Network.LoaderId
+    preloadingAttemptSources: PreloadingAttemptSource[]
+  }
+  export interface EventMap {
+    ruleSetUpdated: RuleSetUpdatedEvent
+    ruleSetRemoved: RuleSetRemovedEvent
+    preloadEnabledStateUpdated: PreloadEnabledStateUpdatedEvent
+    prefetchStatusUpdated: PrefetchStatusUpdatedEvent
+    prerenderStatusUpdated: PrerenderStatusUpdatedEvent
+    preloadingAttemptSourcesUpdated: PreloadingAttemptSourcesUpdatedEvent
   }
 }
 export namespace Security {
@@ -5456,6 +6360,9 @@ export namespace Storage {
   export interface GetStorageKeyForFrameResult {
     storageKey: SerializedStorageKey
   }
+  export interface GetStorageKeyResult {
+    storageKey: SerializedStorageKey
+  }
   export interface GetCookiesResult {
     cookies: Network.Cookie[]
   }
@@ -5578,6 +6485,13 @@ export namespace Storage {
     netErrorName: string
     httpStatusCode: number
   }
+  export interface AttributionReportingVerboseDebugReportSentEvent {
+    url: string
+    body: Record<string, unknown>[]
+    netError: number
+    netErrorName: string
+    httpStatusCode: number
+  }
   export interface EventMap {
     cacheStorageContentUpdated: CacheStorageContentUpdatedEvent
     cacheStorageListUpdated: CacheStorageListUpdatedEvent
@@ -5593,6 +6507,7 @@ export namespace Storage {
     attributionReportingSourceRegistered: AttributionReportingSourceRegisteredEvent
     attributionReportingTriggerRegistered: AttributionReportingTriggerRegisteredEvent
     attributionReportingReportSent: AttributionReportingReportSentEvent
+    attributionReportingVerboseDebugReportSent: AttributionReportingVerboseDebugReportSentEvent
   }
 }
 export namespace SystemInfo {
@@ -5620,12 +6535,6 @@ export namespace SystemInfo {
   }
   export type SubsamplingFormat = 'yuv420' | 'yuv422' | 'yuv444'
   export type ImageType = 'jpeg' | 'webp' | 'unknown'
-  export type ImageDecodeAcceleratorCapability = {
-    imageType: ImageType
-    maxDimensions: Size
-    minDimensions: Size
-    subsamplings: SubsamplingFormat[]
-  }
   export type GPUInfo = {
     devices: GPUDevice[]
     auxAttributes?: Record<string, unknown>
@@ -5633,7 +6542,6 @@ export namespace SystemInfo {
     driverBugWorkarounds: string[]
     videoDecoding: VideoDecodeAcceleratorCapability[]
     videoEncoding: VideoEncodeAcceleratorCapability[]
-    imageDecoding: ImageDecodeAcceleratorCapability[]
   }
   export type ProcessInfo = { type: string; id: number; cpuTime: number }
   export interface GetInfoResult {
@@ -5661,6 +6569,7 @@ export namespace Target {
     openerId?: TargetID
     canAccessOpener: boolean
     openerFrameId?: Page.FrameId
+    parentFrameId?: Page.FrameId
     browserContextId?: Browser.BrowserContextID
     subtype?: string
   }
@@ -5721,6 +6630,10 @@ export namespace Target {
     discover: boolean
     filter?: TargetFilter
   }
+  export interface OpenDevToolsArgs {
+    targetId: TargetID
+    panelId?: string
+  }
   export interface AttachToTargetResult {
     sessionId: SessionID
   }
@@ -5735,6 +6648,7 @@ export namespace Target {
   }
   export interface GetBrowserContextsResult {
     browserContextIds: Browser.BrowserContextID[]
+    defaultBrowserContextId: Browser.BrowserContextID
   }
   export interface CreateTargetResult {
     targetId: TargetID
@@ -5744,6 +6658,12 @@ export namespace Target {
   }
   export interface GetTargetsResult {
     targetInfos: TargetInfo[]
+  }
+  export interface GetDevToolsTargetResult {
+    targetId: TargetID
+  }
+  export interface OpenDevToolsResult {
+    targetId: TargetID
   }
   export interface AttachedToTargetEvent {
     sessionId: SessionID
@@ -5831,6 +6751,9 @@ export namespace Tracing {
   export interface GetCategoriesResult {
     categories: string[]
   }
+  export interface GetTrackEventDescriptorResult {
+    descriptor: string
+  }
   export interface RequestMemoryDumpResult {
     dumpGuid: string
     success: boolean
@@ -5853,92 +6776,6 @@ export namespace Tracing {
     bufferUsage: BufferUsageEvent
     dataCollected: DataCollectedEvent
     tracingComplete: TracingCompleteEvent
-  }
-}
-export namespace Fetch {
-  export type RequestId = string
-  export type RequestStage = 'Request' | 'Response'
-  export type RequestPattern = {
-    urlPattern?: string
-    resourceType?: Network.ResourceType
-    requestStage?: RequestStage
-  }
-  export type HeaderEntry = { name: string; value: string }
-  export type AuthChallenge = {
-    source?: 'Server' | 'Proxy'
-    origin: string
-    scheme: string
-    realm: string
-  }
-  export type AuthChallengeResponse = {
-    response: 'Default' | 'CancelAuth' | 'ProvideCredentials'
-    username?: string
-    password?: string
-  }
-  export interface EnableArgs {
-    patterns?: RequestPattern[]
-    handleAuthRequests?: boolean
-  }
-  export interface FailRequestArgs {
-    requestId: RequestId
-    errorReason: Network.ErrorReason
-  }
-  export interface FulfillRequestArgs {
-    requestId: RequestId
-    responseCode: number
-    responseHeaders?: HeaderEntry[]
-    binaryResponseHeaders?: string
-    body?: string
-    responsePhrase?: string
-  }
-  export interface ContinueRequestArgs {
-    requestId: RequestId
-    url?: string
-    method?: string
-    postData?: string
-    headers?: HeaderEntry[]
-    interceptResponse?: boolean
-  }
-  export interface ContinueWithAuthArgs {
-    requestId: RequestId
-    authChallengeResponse: AuthChallengeResponse
-  }
-  export interface ContinueResponseArgs {
-    requestId: RequestId
-    responseCode?: number
-    responsePhrase?: string
-    responseHeaders?: HeaderEntry[]
-    binaryResponseHeaders?: string
-  }
-  export interface GetResponseBodyResult {
-    body: string
-    base64Encoded: boolean
-  }
-  export interface TakeResponseBodyAsStreamResult {
-    stream: IO.StreamHandle
-  }
-  export interface RequestPausedEvent {
-    requestId: RequestId
-    request: Network.Request
-    frameId: Page.FrameId
-    resourceType: Network.ResourceType
-    responseErrorReason: Network.ErrorReason
-    responseStatusCode: number
-    responseStatusText: string
-    responseHeaders: HeaderEntry[]
-    networkId: Network.RequestId
-    redirectedRequestId: RequestId
-  }
-  export interface AuthRequiredEvent {
-    requestId: RequestId
-    request: Network.Request
-    frameId: Page.FrameId
-    resourceType: Network.ResourceType
-    authChallenge: AuthChallenge
-  }
-  export interface EventMap {
-    requestPaused: RequestPausedEvent
-    authRequired: AuthRequiredEvent
   }
 }
 export namespace WebAudio {
@@ -6165,458 +7002,6 @@ export namespace WebAuthn {
     credentialDeleted: CredentialDeletedEvent
     credentialUpdated: CredentialUpdatedEvent
     credentialAsserted: CredentialAssertedEvent
-  }
-}
-export namespace Media {
-  export type PlayerId = string
-  export type Timestamp = number
-  export type PlayerMessage = {
-    level: 'error' | 'warning' | 'info' | 'debug'
-    message: string
-  }
-  export type PlayerProperty = { name: string; value: string }
-  export type PlayerEvent = { timestamp: Timestamp; value: string }
-  export type PlayerErrorSourceLocation = { file: string; line: number }
-  export type PlayerError = {
-    errorType: string
-    code: number
-    stack: PlayerErrorSourceLocation[]
-    cause: PlayerError[]
-    data: Record<string, unknown>
-  }
-  export interface PlayerPropertiesChangedEvent {
-    playerId: PlayerId
-    properties: PlayerProperty[]
-  }
-  export interface PlayerEventsAddedEvent {
-    playerId: PlayerId
-    events: PlayerEvent[]
-  }
-  export interface PlayerMessagesLoggedEvent {
-    playerId: PlayerId
-    messages: PlayerMessage[]
-  }
-  export interface PlayerErrorsRaisedEvent {
-    playerId: PlayerId
-    errors: PlayerError[]
-  }
-  export interface PlayersCreatedEvent {
-    players: PlayerId[]
-  }
-  export interface EventMap {
-    playerPropertiesChanged: PlayerPropertiesChangedEvent
-    playerEventsAdded: PlayerEventsAddedEvent
-    playerMessagesLogged: PlayerMessagesLoggedEvent
-    playerErrorsRaised: PlayerErrorsRaisedEvent
-    playersCreated: PlayersCreatedEvent
-  }
-}
-export namespace DeviceAccess {
-  export type RequestId = string
-  export type DeviceId = string
-  export type PromptDevice = { id: DeviceId; name: string }
-  export interface SelectPromptArgs {
-    id: RequestId
-    deviceId: DeviceId
-  }
-  export interface DeviceRequestPromptedEvent {
-    id: RequestId
-    devices: PromptDevice[]
-  }
-  export interface EventMap {
-    deviceRequestPrompted: DeviceRequestPromptedEvent
-  }
-}
-export namespace Preload {
-  export type RuleSetId = string
-  export type RuleSet = {
-    id: RuleSetId
-    loaderId: Network.LoaderId
-    sourceText: string
-    backendNodeId?: DOM.BackendNodeId
-    url?: string
-    requestId?: Network.RequestId
-    errorType?: RuleSetErrorType
-    errorMessage?: string
-  }
-  export type RuleSetErrorType = 'SourceIsNotJsonObject' | 'InvalidRulesSkipped'
-  export type SpeculationAction = 'Prefetch' | 'Prerender'
-  export type SpeculationTargetHint = 'Blank' | 'Self'
-  export type PreloadingAttemptKey = {
-    loaderId: Network.LoaderId
-    action: SpeculationAction
-    url: string
-    targetHint?: SpeculationTargetHint
-  }
-  export type PreloadingAttemptSource = {
-    key: PreloadingAttemptKey
-    ruleSetIds: RuleSetId[]
-    nodeIds: DOM.BackendNodeId[]
-  }
-  export type PreloadPipelineId = string
-  export type PrerenderFinalStatus =
-    | 'Activated'
-    | 'Destroyed'
-    | 'LowEndDevice'
-    | 'InvalidSchemeRedirect'
-    | 'InvalidSchemeNavigation'
-    | 'NavigationRequestBlockedByCsp'
-    | 'MojoBinderPolicy'
-    | 'RendererProcessCrashed'
-    | 'RendererProcessKilled'
-    | 'Download'
-    | 'TriggerDestroyed'
-    | 'NavigationNotCommitted'
-    | 'NavigationBadHttpStatus'
-    | 'ClientCertRequested'
-    | 'NavigationRequestNetworkError'
-    | 'CancelAllHostsForTesting'
-    | 'DidFailLoad'
-    | 'Stop'
-    | 'SslCertificateError'
-    | 'LoginAuthRequested'
-    | 'UaChangeRequiresReload'
-    | 'BlockedByClient'
-    | 'AudioOutputDeviceRequested'
-    | 'MixedContent'
-    | 'TriggerBackgrounded'
-    | 'MemoryLimitExceeded'
-    | 'DataSaverEnabled'
-    | 'TriggerUrlHasEffectiveUrl'
-    | 'ActivatedBeforeStarted'
-    | 'InactivePageRestriction'
-    | 'StartFailed'
-    | 'TimeoutBackgrounded'
-    | 'CrossSiteRedirectInInitialNavigation'
-    | 'CrossSiteNavigationInInitialNavigation'
-    | 'SameSiteCrossOriginRedirectNotOptInInInitialNavigation'
-    | 'SameSiteCrossOriginNavigationNotOptInInInitialNavigation'
-    | 'ActivationNavigationParameterMismatch'
-    | 'ActivatedInBackground'
-    | 'EmbedderHostDisallowed'
-    | 'ActivationNavigationDestroyedBeforeSuccess'
-    | 'TabClosedByUserGesture'
-    | 'TabClosedWithoutUserGesture'
-    | 'PrimaryMainFrameRendererProcessCrashed'
-    | 'PrimaryMainFrameRendererProcessKilled'
-    | 'ActivationFramePolicyNotCompatible'
-    | 'PreloadingDisabled'
-    | 'BatterySaverEnabled'
-    | 'ActivatedDuringMainFrameNavigation'
-    | 'PreloadingUnsupportedByWebContents'
-    | 'CrossSiteRedirectInMainFrameNavigation'
-    | 'CrossSiteNavigationInMainFrameNavigation'
-    | 'SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation'
-    | 'SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation'
-    | 'MemoryPressureOnTrigger'
-    | 'MemoryPressureAfterTriggered'
-    | 'PrerenderingDisabledByDevTools'
-    | 'SpeculationRuleRemoved'
-    | 'ActivatedWithAuxiliaryBrowsingContexts'
-    | 'MaxNumOfRunningEagerPrerendersExceeded'
-    | 'MaxNumOfRunningNonEagerPrerendersExceeded'
-    | 'MaxNumOfRunningEmbedderPrerendersExceeded'
-    | 'PrerenderingUrlHasEffectiveUrl'
-    | 'RedirectedPrerenderingUrlHasEffectiveUrl'
-    | 'ActivationUrlHasEffectiveUrl'
-    | 'JavaScriptInterfaceAdded'
-    | 'JavaScriptInterfaceRemoved'
-    | 'AllPrerenderingCanceled'
-    | 'WindowClosed'
-    | 'SlowNetwork'
-    | 'OtherPrerenderedPageActivated'
-    | 'V8OptimizerDisabled'
-    | 'PrerenderFailedDuringPrefetch'
-    | 'BrowsingDataRemoved'
-  export type PreloadingStatus =
-    | 'Pending'
-    | 'Running'
-    | 'Ready'
-    | 'Success'
-    | 'Failure'
-    | 'NotSupported'
-  export type PrefetchStatus =
-    | 'PrefetchAllowed'
-    | 'PrefetchFailedIneligibleRedirect'
-    | 'PrefetchFailedInvalidRedirect'
-    | 'PrefetchFailedMIMENotSupported'
-    | 'PrefetchFailedNetError'
-    | 'PrefetchFailedNon2XX'
-    | 'PrefetchEvictedAfterBrowsingDataRemoved'
-    | 'PrefetchEvictedAfterCandidateRemoved'
-    | 'PrefetchEvictedForNewerPrefetch'
-    | 'PrefetchHeldback'
-    | 'PrefetchIneligibleRetryAfter'
-    | 'PrefetchIsPrivacyDecoy'
-    | 'PrefetchIsStale'
-    | 'PrefetchNotEligibleBrowserContextOffTheRecord'
-    | 'PrefetchNotEligibleDataSaverEnabled'
-    | 'PrefetchNotEligibleExistingProxy'
-    | 'PrefetchNotEligibleHostIsNonUnique'
-    | 'PrefetchNotEligibleNonDefaultStoragePartition'
-    | 'PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy'
-    | 'PrefetchNotEligibleSchemeIsNotHttps'
-    | 'PrefetchNotEligibleUserHasCookies'
-    | 'PrefetchNotEligibleUserHasServiceWorker'
-    | 'PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler'
-    | 'PrefetchNotEligibleRedirectFromServiceWorker'
-    | 'PrefetchNotEligibleRedirectToServiceWorker'
-    | 'PrefetchNotEligibleBatterySaverEnabled'
-    | 'PrefetchNotEligiblePreloadingDisabled'
-    | 'PrefetchNotFinishedInTime'
-    | 'PrefetchNotStarted'
-    | 'PrefetchNotUsedCookiesChanged'
-    | 'PrefetchProxyNotAvailable'
-    | 'PrefetchResponseUsed'
-    | 'PrefetchSuccessfulButNotUsed'
-    | 'PrefetchNotUsedProbeFailed'
-  export type PrerenderMismatchedHeaders = {
-    headerName: string
-    initialValue?: string
-    activationValue?: string
-  }
-  export interface RuleSetUpdatedEvent {
-    ruleSet: RuleSet
-  }
-  export interface RuleSetRemovedEvent {
-    id: RuleSetId
-  }
-  export interface PreloadEnabledStateUpdatedEvent {
-    disabledByPreference: boolean
-    disabledByDataSaver: boolean
-    disabledByBatterySaver: boolean
-    disabledByHoldbackPrefetchSpeculationRules: boolean
-    disabledByHoldbackPrerenderSpeculationRules: boolean
-  }
-  export interface PrefetchStatusUpdatedEvent {
-    key: PreloadingAttemptKey
-    pipelineId: PreloadPipelineId
-    initiatingFrameId: Page.FrameId
-    prefetchUrl: string
-    status: PreloadingStatus
-    prefetchStatus: PrefetchStatus
-    requestId: Network.RequestId
-  }
-  export interface PrerenderStatusUpdatedEvent {
-    key: PreloadingAttemptKey
-    pipelineId: PreloadPipelineId
-    status: PreloadingStatus
-    prerenderStatus: PrerenderFinalStatus
-    disallowedMojoInterface: string
-    mismatchedHeaders: PrerenderMismatchedHeaders[]
-  }
-  export interface PreloadingAttemptSourcesUpdatedEvent {
-    loaderId: Network.LoaderId
-    preloadingAttemptSources: PreloadingAttemptSource[]
-  }
-  export interface EventMap {
-    ruleSetUpdated: RuleSetUpdatedEvent
-    ruleSetRemoved: RuleSetRemovedEvent
-    preloadEnabledStateUpdated: PreloadEnabledStateUpdatedEvent
-    prefetchStatusUpdated: PrefetchStatusUpdatedEvent
-    prerenderStatusUpdated: PrerenderStatusUpdatedEvent
-    preloadingAttemptSourcesUpdated: PreloadingAttemptSourcesUpdatedEvent
-  }
-}
-export namespace FedCm {
-  export type LoginState = 'SignIn' | 'SignUp'
-  export type DialogType =
-    | 'AccountChooser'
-    | 'AutoReauthn'
-    | 'ConfirmIdpLogin'
-    | 'Error'
-  export type DialogButton =
-    | 'ConfirmIdpLoginContinue'
-    | 'ErrorGotIt'
-    | 'ErrorMoreDetails'
-  export type AccountUrlType = 'TermsOfService' | 'PrivacyPolicy'
-  export type Account = {
-    accountId: string
-    email: string
-    name: string
-    givenName: string
-    pictureUrl: string
-    idpConfigUrl: string
-    idpLoginUrl: string
-    loginState: LoginState
-    termsOfServiceUrl?: string
-    privacyPolicyUrl?: string
-  }
-  export interface SelectAccountArgs {
-    dialogId: string
-    accountIndex: number
-  }
-  export interface ClickDialogButtonArgs {
-    dialogId: string
-    dialogButton: DialogButton
-  }
-  export interface OpenUrlArgs {
-    dialogId: string
-    accountIndex: number
-    accountUrlType: AccountUrlType
-  }
-  export interface DismissDialogArgs {
-    dialogId: string
-    triggerCooldown?: boolean
-  }
-  export interface DialogShownEvent {
-    dialogId: string
-    dialogType: DialogType
-    accounts: Account[]
-    title: string
-    subtitle: string
-  }
-  export interface DialogClosedEvent {
-    dialogId: string
-  }
-  export interface EventMap {
-    dialogShown: DialogShownEvent
-    dialogClosed: DialogClosedEvent
-  }
-}
-export namespace PWA {
-  export type FileHandlerAccept = {
-    mediaType: string
-    fileExtensions: string[]
-  }
-  export type FileHandler = {
-    action: string
-    accepts: FileHandlerAccept[]
-    displayName: string
-  }
-  export type DisplayMode = 'standalone' | 'browser'
-  export interface InstallArgs {
-    manifestId: string
-    installUrlOrBundleUrl?: string
-  }
-  export interface LaunchArgs {
-    manifestId: string
-    url?: string
-  }
-  export interface LaunchFilesInAppArgs {
-    manifestId: string
-    files: string[]
-  }
-  export interface ChangeAppUserSettingsArgs {
-    manifestId: string
-    linkCapturing?: boolean
-    displayMode?: DisplayMode
-  }
-  export interface GetOsAppStateResult {
-    badgeCount: number
-    fileHandlers: FileHandler[]
-  }
-  export interface LaunchResult {
-    targetId: Target.TargetID
-  }
-  export interface LaunchFilesInAppResult {
-    targetIds: Target.TargetID[]
-  }
-}
-export namespace BluetoothEmulation {
-  export type CentralState = 'absent' | 'powered-off' | 'powered-on'
-  export type GATTOperationType = 'connection' | 'discovery'
-  export type CharacteristicWriteType =
-    | 'write-default-deprecated'
-    | 'write-with-response'
-    | 'write-without-response'
-  export type CharacteristicOperationType =
-    | 'read'
-    | 'write'
-    | 'subscribe-to-notifications'
-    | 'unsubscribe-from-notifications'
-  export type DescriptorOperationType = 'read' | 'write'
-  export type ManufacturerData = { key: number; data: string }
-  export type ScanRecord = {
-    name?: string
-    uuids?: string[]
-    appearance?: number
-    txPower?: number
-    manufacturerData?: ManufacturerData[]
-  }
-  export type ScanEntry = {
-    deviceAddress: string
-    rssi: number
-    scanRecord: ScanRecord
-  }
-  export type CharacteristicProperties = {
-    broadcast?: boolean
-    read?: boolean
-    writeWithoutResponse?: boolean
-    write?: boolean
-    notify?: boolean
-    indicate?: boolean
-    authenticatedSignedWrites?: boolean
-    extendedProperties?: boolean
-  }
-  export interface EnableArgs {
-    state: CentralState
-    leSupported: boolean
-  }
-  export interface SimulatePreconnectedPeripheralArgs {
-    address: string
-    name: string
-    manufacturerData: ManufacturerData[]
-    knownServiceUuids: string[]
-  }
-  export interface SimulateGATTOperationResponseArgs {
-    address: string
-    type: GATTOperationType
-    code: number
-  }
-  export interface SimulateCharacteristicOperationResponseArgs {
-    characteristicId: string
-    type: CharacteristicOperationType
-    code: number
-    data?: string
-  }
-  export interface SimulateDescriptorOperationResponseArgs {
-    descriptorId: string
-    type: DescriptorOperationType
-    code: number
-    data?: string
-  }
-  export interface AddServiceArgs {
-    address: string
-    serviceUuid: string
-  }
-  export interface AddCharacteristicArgs {
-    serviceId: string
-    characteristicUuid: string
-    properties: CharacteristicProperties
-  }
-  export interface AddDescriptorArgs {
-    characteristicId: string
-    descriptorUuid: string
-  }
-  export interface AddServiceResult {
-    serviceId: string
-  }
-  export interface AddCharacteristicResult {
-    characteristicId: string
-  }
-  export interface AddDescriptorResult {
-    descriptorId: string
-  }
-  export interface GattOperationReceivedEvent {
-    address: string
-    type: GATTOperationType
-  }
-  export interface CharacteristicOperationReceivedEvent {
-    characteristicId: string
-    type: CharacteristicOperationType
-    data: string
-    writeType: CharacteristicWriteType
-  }
-  export interface DescriptorOperationReceivedEvent {
-    descriptorId: string
-    type: DescriptorOperationType
-    data: string
-  }
-  export interface EventMap {
-    gattOperationReceived: GattOperationReceivedEvent
-    characteristicOperationReceived: CharacteristicOperationReceivedEvent
-    descriptorOperationReceived: DescriptorOperationReceivedEvent
   }
 }
 export namespace Console {
@@ -6943,6 +7328,7 @@ export namespace HeapProfiler {
   }
   export interface StartSamplingArgs {
     samplingInterval?: number
+    stackDepth?: number
     includeObjectsCollectedByMajorGC?: boolean
     includeObjectsCollectedByMinorGC?: boolean
   }
@@ -7135,6 +7521,7 @@ export namespace Runtime {
       | 'dataview'
       | 'webassemblymemory'
       | 'wasmvalue'
+      | 'trustedtype'
     className?: string
     value?: unknown
     unserializableValue?: UnserializableValue
@@ -7175,6 +7562,7 @@ export namespace Runtime {
       | 'dataview'
       | 'webassemblymemory'
       | 'wasmvalue'
+      | 'trustedtype'
     description?: string
     overflow: boolean
     properties: PropertyPreview[]
@@ -7214,6 +7602,7 @@ export namespace Runtime {
       | 'dataview'
       | 'webassemblymemory'
       | 'wasmvalue'
+      | 'trustedtype'
   }
   export type EntryPreview = { key?: ObjectPreview; value: ObjectPreview }
   export type PropertyDescriptor = {
@@ -7786,66 +8175,6 @@ class AuditsClient {
     return this.transport.off('Audits.' + name, listener as ChromeEventListener)
   }
 }
-class ExtensionsClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  loadUnpacked(path: string): Promise<Extensions.LoadUnpackedResult> {
-    return this.transport.call<Extensions.LoadUnpackedResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Extensions.loadUnpacked',
-      params: { path: path },
-    })
-  }
-  uninstall(id: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Extensions.uninstall',
-      params: { id: id },
-    })
-  }
-  getStorageItems(
-    args: Extensions.GetStorageItemsArgs
-  ): Promise<Extensions.GetStorageItemsResult> {
-    return this.transport.call<Extensions.GetStorageItemsResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Extensions.getStorageItems',
-      params: args,
-    })
-  }
-  removeStorageItems(args: Extensions.RemoveStorageItemsArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Extensions.removeStorageItems',
-      params: args,
-    })
-  }
-  clearStorageItems(args: Extensions.ClearStorageItemsArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Extensions.clearStorageItems',
-      params: args,
-    })
-  }
-  setStorageItems(args: Extensions.SetStorageItemsArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Extensions.setStorageItems',
-      params: args,
-    })
-  }
-}
 class AutofillClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
@@ -7996,6 +8325,185 @@ class BackgroundServiceClient {
     )
   }
 }
+class BluetoothEmulationClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  enable(args: BluetoothEmulation.EnableArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.enable',
+      params: args,
+    })
+  }
+  setSimulatedCentralState(
+    state: BluetoothEmulation.CentralState
+  ): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.setSimulatedCentralState',
+      params: { state: state },
+    })
+  }
+  disable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.disable',
+      params: {},
+    })
+  }
+  simulatePreconnectedPeripheral(
+    args: BluetoothEmulation.SimulatePreconnectedPeripheralArgs
+  ): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.simulatePreconnectedPeripheral',
+      params: args,
+    })
+  }
+  simulateAdvertisement(entry: BluetoothEmulation.ScanEntry): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.simulateAdvertisement',
+      params: { entry: entry },
+    })
+  }
+  simulateGATTOperationResponse(
+    args: BluetoothEmulation.SimulateGATTOperationResponseArgs
+  ): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.simulateGATTOperationResponse',
+      params: args,
+    })
+  }
+  simulateCharacteristicOperationResponse(
+    args: BluetoothEmulation.SimulateCharacteristicOperationResponseArgs
+  ): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.simulateCharacteristicOperationResponse',
+      params: args,
+    })
+  }
+  simulateDescriptorOperationResponse(
+    args: BluetoothEmulation.SimulateDescriptorOperationResponseArgs
+  ): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.simulateDescriptorOperationResponse',
+      params: args,
+    })
+  }
+  addService(
+    args: BluetoothEmulation.AddServiceArgs
+  ): Promise<BluetoothEmulation.AddServiceResult> {
+    return this.transport.call<BluetoothEmulation.AddServiceResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.addService',
+      params: args,
+    })
+  }
+  removeService(serviceId: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.removeService',
+      params: { serviceId: serviceId },
+    })
+  }
+  addCharacteristic(
+    args: BluetoothEmulation.AddCharacteristicArgs
+  ): Promise<BluetoothEmulation.AddCharacteristicResult> {
+    return this.transport.call<BluetoothEmulation.AddCharacteristicResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.addCharacteristic',
+      params: args,
+    })
+  }
+  removeCharacteristic(characteristicId: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.removeCharacteristic',
+      params: { characteristicId: characteristicId },
+    })
+  }
+  addDescriptor(
+    args: BluetoothEmulation.AddDescriptorArgs
+  ): Promise<BluetoothEmulation.AddDescriptorResult> {
+    return this.transport.call<BluetoothEmulation.AddDescriptorResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.addDescriptor',
+      params: args,
+    })
+  }
+  removeDescriptor(descriptorId: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.removeDescriptor',
+      params: { descriptorId: descriptorId },
+    })
+  }
+  simulateGATTDisconnection(address: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'BluetoothEmulation.simulateGATTDisconnection',
+      params: { address: address },
+    })
+  }
+  on<K extends keyof BluetoothEmulation.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<BluetoothEmulation.EventMap[K]>) => void
+  ): () => void {
+    const filteredListener: typeof listener = (event) => {
+      if (event.sessionId !== this.sessionId) {
+        return
+      }
+      listener(event)
+    }
+    this.listeners.set(
+      listener as ChromeEventListener,
+      filteredListener as ChromeEventListener
+    )
+    return this.transport.on(
+      'BluetoothEmulation.' + name,
+      listener as ChromeEventListener
+    )
+  }
+  off<K extends keyof BluetoothEmulation.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<BluetoothEmulation.EventMap[K]>) => void
+  ): void {
+    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    if (filteredListener === undefined) {
+      return
+    }
+    this.listeners.delete(listener as ChromeEventListener)
+    return this.transport.off(
+      'BluetoothEmulation.' + name,
+      listener as ChromeEventListener
+    )
+  }
+}
 class BrowserClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
@@ -8133,6 +8641,14 @@ class BrowserClient {
       params: args,
     })
   }
+  setContentsSize(args: Browser.SetContentsSizeArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Browser.setContentsSize',
+      params: args,
+    })
+  }
   setDockTile(args?: Browser.SetDockTileArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
@@ -8216,7 +8732,7 @@ class CSSClient {
     })
   }
   collectClassNames(
-    styleSheetId: CSS.StyleSheetId
+    styleSheetId: DOM.StyleSheetId
   ): Promise<CSS.CollectClassNamesResult> {
     return this.transport.call<CSS.CollectClassNamesResult>({
       id: generateId(),
@@ -8335,6 +8851,14 @@ class CSSClient {
       params: { nodeId: nodeId },
     })
   }
+  getEnvironmentVariables(): Promise<CSS.GetEnvironmentVariablesResult> {
+    return this.transport.call<CSS.GetEnvironmentVariablesResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'CSS.getEnvironmentVariables',
+      params: {},
+    })
+  }
   getMediaQueries(): Promise<CSS.GetMediaQueriesResult> {
     return this.transport.call<CSS.GetMediaQueriesResult>({
       id: generateId(),
@@ -8354,7 +8878,7 @@ class CSSClient {
     })
   }
   getStyleSheetText(
-    styleSheetId: CSS.StyleSheetId
+    styleSheetId: DOM.StyleSheetId
   ): Promise<CSS.GetStyleSheetTextResult> {
     return this.transport.call<CSS.GetStyleSheetTextResult>({
       id: generateId(),
@@ -9161,6 +9685,16 @@ class DOMClient {
       params: args,
     })
   }
+  forceShowPopover(
+    args: DOM.ForceShowPopoverArgs
+  ): Promise<DOM.ForceShowPopoverResult> {
+    return this.transport.call<DOM.ForceShowPopoverResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'DOM.forceShowPopover',
+      params: args,
+    })
+  }
   on<K extends keyof DOM.EventMap>(
     name: K,
     listener: (event: ChromeEvent<DOM.EventMap[K]>) => void
@@ -9286,40 +9820,6 @@ class DOMDebuggerClient {
       sessionId: this.sessionId,
       method: 'DOMDebugger.setXHRBreakpoint',
       params: { url: url },
-    })
-  }
-}
-class EventBreakpointsClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  setInstrumentationBreakpoint(eventName: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'EventBreakpoints.setInstrumentationBreakpoint',
-      params: { eventName: eventName },
-    })
-  }
-  removeInstrumentationBreakpoint(eventName: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'EventBreakpoints.removeInstrumentationBreakpoint',
-      params: { eventName: eventName },
-    })
-  }
-  disable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'EventBreakpoints.disable',
-      params: {},
     })
   }
 }
@@ -9460,6 +9960,81 @@ class DOMStorageClient {
     this.listeners.delete(listener as ChromeEventListener)
     return this.transport.off(
       'DOMStorage.' + name,
+      listener as ChromeEventListener
+    )
+  }
+}
+class DeviceAccessClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  enable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'DeviceAccess.enable',
+      params: {},
+    })
+  }
+  disable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'DeviceAccess.disable',
+      params: {},
+    })
+  }
+  selectPrompt(args: DeviceAccess.SelectPromptArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'DeviceAccess.selectPrompt',
+      params: args,
+    })
+  }
+  cancelPrompt(id: DeviceAccess.RequestId): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'DeviceAccess.cancelPrompt',
+      params: { id: id },
+    })
+  }
+  on<K extends keyof DeviceAccess.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<DeviceAccess.EventMap[K]>) => void
+  ): () => void {
+    const filteredListener: typeof listener = (event) => {
+      if (event.sessionId !== this.sessionId) {
+        return
+      }
+      listener(event)
+    }
+    this.listeners.set(
+      listener as ChromeEventListener,
+      filteredListener as ChromeEventListener
+    )
+    return this.transport.on(
+      'DeviceAccess.' + name,
+      listener as ChromeEventListener
+    )
+  }
+  off<K extends keyof DeviceAccess.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<DeviceAccess.EventMap[K]>) => void
+  ): void {
+    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    if (filteredListener === undefined) {
+      return
+    }
+    this.listeners.delete(listener as ChromeEventListener)
+    return this.transport.off(
+      'DeviceAccess.' + name,
       listener as ChromeEventListener
     )
   }
@@ -9668,6 +10243,14 @@ class EmulationClient {
       params: { type: type },
     })
   }
+  setEmulatedOSTextScale(scale?: number): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Emulation.setEmulatedOSTextScale',
+      params: { scale: scale },
+    })
+  }
   setGeolocationOverride(
     args?: Emulation.SetGeolocationOverrideArgs
   ): Promise<void> {
@@ -9832,6 +10415,14 @@ class EmulationClient {
       params: { imageTypes: imageTypes },
     })
   }
+  setDataSaverOverride(dataSaverEnabled?: boolean): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Emulation.setDataSaverOverride',
+      params: { dataSaverEnabled: dataSaverEnabled },
+    })
+  }
   setHardwareConcurrencyOverride(hardwareConcurrency: number): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
@@ -9866,6 +10457,30 @@ class EmulationClient {
       params: { difference: difference },
     })
   }
+  getScreenInfos(): Promise<Emulation.GetScreenInfosResult> {
+    return this.transport.call<Emulation.GetScreenInfosResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Emulation.getScreenInfos',
+      params: {},
+    })
+  }
+  addScreen(args: Emulation.AddScreenArgs): Promise<Emulation.AddScreenResult> {
+    return this.transport.call<Emulation.AddScreenResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Emulation.addScreen',
+      params: args,
+    })
+  }
+  removeScreen(screenId: Emulation.ScreenId): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Emulation.removeScreen',
+      params: { screenId: screenId },
+    })
+  }
   on<K extends keyof Emulation.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Emulation.EventMap[K]>) => void
@@ -9898,6 +10513,326 @@ class EmulationClient {
       'Emulation.' + name,
       listener as ChromeEventListener
     )
+  }
+}
+class EventBreakpointsClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  setInstrumentationBreakpoint(eventName: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'EventBreakpoints.setInstrumentationBreakpoint',
+      params: { eventName: eventName },
+    })
+  }
+  removeInstrumentationBreakpoint(eventName: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'EventBreakpoints.removeInstrumentationBreakpoint',
+      params: { eventName: eventName },
+    })
+  }
+  disable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'EventBreakpoints.disable',
+      params: {},
+    })
+  }
+}
+class ExtensionsClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  loadUnpacked(path: string): Promise<Extensions.LoadUnpackedResult> {
+    return this.transport.call<Extensions.LoadUnpackedResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Extensions.loadUnpacked',
+      params: { path: path },
+    })
+  }
+  uninstall(id: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Extensions.uninstall',
+      params: { id: id },
+    })
+  }
+  getStorageItems(
+    args: Extensions.GetStorageItemsArgs
+  ): Promise<Extensions.GetStorageItemsResult> {
+    return this.transport.call<Extensions.GetStorageItemsResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Extensions.getStorageItems',
+      params: args,
+    })
+  }
+  removeStorageItems(args: Extensions.RemoveStorageItemsArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Extensions.removeStorageItems',
+      params: args,
+    })
+  }
+  clearStorageItems(args: Extensions.ClearStorageItemsArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Extensions.clearStorageItems',
+      params: args,
+    })
+  }
+  setStorageItems(args: Extensions.SetStorageItemsArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Extensions.setStorageItems',
+      params: args,
+    })
+  }
+}
+class FedCmClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  enable(disableRejectionDelay?: boolean): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'FedCm.enable',
+      params: { disableRejectionDelay: disableRejectionDelay },
+    })
+  }
+  disable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'FedCm.disable',
+      params: {},
+    })
+  }
+  selectAccount(args: FedCm.SelectAccountArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'FedCm.selectAccount',
+      params: args,
+    })
+  }
+  clickDialogButton(args: FedCm.ClickDialogButtonArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'FedCm.clickDialogButton',
+      params: args,
+    })
+  }
+  openUrl(args: FedCm.OpenUrlArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'FedCm.openUrl',
+      params: args,
+    })
+  }
+  dismissDialog(args: FedCm.DismissDialogArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'FedCm.dismissDialog',
+      params: args,
+    })
+  }
+  resetCooldown(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'FedCm.resetCooldown',
+      params: {},
+    })
+  }
+  on<K extends keyof FedCm.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<FedCm.EventMap[K]>) => void
+  ): () => void {
+    const filteredListener: typeof listener = (event) => {
+      if (event.sessionId !== this.sessionId) {
+        return
+      }
+      listener(event)
+    }
+    this.listeners.set(
+      listener as ChromeEventListener,
+      filteredListener as ChromeEventListener
+    )
+    return this.transport.on('FedCm.' + name, listener as ChromeEventListener)
+  }
+  off<K extends keyof FedCm.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<FedCm.EventMap[K]>) => void
+  ): void {
+    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    if (filteredListener === undefined) {
+      return
+    }
+    this.listeners.delete(listener as ChromeEventListener)
+    return this.transport.off('FedCm.' + name, listener as ChromeEventListener)
+  }
+}
+class FetchClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  disable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.disable',
+      params: {},
+    })
+  }
+  enable(args?: Fetch.EnableArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.enable',
+      params: args ?? {},
+    })
+  }
+  failRequest(args: Fetch.FailRequestArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.failRequest',
+      params: args,
+    })
+  }
+  fulfillRequest(args: Fetch.FulfillRequestArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.fulfillRequest',
+      params: args,
+    })
+  }
+  continueRequest(args: Fetch.ContinueRequestArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.continueRequest',
+      params: args,
+    })
+  }
+  continueWithAuth(args: Fetch.ContinueWithAuthArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.continueWithAuth',
+      params: args,
+    })
+  }
+  continueResponse(args: Fetch.ContinueResponseArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.continueResponse',
+      params: args,
+    })
+  }
+  getResponseBody(
+    requestId: Fetch.RequestId
+  ): Promise<Fetch.GetResponseBodyResult> {
+    return this.transport.call<Fetch.GetResponseBodyResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.getResponseBody',
+      params: { requestId: requestId },
+    })
+  }
+  takeResponseBodyAsStream(
+    requestId: Fetch.RequestId
+  ): Promise<Fetch.TakeResponseBodyAsStreamResult> {
+    return this.transport.call<Fetch.TakeResponseBodyAsStreamResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Fetch.takeResponseBodyAsStream',
+      params: { requestId: requestId },
+    })
+  }
+  on<K extends keyof Fetch.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<Fetch.EventMap[K]>) => void
+  ): () => void {
+    const filteredListener: typeof listener = (event) => {
+      if (event.sessionId !== this.sessionId) {
+        return
+      }
+      listener(event)
+    }
+    this.listeners.set(
+      listener as ChromeEventListener,
+      filteredListener as ChromeEventListener
+    )
+    return this.transport.on('Fetch.' + name, listener as ChromeEventListener)
+  }
+  off<K extends keyof Fetch.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<Fetch.EventMap[K]>) => void
+  ): void {
+    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    if (filteredListener === undefined) {
+      return
+    }
+    this.listeners.delete(listener as ChromeEventListener)
+    return this.transport.off('Fetch.' + name, listener as ChromeEventListener)
+  }
+}
+class FileSystemClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  getDirectory(
+    bucketFileSystemLocator: FileSystem.BucketFileSystemLocator
+  ): Promise<FileSystem.GetDirectoryResult> {
+    return this.transport.call<FileSystem.GetDirectoryResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'FileSystem.getDirectory',
+      params: { bucketFileSystemLocator: bucketFileSystemLocator },
+    })
   }
 }
 class HeadlessExperimentalClient {
@@ -9967,26 +10902,6 @@ class IOClient {
       sessionId: this.sessionId,
       method: 'IO.resolveBlob',
       params: { objectId: objectId },
-    })
-  }
-}
-class FileSystemClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  getDirectory(
-    bucketFileSystemLocator: FileSystem.BucketFileSystemLocator
-  ): Promise<FileSystem.GetDirectoryResult> {
-    return this.transport.call<FileSystem.GetDirectoryResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'FileSystem.getDirectory',
-      params: { bucketFileSystemLocator: bucketFileSystemLocator },
     })
   }
 }
@@ -10492,6 +11407,59 @@ class LogClient {
     return this.transport.off('Log.' + name, listener as ChromeEventListener)
   }
 }
+class MediaClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  enable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Media.enable',
+      params: {},
+    })
+  }
+  disable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Media.disable',
+      params: {},
+    })
+  }
+  on<K extends keyof Media.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<Media.EventMap[K]>) => void
+  ): () => void {
+    const filteredListener: typeof listener = (event) => {
+      if (event.sessionId !== this.sessionId) {
+        return
+      }
+      listener(event)
+    }
+    this.listeners.set(
+      listener as ChromeEventListener,
+      filteredListener as ChromeEventListener
+    )
+    return this.transport.on('Media.' + name, listener as ChromeEventListener)
+  }
+  off<K extends keyof Media.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<Media.EventMap[K]>) => void
+  ): void {
+    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    if (filteredListener === undefined) {
+      return
+    }
+    this.listeners.delete(listener as ChromeEventListener)
+    return this.transport.off('Media.' + name, listener as ChromeEventListener)
+  }
+}
 class MemoryClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
@@ -10691,11 +11659,39 @@ class NetworkClient {
       params: args,
     })
   }
+  emulateNetworkConditionsByRule(
+    args: Network.EmulateNetworkConditionsByRuleArgs
+  ): Promise<Network.EmulateNetworkConditionsByRuleResult> {
+    return this.transport.call<Network.EmulateNetworkConditionsByRuleResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Network.emulateNetworkConditionsByRule',
+      params: args,
+    })
+  }
+  overrideNetworkState(args: Network.OverrideNetworkStateArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Network.overrideNetworkState',
+      params: args,
+    })
+  }
   enable(args?: Network.EnableArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.enable',
+      params: args ?? {},
+    })
+  }
+  configureDurableMessages(
+    args?: Network.ConfigureDurableMessagesArgs
+  ): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Network.configureDurableMessages',
       params: args ?? {},
     })
   }
@@ -10783,12 +11779,12 @@ class NetworkClient {
       params: args,
     })
   }
-  setBlockedURLs(urls: string[]): Promise<void> {
+  setBlockedURLs(args?: Network.SetBlockedURLsArgs): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Network.setBlockedURLs',
-      params: { urls: urls },
+      params: args ?? {},
     })
   }
   setBypassServiceWorker(bypass: boolean): Promise<void> {
@@ -10881,6 +11877,24 @@ class NetworkClient {
       sessionId: this.sessionId,
       method: 'Network.enableReportingApi',
       params: { enable: enable },
+    })
+  }
+  enableDeviceBoundSessions(enable: boolean): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Network.enableDeviceBoundSessions',
+      params: { enable: enable },
+    })
+  }
+  fetchSchemefulSite(
+    origin: string
+  ): Promise<Network.FetchSchemefulSiteResult> {
+    return this.transport.call<Network.FetchSchemefulSiteResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Network.fetchSchemefulSite',
+      params: { origin: origin },
     })
   }
   loadNetworkResource(
@@ -11226,6 +12240,74 @@ class OverlayClient {
       'Overlay.' + name,
       listener as ChromeEventListener
     )
+  }
+}
+class PWAClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  getOsAppState(manifestId: string): Promise<PWA.GetOsAppStateResult> {
+    return this.transport.call<PWA.GetOsAppStateResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'PWA.getOsAppState',
+      params: { manifestId: manifestId },
+    })
+  }
+  install(args: PWA.InstallArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'PWA.install',
+      params: args,
+    })
+  }
+  uninstall(manifestId: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'PWA.uninstall',
+      params: { manifestId: manifestId },
+    })
+  }
+  launch(args: PWA.LaunchArgs): Promise<PWA.LaunchResult> {
+    return this.transport.call<PWA.LaunchResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'PWA.launch',
+      params: args,
+    })
+  }
+  launchFilesInApp(
+    args: PWA.LaunchFilesInAppArgs
+  ): Promise<PWA.LaunchFilesInAppResult> {
+    return this.transport.call<PWA.LaunchFilesInAppResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'PWA.launchFilesInApp',
+      params: args,
+    })
+  }
+  openCurrentPageInApp(manifestId: string): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'PWA.openCurrentPageInApp',
+      params: { manifestId: manifestId },
+    })
+  }
+  changeAppUserSettings(args: PWA.ChangeAppUserSettingsArgs): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'PWA.changeAppUserSettings',
+      params: args,
+    })
   }
 }
 class PageClient {
@@ -11699,7 +12781,14 @@ class PageClient {
       params: {},
     })
   }
-  setSPCTransactionMode(mode: Page.AutoResponseMode): Promise<void> {
+  setSPCTransactionMode(
+    mode:
+      | 'none'
+      | 'autoAccept'
+      | 'autoChooseToAuthAnotherWay'
+      | 'autoReject'
+      | 'autoOptOut'
+  ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -11707,7 +12796,9 @@ class PageClient {
       params: { mode: mode },
     })
   }
-  setRPHRegistrationMode(mode: Page.AutoResponseMode): Promise<void> {
+  setRPHRegistrationMode(
+    mode: 'none' | 'autoAccept' | 'autoReject'
+  ): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
       sessionId: this.sessionId,
@@ -11747,6 +12838,16 @@ class PageClient {
       sessionId: this.sessionId,
       method: 'Page.setPrerenderingAllowed',
       params: { isAllowed: isAllowed },
+    })
+  }
+  getAnnotatedPageContent(
+    includeActionableInformation?: boolean
+  ): Promise<Page.GetAnnotatedPageContentResult> {
+    return this.transport.call<Page.GetAnnotatedPageContentResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Page.getAnnotatedPageContent',
+      params: { includeActionableInformation: includeActionableInformation },
     })
   }
   on<K extends keyof Page.EventMap>(
@@ -11903,6 +13004,62 @@ class PerformanceTimelineClient {
     )
   }
 }
+class PreloadClient {
+  transport: Transport
+  sessionId: Target.SessionID | undefined
+  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
+  constructor(transport: Transport, sessionId?: Target.SessionID) {
+    this.transport = transport
+    this.sessionId = sessionId
+    this.listeners = new WeakMap()
+  }
+  enable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Preload.enable',
+      params: {},
+    })
+  }
+  disable(): Promise<void> {
+    return this.transport.call<void>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Preload.disable',
+      params: {},
+    })
+  }
+  on<K extends keyof Preload.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<Preload.EventMap[K]>) => void
+  ): () => void {
+    const filteredListener: typeof listener = (event) => {
+      if (event.sessionId !== this.sessionId) {
+        return
+      }
+      listener(event)
+    }
+    this.listeners.set(
+      listener as ChromeEventListener,
+      filteredListener as ChromeEventListener
+    )
+    return this.transport.on('Preload.' + name, listener as ChromeEventListener)
+  }
+  off<K extends keyof Preload.EventMap>(
+    name: K,
+    listener: (event: ChromeEvent<Preload.EventMap[K]>) => void
+  ): void {
+    const filteredListener = this.listeners.get(listener as ChromeEventListener)
+    if (filteredListener === undefined) {
+      return
+    }
+    this.listeners.delete(listener as ChromeEventListener)
+    return this.transport.off(
+      'Preload.' + name,
+      listener as ChromeEventListener
+    )
+  }
+}
 class SecurityClient {
   transport: Transport
   sessionId: Target.SessionID | undefined
@@ -12041,14 +13198,6 @@ class ServiceWorkerClient {
       params: {},
     })
   }
-  inspectWorker(versionId: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'ServiceWorker.inspectWorker',
-      params: { versionId: versionId },
-    })
-  }
   setForceUpdateOnPageLoad(forceUpdateOnPageLoad: boolean): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
@@ -12155,6 +13304,14 @@ class StorageClient {
       id: generateId(),
       sessionId: this.sessionId,
       method: 'Storage.getStorageKeyForFrame',
+      params: { frameId: frameId },
+    })
+  }
+  getStorageKey(frameId?: Page.FrameId): Promise<Storage.GetStorageKeyResult> {
+    return this.transport.call<Storage.GetStorageKeyResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Storage.getStorageKey',
       params: { frameId: frameId },
     })
   }
@@ -12696,6 +13853,26 @@ class TargetClient {
       params: { locations: locations },
     })
   }
+  getDevToolsTarget(
+    targetId: Target.TargetID
+  ): Promise<Target.GetDevToolsTargetResult> {
+    return this.transport.call<Target.GetDevToolsTargetResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Target.getDevToolsTarget',
+      params: { targetId: targetId },
+    })
+  }
+  openDevTools(
+    args: Target.OpenDevToolsArgs
+  ): Promise<Target.OpenDevToolsResult> {
+    return this.transport.call<Target.OpenDevToolsResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Target.openDevTools',
+      params: args,
+    })
+  }
   on<K extends keyof Target.EventMap>(
     name: K,
     listener: (event: ChromeEvent<Target.EventMap[K]>) => void
@@ -12808,6 +13985,14 @@ class TracingClient {
       params: {},
     })
   }
+  getTrackEventDescriptor(): Promise<Tracing.GetTrackEventDescriptorResult> {
+    return this.transport.call<Tracing.GetTrackEventDescriptorResult>({
+      id: generateId(),
+      sessionId: this.sessionId,
+      method: 'Tracing.getTrackEventDescriptor',
+      params: {},
+    })
+  }
   recordClockSyncMarker(syncId: string): Promise<void> {
     return this.transport.call<void>({
       id: generateId(),
@@ -12863,119 +14048,6 @@ class TracingClient {
       'Tracing.' + name,
       listener as ChromeEventListener
     )
-  }
-}
-class FetchClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  disable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.disable',
-      params: {},
-    })
-  }
-  enable(args?: Fetch.EnableArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.enable',
-      params: args ?? {},
-    })
-  }
-  failRequest(args: Fetch.FailRequestArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.failRequest',
-      params: args,
-    })
-  }
-  fulfillRequest(args: Fetch.FulfillRequestArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.fulfillRequest',
-      params: args,
-    })
-  }
-  continueRequest(args: Fetch.ContinueRequestArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.continueRequest',
-      params: args,
-    })
-  }
-  continueWithAuth(args: Fetch.ContinueWithAuthArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.continueWithAuth',
-      params: args,
-    })
-  }
-  continueResponse(args: Fetch.ContinueResponseArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.continueResponse',
-      params: args,
-    })
-  }
-  getResponseBody(
-    requestId: Fetch.RequestId
-  ): Promise<Fetch.GetResponseBodyResult> {
-    return this.transport.call<Fetch.GetResponseBodyResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.getResponseBody',
-      params: { requestId: requestId },
-    })
-  }
-  takeResponseBodyAsStream(
-    requestId: Fetch.RequestId
-  ): Promise<Fetch.TakeResponseBodyAsStreamResult> {
-    return this.transport.call<Fetch.TakeResponseBodyAsStreamResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Fetch.takeResponseBodyAsStream',
-      params: { requestId: requestId },
-    })
-  }
-  on<K extends keyof Fetch.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<Fetch.EventMap[K]>) => void
-  ): () => void {
-    const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
-        return
-      }
-      listener(event)
-    }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
-    return this.transport.on('Fetch.' + name, listener as ChromeEventListener)
-  }
-  off<K extends keyof Fetch.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<Fetch.EventMap[K]>) => void
-  ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
-    if (filteredListener === undefined) {
-      return
-    }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Fetch.' + name, listener as ChromeEventListener)
   }
 }
 class WebAudioClient {
@@ -13204,530 +14276,6 @@ class WebAuthnClient {
     this.listeners.delete(listener as ChromeEventListener)
     return this.transport.off(
       'WebAuthn.' + name,
-      listener as ChromeEventListener
-    )
-  }
-}
-class MediaClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  enable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Media.enable',
-      params: {},
-    })
-  }
-  disable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Media.disable',
-      params: {},
-    })
-  }
-  on<K extends keyof Media.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<Media.EventMap[K]>) => void
-  ): () => void {
-    const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
-        return
-      }
-      listener(event)
-    }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
-    return this.transport.on('Media.' + name, listener as ChromeEventListener)
-  }
-  off<K extends keyof Media.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<Media.EventMap[K]>) => void
-  ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
-    if (filteredListener === undefined) {
-      return
-    }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('Media.' + name, listener as ChromeEventListener)
-  }
-}
-class DeviceAccessClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  enable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'DeviceAccess.enable',
-      params: {},
-    })
-  }
-  disable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'DeviceAccess.disable',
-      params: {},
-    })
-  }
-  selectPrompt(args: DeviceAccess.SelectPromptArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'DeviceAccess.selectPrompt',
-      params: args,
-    })
-  }
-  cancelPrompt(id: DeviceAccess.RequestId): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'DeviceAccess.cancelPrompt',
-      params: { id: id },
-    })
-  }
-  on<K extends keyof DeviceAccess.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<DeviceAccess.EventMap[K]>) => void
-  ): () => void {
-    const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
-        return
-      }
-      listener(event)
-    }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
-    return this.transport.on(
-      'DeviceAccess.' + name,
-      listener as ChromeEventListener
-    )
-  }
-  off<K extends keyof DeviceAccess.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<DeviceAccess.EventMap[K]>) => void
-  ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
-    if (filteredListener === undefined) {
-      return
-    }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off(
-      'DeviceAccess.' + name,
-      listener as ChromeEventListener
-    )
-  }
-}
-class PreloadClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  enable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Preload.enable',
-      params: {},
-    })
-  }
-  disable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'Preload.disable',
-      params: {},
-    })
-  }
-  on<K extends keyof Preload.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<Preload.EventMap[K]>) => void
-  ): () => void {
-    const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
-        return
-      }
-      listener(event)
-    }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
-    return this.transport.on('Preload.' + name, listener as ChromeEventListener)
-  }
-  off<K extends keyof Preload.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<Preload.EventMap[K]>) => void
-  ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
-    if (filteredListener === undefined) {
-      return
-    }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off(
-      'Preload.' + name,
-      listener as ChromeEventListener
-    )
-  }
-}
-class FedCmClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  enable(disableRejectionDelay?: boolean): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'FedCm.enable',
-      params: { disableRejectionDelay: disableRejectionDelay },
-    })
-  }
-  disable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'FedCm.disable',
-      params: {},
-    })
-  }
-  selectAccount(args: FedCm.SelectAccountArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'FedCm.selectAccount',
-      params: args,
-    })
-  }
-  clickDialogButton(args: FedCm.ClickDialogButtonArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'FedCm.clickDialogButton',
-      params: args,
-    })
-  }
-  openUrl(args: FedCm.OpenUrlArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'FedCm.openUrl',
-      params: args,
-    })
-  }
-  dismissDialog(args: FedCm.DismissDialogArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'FedCm.dismissDialog',
-      params: args,
-    })
-  }
-  resetCooldown(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'FedCm.resetCooldown',
-      params: {},
-    })
-  }
-  on<K extends keyof FedCm.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<FedCm.EventMap[K]>) => void
-  ): () => void {
-    const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
-        return
-      }
-      listener(event)
-    }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
-    return this.transport.on('FedCm.' + name, listener as ChromeEventListener)
-  }
-  off<K extends keyof FedCm.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<FedCm.EventMap[K]>) => void
-  ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
-    if (filteredListener === undefined) {
-      return
-    }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off('FedCm.' + name, listener as ChromeEventListener)
-  }
-}
-class PWAClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  getOsAppState(manifestId: string): Promise<PWA.GetOsAppStateResult> {
-    return this.transport.call<PWA.GetOsAppStateResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'PWA.getOsAppState',
-      params: { manifestId: manifestId },
-    })
-  }
-  install(args: PWA.InstallArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'PWA.install',
-      params: args,
-    })
-  }
-  uninstall(manifestId: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'PWA.uninstall',
-      params: { manifestId: manifestId },
-    })
-  }
-  launch(args: PWA.LaunchArgs): Promise<PWA.LaunchResult> {
-    return this.transport.call<PWA.LaunchResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'PWA.launch',
-      params: args,
-    })
-  }
-  launchFilesInApp(
-    args: PWA.LaunchFilesInAppArgs
-  ): Promise<PWA.LaunchFilesInAppResult> {
-    return this.transport.call<PWA.LaunchFilesInAppResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'PWA.launchFilesInApp',
-      params: args,
-    })
-  }
-  openCurrentPageInApp(manifestId: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'PWA.openCurrentPageInApp',
-      params: { manifestId: manifestId },
-    })
-  }
-  changeAppUserSettings(args: PWA.ChangeAppUserSettingsArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'PWA.changeAppUserSettings',
-      params: args,
-    })
-  }
-}
-class BluetoothEmulationClient {
-  transport: Transport
-  sessionId: Target.SessionID | undefined
-  listeners: WeakMap<ChromeEventListener, ChromeEventListener>
-  constructor(transport: Transport, sessionId?: Target.SessionID) {
-    this.transport = transport
-    this.sessionId = sessionId
-    this.listeners = new WeakMap()
-  }
-  enable(args: BluetoothEmulation.EnableArgs): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.enable',
-      params: args,
-    })
-  }
-  setSimulatedCentralState(
-    state: BluetoothEmulation.CentralState
-  ): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.setSimulatedCentralState',
-      params: { state: state },
-    })
-  }
-  disable(): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.disable',
-      params: {},
-    })
-  }
-  simulatePreconnectedPeripheral(
-    args: BluetoothEmulation.SimulatePreconnectedPeripheralArgs
-  ): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.simulatePreconnectedPeripheral',
-      params: args,
-    })
-  }
-  simulateAdvertisement(entry: BluetoothEmulation.ScanEntry): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.simulateAdvertisement',
-      params: { entry: entry },
-    })
-  }
-  simulateGATTOperationResponse(
-    args: BluetoothEmulation.SimulateGATTOperationResponseArgs
-  ): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.simulateGATTOperationResponse',
-      params: args,
-    })
-  }
-  simulateCharacteristicOperationResponse(
-    args: BluetoothEmulation.SimulateCharacteristicOperationResponseArgs
-  ): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.simulateCharacteristicOperationResponse',
-      params: args,
-    })
-  }
-  simulateDescriptorOperationResponse(
-    args: BluetoothEmulation.SimulateDescriptorOperationResponseArgs
-  ): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.simulateDescriptorOperationResponse',
-      params: args,
-    })
-  }
-  addService(
-    args: BluetoothEmulation.AddServiceArgs
-  ): Promise<BluetoothEmulation.AddServiceResult> {
-    return this.transport.call<BluetoothEmulation.AddServiceResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.addService',
-      params: args,
-    })
-  }
-  removeService(serviceId: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.removeService',
-      params: { serviceId: serviceId },
-    })
-  }
-  addCharacteristic(
-    args: BluetoothEmulation.AddCharacteristicArgs
-  ): Promise<BluetoothEmulation.AddCharacteristicResult> {
-    return this.transport.call<BluetoothEmulation.AddCharacteristicResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.addCharacteristic',
-      params: args,
-    })
-  }
-  removeCharacteristic(characteristicId: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.removeCharacteristic',
-      params: { characteristicId: characteristicId },
-    })
-  }
-  addDescriptor(
-    args: BluetoothEmulation.AddDescriptorArgs
-  ): Promise<BluetoothEmulation.AddDescriptorResult> {
-    return this.transport.call<BluetoothEmulation.AddDescriptorResult>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.addDescriptor',
-      params: args,
-    })
-  }
-  removeDescriptor(descriptorId: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.removeDescriptor',
-      params: { descriptorId: descriptorId },
-    })
-  }
-  simulateGATTDisconnection(address: string): Promise<void> {
-    return this.transport.call<void>({
-      id: generateId(),
-      sessionId: this.sessionId,
-      method: 'BluetoothEmulation.simulateGATTDisconnection',
-      params: { address: address },
-    })
-  }
-  on<K extends keyof BluetoothEmulation.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<BluetoothEmulation.EventMap[K]>) => void
-  ): () => void {
-    const filteredListener: typeof listener = (event) => {
-      if (event.sessionId !== this.sessionId) {
-        return
-      }
-      listener(event)
-    }
-    this.listeners.set(
-      listener as ChromeEventListener,
-      filteredListener as ChromeEventListener
-    )
-    return this.transport.on(
-      'BluetoothEmulation.' + name,
-      listener as ChromeEventListener
-    )
-  }
-  off<K extends keyof BluetoothEmulation.EventMap>(
-    name: K,
-    listener: (event: ChromeEvent<BluetoothEmulation.EventMap[K]>) => void
-  ): void {
-    const filteredListener = this.listeners.get(listener as ChromeEventListener)
-    if (filteredListener === undefined) {
-      return
-    }
-    this.listeners.delete(listener as ChromeEventListener)
-    return this.transport.off(
-      'BluetoothEmulation.' + name,
       listener as ChromeEventListener
     )
   }
@@ -14661,34 +15209,41 @@ export class ChromeDevToolsClient {
   accessibility: AccessibilityClient
   animation: AnimationClient
   audits: AuditsClient
-  extensions: ExtensionsClient
   autofill: AutofillClient
   backgroundService: BackgroundServiceClient
+  bluetoothEmulation: BluetoothEmulationClient
   browser: BrowserClient
   css: CSSClient
   cacheStorage: CacheStorageClient
   cast: CastClient
   dom: DOMClient
   domDebugger: DOMDebuggerClient
-  eventBreakpoints: EventBreakpointsClient
   domSnapshot: DOMSnapshotClient
   domStorage: DOMStorageClient
+  deviceAccess: DeviceAccessClient
   deviceOrientation: DeviceOrientationClient
   emulation: EmulationClient
+  eventBreakpoints: EventBreakpointsClient
+  extensions: ExtensionsClient
+  fedCm: FedCmClient
+  fetch: FetchClient
+  fileSystem: FileSystemClient
   headlessExperimental: HeadlessExperimentalClient
   io: IOClient
-  fileSystem: FileSystemClient
   indexedDB: IndexedDBClient
   input: InputClient
   inspector: InspectorClient
   layerTree: LayerTreeClient
   log: LogClient
+  media: MediaClient
   memory: MemoryClient
   network: NetworkClient
   overlay: OverlayClient
+  pwa: PWAClient
   page: PageClient
   performance: PerformanceClient
   performanceTimeline: PerformanceTimelineClient
+  preload: PreloadClient
   security: SecurityClient
   serviceWorker: ServiceWorkerClient
   storage: StorageClient
@@ -14696,15 +15251,8 @@ export class ChromeDevToolsClient {
   target: TargetClient
   tethering: TetheringClient
   tracing: TracingClient
-  fetch: FetchClient
   webAudio: WebAudioClient
   webAuthn: WebAuthnClient
-  media: MediaClient
-  deviceAccess: DeviceAccessClient
-  preload: PreloadClient
-  fedCm: FedCmClient
-  pwa: PWAClient
-  bluetoothEmulation: BluetoothEmulationClient
   console: ConsoleClient
   debugger: DebuggerClient
   heapProfiler: HeapProfilerClient
@@ -14717,9 +15265,12 @@ export class ChromeDevToolsClient {
     this.accessibility = new AccessibilityClient(this.transport, this.sessionId)
     this.animation = new AnimationClient(this.transport, this.sessionId)
     this.audits = new AuditsClient(this.transport, this.sessionId)
-    this.extensions = new ExtensionsClient(this.transport, this.sessionId)
     this.autofill = new AutofillClient(this.transport, this.sessionId)
     this.backgroundService = new BackgroundServiceClient(
+      this.transport,
+      this.sessionId
+    )
+    this.bluetoothEmulation = new BluetoothEmulationClient(
       this.transport,
       this.sessionId
     )
@@ -14729,37 +15280,44 @@ export class ChromeDevToolsClient {
     this.cast = new CastClient(this.transport, this.sessionId)
     this.dom = new DOMClient(this.transport, this.sessionId)
     this.domDebugger = new DOMDebuggerClient(this.transport, this.sessionId)
-    this.eventBreakpoints = new EventBreakpointsClient(
-      this.transport,
-      this.sessionId
-    )
     this.domSnapshot = new DOMSnapshotClient(this.transport, this.sessionId)
     this.domStorage = new DOMStorageClient(this.transport, this.sessionId)
+    this.deviceAccess = new DeviceAccessClient(this.transport, this.sessionId)
     this.deviceOrientation = new DeviceOrientationClient(
       this.transport,
       this.sessionId
     )
     this.emulation = new EmulationClient(this.transport, this.sessionId)
+    this.eventBreakpoints = new EventBreakpointsClient(
+      this.transport,
+      this.sessionId
+    )
+    this.extensions = new ExtensionsClient(this.transport, this.sessionId)
+    this.fedCm = new FedCmClient(this.transport, this.sessionId)
+    this.fetch = new FetchClient(this.transport, this.sessionId)
+    this.fileSystem = new FileSystemClient(this.transport, this.sessionId)
     this.headlessExperimental = new HeadlessExperimentalClient(
       this.transport,
       this.sessionId
     )
     this.io = new IOClient(this.transport, this.sessionId)
-    this.fileSystem = new FileSystemClient(this.transport, this.sessionId)
     this.indexedDB = new IndexedDBClient(this.transport, this.sessionId)
     this.input = new InputClient(this.transport, this.sessionId)
     this.inspector = new InspectorClient(this.transport, this.sessionId)
     this.layerTree = new LayerTreeClient(this.transport, this.sessionId)
     this.log = new LogClient(this.transport, this.sessionId)
+    this.media = new MediaClient(this.transport, this.sessionId)
     this.memory = new MemoryClient(this.transport, this.sessionId)
     this.network = new NetworkClient(this.transport, this.sessionId)
     this.overlay = new OverlayClient(this.transport, this.sessionId)
+    this.pwa = new PWAClient(this.transport, this.sessionId)
     this.page = new PageClient(this.transport, this.sessionId)
     this.performance = new PerformanceClient(this.transport, this.sessionId)
     this.performanceTimeline = new PerformanceTimelineClient(
       this.transport,
       this.sessionId
     )
+    this.preload = new PreloadClient(this.transport, this.sessionId)
     this.security = new SecurityClient(this.transport, this.sessionId)
     this.serviceWorker = new ServiceWorkerClient(this.transport, this.sessionId)
     this.storage = new StorageClient(this.transport, this.sessionId)
@@ -14767,18 +15325,8 @@ export class ChromeDevToolsClient {
     this.target = new TargetClient(this.transport, this.sessionId)
     this.tethering = new TetheringClient(this.transport, this.sessionId)
     this.tracing = new TracingClient(this.transport, this.sessionId)
-    this.fetch = new FetchClient(this.transport, this.sessionId)
     this.webAudio = new WebAudioClient(this.transport, this.sessionId)
     this.webAuthn = new WebAuthnClient(this.transport, this.sessionId)
-    this.media = new MediaClient(this.transport, this.sessionId)
-    this.deviceAccess = new DeviceAccessClient(this.transport, this.sessionId)
-    this.preload = new PreloadClient(this.transport, this.sessionId)
-    this.fedCm = new FedCmClient(this.transport, this.sessionId)
-    this.pwa = new PWAClient(this.transport, this.sessionId)
-    this.bluetoothEmulation = new BluetoothEmulationClient(
-      this.transport,
-      this.sessionId
-    )
     this.console = new ConsoleClient(this.transport, this.sessionId)
     this.debugger = new DebuggerClient(this.transport, this.sessionId)
     this.heapProfiler = new HeapProfilerClient(this.transport, this.sessionId)
