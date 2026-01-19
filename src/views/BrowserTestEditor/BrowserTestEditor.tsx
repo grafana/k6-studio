@@ -1,13 +1,11 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
-import { useEffect, useState } from 'react'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { LogsSection } from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
-import { AnyBrowserAction } from '@/main/runner/schema'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
 import { useDebugSession } from '../Validator/Validator.hooks'
@@ -17,9 +15,11 @@ import {
   useBrowserTest,
   useBrowserTestEditorLayout,
   useBrowserTestFile,
+  useSaveBrowserTest,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
+import { useBrowserTestState } from './useBrowserTestState'
 
 export function BrowserTestEditor() {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
@@ -27,28 +27,26 @@ export function BrowserTestEditor() {
   const file = useBrowserTestFile()
 
   const { data, isLoading } = useBrowserTest(file.fileName)
+  const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.fileName)
 
-  const [actions, setActions] = useState<AnyBrowserAction[]>(
-    data?.actions || []
-  )
+  const test = useBrowserTestState(data)
 
-  // Keep actions in sync when data changes
-  useEffect(() => {
-    if (data) {
-      setActions(data.actions)
-    }
-  }, [data])
-
-  const handleAddAction = (action: AnyBrowserAction) => {
-    setActions((prevActions) => [...prevActions, action])
-  }
-
-  const preview = useBrowserScriptPreview(actions)
+  const preview = useBrowserScriptPreview(test.plainActions)
   const { session, startDebugging } = useDebugSession({
     type: 'raw',
     content: preview,
     name: file.fileName,
   })
+
+  const handleSave = () => {
+    if (!test.isDirty || !data) {
+      return
+    }
+
+    const browserTestData = { ...data, actions: test.plainActions }
+
+    void saveBrowserTest(browserTestData)
+  }
 
   return (
     <View
@@ -56,15 +54,14 @@ export function BrowserTestEditor() {
       subTitle={<FileNameHeader file={file} />}
       loading={isLoading}
       actions={
-        data ? (
-          <BrowserTestEditorControls
-            data={data}
-            file={file}
-            preview={preview}
-            session={session}
-            onStartDebugging={startDebugging}
-          />
-        ) : null
+        <BrowserTestEditorControls
+          file={file}
+          preview={preview}
+          session={session}
+          isDirty={test.isDirty}
+          onStartDebugging={startDebugging}
+          onSave={handleSave}
+        />
       }
     >
       <Flex flexGrow="1" direction="column" align="stretch">
@@ -132,8 +129,10 @@ export function BrowserTestEditor() {
                   <Separator />
                   <Panel id="actions" minSize={400}>
                     <EditableBrowserActionList
-                      actions={actions}
-                      onAddAction={handleAddAction}
+                      actions={test.actions}
+                      onAddAction={test.addAction}
+                      onRemoveAction={test.removeAction}
+                      onUpdateAction={test.updateAction}
                     />
                   </Panel>
                 </Group>

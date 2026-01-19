@@ -27,7 +27,7 @@ export function useBrowserTestFile(): StudioFile {
 }
 
 export function useBrowserTest(fileName: string) {
-  return useQuery({
+  return useQuery<BrowserTestFile>({
     queryKey: ['browserTest', fileName],
     queryFn: () => {
       return window.studio.browserTest.open(fileName)
@@ -83,7 +83,7 @@ export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
         setPreview(script)
       } catch (error) {
         setPreview(
-          `// Failed to generate preview: ${error instanceof Error ? error.message : String(error)}`
+          `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
         )
       }
     }

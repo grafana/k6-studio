@@ -3,19 +3,23 @@ import { Button, Flex, Heading, ScrollArea } from '@radix-ui/themes'
 import { CirclePlusIcon } from 'lucide-react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
-import { AnyBrowserAction } from '@/main/runner/schema'
 
 import { EditableAction } from './EditableAction'
 import { NewActionMenu } from './NewActionMenu'
+import { BrowserActionWithId } from './types'
 
 interface EditableBrowserActionListProps {
-  actions: AnyBrowserAction[]
-  onAddAction: (action: AnyBrowserAction) => void
+  actions: BrowserActionWithId[]
+  onAddAction: (action: BrowserActionWithId) => void
+  onRemoveAction: (actionId: string) => void
+  onUpdateAction: (action: BrowserActionWithId) => void
 }
 
 export function EditableBrowserActionList({
   actions,
   onAddAction,
+  onRemoveAction,
+  onUpdateAction,
 }: EditableBrowserActionListProps) {
   return (
     <Flex direction="column" height="100%">
@@ -31,37 +35,28 @@ export function EditableBrowserActionList({
         `}
       >
         Browser actions ({actions.length})
-        {actions.length !== 0 && (
-          <Flex px="4" py="2">
-            <NewActionMenu
-              onAddAction={onAddAction}
-              trigger={
-                <Button variant="ghost" color="gray">
-                  <CirclePlusIcon /> Add action
-                </Button>
-              }
-            />
-          </Flex>
-        )}
+        <Flex px="4" py="2">
+          <NewActionMenu
+            onAddAction={onAddAction}
+            trigger={
+              <Button variant="ghost" color="gray">
+                <CirclePlusIcon /> Add action
+              </Button>
+            }
+          />
+        </Flex>
       </Heading>
       <ScrollArea>
         {actions.length === 0 ? (
-          <EmptyMessage
-            message="Build your browser test by adding actions."
-            action={
-              <NewActionMenu
-                onAddAction={onAddAction}
-                trigger={
-                  <Button>
-                    <CirclePlusIcon /> Add action
-                  </Button>
-                }
-              />
-            }
-          />
+          <EmptyMessage message="Build your browser test by adding actions." />
         ) : (
           actions.map((action, index) => (
-            <EditableAction key={index} action={action} />
+            <EditableAction
+              key={index}
+              action={action}
+              onRemove={onRemoveAction}
+              onUpdate={onUpdateAction}
+            />
           ))
         )}
       </ScrollArea>

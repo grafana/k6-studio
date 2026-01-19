@@ -1,14 +1,20 @@
 import { css } from '@emotion/react'
-import { Flex } from '@radix-ui/themes'
-import { CircleQuestionMarkIcon, GlobeIcon } from 'lucide-react'
+import { Flex, IconButton } from '@radix-ui/themes'
+import { CircleQuestionMarkIcon, GlobeIcon, Trash2Icon } from 'lucide-react'
 
-import { AnyBrowserAction } from '@/main/runner/schema'
+import { BrowserActionWithId } from './types'
 
 interface EditableActionProps {
-  action: AnyBrowserAction
+  action: BrowserActionWithId
+  onRemove: (actionId: string) => void
+  onUpdate: (action: BrowserActionWithId) => void
 }
 
-export function EditableAction({ action }: EditableActionProps) {
+export function EditableAction({ action, onRemove }: EditableActionProps) {
+  const handleRemove = () => {
+    onRemove(action.id)
+  }
+
   return (
     <Flex
       align="center"
@@ -23,16 +29,25 @@ export function EditableAction({ action }: EditableActionProps) {
       `}
     >
       <ActionIcon action={action} /> <ActionDescription action={action} />
+      <IconButton
+        size="2"
+        variant="ghost"
+        color="gray"
+        onClick={handleRemove}
+        css={{ marginLeft: 'auto' }}
+      >
+        <Trash2Icon />
+      </IconButton>
     </Flex>
   )
 }
 
 interface ActionIconProps {
-  action: AnyBrowserAction
+  action: BrowserActionWithId
 }
 
 function ActionIcon({ action }: ActionIconProps) {
-  switch (action.method) {
+  switch (action.action.method) {
     case 'page.goto':
       return <GlobeIcon />
     default:
@@ -41,14 +56,14 @@ function ActionIcon({ action }: ActionIconProps) {
 }
 
 interface ActionDescriptionProps {
-  action: AnyBrowserAction
+  action: BrowserActionWithId
 }
 
 function ActionDescription({ action }: ActionDescriptionProps) {
-  switch (action.method) {
+  switch (action.action.method) {
     case 'page.goto':
-      return <>Navigate to {action.url}</>
+      return <>Navigate to {action.action.url}</>
     default:
-      return <>Unknown action: {action.method}</>
+      return <>Unknown action: {action.action.method}</>
   }
 }
