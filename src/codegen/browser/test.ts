@@ -296,46 +296,25 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           },
         }
       case 'page.reload':
-        throw new Error('Not implemented.')
       case 'page.waitForNavigation':
-        throw new Error('Not implemented.')
       case 'page.*':
-        throw new Error('Not implemented.')
-
       case 'locator.click':
-        throw new Error('Not implemented.')
       case 'locator.dblclick':
-        throw new Error('Not implemented.')
       case 'locator.fill':
-        throw new Error('Not implemented.')
       case 'locator.type':
-        throw new Error('Not implemented.')
       case 'locator.check':
-        throw new Error('Not implemented.')
       case 'locator.uncheck':
-        throw new Error('Not implemented.')
       case 'locator.selectOption':
-        throw new Error('Not implemented.')
       case 'locator.waitFor':
-        throw new Error('Not implemented.')
       case 'locator.hover':
-        throw new Error('Not implemented.')
       case 'locator.setChecked':
-        throw new Error('Not implemented.')
       case 'locator.tap':
-        throw new Error('Not implemented.')
       case 'locator.clear':
-        throw new Error('Not implemented.')
       case 'locator.press':
-        throw new Error('Not implemented.')
       case 'locator.focus':
-        throw new Error('Not implemented.')
       case 'locator.*':
-        throw new Error('Not implemented.')
-
       case 'browserContext.*':
         throw new Error('Not implemented.')
-
       default:
         return exhaustive(action)
     }
