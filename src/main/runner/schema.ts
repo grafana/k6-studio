@@ -68,9 +68,9 @@ const ActionLocatorSchema = z.discriminatedUnion('type', [
   GetByTextLocatorSchema,
 ])
 
-export const PageGotoActionSchema = z.object({
+const PageGotoActionSchema = z.object({
   method: z.literal('page.goto'),
-  url: z.string().url(),
+  url: z.string(),
   options: GenericOptions.optional(),
 })
 

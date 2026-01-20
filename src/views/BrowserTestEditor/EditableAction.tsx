@@ -8,12 +8,9 @@ import {
   TriangleAlertIcon,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
-import {
-  AnyBrowserAction,
-  PageGotoAction,
-  PageGotoActionSchema,
-} from '@/main/runner/schema'
+import { AnyBrowserAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
 import { BrowserActionWithId } from './types'
@@ -260,12 +257,15 @@ function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
   } = useForm<PageGotoAction>({
     shouldFocusError: true,
     mode: 'onBlur',
-    resolver: zodResolver(PageGotoActionSchema),
+    resolver: zodResolver(z.object({ url: z.string().url() })),
     defaultValues: action,
   })
 
   const handleFormSubmit = handleSubmit((data) => {
-    console.log('GoToActionBody submit', data)
+    if (data.url === action.url) {
+      return
+    }
+
     onUpdate(data)
   })
 
