@@ -15,11 +15,11 @@ import {
   useBrowserTest,
   useBrowserTestEditorLayout,
   useBrowserTestFile,
+  useBrowserTestState,
   useSaveBrowserTest,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
-import { useBrowserTestState } from './useBrowserTestState'
 
 export function BrowserTestEditor() {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =

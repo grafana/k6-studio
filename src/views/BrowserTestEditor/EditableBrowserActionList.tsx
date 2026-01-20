@@ -1,15 +1,22 @@
 import { css } from '@emotion/react'
-import { Flex, Heading, ScrollArea } from '@radix-ui/themes'
+import {
+  Button,
+  DropdownMenu,
+  Flex,
+  Heading,
+  ScrollArea,
+} from '@radix-ui/themes'
+import { CirclePlusIcon } from 'lucide-react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
+import { AnyBrowserAction } from '@/main/runner/schema'
 
 import { EditableAction } from './EditableAction'
-import { NewActionMenu } from './NewActionMenu'
 import { BrowserActionWithId } from './types'
 
 interface EditableBrowserActionListProps {
   actions: BrowserActionWithId[]
-  onAddAction: (action: BrowserActionWithId) => void
+  onAddAction: (method: AnyBrowserAction['method']) => void
   onRemoveAction: (actionId: string) => void
   onUpdateAction: (action: BrowserActionWithId) => void
 }
@@ -53,5 +60,30 @@ export function EditableBrowserActionList({
         )}
       </ScrollArea>
     </Flex>
+  )
+}
+
+interface NewActionMenuProps {
+  onAddAction: (method: AnyBrowserAction['method']) => void
+}
+
+function NewActionMenu({ onAddAction }: NewActionMenuProps) {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>
+        <Button variant="ghost" size="1" color="gray">
+          <CirclePlusIcon /> Add action
+        </Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('page.goto')
+          }}
+        >
+          Navigate to URL
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
   )
 }

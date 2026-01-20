@@ -52,15 +52,18 @@ export function EditableAction({
     >
       <ActionIcon action={action} />{' '}
       <ActionBody action={action} onUpdate={handleUpdate} />
-      <IconButton
-        size="2"
-        variant="ghost"
-        color="gray"
-        onClick={handleRemove}
-        css={{ marginLeft: 'auto' }}
-      >
-        <Trash2Icon />
-      </IconButton>
+      <Tooltip content="Remove action">
+        <IconButton
+          size="2"
+          variant="ghost"
+          color="gray"
+          onClick={handleRemove}
+          aria-label="Remove action"
+          css={{ marginLeft: 'auto' }}
+        >
+          <Trash2Icon />
+        </IconButton>
+      </Tooltip>
     </Flex>
   )
 }
@@ -74,41 +77,23 @@ function ActionIcon({ action }: ActionIconProps) {
     case 'page.goto':
       return <GlobeIcon />
     case 'page.reload':
-      return <CircleQuestionMarkIcon />
     case 'page.waitForNavigation':
-      return <CircleQuestionMarkIcon />
     case 'page.*':
-      return <CircleQuestionMarkIcon />
     case 'locator.click':
-      return <CircleQuestionMarkIcon />
     case 'locator.dblclick':
-      return <CircleQuestionMarkIcon />
     case 'locator.fill':
-      return <CircleQuestionMarkIcon />
     case 'locator.type':
-      return <CircleQuestionMarkIcon />
     case 'locator.check':
-      return <CircleQuestionMarkIcon />
     case 'locator.uncheck':
-      return <CircleQuestionMarkIcon />
     case 'locator.selectOption':
-      return <CircleQuestionMarkIcon />
     case 'locator.waitFor':
-      return <CircleQuestionMarkIcon />
     case 'locator.hover':
-      return <CircleQuestionMarkIcon />
     case 'locator.setChecked':
-      return <CircleQuestionMarkIcon />
     case 'locator.tap':
-      return <CircleQuestionMarkIcon />
     case 'locator.clear':
-      return <CircleQuestionMarkIcon />
     case 'locator.press':
-      return <CircleQuestionMarkIcon />
     case 'locator.focus':
-      return <CircleQuestionMarkIcon />
     case 'locator.*':
-      return <CircleQuestionMarkIcon />
     case 'browserContext.*':
       return <CircleQuestionMarkIcon />
     default:
@@ -126,113 +111,23 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
     case 'page.goto':
       return <GoToActionBody action={action} onUpdate={onUpdate} />
     case 'page.reload':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'page.waitForNavigation':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'page.*':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.click':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.dblclick':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.fill':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.type':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.check':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.uncheck':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.selectOption':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.waitFor':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.hover':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.setChecked':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.tap':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.clear':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.press':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.focus':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'locator.*':
-      return (
-        <>
-          <Code>{action.method}</Code> not implemented
-        </>
-      )
     case 'browserContext.*':
       return (
         <>
