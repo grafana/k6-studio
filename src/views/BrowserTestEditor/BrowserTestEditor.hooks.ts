@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
+import log from 'electron-log/renderer'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
@@ -12,6 +13,7 @@ import {
 import { useStateWithUndo } from '@/hooks/useStateWithUndo'
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
+import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { queryClient } from '@/utils/query'
@@ -40,14 +42,30 @@ export function useBrowserTest(fileName: string) {
 }
 
 export function useSaveBrowserTest(fileName: string) {
+  const showToast = useToast()
+
   return useMutation({
-    mutationFn: (data: BrowserTestFile) => {
-      return window.studio.browserTest.save(fileName, data)
-    },
-    onSuccess: async () => {
+    mutationFn: async (data: BrowserTestFile) => {
+      await window.studio.browserTest.save(fileName, data)
       await queryClient.invalidateQueries({
         queryKey: ['browserTest', fileName],
       })
+    },
+
+    onSuccess: () => {
+      showToast({
+        title: 'Browser test saved',
+        status: 'success',
+      })
+    },
+
+    onError: (error) => {
+      showToast({
+        title: 'Failed to save browser test',
+        status: 'error',
+        description: error.message,
+      })
+      log.error(error)
     },
   })
 }
