@@ -251,9 +251,10 @@ interface GoToActionBodyProps {
 
 function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
   const {
-    handleSubmit,
     register,
     formState: { errors },
+    trigger,
+    getValues,
   } = useForm<PageGotoAction>({
     shouldFocusError: true,
     mode: 'onBlur',
@@ -261,13 +262,14 @@ function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
     defaultValues: action,
   })
 
-  const handleFormSubmit = handleSubmit((data) => {
-    if (data.url === action.url) {
-      return
-    }
+  const handleBlur = async () => {
+    await trigger('url')
 
-    onUpdate(data)
-  })
+    const data = getValues()
+    if (data.url !== action.url) {
+      onUpdate(data)
+    }
+  }
 
   return (
     <>
@@ -280,7 +282,7 @@ function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
           flex: 1;
         `}
         {...register('url', {
-          onBlur: handleFormSubmit,
+          onBlur: handleBlur,
         })}
         placeholder="e.g. https://quickpizza.grafana.com"
       >
