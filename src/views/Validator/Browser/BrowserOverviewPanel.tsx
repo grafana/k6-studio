@@ -6,7 +6,7 @@ import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 
 import { DebugSession } from '../types'
 
-import { SessionPlayer } from './SessionPlayer'
+import { SessionPlayer } from './SessionPlayer/SessionPlayer'
 
 interface BrowserOverviewPanelProps {
   script: string
