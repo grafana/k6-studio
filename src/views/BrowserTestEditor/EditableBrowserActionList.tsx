@@ -42,9 +42,9 @@ export function EditableBrowserActionList({
         {actions.length === 0 ? (
           <EmptyMessage message="Build your browser test by adding actions." />
         ) : (
-          actions.map((action, index) => (
+          actions.map((action) => (
             <EditableAction
-              key={index}
+              key={action.id}
               action={action}
               onRemove={onRemoveAction}
               onUpdate={onUpdateAction}
