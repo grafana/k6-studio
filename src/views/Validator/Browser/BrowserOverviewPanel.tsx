@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Box, Flex, Tabs } from '@radix-ui/themes'
+import { useEffect, useState } from 'react'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 
@@ -16,8 +17,16 @@ export function BrowserOverviewPanel({
   script,
   session,
 }: BrowserOverviewPanelProps) {
+  const [tab, setTab] = useState('script')
+
+  useEffect(() => {
+    return window.studio.script.onScriptStarted(() => {
+      setTab('replay')
+    })
+  }, [])
+
   return (
-    <Tabs.Root asChild defaultValue="script">
+    <Tabs.Root asChild value={tab} onValueChange={setTab}>
       <Flex direction="column" height="100%">
         <Box asChild flexShrink="0">
           <Tabs.List>

@@ -46,6 +46,10 @@ export function onScriptLog(callback: (data: LogEntry) => void) {
   return createListener(ScriptHandler.Log, callback)
 }
 
+export function onScriptStarted(callback: () => void) {
+  return createListener(ScriptHandler.Started, callback)
+}
+
 export function onScriptStopped(callback: () => void) {
   return createListener(ScriptHandler.Stopped, callback)
 }

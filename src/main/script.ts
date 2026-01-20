@@ -108,6 +108,10 @@ export const runScript = async ({
     browserWindow.webContents.send(ScriptHandler.Log, entry)
   })
 
+  testRun.on('start', () => {
+    browserWindow.webContents.send(ScriptHandler.Started, {})
+  })
+
   testRun.on('done', ({ result, checks }) => {
     browserWindow.webContents.send(ScriptHandler.Check, checks)
     browserWindow.webContents.send(ScriptHandler.Finished, result)
