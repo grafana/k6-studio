@@ -279,12 +279,11 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
         <IconButton
           css={css`
             svg {
-              fill: var(--accent-11);
+              fill: var(--accent-9);
               width: 14px !important;
               height: 14px !important;
               min-width: 14px !important;
               min-height: 14px !important;
-              stroke-width: 3 !important;
               stroke-linecap: butt !important;
               stroke-linejoin: round;
             }
