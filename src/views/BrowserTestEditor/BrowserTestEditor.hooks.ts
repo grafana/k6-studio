@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
@@ -82,11 +82,11 @@ export function useBrowserTestEditorLayout() {
     storage: localStorage,
   })
 
-  function onTabClick() {
+  const onTabClick = useCallback(() => {
     if (drawer?.isCollapsed()) {
       drawer?.resize(300)
     }
-  }
+  }, [drawer])
 
   return { drawerLayout, mainLayout, setDrawer, onTabClick }
 }

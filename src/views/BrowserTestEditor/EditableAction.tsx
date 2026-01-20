@@ -75,7 +75,7 @@ interface ActionIconProps {
 function ActionIcon({ action }: ActionIconProps) {
   switch (action.method) {
     case 'page.goto':
-      return <GlobeIcon />
+      return <GlobeIcon aria-hidden="true" />
     case 'page.reload':
     case 'page.waitForNavigation':
     case 'page.*':
@@ -95,7 +95,7 @@ function ActionIcon({ action }: ActionIconProps) {
     case 'locator.focus':
     case 'locator.*':
     case 'browserContext.*':
-      return <CircleQuestionMarkIcon />
+      return <CircleQuestionMarkIcon aria-hidden="true" />
     default:
       return exhaustive(action)
   }
