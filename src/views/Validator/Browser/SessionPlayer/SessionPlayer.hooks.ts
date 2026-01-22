@@ -140,7 +140,7 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     }
 
     let frame = requestAnimationFrame(function tick() {
-      const { totalTime = 0 } = player?.getMetaData() ?? {}
+      const totalTime = player?.getTotalTime() ?? 0
       const currentTime = Math.min(player?.getCurrentTime() ?? 0, totalTime)
 
       setCurrentTime(currentTime)
@@ -160,7 +160,7 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     }
 
     let frame = requestAnimationFrame(function tick() {
-      const { totalTime = 0 } = player?.getMetaData() ?? {}
+      const totalTime = player?.getTotalTime() ?? 0
 
       // We currently don't allow seeking and pausing while streaming, so
       // we keep the total time and the current time in sync.
