@@ -13,6 +13,7 @@ import { createTrackingServer } from '@/utils/k6/tracking'
 import { getResourcePath } from '@/utils/resources'
 
 import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
+import { createReplayEvent } from './runner/rrweb'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -109,11 +110,20 @@ export const runScript = async ({
   })
 
   testRun.on('start', () => {
+    // browserWindow.webContents.send(ScriptHandler.BrowserReplay, [
+    //   createReplayEvent('recording-start', {}),
+    // ])
+
     browserWindow.webContents.send(ScriptHandler.Started, {})
   })
 
   testRun.on('done', ({ result, checks }) => {
+    browserWindow.webContents.send(ScriptHandler.BrowserReplay, [
+      createReplayEvent('recording-end', {}),
+    ])
+
     browserWindow.webContents.send(ScriptHandler.Check, checks)
+
     browserWindow.webContents.send(ScriptHandler.Finished, result)
   })
 

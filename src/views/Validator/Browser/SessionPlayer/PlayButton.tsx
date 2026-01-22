@@ -1,14 +1,20 @@
 import { css } from '@emotion/react'
-import { IconButton } from '@radix-ui/themes'
+import { IconButton, Spinner } from '@radix-ui/themes'
 import { PauseIcon, PlayIcon } from 'lucide-react'
 
 interface PlayButtonProps {
   playing: boolean
+  streaming: boolean
   onPlay: () => void
   onPause: () => void
 }
 
-export function PlayButton({ playing, onPlay, onPause }: PlayButtonProps) {
+export function PlayButton({
+  playing,
+  streaming,
+  onPlay,
+  onPause,
+}: PlayButtonProps) {
   const handlePlayPause = () => {
     if (playing) {
       onPause()
@@ -17,6 +23,10 @@ export function PlayButton({ playing, onPlay, onPause }: PlayButtonProps) {
     }
 
     onPlay()
+  }
+
+  if (streaming) {
+    return <Spinner size="1" />
   }
 
   return (

@@ -3,6 +3,7 @@ import { Text, Flex, Slider } from '@radix-ui/themes'
 
 import { PlayButton } from './PlayButton'
 import { formatTime } from './PlaybackControls.utils'
+import { PlaybackState } from './types'
 
 export interface OnSeekEvent {
   time: number
@@ -10,7 +11,8 @@ export interface OnSeekEvent {
 }
 
 interface PlaybackControlsProps {
-  playing: boolean
+  state: PlaybackState
+  streaming: boolean
   currentTime: number
   totalTime: number
   onPlay: () => void
@@ -19,7 +21,8 @@ interface PlaybackControlsProps {
 }
 
 export function PlaybackControls({
-  playing,
+  state,
+  streaming,
   currentTime,
   totalTime,
   onPlay,
@@ -53,10 +56,16 @@ export function PlaybackControls({
       align="center"
       gap="4"
     >
-      <PlayButton playing={playing} onPlay={onPlay} onPause={onPause} />
+      <PlayButton
+        playing={state === 'playing'}
+        streaming={streaming}
+        onPlay={onPlay}
+        onPause={onPause}
+      />
 
       <Slider
         size="1"
+        disabled={streaming}
         value={[currentTime]}
         step={0.001}
         min={0}

@@ -1,5 +1,7 @@
-import { eventWithTime } from '@rrweb/types'
+import { EventType, eventWithTime } from '@rrweb/types'
 import { record } from 'rrweb'
+
+import type { PageStartEvent } from '../../rrweb'
 
 declare global {
   interface Window {
@@ -18,7 +20,21 @@ function isTopLevelFrame() {
 }
 
 if (trackingServerUrl !== null && isTopLevelFrame()) {
-  let buffer: eventWithTime[] = []
+  let buffer: eventWithTime[] = [
+    {
+      type: EventType.Custom,
+      data: {
+        tag: 'page-start',
+        payload: {
+          title: document.title,
+          href: window.location.href,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
+      } satisfies PageStartEvent,
+      timestamp: Date.now(),
+    },
+  ]
 
   setTimeout(async function send() {
     if (buffer.length > 0) {
