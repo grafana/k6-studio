@@ -33,16 +33,18 @@ export function trackLog(entry: LogEntry) {
     return
   }
 
-  try {
-    const body = JSON.stringify(entry)
+  const body = JSON.stringify(entry)
 
-    http.post(`${TRACKING_SERVER_URL}/log`, body, {
+  // Blocking the `page.on("console")` handler will cause the browser to hang
+  // for extended periods of time so we use asyncRequest here to avoid blocking.
+  http
+    .asyncRequest('POST', `${TRACKING_SERVER_URL}/log`, body, {
       headers: { 'Content-Type': 'application/json' },
     })
-  } catch {
-    // We don't want to interfere with the script execution so
-    // we swallow all errors here.
-  }
+    .catch(() => {
+      // We don't want to interfere with the script execution so
+      // we swallow all errors here.
+    })
 }
 
 function begin(action: AnyBrowserAction | undefined | null) {
