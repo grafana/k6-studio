@@ -43,17 +43,20 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
 
       buffer = []
 
-      try {
-        const url = `${trackingServerUrl}/session-replay`
+      const url = `${trackingServerUrl}/session-replay`
+      const init = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ events }),
+      }
 
-        await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ events }),
-        })
-      } catch (err) {
+      const success = await fetch(url, init)
+        .then((response) => response.ok)
+        .catch(() => false)
+
+      if (!success) {
         // Put events back in the buffer and retry later
         buffer = [...events, ...buffer]
       }

@@ -39,7 +39,7 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
   // While streaming, we won't know the size of the first page until the
   // initial frames arrive. To avoid showing a zero-size viewport, we hide
   // it and show a spinner instead.
-  const hasWindowDimensions = page === undefined
+  const hasWindowDimensions = page !== undefined
 
   return (
     <Flex direction="column" height="100%" width="100%">
@@ -57,7 +57,7 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
           }
         `}
       >
-        {hasWindowDimensions && <Spinner size="2" />}
+        {!hasWindowDimensions && <Spinner size="2" />}
         <Viewport show={page !== undefined}>
           <AddressBar loading={loading} page={page} />
           <Box

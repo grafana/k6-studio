@@ -5,27 +5,33 @@ import { ProxyOptions, trackLog } from '../utils'
 import { locatorProxy } from './locator'
 import { isLocatorMethod } from './utils'
 
+const instrumentedPages = new WeakSet<Page>()
+
 export function pageProxy(target: Page): ProxyOptions<Page> {
-  target.on('console', (msg) => {
-    const type = msg.type()
+  if (!instrumentedPages.has(target)) {
+    target.on('console', (msg) => {
+      const type = msg.type()
 
-    if (
-      type !== 'log' &&
-      type !== 'info' &&
-      type !== 'debug' &&
-      type !== 'warning' &&
-      type !== 'error'
-    ) {
-      return
-    }
+      if (
+        type !== 'log' &&
+        type !== 'info' &&
+        type !== 'debug' &&
+        type !== 'warning' &&
+        type !== 'error'
+      ) {
+        return
+      }
 
-    trackLog({
-      level: type === 'log' ? 'info' : type,
-      msg: msg.text(),
-      time: new Date().toISOString(),
-      source: 'browser',
+      trackLog({
+        level: type === 'log' ? 'info' : type,
+        msg: msg.text(),
+        time: new Date().toISOString(),
+        source: 'browser',
+      })
     })
-  })
+
+    instrumentedPages.add(target)
+  }
 
   return {
     target,

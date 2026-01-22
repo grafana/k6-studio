@@ -57,18 +57,16 @@ export function Viewport({ show, children }: ViewportProps) {
 
   return (
     <div
+      ref={setViewport}
       css={css`
+        display: ${!show ? 'none' : 'block'};
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: scale(${scale}) translate(-50%, -50%);
+        transform-origin: top left;
         border: 1px solid var(--gray-a5);
       `}
-      ref={setViewport}
-      style={{
-        position: 'absolute',
-        left: '50%',
-        top: '50%',
-        transform: `scale(${scale}) translate(-50%, -50%)`,
-        transformOrigin: 'top left',
-        display: !show ? 'none' : 'block',
-      }}
     >
       {children}
     </div>
