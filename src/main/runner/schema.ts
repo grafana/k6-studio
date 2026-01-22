@@ -289,7 +289,7 @@ export const ActionEndEventSchema = ActionEventSchemaBase.extend({
 export const SessionReplayEventSchema = z.object({
   // We don't bother parsing the events themselves and instead assume that
   // rrweb will send valid data.
-  events: z.array(z.unknown().transform((ev) => ev as eventWithTime)),
+  events: z.array(z.unknown().transform((ev) => ev as BrowserReplayEvent)),
 })
 
 export const BrowserActionEventSchema = z.discriminatedUnion('type', [

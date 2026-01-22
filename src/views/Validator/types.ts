@@ -1,6 +1,4 @@
-import { eventWithTime } from '@rrweb/types'
-
-import { BrowserActionEvent } from '@/main/runner/schema'
+import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 import { ProxyData } from '@/types'
 
@@ -12,7 +10,7 @@ export interface DebugSession {
   requests: ProxyData[]
   browser: {
     actions: BrowserActionEvent[]
-    replay: eventWithTime[]
+    replay: BrowserReplayEvent[]
   }
   logs: LogEntry[]
   checks: Check[]

@@ -1,7 +1,8 @@
-import { EventType, eventWithTime } from '@rrweb/types'
+import { EventType } from '@rrweb/types'
 import { record } from 'rrweb'
 
 import type { PageStartEvent } from '../../rrweb'
+import type { BrowserReplayEvent } from '../../schema'
 
 declare global {
   interface Window {
@@ -20,7 +21,7 @@ function isTopLevelFrame() {
 }
 
 if (trackingServerUrl !== null && isTopLevelFrame()) {
-  let buffer: eventWithTime[] = [
+  let buffer: BrowserReplayEvent[] = [
     {
       type: EventType.Custom,
       data: {
