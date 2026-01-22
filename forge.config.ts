@@ -136,6 +136,11 @@ const config: ForgeConfig = {
           entry: 'src/main/runner/entrypoint.ts',
           config: 'vite.script.config.ts',
         },
+        {
+          // Entry doesn't really matter here.
+          entry: 'src/main/runner/shims/browser/replay.ts',
+          config: 'vite.replay.config.ts',
+        },
       ],
       renderer: [
         {

@@ -11,9 +11,12 @@ export default defineConfig((env) => {
       sourcemap: false,
       target: 'esnext',
       lib: {
-        entry: 'src/main/runner/entrypoint.ts',
-        fileName: () => 'entrypoint.js',
-        formats: ['es'],
+        entry: 'src/main/runner/shims/browser/replay.ts',
+        name: 'replay',
+        fileName: () => 'replay.js',
+        // The replay script needs to be an IIFE to avoid polluting the global scope
+        // of the recorded page.
+        formats: ['iife'],
       },
       outDir: 'resources',
       rollupOptions: {
