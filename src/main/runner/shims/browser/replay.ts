@@ -66,6 +66,11 @@ if (trackingServerUrl !== null && isTopLevelFrame()) {
   }, 200)
 
   record({
+    blockSelector: "link[rel='modulepreload']",
+    inlineImages: true,
+    inlineStylesheet: true,
+    collectFonts: true,
+    slimDOMOptions: true,
     emit(event) {
       buffer.push(event)
     },
