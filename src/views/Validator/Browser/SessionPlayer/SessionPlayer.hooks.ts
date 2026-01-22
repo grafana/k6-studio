@@ -105,9 +105,6 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
       const parsedEvent = parseReplayEvent(ev)
 
       switch (parsedEvent.data.tag) {
-        case 'recording-start':
-          break
-
         case 'recording-end':
           newPlayer.setConfig({ liveMode: false })
 

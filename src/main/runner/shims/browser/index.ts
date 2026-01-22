@@ -3,7 +3,8 @@ import { BrowserContext, browser } from 'k6/browser'
 import { pageProxy } from './proxies/page'
 import { createProxy, ProxyOptions, TRACKING_SERVER_URL } from './utils'
 
-const SESSION_REPLAY_SCRIPT = ''
+const SESSION_REPLAY_SCRIPT =
+  'THIS WILL BE REPLACED WITH THE ACTUAL SCRIPT AT RUNTIME'
 
 async function injectSessionReplayScript(context: BrowserContext) {
   await context.addInitScript(

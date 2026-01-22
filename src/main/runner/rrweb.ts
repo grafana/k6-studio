@@ -3,11 +3,6 @@ import { z } from 'zod'
 
 import { BrowserReplayEvent } from './schema'
 
-const RecordingStartEventSchema = z.object({
-  tag: z.literal('recording-start'),
-  payload: z.object({}),
-})
-
 const RecordingEndEventSchema = z.object({
   tag: z.literal('recording-end'),
   payload: z.object({}),
@@ -24,7 +19,6 @@ const PageStartEventSchema = z.object({
 })
 
 const CustomReplayEventSchema = z.discriminatedUnion('tag', [
-  RecordingStartEventSchema,
   RecordingEndEventSchema,
   PageStartEventSchema,
 ])
@@ -35,7 +29,6 @@ const RrwebCustomEventSchema = z.object({
   timestamp: z.number(),
 })
 
-export type RecordingStartEvent = z.infer<typeof RecordingStartEventSchema>
 export type RecordingEndEvent = z.infer<typeof RecordingEndEventSchema>
 export type PageStartEvent = z.infer<typeof PageStartEventSchema>
 

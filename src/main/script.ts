@@ -110,20 +110,11 @@ export const runScript = async ({
   })
 
   testRun.on('start', () => {
-    // browserWindow.webContents.send(ScriptHandler.BrowserReplay, [
-    //   createReplayEvent('recording-start', {}),
-    // ])
-
     browserWindow.webContents.send(ScriptHandler.Started, {})
   })
 
   testRun.on('done', ({ result, checks }) => {
-    browserWindow.webContents.send(ScriptHandler.BrowserReplay, [
-      createReplayEvent('recording-end', {}),
-    ])
-
     browserWindow.webContents.send(ScriptHandler.Check, checks)
-
     browserWindow.webContents.send(ScriptHandler.Finished, result)
   })
 
@@ -138,6 +129,10 @@ export const runScript = async ({
   })
 
   testRun.on('stop', () => {
+    browserWindow.webContents.send(ScriptHandler.BrowserReplay, [
+      createReplayEvent('recording-end', {}),
+    ])
+
     browserWindow.webContents.send(ScriptHandler.Stopped)
 
     trackingServer?.dispose()
