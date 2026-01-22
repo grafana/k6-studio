@@ -1,12 +1,34 @@
 import { BrowserContext, browser } from 'k6/browser'
 
 import { pageProxy } from './proxies/page'
-import { createProxy, ProxyOptions, TRACKING_SERVER_URL } from './utils'
+import {
+  createSingleEntryGuard,
+  createProxy,
+  ProxyOptions,
+  TRACKING_SERVER_URL,
+} from './utils'
+
+declare module 'k6/browser' {
+  // We extend these interfaces to ba able to track specific instances
+  interface Page {
+    __id?: string
+  }
+
+  interface BrowserContext {
+    __id?: string
+  }
+}
 
 // NOTE: This placeholder is replaced with the actual session replay script during the instrumentation process.
 const SESSION_REPLAY_SCRIPT = ''
 
+const isContextInitialized = createSingleEntryGuard()
+
 async function injectSessionReplayScript(context: BrowserContext) {
+  if (!isContextInitialized(context)) {
+    return
+  }
+
   await context.addInitScript(
     `window.__K6_SESSION_REPLAY_TRACKING_SERVER_URL__ = ${JSON.stringify(TRACKING_SERVER_URL)};`
   )

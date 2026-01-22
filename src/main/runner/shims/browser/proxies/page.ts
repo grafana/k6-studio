@@ -1,14 +1,14 @@
 import { Page } from 'k6/browser'
 
-import { ProxyOptions, trackLog } from '../utils'
+import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 
 import { locatorProxy } from './locator'
 import { isLocatorMethod } from './utils'
 
-const instrumentedPages = new WeakSet<Page>()
+const isPageInstrumented = createSingleEntryGuard()
 
 export function pageProxy(target: Page): ProxyOptions<Page> {
-  if (!instrumentedPages.has(target)) {
+  if (!isPageInstrumented(target)) {
     target.on('console', (msg) => {
       const type = msg.type()
 
@@ -29,8 +29,6 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         source: 'browser',
       })
     })
-
-    instrumentedPages.add(target)
   }
 
   return {
