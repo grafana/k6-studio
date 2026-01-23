@@ -23,19 +23,11 @@ declare module 'prettier/plugins/estree' {
 }
 
 function applySpacing(node: ts.Node | null, doc: builders.Doc): builders.Doc {
-  if (node?.newLine === 'before') {
-    return [hardline, doc]
-  }
-
-  if (node?.newLine === 'after') {
-    return [doc, hardline]
-  }
-
-  if (node?.newLine === 'both') {
-    return [hardline, doc, hardline]
-  }
-
-  return doc
+  return [
+    node?.newLine?.before === true && hardline,
+    doc,
+    node?.newLine?.after === true && hardline,
+  ].filter((item) => item !== false)
 }
 
 /**

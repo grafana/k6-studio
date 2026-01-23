@@ -1,6 +1,11 @@
 declare module '@typescript-eslint/types' {
   namespace TSESTree {
-    type NewLine = 'before' | 'after' | 'both'
+    type NewLineOptions = boolean | 'never'
+
+    type NewLine = {
+      before?: boolean | 'never'
+      after?: boolean | 'never'
+    }
 
     interface NodeOrTokenData {
       /**
