@@ -796,7 +796,7 @@ it('should emit comments in the script', async ({ expect }) => {
         {
           type: 'comment',
           nodeId: 'comment-1',
-          text: 'Login flow',
+          text: 'Expecto Patronum! This test now magically passes',
           inputs: {
             previous: { nodeId: 'goto' },
           },

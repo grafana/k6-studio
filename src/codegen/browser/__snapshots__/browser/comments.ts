@@ -16,7 +16,7 @@ export default async function () {
 
   await page.goto("https://example.com");
 
-  // Login flow
+  // Expecto Patronum! This test now magically passes
 
   await page.locator("button").click();
 }
