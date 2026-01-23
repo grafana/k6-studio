@@ -7,14 +7,22 @@ import { View } from '@/components/Layout/View'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useSettings } from '@/hooks/useSettings'
 import { BrowserEvent } from '@/schemas/recording'
-import { ProxyData, StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
+import { ProxyData } from '@/types'
+import { getStudioFileFromPath } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 import { RequestLog } from '../Recorder/RequestLog'
 
 import { RecordingPreviewControls } from './RecordingPreviewerControls'
+
+function useRecordingFile() {
+  const { fileName } = useParams()
+
+  invariant(fileName, 'fileName is required')
+
+  return getStudioFileFromPath('recording', fileName)
+}
 
 export function RecordingPreviewer() {
   const { data: settings } = useSettings()
@@ -23,24 +31,18 @@ export function RecordingPreviewer() {
   const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
 
   const [isLoading, setIsLoading] = useState(true)
-  const { fileName } = useParams()
   const navigate = useNavigate()
+
+  const file = useRecordingFile()
 
   const browserRecorderSetting =
     settings?.recorder.browserRecording ?? 'disabled'
-
-  invariant(fileName, 'fileName is required')
-  const file: StudioFile = {
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-    type: 'recording',
-  }
 
   useEffect(() => {
     ;(async () => {
       setIsLoading(true)
       setProxyData([])
-      const har = await window.studio.har.openFile(fileName)
+      const har = await window.studio.har.openFile(file.fileName)
       setIsLoading(false)
 
       invariant(har, 'Failed to open file')
@@ -53,7 +55,7 @@ export function RecordingPreviewer() {
       setProxyData([])
       setBrowserEvents([])
     }
-  }, [fileName, navigate])
+  }, [file.fileName, navigate])
 
   const groups = useProxyDataGroups(proxyData)
 

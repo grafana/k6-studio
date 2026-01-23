@@ -1,8 +1,22 @@
-import { StudioFileType } from '@/types'
+import { StudioFile } from '@/types'
 
 import { getRoutePath } from '../routeMap'
 
 import { exhaustive } from './typescript'
+
+export function getStudioFileFromPath(
+  type: StudioFile['type'],
+  filePath: string
+): StudioFile {
+  const fileName = filePath.slice(filePath.lastIndexOf('/') + 1)
+
+  return {
+    type,
+    displayName: getFileNameWithoutExtension(fileName),
+    fileName,
+    filePath,
+  }
+}
 
 export function getFileNameWithoutExtension(fileName: string) {
   return fileName.replace(/\.[^/.]+$/, '')
@@ -12,10 +26,10 @@ export function getFileExtension(fileName: string) {
   return fileName.split('.').pop()
 }
 
-export function getViewPath(type: StudioFileType, fileName: string) {
-  const encodedFileName = encodeURIComponent(fileName)
+export function getViewPath(file: StudioFile) {
+  const encodedFileName = encodeURIComponent(file.filePath)
 
-  switch (type) {
+  switch (file.type) {
     case 'recording':
       return getRoutePath('recordingPreviewer', { fileName: encodedFileName })
 
@@ -32,6 +46,6 @@ export function getViewPath(type: StudioFileType, fileName: string) {
       return getRoutePath('dataFilePreviewer', { fileName: encodedFileName })
 
     default:
-      return exhaustive(type)
+      return exhaustive(file.type)
   }
 }

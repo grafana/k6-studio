@@ -11,7 +11,6 @@ import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 import {
   useGeneratorParams,
@@ -32,13 +31,13 @@ export function Generator() {
   const showToast = useToast()
   const navigate = useNavigate()
 
-  const { fileName } = useGeneratorParams()
+  const file = useGeneratorParams()
 
   const {
     data: generatorFileData,
     isLoading: isLoadingGenerator,
     error: generatorError,
-  } = useLoadGeneratorFile(fileName)
+  } = useLoadGeneratorFile(file.fileName)
 
   const {
     data: recording,
@@ -46,11 +45,11 @@ export function Generator() {
     error: harError,
   } = useLoadHarFile(generatorFileData?.recordingPath)
 
-  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(fileName)
+  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file.fileName)
 
   const isLoading = isLoadingGenerator || isLoadingRecording
 
-  const isDirty = useIsGeneratorDirty(fileName)
+  const isDirty = useIsGeneratorDirty(file.fileName)
   const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
@@ -143,20 +142,12 @@ export function Generator() {
   return (
     <View
       title="Generator"
-      subTitle={
-        <FileNameHeader
-          file={{
-            fileName,
-            displayName: getFileNameWithoutExtension(fileName),
-            type: 'generator',
-          }}
-          isDirty={isDirty}
-        />
-      }
+      subTitle={<FileNameHeader file={file} isDirty={isDirty} />}
       actions={
         <GeneratorControls
-          onSave={handleSaveGenerator}
+          file={file}
           isDirty={isDirty}
+          onSave={handleSaveGenerator}
           onChangeRecording={() => setSelectedRequest(null)}
         />
       }
@@ -167,7 +158,7 @@ export function Generator() {
           <Allotment vertical>
             <Allotment.Pane minSize={200}>
               <GeneratorTabs
-                fileName={fileName}
+                fileName={file.fileName}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
               />

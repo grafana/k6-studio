@@ -131,7 +131,7 @@ function EditableFile({
             }
           `,
         ]}
-        to={getViewPath(file.type, file.fileName)}
+        to={getViewPath(file)}
       >
         <HighlightedText text={file.displayName} matches={file.matches} />
       </NavLink>

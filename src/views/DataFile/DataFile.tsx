@@ -8,7 +8,7 @@ import { View } from '@/components/Layout/View'
 import { TableSkeleton } from '@/components/TableSkeleton'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
-import { getFileNameWithoutExtension } from '@/utils/file'
+import { getStudioFileFromPath } from '@/utils/file'
 
 import { useDataFilePreview } from './DataFile.hooks'
 import { DataFileControls } from './DataFileControls'
@@ -20,6 +20,7 @@ export function DataFile() {
   const showToast = useToast()
   invariant(fileName, 'fileName is required')
 
+  const file = getStudioFileFromPath('data-file', fileName)
   const { data: preview, isLoading, isError } = useDataFilePreview(fileName)
 
   useEffect(() => {
@@ -39,17 +40,8 @@ export function DataFile() {
   return (
     <View
       title="Data file preview"
-      subTitle={
-        <FileNameHeader
-          file={{
-            fileName,
-            displayName: getFileNameWithoutExtension(fileName),
-            type: 'data-file',
-          }}
-          showExt
-        />
-      }
-      actions={<DataFileControls fileName={fileName} />}
+      subTitle={<FileNameHeader file={file} showExt />}
+      actions={<DataFileControls file={file} />}
       loading={isLoading}
     >
       <Grid

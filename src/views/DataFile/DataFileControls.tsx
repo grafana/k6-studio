@@ -5,19 +5,12 @@ import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useOpenInDefaultApp } from '@/hooks/useOpenInDefaultApp'
 import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 interface DataFileControlsProps {
-  fileName: string
+  file: StudioFile
 }
 
-export function DataFileControls({ fileName }: DataFileControlsProps) {
-  const file: StudioFile = {
-    type: 'data-file',
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-  }
-
+export function DataFileControls({ file }: DataFileControlsProps) {
   const handleOpenFolder = () => {
     window.studio.ui.openContainingFolder(file)
   }

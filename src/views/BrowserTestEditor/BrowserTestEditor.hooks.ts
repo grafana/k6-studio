@@ -6,17 +6,13 @@ import invariant from 'tiny-invariant'
 import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
 import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
+import { getStudioFileFromPath } from '@/utils/file'
 
 export function useBrowserTestFile(): StudioFile {
   const { fileName } = useParams()
   invariant(fileName, 'fileName is required')
 
-  return {
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-    type: 'browser-test',
-  }
+  return getStudioFileFromPath('browser-test', fileName)
 }
 
 export function useBrowserTest(fileName: string) {

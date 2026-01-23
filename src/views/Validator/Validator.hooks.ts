@@ -9,6 +9,7 @@ import { useBrowserActions } from '@/hooks/useBrowserActions'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
+import { getStudioFileFromPath } from '@/utils/file'
 
 import { DebuggerState } from './types'
 
@@ -17,7 +18,7 @@ export function useScriptPath() {
 
   invariant(fileName, 'fileName param is required')
 
-  return fileName
+  return getStudioFileFromPath('script', fileName)
 }
 
 export function useScript(fileName: string) {

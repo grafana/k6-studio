@@ -8,22 +8,24 @@ import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { useGeneratorStore } from '@/store/generator'
-import { getFileNameWithoutExtension } from '@/utils/file'
+import { StudioFile } from '@/types'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
-import { useGeneratorParams, useScriptExport } from '../Generator.hooks'
+import { useScriptExport } from '../Generator.hooks'
 import { RecordingSelector } from '../RecordingSelector'
 import { ValidatorDialog } from '../ValidatorDialog'
 
 interface GeneratorControlsProps {
-  onSave: () => void
+  file: StudioFile
   isDirty: boolean
+  onSave: () => void
   onChangeRecording: () => void
 }
 
 export function GeneratorControls({
-  onSave,
+  file,
   isDirty,
+  onSave,
   onChangeRecording,
 }: GeneratorControlsProps) {
   const scriptName = useGeneratorStore((store) => store.scriptName)
@@ -31,18 +33,11 @@ export function GeneratorControls({
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const { fileName } = useGeneratorParams()
   const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
 
-  const file = {
-    type: 'generator' as const,
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-  }
-
-  const handleExportScript = useScriptExport(fileName)
+  const handleExportScript = useScriptExport(file.fileName)
 
   const handleDelete = useDeleteFile({
     file,

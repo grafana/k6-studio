@@ -1,12 +1,13 @@
 import { ipcRenderer } from 'electron'
 
+import { StudioFile } from '@/types'
 import { DataFilePreview } from '@/types/testData'
 
 import { DataFileHandler } from './types'
 
 export function importFile() {
   return ipcRenderer.invoke(DataFileHandler.Import) as Promise<
-    string | undefined
+    StudioFile | undefined
   >
 }
 

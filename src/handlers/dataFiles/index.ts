@@ -6,6 +6,7 @@ import invariant from 'tiny-invariant'
 
 import { MAX_DATA_FILE_SIZE } from '@/constants/files'
 import { DATA_FILES_PATH } from '@/constants/workspace'
+import { StudioFile } from '@/types'
 import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { browserWindowFromEvent } from '@/utils/electron'
@@ -13,32 +14,42 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { DataFileHandler } from './types'
 
 export function initialize() {
-  ipcMain.handle(DataFileHandler.Import, async (event) => {
-    const browserWindow = browserWindowFromEvent(event)
+  ipcMain.handle(
+    DataFileHandler.Import,
+    async (event): Promise<StudioFile | undefined> => {
+      const browserWindow = browserWindowFromEvent(event)
 
-    const dialogResult = await dialog.showOpenDialog(browserWindow, {
-      message: 'Import data file',
-      properties: ['openFile'],
-      filters: [{ name: 'Supported data files', extensions: ['csv', 'json'] }],
-    })
+      const dialogResult = await dialog.showOpenDialog(browserWindow, {
+        message: 'Import data file',
+        properties: ['openFile'],
+        filters: [
+          { name: 'Supported data files', extensions: ['csv', 'json'] },
+        ],
+      })
 
-    const filePath = dialogResult.filePaths[0]
+      const filePath = dialogResult.filePaths[0]
 
-    if (dialogResult.canceled || !filePath) {
-      return
+      if (dialogResult.canceled || !filePath) {
+        return
+      }
+
+      const targetPath = path.join(DATA_FILES_PATH, path.basename(filePath))
+
+      const { size } = await stat(filePath)
+      invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
+
+      await copyFile(filePath, targetPath, COPYFILE_EXCL)
+
+      const parsedTargetPath = path.parse(targetPath)
+
+      return {
+        type: 'data-file',
+        fileName: parsedTargetPath.base,
+        displayName: parsedTargetPath.name,
+        filePath: targetPath,
+      }
     }
-
-    const { size } = await stat(filePath)
-    invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
-
-    await copyFile(
-      filePath,
-      path.join(DATA_FILES_PATH, path.basename(filePath)),
-      COPYFILE_EXCL
-    )
-
-    return path.basename(filePath)
-  })
+  )
 
   ipcMain.handle(
     DataFileHandler.LoadPreview,

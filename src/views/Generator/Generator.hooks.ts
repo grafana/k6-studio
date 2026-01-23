@@ -7,6 +7,7 @@ import invariant from 'tiny-invariant'
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { GeneratorFileData } from '@/types/generator'
+import { getStudioFileFromPath } from '@/utils/file'
 import { queryClient } from '@/utils/query'
 
 import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
@@ -15,9 +16,7 @@ export function useGeneratorParams() {
   const { fileName } = useParams()
   invariant(fileName, 'fileName is required')
 
-  return {
-    fileName,
-  }
+  return getStudioFileFromPath('generator', fileName)
 }
 
 export function useLoadHarFile(fileName?: string) {
