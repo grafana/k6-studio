@@ -4,7 +4,7 @@ import { BrowserWindow } from 'electron'
 import { TEMP_SCRIPT_SUFFIX, PROJECT_PATH } from '@/constants/workspace'
 import { UIHandler } from '@/handlers/ui/types'
 
-import { getStudioFileFromPath } from './file'
+import { inferStudioFileFromPath } from './file'
 
 export function configureWatcher(browserWindow: BrowserWindow) {
   k6StudioState.watcher = watch(PROJECT_PATH, {
@@ -12,7 +12,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
   })
 
   k6StudioState.watcher.on('add', (filePath) => {
-    const file = getStudioFileFromPath(filePath)
+    const file = inferStudioFileFromPath(filePath)
 
     if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
       return
@@ -22,7 +22,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
   })
 
   k6StudioState.watcher.on('unlink', (filePath) => {
-    const file = getStudioFileFromPath(filePath)
+    const file = inferStudioFileFromPath(filePath)
 
     if (!file || filePath.endsWith(TEMP_SCRIPT_SUFFIX)) {
       return

@@ -7,7 +7,6 @@ import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
 import { PROJECT_PATH } from '@/constants/workspace'
-import { getFilePath } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
@@ -39,20 +38,17 @@ export function initialize() {
   ipcMain.handle(UIHandler.DeleteFile, async (_, file: StudioFile) => {
     console.info(`${UIHandler.DeleteFile} event received`)
 
-    const filePath = getFilePath(file)
-    return unlink(filePath)
+    return unlink(file.filePath)
   })
 
   ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFolder} event received`)
-    const filePath = getFilePath(file)
-    return shell.showItemInFolder(filePath)
+    return shell.showItemInFolder(file.filePath)
   })
 
   ipcMain.handle(UIHandler.OpenFileInDefaultApp, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFileInDefaultApp} event received`)
-    const filePath = getFilePath(file)
-    return shell.openPath(filePath)
+    return shell.openPath(file.filePath)
   })
 
   ipcMain.handle(UIHandler.GetFiles, async () => {
