@@ -31,19 +31,19 @@ jobs:
             APPLE_API_KEY=apple-certificates:APPLE_API_KEY
             SENTRY_DSN=sentry:SENTRY_DSN
             SENTRY_AUTH_TOKEN=sentry:SENTRY_AUTH_TOKEN
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           persist-credentials: false
 
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 22
 
       # try earlier python version for appdmg
       # https://github.com/electron/forge/issues/3371#issuecomment-2105195302
       - name: Install Python 3.11.4
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6
         with:
           python-version: '3.11.4'
 

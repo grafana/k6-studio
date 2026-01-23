@@ -129,9 +129,13 @@ const archiveScript = async (
   try {
     const client = new K6Client()
 
+    // Set cwd to script directory for import resolution on Windows
+    const scriptDir = path.dirname(scriptPath)
+
     await client.archive({
       scriptPath,
       outputPath: TEMP_K6_ARCHIVE_PATH,
+      cwd: scriptDir,
     })
 
     return TEMP_K6_ARCHIVE_PATH

@@ -25,7 +25,7 @@ export class BrowserServer extends EventEmitter<BrowserExtensionServerEvents> {
   #settings = new Map<string, InBrowserSettings>()
 
   static async start() {
-    const transport = await WebSocketServerTransport.create('localhost', 7554)
+    const transport = await WebSocketServerTransport.create('127.0.0.1', 7554)
 
     return new BrowserServer(
       new BrowserExtensionClient('studio-server', transport)
