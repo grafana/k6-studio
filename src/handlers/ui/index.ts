@@ -1,19 +1,13 @@
 import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
+import { Dirent } from 'fs'
 import { unlink, readdir, access, rename } from 'fs/promises'
 import path from 'path'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
-import {
-  RECORDINGS_PATH,
-  GENERATORS_PATH,
-  SCRIPTS_PATH,
-  TEMP_SCRIPT_SUFFIX,
-  DATA_FILES_PATH,
-  BROWSER_TESTS_PATH,
-} from '@/constants/workspace'
-import { getFilePath, getStudioFileFromPath } from '@/main/file'
+import { PROJECT_PATH } from '@/constants/workspace'
+import { getFilePath } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
@@ -63,32 +57,48 @@ export function initialize() {
 
   ipcMain.handle(UIHandler.GetFiles, async () => {
     console.info(`${UIHandler.GetFiles} event received`)
-    const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
-      .filter((f) => f.isFile())
-      .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
-      .filter((f) => typeof f !== 'undefined')
 
-    const generators = (await readdir(GENERATORS_PATH, { withFileTypes: true }))
-      .filter((f) => f.isFile())
-      .map((f) => getStudioFileFromPath(path.join(GENERATORS_PATH, f.name)))
-      .filter((f) => typeof f !== 'undefined')
+    const allFiles = await readdir(PROJECT_PATH, {
+      recursive: true,
+      withFileTypes: true,
+    })
 
-    const browserTests = (
-      await readdir(BROWSER_TESTS_PATH, { withFileTypes: true })
+    const filesByExtension = Object.groupBy(allFiles.toSorted(), (file) =>
+      path.extname(file.name).toLowerCase()
     )
-      .filter((f) => f.isFile())
-      .map((f) => getStudioFileFromPath(path.join(BROWSER_TESTS_PATH, f.name)))
-      .filter((f) => typeof f !== 'undefined')
 
-    const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
-      .filter((f) => f.isFile() && !f.name.endsWith(TEMP_SCRIPT_SUFFIX))
-      .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
-      .filter((f) => typeof f !== 'undefined')
+    function toStudioFile(type: StudioFile['type']) {
+      return (file: Dirent<string>): StudioFile => {
+        const parsedName = path.parse(file.name)
 
-    const dataFiles = (await readdir(DATA_FILES_PATH, { withFileTypes: true }))
-      .filter((f) => f.isFile())
-      .map((f) => getStudioFileFromPath(path.join(DATA_FILES_PATH, f.name)))
-      .filter((f) => typeof f !== 'undefined')
+        return {
+          type,
+          displayName: parsedName.name,
+          fileName: parsedName.base,
+        }
+      }
+    }
+
+    const recordings: StudioFile[] =
+      filesByExtension['.har']?.map(toStudioFile('recording')) ?? []
+
+    const generators =
+      filesByExtension['.k6g']?.map(toStudioFile('generator')) ?? []
+
+    const browserTests =
+      filesByExtension['.k6b']?.map(toStudioFile('browser-test')) ?? []
+
+    const scripts = [
+      ...(filesByExtension['.js']?.map(toStudioFile('script')) ?? []),
+      ...(filesByExtension['.mjs']?.map(toStudioFile('script')) ?? []),
+      ...(filesByExtension['.cjs']?.map(toStudioFile('script')) ?? []),
+      ...(filesByExtension['.ts']?.map(toStudioFile('script')) ?? []),
+    ]
+
+    const dataFiles: StudioFile[] = [
+      ...(filesByExtension['.json']?.map(toStudioFile('data-file')) ?? []),
+      ...(filesByExtension['.csv']?.map(toStudioFile('data-file')) ?? []),
+    ]
 
     return {
       recordings,

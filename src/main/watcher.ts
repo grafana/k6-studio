@@ -1,31 +1,15 @@
 import { watch } from 'chokidar'
 import { BrowserWindow } from 'electron'
 
-import {
-  RECORDINGS_PATH,
-  GENERATORS_PATH,
-  SCRIPTS_PATH,
-  DATA_FILES_PATH,
-  TEMP_SCRIPT_SUFFIX,
-  BROWSER_TESTS_PATH,
-} from '@/constants/workspace'
+import { TEMP_SCRIPT_SUFFIX, PROJECT_PATH } from '@/constants/workspace'
 import { UIHandler } from '@/handlers/ui/types'
 
 import { getStudioFileFromPath } from './file'
 
 export function configureWatcher(browserWindow: BrowserWindow) {
-  k6StudioState.watcher = watch(
-    [
-      RECORDINGS_PATH,
-      GENERATORS_PATH,
-      BROWSER_TESTS_PATH,
-      SCRIPTS_PATH,
-      DATA_FILES_PATH,
-    ],
-    {
-      ignoreInitial: true,
-    }
-  )
+  k6StudioState.watcher = watch(PROJECT_PATH, {
+    ignoreInitial: true,
+  })
 
   k6StudioState.watcher.on('add', (filePath) => {
     const file = getStudioFileFromPath(filePath)

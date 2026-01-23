@@ -23,47 +23,35 @@ export function getStudioFileFromPath(
     fileName: path.basename(filePath),
   }
 
-  if (
-    filePath.startsWith(RECORDINGS_PATH) &&
-    path.extname(filePath) === '.har'
-  ) {
+  if (path.extname(filePath) === '.har') {
     return {
       type: 'recording',
       ...file,
     }
   }
 
-  if (
-    filePath.startsWith(BROWSER_TESTS_PATH) &&
-    path.extname(filePath) === K6_BROWSER_TEST_FILE_EXTENSION
-  ) {
+  if (path.extname(filePath) === K6_BROWSER_TEST_FILE_EXTENSION) {
     return {
       type: 'browser-test',
       ...file,
     }
   }
 
-  if (
-    filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === K6_GENERATOR_FILE_EXTENSION
-  ) {
+  if (path.extname(filePath) === K6_GENERATOR_FILE_EXTENSION) {
     return {
       type: 'generator',
       ...file,
     }
   }
 
-  if (filePath.startsWith(SCRIPTS_PATH) && path.extname(filePath) === '.js') {
+  if (path.extname(filePath) === '.js') {
     return {
       type: 'script',
       ...file,
     }
   }
 
-  if (
-    filePath.startsWith(DATA_FILES_PATH) &&
-    (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv')
-  ) {
+  if (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv') {
     return {
       type: 'data-file',
       ...file,
