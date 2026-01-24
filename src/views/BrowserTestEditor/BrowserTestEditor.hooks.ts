@@ -15,11 +15,23 @@ export function useBrowserTestFile(): StudioFile {
   return getStudioFileFromPath('browser-test', fileName)
 }
 
-export function useBrowserTest(fileName: string) {
+export function useBrowserTest(file: StudioFile) {
   return useQuery({
-    queryKey: ['browserTest', fileName],
+    queryKey: ['browserTest', file.filePath],
     queryFn: () => {
-      return window.studio.browserTest.open(fileName)
+      return window.studio.files
+        .open(file.filePath, 'browser-test')
+        .then((file) => {
+          if (file === null) {
+            throw new Error('Failed to load browser test file.')
+          }
+
+          if (file.content.type !== 'browser-test') {
+            throw new Error('Invalid browser test file type.')
+          }
+
+          return file.content.test
+        })
     },
   })
 }
