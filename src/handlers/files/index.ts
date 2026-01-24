@@ -2,9 +2,10 @@ import { ipcMain } from 'electron'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
+import { browserWindowFromEvent } from '@/utils/electron'
 
-import { save } from './operations'
-import { FilesHandler, OpenFile } from './types'
+import { openFile, saveFile } from './operations'
+import { FileContent, FilesHandler, OpenFile } from './types'
 
 export function initialize() {
   ipcMain.handle(FilesHandler.Save, async (event, file: OpenFile) => {
@@ -17,6 +18,15 @@ export function initialize() {
       'Invalid file name'
     )
 
-    return await save(file)
+    return await saveFile(file)
   })
+
+  ipcMain.handle(
+    FilesHandler.Open,
+    (event, filePath?: string, expectedType?: FileContent['type']) => {
+      console.log(`${FilesHandler.Open} event received for path: ${filePath}`)
+
+      return openFile(browserWindowFromEvent(event), filePath, expectedType)
+    }
+  )
 }

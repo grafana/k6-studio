@@ -2,6 +2,7 @@ import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { GeneratorFileData } from '@/types/generator'
 
 export enum FilesHandler {
+  Open = 'files:open',
   Save = 'files:save',
 }
 

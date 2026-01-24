@@ -1,13 +1,10 @@
 import { ipcMain } from 'electron'
-import { readFile } from 'fs/promises'
 import path from 'path'
 
 import { K6_GENERATOR_FILE_EXTENSION } from '@/constants/files'
 import { GENERATORS_PATH } from '@/constants/workspace'
-import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { GeneratorFileData } from '@/types/generator'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { createNewGeneratorFile } from '@/utils/generator'
 
@@ -30,17 +27,4 @@ export function initialize() {
 
     return path.join(GENERATORS_PATH, fileName)
   })
-
-  ipcMain.handle(
-    GeneratorHandler.Open,
-    async (_, filePath: string): Promise<GeneratorFileData> => {
-      console.log(`${GeneratorHandler.Open} event received`)
-      const data = await readFile(filePath, {
-        encoding: 'utf-8',
-        flag: 'r',
-      })
-
-      return GeneratorFileDataSchema.parse(JSON.parse(data))
-    }
-  )
 }

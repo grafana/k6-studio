@@ -40,7 +40,17 @@ export async function exportScript(fileName: string) {
 }
 
 export const loadGeneratorFile = async (filePath: string) => {
-  return window.studio.generator.loadGenerator(filePath)
+  return window.studio.files.open(filePath, 'http-test').then((file) => {
+    if (file === null) {
+      throw new Error('Failed to load generator file.')
+    }
+
+    if (file.content.type !== 'http-test') {
+      throw new Error('Invalid generator file type.')
+    }
+
+    return file.content.test
+  })
 }
 
 export const loadHarFile = async (fileName: string) => {
