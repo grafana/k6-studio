@@ -21,6 +21,7 @@ import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import {
   BrowserTestContent,
   FileContent,
+  FileOnDisk,
   HttpTestContent,
   OpenFile,
   RecordingContent,
@@ -268,7 +269,7 @@ export async function openFile(
   window: BaseWindow,
   knownPath?: string,
   expectedType?: FileContent['type']
-): Promise<OpenFile | null> {
+): Promise<OpenFile<FileOnDisk> | null> {
   const filePath = knownPath ?? (await selectFromDialog(window))
 
   if (filePath === undefined) {

@@ -26,7 +26,22 @@ export function useScript(file: StudioFile) {
   return useQuery({
     queryKey: ['script', file.filePath],
     queryFn: async () => {
-      return window.studio.script.openScript(file.filePath)
+      const result = await window.studio.files.open(file.filePath, 'script')
+
+      if (result === null) {
+        throw new Error('Failed to load script')
+      }
+
+      if (result.content.type !== 'script') {
+        throw new Error(`File is not a valid script.`)
+      }
+
+      const analysis = await window.studio.script.analyze(result.location)
+
+      return {
+        ...analysis,
+        script: result.content.content,
+      }
     },
     refetchOnMount: false,
     refetchOnReconnect: false,

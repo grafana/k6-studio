@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
-import { readFile, writeFile, unlink } from 'fs/promises'
+import { writeFile, unlink } from 'fs/promises'
 import path from 'path'
 
 import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
@@ -12,6 +12,8 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
 import { isExternalScript } from '@/utils/workspace'
+
+import { FileOnDisk } from '../files/types'
 
 import { ScriptHandler } from './types'
 
@@ -32,28 +34,16 @@ export function initialize() {
     return scriptPath
   })
 
-  ipcMain.handle(ScriptHandler.Open, async (_, scriptPath: string) => {
-    console.log(`${ScriptHandler.Open} event received`)
-
-    const absolute = path.isAbsolute(scriptPath)
-
-    const resolvedScriptPath = absolute
-      ? scriptPath
-      : path.join(SCRIPTS_PATH, scriptPath)
-
-    const script = await readFile(resolvedScriptPath, {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
+  ipcMain.handle(ScriptHandler.Analyze, async (_, location: FileOnDisk) => {
+    console.log(`${ScriptHandler.Analyze} event received`)
 
     const options = await new K6Client()
-      .inspect({ scriptPath: resolvedScriptPath })
+      .inspect({ scriptPath: location.path })
       .catch(() => ({}))
 
     return {
-      script,
       options: options ?? {},
-      isExternal: isExternalScript(resolvedScriptPath),
+      isExternal: isExternalScript(location.path),
     }
   })
 

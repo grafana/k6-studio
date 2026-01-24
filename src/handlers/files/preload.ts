@@ -13,5 +13,5 @@ export function open(filePath?: string, expectedType?: FileContent['type']) {
     FilesHandler.Open,
     filePath,
     expectedType
-  ) as Promise<OpenFile | null>
+  ) as Promise<OpenFile<FileOnDisk> | null>
 }

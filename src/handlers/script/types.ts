@@ -2,7 +2,7 @@ import { K6TestOptions } from '@/utils/k6/schema'
 
 export enum ScriptHandler {
   Select = 'script:select',
-  Open = 'script:open',
+  Analyze = 'script:analyze',
   Run = 'script:run',
   Stop = 'script:stop',
   Log = 'script:log',
@@ -14,8 +14,7 @@ export enum ScriptHandler {
   BrowserAction = 'script:browser-action',
 }
 
-export interface OpenScriptResult {
-  script: string
+export interface ScriptAnalysis {
   isExternal: boolean
   options: K6TestOptions
 }

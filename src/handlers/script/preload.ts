@@ -3,19 +3,20 @@ import { ipcRenderer } from 'electron'
 import { BrowserActionEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 
+import { FileOnDisk } from '../files/types'
 import { createListener } from '../utils'
 
-import { OpenScriptResult, ScriptHandler } from './types'
+import { ScriptAnalysis, ScriptHandler } from './types'
 
 export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
 }
 
-export function openScript(scriptPath: string) {
+export function analyze(location: FileOnDisk) {
   return ipcRenderer.invoke(
-    ScriptHandler.Open,
-    scriptPath
-  ) as Promise<OpenScriptResult>
+    ScriptHandler.Analyze,
+    location
+  ) as Promise<ScriptAnalysis>
 }
 
 export function runScriptFromGenerator(script: string, shouldTrack = true) {
