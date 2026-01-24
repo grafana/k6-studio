@@ -122,9 +122,9 @@ export function Recorder() {
 
       const har = proxyDataToHar(grouped, browserEvents)
       const prefix = getHostNameFromURL(startUrl) ?? 'Recording'
-      const fileName = await window.studio.har.saveFile(har, prefix)
+      const filePath = await window.studio.har.saveFile(har, prefix)
 
-      return fileName
+      return filePath
     } finally {
       setRecorderState('idle')
     }
@@ -186,9 +186,9 @@ export function Recorder() {
         return
       }
 
-      const fileName = await validateAndSaveHarFile()
+      const filePath = await validateAndSaveHarFile()
 
-      if (fileName === null) {
+      if (filePath === null) {
         return
       }
 
@@ -199,7 +199,7 @@ export function Recorder() {
 
       navigate(
         getRoutePath('recordingPreviewer', {
-          fileName: encodeURIComponent(fileName),
+          fileName: encodeURIComponent(filePath),
         }),
         {
           state: { discardable: true },

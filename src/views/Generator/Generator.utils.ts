@@ -6,7 +6,6 @@ import {
 } from '@/store/generator'
 import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(
@@ -54,6 +53,15 @@ export const loadGeneratorFile = async (filePath: string) => {
 }
 
 export const loadHarFile = async (fileName: string) => {
-  const har = await window.studio.har.openFile(fileName)
-  return harToProxyData(har)
+  const file = await window.studio.files.open(fileName, 'recording')
+
+  if (file === null) {
+    throw new Error('Failed to load HAR file.')
+  }
+
+  if (file.content.type !== 'recording') {
+    throw new Error('Invalid HAR file type.')
+  }
+
+  return file.content.requests
 }

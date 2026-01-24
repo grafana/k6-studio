@@ -7,7 +7,6 @@ import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
 import { getFileNameWithoutExtension } from '@/utils/file'
-import { harToProxyData } from '@/utils/harToProxyData'
 
 export function RecordingSelector({
   compact = false,
@@ -31,10 +30,22 @@ export function RecordingSelector({
 
   const handleOpen = async (filePath: string) => {
     try {
-      const har = await window.studio.har.openFile(filePath)
+      const requests = await window.studio.files
+        .open(filePath, 'recording')
+        .then((file) => {
+          if (file === null) {
+            throw new Error('No file returned')
+          }
 
-      const proxyData = harToProxyData(har)
-      setRecording(proxyData, filePath)
+          if (file.content.type !== 'recording') {
+            throw new Error(
+              `Expected recording file but got ${file.content.type}`
+            )
+          }
+          return file.content.requests
+        })
+
+      setRecording(requests, filePath)
       onChangeRecording?.()
     } catch (error) {
       showToast({

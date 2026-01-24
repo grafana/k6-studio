@@ -9,7 +9,6 @@ import { useSettings } from '@/hooks/useSettings'
 import { BrowserEvent } from '@/schemas/recording'
 import { ProxyData } from '@/types'
 import { getStudioFileFromPath } from '@/utils/file'
-import { harToProxyData } from '@/utils/harToProxyData'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 import { RequestLog } from '../Recorder/RequestLog'
@@ -39,23 +38,36 @@ export function RecordingPreviewer() {
     settings?.recorder.browserRecording ?? 'disabled'
 
   useEffect(() => {
-    ;(async () => {
-      setIsLoading(true)
-      setProxyData([])
-      const har = await window.studio.har.openFile(file.fileName)
-      setIsLoading(false)
+    setIsLoading(true)
 
-      invariant(har, 'Failed to open file')
+    window.studio.files
+      .open(file.filePath, 'recording')
+      .then((file) => {
+        if (file === null) {
+          throw new Error('Failed to load recording file.')
+        }
 
-      setProxyData(harToProxyData(har))
-      setBrowserEvents(har.log._browserEvents?.events ?? [])
-    })()
+        if (file.content.type !== 'recording') {
+          throw new Error('Invalid recording file type.')
+        }
+
+        setProxyData(file.content.requests)
+        setBrowserEvents(file.content.browserEvents)
+      })
+      .catch((error) => {
+        console.error(error)
+
+        navigate('/home')
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
 
     return () => {
       setProxyData([])
       setBrowserEvents([])
     }
-  }, [file.fileName, navigate])
+  }, [file.filePath, navigate])
 
   const groups = useProxyDataGroups(proxyData)
 

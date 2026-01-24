@@ -1,9 +1,17 @@
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
+import { BrowserEvent } from '@/schemas/recording'
+import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 
 export enum FilesHandler {
   Open = 'files:open',
   Save = 'files:save',
+}
+
+export interface RecordingContent {
+  type: 'recording'
+  requests: ProxyData[]
+  browserEvents: BrowserEvent[]
 }
 
 export interface HttpTestContent {
@@ -21,7 +29,11 @@ export interface ScriptContent {
   content: string
 }
 
-export type FileContent = HttpTestContent | BrowserTestContent | ScriptContent
+export type FileContent =
+  | RecordingContent
+  | HttpTestContent
+  | BrowserTestContent
+  | ScriptContent
 
 export interface UntitledFile {
   type: 'untitled'

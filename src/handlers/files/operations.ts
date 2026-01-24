@@ -5,20 +5,25 @@ import path from 'path'
 import {
   BROWSER_TESTS_PATH,
   GENERATORS_PATH,
+  RECORDINGS_PATH,
   SCRIPTS_PATH,
 } from '@/constants/workspace'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
+import { RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { GeneratorFileData } from '@/types/generator'
+import { harToProxyData } from '@/utils/harToProxyData'
 import { parseJsonAsSchema } from '@/utils/json'
+import { proxyDataToHar } from '@/utils/proxyDataToHar'
 
 import {
   BrowserTestContent,
   FileContent,
   HttpTestContent,
   OpenFile,
+  RecordingContent,
   ScriptContent,
 } from './types'
 
@@ -42,6 +47,12 @@ function trackGeneratorUpdated({ rules }: GeneratorFileData) {
 
 function trackSave(file: OpenFile) {
   switch (file.content.type) {
+    case 'recording':
+      trackEvent({
+        event: UsageEventName.RecordingCreated,
+      })
+      break
+
     case 'http-test':
       trackGeneratorUpdated(file.content.test)
       break
@@ -68,6 +79,9 @@ function trackSave(file: OpenFile) {
 
 function getBaseDirectoryForContentType(type: FileContent['type']): string {
   switch (type) {
+    case 'recording':
+      return RECORDINGS_PATH
+
     case 'http-test':
       return GENERATORS_PATH
 
@@ -96,6 +110,13 @@ function getFilePath({
 
 function serializeContent(content: FileContent): string {
   switch (content.type) {
+    case 'recording':
+      return JSON.stringify(
+        proxyDataToHar(content.requests, content.browserEvents),
+        null,
+        2
+      )
+
     case 'http-test':
       return JSON.stringify(content.test, null, 2)
 
@@ -137,6 +158,9 @@ function inferTypeFromFileExtension(filePath: string): FileContent['type'] {
   const ext = path.extname(filePath).toLowerCase()
 
   switch (ext) {
+    case '.har':
+      return 'recording'
+
     case '.k6g':
       return 'http-test'
 
@@ -155,6 +179,20 @@ function inferTypeFromFileExtension(filePath: string): FileContent['type'] {
 interface ParseFileOptions {
   type: FileContent['type']
   data: string
+}
+
+function parseRecordingContent({ data }: ParseFileOptions): RecordingContent {
+  const result = parseJsonAsSchema(data, RecordingSchema)
+
+  if (!result.success) {
+    throw new Error('Failed to parse recording file content.')
+  }
+
+  return {
+    type: 'recording',
+    requests: harToProxyData(result.data),
+    browserEvents: result.data.log._browserEvents?.events ?? [],
+  }
 }
 
 function parseHttpTestContent({ data }: ParseFileOptions): HttpTestContent {
@@ -194,6 +232,9 @@ function parseScriptContent({ data }: ParseFileOptions): ScriptContent {
 
 function parseFileContent(options: ParseFileOptions): FileContent {
   switch (options.type) {
+    case 'recording':
+      return parseRecordingContent(options)
+
     case 'http-test':
       return parseHttpTestContent(options)
 

@@ -16,7 +16,7 @@ export function harToProxyData(har: Recording): ProxyData[] {
     const response = harEntryToResponse(entry)
 
     return {
-      id: self.crypto.randomUUID(),
+      id: crypto.randomUUID(),
       request,
       response,
       group: entry.pageref || DEFAULT_GROUP_NAME,
