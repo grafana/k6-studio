@@ -9,7 +9,17 @@ export interface GeneratorContent {
   generator: GeneratorFileData
 }
 
-export type FileContent = GeneratorContent
+export interface ScriptContent {
+  type: 'script'
+  content: string
+}
+
+export type FileContent = GeneratorContent | ScriptContent
+
+export interface UntitledFile {
+  type: 'untitled'
+  name: string
+}
 
 export interface FileOnDisk {
   type: 'file-on-disk'
@@ -17,9 +27,9 @@ export interface FileOnDisk {
   path: string
 }
 
-export type FileLocation = FileOnDisk
+export type FileLocation = FileOnDisk | UntitledFile
 
-export interface OpenFile {
-  location: FileLocation
-  content: GeneratorContent
+export interface OpenFile<Location extends FileLocation = FileLocation> {
+  location: Location
+  content: FileContent
 }

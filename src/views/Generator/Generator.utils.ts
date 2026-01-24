@@ -27,7 +27,16 @@ export async function exportScript(fileName: string) {
 
   const script = await generateScriptPreview(generator, filteredRequests)
 
-  await window.studio.script.saveScript(script, fileName)
+  await window.studio.files.save({
+    location: {
+      type: 'untitled',
+      name: fileName,
+    },
+    content: {
+      type: 'script',
+      content: script,
+    },
+  })
 }
 
 export const loadGeneratorFile = async (filePath: string) => {

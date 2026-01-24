@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { Button, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
 import { ChevronDownIcon, EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
 import { convertToTest } from '@/codegen/browser/test'
@@ -29,7 +29,6 @@ export function RecordingPreviewControls({
   const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
-  const { fileName } = useParams()
 
   // TODO: https://github.com/grafana/k6-studio/issues/277
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -38,7 +37,11 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
-  const handleCreateGenerator = () => createTestGenerator(fileName)
+  const handleCreateGenerator = () => {
+    createTestGenerator(file.fileName).catch((err) => {
+      console.error(err)
+    })
+  }
 
   const handleDelete = useDeleteFile({
     file,
@@ -61,11 +64,22 @@ export function RecordingPreviewControls({
     })
 
     emitScript(test)
-      .then((script) => window.studio.script.saveScript(script, fileName))
-      .then(() => {
+      .then((script) =>
+        window.studio.files.save({
+          location: {
+            type: 'untitled',
+            name: fileName,
+          },
+          content: {
+            type: 'script',
+            content: script,
+          },
+        })
+      )
+      .then((file) => {
         navigate(
           getRoutePath('validator', {
-            fileName: encodeURIComponent(fileName),
+            fileName: encodeURIComponent(file.location.path),
           })
         )
       })

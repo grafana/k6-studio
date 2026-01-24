@@ -18,7 +18,7 @@ interface ValidatorProps {
 }
 
 function Content({ file }: ValidatorProps) {
-  const { data, isLoading } = useScript(file.filePath)
+  const { data, isLoading } = useScript(file)
 
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 

@@ -9,6 +9,7 @@ import { useBrowserActions } from '@/hooks/useBrowserActions'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
+import { StudioFile } from '@/types'
 import { getStudioFileFromPath } from '@/utils/file'
 
 import { DebuggerState } from './types'
@@ -21,11 +22,11 @@ export function useScriptPath() {
   return getStudioFileFromPath('script', fileName)
 }
 
-export function useScript(fileName: string) {
+export function useScript(file: StudioFile) {
   return useQuery({
-    queryKey: ['script', fileName],
+    queryKey: ['script', file.filePath],
     queryFn: async () => {
-      return window.studio.script.openScript(fileName)
+      return window.studio.script.openScript(file.filePath)
     },
     refetchOnMount: false,
     refetchOnReconnect: false,

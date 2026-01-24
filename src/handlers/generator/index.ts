@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 import { readFile } from 'fs/promises'
+import path from 'path'
 
 import { K6_GENERATOR_FILE_EXTENSION } from '@/constants/files'
 import { GENERATORS_PATH } from '@/constants/workspace'
@@ -27,7 +28,7 @@ export function initialize() {
       event: UsageEventName.GeneratorCreated,
     })
 
-    return fileName
+    return path.join(GENERATORS_PATH, fileName)
   })
 
   ipcMain.handle(

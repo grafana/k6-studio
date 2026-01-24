@@ -62,7 +62,16 @@ export function BrowserTestEditor() {
   }
 
   const handleExportScript = (scriptName: string) => {
-    void window.studio.script.saveScript(preview, scriptName)
+    void window.studio.files.save({
+      location: {
+        type: 'untitled',
+        name: scriptName,
+      },
+      content: {
+        type: 'script',
+        content: preview,
+      },
+    })
   }
 
   // TODO: currently re-saves the opened file without changes.

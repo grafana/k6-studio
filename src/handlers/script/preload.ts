@@ -26,14 +26,6 @@ export function runScriptFromGenerator(script: string, shouldTrack = true) {
   ) as Promise<void>
 }
 
-export function saveScript(script: string, fileName: string) {
-  return ipcRenderer.invoke(
-    ScriptHandler.Save,
-    script,
-    fileName
-  ) as Promise<void>
-}
-
 export function runScript(scriptPath: string) {
   return ipcRenderer.invoke(ScriptHandler.Run, scriptPath) as Promise<void>
 }

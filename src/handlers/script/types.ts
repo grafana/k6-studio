@@ -5,7 +5,6 @@ export enum ScriptHandler {
   Open = 'script:open',
   Run = 'script:run',
   Stop = 'script:stop',
-  Save = 'script:save',
   Log = 'script:log',
   Stopped = 'script:stopped',
   Finished = 'script:finished',
