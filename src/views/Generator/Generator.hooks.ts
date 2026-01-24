@@ -47,8 +47,8 @@ export function useUpdateValueInGeneratorFile(file: StudioFile) {
           path: file.filePath,
         },
         content: {
-          type: 'generator',
-          generator: { ...generator, [key]: value },
+          type: 'http-test',
+          test: { ...generator, [key]: value },
         },
       })
     },
@@ -66,7 +66,7 @@ export function useSaveGeneratorFile(file: StudioFile) {
           name: file.fileName,
           path: file.filePath,
         },
-        content: { type: 'generator', generator },
+        content: { type: 'http-test', test: generator },
       })
 
       await queryClient.invalidateQueries({

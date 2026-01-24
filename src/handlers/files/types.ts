@@ -1,12 +1,18 @@
+import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { GeneratorFileData } from '@/types/generator'
 
 export enum FilesHandler {
   Save = 'files:save',
 }
 
-export interface GeneratorContent {
-  type: 'generator'
-  generator: GeneratorFileData
+export interface HttpTestContent {
+  type: 'http-test'
+  test: GeneratorFileData
+}
+
+export interface BrowserTestContent {
+  type: 'browser-test'
+  test: BrowserTestFile
 }
 
 export interface ScriptContent {
@@ -14,7 +20,7 @@ export interface ScriptContent {
   content: string
 }
 
-export type FileContent = GeneratorContent | ScriptContent
+export type FileContent = HttpTestContent | BrowserTestContent | ScriptContent
 
 export interface UntitledFile {
   type: 'untitled'

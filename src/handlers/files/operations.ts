@@ -1,7 +1,11 @@
 import { writeFile } from 'fs/promises'
 import path from 'path'
 
-import { GENERATORS_PATH, SCRIPTS_PATH } from '@/constants/workspace'
+import {
+  BROWSER_TESTS_PATH,
+  GENERATORS_PATH,
+  SCRIPTS_PATH,
+} from '@/constants/workspace'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { GeneratorFileData } from '@/types/generator'
@@ -28,8 +32,14 @@ function trackGeneratorUpdated({ rules }: GeneratorFileData) {
 
 function trackSave(file: OpenFile) {
   switch (file.content.type) {
-    case 'generator':
-      trackGeneratorUpdated(file.content.generator)
+    case 'http-test':
+      trackGeneratorUpdated(file.content.test)
+      break
+
+    case 'browser-test':
+      trackEvent({
+        event: UsageEventName.BrowserTestUpdated,
+      })
       break
 
     case 'script':
@@ -56,8 +66,11 @@ function getFilePath({
 
   // TODO: Use a save dialog instead of auto-generating the path
   switch (content.type) {
-    case 'generator':
+    case 'http-test':
       return Promise.resolve(path.join(GENERATORS_PATH, location.name))
+
+    case 'browser-test':
+      return Promise.resolve(path.join(BROWSER_TESTS_PATH, location.name))
 
     case 'script':
       return Promise.resolve(path.join(SCRIPTS_PATH, location.name))
@@ -69,8 +82,11 @@ function getFilePath({
 
 function serializeContent(content: FileContent): string {
   switch (content.type) {
-    case 'generator':
-      return JSON.stringify(content.generator, null, 2)
+    case 'http-test':
+      return JSON.stringify(content.test, null, 2)
+
+    case 'browser-test':
+      return JSON.stringify(content.test, null, 2)
 
     case 'script':
       return content.content

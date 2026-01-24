@@ -8,6 +8,10 @@ import { FilesHandler, OpenFile } from './types'
 
 export function initialize() {
   ipcMain.handle(FilesHandler.Save, async (event, file: OpenFile) => {
+    console.log(
+      `${FilesHandler.Save} event received for file of type ${file.content.type}`
+    )
+
     invariant(
       !INVALID_FILENAME_CHARS.test(file.location.name),
       'Invalid file name'

@@ -80,7 +80,18 @@ export function BrowserTestEditor() {
     if (!data) {
       return
     }
-    void window.studio.browserTest.save(file.fileName, data)
+
+    void window.studio.files.save({
+      location: {
+        type: 'file-on-disk',
+        name: file.fileName,
+        path: file.filePath,
+      },
+      content: {
+        type: 'browser-test',
+        test: data,
+      },
+    })
   }
 
   const handleTabClick = () => {
