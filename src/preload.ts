@@ -8,6 +8,7 @@ import * as browserRemote from './handlers/browserRemote/preload'
 import * as browserTest from './handlers/browserTest/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as data from './handlers/dataFiles/preload'
+import * as files from './handlers/files/preload'
 import * as generator from './handlers/generator/preload'
 import * as har from './handlers/har/preload'
 import * as log from './handlers/log/preload'
@@ -33,6 +34,7 @@ const studio = {
   browserRemote,
   cloud,
   ai,
+  files,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

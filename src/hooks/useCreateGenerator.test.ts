@@ -39,9 +39,11 @@ describe('useCreateGenerator', () => {
 
     vi.mocked(getRoutePath).mockReturnValue(routePath)
     vi.stubGlobal('studio', {
+      files: {
+        save: vi.fn(),
+      },
       generator: {
         createGenerator: vi.fn().mockResolvedValue(fileName),
-        saveGenerator: vi.fn(),
         loadGenerator: vi.fn(),
       },
     })

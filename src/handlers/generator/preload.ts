@@ -11,14 +11,6 @@ export function createGenerator(recordingPath: string) {
   ) as Promise<string>
 }
 
-export function saveGenerator(generator: GeneratorFileData, fileName: string) {
-  return ipcRenderer.invoke(
-    GeneratorHandler.Save,
-    generator,
-    fileName
-  ) as Promise<void>
-}
-
 export function loadGenerator(fileName: string) {
   return ipcRenderer.invoke(
     GeneratorHandler.Open,

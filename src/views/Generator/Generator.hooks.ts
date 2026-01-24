@@ -6,6 +6,7 @@ import invariant from 'tiny-invariant'
 
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
+import { StudioFile } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { getStudioFileFromPath } from '@/utils/file'
 import { queryClient } from '@/utils/query'
@@ -27,32 +28,50 @@ export function useLoadHarFile(fileName?: string) {
   })
 }
 
-export function useLoadGeneratorFile(fileName: string) {
+export function useLoadGeneratorFile(file: StudioFile) {
   return useQuery({
-    queryKey: ['generator', fileName],
-    queryFn: () => loadGeneratorFile(fileName),
+    queryKey: ['generator', file.filePath],
+    queryFn: () => loadGeneratorFile(file.filePath),
   })
 }
 
-export function useUpdateValueInGeneratorFile(fileName: string) {
+export function useUpdateValueInGeneratorFile(file: StudioFile) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
-      const generator = await loadGeneratorFile(fileName)
-      await window.studio.generator.saveGenerator(
-        { ...generator, [key]: value },
-        fileName
-      )
+      const generator = await loadGeneratorFile(file.filePath)
+
+      await window.studio.files.save({
+        location: {
+          type: 'file-on-disk',
+          name: file.fileName,
+          path: file.filePath,
+        },
+        content: {
+          type: 'generator',
+          generator: { ...generator, [key]: value },
+        },
+      })
     },
   })
 }
 
-export function useSaveGeneratorFile(fileName: string) {
+export function useSaveGeneratorFile(file: StudioFile) {
   const showToast = useToast()
 
   return useMutation({
     mutationFn: async (generator: GeneratorFileData) => {
-      await window.studio.generator.saveGenerator(generator, fileName)
-      await queryClient.invalidateQueries({ queryKey: ['generator', fileName] })
+      await window.studio.files.save({
+        location: {
+          type: 'file-on-disk',
+          name: file.fileName,
+          path: file.filePath,
+        },
+        content: { type: 'generator', generator },
+      })
+
+      await queryClient.invalidateQueries({
+        queryKey: ['generator', file.filePath],
+      })
     },
 
     onSuccess: () => {
@@ -75,9 +94,9 @@ export function useSaveGeneratorFile(fileName: string) {
   })
 }
 
-export function useIsGeneratorDirty(fileName: string) {
+export function useIsGeneratorDirty(file: StudioFile) {
   const generatorState = useGeneratorStore(selectGeneratorData)
-  const { data } = useLoadGeneratorFile(fileName)
+  const { data } = useLoadGeneratorFile(file)
 
   // Comparing data without `scriptName`, which is saved to disk in the background
   // and should not be considered as a change
@@ -91,11 +110,11 @@ export function useIsGeneratorDirty(fileName: string) {
   )
 }
 
-export function useScriptExport(generatorFileName: string) {
+export function useScriptExport(file: StudioFile) {
   const showToast = useToast()
   const setScriptName = useGeneratorStore((store) => store.setScriptName)
   const { mutateAsync: updateGeneratorFile } =
-    useUpdateValueInGeneratorFile(generatorFileName)
+    useUpdateValueInGeneratorFile(file)
 
   return useCallback(
     async (scriptName: string) => {

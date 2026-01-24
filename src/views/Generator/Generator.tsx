@@ -37,7 +37,7 @@ export function Generator() {
     data: generatorFileData,
     isLoading: isLoadingGenerator,
     error: generatorError,
-  } = useLoadGeneratorFile(file.fileName)
+  } = useLoadGeneratorFile(file)
 
   const {
     data: recording,
@@ -45,11 +45,11 @@ export function Generator() {
     error: harError,
   } = useLoadHarFile(generatorFileData?.recordingPath)
 
-  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file.fileName)
+  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file)
 
   const isLoading = isLoadingGenerator || isLoadingRecording
 
-  const isDirty = useIsGeneratorDirty(file.fileName)
+  const isDirty = useIsGeneratorDirty(file)
   const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
@@ -158,7 +158,7 @@ export function Generator() {
           <Allotment vertical>
             <Allotment.Pane minSize={200}>
               <GeneratorTabs
-                fileName={file.fileName}
+                file={file}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
               />

@@ -10,6 +10,7 @@ import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
 import { useGeneratorStore } from '@/store/generator'
+import { StudioFile } from '@/types'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
 import { useScriptExport } from '../Generator.hooks'
@@ -18,10 +19,10 @@ import { ValidatorDialog } from '../ValidatorDialog'
 import { ScriptPreviewError } from './ScriptPreviewError'
 
 interface ScriptPreviewProps {
-  fileName: string
+  file: StudioFile
 }
 
-export function ScriptPreview({ fileName }: ScriptPreviewProps) {
+export function ScriptPreview({ file }: ScriptPreviewProps) {
   const scriptName = useGeneratorStore((store) => store.scriptName)
 
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
@@ -33,7 +34,7 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
 
   const isScriptExportable = !error && !!preview
 
-  const handleExportScript = useScriptExport(fileName)
+  const handleExportScript = useScriptExport(file)
   const handleCopy = useTrackScriptCopy(preview, 'generator')
 
   return (
@@ -86,7 +87,7 @@ export function ScriptPreview({ fileName }: ScriptPreviewProps) {
         <>
           <RunInCloudDialog
             open={isRunInCloudDialogOpen}
-            script={{ type: 'raw', name: fileName, content: preview }}
+            script={{ type: 'raw', name: file.fileName, content: preview }}
             onOpenChange={setIsRunInCloudDialogOpen}
           />
           <ValidatorDialog

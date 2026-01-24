@@ -37,7 +37,7 @@ export function GeneratorControls({
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
 
-  const handleExportScript = useScriptExport(file.fileName)
+  const handleExportScript = useScriptExport(file)
 
   const handleDelete = useDeleteFile({
     file,
