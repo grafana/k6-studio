@@ -11,7 +11,7 @@ function orderByFileName(files: Map<string, StudioFile>) {
 }
 
 function toFileMap(files: StudioFile[]) {
-  return new Map(files.map((file) => [file.fileName, file]))
+  return new Map(files.map((file) => [file.filePath, file]))
 }
 
 function useFolderContent() {

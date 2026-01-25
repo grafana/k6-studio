@@ -22,7 +22,7 @@ export function RecordingSelector({
   const showToast = useToast()
 
   const selectedRecording = recordings.find(
-    (recording) => recording.fileName === recordingPath
+    (recording) => recording.filePath === recordingPath
   )
 
   const isRecordingMissing =
@@ -99,7 +99,7 @@ export function RecordingSelector({
                 `}
               />
             )}
-            {getFileNameWithoutExtension(recordingPath)}
+            {selectedRecording?.displayName ?? recordingPath}
           </Flex>
         </Select.Trigger>
         <Select.Content position="popper">
@@ -109,7 +109,7 @@ export function RecordingSelector({
             </Select.Item>
           )}
           {recordings.map((recording) => (
-            <Select.Item value={recording.fileName} key={recording.fileName}>
+            <Select.Item value={recording.filePath} key={recording.filePath}>
               {recording.displayName}
             </Select.Item>
           ))}

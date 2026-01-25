@@ -37,19 +37,19 @@ export const useStudioUIStore = create<StudioUIStore>()(
       set((state) => {
         switch (file.type) {
           case 'recording':
-            state.recordings.set(file.fileName, file)
+            state.recordings.set(file.filePath, file)
             break
           case 'generator':
-            state.generators.set(file.fileName, file)
+            state.generators.set(file.filePath, file)
             break
           case 'browser-test':
-            state.browserTests.set(file.fileName, file)
+            state.browserTests.set(file.filePath, file)
             break
           case 'script':
-            state.scripts.set(file.fileName, file)
+            state.scripts.set(file.filePath, file)
             break
           case 'data-file':
-            state.dataFiles.set(file.fileName, file)
+            state.dataFiles.set(file.filePath, file)
             break
           default:
             exhaustive(file.type)
@@ -59,19 +59,19 @@ export const useStudioUIStore = create<StudioUIStore>()(
       set((state) => {
         switch (file.type) {
           case 'recording':
-            state.recordings.delete(file.fileName)
+            state.recordings.delete(file.filePath)
             break
           case 'generator':
-            state.generators.delete(file.fileName)
+            state.generators.delete(file.filePath)
             break
           case 'browser-test':
-            state.browserTests.delete(file.fileName)
+            state.browserTests.delete(file.filePath)
             break
           case 'script':
-            state.scripts.delete(file.fileName)
+            state.scripts.delete(file.filePath)
             break
           case 'data-file':
-            state.dataFiles.delete(file.fileName)
+            state.dataFiles.delete(file.filePath)
             break
           default:
             exhaustive(file.type)

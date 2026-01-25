@@ -1,13 +1,11 @@
 import { z } from 'zod'
 
-import * as v3 from '../v3'
-
 import { TestRuleSchema } from './rules'
 import { TestDataSchema } from './testData'
 import { TestOptionsSchema } from './testOptions'
 
 export const GeneratorFileDataSchema = z.object({
-  version: z.literal('2.0'),
+  version: z.literal('3.0'),
   recordingPath: z.string(),
   options: TestOptionsSchema,
   testData: TestDataSchema,
@@ -19,15 +17,7 @@ export const GeneratorFileDataSchema = z.object({
 
 export type GeneratorSchema = z.infer<typeof GeneratorFileDataSchema>
 
-export function migrate(
-  generator: z.infer<typeof GeneratorFileDataSchema>
-): v3.GeneratorSchema {
-  return {
-    ...generator,
-    version: '3.0',
-    // In v3 recordings are stored relative to the generator file. Since all v2
-    // recordings are in the Recordings/ folder, we need to update the path accordingly.
-    recordingPath:
-      generator.recordingPath && `../Recordings/${generator.recordingPath}`,
-  }
+// TODO: Migrate generator to the next version
+export function migrate(generator: z.infer<typeof GeneratorFileDataSchema>) {
+  return { ...generator }
 }
