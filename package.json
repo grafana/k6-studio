@@ -142,6 +142,7 @@
     "node-forge": "^1.3.2",
     "openid-client": "^6.1.7",
     "papaparse": "^5.5.1",
+    "pathe": "^2.0.3",
     "plist": "^3.1.0",
     "prettier": "^3.3.2",
     "react": "^18.3.1",

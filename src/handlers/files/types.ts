@@ -26,7 +26,7 @@ export interface BrowserTestContent {
 
 export interface ScriptContent {
   type: 'script'
-  content: string
+  script: string
 }
 
 export type FileContent =

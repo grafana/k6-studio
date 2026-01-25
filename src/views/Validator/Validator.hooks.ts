@@ -40,7 +40,7 @@ export function useScript(file: StudioFile) {
 
       return {
         ...analysis,
-        script: result.content.content,
+        script: result.content.script,
       }
     },
     refetchOnMount: false,

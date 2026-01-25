@@ -33,7 +33,7 @@ export async function exportScript(fileName: string) {
     },
     content: {
       type: 'script',
-      content: script,
+      script: script,
     },
   })
 }

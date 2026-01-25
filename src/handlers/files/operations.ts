@@ -1,6 +1,6 @@
 import { BaseWindow, dialog } from 'electron'
 import { readFile, writeFile } from 'fs/promises'
-import path from 'path'
+import * as path from 'pathe'
 
 import {
   BROWSER_TESTS_PATH,
@@ -11,13 +11,12 @@ import {
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
-import { trackEvent } from '@/services/usageTracking'
-import { UsageEventName } from '@/services/usageTracking/types'
 import { GeneratorFileData } from '@/types/generator'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { parseJsonAsSchema } from '@/utils/json'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 
+import { trackFileSaved } from './tracking'
 import {
   BrowserTestContent,
   FileContent,
@@ -28,54 +27,18 @@ import {
   ScriptContent,
 } from './types'
 
-function trackGeneratorUpdated({ rules }: GeneratorFileData) {
-  trackEvent({
-    event: UsageEventName.GeneratorUpdated,
-    payload: {
-      rules: {
-        correlation: rules.filter((rule) => rule.type === 'correlation').length,
-        parameterization: rules.filter(
-          (rule) => rule.type === 'parameterization'
-        ).length,
-        verification: rules.filter((rule) => rule.type === 'verification')
-          .length,
-        customCode: rules.filter((rule) => rule.type === 'customCode').length,
-        disabled: rules.filter((rule) => !rule.enabled).length,
-      },
-    },
-  })
+function makeRelativeToFile(
+  baseFilePath: string,
+  targetFilePath: string
+): string {
+  return path.relative(path.dirname(baseFilePath), targetFilePath)
 }
 
-function trackSave(file: OpenFile) {
-  switch (file.content.type) {
-    case 'recording':
-      trackEvent({
-        event: UsageEventName.RecordingCreated,
-      })
-      break
-
-    case 'http-test':
-      trackGeneratorUpdated(file.content.test)
-      break
-
-    case 'browser-test':
-      trackEvent({
-        event: UsageEventName.BrowserTestUpdated,
-      })
-      break
-
-    case 'script':
-      trackEvent({
-        event: UsageEventName.ScriptExported,
-      })
-      break
-
-    default:
-      file.content satisfies never
-      break
-  }
-
-  return file
+function makeAbsoluteFromFile(
+  baseFilePath: string,
+  relativePath: string
+): string {
+  return path.resolve(path.dirname(baseFilePath), relativePath)
 }
 
 function getBaseDirectoryForContentType(type: FileContent['type']): string {
@@ -97,62 +60,82 @@ function getBaseDirectoryForContentType(type: FileContent['type']): string {
   }
 }
 
-function getFilePath({
+function getFileLocation({
   location,
   content,
-}: OpenFile): Promise<string | undefined> {
+}: OpenFile): Promise<FileOnDisk | undefined> {
   if (location.type === 'file-on-disk') {
-    return Promise.resolve(location.path)
+    return Promise.resolve(location)
   }
 
   // TODO: Use a save dialog instead of auto-generating the path
-  return Promise.resolve(getBaseDirectoryForContentType(content.type))
+  const path = getBaseDirectoryForContentType(content.type)
+
+  const fileLocation: FileOnDisk = {
+    type: 'file-on-disk',
+    name: location.name,
+    path: path,
+  }
+
+  return Promise.resolve(fileLocation)
 }
 
-function serializeContent(content: FileContent): string {
-  switch (content.type) {
+function serializeHttpTest(
+  location: FileOnDisk,
+  { test }: HttpTestContent
+): string {
+  const normalizedGenerator: GeneratorFileData = {
+    ...test,
+    recordingPath:
+      test.recordingPath &&
+      makeRelativeToFile(location.path, test.recordingPath),
+  }
+
+  return JSON.stringify(normalizedGenerator, null, 2)
+}
+
+function serializeContent(file: OpenFile<FileOnDisk>): string {
+  switch (file.content.type) {
     case 'recording':
       return JSON.stringify(
-        proxyDataToHar(content.requests, content.browserEvents),
+        proxyDataToHar(file.content.requests, file.content.browserEvents),
         null,
         2
       )
 
     case 'http-test':
-      return JSON.stringify(content.test, null, 2)
+      return serializeHttpTest(file.location, file.content)
 
     case 'browser-test':
-      return JSON.stringify(content.test, null, 2)
+      return JSON.stringify(file.content.test, null, 2)
 
     case 'script':
-      return content.content
+      return file.content.script
 
     default:
-      return content satisfies never
+      return file.content satisfies never
   }
 }
 
 export async function saveFile(file: OpenFile): Promise<OpenFile> {
-  const filePath = await getFilePath(file)
+  const location = await getFileLocation(file)
 
-  if (filePath === undefined) {
+  if (location === undefined) {
     return file
   }
 
-  const serializedContent = serializeContent(file.content)
-
-  await writeFile(filePath, serializedContent, 'utf-8')
-
-  trackSave(file)
-
-  return {
+  const newFile = {
     ...file,
-    location: {
-      type: 'file-on-disk',
-      name: path.basename(filePath),
-      path: filePath,
-    },
+    location,
   }
+
+  const serializedContent = serializeContent(newFile)
+
+  await writeFile(location.path, serializedContent, 'utf-8')
+
+  trackFileSaved(newFile)
+
+  return newFile
 }
 
 function inferTypeFromFileExtension(filePath: string): FileContent['type'] {
@@ -179,6 +162,7 @@ function inferTypeFromFileExtension(filePath: string): FileContent['type'] {
 
 interface ParseFileOptions {
   type: FileContent['type']
+  path: string
   data: string
 }
 
@@ -196,16 +180,26 @@ function parseRecordingContent({ data }: ParseFileOptions): RecordingContent {
   }
 }
 
-function parseHttpTestContent({ data }: ParseFileOptions): HttpTestContent {
-  const result = parseJsonAsSchema(data, GeneratorFileDataSchema)
+function parseHttpTestContent({
+  path,
+  data,
+}: ParseFileOptions): HttpTestContent {
+  const { success, data: test } = parseJsonAsSchema(
+    data,
+    GeneratorFileDataSchema
+  )
 
-  if (!result.success) {
+  if (!success) {
     throw new Error('Failed to parse HTTP test file content.')
   }
 
   return {
     type: 'http-test',
-    test: result.data,
+    test: {
+      ...test,
+      recordingPath:
+        test.recordingPath && makeAbsoluteFromFile(path, test.recordingPath),
+    },
   }
 }
 
@@ -227,7 +221,7 @@ function parseBrowserTestContent({
 function parseScriptContent({ data }: ParseFileOptions): ScriptContent {
   return {
     type: 'script',
-    content: data,
+    script: data,
   }
 }
 
@@ -281,7 +275,7 @@ export async function openFile(
   const absolute = path.isAbsolute(filePath)
 
   if (!absolute) {
-    console.log('Found non-relative path in open:', filePath)
+    console.warn('Found non-relative path in open:', filePath)
   }
 
   const resolvedPath = !absolute
@@ -289,7 +283,12 @@ export async function openFile(
     : filePath
 
   const data = await readFile(resolvedPath, 'utf-8')
-  const content = parseFileContent({ type, data })
+
+  const content = parseFileContent({
+    type,
+    path: resolvedPath,
+    data,
+  })
 
   return {
     location: {

@@ -38,7 +38,7 @@ export function RecordingPreviewControls({
   const isDiscardable = Boolean(state?.discardable)
 
   const handleCreateGenerator = () => {
-    createTestGenerator(file.fileName).catch((err) => {
+    createTestGenerator(file.filePath).catch((err) => {
       console.error(err)
     })
   }
@@ -72,7 +72,7 @@ export function RecordingPreviewControls({
           },
           content: {
             type: 'script',
-            content: script,
+            script: script,
           },
         })
       )

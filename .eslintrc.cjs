@@ -42,6 +42,23 @@ module.exports = {
     'react/no-unknown-property': ['error', { ignore: ['css'] }],
     'no-param-reassign': 'error',
     'unused-imports/no-unused-imports': 'warn',
+    'no-restricted-imports': [
+      'warn',
+      {
+        paths: [
+          {
+            name: 'path',
+            message:
+              "Please use 'pathe' package instead of Node.js 'path' module for better cross-platform compatibility.",
+          },
+          {
+            name: 'node:path',
+            message:
+              "Please use 'pathe' package instead of Node.js 'path' module for better cross-platform compatibility.",
+          },
+        ],
+      },
+    ],
     '@typescript-eslint/no-unused-vars': [
       'error',
       {

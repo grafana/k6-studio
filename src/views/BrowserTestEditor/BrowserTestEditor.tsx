@@ -69,7 +69,7 @@ export function BrowserTestEditor() {
       },
       content: {
         type: 'script',
-        content: preview,
+        script: preview,
       },
     })
   }
