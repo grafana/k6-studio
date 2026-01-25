@@ -33,7 +33,7 @@ export function GeneratorControls({
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const { preview, hasError } = useScriptPreview()
+  const { preview, hasError } = useScriptPreview(file)
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
 

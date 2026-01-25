@@ -1,4 +1,5 @@
 import { useChat } from '@ai-sdk/react'
+import * as path from 'pathe'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { TokenUsage } from '@/handlers/ai/types'
@@ -9,6 +10,7 @@ import {
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
+import { StudioFile } from '@/types'
 import { AiCorrelationRule } from '@/types/autoCorrelation'
 import { CorrelationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
@@ -30,8 +32,10 @@ import { sumTokenUsage } from './utils/sumTokenUsage'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
 export const useGenerateRules = ({
+  file,
   clearValidation,
 }: {
+  file: StudioFile
   clearValidation: () => void
 }) => {
   const [suggestedRules, setSuggestedRules] = useState<CorrelationRule[]>([])
@@ -161,6 +165,7 @@ export const useGenerateRules = ({
   async function runValidation() {
     clearValidation()
     const script = await generateScriptPreview(
+      path.dirname(file.filePath),
       {
         ...generator,
         rules: [...generator.rules, ...suggestedRulesRef.current],

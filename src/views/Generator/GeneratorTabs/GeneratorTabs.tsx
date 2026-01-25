@@ -31,7 +31,7 @@ export function GeneratorTabs({
 }: GeneratorTabsProps) {
   const [tab, setTab] = useState('requests')
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
-  const { hasError } = useScriptPreview()
+  const { hasError } = useScriptPreview(file)
 
   const hasRecording = useGeneratorStore(selectHasRecording)
 

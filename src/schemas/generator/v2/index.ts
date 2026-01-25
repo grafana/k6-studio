@@ -29,5 +29,14 @@ export function migrate(
     // recordings are in the Recordings/ folder, we need to update the path accordingly.
     recordingPath:
       generator.recordingPath && `../Recordings/${generator.recordingPath}`,
+    testData: {
+      ...generator.testData,
+      files: generator.testData.files.map((file) => {
+        return {
+          ...file,
+          name: `../Data/${file.name}`,
+        }
+      }),
+    },
   }
 }

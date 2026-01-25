@@ -1,7 +1,7 @@
 import { COPYFILE_EXCL } from 'constants'
 import { ipcMain, dialog } from 'electron'
 import { stat, copyFile, readFile } from 'fs/promises'
-import path from 'path'
+import * as path from 'pathe'
 import invariant from 'tiny-invariant'
 
 import { MAX_DATA_FILE_SIZE } from '@/constants/files'
@@ -53,9 +53,8 @@ export function initialize() {
 
   ipcMain.handle(
     DataFileHandler.LoadPreview,
-    async (_, fileName: string): Promise<DataFilePreview> => {
-      const fileType = fileName.split('.').pop()
-      const filePath = path.join(DATA_FILES_PATH, fileName)
+    async (_, filePath: string): Promise<DataFilePreview> => {
+      const fileType = path.extname(filePath).slice(1).toLowerCase()
 
       invariant(
         fileType === 'csv' || fileType === 'json',

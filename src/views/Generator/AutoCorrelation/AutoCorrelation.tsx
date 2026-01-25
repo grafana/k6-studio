@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useGeneratorStore } from '@/store/generator'
+import { StudioFile } from '@/types'
 
 import { ErrorMessage } from './ErrorMessage'
 import { IntroductionMessage } from './IntroductionMessage'
@@ -13,11 +14,13 @@ import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
 
 interface AutoCorrelationDialogProps {
+  file: StudioFile
   close: () => void
   onCorrelationStatusChange: (status: CorrelationStatus) => void
 }
 
 export function AutoCorrelation({
+  file,
   close,
   onCorrelationStatusChange,
 }: AutoCorrelationDialogProps) {
@@ -39,6 +42,7 @@ export function AutoCorrelation({
     stop,
     restart,
   } = useGenerateRules({
+    file,
     clearValidation: clearValidation,
   })
 

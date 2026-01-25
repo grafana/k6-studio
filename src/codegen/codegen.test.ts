@@ -76,6 +76,7 @@ describe('Code generation', () => {
 
       expect(
         generateScript({
+          targetDir: '/User/test/project/scripts',
           recording: [],
           generator: {
             version: '3.0',
@@ -207,7 +208,10 @@ describe('Code generation', () => {
 
   describe('generateDataFileDeclarations', () => {
     it('should generate file declarations', async () => {
-      const files = [{ name: 'users.csv' }, { name: 'products.json' }]
+      const files = [
+        { name: '/Users/Me/Documents/k6-studio/Data/users.csv' },
+        { name: '/Users/Me/Documents/k6-studio/Data/products.json' },
+      ]
 
       const expectedResult = await prettify(`
         const FILES = {
@@ -219,9 +223,14 @@ describe('Code generation', () => {
           }),
         };`)
 
-      expect(await prettify(generateDataFileDeclarations(files))).toBe(
-        expectedResult
-      )
+      expect(
+        await prettify(
+          generateDataFileDeclarations(
+            '/Users/Me/Documents/k6-studio/Generators/',
+            files
+          )
+        )
+      ).toBe(expectedResult)
     })
   })
 

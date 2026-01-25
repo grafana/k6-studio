@@ -24,7 +24,7 @@ export function useImportDataFile() {
         addFile(file)
       }
 
-      return file?.fileName
+      return file?.filePath
     } catch (error) {
       showToast({
         title: 'Failed to import data file',

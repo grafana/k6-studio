@@ -3,17 +3,20 @@ import { XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { UsageEventName } from '@/services/usageTracking/types'
+import { StudioFile } from '@/types'
 
 import { AutoCorrelation } from './AutoCorrelation'
 import { Status } from './Status'
 import { CorrelationStatus } from './types'
 
 interface AutoCorrelationDialogProps {
+  file: StudioFile
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function AutoCorrelationDialog({
+  file,
   open,
   onOpenChange,
 }: AutoCorrelationDialogProps) {
@@ -72,6 +75,7 @@ export function AutoCorrelationDialog({
             }}
           >
             <AutoCorrelation
+              file={file}
               close={() => onOpenChange(false)}
               onCorrelationStatusChange={setCorrelationStatus}
             />

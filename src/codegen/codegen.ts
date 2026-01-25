@@ -1,3 +1,5 @@
+import * as path from 'pathe'
+
 import { K6_EXPORTS, REQUIRED_IMPORTS } from '@/constants/imports'
 import { getCustomCodeSnippet } from '@/rules/parameterization'
 import { applyRules } from '@/rules/rules'
@@ -6,7 +8,6 @@ import { GeneratorFileData } from '@/types/generator'
 import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
 import { DataFile, Variable } from '@/types/testData'
 import { ThinkTime } from '@/types/testOptions'
-import { getFileNameWithoutExtension } from '@/utils/file'
 import { groupProxyData } from '@/utils/groups'
 import { getContentTypeWithCharsetHeader } from '@/utils/headers'
 import { exhaustive } from '@/utils/typescript'
@@ -20,11 +21,13 @@ import { generateImportStatement } from './imports'
 import { generateOptions } from './options'
 
 interface GenerateScriptParams {
+  targetDir: string
   recording: ProxyData[]
   generator: GeneratorFileData
 }
 
 export function generateScript({
+  targetDir,
   recording,
   generator,
 }: GenerateScriptParams): string {
@@ -36,7 +39,7 @@ export function generateScript({
     export const options = ${generateOptions(generator.options)}
 
     ${generateVariableDeclarations(generator.testData.variables)}
-    ${generateDataFileDeclarations(generator.testData.files)}
+    ${generateDataFileDeclarations(targetDir, generator.testData.files)}
     ${generateGetUniqueItemFunction(generator.testData.files)}
 
     export default function() {
@@ -78,24 +81,31 @@ export function generateVariableDeclarations(variables: Variable[]): string {
   return `const VARS = {\n${variableKeyValuePairs}\n};`
 }
 
-export function generateDataFileDeclarations(files: DataFile[]): string {
+export function generateDataFileDeclarations(
+  targetDir: string,
+  files: DataFile[]
+): string {
   if (files.length === 0) {
     return ''
   }
 
   const fileKeyValuePairs = files
     .map(({ name }) => {
-      const displayName = getFileNameWithoutExtension(name)
-      const isCSV = name.toLowerCase().endsWith('csv')
+      const parsedPath = path.parse(name)
+
+      const displayName = parsedPath.name
+      const isCSV = parsedPath.ext.toLowerCase() === '.csv'
+
+      const relativePath = path.relative(targetDir, name)
 
       if (isCSV) {
         return `
-        "${displayName}": await csv.parse(await fs.open('../Data/${name}'), { asObjects: true })`
+        "${displayName}": await csv.parse(await fs.open('${relativePath}'), { asObjects: true })`
       }
 
       return `
         "${displayName}": new SharedArray("${displayName}", () => {
-          const data = JSON.parse(open('../Data/${name}'));
+          const data = JSON.parse(open('${relativePath}'));
           return Array.isArray(data) ? data : [data];
         })`
     })

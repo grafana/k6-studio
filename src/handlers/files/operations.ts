@@ -89,6 +89,15 @@ function serializeHttpTest(
     recordingPath:
       test.recordingPath &&
       makeRelativeToFile(location.path, test.recordingPath),
+    testData: {
+      ...test.testData,
+      files: test.testData.files.map((file) => {
+        return {
+          ...file,
+          name: makeRelativeToFile(location.path, file.name),
+        }
+      }),
+    },
   }
 
   return JSON.stringify(normalizedGenerator, null, 2)
@@ -199,6 +208,15 @@ function parseHttpTestContent({
       ...test,
       recordingPath:
         test.recordingPath && makeAbsoluteFromFile(path, test.recordingPath),
+      testData: {
+        ...test.testData,
+        files: test.testData.files.map((file) => {
+          return {
+            ...file,
+            name: makeAbsoluteFromFile(path, file.name),
+          }
+        }),
+      },
     },
   }
 }

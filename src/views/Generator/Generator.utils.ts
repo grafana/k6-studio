@@ -1,3 +1,5 @@
+import * as path from 'pathe'
+
 import { generateScript } from '@/codegen'
 import {
   selectFilteredRequests,
@@ -9,10 +11,12 @@ import { GeneratorFileData } from '@/types/generator'
 import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(
+  targetDir: string,
   generator: GeneratorFileData,
   recording: ProxyData[]
 ) {
   const script = generateScript({
+    targetDir,
     generator,
     recording,
   })
@@ -24,7 +28,11 @@ export async function exportScript(fileName: string) {
   const generator = selectGeneratorData(useGeneratorStore.getState())
   const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
-  const script = await generateScriptPreview(generator, filteredRequests)
+  const script = await generateScriptPreview(
+    path.dirname(fileName),
+    generator,
+    filteredRequests
+  )
 
   await window.studio.files.save({
     location: {

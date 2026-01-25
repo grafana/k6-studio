@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
 import { Badge, Strong, Text, Tooltip } from '@radix-ui/themes'
 import { Link2Icon } from 'lucide-react'
+import * as path from 'pathe'
 import { useRef } from 'react'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
@@ -130,7 +131,7 @@ function ParameterizationValue({ rule }: { rule: ParameterizationRule }) {
       return (
         <>
           <Strong>{rule.value.propertyName}</Strong> from{' '}
-          <Strong>{rule.value.fileName}</Strong>
+          <Strong>{path.basename(rule.value.fileName)}</Strong>
         </>
       )
     case 'customCode':

@@ -21,7 +21,11 @@ export function DataFile() {
   invariant(fileName, 'fileName is required')
 
   const file = getStudioFileFromPath('data-file', fileName)
-  const { data: preview, isLoading, isError } = useDataFilePreview(fileName)
+  const {
+    data: preview,
+    isLoading,
+    isError,
+  } = useDataFilePreview(file.filePath)
 
   useEffect(() => {
     if (isError) {

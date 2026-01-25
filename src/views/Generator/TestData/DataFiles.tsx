@@ -14,6 +14,7 @@ import {
   Trash2Icon,
   TriangleAlertIcon,
 } from 'lucide-react'
+import * as path from 'pathe'
 
 import { PopoverTooltip } from '@/components/PopoverTooltip'
 import { Table } from '@/components/Table'
@@ -108,7 +109,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
               />
             </Tooltip>
           )}
-          {file.name}
+          {path.basename(file.name)}
         </Flex>
       </Table.Cell>
       <Table.Cell>Unique item per iteration</Table.Cell>
@@ -166,7 +167,7 @@ function AddDataFileDropdown() {
         {options.map((file) => (
           <DropdownMenu.Item
             key={file.fileName}
-            onClick={() => handleAdd(file.fileName)}
+            onClick={() => handleAdd(file.filePath)}
           >
             {file.fileName}
           </DropdownMenu.Item>

@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Code } from '@radix-ui/themes'
+import * as path from 'pathe'
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
@@ -17,6 +18,7 @@ export function FileSelect() {
 
   const fileName = watch('value.fileName')
   const propertyName = watch('value.propertyName')
+
   const files = useGeneratorStore((store) => store.files)
   const { data: preview, isLoading } = useDataFilePreview(fileName)
 
@@ -25,7 +27,7 @@ export function FileSelect() {
       value: file.name,
       label: (
         <Code size="2" truncate variant="ghost">
-          {file.name}
+          {path.basename(file.name)}
         </Code>
       ),
     }))

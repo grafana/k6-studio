@@ -164,7 +164,7 @@ export function Generator() {
               />
             </Allotment.Pane>
             <Allotment.Pane minSize={200}>
-              <TestRuleContainer />
+              <TestRuleContainer file={file} />
             </Allotment.Pane>
           </Allotment>
         </Allotment.Pane>

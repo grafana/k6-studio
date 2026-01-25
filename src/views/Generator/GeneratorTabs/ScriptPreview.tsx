@@ -29,7 +29,7 @@ export function ScriptPreview({ file }: ScriptPreviewProps) {
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const { preview, error } = useScriptPreview()
+  const { preview, error } = useScriptPreview(file)
   const proxyStatus = useProxyStatus()
 
   const isScriptExportable = !error && !!preview

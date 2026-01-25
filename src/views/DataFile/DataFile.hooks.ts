@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 
-export function useDataFilePreview(fileName: string) {
+export function useDataFilePreview(filePath: string) {
   return useQuery({
-    queryKey: ['data-file', fileName],
-    queryFn: () => window.studio.data.loadPreview(fileName),
-    enabled: !!fileName,
+    queryKey: ['data-file', filePath],
+    queryFn: () => window.studio.data.loadPreview(filePath),
+    enabled: !!filePath,
   })
 }

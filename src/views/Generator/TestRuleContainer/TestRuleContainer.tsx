@@ -8,6 +8,7 @@ import {
   selectSelectedRule,
   useGeneratorStore,
 } from '@/store/generator'
+import { StudioFile } from '@/types'
 
 import { AutoCorrelationDialog } from '../AutoCorrelation/AutoCorrelationDialog'
 import { NewRuleMenu } from '../NewRuleMenu'
@@ -17,7 +18,11 @@ import { RulesNotAppliedCallout } from './RulesNotAppliedCallout'
 import { SortableRuleList } from './SortableRuleList'
 import { StickyPanelHeader } from './StickyPanelHeader'
 
-export function TestRuleContainer() {
+interface TestRuleContainerProps {
+  file: StudioFile
+}
+
+export function TestRuleContainer({ file }: TestRuleContainerProps) {
   const rules = useGeneratorStore((store) => store.rules)
   const swapRules = useGeneratorStore((store) => store.swapRules)
   const selectedRule = useGeneratorStore(selectSelectedRule)
@@ -88,6 +93,7 @@ export function TestRuleContainer() {
       </ScrollArea>
 
       <AutoCorrelationDialog
+        file={file}
         open={isAutoCorrelationDialogOpen}
         onOpenChange={setIsAutoCorrelationDialogOpen}
       />

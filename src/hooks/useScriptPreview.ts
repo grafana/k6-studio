@@ -1,4 +1,5 @@
 import { debounce } from 'lodash-es'
+import * as path from 'pathe'
 import { useEffect, useState } from 'react'
 
 import {
@@ -7,9 +8,10 @@ import {
   useGeneratorStore,
   GeneratorStore,
 } from '@/store/generator'
+import { StudioFile } from '@/types'
 import { generateScriptPreview } from '@/views/Generator/Generator.utils'
 
-export function useScriptPreview() {
+export function useScriptPreview(file: StudioFile) {
   const [preview, setPreview] = useState('')
   const [error, setError] = useState<Error>()
 
@@ -21,7 +23,11 @@ export function useScriptPreview() {
         const generator = selectGeneratorData(state)
         const requests = selectFilteredRequests(state)
 
-        const script = await generateScriptPreview(generator, requests)
+        const script = await generateScriptPreview(
+          path.dirname(file.filePath),
+          generator,
+          requests
+        )
         setPreview(script)
       } catch (e) {
         console.error(e)
@@ -38,7 +44,7 @@ export function useScriptPreview() {
       updatePreview(state)
     )
     return unsubscribe
-  }, [])
+  }, [file.filePath])
 
   return { preview, error, hasError: !!error }
 }
