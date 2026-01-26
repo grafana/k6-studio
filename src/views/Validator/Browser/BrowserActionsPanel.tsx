@@ -31,7 +31,7 @@ export function BrowserActionsPanel({
         justify="between"
         pr="2"
         css={css`
-          border-bottom: 1px solid var(--gray-a5);
+          box-shadow: inset 0 -1px 0 0 var(--gray-a5);
         `}
       >
         <Flex align="center" gap="1">
