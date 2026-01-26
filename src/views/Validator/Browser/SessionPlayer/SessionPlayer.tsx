@@ -10,6 +10,25 @@ import { AddressBar } from './AddressBar'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
 import { usePlayer } from './SessionPlayer.hooks'
 import { Viewport } from './Viewport'
+import { Page } from './types'
+
+type PageState =
+  /** We're streaming, but haven't received the first page yet. */
+  | 'waiting-for-initial'
+  /** We have a page, but we're still waiting on the first frame for it. */
+  | 'transitioning'
+  /** We've received the first frame for the page and can start showing the content. */
+  | 'loaded'
+  /** The session ended without any page loads. */
+  | 'no-page'
+
+const DEFAULT_PAGE: Page = {
+  href: 'about:blank',
+  title: 'k6 Studio',
+  // Same default size as k6/browser
+  width: 1280,
+  height: 720,
+}
 
 interface SessionPlayerProps {
   session: DebugSession
@@ -36,10 +55,16 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
     pause()
   }
 
-  // While streaming, we won't know the size of the first page until the
-  // initial frames arrive. To avoid showing a zero-size viewport, we hide
-  // it and show a spinner instead.
-  const hasWindowDimensions = page !== undefined
+  const pageState: PageState =
+    session.state === 'stopped' && page === undefined
+      ? 'no-page'
+      : page === undefined
+        ? 'waiting-for-initial'
+        : loading
+          ? 'transitioning'
+          : 'loaded'
+
+  const pageWithFallback = page ?? DEFAULT_PAGE
 
   return (
     <Flex direction="column" height="100%" width="100%">
@@ -57,20 +82,23 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
           }
         `}
       >
-        {!hasWindowDimensions && <Spinner size="2" />}
-        <Viewport show={page !== undefined}>
-          <AddressBar loading={loading} page={page} />
+        {pageState === 'waiting-for-initial' && <Spinner size="2" />}
+        <Viewport show={pageState !== 'waiting-for-initial'}>
+          <AddressBar
+            loading={pageState === 'transitioning'}
+            page={pageWithFallback}
+          />
           <Box
             position="relative"
             style={{
-              minWidth: page?.width,
-              minHeight: page?.height,
+              minWidth: pageWithFallback.width,
+              minHeight: pageWithFallback.height,
             }}
           >
             <div
               ref={setMount}
               style={{
-                display: loading ? 'none' : 'block',
+                display: pageState !== 'loaded' ? 'none' : 'block',
               }}
             />
           </Box>
