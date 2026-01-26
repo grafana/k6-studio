@@ -16,7 +16,7 @@ import {
   Trash2Icon,
   TriangleAlertIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AnyBrowserAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
@@ -155,6 +155,7 @@ interface GoToActionBodyProps {
 function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [url, setUrl] = useState(action.url)
+
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -163,20 +164,25 @@ function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
       ...action,
       url,
     })
+    setIsPopoverOpen(false)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
+    setUrl(e.target.value)
+  }
 
+  useEffect(() => {
     try {
-      new URL(value)
+      new URL(url)
       setError(null)
     } catch {
       setError('Invalid URL')
-    } finally {
-      setUrl(value)
     }
-  }
+  }, [url])
+
+  useEffect(() => {
+    setUrl(action.url)
+  }, [action.url])
 
   return (
     <>

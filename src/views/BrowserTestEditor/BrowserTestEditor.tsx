@@ -1,11 +1,15 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
+import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { LogsSection } from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { routeMap } from '@/routeMap'
+import { BrowserTestFile } from '@/schemas/browserTest/v1'
+import { StudioFile } from '@/types'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
 import { useDebugSession } from '../Validator/Validator.hooks'
@@ -21,12 +25,15 @@ import {
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
 
-export function BrowserTestEditor() {
+interface BrowserTestEditorViewProps {
+  file: StudioFile
+  data: BrowserTestFile
+}
+
+function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
     useBrowserTestEditorLayout()
-  const file = useBrowserTestFile()
 
-  const { data, isLoading } = useBrowserTest(file.fileName)
   const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.fileName)
 
   const test = useBrowserTestState(data)
@@ -52,7 +59,6 @@ export function BrowserTestEditor() {
     <View
       title="Browser test"
       subTitle={<FileNameHeader file={file} />}
-      loading={isLoading}
       actions={
         <BrowserTestEditorControls
           file={file}
@@ -175,4 +181,22 @@ export function BrowserTestEditor() {
       </Flex>
     </View>
   )
+}
+
+export function BrowserTestEditor() {
+  const file = useBrowserTestFile()
+  const navigate = useNavigate()
+
+  const { data, isLoading } = useBrowserTest(file.fileName)
+
+  if (isLoading) {
+    return null
+  }
+
+  if (data === undefined) {
+    navigate(routeMap.home)
+    return null
+  }
+
+  return <BrowserTestEditorView key={file.fileName} file={file} data={data} />
 }

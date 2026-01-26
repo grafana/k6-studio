@@ -120,23 +120,12 @@ export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
   const { actions = [] } = browserTestFile ?? {}
-  const { state, undo, redo, push, reset } = useStateWithUndo<
-    BrowserActionWithId[]
-  >(
+  const { state, undo, redo, push } = useStateWithUndo<BrowserActionWithId[]>(
     actions.map((action) => ({
       id: crypto.randomUUID(),
       action,
     }))
   )
-
-  useEffect(() => {
-    reset(
-      actions.map((action) => ({
-        id: crypto.randomUUID(),
-        action,
-      }))
-    )
-  }, [reset, actions])
 
   const addAction = (method: AnyBrowserAction['method']) => {
     const action = createNewAction(method)
@@ -153,15 +142,6 @@ export function useBrowserTestState(
   const removeAction = (id: string) => {
     const newActions = state.filter((actionWithId) => actionWithId.id !== id)
     push(newActions)
-  }
-
-  const resetActions = (newState: AnyBrowserAction[]) => {
-    reset(
-      newState.map((action) => ({
-        id: crypto.randomUUID(),
-        action,
-      }))
-    )
   }
 
   const plainActions = useMemo(() => {
@@ -184,7 +164,6 @@ export function useBrowserTestState(
     isDirty,
     undo,
     redo,
-    resetActions,
   }
 }
 

@@ -39,17 +39,10 @@ export function useStateWithUndo<T>(initialState: T) {
     setCurrentState(nextState)
   }, [redoStack, currentState])
 
-  const reset = useCallback((newState: T) => {
-    setCurrentState(newState)
-    setUndoStack([])
-    setRedoStack([])
-  }, [])
-
   return {
     state: currentState,
     undo: undoStack.length > 0 ? undo : undefined,
     redo: redoStack.length > 0 ? redo : undefined,
     push: setState,
-    reset,
   }
 }

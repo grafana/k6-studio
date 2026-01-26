@@ -158,33 +158,6 @@ describe('useStateWithUndo', () => {
     expect(result.current.redo).toBeUndefined()
   })
 
-  it('should reset state and clear both stacks', () => {
-    const { result } = renderHook(() => useStateWithUndo(1))
-
-    act(() => {
-      result.current.push(2)
-    })
-
-    act(() => {
-      result.current.push(3)
-    })
-
-    act(() => {
-      result.current.undo?.()
-    })
-
-    expect(result.current.undo).toBeDefined()
-    expect(result.current.redo).toBeDefined()
-
-    act(() => {
-      result.current.reset(10)
-    })
-
-    expect(result.current.state).toBe(10)
-    expect(result.current.undo).toBeUndefined()
-    expect(result.current.redo).toBeUndefined()
-  })
-
   it('should work with complex object types', () => {
     interface ComplexState {
       id: number
