@@ -6,6 +6,7 @@ import invariant from 'tiny-invariant'
 
 import { Script } from '@/handlers/cloud/types'
 import { useBrowserActions } from '@/hooks/useBrowserActions'
+import { useBrowserReplay } from '@/hooks/useBrowserSession'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
@@ -41,7 +42,10 @@ export function useDebugSession(script: Script) {
   const { proxyData, resetProxyData } = useListenProxyData()
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
+
   const { browserActions, resetBrowserActions } = useBrowserActions()
+  const { browserReplay, resetBrowserReplay } = useBrowserReplay()
+
   const input = script.type === 'file' ? script.path : script.content
 
   const resetSession = useCallback(() => {
@@ -49,9 +53,16 @@ export function useDebugSession(script: Script) {
 
     resetProxyData()
     resetBrowserActions()
+    resetBrowserReplay()
     resetLogs()
     resetChecks()
-  }, [resetChecks, resetLogs, resetProxyData, resetBrowserActions])
+  }, [
+    resetChecks,
+    resetLogs,
+    resetProxyData,
+    resetBrowserActions,
+    resetBrowserReplay,
+  ])
 
   // Reset session when script or script path changes.
   useEffect(() => {
@@ -95,11 +106,14 @@ export function useDebugSession(script: Script) {
       id: sessionId,
       state,
       requests: proxyData,
-      browserActions,
+      browser: {
+        actions: browserActions,
+        replay: browserReplay,
+      },
       logs,
       checks,
     }
-  }, [sessionId, state, checks, logs, proxyData, browserActions])
+  }, [sessionId, state, checks, logs, proxyData, browserActions, browserReplay])
 
   return {
     session,

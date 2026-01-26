@@ -1,5 +1,7 @@
 import http from 'k6/http'
 
+import { LogEntry } from '@/schemas/k6'
+
 import {
   ActionBeginEvent,
   ActionEndEvent,
@@ -7,7 +9,7 @@ import {
   AnyBrowserAction,
 } from '../../schema'
 
-const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
+export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
   ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
   : null
 
@@ -18,13 +20,34 @@ function isTestingLibrary() {
   return new Error().stack?.includes('k6-testing') ?? false
 }
 
-const nextId = (() => {
+export function createSequence() {
   let currentId = 0
 
   return () => {
     return String(currentId++)
   }
-})()
+}
+
+const nextId = createSequence()
+
+export function trackLog(entry: LogEntry) {
+  if (TRACKING_SERVER_URL === null) {
+    return
+  }
+
+  const body = JSON.stringify(entry)
+
+  // Blocking the `page.on("console")` handler will cause the browser to hang
+  // for extended periods of time so we use asyncRequest here to avoid blocking.
+  http
+    .asyncRequest('POST', `${TRACKING_SERVER_URL}/log`, body, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+    .catch(() => {
+      // We don't want to interfere with the script execution so
+      // we swallow all errors here.
+    })
+}
 
 function begin(action: AnyBrowserAction | undefined | null) {
   if (TRACKING_SERVER_URL === null) {
@@ -228,4 +251,29 @@ export function createProxy<T extends object>({
       }
     },
   })
+}
+
+/**
+ * This function create a gate that allows an item to pass only once.
+ * Subsequent calls with the same item will return false.
+ */
+export function createSingleEntryGuard() {
+  const nextId = createSequence()
+
+  // Ideally we could use a WeakSet here but k6 has poor support and it
+  // prevents the k6 process from exiting when used with browser entities
+  // such as Page or BrowserContext.
+  const items = new Set<string>()
+
+  return (item: { __id?: string }) => {
+    item.__id ??= nextId()
+
+    if (items.has(item.__id)) {
+      return false
+    }
+
+    items.add(item.__id)
+
+    return true
+  }
 }

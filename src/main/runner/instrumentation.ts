@@ -1,14 +1,14 @@
 import { parse } from '@typescript-eslint/typescript-estree'
 import { generate } from 'astring'
-import { app } from 'electron'
-import { readFile } from 'fs/promises'
 import path from 'path'
 
-import { NodeType } from '@/codegen/estree/nodes'
+import { baseProps, NodeType } from '@/codegen/estree/nodes'
 import { traverse } from '@/codegen/estree/traverse'
+import { readResource } from '@/utils/resources'
 
 interface InstrumentScriptOptions {
   entryScript: string
+  replayScript: string
   scriptPath: string
 }
 
@@ -21,6 +21,7 @@ const parseScript = (input: string) => {
 
 export const instrumentScript = ({
   entryScript,
+  replayScript,
   scriptPath,
 }: InstrumentScriptOptions) => {
   const entryAst = parseScript(entryScript)
@@ -40,21 +41,31 @@ export const instrumentScript = ({
         node.source.raw = JSON.stringify(relativePath)
       }
     },
+    [NodeType.VariableDeclarator](node) {
+      if (
+        node.id.type === NodeType.Identifier &&
+        node.id.name === 'SESSION_REPLAY_SCRIPT'
+      ) {
+        node.init = {
+          ...baseProps,
+          type: NodeType.Literal,
+          value: replayScript,
+          raw: JSON.stringify(replayScript),
+        }
+      }
+    },
   })
 
   return generate(entryAst)
 }
 
 export const instrumentScriptFromPath = async (scriptPath: string) => {
-  // @ts-expect-error We are targeting CommonJS so import.meta is not available
-  const entryScriptPath = !import.meta.env.PROD
-    ? path.join(app.getAppPath(), 'resources', 'entrypoint.js')
-    : path.join(process.resourcesPath, 'entrypoint.js')
-
-  const entryScript = await readFile(entryScriptPath, { encoding: 'utf-8' })
+  const entryScript = await readResource('entrypoint-script')
+  const replayScript = await readResource('replay-script')
 
   return instrumentScript({
     entryScript,
+    replayScript,
     scriptPath,
   })
 }

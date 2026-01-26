@@ -88,11 +88,38 @@ export interface TestRunLogEvent {
 }
 
 interface TestRunEventMap {
+  /**
+   * Fired when the k6 process has started and
+   * the script is being executed.
+   */
   start: TestRunStartEvent
+
+  /**
+   * Fired when the k6 process couldn't be spawned or exited
+   * in an unexpected manner, e.g. because of a runtime panic.
+   */
   error: TestRunErrorEvent
+
+  /**
+   * Fired when test run has been aborted by the user.
+   */
   abort: TestRunAbortEvent
+
+  /**
+   * Fired when the test run has ran to completion, regardless
+   * of whether it passed or failed.
+   */
   done: TestRunDoneEvent
+
+  /**
+   * Called when the test run has stopped, i.e. after the
+   * done, abort or error events have been emitted.
+   */
   stop: void
+
+  /**
+   * Fired when a log entry is emitted by the test run.
+   */
   log: TestRunLogEvent
 }
 
