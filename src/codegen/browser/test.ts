@@ -1,3 +1,4 @@
+import { AnyBrowserAction } from '@/main/runner/schema'
 import {
   Assertion,
   BrowserEvent,
@@ -57,7 +58,7 @@ function toAssertionOperation(assertion: Assertion): AssertionOperation {
   }
 }
 
-function buildBrowserNodeGraph(events: BrowserEvent[]) {
+function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   const pages = new Map<string, PageNode>()
 
   let previousLocator: LocatorNode | null = null
@@ -270,10 +271,81 @@ function buildBrowserNodeGraph(events: BrowserEvent[]) {
   return nodes
 }
 
-export function convertToTest({ browserEvents }: Recording): Test {
+function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
+  const nodes: TestNode[] = []
+
+  // TODO: Add support for multiple pages
+  const pageNode: TestNode = {
+    type: 'page',
+    nodeId: crypto.randomUUID(),
+  }
+
+  nodes.push(pageNode)
+  const page = toNodeRef(pageNode)
+
+  function toNode(action: AnyBrowserAction): TestNode {
+    switch (action.method) {
+      case 'page.goto':
+        return {
+          type: 'goto',
+          nodeId: crypto.randomUUID(),
+          url: action.url,
+          source: 'address-bar',
+          inputs: {
+            page,
+          },
+        }
+      case 'page.reload':
+      case 'page.waitForNavigation':
+      case 'page.*':
+      case 'locator.click':
+      case 'locator.dblclick':
+      case 'locator.fill':
+      case 'locator.type':
+      case 'locator.check':
+      case 'locator.uncheck':
+      case 'locator.selectOption':
+      case 'locator.waitFor':
+      case 'locator.hover':
+      case 'locator.setChecked':
+      case 'locator.tap':
+      case 'locator.clear':
+      case 'locator.press':
+      case 'locator.focus':
+      case 'locator.*':
+      case 'browserContext.*':
+        throw new Error('Not implemented.')
+      default:
+        return exhaustive(action)
+    }
+  }
+
+  browserActions.forEach((action) => {
+    const node = toNode(action)
+
+    nodes.push(node)
+  })
+
+  return nodes
+}
+
+export function convertEventsToTest({ browserEvents }: Recording): Test {
   return {
     defaultScenario: {
-      nodes: buildBrowserNodeGraph(browserEvents),
+      nodes: buildBrowserNodeGraphFromEvents(browserEvents),
+    },
+    scenarios: {},
+  }
+}
+
+export function convertActionsToTest({
+  browserActions,
+}: {
+  browserActions: AnyBrowserAction[]
+}): Test {
+  return {
+    defaultScenario: {
+      nodes: buildBrowserNodeGraphFromActions(browserActions),
     },
     scenarios: {},
   }
