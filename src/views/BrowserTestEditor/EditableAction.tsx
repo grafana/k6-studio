@@ -1,14 +1,22 @@
 import { css } from '@emotion/react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Code, Flex, IconButton, TextField, Tooltip } from '@radix-ui/themes'
+import {
+  Badge,
+  Popover,
+  Code,
+  Flex,
+  IconButton,
+  TextField,
+  Tooltip,
+  Button,
+  Text,
+} from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
   GlobeIcon,
   Trash2Icon,
   TriangleAlertIcon,
 } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { useState } from 'react'
 
 import { AnyBrowserAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
@@ -145,50 +153,65 @@ interface GoToActionBodyProps {
 }
 
 function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
-  const {
-    register,
-    formState: { errors },
-    trigger,
-    getValues,
-  } = useForm<PageGotoAction>({
-    shouldFocusError: true,
-    mode: 'onBlur',
-    resolver: zodResolver(z.object({ url: z.string().url() })),
-    defaultValues: action,
-  })
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [url, setUrl] = useState(action.url)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleBlur = async () => {
-    await trigger('url')
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onUpdate({
+      ...action,
+      url,
+    })
+  }
 
-    const data = getValues()
-    if (data.url !== action.url) {
-      onUpdate(data)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+
+    try {
+      new URL(value)
+      setError(null)
+    } catch {
+      setError('Invalid URL')
+    } finally {
+      setUrl(value)
     }
   }
 
   return (
     <>
       Navigate to{' '}
-      <TextField.Root
-        size="1"
-        color={errors.url ? 'red' : 'gray'}
-        variant="soft"
-        css={css`
-          flex: 1;
-        `}
-        {...register('url', {
-          onBlur: handleBlur,
-        })}
-        placeholder="e.g. https://quickpizza.grafana.com"
-      >
-        {errors.url !== undefined && (
-          <TextField.Slot side="right" css={{ color: 'var(--red-11)' }}>
-            <Tooltip content={errors.url.message || ''}>
-              <TriangleAlertIcon />
-            </Tooltip>
-          </TextField.Slot>
-        )}
-      </TextField.Root>
+      <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <Popover.Trigger>
+          <Badge color={error ? 'red' : 'gray'} asChild>
+            <Button size="1">
+              {action.url}
+              {error && (
+                <Tooltip content={error}>
+                  <TriangleAlertIcon />
+                </Tooltip>
+              )}
+            </Button>
+          </Badge>
+        </Popover.Trigger>
+        <Popover.Content align="start" size="1" width="300px">
+          <form onSubmit={handleSubmit}>
+            <TextField.Root
+              size="1"
+              color={error ? 'red' : 'gray'}
+              value={url}
+              onChange={handleChange}
+              onBlur={handleSubmit}
+              placeholder="e.g. https://quickpizza.grafana.com"
+            />
+            {error && (
+              <Text size="1" color="red" mt="1">
+                {error}
+              </Text>
+            )}
+          </form>
+        </Popover.Content>
+      </Popover.Root>
     </>
   )
 }
