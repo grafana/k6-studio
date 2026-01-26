@@ -4,7 +4,7 @@ import constrainedEditor, {
   ConstrainedEditorInstance,
   RestrictionObject,
 } from 'constrained-editor-plugin'
-import * as monacoTypes from 'monaco-editor'
+import * as monacoTypes from 'monaco-editor/esm/vs/editor/editor.api'
 import { useEffect, useState } from 'react'
 
 import { ReactMonacoEditor } from './ReactMonacoEditor'
@@ -22,7 +22,7 @@ export function ConstrainedCodeEditor({
   editableRange,
   options,
 }: CodeEditorProps) {
-  const [model, setModel] = useState<monacoTypes.editor.ITextModel | null>()
+  const [model, setModel] = useState<monacoTypes.editor.ITextModel | null>(null)
   const [constrainedInstance, setConstrainedInstance] =
     useState<ConstrainedEditorInstance>()
 
