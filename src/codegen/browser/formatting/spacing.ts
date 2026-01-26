@@ -35,14 +35,18 @@ export function mergeNewLine(
   }
 
   const before =
-    newLine.before !== undefined && target?.before === 'never'
-      ? target?.before
-      : newLine.before
+    newLine.before !== undefined
+      ? target.before === 'never'
+        ? 'never'
+        : newLine.before
+      : target.before
 
   const after =
-    newLine.after !== undefined && target?.after === 'never'
-      ? target?.after
-      : newLine.after
+    newLine.after !== undefined
+      ? target.after === 'never'
+        ? 'never'
+        : newLine.after
+      : target.after
 
   return { before, after }
 }
@@ -88,7 +92,7 @@ export function spaceAround<T extends ts.Node>([first, ...rest]: T[]): T[] {
   return [
     { ...first, newLine: mergeNewLine(first.newLine, { before: true }) },
     ...middle,
-    { ...last, newLine: mergeNewLine(last.newLine, { after: false }) },
+    { ...last, newLine: mergeNewLine(last.newLine, { after: true }) },
   ]
 }
 
