@@ -78,6 +78,7 @@ export function PlaybackControls({
         size="1"
         css={css`
           white-space: nowrap;
+          font-variant-numeric: tabular-nums;
         `}
       >
         <Flex align="center" justify="end" minWidth="80px">
