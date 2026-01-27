@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
-import { convertToTest } from '@/codegen/browser/test'
+import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
@@ -56,7 +56,7 @@ export function RecordingPreviewControls({
   }
 
   const handleExportBrowserScript = (fileName: string) => {
-    const test = convertToTest({
+    const test = convertEventsToTest({
       browserEvents,
     })
 

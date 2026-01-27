@@ -12,6 +12,7 @@ import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
 
 import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
+import { createReplayEvent } from './runner/rrweb'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -76,6 +77,14 @@ export const runScript = async ({
     browserWindow.webContents.send(ScriptHandler.BrowserAction, ev)
   })
 
+  trackingServer.on('log', (ev) => {
+    browserWindow.webContents.send(ScriptHandler.Log, ev.entry)
+  })
+
+  trackingServer.on('replay', (ev) => {
+    browserWindow.webContents.send(ScriptHandler.BrowserReplay, ev.events)
+  })
+
   // 5. Run the test
   const client = new K6Client()
 
@@ -98,6 +107,10 @@ export const runScript = async ({
     browserWindow.webContents.send(ScriptHandler.Log, entry)
   })
 
+  testRun.on('start', () => {
+    browserWindow.webContents.send(ScriptHandler.Started, {})
+  })
+
   testRun.on('done', ({ result, checks }) => {
     browserWindow.webContents.send(ScriptHandler.Check, checks)
     browserWindow.webContents.send(ScriptHandler.Finished, result)
@@ -114,6 +127,10 @@ export const runScript = async ({
   })
 
   testRun.on('stop', () => {
+    browserWindow.webContents.send(ScriptHandler.BrowserReplay, [
+      createReplayEvent('recording-end', {}),
+    ])
+
     browserWindow.webContents.send(ScriptHandler.Stopped)
 
     trackingServer?.dispose()

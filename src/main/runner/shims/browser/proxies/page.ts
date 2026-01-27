@@ -1,11 +1,36 @@
 import { Page } from 'k6/browser'
 
-import { ProxyOptions } from '../utils'
+import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 
 import { locatorProxy } from './locator'
 import { isLocatorMethod } from './utils'
 
+const isPageInstrumented = createSingleEntryGuard()
+
 export function pageProxy(target: Page): ProxyOptions<Page> {
+  if (!isPageInstrumented(target)) {
+    target.on('console', (msg) => {
+      const type = msg.type()
+
+      if (
+        type !== 'log' &&
+        type !== 'info' &&
+        type !== 'debug' &&
+        type !== 'warning' &&
+        type !== 'error'
+      ) {
+        return
+      }
+
+      trackLog({
+        level: type === 'log' ? 'info' : type,
+        msg: msg.text(),
+        time: new Date().toISOString(),
+        source: 'browser',
+      })
+    })
+  }
+
   return {
     target,
     tracking: {
