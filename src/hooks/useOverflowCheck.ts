@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export function useOverflowCheck(ref: React.RefObject<HTMLElement>) {
+export function useOverflowCheck(ref: React.RefObject<HTMLElement | null>) {
   const [hasOverflow, setHasOverflow] = useState(false)
 
   useEffect(() => {
