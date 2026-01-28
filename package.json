@@ -117,7 +117,7 @@
     "@typescript-eslint/typescript-estree": "^8.21.0",
     "@vitejs/plugin-react": "^4.3.1",
     "ai": "^5.0.95",
-    "allotment": "^1.20.2",
+    "allotment": "^1.20.5",
     "aria-query": "^5.3.2",
     "astring": "^1.9.0",
     "chokidar": "^4.0.3",
