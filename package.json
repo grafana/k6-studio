@@ -37,7 +37,7 @@
     "@electron-forge/publisher-github": "^7.10.2",
     "@electron/fuses": "^1.8.0",
     "@tanstack/eslint-plugin-query": "^5.53.0",
-    "@testing-library/react": "^16.0.1",
+    "@testing-library/react": "^16.3.2",
     "@types/chrome": "^0.0.287",
     "@types/cors": "^2.8.19",
     "@types/diff": "^7.0.2",
