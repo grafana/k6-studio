@@ -10,7 +10,7 @@ class ResizeObserverMock {
 }
 
 function setValueOnRef(
-  ref: React.RefObject<HTMLElement>,
+  ref: React.RefObject<HTMLElement | null>,
   key: string,
   value: number
 ) {
@@ -20,7 +20,7 @@ function setValueOnRef(
 vi.stubGlobal('ResizeObserver', ResizeObserverMock)
 
 describe('useOverflowCheck', () => {
-  let ref: React.RefObject<HTMLElement>
+  let ref: React.RefObject<HTMLElement | null>
 
   beforeEach(() => {
     ref = {
