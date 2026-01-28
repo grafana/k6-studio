@@ -59,6 +59,9 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'ExpectExpression':
         return visit(node.actual) || visitAssertion(node.expected)
 
+      case 'Comment':
+        return false
+
       default:
         return exhaustive(node)
     }

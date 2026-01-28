@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 
 const uuid = nanoid()
 
-type GlobalClass = 'inspecting' | 'asserting-text'
+type GlobalClass = 'inspecting' | 'asserting-text' | 'commenting'
 
 export function useGlobalClass(name: GlobalClass) {
   useEffect(() => {
@@ -36,6 +36,10 @@ export function GlobalStyles() {
         .ksix-studio-asserting-text-${uuid} * {
           cursor: text !important;
           user-select: text !important;
+        }
+
+        .ksix-studio-commenting-${uuid} {
+          cursor: text !important;
         }
       `}
     />

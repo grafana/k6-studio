@@ -17,6 +17,7 @@ import {
   SquareDashedMousePointerIcon,
   SquareStopIcon,
   TextCursorIcon,
+  MessageCircle,
 } from 'lucide-react'
 
 import { Flex } from '@/components/primitives/Flex'
@@ -78,6 +79,7 @@ export function ToolBox({
     switch (value) {
       case 'assert-text':
       case 'inspect':
+      case 'add-comment':
         onSelectTool(value)
         break
 
@@ -148,6 +150,11 @@ export function ToolBox({
           <ToolBoxTooltip content="Add assertions on text content by selecting it">
             <Toolbar.ToggleItem value="assert-text">
               <TextCursorIcon />
+            </Toolbar.ToggleItem>
+          </ToolBoxTooltip>
+          <ToolBoxTooltip content="Click anywhere on the page to add a comment">
+            <Toolbar.ToggleItem value="add-comment">
+              <MessageCircle />
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
         </Toolbar.ToggleGroup>

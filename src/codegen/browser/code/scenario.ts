@@ -18,6 +18,7 @@ import { exhaustive } from '@/utils/typescript'
 import { spaceBetween } from '../formatting/spacing'
 import * as ir from '../intermediate/ast'
 
+import { comment } from './comment'
 import { ScenarioContext } from './context'
 
 function emitNewPageExpression(
@@ -488,6 +489,9 @@ function emitStatement(
           }),
         ],
       })
+
+    case 'Comment':
+      return comment(statement.value)
 
     default:
       return exhaustive(statement)
