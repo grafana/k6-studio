@@ -37,7 +37,7 @@ export function HelpButton() {
           <BookTextIcon /> Documentation
         </DropdownMenu.Item>
         <DropdownMenu.Item onClick={handleTakeSurvey}>
-          <MessageSquareIcon /> Take survey{' '}
+          <MessageSquareIcon /> Take survey
           <Badge variant="solid" color="indigo" ml="1" size="1">
             New
           </Badge>

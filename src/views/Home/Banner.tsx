@@ -3,8 +3,6 @@ import { Button, Callout, Flex } from '@radix-ui/themes'
 import { InfoIcon } from 'lucide-react'
 import { useLocalStorage } from 'react-use'
 
-import { ExternalLink } from '@/components/ExternalLink'
-
 export function Banner() {
   const [isDismissed, setIsDismissed] = useLocalStorage(
     'feb2026-banner-dismissed',
@@ -13,6 +11,13 @@ export function Banner() {
 
   if (isDismissed) {
     return null
+  }
+
+  const handleTakeSurvey = async () => {
+    await window.studio.browser.openExternalLink(
+      'https://www.userinterviews.com/projects/XwPjeHBAbA/apply'
+    )
+    setIsDismissed(true)
   }
 
   return (
@@ -30,7 +35,7 @@ export function Banner() {
     >
       <Callout.Icon>
         <InfoIcon size={16} />
-      </Callout.Icon>{' '}
+      </Callout.Icon>
       <Callout.Text>
         Help us improve Grafana k6 Studio. Share your experience and help shape
         future improvements.
@@ -44,14 +49,9 @@ export function Banner() {
         >
           Dismiss
         </Button>
-        <ExternalLink
-          href="https://www.userinterviews.com/projects/XwPjeHBAbA/apply"
-          onClick={() => {
-            setIsDismissed(true)
-          }}
-        >
-          <Button css={{ whiteSpace: 'nowrap' }}>Take survey</Button>
-        </ExternalLink>
+        <Button css={{ whiteSpace: 'nowrap' }} onClick={handleTakeSurvey}>
+          Take survey
+        </Button>
       </Flex>
     </Callout.Root>
   )
