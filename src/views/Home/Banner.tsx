@@ -5,7 +5,7 @@ import { useLocalStorage } from 'react-use'
 
 export function Banner() {
   const [isDismissed, setIsDismissed] = useLocalStorage(
-    'feb2026-banner-dismissed',
+    'feb2026BannerDismissed',
     false
   )
 
