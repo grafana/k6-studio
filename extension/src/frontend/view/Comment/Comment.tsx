@@ -6,7 +6,6 @@ import { useGlobalClass } from '../GlobalStyles'
 import { useStudioClient } from '../StudioClientProvider'
 import { useEscape } from '../hooks/useEscape'
 import { usePreventClick } from '../hooks/usePreventClick'
-import { Position } from '../types'
 
 import { CommentPopover } from './CommentPopover'
 
@@ -16,24 +15,21 @@ interface CommentProps {
 
 export function Comment({ onClose }: CommentProps) {
   const client = useStudioClient()
-  const [clickPosition, setClickPosition] = useState<Position | null>(null)
+  const [showPopover, setShowPopover] = useState(false)
 
   useGlobalClass('commenting')
 
   useEscape(() => {
-    if (clickPosition !== null) {
-      setClickPosition(null)
+    if (showPopover) {
+      setShowPopover(false)
       return
     }
     onClose()
-  }, [clickPosition, onClose])
+  }, [showPopover, onClose])
 
   usePreventClick({
-    callback: (ev) => {
-      setClickPosition({
-        top: ev.clientY + window.scrollY,
-        left: ev.clientX + window.scrollX,
-      })
+    callback: () => {
+      setShowPopover(true)
     },
   })
 
@@ -51,7 +47,7 @@ export function Comment({ onClose }: CommentProps) {
           },
         ],
       })
-      setClickPosition(null)
+      setShowPopover(false)
       onClose()
     },
     [client, onClose]
@@ -59,9 +55,8 @@ export function Comment({ onClose }: CommentProps) {
 
   return (
     <CommentPopover
-      open={clickPosition !== null}
-      position={clickPosition}
-      onClose={() => setClickPosition(null)}
+      open={showPopover}
+      onClose={() => setShowPopover(false)}
       onSubmit={handleSubmit}
     />
   )
