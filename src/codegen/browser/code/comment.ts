@@ -2,7 +2,10 @@ import { AST_NODE_TYPES, TSESTree as ts } from '@typescript-eslint/types'
 
 import { baseProps } from '@/codegen/estree/nodes'
 
-export function comment(value: string): ts.BlockStatement {
+export function comment(
+  value: string,
+  newLine: ts.NewLine = { after: 'never' }
+): ts.BlockStatement {
   // The type of node here is not important since it's just being used as
   // a placeholder for the comment. A BlockStatement just happens to be one
   // of the simplest nodes to build.
@@ -11,5 +14,6 @@ export function comment(value: string): ts.BlockStatement {
     type: AST_NODE_TYPES.BlockStatement,
     comment: value,
     body: [],
+    newLine,
   }
 }

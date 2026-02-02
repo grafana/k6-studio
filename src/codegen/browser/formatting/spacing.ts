@@ -3,37 +3,63 @@ import type { TSESTree as ts } from '@typescript-eslint/types'
 export function trimBefore(
   newLine: ts.NewLine | undefined
 ): ts.NewLine | undefined {
-  return newLine === 'both' ? 'after' : undefined
+  if (newLine === undefined) {
+    return undefined
+  }
+
+  return {
+    ...newLine,
+    before: newLine.before === true ? false : newLine.before,
+  }
 }
 
 export function trimAfter(
   newLine: ts.NewLine | undefined
 ): ts.NewLine | undefined {
-  return newLine === 'both' ? 'before' : undefined
+  if (newLine === undefined) {
+    return undefined
+  }
+
+  return {
+    ...newLine,
+    after: newLine.after === true ? false : newLine.after,
+  }
 }
 
 export function mergeNewLine(
-  newLine: ts.NewLine | undefined,
-  target: ts.NewLine
+  target: ts.NewLine | undefined,
+  newLine: ts.NewLine
 ): ts.NewLine {
-  if (newLine === target) {
+  if (target === undefined) {
     return newLine
   }
 
-  if (newLine === undefined) {
-    return target
-  }
+  const before =
+    newLine.before !== undefined
+      ? target.before === 'never'
+        ? 'never'
+        : newLine.before
+      : target.before
 
-  return 'both'
+  const after =
+    newLine.after !== undefined
+      ? target.after === 'never'
+        ? 'never'
+        : newLine.after
+      : target.after
+
+  return { before, after }
 }
 
 export function spaceBetween<T extends ts.Node>(nodes: T[]) {
   return nodes.map((node, index) => {
-    if (index === nodes.length - 1) {
+    const nextNode = nodes[index + 1]
+
+    if (nextNode === undefined || nextNode.newLine?.before === 'never') {
       return node
     }
 
-    return { ...node, newLine: mergeNewLine(node.newLine, 'after') }
+    return { ...node, newLine: mergeNewLine(node.newLine, { after: true }) }
   })
 }
 
@@ -46,7 +72,7 @@ export function spaceAfter<T extends ts.Node>(nodes: T[]): T[] {
 
   return [
     ...nodes.slice(0, -1),
-    { ...last, newLine: mergeNewLine(last.newLine, 'after') },
+    { ...last, newLine: mergeNewLine(last.newLine, { after: true }) },
   ]
 }
 
@@ -64,9 +90,9 @@ export function spaceAround<T extends ts.Node>([first, ...rest]: T[]): T[] {
   const middle = rest.slice(0, -1)
 
   return [
-    { ...first, newLine: mergeNewLine(first.newLine, 'before') },
+    { ...first, newLine: mergeNewLine(first.newLine, { before: true }) },
     ...middle,
-    { ...last, newLine: mergeNewLine(last.newLine, 'after') },
+    { ...last, newLine: mergeNewLine(last.newLine, { after: true }) },
   ]
 }
 
@@ -75,7 +101,10 @@ export function spaceBefore<T extends ts.Node>([first, ...rest]: T[]): T[] {
     return []
   }
 
-  return [{ ...first, newLine: mergeNewLine(first.newLine, 'before') }, ...rest]
+  return [
+    { ...first, newLine: mergeNewLine(first.newLine, { before: true }) },
+    ...rest,
+  ]
 }
 
 export function trimSpacing<T extends ts.Node>([first, ...rest]: T[]): T[] {

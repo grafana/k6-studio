@@ -1,10 +1,6 @@
 import { css } from '@emotion/react'
-import { Label } from '@radix-ui/react-label'
-import { Flex, Heading, Switch, Tabs, Text } from '@radix-ui/themes'
-import { useState } from 'react'
+import { Flex, Tabs } from '@radix-ui/themes'
 
-import { AutoScrollArea } from '@/components/AutoScrollArea'
-import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { LogsSection } from '@/components/Validator/LogsSection'
 import {
   Group,
@@ -14,10 +10,10 @@ import {
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
 
-import { DebuggerEmptyState } from '../DebuggerEmptyState'
 import { DebugSession } from '../types'
 
-import { BrowserActionList } from './BrowserActionList'
+import { BrowserActionsPanel } from './BrowserActionsPanel'
+import { BrowserOverviewPanel } from './BrowserOverviewPanel'
 import { NetworkInspector } from './NetworkInspector'
 
 interface BrowserDebuggerProps {
@@ -31,7 +27,6 @@ export function BrowserDebugger({
   session,
   onDebugScript,
 }: BrowserDebuggerProps) {
-  const [tailActions, setTailActions] = useState(true)
   const [drawer, setDrawer] = usePanelCallbackRef()
 
   const drawerLayout = useDefaultLayout({
@@ -43,10 +38,6 @@ export function BrowserDebugger({
     groupId: 'browser-debugger-main',
     storage: localStorage,
   })
-
-  const handleActionsScrollBack = () => {
-    setTailActions(false)
-  }
 
   const handleTabClick = () => {
     if (drawer?.isCollapsed()) {
@@ -70,7 +61,7 @@ export function BrowserDebugger({
           `}
           orientation="vertical"
         >
-          <Panel id="main">
+          <Panel id="main" minSize={400}>
             <Group
               {...mainLayout}
               id="main"
@@ -78,96 +69,15 @@ export function BrowserDebugger({
                 height: 100%;
               `}
             >
-              <Panel id="main">
-                <Tabs.Root asChild defaultValue="script">
-                  <Flex direction="column" height="100%">
-                    <Tabs.List>
-                      <Tabs.Trigger
-                        disabled
-                        css={css`
-                          /* 
-                        * Since we currently only have a single tab, we disable the
-                        * hover styling. This should be removed once we have more tabs.
-                        */
-                          cursor: default;
-
-                          &:hover .rt-TabsTriggerInner {
-                            background-color: transparent;
-                          }
-                        `}
-                        value="script"
-                      >
-                        Script
-                      </Tabs.Trigger>
-                    </Tabs.List>
-                    <Tabs.Content
-                      css={css`
-                        flex: 1 1 0;
-                        overflow: hidden;
-                      `}
-                      value="script"
-                    >
-                      <ReadOnlyEditor
-                        value={script}
-                        showToolbar={false}
-                        language="typescript"
-                      />
-                    </Tabs.Content>
-                  </Flex>
-                </Tabs.Root>
+              <Panel id="main" minSize={400}>
+                <BrowserOverviewPanel script={script} session={session} />
               </Panel>
               <Separator />
               <Panel id="actions" minSize={400}>
-                <Flex direction="column" height="100%">
-                  <Flex
-                    justify="between"
-                    pr="2"
-                    css={css`
-                      border-bottom: 1px solid var(--gray-a5);
-                    `}
-                  >
-                    <Flex align="center" gap="1">
-                      <Heading
-                        size="2"
-                        weight="medium"
-                        css={css`
-                          min-height: 40px;
-                          padding: 0 var(--space-2);
-                          display: flex;
-                          align-items: center;
-                        `}
-                      >
-                        Browser actions ({session.browserActions.length})
-                      </Heading>
-                    </Flex>
-
-                    {session.state === 'running' && (
-                      <Flex asChild gap="2" align="center">
-                        <Label>
-                          <Text size="2">Tail log</Text>
-                          <Switch
-                            checked={tailActions}
-                            onCheckedChange={setTailActions}
-                          />
-                        </Label>
-                      </Flex>
-                    )}
-                  </Flex>
-                  <AutoScrollArea
-                    tail={session.state === 'running' && tailActions}
-                    items={session.browserActions.length}
-                    onScrollBack={handleActionsScrollBack}
-                  >
-                    {session.state === 'pending' && (
-                      <DebuggerEmptyState onDebugScript={onDebugScript}>
-                        Debug the script to inspect browser actions.
-                      </DebuggerEmptyState>
-                    )}
-                    {session.state !== 'pending' && (
-                      <BrowserActionList actions={session.browserActions} />
-                    )}
-                  </AutoScrollArea>
-                </Flex>
+                <BrowserActionsPanel
+                  session={session}
+                  onDebugScript={onDebugScript}
+                />
               </Panel>
             </Group>
           </Panel>

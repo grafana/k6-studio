@@ -4,8 +4,8 @@ import constrainedEditor, {
   ConstrainedEditorInstance,
   RestrictionObject,
 } from 'constrained-editor-plugin'
-import * as monacoTypes from 'monaco-editor'
-import { useEffect, useState } from 'react'
+import * as monacoTypes from 'monaco-editor/esm/vs/editor/editor.api'
+import { useEffect, useRef, useState } from 'react'
 
 import { ReactMonacoEditor } from './ReactMonacoEditor'
 
@@ -22,9 +22,14 @@ export function ConstrainedCodeEditor({
   editableRange,
   options,
 }: CodeEditorProps) {
-  const [model, setModel] = useState<monacoTypes.editor.ITextModel | null>()
+  const [model, setModel] = useState<monacoTypes.editor.ITextModel | null>(null)
   const [constrainedInstance, setConstrainedInstance] =
     useState<ConstrainedEditorInstance>()
+  const editableRangeRef = useRef(editableRange)
+
+  useEffect(() => {
+    editableRangeRef.current = editableRange
+  }, [editableRange])
 
   useEffect(() => {
     if (!model || !constrainedInstance) {
@@ -38,7 +43,7 @@ export function ConstrainedCodeEditor({
     // Add editable range to editor
     const constrainedModel = constrainedInstance.addRestrictionsTo(model, [
       {
-        range: editableRange,
+        range: editableRangeRef.current,
         label: 'editableRange', // Used for reading value onDidChangeContentInEditableRange
         allowMultiline: true,
       },
@@ -52,7 +57,7 @@ export function ConstrainedCodeEditor({
 
     // Cleanup
     return constrainedModel.disposeRestrictions
-  }, [model, constrainedInstance, editableRange, onChange, value])
+  }, [model, constrainedInstance, onChange, value])
 
   const handleEditorMount = (
     editor: monacoTypes.editor.IStandaloneCodeEditor,

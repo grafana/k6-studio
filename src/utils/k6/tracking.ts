@@ -1,3 +1,4 @@
+import cors from 'cors'
 import log from 'electron-log/main'
 import express, { json } from 'express'
 import { Server } from 'http'
@@ -8,7 +9,10 @@ import {
   ActionBeginEventSchema,
   ActionEndEvent,
   ActionEndEventSchema,
+  BrowserReplayEvent,
+  SessionReplayEventSchema,
 } from '@/main/runner/schema'
+import { LogEntry, LogEntrySchema } from '@/schemas/k6'
 import { EventEmitter } from 'extension/src/utils/events'
 
 function getPort(address: AddressInfo | string | null): number {
@@ -26,6 +30,12 @@ function getPort(address: AddressInfo | string | null): number {
 interface ReportingServerEventMap {
   begin: ActionBeginEvent
   end: ActionEndEvent
+  replay: {
+    events: BrowserReplayEvent[]
+  }
+  log: {
+    entry: LogEntry
+  }
 }
 
 class TestRunTrackingServer extends EventEmitter<ReportingServerEventMap> {
@@ -56,7 +66,17 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
   const httpServer = new Server(app)
   const trackingServer = new TestRunTrackingServer(httpServer)
 
-  app.use(json())
+  app.use(
+    cors({
+      origin: '*',
+    })
+  )
+
+  app.use(
+    json({
+      limit: '100mb',
+    })
+  )
 
   app.post('/track/:id/begin', (req, res) => {
     const parsed = ActionBeginEventSchema.safeParse(req.body)
@@ -86,6 +106,38 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     }
 
     trackingServer.emit('end', parsed.data)
+
+    res.status(204).end()
+  })
+
+  app.post('/log', (req, res) => {
+    const parsed = LogEntrySchema.safeParse(req.body)
+
+    if (!parsed.success) {
+      log.warn('Received invalid log entry: ', parsed.error.format())
+
+      res.status(400).end()
+
+      return
+    }
+
+    trackingServer.emit('log', { entry: parsed.data })
+  })
+
+  app.post('/session-replay', (req, res) => {
+    const parsed = SessionReplayEventSchema.safeParse(req.body)
+
+    if (!parsed.success) {
+      log.warn('Received invalid session replay event: ', parsed.error.format())
+
+      res.status(400).end()
+
+      return
+    }
+
+    trackingServer.emit('replay', {
+      events: parsed.data.events,
+    })
 
     res.status(204).end()
   })

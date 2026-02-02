@@ -1,5 +1,5 @@
 declare module 'constrained-editor-plugin' {
-  import * as monacoTypes from 'monaco-editor'
+  import * as monacoTypes from 'monaco-editor/esm/vs/editor/editor.api'
 
   type Range = [number, number, number, number] | number[]
   type EditableRangesMap = Record<string, RestrictionObject>

@@ -61,6 +61,7 @@ const config: ForgeConfig = {
       './resources/browser',
       './resources/json_output.py',
       './resources/entrypoint.js',
+      './resources/replay.js',
       './resources/splashscreen.html',
       './resources/logo-splashscreen-dark.svg',
       './resources/logo-splashscreen.svg',
@@ -134,6 +135,11 @@ const config: ForgeConfig = {
           // Entry doesn't really matter here.
           entry: 'src/main/runner/entrypoint.ts',
           config: 'vite.script.config.ts',
+        },
+        {
+          // Entry doesn't really matter here.
+          entry: 'src/main/runner/shims/browser/replay.ts',
+          config: 'vite.replay.config.ts',
         },
       ],
       renderer: [

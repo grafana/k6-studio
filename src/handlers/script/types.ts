@@ -7,12 +7,14 @@ export enum ScriptHandler {
   Stop = 'script:stop',
   Save = 'script:save',
   Log = 'script:log',
+  Started = 'script:started',
   Stopped = 'script:stopped',
   Finished = 'script:finished',
   Failed = 'script:failed',
   Check = 'script:check',
   RunFromGenerator = 'script:run-from-generator',
   BrowserAction = 'script:browser-action',
+  BrowserReplay = 'script:browser-replay',
 }
 
 export interface OpenScriptResult {

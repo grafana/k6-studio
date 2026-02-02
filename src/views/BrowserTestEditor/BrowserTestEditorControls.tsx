@@ -3,7 +3,9 @@ import { EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { StudioFile } from '@/types'
 
 import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
@@ -11,28 +13,36 @@ import { DebugSession } from '../Validator/types'
 
 interface BrowserTestEditorControlsProps {
   file: StudioFile
+  preview: string
   session: DebugSession
-  onDelete: () => void
-  onExportScript: (scriptName: string) => void
-  onRunInCloud: () => void
-  onSave: () => void
+  isDirty: boolean
   onStartDebugging: () => void
+  onSave: () => void
 }
 
 export function BrowserTestEditorControls({
   file,
+  preview,
   session,
-  onDelete,
-  onExportScript,
-  onRunInCloud,
-  onSave,
+  isDirty,
   onStartDebugging,
+  onSave,
 }: BrowserTestEditorControlsProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
+
+  const handleDelete = useDeleteFile({
+    file,
+    navigateHomeOnDelete: true,
+  })
+
+  const handleExportScript = (scriptName: string) => {
+    void window.studio.script.saveScript(preview, scriptName)
+  }
 
   return (
     <Flex align="center" gap="2">
-      <Button variant="outline" onClick={onSave}>
+      <Button variant="outline" onClick={onSave} disabled={!isDirty}>
         Save
       </Button>
       <Button
@@ -42,7 +52,7 @@ export function BrowserTestEditorControls({
       >
         Debug script
       </Button>
-      <Button onClick={onRunInCloud}>
+      <Button onClick={() => setIsRunInCloudDialogOpen(true)}>
         <GrafanaIcon /> Run in Grafana Cloud
       </Button>
       <DropdownMenu.Root>
@@ -57,7 +67,7 @@ export function BrowserTestEditorControls({
           </DropdownMenu.Item>
           <DeleteFileDialog
             file={file}
-            onConfirm={onDelete}
+            onConfirm={handleDelete}
             trigger={
               <DropdownMenu.Item
                 color="red"
@@ -71,9 +81,18 @@ export function BrowserTestEditorControls({
       </DropdownMenu.Root>
       <ExportScriptDialog
         scriptName={`${file.displayName}.js`}
-        onExport={onExportScript}
+        onExport={handleExportScript}
         open={isExportDialogOpen}
         onOpenChange={setIsExportDialogOpen}
+      />
+      <RunInCloudDialog
+        open={isRunInCloudDialogOpen}
+        script={{
+          type: 'raw',
+          name: file.fileName,
+          content: preview,
+        }}
+        onOpenChange={setIsRunInCloudDialogOpen}
       />
     </Flex>
   )

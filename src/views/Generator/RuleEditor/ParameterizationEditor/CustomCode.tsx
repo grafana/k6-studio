@@ -1,7 +1,7 @@
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { FieldGroup } from '@/components/Form'
-import { ConstrainedCodeEditor } from '@/components/Monaco/ConstrainerCodeEditor'
+import { ConstrainedCodeEditor } from '@/components/Monaco/ConstrainedCodeEditor'
 import { getCustomCodeSnippet } from '@/rules/parameterization'
 import { selectSelectedRuleIndex, useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
@@ -42,8 +42,8 @@ function valueWithFallback(value?: string) {
   )
 }
 
-function getEditableRanges(value?: string) {
-  const lines = (value ?? '').split('\n')
+function getEditableRanges(value: string) {
+  const lines = value.split('\n')
   const lastLine = lines[lines.length - 1] ?? '1'
   const startLine = 2 // Skip the first line with the function declaration
   const startColumn = 1
