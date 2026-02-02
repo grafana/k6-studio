@@ -1,5 +1,10 @@
-import { DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
-import { CircleHelpIcon } from 'lucide-react'
+import { Badge, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
+import {
+  AlertTriangleIcon,
+  BookTextIcon,
+  CircleHelpIcon,
+  MessageSquareIcon,
+} from 'lucide-react'
 
 export function HelpButton() {
   const handleOpenDocs = () =>
@@ -7,18 +12,19 @@ export function HelpButton() {
       'https://grafana.com/docs/k6-studio/'
     )
 
-  const handleReportIssue = () => window.studio.ui.reportIssue()
+  const handleTakeSurvey = () =>
+    window.studio.browser.openExternalLink(
+      'https://www.userinterviews.com/projects/XwPjeHBAbA/apply'
+    )
 
-  const handleOpenApplicationLogs = () => {
-    window.studio.log.openLogFolder()
-  }
+  const handleReportIssue = () => window.studio.ui.reportIssue()
 
   return (
     <DropdownMenu.Root>
       <Tooltip content="Help & feedback" side="right">
         <DropdownMenu.Trigger>
           <IconButton
-            area-label="Help and feedback"
+            aria-label="Help and feedback"
             color="gray"
             variant="ghost"
           >
@@ -28,13 +34,16 @@ export function HelpButton() {
       </Tooltip>
       <DropdownMenu.Content side="right">
         <DropdownMenu.Item onClick={handleOpenDocs}>
-          Documentation
+          <BookTextIcon /> Documentation
+        </DropdownMenu.Item>
+        <DropdownMenu.Item onClick={handleTakeSurvey}>
+          <MessageSquareIcon /> Take survey{' '}
+          <Badge variant="solid" color="indigo" ml="1" size="1">
+            New
+          </Badge>
         </DropdownMenu.Item>
         <DropdownMenu.Item onClick={handleReportIssue}>
-          Report an issue
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onClick={handleOpenApplicationLogs}>
-          Application logs
+          <AlertTriangleIcon /> Report issue
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
