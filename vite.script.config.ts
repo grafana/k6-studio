@@ -9,6 +9,7 @@ export default defineConfig((env) => {
     mode: env.mode,
     build: {
       sourcemap: false,
+      minify: false,
       target: 'esnext',
       lib: {
         entry: 'src/main/runner/entrypoint.ts',
