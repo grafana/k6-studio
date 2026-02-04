@@ -50,7 +50,7 @@ export function applyRules(recording: ProxyData[], rules: TestRule[]) {
   // Collect affected requests to exclude from redirect merging
   const affectedRequestIds = new Set(
     ruleInstances.flatMap((instance) => {
-      if (instance.type === 'parameterization') {
+      if (['parameterization', 'customCode'].includes(instance.type)) {
         return instance.state.matchedRequestIds
       }
 
