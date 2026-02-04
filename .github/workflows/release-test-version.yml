@@ -4,65 +4,37 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Specify a version suffix for the test release (limit to 20 characters or windows build will fail)"
+        description: 'Specify a version suffix for the test release (limit to 20 characters or windows build will fail)'
         required: true
         type: string
-        default: "test-version"
+        default: 'test-version'
 
 permissions: {}
 
 jobs:
-  publish-studio:
-    # required for Azure OIDC
-    environment:
-      name: azure-trusted-signing
+  publish-macos:
     permissions:
       contents: write
-      id-token: write
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, macos-15-intel, windows-latest, ubuntu-latest]
+        include:
+          - platform: macos-latest
+            publish_args: ''
+          - platform: macos-15-intel
+            publish_args: '--arch=x64'
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - id: get-secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
-        with:
-          repo_secrets: |
-            APPLE_CERTIFICATE_P12=apple-certificates:APPLE_CERTIFICATE_P12
-            CERTIFICATE_PASSWORD=apple-certificates:APPLE_CERTIFICATE_P12_PASSWORD
-            APPLE_API_KEY_ID=apple-certificates:APPLE_API_KEY_ID
-            APPLE_API_ISSUER=apple-certificates:APPLE_API_ISSUER
-            APPLE_API_KEY=apple-certificates:APPLE_API_KEY
-            SENTRY_DSN=sentry:SENTRY_DSN
-            SENTRY_AUTH_TOKEN=sentry:SENTRY_AUTH_TOKEN
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-        with:
-          persist-credentials: false
+      - name: Setup release
+        uses: ./.github/actions/setup-release
 
       - name: Set version for test release
         env:
           PACKAGE_VERSION: ${{ inputs.version }}
         run: python update_version.py
 
-      - name: setup node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
-        with:
-          node-version: 22
-
-      # try earlier python version for appdmg
-      # https://github.com/electron/forge/issues/3371#issuecomment-2105195302
-      - name: Install Python 3.11.4
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6
-        with:
-          python-version: '3.11.4'
-
-      - name: install dependencies
-        run: npm ci
-
       - name: setup macos keychain
-        if: startsWith(matrix.platform, 'macos-')
         run: |
           echo "$APPLE_API_KEY" > ./apple_api_key.p8
           echo $APPLE_CERTIFICATE_P12 | base64 --decode > certificate.p12
@@ -72,8 +44,7 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$CERTIFICATE_PASSWORD" build.keychain
 
-      - name: publish macOS arm64
-        if: startsWith(matrix.platform, 'macos-latest')
+      - name: publish macOS
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -84,26 +55,33 @@ jobs:
           SENTRY_ORG: ${{ vars.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: |
-          npm run publish
+          npm run publish ${{ matrix.publish_args }}
 
-      - name: publish macOS x86_64
-        if: startsWith(matrix.platform, 'macos-15-intel')
-        env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # apple notarization
-          APPLE_API_KEY: ./apple_api_key.p8
-          # sentry integration
-          # sentry vite plugin integration during build
-          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+      - name: cleanup macos certificates
         run: |
-          npm run publish -- --arch=x64
+          rm apple_api_key.p8
+          rm certificate.p12
+
+  publish-windows:
+    # required for Azure OIDC
+    environment:
+      name: azure-trusted-signing
+    permissions:
+      contents: write
+      id-token: write
+    runs-on: windows-latest
+    steps:
+      - name: Setup release
+        uses: ./.github/actions/setup-release
+
+      - name: Set version for test release
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
+        run: python update_version.py
 
       - name: Get azure secrets
         id: get-azure-secrets
         uses: grafana/shared-workflows/actions/get-vault-secrets@5d7e361bc7e0a183cde8afe9899fb7b596d2659b # v1.2.0
-        if: startsWith(matrix.platform, 'windows-')
         with:
           export_env: false
           repo_secrets: |
@@ -113,7 +91,6 @@ jobs:
 
       - name: Azure log in
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
-        if: startsWith(matrix.platform, 'windows-')
         with:
           client-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).client-id }}
           subscription-id: ${{ fromJSON(steps.get-azure-secrets.outputs.secrets).subscription-id }}
@@ -121,18 +98,16 @@ jobs:
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
-        if: startsWith(matrix.platform, 'windows-')
         with:
           # renovate: datasource=dotnet-version depName=dotnet-sdk
-          dotnet-version: "8.0.414"
+          dotnet-version: '8.0.414'
 
       - name: Install Sign CLI tool
         id: install-sign-tool
-        if: startsWith(matrix.platform, 'windows-')
         shell: pwsh
         env:
           # renovate: datasource=nuget depName=sign
-          DOTNET_SIGN_VERSION: "0.9.1-beta.25379.1"
+          DOTNET_SIGN_VERSION: '0.9.1-beta.25379.1'
         run: |
           $toolPath = Join-Path -Path ${env:RUNNER_TEMP} -ChildPath (New-Guid).ToString()
           New-Item -ItemType Directory -Path $toolPath | Out-Null
@@ -147,7 +122,6 @@ jobs:
           "sign-tool=$toolPath" >> ${env:GITHUB_OUTPUT}
 
       - name: publish Windows
-        if: startsWith(matrix.platform, 'windows-')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
@@ -161,8 +135,20 @@ jobs:
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
         run: npm run publish
 
+  publish-linux:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup release
+        uses: ./.github/actions/setup-release
+
+      - name: Set version for test release
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
+        run: python update_version.py
+
       - name: publish Linux
-        if: startsWith(matrix.platform, 'ubuntu-')
         env:
           NODE_OPTIONS: '--max_old_space_size=8192'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -180,9 +166,3 @@ jobs:
 
           npm run publish
           npm run publish -- --arch=arm64
-
-      - name: cleanup macos certificates
-        if: startsWith(matrix.platform, 'macos-')
-        run: |
-          rm apple_api_key.p8
-          rm certificate.p12
