@@ -689,6 +689,26 @@ describe('Code generation', () => {
         expectedResult
       )
     })
+
+    it('generate request params with redirects: 0 when disableRedirects is true', async () => {
+      const headers: Header[] = [['content-type', 'application/json']]
+      const request = generateRequest(headers)
+
+      const expectedResult = await prettify(`
+        params = {
+          headers: {
+            'content-type': \`application/json\`
+          },
+          cookies: {},
+          redirects: 0
+        }
+      `)
+      expect(
+        await prettify(
+          generateRequestParams(request, { disableRedirects: true })
+        )
+      ).toBe(expectedResult)
+    })
   })
 
   describe('generateParameterizationCustomCode', () => {

@@ -215,6 +215,38 @@ describe('Code generation - utils', () => {
       expect(result[2]?.data.id).toBe('4')
       expect(result[1]?.noRedirect).toBe(true)
     })
+
+    it('keeps redirect unchanged when target URL is not in recording', () => {
+      const redirect = createRedirectSnippet(
+        '1',
+        'http://a.com',
+        'http://missing.com'
+      )
+
+      const result = processRedirectChains([redirect], new Set())
+
+      expect(result.length).toBe(1)
+      expect(result[0]?.data.id).toBe('1')
+      expect(result[0]?.data.response?.statusCode).toBe(302)
+      expect(result[0]?.noRedirect).toBeFalsy()
+    })
+
+    it('handles same URL appearing in multiple independent chains', () => {
+      const snippets = [
+        createRedirectSnippet('1', 'http://a.com', 'http://shared.com'),
+        createFinalSnippet('2', 'http://shared.com', 'First chain'),
+        createRedirectSnippet('3', 'http://b.com', 'http://shared.com'),
+        createFinalSnippet('4', 'http://shared.com', 'Second chain'),
+      ]
+
+      const result = processRedirectChains(snippets, new Set())
+
+      expect(result.length).toBe(2)
+      expect(result[0]?.data.id).toBe('1')
+      expect(result[0]?.data.response?.content).toBe('First chain')
+      expect(result[1]?.data.id).toBe('3')
+      expect(result[1]?.data.response?.content).toBe('Second chain')
+    })
   })
 
   describe('removeWebsocketRequests', () => {
