@@ -1,7 +1,5 @@
-import { flow } from 'lodash-es'
-
 import { canonicalHeaderKey } from '@/rules/utils'
-import { ProxyData } from '@/types'
+import { ProxyData, RequestSnippetSchema } from '@/types'
 import { getLocationHeader, getUpgradeHeader } from '@/utils/headers'
 
 const HEADERS_TO_EXCLUDE = ['Cookie', 'User-Agent', 'Host', 'Content-Length']
@@ -32,7 +30,7 @@ export function stringify(value: unknown): string {
 
 function isRedirect(response: ProxyData['response']) {
   if (!response) return false
-  return [301, 302].includes(response.statusCode)
+  return [301, 302, 303, 307, 308].includes(response.statusCode)
 }
 
 function isValidUrl(url: string) {
@@ -44,7 +42,7 @@ function isValidUrl(url: string) {
   }
 }
 
-function getRedirectUrl(
+export function getRedirectUrl(
   request: ProxyData['request'],
   response: ProxyData['response']
 ) {
@@ -62,56 +60,73 @@ function buildLocationUrl(request: ProxyData['request'], location: string) {
   return `${protocol}//${host}${location}`
 }
 
-export function mergeRedirects(recording: ProxyData[]) {
-  const result = []
-  const processed = new Set()
+function followChain(
+  start: RequestSnippetSchema,
+  snippets: RequestSnippetSchema[],
+  processed: Set<string>
+): RequestSnippetSchema[] {
+  const chain: RequestSnippetSchema[] = [start]
+  const visited = new Set<string>([start.data.id])
+  let current = start
+  let nextUrl = getRedirectUrl(current.data.request, current.data.response)
 
-  for (const item of recording) {
-    const { response, request, id } = item
+  while (nextUrl) {
+    const next = snippets.find(
+      (s) =>
+        s.data.request.url === nextUrl &&
+        !processed.has(s.data.id) &&
+        !visited.has(s.data.id)
+    )
+    if (!next) break
 
-    // Skip requests that have been processed
-    if (processed.has(id)) {
+    visited.add(next.data.id)
+    chain.push(next)
+    current = next
+    nextUrl = getRedirectUrl(current.data.request, current.data.response)
+  }
+
+  return chain
+}
+
+export function processRedirectChains(
+  snippets: RequestSnippetSchema[],
+  affectedRequestIds: Set<string>
+): RequestSnippetSchema[] {
+  const processed = new Set<string>()
+  const result: RequestSnippetSchema[] = []
+
+  for (const snippet of snippets) {
+    if (processed.has(snippet.data.id)) {
       continue
     }
 
-    // Requests without response don't need to be merged
-    if (!response) {
-      result.push(item)
-      processed.add(id)
+    if (!snippet.data.response || !isRedirect(snippet.data.response)) {
+      result.push(snippet)
+      processed.add(snippet.data.id)
       continue
     }
 
-    // Requests that are not redirects don't need to be merged
-    if (!isRedirect(response)) {
-      result.push(item)
-      processed.add(id)
+    const chain = followChain(snippet, snippets, processed)
+    const chainAffected = chain.some((s) => affectedRequestIds.has(s.data.id))
+
+    chain.forEach((s) => processed.add(s.data.id))
+
+    if (chainAffected) {
+      // Skip redirect merging since redirect chain is affected by some rules
+      chain.forEach((chainSnippet) => {
+        result.push({
+          ...chainSnippet,
+          noRedirect: isRedirect(chainSnippet.data.response),
+        })
+      })
       continue
     }
 
-    let finalResponse: ProxyData['response'] = response
-    let nextUrl = getRedirectUrl(request, response)
-
-    // Find the final response by following the redirect chain
-    while (nextUrl) {
-      // Find request that corresponds to the next URL in the chain and that haven't been processed yet
-      const nextRequest = recording.find(
-        (req) => req.request.url === nextUrl && !processed.has(req.id)
-      )
-      if (nextRequest) {
-        processed.add(nextRequest.id)
-        finalResponse = nextRequest.response
-        nextUrl = getRedirectUrl(request, finalResponse)
-      } else {
-        break
-      }
-    }
-
+    const last = chain[chain.length - 1]!
     result.push({
-      ...item,
-      response: finalResponse,
+      ...snippet,
+      data: { ...snippet.data, response: last.data.response },
     })
-
-    processed.add(id)
   }
 
   return result
@@ -124,7 +139,7 @@ export const removeWebsocketRequests = (recording: ProxyData[]) => {
 }
 
 export function cleanupRecording(recording: ProxyData[]) {
-  return flow(removeWebsocketRequests, mergeRedirects)(recording)
+  return removeWebsocketRequests(recording)
 }
 
 export function shouldIncludeHeaderInScript(key: string) {

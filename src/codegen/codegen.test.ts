@@ -10,7 +10,7 @@ import {
   customCodeReplaceProjectId,
   jsonRule,
 } from '@/test/fixtures/parameterizationRules'
-import { Cookie, Header, ProxyData, Request } from '@/types'
+import { Cookie, Header, Request } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { TestRule } from '@/types/rules'
 import { ThinkTime } from '@/types/testOptions'
@@ -18,7 +18,6 @@ import { prettify } from '@/utils/prettify'
 
 import {
   generateScript,
-  generateRequestSnippets,
   generateVariableDeclarations,
   generateGroupSnippet,
   generateRequestParams,
@@ -26,6 +25,7 @@ import {
   generateDataFileDeclarations,
   generateImports,
   generateParameterizationCustomCode,
+  generateRequestSnippetsFromSchemas,
 } from './codegen'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
@@ -225,30 +225,20 @@ describe('Code generation', () => {
     })
   })
 
-  describe('generateRequestSnippets', () => {
+  describe('generateRequestSnippetsFromSchemas', () => {
     it('should generate request snippets', () => {
-      const recording: ProxyData[] = [
-        {
+      const schema = {
+        data: createProxyData({
           id: '1',
-          request: {
+          request: createRequest({
             method: 'GET',
             url: '/api/v1/users',
-            headers: [],
-            cookies: [],
-            query: [],
-            scheme: 'http',
-            host: 'localhost:3000',
-            content: '',
-            path: '/api/v1/users',
-            timestampStart: 0,
-            timestampEnd: 0,
-            contentLength: 0,
-            httpVersion: '1.1',
-          },
-        },
-      ]
-
-      const rules: TestRule[] = []
+          }),
+        }),
+        before: [],
+        after: [],
+        checks: [],
+      }
 
       const expectedResult = `
         params = { headers: {}, cookies: {} }
@@ -256,13 +246,11 @@ describe('Code generation', () => {
         resp = http.request('GET', url, null, params)
       `
 
-      expect(
-        generateRequestSnippets(
-          recording,
-          rules,
-          thinkTime
-        )[0]?.snippet.replace(/\s/g, '')
-      ).toBe(expectedResult.replace(/\s/g, ''))
+      const result = generateRequestSnippetsFromSchemas([schema], thinkTime)
+
+      expect(result[0]?.snippet.replace(/\s/g, '')).toBe(
+        expectedResult.replace(/\s/g, '')
+      )
     })
 
     describe('Correlation', () => {
@@ -448,20 +436,13 @@ describe('Code generation', () => {
         },
       ]
 
-      const expectedResult = `
-        params = { headers: {}, cookies: {} }
-        url = http.url\`http://test.k6.io/api/v1/foo\`
-        resp = http.request('POST', url, null, params)
-        check(resp, { 'status equals 200': (r) => r.status === 200 })
-      `
+      const result = generateVUCode(checksRecording, rules, thinkTime)
 
-      expect(
-        generateRequestSnippets(
-          checksRecording,
-          rules,
-          thinkTime
-        )[0]?.snippet.replace(/\s/g, '')
-      ).toBe(expectedResult.replace(/\s/g, ''))
+      expect(result).toContain('http.url`http://test.k6.io/api/v1/foo`')
+      expect(result).toContain("http.request('POST', url, null, params)")
+      expect(result).toContain(
+        "check(resp, { 'status equals 200': (r) => r.status === 200 })"
+      )
     })
 
     describe('Parameterization', () => {
@@ -647,48 +628,44 @@ describe('Code generation', () => {
       }
     }
 
-    it('generate request params', () => {
+    it('generate request params', async () => {
       const headers: Header[] = [['content-type', 'application/json']]
       const request = generateRequest(headers)
 
-      const expectedResult = `
-    {
-      headers: {
-        'content-type': \`application/json\`
-      },
-      cookies: {
-
-      }
-    }
-  `
-      expect(generateRequestParams(request).replace(/\s/g, '')).toBe(
-        expectedResult.replace(/\s/g, '')
+      const expectedResult = await prettify(`
+        params = {
+          headers: {
+            'content-type': \`application/json\`
+          },
+          cookies: {}
+        }
+      `)
+      expect(await prettify(generateRequestParams(request))).toBe(
+        expectedResult
       )
     })
 
-    it('generate request params with cookie header', () => {
+    it('generate request params with cookie header', async () => {
       const headers: Header[] = [
         ['content-type', 'application/json'],
         ['Cookie', 'hello=world'],
       ]
       const request = generateRequest(headers)
 
-      const expectedResult = `
-    {
-      headers: {
-        'content-type': \`application/json\`
-      },
-      cookies: {
-
-      }
-    }
-  `
-      expect(generateRequestParams(request).replace(/\s/g, '')).toBe(
-        expectedResult.replace(/\s/g, '')
+      const expectedResult = await prettify(`
+        params = {
+          headers: {
+            'content-type': \`application/json\`
+          },
+          cookies: {}
+        }
+      `)
+      expect(await prettify(generateRequestParams(request))).toBe(
+        expectedResult
       )
     })
 
-    it('generate request params with cookies with correlation', () => {
+    it('generate request params with cookies with correlation', async () => {
       const headers: Header[] = [
         ['content-type', 'application/json'],
         ['Cookie', "security=${correlation_vars['correlation_0']}"],
@@ -698,17 +675,19 @@ describe('Code generation', () => {
       ]
       const request = generateRequest(headers, cookies)
 
-      const expectedResult = `
-    {
-      headers: {
-        'content-type': \`application/json\`
-      },
-      cookies: {
-        'security': {value: \`\${correlation_vars['correlation_0']}\`, replace: true}
-      }
-    }
-  `
-      expect(generateRequestParams(request)).toBe(expectedResult)
+      const expectedResult = await prettify(`
+        params = {
+          headers: {
+            'content-type': \`application/json\`
+          },
+          cookies: {
+            'security': {value: \`\${correlation_vars['correlation_0']}\`, replace: true}
+          }
+        }
+      `)
+      expect(await prettify(generateRequestParams(request))).toBe(
+        expectedResult
+      )
     })
   })
 

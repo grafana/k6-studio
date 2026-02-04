@@ -84,6 +84,7 @@ export interface RequestSnippetSchema {
   before: string[]
   after: string[]
   checks: Check[]
+  noRedirect?: boolean
 }
 
 export interface StudioFile {

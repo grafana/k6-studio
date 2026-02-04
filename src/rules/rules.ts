@@ -47,7 +47,25 @@ export function applyRules(recording: ProxyData[], rules: TestRule[]) {
     // since some rules may change the URL
     .map(updateQueryParams)
 
-  return { requestSnippetSchemas, ruleInstances }
+  // Collect affected requests to exclude from redirect merging
+  const affectedRequestIds = new Set(
+    ruleInstances.flatMap((instance) => {
+      if (instance.type === 'parameterization') {
+        return instance.state.matchedRequestIds
+      }
+
+      if (instance.type === 'correlation') {
+        return [
+          ...instance.state.matchedRequestIds,
+          ...instance.state.responsesExtracted.map((extracted) => extracted.id),
+        ]
+      }
+
+      return []
+    })
+  )
+
+  return { requestSnippetSchemas, ruleInstances, affectedRequestIds }
 }
 
 function createRuleInstance<T extends TestRule>(
