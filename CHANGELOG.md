@@ -1,59 +1,5 @@
 # Changelog
 
-## [1.11.0](https://github.com/grafana/k6-studio/compare/v1.10.0...v1.11.0) (2026-02-03)
-
-
-### Features
-
-* Add User survey banner ([#1069](https://github.com/grafana/k6-studio/issues/1069)) ([0ad8d20](https://github.com/grafana/k6-studio/commit/0ad8d2008d04960bc56b305a3595a323fa390a76))
-* **browser:** Session replay while debugging browser tests ([#1035](https://github.com/grafana/k6-studio/issues/1035)) ([6ec179a](https://github.com/grafana/k6-studio/commit/6ec179a81e4beae8ffbd9fb687cba68e7270ced7))
-
-
-### Bug Fixes
-
-* **deps:** update dependency devtools-protocol to ^0.0.1568225 ([#992](https://github.com/grafana/k6-studio/issues/992)) ([b7e98e6](https://github.com/grafana/k6-studio/commit/b7e98e6a7ce09cc37fe3bd07b85a396a6226e5fc))
-* **deps:** update dependency diff to v8 [security] ([#1036](https://github.com/grafana/k6-studio/issues/1036)) ([f603339](https://github.com/grafana/k6-studio/commit/f603339bdc6d2bd770003b8781aadfca28787954))
-
-
-### Internal Changes
-
-* **browser:** Add browser test editor UI ([#1005](https://github.com/grafana/k6-studio/issues/1005)) ([ec89b04](https://github.com/grafana/k6-studio/commit/ec89b042d6af79f1e03f5c1d21c372025e26a143))
-* **browser:** Browser action editing MVP ([#1031](https://github.com/grafana/k6-studio/issues/1031)) ([08c15f4](https://github.com/grafana/k6-studio/commit/08c15f46bcd2ac7f1d465098272fbdab74afaac0))
-
-
-### Dependency Updates
-
-* Migrate to React 19 ([#1041](https://github.com/grafana/k6-studio/issues/1041)) ([3fbd16a](https://github.com/grafana/k6-studio/commit/3fbd16ac6a9dd5b7b9f7c70e05214c4f7a2d2ddf))
-* Update `monaco-editor`, `@monaco-editor/react`, and `constrained-editor-plugin` ([#1040](https://github.com/grafana/k6-studio/issues/1040)) ([f7a54af](https://github.com/grafana/k6-studio/commit/f7a54af211dc346e19e34eeba9acb04b6a444d54))
-
-
-### Miscellaneous Chores
-
-* **deps:** update actions/checkout action to v6 ([#1001](https://github.com/grafana/k6-studio/issues/1001)) ([0cd6bfb](https://github.com/grafana/k6-studio/commit/0cd6bfb572b35fcddf817443cc1843d66639582f))
-* **deps:** update actions/create-github-app-token action to v2 ([#1002](https://github.com/grafana/k6-studio/issues/1002)) ([cb92991](https://github.com/grafana/k6-studio/commit/cb9299149f6cf8a55f8a7eb25dd4965ff899b00d))
-* **deps:** update actions/setup-node action to v5 ([#1018](https://github.com/grafana/k6-studio/issues/1018)) ([39370f1](https://github.com/grafana/k6-studio/commit/39370f16db09d4aaa53c8de0d2be5f6b1c12453e))
-* **deps:** update actions/setup-python action to v6 ([#1019](https://github.com/grafana/k6-studio/issues/1019)) ([cccdb97](https://github.com/grafana/k6-studio/commit/cccdb9765818675d81882914ed42207ca174a718))
-* **deps:** update dependency dotenv to v17 ([#1021](https://github.com/grafana/k6-studio/issues/1021)) ([5dc68b0](https://github.com/grafana/k6-studio/commit/5dc68b046e70c70bcad9f671d4b374e187586635))
-* **deps:** update dependency esbuild to ^0.27.0 ([#996](https://github.com/grafana/k6-studio/issues/996)) ([3a7d5fa](https://github.com/grafana/k6-studio/commit/3a7d5fa66bdb4d73592b2327c0242e0a98f93820))
-* **deps:** update dependency eslint-plugin-unused-imports to v4 ([#1028](https://github.com/grafana/k6-studio/issues/1028)) ([e7251bc](https://github.com/grafana/k6-studio/commit/e7251bc469337d0bb2719b3668e2bedd69fd533b))
-* **deps:** update dependency lodash-es to v4.17.23 [security] ([#1034](https://github.com/grafana/k6-studio/issues/1034)) ([85227c1](https://github.com/grafana/k6-studio/commit/85227c1290a38665b6e467a6784ba416a778cdb5))
-* **deps:** update dependency undici to v7.18.2 [security] ([#1012](https://github.com/grafana/k6-studio/issues/1012)) ([ce37d0d](https://github.com/grafana/k6-studio/commit/ce37d0dd21a6f0de2708e9d3114cda0ec7200be8))
-* **deps:** update grafana/shared-workflows/get-vault-secrets action to v1.3.0 ([#998](https://github.com/grafana/k6-studio/issues/998)) ([d8e330c](https://github.com/grafana/k6-studio/commit/d8e330c0b6fd8bf06ce6da42f9d25b1dd88ebe8b))
-* **deps:** update react monorepo ([#991](https://github.com/grafana/k6-studio/issues/991)) ([43999ca](https://github.com/grafana/k6-studio/commit/43999ca17bcd6ab98b308f12006915b253d8f508))
-* **main:** release 1.11.0 ([#1014](https://github.com/grafana/k6-studio/issues/1014)) ([6a4c5af](https://github.com/grafana/k6-studio/commit/6a4c5af4865f762fc8d0a891cd36a81c3878852f))
-* Revert "chore(main): release 1.11.0 ([#1014](https://github.com/grafana/k6-studio/issues/1014))" ([#1072](https://github.com/grafana/k6-studio/issues/1072)) ([b74bac5](https://github.com/grafana/k6-studio/commit/b74bac5550ba8b47f19a5373b3a9f8bc17195d75))
-
-
-### Code Refactoring
-
-* **browser:** Make comments emitted by codegen stick to the statement below them ([#1038](https://github.com/grafana/k6-studio/issues/1038)) ([1b93434](https://github.com/grafana/k6-studio/commit/1b934347abb9103a3d6c26981b44334c4ceb25c0))
-
-
-### Continuous Integration
-
-* Configure renovate to only upgrade packages with security updates ([#1039](https://github.com/grafana/k6-studio/issues/1039)) ([734f6fc](https://github.com/grafana/k6-studio/commit/734f6fc7fe9542050caf1d19092cbbf47b513794))
-* **windows:** Fix windows release job ([#1071](https://github.com/grafana/k6-studio/issues/1071)) ([7a2da01](https://github.com/grafana/k6-studio/commit/7a2da010ee2d15c4eaed9337c16cf1d83da0c347))
-
 ## [1.10.0](https://github.com/grafana/k6-studio/compare/v1.9.0...v1.10.0) (2026-01-15)
 
 
