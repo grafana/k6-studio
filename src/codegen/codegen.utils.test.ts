@@ -247,6 +247,82 @@ describe('Code generation - utils', () => {
       expect(result[1]?.data.id).toBe('3')
       expect(result[1]?.data.response?.content).toBe('Second chain')
     })
+
+    it("uses final request's checks in a redirect chain", () => {
+      const redirectWithCheck = {
+        ...createRedirectSnippet('1', 'http://a.com', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 302',
+            expression: '(r) => r.status === 302',
+          },
+        ],
+      }
+      const finalWithCheck = {
+        ...createFinalSnippet('2', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 200',
+            expression: '(r) => r.status === 200',
+          },
+        ],
+      }
+
+      const result = processRedirectChains(
+        [redirectWithCheck, finalWithCheck],
+        new Set()
+      )
+
+      expect(result.length).toBe(1)
+      expect(result[0]?.data.id).toBe('1')
+      expect(result[0]?.data.response?.statusCode).toBe(200)
+      expect(result[0]?.checks).toEqual([
+        {
+          description: 'status equals 200',
+          expression: '(r) => r.status === 200',
+        },
+      ])
+    })
+
+    it('keeps checks for affected redirect chains', () => {
+      const redirectWithCheck = {
+        ...createRedirectSnippet('1', 'http://a.com', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 302',
+            expression: '(r) => r.status === 302',
+          },
+        ],
+      }
+      const finalWithCheck = {
+        ...createFinalSnippet('2', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 200',
+            expression: '(r) => r.status === 200',
+          },
+        ],
+      }
+
+      const result = processRedirectChains(
+        [redirectWithCheck, finalWithCheck],
+        new Set(['1'])
+      )
+
+      expect(result.length).toBe(2)
+      expect(result[0]?.checks).toEqual([
+        {
+          description: 'status equals 302',
+          expression: '(r) => r.status === 302',
+        },
+      ])
+      expect(result[1]?.checks).toEqual([
+        {
+          description: 'status equals 200',
+          expression: '(r) => r.status === 200',
+        },
+      ])
+    })
   })
 
   describe('removeWebsocketRequests', () => {

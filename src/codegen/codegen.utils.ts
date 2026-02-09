@@ -126,6 +126,7 @@ export function processRedirectChains(
     result.push({
       ...snippet,
       data: { ...snippet.data, response: last.data.response },
+      checks: last.checks,
     })
   }
 
