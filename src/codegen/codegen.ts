@@ -14,6 +14,7 @@ import { exhaustive } from '@/utils/typescript'
 import {
   cleanupRecording,
   generateScriptHeader,
+  processRedirectChains,
   shouldIncludeHeaderInScript,
 } from './codegen.utils'
 import { generateImportStatement } from './imports'
@@ -30,7 +31,7 @@ export function generateScript({
 }: GenerateScriptParams): string {
   return `
     // ${generateScriptHeader()}
-    
+
     ${generateImports(generator)}
 
     export const options = ${generateOptions(generator.options)}
@@ -123,9 +124,17 @@ export function generateVUCode(
   const cleanedRecording = cleanupRecording(recording)
   const enabledRules = rules.filter((rule) => rule.enabled)
 
-  const requestSnippets = generateRequestSnippets(
+  const { requestSnippetSchemas, affectedRequestIds } = applyRules(
     cleanedRecording,
-    enabledRules,
+    enabledRules
+  )
+
+  const snippets = processRedirectChains(
+    requestSnippetSchemas,
+    affectedRequestIds
+  )
+  const requestSnippets = generateRequestSnippetsFromSchemas(
+    snippets,
     thinkTime
   )
 
@@ -169,12 +178,10 @@ type GenerateRequestSnippetReturnValue = Array<{
   group?: string
 }>
 
-export function generateRequestSnippets(
-  recording: ProxyData[],
-  rules: TestRule[],
+export function generateRequestSnippetsFromSchemas(
+  requestSnippetSchemas: RequestSnippetSchema[],
   thinkTime: ThinkTime
 ): GenerateRequestSnippetReturnValue {
-  const { requestSnippetSchemas } = applyRules(recording, rules)
   return requestSnippetSchemas.reduce<GenerateRequestSnippetReturnValue>(
     (acc, requestSnippetSchema) => {
       const requestSnippet = generateSingleRequestSnippet(requestSnippetSchema)
@@ -213,6 +220,7 @@ export function generateSingleRequestSnippet(
     after,
     data: { request },
     checks,
+    noRedirect,
   } = requestSnippetSchema
 
   const method = `'${request.method}'`
@@ -241,7 +249,9 @@ export function generateSingleRequestSnippet(
     console.error('Failed to serialize request content', error)
   }
 
-  const params = `params = ${generateRequestParams(request)}`
+  const params = generateRequestParams(request, {
+    disableRedirects: noRedirect,
+  })
 
   const main = `
     url = http.url${url}
@@ -262,7 +272,10 @@ function generateSleep(timing: ThinkTime['timing']): string {
   }
 }
 
-export function generateRequestParams(request: ProxyData['request']): string {
+export function generateRequestParams(
+  request: ProxyData['request'],
+  options: { disableRedirects?: boolean } = {}
+): string {
   const headers = request.headers
     .filter(([name]) => shouldIncludeHeaderInScript(name))
     .map(([name, value]) => `'${name}': \`${value}\``)
@@ -273,16 +286,19 @@ export function generateRequestParams(request: ProxyData['request']): string {
     .map(([name, value]) => `'${name}': {value: \`${value}\`, replace: true}`)
     .join(',\n')
 
-  return `
-    {
-      headers: {
-        ${headers}
-      },
-      cookies: {
-        ${cookies}
-      }
-    }
-  `
+  const params = [
+    `headers: {
+      ${headers}
+    }`,
+    `cookies: {
+      ${cookies}
+    }`,
+    ...(options.disableRedirects ? ['redirects: 0'] : []),
+  ]
+
+  return `params = {
+    ${params.join(',\n')}
+  }`
 }
 
 export function generateParameterizationCustomCode(
