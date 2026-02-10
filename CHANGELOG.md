@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/grafana/k6-studio/compare/v1.11.0...v1.11.1) (2026-02-10)
+
+
+### Bug Fixes
+
+* Allow to modify requests in a redirect chain ([#1077](https://github.com/grafana/k6-studio/issues/1077)) ([4951e57](https://github.com/grafana/k6-studio/commit/4951e57af104513721fae687fc1fb534b8fb4095))
+
 ## [1.11.0](https://github.com/grafana/k6-studio/compare/v1.10.0...v1.11.0) (2026-02-04)
 
 
