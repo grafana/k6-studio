@@ -13,36 +13,30 @@ import {
 import {
   CircleQuestionMarkIcon,
   GlobeIcon,
+  RefreshCwIcon,
   Trash2Icon,
   TriangleAlertIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { AnyBrowserAction, PageGotoAction } from '@/main/runner/schema'
+import { PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import { BrowserActionWithId } from './types'
+import { BrowserActionInstance, WithEditorMetadata } from './types'
 
 interface EditableActionProps {
-  action: BrowserActionWithId
+  action: BrowserActionInstance
   onRemove: (actionId: string) => void
-  onUpdate: (action: BrowserActionWithId) => void
+  onUpdate: (action: BrowserActionInstance) => void
 }
 
 export function EditableAction({
-  action: { id: actionId, action },
+  action,
   onRemove,
   onUpdate,
 }: EditableActionProps) {
   const handleRemove = () => {
-    onRemove(actionId)
-  }
-
-  const handleUpdate = (updatedAction: AnyBrowserAction) => {
-    onUpdate({
-      id: actionId,
-      action: updatedAction,
-    })
+    onRemove(action.id)
   }
 
   return (
@@ -58,8 +52,8 @@ export function EditableAction({
         }
       `}
     >
-      <ActionIcon action={action} />{' '}
-      <ActionBody action={action} onUpdate={handleUpdate} />
+      <ActionIcon method={action.method} />
+      <ActionBody action={action} onUpdate={onUpdate} />
       <Tooltip content="Remove action">
         <IconButton
           size="2"
@@ -77,14 +71,15 @@ export function EditableAction({
 }
 
 interface ActionIconProps {
-  action: AnyBrowserAction
+  method: BrowserActionInstance['method']
 }
 
-function ActionIcon({ action }: ActionIconProps) {
-  switch (action.method) {
+function ActionIcon({ method }: ActionIconProps) {
+  switch (method) {
     case 'page.goto':
       return <GlobeIcon aria-hidden="true" />
     case 'page.reload':
+      return <RefreshCwIcon aria-hidden="true" />
     case 'page.waitForNavigation':
     case 'page.*':
     case 'locator.click':
@@ -105,13 +100,13 @@ function ActionIcon({ action }: ActionIconProps) {
     case 'browserContext.*':
       return <CircleQuestionMarkIcon aria-hidden="true" />
     default:
-      return exhaustive(action)
+      return exhaustive(method)
   }
 }
 
 interface ActionBodyProps {
-  action: AnyBrowserAction
-  onUpdate: (action: AnyBrowserAction) => void
+  action: BrowserActionInstance
+  onUpdate: (action: BrowserActionInstance) => void
 }
 
 function ActionBody({ action, onUpdate }: ActionBodyProps) {
@@ -119,6 +114,7 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
     case 'page.goto':
       return <GoToActionBody action={action} onUpdate={onUpdate} />
     case 'page.reload':
+      return <RefreshActionBody />
     case 'page.waitForNavigation':
     case 'page.*':
     case 'locator.click':
@@ -148,8 +144,8 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
 }
 
 interface GoToActionBodyProps {
-  action: PageGotoAction
-  onUpdate: (action: PageGotoAction) => void
+  action: WithEditorMetadata<PageGotoAction>
+  onUpdate: (action: WithEditorMetadata<PageGotoAction>) => void
 }
 
 function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
@@ -220,4 +216,8 @@ function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
       </Popover.Root>
     </>
   )
+}
+
+function RefreshActionBody() {
+  return <>Reload page</>
 }

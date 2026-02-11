@@ -1,10 +1,10 @@
-import { AnyBrowserAction } from '@/main/runner/schema'
 import {
   Assertion,
   BrowserEvent,
   BrowserEventTarget,
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
+import { BrowserActionInstance } from '@/views/BrowserTestEditor/types'
 
 import { isSelectorEqual, getNodeSelector } from './selectors'
 import {
@@ -271,7 +271,9 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   return nodes
 }
 
-function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
+function buildBrowserNodeGraphFromActions(
+  browserActions: BrowserActionInstance[]
+) {
   const nodes: TestNode[] = []
 
   // TODO: Add support for multiple pages
@@ -283,7 +285,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
   nodes.push(pageNode)
   const page = toNodeRef(pageNode)
 
-  function toNode(action: AnyBrowserAction): TestNode {
+  function toNode(action: BrowserActionInstance): TestNode {
     switch (action.method) {
       case 'page.goto':
         return {
@@ -296,6 +298,13 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           },
         }
       case 'page.reload':
+        return {
+          type: 'reload',
+          nodeId: crypto.randomUUID(),
+          inputs: {
+            page,
+          },
+        }
       case 'page.waitForNavigation':
       case 'page.*':
       case 'locator.click':
@@ -341,7 +350,7 @@ export function convertEventsToTest({ browserEvents }: Recording): Test {
 export function convertActionsToTest({
   browserActions,
 }: {
-  browserActions: AnyBrowserAction[]
+  browserActions: BrowserActionInstance[]
 }): Test {
   return {
     defaultScenario: {

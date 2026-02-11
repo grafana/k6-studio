@@ -1,6 +1,12 @@
-import { AnyBrowserAction } from '@/main/runner/schema'
+import { ActionLocator, AnyBrowserAction } from '@/main/runner/schema'
 
-export interface BrowserActionWithId {
-  id: string
-  action: AnyBrowserAction
+interface LocatorOptions {
+  current: ActionLocator['type']
+  values: ActionLocator[]
 }
+
+export type WithEditorMetadata<T> = (T extends { locator: ActionLocator }
+  ? Omit<T, 'locator'> & { locator: LocatorOptions }
+  : T) & { id: string }
+
+export type BrowserActionInstance = WithEditorMetadata<AnyBrowserAction>

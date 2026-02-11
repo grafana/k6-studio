@@ -19,7 +19,7 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import { queryClient } from '@/utils/query'
 import { exhaustive } from '@/utils/typescript'
 
-import { BrowserActionWithId } from './types'
+import { BrowserActionInstance } from './types'
 
 export function useBrowserTestFile(): StudioFile {
   const { fileName } = useParams()
@@ -91,7 +91,9 @@ export function useBrowserTestEditorLayout() {
   return { drawerLayout, mainLayout, setDrawer, onTabClick }
 }
 
-export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
+export function useBrowserScriptPreview(
+  browserActions: BrowserActionInstance[]
+) {
   const [preview, setPreview] = useState('')
 
   useEffect(() => {
@@ -105,7 +107,7 @@ export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
         setPreview(script)
       } catch (error) {
         setPreview(
-          `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
+          `// Failed to generate script preview:// ${error instanceof Error ? error.message : String(error)}`
         )
       }
     }
@@ -120,19 +122,16 @@ export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
   const { actions = [] } = browserTestFile ?? {}
-  const { state, undo, redo, push } = useStateWithUndo<BrowserActionWithId[]>(
-    actions.map((action) => ({
-      id: crypto.randomUUID(),
-      action,
-    }))
+  const { state, undo, redo, push } = useStateWithUndo<BrowserActionInstance[]>(
+    actions.map(toBrowserActionInstance)
   )
 
-  const addAction = (method: AnyBrowserAction['method']) => {
+  const addAction = (method: BrowserActionInstance['method']) => {
     const action = createNewAction(method)
-    push([...state, { id: crypto.randomUUID(), action }])
+    push([...state, action])
   }
 
-  const updateAction = (updatedAction: BrowserActionWithId) => {
+  const updateAction = (updatedAction: BrowserActionInstance) => {
     const newActions = state.map((action) =>
       action.id === updatedAction.id ? updatedAction : action
     )
@@ -145,7 +144,7 @@ export function useBrowserTestState(
   }
 
   const plainActions = useMemo(() => {
-    return state.map((actionWithId) => actionWithId.action)
+    return state.map(fromBrowserActionInstance)
   }, [state])
 
   const isDirty = useMemo(() => {
@@ -167,14 +166,58 @@ export function useBrowserTestState(
   }
 }
 
-function createNewAction(method: AnyBrowserAction['method']): AnyBrowserAction {
+function toBrowserActionInstance(
+  action: AnyBrowserAction
+): BrowserActionInstance {
+  const id = crypto.randomUUID()
+
+  if ('locator' in action) {
+    return {
+      id,
+      ...action,
+      locator: {
+        current: action.locator.type,
+        values: [action.locator],
+      },
+    }
+  }
+
+  return { id, ...action }
+}
+
+function fromBrowserActionInstance({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  id,
+  ...action
+}: BrowserActionInstance): AnyBrowserAction {
+  if ('locator' in action) {
+    return {
+      ...action,
+      locator: action.locator.values.find(
+        (locator) => locator.type === action.locator.current
+      )!,
+    }
+  }
+
+  return action
+}
+
+function createNewAction(
+  method: BrowserActionInstance['method']
+): BrowserActionInstance {
+  const id = crypto.randomUUID()
   switch (method) {
     case 'page.goto':
       return {
+        id,
         method: 'page.goto',
         url: 'https://example.com',
       }
     case 'page.reload':
+      return {
+        id,
+        method: 'page.reload',
+      }
     case 'page.waitForNavigation':
     case 'page.*':
     case 'locator.click':
