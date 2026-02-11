@@ -61,10 +61,20 @@ function createPlugin(program: ts.Program): Plugin {
         print(path: AstPath<ts.Node>, options: ParserOptions<ts.Node>, print) {
           const node = path.getNode()
 
+          const comments = node?.comment?.split('\n').flatMap((line, index) => {
+            const comment = ['// ', line]
+
+            if (index > 0) {
+              return [hardline, ...comment]
+            }
+
+            return comment
+          })
+
           const doc =
-            node?.comment === undefined
+            comments === undefined
               ? estree.print(path, options, print)
-              : ['// ', node.comment]
+              : comments
 
           return applySpacing(node, doc)
         },

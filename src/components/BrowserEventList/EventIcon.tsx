@@ -3,6 +3,7 @@ import {
   CircleDotIcon,
   CircleIcon,
   ClipboardListIcon,
+  MessageSquareTextIcon,
   EyeIcon,
   GlobeIcon,
   ListFilterPlusIcon,
@@ -50,6 +51,9 @@ export function EventIcon({ event }: EventIconProps) {
 
     case 'wait-for':
       return <TimerIcon />
+
+    case 'comment':
+      return <MessageSquareTextIcon />
 
     default:
       return exhaustive(event)

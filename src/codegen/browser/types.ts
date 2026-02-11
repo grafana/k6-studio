@@ -135,6 +135,14 @@ export interface WaitForNode extends NodeBase {
   }
 }
 
+export interface CommentNode extends NodeBase {
+  type: 'comment'
+  text: string
+  inputs: {
+    previous?: NodeRef
+  }
+}
+
 export type TestNode =
   | PageNode
   | GotoNode
@@ -146,6 +154,7 @@ export type TestNode =
   | CheckNode
   | AssertNode
   | WaitForNode
+  | CommentNode
 
 export interface Scenario {
   nodes: TestNode[]

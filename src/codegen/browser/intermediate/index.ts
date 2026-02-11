@@ -375,6 +375,13 @@ function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
   })
 }
 
+function emitCommentNode(context: IntermediateContext, node: m.CommentNode) {
+  context.emit({
+    type: 'Comment',
+    value: node.text,
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -406,6 +413,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'wait-for':
       return emitWaitForNode(context, node)
+
+    case 'comment':
+      return emitCommentNode(context, node)
 
     default:
       return exhaustive(node)

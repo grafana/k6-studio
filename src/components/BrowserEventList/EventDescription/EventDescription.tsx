@@ -85,6 +85,13 @@ export function EventDescription({
     case 'wait-for':
       return <WaitForDescription event={event} onHighlight={onHighlight} />
 
+    case 'comment':
+      return (
+        <>
+          Added a comment <em>{`"${event.text}"`}</em>
+        </>
+      )
+
     default:
       return exhaustive(event)
   }

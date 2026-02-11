@@ -213,6 +213,9 @@ function substituteStatement(
         expression: substituteExpression(node.expression, substitutions),
       }
 
+    case 'Comment':
+      return node
+
     default:
       return exhaustive(node)
   }
