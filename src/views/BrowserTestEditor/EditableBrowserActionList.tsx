@@ -12,13 +12,13 @@ import { EmptyMessage } from '@/components/EmptyMessage'
 import { AnyBrowserAction } from '@/main/runner/schema'
 
 import { EditableAction } from './EditableAction'
-import { BrowserActionWithId } from './types'
+import { BrowserActionInstance } from './types'
 
 interface EditableBrowserActionListProps {
-  actions: BrowserActionWithId[]
-  onAddAction: (method: AnyBrowserAction['method']) => void
+  actions: BrowserActionInstance[]
+  onAddAction: (method: BrowserActionInstance['method']) => void
   onRemoveAction: (actionId: string) => void
-  onUpdateAction: (action: BrowserActionWithId) => void
+  onUpdateAction: (action: BrowserActionInstance) => void
 }
 
 export function EditableBrowserActionList({
@@ -82,6 +82,13 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
           }}
         >
           Navigate to URL
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('page.reload')
+          }}
+        >
+          Reload page
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
