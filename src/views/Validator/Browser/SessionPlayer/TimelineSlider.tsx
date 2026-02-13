@@ -48,11 +48,10 @@ export function TimelineSlider({
 
   return (
     <Flex
-      gap="1px"
+      gap="2px"
       direction="column"
       className={className}
       css={css`
-        position: relative;
         width: 100%;
         min-width: 0;
         cursor: ${disabled ? 'default' : 'pointer'};
@@ -73,7 +72,6 @@ export function TimelineSlider({
         step={0.001}
         disabled={disabled}
         css={css`
-          position: relative;
           display: flex;
           align-items: center;
           width: 100%;

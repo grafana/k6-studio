@@ -7,6 +7,16 @@ import { BrowserActionEvent } from '@/main/runner/schema'
 import { TimelineTooltip } from './TimelineTooltip'
 import { Time } from './types'
 
+const MIN_LANE_HEIGHT = 3
+const MIN_TIMELINE_HEIGHT = 10
+
+function isIntersecting(previous: Segment, current: Segment) {
+  return (
+    (previous.end > current.start && previous.start < current.end) ||
+    (previous.start > current.start && previous.end < current.end)
+  )
+}
+
 function getActionsAtTime(
   actions: BrowserActionEvent[],
   timeMs: number,
@@ -31,13 +41,16 @@ interface Segment {
   flex: number
   start: number
   end: number
+  lane: number
   action: BrowserActionEvent
 }
 
-function buildSegments(actions: BrowserActionEvent[], time: Time): Segment[] {
+function buildSegments(actions: BrowserActionEvent[], time: Time) {
   const segments: Segment[] = []
 
-  for (const action of actions) {
+  let lanes = 1
+
+  for (const [index, action] of actions.entries()) {
     const actionStarted = action.timestamp.started
     const actionEnded = action.timestamp.ended ?? time.end
 
@@ -46,34 +59,64 @@ function buildSegments(actions: BrowserActionEvent[], time: Time): Segment[] {
 
     const duration = Math.max(0, end - start)
 
-    segments.push({
+    const segment: Segment = {
       id: action.eventId,
       flex: duration,
       start,
       end,
+      lane: 0,
       action,
-    })
+    }
+
+    for (let i = index - 1; i >= 0; i--) {
+      const previous = segments[i]
+
+      if (previous === undefined) {
+        break
+      }
+
+      if (!isIntersecting(previous, segment)) {
+        break
+      }
+
+      segment.lane = Math.max(segment.lane, previous.lane + 1)
+
+      lanes = Math.max(lanes, segment.lane + 1)
+    }
+
+    segments.push(segment)
   }
 
-  return segments
+  return { segments, lanes }
 }
 
 interface SegmentProps {
   time: Time
+  lanes: number
   disabled?: boolean
   hoverTime: number | null
   segment: Segment
   onSeek: (time: number) => void
 }
 
-function Segment({ time, disabled, hoverTime, segment, onSeek }: SegmentProps) {
+function Segment({
+  time,
+  lanes,
+  disabled,
+  hoverTime,
+  segment,
+  onSeek,
+}: SegmentProps) {
   const left = (segment.start / time.total) * 100
   const width = ((segment.end - segment.start) / time.total) * 100
+  const height = Math.max(MIN_LANE_HEIGHT, MIN_TIMELINE_HEIGHT / lanes)
 
   const style = {
     minWidth: segment.action ? 2 : 0,
     left: `${left}%`,
     width: `${width}%`,
+    top: `${segment.lane * height}px`,
+    height: `${height}px`,
   }
 
   const status = segment.action.result?.type ?? 'unknown'
@@ -174,8 +217,9 @@ export function TimelineChapters({
   time,
   onSeek,
 }: TimelineChaptersProps) {
-  const segments = buildSegments(actions, time)
   const trackRef = useRef<HTMLDivElement>(null)
+
+  const { lanes, segments } = buildSegments(actions, time)
 
   const [hoverTime, setHoverTime] = useState<number | null>(null)
 
@@ -214,11 +258,14 @@ export function TimelineChapters({
         position: relative;
         --chapters-background-color: var(--gray-5);
         width: 100%;
-        min-height: 8px;
+        min-height: 10px;
         flex-shrink: 0;
         min-width: 0;
         background-color: var(--chapters-background-color);
       `}
+      style={{
+        height: lanes * MIN_LANE_HEIGHT,
+      }}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
@@ -233,6 +280,7 @@ export function TimelineChapters({
         <Segment
           key={segment.id}
           time={time}
+          lanes={lanes}
           disabled={disabled}
           hoverTime={hoverOffset}
           segment={segment}
