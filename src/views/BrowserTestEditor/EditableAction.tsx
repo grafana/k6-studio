@@ -14,14 +14,16 @@ import {
   CircleQuestionMarkIcon,
   GlobeIcon,
   RefreshCwIcon,
+  TimerIcon,
   Trash2Icon,
   TriangleAlertIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { PageGotoAction } from '@/main/runner/schema'
+import { LocatorWaitForAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
+import { LocatorInput } from './LocatorInput'
 import { BrowserActionInstance, WithEditorMetadata } from './types'
 
 interface EditableActionProps {
@@ -80,6 +82,8 @@ function ActionIcon({ method }: ActionIconProps) {
       return <GlobeIcon aria-hidden="true" />
     case 'page.reload':
       return <RefreshCwIcon aria-hidden="true" />
+    case 'locator.waitFor':
+      return <TimerIcon aria-hidden="true" />
     case 'page.waitForNavigation':
     case 'page.close':
     case 'page.*':
@@ -90,7 +94,6 @@ function ActionIcon({ method }: ActionIconProps) {
     case 'locator.check':
     case 'locator.uncheck':
     case 'locator.selectOption':
-    case 'locator.waitFor':
     case 'locator.hover':
     case 'locator.setChecked':
     case 'locator.tap':
@@ -116,6 +119,8 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
       return <GoToActionBody action={action} onUpdate={onUpdate} />
     case 'page.reload':
       return <RefreshActionBody />
+    case 'locator.waitFor':
+      return <WaitForActionBody action={action} onUpdate={onUpdate} />
     case 'page.waitForNavigation':
     case 'page.close':
     case 'page.*':
@@ -126,7 +131,6 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
     case 'locator.check':
     case 'locator.uncheck':
     case 'locator.selectOption':
-    case 'locator.waitFor':
     case 'locator.hover':
     case 'locator.setChecked':
     case 'locator.tap':
@@ -219,6 +223,31 @@ function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
     </>
   )
 }
+
+interface WaitForActionBodyProps {
+  action: WithEditorMetadata<LocatorWaitForAction>
+  onUpdate: (action: WithEditorMetadata<LocatorWaitForAction>) => void
+}
+
+function WaitForActionBody({ action, onUpdate }: WaitForActionBodyProps) {
+  const handleChangeLocator = (
+    locator: WithEditorMetadata<LocatorWaitForAction>['locator']
+  ) => {
+    onUpdate({
+      ...action,
+      locator,
+    })
+  }
+
+  return (
+    <>
+      {' '}
+      Wait for element{' '}
+      <LocatorInput state={action.locator} onChange={handleChangeLocator} />
+    </>
+  )
+}
+;``
 
 function RefreshActionBody() {
   return <>Reload page</>
