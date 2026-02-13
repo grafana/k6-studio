@@ -85,6 +85,13 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => {
+            onAddAction('locator.waitFor')
+          }}
+        >
+          Wait for element
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
             onAddAction('page.reload')
           }}
         >

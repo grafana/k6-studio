@@ -1,8 +1,8 @@
 import { ActionLocator, AnyBrowserAction } from '@/main/runner/schema'
 
-interface LocatorOptions {
+export interface LocatorOptions {
   current: ActionLocator['type']
-  values: ActionLocator[]
+  values: Partial<Record<ActionLocator['type'], ActionLocator>>
 }
 
 export type WithEditorMetadata<T> = (T extends { locator: ActionLocator }

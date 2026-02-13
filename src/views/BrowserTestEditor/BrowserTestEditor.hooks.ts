@@ -177,7 +177,9 @@ function toBrowserActionInstance(
       ...action,
       locator: {
         current: action.locator.type,
-        values: [action.locator],
+        values: {
+          [action.locator.type]: action.locator,
+        },
       },
     }
   }
@@ -186,16 +188,21 @@ function toBrowserActionInstance(
 }
 
 function fromBrowserActionInstance({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  id,
+  id: _id,
   ...action
 }: BrowserActionInstance): AnyBrowserAction {
   if ('locator' in action) {
+    const locator = action.locator.values[action.locator.current]
+
+    if (locator === undefined) {
+      throw new Error(
+        `Current locator of type "${action.locator.current}" not found in locator values.`
+      )
+    }
+
     return {
       ...action,
-      locator: action.locator.values.find(
-        (locator) => locator.type === action.locator.current
-      )!,
+      locator,
     }
   }
 
@@ -210,13 +217,27 @@ function createNewAction(
     case 'page.goto':
       return {
         id,
-        method: 'page.goto',
+        method,
         url: 'https://example.com',
       }
     case 'page.reload':
       return {
         id,
-        method: 'page.reload',
+        method,
+      }
+    case 'locator.waitFor':
+      return {
+        id,
+        method,
+        locator: {
+          current: 'css',
+          values: {
+            css: {
+              type: 'css',
+              selector: '',
+            },
+          },
+        },
       }
     case 'page.waitForNavigation':
     case 'page.*':
@@ -227,7 +248,6 @@ function createNewAction(
     case 'locator.check':
     case 'locator.uncheck':
     case 'locator.selectOption':
-    case 'locator.waitFor':
     case 'locator.hover':
     case 'locator.setChecked':
     case 'locator.tap':

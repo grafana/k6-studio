@@ -4,9 +4,12 @@ import {
   BrowserEventTarget,
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
-import { BrowserActionInstance } from '@/views/BrowserTestEditor/types'
+import {
+  BrowserActionInstance,
+  LocatorOptions,
+} from '@/views/BrowserTestEditor/types'
 
-import { isSelectorEqual, getNodeSelector } from './selectors'
+import { isSelectorEqual, getNodeSelector, toNodeSelector } from './selectors'
 import {
   TestNode,
   PageNode,
@@ -275,6 +278,7 @@ function buildBrowserNodeGraphFromActions(
   browserActions: BrowserActionInstance[]
 ) {
   const nodes: TestNode[] = []
+  let previousLocatorNode: LocatorNode | null = null
 
   // TODO: Add support for multiple pages
   const pageNode: TestNode = {
@@ -284,6 +288,45 @@ function buildBrowserNodeGraphFromActions(
 
   nodes.push(pageNode)
   const page = toNodeRef(pageNode)
+
+  function getLocator({ current, values }: LocatorOptions): NodeRef {
+    const currentLocator = values[current]
+    if (!currentLocator) {
+      throw new Error(
+        `Current locator of type "${current}" not found in locator values.`
+      )
+    }
+
+    // Group sequential locators together, so that we reuse the same locator
+    // multiple actions have occurred on the same element, e.g:
+    // ```
+    // const input = page.locator("input")
+    //
+    // await input.focus()
+    // await input.type("Hello")
+    // await input.press("Enter")
+
+    const selector = toNodeSelector(currentLocator)
+
+    if (
+      previousLocatorNode === null ||
+      !isSelectorEqual(selector, previousLocatorNode.selector) ||
+      previousLocatorNode.inputs.page.nodeId !== page.nodeId
+    ) {
+      previousLocatorNode = {
+        type: 'locator',
+        nodeId: crypto.randomUUID(),
+        selector,
+        inputs: {
+          page,
+        },
+      }
+
+      nodes.push(previousLocatorNode)
+    }
+
+    return toNodeRef(previousLocatorNode)
+  }
 
   function toNode(action: BrowserActionInstance): TestNode {
     switch (action.method) {
@@ -305,6 +348,14 @@ function buildBrowserNodeGraphFromActions(
             page,
           },
         }
+      case 'locator.waitFor':
+        return {
+          type: 'wait-for',
+          nodeId: crypto.randomUUID(),
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
       case 'page.waitForNavigation':
       case 'page.*':
       case 'locator.click':
@@ -314,7 +365,6 @@ function buildBrowserNodeGraphFromActions(
       case 'locator.check':
       case 'locator.uncheck':
       case 'locator.selectOption':
-      case 'locator.waitFor':
       case 'locator.hover':
       case 'locator.setChecked':
       case 'locator.tap':
