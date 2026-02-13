@@ -1,4 +1,4 @@
-import { LanguageModelUsage, UIMessage, UIMessageChunk } from 'ai'
+import { UIMessage, UIMessageChunk } from 'ai'
 
 import { AiProvider } from '@/types/features'
 
@@ -24,11 +24,8 @@ export interface StreamChatChunk {
   chunk?: UIMessageChunk
 }
 
-export type TokenUsage = LanguageModelUsage
-
 export interface StreamChatEnd {
   id: string
-  usage?: TokenUsage
 }
 
 export interface AbortStreamChatRequest {

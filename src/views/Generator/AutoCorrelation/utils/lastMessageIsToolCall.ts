@@ -11,14 +11,26 @@ type ToolPart = DynamicToolUIPart | ToolUIPart<Tools>
 export function lastMessageIsToolCall({ messages }: { messages: Message[] }) {
   const finalMessage = extractFinalMessage(messages)
   if (!finalMessage) {
+    console.info('[lastMessageIsToolCall] No assistant message found → false')
     return false
   }
 
   const toolsInLastStep = extractToolsFromMostRecentStep(finalMessage.parts)
 
-  return (
-    hasCompletedTools(toolsInLastStep) && !endsWithFinishTool(toolsInLastStep)
+  const completed = hasCompletedTools(toolsInLastStep)
+  const endsWithFinish = endsWithFinishTool(toolsInLastStep)
+  const result = completed && !endsWithFinish
+
+  console.info(
+    '[lastMessageIsToolCall]',
+    `tools=${toolsInLastStep.length}`,
+    `completed=${completed}`,
+    `endsWithFinish=${endsWithFinish}`,
+    `→ ${result}`,
+    toolsInLastStep.map((t) => `${t.type}(${t.state})`).join(', ')
   )
+
+  return result
 }
 
 function extractFinalMessage(messages: Message[]) {
