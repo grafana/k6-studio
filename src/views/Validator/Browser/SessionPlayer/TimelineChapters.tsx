@@ -68,19 +68,21 @@ function buildSegments(actions: BrowserActionEvent[], time: Time) {
       action,
     }
 
+    // We need to figure out which lane the segment should be in.
+    //
+    // We do this by walking backwards through the segments until we find a
+    // segment that doesn't intersect with the current segment. The segment's
+    // lane is one lane above the top-most intersecting segment's lane.
     for (let i = index - 1; i >= 0; i--) {
       const previous = segments[i]
 
-      if (previous === undefined) {
-        break
-      }
-
-      if (!isIntersecting(previous, segment)) {
+      if (previous === undefined || !isIntersecting(previous, segment)) {
         break
       }
 
       segment.lane = Math.max(segment.lane, previous.lane + 1)
 
+      // Keep track of the total number of lanes.
       lanes = Math.max(lanes, segment.lane + 1)
     }
 
@@ -141,8 +143,6 @@ function Segment({
         data-status={status}
         css={css`
           position: absolute;
-          top: 0;
-          bottom: 0;
           border-radius: 2px;
           box-sizing: border-box;
           border-right: 1px solid var(--chapters-background-color);

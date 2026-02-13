@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import * as SliderPrimitive from '@radix-ui/react-slider'
-import { Flex, VisuallyHidden } from '@radix-ui/themes'
+import { Flex } from '@radix-ui/themes'
 import { useCallback } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
@@ -72,6 +72,7 @@ export function TimelineSlider({
         step={0.001}
         disabled={disabled}
         css={css`
+          position: relative;
           display: flex;
           align-items: center;
           width: 100%;
@@ -104,21 +105,16 @@ export function TimelineSlider({
             `}
           />
         </SliderPrimitive.Track>
-        <VisuallyHidden>
-          <SliderPrimitive.Thumb
-            aria-label="Playback position"
-            css={css`
-              display: block;
-              width: 10px;
-              height: 10px;
-              border-radius: 50%;
-              background-color: var(--gray-12);
-              border: 1px solid var(--gray-a7);
-              box-shadow: 0 1px 2px var(--black-a3);
-              pointer-events: auto;
-            `}
-          />
-        </VisuallyHidden>
+        <SliderPrimitive.Thumb
+          aria-label="Playback position"
+          css={css`
+            display: block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--gray-12);
+            pointer-events: auto;
+          `}
+        />
       </SliderPrimitive.Root>
     </Flex>
   )
