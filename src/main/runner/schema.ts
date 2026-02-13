@@ -254,7 +254,9 @@ export const ActionBeginEventSchema = ActionEventSchemaBase.extend({
   type: z.literal('begin'),
   timestamp: z.object({
     started: z.number(),
+    ended: z.undefined().optional(),
   }),
+  result: z.undefined().optional(),
 })
 
 export const ActionSuccessSchema = z.object({

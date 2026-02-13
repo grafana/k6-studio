@@ -1,9 +1,12 @@
 import { css } from '@emotion/react'
-import { Text, Flex, Slider } from '@radix-ui/themes'
+import { Text, Flex, Slider, Box } from '@radix-ui/themes'
+
+import { BrowserActionEvent } from '@/main/runner/schema'
 
 import { PlayButton } from './PlayButton'
 import { formatTime } from './PlaybackControls.utils'
-import { PlaybackState } from './types'
+import { TimelineChapters } from './TimelineChapters'
+import { PlaybackState, Time } from './types'
 
 export interface OnSeekEvent {
   time: number
@@ -13,8 +16,8 @@ export interface OnSeekEvent {
 interface PlaybackControlsProps {
   state: PlaybackState
   streaming: boolean
-  currentTime: number
-  totalTime: number
+  time: Time
+  actions: BrowserActionEvent[]
   onPlay: () => void
   onPause: () => void
   onSeek: ({ time, commit }: OnSeekEvent) => void
@@ -23,8 +26,8 @@ interface PlaybackControlsProps {
 export function PlaybackControls({
   state,
   streaming,
-  currentTime,
-  totalTime,
+  time,
+  actions = [],
   onPlay,
   onPause,
   onSeek,
@@ -47,44 +50,57 @@ export function PlaybackControls({
 
   return (
     <Flex
+      direction="column"
       css={css`
         background-color: var(--gray-2);
         border-top: 1px solid var(--gray-a5);
       `}
       py="2"
       px="4"
-      align="center"
-      gap="4"
+      gap="2"
     >
-      <PlayButton
-        playing={state === 'playing'}
-        streaming={streaming}
-        onPlay={onPlay}
-        onPause={onPause}
-      />
+      <Flex align="center" gap="4">
+        <PlayButton
+          playing={state === 'playing'}
+          streaming={streaming}
+          onPlay={onPlay}
+          onPause={onPause}
+        />
 
-      <Slider
-        size="1"
-        disabled={streaming}
-        value={[currentTime]}
-        step={0.001}
-        min={0}
-        max={totalTime}
-        onValueChange={handlePositionChange}
-        onValueCommit={handlePositionCommit}
-      />
-      <Text
-        asChild
-        size="1"
-        css={css`
-          white-space: nowrap;
-          font-variant-numeric: tabular-nums;
-        `}
-      >
-        <Flex align="center" justify="end" minWidth="80px">
-          {formatTime(currentTime)} / {formatTime(totalTime)}
-        </Flex>
-      </Text>
+        <Box
+          css={css`
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+          `}
+        >
+          <TimelineChapters actions={actions} time={time} />
+          <Slider
+            size="1"
+            disabled={streaming}
+            value={[time.current]}
+            step={0.001}
+            min={0}
+            max={time.total}
+            onValueChange={handlePositionChange}
+            onValueCommit={handlePositionCommit}
+          />
+        </Box>
+        <Text
+          asChild
+          size="1"
+          css={css`
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+          `}
+        >
+          <Flex align="center" justify="end" minWidth="80px">
+            {formatTime(time.current)} / {formatTime(time.total)}
+          </Flex>
+        </Text>
+      </Flex>
     </Flex>
   )
 }
