@@ -5,8 +5,9 @@ import { useCallback } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
+import { Time } from '../types'
+
 import { TimelineChapters } from './TimelineChapters'
-import { Time } from './types'
 
 interface TimelineSliderProps {
   className?: string

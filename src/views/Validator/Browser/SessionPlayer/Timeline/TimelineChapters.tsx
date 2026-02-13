@@ -1,11 +1,12 @@
 import { css } from '@emotion/react'
 import { Box, Reset } from '@radix-ui/themes'
-import { PointerEvent, useCallback, useRef, useState } from 'react'
+import { PointerEvent, useCallback, useState } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
+import { Time } from '../types'
+
 import { TimelineTooltip } from './TimelineTooltip'
-import { Time } from './types'
 
 const MIN_LANE_HEIGHT = 3
 const MIN_TIMELINE_HEIGHT = 10
@@ -15,18 +16,6 @@ function isIntersecting(previous: Segment, current: Segment) {
     (previous.end > current.start && previous.start < current.end) ||
     (previous.start > current.start && previous.end < current.end)
   )
-}
-
-function getActionsAtTime(
-  actions: BrowserActionEvent[],
-  timeMs: number,
-  time: Time
-): BrowserActionEvent[] {
-  return actions.filter((action) => {
-    const started = action.timestamp.started
-    const ended = action.timestamp.ended ?? time.end
-    return timeMs >= started && timeMs <= ended
-  })
 }
 
 interface TimelineChaptersProps {
@@ -96,18 +85,18 @@ interface SegmentProps {
   time: Time
   lanes: number
   disabled?: boolean
-  hoverTime: number | null
   segment: Segment
   onSeek: (time: number) => void
+  onHover: (segment: Segment | null) => void
 }
 
 function Segment({
   time,
   lanes,
   disabled,
-  hoverTime,
   segment,
   onSeek,
+  onHover,
 }: SegmentProps) {
   const left = (segment.start / time.total) * 100
   const width = ((segment.end - segment.start) / time.total) * 100
@@ -131,15 +120,18 @@ function Segment({
     onSeek(segment.start)
   }
 
+  const handleMouseEnter = () => {
+    onHover(segment)
+  }
+
+  const handleMouseLeave = () => {
+    onHover(null)
+  }
+
   return (
     <Reset>
       <button
         disabled={disabled}
-        data-hover={
-          hoverTime !== null &&
-          hoverTime >= segment.start &&
-          hoverTime <= segment.end
-        }
         data-status={status}
         css={css`
           position: absolute;
@@ -159,10 +151,6 @@ function Segment({
           &[data-status='success'] {
             background-color: var(--green-a5);
 
-            &[data-hover='true']:not(:disabled) {
-              background-color: var(--green-a7);
-            }
-
             &:hover:not(:disabled) {
               background-color: var(--green-9);
             }
@@ -170,10 +158,6 @@ function Segment({
 
           &[data-status='error'] {
             background-color: var(--red-a5);
-
-            &[data-hover='true']:not(:disabled) {
-              background-color: var(--red-a7);
-            }
 
             &:hover:not(:disabled) {
               background-color: var(--red-9);
@@ -183,10 +167,6 @@ function Segment({
           &[data-status='aborted'] {
             background-color: var(--orange-a5);
 
-            &[data-hover='true']:not(:disabled) {
-              background-color: var(--orange-a7);
-            }
-
             &:hover:not(:disabled) {
               background-color: var(--orange-9);
             }
@@ -195,10 +175,6 @@ function Segment({
           &[data-status='unknown'] {
             background-color: var(--gray-a5);
 
-            &[data-hover='true']:not(:disabled) {
-              background-color: var(--gray-a7);
-            }
-
             &:hover:not(:disabled) {
               background-color: var(--gray-9);
             }
@@ -206,6 +182,8 @@ function Segment({
         `}
         style={style}
         onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       />
     </Reset>
   )
@@ -217,46 +195,26 @@ export function TimelineChapters({
   time,
   onSeek,
 }: TimelineChaptersProps) {
-  const trackRef = useRef<HTMLDivElement>(null)
-
   const { lanes, segments } = buildSegments(actions, time)
 
-  const [hoverTime, setHoverTime] = useState<number | null>(null)
+  const [hoverOffset, setHoverOffset] = useState<number>(0)
+  const [hoverSegment, setHoverSegment] = useState<Segment | null>(null)
 
-  const handlePointerMove = useCallback(
-    (e: PointerEvent) => {
-      const el = trackRef.current
+  const handlePointerMove = useCallback((ev: PointerEvent) => {
+    const bounds = ev.currentTarget.getBoundingClientRect()
+    const fraction = Math.max(
+      0,
+      Math.min(1, (ev.clientX - bounds.left) / bounds.width)
+    )
 
-      if (el === null) {
-        return
-      }
-
-      const bounds = el.getBoundingClientRect()
-      const fraction = Math.max(
-        0,
-        Math.min(1, (e.clientX - bounds.left) / bounds.width)
-      )
-
-      setHoverTime(time.start + fraction * time.total)
-    },
-    [time.start, time.total]
-  )
-
-  const handlePointerLeave = useCallback(() => {
-    setHoverTime(null)
+    setHoverOffset(fraction * 100)
   }, [])
-
-  const hoverOffset = hoverTime && hoverTime - time.start
-
-  const actionsAtHover =
-    hoverTime !== null ? getActionsAtTime(actions, hoverTime, time) : []
 
   return (
     <Box
-      ref={trackRef}
       css={css`
-        position: relative;
         --chapters-background-color: var(--gray-5);
+        position: relative;
         width: 100%;
         min-height: 10px;
         flex-shrink: 0;
@@ -267,13 +225,11 @@ export function TimelineChapters({
         height: lanes * MIN_LANE_HEIGHT,
       }}
       onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
     >
       <TimelineTooltip
         disabled={disabled}
-        time={time}
-        hoverTime={hoverTime}
-        actions={actionsAtHover}
+        offset={hoverOffset}
+        action={hoverSegment?.action}
       />
 
       {segments.map((segment) => (
@@ -282,8 +238,8 @@ export function TimelineChapters({
           time={time}
           lanes={lanes}
           disabled={disabled}
-          hoverTime={hoverOffset}
           segment={segment}
+          onHover={setHoverSegment}
           onSeek={onSeek}
         />
       ))}

@@ -5,7 +5,7 @@ import { BrowserActionEvent } from '@/main/runner/schema'
 
 import { PlayButton } from './PlayButton'
 import { formatTime } from './PlaybackControls.utils'
-import { TimelineSlider } from './TimelineSlider'
+import { TimelineSlider } from './Timeline/TimelineSlider'
 import { PlaybackState, Time } from './types'
 
 export interface OnSeekEvent {
