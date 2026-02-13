@@ -20,6 +20,22 @@ export default defineConfig((env) => {
     build: {
       outDir: `.vite/renderer/${name}`,
       sourcemap: true,
+      // Optimize chunk splitting for faster builds
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            // Split large vendor dependencies into separate chunks
+            if (id.includes('node_modules')) {
+              if (id.includes('monaco-editor')) return 'monaco'
+              if (id.includes('@radix-ui')) return 'radix'
+              if (id.includes('react') || id.includes('react-dom'))
+                return 'react'
+              if (id.includes('@emotion')) return 'emotion'
+              return 'vendor'
+            }
+          },
+        },
+      },
     },
     plugins: [
       react({

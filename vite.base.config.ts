@@ -30,8 +30,17 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
       watch: command === 'serve' ? {} : null,
       minify: command === 'build',
       sourcemap: command === 'serve',
+      // Optimize build performance
+      chunkSizeWarningLimit: 2000,
+      rollupOptions: {
+        maxParallelFileOps: 20,
+      },
     },
     clearScreen: false,
+    // Optimize caching and dependency handling
+    optimizeDeps: {
+      exclude: external,
+    },
   }
 }
 
