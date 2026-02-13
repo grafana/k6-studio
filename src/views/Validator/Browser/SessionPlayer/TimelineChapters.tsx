@@ -1,24 +1,23 @@
 import { css } from '@emotion/react'
-import { Box, Flex, Tooltip } from '@radix-ui/themes'
+import { Box, Flex, Reset } from '@radix-ui/themes'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
-import { BrowserActionText } from '../BrowserActionText'
-
 import { Time } from './types'
 
-function formatDuration(started: number, ended: number) {
-  return `${((ended - started) / 1000).toFixed(1)}s`
-}
-
 interface TimelineChaptersProps {
+  disabled?: boolean
   actions: BrowserActionEvent[]
   time: Time
+  hoverTime: number | null
+  onSeek: (time: number) => void
 }
 
 interface Segment {
   id: string
   flex: number
+  start: number
+  end: number
   action?: BrowserActionEvent
 }
 
@@ -29,28 +28,44 @@ function buildSegments(actions: BrowserActionEvent[], time: Time): Segment[] {
     const actionStarted = action.timestamp.started
     const actionEnded = action.timestamp.ended ?? time.end
 
-    const startOffset = Math.max(0, actionStarted - time.start)
-    const endOffset = Math.min(time.total, actionEnded - time.start)
+    const start = Math.max(0, actionStarted - time.start)
+    const end = Math.min(time.total, actionEnded - time.start)
 
-    const duration = Math.max(0, endOffset - startOffset)
+    const duration = Math.max(0, end - start)
 
-    const prevEnd = actions[index - 1]?.timestamp.ended ?? startOffset
+    const prevEnd = actions[index - 1]?.timestamp.ended ?? start
+    const gapFlex = Math.max(0, start - prevEnd)
 
     // Add a gap between actions
-    if (index !== 0) {
+    if (index !== 0 && gapFlex > 0) {
       segments.push({
         id: 'gap-' + action.eventId,
-        flex: Math.max(0, startOffset - prevEnd),
+        flex: gapFlex,
+        start,
+        end,
       })
     }
 
-    segments.push({ id: action.eventId, flex: duration, action })
+    segments.push({
+      id: action.eventId,
+      flex: duration,
+      start,
+      end,
+      action,
+    })
   }
 
   return segments
 }
 
-function Segment({ time, segment }: { time: Time; segment: Segment }) {
+interface SegmentProps {
+  disabled?: boolean
+  hoverTime: number | null
+  segment: Segment
+  onSeek: (time: number) => void
+}
+
+function Segment({ disabled, hoverTime, segment, onSeek }: SegmentProps) {
   const style = {
     flex: `${segment.flex} 0 0`,
     minWidth: segment.action ? 2 : 0,
@@ -62,86 +77,122 @@ function Segment({ time, segment }: { time: Time; segment: Segment }) {
 
   const status = segment.action.result?.type ?? 'unknown'
 
+  const handleClick = () => {
+    if (segment.action === undefined) {
+      return
+    }
+
+    onSeek(segment.start)
+  }
+
   return (
-    <Tooltip
-      content={
-        <Flex direction="column" gap="1">
-          <Box>
-            <BrowserActionText action={segment.action.action} />
-          </Box>
-          <Box
-            css={css`
-              font-variant-numeric: tabular-nums;
-            `}
-          >
-            {formatDuration(
-              segment.action.timestamp.started,
-              segment.action.timestamp.ended ?? time.end
-            )}
-          </Box>
-        </Flex>
-      }
-    >
-      <Box
+    <Reset>
+      <button
+        disabled={disabled}
+        data-hover={
+          hoverTime !== null &&
+          hoverTime >= segment.start &&
+          hoverTime <= segment.end
+        }
         data-status={status}
         css={css`
           border-radius: 2px;
-          cursor: default;
+          box-sizing: border-box;
+          border-right: 1px solid var(--chapters-background-color);
+
+          &:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+          }
+
+          &:last-child {
+            border-right: none;
+          }
 
           &[data-status='success'] {
             background-color: var(--green-a5);
 
-            &:hover {
-              background-color: var(--green-11);
+            &[data-hover='true']:not(:disabled) {
+              background-color: var(--green-a7);
+            }
+
+            &:hover:not(:disabled) {
+              background-color: var(--green-9);
             }
           }
 
           &[data-status='error'] {
             background-color: var(--red-a5);
 
-            &:hover {
-              background-color: var(--red-11);
+            &[data-hover='true']:not(:disabled) {
+              background-color: var(--red-a7);
+            }
+
+            &:hover:not(:disabled) {
+              background-color: var(--red-9);
             }
           }
 
           &[data-status='aborted'] {
             background-color: var(--orange-a5);
 
-            &:hover {
-              background-color: var(--orange-11);
+            &[data-hover='true']:not(:disabled) {
+              background-color: var(--orange-a7);
+            }
+
+            &:hover:not(:disabled) {
+              background-color: var(--orange-9);
             }
           }
 
           &[data-status='unknown'] {
             background-color: var(--gray-a5);
 
-            &:hover {
-              background-color: var(--gray-11);
+            &[data-hover='true']:not(:disabled) {
+              background-color: var(--gray-a7);
+            }
+
+            &:hover:not(:disabled) {
+              background-color: var(--gray-9);
             }
           }
         `}
         style={style}
+        onClick={handleClick}
       />
-    </Tooltip>
+    </Reset>
   )
 }
 
-export function TimelineChapters({ actions, time }: TimelineChaptersProps) {
+export function TimelineChapters({
+  disabled = false,
+  hoverTime,
+  actions,
+  time,
+  onSeek,
+}: TimelineChaptersProps) {
   const segments = buildSegments(actions, time)
+  const hoverOffset = hoverTime && hoverTime - time.start
 
   return (
     <Flex
-      gap="1px"
       css={css`
+        --chapters-background-color: var(--gray-5);
         width: 100%;
         min-height: 8px;
         flex-shrink: 0;
         min-width: 0;
-        background-color: var(--gray-a5);
+        background-color: var(--chapters-background-color);
       `}
     >
       {segments.map((segment) => (
-        <Segment key={segment.id} time={time} segment={segment} />
+        <Segment
+          key={segment.id}
+          disabled={disabled}
+          hoverTime={hoverOffset}
+          segment={segment}
+          onSeek={onSeek}
+        />
       ))}
     </Flex>
   )

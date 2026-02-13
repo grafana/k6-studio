@@ -1,11 +1,11 @@
 import { css } from '@emotion/react'
-import { Text, Flex, Slider, Box } from '@radix-ui/themes'
+import { Text, Flex } from '@radix-ui/themes'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
 import { PlayButton } from './PlayButton'
 import { formatTime } from './PlaybackControls.utils'
-import { TimelineChapters } from './TimelineChapters'
+import { TimelineSlider } from './TimelineSlider'
 import { PlaybackState, Time } from './types'
 
 export interface OnSeekEvent {
@@ -32,75 +32,50 @@ export function PlaybackControls({
   onPause,
   onSeek,
 }: PlaybackControlsProps) {
-  const handlePositionChange = ([newTime]: number[]) => {
-    if (newTime === undefined) {
-      return
-    }
-
-    onSeek({ time: newTime, commit: false })
-  }
-
-  const handlePositionCommit = ([newTime]: number[]) => {
-    if (newTime === undefined) {
-      return
-    }
-
-    onSeek({ time: newTime, commit: true })
+  const handleSeek = (seekTime: number, commit: boolean) => {
+    onSeek({ time: seekTime, commit })
   }
 
   return (
     <Flex
-      direction="column"
       css={css`
         background-color: var(--gray-2);
         border-top: 1px solid var(--gray-a5);
       `}
+      align="center"
+      gap="4"
       py="2"
       px="4"
-      gap="2"
     >
-      <Flex align="center" gap="4">
-        <PlayButton
-          playing={state === 'playing'}
-          streaming={streaming}
-          onPlay={onPlay}
-          onPause={onPause}
-        />
+      <PlayButton
+        playing={state === 'playing'}
+        streaming={streaming}
+        onPlay={onPlay}
+        onPause={onPause}
+      />
 
-        <Box
-          css={css`
-            flex: 1 1 0;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-          `}
-        >
-          <TimelineChapters actions={actions} time={time} />
-          <Slider
-            size="1"
-            disabled={streaming}
-            value={[time.current]}
-            step={0.001}
-            min={0}
-            max={time.total}
-            onValueChange={handlePositionChange}
-            onValueCommit={handlePositionCommit}
-          />
-        </Box>
-        <Text
-          asChild
-          size="1"
-          css={css`
-            white-space: nowrap;
-            font-variant-numeric: tabular-nums;
-          `}
-        >
-          <Flex align="center" justify="end" minWidth="80px">
-            {formatTime(time.current)} / {formatTime(time.total)}
-          </Flex>
-        </Text>
-      </Flex>
+      <TimelineSlider
+        css={css`
+          flex: 1 1 0;
+          min-width: 0;
+        `}
+        time={time}
+        actions={actions}
+        disabled={streaming}
+        onSeek={handleSeek}
+      />
+      <Text
+        asChild
+        size="1"
+        css={css`
+          white-space: nowrap;
+          font-variant-numeric: tabular-nums;
+        `}
+      >
+        <Flex align="center" justify="end" minWidth="80px">
+          {formatTime(time.current)} / {formatTime(time.total)}
+        </Flex>
+      </Text>
     </Flex>
   )
 }
