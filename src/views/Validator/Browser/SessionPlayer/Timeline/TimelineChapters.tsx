@@ -9,6 +9,7 @@ import { Time } from '../types'
 import { TimelineTooltip } from './TimelineTooltip'
 
 const MIN_LANE_HEIGHT = 3
+const MAX_LANE_HEIGHT = 6
 const MIN_TIMELINE_HEIGHT = 10
 
 function isIntersecting(previous: Segment, current: Segment) {
@@ -100,10 +101,13 @@ function Segment({
 }: SegmentProps) {
   const left = (segment.start / time.total) * 100
   const width = ((segment.end - segment.start) / time.total) * 100
-  const height = Math.max(MIN_LANE_HEIGHT, MIN_TIMELINE_HEIGHT / lanes)
+
+  const height = Math.min(
+    MAX_LANE_HEIGHT,
+    Math.max(MIN_LANE_HEIGHT, MIN_TIMELINE_HEIGHT / lanes)
+  )
 
   const style = {
-    minWidth: segment.action ? 2 : 0,
     left: `${left}%`,
     width: `${width}%`,
     top: `${segment.lane * height}px`,
@@ -129,63 +133,64 @@ function Segment({
   }
 
   return (
-    <Reset>
-      <button
-        disabled={disabled}
-        data-status={status}
-        css={css`
-          position: absolute;
-          border-radius: 2px;
-          box-sizing: border-box;
-          border-right: 1px solid var(--chapters-background-color);
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <Reset>
+        <button
+          disabled={disabled}
+          data-status={status}
+          css={css`
+            min-width: 2px;
+            position: absolute;
+            border-radius: 2px;
+            box-sizing: border-box;
+            border-right: 1px solid var(--chapters-background-color);
 
-          &:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-          }
-
-          &:last-child {
-            border-right: none;
-          }
-
-          &[data-status='success'] {
-            background-color: var(--green-a5);
-
-            &:hover:not(:disabled) {
-              background-color: var(--green-9);
+            &:disabled {
+              cursor: default;
+              opacity: 0.5;
             }
-          }
 
-          &[data-status='error'] {
-            background-color: var(--red-a5);
-
-            &:hover:not(:disabled) {
-              background-color: var(--red-9);
+            &:last-child {
+              border-right: none;
             }
-          }
 
-          &[data-status='aborted'] {
-            background-color: var(--orange-a5);
+            &[data-status='success'] {
+              background-color: var(--green-a5);
 
-            &:hover:not(:disabled) {
-              background-color: var(--orange-9);
+              &:hover {
+                background-color: var(--green-9);
+              }
             }
-          }
 
-          &[data-status='unknown'] {
-            background-color: var(--gray-a5);
+            &[data-status='error'] {
+              background-color: var(--red-a5);
 
-            &:hover:not(:disabled) {
-              background-color: var(--gray-9);
+              &:hover {
+                background-color: var(--red-9);
+              }
             }
-          }
-        `}
-        style={style}
-        onClick={handleClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      />
-    </Reset>
+
+            &[data-status='aborted'] {
+              background-color: var(--orange-a5);
+
+              &:hover {
+                background-color: var(--orange-9);
+              }
+            }
+
+            &[data-status='unknown'] {
+              background-color: var(--gray-a5);
+
+              &:hover {
+                background-color: var(--gray-9);
+              }
+            }
+          `}
+          style={style}
+          onClick={handleClick}
+        />
+      </Reset>
+    </div>
   )
 }
 
@@ -226,11 +231,7 @@ export function TimelineChapters({
       }}
       onPointerMove={handlePointerMove}
     >
-      <TimelineTooltip
-        disabled={disabled}
-        offset={hoverOffset}
-        action={hoverSegment?.action}
-      />
+      <TimelineTooltip offset={hoverOffset} action={hoverSegment?.action} />
 
       {segments.map((segment) => (
         <Segment

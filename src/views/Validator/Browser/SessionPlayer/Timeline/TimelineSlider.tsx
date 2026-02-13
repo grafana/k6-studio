@@ -112,6 +112,7 @@ export function TimelineSlider({
             display: block;
             width: 8px;
             height: 8px;
+            border-radius: 50%;
             background-color: var(--gray-12);
             pointer-events: auto;
           `}

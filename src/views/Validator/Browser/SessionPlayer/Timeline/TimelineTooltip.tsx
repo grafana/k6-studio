@@ -7,18 +7,13 @@ import { BrowserActionStatusIcon } from '../../BrowserActionStatusIcon'
 import { BrowserActionText } from '../../BrowserActionText'
 
 interface TimelineTooltipProps {
-  disabled?: boolean
   offset: number
   action: BrowserActionEvent | undefined
 }
 
-export function TimelineTooltip({
-  disabled,
-  offset,
-  action,
-}: TimelineTooltipProps) {
+export function TimelineTooltip({ offset, action }: TimelineTooltipProps) {
   return (
-    <Popover.Root open={!disabled && offset !== null && action !== undefined}>
+    <Popover.Root open={action !== undefined}>
       <Popover.Trigger key={offset}>
         <div
           css={css`
