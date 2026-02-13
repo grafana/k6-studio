@@ -60,21 +60,8 @@ export const useGenerateRules = ({
       console.error(error)
     },
     onToolCall: async ({ toolCall }) => {
-      console.info(
-        '[AutoCorrelation] onToolCall fired:',
-        toolCall.toolName,
-        'id=',
-        toolCall.toolCallId,
-        'dynamic=',
-        toolCall.dynamic
-      )
-
       // Narrow down to static tool calls only
       if (toolCall.dynamic) {
-        console.warn(
-          '[AutoCorrelation] Skipping dynamic tool call:',
-          toolCall.toolName
-        )
         return
       }
 
@@ -84,23 +71,13 @@ export const useGenerateRules = ({
       }
 
       setCorrelationStatus(toolCallToStep(toolCallWithType))
-
-      console.info('[AutoCorrelation] Executing tool:', toolCall.toolName)
       const toolResult = await handleToolCall(toolCallWithType)
-      console.info(
-        '[AutoCorrelation] Tool result received for:',
-        toolCall.toolName
-      )
 
       void addToolOutput({
         tool: toolCall.toolName,
         toolCallId: toolCall.toolCallId,
         output: toolResult,
       })
-      console.info(
-        '[AutoCorrelation] addToolOutput called for:',
-        toolCall.toolName
-      )
     },
   })
 
@@ -158,9 +135,10 @@ export const useGenerateRules = ({
   }
 
   function addRule(rule: AiCorrelationRule) {
+    const validRule = AiCorrelationRuleToCorrelationRule(rule)
     const applyResult = applyRules(recording, [
       ...suggestedRulesRef.current,
-      rule,
+      validRule,
     ])
 
     const matchedRequestsIds =
@@ -170,7 +148,7 @@ export const useGenerateRules = ({
       return []
     }
 
-    setSuggestedRules((prev) => [...prev, rule])
+    setSuggestedRules((prev) => [...prev, validRule])
     return matchedRequestsIds
   }
 
@@ -284,5 +262,16 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
       return toolCall.input.outcome
     default:
       return exhaustive(toolName)
+  }
+}
+
+function AiCorrelationRuleToCorrelationRule(
+  rule: AiCorrelationRule
+): CorrelationRule {
+  return {
+    ...rule,
+    id: `autocorrelation_rule_${crypto.randomUUID()}`,
+    type: 'correlation',
+    enabled: true,
   }
 }

@@ -7,8 +7,6 @@ import { streamMessages } from './streamMessages'
 import { tools } from './tools'
 import { AiHandler, StreamChatRequest, AbortStreamChatRequest } from './types'
 
-const PREFIX = '[ai:handler]'
-
 // Store active AbortControllers indexed by request ID
 const activeAbortControllers = new Map<string, AbortController>()
 
@@ -28,11 +26,6 @@ async function handleStreamChat(
   activeAbortControllers.set(request.id, abortController)
 
   try {
-    log.info(
-      PREFIX,
-      `handleStreamChat requestId=${request.id} messages=${messages.length}`
-    )
-
     const response = streamText({
       model: aiModel,
       toolChoice: 'required',
@@ -47,16 +40,9 @@ async function handleStreamChat(
     })
 
     await streamMessages(event.sender, response, request.id)
-    log.info(PREFIX, `handleStreamChat completed for requestId=${request.id}`)
   } catch (error) {
-    log.error(
-      PREFIX,
-      `handleStreamChat error for requestId=${request.id}:`,
-      error
-    )
-    throw error
+    log.error('handleStreamChat error:', error)
   } finally {
-    // Clean up the AbortController after streaming completes or fails
     activeAbortControllers.delete(request.id)
   }
 }
