@@ -1,15 +1,28 @@
 import { css } from '@emotion/react'
-import { Box, Flex, Reset } from '@radix-ui/themes'
+import { Box, Reset } from '@radix-ui/themes'
+import { PointerEvent, useCallback, useRef, useState } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
+import { TimelineTooltip } from './TimelineTooltip'
 import { Time } from './types'
+
+function getActionsAtTime(
+  actions: BrowserActionEvent[],
+  timeMs: number,
+  time: Time
+): BrowserActionEvent[] {
+  return actions.filter((action) => {
+    const started = action.timestamp.started
+    const ended = action.timestamp.ended ?? time.end
+    return timeMs >= started && timeMs <= ended
+  })
+}
 
 interface TimelineChaptersProps {
   disabled?: boolean
-  actions: BrowserActionEvent[]
   time: Time
-  hoverTime: number | null
+  actions: BrowserActionEvent[]
   onSeek: (time: number) => void
 }
 
@@ -18,13 +31,13 @@ interface Segment {
   flex: number
   start: number
   end: number
-  action?: BrowserActionEvent
+  action: BrowserActionEvent
 }
 
 function buildSegments(actions: BrowserActionEvent[], time: Time): Segment[] {
   const segments: Segment[] = []
 
-  for (const [index, action] of actions.entries()) {
+  for (const action of actions) {
     const actionStarted = action.timestamp.started
     const actionEnded = action.timestamp.ended ?? time.end
 
@@ -32,19 +45,6 @@ function buildSegments(actions: BrowserActionEvent[], time: Time): Segment[] {
     const end = Math.min(time.total, actionEnded - time.start)
 
     const duration = Math.max(0, end - start)
-
-    const prevEnd = actions[index - 1]?.timestamp.ended ?? start
-    const gapFlex = Math.max(0, start - prevEnd)
-
-    // Add a gap between actions
-    if (index !== 0 && gapFlex > 0) {
-      segments.push({
-        id: 'gap-' + action.eventId,
-        flex: gapFlex,
-        start,
-        end,
-      })
-    }
 
     segments.push({
       id: action.eventId,
@@ -59,20 +59,21 @@ function buildSegments(actions: BrowserActionEvent[], time: Time): Segment[] {
 }
 
 interface SegmentProps {
+  time: Time
   disabled?: boolean
   hoverTime: number | null
   segment: Segment
   onSeek: (time: number) => void
 }
 
-function Segment({ disabled, hoverTime, segment, onSeek }: SegmentProps) {
-  const style = {
-    flex: `${segment.flex} 0 0`,
-    minWidth: segment.action ? 2 : 0,
-  }
+function Segment({ time, disabled, hoverTime, segment, onSeek }: SegmentProps) {
+  const left = (segment.start / time.total) * 100
+  const width = ((segment.end - segment.start) / time.total) * 100
 
-  if (segment.action === undefined) {
-    return <Box style={style} />
+  const style = {
+    minWidth: segment.action ? 2 : 0,
+    left: `${left}%`,
+    width: `${width}%`,
   }
 
   const status = segment.action.result?.type ?? 'unknown'
@@ -96,6 +97,9 @@ function Segment({ disabled, hoverTime, segment, onSeek }: SegmentProps) {
         }
         data-status={status}
         css={css`
+          position: absolute;
+          top: 0;
+          bottom: 0;
           border-radius: 2px;
           box-sizing: border-box;
           border-right: 1px solid var(--chapters-background-color);
@@ -166,17 +170,48 @@ function Segment({ disabled, hoverTime, segment, onSeek }: SegmentProps) {
 
 export function TimelineChapters({
   disabled = false,
-  hoverTime,
   actions,
   time,
   onSeek,
 }: TimelineChaptersProps) {
   const segments = buildSegments(actions, time)
+  const trackRef = useRef<HTMLDivElement>(null)
+
+  const [hoverTime, setHoverTime] = useState<number | null>(null)
+
+  const handlePointerMove = useCallback(
+    (e: PointerEvent) => {
+      const el = trackRef.current
+
+      if (el === null) {
+        return
+      }
+
+      const bounds = el.getBoundingClientRect()
+      const fraction = Math.max(
+        0,
+        Math.min(1, (e.clientX - bounds.left) / bounds.width)
+      )
+
+      setHoverTime(time.start + fraction * time.total)
+    },
+    [time.start, time.total]
+  )
+
+  const handlePointerLeave = useCallback(() => {
+    setHoverTime(null)
+  }, [])
+
   const hoverOffset = hoverTime && hoverTime - time.start
 
+  const actionsAtHover =
+    hoverTime !== null ? getActionsAtTime(actions, hoverTime, time) : []
+
   return (
-    <Flex
+    <Box
+      ref={trackRef}
       css={css`
+        position: relative;
         --chapters-background-color: var(--gray-5);
         width: 100%;
         min-height: 8px;
@@ -184,16 +219,26 @@ export function TimelineChapters({
         min-width: 0;
         background-color: var(--chapters-background-color);
       `}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
     >
+      <TimelineTooltip
+        disabled={disabled}
+        time={time}
+        hoverTime={hoverTime}
+        actions={actionsAtHover}
+      />
+
       {segments.map((segment) => (
         <Segment
           key={segment.id}
+          time={time}
           disabled={disabled}
           hoverTime={hoverOffset}
           segment={segment}
           onSeek={onSeek}
         />
       ))}
-    </Flex>
+    </Box>
   )
 }

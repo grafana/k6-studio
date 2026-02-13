@@ -1,27 +1,12 @@
 import { css } from '@emotion/react'
 import * as SliderPrimitive from '@radix-ui/react-slider'
-import { Flex, Popover, VisuallyHidden } from '@radix-ui/themes'
-import { PointerEvent, useCallback, useRef, useState } from 'react'
+import { Flex, VisuallyHidden } from '@radix-ui/themes'
+import { useCallback } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
-import { BrowserActionStatusIcon } from '../BrowserActionStatusIcon'
-import { BrowserActionText } from '../BrowserActionText'
-
 import { TimelineChapters } from './TimelineChapters'
 import { Time } from './types'
-
-function getActionsAtTime(
-  actions: BrowserActionEvent[],
-  timeMs: number,
-  time: Time
-): BrowserActionEvent[] {
-  return actions.filter((action) => {
-    const started = action.timestamp.started
-    const ended = action.timestamp.ended ?? time.end
-    return timeMs >= started && timeMs <= ended
-  })
-}
 
 interface TimelineSliderProps {
   className?: string
@@ -31,74 +16,6 @@ interface TimelineSliderProps {
   onSeek: (time: number, commit: boolean) => void
 }
 
-interface TimelineTooltipProps {
-  disabled?: boolean
-  time: Time
-  hoverTime: number | null
-  actions: BrowserActionEvent[]
-}
-
-function TimelineTooltip({
-  disabled,
-  time,
-  hoverTime,
-  actions,
-}: TimelineTooltipProps) {
-  return (
-    <Popover.Root open={!disabled && hoverTime !== null && actions.length > 0}>
-      <Popover.Trigger key={hoverTime}>
-        <div
-          css={css`
-            position: absolute;
-            top: 0;
-            width: 0;
-            height: 0;
-          `}
-          style={{
-            left: hoverTime
-              ? `${((hoverTime - time.start) / time.total) * 100}%`
-              : 0,
-          }}
-        />
-      </Popover.Trigger>
-      <Popover.Content asChild side="top" align="center" size="1">
-        <Flex
-          css={css`
-            font-size: var(--font-size-1);
-            border-radius: var(--radius-2);
-          `}
-          direction="column"
-          p="0"
-        >
-          {hoverTime &&
-            actions.map((action) => (
-              <Flex
-                key={action.eventId}
-                align="center"
-                py="2"
-                px="4"
-                css={css`
-                  border-bottom: 1px solid var(--gray-5);
-
-                  &:last-child {
-                    border-bottom: none;
-                  }
-
-                  min-height: 28px;
-                `}
-              >
-                <Flex align="center" gap="2">
-                  <BrowserActionStatusIcon event={action} />
-                  <BrowserActionText action={action.action} />
-                </Flex>
-              </Flex>
-            ))}
-        </Flex>
-      </Popover.Content>
-    </Popover.Root>
-  )
-}
-
 export function TimelineSlider({
   className,
   time,
@@ -106,35 +23,6 @@ export function TimelineSlider({
   disabled = false,
   onSeek,
 }: TimelineSliderProps) {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const [hoverTime, setHoverTime] = useState<number | null>(null)
-
-  const handlePointerMove = useCallback(
-    (e: PointerEvent) => {
-      const el = trackRef.current
-
-      if (el === null) {
-        return
-      }
-
-      const bounds = el.getBoundingClientRect()
-      const fraction = Math.max(
-        0,
-        Math.min(1, (e.clientX - bounds.left) / bounds.width)
-      )
-
-      setHoverTime(time.start + fraction * time.total)
-    },
-    [time.start, time.total]
-  )
-
-  const handlePointerLeave = useCallback(() => {
-    setHoverTime(null)
-  }, [])
-
-  const actionsAtHover =
-    hoverTime !== null ? getActionsAtTime(actions, hoverTime, time) : []
-
   const handleChapterSeek = useCallback(
     (time: number) => {
       onSeek(time, true)
@@ -160,7 +48,6 @@ export function TimelineSlider({
 
   return (
     <Flex
-      ref={trackRef}
       gap="1px"
       direction="column"
       className={className}
@@ -171,19 +58,9 @@ export function TimelineSlider({
         cursor: ${disabled ? 'default' : 'pointer'};
         border-radius: var(--radius-2);
       `}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
     >
-      <TimelineTooltip
-        disabled={disabled}
-        time={time}
-        hoverTime={hoverTime}
-        actions={actionsAtHover}
-      />
-
       <TimelineChapters
         disabled={disabled}
-        hoverTime={hoverTime}
         time={time}
         actions={actions}
         onSeek={handleChapterSeek}
