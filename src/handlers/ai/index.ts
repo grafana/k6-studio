@@ -1,11 +1,13 @@
-import { OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
 import { convertToModelMessages, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
+import log from 'electron-log/main'
 
-import { setupAiModel } from './model'
+import { getAiModel } from './model'
 import { streamMessages } from './streamMessages'
 import { tools } from './tools'
 import { AiHandler, StreamChatRequest, AbortStreamChatRequest } from './types'
+
+const PREFIX = '[ai:handler]'
 
 // Store active AbortControllers indexed by request ID
 const activeAbortControllers = new Map<string, AbortController>()
@@ -19,13 +21,18 @@ async function handleStreamChat(
   event: IpcMainEvent,
   request: StreamChatRequest
 ) {
-  const aiModel = await setupAiModel()
+  const aiModel = getAiModel()
   const messages = convertToModelMessages(request.messages)
 
   const abortController = new AbortController()
   activeAbortControllers.set(request.id, abortController)
 
   try {
+    log.info(
+      PREFIX,
+      `handleStreamChat requestId=${request.id} messages=${messages.length}`
+    )
+
     const response = streamText({
       model: aiModel,
       toolChoice: 'required',
@@ -33,17 +40,21 @@ async function handleStreamChat(
       tools,
       abortSignal: abortController.signal,
       providerOptions: {
-        openai: {
-          parallelToolCalls: false,
-          reasoningEffort: 'low',
-          textVerbosity: 'low',
-          // Disable storing of conversations, required for orgs with zero data retention
-          store: false,
-        } satisfies OpenAIResponsesProviderOptions,
+        grafanaAssistant: {
+          chatId: request.id,
+        },
       },
     })
 
     await streamMessages(event.sender, response, request.id)
+    log.info(PREFIX, `handleStreamChat completed for requestId=${request.id}`)
+  } catch (error) {
+    log.error(
+      PREFIX,
+      `handleStreamChat error for requestId=${request.id}:`,
+      error
+    )
+    throw error
   } finally {
     // Clean up the AbortController after streaming completes or fails
     activeAbortControllers.delete(request.id)

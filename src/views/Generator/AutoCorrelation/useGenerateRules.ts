@@ -1,7 +1,6 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { TokenUsage } from '@/handlers/ai/types'
 import { applyRules } from '@/rules/rules'
 import { UsageEventName } from '@/services/usageTracking/types'
 import {
@@ -26,7 +25,6 @@ import {
   searchRequests,
 } from './utils/searchTools'
 import { prepareRequestsForAI } from './utils/stripRequestData'
-import { sumTokenUsage } from './utils/sumTokenUsage'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
 export const useGenerateRules = ({
@@ -38,7 +36,6 @@ export const useGenerateRules = ({
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
-  const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
   const suggestedRulesRef = useRef(suggestedRules)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
@@ -55,11 +52,7 @@ export const useGenerateRules = ({
     clearError,
     setMessages,
   } = useChat<Message>({
-    transport: new IPCChatTransport({
-      onUsage: (usage) => {
-        setTokenUsage((prev) => sumTokenUsage(prev, usage))
-      },
-    }),
+    transport: new IPCChatTransport(),
     // Keep calling tools without user input
     sendAutomaticallyWhen: lastMessageIsToolCall,
     onError: (error) => {
@@ -67,8 +60,21 @@ export const useGenerateRules = ({
       console.error(error)
     },
     onToolCall: async ({ toolCall }) => {
+      console.info(
+        '[AutoCorrelation] onToolCall fired:',
+        toolCall.toolName,
+        'id=',
+        toolCall.toolCallId,
+        'dynamic=',
+        toolCall.dynamic
+      )
+
       // Narrow down to static tool calls only
       if (toolCall.dynamic) {
+        console.warn(
+          '[AutoCorrelation] Skipping dynamic tool call:',
+          toolCall.toolName
+        )
         return
       }
 
@@ -78,13 +84,23 @@ export const useGenerateRules = ({
       }
 
       setCorrelationStatus(toolCallToStep(toolCallWithType))
+
+      console.info('[AutoCorrelation] Executing tool:', toolCall.toolName)
       const toolResult = await handleToolCall(toolCallWithType)
+      console.info(
+        '[AutoCorrelation] Tool result received for:',
+        toolCall.toolName
+      )
 
       void addToolOutput({
         tool: toolCall.toolName,
         toolCallId: toolCall.toolCallId,
         output: toolResult,
       })
+      console.info(
+        '[AutoCorrelation] addToolOutput called for:',
+        toolCall.toolName
+      )
     },
   })
 
@@ -230,7 +246,6 @@ export const useGenerateRules = ({
     setSuggestedRules([])
     setMessages([])
     clearError()
-    setTokenUsage(undefined)
     return start()
   }
 
@@ -249,7 +264,6 @@ export const useGenerateRules = ({
     isLoading,
     correlationStatus,
     outcomeReason,
-    tokenUsage,
     restart,
     stop: useCallback(stop, [stopGeneration]),
   }

@@ -7,7 +7,6 @@ import { useGeneratorStore } from '@/store/generator'
 import { ErrorMessage } from './ErrorMessage'
 import { IntroductionMessage } from './IntroductionMessage'
 import { SuggestedRules } from './SuggestedRules'
-import { TokenUsageIndicator } from './TokenUsageIndicator'
 import { ValidationResults } from './ValidationResults'
 import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
@@ -34,7 +33,6 @@ export function AutoCorrelation({
     isLoading,
     correlationStatus,
     outcomeReason,
-    tokenUsage,
     error,
     stop,
     restart,
@@ -117,16 +115,13 @@ export function AutoCorrelation({
 
       <Flex
         gap="3"
-        justify="between"
+        justify="end"
         align="center"
         p="3"
         css={{
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        <Flex align="center">
-          <TokenUsageIndicator tokenUsage={tokenUsage} />
-        </Flex>
         <Flex gap="3">
           <Button
             variant="outline"
