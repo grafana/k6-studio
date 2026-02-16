@@ -86,6 +86,7 @@ function ActionIcon({ action }: ActionIconProps) {
       return <GlobeIcon aria-hidden="true" />
     case 'page.reload':
     case 'page.waitForNavigation':
+    case 'page.close':
     case 'page.*':
     case 'locator.click':
     case 'locator.dblclick':
@@ -120,6 +121,7 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
       return <GoToActionBody action={action} onUpdate={onUpdate} />
     case 'page.reload':
     case 'page.waitForNavigation':
+    case 'page.close':
     case 'page.*':
     case 'locator.click':
     case 'locator.dblclick':
