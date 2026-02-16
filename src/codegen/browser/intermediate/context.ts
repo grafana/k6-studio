@@ -314,7 +314,7 @@ export class IntermediateContext {
         value,
       })),
       statements: currentBlock.statements,
-      disposers: currentBlock.disposers,
+      disposers: currentBlock.disposers.toReversed(), // Disposers should be called in reverse order
     })
 
     this.#blocks = [parentBlock, ...rest]
