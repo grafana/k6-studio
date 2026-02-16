@@ -100,6 +100,11 @@ interface AllocateArgs {
   node: model.TestNode
   name: string
   value: ir.Expression
+
+  /**
+   * Function that generates the dispose statement for the allocated resource. The expression
+   * passed is the reference to the allocated resource, i.e. the variable that was declared for it.
+   */
   dispose: (target: ir.Expression) => ir.Statement
 }
 
@@ -297,6 +302,8 @@ export class IntermediateContext {
       )
     }
 
+    // Now that the allocation block is done, we can declare all its variables and emit what will
+    // eventually be the try-finally block that ensures proper disposal of the allocated resources.
     parentBlock.statements.push({
       type: 'Allocation',
       declarations: currentBlock.initializers.map(({ kind, name, value }) => ({

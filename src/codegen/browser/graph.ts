@@ -11,12 +11,6 @@ interface GraphEdge<E> {
   data: E
 }
 
-interface ResolvedGraphEdge<T, E> {
-  from: GraphNode<T>
-  to: GraphNode<T>
-  data: E
-}
-
 interface QueueItem<T> {
   value: T
   next: QueueItem<T> | null
@@ -171,24 +165,12 @@ export class Graph<T, E> {
     return false
   }
 
-  *outgoing(node: GraphNode<T> | NodeId): Generator<ResolvedGraphEdge<T, E>> {
-    for (const edge of this.#outgoing.of(toNodeId(node))) {
-      yield {
-        from: this.require(edge.from),
-        to: this.require(edge.to),
-        data: edge.data,
-      }
-    }
+  outgoing(node: GraphNode<T> | NodeId) {
+    return this.#outgoing.of(toNodeId(node))
   }
 
-  *incoming(node: GraphNode<T> | NodeId): Generator<ResolvedGraphEdge<T, E>> {
-    for (const edge of this.#incoming.of(toNodeId(node))) {
-      yield {
-        from: this.require(edge.from),
-        to: this.require(edge.to),
-        data: edge.data,
-      }
-    }
+  incoming(node: GraphNode<T> | NodeId) {
+    return this.#incoming.of(toNodeId(node))
   }
 
   *sources() {
