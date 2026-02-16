@@ -46,6 +46,7 @@ export function PlaybackControls({
       gap="4"
       py="2"
       px="4"
+      minHeight="40px"
     >
       <PlayButton
         playing={state === 'playing'}
