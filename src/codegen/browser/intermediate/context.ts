@@ -154,7 +154,8 @@ export class IntermediateContext {
   }
 
   /**
-   * Allocates a resource for the given node and ensures that it will be properly disposed.
+   * Allocates a resource for the given node and ensures that it will be properly disposed
+   * once it's no longer used.
    */
   allocate({ node, name, value, dispose }: AllocateArgs) {
     const temporary = this.#newDeclaration(node, name)
