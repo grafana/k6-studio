@@ -209,7 +209,12 @@ export interface ExpressionStatement {
   expression: Expression
 }
 
-export type Statement = Declaration | ExpressionStatement
+export interface CommentStatement {
+  type: 'Comment'
+  value: string
+}
+
+export type Statement = Declaration | ExpressionStatement | CommentStatement
 
 export type Node = Expression | Statement
 

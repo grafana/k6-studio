@@ -80,6 +80,10 @@ function buildScenarioGraph(scenario: model.Scenario) {
         connectPrevious(graph, node)
         break
 
+      case 'comment':
+        connectPrevious(graph, node)
+        break
+
       default:
         return exhaustive(node)
     }

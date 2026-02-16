@@ -776,6 +776,63 @@ it('should assert that aria input is not checked', async ({ expect }) => {
   )
 })
 
+it('should emit comments in the script', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'comment',
+          nodeId: 'comment-1',
+          text: 'Expecto Patronum! This test now magically passes',
+          inputs: {
+            previous: { nodeId: 'goto' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: { type: 'css', selector: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            previous: { nodeId: 'comment-1' },
+            locator: { nodeId: 'locator' },
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot('__snapshots__/browser/comments.ts')
+})
+
 it('should assert that aria input is indeterminate', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
