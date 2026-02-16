@@ -11,6 +11,10 @@ import {
   fromObjectLiteral,
   ObjectBuilder,
   literal,
+  letDeclarator,
+  declareLet,
+  block,
+  tryStatement,
 } from '@/codegen/estree'
 import { mapNonEmpty } from '@/utils/list'
 import { exhaustive } from '@/utils/typescript'
@@ -28,6 +32,19 @@ function emitNewPageExpression(
 
   return new ExpressionBuilder(identifier('browser'))
     .member('newPage')
+    .call([])
+    .await(context)
+    .done()
+}
+
+function emitClosePageExpression(
+  context: ScenarioContext,
+  expression: ir.ClosePageExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  return new ExpressionBuilder(target)
+    .member('close', true)
     .call([])
     .await(context)
     .done()
@@ -401,11 +418,17 @@ function emitExpression(
     case 'StringLiteral':
       return string(expression.value)
 
+    case 'NullLiteral':
+      return literal({ value: null })
+
     case 'Identifier':
       return identifier(expression.name)
 
     case 'NewPageExpression':
       return emitNewPageExpression(context, expression)
+
+    case 'ClosePageExpression':
+      return emitClosePageExpression(context, expression)
 
     case 'NewRoleLocatorExpression':
       return emitNewRoleLocatorExpression(context, expression)
@@ -469,17 +492,22 @@ function emitExpression(
   }
 }
 
-function emitStatement(
+function emitVariableDeclaration(
   context: ScenarioContext,
-  statement: ir.Statement
-): ts.Statement {
-  switch (statement.type) {
-    case 'ExpressionStatement':
-      return expressionStatement({
-        expression: emitExpression(context, statement.expression),
+  statement: ir.VariableDeclaration
+): ts.VariableDeclaration {
+  switch (statement.kind) {
+    case 'let':
+      return declareLet({
+        declarations: [
+          letDeclarator({
+            id: identifier(statement.name),
+            init: emitExpression(context, statement.value),
+          }),
+        ],
       })
 
-    case 'VariableDeclaration':
+    case 'const':
       return declareConst({
         declarations: [
           constDeclarator({
@@ -488,6 +516,62 @@ function emitStatement(
           }),
         ],
       })
+  }
+}
+
+function emitAssignmentStatement(
+  context: ScenarioContext,
+  statement: ir.AssignmentStatement
+): ts.ExpressionStatement {
+  return expressionStatement({
+    expression: new ExpressionBuilder(emitExpression(context, statement.target))
+      .assign(emitExpression(context, statement.value))
+      .done(),
+  })
+}
+
+function emitAllocation(
+  context: ScenarioContext,
+  statement: ir.Allocation
+): ts.Statement[] {
+  const declarations = statement.declarations.map((declaration) =>
+    emitVariableDeclaration(context, declaration)
+  )
+
+  const body = spaceBetween(
+    statement.statements.flatMap((stmt) => emitStatement(context, stmt))
+  )
+
+  const disposers = statement.disposers.flatMap((stmt) =>
+    emitStatement(context, stmt)
+  )
+
+  const tryFinally = tryStatement({
+    block: block(body),
+    finalizer: block(disposers),
+  })
+
+  return [...declarations, tryFinally]
+}
+
+function emitStatement(
+  context: ScenarioContext,
+  statement: ir.Statement
+): ts.Statement[] | ts.Statement {
+  switch (statement.type) {
+    case 'VariableDeclaration':
+      return emitVariableDeclaration(context, statement)
+
+    case 'Allocation':
+      return emitAllocation(context, statement)
+
+    case 'ExpressionStatement':
+      return expressionStatement({
+        expression: emitExpression(context, statement.expression),
+      })
+
+    case 'AssignmentStatement':
+      return emitAssignmentStatement(context, statement)
 
     default:
       return exhaustive(statement)
@@ -498,5 +582,7 @@ export function emitScenarioBody(
   context: ScenarioContext,
   scenario: ir.Scenario
 ) {
-  return spaceBetween(scenario.body.map((node) => emitStatement(context, node)))
+  return spaceBetween(
+    scenario.body.flatMap((node) => emitStatement(context, node))
+  )
 }

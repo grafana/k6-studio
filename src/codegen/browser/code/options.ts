@@ -28,7 +28,11 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'ExpressionStatement':
         return visit(node.expression)
 
+      case 'AssignmentStatement':
+        return visit(node.value)
+
       case 'NewPageExpression':
+      case 'ClosePageExpression':
       case 'GotoExpression':
       case 'ReloadExpression':
       case 'NewRoleLocatorExpression':
@@ -50,11 +54,19 @@ function isBrowserScenario(scenario: ir.Scenario) {
 
       case 'Identifier':
       case 'StringLiteral':
+      case 'NullLiteral':
       case 'PromiseAllExpression':
         return false
 
       case 'VariableDeclaration':
         return visit(node.value)
+
+      case 'Allocation':
+        return (
+          node.declarations.some(visit) ||
+          node.statements.some(visit) ||
+          node.disposers.some(visit)
+        )
 
       case 'ExpectExpression':
         return visit(node.actual) || visitAssertion(node.expected)

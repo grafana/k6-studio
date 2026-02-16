@@ -50,9 +50,16 @@ function substituteExpression(
 ): Expression {
   switch (node.type) {
     case 'StringLiteral':
+    case 'NullLiteral':
     case 'NewPageExpression':
     case 'ClickOptionsExpression':
       return node
+
+    case 'ClosePageExpression':
+      return {
+        ...node,
+        target: substituteExpression(node.target, substitutions),
+      }
 
     case 'Identifier':
       return {
@@ -207,10 +214,36 @@ function substituteStatement(
         value: substituteExpression(node.value, substitutions),
       }
 
+    case 'Allocation':
+      return {
+        type: 'Allocation',
+        declarations: node.declarations.map((declaration) => ({
+          ...declaration,
+          name: substitutions.get(declaration.name) ?? declaration.name,
+          value: substituteExpression(declaration.value, substitutions),
+        })),
+        statements: node.statements.map((statement) =>
+          substituteStatement(statement, substitutions)
+        ),
+        disposers: node.disposers.map((statement) =>
+          substituteStatement(statement, substitutions)
+        ),
+      }
+
     case 'ExpressionStatement':
       return {
         type: 'ExpressionStatement',
         expression: substituteExpression(node.expression, substitutions),
+      }
+
+    case 'AssignmentStatement':
+      return {
+        type: 'AssignmentStatement',
+        target: {
+          type: 'Identifier',
+          name: substitutions.get(node.target.name) ?? node.target.name,
+        },
+        value: substituteExpression(node.value, substitutions),
       }
 
     default:

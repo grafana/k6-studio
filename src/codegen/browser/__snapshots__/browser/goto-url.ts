@@ -14,5 +14,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.goto("https://example.com");
+  try {
+    await page.goto("https://example.com");
+  } finally {
+    await page?.close();
+  }
 }

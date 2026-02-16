@@ -77,7 +77,6 @@ module.exports = {
   },
 
   parserOptions: {
-    projectService: true,
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
   },

@@ -14,5 +14,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.getByTestId("submit-button").click();
+  try {
+    await page.getByTestId("submit-button").click();
+  } finally {
+    await page?.close();
+  }
 }

@@ -8,8 +8,17 @@ export interface StringLiteral {
   value: string
 }
 
+export interface NullLiteral {
+  type: 'NullLiteral'
+}
+
 export interface NewPageExpression {
   type: 'NewPageExpression'
+}
+
+export interface ClosePageExpression {
+  type: 'ClosePageExpression'
+  target: Expression
 }
 
 export interface NewCssLocatorExpression {
@@ -174,7 +183,9 @@ export interface ExpectExpression {
 export type Expression =
   | Identifier
   | StringLiteral
+  | NullLiteral
   | NewPageExpression
+  | ClosePageExpression
   | NewRoleLocatorExpression
   | NewLabelLocatorExpression
   | NewPlaceholderLocatorExpression
@@ -197,19 +208,32 @@ export type Expression =
 
 export interface VariableDeclaration {
   type: 'VariableDeclaration'
-  kind: 'const'
+  kind: 'const' | 'let'
   name: string
   value: Expression
 }
 
-export type Declaration = VariableDeclaration
+export interface Allocation {
+  type: 'Allocation'
+  declarations: VariableDeclaration[]
+  statements: Statement[]
+  disposers: Statement[]
+}
+
+export type Declaration = VariableDeclaration | Allocation
 
 export interface ExpressionStatement {
   type: 'ExpressionStatement'
   expression: Expression
 }
 
-export type Statement = Declaration | ExpressionStatement
+export interface AssignmentStatement {
+  type: 'AssignmentStatement'
+  target: Identifier
+  value: Expression
+}
+
+export type Statement = Declaration | ExpressionStatement | AssignmentStatement
 
 export type Node = Expression | Statement
 

@@ -1170,3 +1170,92 @@ it('should emit a waitFor statement', async ({ expect }) => {
     '__snapshots__/browser/wait-for-statement.ts'
   )
 })
+
+it('should emit merged try-finally blocks', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'first-page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'reference-first-page',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'first-page' },
+          },
+        },
+        {
+          type: 'page',
+          nodeId: 'second-page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'reference-second-page',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'second-page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'reference-first-page-again',
+          url: 'https://example2.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'first-page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/merged-try-finally-blocks.ts'
+  )
+})
+
+it('should emit two disjoint try-finally blocks', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'page',
+          nodeId: 'second-page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'second-page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/disjoint-try-finally-blocks.ts'
+  )
+})

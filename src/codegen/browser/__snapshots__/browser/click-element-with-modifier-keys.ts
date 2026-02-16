@@ -14,7 +14,14 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page
-    .locator("button")
-    .click({ button: "right", modifiers: ["Control", "Shift", "Alt", "Meta"] });
+  try {
+    await page
+      .locator("button")
+      .click({
+        button: "right",
+        modifiers: ["Control", "Shift", "Alt", "Meta"],
+      });
+  } finally {
+    await page?.close();
+  }
 }

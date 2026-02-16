@@ -14,7 +14,11 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page
-    .getByPlaceholder("Enter your email", { exact: true })
-    .fill("test@example.com");
+  try {
+    await page
+      .getByPlaceholder("Enter your email", { exact: true })
+      .fill("test@example.com");
+  } finally {
+    await page?.close();
+  }
 }
