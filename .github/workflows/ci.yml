@@ -18,8 +18,8 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version: 24.11
+          cache: "npm"
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
