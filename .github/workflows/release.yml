@@ -1,4 +1,4 @@
-name: 'Manual Release'
+name: "Manual Release"
 
 on:
   workflow_dispatch:
@@ -38,14 +38,14 @@ jobs:
       - name: setup node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
-          node-version: 22
+          node-version: 24.11
 
       # try earlier python version for appdmg
       # https://github.com/electron/forge/issues/3371#issuecomment-2105195302
       - name: Install Python 3.11.4
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6
         with:
-          python-version: '3.11.4'
+          python-version: "3.11.4"
 
       - name: install dependencies
         run: npm ci
@@ -64,7 +64,7 @@ jobs:
       - name: publish macOS arm64
         if: startsWith(matrix.platform, 'macos-latest')
         env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
@@ -78,7 +78,7 @@ jobs:
       - name: publish macOS x86_64
         if: startsWith(matrix.platform, 'macos-15-intel')
         env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # apple notarization
           APPLE_API_KEY: ./apple_api_key.p8
@@ -113,7 +113,7 @@ jobs:
         if: startsWith(matrix.platform, 'windows-')
         with:
           # renovate: datasource=dotnet-version depName=dotnet-sdk
-          dotnet-version: '8.0.414'
+          dotnet-version: "8.0.414"
 
       - name: Install Sign CLI tool
         id: install-sign-tool
@@ -121,7 +121,7 @@ jobs:
         shell: pwsh
         env:
           # renovate: datasource=nuget depName=sign
-          DOTNET_SIGN_VERSION: '0.9.1-beta.25379.1'
+          DOTNET_SIGN_VERSION: "0.9.1-beta.25379.1"
         run: |
           $toolPath = Join-Path -Path ${env:RUNNER_TEMP} -ChildPath (New-Guid).ToString()
           New-Item -ItemType Directory -Path $toolPath | Out-Null
@@ -135,7 +135,7 @@ jobs:
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')
         env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
           TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
@@ -151,7 +151,7 @@ jobs:
       - name: publish Linux
         if: startsWith(matrix.platform, 'ubuntu-')
         env:
-          NODE_OPTIONS: '--max_old_space_size=8192'
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # sentry integration
           # sentry vite plugin integration during build
