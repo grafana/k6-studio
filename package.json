@@ -6,7 +6,7 @@
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
   "engines": {
-    "node": "^22.0.0"
+    "node": "^24.11.0"
   },
   "scripts": {
     "preinstall": "node install-k6.js",
@@ -57,7 +57,7 @@
     "@typescript-eslint/types": "^8.21.0",
     "dedent": "^1.7.0",
     "dotenv": "^17.0.0",
-    "electron": "37.3.1",
+    "electron": "40.4.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -128,7 +128,7 @@
     "devtools-protocol": "^0.0.1568225",
     "diff": "^8.0.0",
     "dom-accessibility-api": "^0.7.0",
-    "electron-log": "^5.2.0",
+    "electron-log": "^5.4.3",
     "electron-squirrel-startup": "^1.0.1",
     "express": "^5.2.1",
     "find-process": "^1.4.7",
