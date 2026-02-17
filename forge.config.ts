@@ -4,6 +4,7 @@ import { MakerDMG } from '@electron-forge/maker-dmg'
 import { MakerRpm } from '@electron-forge/maker-rpm'
 import { MakerSquirrel } from '@electron-forge/maker-squirrel'
 import { MakerZIP } from '@electron-forge/maker-zip'
+import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
 import type { ForgeConfig, ForgeMakeResult } from '@electron-forge/shared-types'
@@ -56,6 +57,7 @@ const config: ForgeConfig = {
     executableName: 'k6-studio',
     icon: './resources/icons/logo',
     asar: true,
+    ignore: [],
     extraResource: [
       '.vite/build/extension',
       './resources/browser',
@@ -161,6 +163,7 @@ const config: ForgeConfig = {
       [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
+    new AutoUnpackNativesPlugin({}),
   ],
   publishers: [
     {

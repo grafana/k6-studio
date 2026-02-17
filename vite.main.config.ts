@@ -7,8 +7,8 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import {
   getBuildConfig,
   getBuildDefine,
-  builtins,
   pluginHotRestart,
+  external,
 } from './vite.base.config'
 
 function getDotEnv(defaults: Record<string, string>) {
@@ -45,7 +45,7 @@ export default defineConfig((env) => {
         formats: ['cjs'],
       },
       rollupOptions: {
-        external: [...builtins, 'bufferutil', 'utf-8-validate'],
+        external,
       },
       sourcemap: true,
     },

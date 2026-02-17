@@ -4,7 +4,7 @@ import type { ConfigEnv, Plugin, UserConfig } from 'vite'
 
 import pkg from './package.json'
 
-export const builtins = [
+const builtins = [
   'electron',
   ...builtinModules.map((m) => [m, `node:${m}`]).flat(),
 ]
