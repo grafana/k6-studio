@@ -25,7 +25,7 @@ export default async function () {
 
     await page1.goto("https://example2.com");
   } finally {
-    await page1?.close();
     await page2?.close();
+    await page1?.close();
   }
 }
