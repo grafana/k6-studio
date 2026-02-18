@@ -15,5 +15,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await expect(page.locator("button")).toContainText("Hello, World!");
+  try {
+    await expect(page.locator("button")).toContainText("Hello, World!");
+  } finally {
+    await page?.close();
+  }
 }

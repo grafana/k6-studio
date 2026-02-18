@@ -15,5 +15,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await expect(page.locator('input[type="text"]')).toHaveValue("value1");
+  try {
+    await expect(page.locator('input[type="text"]')).toHaveValue("value1");
+  } finally {
+    await page?.close();
+  }
 }

@@ -14,7 +14,11 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page
-    .getByTitle("Submit your form", { exact: true })
-    .waitFor({ timeout: 5000, state: "hidden" });
+  try {
+    await page
+      .getByTitle("Submit your form", { exact: true })
+      .waitFor({ timeout: 5000, state: "hidden" });
+  } finally {
+    await page?.close();
+  }
 }

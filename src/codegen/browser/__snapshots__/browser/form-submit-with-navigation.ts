@@ -14,8 +14,12 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await Promise.all([
-    page.waitForNavigation(),
-    page.locator('button[type="submit"]').click(),
-  ]);
+  try {
+    await Promise.all([
+      page.waitForNavigation(),
+      page.locator('button[type="submit"]').click(),
+    ]);
+  } finally {
+    await page?.close();
+  }
 }

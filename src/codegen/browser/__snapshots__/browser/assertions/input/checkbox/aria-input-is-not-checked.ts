@@ -15,8 +15,12 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await expect(page.locator('[role="checkbox"]')).toHaveAttribute(
-    "aria-checked",
-    "false",
-  );
+  try {
+    await expect(page.locator('[role="checkbox"]')).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
+  } finally {
+    await page?.close();
+  }
 }

@@ -14,5 +14,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.getByAltText("Grot is happy", { exact: true }).click();
+  try {
+    await page.getByAltText("Grot is happy", { exact: true }).click();
+  } finally {
+    await page?.close();
+  }
 }

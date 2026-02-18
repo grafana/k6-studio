@@ -85,6 +85,10 @@ const PageWaitForNavigationActionSchema = z.object({
   options: GenericOptions.optional(),
 })
 
+const PageCloseActionSchema = z.object({
+  method: z.literal('page.close'),
+})
+
 const GenericPageActionSchema = z.object({
   method: z.literal('page.*'),
   name: z.string(),
@@ -225,6 +229,7 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
   PageGotoActionSchema,
   PageReloadActionSchema,
   PageWaitForNavigationActionSchema,
+  PageCloseActionSchema,
   GenericPageActionSchema,
 
   // Locator actions

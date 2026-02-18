@@ -14,5 +14,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.locator("button").click();
+  try {
+    await page.locator("button").click();
+  } finally {
+    await page?.close();
+  }
 }

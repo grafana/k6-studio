@@ -26,6 +26,22 @@ export function declareConst({
   }
 }
 
+export function declareLet({
+  declarations,
+}: NodeOptions<
+  ts.LetOrVarNonDeclaredDeclaration,
+  'declarations',
+  'kind'
+>): ts.LetOrVarNonDeclaredDeclaration {
+  return {
+    ...baseProps,
+    type: NodeType.VariableDeclaration,
+    declarations,
+    kind: 'let',
+    declare: false,
+  }
+}
+
 export function declareFunction({
   id = null,
   params,
@@ -59,8 +75,25 @@ export function constDeclarator({
   id,
   init,
 }: NodeOptions<
-  ts.VariableDeclarator,
+  ts.LetOrConstOrVarDeclarator,
   'id' | 'init'
+>): ts.VariableDeclaratorMaybeInit {
+  return {
+    ...baseProps,
+    type: NodeType.VariableDeclarator,
+    id,
+    init,
+    definite: false,
+  }
+}
+
+export function letDeclarator({
+  id,
+  init,
+}: NodeOptions<
+  ts.VariableDeclaratorMaybeInit,
+  'id' | 'init',
+  'definite'
 >): ts.VariableDeclaratorMaybeInit {
   return {
     ...baseProps,

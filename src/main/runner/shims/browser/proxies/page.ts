@@ -53,6 +53,12 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         }
       },
 
+      close() {
+        return {
+          method: 'page.close',
+        }
+      },
+
       $default(method, ...args) {
         if (isLocatorMethod(method)) {
           return null

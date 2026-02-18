@@ -14,5 +14,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.getByTitle("Submit your form", { exact: true }).click();
+  try {
+    await page.getByTitle("Submit your form", { exact: true }).click();
+  } finally {
+    await page?.close();
+  }
 }
