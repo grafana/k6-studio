@@ -53,10 +53,12 @@ export function TimelineSlider({
       direction="column"
       className={className}
       css={css`
+        --chapters-background-color: var(--gray-5);
         width: 100%;
         min-width: 0;
         cursor: ${disabled ? 'default' : 'pointer'};
         border-radius: var(--radius-2);
+        background-color: var(--chapters-background-color);
       `}
     >
       <TimelineChapters
@@ -110,8 +112,8 @@ export function TimelineSlider({
           aria-label="Playback position"
           css={css`
             display: block;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background-color: var(--gray-12);
             pointer-events: auto;

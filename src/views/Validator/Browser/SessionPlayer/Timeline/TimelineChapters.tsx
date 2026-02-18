@@ -10,7 +10,7 @@ import { TimelineTooltip } from './TimelineTooltip'
 
 const MIN_LANE_HEIGHT = 3
 const MAX_LANE_HEIGHT = 6
-const MIN_TIMELINE_HEIGHT = 10
+const MIN_TIMELINE_HEIGHT = 6
 
 function isIntersecting(previous: Segment, current: Segment) {
   return (
@@ -218,13 +218,11 @@ export function TimelineChapters({
   return (
     <Box
       css={css`
-        --chapters-background-color: var(--gray-5);
         position: relative;
         width: 100%;
-        min-height: 10px;
+        min-height: ${MIN_TIMELINE_HEIGHT}px;
         flex-shrink: 0;
         min-width: 0;
-        background-color: var(--chapters-background-color);
       `}
       style={{
         height: lanes * MIN_LANE_HEIGHT,
