@@ -7,7 +7,7 @@ import { Label } from '@/components/primitives/Label'
 import { ActionLocator } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import { LocatorOptions } from './types'
+import { LocatorOptions } from '../types'
 
 const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
   role: 'ARIA Role',
@@ -81,7 +81,7 @@ export function LocatorInput({
 function initializeLocatorValues(type: ActionLocator['type']): ActionLocator {
   switch (type) {
     case 'css':
-      return { type, selector: '' }
+      return { type, selector: 'body' }
     case 'testid':
       return { type, testId: '' }
     case 'label':
