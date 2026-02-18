@@ -33,6 +33,9 @@ export function BrowserActionText({ action }: BrowserActionTextProps) {
     case 'page.waitForNavigation':
       return <>Waiting for page navigation</>
 
+    case 'page.close':
+      return <>Close page</>
+
     case 'page.*':
       return (
         <>

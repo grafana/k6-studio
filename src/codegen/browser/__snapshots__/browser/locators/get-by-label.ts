@@ -14,5 +14,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.getByLabel("Username", { exact: true }).fill("my-username");
+  try {
+    await page.getByLabel("Username", { exact: true }).fill("my-username");
+  } finally {
+    await page?.close();
+  }
 }

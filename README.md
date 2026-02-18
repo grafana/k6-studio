@@ -120,7 +120,7 @@ If you're interested in contributing to the Grafana k6 Studio project:
 Make sure you have the following dependencies installed before setting up your developer environment:
 
 - [Git](https://git-scm.com/downloads)
-- [Node.js](https://nodejs.org/en/download/) ^v22.0.0
+- [Node.js](https://nodejs.org/en/download/) ^v24.11.0
 
 ### Run Grafana k6 Studio locally
 

@@ -297,6 +297,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
         }
       case 'page.reload':
       case 'page.waitForNavigation':
+      case 'page.close':
       case 'page.*':
       case 'locator.click':
       case 'locator.dblclick':

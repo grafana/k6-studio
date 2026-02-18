@@ -5,11 +5,12 @@ import {
   createResponse,
   createProxyData,
 } from '@/test/factories/proxyData'
+import { RequestSnippetSchema } from '@/types'
 
 import {
-  mergeRedirects,
   stringify,
   removeWebsocketRequests,
+  processRedirectChains,
 } from './codegen.utils'
 
 describe('Code generation - utils', () => {
@@ -99,114 +100,228 @@ describe('Code generation - utils', () => {
     })
   })
 
-  describe('mergeRedirects', () => {
-    const createRedirectMock = (id: string, from: string, to: string) => {
-      const request = createRequest({ url: from })
-      const response = createResponse({
-        statusCode: 301,
-        headers: [['location', to]],
-      })
-      return createProxyData({ id, request, response })
-    }
+  function toSnippet(
+    data: ReturnType<typeof createProxyData>
+  ): RequestSnippetSchema {
+    return { data, before: [], after: [], checks: [] }
+  }
 
-    it('should resolve redirect chains with absolute URLs', () => {
-      const first = createRedirectMock(
+  const createRedirectSnippet = (id: string, from: string, to: string) => {
+    return toSnippet(
+      createProxyData({
+        id,
+        request: createRequest({ url: from }),
+        response: createResponse({
+          statusCode: 302,
+          headers: [['location', to]],
+        }),
+      })
+    )
+  }
+
+  const createFinalSnippet = (id: string, url: string, content = 'Final') => {
+    return toSnippet(
+      createProxyData({
+        id,
+        request: createRequest({ url }),
+        response: createResponse({ statusCode: 200, content }),
+      })
+    )
+  }
+
+  describe('processRedirectChains', () => {
+    it('merges chain when no requests are affected', () => {
+      const first = createRedirectSnippet('1', 'http://a.com', 'http://b.com')
+      const final = createFinalSnippet('2', 'http://b.com', 'Final Content')
+
+      const result = processRedirectChains([first, final], new Set())
+
+      expect(result.length).toBe(1)
+      expect(result[0]?.data.id).toBe('1')
+      expect(result[0]?.data.response?.content).toBe('Final Content')
+      expect(result[0]?.noRedirect).toBeFalsy()
+    })
+
+    it('keeps chain separate when first request is affected', () => {
+      const first = createRedirectSnippet('1', 'http://a.com', 'http://b.com')
+      const final = createFinalSnippet('2', 'http://b.com')
+
+      const result = processRedirectChains([first, final], new Set(['1']))
+
+      expect(result.length).toBe(2)
+      expect(result[0]?.noRedirect).toBe(true)
+      expect(result[1]?.noRedirect).toBe(false)
+    })
+
+    it('keeps chain separate when middle request is affected', () => {
+      const snippets = [
+        createRedirectSnippet('1', 'http://a.com', 'http://b.com'),
+        createRedirectSnippet('2', 'http://b.com', 'http://c.com'),
+        createFinalSnippet('3', 'http://c.com'),
+      ]
+
+      const result = processRedirectChains(snippets, new Set(['2']))
+
+      expect(result.length).toBe(3)
+      expect(result[0]?.noRedirect).toBe(true)
+      expect(result[1]?.noRedirect).toBe(true)
+      expect(result[2]?.noRedirect).toBe(false)
+    })
+
+    it('resolves relative URLs correctly across domains', () => {
+      const snippets = [
+        toSnippet(
+          createProxyData({
+            id: '1',
+            request: createRequest({ url: 'http://domain1.com/start' }),
+            response: createResponse({
+              statusCode: 302,
+              headers: [['location', 'http://domain2.com/auth']],
+            }),
+          })
+        ),
+        toSnippet(
+          createProxyData({
+            id: '2',
+            request: createRequest({ url: 'http://domain2.com/auth' }),
+            response: createResponse({
+              statusCode: 302,
+              headers: [['location', '/callback']],
+            }),
+          })
+        ),
+        createFinalSnippet('3', 'http://domain2.com/callback'),
+      ]
+
+      const result = processRedirectChains(snippets, new Set())
+
+      expect(result.length).toBe(1)
+      expect(result[0]?.data.id).toBe('1')
+    })
+
+    it('only merges unaffected chains when multiple chains exist', () => {
+      const snippets = [
+        createRedirectSnippet('1', 'http://a.com', 'http://b.com'),
+        createFinalSnippet('2', 'http://b.com'),
+        createRedirectSnippet('3', 'http://c.com', 'http://d.com'),
+        createFinalSnippet('4', 'http://d.com'),
+      ]
+
+      const result = processRedirectChains(snippets, new Set(['3']))
+
+      expect(result.length).toBe(3)
+      expect(result[0]?.data.id).toBe('1')
+      expect(result[1]?.data.id).toBe('3')
+      expect(result[2]?.data.id).toBe('4')
+      expect(result[1]?.noRedirect).toBe(true)
+    })
+
+    it('keeps redirect unchanged when target URL is not in recording', () => {
+      const redirect = createRedirectSnippet(
         '1',
-        'http://first.com',
-        'http://second.com'
-      )
-      const last = createProxyData({
-        id: '4',
-        request: createRequest({ url: 'http://last.com' }),
-        response: createResponse({ content: "I'm the last one" }),
-      })
-
-      const recording = [
-        first,
-        createRedirectMock('2', 'http://second.com', 'http://third.com'),
-        createRedirectMock('3', 'http://third.com', 'http://last.com'),
-        last,
-      ]
-
-      expect(mergeRedirects(recording)).toEqual([
-        { ...first, response: last.response },
-      ])
-    })
-
-    it('should resolve redirect chains with relative path', () => {
-      const first = createRedirectMock('1', 'http://domain.com', '/second')
-      const last = createProxyData({
-        id: '4',
-        request: createRequest({ url: 'http://domain.com/last' }),
-        response: createResponse({ content: "I'm the last one" }),
-      })
-
-      const recording = [
-        first,
-        createRedirectMock('2', 'http://domain.com/second', '/third'),
-        createRedirectMock('3', 'http://domain.com/third', '/last'),
-        last,
-      ]
-
-      expect(mergeRedirects(recording)).toEqual([
-        { ...first, response: last.response },
-      ])
-    })
-
-    it('should resolve redirect chains that are out of order', () => {
-      const from = createRedirectMock('1', 'http://a.com', 'http://b.com')
-      const nonRedirect = createProxyData({ id: '2' })
-      const to = createProxyData({
-        id: '3',
-        request: createRequest({ url: 'http://b.com' }),
-        response: createResponse({ content: "I'm the final response" }),
-      })
-
-      // "from" and "to" are not in order
-      const recording = [from, nonRedirect, to]
-
-      expect(mergeRedirects(recording)).toEqual([
-        { ...from, response: to.response },
-        nonRedirect,
-      ])
-    })
-
-    it("should resolve redirects to the same URL that don't belong to the redirect chain", () => {
-      // request to "b.com" is made more than once
-      // ensures that the redirect chain is not resolved with the wrong request
-      const requestB = createProxyData({
-        id: '1',
-        request: createRequest({ url: 'http://b.com' }),
-        response: createResponse({ content: "I don't come from a redirect" }),
-      })
-      const redirectFromAToB = createRedirectMock(
-        '2',
         'http://a.com',
-        'http://b.com'
+        'http://missing.com'
       )
-      const requestBFromRedirect = createProxyData({
-        id: '3',
-        request: createRequest({ url: 'http://b.com' }),
-        response: createResponse({ content: "I'm redirected from a.com" }),
-      })
 
-      const recording = [requestB, redirectFromAToB, requestBFromRedirect]
+      const result = processRedirectChains([redirect], new Set())
 
-      expect(mergeRedirects(recording)).toEqual([
-        requestB,
-        { ...redirectFromAToB, response: requestBFromRedirect.response },
+      expect(result.length).toBe(1)
+      expect(result[0]?.data.id).toBe('1')
+      expect(result[0]?.data.response?.statusCode).toBe(302)
+      expect(result[0]?.noRedirect).toBeFalsy()
+    })
+
+    it('handles same URL appearing in multiple independent chains', () => {
+      const snippets = [
+        createRedirectSnippet('1', 'http://a.com', 'http://shared.com'),
+        createFinalSnippet('2', 'http://shared.com', 'First chain'),
+        createRedirectSnippet('3', 'http://b.com', 'http://shared.com'),
+        createFinalSnippet('4', 'http://shared.com', 'Second chain'),
+      ]
+
+      const result = processRedirectChains(snippets, new Set())
+
+      expect(result.length).toBe(2)
+      expect(result[0]?.data.id).toBe('1')
+      expect(result[0]?.data.response?.content).toBe('First chain')
+      expect(result[1]?.data.id).toBe('3')
+      expect(result[1]?.data.response?.content).toBe('Second chain')
+    })
+
+    it("uses final request's checks in a redirect chain", () => {
+      const redirectWithCheck = {
+        ...createRedirectSnippet('1', 'http://a.com', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 302',
+            expression: '(r) => r.status === 302',
+          },
+        ],
+      }
+      const finalWithCheck = {
+        ...createFinalSnippet('2', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 200',
+            expression: '(r) => r.status === 200',
+          },
+        ],
+      }
+
+      const result = processRedirectChains(
+        [redirectWithCheck, finalWithCheck],
+        new Set()
+      )
+
+      expect(result.length).toBe(1)
+      expect(result[0]?.data.id).toBe('1')
+      expect(result[0]?.data.response?.statusCode).toBe(200)
+      expect(result[0]?.checks).toEqual([
+        {
+          description: 'status equals 200',
+          expression: '(r) => r.status === 200',
+        },
       ])
     })
 
-    it('should not change the request if a redirect is not found', () => {
-      const redirect = createRedirectMock(
-        '1',
-        'http://first.com',
-        'http://not-present-in-recording.com'
-      )
-      const recording = [redirect, createProxyData({ id: '2' })]
+    it('keeps checks for affected redirect chains', () => {
+      const redirectWithCheck = {
+        ...createRedirectSnippet('1', 'http://a.com', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 302',
+            expression: '(r) => r.status === 302',
+          },
+        ],
+      }
+      const finalWithCheck = {
+        ...createFinalSnippet('2', 'http://b.com'),
+        checks: [
+          {
+            description: 'status equals 200',
+            expression: '(r) => r.status === 200',
+          },
+        ],
+      }
 
-      expect(mergeRedirects(recording)).toEqual(recording)
+      const result = processRedirectChains(
+        [redirectWithCheck, finalWithCheck],
+        new Set(['1'])
+      )
+
+      expect(result.length).toBe(2)
+      expect(result[0]?.checks).toEqual([
+        {
+          description: 'status equals 302',
+          expression: '(r) => r.status === 302',
+        },
+      ])
+      expect(result[1]?.checks).toEqual([
+        {
+          description: 'status equals 200',
+          expression: '(r) => r.status === 200',
+        },
+      ])
     })
   })
 

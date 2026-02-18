@@ -22,3 +22,17 @@ export function expressionStatement({
     directive,
   }
 }
+
+export function tryStatement({
+  block,
+  handler = null,
+  finalizer = null,
+}: NodeOptions<ts.TryStatement, 'block'>): ts.TryStatement {
+  return {
+    ...baseProps,
+    type: NodeType.TryStatement,
+    block,
+    handler,
+    finalizer,
+  }
+}

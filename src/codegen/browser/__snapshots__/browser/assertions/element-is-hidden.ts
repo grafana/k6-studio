@@ -15,5 +15,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await expect(page.locator("button")).toBeHidden();
+  try {
+    await expect(page.locator("button")).toBeHidden();
+  } finally {
+    await page?.close();
+  }
 }

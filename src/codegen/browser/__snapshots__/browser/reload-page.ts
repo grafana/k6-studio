@@ -14,5 +14,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.reload();
+  try {
+    await page.reload();
+  } finally {
+    await page?.close();
+  }
 }

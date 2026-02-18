@@ -12,21 +12,29 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
     type: 'NewPageExpression',
   }
 
-  context.declare({
-    kind: 'const',
+  context.allocate({
     node,
     name: 'page',
     value: expression,
+    dispose(expression) {
+      return {
+        type: 'ExpressionStatement',
+        expression: {
+          type: 'ClosePageExpression',
+          target: expression,
+        },
+      }
+    },
   })
 }
 
 function emitGotoNode(context: IntermediateContext, node: m.GotoNode) {
-  const page = context.reference(node.inputs.page)
-
   // Skip goto for implicit navigation, as it will be triggered by preceding action
   if (node.source === 'implicit') {
     return
   }
+
+  const page = context.reference(node.inputs.page)
 
   context.emit({
     type: 'ExpressionStatement',
@@ -195,7 +203,6 @@ function wrapWithWaitForNavigation(
 function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
   const locator = context.reference(node.inputs.locator)
   const options = getClickOptions(node)
-  const page = context.reference(node.inputs.page)
 
   const expression: ir.ClickExpression = {
     type: 'ClickExpression',
@@ -204,6 +211,8 @@ function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
   }
 
   if (node.triggersNavigation) {
+    const page = context.reference(node.inputs.page)
+
     context.emit(wrapWithWaitForNavigation(expression, page))
     return
   }

@@ -15,7 +15,11 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await expect(page.locator('input[type="checkbox"]')).toBeChecked({
-    indeterminate: true,
-  });
+  try {
+    await expect(page.locator('input[type="checkbox"]')).toBeChecked({
+      indeterminate: true,
+    });
+  } finally {
+    await page?.close();
+  }
 }

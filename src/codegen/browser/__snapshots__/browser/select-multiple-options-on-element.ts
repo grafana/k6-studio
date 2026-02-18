@@ -14,5 +14,9 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.locator("select").selectOption(["option1", "option2"]);
+  try {
+    await page.locator("select").selectOption(["option1", "option2"]);
+  } finally {
+    await page?.close();
+  }
 }
