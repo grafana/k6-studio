@@ -1,29 +1,18 @@
 import { css } from '@emotion/react'
-import {
-  Badge,
-  Popover,
-  Code,
-  Flex,
-  IconButton,
-  TextField,
-  Tooltip,
-  Button,
-  Text,
-} from '@radix-ui/themes'
+import { Code, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
   GlobeIcon,
   RefreshCwIcon,
   TimerIcon,
   Trash2Icon,
-  TriangleAlertIcon,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 import { LocatorWaitForAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import { LocatorInput } from './LocatorInput'
+import { LocatorInput } from './Inputs/LocatorInput'
+import { UrlInput } from './Inputs/UrlInput'
 import { BrowserActionInstance, WithEditorMetadata } from './types'
 
 interface EditableActionProps {
@@ -153,71 +142,16 @@ interface GoToActionBodyProps {
 }
 
 function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const [url, setUrl] = useState(action.url)
-
-  const [error, setError] = useState<string | null>(null)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleChangeUrl = (url: string) => {
     onUpdate({
       ...action,
       url,
     })
-    setIsPopoverOpen(false)
   }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUrl(e.target.value)
-  }
-
-  useEffect(() => {
-    try {
-      new URL(url)
-      setError(null)
-    } catch {
-      setError('Invalid URL')
-    }
-  }, [url])
-
-  useEffect(() => {
-    setUrl(action.url)
-  }, [action.url])
 
   return (
     <>
-      Navigate to{' '}
-      <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <Popover.Trigger>
-          <Badge color={error ? 'red' : 'gray'} asChild>
-            <Button size="1">
-              {action.url}
-              {error && (
-                <Tooltip content={error}>
-                  <TriangleAlertIcon />
-                </Tooltip>
-              )}
-            </Button>
-          </Badge>
-        </Popover.Trigger>
-        <Popover.Content align="start" size="1" width="300px">
-          <form onSubmit={handleSubmit}>
-            <TextField.Root
-              size="1"
-              color={error ? 'red' : 'gray'}
-              value={url}
-              onChange={handleChange}
-              onBlur={handleSubmit}
-              placeholder="e.g. https://quickpizza.grafana.com"
-            />
-            {error && (
-              <Text size="1" color="red" mt="1">
-                {error}
-              </Text>
-            )}
-          </form>
-        </Popover.Content>
-      </Popover.Root>
+      Navigate to <UrlInput value={action.url} onChange={handleChangeUrl} />
     </>
   )
 }
