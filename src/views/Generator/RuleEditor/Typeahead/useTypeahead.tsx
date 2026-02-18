@@ -1,6 +1,9 @@
 import * as React from 'react'
 
-import type { TypeaheadProps } from '@/views/Generator/RuleEditor/Typeahead/Typeahead'
+import type {
+  TypeaheadConfig,
+  TypeaheadProps,
+} from '@/views/Generator/RuleEditor/Typeahead/Typeahead'
 
 /**
  * Temporary feature flagging, we can use this to experiment with different use cases
@@ -10,8 +13,14 @@ import type { TypeaheadProps } from '@/views/Generator/RuleEditor/Typeahead/Type
  * onThirdKey: will render suggestions on the third key
  */
 export type SuggestionMode = 'onDot' | 'onFirstKey' | 'onThirdKey'
-type ExternalProps = Omit<TypeaheadProps, 'options' | 'mode'>
+type OptionsQuery = {
+  data: string[]
+  isLoading: boolean
+  isError: boolean
+}
+type ExternalProps = Omit<TypeaheadProps, 'mode'>
 const defaultSuggestionMode: SuggestionMode = 'onDot'
+const defaultDropDownLimit = 50
 
 function checkKeyPrefixes(value: string, mode: SuggestionMode) {
   if (mode === 'onDot') return value.includes('.')
@@ -20,11 +29,7 @@ function checkKeyPrefixes(value: string, mode: SuggestionMode) {
   return false
 }
 
-export function useTypeahead(
-  options: string[],
-  props: ExternalProps = {},
-  mode: SuggestionMode = defaultSuggestionMode
-) {
+export function useTypeahead(config: TypeaheadConfig, props: ExternalProps) {
   const {
     value: extValue,
     defaultValue: extDefaultValue,
@@ -32,7 +37,19 @@ export function useTypeahead(
     onBlur: extOnBlur,
     ...restProps
   } = props
+  const {
+    mode = defaultSuggestionMode,
+    getOptions,
+    optionsLimit = defaultDropDownLimit,
+  } = config
 
+  const [optionsQuery, setOptionsQuery] = React.useState<OptionsQuery>({
+    data: [],
+    isLoading: false,
+    isError: false,
+  })
+
+  const requestIdRef = React.useRef(0)
   const isControlled = extValue !== undefined
   const [inputValue, setInputValue] = React.useState<string>(
     isControlled
@@ -55,23 +72,47 @@ export function useTypeahead(
     return checkKeyPrefixes(inputValue, mode)
   }, [inputValue, mode])
 
+  const debounceMs = 120
+
+  React.useEffect(() => {
+    if (!shouldSuggest) {
+      setOptionsQuery({ data: [], isLoading: false, isError: false })
+      return
+    }
+
+    const requestId = ++requestIdRef.current
+
+    const timer = setTimeout(() => {
+      setOptionsQuery((prev) => ({ ...prev, isLoading: true, isError: false }))
+
+      getOptions({ query: inputValue, mode, limit: optionsLimit })
+        .then((next) => {
+          if (requestId !== requestIdRef.current) return
+          setOptionsQuery({
+            data: next ?? [],
+            isLoading: false,
+            isError: false,
+          })
+          setActiveIndex(null)
+        })
+        .catch(() => {
+          if (requestId !== requestIdRef.current) return
+          setOptionsQuery({ data: [], isLoading: false, isError: true })
+          setActiveIndex(null)
+        })
+    }, debounceMs)
+
+    return () => clearTimeout(timer)
+  }, [getOptions, inputValue, mode, optionsLimit, shouldSuggest])
+
   const filteredOptions = React.useMemo(() => {
     if (!shouldSuggest) return []
-    if (mode === 'onDot') {
-      const parts = inputValue.split('.')
-      const prefix = parts.slice(0, -1).join('.')
-      const current = parts[parts.length - 1] || ''
-      const base = prefix ? `${prefix}.` : ''
-      return options.filter(
-        (o) =>
-          o.startsWith(base) &&
-          o.slice(base.length).toLowerCase().startsWith(current.toLowerCase())
-      )
-    }
-    return options.filter((o) =>
-      o.toLowerCase().includes(inputValue.toLowerCase())
-    )
-  }, [options, inputValue, shouldSuggest, mode])
+    return getOptions({
+      query: inputValue,
+      mode: mode,
+      limit: optionsLimit,
+    })
+  }, [inputValue, shouldSuggest, mode, getOptions, optionsLimit])
 
   const selectOption = React.useCallback(
     (value: string) => {
@@ -90,27 +131,28 @@ export function useTypeahead(
   )
 
   const onKeyDown = React.useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (filteredOptions.length === 0) return
+    async (e: React.KeyboardEvent<HTMLInputElement>) => {
+      const filteredOptionsValue = await filteredOptions
+      if (filteredOptionsValue.length === 0) return
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault()
           setActiveIndex((i) =>
-            i === null || i === filteredOptions.length - 1 ? 0 : i + 1
+            i === null || i === filteredOptionsValue.length - 1 ? 0 : i + 1
           )
           break
         case 'ArrowUp':
           e.preventDefault()
           setActiveIndex((i) =>
-            i === null || i === 0 ? filteredOptions.length - 1 : i - 1
+            i === null || i === 0 ? filteredOptionsValue.length - 1 : i - 1
           )
           break
         case 'Enter':
         case 'Tab':
           if (activeIndex !== null) {
             e.preventDefault()
-            if (filteredOptions[activeIndex]) {
-              selectOption(filteredOptions[activeIndex])
+            if (filteredOptionsValue[activeIndex]) {
+              selectOption(filteredOptionsValue[activeIndex])
             }
           }
           break
@@ -139,6 +181,8 @@ export function useTypeahead(
     extOnBlur?.(e)
   }
 
+  const isOptionsAvailable = optionsQuery.data && optionsQuery.data.length > 0
+
   const inputProps = {
     ...restProps,
     value: inputValue,
@@ -147,10 +191,10 @@ export function useTypeahead(
     onBlur: handleBlur,
     onKeyDown,
     role: 'combobox',
-    'aria-expanded': isFocused && filteredOptions.length > 0,
+    'aria-expanded': isFocused && isOptionsAvailable,
     'aria-activedescendant':
-      activeIndex !== null
-        ? `typeahead-option-${filteredOptions[activeIndex]}`
+      activeIndex && isOptionsAvailable !== null
+        ? `typeahead-option-${optionsQuery.data[activeIndex]}`
         : undefined,
   }
 
@@ -170,8 +214,8 @@ export function useTypeahead(
 
   return {
     inputProps,
-    filteredOptions,
     activeIndex,
+    optionsQuery,
     dropdownProps,
     selectOption,
     isFocused,
