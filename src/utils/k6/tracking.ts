@@ -84,14 +84,14 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     if (!parsed.success) {
       log.warn('Received invalid begin action event: ', parsed.error.format())
 
-      res.status(400).end()
+      res.status(400).send()
 
       return
     }
 
     trackingServer.emit('begin', parsed.data)
 
-    res.status(204).end()
+    res.status(204).send()
   })
 
   app.post('/track/:id/end', (req, res) => {
@@ -100,14 +100,14 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     if (!parsed.success) {
       log.warn('Received invalid end action event: ', parsed.error.format())
 
-      res.status(400).end()
+      res.status(400).send()
 
       return
     }
 
     trackingServer.emit('end', parsed.data)
 
-    res.status(204).end()
+    res.status(204).send()
   })
 
   app.post('/log', (req, res) => {
@@ -116,12 +116,14 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     if (!parsed.success) {
       log.warn('Received invalid log entry: ', parsed.error.format())
 
-      res.status(400).end()
+      res.status(400).send()
 
       return
     }
 
     trackingServer.emit('log', { entry: parsed.data })
+
+    res.status(204).send()
   })
 
   app.post('/session-replay', (req, res) => {
@@ -130,7 +132,7 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
     if (!parsed.success) {
       log.warn('Received invalid session replay event: ', parsed.error.format())
 
-      res.status(400).end()
+      res.status(400).send()
 
       return
     }
@@ -139,7 +141,7 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
       events: parsed.data.events,
     })
 
-    res.status(204).end()
+    res.status(204).send()
   })
 
   await new Promise<void>((resolve, reject) => {
