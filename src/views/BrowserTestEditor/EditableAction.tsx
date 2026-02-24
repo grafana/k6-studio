@@ -11,8 +11,8 @@ import {
 import { LocatorWaitForAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import { LocatorInput } from './Inputs/LocatorInput'
-import { UrlInput } from './Inputs/UrlInput'
+import { LocatorInput } from './Inputs/LocatorInput/LocatorInput'
+import { UrlInput } from './Inputs/UrlInput/UrlInput'
 import { BrowserActionInstance, WithEditorMetadata } from './types'
 
 interface EditableActionProps {
