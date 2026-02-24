@@ -1,6 +1,6 @@
 import { TextField } from '@radix-ui/themes'
 
-import { FieldGroup } from '@/components/Form/FieldGroup'
+import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 
 type TestIdLocator = Extract<ActionLocator, { type: 'testid' }>

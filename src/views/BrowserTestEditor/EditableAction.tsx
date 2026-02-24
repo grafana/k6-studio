@@ -179,7 +179,6 @@ function WaitForActionBody({ action, onUpdate }: WaitForActionBodyProps) {
     </>
   )
 }
-;``
 
 function RefreshActionBody() {
   return <>Reload page</>
