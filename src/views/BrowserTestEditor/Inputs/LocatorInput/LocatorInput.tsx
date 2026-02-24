@@ -157,7 +157,7 @@ export function LocatorInput({
           <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
             <RadioGroup.Root
               size="1"
-              aria-labelledby="locator-type-label"
+              name="locator-type"
               value={localCurrent}
               onValueChange={handleChangeCurrent}
             >

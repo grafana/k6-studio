@@ -107,7 +107,7 @@ export function useBrowserScriptPreview(
         setPreview(script)
       } catch (error) {
         setPreview(
-          `// Failed to generate script preview:// ${error instanceof Error ? error.message : String(error)}`
+          `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
         )
       }
     }
