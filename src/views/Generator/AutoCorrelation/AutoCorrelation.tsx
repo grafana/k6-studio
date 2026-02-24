@@ -36,6 +36,7 @@ export function AutoCorrelation({
     error,
     stop,
     restart,
+    messages,
   } = useGenerateRules({
     clearValidation: clearValidation,
   })
@@ -76,6 +77,10 @@ export function AutoCorrelation({
     return <ErrorMessage error={error} onRetry={restart} />
   }
 
+  const assistantMessages = messages.filter((msg) => msg.role === 'assistant')
+  const textMessages = assistantMessages
+    .flatMap((msg) => msg.parts)
+    .filter((part) => part.type === 'text')
   return (
     <Flex
       css={{
@@ -103,6 +108,15 @@ export function AutoCorrelation({
                       </Text>
                     </Box>
                   )}
+                  <Box px="3" pt="2">
+                    {textMessages.map((msg, index) => (
+                      <Box key={index}>
+                        <Text key={index} color="gray" size="2" mb="2">
+                          {msg.text}
+                        </Text>
+                      </Box>
+                    ))}
+                  </Box>
                 </ScrollArea>
               </Flex>
             </Box>

@@ -73,6 +73,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     const contextId = existingSession?.contextId
     const userText = extractLatestUserText(options.prompt)
     const body = buildA2ARequest(userText, contextId)
+    log.info('Request body', JSON.stringify(body, null, 2))
 
     const response = await fetch(
       `${a2aConfig.baseUrl}/agents/${a2aConfig.agentId}`,
