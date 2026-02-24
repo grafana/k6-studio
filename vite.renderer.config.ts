@@ -14,6 +14,9 @@ export default defineConfig((env) => {
   const name = forgeConfigSelf.name ?? ''
 
   return {
+    server: {
+      port: 6999,
+    },
     root,
     mode,
     base: './',

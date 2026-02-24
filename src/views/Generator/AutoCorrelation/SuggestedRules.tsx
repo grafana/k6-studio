@@ -31,13 +31,13 @@ export function SuggestedRules({
     }
   }
 
-  if (isLoading && suggestedRules.length === 0) {
-    return (
-      <Flex height="100%" align="center" justify="center">
-        <Text color="gray">Your rules will appear here</Text>
-      </Flex>
-    )
-  }
+  // if (isLoading && suggestedRules.length === 0) {
+  // return (
+  // <Flex height="100%" align="center" justify="center">
+  // <Text color="gray">Your rules will appear here</Text>
+  // </Flex>
+  // )
+  // }
 
   if (!isLoading && suggestedRules.length === 0) {
     return null

@@ -51,6 +51,7 @@ export const useGenerateRules = ({
     stop: stopGeneration,
     clearError,
     setMessages,
+    messages,
   } = useChat<Message>({
     transport: new IPCChatTransport(),
     // Keep calling tools without user input
@@ -80,6 +81,7 @@ export const useGenerateRules = ({
       })
     },
   })
+  console.log('messages', messages)
 
   async function handleToolCall(toolCall: ToolCall) {
     const { toolName } = toolCall
@@ -204,6 +206,7 @@ export const useGenerateRules = ({
       setCorrelationStatus('analyzing')
       return sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
+        // text: 'list tools and their input schema in json available to you',
       })
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -244,6 +247,7 @@ export const useGenerateRules = ({
     outcomeReason,
     restart,
     stop: useCallback(stop, [stopGeneration]),
+    messages,
   }
 }
 
