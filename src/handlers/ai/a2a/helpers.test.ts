@@ -162,4 +162,36 @@ describe('buildA2ARequest', () => {
 
     expect(params.contextId).toBe('ctx-1')
   })
+
+  it('includes metadata with tools when tools are provided', () => {
+    const tools = [
+      {
+        name: 'searchRequests',
+        description: 'Search for requests',
+        inputSchema: { type: 'object' },
+      },
+    ]
+
+    const req = buildA2ARequest('Hello', undefined, tools)
+    const params = req.params as Record<string, unknown>
+    const metadata = params.metadata as Record<string, unknown>
+
+    expect(metadata).toEqual({
+      'https://grafana.com/extensions/client-provided-tools/v1': { tools },
+    })
+  })
+
+  it('omits metadata when tools is an empty array', () => {
+    const req = buildA2ARequest('Hello', undefined, [])
+    const params = req.params as Record<string, unknown>
+
+    expect(params.metadata).toBeUndefined()
+  })
+
+  it('omits metadata when tools is undefined', () => {
+    const req = buildA2ARequest('Hello')
+    const params = req.params as Record<string, unknown>
+
+    expect(params.metadata).toBeUndefined()
+  })
 })

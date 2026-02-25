@@ -1,6 +1,6 @@
 import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 
-import { getToolDefinitionsForA2A } from '../tools'
+import type { RemoteToolDefinition } from '../tools'
 
 export function extractChatId(options: LanguageModelV2CallOptions): string {
   const grafanaOpts = options.providerOptions?.grafanaAssistant as
@@ -79,7 +79,8 @@ function resolveToolOutput(
 
 export function buildA2ARequest(
   userText: string,
-  contextId?: string
+  contextId?: string,
+  tools?: RemoteToolDefinition[]
 ): Record<string, unknown> {
   return {
     jsonrpc: '2.0',
@@ -93,11 +94,15 @@ export function buildA2ARequest(
         parts: [{ kind: 'text', text: userText }],
       },
       ...(contextId ? { contextId } : {}),
-      metadata: {
-        'https://grafana.com/extensions/client-provided-tools/v1': {
-          tools: getToolDefinitionsForA2A(),
-        },
-      },
+      ...(tools && tools.length > 0
+        ? {
+            metadata: {
+              'https://grafana.com/extensions/client-provided-tools/v1': {
+                tools,
+              },
+            },
+          }
+        : {}),
     },
   }
 }
