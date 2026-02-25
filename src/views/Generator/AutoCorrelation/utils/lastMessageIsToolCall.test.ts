@@ -52,7 +52,7 @@ describe('lastMessageIsToolCall', () => {
     expect(result).toBe(false)
   })
 
-  it('returns false when the last tool call is the finish tool', () => {
+  it('returns true when the last tool call is the finish tool', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
@@ -61,7 +61,7 @@ describe('lastMessageIsToolCall', () => {
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
-    expect(result).toBe(false)
+    expect(result).toBe(true)
   })
 
   it('returns true when all tool calls complete and last is not finish', () => {

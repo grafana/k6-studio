@@ -132,7 +132,7 @@ export const useGenerateRules = ({
           })
         }
         setOutcomeReason(toolCall.input.reason)
-        return
+        return toolCall.input.outcome
 
       default:
         return exhaustive(toolName)
