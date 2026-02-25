@@ -1,13 +1,12 @@
 import { css } from '@emotion/react'
 import * as SliderPrimitive from '@radix-ui/react-slider'
-import { Flex } from '@radix-ui/themes'
 import { useCallback } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
 import { Time } from '../types'
 
-import { TimelineChapters } from './TimelineChapters'
+import { TimelineActions } from './TimelineActions'
 
 interface TimelineSliderProps {
   className?: string
@@ -48,78 +47,89 @@ export function TimelineSlider({
   )
 
   return (
-    <Flex
-      gap="2px"
-      direction="column"
+    <SliderPrimitive.Root
+      asChild
       className={className}
       css={css`
-        --chapters-background-color: var(--gray-5);
-        width: 100%;
-        min-width: 0;
-        cursor: ${disabled ? 'default' : 'pointer'};
-        border-radius: var(--radius-2);
-        background-color: var(--chapters-background-color);
-      `}
-    >
-      <TimelineChapters
-        disabled={disabled}
-        time={time}
-        actions={actions}
-        onSeek={handleChapterSeek}
-      />
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 20px;
+        touch-action: none;
 
-      <SliderPrimitive.Root
-        value={[time.current]}
-        min={0}
-        max={time.total}
-        step={0.001}
-        disabled={disabled}
-        css={css`
-          position: relative;
-          display: flex;
-          align-items: center;
-          width: 100%;
-          height: 5px;
-          flex-shrink: 0;
-        `}
-        onValueChange={handleValueChange}
-        onValueCommit={handleValueCommit}
-      >
+        // We want the thumb to slightly overflow the track, so we need to add some
+        // negative margin to the track. Unfortunately, Radix UI wraps the thumb in
+        // an extra element that is absolutely positioned and there's no way to target
+        // it directly, so we need to target it using the :nth-child selector.
+        > :nth-child(2) {
+          top: -2px;
+          bottom: -2px;
+        }
+      `}
+      value={[time.current]}
+      min={0}
+      max={time.total}
+      step={0.001}
+      disabled={disabled}
+      onValueChange={handleValueChange}
+      onValueCommit={handleValueCommit}
+    >
+      <div>
         <SliderPrimitive.Track
           css={css`
             position: relative;
-            flex-grow: 1;
-            height: 100%;
-            background-color: var(--gray-a7);
-            border-radius: 1px;
-
-            &[data-disabled] {
-              cursor: not-allowed;
-              opacity: 0.5;
-            }
+            flex: 1 1 0;
+            min-height: 16px;
+            border-radius: var(--radius-1);
+            background-color: var(--gray-5);
+            box-shadow: inset 0 0 0 1px var(--gray-a6);
           `}
         >
           <SliderPrimitive.Range
             css={css`
               position: absolute;
               height: 100%;
-              background-color: var(--accent-9);
-              border-radius: 1px;
+              background: var(--gray-a6);
             `}
+          />
+          <TimelineActions
+            time={time}
+            actions={actions}
+            onSeek={handleChapterSeek}
           />
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
-          aria-label="Playback position"
+          aria-label="Timeline position"
           css={css`
             display: block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--gray-12);
-            pointer-events: auto;
+            width: 4px;
+            height: calc(100%);
+            background-color: var(--gray-1);
+            border: 1px solid var(--gray-a8);
+            box-shadow: var(--shadow-2);
+            transition:
+              transform 120ms ease,
+              box-shadow 120ms ease;
+
+            &:hover {
+              transform: scale(1.08);
+            }
+
+            &:focus-visible {
+              outline: none;
+              box-shadow:
+                0 0 0 3px var(--blue-a5),
+                0 2px 6px var(--black-a6);
+            }
+
+            &[data-disabled] {
+              background-color: var(--gray-3);
+              border-color: var(--gray-a6);
+              box-shadow: none;
+            }
           `}
         />
-      </SliderPrimitive.Root>
-    </Flex>
+      </div>
+    </SliderPrimitive.Root>
   )
 }

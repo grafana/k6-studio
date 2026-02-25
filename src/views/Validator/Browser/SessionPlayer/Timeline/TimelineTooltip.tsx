@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Popover } from '@radix-ui/themes'
+import { ReactNode } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
@@ -7,27 +8,28 @@ import { BrowserActionStatusIcon } from '../../BrowserActionStatusIcon'
 import { BrowserActionText } from '../../BrowserActionText'
 
 interface TimelineTooltipProps {
-  offset: number
-  action: BrowserActionEvent | undefined
+  open: boolean
+  action: BrowserActionEvent
+  children: ReactNode
 }
 
-export function TimelineTooltip({ offset, action }: TimelineTooltipProps) {
+export function TimelineTooltip({
+  open,
+  action,
+  children,
+}: TimelineTooltipProps) {
   return (
-    <Popover.Root open={action !== undefined}>
-      <Popover.Trigger key={offset}>
-        <div
-          css={css`
-            position: absolute;
-            top: 0;
-            width: 0;
-            height: 0;
-          `}
-          style={{
-            left: `${offset}%`,
-          }}
-        />
-      </Popover.Trigger>
-      <Popover.Content asChild side="top" align="center" size="1">
+    <Popover.Root open={open}>
+      <Popover.Trigger>{children}</Popover.Trigger>
+      <Popover.Content
+        asChild
+        css={css`
+          min-width: unset;
+        `}
+        side="top"
+        align="center"
+        size="1"
+      >
         <Flex
           css={css`
             font-size: var(--font-size-1);
