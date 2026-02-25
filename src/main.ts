@@ -17,9 +17,9 @@ import {
   stopProxyProcess,
 } from './main/proxy'
 import { getSettings, initSettings } from './main/settings'
-import { resolveWindowBounds } from './main/windowBounds'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
+import { resolveWindowBounds } from './main/windowBounds'
 import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
