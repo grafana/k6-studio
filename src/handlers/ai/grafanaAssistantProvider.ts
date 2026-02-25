@@ -59,6 +59,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     chatId: string,
     options: LanguageModelV2CallOptions
   ): Promise<Awaited<ReturnType<LanguageModelV2['doStream']>>> {
+    const contextId = activeSessions.get(chatId)?.contextId
     cleanupSession(chatId)
 
     const sessionAbortController = new AbortController()
@@ -69,9 +70,6 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
         { once: true }
       )
     }
-
-    const existingSession = activeSessions.get(chatId)
-    const contextId = existingSession?.contextId
     const userText = extractLatestUserText(options.prompt)
     const body = buildA2ARequest(
       userText,
