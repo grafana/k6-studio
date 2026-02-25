@@ -6,7 +6,7 @@
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
   "engines": {
-    "node": "^22.0.0"
+    "node": "^24.11.0"
   },
   "scripts": {
     "preinstall": "node install-k6.js",
@@ -173,6 +173,7 @@
     ]
   },
   "overrides": {
-    "esbuild": "^0.27.0"
+    "esbuild": "^0.27.0",
+    "nan": "^2.25.0"
   }
 }
