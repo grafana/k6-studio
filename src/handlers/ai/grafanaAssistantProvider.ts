@@ -14,6 +14,7 @@ import {
 import { sendRemoteToolResponse } from './a2a/remoteToolResponse'
 import { createA2AStream } from './a2a/stream'
 import type { ActiveA2ASession } from './a2a/types'
+import { getToolDefinitionsForA2A } from './tools'
 
 const PREFIX = '[GrafanaAssistant]'
 
@@ -72,7 +73,11 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     const existingSession = activeSessions.get(chatId)
     const contextId = existingSession?.contextId
     const userText = extractLatestUserText(options.prompt)
-    const body = buildA2ARequest(userText, contextId)
+    const body = buildA2ARequest(
+      userText,
+      contextId,
+      getToolDefinitionsForA2A()
+    )
     log.info('Request body', JSON.stringify(body, null, 2))
 
     const response = await fetch(
