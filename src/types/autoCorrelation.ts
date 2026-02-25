@@ -3,11 +3,15 @@ import { z } from 'zod'
 
 import * as GeneratorSchema from '@/schemas/generator'
 
-const FilterSchema = GeneratorSchema.FilterSchema.describe(
+export const FilterSchema = GeneratorSchema.FilterSchema.describe(
   'Filter the requests by path, for example /users/1234. Use empty string when matching all requests'
 )
 
-const BeginEndSelectorSchema = GeneratorSchema.BeginEndSelectorSchema.describe(`
+export const BeginEndSelectorSchema =
+  GeneratorSchema.BeginEndSelectorSchema.extend({
+    // Need to use enum because literals are not supported by Assistant
+    type: z.enum(['begin-end']),
+  }).describe(`
 Used to match value when being and end string are known.  example:
   headers:
     Authorization: Bearer 123;
@@ -28,8 +32,10 @@ Used to match value when being and end string are known.  example:
   extracted value: 321
 `)
 
-const HeaderNameSelectorSchema = GeneratorSchema.HeaderNameSelectorSchema
-  .describe(`
+export const HeaderNameSelectorSchema =
+  GeneratorSchema.HeaderNameSelectorSchema.extend({
+    type: z.enum(['header-name']),
+  }).describe(`
 Used to match header value by header name. For example:
   headers:
     content-type: application/json
@@ -37,7 +43,9 @@ Used to match header value by header name. For example:
   extracted value: application/json
 `)
 
-const RegexSelectorSchema = GeneratorSchema.RegexSelectorSchema.describe(`
+export const RegexSelectorSchema = GeneratorSchema.RegexSelectorSchema.extend({
+  type: z.enum(['regex']),
+}).describe(`
 Used to match value by regex, must have a capture group.
 
   Examples:
@@ -58,7 +66,9 @@ Used to match value by regex, must have a capture group.
   extracted value: 1234
 `)
 
-const JsonSelectorSchema = GeneratorSchema.JsonSelectorSchema.describe(`
+export const JsonSelectorSchema = GeneratorSchema.JsonSelectorSchema.extend({
+  type: z.enum(['json']),
+}).describe(`
 Used to match value by json path. For example:
   json:
     {"users":[{"id":1234,"name":"John"}]}

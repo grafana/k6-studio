@@ -87,7 +87,10 @@ export const useGenerateRules = ({
     const { toolName } = toolCall
 
     switch (toolName) {
-      case 'addRule': {
+      case 'addRuleBeginEnd':
+      case 'addRuleRegex':
+      case 'addRuleJson':
+      case 'addRuleHeaderName': {
         return addRule(toolCall.input.rule)
       }
 
@@ -147,7 +150,7 @@ export const useGenerateRules = ({
       applyResult.ruleInstances[0]?.state.matchedRequestIds
 
     if (!matchedRequestsIds || matchedRequestsIds.length === 0) {
-      return []
+      return 'The provided rule did not match any requests in the recording. Review the rule and try again.'
     }
 
     setSuggestedRules((prev) => [...prev, validRule])
@@ -260,7 +263,10 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
     case 'getRequestsMetadata':
     case 'getRequestDetails':
       return 'analyzing'
-    case 'addRule':
+    case 'addRuleBeginEnd':
+    case 'addRuleRegex':
+    case 'addRuleJson':
+    case 'addRuleHeaderName':
       return 'creating-rules'
     case 'finish':
       return toolCall.input.outcome

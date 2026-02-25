@@ -44,7 +44,7 @@ describe('lastMessageIsToolCall', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
-        { type: 'tool-addRule', state: 'input-available' },
+        { type: 'tool-addRuleRegex', state: 'input-available' },
         { type: 'tool-runValidation', state: 'output-available' },
       ]),
     ]
@@ -69,7 +69,7 @@ describe('lastMessageIsToolCall', () => {
       createAssistantMessage([
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-available' },
+        { type: 'tool-addRuleRegex', state: 'output-available' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
@@ -85,7 +85,7 @@ describe('lastMessageIsToolCall', () => {
         // Second (last) step - complete tool calls
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-available' },
+        { type: 'tool-addRuleRegex', state: 'output-available' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
@@ -97,7 +97,7 @@ describe('lastMessageIsToolCall', () => {
       createAssistantMessage([
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-error' },
+        { type: 'tool-addRuleRegex', state: 'output-error' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
