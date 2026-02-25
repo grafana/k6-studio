@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Code, Flex, IconButton, Tooltip } from '@radix-ui/themes'
+import { Code, Flex, Grid, IconButton, Tooltip } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
   GlobeIcon,
@@ -150,9 +150,9 @@ function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
   }
 
   return (
-    <>
+    <Grid columns="max-content auto" gap="2" align="center">
       Navigate to <UrlInput value={action.url} onChange={handleChangeUrl} />
-    </>
+    </Grid>
   )
 }
 
@@ -172,11 +172,10 @@ function WaitForActionBody({ action, onUpdate }: WaitForActionBodyProps) {
   }
 
   return (
-    <>
-      {' '}
-      Wait for element{' '}
+    <Grid columns="max-content auto" gap="2" align="center">
+      Wait for element
       <LocatorInput state={action.locator} onChange={handleChangeLocator} />
-    </>
+    </Grid>
   )
 }
 

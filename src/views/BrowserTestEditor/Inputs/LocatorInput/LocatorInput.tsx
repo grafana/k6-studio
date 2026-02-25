@@ -1,12 +1,4 @@
-import {
-  Badge,
-  Button,
-  Flex,
-  Grid,
-  Popover,
-  RadioGroup,
-  Separator,
-} from '@radix-ui/themes'
+import { Flex, Grid, RadioGroup, Separator } from '@radix-ui/themes'
 import { useState, useEffect } from 'react'
 
 import { toNodeSelector } from '@/codegen/browser/selectors'
@@ -16,6 +8,7 @@ import { ActionLocator } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
 import { LocatorOptions } from '../../types'
+import { FormPopover } from '../Shared/FormPopover'
 
 import { AltLocator } from './AltLocator'
 import { CssLocator } from './CssLocator'
@@ -35,7 +28,7 @@ const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
   testid: 'Test Id',
   text: 'Text content',
   title: 'Title',
-  css: 'CSS',
+  css: 'CSS selector',
 }
 
 interface LocatorInputProps {
@@ -51,7 +44,6 @@ export function LocatorInput({
   const [localCurrent, setLocalCurrent] = useState(current)
   const [localValues, setLocalValues] = useState({ ...values })
 
-  // Keep local state in sync if parent changes
   useEffect(() => {
     setLocalCurrent(current)
     setLocalValues({ ...values })
@@ -59,7 +51,6 @@ export function LocatorInput({
 
   const currentLocator =
     localValues[localCurrent] ?? initializeLocatorValues(localCurrent)
-  const selector = toNodeSelector(currentLocator)
 
   const handleChangeCurrent = (type: LocatorOptions['current']) => {
     setLocalCurrent(type)
@@ -75,12 +66,16 @@ export function LocatorInput({
   const handlePopoverOpenChange = (open: boolean) => {
     setIsPopoverOpen(open)
     if (!open) {
-      // Commit changes on popover close
       onChange({
         current: localCurrent,
         values: localValues,
       })
     }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    handlePopoverOpenChange(false)
   }
 
   const renderLocatorForm = () => {
@@ -141,18 +136,13 @@ export function LocatorInput({
   }
 
   return (
-    <Popover.Root open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
-      <Popover.Trigger>
-        <Badge color="gray" asChild>
-          <Button size="1">
-            <Flex gap="1">
-              <LocatorIcon locator={selector} />
-              {selector ? <LocatorText locator={selector} /> : 'Select locator'}
-            </Flex>
-          </Button>
-        </Badge>
-      </Popover.Trigger>
-      <Popover.Content align="start" size="1" width="400px">
+    <FormPopover
+      displayValue={<DisplayValue state={{ current, values }} />}
+      open={isPopoverOpen}
+      width="400px"
+      onOpenChange={handlePopoverOpenChange}
+    >
+      <form onSubmit={handleSubmit}>
         <Grid gap="2" columns="auto auto 1fr">
           <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
             <RadioGroup.Root
@@ -173,9 +163,31 @@ export function LocatorInput({
           </FieldGroup>
 
           <Separator orientation="vertical" size="4" decorative />
-          <div>{renderLocatorForm()}</div>
+          {renderLocatorForm()}
         </Grid>
-      </Popover.Content>
-    </Popover.Root>
+      </form>
+    </FormPopover>
+  )
+}
+
+function DisplayValue({
+  state: { current, values },
+}: {
+  state: LocatorOptions
+}) {
+  const selector = toNodeSelector(values[current]!)
+  return (
+    <Flex gap="1" align="center" overflow="hidden">
+      <LocatorIcon locator={selector} />
+      <span
+        css={{
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        <LocatorText locator={selector} />
+      </span>
+    </Flex>
   )
 }

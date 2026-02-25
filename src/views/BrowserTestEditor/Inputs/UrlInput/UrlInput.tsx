@@ -1,13 +1,9 @@
-import {
-  Badge,
-  Popover,
-  TextField,
-  Tooltip,
-  Button,
-  Text,
-} from '@radix-ui/themes'
-import { TriangleAlertIcon } from 'lucide-react'
+import { TextField, Text } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
+
+import { FieldGroup } from '@/components/Form/FieldGroup'
+
+import { FormPopover } from '../Shared/FormPopover'
 
 interface UrlInputProps {
   value: string
@@ -20,10 +16,16 @@ export function UrlInput({ value, onChange }: UrlInputProps) {
 
   const [error, setError] = useState<string | null>(null)
 
+  const handlePopoverOpenChange = (open: boolean) => {
+    setIsPopoverOpen(open)
+    if (!open) {
+      onChange(url)
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onChange(url)
-    setIsPopoverOpen(false)
+    handlePopoverOpenChange(false)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,27 +46,20 @@ export function UrlInput({ value, onChange }: UrlInputProps) {
   }, [value])
 
   return (
-    <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-      <Popover.Trigger>
-        <Badge color={error ? 'red' : 'gray'} asChild>
-          <Button size="1">
-            {value}
-            {error && (
-              <Tooltip content={error}>
-                <TriangleAlertIcon />
-              </Tooltip>
-            )}
-          </Button>
-        </Badge>
-      </Popover.Trigger>
-      <Popover.Content align="start" size="1" width="300px">
-        <form onSubmit={handleSubmit}>
+    <FormPopover
+      open={isPopoverOpen}
+      displayValue={value || 'Enter URL'}
+      error={error}
+      onOpenChange={setIsPopoverOpen}
+    >
+      <form onSubmit={handleSubmit}>
+        <FieldGroup name="url" label="URL" labelSize="1" mb="0">
           <TextField.Root
             size="1"
+            name="url"
             color={error ? 'red' : 'gray'}
             value={url}
             onChange={handleChange}
-            onBlur={handleSubmit}
             placeholder="e.g. https://quickpizza.grafana.com"
           />
           {error && (
@@ -72,8 +67,8 @@ export function UrlInput({ value, onChange }: UrlInputProps) {
               {error}
             </Text>
           )}
-        </form>
-      </Popover.Content>
-    </Popover.Root>
+        </FieldGroup>
+      </form>
+    </FormPopover>
   )
 }
