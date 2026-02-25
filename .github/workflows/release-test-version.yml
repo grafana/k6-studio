@@ -51,12 +51,12 @@ jobs:
         with:
           node-version: 24.11
 
-      # try earlier python version for appdmg
-      # https://github.com/electron/forge/issues/3371#issuecomment-2105195302
-      - name: Install Python 3.11.4
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6
-        with:
-          python-version: "3.11.4"
+      # appdmg (used for DMG builds) depends on native modules compiled via node-gyp,
+      # which requires Python setuptools. macOS runners ship with Python 3.12+ where
+      # setuptools was removed. See https://github.com/electron/forge/issues/3371
+      - name: Install setuptools for appdmg
+        if: runner.os == 'macOS'
+        run: brew install python-setuptools
 
       - name: install dependencies
         run: npm ci
