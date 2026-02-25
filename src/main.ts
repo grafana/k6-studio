@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/electron/main'
-import { app, BrowserWindow, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeTheme, screen } from 'electron'
 import log from 'electron-log/main'
 import isSquirrelStartup from 'electron-squirrel-startup'
 import path from 'path'
@@ -17,6 +17,7 @@ import {
   stopProxyProcess,
 } from './main/proxy'
 import { getSettings, initSettings } from './main/settings'
+import { resolveWindowBounds } from './main/windowBounds'
 import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { configureSystemProxy } from './services/http'
@@ -105,7 +106,11 @@ const createWindow = async () => {
   // clean leftover proxies if any, this might happen on windows
   await cleanUpProxies()
 
-  const { width, height, x, y } = k6StudioState.appSettings.windowState
+  const { width, height, x, y } = resolveWindowBounds(
+    k6StudioState.appSettings.windowState,
+    screen.getAllDisplays().map((display) => display.workArea),
+    screen.getPrimaryDisplay().workArea
+  )
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
