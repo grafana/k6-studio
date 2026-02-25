@@ -46,9 +46,9 @@ describe('tryMatchToolRequests', () => {
 
   it('sets readyToFinishForTools when all calls are matched', () => {
     const session = createSession({
-      unmatchedToolCalls: [{ toolId: 'tool-1', toolName: 'addRule' }],
+      unmatchedToolCalls: [{ toolId: 'tool-1', toolName: 'addRuleRegex' }],
       unmatchedRemoteRequests: [
-        { requestId: 'req-1', chatId: 'chat-1', toolName: 'addRule' },
+        { requestId: 'req-1', chatId: 'chat-1', toolName: 'addRuleRegex' },
       ],
     })
 
