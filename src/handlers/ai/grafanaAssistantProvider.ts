@@ -4,6 +4,7 @@ import type {
 } from '@ai-sdk/provider'
 import log from 'electron-log/main'
 
+import { sendTaskCancel } from './a2a/cancelTask'
 import { a2aConfig } from './a2a/config'
 import {
   buildA2ARequest,
@@ -59,7 +60,12 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     chatId: string,
     options: LanguageModelV2CallOptions
   ): Promise<Awaited<ReturnType<LanguageModelV2['doStream']>>> {
-    const contextId = activeSessions.get(chatId)?.contextId
+    const existingSession = activeSessions.get(chatId)
+    const contextId = existingSession?.contextId
+
+    if (existingSession) {
+      existingSession.sessionAbortController.abort()
+    }
     cleanupSession(chatId)
 
     const sessionAbortController = new AbortController()
@@ -179,6 +185,12 @@ function cleanupSession(chatId: string): void {
   const session = activeSessions.get(chatId)
   if (!session) {
     return
+  }
+
+  if (session.taskId && session.sessionAbortController.signal.aborted) {
+    sendTaskCancel(session.taskId).catch((error) => {
+      log.error(PREFIX, 'Failed to cancel A2A task:', error)
+    })
   }
 
   try {

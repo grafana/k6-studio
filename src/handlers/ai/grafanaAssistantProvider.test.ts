@@ -1,6 +1,7 @@
 import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { sendTaskCancel } from './a2a/cancelTask'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 
 vi.mock('electron-log/main', () => ({
@@ -20,6 +21,10 @@ vi.mock('./a2a/config', () => ({
     grafanaUrl: 'http://test-grafana',
     grafanaApiKey: 'test-key',
   },
+}))
+
+vi.mock('./a2a/cancelTask', () => ({
+  sendTaskCancel: vi.fn(() => Promise.resolve()),
 }))
 
 /**
@@ -176,6 +181,240 @@ describe('GrafanaAssistantLanguageModel', () => {
       const params = secondCallBody.params as Record<string, unknown>
 
       expect(params.contextId).toBe('ctx-from-server')
+    })
+  })
+
+  describe('task cancellation on abort', () => {
+    it('sends tasks/cancel when session with taskId is aborted', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      const sendTaskCancelMock = vi.mocked(sendTaskCancel)
+
+      const model = new GrafanaAssistantLanguageModel()
+      const abortController = new AbortController()
+
+      fetchSpy.mockResolvedValueOnce(
+        makeSSEResponse(
+          encodeSSEChunked([
+            {
+              jsonrpc: '2.0',
+              id: 1,
+              result: {
+                kind: 'status-update',
+                taskId: 'task-to-cancel',
+                contextId: 'c1',
+                status: { state: 'working' },
+              },
+            },
+            {
+              jsonrpc: '2.0',
+              id: 2,
+              result: {
+                kind: 'artifact-update',
+                taskId: 'task-to-cancel',
+                contextId: 'c1',
+                artifact: {
+                  name: 'step.toolCall',
+                  artifactId: 'art-1',
+                  parts: [
+                    {
+                      kind: 'data',
+                      data: {
+                        toolId: 'tool-1',
+                        toolName: 'searchRequests',
+                        inputs: {},
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              jsonrpc: '2.0',
+              id: 3,
+              result: {
+                type: 'REMOTE_TOOL_REQUEST',
+                data: {
+                  requestId: 'req-1',
+                  chatId: 'abort-chat',
+                  toolName: 'searchRequests',
+                  toolInput: {},
+                },
+              },
+            },
+          ])
+        )
+      )
+
+      const result = await model.doStream(
+        makeOptions('abort-chat', 'Hello') as LanguageModelV2CallOptions & {
+          abortSignal: AbortSignal
+        }
+      )
+
+      // Drain the stream to consume the tool-calls finish
+      await drainStream(result)
+
+      // Now abort — this should trigger cleanupSession with the abort flag
+      abortController.abort()
+
+      // Start a new message for the same chatId so handleNewMessage cleans up
+      // the old session (which now has taskId='task-to-cancel').
+      fetchSpy.mockResolvedValueOnce(
+        makeSSEResponse(
+          encodeSSEChunked([
+            {
+              jsonrpc: '2.0',
+              id: 4,
+              result: {
+                kind: 'status-update',
+                taskId: 't2',
+                contextId: 'c1',
+                status: { state: 'completed' },
+              },
+            },
+          ])
+        )
+      )
+
+      const result2 = await model.doStream(
+        makeOptions('abort-chat', 'New message')
+      )
+      await drainStream(result2)
+
+      expect(sendTaskCancelMock).toHaveBeenCalledWith('task-to-cancel')
+    })
+
+    it('does NOT send tasks/cancel when session finishes normally', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      const sendTaskCancelMock = vi.mocked(sendTaskCancel)
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      fetchSpy.mockResolvedValueOnce(
+        makeSSEResponse(
+          encodeSSEChunked([
+            {
+              jsonrpc: '2.0',
+              id: 1,
+              result: {
+                kind: 'status-update',
+                taskId: 'task-normal',
+                contextId: 'c1',
+                status: { state: 'working' },
+              },
+            },
+            {
+              jsonrpc: '2.0',
+              id: 2,
+              result: {
+                kind: 'status-update',
+                taskId: 'task-normal',
+                contextId: 'c1',
+                status: { state: 'completed' },
+              },
+            },
+          ])
+        )
+      )
+
+      const result = await model.doStream(makeOptions('normal-chat', 'Hello'))
+      await drainStream(result)
+
+      expect(sendTaskCancelMock).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleNewMessage aborts existing session', () => {
+    it('cancels old task when a new message replaces an active session', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      const sendTaskCancelMock = vi.mocked(sendTaskCancel)
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      // First call finishes with tool-calls, keeping session alive with a taskId
+      fetchSpy.mockResolvedValueOnce(
+        makeSSEResponse(
+          encodeSSEChunked([
+            {
+              jsonrpc: '2.0',
+              id: 1,
+              result: {
+                kind: 'status-update',
+                taskId: 'old-task',
+                contextId: 'c1',
+                status: { state: 'working' },
+              },
+            },
+            {
+              jsonrpc: '2.0',
+              id: 2,
+              result: {
+                kind: 'artifact-update',
+                taskId: 'old-task',
+                contextId: 'c1',
+                artifact: {
+                  name: 'step.toolCall',
+                  artifactId: 'art-1',
+                  parts: [
+                    {
+                      kind: 'data',
+                      data: {
+                        toolId: 'tool-1',
+                        toolName: 'searchRequests',
+                        inputs: {},
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              jsonrpc: '2.0',
+              id: 3,
+              result: {
+                type: 'REMOTE_TOOL_REQUEST',
+                data: {
+                  requestId: 'req-1',
+                  chatId: 'replace-chat',
+                  toolName: 'searchRequests',
+                  toolInput: {},
+                },
+              },
+            },
+          ])
+        )
+      )
+
+      const firstResult = await model.doStream(
+        makeOptions('replace-chat', 'First message')
+      )
+      await drainStream(firstResult)
+
+      // Second call: new user message replaces the still-active session.
+      // handleNewMessage should abort the old session and cancel its task.
+      fetchSpy.mockResolvedValueOnce(
+        makeSSEResponse(
+          encodeSSEChunked([
+            {
+              jsonrpc: '2.0',
+              id: 4,
+              result: {
+                kind: 'status-update',
+                taskId: 'new-task',
+                contextId: 'c1',
+                status: { state: 'completed' },
+              },
+            },
+          ])
+        )
+      )
+
+      const secondResult = await model.doStream(
+        makeOptions('replace-chat', 'Second message')
+      )
+      await drainStream(secondResult)
+
+      expect(sendTaskCancelMock).toHaveBeenCalledWith('old-task')
     })
   })
 })
