@@ -3,7 +3,7 @@ import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig, mergeConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-import { getBuildConfig, builtins, pluginHotRestart } from './vite.base.config'
+import { getBuildConfig, external, pluginHotRestart } from './vite.base.config'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -12,15 +12,15 @@ export default defineConfig((env) => {
   const config: UserConfig = {
     build: {
       rollupOptions: {
-        external: builtins,
+        external,
         // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
         input: forgeConfigSelf.entry,
         output: {
-          format: 'cjs',
+          format: 'es',
           // It should not be split chunks.
           inlineDynamicImports: true,
-          entryFileNames: '[name].js',
-          chunkFileNames: '[name].js',
+          entryFileNames: '[name].mjs',
+          chunkFileNames: '[name].mjs',
           assetFileNames: '[name].[ext]',
         },
       },

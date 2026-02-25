@@ -9,11 +9,16 @@ export const builtins = [
   ...builtinModules.map((m) => [m, `node:${m}`]).flat(),
 ]
 
+// CJS packages whose named exports can't be statically analyzed by
+// Node.js cjs-module-lexer. These get bundled by Vite (with proper
+// CJS→ESM conversion) instead of being externalized.
+const cjsBundled = new Set(['plist', 'papaparse'])
+
 export const external = [
   ...builtins,
   ...Object.keys(
     'dependencies' in pkg ? (pkg.dependencies as Record<string, unknown>) : {}
-  ),
+  ).filter((dep) => !cjsBundled.has(dep)),
 ]
 
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {

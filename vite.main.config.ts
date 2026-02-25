@@ -7,7 +7,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import {
   getBuildConfig,
   getBuildDefine,
-  builtins,
+  external,
   pluginHotRestart,
 } from './vite.base.config'
 
@@ -41,11 +41,11 @@ export default defineConfig((env) => {
     build: {
       lib: {
         entry: forgeConfigSelf.entry,
-        fileName: () => '[name].js',
-        formats: ['cjs'],
+        fileName: () => '[name].mjs',
+        formats: ['es'],
       },
       rollupOptions: {
-        external: [...builtins, 'bufferutil', 'utf-8-validate'],
+        external,
       },
       sourcemap: true,
     },

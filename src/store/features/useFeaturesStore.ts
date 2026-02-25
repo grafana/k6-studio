@@ -11,7 +11,6 @@ interface FeaturesStore {
 export const defaultFeatures: Record<Feature, boolean> = {
   'dummy-feature': false,
   'typeahead-json': false,
-  // @ts-expect-error - Electron apps are built as CJS.
   'browser-test-editor': import.meta.env.DEV,
 }
 

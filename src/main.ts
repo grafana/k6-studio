@@ -120,7 +120,7 @@ const createWindow = async () => {
     title: 'Grafana k6 Studio',
     backgroundColor: nativeTheme.themeSource === 'light' ? '#fff' : '#111110',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(import.meta.dirname, 'preload.mjs'),
       devTools: process.env.NODE_ENV === 'development',
     },
   })
@@ -146,7 +146,10 @@ const createWindow = async () => {
     await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
     await mainWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
+      path.join(
+        import.meta.dirname,
+        `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`
+      )
     )
   }
 
