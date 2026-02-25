@@ -5,8 +5,7 @@ import { Message, Tools } from '../types'
 type ToolPart = DynamicToolUIPart | ToolUIPart<Tools>
 
 /**
- * Determines if the final message contains completed tool invocations
- * (excluding finish tools which should not trigger auto-sending)
+ * Determines if the final message contains completed tool invocations.
  */
 export function lastMessageIsToolCall({ messages }: { messages: Message[] }) {
   const finalMessage = extractFinalMessage(messages)
@@ -16,9 +15,7 @@ export function lastMessageIsToolCall({ messages }: { messages: Message[] }) {
 
   const toolsInLastStep = extractToolsFromMostRecentStep(finalMessage.parts)
 
-  return (
-    hasCompletedTools(toolsInLastStep) && !endsWithFinishTool(toolsInLastStep)
-  )
+  return hasCompletedTools(toolsInLastStep)
 }
 
 function extractFinalMessage(messages: Message[]) {
@@ -61,9 +58,4 @@ function hasCompletedTools(toolParts: ToolPart[]) {
 
 function isToolComplete(tool: ToolPart) {
   return tool.state === 'output-available' || tool.state === 'output-error'
-}
-
-function endsWithFinishTool(toolParts: ToolPart[]) {
-  const finalTool = toolParts.at(-1)
-  return finalTool?.type === 'tool-finish'
 }
