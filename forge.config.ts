@@ -56,6 +56,10 @@ const config: ForgeConfig = {
     executableName: 'k6-studio',
     icon: './resources/icons/logo',
     asar: true,
+    ignore: (file: string) => {
+      if (!file) return false
+      return !file.startsWith('/.vite') && !file.startsWith('/node_modules')
+    },
     extraResource: [
       '.vite/build/extension',
       './resources/browser',
