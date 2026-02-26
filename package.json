@@ -4,7 +4,7 @@
   "version": "1.11.0",
   "description": "k6 Studio",
   "repository": "github:grafana/k6-studio",
-  "main": ".vite/build/main.mjs",
+  "main": ".vite/build/main.js",
   "engines": {
     "node": "^24.11.0"
   },

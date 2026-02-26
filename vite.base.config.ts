@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import type { AddressInfo } from 'node:net'
+import { join } from 'node:path'
 import type { ConfigEnv, Plugin, UserConfig } from 'vite'
 
 import pkg from './package.json'
@@ -9,16 +11,28 @@ export const builtins = [
   ...builtinModules.map((m) => [m, `node:${m}`]).flat(),
 ]
 
-// CJS packages whose named exports can't be statically analyzed by
-// Node.js cjs-module-lexer. These get bundled by Vite (with proper
-// CJS→ESM conversion) instead of being externalized.
-const cjsBundled = new Set(['plist', 'papaparse'])
+function isEsmOnlyPackage(name: string): boolean {
+  try {
+    const pkgJsonPath = join(
+      process.cwd(),
+      'node_modules',
+      name,
+      'package.json'
+    )
+    const depPkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8')) as {
+      type?: string
+    }
+    return depPkg.type === 'module'
+  } catch {
+    return false
+  }
+}
 
 export const external = [
   ...builtins,
   ...Object.keys(
     'dependencies' in pkg ? (pkg.dependencies as Record<string, unknown>) : {}
-  ).filter((dep) => !cjsBundled.has(dep)),
+  ).filter((dep) => !isEsmOnlyPackage(dep)),
 ]
 
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
