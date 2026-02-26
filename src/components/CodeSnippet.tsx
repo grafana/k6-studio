@@ -1,5 +1,5 @@
 import { Box } from '@radix-ui/themes'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
+import type * as monaco from 'monaco-editor'
 import { useMemo } from 'react'
 
 import { ReadOnlyEditor } from './Monaco/ReadOnlyEditor'
