@@ -28,12 +28,15 @@ function isEsmOnlyPackage(name: string): boolean {
   }
 }
 
-export const external = [
-  ...builtins,
-  ...Object.keys(
-    'dependencies' in pkg ? (pkg.dependencies as Record<string, unknown>) : {}
-  ).filter((dep) => !isEsmOnlyPackage(dep)),
-]
+export function getExternal(command: 'serve' | 'build') {
+  if (command === 'build') return builtins
+  return [
+    ...builtins,
+    ...Object.keys(
+      'dependencies' in pkg ? (pkg.dependencies as Record<string, unknown>) : {}
+    ).filter((dep) => !isEsmOnlyPackage(dep)),
+  ]
+}
 
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
   const { root, mode, command } = env

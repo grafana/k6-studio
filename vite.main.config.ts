@@ -7,7 +7,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import {
   getBuildConfig,
   getBuildDefine,
-  external,
+  getExternal,
   pluginHotRestart,
 } from './vite.base.config'
 
@@ -45,7 +45,7 @@ export default defineConfig((env) => {
         formats: ['cjs'],
       },
       rollupOptions: {
-        external,
+        external: getExternal(env.command),
       },
       sourcemap: true,
     },
