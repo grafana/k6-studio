@@ -11,6 +11,9 @@ export const builtins = [
   ...builtinModules.map((m) => [m, `node:${m}`]).flat(),
 ]
 
+// ESM-only packages (those with "type": "module" in their package.json)
+// can't be loaded via CJS require(). In dev mode we externalize all deps
+// for speed, so these must be detected and kept bundled by Vite instead.
 function isEsmOnlyPackage(name: string): boolean {
   try {
     const pkgJsonPath = join(
@@ -28,6 +31,10 @@ function isEsmOnlyPackage(name: string): boolean {
   }
 }
 
+// Dev: externalize all CJS-compatible deps for fast builds and HMR.
+// Prod: only externalize builtins so Vite bundles everything — the
+// forge Vite plugin strips node_modules from the ASAR, so externalized
+// npm packages would be missing at runtime.
 export function getExternal(command: 'serve' | 'build') {
   if (command === 'build') return builtins
   return [
