@@ -8,6 +8,8 @@ import pkg from './package.json'
 
 export const builtins = [
   'electron',
+  'bufferutil',
+  'utf-8-validate',
   ...builtinModules.map((m) => [m, `node:${m}`]).flat(),
 ]
 
