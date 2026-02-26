@@ -149,6 +149,7 @@ jobs:
       - name: publish Windows
         if: startsWith(matrix.platform, 'windows-')
         env:
+          NODE_OPTIONS: "--max_old_space_size=8192"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # windows cert
           TRUSTED_SIGNING_ACCOUNT: grafana-premium-eastus
