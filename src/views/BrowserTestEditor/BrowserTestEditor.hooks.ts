@@ -10,7 +10,6 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { useStateWithUndo } from '@/hooks/useStateWithUndo'
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
@@ -122,25 +121,25 @@ export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
   const { actions = [] } = browserTestFile ?? {}
-  const { state, undo, redo, push } = useStateWithUndo<BrowserActionInstance[]>(
+  const [state, setState] = useState<BrowserActionInstance[]>(
     actions.map(toBrowserActionInstance)
   )
 
   const addAction = (method: BrowserActionInstance['method']) => {
     const action = createNewAction(method)
-    push([...state, action])
+    setState([...state, action])
   }
 
   const updateAction = (updatedAction: BrowserActionInstance) => {
     const newActions = state.map((action) =>
       action.id === updatedAction.id ? updatedAction : action
     )
-    push(newActions)
+    setState(newActions)
   }
 
   const removeAction = (id: string) => {
     const newActions = state.filter((actionWithId) => actionWithId.id !== id)
-    push(newActions)
+    setState(newActions)
   }
 
   const plainActions = useMemo(() => {
@@ -161,8 +160,6 @@ export function useBrowserTestState(
     updateAction,
     removeAction,
     isDirty,
-    undo,
-    redo,
   }
 }
 
