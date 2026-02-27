@@ -4,20 +4,30 @@ import { TextArea } from '@radix-ui/themes'
 import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 
+import { buildFieldErrors } from './LocatorInput.utils'
+
 type CssLocator = Extract<ActionLocator, { type: 'css' }>
 
 interface CssLocatorProps {
   locator: CssLocator
   onChange: (locator: CssLocator) => void
+  onBlur?: () => void
+  error?: string
 }
 
-export function CssLocator({ locator, onChange }: CssLocatorProps) {
+export function CssLocator({
+  locator,
+  onChange,
+  onBlur,
+  error,
+}: CssLocatorProps) {
   return (
     <FieldGroup
       name="css-selector"
       label="CSS selector"
       labelSize="1"
       mb="0"
+      errors={buildFieldErrors('css-selector', error)}
       css={css`
         display: grid;
         height: 100%;
@@ -32,6 +42,7 @@ export function CssLocator({ locator, onChange }: CssLocatorProps) {
         `}
         value={locator.selector}
         onChange={(e) => onChange({ ...locator, selector: e.target.value })}
+        onBlur={onBlur}
       />
     </FieldGroup>
   )

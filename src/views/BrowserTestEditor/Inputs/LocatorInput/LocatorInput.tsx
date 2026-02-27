@@ -1,5 +1,5 @@
 import { Flex, Grid, RadioGroup, Separator } from '@radix-ui/themes'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 import { toNodeSelector } from '@/codegen/browser/selectors'
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
@@ -41,35 +41,41 @@ export function LocatorInput({
   onChange,
 }: LocatorInputProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const [localCurrent, setLocalCurrent] = useState(current)
-  const [localValues, setLocalValues] = useState({ ...values })
+  const [touchedTypes, setTouchedTypes] = useState(
+    new Set<ActionLocator['type']>()
+  )
 
-  useEffect(() => {
-    setLocalCurrent(current)
-    setLocalValues({ ...values })
-  }, [current, values])
-
-  const currentLocator =
-    localValues[localCurrent] ?? initializeLocatorValues(localCurrent)
+  const currentLocator = values[current] ?? initializeLocatorValues(current)
 
   const handleChangeCurrent = (type: LocatorOptions['current']) => {
-    setLocalCurrent(type)
-    setLocalValues((prev) =>
-      prev[type] ? prev : { ...prev, [type]: initializeLocatorValues(type) }
-    )
+    const nextValues = values[type]
+      ? values
+      : { ...values, [type]: initializeLocatorValues(type) }
+    onChange({ current: type, values: nextValues })
   }
 
   const handleLocatorChange = (locator: ActionLocator) => {
-    setLocalValues((prev) => ({ ...prev, [localCurrent]: locator }))
+    onChange({
+      current,
+      values: { ...values, [current]: locator },
+    })
+  }
+
+  const handleFieldBlur = () => {
+    setTouchedTypes((prev) => {
+      if (prev.has(current)) {
+        return prev
+      }
+      const next = new Set(prev)
+      next.add(current)
+      return next
+    })
   }
 
   const handlePopoverOpenChange = (open: boolean) => {
     setIsPopoverOpen(open)
-    if (!open) {
-      onChange({
-        current: localCurrent,
-        values: localValues,
-      })
+    if (open) {
+      setTouchedTypes(new Set())
     }
   }
 
@@ -78,7 +84,10 @@ export function LocatorInput({
     handlePopoverOpenChange(false)
   }
 
-  const error = validateLocator(currentLocator)
+  const validation = touchedTypes.has(current)
+    ? validateLocator(currentLocator)
+    : { isValid: true }
+  const error = validation.isValid ? null : validation.message
 
   return (
     <FormPopover
@@ -94,7 +103,7 @@ export function LocatorInput({
             <RadioGroup.Root
               size="1"
               name="locator-type"
-              value={localCurrent}
+              value={current}
               onValueChange={handleChangeCurrent}
             >
               {Object.entries(LOCATOR_TYPES)
@@ -111,7 +120,9 @@ export function LocatorInput({
           <Separator orientation="vertical" size="4" decorative />
           <LocatorForm
             currentLocator={currentLocator}
+            fieldErrors={validation.fieldErrors}
             onLocatorChange={handleLocatorChange}
+            onBlur={handleFieldBlur}
           />
         </Grid>
       </form>
@@ -122,37 +133,92 @@ export function LocatorInput({
 interface LocatorFormProps {
   currentLocator: ActionLocator
   onLocatorChange: (locator: ActionLocator) => void
+  fieldErrors?: Record<string, string>
+  onBlur: () => void
 }
 
-function LocatorForm({ currentLocator, onLocatorChange }: LocatorFormProps) {
+function LocatorForm({
+  currentLocator,
+  onLocatorChange,
+  fieldErrors,
+  onBlur,
+}: LocatorFormProps) {
   switch (currentLocator.type) {
     case 'css':
-      return <CssLocator locator={currentLocator} onChange={onLocatorChange} />
+      return (
+        <CssLocator
+          locator={currentLocator}
+          onChange={onLocatorChange}
+          onBlur={onBlur}
+          error={fieldErrors?.selector}
+        />
+      )
     case 'testid':
       return (
-        <TestIdLocator locator={currentLocator} onChange={onLocatorChange} />
+        <TestIdLocator
+          locator={currentLocator}
+          onChange={onLocatorChange}
+          onBlur={onBlur}
+          error={fieldErrors?.testId}
+        />
       )
     case 'role':
-      return <RoleLocator locator={currentLocator} onChange={onLocatorChange} />
+      return (
+        <RoleLocator
+          locator={currentLocator}
+          errors={{
+            role: fieldErrors?.role,
+            name: fieldErrors?.name,
+          }}
+          onChange={onLocatorChange}
+          onBlur={onBlur}
+        />
+      )
     case 'text':
-      return <TextLocator locator={currentLocator} onChange={onLocatorChange} />
+      return (
+        <TextLocator
+          locator={currentLocator}
+          onChange={onLocatorChange}
+          onBlur={onBlur}
+          error={fieldErrors?.text}
+        />
+      )
     case 'label':
       return (
-        <LabelLocator locator={currentLocator} onChange={onLocatorChange} />
+        <LabelLocator
+          locator={currentLocator}
+          onChange={onLocatorChange}
+          onBlur={onBlur}
+          error={fieldErrors?.label}
+        />
       )
     case 'placeholder':
       return (
         <PlaceholderLocator
           locator={currentLocator}
           onChange={onLocatorChange}
+          onBlur={onBlur}
+          error={fieldErrors?.placeholder}
         />
       )
     case 'title':
       return (
-        <TitleLocator locator={currentLocator} onChange={onLocatorChange} />
+        <TitleLocator
+          locator={currentLocator}
+          onChange={onLocatorChange}
+          onBlur={onBlur}
+          error={fieldErrors?.title}
+        />
       )
     case 'alt':
-      return <AltLocator locator={currentLocator} onChange={onLocatorChange} />
+      return (
+        <AltLocator
+          locator={currentLocator}
+          onChange={onLocatorChange}
+          onBlur={onBlur}
+          error={fieldErrors?.text}
+        />
+      )
     default:
       return exhaustive(currentLocator)
   }

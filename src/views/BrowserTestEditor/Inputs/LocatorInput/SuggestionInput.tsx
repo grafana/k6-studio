@@ -23,6 +23,7 @@ interface SuggestionInputProps {
   disabled?: boolean
   name?: string
   id?: string
+  onBlur?: () => void
 }
 
 export function SuggestionInput({
@@ -32,6 +33,7 @@ export function SuggestionInput({
   disabled,
   name,
   id,
+  onBlur,
 }: SuggestionInputProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -55,7 +57,10 @@ export function SuggestionInput({
       value={selectedValue}
       inputValue={inputValue}
       onFocus={() => !disabled && setMenuOpen(true)}
-      onBlur={() => setMenuOpen(false)}
+      onBlur={() => {
+        setMenuOpen(false)
+        onBlur?.()
+      }}
       onMenuOpen={() => setMenuOpen(true)}
       onMenuClose={() => setMenuOpen(false)}
       onInputChange={(nextValue, actionMeta) => {
