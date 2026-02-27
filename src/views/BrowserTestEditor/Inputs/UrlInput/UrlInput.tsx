@@ -56,7 +56,7 @@ export function UrlInput({ value, onChange }: UrlInputProps) {
         <FieldGroup name="url" label="URL" labelSize="1" mb="0">
           <TextField.Root
             size="1"
-            name="url"
+            id="url"
             color={error ? 'red' : 'gray'}
             value={url}
             onChange={handleChange}
