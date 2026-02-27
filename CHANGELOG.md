@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.11.1](https://github.com/grafana/k6-studio/compare/v1.11.0...v1.11.1) (2026-02-27)
+
+
+### Bug Fixes
+
+* Allow to modify requests in a redirect chain ([#1077](https://github.com/grafana/k6-studio/issues/1077)) ([4951e57](https://github.com/grafana/k6-studio/commit/4951e57af104513721fae687fc1fb534b8fb4095))
+* **browser:** Pages are not disposed of properly at end of test ([#1090](https://github.com/grafana/k6-studio/issues/1090)) ([188008a](https://github.com/grafana/k6-studio/commit/188008a13607e7e9835caa9f0e0d1b7e2be5863d))
+
+
+### Miscellaneous Chores
+
+* Update electron forge to latest version ([#1088](https://github.com/grafana/k6-studio/issues/1088)) ([52471ce](https://github.com/grafana/k6-studio/commit/52471ceaa2336a9b60688358eb7151f33dee084d))
+* Update electron to latest version ([#1089](https://github.com/grafana/k6-studio/issues/1089)) ([b532c38](https://github.com/grafana/k6-studio/commit/b532c3880ac184f51076a9552021bba5b06e8e8d))
+
+
+### Build System
+
+* Fix macos build error and improve local build/hmr performance ([#1097](https://github.com/grafana/k6-studio/issues/1097)) ([3b5230b](https://github.com/grafana/k6-studio/commit/3b5230bdf65a27c753a0d19a3ef5aa1d2bea0402))
+
 ## [1.11.0](https://github.com/grafana/k6-studio/compare/v1.10.0...v1.11.0) (2026-02-04)
 
 
