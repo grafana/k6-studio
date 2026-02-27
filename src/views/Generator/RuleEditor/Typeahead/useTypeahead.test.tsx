@@ -1,5 +1,10 @@
+/**
+ * @TODO fix the tests
+ */
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+import { TypeaheadGetOptionsRequest } from '@/views/Generator/RuleEditor/Typeahead/Typeahead'
 
 import { useTypeahead } from './useTypeahead'
 
@@ -13,16 +18,24 @@ const options = [
 ]
 
 function TestComponent() {
-  const { inputProps, dropdownProps, filteredOptions, isFocused } =
-    useTypeahead(options, undefined, 'onDot')
-
+  const { inputProps, dropdownProps, optionsQuery, isFocused } = useTypeahead(
+    {
+      mode: 'onDot',
+      getOptions: () => Promise.resolve(options),
+    },
+    {
+      getOptions(_args: TypeaheadGetOptionsRequest): Promise<string[]> {
+        return Promise.resolve(options)
+      },
+    }
+  )
   return (
     <div>
       {/*// @ts-expect-error issue on size types*/}
       <input data-testid="typeahead-input" {...inputProps} />
       {isFocused && (
         <ul data-testid="typeahead-dropdown">
-          {filteredOptions.map((opt) => (
+          {optionsQuery.data.map((opt) => (
             <li
               key={opt}
               data-testid={`option-${opt}`}
