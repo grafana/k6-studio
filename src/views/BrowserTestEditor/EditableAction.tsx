@@ -1,48 +1,33 @@
 import { css } from '@emotion/react'
-import {
-  Badge,
-  Popover,
-  Code,
-  Flex,
-  IconButton,
-  TextField,
-  Tooltip,
-  Button,
-  Text,
-} from '@radix-ui/themes'
+import { Code, Flex, Grid, IconButton, Tooltip } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
   GlobeIcon,
+  RefreshCwIcon,
+  TimerIcon,
   Trash2Icon,
-  TriangleAlertIcon,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
-import { AnyBrowserAction, PageGotoAction } from '@/main/runner/schema'
+import { LocatorWaitForAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import { BrowserActionWithId } from './types'
+import { LocatorInput } from './Inputs/LocatorInput/LocatorInput'
+import { UrlInput } from './Inputs/UrlInput/UrlInput'
+import { BrowserActionInstance, WithEditorMetadata } from './types'
 
 interface EditableActionProps {
-  action: BrowserActionWithId
+  action: BrowserActionInstance
   onRemove: (actionId: string) => void
-  onUpdate: (action: BrowserActionWithId) => void
+  onUpdate: (action: BrowserActionInstance) => void
 }
 
 export function EditableAction({
-  action: { id: actionId, action },
+  action,
   onRemove,
   onUpdate,
 }: EditableActionProps) {
   const handleRemove = () => {
-    onRemove(actionId)
-  }
-
-  const handleUpdate = (updatedAction: AnyBrowserAction) => {
-    onUpdate({
-      id: actionId,
-      action: updatedAction,
-    })
+    onRemove(action.id)
   }
 
   return (
@@ -58,8 +43,8 @@ export function EditableAction({
         }
       `}
     >
-      <ActionIcon action={action} />{' '}
-      <ActionBody action={action} onUpdate={handleUpdate} />
+      <ActionIcon method={action.method} />
+      <ActionBody action={action} onUpdate={onUpdate} />
       <Tooltip content="Remove action">
         <IconButton
           size="2"
@@ -77,14 +62,17 @@ export function EditableAction({
 }
 
 interface ActionIconProps {
-  action: AnyBrowserAction
+  method: BrowserActionInstance['method']
 }
 
-function ActionIcon({ action }: ActionIconProps) {
-  switch (action.method) {
+function ActionIcon({ method }: ActionIconProps) {
+  switch (method) {
     case 'page.goto':
       return <GlobeIcon aria-hidden="true" />
     case 'page.reload':
+      return <RefreshCwIcon aria-hidden="true" />
+    case 'locator.waitFor':
+      return <TimerIcon aria-hidden="true" />
     case 'page.waitForNavigation':
     case 'page.close':
     case 'page.*':
@@ -95,7 +83,6 @@ function ActionIcon({ action }: ActionIconProps) {
     case 'locator.check':
     case 'locator.uncheck':
     case 'locator.selectOption':
-    case 'locator.waitFor':
     case 'locator.hover':
     case 'locator.setChecked':
     case 'locator.tap':
@@ -106,13 +93,13 @@ function ActionIcon({ action }: ActionIconProps) {
     case 'browserContext.*':
       return <CircleQuestionMarkIcon aria-hidden="true" />
     default:
-      return exhaustive(action)
+      return exhaustive(method)
   }
 }
 
 interface ActionBodyProps {
-  action: AnyBrowserAction
-  onUpdate: (action: AnyBrowserAction) => void
+  action: BrowserActionInstance
+  onUpdate: (action: BrowserActionInstance) => void
 }
 
 function ActionBody({ action, onUpdate }: ActionBodyProps) {
@@ -120,6 +107,9 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
     case 'page.goto':
       return <GoToActionBody action={action} onUpdate={onUpdate} />
     case 'page.reload':
+      return <RefreshActionBody />
+    case 'locator.waitFor':
+      return <WaitForActionBody action={action} onUpdate={onUpdate} />
     case 'page.waitForNavigation':
     case 'page.close':
     case 'page.*':
@@ -130,7 +120,6 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
     case 'locator.check':
     case 'locator.uncheck':
     case 'locator.selectOption':
-    case 'locator.waitFor':
     case 'locator.hover':
     case 'locator.setChecked':
     case 'locator.tap':
@@ -150,76 +139,48 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
 }
 
 interface GoToActionBodyProps {
-  action: PageGotoAction
-  onUpdate: (action: PageGotoAction) => void
+  action: WithEditorMetadata<PageGotoAction>
+  onUpdate: (action: WithEditorMetadata<PageGotoAction>) => void
 }
 
 function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const [url, setUrl] = useState(action.url)
-
-  const [error, setError] = useState<string | null>(null)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleChangeUrl = (url: string) => {
     onUpdate({
       ...action,
       url,
     })
-    setIsPopoverOpen(false)
   }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUrl(e.target.value)
-  }
-
-  useEffect(() => {
-    try {
-      new URL(url)
-      setError(null)
-    } catch {
-      setError('Invalid URL')
-    }
-  }, [url])
-
-  useEffect(() => {
-    setUrl(action.url)
-  }, [action.url])
 
   return (
-    <>
-      Navigate to{' '}
-      <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <Popover.Trigger>
-          <Badge color={error ? 'red' : 'gray'} asChild>
-            <Button size="1">
-              {action.url}
-              {error && (
-                <Tooltip content={error}>
-                  <TriangleAlertIcon />
-                </Tooltip>
-              )}
-            </Button>
-          </Badge>
-        </Popover.Trigger>
-        <Popover.Content align="start" size="1" width="300px">
-          <form onSubmit={handleSubmit}>
-            <TextField.Root
-              size="1"
-              color={error ? 'red' : 'gray'}
-              value={url}
-              onChange={handleChange}
-              onBlur={handleSubmit}
-              placeholder="e.g. https://quickpizza.grafana.com"
-            />
-            {error && (
-              <Text size="1" color="red" mt="1">
-                {error}
-              </Text>
-            )}
-          </form>
-        </Popover.Content>
-      </Popover.Root>
-    </>
+    <Grid columns="max-content auto" gap="2" align="center">
+      Navigate to <UrlInput value={action.url} onChange={handleChangeUrl} />
+    </Grid>
   )
+}
+
+interface WaitForActionBodyProps {
+  action: WithEditorMetadata<LocatorWaitForAction>
+  onUpdate: (action: WithEditorMetadata<LocatorWaitForAction>) => void
+}
+
+function WaitForActionBody({ action, onUpdate }: WaitForActionBodyProps) {
+  const handleChangeLocator = (
+    locator: WithEditorMetadata<LocatorWaitForAction>['locator']
+  ) => {
+    onUpdate({
+      ...action,
+      locator,
+    })
+  }
+
+  return (
+    <Grid columns="max-content auto" gap="2" align="center">
+      Wait for element
+      <LocatorInput state={action.locator} onChange={handleChangeLocator} />
+    </Grid>
+  )
+}
+
+function RefreshActionBody() {
+  return <>Reload page</>
 }
