@@ -25,7 +25,7 @@ const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
   label: 'Form label',
   alt: 'Alt text',
   placeholder: 'Placeholder',
-  testid: 'Test Id',
+  testid: 'Test ID',
   text: 'Text content',
   title: 'Title',
   css: 'CSS selector',
@@ -143,7 +143,7 @@ export function LocatorInput({
       onOpenChange={handlePopoverOpenChange}
     >
       <form onSubmit={handleSubmit}>
-        <Grid gap="2" columns="auto auto 1fr">
+        <Grid gap="3" columns="auto auto 1fr">
           <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
             <RadioGroup.Root
               size="1"
