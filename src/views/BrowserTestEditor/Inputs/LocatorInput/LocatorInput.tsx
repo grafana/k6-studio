@@ -13,7 +13,7 @@ import { FormPopover } from '../Shared/FormPopover'
 import { AltLocator } from './AltLocator'
 import { CssLocator } from './CssLocator'
 import { LabelLocator } from './LabelLocator'
-import { initializeLocatorValues } from './LocatorInput.utils'
+import { initializeLocatorValues, validateLocator } from './LocatorInput.utils'
 import { PlaceholderLocator } from './PlaceholderLocator'
 import { RoleLocator } from './RoleLocator'
 import { TestIdLocator } from './TestIdLocator'
@@ -78,66 +78,12 @@ export function LocatorInput({
     handlePopoverOpenChange(false)
   }
 
-  const renderLocatorForm = () => {
-    switch (currentLocator.type) {
-      case 'css':
-        return (
-          <CssLocator locator={currentLocator} onChange={handleLocatorChange} />
-        )
-      case 'testid':
-        return (
-          <TestIdLocator
-            locator={currentLocator}
-            onChange={handleLocatorChange}
-          />
-        )
-      case 'role':
-        return (
-          <RoleLocator
-            locator={currentLocator}
-            onChange={handleLocatorChange}
-          />
-        )
-      case 'text':
-        return (
-          <TextLocator
-            locator={currentLocator}
-            onChange={handleLocatorChange}
-          />
-        )
-      case 'label':
-        return (
-          <LabelLocator
-            locator={currentLocator}
-            onChange={handleLocatorChange}
-          />
-        )
-      case 'placeholder':
-        return (
-          <PlaceholderLocator
-            locator={currentLocator}
-            onChange={handleLocatorChange}
-          />
-        )
-      case 'title':
-        return (
-          <TitleLocator
-            locator={currentLocator}
-            onChange={handleLocatorChange}
-          />
-        )
-      case 'alt':
-        return (
-          <AltLocator locator={currentLocator} onChange={handleLocatorChange} />
-        )
-      default:
-        return exhaustive(currentLocator)
-    }
-  }
+  const error = validateLocator(currentLocator)
 
   return (
     <FormPopover
       displayValue={<DisplayValue state={{ current, values }} />}
+      error={error}
       open={isPopoverOpen}
       width="400px"
       onOpenChange={handlePopoverOpenChange}
@@ -163,11 +109,53 @@ export function LocatorInput({
           </FieldGroup>
 
           <Separator orientation="vertical" size="4" decorative />
-          {renderLocatorForm()}
+          <LocatorForm
+            currentLocator={currentLocator}
+            onLocatorChange={handleLocatorChange}
+          />
         </Grid>
       </form>
     </FormPopover>
   )
+}
+
+interface LocatorFormProps {
+  currentLocator: ActionLocator
+  onLocatorChange: (locator: ActionLocator) => void
+}
+
+function LocatorForm({ currentLocator, onLocatorChange }: LocatorFormProps) {
+  switch (currentLocator.type) {
+    case 'css':
+      return <CssLocator locator={currentLocator} onChange={onLocatorChange} />
+    case 'testid':
+      return (
+        <TestIdLocator locator={currentLocator} onChange={onLocatorChange} />
+      )
+    case 'role':
+      return <RoleLocator locator={currentLocator} onChange={onLocatorChange} />
+    case 'text':
+      return <TextLocator locator={currentLocator} onChange={onLocatorChange} />
+    case 'label':
+      return (
+        <LabelLocator locator={currentLocator} onChange={onLocatorChange} />
+      )
+    case 'placeholder':
+      return (
+        <PlaceholderLocator
+          locator={currentLocator}
+          onChange={onLocatorChange}
+        />
+      )
+    case 'title':
+      return (
+        <TitleLocator locator={currentLocator} onChange={onLocatorChange} />
+      )
+    case 'alt':
+      return <AltLocator locator={currentLocator} onChange={onLocatorChange} />
+    default:
+      return exhaustive(currentLocator)
+  }
 }
 
 function DisplayValue({
