@@ -24,3 +24,29 @@ export function initializeLocatorValues(
       return exhaustive(type)
   }
 }
+
+export function validateLocator(locator: ActionLocator): string | null {
+  switch (locator.type) {
+    case 'css':
+      return locator.selector.trim() === ''
+        ? 'CSS selector cannot be empty'
+        : null
+    case 'testid':
+      return locator.testId.trim() === '' ? 'Test ID cannot be empty' : null
+    case 'label':
+      return locator.label.trim() === '' ? 'Label cannot be empty' : null
+    case 'placeholder':
+      return locator.placeholder.trim() === ''
+        ? 'Placeholder cannot be empty'
+        : null
+    case 'title':
+      return locator.title.trim() === '' ? 'Title cannot be empty' : null
+    case 'alt':
+    case 'text':
+      return locator.text.trim() === '' ? 'Text cannot be empty' : null
+    case 'role':
+      return locator.role.trim() === '' ? 'Role cannot be empty' : null
+    default:
+      return exhaustive(locator)
+  }
+}
