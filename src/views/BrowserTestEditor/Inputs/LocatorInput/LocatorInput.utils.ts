@@ -1,5 +1,24 @@
+import { FieldErrors } from 'react-hook-form'
+
 import { ActionLocator } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
+
+export type LocatorValidation = {
+  isValid: boolean
+  message?: string
+  fieldErrors?: Record<string, string>
+}
+
+export function buildFieldErrors(
+  name: string,
+  message?: string
+): FieldErrors | undefined {
+  if (!message) {
+    return undefined
+  }
+
+  return { [name]: { message } } as FieldErrors
+}
 
 export function initializeLocatorValues(
   type: ActionLocator['type']
@@ -25,27 +44,79 @@ export function initializeLocatorValues(
   }
 }
 
-export function validateLocator(locator: ActionLocator): string | null {
+export function validateLocator(locator: ActionLocator): LocatorValidation {
   switch (locator.type) {
     case 'css':
-      return locator.selector.trim() === ''
-        ? 'CSS selector cannot be empty'
-        : null
+      if (locator.selector.trim() === '') {
+        return {
+          isValid: false,
+          message: 'CSS selector cannot be empty',
+          fieldErrors: { selector: 'CSS selector cannot be empty' },
+        }
+      }
+      return { isValid: true }
     case 'testid':
-      return locator.testId.trim() === '' ? 'Test ID cannot be empty' : null
+      if (locator.testId.trim() === '') {
+        return {
+          isValid: false,
+          message: 'Test ID cannot be empty',
+          fieldErrors: { testId: 'Test ID cannot be empty' },
+        }
+      }
+      return { isValid: true }
     case 'label':
-      return locator.label.trim() === '' ? 'Label cannot be empty' : null
+      if (locator.label.trim() === '') {
+        return {
+          isValid: false,
+          message: 'Label cannot be empty',
+          fieldErrors: { label: 'Label cannot be empty' },
+        }
+      }
+      return { isValid: true }
     case 'placeholder':
-      return locator.placeholder.trim() === ''
-        ? 'Placeholder cannot be empty'
-        : null
+      if (locator.placeholder.trim() === '') {
+        return {
+          isValid: false,
+          message: 'Placeholder cannot be empty',
+          fieldErrors: { placeholder: 'Placeholder cannot be empty' },
+        }
+      }
+      return { isValid: true }
     case 'title':
-      return locator.title.trim() === '' ? 'Title cannot be empty' : null
+      if (locator.title.trim() === '') {
+        return {
+          isValid: false,
+          message: 'Title cannot be empty',
+          fieldErrors: { title: 'Title cannot be empty' },
+        }
+      }
+      return { isValid: true }
     case 'alt':
     case 'text':
-      return locator.text.trim() === '' ? 'Text cannot be empty' : null
+      if (locator.text.trim() === '') {
+        return {
+          isValid: false,
+          message: 'Text cannot be empty',
+          fieldErrors: { text: 'Text cannot be empty' },
+        }
+      }
+      return { isValid: true }
     case 'role':
-      return locator.role.trim() === '' ? 'Role cannot be empty' : null
+      if (locator.role.trim() === '') {
+        return {
+          isValid: false,
+          message: 'Role cannot be empty',
+          fieldErrors: { role: 'Role cannot be empty' },
+        }
+      }
+      if (!locator.options?.name?.trim()) {
+        return {
+          isValid: false,
+          message: 'Name is required for role locator',
+          fieldErrors: { name: 'Name is required for role locator' },
+        }
+      }
+      return { isValid: true }
     default:
       return exhaustive(locator)
   }
