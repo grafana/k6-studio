@@ -1,5 +1,4 @@
 import { IconButton, TextField, Tooltip } from '@radix-ui/themes'
-import { RootProps } from '@radix-ui/themes/dist/cjs/components/text-field'
 import { CodeXmlIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { useKeyPressEvent } from 'react-use'
@@ -13,7 +12,7 @@ export function Filter({
   filterAllData,
   setFilterAllData,
   ...inputProps
-}: RootProps & {
+}: TextField.RootProps & {
   filter: string
   setFilter: (filter: string) => void
   filterAllData?: boolean

@@ -1,20 +1,51 @@
+import { readFileSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import type { AddressInfo } from 'node:net'
+import { join } from 'node:path'
 import type { ConfigEnv, Plugin, UserConfig } from 'vite'
 
 import pkg from './package.json'
 
 export const builtins = [
   'electron',
+  'bufferutil',
+  'utf-8-validate',
   ...builtinModules.map((m) => [m, `node:${m}`]).flat(),
 ]
 
-export const external = [
-  ...builtins,
-  ...Object.keys(
-    'dependencies' in pkg ? (pkg.dependencies as Record<string, unknown>) : {}
-  ),
-]
+// ESM-only packages (those with "type": "module" in their package.json)
+// can't be loaded via CJS require(). In dev mode we externalize all deps
+// for speed, so these must be detected and kept bundled by Vite instead.
+function isEsmOnlyPackage(name: string): boolean {
+  try {
+    const pkgJsonPath = join(
+      process.cwd(),
+      'node_modules',
+      name,
+      'package.json'
+    )
+    const depPkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8')) as {
+      type?: string
+    }
+    return depPkg.type === 'module'
+  } catch {
+    return false
+  }
+}
+
+// Dev: externalize all CJS-compatible deps for fast builds and HMR.
+// Prod: only externalize builtins so Vite bundles everything — the
+// forge Vite plugin strips node_modules from the ASAR, so externalized
+// npm packages would be missing at runtime.
+export function getExternal(command: 'serve' | 'build') {
+  if (command === 'build') return builtins
+  return [
+    ...builtins,
+    ...Object.keys(
+      'dependencies' in pkg ? (pkg.dependencies as Record<string, unknown>) : {}
+    ).filter((dep) => !isEsmOnlyPackage(dep)),
+  ]
+}
 
 export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
   const { root, mode, command } = env

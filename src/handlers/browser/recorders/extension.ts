@@ -72,7 +72,6 @@ class BrowserExtensionRecordingSession
 }
 
 function getExtensionPath() {
-  // @ts-expect-error - Electron apps are built as CJS.
   if (import.meta.env.DEV) {
     return path.join(app.getAppPath(), '.vite/build/extension')
   }

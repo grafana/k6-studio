@@ -11,7 +11,6 @@ const RESOURCE_INDEX = {
 export type ResourceName = keyof typeof RESOURCE_INDEX
 
 function getResourceRootPath() {
-  // @ts-expect-error We are targeting CommonJS so import.meta is not available
   return !import.meta.env.PROD
     ? path.join(app.getAppPath(), 'resources')
     : process.resourcesPath

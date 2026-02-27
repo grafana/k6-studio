@@ -14,7 +14,6 @@ import { TestRun } from './testRun'
 const EXECUTABLE_NAME = getPlatform() === 'win' ? 'k6.exe' : 'k6'
 
 function getDefaultExecutablePath() {
-  // @ts-expect-error - import.meta doesn't exist because we're targeting CommonJS
   const resourcesPath = import.meta.env.DEV
     ? path.join(app.getAppPath(), 'resources', getPlatform())
     : process.resourcesPath

@@ -50,5 +50,4 @@ function ProdModeDialog() {
 }
 
 export const DevToolsDialog =
-  // @ts-expect-error we have commonjs set as module option
   import.meta.env.MODE === 'development' ? DevModeDialog : ProdModeDialog

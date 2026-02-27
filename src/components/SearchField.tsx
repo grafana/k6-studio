@@ -1,5 +1,4 @@
 import { IconButton, TextField } from '@radix-ui/themes'
-import { RootProps } from '@radix-ui/themes/dist/cjs/components/text-field'
 import { SearchIcon, XIcon } from 'lucide-react'
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react'
 
@@ -8,7 +7,7 @@ export interface SearchFieldHandle {
   clear(): void
 }
 
-type SearchFieldProps = Omit<RootProps, 'onChange'> & {
+type SearchFieldProps = Omit<TextField.RootProps, 'onChange'> & {
   filter: string
   onChange: (filter: string) => void
   children?: React.ReactNode
