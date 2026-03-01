@@ -254,6 +254,8 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     loading: !hasRendered,
     state,
     time: {
+      start: player?.getStartTime() ?? 0,
+      end: player?.getEndTime() ?? 0,
       // rrweb can return a current time greater than total time so we
       // clamp it here to avoid issues in the UI.
       current: Math.min(currentTime, totalTime),
