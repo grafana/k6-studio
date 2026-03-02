@@ -23,7 +23,7 @@ export function Home() {
       return
     }
 
-    navigate(getRoutePath('validator', { fileName: encodeURIComponent(path) }))
+    navigate(getRoutePath('home', { fileName: encodeURIComponent(path) }))
   }
 
   return (
