@@ -1,7 +1,6 @@
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { Recording } from '@/schemas/recording'
 import { GeneratorFileData } from '@/types/generator'
-import { K6TestOptions } from '@/utils/k6/schema'
 
 export enum FileHandler {
   Save = 'file:save',
@@ -35,9 +34,4 @@ export type OpenFileResult =
   | { type: 'generator'; data: GeneratorFileData }
   | { type: 'browser-test'; data: BrowserTestFile }
   | { type: 'recording'; data: Recording }
-  | {
-      type: 'script'
-      content: string
-      options: K6TestOptions
-      isExternal: boolean
-    }
+  | { type: 'script'; content: string; isExternal: boolean }

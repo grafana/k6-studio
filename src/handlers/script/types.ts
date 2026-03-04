@@ -1,6 +1,7 @@
 import { K6TestOptions } from '@/utils/k6/schema'
 
 export enum ScriptHandler {
+  Analyze = 'script:analyze',
   Select = 'script:select',
   Open = 'script:open',
   Run = 'script:run',

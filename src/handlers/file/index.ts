@@ -1,16 +1,12 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
-import invariant from 'tiny-invariant'
 
-import { INVALID_FILENAME_CHARS } from '@/constants/files'
-import { getFilePath } from '@/main/file'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
-import { K6Client } from '@/utils/k6/client'
 import { exhaustive } from '@/utils/typescript'
 import { isExternalScript } from '@/utils/workspace'
 
@@ -18,11 +14,11 @@ import {
   FileContent,
   FileContentType,
   FileHandler,
-  FileLocation,
   OpenFileRequest,
   OpenFileResult,
   SaveFilePayload,
 } from './types'
+import { resolveFileLocation } from './utils'
 
 export function initialize() {
   ipcMain.handle(
@@ -58,33 +54,6 @@ export function initialize() {
   )
 }
 
-function resolveFileLocation(
-  fileType: FileContentType,
-  location: FileLocation
-): string {
-  switch (location.type) {
-    case 'path':
-      return location.path
-
-    case 'legacy': {
-      invariant(
-        !INVALID_FILENAME_CHARS.test(location.name),
-        'Invalid file name'
-      )
-      return getFilePath({
-        type: fileType,
-        fileName: location.name,
-      })
-    }
-
-    case 'new':
-      throw new Error('Files with location "new" are not supported')
-
-    default:
-      return exhaustive(location)
-  }
-}
-
 async function parseOpenResult(
   filePath: string,
   fileType: FileContentType,
@@ -109,18 +78,12 @@ async function parseOpenResult(
       return { type: 'recording', data }
     }
 
-    case 'script': {
-      const options = await new K6Client()
-        .inspect({ scriptPath: filePath })
-        .catch(() => ({}))
-
+    case 'script':
       return {
         type: 'script',
         content: raw,
-        options: options ?? {},
         isExternal: isExternalScript(filePath),
       }
-    }
 
     default:
       return exhaustive(fileType)

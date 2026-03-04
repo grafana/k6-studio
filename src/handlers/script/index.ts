@@ -4,11 +4,14 @@ import { writeFile, unlink } from 'fs/promises'
 import path from 'path'
 
 import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
+import { FileLocation } from '@/handlers/file/types'
+import { resolveFileLocation } from '@/handlers/file/utils'
 import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
 import { isExternalScript } from '@/utils/workspace'
 
@@ -16,6 +19,15 @@ import { ScriptHandler } from './types'
 
 export function initialize() {
   let currentTestRun: TestRun | null
+
+  ipcMain.handle(ScriptHandler.Analyze, async (_, location: FileLocation) => {
+    console.info(`${ScriptHandler.Analyze} event received`)
+    const scriptPath = resolveFileLocation('script', location)
+    const options = await new K6Client()
+      .inspect({ scriptPath })
+      .catch(() => ({}))
+    return options ?? {}
+  })
 
   ipcMain.handle(ScriptHandler.Select, async (event) => {
     console.info(`${ScriptHandler.Select} event received`)

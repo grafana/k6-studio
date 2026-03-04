@@ -6,12 +6,19 @@ import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 
 import { open as openFile, save } from '../file/preload'
+import { FileLocation } from '../file/types'
 import { createListener } from '../utils'
 
 import { OpenScriptResult, ScriptHandler } from './types'
 
 export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
+}
+
+export function analyzeScript(location: FileLocation) {
+  return ipcRenderer.invoke(ScriptHandler.Analyze, location) as Promise<
+    OpenScriptResult['options']
+  >
 }
 
 export async function openScript(
@@ -28,9 +35,11 @@ export async function openScript(
 
   invariant(result.type === 'script', 'Expected script content')
 
+  const options = await analyzeScript(location)
+
   return {
     script: result.content,
-    options: result.options,
+    options,
     isExternal: result.isExternal,
   }
 }
