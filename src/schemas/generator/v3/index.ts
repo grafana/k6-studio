@@ -1,14 +1,12 @@
-import path from 'path'
 import { z } from 'zod'
-
-import * as v3 from '../v3'
 
 import { TestRuleSchema } from './rules'
 import { TestDataSchema } from './testData'
 import { TestOptionsSchema } from './testOptions'
 
 export const GeneratorFileDataSchema = z.object({
-  version: z.literal('2.0'),
+  version: z.literal('3.0'),
+  /** Path to the recording file relative to the generator file (e.g. ../Recordings/file.har) */
   recordingPath: z.string(),
   options: TestOptionsSchema,
   testData: TestDataSchema,
@@ -20,17 +18,6 @@ export const GeneratorFileDataSchema = z.object({
 
 export type GeneratorSchema = z.infer<typeof GeneratorFileDataSchema>
 
-export function migrate(
-  generator: z.infer<typeof GeneratorFileDataSchema>
-): v3.GeneratorSchema {
-  const relativeRecordingPath =
-    generator.recordingPath !== ''
-      ? `../Recordings/${path.basename(generator.recordingPath)}`
-      : ''
-
-  return {
-    ...generator,
-    version: '3.0',
-    recordingPath: relativeRecordingPath,
-  }
+export function migrate(generator: z.infer<typeof GeneratorFileDataSchema>) {
+  return { ...generator }
 }

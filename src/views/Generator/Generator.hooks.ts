@@ -28,10 +28,8 @@ export function useUpdateValueInGeneratorFile(filePath: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
       const generator = await loadGeneratorFile(filePath)
-      await window.studio.generator.saveGenerator(
-        { ...generator, [key]: value },
-        filePath
-      )
+      const updated = { ...generator, [key]: value }
+      await window.studio.generator.saveGenerator(updated, filePath)
     },
   })
 }

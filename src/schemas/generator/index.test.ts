@@ -45,7 +45,68 @@ describe('Generator migration', () => {
     }
 
     const migration = migrate(v0Generator)
-    expect(migration.version).toBe('2.0')
+    expect(migration.version).toBe('3.0')
     expect(migration.options.thresholds).toEqual([])
+    expect(migration.recordingPath).toBe('../Recordings/test')
+  })
+
+  it('should migrate v2 recordingPath to relative path (v3)', () => {
+    const v2Generator = {
+      version: '2.0' as const,
+      recordingPath: 'my-recording.har',
+      options: {
+        loadProfile: {
+          executor: 'ramping-vus' as const,
+          stages: [],
+        },
+        thinkTime: {
+          sleepType: 'groups' as const,
+          timing: { type: 'fixed' as const, value: 1 },
+        },
+        thresholds: [],
+        cloud: {
+          loadZones: { distribution: 'even' as const, zones: [] },
+        },
+      },
+      testData: { variables: [], files: [] },
+      rules: [],
+      allowlist: [],
+      includeStaticAssets: false,
+      scriptName: 'my-script.js',
+    }
+
+    const migration = migrate(v2Generator)
+    expect(migration.version).toBe('3.0')
+    expect(migration.recordingPath).toBe('../Recordings/my-recording.har')
+  })
+
+  it('should keep empty recordingPath when migrating v2 to v3', () => {
+    const v2Generator = {
+      version: '2.0' as const,
+      recordingPath: '',
+      options: {
+        loadProfile: {
+          executor: 'ramping-vus' as const,
+          stages: [],
+        },
+        thinkTime: {
+          sleepType: 'groups' as const,
+          timing: { type: 'fixed' as const, value: 1 },
+        },
+        thresholds: [],
+        cloud: {
+          loadZones: { distribution: 'even' as const, zones: [] },
+        },
+      },
+      testData: { variables: [], files: [] },
+      rules: [],
+      allowlist: [],
+      includeStaticAssets: false,
+      scriptName: 'my-script.js',
+    }
+
+    const migration = migrate(v2Generator)
+    expect(migration.version).toBe('3.0')
+    expect(migration.recordingPath).toBe('')
   })
 })

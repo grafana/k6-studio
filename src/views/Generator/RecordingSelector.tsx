@@ -2,12 +2,17 @@ import { css } from '@emotion/react'
 import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
 import { AlertTriangleIcon, PlusIcon } from 'lucide-react'
+import * as pathe from 'pathe'
 
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
+
+function displayNameFromPath(filePath: string) {
+  return getFileNameWithoutExtension(pathe.basename(filePath))
+}
 
 export function RecordingSelector({
   compact = false,
@@ -23,7 +28,7 @@ export function RecordingSelector({
   const showToast = useToast()
 
   const selectedRecording = recordings.find(
-    (recording) => recording.fileName === recordingPath
+    (recording) => recording.path === recordingPath
   )
 
   const isRecordingMissing =
@@ -88,17 +93,17 @@ export function RecordingSelector({
                 `}
               />
             )}
-            {getFileNameWithoutExtension(recordingPath)}
+            {displayNameFromPath(recordingPath)}
           </Flex>
         </Select.Trigger>
         <Select.Content position="popper">
           {isRecordingMissing && (
             <Select.Item value={recordingPath} disabled>
-              {getFileNameWithoutExtension(recordingPath)}
+              {displayNameFromPath(recordingPath)}
             </Select.Item>
           )}
           {recordings.map((recording) => (
-            <Select.Item value={recording.fileName} key={recording.fileName}>
+            <Select.Item value={recording.path} key={recording.path}>
               {recording.displayName}
             </Select.Item>
           ))}

@@ -1,4 +1,5 @@
 import { Flex, Switch, Text } from '@radix-ui/themes'
+import * as pathe from 'pathe'
 
 import { Filter } from '@/components/WebLogView/Filter'
 import { RecorderIcon } from '@/components/icons'
@@ -33,7 +34,9 @@ export function Header({
           <Flex flexShrink="0">
             <RecorderIcon width="22px" />
           </Flex>
-          <Text truncate>{getFileNameWithoutExtension(recordingPath)}</Text>
+          <Text truncate>
+            {getFileNameWithoutExtension(pathe.basename(recordingPath))}
+          </Text>
         </Flex>
       </Text>
       <Flex justify="end" align="center" gap="4">

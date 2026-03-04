@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
+import path from 'path'
 
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
@@ -28,7 +29,7 @@ export function initialize() {
 
       try {
         const filePath = resolveFileLocation(content.type, location)
-        const serialized = serializeContent(content)
+        const serialized = serializeContent(content, filePath)
 
         await writeFile(filePath, serialized)
 
@@ -64,8 +65,15 @@ async function parseOpenResult(
   switch (fileType) {
     case 'generator': {
       const data = GeneratorFileDataSchema.parse(JSON.parse(raw))
+      const absoluteRecordingPath =
+        data.recordingPath !== ''
+          ? path.resolve(path.dirname(filePath), data.recordingPath)
+          : ''
 
-      return { type: 'generator', data }
+      return {
+        type: 'generator',
+        data: { ...data, recordingPath: absoluteRecordingPath },
+      }
     }
 
     case 'browser-test': {
@@ -92,9 +100,21 @@ async function parseOpenResult(
   }
 }
 
-function serializeContent(content: FileContent): string {
+function serializeContent(content: FileContent, filePath: string): string {
   switch (content.type) {
-    case 'generator':
+    case 'generator': {
+      const relativeRecordingPath =
+        content.data.recordingPath !== ''
+          ? path.relative(path.dirname(filePath), content.data.recordingPath)
+          : ''
+
+      const dataToWrite = {
+        ...content.data,
+        recordingPath: relativeRecordingPath,
+      }
+      return JSON.stringify(dataToWrite, null, 2)
+    }
+
     case 'browser-test':
     case 'recording':
       return JSON.stringify(content.data, null, 2)
