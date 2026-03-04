@@ -10,7 +10,6 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { useStateWithUndo } from '@/hooks/useStateWithUndo'
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
@@ -19,7 +18,7 @@ import { getFileNameWithoutExtension } from '@/utils/file'
 import { queryClient } from '@/utils/query'
 import { exhaustive } from '@/utils/typescript'
 
-import { BrowserActionWithId } from './types'
+import { BrowserActionInstance } from './types'
 
 export function useBrowserTestFile(): StudioFile {
   const { fileName } = useParams()
@@ -91,7 +90,9 @@ export function useBrowserTestEditorLayout() {
   return { drawerLayout, mainLayout, setDrawer, onTabClick }
 }
 
-export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
+export function useBrowserScriptPreview(
+  browserActions: BrowserActionInstance[]
+) {
   const [preview, setPreview] = useState('')
 
   useEffect(() => {
@@ -120,32 +121,29 @@ export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
   const { actions = [] } = browserTestFile ?? {}
-  const { state, undo, redo, push } = useStateWithUndo<BrowserActionWithId[]>(
-    actions.map((action) => ({
-      id: crypto.randomUUID(),
-      action,
-    }))
+  const [state, setState] = useState<BrowserActionInstance[]>(
+    actions.map(toBrowserActionInstance)
   )
 
-  const addAction = (method: AnyBrowserAction['method']) => {
+  const addAction = (method: BrowserActionInstance['method']) => {
     const action = createNewAction(method)
-    push([...state, { id: crypto.randomUUID(), action }])
+    setState([...state, action])
   }
 
-  const updateAction = (updatedAction: BrowserActionWithId) => {
+  const updateAction = (updatedAction: BrowserActionInstance) => {
     const newActions = state.map((action) =>
       action.id === updatedAction.id ? updatedAction : action
     )
-    push(newActions)
+    setState(newActions)
   }
 
   const removeAction = (id: string) => {
     const newActions = state.filter((actionWithId) => actionWithId.id !== id)
-    push(newActions)
+    setState(newActions)
   }
 
   const plainActions = useMemo(() => {
-    return state.map((actionWithId) => actionWithId.action)
+    return state.map(fromBrowserActionInstance)
   }, [state])
 
   const isDirty = useMemo(() => {
@@ -162,19 +160,82 @@ export function useBrowserTestState(
     updateAction,
     removeAction,
     isDirty,
-    undo,
-    redo,
   }
 }
 
-function createNewAction(method: AnyBrowserAction['method']): AnyBrowserAction {
+function toBrowserActionInstance(
+  action: AnyBrowserAction
+): BrowserActionInstance {
+  const id = crypto.randomUUID()
+
+  if ('locator' in action) {
+    return {
+      id,
+      ...action,
+      locator: {
+        current: action.locator.type,
+        values: {
+          [action.locator.type]: action.locator,
+        },
+      },
+    }
+  }
+
+  return { id, ...action }
+}
+
+function fromBrowserActionInstance({
+  id: _id,
+  ...action
+}: BrowserActionInstance): AnyBrowserAction {
+  if ('locator' in action) {
+    const locator = action.locator.values[action.locator.current]
+
+    if (locator === undefined) {
+      throw new Error(
+        `Current locator of type "${action.locator.current}" not found in locator values.`
+      )
+    }
+
+    return {
+      ...action,
+      locator,
+    }
+  }
+
+  return action
+}
+
+function createNewAction(
+  method: BrowserActionInstance['method']
+): BrowserActionInstance {
+  const id = crypto.randomUUID()
   switch (method) {
     case 'page.goto':
       return {
-        method: 'page.goto',
+        id,
+        method,
         url: 'https://example.com',
       }
     case 'page.reload':
+      return {
+        id,
+        method,
+      }
+    case 'locator.waitFor':
+      return {
+        id,
+        method,
+        locator: {
+          current: 'css',
+          values: {
+            css: {
+              type: 'css',
+              selector: '',
+            },
+          },
+        },
+      }
     case 'page.waitForNavigation':
     case 'page.close':
     case 'page.*':
@@ -185,7 +246,6 @@ function createNewAction(method: AnyBrowserAction['method']): AnyBrowserAction {
     case 'locator.check':
     case 'locator.uncheck':
     case 'locator.selectOption':
-    case 'locator.waitFor':
     case 'locator.hover':
     case 'locator.setChecked':
     case 'locator.tap':
