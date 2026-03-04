@@ -9,7 +9,6 @@ import { useFileNameParam } from '@/hooks/useFileNameParam'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { useGeneratorStore } from '@/store/generator'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
 import { useScriptExport } from '../Generator.hooks'
@@ -32,18 +31,12 @@ export function GeneratorControls({
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const { fileName } = useFileNameParam()
+  const file = useFileNameParam('generator')
   const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
 
-  const file = {
-    type: 'generator' as const,
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-  }
-
-  const handleExportScript = useScriptExport(fileName)
+  const handleExportScript = useScriptExport(file.fileName)
 
   const handleDelete = useDeleteFile({
     file,

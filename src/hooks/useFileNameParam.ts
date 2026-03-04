@@ -1,10 +1,17 @@
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
-export function useFileNameParam(): { fileName: string } {
+import { StudioFile, StudioFileType } from '@/types'
+import { getFileNameWithoutExtension } from '@/utils/file'
+
+export function useFileNameParam(type: StudioFileType): StudioFile {
   const { fileName } = useParams()
 
   invariant(fileName, 'fileName is required')
 
-  return { fileName }
+  return {
+    type,
+    fileName,
+    displayName: getFileNameWithoutExtension(fileName),
+  }
 }

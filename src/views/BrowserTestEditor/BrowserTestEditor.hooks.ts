@@ -14,20 +14,13 @@ import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
 import { queryClient } from '@/utils/query'
 import { exhaustive } from '@/utils/typescript'
 
 import { BrowserActionWithId } from './types'
 
 export function useBrowserTestFile(): StudioFile {
-  const { fileName } = useFileNameParam()
-
-  return {
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-    type: 'browser-test',
-  }
+  return useFileNameParam('browser-test')
 }
 
 export function useBrowserTest(fileName: string) {

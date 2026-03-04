@@ -7,6 +7,8 @@ import { getFileNameWithoutExtension, getViewPath } from '@/utils/file'
 import { queryClient } from '@/utils/query'
 
 export function useRenameFile(file: StudioFile) {
+  // We don't want to use the useFileNameParam hook here because we might be in
+  // a view that doesn't have a file name parameter e.g. the home page.
   const { fileName: selectedFileName } = useParams<{ fileName: string }>()
 
   const navigate = useNavigate()
