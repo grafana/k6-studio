@@ -81,7 +81,6 @@ export const useGenerateRules = ({
       })
     },
   })
-  console.log('messages', messages)
 
   async function handleToolCall(toolCall: ToolCall) {
     const { toolName } = toolCall

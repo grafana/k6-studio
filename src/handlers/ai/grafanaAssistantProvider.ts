@@ -82,7 +82,10 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       contextId,
       getToolDefinitionsForA2A()
     )
-    log.info('Request body', JSON.stringify(body, null, 2))
+    log.info(
+      PREFIX,
+      `Sending A2A request for chatId=${chatId}, contextId=${contextId}`
+    )
 
     const response = await fetch(
       `${a2aConfig.baseUrl}/agents/${a2aConfig.agentId}`,
