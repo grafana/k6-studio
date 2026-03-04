@@ -109,4 +109,40 @@ describe('Generator migration', () => {
     expect(migration.version).toBe('3.0')
     expect(migration.recordingPath).toBe('')
   })
+
+  it('should migrate v2 testData.files name to path (v3)', () => {
+    const v2Generator = {
+      version: '2.0' as const,
+      recordingPath: '',
+      options: {
+        loadProfile: {
+          executor: 'ramping-vus' as const,
+          stages: [],
+        },
+        thinkTime: {
+          sleepType: 'groups' as const,
+          timing: { type: 'fixed' as const, value: 1 },
+        },
+        thresholds: [],
+        cloud: {
+          loadZones: { distribution: 'even' as const, zones: [] },
+        },
+      },
+      testData: {
+        variables: [],
+        files: [{ name: 'users.json' }, { name: 'data/products.csv' }],
+      },
+      rules: [],
+      allowlist: [],
+      includeStaticAssets: false,
+      scriptName: 'my-script.js',
+    }
+
+    const migration = migrate(v2Generator)
+    expect(migration.version).toBe('3.0')
+    expect(migration.testData.files).toEqual([
+      { path: '../Data/users.json' },
+      { path: '../Data/products.csv' },
+    ])
+  })
 })

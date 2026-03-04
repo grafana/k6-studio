@@ -6,6 +6,7 @@ import { useFormContext } from 'react-hook-form'
 import { ControlledSelect, FieldGroup } from '@/components/Form'
 import { useGeneratorStore } from '@/store/generator'
 import { ParameterizationRule } from '@/types/rules'
+import { getDataFileDisplayName } from '@/utils/file'
 import { useDataFilePreview } from '@/views/DataFile/DataFile.hooks'
 
 export function FileSelect() {
@@ -15,17 +16,17 @@ export function FileSelect() {
     formState: { errors },
   } = useFormContext<ParameterizationRule>()
 
-  const fileName = watch('value.fileName')
+  const filePath = watch('value.fileName')
   const propertyName = watch('value.propertyName')
   const files = useGeneratorStore((store) => store.files)
-  const { data: preview, isLoading } = useDataFilePreview(fileName)
+  const { data: preview, isLoading } = useDataFilePreview(filePath)
 
   const fileOptions = useMemo(() => {
     return files.map((file) => ({
-      value: file.name,
+      value: file.path,
       label: (
         <Code size="2" truncate variant="ghost">
-          {file.name}
+          {getDataFileDisplayName(file.path)}
         </Code>
       ),
     }))
@@ -63,7 +64,7 @@ export function FileSelect() {
           selectProps={{
             // Automatically open the select when switching to data file value type
             // in new parameterization rule
-            defaultOpen: !fileName,
+            defaultOpen: !filePath,
           }}
           contentProps={{
             css: { maxWidth: 'var(--radix-select-trigger-width)' },
@@ -84,7 +85,7 @@ export function FileSelect() {
             disabled: isLoading,
             // Automatically open the select when selecting data file
             // in new parameterization rule
-            defaultOpen: !!fileName && !propertyName,
+            defaultOpen: !!filePath && !propertyName,
           }}
           contentProps={{
             css: { maxWidth: 'var(--radix-select-trigger-width)' },

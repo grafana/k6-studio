@@ -161,7 +161,7 @@ describe('Code generation', () => {
     })
 
     it('should generate imports with data files', async () => {
-      const files = [{ name: 'users.csv' }, { name: 'products.json' }]
+      const files = [{ path: 'users.csv' }, { path: 'products.json' }]
       const expectedResult = await prettify(`
         import { group, sleep, check } from 'k6'
         import http from 'k6/http'
@@ -207,7 +207,7 @@ describe('Code generation', () => {
 
   describe('generateDataFileDeclarations', () => {
     it('should generate file declarations', async () => {
-      const files = [{ name: 'users.csv' }, { name: 'products.json' }]
+      const files = [{ path: 'users.csv' }, { path: 'products.json' }]
 
       const expectedResult = await prettify(`
         const FILES = {

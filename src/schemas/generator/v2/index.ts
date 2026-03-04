@@ -28,9 +28,17 @@ export function migrate(
       ? `../Recordings/${path.basename(generator.recordingPath)}`
       : ''
 
+  const files = generator.testData.files.map((file) => ({
+    path: `../Data/${path.basename(file.name)}`,
+  }))
+
   return {
     ...generator,
     version: '3.0',
     recordingPath: relativeRecordingPath,
+    testData: {
+      ...generator.testData,
+      files,
+    },
   }
 }

@@ -11,11 +11,8 @@ export const VariableSchema = z.object({
 })
 
 export const DataFileSchema = z.object({
-  name: z
-    .string()
-    .min(1, { message: 'Required' })
-    // Don't allow native object properties, like __proto__, valueOf, etc.
-    .refine((val) => !(val in {}), { message: 'Invalid name' }),
+  /** Path to the data file relative to the generator file (e.g. ../Data/file.json) */
+  path: z.string().min(1, { message: 'Required' }),
 })
 
 export const TestDataSchema = z.object({

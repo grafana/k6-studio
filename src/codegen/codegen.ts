@@ -1,3 +1,5 @@
+import * as pathe from 'pathe'
+
 import { K6_EXPORTS, REQUIRED_IMPORTS } from '@/constants/imports'
 import { getCustomCodeSnippet } from '@/rules/parameterization'
 import { applyRules } from '@/rules/rules'
@@ -47,11 +49,11 @@ export function generateScript({
 }
 
 export function generateImports(generator: GeneratorFileData): string {
-  const hasCSVDataFiles = generator.testData.files.some(({ name }) =>
-    name.toLowerCase().endsWith('csv')
+  const hasCSVDataFiles = generator.testData.files.some((file: DataFile) =>
+    pathe.basename(file.path).toLowerCase().endsWith('csv')
   )
-  const hasJSONDataFiles = generator.testData.files.some(({ name }) =>
-    name.toLowerCase().endsWith('json')
+  const hasJSONDataFiles = generator.testData.files.some((file: DataFile) =>
+    pathe.basename(file.path).toLowerCase().endsWith('json')
   )
   const imports = [
     ...REQUIRED_IMPORTS,
@@ -85,18 +87,20 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
   }
 
   const fileKeyValuePairs = files
-    .map(({ name }) => {
+    .map((file: DataFile) => {
+      const name = pathe.basename(file.path)
       const displayName = getFileNameWithoutExtension(name)
       const isCSV = name.toLowerCase().endsWith('csv')
+      const dataPath = `../Data/${name}`
 
       if (isCSV) {
         return `
-        "${displayName}": await csv.parse(await fs.open('../Data/${name}'), { asObjects: true })`
+        "${displayName}": await csv.parse(await fs.open('${dataPath}'), { asObjects: true })`
       }
 
       return `
         "${displayName}": new SharedArray("${displayName}", () => {
-          const data = JSON.parse(open('../Data/${name}'));
+          const data = JSON.parse(open('${dataPath}'));
           return Array.isArray(data) ? data : [data];
         })`
     })

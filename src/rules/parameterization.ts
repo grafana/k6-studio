@@ -4,7 +4,10 @@ import {
   ParameterizationRuleInstance,
   ParameterizationState,
 } from '@/types/rules'
-import { getFileNameWithoutExtension } from '@/utils/file'
+import {
+  getDataFileDisplayName,
+  getFileNameWithoutExtension,
+} from '@/utils/file'
 import { exhaustive } from '@/utils/typescript'
 
 import { replaceRequestValues } from './selectors'
@@ -88,7 +91,9 @@ function getRuleValue(rule: ParameterizationRule, id: number) {
       return `\${VARS['${value.variableName}']}`
 
     case 'dataFileValue': {
-      const displayName = getFileNameWithoutExtension(value.fileName)
+      const displayName = getFileNameWithoutExtension(
+        getDataFileDisplayName(value.fileName)
+      )
       return `\${getUniqueItem(FILES['${displayName}'])['${value.propertyName}']}`
     }
 

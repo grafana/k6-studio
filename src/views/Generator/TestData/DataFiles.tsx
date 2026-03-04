@@ -21,13 +21,14 @@ import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { DataFile } from '@/types/testData'
+import { getDataFileDisplayName } from '@/utils/file'
 
 export function DataFiles() {
   const selectedFiles = useGeneratorStore((store) => store.files)
   const setFiles = useGeneratorStore((store) => store.setFiles)
 
-  const handleRemove = (fileName: string) => {
-    setFiles(selectedFiles.filter((file) => file.name !== fileName))
+  const handleRemove = (filePath: string) => {
+    setFiles(selectedFiles.filter((file) => file.path !== filePath))
   }
 
   return (
@@ -54,9 +55,9 @@ export function DataFiles() {
         <Table.Body>
           {selectedFiles.map((file) => (
             <DataFileRow
-              key={file.name}
+              key={file.path}
               file={file}
-              onRemove={() => handleRemove(file.name)}
+              onRemove={() => handleRemove(file.path)}
             />
           ))}
 
@@ -82,12 +83,12 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
       (rule) =>
         rule.type === 'parameterization' &&
         rule.value.type === 'dataFileValue' &&
-        rule.value.fileName === file.name
+        rule.value.fileName === file.path
     )
   )
 
   const isFileMissing = useStudioUIStore(
-    (store) => !store.dataFiles.has(file.name)
+    (store) => !store.dataFiles.has(file.path)
   )
 
   return (
@@ -108,7 +109,7 @@ function DataFileRow({ file, onRemove }: DataFileRowProps) {
               />
             </Tooltip>
           )}
-          {file.name}
+          {getDataFileDisplayName(file.path)}
         </Flex>
       </Table.Cell>
       <Table.Cell>Unique item per iteration</Table.Cell>
@@ -136,22 +137,22 @@ function AddDataFileDropdown() {
   const selectedFiles = useGeneratorStore((store) => store.files)
 
   const options = [...availableFiles.values()].filter(
-    (file) => !selectedFiles.find((f) => f.name === file.fileName)
+    (file) => !selectedFiles.find((f) => f.path === file.path)
   )
 
-  const handleAdd = (fileName: string) => {
-    if (selectedFiles.find((file) => file.name === fileName)) return
+  const handleAdd = (filePath: string) => {
+    if (selectedFiles.find((file) => file.path === filePath)) return
 
-    setFiles([...selectedFiles, { name: fileName }])
+    setFiles([...selectedFiles, { path: filePath }])
   }
 
   const importDataFile = useImportDataFile()
 
   const handleImportDataFile = async () => {
-    const fileName = await importDataFile()
+    const destPath = await importDataFile()
 
-    if (fileName) {
-      handleAdd(fileName)
+    if (destPath) {
+      handleAdd(destPath)
     }
   }
 
@@ -165,10 +166,10 @@ function AddDataFileDropdown() {
       <DropdownMenu.Content>
         {options.map((file) => (
           <DropdownMenu.Item
-            key={file.fileName}
-            onClick={() => handleAdd(file.fileName)}
+            key={file.path}
+            onClick={() => handleAdd(file.path)}
           >
-            {file.fileName}
+            {getDataFileDisplayName(file.path)}
           </DropdownMenu.Item>
         ))}
         {options.length > 0 && <DropdownMenu.Separator />}

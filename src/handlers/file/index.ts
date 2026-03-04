@@ -65,14 +65,44 @@ async function parseOpenResult(
   switch (fileType) {
     case 'generator': {
       const data = GeneratorFileDataSchema.parse(JSON.parse(raw))
+      const generatorDir = path.dirname(filePath)
+
       const absoluteRecordingPath =
         data.recordingPath !== ''
-          ? path.resolve(path.dirname(filePath), data.recordingPath)
+          ? path.resolve(generatorDir, data.recordingPath)
           : ''
+
+      const absoluteFiles = data.testData.files.map((file) => {
+        return {
+          path: file.path !== '' ? path.resolve(generatorDir, file.path) : '',
+        }
+      })
+
+      const absoluteRules = data.rules.map((rule) => {
+        if (
+          rule.type === 'parameterization' &&
+          rule.value.type === 'dataFileValue' &&
+          rule.value.fileName !== ''
+        ) {
+          return {
+            ...rule,
+            value: {
+              ...rule.value,
+              fileName: path.resolve(generatorDir, rule.value.fileName),
+            },
+          }
+        }
+        return rule
+      })
 
       return {
         type: 'generator',
-        data: { ...data, recordingPath: absoluteRecordingPath },
+        data: {
+          ...data,
+          recordingPath: absoluteRecordingPath,
+          testData: { ...data.testData, files: absoluteFiles },
+          rules: absoluteRules,
+        },
       }
     }
 
@@ -103,14 +133,41 @@ async function parseOpenResult(
 function serializeContent(content: FileContent, filePath: string): string {
   switch (content.type) {
     case 'generator': {
+      const generatorDir = path.dirname(filePath)
+
       const relativeRecordingPath =
         content.data.recordingPath !== ''
-          ? path.relative(path.dirname(filePath), content.data.recordingPath)
+          ? path.relative(generatorDir, content.data.recordingPath)
           : ''
+
+      const relativeFiles = content.data.testData.files.map((file) => {
+        return {
+          path: file.path !== '' ? path.relative(generatorDir, file.path) : '',
+        }
+      })
+
+      const relativeRules = content.data.rules.map((rule) => {
+        if (
+          rule.type === 'parameterization' &&
+          rule.value.type === 'dataFileValue' &&
+          rule.value.fileName !== ''
+        ) {
+          return {
+            ...rule,
+            value: {
+              ...rule.value,
+              fileName: path.relative(generatorDir, rule.value.fileName),
+            },
+          }
+        }
+        return rule
+      })
 
       const dataToWrite = {
         ...content.data,
         recordingPath: relativeRecordingPath,
+        testData: { ...content.data.testData, files: relativeFiles },
+        rules: relativeRules,
       }
       return JSON.stringify(dataToWrite, null, 2)
     }
