@@ -7,6 +7,7 @@ import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
+import { useFileNameParam } from '@/hooks/useFileNameParam'
 import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
@@ -14,7 +15,6 @@ import { ProxyData } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
 import {
-  useGeneratorParams,
   useIsGeneratorDirty,
   useLoadGeneratorFile,
   useLoadHarFile,
@@ -32,7 +32,7 @@ export function Generator() {
   const showToast = useToast()
   const navigate = useNavigate()
 
-  const { fileName } = useGeneratorParams()
+  const { fileName } = useFileNameParam()
 
   const {
     data: generatorFileData,

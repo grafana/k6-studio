@@ -1,8 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { useCallback } from 'react'
-import { useParams } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
@@ -10,15 +8,6 @@ import { GeneratorFileData } from '@/types/generator'
 import { queryClient } from '@/utils/query'
 
 import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
-
-export function useGeneratorParams() {
-  const { fileName } = useParams()
-  invariant(fileName, 'fileName is required')
-
-  return {
-    fileName,
-  }
-}
 
 export function useLoadHarFile(fileName?: string) {
   return useQuery({

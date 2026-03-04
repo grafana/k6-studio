@@ -7,7 +7,8 @@ import { getFileNameWithoutExtension, getViewPath } from '@/utils/file'
 import { queryClient } from '@/utils/query'
 
 export function useRenameFile(file: StudioFile) {
-  const { fileName: selectedFileName } = useParams()
+  const { fileName: selectedFileName } = useParams<{ fileName: string }>()
+
   const navigate = useNavigate()
   const addFile = useStudioUIStore((state) => state.addFile)
   const removeFile = useStudioUIStore((state) => state.removeFile)

@@ -1,11 +1,11 @@
 import { Grid } from '@radix-ui/themes'
 import { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import invariant from 'tiny-invariant'
+import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { TableSkeleton } from '@/components/TableSkeleton'
+import { useFileNameParam } from '@/hooks/useFileNameParam'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { getFileNameWithoutExtension } from '@/utils/file'
@@ -15,10 +15,9 @@ import { DataFileControls } from './DataFileControls'
 import { DataFileTable } from './DataFileTable'
 
 export function DataFile() {
-  const { fileName } = useParams()
+  const { fileName } = useFileNameParam()
   const navigate = useNavigate()
   const showToast = useToast()
-  invariant(fileName, 'fileName is required')
 
   const { data: preview, isLoading, isError } = useDataFilePreview(fileName)
 

@@ -1,8 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { emitScript } from '@/codegen/browser'
 import { convertActionsToTest } from '@/codegen/browser/test'
@@ -10,6 +8,7 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
+import { useFileNameParam } from '@/hooks/useFileNameParam'
 import { useStateWithUndo } from '@/hooks/useStateWithUndo'
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
@@ -22,8 +21,7 @@ import { exhaustive } from '@/utils/typescript'
 import { BrowserActionWithId } from './types'
 
 export function useBrowserTestFile(): StudioFile {
-  const { fileName } = useParams()
-  invariant(fileName, 'fileName is required')
+  const { fileName } = useFileNameParam()
 
   return {
     fileName,

@@ -5,13 +5,14 @@ import { useState } from 'react'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
+import { useFileNameParam } from '@/hooks/useFileNameParam'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { useGeneratorStore } from '@/store/generator'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { ExportScriptDialog } from '../ExportScriptDialog'
-import { useGeneratorParams, useScriptExport } from '../Generator.hooks'
+import { useScriptExport } from '../Generator.hooks'
 import { RecordingSelector } from '../RecordingSelector'
 import { ValidatorDialog } from '../ValidatorDialog'
 
@@ -31,7 +32,7 @@ export function GeneratorControls({
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const { fileName } = useGeneratorParams()
+  const { fileName } = useFileNameParam()
   const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview

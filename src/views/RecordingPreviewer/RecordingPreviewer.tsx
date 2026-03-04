@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
+import { useFileNameParam } from '@/hooks/useFileNameParam'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useSettings } from '@/hooks/useSettings'
 import { BrowserEvent } from '@/schemas/recording'
@@ -23,13 +24,12 @@ export function RecordingPreviewer() {
   const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
 
   const [isLoading, setIsLoading] = useState(true)
-  const { fileName } = useParams()
+  const { fileName } = useFileNameParam()
   const navigate = useNavigate()
 
   const browserRecorderSetting =
     settings?.recorder.browserRecording ?? 'disabled'
 
-  invariant(fileName, 'fileName is required')
   const file: StudioFile = {
     fileName,
     displayName: getFileNameWithoutExtension(fileName),
