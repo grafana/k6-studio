@@ -186,9 +186,9 @@ export function Recorder() {
         return
       }
 
-      const fileName = await validateAndSaveHarFile()
+      const filePath = await validateAndSaveHarFile()
 
-      if (fileName === null) {
+      if (filePath === null) {
         return
       }
 
@@ -199,7 +199,7 @@ export function Recorder() {
 
       navigate(
         getRoutePath('recordingPreviewer', {
-          fileName: encodeURIComponent(fileName),
+          path: encodeURIComponent(filePath),
         }),
         {
           state: { discardable: true },

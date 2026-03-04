@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron'
+import path from 'path'
 import { z } from 'zod'
 
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
@@ -30,6 +31,6 @@ export function initialize() {
       event: UsageEventName.BrowserTestCreated,
     })
 
-    return fileName
+    return path.join(BROWSER_TESTS_PATH, fileName)
   })
 }

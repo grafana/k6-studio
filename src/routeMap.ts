@@ -3,11 +3,11 @@ import { generatePath } from 'react-router-dom'
 const routes = {
   home: '/',
   recorder: '/recorder',
-  recordingPreviewer: '/recording-previewer/:fileName',
-  validator: '/validator/:fileName?',
-  generator: '/generator/:fileName',
-  browserTestEditor: '/editor/:fileName',
-  dataFilePreviewer: '/data-file/:fileName',
+  recordingPreviewer: '/recording-previewer/:path',
+  validator: '/validator/:path?',
+  generator: '/generator/:path',
+  browserTestEditor: '/editor/:path',
+  dataFilePreviewer: '/data-file/:path',
 }
 
 export type RouteName = keyof typeof routes

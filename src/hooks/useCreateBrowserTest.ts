@@ -10,11 +10,11 @@ export function useCreateBrowserTest() {
 
   return useCallback(async () => {
     try {
-      const fileName = await window.studio.browserTest.create()
+      const filePath = await window.studio.browserTest.create()
 
       navigate(
         getRoutePath('browserTestEditor', {
-          fileName: encodeURIComponent(fileName),
+          path: encodeURIComponent(filePath),
         })
       )
     } catch {

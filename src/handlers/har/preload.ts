@@ -1,9 +1,11 @@
 import { ipcRenderer } from 'electron'
+import * as path from 'pathe'
 import invariant from 'tiny-invariant'
 
 import { Recording } from '@/schemas/recording'
 
 import { open as openFileViaHandler } from '../file/preload'
+import { FileLocation } from '../file/types'
 
 import { HarHandler } from './types'
 
@@ -16,8 +18,12 @@ export function saveFile(data: Recording, prefix: string) {
 }
 
 export async function openFile(filePath: string): Promise<Recording> {
+  const location: FileLocation = path.isAbsolute(filePath)
+    ? { type: 'path', path: filePath }
+    : { type: 'legacy', name: filePath }
+
   const result = await openFileViaHandler({
-    location: { type: 'legacy', name: filePath },
+    location,
     fileType: 'recording',
   })
 

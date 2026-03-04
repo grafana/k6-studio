@@ -12,11 +12,11 @@ export function useCreateGenerator() {
   const createTestGenerator = useCallback(
     async (recordingPath = '') => {
       try {
-        const fileName =
+        const filePath =
           await window.studio.generator.createGenerator(recordingPath)
 
         navigate(
-          getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
+          getRoutePath('generator', { path: encodeURIComponent(filePath) })
         )
       } catch (error) {
         showToast({

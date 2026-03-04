@@ -19,7 +19,7 @@ interface ValidatorProps {
 }
 
 function Content({ file }: ValidatorProps) {
-  const { data, isLoading } = useScript(file.fileName)
+  const { data, isLoading } = useScript(file.path)
 
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
@@ -28,7 +28,7 @@ function Content({ file }: ValidatorProps) {
 
   const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'file',
-    path: file.fileName,
+    path: file.path,
   })
 
   const isRunning = session?.state === 'running'
@@ -42,13 +42,13 @@ function Content({ file }: ValidatorProps) {
 
     navigate(
       getRoutePath('validator', {
-        fileName: encodeURIComponent(newScriptPath),
+        path: encodeURIComponent(newScriptPath),
       })
     )
   }, [navigate])
 
   async function handleDebugScript() {
-    if (!file.fileName) {
+    if (!file.path) {
       return
     }
 
@@ -112,12 +112,12 @@ function Content({ file }: ValidatorProps) {
           onDebugScript={handleDebugScript}
         />
       </Flex>
-      {file.fileName !== undefined && (
+      {file.path !== undefined && (
         <RunInCloudDialog
           open={showRunInCloudDialog}
           script={{
             type: 'file',
-            path: file.fileName,
+            path: file.path,
           }}
           onOpenChange={setShowRunInCloudDialog}
         />
@@ -129,5 +129,5 @@ function Content({ file }: ValidatorProps) {
 export function Validator() {
   const file = useFileNameParam('script')
 
-  return <Content key={file.fileName} file={file} />
+  return <Content key={file.path} file={file} />
 }

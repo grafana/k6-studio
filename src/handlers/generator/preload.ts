@@ -14,18 +14,18 @@ export function createGenerator(recordingPath: string) {
   ) as Promise<string>
 }
 
-export function saveGenerator(generator: GeneratorFileData, fileName: string) {
+export function saveGenerator(generator: GeneratorFileData, filePath: string) {
   return save({
     content: { type: 'generator', data: generator },
-    location: { type: 'legacy', name: fileName },
+    location: { type: 'path', path: filePath },
   })
 }
 
 export async function loadGenerator(
-  fileName: string
+  filePath: string
 ): Promise<GeneratorFileData> {
   const result = await openFile({
-    location: { type: 'legacy', name: fileName },
+    location: { type: 'path', path: filePath },
     fileType: 'generator',
   })
 

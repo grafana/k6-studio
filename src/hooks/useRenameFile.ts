@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
+import * as pathe from 'pathe'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { useStudioUIStore } from '@/store/ui'
@@ -9,7 +10,7 @@ import { queryClient } from '@/utils/query'
 export function useRenameFile(file: StudioFile) {
   // We don't want to use the useFileNameParam hook here because we might be in
   // a view that doesn't have a file name parameter e.g. the home page.
-  const { fileName: selectedFileName } = useParams<{ fileName: string }>()
+  const { path: currentPath } = useParams<{ path?: string }>()
 
   const navigate = useNavigate()
   const addFile = useStudioUIStore((state) => state.addFile)
@@ -17,13 +18,12 @@ export function useRenameFile(file: StudioFile) {
 
   return useMutation({
     mutationFn: (newName: string) =>
-      window.studio.ui.renameFile(file.fileName, newName, file.type),
+      window.studio.ui.renameFile(file.path, newName),
     onSuccess: (_, newName) => {
-      // There's a slight delay between the add and remove callbacks being triggered,
-      // causing the UI to flicker because it thinks the renamed file is actually
-      // a new file. To prevent this, we optimistically update the file list.
-      const updatedFile = {
+      const newPath = pathe.join(pathe.dirname(file.path), newName)
+      const updatedFile: StudioFile = {
         ...file,
+        path: newPath,
         displayName: getFileNameWithoutExtension(newName),
         fileName: newName,
       }
@@ -31,18 +31,21 @@ export function useRenameFile(file: StudioFile) {
       removeFile(file)
       addFile(updatedFile)
 
-      if (selectedFileName !== file.fileName) {
+      if (
+        currentPath === undefined ||
+        decodeURIComponent(currentPath) !== file.path
+      ) {
         return
       }
 
       if (file.type === 'generator') {
         queryClient.setQueryData(
-          ['generator', newName],
-          queryClient.getQueryData(['generator', file.fileName])
+          ['generator', newPath],
+          queryClient.getQueryData(['generator', file.path])
         )
       }
 
-      navigate(getViewPath(file.type, newName), { replace: true })
+      navigate(getViewPath(file.type, newPath), { replace: true })
     },
   })
 }

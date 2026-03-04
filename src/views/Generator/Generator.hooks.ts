@@ -17,32 +17,32 @@ export function useLoadHarFile(fileName?: string) {
   })
 }
 
-export function useLoadGeneratorFile(fileName: string) {
+export function useLoadGeneratorFile(filePath: string) {
   return useQuery({
-    queryKey: ['generator', fileName],
-    queryFn: () => loadGeneratorFile(fileName),
+    queryKey: ['generator', filePath],
+    queryFn: () => loadGeneratorFile(filePath),
   })
 }
 
-export function useUpdateValueInGeneratorFile(fileName: string) {
+export function useUpdateValueInGeneratorFile(filePath: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
-      const generator = await loadGeneratorFile(fileName)
+      const generator = await loadGeneratorFile(filePath)
       await window.studio.generator.saveGenerator(
         { ...generator, [key]: value },
-        fileName
+        filePath
       )
     },
   })
 }
 
-export function useSaveGeneratorFile(fileName: string) {
+export function useSaveGeneratorFile(filePath: string) {
   const showToast = useToast()
 
   return useMutation({
     mutationFn: async (generator: GeneratorFileData) => {
-      await window.studio.generator.saveGenerator(generator, fileName)
-      await queryClient.invalidateQueries({ queryKey: ['generator', fileName] })
+      await window.studio.generator.saveGenerator(generator, filePath)
+      await queryClient.invalidateQueries({ queryKey: ['generator', filePath] })
     },
 
     onSuccess: () => {
@@ -65,9 +65,9 @@ export function useSaveGeneratorFile(fileName: string) {
   })
 }
 
-export function useIsGeneratorDirty(fileName: string) {
+export function useIsGeneratorDirty(filePath: string) {
   const generatorState = useGeneratorStore(selectGeneratorData)
-  const { data } = useLoadGeneratorFile(fileName)
+  const { data } = useLoadGeneratorFile(filePath)
 
   // Comparing data without `scriptName`, which is saved to disk in the background
   // and should not be considered as a change
@@ -81,11 +81,11 @@ export function useIsGeneratorDirty(fileName: string) {
   )
 }
 
-export function useScriptExport(generatorFileName: string) {
+export function useScriptExport(generatorFilePath: string) {
   const showToast = useToast()
   const setScriptName = useGeneratorStore((store) => store.setScriptName)
   const { mutateAsync: updateGeneratorFile } =
-    useUpdateValueInGeneratorFile(generatorFileName)
+    useUpdateValueInGeneratorFile(generatorFilePath)
 
   return useCallback(
     async (scriptName: string) => {

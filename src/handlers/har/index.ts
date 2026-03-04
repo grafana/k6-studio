@@ -28,7 +28,7 @@ export function initialize() {
         event: UsageEventName.RecordingCreated,
       })
 
-      return fileName
+      return path.join(RECORDINGS_PATH, fileName)
     }
   )
 

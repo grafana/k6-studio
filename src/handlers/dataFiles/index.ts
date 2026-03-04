@@ -31,20 +31,19 @@ export function initialize() {
     const { size } = await stat(filePath)
     invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
 
-    await copyFile(
-      filePath,
-      path.join(DATA_FILES_PATH, path.basename(filePath)),
-      COPYFILE_EXCL
-    )
+    const destPath = path.join(DATA_FILES_PATH, path.basename(filePath))
+    await copyFile(filePath, destPath, COPYFILE_EXCL)
 
-    return path.basename(filePath)
+    return destPath
   })
 
   ipcMain.handle(
     DataFileHandler.LoadPreview,
-    async (_, fileName: string): Promise<DataFilePreview> => {
-      const fileType = fileName.split('.').pop()
-      const filePath = path.join(DATA_FILES_PATH, fileName)
+    async (_, pathOrFileName: string): Promise<DataFilePreview> => {
+      const filePath = path.isAbsolute(pathOrFileName)
+        ? pathOrFileName
+        : path.join(DATA_FILES_PATH, pathOrFileName)
+      const fileType = path.extname(filePath).slice(1)
 
       invariant(
         fileType === 'csv' || fileType === 'json',

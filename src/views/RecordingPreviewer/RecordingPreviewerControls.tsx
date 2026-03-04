@@ -37,7 +37,7 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
-  const handleCreateGenerator = () => createTestGenerator(file.fileName)
+  const handleCreateGenerator = () => createTestGenerator(file.path)
 
   const handleDelete = useDeleteFile({
     file,
@@ -61,14 +61,14 @@ export function RecordingPreviewControls({
 
     emitScript(test)
       .then((script) => window.studio.script.saveScript(script, fileName))
-      .then(() => {
+      .then((scriptPath) => {
         showToast({
           title: 'Script exported successfully',
           status: 'success',
         })
         navigate(
           getRoutePath('validator', {
-            fileName: encodeURIComponent(fileName),
+            path: encodeURIComponent(scriptPath),
           })
         )
       })

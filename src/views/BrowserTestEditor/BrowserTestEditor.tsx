@@ -34,7 +34,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
     useBrowserTestEditorLayout()
 
-  const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.fileName)
+  const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.path)
 
   const test = useBrowserTestState(data)
 
@@ -187,7 +187,7 @@ export function BrowserTestEditor() {
   const file = useBrowserTestFile()
   const navigate = useNavigate()
 
-  const { data, isLoading } = useBrowserTest(file.fileName)
+  const { data, isLoading } = useBrowserTest(file.path)
 
   if (isLoading) {
     return null
@@ -198,5 +198,5 @@ export function BrowserTestEditor() {
     return null
   }
 
-  return <BrowserTestEditorView key={file.fileName} file={file} data={data} />
+  return <BrowserTestEditorView key={file.path} file={file} data={data} />
 }

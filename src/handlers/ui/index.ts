@@ -106,33 +106,18 @@ export function initialize() {
 
   ipcMain.handle(
     UIHandler.RenameFile,
-    async (
-      e,
-      oldFileName: string,
-      newFileName: string,
-      type: StudioFile['type']
-    ) => {
+    async (e, oldPath: string, newName: string) => {
       console.info(`${UIHandler.RenameFile} event received`)
       const browserWindow = BrowserWindow.fromWebContents(e.sender)
 
       try {
-        invariant(
-          !INVALID_FILENAME_CHARS.test(newFileName),
-          'Invalid file name'
-        )
+        invariant(!INVALID_FILENAME_CHARS.test(newName), 'Invalid file name')
 
-        const oldPath = getFilePath({
-          type,
-          fileName: oldFileName,
-        })
-        const newPath = getFilePath({
-          type,
-          fileName: newFileName,
-        })
+        const newPath = path.join(path.dirname(oldPath), newName)
 
         try {
           await access(newPath)
-          throw new Error(`File with name ${newFileName} already exists`)
+          throw new Error(`File with name ${newName} already exists`)
         } catch (error) {
           // Only rename if the error code is ENOENT (file does not exist)
           if (isNodeJsErrnoException(error) && error.code === 'ENOENT') {

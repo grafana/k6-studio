@@ -11,7 +11,7 @@ interface FileListProps {
 }
 
 export function FileList({ files, noFilesMessage }: FileListProps) {
-  const { fileName: currentFile } = useParams()
+  const { path: currentPath } = useParams()
 
   if (files.length === 0) {
     return <NoFileMessage message={noFilesMessage} />
@@ -27,7 +27,13 @@ export function FileList({ files, noFilesMessage }: FileListProps) {
     >
       {files.map((file) => (
         <li key={file.displayName}>
-          <File file={file} isSelected={file.fileName === currentFile} />
+          <File
+            file={file}
+            isSelected={
+              currentPath !== undefined &&
+              decodeURIComponent(currentPath) === file.path
+            }
+          />
         </li>
       ))}
     </ul>

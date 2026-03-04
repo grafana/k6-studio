@@ -8,7 +8,7 @@ import {
 } from './types'
 
 export function save(payload: SaveFilePayload) {
-  return ipcRenderer.invoke(FileHandler.Save, payload) as Promise<void>
+  return ipcRenderer.invoke(FileHandler.Save, payload) as Promise<string>
 }
 
 export function open(request: OpenFileRequest) {

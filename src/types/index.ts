@@ -89,6 +89,7 @@ export interface RequestSnippetSchema {
 
 export interface StudioFile {
   type: 'recording' | 'generator' | 'script' | 'data-file' | 'browser-test'
+  path: string
   displayName: string
   fileName: string
 }

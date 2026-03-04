@@ -1,9 +1,9 @@
 import log from 'electron-log/renderer'
+import * as pathe from 'pathe'
 import { useCallback } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 export function useImportDataFile() {
   const showToast = useToast()
@@ -11,9 +11,10 @@ export function useImportDataFile() {
 
   return useCallback(async () => {
     try {
-      const fileName = await window.studio.data.importFile()
+      const filePath = await window.studio.data.importFile()
 
-      if (fileName) {
+      if (filePath) {
+        const fileName = pathe.basename(filePath)
         showToast({
           title: `Imported ${fileName}`,
           status: 'success',
@@ -24,12 +25,13 @@ export function useImportDataFile() {
         // is actually missing. To prevent this, we optimistically update the file list.
         addFile({
           type: 'data-file',
+          path: filePath,
           fileName,
-          displayName: getFileNameWithoutExtension(fileName),
+          displayName: pathe.basename(filePath, pathe.extname(filePath)),
         })
       }
 
-      return fileName
+      return filePath
     } catch (error) {
       showToast({
         title: 'Failed to import data file',

@@ -1,17 +1,22 @@
+import * as pathe from 'pathe'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { StudioFile, StudioFileType } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 export function useFileNameParam(type: StudioFileType): StudioFile {
-  const { fileName } = useParams()
+  const { path: pathParam } = useParams()
 
-  invariant(fileName, 'fileName is required')
+  invariant(pathParam, 'path is required')
+
+  const path = decodeURIComponent(pathParam)
+  const fileName = pathe.basename(path)
+  const displayName = pathe.basename(path, pathe.extname(path))
 
   return {
     type,
+    path,
     fileName,
-    displayName: getFileNameWithoutExtension(fileName),
+    displayName,
   }
 }

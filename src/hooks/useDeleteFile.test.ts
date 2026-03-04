@@ -18,8 +18,9 @@ describe('useDeleteFile', () => {
   const showToast = vi.fn()
   const file: StudioFile = {
     type: 'recording',
-    fileName: 'file-name',
-    displayName: 'test-file',
+    path: '/recordings/file-name.har',
+    fileName: 'file-name.har',
+    displayName: 'file-name',
   }
 
   beforeEach(() => {
@@ -44,7 +45,7 @@ describe('useDeleteFile', () => {
     expect(window.studio.ui.deleteFile).toHaveBeenCalledWith(file)
     expect(showToast).toHaveBeenCalledWith({
       title: 'Recording deleted',
-      description: 'test-file',
+      description: 'file-name',
       status: 'success',
     })
     expect(navigate).not.toHaveBeenCalled()
@@ -76,7 +77,7 @@ describe('useDeleteFile', () => {
 
     expect(showToast).toHaveBeenCalledWith({
       title: 'Failed to delete recording',
-      description: 'test-file',
+      description: 'file-name',
       status: 'error',
     })
   })

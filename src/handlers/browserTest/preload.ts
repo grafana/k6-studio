@@ -11,9 +11,9 @@ export function create() {
   return ipcRenderer.invoke(BrowserTestHandler.Create) as Promise<string>
 }
 
-export async function open(fileName: string): Promise<BrowserTestFile> {
+export async function open(filePath: string): Promise<BrowserTestFile> {
   const result = await openFile({
-    location: { type: 'legacy', name: fileName },
+    location: { type: 'path', path: filePath },
     fileType: 'browser-test',
   })
 
@@ -22,9 +22,9 @@ export async function open(fileName: string): Promise<BrowserTestFile> {
   return result.data
 }
 
-export function save(fileName: string, data: BrowserTestFile) {
+export function save(filePath: string, data: BrowserTestFile) {
   return saveFile({
     content: { type: 'browser-test', data },
-    location: { type: 'legacy', name: fileName },
+    location: { type: 'path', path: filePath },
   })
 }

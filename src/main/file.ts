@@ -19,6 +19,7 @@ export function getStudioFileFromPath(
   filePath: string
 ): StudioFile | undefined {
   const file = {
+    path: filePath,
     displayName: path.parse(filePath).name,
     fileName: path.basename(filePath),
   }
@@ -73,7 +74,10 @@ export function getStudioFileFromPath(
 
 export function getFilePath(
   file: Partial<StudioFile> & Pick<StudioFile, 'type' | 'fileName'>
-) {
+): string {
+  if ('path' in file && typeof file.path === 'string') {
+    return file.path
+  }
   switch (file.type) {
     case 'recording':
       return path.join(RECORDINGS_PATH, file.fileName)

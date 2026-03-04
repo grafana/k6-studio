@@ -23,7 +23,7 @@ import { resolveFileLocation } from './utils'
 export function initialize() {
   ipcMain.handle(
     FileHandler.Save,
-    async (_event, { content, location }: SaveFilePayload) => {
+    async (_event, { content, location }: SaveFilePayload): Promise<string> => {
       console.info(`${FileHandler.Save} event received`)
 
       try {
@@ -33,6 +33,8 @@ export function initialize() {
         await writeFile(filePath, serialized)
 
         trackSaveFile(content)
+
+        return filePath
       } catch (error) {
         log.error(error)
 

@@ -32,14 +32,14 @@ export function useBrowserTest(fileName: string) {
   })
 }
 
-export function useSaveBrowserTest(fileName: string) {
+export function useSaveBrowserTest(filePath: string) {
   const showToast = useToast()
 
   return useMutation({
     mutationFn: async (data: BrowserTestFile) => {
-      await window.studio.browserTest.save(fileName, data)
+      await window.studio.browserTest.save(filePath, data)
       await queryClient.invalidateQueries({
-        queryKey: ['browserTest', fileName],
+        queryKey: ['browserTest', filePath],
       })
     },
 

@@ -12,24 +12,24 @@ export function getFileExtension(fileName: string) {
   return fileName.split('.').pop()
 }
 
-export function getViewPath(type: StudioFileType, fileName: string) {
-  const encodedFileName = encodeURIComponent(fileName)
+export function getViewPath(type: StudioFileType, path: string) {
+  const encodedPath = encodeURIComponent(path)
 
   switch (type) {
     case 'recording':
-      return getRoutePath('recordingPreviewer', { fileName: encodedFileName })
+      return getRoutePath('recordingPreviewer', { path: encodedPath })
 
     case 'generator':
-      return getRoutePath('generator', { fileName: encodedFileName })
+      return getRoutePath('generator', { path: encodedPath })
 
     case 'browser-test':
-      return getRoutePath('browserTestEditor', { fileName: encodedFileName })
+      return getRoutePath('browserTestEditor', { path: encodedPath })
 
     case 'script':
-      return getRoutePath('validator', { fileName: encodedFileName })
+      return getRoutePath('validator', { path: encodedPath })
 
     case 'data-file':
-      return getRoutePath('dataFilePreviewer', { fileName: encodedFileName })
+      return getRoutePath('dataFilePreviewer', { path: encodedPath })
 
     default:
       return exhaustive(type)

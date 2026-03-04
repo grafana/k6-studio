@@ -18,11 +18,7 @@ export function DataFile() {
   const navigate = useNavigate()
   const showToast = useToast()
 
-  const {
-    data: preview,
-    isLoading,
-    isError,
-  } = useDataFilePreview(file.fileName)
+  const { data: preview, isLoading, isError } = useDataFilePreview(file.path)
 
   useEffect(() => {
     if (isError) {
