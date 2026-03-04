@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
@@ -9,7 +8,6 @@ import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useSettings } from '@/hooks/useSettings'
 import { BrowserEvent } from '@/schemas/recording'
 import { ProxyData } from '@/types'
-import { harToProxyData } from '@/utils/harToProxyData'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
 import { RequestLog } from '../Recorder/RequestLog'
@@ -24,7 +22,6 @@ export function RecordingPreviewer() {
 
   const [isLoading, setIsLoading] = useState(true)
   const file = useFileNameParam('recording')
-  const navigate = useNavigate()
 
   const browserRecorderSetting =
     settings?.recorder.browserRecording ?? 'disabled'
@@ -33,20 +30,20 @@ export function RecordingPreviewer() {
     ;(async () => {
       setIsLoading(true)
       setProxyData([])
-      const har = await window.studio.har.openFile(file.path)
+      const data = await window.studio.har.openFile(file.path)
       setIsLoading(false)
 
-      invariant(har, 'Failed to open file')
+      invariant(data, 'Failed to open file')
 
-      setProxyData(harToProxyData(har))
-      setBrowserEvents(har.log._browserEvents?.events ?? [])
+      setProxyData(data.requests)
+      setBrowserEvents(data.browserEvents)
     })()
 
     return () => {
       setProxyData([])
       setBrowserEvents([])
     }
-  }, [file.path, navigate])
+  }, [file.path])
 
   const groups = useProxyDataGroups(proxyData)
 

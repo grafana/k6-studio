@@ -7,13 +7,17 @@ import { useToast } from '@/store/ui/useToast'
 import { GeneratorFileData } from '@/types/generator'
 import { queryClient } from '@/utils/query'
 
-import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
+import {
+  exportScript,
+  loadGeneratorFile,
+  loadRecording,
+} from './Generator.utils'
 
-export function useLoadHarFile(fileName?: string) {
+export function useLoadRecording(fileName?: string) {
   return useQuery({
     queryKey: ['har', fileName],
     enabled: !!fileName,
-    queryFn: () => loadHarFile(fileName!),
+    queryFn: () => loadRecording(fileName!),
   })
 }
 

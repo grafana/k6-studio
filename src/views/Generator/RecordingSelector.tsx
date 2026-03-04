@@ -8,7 +8,6 @@ import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
 import { getFileNameWithoutExtension } from '@/utils/file'
-import { harToProxyData } from '@/utils/harToProxyData'
 
 function displayNameFromPath(filePath: string) {
   return getFileNameWithoutExtension(pathe.basename(filePath))
@@ -36,10 +35,9 @@ export function RecordingSelector({
 
   const handleOpen = async (filePath: string) => {
     try {
-      const har = await window.studio.har.openFile(filePath)
+      const data = await window.studio.har.openFile(filePath)
 
-      const proxyData = harToProxyData(har)
-      setRecording(proxyData, filePath)
+      setRecording(data.requests, filePath)
       onChangeRecording?.()
     } catch (error) {
       showToast({

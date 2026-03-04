@@ -16,7 +16,7 @@ import { ProxyData } from '@/types'
 import {
   useIsGeneratorDirty,
   useLoadGeneratorFile,
-  useLoadHarFile,
+  useLoadRecording,
   useSaveGeneratorFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
@@ -43,7 +43,7 @@ export function Generator() {
     data: recording,
     isLoading: isLoadingRecording,
     error: harError,
-  } = useLoadHarFile(generatorFileData?.recordingPath)
+  } = useLoadRecording(generatorFileData?.recordingPath)
 
   const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file.path)
 

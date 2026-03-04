@@ -1,6 +1,6 @@
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
-import { Recording } from '@/schemas/recording'
 import { GeneratorFileData } from '@/types/generator'
+import { RecordingData } from '@/types/recordingData'
 
 export enum FileHandler {
   Save = 'file:save',
@@ -11,7 +11,7 @@ export type FileContent =
   | { type: 'generator'; data: GeneratorFileData }
   | { type: 'browser-test'; data: BrowserTestFile }
   | { type: 'script'; content: string }
-  | { type: 'recording'; data: Recording }
+  | { type: 'recording'; data: RecordingData }
 
 export type FileContentType = FileContent['type']
 
@@ -33,5 +33,5 @@ export interface OpenFileRequest {
 export type OpenFileResult =
   | { type: 'generator'; data: GeneratorFileData }
   | { type: 'browser-test'; data: BrowserTestFile }
-  | { type: 'recording'; data: Recording }
+  | { type: 'recording'; data: RecordingData }
   | { type: 'script'; content: string; isExternal: boolean }

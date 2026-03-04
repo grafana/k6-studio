@@ -3,22 +3,24 @@ import { copyFile } from 'fs/promises'
 import path from 'path'
 
 import { RECORDINGS_PATH } from '@/constants/workspace'
-import { Recording } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
+import { RecordingData } from '@/types/recordingData'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
+import { proxyDataToHar } from '@/utils/proxyDataToHar'
 
 import { HarHandler } from './types'
 
 export function initialize() {
   ipcMain.handle(
     HarHandler.SaveFile,
-    async (_, data: Recording, prefix: string) => {
+    async (_, data: RecordingData, prefix: string) => {
       console.info(`${HarHandler.SaveFile} event received`)
 
+      const har = proxyDataToHar(data.requests, data.browserEvents)
       const fileName = await createFileWithUniqueName({
-        data: JSON.stringify(data, null, 2),
+        data: JSON.stringify(har, null, 2),
         directory: RECORDINGS_PATH,
         ext: '.har',
         prefix,

@@ -6,7 +6,6 @@ import {
 } from '@/store/generator'
 import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
-import { harToProxyData } from '@/utils/harToProxyData'
 import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(
@@ -35,7 +34,7 @@ export const loadGeneratorFile = async (fileName: string) => {
   return generator
 }
 
-export const loadHarFile = async (fileName: string) => {
-  const har = await window.studio.har.openFile(fileName)
-  return harToProxyData(har)
+export const loadRecording = async (fileName: string) => {
+  const data = await window.studio.har.openFile(fileName)
+  return data.requests
 }

@@ -1,3 +1,5 @@
+import { app } from 'electron'
+
 import { BrowserEvent, Recording } from '@/schemas/recording'
 import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
 import { HarEntry, HarPage } from '@/types/recording'
@@ -24,7 +26,7 @@ function createLog(
     version: '1.2',
     creator: {
       name: 'k6-studio',
-      version: __APP_VERSION__,
+      version: app.getVersion(),
     },
     pages,
     entries,

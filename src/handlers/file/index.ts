@@ -8,6 +8,8 @@ import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
+import { harToProxyData } from '@/utils/harToProxyData'
+import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { exhaustive } from '@/utils/typescript'
 import { isExternalScript } from '@/utils/workspace'
 
@@ -113,9 +115,14 @@ async function parseOpenResult(
     }
 
     case 'recording': {
-      const data = RecordingSchema.parse(JSON.parse(raw))
+      const har = RecordingSchema.parse(JSON.parse(raw))
+      const requests = harToProxyData(har)
+      const browserEvents = har.log._browserEvents?.events ?? []
 
-      return { type: 'recording', data }
+      return {
+        type: 'recording',
+        data: { requests, browserEvents },
+      }
     }
 
     case 'script':
@@ -173,8 +180,15 @@ function serializeContent(content: FileContent, filePath: string): string {
     }
 
     case 'browser-test':
-    case 'recording':
       return JSON.stringify(content.data, null, 2)
+
+    case 'recording': {
+      const har = proxyDataToHar(
+        content.data.requests,
+        content.data.browserEvents
+      )
+      return JSON.stringify(har, null, 2)
+    }
 
     case 'script':
       return content.content

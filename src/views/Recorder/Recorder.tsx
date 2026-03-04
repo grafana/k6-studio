@@ -14,7 +14,6 @@ import { useSettings } from '@/hooks/useSettings'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { Group, ProxyData } from '@/types'
-import { proxyDataToHar } from '@/utils/proxyDataToHar'
 
 import { ConfirmNavigationDialog } from './ConfirmNavigationDialog'
 import { EmptyState } from './EmptyState'
@@ -107,7 +106,6 @@ export function Recorder() {
         return null
       }
 
-      // Temporary solution to avoid having to update `proxyDataToHar`.
       const grouped = proxyData.map((data) => {
         const group = groups.find((g) => g.id === data.group) ?? {
           id: DEFAULT_GROUP_NAME,
@@ -120,9 +118,11 @@ export function Recorder() {
         }
       })
 
-      const har = proxyDataToHar(grouped, browserEvents)
       const prefix = getHostNameFromURL(startUrl) ?? 'Recording'
-      const fileName = await window.studio.har.saveFile(har, prefix)
+      const fileName = await window.studio.har.saveFile(
+        { requests: grouped, browserEvents },
+        prefix
+      )
 
       return fileName
     } finally {
