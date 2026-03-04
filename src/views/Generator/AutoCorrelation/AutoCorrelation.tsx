@@ -7,6 +7,7 @@ import { useGeneratorStore } from '@/store/generator'
 import { ErrorMessage } from './ErrorMessage'
 import { IntroductionMessage } from './IntroductionMessage'
 import { SuggestedRules } from './SuggestedRules'
+import { TokenUsageIndicator } from './TokenUsageIndicator'
 import { ValidationResults } from './ValidationResults'
 import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
@@ -36,7 +37,8 @@ export function AutoCorrelation({
     error,
     stop,
     restart,
-    messages,
+    tokenUsage,
+    provider,
   } = useGenerateRules({
     clearValidation: clearValidation,
   })
@@ -77,10 +79,6 @@ export function AutoCorrelation({
     return <ErrorMessage error={error} onRetry={restart} />
   }
 
-  const assistantMessages = messages.filter((msg) => msg.role === 'assistant')
-  const textMessages = assistantMessages
-    .flatMap((msg) => msg.parts)
-    .filter((part) => part.type === 'text')
   return (
     <Flex
       css={{
@@ -108,15 +106,6 @@ export function AutoCorrelation({
                       </Text>
                     </Box>
                   )}
-                  <Box px="3" pt="2">
-                    {textMessages.map((msg, index) => (
-                      <Box key={index}>
-                        <Text key={index} color="gray" size="2" mb="2">
-                          {msg.text}
-                        </Text>
-                      </Box>
-                    ))}
-                  </Box>
                 </ScrollArea>
               </Flex>
             </Box>
@@ -129,13 +118,20 @@ export function AutoCorrelation({
 
       <Flex
         gap="3"
-        justify="end"
+        justify="between"
         align="center"
         p="3"
         css={{
           borderTop: '1px solid var(--gray-5)',
         }}
       >
+        {provider === 'openai' ? (
+          <div>
+            <TokenUsageIndicator tokenUsage={tokenUsage} />
+          </div>
+        ) : (
+          <div />
+        )}
         <Flex gap="3">
           <Button
             variant="outline"

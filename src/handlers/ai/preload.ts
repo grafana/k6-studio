@@ -28,13 +28,13 @@ export function streamChat(request: StreamChatRequest) {
         ipcRenderer.removeListener(AiHandler.StreamChatChunk, handler)
     },
 
-    onEnd: (callback: () => void) => {
+    onEnd: (callback: (data: StreamChatEnd) => void) => {
       const handler = (
         _event: Electron.IpcRendererEvent,
         data: StreamChatEnd
       ) => {
         if (data.id === request.id) {
-          callback()
+          callback(data)
         }
       }
       ipcRenderer.on(AiHandler.StreamChatEnd, handler)

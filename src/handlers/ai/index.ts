@@ -1,13 +1,13 @@
+import { OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
 import { convertToModelMessages, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
 import log from 'electron-log/main'
 
-import { getAiModel } from './model'
+import { getGrafanaAssistantModel, getOpenAiModel } from './model'
 import { streamMessages } from './streamMessages'
 import { tools } from './tools'
 import { AiHandler, StreamChatRequest, AbortStreamChatRequest } from './types'
 
-// Store active AbortControllers indexed by request ID
 const activeAbortControllers = new Map<string, AbortController>()
 
 export function initialize() {
@@ -19,27 +19,51 @@ async function handleStreamChat(
   event: IpcMainEvent,
   request: StreamChatRequest
 ) {
-  const aiModel = getAiModel()
+  const provider = request.provider ?? 'openai'
   const messages = convertToModelMessages(request.messages)
 
   const abortController = new AbortController()
   activeAbortControllers.set(request.id, abortController)
 
   try {
-    const response = streamText({
-      model: aiModel,
-      toolChoice: 'required',
-      messages,
-      tools,
-      abortSignal: abortController.signal,
-      providerOptions: {
-        grafanaAssistant: {
-          chatId: request.id,
-        },
-      },
-    })
+    if (provider === 'grafana-assistant') {
+      const aiModel = getGrafanaAssistantModel()
 
-    await streamMessages(event.sender, response, request.id)
+      const response = streamText({
+        model: aiModel,
+        toolChoice: 'required',
+        messages,
+        tools,
+        abortSignal: abortController.signal,
+        providerOptions: {
+          grafanaAssistant: {
+            chatId: request.id,
+          },
+        },
+      })
+
+      await streamMessages(event.sender, response, request.id, false)
+    } else {
+      const aiModel = await getOpenAiModel()
+
+      log.info('new message')
+      const response = streamText({
+        model: aiModel,
+        messages,
+        tools,
+        abortSignal: abortController.signal,
+        providerOptions: {
+          openai: {
+            parallelToolCalls: false,
+            reasoningEffort: 'low',
+            textVerbosity: 'low',
+            store: false,
+          } satisfies OpenAIResponsesProviderOptions,
+        },
+      })
+
+      await streamMessages(event.sender, response, request.id, true)
+    }
   } catch (error) {
     log.error('handleStreamChat error:', error)
   } finally {

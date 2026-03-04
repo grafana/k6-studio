@@ -5,7 +5,17 @@ import {
   UIMessageChunk,
 } from 'ai'
 
-import { StreamChatChunk, StreamChatRequest } from '@/handlers/ai/types'
+import {
+  StreamChatChunk,
+  StreamChatRequest,
+  TokenUsage,
+} from '@/handlers/ai/types'
+import { AiProvider } from '@/types/features'
+
+interface IPCChatTransportOptions {
+  provider: AiProvider
+  onUsage?: (usage: TokenUsage) => void
+}
 
 /**
  * Custom ChatTransport implementation that uses Electron IPC for communication
@@ -14,6 +24,14 @@ import { StreamChatChunk, StreamChatRequest } from '@/handlers/ai/types'
 export class IPCChatTransport<
   Message extends UIMessage,
 > implements ChatTransport<Message> {
+  private provider: AiProvider
+  private onUsage?: (usage: TokenUsage) => void
+
+  constructor(options: IPCChatTransportOptions) {
+    this.provider = options.provider
+    this.onUsage = options.onUsage
+  }
+
   sendMessages(
     options: {
       trigger: 'submit-message' | 'regenerate-message'
@@ -35,15 +53,16 @@ export class IPCChatTransport<
       messages: options.messages,
       headers,
       body: options.body,
+      provider: this.provider,
     }
 
-    // Create a ReadableStream that will receive chunks via IPC
+    const onUsage = this.onUsage
+
     return Promise.resolve(
       new ReadableStream<UIMessageChunk>({
         start(controller) {
           const stream = window.studio.ai.streamChat(request)
 
-          // Set up listeners for stream events
           const removeChunkListener = stream.onChunk(
             (data: StreamChatChunk) => {
               controller.enqueue(data.chunk)
@@ -55,17 +74,17 @@ export class IPCChatTransport<
             }
           )
 
-          const removeEndListener = stream.onEnd(() => {
+          const removeEndListener = stream.onEnd((data) => {
+            if (data.usage && onUsage) {
+              onUsage(data.usage)
+            }
             controller.close()
             cleanup()
           })
 
-          // Handle abort signal
           if (options.abortSignal) {
             options.abortSignal.addEventListener('abort', () => {
               stream.abort()
-              // Need to call error to stop the stream immediately,
-              // calling close would still proccess enqueued chunks
               controller.error()
               cleanup()
             })
@@ -85,7 +104,6 @@ export class IPCChatTransport<
       chatId: string
     } & ChatRequestOptions
   ): Promise<ReadableStream<UIMessageChunk> | null> {
-    // Not implemented
     return Promise.resolve(null)
   }
 }

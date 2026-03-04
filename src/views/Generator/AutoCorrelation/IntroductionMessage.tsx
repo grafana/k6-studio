@@ -32,6 +32,70 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   const proxyStatus = useProxyStatus()
 
   return (
+    <IntroLayout>
+      {isAiConfigured && (
+        <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
+      )}
+      {!isAiConfigured && (
+        <>
+          <Text size="2" color="gray">
+            To use autocorrelation, configure your OpenAI API key first.
+          </Text>
+
+          <Button onClick={() => openSettingsDialog('ai')} size="3">
+            <KeyIcon />
+            Add OpenAI API key
+          </Button>
+        </>
+      )}
+      <Text size="1" color="gray" mt="1">
+        This feature is in public preview and subject to change.
+      </Text>
+    </IntroLayout>
+  )
+}
+
+function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
+  const proxyStatus = useProxyStatus()
+
+  return (
+    <IntroLayout subtitle="Powered by Grafana Assistant">
+      <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
+      <Text size="1" color="gray" mt="1">
+        This feature is in public preview and subject to change.
+      </Text>
+    </IntroLayout>
+  )
+}
+
+function AnalyzeButton({
+  onStart,
+  proxyStatus,
+}: {
+  onStart: () => void
+  proxyStatus: string
+}) {
+  return (
+    <Tooltip
+      content={`Proxy is ${proxyStatus}`}
+      hidden={proxyStatus === 'online'}
+    >
+      <Button onClick={onStart} size="3" disabled={proxyStatus !== 'online'}>
+        <WandSparkles />
+        Analyze recording
+      </Button>
+    </Tooltip>
+  )
+}
+
+function IntroLayout({
+  children,
+  subtitle,
+}: {
+  children: React.ReactNode
+  subtitle?: string
+}) {
+  return (
     <Flex
       direction="column"
       align="center"
@@ -59,6 +123,11 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
         <Text size="3" weight="bold">
           Automatically correlate dynamic values
         </Text>
+        {subtitle && (
+          <Text size="2" color="gray">
+            {subtitle}
+          </Text>
+        )}
         <Text size="2" color="gray" mb="2">
           Use AI to automatically handle session IDs, tokens, and other dynamic
           values that would otherwise cause your test scripts to fail.
@@ -70,82 +139,7 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
           <ListItem>Creates rules to extract and reuse these values</ListItem>
         </Flex>
 
-        {isAiConfigured && (
-          <Tooltip
-            content={`Proxy is ${proxyStatus}`}
-            hidden={proxyStatus === 'online'}
-          >
-            <Button
-              onClick={onStart}
-              size="3"
-              disabled={proxyStatus !== 'online'}
-            >
-              <WandSparkles />
-              Analyze recording
-            </Button>
-          </Tooltip>
-        )}
-        {!isAiConfigured && (
-          <>
-            <Text size="2" color="gray">
-              To use autocorrelation, configure your OpenAI API key first.
-            </Text>
-
-            <Button onClick={() => openSettingsDialog('ai')} size="3">
-              <KeyIcon />
-              Add OpenAI API key
-            </Button>
-          </>
-        )}
-        <Text size="1" color="gray" mt="1">
-          This feature is in public preview and subject to change.
-        </Text>
-      </Flex>
-    </Flex>
-  )
-}
-
-function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
-  return (
-    <Flex
-      direction="column"
-      align="center"
-      gap="6"
-      justify="center"
-      height="100%"
-    >
-      <img
-        src={grotIllustration}
-        role="img"
-        aria-label="Grafana mascot illustration"
-        css={{ maxWidth: 250 }}
-      />
-
-      <Flex
-        direction="column"
-        align="center"
-        gap="4"
-        maxWidth="600px"
-        css={{ textAlign: 'center' }}
-      >
-        <Badge color="orange" variant="soft">
-          Coming Soon
-        </Badge>
-        <Text size="3" weight="bold">
-          Automatically correlate dynamic values
-        </Text>
-        <Text size="2" color="gray" mb="2">
-          Powered by Grafana Assistant
-        </Text>
-
-        <Button onClick={onStart} size="3" disabled>
-          <WandSparkles />
-          Analyze recording
-        </Button>
-
-        <Text size="1" color="gray" mt="1">
-          This feature is in public preview and subject to change.
-        </Text>
+        {children}
       </Flex>
     </Flex>
   )
