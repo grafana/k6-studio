@@ -1,12 +1,7 @@
 import { DEFAULT_GROUP_NAME } from '@/constants'
 import { Recording } from '@/schemas/recording'
-import { useFeaturesStore } from '@/store/features'
-import {
-  generateJsonPaths,
-  isJsonContentType,
-} from '@/store/generator/slices/recording.utils'
 import { Method, ProxyData, Request, Response } from '@/types'
-import type { HarContent, HarEntry, HarHeader } from '@/types/recording'
+import type { HarContent, HarEntry } from '@/types/recording'
 
 import { safeAtob } from './format'
 
@@ -40,7 +35,6 @@ function harEntryToRequest({ request, startedDateTime }: HarEntry): Request {
     )
   }
 
-  const jsonPaths = parseJsonPaths(content, request.headers ?? [])
   const url = new URL(request.url)
 
   return {
@@ -50,7 +44,6 @@ function harEntryToRequest({ request, startedDateTime }: HarEntry): Request {
     headers: (request.headers ?? []).map((h) => [h.name, h.value]),
     query: (request.queryString ?? []).map((q) => [q.name, q.value]),
     cookies: (request.cookies ?? []).map((c) => [c.name, c.value]),
-    jsonPaths,
     content,
     timestampStart: startedDateTime ? isoToUnixTimestamp(startedDateTime) : 0,
     timestampEnd: 0,
@@ -67,7 +60,6 @@ function harEntryToResponse({ response }: HarEntry): Response | undefined {
   }
 
   const content = parseContent(response.content)
-  const jsonPaths = parseJsonPaths(content, response.headers)
 
   return {
     statusCode: response.status,
@@ -75,7 +67,6 @@ function harEntryToResponse({ response }: HarEntry): Response | undefined {
     httpVersion: response.httpVersion,
     headers: response.headers.map((h) => [h.name, h.value]),
     cookies: response.cookies.map((c) => [c.name, c.value]),
-    jsonPaths,
     content,
     contentLength: response.content?.size ?? 0,
     timestampStart: 0,
@@ -83,27 +74,18 @@ function harEntryToResponse({ response }: HarEntry): Response | undefined {
   }
 }
 
-function parseJsonPaths(content: string, headers: HarHeader[]): string[] {
-  const isJsonPathsFeatureFlagTrue =
-    useFeaturesStore.getState().features['typeahead-json']
-  const isJsonPathsEnabled =
-    isJsonPathsFeatureFlagTrue && isJsonContentType(headers)
-
-  if (!isJsonPathsEnabled) {
-    return []
-  }
-  return generateJsonPaths(content)
-}
-
 function isoToUnixTimestamp(isoString: string): number {
   return new Date(isoString).getTime() / 1000
 }
 
 function parseContent(content: HarContent): string {
-  if (!content.text) return ''
+  if (!content.text) {
+    return ''
+  }
 
   if (content.encoding === 'base64') {
     return safeAtob(content.text)
   }
+
   return content.text
 }

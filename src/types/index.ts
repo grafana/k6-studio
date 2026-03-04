@@ -18,15 +18,7 @@ export type Header = KeyValueTuple
 export type Cookie = KeyValueTuple
 export type Query = KeyValueTuple
 
-interface Metadata {
-  /**
-   * Metadata precomputed for json path rendering.
-   * Attached to each request/response to allow co-location, and efficient pre-computations when the data is loaded.
-   */
-  jsonPaths?: string[]
-}
-
-export interface Request extends Metadata {
+export interface Request {
   headers: Header[]
   cookies: Cookie[]
   query: Query[]
@@ -44,7 +36,7 @@ export interface Request extends Metadata {
   url: string
 }
 
-export interface Response extends Metadata {
+export interface Response {
   headers: Header[]
   cookies: Cookie[]
   reason: string

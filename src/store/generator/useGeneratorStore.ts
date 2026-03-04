@@ -19,7 +19,8 @@ import {
 import { createScriptDataSlice, ScriptDataStore } from './slices/script'
 
 export interface GeneratorStore
-  extends RecordingSliceStore,
+  extends
+    RecordingSliceStore,
     RulesSliceStore,
     TestDataStore,
     TestOptionsStore,
@@ -86,11 +87,6 @@ export const useGeneratorStore = create<GeneratorStore>()(
         state.rules = rules
         state.previewOriginalRequests = false
 
-        /**
-         * Store request level metadata.
-         * This uniqifies the json paths across all requests, since the json paths already are precomputed.
-         * Using a simple set based merge strategy
-         */
         const { requestJsonPaths, responseJsonPaths } = extractUniqueJsonPaths(
           state.requests
         )

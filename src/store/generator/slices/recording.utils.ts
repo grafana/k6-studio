@@ -1,7 +1,7 @@
 import { uniq } from 'lodash-es'
 
-import { ProxyData } from '@/types'
-import type { HarHeader } from '@/types/recording'
+import { useFeaturesStore } from '@/store/features'
+import { KeyValueTuple, ProxyData } from '@/types'
 
 export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
@@ -127,16 +127,12 @@ function parseToJsonPaths(content: string): string[] {
   return paths
 }
 
-/**
- * Takes a set of headers and determines if its of json content type
- */
-export function isJsonContentType(headerValues: HarHeader[]): boolean {
-  return headerValues.some((header) => {
-    const name = header.name
-    const value = header.value
+function isJsonContentType(headerValues: KeyValueTuple[]): boolean {
+  return headerValues.some(([name, value]) => {
     if (!name || !value) {
       return false
     }
+
     return (
       name.toLowerCase() === 'content-type' &&
       value.toLowerCase().includes('application/json')
@@ -148,16 +144,42 @@ export function extractUniqueJsonPaths(requests: ProxyData[]): {
   requestJsonPaths: string[]
   responseJsonPaths: string[]
 } {
-  const requestJsonPaths = new Set<string>()
-  const responseJsonPaths = new Set<string>()
+  const isJsonPathsFeatureFlagTrue =
+    useFeaturesStore.getState().features['typeahead-json']
 
-  for (const proxy of requests) {
-    proxy.request?.jsonPaths?.forEach((path) => requestJsonPaths.add(path))
-    proxy.response?.jsonPaths?.forEach((path) => responseJsonPaths.add(path))
+  if (!isJsonPathsFeatureFlagTrue) {
+    return {
+      requestJsonPaths: [],
+      responseJsonPaths: [],
+    }
   }
+
+  const requestJsonPaths = new Set<string>(
+    requests.flatMap((proxy) => parseJsonPaths(proxy.request))
+  )
+
+  const responseJsonPaths = new Set<string>(
+    requests.flatMap((proxy) =>
+      proxy.response ? parseJsonPaths(proxy.response) : []
+    )
+  )
 
   return {
     requestJsonPaths: Array.from(requestJsonPaths),
     responseJsonPaths: Array.from(responseJsonPaths),
   }
+}
+
+function parseJsonPaths({
+  content,
+  headers,
+}: {
+  content: string | null
+  headers: KeyValueTuple[]
+}): string[] {
+  if (content === null || !isJsonContentType(headers)) {
+    return []
+  }
+
+  return generateJsonPaths(content)
 }
