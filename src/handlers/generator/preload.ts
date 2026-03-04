@@ -1,8 +1,9 @@
 import { ipcRenderer } from 'electron'
+import invariant from 'tiny-invariant'
 
 import { GeneratorFileData } from '@/types/generator'
 
-import { save } from '../file/preload'
+import { open as openFile, save } from '../file/preload'
 
 import { GeneratorHandler } from './types'
 
@@ -20,9 +21,15 @@ export function saveGenerator(generator: GeneratorFileData, fileName: string) {
   })
 }
 
-export function loadGenerator(fileName: string) {
-  return ipcRenderer.invoke(
-    GeneratorHandler.Open,
-    fileName
-  ) as Promise<GeneratorFileData>
+export async function loadGenerator(
+  fileName: string
+): Promise<GeneratorFileData> {
+  const result = await openFile({
+    location: { type: 'legacy', name: fileName },
+    fileType: 'generator',
+  })
+
+  invariant(result.type === 'generator', 'Expected generator content')
+
+  return result.data
 }

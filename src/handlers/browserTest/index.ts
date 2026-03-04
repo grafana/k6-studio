@@ -1,6 +1,4 @@
 import { ipcMain } from 'electron'
-import { readFile } from 'fs/promises'
-import path from 'path'
 import { z } from 'zod'
 
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
@@ -33,16 +31,5 @@ export function initialize() {
     })
 
     return fileName
-  })
-
-  ipcMain.handle(BrowserTestHandler.Open, async (_, fileName: string) => {
-    console.info(`${BrowserTestHandler.Open} event received`)
-
-    const data = await readFile(path.join(BROWSER_TESTS_PATH, fileName), {
-      encoding: 'utf-8',
-      flag: 'r',
-    })
-
-    return BrowserTestFileSchema.parse(JSON.parse(data))
   })
 }

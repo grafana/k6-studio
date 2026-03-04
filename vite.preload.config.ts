@@ -16,7 +16,9 @@ export default defineConfig((env) => {
   const config: UserConfig = {
     build: {
       rollupOptions: {
-        external: getExternal(env.command),
+        external: getExternal(env.command).filter(
+          (dep) => dep !== 'tiny-invariant'
+        ),
         // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
         input: forgeConfigSelf.entry,
         output: {

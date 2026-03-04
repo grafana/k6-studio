@@ -1,15 +1,28 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
-import { writeFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
 import { getFilePath } from '@/main/file'
+import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
+import { GeneratorFileDataSchema } from '@/schemas/generator'
+import { RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
+import { K6Client } from '@/utils/k6/client'
 import { exhaustive } from '@/utils/typescript'
+import { isExternalScript } from '@/utils/workspace'
 
-import { FileHandler, SaveFileContent, SaveFilePayload } from './types'
+import {
+  FileContent,
+  FileContentType,
+  FileHandler,
+  FileLocation,
+  OpenFileRequest,
+  OpenFileResult,
+  SaveFilePayload,
+} from './types'
 
 export function initialize() {
   ipcMain.handle(
@@ -18,7 +31,7 @@ export function initialize() {
       console.info(`${FileHandler.Save} event received`)
 
       try {
-        const filePath = resolvePath(content, location)
+        const filePath = resolveFileLocation(content.type, location)
         const serialized = serializeContent(content)
 
         await writeFile(filePath, serialized)
@@ -31,11 +44,23 @@ export function initialize() {
       }
     }
   )
+
+  ipcMain.handle(
+    FileHandler.Open,
+    async (_event, request: OpenFileRequest): Promise<OpenFileResult> => {
+      console.info(`${FileHandler.Open} event received`)
+
+      const filePath = resolveFileLocation(request.fileType, request.location)
+      const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })
+
+      return parseOpenResult(filePath, request.fileType, raw)
+    }
+  )
 }
 
-function resolvePath(
-  content: SaveFilePayload['content'],
-  location: SaveFilePayload['location']
+function resolveFileLocation(
+  fileType: FileContentType,
+  location: FileLocation
 ): string {
   switch (location.type) {
     case 'path':
@@ -47,19 +72,62 @@ function resolvePath(
         'Invalid file name'
       )
       return getFilePath({
-        type: content.type,
+        type: fileType,
         fileName: location.name,
       })
     }
+
     case 'new':
-      throw new Error("Save with location 'new' is not implemented")
+      throw new Error('Files with location "new" are not supported')
 
     default:
       return exhaustive(location)
   }
 }
 
-function serializeContent(content: SaveFilePayload['content']): string {
+async function parseOpenResult(
+  filePath: string,
+  fileType: FileContentType,
+  raw: string
+): Promise<OpenFileResult> {
+  switch (fileType) {
+    case 'generator': {
+      const data = GeneratorFileDataSchema.parse(JSON.parse(raw))
+
+      return { type: 'generator', data }
+    }
+
+    case 'browser-test': {
+      const data = BrowserTestFileSchema.parse(JSON.parse(raw))
+
+      return { type: 'browser-test', data }
+    }
+
+    case 'recording': {
+      const data = RecordingSchema.parse(JSON.parse(raw))
+
+      return { type: 'recording', data }
+    }
+
+    case 'script': {
+      const options = await new K6Client()
+        .inspect({ scriptPath: filePath })
+        .catch(() => ({}))
+
+      return {
+        type: 'script',
+        content: raw,
+        options: options ?? {},
+        isExternal: isExternalScript(filePath),
+      }
+    }
+
+    default:
+      return exhaustive(fileType)
+  }
+}
+
+function serializeContent(content: FileContent): string {
   switch (content.type) {
     case 'generator':
     case 'browser-test':
@@ -74,7 +142,7 @@ function serializeContent(content: SaveFilePayload['content']): string {
   }
 }
 
-function trackSaveFile(content: SaveFileContent) {
+function trackSaveFile(content: FileContent) {
   const trackingEvent = getTrackingEvent(content)
 
   if (trackingEvent === null) {
@@ -84,7 +152,7 @@ function trackSaveFile(content: SaveFileContent) {
   trackEvent(trackingEvent)
 }
 
-function getTrackingEvent(content: SaveFileContent): UsageEvent | null {
+function getTrackingEvent(content: FileContent): UsageEvent | null {
   switch (content.type) {
     case 'generator':
       return {
