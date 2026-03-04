@@ -8,7 +8,7 @@ import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { browserWindowFromEvent, sendToast } from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
 import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
 import { isExternalScript } from '@/utils/workspace'
@@ -122,32 +122,6 @@ export function initialize() {
       }
 
       await unlink(TEMP_GENERATOR_SCRIPT_PATH)
-    }
-  )
-
-  ipcMain.handle(
-    ScriptHandler.Save,
-    async (event, script: string, fileName: string = 'script.js') => {
-      console.info(`${ScriptHandler.Save} event received`)
-      const browserWindow = browserWindowFromEvent(event)
-      try {
-        const filePath = path.join(SCRIPTS_PATH, fileName)
-        await writeFile(filePath, script)
-
-        trackEvent({
-          event: UsageEventName.ScriptExported,
-        })
-        sendToast(browserWindow.webContents, {
-          title: 'Script exported successfully',
-          status: 'success',
-        })
-      } catch (error) {
-        sendToast(browserWindow.webContents, {
-          title: 'Failed to export the script',
-          status: 'error',
-        })
-        log.error(error)
-      }
     }
   )
 }

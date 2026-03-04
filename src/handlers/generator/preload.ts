@@ -2,6 +2,8 @@ import { ipcRenderer } from 'electron'
 
 import { GeneratorFileData } from '@/types/generator'
 
+import { save } from '../file/preload'
+
 import { GeneratorHandler } from './types'
 
 export function createGenerator(recordingPath: string) {
@@ -12,11 +14,10 @@ export function createGenerator(recordingPath: string) {
 }
 
 export function saveGenerator(generator: GeneratorFileData, fileName: string) {
-  return ipcRenderer.invoke(
-    GeneratorHandler.Save,
-    generator,
-    fileName
-  ) as Promise<void>
+  return save({
+    content: { type: 'generator', data: generator },
+    location: { type: 'legacy', name: fileName },
+  })
 }
 
 export function loadGenerator(fileName: string) {

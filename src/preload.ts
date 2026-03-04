@@ -8,6 +8,7 @@ import * as browserRemote from './handlers/browserRemote/preload'
 import * as browserTest from './handlers/browserTest/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as data from './handlers/dataFiles/preload'
+import * as file from './handlers/file/preload'
 import * as generator from './handlers/generator/preload'
 import * as har from './handlers/har/preload'
 import * as log from './handlers/log/preload'
@@ -23,6 +24,7 @@ const studio = {
   browser,
   script,
   data,
+  file,
   har,
   ui,
   generator,

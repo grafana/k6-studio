@@ -3,6 +3,7 @@ import { ipcRenderer } from 'electron'
 import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 
+import { save } from '../file/preload'
 import { createListener } from '../utils'
 
 import { OpenScriptResult, ScriptHandler } from './types'
@@ -27,11 +28,10 @@ export function runScriptFromGenerator(script: string, shouldTrack = true) {
 }
 
 export function saveScript(script: string, fileName: string) {
-  return ipcRenderer.invoke(
-    ScriptHandler.Save,
-    script,
-    fileName
-  ) as Promise<void>
+  return save({
+    content: { type: 'script', content: script },
+    location: { type: 'legacy', name: fileName },
+  })
 }
 
 export function runScript(scriptPath: string) {

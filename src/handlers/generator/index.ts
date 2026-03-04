@@ -1,12 +1,8 @@
 import { ipcMain } from 'electron'
-import { writeFile, readFile } from 'fs/promises'
+import { readFile } from 'fs/promises'
 import path from 'path'
-import invariant from 'tiny-invariant'
 
-import {
-  INVALID_FILENAME_CHARS,
-  K6_GENERATOR_FILE_EXTENSION,
-} from '@/constants/files'
+import { K6_GENERATOR_FILE_EXTENSION } from '@/constants/files'
 import { GENERATORS_PATH } from '@/constants/workspace'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { trackEvent } from '@/services/usageTracking'
@@ -36,21 +32,6 @@ export function initialize() {
   })
 
   ipcMain.handle(
-    GeneratorHandler.Save,
-    async (_, generator: GeneratorFileData, fileName: string) => {
-      console.log(`${GeneratorHandler.Save} event received`)
-      invariant(!INVALID_FILENAME_CHARS.test(fileName), 'Invalid file name')
-
-      await writeFile(
-        path.join(GENERATORS_PATH, fileName),
-        JSON.stringify(generator, null, 2)
-      )
-
-      trackGeneratorUpdated(generator)
-    }
-  )
-
-  ipcMain.handle(
     GeneratorHandler.Open,
     async (_, fileName: string): Promise<GeneratorFileData> => {
       console.log(`${GeneratorHandler.Open} event received`)
@@ -62,22 +43,4 @@ export function initialize() {
       return GeneratorFileDataSchema.parse(JSON.parse(data))
     }
   )
-}
-
-function trackGeneratorUpdated({ rules }: GeneratorFileData) {
-  trackEvent({
-    event: UsageEventName.GeneratorUpdated,
-    payload: {
-      rules: {
-        correlation: rules.filter((rule) => rule.type === 'correlation').length,
-        parameterization: rules.filter(
-          (rule) => rule.type === 'parameterization'
-        ).length,
-        verification: rules.filter((rule) => rule.type === 'verification')
-          .length,
-        customCode: rules.filter((rule) => rule.type === 'customCode').length,
-        disabled: rules.filter((rule) => !rule.enabled).length,
-      },
-    },
-  })
 }

@@ -6,6 +6,7 @@ import * as browserRemote from './browserRemote'
 import * as browserTest from './browserTest'
 import * as cloud from './cloud'
 import * as dataFiles from './dataFiles'
+import * as file from './file'
 import * as generator from './generator'
 import * as har from './har'
 import * as log from './log'
@@ -18,6 +19,7 @@ export function initialize() {
   browserRemote.initialize()
   auth.initialize()
   cloud.initialize()
+  file.initialize()
   har.initialize()
   browser.initialize()
   script.initialize()

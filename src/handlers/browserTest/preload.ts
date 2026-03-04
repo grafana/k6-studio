@@ -2,6 +2,8 @@ import { ipcRenderer } from 'electron'
 
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 
+import { save as saveFile } from '../file/preload'
+
 import { BrowserTestHandler } from './types'
 
 export function create() {
@@ -16,9 +18,8 @@ export function open(fileName: string) {
 }
 
 export function save(fileName: string, data: BrowserTestFile) {
-  return ipcRenderer.invoke(
-    BrowserTestHandler.Save,
-    fileName,
-    data
-  ) as Promise<void>
+  return saveFile({
+    content: { type: 'browser-test', data },
+    location: { type: 'legacy', name: fileName },
+  })
 }

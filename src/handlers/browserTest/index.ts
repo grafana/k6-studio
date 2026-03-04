@@ -1,14 +1,11 @@
 import { ipcMain } from 'electron'
-import { readFile, writeFile } from 'fs/promises'
+import { readFile } from 'fs/promises'
 import path from 'path'
 import { z } from 'zod'
 
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
 import { BROWSER_TESTS_PATH } from '@/constants/workspace'
-import {
-  BrowserTestFile,
-  BrowserTestFileSchema,
-} from '@/schemas/browserTest/v1'
+import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
@@ -48,20 +45,4 @@ export function initialize() {
 
     return BrowserTestFileSchema.parse(JSON.parse(data))
   })
-
-  ipcMain.handle(
-    BrowserTestHandler.Save,
-    async (_, fileName: string, data: BrowserTestFile) => {
-      console.info(`${BrowserTestHandler.Save} event received`)
-
-      await writeFile(
-        path.join(BROWSER_TESTS_PATH, fileName),
-        JSON.stringify(data, null, 2)
-      )
-
-      trackEvent({
-        event: UsageEventName.BrowserTestUpdated,
-      })
-    }
-  )
 }
