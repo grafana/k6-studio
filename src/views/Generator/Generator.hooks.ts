@@ -104,6 +104,10 @@ export function useScriptExport(generatorFileName: string) {
 
       try {
         await exportScript(scriptName)
+        showToast({
+          title: 'Script exported successfully',
+          status: 'success',
+        })
       } catch (error) {
         log.error(error)
 

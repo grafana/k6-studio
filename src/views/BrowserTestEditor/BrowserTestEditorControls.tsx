@@ -6,6 +6,7 @@ import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
+import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
 import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
@@ -30,6 +31,7 @@ export function BrowserTestEditorControls({
 }: BrowserTestEditorControlsProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
+  const showToast = useToast()
 
   const handleDelete = useDeleteFile({
     file,
@@ -37,7 +39,21 @@ export function BrowserTestEditorControls({
   })
 
   const handleExportScript = (scriptName: string) => {
-    void window.studio.script.saveScript(preview, scriptName)
+    window.studio.script
+      .saveScript(preview, scriptName)
+      .then(() => {
+        showToast({
+          title: 'Script exported successfully',
+          status: 'success',
+        })
+        setIsExportDialogOpen(false)
+      })
+      .catch(() => {
+        showToast({
+          title: 'Failed to export script',
+          status: 'error',
+        })
+      })
   }
 
   return (

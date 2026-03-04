@@ -63,6 +63,10 @@ export function RecordingPreviewControls({
     emitScript(test)
       .then((script) => window.studio.script.saveScript(script, fileName))
       .then(() => {
+        showToast({
+          title: 'Script exported successfully',
+          status: 'success',
+        })
         navigate(
           getRoutePath('validator', {
             fileName: encodeURIComponent(fileName),
@@ -73,7 +77,7 @@ export function RecordingPreviewControls({
         console.error(err)
 
         showToast({
-          title: 'Failed to export browser script.',
+          title: 'Failed to export browser script',
           status: 'error',
         })
       })
