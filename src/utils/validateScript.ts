@@ -1,3 +1,4 @@
+import { RawScript } from '@/handlers/cloud/types'
 import { ProxyData } from '@/types'
 
 import { processProxyData } from './proxyData'
@@ -6,7 +7,7 @@ import { processProxyData } from './proxyData'
  * Validates a k6 script by running it and collecting proxy data
  */
 export async function validateScript(
-  script: string,
+  script: RawScript,
   signal?: AbortSignal,
   shouldTrack = true
 ): Promise<ProxyData[]> {
@@ -52,11 +53,10 @@ export async function validateScript(
     })
 
     // Run the script
-    window.studio.script
-      .runScriptFromGenerator(script, shouldTrack)
-      .catch((error) => {
-        cleanup()
-        reject(error)
-      })
+    window.studio.script.runScript(script, shouldTrack).catch((error) => {
+      cleanup()
+
+      reject(error)
+    })
   })
 }

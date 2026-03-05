@@ -21,6 +21,7 @@ export interface ScriptFile {
 export interface RawScript {
   type: 'raw'
   name: string
+  path?: string
   content: string
 }
 

@@ -2,6 +2,7 @@ import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { TokenUsage } from '@/handlers/ai/types'
+import { RawScript } from '@/handlers/cloud/types'
 import { applyRules } from '@/rules/rules'
 import { UsageEventName } from '@/services/usageTracking/types'
 import {
@@ -160,13 +161,17 @@ export const useGenerateRules = ({
 
   async function runValidation() {
     clearValidation()
-    const script = await generateScriptPreview(
-      {
-        ...generator,
-        rules: [...generator.rules, ...suggestedRulesRef.current],
-      },
-      recording
-    )
+
+    const newGenerator = {
+      ...generator,
+      rules: [...generator.rules, ...suggestedRulesRef.current],
+    }
+
+    const script: RawScript = {
+      type: 'raw',
+      name: 'script.js',
+      content: await generateScriptPreview(newGenerator, recording),
+    }
 
     const validationResult = await validateScript(
       script,

@@ -1,47 +1,15 @@
 import { ipcMain, shell } from 'electron'
-import { rm, writeFile } from 'fs/promises'
-import { basename, extname, isAbsolute, join } from 'path'
+import { isAbsolute, join } from 'path'
 
 import { SCRIPTS_PATH } from '@/constants/workspace'
-import { getTempScriptName } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { logError } from '@/utils/errors'
+import { toScriptFile } from '@/utils/fs/scripts'
 
 import { RunInCloudStateMachine } from './states'
-import { CloudHandlers, RawScript, Script } from './types'
-
-async function createTempFile(script: RawScript) {
-  const tempFileName = getTempScriptName()
-  const tempFilePath = join(SCRIPTS_PATH, tempFileName)
-
-  await writeFile(tempFilePath, script.content)
-
-  return {
-    name: basename(script.name, extname(script.name)),
-    path: tempFilePath,
-    dispose() {
-      try {
-        return rm(tempFilePath)
-      } catch {
-        return
-      }
-    },
-  }
-}
-
-function toScriptFile(script: Script) {
-  if (script.type === 'raw') {
-    return createTempFile(script)
-  }
-
-  return {
-    name: basename(script.path),
-    path: script.path,
-    dispose() {},
-  }
-}
+import { CloudHandlers, Script } from './types'
 
 export function initialize() {
   let stateMachine: RunInCloudStateMachine | null = null

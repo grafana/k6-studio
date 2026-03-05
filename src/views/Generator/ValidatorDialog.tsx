@@ -51,7 +51,11 @@ export function ValidatorDialog({
     resetState()
     setIsRunning(true)
 
-    await window.studio.script.runScriptFromGenerator(script)
+    await window.studio.script.runScript({
+      type: 'raw',
+      name: 'script.js',
+      content: script,
+    })
   }, [resetState, script])
 
   useEffect(() => {

@@ -1,9 +1,7 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
-import { writeFile, unlink } from 'fs/promises'
-import path from 'path'
 
-import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
+import { SCRIPTS_PATH } from '@/constants/workspace'
 import { FileLocation } from '@/handlers/file/types'
 import { resolveFileLocation } from '@/handlers/file/utils'
 import { waitForProxy } from '@/main/proxy'
@@ -11,9 +9,11 @@ import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { toScriptFile } from '@/utils/fs/scripts'
 import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
-import { isExternalScript } from '@/utils/workspace'
+
+import { Script } from '../cloud/types'
 
 import { ScriptHandler } from './types'
 
@@ -43,31 +43,37 @@ export function initialize() {
     return scriptPath
   })
 
-  ipcMain.handle(ScriptHandler.Run, async (event, scriptPath: string) => {
-    console.info(`${ScriptHandler.Run} event received`)
-    await waitForProxy()
+  ipcMain.handle(
+    ScriptHandler.Run,
+    async (event, script: Script, shouldTrack = true) => {
+      console.info(`${ScriptHandler.Run} event received`)
+      await waitForProxy()
 
-    const browserWindow = browserWindowFromEvent(event)
+      const file = await toScriptFile(script)
 
-    const absolute = path.isAbsolute(scriptPath)
-    const resolvedScriptPath = absolute
-      ? scriptPath
-      : path.join(SCRIPTS_PATH, scriptPath)
+      const browserWindow = browserWindowFromEvent(event)
 
-    currentTestRun = await runScript({
-      browserWindow,
-      scriptPath: resolvedScriptPath,
-      proxySettings: k6StudioState.appSettings.proxy,
-      usageReport: k6StudioState.appSettings.telemetry.usageReport,
-    })
+      try {
+        currentTestRun = await runScript({
+          browserWindow,
+          scriptPath: file.path,
+          proxySettings: k6StudioState.appSettings.proxy,
+          usageReport: k6StudioState.appSettings.telemetry.usageReport,
+        })
 
-    trackEvent({
-      event: UsageEventName.ScriptValidated,
-      payload: {
-        isExternal: isExternalScript(resolvedScriptPath),
-      },
-    })
-  })
+        if (shouldTrack) {
+          trackEvent({
+            event: UsageEventName.ScriptValidated,
+            payload: {
+              isExternal: !file.path.startsWith(SCRIPTS_PATH),
+            },
+          })
+        }
+      } finally {
+        await file.dispose()
+      }
+    }
+  )
 
   ipcMain.on(ScriptHandler.Stop, (event) => {
     console.info(`${ScriptHandler.Stop} event received`)
@@ -82,32 +88,4 @@ export function initialize() {
     const browserWindow = browserWindowFromEvent(event)
     browserWindow.webContents.send(ScriptHandler.Stopped)
   })
-
-  ipcMain.handle(
-    ScriptHandler.RunFromGenerator,
-    async (event, script: string, shouldTrack = true) => {
-      console.info(`${ScriptHandler.RunFromGenerator} event received`)
-      await writeFile(TEMP_GENERATOR_SCRIPT_PATH, script)
-
-      const browserWindow = browserWindowFromEvent(event)
-
-      currentTestRun = await runScript({
-        browserWindow,
-        scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
-        proxySettings: k6StudioState.appSettings.proxy,
-        usageReport: k6StudioState.appSettings.telemetry.usageReport,
-      })
-
-      if (shouldTrack) {
-        trackEvent({
-          event: UsageEventName.ScriptValidated,
-          payload: {
-            isExternal: false,
-          },
-        })
-      }
-
-      await unlink(TEMP_GENERATOR_SCRIPT_PATH)
-    }
-  )
 }

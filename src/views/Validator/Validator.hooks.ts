@@ -65,17 +65,10 @@ export function useDebugSession(script: Script) {
 
     resetSession()
 
-    if (script.type === 'raw') {
-      await window.studio.script.runScriptFromGenerator(input).catch(() => {
-        setState('stopped')
-      })
-      return
-    }
-
-    await window.studio.script.runScript(input).catch(() => {
+    await window.studio.script.runScript(script).catch(() => {
       setState('stopped')
     })
-  }, [resetSession, script.type, input])
+  }, [script, resetSession])
 
   const stopDebugging = useCallback(() => {
     window.studio.script.stopScript()

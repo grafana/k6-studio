@@ -5,6 +5,7 @@ import invariant from 'tiny-invariant'
 import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 
+import { Script } from '../cloud/types'
 import { open as openFile, save } from '../file/preload'
 import { FileLocation } from '../file/types'
 import { createListener } from '../utils'
@@ -44,14 +45,6 @@ export async function openScript(
   }
 }
 
-export function runScriptFromGenerator(script: string, shouldTrack = true) {
-  return ipcRenderer.invoke(
-    ScriptHandler.RunFromGenerator,
-    script,
-    shouldTrack
-  ) as Promise<void>
-}
-
 export function saveScript(script: string, fileName: string) {
   return save({
     content: { type: 'script', content: script },
@@ -59,8 +52,12 @@ export function saveScript(script: string, fileName: string) {
   })
 }
 
-export function runScript(scriptPath: string) {
-  return ipcRenderer.invoke(ScriptHandler.Run, scriptPath) as Promise<void>
+export function runScript(script: Script, shouldTrack = true) {
+  return ipcRenderer.invoke(
+    ScriptHandler.Run,
+    script,
+    shouldTrack
+  ) as Promise<void>
 }
 
 export function stopScript() {
