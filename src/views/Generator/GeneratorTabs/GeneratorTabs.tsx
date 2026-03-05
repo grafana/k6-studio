@@ -3,7 +3,6 @@ import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { CircleXIcon } from 'lucide-react'
 import { useState } from 'react'
 
-import { useScriptPreview } from '@/hooks/useScriptPreview'
 import {
   selectFilteredRequests,
   selectHasRecording,
@@ -20,18 +19,21 @@ import { ScriptPreview } from './ScriptPreview'
 
 interface GeneratorTabsProps {
   file: StudioFile
+  preview: string
+  error: Error | undefined
   selectedRequest: ProxyData | null
   onSelectRequest: (request: ProxyData | null) => void
 }
 
 export function GeneratorTabs({
   file,
+  preview,
+  error,
   selectedRequest,
   onSelectRequest,
 }: GeneratorTabsProps) {
   const [tab, setTab] = useState('requests')
   const filteredRequests = useGeneratorStore(selectFilteredRequests)
-  const { hasError } = useScriptPreview()
 
   const hasRecording = useGeneratorStore(selectHasRecording)
 
@@ -49,13 +51,13 @@ export function GeneratorTabs({
                   value="script"
                   disabled={!hasRecording}
                   css={
-                    hasError &&
+                    error !== undefined &&
                     css`
                       color: var(--red-9);
                     `
                   }
                 >
-                  {hasError && (
+                  {error !== undefined && (
                     <CircleXIcon
                       css={css`
                         margin-right: var(--space-1);
@@ -94,7 +96,7 @@ export function GeneratorTabs({
             min-height: 0;
           `}
         >
-          <ScriptPreview file={file} />
+          <ScriptPreview file={file} preview={preview} error={error} />
         </Tabs.Content>
       </Tabs.Root>
     </Flex>

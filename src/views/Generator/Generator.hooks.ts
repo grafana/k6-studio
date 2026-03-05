@@ -1,14 +1,21 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
-import { useCallback } from 'react'
+import { debounce } from 'lodash-es'
+import { useCallback, useEffect, useState } from 'react'
 
-import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
+import {
+  GeneratorStore,
+  selectFilteredRequests,
+  selectGeneratorData,
+  useGeneratorStore,
+} from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { GeneratorFileData } from '@/types/generator'
 import { queryClient } from '@/utils/query'
 
 import {
   exportScript,
+  generateScriptPreview,
   loadGeneratorFile,
   loadRecording,
 } from './Generator.utils'
@@ -121,4 +128,38 @@ export function useScriptExport(generatorFilePath: string) {
     },
     [showToast, setScriptName, updateGeneratorFile]
   )
+}
+
+export function useScriptPreview() {
+  const [preview, setPreview] = useState('')
+  const [error, setError] = useState<Error>()
+
+  // Connect to the store on mount, disconnect on unmount, regenerate preview on state change
+  useEffect(() => {
+    const updatePreview = debounce(async (state: GeneratorStore) => {
+      try {
+        setError(undefined)
+        const generator = selectGeneratorData(state)
+        const requests = selectFilteredRequests(state)
+
+        const script = await generateScriptPreview(generator, requests)
+        setPreview(script)
+      } catch (e) {
+        console.error(e)
+        setError(e as Error)
+      }
+    }, 100)
+
+    // Initial preview generation
+    // TODO: https://github.com/grafana/k6-studio/issues/277
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    updatePreview(useGeneratorStore.getState())
+
+    const unsubscribe = useGeneratorStore.subscribe((state) =>
+      updatePreview(state)
+    )
+    return unsubscribe
+  }, [])
+
+  return { preview, error }
 }

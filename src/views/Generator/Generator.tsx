@@ -15,6 +15,7 @@ import { ProxyData } from '@/types'
 
 import {
   useIsGeneratorDirty,
+  useScriptPreview,
   useLoadGeneratorFile,
   useLoadRecording,
   useSaveGeneratorFile,
@@ -62,6 +63,8 @@ export function Generator() {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     return isDirty && historyAction !== 'REPLACE'
   })
+
+  const { preview, error } = useScriptPreview()
 
   useEffect(() => {
     if (!generatorFileData) return
@@ -145,8 +148,10 @@ export function Generator() {
       subTitle={<FileNameHeader file={file} isDirty={isDirty} />}
       actions={
         <GeneratorControls
-          onSave={handleSaveGenerator}
           isDirty={isDirty}
+          preview={preview}
+          error={error}
+          onSave={handleSaveGenerator}
           onChangeRecording={() => setSelectedRequest(null)}
         />
       }
@@ -158,6 +163,8 @@ export function Generator() {
             <Allotment.Pane minSize={200}>
               <GeneratorTabs
                 file={file}
+                preview={preview}
+                error={error}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
               />

@@ -7,7 +7,6 @@ import { ReactMonacoEditor } from '@/components/Monaco/ReactMonacoEditor'
 import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { useScriptPreview } from '@/hooks/useScriptPreview'
 import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
 import { useGeneratorStore } from '@/store/generator'
 import { StudioFile } from '@/types'
@@ -20,16 +19,17 @@ import { ScriptPreviewError } from './ScriptPreviewError'
 
 interface ScriptPreviewProps {
   file: StudioFile
+  preview: string
+  error: Error | undefined
 }
 
-export function ScriptPreview({ file }: ScriptPreviewProps) {
+export function ScriptPreview({ file, preview, error }: ScriptPreviewProps) {
   const scriptName = useGeneratorStore((store) => store.scriptName)
 
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const { preview, error } = useScriptPreview()
   const proxyStatus = useProxyStatus()
 
   const isScriptExportable = !error && !!preview
