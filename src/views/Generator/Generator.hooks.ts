@@ -101,7 +101,8 @@ export function useScriptExport(generatorFilePath: string) {
       setScriptName(scriptName)
 
       try {
-        await exportScript(scriptName)
+        const filePath = await window.studio.script.showSaveDialog(scriptName)
+        await exportScript(filePath)
         showToast({
           title: 'Script exported successfully',
           status: 'success',

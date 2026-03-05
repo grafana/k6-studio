@@ -29,6 +29,14 @@ export function initialize() {
     return options ?? {}
   })
 
+  ipcMain.handle(
+    ScriptHandler.ShowSaveDialog,
+    (_, fileName: string): string => {
+      console.info(`${ScriptHandler.ShowSaveDialog} event received`)
+      return resolveFileLocation('script', { type: 'legacy', name: fileName })
+    }
+  )
+
   ipcMain.handle(ScriptHandler.Select, async (event) => {
     console.info(`${ScriptHandler.Select} event received`)
     const browserWindow = browserWindowFromEvent(event)

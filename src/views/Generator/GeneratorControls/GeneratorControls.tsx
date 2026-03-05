@@ -36,7 +36,7 @@ export function GeneratorControls({
     useState(false)
   const file = useFileNameParam('generator')
   const proxyStatus = useProxyStatus()
-  const isScriptExportable = error !== undefined && preview !== ''
+  const isScriptExportable = error === undefined && preview !== ''
 
   const handleExportScript = useScriptExport(file.path)
 

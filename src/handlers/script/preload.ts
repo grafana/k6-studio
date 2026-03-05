@@ -16,6 +16,13 @@ export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
 }
 
+export function showSaveDialog(fileName: string) {
+  return ipcRenderer.invoke(
+    ScriptHandler.ShowSaveDialog,
+    fileName
+  ) as Promise<string>
+}
+
 export function analyzeScript(location: FileLocation) {
   return ipcRenderer.invoke(ScriptHandler.Analyze, location) as Promise<
     OpenScriptResult['options']
@@ -45,10 +52,10 @@ export async function openScript(
   }
 }
 
-export function saveScript(script: string, fileName: string) {
+export function saveScript(script: string, filePath: string) {
   return save({
     content: { type: 'script', content: script },
-    location: { type: 'legacy', name: fileName },
+    location: { type: 'path', path: filePath },
   })
 }
 

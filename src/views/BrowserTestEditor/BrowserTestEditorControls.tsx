@@ -40,7 +40,8 @@ export function BrowserTestEditorControls({
 
   const handleExportScript = (scriptName: string) => {
     window.studio.script
-      .saveScript(preview, scriptName)
+      .showSaveDialog(scriptName)
+      .then((filePath) => window.studio.script.saveScript(preview, filePath))
       .then(() => {
         showToast({
           title: 'Script exported successfully',

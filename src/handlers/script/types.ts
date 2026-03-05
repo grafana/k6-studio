@@ -3,6 +3,7 @@ import { K6TestOptions } from '@/utils/k6/schema'
 export enum ScriptHandler {
   Analyze = 'script:analyze',
   Select = 'script:select',
+  ShowSaveDialog = 'script:show-save-dialog',
   Open = 'script:open',
   Run = 'script:run',
   Stop = 'script:stop',

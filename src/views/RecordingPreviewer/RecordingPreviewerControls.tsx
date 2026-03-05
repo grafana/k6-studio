@@ -59,8 +59,13 @@ export function RecordingPreviewControls({
       browserEvents,
     })
 
-    emitScript(test)
-      .then((script) => window.studio.script.saveScript(script, fileName))
+    window.studio.script
+      .showSaveDialog(fileName)
+      .then((filePath) =>
+        emitScript(test).then((script) =>
+          window.studio.script.saveScript(script, filePath)
+        )
+      )
       .then((scriptPath) => {
         showToast({
           title: 'Script exported successfully',
