@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'fs'
 import { writeFile, open } from 'fs/promises'
 import path from 'path'
 
-import { resetAiModel } from '@/handlers/ai/model'
+import { resetOpenAiModel } from '@/handlers/ai/model'
 import { configureSystemProxy } from '@/services/http'
 
 import { AppSettingsSchema } from '../schemas/settings'
@@ -185,7 +185,7 @@ export async function applySettings(
 
   if (modifiedSettings.ai) {
     k6StudioState.appSettings.ai = modifiedSettings.ai
-    resetAiModel()
+    resetOpenAiModel()
   }
 }
 
