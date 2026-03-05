@@ -3,15 +3,15 @@ import path from 'path'
 import { z } from 'zod'
 
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
-import { BROWSER_TESTS_PATH } from '@/constants/workspace'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
+import { Workspace } from '@/utils/workspace'
 
 import { BrowserTestHandler } from './types'
 
-export function initialize() {
+export function initialize(workspace: Workspace) {
   ipcMain.handle(BrowserTestHandler.Create, async () => {
     console.info(`${BrowserTestHandler.Create} event received`)
 
@@ -22,7 +22,7 @@ export function initialize() {
 
     const fileName = await createFileWithUniqueName({
       data: JSON.stringify(emptyBrowserTest, null, 2),
-      directory: BROWSER_TESTS_PATH,
+      directory: workspace.paths.browserTests,
       ext: K6_BROWSER_TEST_FILE_EXTENSION,
       prefix: 'Browser',
     })
@@ -31,6 +31,6 @@ export function initialize() {
       event: UsageEventName.BrowserTestCreated,
     })
 
-    return path.join(BROWSER_TESTS_PATH, fileName)
+    return path.join(workspace.paths.browserTests, fileName)
   })
 }

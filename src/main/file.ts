@@ -2,10 +2,6 @@ import os from 'os'
 import path from 'path'
 
 import {
-  K6_BROWSER_TEST_FILE_EXTENSION,
-  K6_GENERATOR_FILE_EXTENSION,
-} from '@/constants/files'
-import {
   RECORDINGS_PATH,
   GENERATORS_PATH,
   SCRIPTS_PATH,
@@ -55,63 +51,6 @@ export function createStudioFile(filePath: string): StudioFile | null {
     path: filePath,
     fileName: parsed.base,
     displayName: parsed.name,
-  }
-}
-
-export function getStudioFileFromPath(
-  filePath: string
-): StudioFile | undefined {
-  const file = {
-    path: filePath,
-    displayName: path.parse(filePath).name,
-    fileName: path.basename(filePath),
-  }
-
-  if (
-    filePath.startsWith(RECORDINGS_PATH) &&
-    path.extname(filePath) === '.har'
-  ) {
-    return {
-      type: 'recording',
-      ...file,
-    }
-  }
-
-  if (
-    filePath.startsWith(BROWSER_TESTS_PATH) &&
-    path.extname(filePath) === K6_BROWSER_TEST_FILE_EXTENSION
-  ) {
-    return {
-      type: 'browser-test',
-      ...file,
-    }
-  }
-
-  if (
-    filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === K6_GENERATOR_FILE_EXTENSION
-  ) {
-    return {
-      type: 'generator',
-      ...file,
-    }
-  }
-
-  if (filePath.startsWith(SCRIPTS_PATH) && path.extname(filePath) === '.js') {
-    return {
-      type: 'script',
-      ...file,
-    }
-  }
-
-  if (
-    filePath.startsWith(DATA_FILES_PATH) &&
-    (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv')
-  ) {
-    return {
-      type: 'data-file',
-      ...file,
-    }
   }
 }
 

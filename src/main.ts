@@ -50,8 +50,8 @@ if (isSquirrelStartup) {
 }
 
 initializeLogger()
-handlers.initialize()
 mainState.initialize()
+handlers.initialize(k6StudioState.workspace)
 initializeDeepLinks()
 
 const createSplashWindow = async () => {
@@ -207,6 +207,7 @@ app.on('window-all-closed', async () => {
   }
 
   await closeWatcher()
+  await k6StudioState.workspace.close()
 })
 
 app.on('activate', async () => {
@@ -221,5 +222,6 @@ app.on('activate', async () => {
 app.on('before-quit', async () => {
   k6StudioState.appShuttingDown = true
   await closeWatcher()
+  await k6StudioState.workspace.close()
   return stopProxyProcess()
 })

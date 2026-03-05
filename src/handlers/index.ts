@@ -1,3 +1,5 @@
+import { Workspace } from '@/utils/workspace'
+
 import * as ai from './ai'
 import * as app from './app'
 import * as auth from './auth'
@@ -15,20 +17,20 @@ import * as script from './script'
 import * as settings from './settings'
 import * as ui from './ui'
 
-export function initialize() {
+export function initialize(workspace: Workspace) {
   browserRemote.initialize()
   auth.initialize()
   cloud.initialize()
-  file.initialize()
-  har.initialize()
+  file.initialize(workspace)
+  har.initialize(workspace)
   browser.initialize()
-  script.initialize()
+  script.initialize(workspace)
   settings.initialize()
   proxy.initialize()
-  ui.initialize()
-  generator.initialize()
-  browserTest.initialize()
-  dataFiles.initialize()
+  ui.initialize(workspace)
+  generator.initialize(workspace)
+  browserTest.initialize(workspace)
+  dataFiles.initialize(workspace)
   log.initialize()
   app.initialize()
   ai.initialize()

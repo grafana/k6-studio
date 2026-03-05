@@ -5,17 +5,17 @@ import path from 'path'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
-import { PROJECT_PATH } from '@/constants/workspace'
-import { createStudioFile, getFilePath } from '@/main/file'
+import { createStudioFile } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
 import { isNodeJsErrnoException } from '@/utils/typescript'
+import { Workspace } from '@/utils/workspace'
 
 import { UIHandler } from './types'
 
-export function initialize() {
+export function initialize(workspace: Workspace) {
   ipcMain.on(UIHandler.ToggleTheme, () => {
     console.info(`${UIHandler.ToggleTheme} event received`)
     nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
@@ -38,26 +38,25 @@ export function initialize() {
   ipcMain.handle(UIHandler.DeleteFile, async (_, file: StudioFile) => {
     console.info(`${UIHandler.DeleteFile} event received`)
 
-    const filePath = getFilePath(file)
-    return unlink(filePath)
+    return unlink(file.path)
   })
 
   ipcMain.on(UIHandler.OpenFolder, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFolder} event received`)
-    const filePath = getFilePath(file)
-    return shell.showItemInFolder(filePath)
+
+    return shell.showItemInFolder(file.path)
   })
 
   ipcMain.handle(UIHandler.OpenFileInDefaultApp, (_, file: StudioFile) => {
     console.info(`${UIHandler.OpenFileInDefaultApp} event received`)
-    const filePath = getFilePath(file)
-    return shell.openPath(filePath)
+
+    return shell.openPath(file.path)
   })
 
   ipcMain.handle(UIHandler.GetFiles, async () => {
     console.info(`${UIHandler.GetFiles} event received`)
 
-    const entries = await readdir(PROJECT_PATH, {
+    const entries = await readdir(workspace.path, {
       recursive: true,
       withFileTypes: true,
     })

@@ -2,17 +2,17 @@ import { ipcMain, dialog } from 'electron'
 import { copyFile } from 'fs/promises'
 import path from 'path'
 
-import { RECORDINGS_PATH } from '@/constants/workspace'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { RecordingData } from '@/types/recordingData'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
+import { Workspace } from '@/utils/workspace'
 
 import { HarHandler } from './types'
 
-export function initialize() {
+export function initialize(workspace: Workspace) {
   ipcMain.handle(
     HarHandler.SaveFile,
     async (_, data: RecordingData, prefix: string) => {
@@ -21,7 +21,7 @@ export function initialize() {
       const har = proxyDataToHar(data.requests, data.browserEvents)
       const fileName = await createFileWithUniqueName({
         data: JSON.stringify(har, null, 2),
-        directory: RECORDINGS_PATH,
+        directory: workspace.paths.recordings,
         ext: '.har',
         prefix,
       })
@@ -30,7 +30,7 @@ export function initialize() {
         event: UsageEventName.RecordingCreated,
       })
 
-      return path.join(RECORDINGS_PATH, fileName)
+      return path.join(workspace.paths.recordings, fileName)
     }
   )
 
@@ -42,7 +42,7 @@ export function initialize() {
     const dialogResult = await dialog.showOpenDialog(browserWindow, {
       message: 'Import HAR file',
       properties: ['openFile'],
-      defaultPath: RECORDINGS_PATH,
+      defaultPath: workspace.paths.recordings,
       filters: [{ name: 'HAR', extensions: ['har'] }],
     })
 
@@ -54,7 +54,7 @@ export function initialize() {
 
     await copyFile(
       filePath,
-      path.join(RECORDINGS_PATH, path.basename(filePath))
+      path.join(workspace.paths.recordings, path.basename(filePath))
     )
 
     trackEvent({

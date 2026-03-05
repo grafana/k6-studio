@@ -1,7 +1,5 @@
 import { ipcMain, shell } from 'electron'
-import { isAbsolute, join } from 'path'
 
-import { SCRIPTS_PATH } from '@/constants/workspace'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent } from '@/utils/electron'
@@ -18,16 +16,12 @@ export function initialize() {
     const browserWindow = browserWindowFromEvent(event)
     const file = await toScriptFile(script)
 
-    const absolutePath = !isAbsolute(file.path)
-      ? join(SCRIPTS_PATH, file.path)
-      : file.path
-
     try {
       if (stateMachine !== null) {
         stateMachine.abort()
       }
 
-      stateMachine = new RunInCloudStateMachine(absolutePath, file.name)
+      stateMachine = new RunInCloudStateMachine(file.path, file.name)
 
       stateMachine.on('state-change', (state) => {
         browserWindow.webContents.send('cloud:state-change', state)

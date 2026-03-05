@@ -12,7 +12,7 @@ import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { exhaustive } from '@/utils/typescript'
-import { isExternalScript } from '@/utils/workspace'
+import { Workspace } from '@/utils/workspace'
 
 import {
   FileContent,
@@ -25,7 +25,7 @@ import {
 } from './types'
 import { resolveFileLocation } from './utils'
 
-export function initialize() {
+export function initialize(workspace: Workspace) {
   ipcMain.handle(
     FileHandler.Save,
     async (_event, { content, location }: SaveFilePayload): Promise<string> => {
@@ -56,7 +56,7 @@ export function initialize() {
       const filePath = resolveFileLocation(request.fileType, request.location)
       const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })
 
-      return parseOpenResult(filePath, request.fileType, raw)
+      return parseOpenResult(workspace, filePath, request.fileType, raw)
     }
   )
 
@@ -72,6 +72,7 @@ export function initialize() {
 }
 
 async function parseOpenResult(
+  workspace: Workspace,
   filePath: string,
   fileType: FileContentType,
   raw: string
@@ -141,7 +142,7 @@ async function parseOpenResult(
       return {
         type: 'script',
         content: raw,
-        isExternal: isExternalScript(filePath),
+        isExternal: !workspace.isInside(filePath),
       }
 
     default:

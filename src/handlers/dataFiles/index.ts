@@ -5,14 +5,14 @@ import path from 'path'
 import invariant from 'tiny-invariant'
 
 import { MAX_DATA_FILE_SIZE } from '@/constants/files'
-import { DATA_FILES_PATH } from '@/constants/workspace'
 import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
 import { browserWindowFromEvent } from '@/utils/electron'
+import { Workspace } from '@/utils/workspace'
 
 import { DataFileHandler } from './types'
 
-export function initialize() {
+export function initialize(workspace: Workspace) {
   ipcMain.handle(DataFileHandler.Import, async (event) => {
     const browserWindow = browserWindowFromEvent(event)
 
@@ -31,7 +31,10 @@ export function initialize() {
     const { size } = await stat(filePath)
     invariant(size <= MAX_DATA_FILE_SIZE, 'File is too large')
 
-    const destPath = path.join(DATA_FILES_PATH, path.basename(filePath))
+    const destPath = path.join(
+      workspace.paths.dataFiles,
+      path.basename(filePath)
+    )
     await copyFile(filePath, destPath, COPYFILE_EXCL)
 
     return destPath
@@ -42,7 +45,7 @@ export function initialize() {
     async (_, pathOrFileName: string): Promise<DataFilePreview> => {
       const filePath = path.isAbsolute(pathOrFileName)
         ? pathOrFileName
-        : path.join(DATA_FILES_PATH, pathOrFileName)
+        : path.join(workspace.paths.dataFiles, pathOrFileName)
       const fileType = path.extname(filePath).slice(1)
 
       invariant(

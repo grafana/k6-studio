@@ -1,7 +1,6 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 
-import { SCRIPTS_PATH } from '@/constants/workspace'
 import { FileLocation } from '@/handlers/file/types'
 import { resolveFileLocation } from '@/handlers/file/utils'
 import { waitForProxy } from '@/main/proxy'
@@ -12,12 +11,13 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { toScriptFile } from '@/utils/fs/scripts'
 import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
+import { Workspace } from '@/utils/workspace'
 
 import { Script } from '../cloud/types'
 
 import { ScriptHandler } from './types'
 
-export function initialize() {
+export function initialize(workspace: Workspace) {
   let currentTestRun: TestRun | null
 
   ipcMain.handle(ScriptHandler.Analyze, async (_, location: FileLocation) => {
@@ -76,7 +76,7 @@ export function initialize() {
         trackEvent({
           event: UsageEventName.ScriptValidated,
           payload: {
-            isExternal: !file.path.startsWith(SCRIPTS_PATH),
+            isExternal: !workspace.isInside(file.path),
           },
         })
       }
