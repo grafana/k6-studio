@@ -2,9 +2,7 @@ import { FSWatcher } from 'chokidar'
 import { BrowserWindow } from 'electron'
 import eventEmitter from 'events'
 
-import { PROJECT_PATH } from '@/constants/workspace'
 import { RecordingSession } from '@/handlers/browser/recorders/types'
-import { Workspace } from '@/utils/workspace'
 
 import { ProxyStatus } from '../types'
 import { AppSettings } from '../types/settings'
@@ -24,7 +22,6 @@ export type k6StudioState = {
   currentClientRoute: string
   wasAppClosedByClient: boolean
   splashscreenWindow: BrowserWindow | null
-  workspace: Workspace
   watcher: FSWatcher | null
 }
 
@@ -48,7 +45,6 @@ export function initialize() {
     wasAppClosedByClient: false,
 
     splashscreenWindow: null,
-    workspace: new Workspace(PROJECT_PATH),
     watcher: null,
   }
 }

@@ -7,17 +7,19 @@ import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { browserWindowFromEvent } from '@/utils/electron'
+import {
+  browserWindowFromEvent,
+  workspaceWindowFromEvent,
+} from '@/utils/electron'
 import { toScriptFile } from '@/utils/fs/scripts'
 import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
-import { Workspace } from '@/utils/workspace'
 
 import { Script } from '../cloud/types'
 
 import { ScriptHandler } from './types'
 
-export function initialize(workspace: Workspace) {
+export function initialize() {
   let currentTestRun: TestRun | null
 
   ipcMain.handle(ScriptHandler.Analyze, async (_, location: FileLocation) => {
@@ -59,7 +61,7 @@ export function initialize(workspace: Workspace) {
 
       const file = await toScriptFile(script)
 
-      const browserWindow = browserWindowFromEvent(event)
+      const browserWindow = workspaceWindowFromEvent(event)
 
       currentTestRun = await runScript({
         browserWindow,
@@ -76,7 +78,7 @@ export function initialize(workspace: Workspace) {
         trackEvent({
           event: UsageEventName.ScriptValidated,
           payload: {
-            isExternal: !workspace.isInside(file.path),
+            isExternal: !browserWindow.workspace.isInside(file.path),
           },
         })
       }

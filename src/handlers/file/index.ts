@@ -9,6 +9,7 @@ import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
+import { workspaceWindowFromEvent } from '@/utils/electron'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { exhaustive } from '@/utils/typescript'
@@ -25,7 +26,7 @@ import {
 } from './types'
 import { resolveFileLocation } from './utils'
 
-export function initialize(workspace: Workspace) {
+export function initialize() {
   ipcMain.handle(
     FileHandler.Save,
     async (_event, { content, location }: SaveFilePayload): Promise<string> => {
@@ -50,13 +51,20 @@ export function initialize(workspace: Workspace) {
 
   ipcMain.handle(
     FileHandler.Open,
-    async (_event, request: OpenFileRequest): Promise<OpenFileResult> => {
+    async (event, request: OpenFileRequest): Promise<OpenFileResult> => {
       console.info(`${FileHandler.Open} event received`)
+
+      const browserWindow = workspaceWindowFromEvent(event)
 
       const filePath = resolveFileLocation(request.fileType, request.location)
       const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })
 
-      return parseOpenResult(workspace, filePath, request.fileType, raw)
+      return parseOpenResult(
+        browserWindow.workspace,
+        filePath,
+        request.fileType,
+        raw
+      )
     }
   )
 

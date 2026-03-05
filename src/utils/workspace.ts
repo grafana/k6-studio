@@ -1,6 +1,12 @@
+import { FSWatcher, watch } from 'chokidar'
+import { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import path from 'path'
+
+// import { EventEmitter } from 'extension/src/utils/events'
+
+import { EventEmitter } from 'extension/src/utils/events'
 
 import {
   DATA_FILES_PATH,
@@ -30,15 +36,41 @@ export const setupProjectStructure = async () => {
   }
 }
 
-export class Workspace {
+interface WorkspaceEventMap {
+  add: { path: string }
+  remove: { path: string }
+  change: { path: string }
+}
+
+export class Workspace extends EventEmitter<WorkspaceEventMap> {
   #rootPath: string
+  #watcher: FSWatcher
 
   constructor(rootPath: string) {
+    super()
+
     this.#rootPath = rootPath
+    this.#watcher = watch(rootPath, { ignoreInitial: true })
+
+    this.#watcher.on('add', (filePath) => {
+      this.emit('add', { path: filePath })
+    })
+
+    this.#watcher.on('unlink', (filePath) => {
+      this.emit('remove', { path: filePath })
+    })
+
+    this.#watcher.on('change', (filePath) => {
+      this.emit('change', { path: filePath })
+    })
   }
 
   switch(newRootPath: string) {
+    this.#watcher.unwatch(this.#rootPath)
+
     this.#rootPath = newRootPath
+
+    this.#watcher = watch(newRootPath, { ignoreInitial: true })
   }
 
   get path() {
@@ -74,7 +106,25 @@ export class Workspace {
     return path.startsWith(this.#rootPath)
   }
 
-  close() {
-    return Promise.resolve()
+  async close() {
+    await this.#watcher.close()
+  }
+}
+
+export class WorkspaceWindow extends BrowserWindow {
+  workspace: Workspace
+
+  constructor(
+    options: BrowserWindowConstructorOptions & { workspace: Workspace }
+  ) {
+    super(options)
+
+    this.workspace = options.workspace
+
+    this.on('closed', () => {
+      this.workspace.close().catch(() => {
+        console.warn(`Failed to close workspace '${this.workspace.path}'.`)
+      })
+    })
   }
 }

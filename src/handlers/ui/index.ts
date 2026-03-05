@@ -9,13 +9,12 @@ import { createStudioFile } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
-import { sendToast } from '@/utils/electron'
+import { sendToast, workspaceWindowFromEvent } from '@/utils/electron'
 import { isNodeJsErrnoException } from '@/utils/typescript'
-import { Workspace } from '@/utils/workspace'
 
 import { UIHandler } from './types'
 
-export function initialize(workspace: Workspace) {
+export function initialize() {
   ipcMain.on(UIHandler.ToggleTheme, () => {
     console.info(`${UIHandler.ToggleTheme} event received`)
     nativeTheme.themeSource = nativeTheme.shouldUseDarkColors ? 'light' : 'dark'
@@ -53,10 +52,12 @@ export function initialize(workspace: Workspace) {
     return shell.openPath(file.path)
   })
 
-  ipcMain.handle(UIHandler.GetFiles, async () => {
+  ipcMain.handle(UIHandler.GetFiles, async (event) => {
     console.info(`${UIHandler.GetFiles} event received`)
 
-    const entries = await readdir(workspace.path, {
+    const browserWindow = workspaceWindowFromEvent(event)
+
+    const entries = await readdir(browserWindow.workspace.path, {
       recursive: true,
       withFileTypes: true,
     })

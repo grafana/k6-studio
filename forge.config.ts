@@ -10,7 +10,7 @@ import type { ForgeConfig, ForgeMakeResult } from '@electron-forge/shared-types'
 import path from 'path'
 
 import { CUSTOM_APP_PROTOCOL } from './src/main/deepLinks.constants'
-import { getPlatform, getArch } from './src/utils/electron'
+import { getPlatform, getArch } from './src/utils/platform'
 import { windowsSign } from './windowsSign'
 import { spawnSignFile } from './windowsSignHook'
 

@@ -8,6 +8,8 @@ import { AddToastPayload } from '@/types/toast'
 
 import { UIHandler } from '../handlers/ui/types'
 
+import { WorkspaceWindow } from './workspace'
+
 export function getPlatform(): Platform {
   switch (platform()) {
     case 'aix':
@@ -82,4 +84,16 @@ export const browserWindowFromEvent = (
   }
 
   return browserWindow
+}
+
+export function workspaceWindowFromEvent(
+  event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent
+) {
+  const workspaceWindow = browserWindowFromEvent(event)
+
+  if (workspaceWindow instanceof WorkspaceWindow === false) {
+    throw new Error('failed to obtain WorkspaceWindow')
+  }
+
+  return workspaceWindow
 }

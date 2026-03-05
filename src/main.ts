@@ -5,6 +5,7 @@ import isSquirrelStartup from 'electron-squirrel-startup'
 import path from 'path'
 import { updateElectronApp } from 'update-electron-app'
 
+import { PROJECT_PATH } from './constants/workspace'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
 import { initializeDeepLinks } from './main/deepLinks'
@@ -23,7 +24,11 @@ import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
-import { setupProjectStructure } from './utils/workspace'
+import {
+  setupProjectStructure,
+  Workspace,
+  WorkspaceWindow,
+} from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -51,7 +56,7 @@ if (isSquirrelStartup) {
 
 initializeLogger()
 mainState.initialize()
-handlers.initialize(k6StudioState.workspace)
+handlers.initialize()
 initializeDeepLinks()
 
 const createSplashWindow = async () => {
@@ -108,7 +113,8 @@ const createWindow = async () => {
   const { width, height, x, y } = k6StudioState.appSettings.windowState
 
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  const mainWindow = new WorkspaceWindow({
+    workspace: new Workspace(PROJECT_PATH),
     x,
     y,
     width,
@@ -207,7 +213,6 @@ app.on('window-all-closed', async () => {
   }
 
   await closeWatcher()
-  await k6StudioState.workspace.close()
 })
 
 app.on('activate', async () => {
@@ -222,6 +227,5 @@ app.on('activate', async () => {
 app.on('before-quit', async () => {
   k6StudioState.appShuttingDown = true
   await closeWatcher()
-  await k6StudioState.workspace.close()
   return stopProxyProcess()
 })
