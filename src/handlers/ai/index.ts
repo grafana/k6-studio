@@ -8,6 +8,7 @@ import { streamMessages } from './streamMessages'
 import { tools } from './tools'
 import { AiHandler, StreamChatRequest, AbortStreamChatRequest } from './types'
 
+// Store active AbortControllers indexed by request ID
 const activeAbortControllers = new Map<string, AbortController>()
 
 export function initialize() {
@@ -46,7 +47,6 @@ async function handleStreamChat(
     } else {
       const aiModel = await getOpenAiModel()
 
-      log.info('new message')
       const response = streamText({
         model: aiModel,
         messages,
@@ -57,6 +57,7 @@ async function handleStreamChat(
             parallelToolCalls: false,
             reasoningEffort: 'low',
             textVerbosity: 'low',
+            // Disable storing of conversations, required for orgs with zero data retention
             store: false,
           } satisfies OpenAIResponsesProviderOptions,
         },

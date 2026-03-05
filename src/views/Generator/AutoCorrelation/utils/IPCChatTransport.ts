@@ -56,13 +56,16 @@ export class IPCChatTransport<
       provider: this.provider,
     }
 
-    const onUsage = this.onUsage
+    // Capture callback reference for use inside start()
+    const onUsageCallback = this.onUsage
 
+    // Create a ReadableStream that will receive chunks via IPC
     return Promise.resolve(
       new ReadableStream<UIMessageChunk>({
         start(controller) {
           const stream = window.studio.ai.streamChat(request)
 
+          // Set up listeners for stream events
           const removeChunkListener = stream.onChunk(
             (data: StreamChatChunk) => {
               controller.enqueue(data.chunk)
@@ -74,17 +77,20 @@ export class IPCChatTransport<
             }
           )
 
-          const removeEndListener = stream.onEnd((data) => {
-            if (data.usage && onUsage) {
-              onUsage(data.usage)
+          const removeEndListener = stream.onEnd((usage) => {
+            if (usage && onUsageCallback) {
+              onUsageCallback(usage)
             }
             controller.close()
             cleanup()
           })
 
+          // Handle abort signal
           if (options.abortSignal) {
             options.abortSignal.addEventListener('abort', () => {
               stream.abort()
+              // Need to call error to stop the stream immediately,
+              // calling close would still proccess enqueued chunks
               controller.error()
               cleanup()
             })
@@ -104,6 +110,7 @@ export class IPCChatTransport<
       chatId: string
     } & ChatRequestOptions
   ): Promise<ReadableStream<UIMessageChunk> | null> {
+    // Not implemented
     return Promise.resolve(null)
   }
 }

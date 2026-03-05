@@ -6,6 +6,7 @@ import {
   StreamChatChunk,
   StreamChatEnd,
   StreamChatRequest,
+  TokenUsage,
 } from './types'
 
 export function streamChat(request: StreamChatRequest) {
@@ -28,13 +29,13 @@ export function streamChat(request: StreamChatRequest) {
         ipcRenderer.removeListener(AiHandler.StreamChatChunk, handler)
     },
 
-    onEnd: (callback: (data: StreamChatEnd) => void) => {
+    onEnd: (callback: (usage?: TokenUsage) => void) => {
       const handler = (
         _event: Electron.IpcRendererEvent,
         data: StreamChatEnd
       ) => {
         if (data.id === request.id) {
-          callback(data)
+          callback(data.usage)
         }
       }
       ipcRenderer.on(AiHandler.StreamChatEnd, handler)
