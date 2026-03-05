@@ -24,8 +24,8 @@ interface ValidatorDialogProps {
 }
 
 export function ValidatorDialog({
-  script,
   open,
+  script,
   onOpenChange,
 }: ValidatorDialogProps) {
   const [isRunning, setIsRunning] = useState(false)
@@ -68,7 +68,11 @@ export function ValidatorDialog({
       useGeneratorStore.getState()
     )
 
-    const script = await generateScriptPreview(generator, filteredRequests)
+    const script = await generateScriptPreview(
+      tempPath,
+      generator,
+      filteredRequests
+    )
 
     await window.studio.script.runScript({
       type: 'raw',

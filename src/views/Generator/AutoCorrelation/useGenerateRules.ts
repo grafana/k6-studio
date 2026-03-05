@@ -176,7 +176,7 @@ export const useGenerateRules = ({
       type: 'raw',
       name: 'script.js',
       path: tempPath,
-      content: await generateScriptPreview(newGenerator, recording),
+      content: await generateScriptPreview(tempPath, newGenerator, recording),
     }
 
     const validationResult = await validateScript(

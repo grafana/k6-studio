@@ -4,6 +4,7 @@ import path from 'path'
 
 import { baseProps, NodeType } from '@/codegen/estree/nodes'
 import { traverse } from '@/codegen/estree/traverse'
+import { makeRelativePath } from '@/utils/fs/path'
 import { readResource } from '@/utils/resources'
 
 interface InstrumentScriptOptions {
@@ -34,19 +35,13 @@ export const instrumentScript = ({
 
   // Use relative import path from entry script's directory
   const entryDir = path.dirname(entryPath)
-  const relativePath = path.relative(entryDir, scriptPath)
-
-  // If the file is in the same directory, then path.relative will return
-  // just the filename, so we need to add the ./ prefix.
-  const relativePathWithPrefix = !relativePath.startsWith('.')
-    ? `./${relativePath}`
-    : relativePath
+  const relativePath = makeRelativePath(entryDir, scriptPath)
 
   traverse(entryAst, {
     [NodeType.ImportDeclaration](node) {
       if (node.source.value === '__USER_SCRIPT_PATH__') {
-        node.source.value = relativePathWithPrefix
-        node.source.raw = JSON.stringify(relativePathWithPrefix)
+        node.source.value = relativePath
+        node.source.raw = JSON.stringify(relativePath)
       }
     },
     [NodeType.VariableDeclarator](node) {

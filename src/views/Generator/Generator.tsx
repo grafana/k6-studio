@@ -64,7 +64,7 @@ export function Generator() {
     return isDirty && historyAction !== 'REPLACE'
   })
 
-  const { preview, error } = useScriptPreview()
+  const { preview, error } = useScriptPreview(file.path)
 
   useEffect(() => {
     if (!generatorFileData) return

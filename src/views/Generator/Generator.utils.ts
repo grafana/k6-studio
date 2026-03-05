@@ -9,10 +9,12 @@ import { GeneratorFileData } from '@/types/generator'
 import { prettify } from '@/utils/prettify'
 
 export async function generateScriptPreview(
+  scriptPath: string,
   generator: GeneratorFileData,
   recording: ProxyData[]
 ) {
   const script = generateScript({
+    scriptPath,
     generator,
     recording,
   })
@@ -24,7 +26,11 @@ export async function exportScript(filePath: string) {
   const generator = selectGeneratorData(useGeneratorStore.getState())
   const filteredRequests = selectFilteredRequests(useGeneratorStore.getState())
 
-  const script = await generateScriptPreview(generator, filteredRequests)
+  const script = await generateScriptPreview(
+    filePath,
+    generator,
+    filteredRequests
+  )
 
   await window.studio.script.saveScript(script, filePath)
 }

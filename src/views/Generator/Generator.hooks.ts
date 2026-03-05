@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { debounce } from 'lodash-es'
+import * as pathe from 'pathe'
 import { useCallback, useEffect, useState } from 'react'
 
 import {
@@ -131,7 +132,7 @@ export function useScriptExport(generatorFilePath: string) {
   )
 }
 
-export function useScriptPreview() {
+export function useScriptPreview(generatorFilePath: string) {
   const [preview, setPreview] = useState('')
   const [error, setError] = useState<Error>()
 
@@ -143,7 +144,16 @@ export function useScriptPreview() {
         const generator = selectGeneratorData(state)
         const requests = selectFilteredRequests(state)
 
-        const script = await generateScriptPreview(generator, requests)
+        const scriptPath = pathe.join(
+          pathe.dirname(generatorFilePath),
+          generator.scriptName || 'script.js'
+        )
+
+        const script = await generateScriptPreview(
+          scriptPath,
+          generator,
+          requests
+        )
         setPreview(script)
       } catch (e) {
         console.error(e)
@@ -160,7 +170,7 @@ export function useScriptPreview() {
       updatePreview(state)
     )
     return unsubscribe
-  }, [])
+  }, [generatorFilePath])
 
   return { preview, error }
 }

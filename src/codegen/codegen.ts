@@ -9,6 +9,7 @@ import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
 import { DataFile, Variable } from '@/types/testData'
 import { ThinkTime } from '@/types/testOptions'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { makeRelativePath } from '@/utils/fs/path'
 import { groupProxyData } from '@/utils/groups'
 import { getContentTypeWithCharsetHeader } from '@/utils/headers'
 import { exhaustive } from '@/utils/typescript'
@@ -23,11 +24,13 @@ import { generateImportStatement } from './imports'
 import { generateOptions } from './options'
 
 interface GenerateScriptParams {
+  scriptPath: string
   recording: ProxyData[]
   generator: GeneratorFileData
 }
 
 export function generateScript({
+  scriptPath,
   recording,
   generator,
 }: GenerateScriptParams): string {
@@ -39,7 +42,7 @@ export function generateScript({
     export const options = ${generateOptions(generator.options)}
 
     ${generateVariableDeclarations(generator.testData.variables)}
-    ${generateDataFileDeclarations(generator.testData.files)}
+    ${generateDataFileDeclarations(generator.testData.files, scriptPath)}
     ${generateGetUniqueItemFunction(generator.testData.files)}
 
     export default function() {
@@ -81,7 +84,10 @@ export function generateVariableDeclarations(variables: Variable[]): string {
   return `const VARS = {\n${variableKeyValuePairs}\n};`
 }
 
-export function generateDataFileDeclarations(files: DataFile[]): string {
+export function generateDataFileDeclarations(
+  files: DataFile[],
+  scriptPath: string | undefined
+): string {
   if (files.length === 0) {
     return ''
   }
@@ -91,16 +97,20 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
       const name = pathe.basename(file.path)
       const displayName = getFileNameWithoutExtension(name)
       const isCSV = name.toLowerCase().endsWith('csv')
-      const dataPath = `../Data/${name}`
+
+      // If the script path is not provided, just assume that the script is in the same
+      // directory as the data file.
+      const scriptDir = pathe.dirname(scriptPath ?? file.path)
+      const relativePath = makeRelativePath(scriptDir, file.path)
 
       if (isCSV) {
         return `
-        "${displayName}": await csv.parse(await fs.open('${dataPath}'), { asObjects: true })`
+        "${displayName}": await csv.parse(await fs.open('${relativePath}'), { asObjects: true })`
       }
 
       return `
         "${displayName}": new SharedArray("${displayName}", () => {
-          const data = JSON.parse(open('${dataPath}'));
+          const data = JSON.parse(open('${relativePath}'));
           return Array.isArray(data) ? data : [data];
         })`
     })
