@@ -167,9 +167,15 @@ export const useGenerateRules = ({
       rules: [...generator.rules, ...suggestedRulesRef.current],
     }
 
+    const tempPath = await window.studio.file.getTempPath({
+      extension: '.js',
+      prefix: 'script',
+    })
+
     const script: RawScript = {
       type: 'raw',
       name: 'script.js',
+      path: tempPath,
       content: await generateScriptPreview(newGenerator, recording),
     }
 
