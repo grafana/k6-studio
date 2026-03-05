@@ -9,6 +9,7 @@ import { readResource } from '@/utils/resources'
 interface InstrumentScriptOptions {
   entryScript: string
   replayScript: string
+  entryPath: string
   scriptPath: string
 }
 
@@ -22,6 +23,7 @@ const parseScript = (input: string) => {
 export const instrumentScript = ({
   entryScript,
   replayScript,
+  entryPath,
   scriptPath,
 }: InstrumentScriptOptions) => {
   const entryAst = parseScript(entryScript)
@@ -30,15 +32,21 @@ export const instrumentScript = ({
     throw new Error('Failed to parse entry script')
   }
 
-  // Use relative import path with ./ prefix for cross-platform compatibility
-  const scriptBasename = path.basename(scriptPath)
-  const relativePath = `./${scriptBasename}`
+  // Use relative import path from entry script's directory
+  const entryDir = path.dirname(entryPath)
+  const relativePath = path.relative(entryDir, scriptPath)
+
+  // If the file is in the same directory, then path.relative will return
+  // just the filename, so we need to add the ./ prefix.
+  const relativePathWithPrefix = !relativePath.startsWith('.')
+    ? `./${relativePath}`
+    : relativePath
 
   traverse(entryAst, {
     [NodeType.ImportDeclaration](node) {
       if (node.source.value === '__USER_SCRIPT_PATH__') {
-        node.source.value = relativePath
-        node.source.raw = JSON.stringify(relativePath)
+        node.source.value = relativePathWithPrefix
+        node.source.raw = JSON.stringify(relativePathWithPrefix)
       }
     },
     [NodeType.VariableDeclarator](node) {
@@ -59,13 +67,17 @@ export const instrumentScript = ({
   return generate(entryAst)
 }
 
-export const instrumentScriptFromPath = async (scriptPath: string) => {
+export const instrumentScriptFromPath = async (
+  entryPath: string,
+  scriptPath: string
+) => {
   const entryScript = await readResource('entrypoint-script')
   const replayScript = await readResource('replay-script')
 
   return instrumentScript({
     entryScript,
     replayScript,
+    entryPath,
     scriptPath,
   })
 }

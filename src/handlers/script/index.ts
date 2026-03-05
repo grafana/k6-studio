@@ -53,24 +53,24 @@ export function initialize() {
 
       const browserWindow = browserWindowFromEvent(event)
 
-      try {
-        currentTestRun = await runScript({
-          browserWindow,
-          scriptPath: file.path,
-          proxySettings: k6StudioState.appSettings.proxy,
-          usageReport: k6StudioState.appSettings.telemetry.usageReport,
-        })
+      currentTestRun = await runScript({
+        browserWindow,
+        scriptPath: file.path,
+        proxySettings: k6StudioState.appSettings.proxy,
+        usageReport: k6StudioState.appSettings.telemetry.usageReport,
+      })
 
-        if (shouldTrack) {
-          trackEvent({
-            event: UsageEventName.ScriptValidated,
-            payload: {
-              isExternal: !file.path.startsWith(SCRIPTS_PATH),
-            },
-          })
-        }
-      } finally {
+      currentTestRun.on('stop', async () => {
         await file.dispose()
+      })
+
+      if (shouldTrack) {
+        trackEvent({
+          event: UsageEventName.ScriptValidated,
+          payload: {
+            isExternal: !file.path.startsWith(SCRIPTS_PATH),
+          },
+        })
       }
     }
   )

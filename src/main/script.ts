@@ -2,6 +2,7 @@ import { dialog, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { writeFile, unlink } from 'fs/promises'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
+import os from 'os'
 import path from 'path'
 
 import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
@@ -45,23 +46,24 @@ export const runScript = async ({
   proxySettings,
   browserWindow,
 }: RunScriptOptions) => {
+  const entryScriptName = getTempScriptName()
+  const entryScriptPath = path.join(os.tmpdir(), entryScriptName)
+
   // 1. Get an instrumented version of the script content
-  const modifiedScript = await instrumentScriptFromPath(scriptPath)
+  const modifiedScript = await instrumentScriptFromPath(
+    entryScriptPath,
+    scriptPath
+  )
 
   // 2. Save the enhanced script content to a temp file in the same directory as the original script
   // (k6 will look for modules/data files in the same directory as the script)
-  const dirname = path.dirname(scriptPath)
-
-  const tempFileName = getTempScriptName()
-  const tempScriptPath = path.join(dirname, tempFileName)
-
-  await writeFile(tempScriptPath, modifiedScript)
+  await writeFile(entryScriptPath, modifiedScript)
 
   // 3. Archive the script and its dependencies
-  const archivePath = await archiveScript(tempScriptPath, browserWindow)
+  const archivePath = await archiveScript(entryScriptPath, browserWindow)
 
   // 4. Delete the temp script file
-  await unlink(tempScriptPath)
+  await unlink(entryScriptPath)
 
   const proxyArgs = await getProxyArguments(proxySettings, {
     prefix: '',
