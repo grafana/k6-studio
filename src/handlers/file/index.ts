@@ -1,9 +1,9 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
-import os from 'os'
 import path from 'path'
 
+import { TEMP_PATH } from '@/constants/workspace'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
@@ -66,7 +66,7 @@ export function initialize() {
       const ext = extension?.replace(/^\.?/, '.') ?? ''
       const basename = `${prefix}-${crypto.randomUUID()}${ext}`
 
-      return path.join(os.tmpdir(), basename)
+      return path.join(TEMP_PATH, basename)
     }
   )
 }

@@ -1,13 +1,13 @@
 import { writeFile, unlink } from 'fs/promises'
-import os from 'os'
 import { basename, extname, join } from 'path'
 
+import { TEMP_PATH } from '@/constants/workspace'
 import { RawScript, Script } from '@/handlers/cloud/types'
 import { getTempScriptName } from '@/main/script'
 
 async function createTempFile(script: RawScript) {
   const tempFilePath =
-    script.path ?? join(os.tmpdir(), script.name || getTempScriptName())
+    script.path ?? join(TEMP_PATH, script.name || getTempScriptName())
 
   await writeFile(tempFilePath, script.content)
 

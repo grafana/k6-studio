@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, writeFile } from 'fs/promises'
-import os from 'os'
 import path from 'path'
 
+import { TEMP_PATH } from '@/constants/workspace'
 import { getProxyArguments } from '@/main/proxy'
 import { AppSettings } from '@/types/settings'
 import { getBrowserPath } from '@/utils/browser'
@@ -22,7 +22,7 @@ const CHROME_DEV_PREFERENCES = JSON.stringify({
 })
 
 const createUserDataDir = async () => {
-  const userDataDir = await mkdtemp(path.join(os.tmpdir(), 'k6-studio-'))
+  const userDataDir = await mkdtemp(path.join(TEMP_PATH, 'browser-'))
 
   // If we're in development mode, we create a default Chrome profile
   // with some preferences that make developing the extension easier

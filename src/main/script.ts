@@ -2,10 +2,13 @@ import { dialog, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { writeFile, unlink } from 'fs/promises'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
-import os from 'os'
 import path from 'path'
 
-import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
+import {
+  TEMP_K6_ARCHIVE_PATH,
+  TEMP_PATH,
+  TEMP_SCRIPT_SUFFIX,
+} from '@/constants/workspace'
 import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
@@ -47,7 +50,7 @@ export const runScript = async ({
   browserWindow,
 }: RunScriptOptions) => {
   const entryScriptName = getTempScriptName()
-  const entryScriptPath = path.join(os.tmpdir(), entryScriptName)
+  const entryScriptPath = path.join(TEMP_PATH, entryScriptName)
 
   // 1. Get an instrumented version of the script content
   const modifiedScript = await instrumentScriptFromPath(
