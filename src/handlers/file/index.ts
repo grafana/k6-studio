@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
+import os from 'os'
 import path from 'path'
 
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
@@ -17,6 +18,7 @@ import {
   FileContent,
   FileContentType,
   FileHandler,
+  GetTempPathArgs,
   OpenFileRequest,
   OpenFileResult,
   SaveFilePayload,
@@ -55,6 +57,16 @@ export function initialize() {
       const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })
 
       return parseOpenResult(filePath, request.fileType, raw)
+    }
+  )
+
+  ipcMain.handle(
+    FileHandler.GetTempPath,
+    (_event, { prefix = 'k6s', extension }: GetTempPathArgs = {}): string => {
+      const ext = extension?.replace(/^\.?/, '.') ?? ''
+      const basename = `${prefix}-${crypto.randomUUID()}${ext}`
+
+      return path.join(os.tmpdir(), basename)
     }
   )
 }

@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron'
 
 import {
   FileHandler,
+  GetTempPathArgs,
   OpenFileRequest,
   OpenFileResult,
   SaveFilePayload,
@@ -16,4 +17,8 @@ export function open(request: OpenFileRequest) {
     FileHandler.Open,
     request
   ) as Promise<OpenFileResult>
+}
+
+export function getTempPath(payload?: GetTempPathArgs) {
+  return ipcRenderer.invoke(FileHandler.GetTempPath, payload) as Promise<string>
 }

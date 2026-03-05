@@ -5,6 +5,12 @@ import { RecordingData } from '@/types/recordingData'
 export enum FileHandler {
   Save = 'file:save',
   Open = 'file:open',
+  GetTempPath = 'file:get-temp-path',
+}
+
+export interface GetTempPathArgs {
+  prefix?: string
+  extension?: string
 }
 
 export type FileContent =
