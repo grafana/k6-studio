@@ -1,9 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 
-export function useDataFilePreview(fileName: string) {
+export function useDataFilePreview(filePath: string) {
   return useQuery({
-    queryKey: ['data-file', fileName],
-    queryFn: () => window.studio.data.loadPreview(fileName),
-    enabled: !!fileName,
+    queryKey: ['data-file', filePath],
+    queryFn: async () => {
+      const data = await window.studio.file.open({
+        location: { type: 'path', path: filePath },
+      })
+
+      if (data.type !== 'json' && data.type !== 'csv') {
+        throw new Error('Unsupported file format')
+      }
+
+      return data
+    },
+    enabled: !!filePath,
   })
 }

@@ -48,7 +48,8 @@ export const useStudioUIStore = create<StudioUIStore>()(
           case 'script':
             state.scripts.set(file.path, file)
             break
-          case 'data-file':
+          case 'json':
+          case 'csv':
             state.dataFiles.set(file.path, file)
             break
           default:
@@ -70,7 +71,8 @@ export const useStudioUIStore = create<StudioUIStore>()(
           case 'script':
             state.scripts.delete(file.path)
             break
-          case 'data-file':
+          case 'json':
+          case 'csv':
             state.dataFiles.delete(file.path)
             break
           default:

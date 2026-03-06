@@ -3,7 +3,7 @@ import path from 'path'
 
 import { StudioFile } from '@/types'
 
-function inferFileTypeFromExtension(
+export function inferFileTypeFromExtension(
   filePath: string
 ): StudioFile['type'] | null {
   const ext = path.extname(filePath).toLowerCase()
@@ -21,8 +21,10 @@ function inferFileTypeFromExtension(
       return 'script'
 
     case '.json':
+      return 'json'
+
     case '.csv':
-      return 'data-file'
+      return 'csv'
 
     default:
       return null

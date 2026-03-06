@@ -1,7 +1,9 @@
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
-import { StudioFile } from '@/types'
+import { StudioFile, SupportedFileType } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { RecordingData } from '@/types/recordingData'
+import { DataRecord } from '@/types/testData'
+import { JsonObject } from '@/utils/json'
 
 export enum FileHandler {
   Save = 'file:save',
@@ -33,16 +35,24 @@ export interface GetTempPathArgs {
 }
 
 export type FileContent =
-  | { type: 'generator'; data: GeneratorFileData }
-  | { type: 'browser-test'; data: BrowserTestFile }
-  | { type: 'script'; content: string }
-  | { type: 'recording'; data: RecordingData }
+  | GeneratorFileContent
+  | BrowserTestFileContent
+  | RecordingFileContent
+  | ScriptFileContent
 
 export type FileContentType = FileContent['type']
 
-export type FileLocation =
-  | { type: 'path'; path: string }
-  | { type: 'new'; hint: string }
+export interface FileOnDisk {
+  type: 'path'
+  path: string
+}
+
+export interface UnsavedFile {
+  type: 'new'
+  hint: string
+}
+
+export type FileLocation = FileOnDisk | UnsavedFile
 
 export interface SaveFilePayload {
   content: FileContent
@@ -50,12 +60,52 @@ export interface SaveFilePayload {
 }
 
 export interface OpenFileRequest {
-  location: FileLocation
-  fileType: FileContentType
+  location: FileOnDisk
+  fileType?: SupportedFileType
+}
+
+export interface GeneratorFileContent {
+  type: 'generator'
+  data: GeneratorFileData
+}
+
+export interface BrowserTestFileContent {
+  type: 'browser-test'
+  data: BrowserTestFile
+}
+
+export interface RecordingFileContent {
+  type: 'recording'
+  data: RecordingData
+}
+
+export interface ScriptFileContent {
+  type: 'script'
+  content: string
+}
+export interface JsonFileContent {
+  type: 'json'
+  props: string[]
+  data: JsonObject[]
+  total: number
+}
+
+export interface CsvFileContent {
+  type: 'csv'
+  props: string[]
+  data: DataRecord[]
+  total: number
+}
+
+export interface UnsupportedFileContent {
+  type: 'unsupported-format'
 }
 
 export type OpenFileResult =
-  | { type: 'generator'; data: GeneratorFileData }
-  | { type: 'browser-test'; data: BrowserTestFile }
-  | { type: 'recording'; data: RecordingData }
-  | { type: 'script'; content: string; isExternal: boolean }
+  | GeneratorFileContent
+  | BrowserTestFileContent
+  | RecordingFileContent
+  | (ScriptFileContent & { isExternal: boolean })
+  | JsonFileContent
+  | CsvFileContent
+  | UnsupportedFileContent

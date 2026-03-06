@@ -3,11 +3,11 @@ import { InfoIcon } from 'lucide-react'
 
 import { Table } from '@/components/Table'
 import { TableCellWithTooltip } from '@/components/TableCellWithTooltip'
-import { DataFilePreview } from '@/types/testData'
+import { CsvFileContent, JsonFileContent } from '@/handlers/file/types'
 import { renderDataFileValue } from '@/utils/dataFile'
 
 interface DataFileTableProps {
-  preview: DataFilePreview
+  preview: JsonFileContent | CsvFileContent
   isLoading: boolean
 }
 

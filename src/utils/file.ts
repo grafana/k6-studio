@@ -1,4 +1,4 @@
-import { StudioFileType } from '@/types'
+import { SupportedFileType } from '@/types'
 
 import { getRoutePath } from '../routeMap'
 
@@ -18,7 +18,7 @@ export function getFileExtension(fileName: string) {
   return fileName.split('.').pop()
 }
 
-export function getViewPath(type: StudioFileType, path: string) {
+export function getViewPath(type: SupportedFileType, path: string) {
   const encodedPath = encodeURIComponent(path)
 
   switch (type) {
@@ -34,7 +34,8 @@ export function getViewPath(type: StudioFileType, path: string) {
     case 'script':
       return getRoutePath('validator', { path: encodedPath })
 
-    case 'data-file':
+    case 'json':
+    case 'csv':
       return getRoutePath('dataFilePreviewer', { path: encodedPath })
 
     default:

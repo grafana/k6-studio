@@ -7,17 +7,10 @@ import {
   Text,
   Tooltip,
 } from '@radix-ui/themes'
-import {
-  FilePlusIcon,
-  InfoIcon,
-  PlusIcon,
-  Trash2Icon,
-  TriangleAlertIcon,
-} from 'lucide-react'
+import { InfoIcon, PlusIcon, Trash2Icon, TriangleAlertIcon } from 'lucide-react'
 
 import { PopoverTooltip } from '@/components/PopoverTooltip'
 import { Table } from '@/components/Table'
-import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { DataFile } from '@/types/testData'
@@ -146,16 +139,6 @@ function AddDataFileDropdown() {
     setFiles([...selectedFiles, { path: filePath }])
   }
 
-  const importDataFile = useImportDataFile()
-
-  const handleImportDataFile = async () => {
-    const destPath = await importDataFile()
-
-    if (destPath) {
-      handleAdd(destPath)
-    }
-  }
-
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
@@ -172,11 +155,6 @@ function AddDataFileDropdown() {
             {getDataFileDisplayName(file.path)}
           </DropdownMenu.Item>
         ))}
-        {options.length > 0 && <DropdownMenu.Separator />}
-        <DropdownMenu.Item onClick={handleImportDataFile}>
-          <FilePlusIcon />
-          Import new data file
-        </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )

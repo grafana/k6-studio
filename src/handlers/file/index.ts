@@ -1,19 +1,23 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
+import { parse as parseCSV } from 'papaparse'
 import path from 'path'
 import { EntryInfo, readdirp, ReaddirpOptions } from 'readdirp'
 
 import { isIgnoredSystemFile } from '@/constants/files'
 import { TEMP_PATH } from '@/constants/workspace'
-import { createStudioFile } from '@/main/file'
+import { createStudioFile, inferFileTypeFromExtension } from '@/main/file'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
+import { SupportedFileType } from '@/types'
+import { DataRecord } from '@/types/testData'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { harToProxyData } from '@/utils/harToProxyData'
+import { JsonObject } from '@/utils/json'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { exhaustive } from '@/utils/typescript'
 import { Workspace } from '@/utils/workspace'
@@ -21,7 +25,6 @@ import { Workspace } from '@/utils/workspace'
 import {
   type DirectoryEntry,
   FileContent,
-  FileContentType,
   FileHandler,
   GetTempPathArgs,
   type ListDirectoryArgs,
@@ -61,13 +64,22 @@ export function initialize() {
 
       const browserWindow = browserWindowFromEvent(event)
 
-      const filePath = resolveFileLocation(request.fileType, request.location)
-      const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })
+      const fileType =
+        request.fileType ?? inferFileTypeFromExtension(request.location.path)
+
+      if (fileType === null) {
+        return { type: 'unsupported-format' }
+      }
+
+      const raw = await readFile(request.location.path, {
+        encoding: 'utf-8',
+        flag: 'r',
+      })
 
       return parseOpenResult(
         browserWindow.workspace,
-        filePath,
-        request.fileType,
+        request.location.path,
+        fileType,
         raw
       )
     }
@@ -161,7 +173,7 @@ export function initialize() {
 async function parseOpenResult(
   workspace: Workspace,
   filePath: string,
-  fileType: FileContentType,
+  fileType: SupportedFileType,
   raw: string
 ): Promise<OpenFileResult> {
   switch (fileType) {
@@ -231,6 +243,34 @@ async function parseOpenResult(
         content: raw,
         isExternal: !workspace.isInside(filePath),
       }
+
+    case 'json': {
+      // We should use zod to parse the json, so that we know that the format is correct.
+      const parsed = JSON.parse(raw) as JsonObject | JsonObject[]
+      const array = Array.isArray(parsed) ? parsed : [parsed]
+
+      return {
+        type: 'json',
+        props: array[0] ? Object.keys(array[0]) : [],
+        data: array.slice(0, 20),
+        total: array.length,
+      }
+    }
+
+    case 'csv': {
+      const parsed = parseCSV<DataRecord>(raw, {
+        header: true,
+        delimiter: ',',
+        skipEmptyLines: true,
+      })
+
+      return {
+        type: 'csv',
+        props: parsed.meta.fields ?? [],
+        data: parsed.data.slice(0, 20),
+        total: parsed.data.length,
+      }
+    }
 
     default:
       return exhaustive(fileType)

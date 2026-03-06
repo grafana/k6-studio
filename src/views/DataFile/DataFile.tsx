@@ -14,7 +14,7 @@ import { DataFileControls } from './DataFileControls'
 import { DataFileTable } from './DataFileTable'
 
 export function DataFile() {
-  const file = useCurrentFile('data-file')
+  const file = useCurrentFile('json')
   const navigate = useNavigate()
   const showToast = useToast()
 

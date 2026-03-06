@@ -1,5 +1,15 @@
 import { z } from 'zod'
 
+export type JsonObject = { [key: string]: JsonValue }
+
+export type JsonValue =
+  | JsonObject
+  | JsonValue[]
+  | string
+  | number
+  | boolean
+  | null
+
 export function safeJsonParse<T extends object>(value: string) {
   try {
     return JSON.parse(value) as T

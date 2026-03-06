@@ -5,7 +5,6 @@ import * as browser from './browser'
 import * as browserRemote from './browserRemote'
 import * as browserTest from './browserTest'
 import * as cloud from './cloud'
-import * as dataFiles from './dataFiles'
 import * as file from './file'
 import * as generator from './generator'
 import * as har from './har'
@@ -29,7 +28,6 @@ export function initialize() {
   ui.initialize()
   generator.initialize()
   browserTest.initialize()
-  dataFiles.initialize()
   log.initialize()
   app.initialize()
   ai.initialize()

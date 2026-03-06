@@ -28,6 +28,7 @@ export const FileTypeToLabel: Record<StudioFile['type'], string> = {
   recording: 'recording',
   generator: 'generator',
   script: 'script',
-  'data-file': 'data file',
+  json: 'data file',
+  csv: 'data file',
   'browser-test': 'browser test',
 }

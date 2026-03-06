@@ -2,7 +2,7 @@ import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { unlink, access, rename } from 'fs/promises'
 import path from 'path'
-import readdirp, { EntryInfo, ReaddirpOptions } from 'readdirp'
+import { readdirp, EntryInfo, ReaddirpOptions } from 'readdirp'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS, isIgnoredSystemFile } from '@/constants/files'
@@ -102,7 +102,8 @@ export function initialize() {
           scripts.push(file)
           break
 
-        case 'data-file':
+        case 'csv':
+        case 'json':
           dataFiles.push(file)
           break
       }

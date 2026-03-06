@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Box, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
-import { FilePlusIcon, PanelLeftCloseIcon, PlusIcon } from 'lucide-react'
+import { PanelLeftCloseIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -8,7 +8,6 @@ import { FileTree } from '@/components/FileTree'
 import { NewTestMenu } from '@/components/NewTestMenu'
 import { SearchField } from '@/components/SearchField'
 import { WorkspaceFileTree } from '@/components/WorkspaceFileTree'
-import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { getRoutePath } from '@/routeMap'
 import { useFeaturesStore } from '@/store/features'
 
@@ -25,7 +24,6 @@ interface SidebarProps {
 export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, tests, scripts, dataFiles } = useFiles(searchTerm)
-  const handleImportDataFile = useImportDataFile()
   const isBrowserEditorEnabled = useFeaturesStore(
     (state) => state.features['browser-test-editor']
   )
@@ -112,18 +110,6 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
                 label="Data files"
                 files={dataFiles}
                 noFilesMessage="No data files found"
-                actions={
-                  <Tooltip content="Import data file" side="right">
-                    <IconButton
-                      aria-label="Import data file"
-                      variant="ghost"
-                      size="1"
-                      onClick={handleImportDataFile}
-                    >
-                      <FilePlusIcon />
-                    </IconButton>
-                  </Tooltip>
-                }
               />
             </Flex>
           </ScrollArea>
