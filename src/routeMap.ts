@@ -7,7 +7,6 @@ const routes = {
   validator: '/validator/:path?',
   generator: '/generator/:path',
   browserTestEditor: '/editor/:path',
-  dataFilePreviewer: '/data-file/:path',
 }
 
 export type RouteName = keyof typeof routes
@@ -30,5 +29,4 @@ export const routeMap = {
   generator: getRoutePath('generator'),
   browserTestEditor: getRoutePath('browserTestEditor'),
   validator: getRoutePath('validator'),
-  dataFilePreviewer: getRoutePath('dataFilePreviewer'),
 }

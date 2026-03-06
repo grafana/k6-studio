@@ -7,6 +7,7 @@ import invariant from 'tiny-invariant'
 import { View } from '@/components/Layout/View'
 import { StudioFile } from '@/types'
 
+import { DataFile } from '../DataFile'
 import { RecordingPreviewer } from '../RecordingPreviewer'
 import { Validator } from '../Validator'
 
@@ -98,6 +99,11 @@ export function EditorView() {
         }}
       />
     )
+  }
+
+  if (result.type === 'json' || result.type === 'csv') {
+    const file = createStudioFile(path, result.type)
+    return <DataFile file={file} preview={result} />
   }
 
   if (result.type === 'unsupported-format') {

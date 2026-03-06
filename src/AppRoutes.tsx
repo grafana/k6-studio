@@ -16,7 +16,6 @@ import { Recorder } from '@/views/Recorder'
 
 import { ErrorElement } from './ErrorElement'
 import { routeMap } from './routeMap'
-import { DataFile } from './views/DataFile'
 import { Generator } from './views/Generator'
 
 const router = createHashRouter(
@@ -34,7 +33,6 @@ const router = createHashRouter(
         path={routeMap.browserTestEditor}
         element={<BrowserTestEditor />}
       />
-      <Route path={routeMap.dataFilePreviewer} element={<DataFile />} />
       <Route path="*" element={<NoRouteFound />} />
     </Route>
   )

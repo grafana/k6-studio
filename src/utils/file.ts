@@ -32,11 +32,9 @@ export function getViewPath(type: SupportedFileType, path: string) {
       return getRoutePath('browserTestEditor', { path: encodedPath })
 
     case 'script':
-      return getRoutePath('editorView', { path: encodedPath })
-
     case 'json':
     case 'csv':
-      return getRoutePath('dataFilePreviewer', { path: encodedPath })
+      return getRoutePath('editorView', { path: encodedPath })
 
     default:
       return exhaustive(type)
