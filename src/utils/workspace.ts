@@ -6,6 +6,7 @@ import path from 'path'
 
 // import { EventEmitter } from 'extension/src/utils/events'
 
+import { WorkspaceHandler } from '@/handlers/workspace/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
 import {
@@ -37,9 +38,10 @@ export const setupProjectStructure = async () => {
 }
 
 interface WorkspaceEventMap {
-  add: { path: string }
-  remove: { path: string }
-  change: { path: string }
+  'file:add': { path: string }
+  'file:remove': { path: string }
+  'file:change': { path: string }
+  'workspace:change': { path: string }
 }
 
 export class Workspace extends EventEmitter<WorkspaceEventMap> {
@@ -53,15 +55,15 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
     this.#watcher = watch(rootPath, { ignoreInitial: true })
 
     this.#watcher.on('add', (filePath) => {
-      this.emit('add', { path: filePath })
+      this.emit('file:add', { path: filePath })
     })
 
     this.#watcher.on('unlink', (filePath) => {
-      this.emit('remove', { path: filePath })
+      this.emit('file:remove', { path: filePath })
     })
 
     this.#watcher.on('change', (filePath) => {
-      this.emit('change', { path: filePath })
+      this.emit('file:change', { path: filePath })
     })
   }
 
@@ -70,7 +72,13 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
 
     this.#rootPath = newRootPath
 
-    this.#watcher = watch(newRootPath, { ignoreInitial: true })
+    this.#watcher = watch(newRootPath, {
+      ignoreInitial: true,
+    })
+
+    this.emit('workspace:change', {
+      path: newRootPath,
+    })
   }
 
   get path() {
@@ -125,6 +133,18 @@ export class WorkspaceWindow extends BrowserWindow {
       this.workspace.close().catch(() => {
         console.warn(`Failed to close workspace '${this.workspace.path}'.`)
       })
+    })
+
+    this.workspace.on('file:add', (event) => {
+      this.webContents.send(WorkspaceHandler.OnAddFile, event.path)
+    })
+
+    this.workspace.on('file:remove', (event) => {
+      this.webContents.send(WorkspaceHandler.OnRemoveFile, event.path)
+    })
+
+    this.workspace.on('workspace:change', (event) => {
+      this.webContents.send(WorkspaceHandler.OnChangeWorkspace, event.path)
     })
   }
 }

@@ -16,6 +16,7 @@ import * as proxy from './handlers/proxy/preload'
 import * as script from './handlers/script/preload'
 import * as settings from './handlers/settings/preload'
 import * as ui from './handlers/ui/preload'
+import * as workspace from './handlers/workspace/preload'
 import * as Sentry from './sentry'
 
 const studio = {
@@ -35,6 +36,7 @@ const studio = {
   browserRemote,
   cloud,
   ai,
+  workspace,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

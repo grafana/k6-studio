@@ -1,7 +1,8 @@
-import { Menu, shell } from 'electron'
+import { dialog, Menu, shell } from 'electron'
 
 import { reportNewIssue } from '../utils/bugReport'
 import { getPlatform } from '../utils/electron'
+import { WorkspaceWindow } from '../utils/workspace'
 
 import { openLogFolder } from './logger'
 
@@ -12,7 +13,34 @@ const isMac = getPlatform() === 'mac'
 // https://www.electronjs.org/docs/latest/api/menu
 const template: Electron.MenuItemConstructorOptions[] = [
   ...getAppMenu(),
-  { role: 'fileMenu' },
+  {
+    role: 'fileMenu',
+    submenu: [
+      {
+        label: 'Open workspace...',
+        click: async (_menuItem, browserWindow) => {
+          if (browserWindow instanceof WorkspaceWindow === false) {
+            return
+          }
+
+          const {
+            filePaths: [selectedPath],
+          } = await dialog.showOpenDialog(browserWindow, {
+            properties: ['openDirectory'],
+            title: 'Open workspace',
+          })
+
+          if (selectedPath === undefined) {
+            return
+          }
+
+          browserWindow.workspace.switch(selectedPath)
+        },
+      },
+      { type: 'separator' },
+      { role: 'close' },
+    ],
+  },
   { role: 'editMenu' },
   {
     label: 'View',
