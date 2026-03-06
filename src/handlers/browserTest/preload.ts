@@ -1,22 +1,13 @@
 import { ipcRenderer } from 'electron'
-import invariant from 'tiny-invariant'
 
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 
-import { open as openFile, save as saveFile } from '../file/preload'
+import { save as saveFile } from '../file/preload'
 
 import { BrowserTestHandler } from './types'
 
 export function create() {
   return ipcRenderer.invoke(BrowserTestHandler.Create) as Promise<string>
-}
-
-export async function open(filePath: string): Promise<BrowserTestFile> {
-  const result = await openFile(filePath)
-
-  invariant(result.type === 'browser-test', 'Expected browser-test content')
-
-  return result.data
 }
 
 export function save(filePath: string, data: BrowserTestFile) {

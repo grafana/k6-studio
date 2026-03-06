@@ -35,9 +35,13 @@ export function RecordingSelector({
 
   const handleOpen = async (filePath: string) => {
     try {
-      const data = await window.studio.har.openFile(filePath)
+      const result = await window.studio.file.open(filePath)
 
-      setRecording(data.requests, filePath)
+      if (result.type !== 'recording') {
+        throw new Error('Expected recording content')
+      }
+
+      setRecording(result.data.requests, filePath)
       onChangeRecording?.()
     } catch (error) {
       showToast({

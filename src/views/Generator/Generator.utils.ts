@@ -1,3 +1,5 @@
+import invariant from 'tiny-invariant'
+
 import { generateScript } from '@/codegen'
 import {
   selectFilteredRequests,
@@ -36,11 +38,17 @@ export async function exportScript(filePath: string) {
 }
 
 export const loadGeneratorFile = async (fileName: string) => {
-  const generator = await window.studio.generator.loadGenerator(fileName)
-  return generator
+  const result = await window.studio.file.open(fileName)
+
+  invariant(result.type === 'generator', 'Expected generator content')
+
+  return result.data
 }
 
 export const loadRecording = async (filePath: string) => {
-  const data = await window.studio.har.openFile(filePath)
-  return data.requests
+  const result = await window.studio.file.open(filePath)
+
+  invariant(result.type === 'recording', 'Expected recording content')
+
+  return result.data.requests
 }

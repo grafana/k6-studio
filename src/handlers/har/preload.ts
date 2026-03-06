@@ -1,9 +1,6 @@
 import { ipcRenderer } from 'electron'
-import invariant from 'tiny-invariant'
 
 import { RecordingData } from '@/types/recordingData'
-
-import { open as openFileViaHandler } from '../file/preload'
 
 import { HarHandler } from './types'
 
@@ -13,14 +10,6 @@ export function saveFile(data: RecordingData, prefix: string) {
     data,
     prefix
   ) as Promise<string>
-}
-
-export async function openFile(filePath: string): Promise<RecordingData> {
-  const result = await openFileViaHandler(filePath)
-
-  invariant(result.type === 'recording', 'Expected recording content')
-
-  return result.data
 }
 
 export function importFile() {

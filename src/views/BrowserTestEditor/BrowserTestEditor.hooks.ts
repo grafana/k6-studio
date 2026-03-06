@@ -26,8 +26,14 @@ export function useBrowserTestFile(): StudioFile {
 export function useBrowserTest(fileName: string) {
   return useQuery<BrowserTestFile>({
     queryKey: ['browserTest', fileName],
-    queryFn: () => {
-      return window.studio.browserTest.open(fileName)
+    queryFn: async () => {
+      const result = await window.studio.file.open(fileName)
+
+      if (result.type !== 'browser-test') {
+        throw new Error('Expected browser-test content')
+      }
+
+      return result.data
     },
   })
 }

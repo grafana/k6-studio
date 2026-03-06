@@ -30,13 +30,13 @@ export function RecordingPreviewer() {
     ;(async () => {
       setIsLoading(true)
       setProxyData([])
-      const data = await window.studio.har.openFile(file.path)
+      const result = await window.studio.file.open(file.path)
       setIsLoading(false)
 
-      invariant(data, 'Failed to open file')
+      invariant(result.type === 'recording', 'Failed to open file')
 
-      setProxyData(data.requests)
-      setBrowserEvents(data.browserEvents)
+      setProxyData(result.data.requests)
+      setBrowserEvents(result.data.browserEvents)
     })()
 
     return () => {

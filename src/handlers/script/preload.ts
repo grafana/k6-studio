@@ -1,11 +1,10 @@
 import { ipcRenderer } from 'electron'
-import invariant from 'tiny-invariant'
 
 import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 
 import { Script } from '../cloud/types'
-import { open as openFile, save } from '../file/preload'
+import { save } from '../file/preload'
 import { FileLocation } from '../file/types'
 import { createListener } from '../utils'
 
@@ -26,22 +25,6 @@ export function analyzeScript(location: FileLocation) {
   return ipcRenderer.invoke(ScriptHandler.Analyze, location) as Promise<
     OpenScriptResult['options']
   >
-}
-
-export async function openScript(
-  scriptPath: string
-): Promise<OpenScriptResult> {
-  const result = await openFile(scriptPath)
-
-  invariant(result.type === 'script', 'Expected script content')
-
-  const options = await analyzeScript({ type: 'path', path: scriptPath })
-
-  return {
-    script: result.content,
-    options,
-    isExternal: result.isExternal,
-  }
 }
 
 export function saveScript(script: string, filePath: string) {

@@ -42,7 +42,6 @@ describe('useCreateGenerator', () => {
       generator: {
         createGenerator: vi.fn().mockResolvedValue(fileName),
         saveGenerator: vi.fn(),
-        loadGenerator: vi.fn(),
       },
     })
 
@@ -61,7 +60,6 @@ describe('useCreateGenerator', () => {
     vi.stubGlobal('studio', {
       generator: {
         saveGenerator: vi.fn().mockRejectedValue(error),
-        loadGenerator: vi.fn(),
       },
     })
 
