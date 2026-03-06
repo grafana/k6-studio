@@ -1,5 +1,6 @@
 import { Button, DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
 import { EllipsisVerticalIcon } from 'lucide-react'
+import * as pathe from 'pathe'
 import { useState } from 'react'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
@@ -9,7 +10,6 @@ import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
-import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
 import { DebugSession } from '../Validator/types'
 
 interface BrowserTestEditorControlsProps {
@@ -29,7 +29,6 @@ export function BrowserTestEditorControls({
   onStartDebugging,
   onSave,
 }: BrowserTestEditorControlsProps) {
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const showToast = useToast()
 
@@ -38,23 +37,32 @@ export function BrowserTestEditorControls({
     navigateHomeOnDelete: true,
   })
 
-  const handleExportScript = (scriptName: string) => {
-    window.studio.script
-      .showSaveDialog(scriptName)
-      .then((filePath) => window.studio.script.saveScript(preview, filePath))
-      .then(() => {
-        showToast({
-          title: 'Script exported successfully',
-          status: 'success',
-        })
-        setIsExportDialogOpen(false)
+  const handleExportScript = async () => {
+    try {
+      const parsedPath = pathe.parse(file.path)
+
+      const filePath = await window.studio.script.showSaveDialog(
+        pathe.join(parsedPath.dir, parsedPath.name + '.js')
+      )
+
+      if (filePath === null) {
+        return
+      }
+
+      await window.studio.script.saveScript(preview, filePath)
+
+      showToast({
+        title: 'Script exported successfully',
+        status: 'success',
       })
-      .catch(() => {
-        showToast({
-          title: 'Failed to export script',
-          status: 'error',
-        })
+    } catch (error) {
+      console.error(error)
+
+      showToast({
+        title: 'Failed to export script',
+        status: 'error',
       })
+    }
   }
 
   return (
@@ -79,7 +87,7 @@ export function BrowserTestEditorControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item onClick={() => setIsExportDialogOpen(true)}>
+          <DropdownMenu.Item onClick={handleExportScript}>
             Export script
           </DropdownMenu.Item>
           <DeleteFileDialog
@@ -96,12 +104,7 @@ export function BrowserTestEditorControls({
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-      <ExportScriptDialog
-        scriptName={`${file.displayName}.js`}
-        onExport={handleExportScript}
-        open={isExportDialogOpen}
-        onOpenChange={setIsExportDialogOpen}
-      />
+
       <RunInCloudDialog
         open={isRunInCloudDialogOpen}
         script={{

@@ -7,9 +7,7 @@ import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
-import { useGeneratorStore } from '@/store/generator'
 
-import { ExportScriptDialog } from '../ExportScriptDialog'
 import { useScriptExport } from '../Generator.hooks'
 import { RecordingSelector } from '../RecordingSelector'
 import { ValidatorDialog } from '../ValidatorDialog'
@@ -29,11 +27,8 @@ export function GeneratorControls({
   onSave,
   onChangeRecording,
 }: GeneratorControlsProps) {
-  const scriptName = useGeneratorStore((store) => store.scriptName)
-
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
-  const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
-    useState(false)
+
   const file = useCurrentFile('generator')
   const proxyStatus = useProxyStatus()
   const isScriptExportable = error === undefined && preview !== ''
@@ -64,14 +59,14 @@ export function GeneratorControls({
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
             <DropdownMenu.Item
-              onSelect={() => setIsValidatorDialogOpen(true)}
               disabled={!isScriptExportable || proxyStatus !== 'online'}
+              onSelect={() => setIsValidatorDialogOpen(true)}
             >
               Validate script
             </DropdownMenu.Item>
             <DropdownMenu.Item
-              onSelect={() => setIsExportScriptDialogOpen(true)}
               disabled={!isScriptExportable}
+              onSelect={() => void handleExportScript()}
             >
               Export script
             </DropdownMenu.Item>
@@ -96,12 +91,6 @@ export function GeneratorControls({
               script={preview}
               open={isValidatorDialogOpen}
               onOpenChange={setIsValidatorDialogOpen}
-            />
-            <ExportScriptDialog
-              open={isExportScriptDialogOpen}
-              scriptName={scriptName}
-              onExport={handleExportScript}
-              onOpenChange={setIsExportScriptDialogOpen}
             />
           </>
         )}

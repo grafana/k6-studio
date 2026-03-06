@@ -78,6 +78,7 @@ export interface ScriptFileContent {
   type: 'script'
   content: string
 }
+
 export interface JsonFileContent {
   type: 'json'
   props: string[]

@@ -15,10 +15,9 @@ export function showScriptSelectDialog() {
 }
 
 export function showSaveDialog(fileName: string) {
-  return ipcRenderer.invoke(
-    ScriptHandler.ShowSaveDialog,
-    fileName
-  ) as Promise<string>
+  return ipcRenderer.invoke(ScriptHandler.ShowSaveDialog, fileName) as Promise<
+    string | null
+  >
 }
 
 export function analyzeScript(location: FileLocation) {

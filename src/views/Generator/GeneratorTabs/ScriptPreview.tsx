@@ -8,10 +8,8 @@ import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useTrackScriptCopy } from '@/hooks/useTrackScriptCopy'
-import { useGeneratorStore } from '@/store/generator'
 import { StudioFile } from '@/types'
 
-import { ExportScriptDialog } from '../ExportScriptDialog'
 import { useScriptExport } from '../Generator.hooks'
 import { ValidatorDialog } from '../ValidatorDialog'
 
@@ -24,12 +22,8 @@ interface ScriptPreviewProps {
 }
 
 export function ScriptPreview({ file, preview, error }: ScriptPreviewProps) {
-  const scriptName = useGeneratorStore((store) => store.scriptName)
-
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
-  const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
-    useState(false)
   const proxyStatus = useProxyStatus()
 
   const isScriptExportable = !error && !!preview
@@ -56,9 +50,7 @@ export function ScriptPreview({ file, preview, error }: ScriptPreviewProps) {
         </Tooltip>
         <GhostButton
           disabled={!isScriptExportable}
-          onClick={() => {
-            setIsExportScriptDialogOpen(true)
-          }}
+          onClick={handleExportScript}
         >
           <DownloadIcon />
           Export
@@ -94,12 +86,6 @@ export function ScriptPreview({ file, preview, error }: ScriptPreviewProps) {
             script={preview}
             open={isValidatorDialogOpen}
             onOpenChange={setIsValidatorDialogOpen}
-          />
-          <ExportScriptDialog
-            open={isExportScriptDialogOpen}
-            scriptName={scriptName}
-            onExport={handleExportScript}
-            onOpenChange={setIsExportScriptDialogOpen}
           />
         </>
       )}

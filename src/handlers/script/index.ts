@@ -1,9 +1,6 @@
-import { ipcMain } from 'electron'
+import { dialog, ipcMain } from 'electron'
 import log from 'electron-log/main'
-import path from 'path'
 
-import { FileLocation } from '@/handlers/file/types'
-import { resolveFileLocation } from '@/handlers/file/utils'
 import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
@@ -20,23 +17,35 @@ import { ScriptHandler } from './types'
 export function initialize() {
   let currentTestRun: TestRun | null
 
-  ipcMain.handle(ScriptHandler.Analyze, async (_, location: FileLocation) => {
+  ipcMain.handle(ScriptHandler.Analyze, async (_, scriptPath: string) => {
     console.info(`${ScriptHandler.Analyze} event received`)
-    const scriptPath = resolveFileLocation('script', location)
+
     const options = await new K6Client()
       .inspect({ scriptPath })
       .catch(() => ({}))
+
     return options ?? {}
   })
 
   ipcMain.handle(
     ScriptHandler.ShowSaveDialog,
-    (event, fileName: string): string => {
+    async (event, fileName: string): Promise<string | null> => {
       console.info(`${ScriptHandler.ShowSaveDialog} event received`)
 
       const browserWindow = browserWindowFromEvent(event)
 
-      return path.join(browserWindow.workspace.paths.scripts, fileName)
+      const { filePath } = await dialog.showSaveDialog(browserWindow, {
+        title: 'Save file',
+        filters: [{ name: 'All files', extensions: ['*'] }],
+        defaultPath: fileName,
+        properties: ['showOverwriteConfirmation'],
+      })
+
+      if (filePath === '') {
+        return null
+      }
+
+      return filePath
     }
   )
 

@@ -93,43 +93,59 @@ export function useIsGeneratorDirty(filePath: string) {
 
 export function useScriptExport(generatorFilePath: string) {
   const showToast = useToast()
+
   const setScriptName = useGeneratorStore((store) => store.setScriptName)
+
   const { mutateAsync: updateGeneratorFile } =
     useUpdateValueInGeneratorFile(generatorFilePath)
 
-  return useCallback(
-    async (scriptName: string) => {
-      setScriptName(scriptName)
+  return useCallback(async () => {
+    const parsedPath = pathe.parse(generatorFilePath)
 
-      try {
-        const filePath = await window.studio.script.showSaveDialog(scriptName)
-        await exportScript(filePath)
-        showToast({
-          title: 'Script exported successfully',
-          status: 'success',
-        })
-      } catch (error) {
-        log.error(error)
+    let filePath: string | null = pathe.join(
+      parsedPath.dir,
+      parsedPath.name + '.js'
+    )
 
-        showToast({
-          title: 'Failed to export script',
-          status: 'error',
-        })
+    try {
+      filePath = await window.studio.script.showSaveDialog(filePath)
+
+      if (filePath === null) {
+        return
       }
 
-      try {
-        await updateGeneratorFile({ key: 'scriptName', value: scriptName })
-      } catch (error) {
-        log.error(error)
+      await exportScript(filePath)
 
-        showToast({
-          title: 'Failed to update script name',
-          status: 'error',
-        })
-      }
-    },
-    [showToast, setScriptName, updateGeneratorFile]
-  )
+      showToast({
+        title: 'Script exported successfully',
+        status: 'success',
+      })
+    } catch (error) {
+      log.error(error)
+
+      showToast({
+        title: 'Failed to export script',
+        status: 'error',
+      })
+
+      return
+    }
+
+    const scriptName = pathe.basename(filePath)
+
+    setScriptName(scriptName)
+
+    try {
+      await updateGeneratorFile({ key: 'scriptName', value: scriptName })
+    } catch (error) {
+      log.error(error)
+
+      showToast({
+        title: 'Failed to update script name',
+        status: 'error',
+      })
+    }
+  }, [generatorFilePath, showToast, setScriptName, updateGeneratorFile])
 }
 
 export function useScriptPreview(generatorFilePath: string) {

@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { Button, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
 import { ChevronDownIcon, EllipsisVerticalIcon } from 'lucide-react'
-import { useState } from 'react'
+import * as pathe from 'pathe'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
@@ -14,8 +14,6 @@ import { BrowserEvent } from '@/schemas/recording'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
-import { ExportScriptDialog } from '../Generator/ExportScriptDialog'
-
 interface RecordingPreviewControlsProps {
   file: StudioFile
   browserEvents: BrowserEvent[]
@@ -25,7 +23,6 @@ export function RecordingPreviewControls({
   file,
   browserEvents,
 }: RecordingPreviewControlsProps) {
-  const [showExportDialog, setShowExportDialog] = useState(false)
   const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
@@ -54,37 +51,44 @@ export function RecordingPreviewControls({
     navigate(getRoutePath('home'))
   }
 
-  const handleExportBrowserScript = (fileName: string) => {
+  const handleExportBrowserScript = async () => {
     const test = convertEventsToTest({
       browserEvents,
     })
 
-    window.studio.script
-      .showSaveDialog(fileName)
-      .then((filePath) =>
-        emitScript(test).then((script) =>
-          window.studio.script.saveScript(script, filePath)
-        )
-      )
-      .then((scriptPath) => {
-        showToast({
-          title: 'Script exported successfully',
-          status: 'success',
-        })
-        navigate(
-          getRoutePath('validator', {
-            path: encodeURIComponent(scriptPath),
-          })
-        )
-      })
-      .catch((err) => {
-        console.error(err)
+    try {
+      const parsedPath = pathe.parse(file.path)
 
-        showToast({
-          title: 'Failed to export browser script',
-          status: 'error',
-        })
+      const scriptPath = await window.studio.script.showSaveDialog(
+        pathe.join(parsedPath.dir, parsedPath.name + '.js')
+      )
+
+      if (scriptPath === null) {
+        return
+      }
+
+      const script = await emitScript(test)
+
+      await window.studio.script.saveScript(script, scriptPath)
+
+      showToast({
+        title: 'Script exported successfully',
+        status: 'success',
       })
+
+      navigate(
+        getRoutePath('validator', {
+          path: encodeURIComponent(scriptPath),
+        })
+      )
+    } catch (error) {
+      console.error(error)
+
+      showToast({
+        title: 'Failed to export browser script',
+        status: 'error',
+      })
+    }
   }
 
   return (
@@ -122,7 +126,7 @@ export function RecordingPreviewControls({
             label="Browser test"
             description="Export a k6 script simulating browser interactions"
             disabled={browserEvents.length === 0}
-            onClick={() => setShowExportDialog(true)}
+            onClick={handleExportBrowserScript}
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
@@ -147,12 +151,6 @@ export function RecordingPreviewControls({
           />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-      <ExportScriptDialog
-        open={showExportDialog}
-        scriptName="my-browser-script.js"
-        onOpenChange={setShowExportDialog}
-        onExport={handleExportBrowserScript}
-      />
     </>
   )
 }

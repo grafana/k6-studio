@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { BrowserWindow, dialog, ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
 import { parse as parseCSV } from 'papaparse'
@@ -26,28 +26,70 @@ import {
   type DirectoryEntry,
   FileContent,
   FileHandler,
+  FileLocation,
+  FileOnDisk,
   GetTempPathArgs,
   type ListDirectoryArgs,
   OpenFileResult,
   SaveFilePayload,
 } from './types'
-import { resolveFileLocation } from './utils'
+
+async function save(
+  browserWindow: BrowserWindow,
+  location: FileLocation,
+  content: FileContent
+): Promise<FileOnDisk | null> {
+  switch (location.type) {
+    case 'path': {
+      const serialized = serializeContent(content, location.path)
+
+      await writeFile(location.path, serialized)
+
+      trackSaveFile(content)
+
+      return location
+    }
+
+    case 'new': {
+      return saveAs(browserWindow, content)
+    }
+
+    default: {
+      return exhaustive(location)
+    }
+  }
+}
+
+async function saveAs(
+  browserWindow: BrowserWindow,
+  content: FileContent
+): Promise<FileOnDisk | null> {
+  const { filePath } = await dialog.showSaveDialog(browserWindow, {
+    title: 'Save file',
+    filters: [{ name: 'All files', extensions: ['*'] }],
+    properties: ['showOverwriteConfirmation'],
+  })
+
+  if (filePath === '') {
+    return null
+  }
+
+  return save(browserWindow, { type: 'path', path: filePath }, content)
+}
 
 export function initialize() {
   ipcMain.handle(
     FileHandler.Save,
-    async (_event, { content, location }: SaveFilePayload): Promise<string> => {
+    async (
+      event,
+      { content, location }: SaveFilePayload
+    ): Promise<FileOnDisk | null> => {
       console.info(`${FileHandler.Save} event received`)
 
+      const browserWindow = browserWindowFromEvent(event)
+
       try {
-        const filePath = resolveFileLocation(content.type, location)
-        const serialized = serializeContent(content, filePath)
-
-        await writeFile(filePath, serialized)
-
-        trackSaveFile(content)
-
-        return filePath
+        return await save(browserWindow, location, content)
       } catch (error) {
         log.error(error)
 
