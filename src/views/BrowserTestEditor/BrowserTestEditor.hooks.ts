@@ -8,7 +8,7 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { useFileNameParam } from '@/hooks/useFileNameParam'
+import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { useStateWithUndo } from '@/hooks/useStateWithUndo'
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
@@ -20,7 +20,7 @@ import { exhaustive } from '@/utils/typescript'
 import { BrowserActionWithId } from './types'
 
 export function useBrowserTestFile(): StudioFile {
-  return useFileNameParam('browser-test')
+  return useCurrentFile('browser-test')
 }
 
 export function useBrowserTest(fileName: string) {

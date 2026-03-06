@@ -1,4 +1,5 @@
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
+import { StudioFile } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { RecordingData } from '@/types/recordingData'
 
@@ -6,6 +7,24 @@ export enum FileHandler {
   Save = 'file:save',
   Open = 'file:open',
   GetTempPath = 'file:get-temp-path',
+  ListDirectory = 'file:list-directory',
+}
+
+export type DirectoryEntry =
+  | {
+      type: 'directory'
+      basename: string
+      path: string
+    }
+  | {
+      type: 'file'
+      basename: string
+      path: string
+      file: StudioFile | null
+    }
+
+export interface ListDirectoryArgs {
+  path: string
 }
 
 export interface GetTempPathArgs {

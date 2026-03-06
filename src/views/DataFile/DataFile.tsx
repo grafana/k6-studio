@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { TableSkeleton } from '@/components/TableSkeleton'
-import { useFileNameParam } from '@/hooks/useFileNameParam'
+import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 
@@ -14,7 +14,7 @@ import { DataFileControls } from './DataFileControls'
 import { DataFileTable } from './DataFileTable'
 
 export function DataFile() {
-  const file = useFileNameParam('data-file')
+  const file = useCurrentFile('data-file')
   const navigate = useNavigate()
   const showToast = useToast()
 

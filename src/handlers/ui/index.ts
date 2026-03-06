@@ -1,10 +1,11 @@
 import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
-import { unlink, readdir, access, rename } from 'fs/promises'
+import { unlink, access, rename } from 'fs/promises'
 import path from 'path'
+import readdirp, { EntryInfo, ReaddirpOptions } from 'readdirp'
 import invariant from 'tiny-invariant'
 
-import { INVALID_FILENAME_CHARS } from '@/constants/files'
+import { INVALID_FILENAME_CHARS, isIgnoredSystemFile } from '@/constants/files'
 import { createStudioFile } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
@@ -57,23 +58,27 @@ export function initialize() {
 
     const browserWindow = browserWindowFromEvent(event)
 
-    const entries = await readdir(browserWindow.workspace.path, {
-      recursive: true,
-      withFileTypes: true,
-    })
-
     const recordings: StudioFile[] = []
     const generators: StudioFile[] = []
     const browserTests: StudioFile[] = []
     const scripts: StudioFile[] = []
     const dataFiles: StudioFile[] = []
 
-    for (const entry of entries) {
-      if (!entry.isFile()) {
-        continue
-      }
+    const options: Partial<ReaddirpOptions> = {
+      type: 'files',
+      directoryFilter: (entry: { basename: string }) => {
+        return entry.basename !== 'node_modules'
+      },
+      fileFilter: (entry: { basename: string }) => {
+        return !isIgnoredSystemFile(entry.basename)
+      },
+    }
 
-      const fullPath = path.join(entry.parentPath, entry.name)
+    for await (const entry of readdirp(
+      browserWindow.workspace.path,
+      options
+    ) as AsyncIterable<EntryInfo>) {
+      const fullPath = entry.fullPath
       const file = createStudioFile(fullPath)
 
       if (file === null) {

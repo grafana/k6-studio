@@ -4,7 +4,7 @@ import invariant from 'tiny-invariant'
 
 import { StudioFile, StudioFileType } from '@/types'
 
-export function useFileNameParam(type: StudioFileType): StudioFile {
+export function useCurrentFile(type: StudioFileType): StudioFile {
   const { path: pathParam } = useParams()
 
   invariant(pathParam, 'path is required')
@@ -19,4 +19,10 @@ export function useFileNameParam(type: StudioFileType): StudioFile {
     fileName,
     displayName,
   }
+}
+
+export function useCurrentPath(): string | undefined {
+  const { path } = useParams<{ path: string }>()
+
+  return path
 }

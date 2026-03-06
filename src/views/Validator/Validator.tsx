@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { useFileNameParam } from '@/hooks/useFileNameParam'
+import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
@@ -127,7 +127,7 @@ function Content({ file }: ValidatorProps) {
 }
 
 export function Validator() {
-  const file = useFileNameParam('script')
+  const file = useCurrentFile('script')
 
   return <Content key={file.path} file={file} />
 }

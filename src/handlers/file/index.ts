@@ -2,8 +2,11 @@ import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
+import { EntryInfo, readdirp, ReaddirpOptions } from 'readdirp'
 
+import { isIgnoredSystemFile } from '@/constants/files'
 import { TEMP_PATH } from '@/constants/workspace'
+import { createStudioFile } from '@/main/file'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
@@ -16,10 +19,12 @@ import { exhaustive } from '@/utils/typescript'
 import { Workspace } from '@/utils/workspace'
 
 import {
+  type DirectoryEntry,
   FileContent,
   FileContentType,
   FileHandler,
   GetTempPathArgs,
+  type ListDirectoryArgs,
   OpenFileRequest,
   OpenFileResult,
   SaveFilePayload,
@@ -75,6 +80,80 @@ export function initialize() {
       const basename = `${prefix}-${crypto.randomUUID()}${ext}`
 
       return path.join(TEMP_PATH, basename)
+    }
+  )
+
+  ipcMain.handle(
+    FileHandler.ListDirectory,
+    async (
+      event,
+      { path: requestedPath }: ListDirectoryArgs
+    ): Promise<DirectoryEntry[]> => {
+      console.info(`${FileHandler.ListDirectory} event received`)
+
+      const browserWindow = browserWindowFromEvent(event)
+      const workspacePath = browserWindow.workspace.path
+
+      const resolvedPath = path.resolve(requestedPath)
+      const relativePath = path.relative(workspacePath, resolvedPath)
+
+      if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+        throw new Error('Path is outside workspace')
+      }
+
+      const options: Partial<ReaddirpOptions> = {
+        depth: 0,
+        type: 'all',
+        directoryFilter: (entry: { basename: string }) => {
+          return entry.basename !== 'node_modules'
+        },
+        fileFilter: (entry: { basename: string }) => {
+          return !isIgnoredSystemFile(entry.basename)
+        },
+      }
+
+      const entries: DirectoryEntry[] = []
+
+      for await (const entry of readdirp(
+        resolvedPath,
+        options
+      ) as AsyncIterable<EntryInfo>) {
+        const fullPath = entry.fullPath
+
+        if (entry.dirent === undefined) {
+          continue
+        }
+
+        if (entry.dirent.isDirectory()) {
+          entries.push({
+            type: 'directory',
+            basename: entry.basename,
+            path: fullPath,
+          })
+
+          continue
+        }
+
+        entries.push({
+          type: 'file',
+          basename: entry.basename,
+          path: fullPath,
+          file: createStudioFile(fullPath),
+        })
+      }
+
+      const sortEntries = (a: DirectoryEntry, b: DirectoryEntry) => {
+        const aIsDir = a.type === 'directory'
+        const bIsDir = b.type === 'directory'
+        if (aIsDir !== bIsDir) {
+          return aIsDir ? -1 : 1
+        }
+        return a.basename.localeCompare(b.basename, undefined, {
+          sensitivity: 'base',
+        })
+      }
+
+      return entries.sort(sortEntries)
     }
   )
 }

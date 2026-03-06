@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import { FileTree } from '@/components/FileTree'
 import { NewTestMenu } from '@/components/NewTestMenu'
 import { SearchField } from '@/components/SearchField'
+import { WorkspaceFileTree } from '@/components/WorkspaceFileTree'
 import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { getRoutePath } from '@/routeMap'
 import { useFeaturesStore } from '@/store/features'
@@ -39,18 +40,16 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
       asChild
     >
       <Flex direction="column">
-        <Flex align="center" m="2" gap="2">
-          {view === 'files' && (
-            <SearchField
-              css={css`
-                flex: 1 1 0;
-              `}
-              filter={searchTerm}
-              placeholder="Find files..."
-              size="1"
-              onChange={setSearchTerm}
-            />
-          )}
+        <Flex align="center" justify="end" m="2" gap="2">
+          <SearchField
+            css={css`
+              flex: 1 1 0;
+            `}
+            filter={searchTerm}
+            placeholder="Find files..."
+            size="1"
+            onChange={setSearchTerm}
+          />
 
           {isExpanded && (
             <IconButton
@@ -63,6 +62,13 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
             </IconButton>
           )}
         </Flex>
+        {view === 'workspace' && (
+          <ScrollArea scrollbars="vertical">
+            <Box px="2">
+              <WorkspaceFileTree />
+            </Box>
+          </ScrollArea>
+        )}
         {view === 'files' && (
           <ScrollArea scrollbars="vertical">
             <Flex direction="column" gap="2" pb="2">

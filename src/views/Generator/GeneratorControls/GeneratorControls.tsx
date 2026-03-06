@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { useFileNameParam } from '@/hooks/useFileNameParam'
+import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useGeneratorStore } from '@/store/generator'
 
@@ -34,7 +34,7 @@ export function GeneratorControls({
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
   const [isExportScriptDialogOpen, setIsExportScriptDialogOpen] =
     useState(false)
-  const file = useFileNameParam('generator')
+  const file = useCurrentFile('generator')
   const proxyStatus = useProxyStatus()
   const isScriptExportable = error === undefined && preview !== ''
 

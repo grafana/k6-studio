@@ -3,7 +3,7 @@ import invariant from 'tiny-invariant'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
-import { useFileNameParam } from '@/hooks/useFileNameParam'
+import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { useSettings } from '@/hooks/useSettings'
 import { BrowserEvent } from '@/schemas/recording'
@@ -21,7 +21,7 @@ export function RecordingPreviewer() {
   const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
 
   const [isLoading, setIsLoading] = useState(true)
-  const file = useFileNameParam('recording')
+  const file = useCurrentFile('recording')
 
   const browserRecorderSetting =
     settings?.recorder.browserRecording ?? 'disabled'

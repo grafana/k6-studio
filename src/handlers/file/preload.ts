@@ -1,12 +1,20 @@
 import { ipcRenderer } from 'electron'
 
 import {
+  type DirectoryEntry,
   FileHandler,
   GetTempPathArgs,
+  type ListDirectoryArgs,
   OpenFileRequest,
   OpenFileResult,
   SaveFilePayload,
 } from './types'
+
+export function listDirectory(args: ListDirectoryArgs) {
+  return ipcRenderer.invoke(FileHandler.ListDirectory, args) as Promise<
+    DirectoryEntry[]
+  >
+}
 
 export function save(payload: SaveFilePayload) {
   return ipcRenderer.invoke(FileHandler.Save, payload) as Promise<string>
