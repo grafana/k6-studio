@@ -9,7 +9,7 @@ import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
-import { workspaceWindowFromEvent } from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
 import { harToProxyData } from '@/utils/harToProxyData'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 import { exhaustive } from '@/utils/typescript'
@@ -54,7 +54,7 @@ export function initialize() {
     async (event, request: OpenFileRequest): Promise<OpenFileResult> => {
       console.info(`${FileHandler.Open} event received`)
 
-      const browserWindow = workspaceWindowFromEvent(event)
+      const browserWindow = browserWindowFromEvent(event)
 
       const filePath = resolveFileLocation(request.fileType, request.location)
       const raw = await readFile(filePath, { encoding: 'utf-8', flag: 'r' })

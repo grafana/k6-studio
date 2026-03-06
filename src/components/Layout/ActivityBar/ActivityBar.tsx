@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Grid, Separator } from '@radix-ui/themes'
+import { FolderTreeIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import k6LogoDark from '@/assets/logo-dark.svg'
@@ -9,6 +10,8 @@ import { HomeIcon } from '@/components/icons'
 import { useTheme } from '@/hooks/useTheme'
 import { getRoutePath } from '@/routeMap'
 
+import type { SidebarView } from '../Layout'
+
 import { HelpButton } from './HelpButton'
 import { NavIconButton } from './NavIconButton'
 import { Profile } from './Profile'
@@ -16,7 +19,15 @@ import { ProxyStatusIndicator } from './ProxyStatusIndicator'
 import { SettingsButton } from './SettingsButton'
 import { VersionLabel } from './VersionLabel'
 
-export function ActivityBar() {
+interface ActivityBarProps {
+  sidebarView: SidebarView
+  onSidebarViewChange: (view: SidebarView) => void
+}
+
+export function ActivityBar({
+  sidebarView,
+  onSidebarViewChange,
+}: ActivityBarProps) {
   const theme = useTheme()
 
   return (
@@ -43,12 +54,22 @@ export function ActivityBar() {
           width="32"
         />
       </Link>
-      <Grid gap="5" mt="4">
+      <Grid gap="3" mt="4">
         <NavIconButton
           to={getRoutePath('home')}
-          icon={<HomeIcon />}
           tooltip="Home"
-        />
+          active={sidebarView === 'files'}
+          onClick={() => onSidebarViewChange('files')}
+        >
+          <HomeIcon />
+        </NavIconButton>
+        <NavIconButton
+          tooltip="Workspace"
+          active={sidebarView === 'workspace'}
+          onClick={() => onSidebarViewChange('workspace')}
+        >
+          <FolderTreeIcon />
+        </NavIconButton>
       </Grid>
 
       <Flex direction="column" align="center" gap="3" mt="auto">

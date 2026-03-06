@@ -7,13 +7,13 @@ import invariant from 'tiny-invariant'
 import { MAX_DATA_FILE_SIZE } from '@/constants/files'
 import { DataFilePreview } from '@/types/testData'
 import { parseDataFile } from '@/utils/dataFile'
-import { workspaceWindowFromEvent } from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
 
 import { DataFileHandler } from './types'
 
 export function initialize() {
   ipcMain.handle(DataFileHandler.Import, async (event) => {
-    const browserWindow = workspaceWindowFromEvent(event)
+    const browserWindow = browserWindowFromEvent(event)
 
     const dialogResult = await dialog.showOpenDialog(browserWindow, {
       message: 'Import data file',
@@ -42,7 +42,7 @@ export function initialize() {
   ipcMain.handle(
     DataFileHandler.LoadPreview,
     async (event, pathOrFileName: string): Promise<DataFilePreview> => {
-      const browserWindow = workspaceWindowFromEvent(event)
+      const browserWindow = browserWindowFromEvent(event)
 
       const filePath = path.isAbsolute(pathOrFileName)
         ? pathOrFileName

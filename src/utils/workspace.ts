@@ -1,12 +1,10 @@
 import { FSWatcher, watch } from 'chokidar'
-import { BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import path from 'path'
 
 // import { EventEmitter } from 'extension/src/utils/events'
 
-import { WorkspaceHandler } from '@/handlers/workspace/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
 import {
@@ -116,35 +114,5 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
 
   async close() {
     await this.#watcher.close()
-  }
-}
-
-export class WorkspaceWindow extends BrowserWindow {
-  workspace: Workspace
-
-  constructor(
-    options: BrowserWindowConstructorOptions & { workspace: Workspace }
-  ) {
-    super(options)
-
-    this.workspace = options.workspace
-
-    this.on('closed', () => {
-      this.workspace.close().catch(() => {
-        console.warn(`Failed to close workspace '${this.workspace.path}'.`)
-      })
-    })
-
-    this.workspace.on('file:add', (event) => {
-      this.webContents.send(WorkspaceHandler.OnAddFile, event.path)
-    })
-
-    this.workspace.on('file:remove', (event) => {
-      this.webContents.send(WorkspaceHandler.OnRemoveFile, event.path)
-    })
-
-    this.workspace.on('workspace:change', (event) => {
-      this.webContents.send(WorkspaceHandler.OnChangeWorkspace, event.path)
-    })
   }
 }

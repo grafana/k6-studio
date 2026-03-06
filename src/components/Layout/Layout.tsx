@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { Box, IconButton } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { PanelLeftOpenIcon } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
@@ -11,11 +11,14 @@ import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
 
+export type SidebarView = 'files' | 'workspace'
+
 export function Layout() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(
     'isSidebarExpanded',
     true
   )
+  const [sidebarView, setSidebarView] = useState<SidebarView>('files')
   const location = useLocation()
   useListenDeepLinks()
 
@@ -62,7 +65,10 @@ export function Layout() {
       )}
       <Allotment onVisibleChange={handleVisibleChange}>
         <Allotment.Pane minSize={64} maxSize={64}>
-          <ActivityBar />
+          <ActivityBar
+            sidebarView={sidebarView}
+            onSidebarViewChange={setSidebarView}
+          />
         </Allotment.Pane>
         <Allotment.Pane
           minSize={200}
@@ -74,6 +80,7 @@ export function Layout() {
           <Sidebar
             isExpanded={isSidebarExpanded}
             onCollapseSidebar={() => setIsSidebarExpanded(false)}
+            view={sidebarView}
           />
         </Allotment.Pane>
 

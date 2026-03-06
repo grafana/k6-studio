@@ -6,7 +6,7 @@ import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { workspaceWindowFromEvent } from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
 
 import { BrowserTestHandler } from './types'
@@ -15,7 +15,7 @@ export function initialize() {
   ipcMain.handle(BrowserTestHandler.Create, async (event) => {
     console.info(`${BrowserTestHandler.Create} event received`)
 
-    const browserWindow = workspaceWindowFromEvent(event)
+    const browserWindow = browserWindowFromEvent(event)
 
     const emptyBrowserTest: z.infer<typeof BrowserTestFileSchema> = {
       version: '1.0',

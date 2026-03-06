@@ -8,6 +8,7 @@ import { updateElectronApp } from 'update-electron-app'
 import { PROJECT_PATH } from './constants/workspace'
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
+import { WorkspaceHandler } from './handlers/workspace/types'
 import { initializeDeepLinks } from './main/deepLinks'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
@@ -23,11 +24,7 @@ import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
-import {
-  setupProjectStructure,
-  Workspace,
-  WorkspaceWindow,
-} from './utils/workspace'
+import { setupProjectStructure, Workspace } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -112,8 +109,8 @@ const createWindow = async () => {
   const { width, height, x, y } = k6StudioState.appSettings.windowState
 
   // Create the browser window.
-  const mainWindow = new WorkspaceWindow({
-    workspace: new Workspace(PROJECT_PATH),
+  const mainWindow = new BrowserWindow({
+    // workspace: new Workspace(PROJECT_PATH),
     x,
     y,
     width,
@@ -128,6 +125,20 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       devTools: process.env.NODE_ENV === 'development',
     },
+  })
+
+  mainWindow.workspace = new Workspace(PROJECT_PATH)
+
+  mainWindow.workspace.on('file:add', (event) => {
+    mainWindow.webContents.send(WorkspaceHandler.OnAddFile, event.path)
+  })
+
+  mainWindow.workspace.on('file:remove', (event) => {
+    mainWindow.webContents.send(WorkspaceHandler.OnRemoveFile, event.path)
+  })
+
+  mainWindow.workspace.on('workspace:change', (event) => {
+    mainWindow.webContents.send(WorkspaceHandler.OnChangeWorkspace, event.path)
   })
 
   configureApplicationMenu()
@@ -216,6 +227,7 @@ app.on('activate', async () => {
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     const mainWindow = await createWindow()
+
     showWindow(mainWindow)
   }
 })

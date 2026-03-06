@@ -5,7 +5,7 @@ import path from 'path'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { RecordingData } from '@/types/recordingData'
-import { workspaceWindowFromEvent } from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
 
@@ -17,7 +17,7 @@ export function initialize() {
     async (event, data: RecordingData, prefix: string) => {
       console.info(`${HarHandler.SaveFile} event received`)
 
-      const browserWindow = workspaceWindowFromEvent(event)
+      const browserWindow = browserWindowFromEvent(event)
 
       const har = proxyDataToHar(data.requests, data.browserEvents)
       const fileName = await createFileWithUniqueName({
@@ -38,7 +38,7 @@ export function initialize() {
   ipcMain.handle(HarHandler.ImportFile, async (event) => {
     console.info(`${HarHandler.ImportFile} event received`)
 
-    const browserWindow = workspaceWindowFromEvent(event)
+    const browserWindow = browserWindowFromEvent(event)
 
     const dialogResult = await dialog.showOpenDialog(browserWindow, {
       message: 'Import HAR file',

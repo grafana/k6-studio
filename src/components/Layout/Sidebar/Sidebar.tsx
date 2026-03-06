@@ -11,14 +11,17 @@ import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { getRoutePath } from '@/routeMap'
 import { useFeaturesStore } from '@/store/features'
 
+import type { SidebarView } from '../Layout'
+
 import { useFiles } from './Sidebar.hooks'
 
 interface SidebarProps {
+  view: SidebarView
   isExpanded?: boolean
   onCollapseSidebar: () => void
 }
 
-export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
+export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, tests, scripts, dataFiles } = useFiles(searchTerm)
   const handleImportDataFile = useImportDataFile()
@@ -37,15 +40,17 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
     >
       <Flex direction="column">
         <Flex align="center" m="2" gap="2">
-          <SearchField
-            css={css`
-              flex: 1 1 0;
-            `}
-            filter={searchTerm}
-            placeholder="Find files..."
-            size="1"
-            onChange={setSearchTerm}
-          />
+          {view === 'files' && (
+            <SearchField
+              css={css`
+                flex: 1 1 0;
+              `}
+              filter={searchTerm}
+              placeholder="Find files..."
+              size="1"
+              onChange={setSearchTerm}
+            />
+          )}
 
           {isExpanded && (
             <IconButton
@@ -58,63 +63,65 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
             </IconButton>
           )}
         </Flex>
-        <ScrollArea scrollbars="vertical">
-          <Flex direction="column" gap="2" pb="2">
-            <FileTree
-              label="Recordings"
-              files={recordings}
-              noFilesMessage="No recordings found"
-              actions={
-                <>
-                  <Tooltip content="New recording" side="right">
+        {view === 'files' && (
+          <ScrollArea scrollbars="vertical">
+            <Flex direction="column" gap="2" pb="2">
+              <FileTree
+                label="Recordings"
+                files={recordings}
+                noFilesMessage="No recordings found"
+                actions={
+                  <>
+                    <Tooltip content="New recording" side="right">
+                      <IconButton
+                        asChild
+                        aria-label="New recording"
+                        variant="ghost"
+                        size="1"
+                      >
+                        <Link to={getRoutePath('recorder')}>
+                          <PlusIcon />
+                        </Link>
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                }
+              />
+              <FileTree
+                label={isBrowserEditorEnabled ? 'Tests' : 'Test generators'}
+                files={tests}
+                noFilesMessage={
+                  isBrowserEditorEnabled
+                    ? 'No tests found'
+                    : 'No generators found'
+                }
+                actions={<NewTestMenu />}
+              />
+              <FileTree
+                label="Scripts"
+                files={scripts}
+                noFilesMessage="No scripts found"
+              />
+              <FileTree
+                label="Data files"
+                files={dataFiles}
+                noFilesMessage="No data files found"
+                actions={
+                  <Tooltip content="Import data file" side="right">
                     <IconButton
-                      asChild
-                      aria-label="New recording"
+                      aria-label="Import data file"
                       variant="ghost"
                       size="1"
+                      onClick={handleImportDataFile}
                     >
-                      <Link to={getRoutePath('recorder')}>
-                        <PlusIcon />
-                      </Link>
+                      <FilePlusIcon />
                     </IconButton>
                   </Tooltip>
-                </>
-              }
-            />
-            <FileTree
-              label={isBrowserEditorEnabled ? 'Tests' : 'Test generators'}
-              files={tests}
-              noFilesMessage={
-                isBrowserEditorEnabled
-                  ? 'No tests found'
-                  : 'No generators found'
-              }
-              actions={<NewTestMenu />}
-            />
-            <FileTree
-              label="Scripts"
-              files={scripts}
-              noFilesMessage="No scripts found"
-            />
-            <FileTree
-              label="Data files"
-              files={dataFiles}
-              noFilesMessage="No data files found"
-              actions={
-                <Tooltip content="Import data file" side="right">
-                  <IconButton
-                    aria-label="Import data file"
-                    variant="ghost"
-                    size="1"
-                    onClick={handleImportDataFile}
-                  >
-                    <FilePlusIcon />
-                  </IconButton>
-                </Tooltip>
-              }
-            />
-          </Flex>
-        </ScrollArea>
+                }
+              />
+            </Flex>
+          </ScrollArea>
+        )}
       </Flex>
     </Box>
   )

@@ -8,10 +8,7 @@ import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import {
-  browserWindowFromEvent,
-  workspaceWindowFromEvent,
-} from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
 import { toScriptFile } from '@/utils/fs/scripts'
 import { K6Client } from '@/utils/k6/client'
 import { TestRun } from '@/utils/k6/testRun'
@@ -37,7 +34,7 @@ export function initialize() {
     (event, fileName: string): string => {
       console.info(`${ScriptHandler.ShowSaveDialog} event received`)
 
-      const browserWindow = workspaceWindowFromEvent(event)
+      const browserWindow = browserWindowFromEvent(event)
 
       return path.join(browserWindow.workspace.paths.scripts, fileName)
     }
@@ -65,7 +62,7 @@ export function initialize() {
 
       const file = await toScriptFile(script)
 
-      const browserWindow = workspaceWindowFromEvent(event)
+      const browserWindow = browserWindowFromEvent(event)
 
       currentTestRun = await runScript({
         browserWindow,

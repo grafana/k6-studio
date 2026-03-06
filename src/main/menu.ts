@@ -1,8 +1,7 @@
-import { dialog, Menu, shell } from 'electron'
+import { BrowserWindow, dialog, Menu, shell } from 'electron'
 
 import { reportNewIssue } from '../utils/bugReport'
 import { getPlatform } from '../utils/electron'
-import { WorkspaceWindow } from '../utils/workspace'
 
 import { openLogFolder } from './logger'
 
@@ -19,7 +18,7 @@ const template: Electron.MenuItemConstructorOptions[] = [
       {
         label: 'Open workspace...',
         click: async (_menuItem, browserWindow) => {
-          if (browserWindow instanceof WorkspaceWindow === false) {
+          if (browserWindow instanceof BrowserWindow === false) {
             return
           }
 

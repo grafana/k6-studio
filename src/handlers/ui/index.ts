@@ -9,7 +9,7 @@ import { createStudioFile } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
-import { sendToast, workspaceWindowFromEvent } from '@/utils/electron'
+import { sendToast, browserWindowFromEvent } from '@/utils/electron'
 import { isNodeJsErrnoException } from '@/utils/typescript'
 
 import { UIHandler } from './types'
@@ -55,7 +55,7 @@ export function initialize() {
   ipcMain.handle(UIHandler.GetFiles, async (event) => {
     console.info(`${UIHandler.GetFiles} event received`)
 
-    const browserWindow = workspaceWindowFromEvent(event)
+    const browserWindow = browserWindowFromEvent(event)
 
     const entries = await readdir(browserWindow.workspace.path, {
       recursive: true,

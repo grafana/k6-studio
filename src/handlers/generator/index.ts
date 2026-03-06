@@ -5,7 +5,7 @@ import path from 'path'
 import { K6_GENERATOR_FILE_EXTENSION } from '@/constants/files'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { workspaceWindowFromEvent } from '@/utils/electron'
+import { browserWindowFromEvent } from '@/utils/electron'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
 import { createNewGeneratorFile } from '@/utils/generator'
 
@@ -16,7 +16,7 @@ export function initialize() {
     GeneratorHandler.Create,
     async (event, recordingPath: string) => {
       console.log(`${GeneratorHandler.Create} event received`)
-      const browserWindow = workspaceWindowFromEvent(event)
+      const browserWindow = browserWindowFromEvent(event)
 
       const placeholderGenerator = createNewGeneratorFile('')
       const fileName = await createFileWithUniqueName({
