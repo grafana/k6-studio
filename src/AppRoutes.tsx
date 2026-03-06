@@ -15,7 +15,6 @@ import { Recorder } from '@/views/Recorder'
 
 import { ErrorElement } from './ErrorElement'
 import { routeMap } from './routeMap'
-import { Generator } from './views/Generator'
 
 const router = createHashRouter(
   createRoutesFromChildren(
@@ -27,7 +26,6 @@ const router = createHashRouter(
       <Route index element={<Home />} />
       <Route path={routeMap.recorder} element={<Recorder />} />
       <Route path={routeMap.editorView} element={<EditorView />} />
-      <Route path={routeMap.generator} element={<Generator />} />
       <Route path="*" element={<NoRouteFound />} />
     </Route>
   )

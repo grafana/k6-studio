@@ -26,7 +26,7 @@ export function getViewPath(type: SupportedFileType, path: string) {
       return getRoutePath('editorView', { path: encodedPath })
 
     case 'generator':
-      return getRoutePath('generator', { path: encodedPath })
+      return getRoutePath('editorView', { path: encodedPath })
 
     case 'browser-test':
       return getRoutePath('editorView', { path: encodedPath })

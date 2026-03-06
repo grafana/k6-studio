@@ -5,14 +5,15 @@ import { useState } from 'react'
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
+import { StudioFile } from '@/types'
 
 import { useScriptExport } from '../Generator.hooks'
 import { RecordingSelector } from '../RecordingSelector'
 import { ValidatorDialog } from '../ValidatorDialog'
 
 interface GeneratorControlsProps {
+  file: StudioFile
   isDirty: boolean
   preview: string
   error: Error | undefined
@@ -21,6 +22,7 @@ interface GeneratorControlsProps {
 }
 
 export function GeneratorControls({
+  file,
   preview,
   error,
   isDirty,
@@ -28,8 +30,6 @@ export function GeneratorControls({
   onChangeRecording,
 }: GeneratorControlsProps) {
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
-
-  const file = useCurrentFile('generator')
   const proxyStatus = useProxyStatus()
   const isScriptExportable = error === undefined && preview !== ''
 

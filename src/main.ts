@@ -179,7 +179,9 @@ const createWindow = async () => {
   mainWindow.on('close', (event) => {
     mainWindow.webContents.send('app:close')
     if (
-      k6StudioState.currentClientRoute.startsWith('/generator') &&
+      (k6StudioState.currentClientRoute.startsWith('/generator') ||
+        (k6StudioState.currentClientRoute.startsWith('/file/') &&
+          k6StudioState.currentClientRoute.includes('.k6g'))) &&
       !k6StudioState.wasAppClosedByClient
     ) {
       event.preventDefault()

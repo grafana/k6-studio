@@ -9,6 +9,7 @@ import { StudioFile } from '@/types'
 
 import { BrowserTestEditor } from '../BrowserTestEditor'
 import { DataFile } from '../DataFile'
+import { Generator } from '../Generator'
 import { RecordingPreviewer } from '../RecordingPreviewer'
 import { Validator } from '../Validator'
 
@@ -84,6 +85,7 @@ export function EditorView() {
 
   if (result.type === 'recording') {
     const file = createStudioFile(path, 'recording')
+
     return <RecordingPreviewer file={file} data={result.data} />
   }
 
@@ -104,12 +106,20 @@ export function EditorView() {
 
   if (result.type === 'json' || result.type === 'csv') {
     const file = createStudioFile(path, result.type)
+
     return <DataFile file={file} preview={result} />
   }
 
   if (result.type === 'browser-test') {
     const file = createStudioFile(path, 'browser-test')
+
     return <BrowserTestEditor key={path} file={file} data={result.data} />
+  }
+
+  if (result.type === 'generator') {
+    const file = createStudioFile(path, 'generator')
+
+    return <Generator file={file} data={result.data} />
   }
 
   if (result.type === 'unsupported-format') {

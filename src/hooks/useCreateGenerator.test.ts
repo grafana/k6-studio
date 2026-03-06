@@ -35,7 +35,7 @@ describe('useCreateGenerator', () => {
 
   it('should navigate to the correct path on successful generator creation', async () => {
     const fileName = 'test-file.json'
-    const routePath = '/generator/test-file.json'
+    const routePath = '/file/test-file.k6g'
 
     vi.mocked(getRoutePath).mockReturnValue(routePath)
     vi.stubGlobal('studio', {

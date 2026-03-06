@@ -16,7 +16,7 @@ export function useCreateGenerator() {
           await window.studio.generator.createGenerator(recordingPath)
 
         navigate(
-          getRoutePath('generator', { path: encodeURIComponent(filePath) })
+          getRoutePath('editorView', { path: encodeURIComponent(filePath) })
         )
       } catch (error) {
         showToast({
