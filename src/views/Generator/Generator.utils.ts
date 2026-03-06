@@ -40,7 +40,7 @@ export const loadGeneratorFile = async (fileName: string) => {
   return generator
 }
 
-export const loadRecording = async (fileName: string) => {
-  const data = await window.studio.har.openFile(fileName)
+export const loadRecording = async (filePath: string) => {
+  const data = await window.studio.har.openFile(filePath)
   return data.requests
 }

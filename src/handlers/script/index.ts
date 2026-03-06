@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
+import path from 'path'
 
 import { FileLocation } from '@/handlers/file/types'
 import { resolveFileLocation } from '@/handlers/file/utils'
@@ -33,9 +34,12 @@ export function initialize() {
 
   ipcMain.handle(
     ScriptHandler.ShowSaveDialog,
-    (_, fileName: string): string => {
+    (event, fileName: string): string => {
       console.info(`${ScriptHandler.ShowSaveDialog} event received`)
-      return resolveFileLocation('script', { type: 'legacy', name: fileName })
+
+      const browserWindow = workspaceWindowFromEvent(event)
+
+      return path.join(browserWindow.workspace.paths.scripts, fileName)
     }
   )
 

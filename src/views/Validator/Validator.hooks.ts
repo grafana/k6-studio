@@ -11,11 +11,11 @@ import { useRunLogs } from '@/hooks/useRunLogs'
 
 import { DebuggerState } from './types'
 
-export function useScript(fileName: string) {
+export function useScript(filePath: string) {
   return useQuery({
-    queryKey: ['script', fileName],
+    queryKey: ['script', filePath],
     queryFn: async () => {
-      return window.studio.script.openScript(fileName)
+      return window.studio.script.openScript(filePath)
     },
     refetchOnMount: false,
     refetchOnReconnect: false,

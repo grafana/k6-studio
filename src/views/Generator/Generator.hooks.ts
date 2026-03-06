@@ -21,11 +21,11 @@ import {
   loadRecording,
 } from './Generator.utils'
 
-export function useLoadRecording(fileName?: string) {
+export function useLoadRecording(filePath?: string) {
   return useQuery({
-    queryKey: ['har', fileName],
-    enabled: !!fileName,
-    queryFn: () => loadRecording(fileName!),
+    queryKey: ['har', filePath],
+    enabled: !!filePath,
+    queryFn: () => loadRecording(filePath!),
   })
 }
 

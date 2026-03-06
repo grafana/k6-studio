@@ -18,7 +18,6 @@ import {
   stopProxyProcess,
 } from './main/proxy'
 import { getSettings, initSettings } from './main/settings'
-import { closeWatcher, configureWatcher } from './main/watcher'
 import { showWindow, trackWindowState } from './main/window'
 import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
@@ -132,7 +131,6 @@ const createWindow = async () => {
   })
 
   configureApplicationMenu()
-  configureWatcher(mainWindow)
   k6StudioState.wasAppClosedByClient = false
 
   k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
@@ -206,13 +204,11 @@ app.whenReady().then(
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', async () => {
+app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
     return
   }
-
-  await closeWatcher()
 })
 
 app.on('activate', async () => {
@@ -226,6 +222,5 @@ app.on('activate', async () => {
 
 app.on('before-quit', async () => {
   k6StudioState.appShuttingDown = true
-  await closeWatcher()
   return stopProxyProcess()
 })

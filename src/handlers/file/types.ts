@@ -23,7 +23,6 @@ export type FileContentType = FileContent['type']
 
 export type FileLocation =
   | { type: 'path'; path: string }
-  | { type: 'legacy'; name: string }
   | { type: 'new'; hint: string }
 
 export interface SaveFilePayload {

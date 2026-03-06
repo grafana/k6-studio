@@ -1,5 +1,4 @@
 import { ipcRenderer } from 'electron'
-import * as path from 'pathe'
 import invariant from 'tiny-invariant'
 
 import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
@@ -32,9 +31,7 @@ export function analyzeScript(location: FileLocation) {
 export async function openScript(
   scriptPath: string
 ): Promise<OpenScriptResult> {
-  const location = path.isAbsolute(scriptPath)
-    ? { type: 'path' as const, path: scriptPath }
-    : { type: 'legacy' as const, name: scriptPath }
+  const location: FileLocation = { type: 'path', path: scriptPath }
 
   const result = await openFile({
     location,
