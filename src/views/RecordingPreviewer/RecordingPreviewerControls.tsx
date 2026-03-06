@@ -77,7 +77,7 @@ export function RecordingPreviewControls({
       })
 
       navigate(
-        getRoutePath('validator', {
+        getRoutePath('editorView', {
           path: encodeURIComponent(scriptPath),
         })
       )

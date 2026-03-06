@@ -8,6 +8,7 @@ import { View } from '@/components/Layout/View'
 import { StudioFile } from '@/types'
 
 import { RecordingPreviewer } from '../RecordingPreviewer'
+import { Validator } from '../Validator'
 
 function createStudioFile(path: string, type: StudioFile['type']): StudioFile {
   const fileName = pathe.basename(path)
@@ -34,7 +35,23 @@ export function EditorView() {
     error,
   } = useQuery({
     queryKey: ['file', path],
-    queryFn: () => window.studio.file.open(path),
+    queryFn: async () => {
+      const result = await window.studio.file.open(path)
+
+      if (result.type === 'script') {
+        const options = await window.studio.script.analyzeScript({
+          type: 'path',
+          path: path,
+        })
+
+        return {
+          ...result,
+          options,
+        }
+      }
+
+      return result
+    },
     staleTime: 0,
     gcTime: 0,
     refetchOnWindowFocus: false,
@@ -66,6 +83,21 @@ export function EditorView() {
   if (result.type === 'recording') {
     const file = createStudioFile(path, 'recording')
     return <RecordingPreviewer file={file} data={result.data} />
+  }
+
+  if (result.type === 'script') {
+    const file = createStudioFile(path, 'script')
+
+    return (
+      <Validator
+        file={file}
+        scriptData={{
+          script: result.content,
+          options: result.options,
+          isExternal: result.isExternal,
+        }}
+      />
+    )
   }
 
   if (result.type === 'unsupported-format') {

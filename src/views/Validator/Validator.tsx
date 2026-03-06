@@ -5,22 +5,27 @@ import { useNavigate } from 'react-router-dom'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
+import { K6TestOptions } from '@/utils/k6/schema'
 
 import { Debugger } from './Debugger'
-import { useDebugSession, useScript } from './Validator.hooks'
+import { useDebugSession } from './Validator.hooks'
 import { ValidatorControls } from './ValidatorControls'
+
+export interface ValidatorScriptData {
+  script: string
+  options: K6TestOptions
+  isExternal: boolean
+}
 
 interface ValidatorProps {
   file: StudioFile
+  scriptData: ValidatorScriptData
 }
 
-function Content({ file }: ValidatorProps) {
-  const { data, isLoading } = useScript(file.path)
-
+export function Validator({ file, scriptData }: ValidatorProps) {
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
   const navigate = useNavigate()
@@ -41,7 +46,7 @@ function Content({ file }: ValidatorProps) {
     }
 
     navigate(
-      getRoutePath('validator', {
+      getRoutePath('editorView', {
         path: encodeURIComponent(newScriptPath),
       })
     )
@@ -90,24 +95,25 @@ function Content({ file }: ValidatorProps) {
   return (
     <View
       title="Validator"
-      subTitle={<FileNameHeader file={file} canRename={!data?.isExternal} />}
+      subTitle={
+        <FileNameHeader file={file} canRename={!scriptData.isExternal} />
+      }
       actions={
         <ValidatorControls
           file={file}
           isRunning={isRunning}
-          canDelete={data !== undefined && !data.isExternal}
+          canDelete={!scriptData.isExternal}
           onRunScript={handleDebugScript}
           onRunInCloud={handleRunInCloud}
           onSelectScript={handleSelectExternalScript}
           onStopScript={handleStopScript}
         />
       }
-      loading={isLoading}
     >
       <Flex flexGrow="1" direction="column" align="stretch">
         <Debugger
-          script={data?.script ?? ''}
-          options={data?.options ?? {}}
+          script={scriptData.script}
+          options={scriptData.options}
           session={session}
           onDebugScript={handleDebugScript}
         />
@@ -124,10 +130,4 @@ function Content({ file }: ValidatorProps) {
       )}
     </View>
   )
-}
-
-export function Validator() {
-  const file = useCurrentFile('script')
-
-  return <Content key={file.path} file={file} />
 }

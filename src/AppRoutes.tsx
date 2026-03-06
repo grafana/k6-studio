@@ -13,7 +13,6 @@ import { BrowserTestEditor } from '@/views/BrowserTestEditor'
 import { EditorView } from '@/views/EditorView'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
-import { Validator } from '@/views/Validator'
 
 import { ErrorElement } from './ErrorElement'
 import { routeMap } from './routeMap'
@@ -35,7 +34,6 @@ const router = createHashRouter(
         path={routeMap.browserTestEditor}
         element={<BrowserTestEditor />}
       />
-      <Route path={routeMap.validator} element={<Validator />} />
       <Route path={routeMap.dataFilePreviewer} element={<DataFile />} />
       <Route path="*" element={<NoRouteFound />} />
     </Route>
