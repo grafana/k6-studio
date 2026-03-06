@@ -12,10 +12,7 @@ export function create() {
 }
 
 export async function open(filePath: string): Promise<BrowserTestFile> {
-  const result = await openFile({
-    location: { type: 'path', path: filePath },
-    fileType: 'browser-test',
-  })
+  const result = await openFile(filePath)
 
   invariant(result.type === 'browser-test', 'Expected browser-test content')
 

@@ -31,16 +31,11 @@ export function analyzeScript(location: FileLocation) {
 export async function openScript(
   scriptPath: string
 ): Promise<OpenScriptResult> {
-  const location: FileLocation = { type: 'path', path: scriptPath }
-
-  const result = await openFile({
-    location,
-    fileType: 'script',
-  })
+  const result = await openFile(scriptPath)
 
   invariant(result.type === 'script', 'Expected script content')
 
-  const options = await analyzeScript(location)
+  const options = await analyzeScript({ type: 'path', path: scriptPath })
 
   return {
     script: result.content,

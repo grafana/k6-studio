@@ -24,10 +24,7 @@ export function saveGenerator(generator: GeneratorFileData, filePath: string) {
 export async function loadGenerator(
   filePath: string
 ): Promise<GeneratorFileData> {
-  const result = await openFile({
-    location: { type: 'path', path: filePath },
-    fileType: 'generator',
-  })
+  const result = await openFile(filePath)
 
   invariant(result.type === 'generator', 'Expected generator content')
 

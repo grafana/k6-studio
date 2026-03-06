@@ -28,7 +28,6 @@ import {
   FileHandler,
   GetTempPathArgs,
   type ListDirectoryArgs,
-  OpenFileRequest,
   OpenFileResult,
   SaveFilePayload,
 } from './types'
@@ -59,29 +58,23 @@ export function initialize() {
 
   ipcMain.handle(
     FileHandler.Open,
-    async (event, request: OpenFileRequest): Promise<OpenFileResult> => {
+    async (event, path: string): Promise<OpenFileResult> => {
       console.info(`${FileHandler.Open} event received`)
 
       const browserWindow = browserWindowFromEvent(event)
 
-      const fileType =
-        request.fileType ?? inferFileTypeFromExtension(request.location.path)
+      const fileType = inferFileTypeFromExtension(path)
 
       if (fileType === null) {
         return { type: 'unsupported-format' }
       }
 
-      const raw = await readFile(request.location.path, {
+      const raw = await readFile(path, {
         encoding: 'utf-8',
         flag: 'r',
       })
 
-      return parseOpenResult(
-        browserWindow.workspace,
-        request.location.path,
-        fileType,
-        raw
-      )
+      return parseOpenResult(browserWindow.workspace, path, fileType, raw)
     }
   )
 

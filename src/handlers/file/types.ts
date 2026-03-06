@@ -1,5 +1,5 @@
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
-import { StudioFile, SupportedFileType } from '@/types'
+import { StudioFile } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { RecordingData } from '@/types/recordingData'
 import { DataRecord } from '@/types/testData'
@@ -57,11 +57,6 @@ export type FileLocation = FileOnDisk | UnsavedFile
 export interface SaveFilePayload {
   content: FileContent
   location: FileLocation
-}
-
-export interface OpenFileRequest {
-  location: FileOnDisk
-  fileType?: SupportedFileType
 }
 
 export interface GeneratorFileContent {

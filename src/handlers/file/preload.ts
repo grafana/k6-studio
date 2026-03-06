@@ -5,7 +5,6 @@ import {
   FileHandler,
   GetTempPathArgs,
   type ListDirectoryArgs,
-  OpenFileRequest,
   OpenFileResult,
   SaveFilePayload,
 } from './types'
@@ -20,11 +19,8 @@ export function save(payload: SaveFilePayload) {
   return ipcRenderer.invoke(FileHandler.Save, payload) as Promise<string>
 }
 
-export function open(request: OpenFileRequest) {
-  return ipcRenderer.invoke(
-    FileHandler.Open,
-    request
-  ) as Promise<OpenFileResult>
+export function open(path: string) {
+  return ipcRenderer.invoke(FileHandler.Open, path) as Promise<OpenFileResult>
 }
 
 export function getTempPath(payload?: GetTempPathArgs) {

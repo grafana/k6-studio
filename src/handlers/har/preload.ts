@@ -16,10 +16,7 @@ export function saveFile(data: RecordingData, prefix: string) {
 }
 
 export async function openFile(filePath: string): Promise<RecordingData> {
-  const result = await openFileViaHandler({
-    location: { type: 'path', path: filePath },
-    fileType: 'recording',
-  })
+  const result = await openFileViaHandler(filePath)
 
   invariant(result.type === 'recording', 'Expected recording content')
 
