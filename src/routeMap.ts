@@ -6,7 +6,6 @@ const routes = {
   editorView: '/file/:path',
   validator: '/validator/:path?',
   generator: '/generator/:path',
-  browserTestEditor: '/editor/:path',
 }
 
 export type RouteName = keyof typeof routes
@@ -27,6 +26,5 @@ export const routeMap = {
   recorder: getRoutePath('recorder'),
   editorView: getRoutePath('editorView'),
   generator: getRoutePath('generator'),
-  browserTestEditor: getRoutePath('browserTestEditor'),
   validator: getRoutePath('validator'),
 }

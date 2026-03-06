@@ -1,13 +1,11 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
-import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { LogsSection } from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
-import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
 
@@ -16,9 +14,7 @@ import { useDebugSession } from '../Validator/Validator.hooks'
 
 import {
   useBrowserScriptPreview,
-  useBrowserTest,
   useBrowserTestEditorLayout,
-  useBrowserTestFile,
   useBrowserTestState,
   useSaveBrowserTest,
 } from './BrowserTestEditor.hooks'
@@ -183,20 +179,11 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   )
 }
 
-export function BrowserTestEditor() {
-  const file = useBrowserTestFile()
-  const navigate = useNavigate()
+interface BrowserTestEditorProps {
+  file: StudioFile
+  data: BrowserTestFile
+}
 
-  const { data, isLoading } = useBrowserTest(file.path)
-
-  if (isLoading) {
-    return null
-  }
-
-  if (data === undefined) {
-    navigate(routeMap.home)
-    return null
-  }
-
+export function BrowserTestEditor({ file, data }: BrowserTestEditorProps) {
   return <BrowserTestEditorView key={file.path} file={file} data={data} />
 }

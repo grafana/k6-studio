@@ -13,7 +13,7 @@ export function useCreateBrowserTest() {
       const filePath = await window.studio.browserTest.create()
 
       navigate(
-        getRoutePath('browserTestEditor', {
+        getRoutePath('editorView', {
           path: encodeURIComponent(filePath),
         })
       )

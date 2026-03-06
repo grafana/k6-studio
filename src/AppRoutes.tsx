@@ -9,7 +9,6 @@ import {
 } from 'react-router-dom'
 
 import { Layout } from '@/components/Layout/Layout'
-import { BrowserTestEditor } from '@/views/BrowserTestEditor'
 import { EditorView } from '@/views/EditorView'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
@@ -29,10 +28,6 @@ const router = createHashRouter(
       <Route path={routeMap.recorder} element={<Recorder />} />
       <Route path={routeMap.editorView} element={<EditorView />} />
       <Route path={routeMap.generator} element={<Generator />} />
-      <Route
-        path={routeMap.browserTestEditor}
-        element={<BrowserTestEditor />}
-      />
       <Route path="*" element={<NoRouteFound />} />
     </Route>
   )

@@ -29,7 +29,7 @@ export function getViewPath(type: SupportedFileType, path: string) {
       return getRoutePath('generator', { path: encodedPath })
 
     case 'browser-test':
-      return getRoutePath('browserTestEditor', { path: encodedPath })
+      return getRoutePath('editorView', { path: encodedPath })
 
     case 'script':
     case 'json':
