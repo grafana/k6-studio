@@ -23,7 +23,7 @@ export function getViewPath(type: SupportedFileType, path: string) {
 
   switch (type) {
     case 'recording':
-      return getRoutePath('recordingPreviewer', { path: encodedPath })
+      return getRoutePath('editorView', { path: encodedPath })
 
     case 'generator':
       return getRoutePath('generator', { path: encodedPath })

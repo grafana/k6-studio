@@ -198,7 +198,7 @@ export function Recorder() {
       })
 
       navigate(
-        getRoutePath('recordingPreviewer', {
+        getRoutePath('editorView', {
           path: encodeURIComponent(filePath),
         }),
         {

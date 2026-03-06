@@ -10,9 +10,9 @@ import {
 
 import { Layout } from '@/components/Layout/Layout'
 import { BrowserTestEditor } from '@/views/BrowserTestEditor'
+import { EditorView } from '@/views/EditorView'
 import { Home } from '@/views/Home'
 import { Recorder } from '@/views/Recorder'
-import { RecordingPreviewer } from '@/views/RecordingPreviewer'
 import { Validator } from '@/views/Validator'
 
 import { ErrorElement } from './ErrorElement'
@@ -29,10 +29,7 @@ const router = createHashRouter(
     >
       <Route index element={<Home />} />
       <Route path={routeMap.recorder} element={<Recorder />} />
-      <Route
-        path={routeMap.recordingPreviewer}
-        element={<RecordingPreviewer />}
-      />
+      <Route path={routeMap.editorView} element={<EditorView />} />
       <Route path={routeMap.generator} element={<Generator />} />
       <Route
         path={routeMap.browserTestEditor}
