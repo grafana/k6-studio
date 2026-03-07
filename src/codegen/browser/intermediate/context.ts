@@ -46,6 +46,15 @@ function buildScenarioGraph(scenario: model.Scenario) {
         break
 
       case 'goto':
+        // Implicit navigations are emitted as part of the preceding action
+        // (e.g. click + waitForNavigation), so they must not count as a
+        // standalone page dependency.
+        if (node.source !== 'implicit') {
+          graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        }
+        connectPrevious(graph, node)
+        break
+
       case 'reload':
         graph.connect(node.nodeId, node.inputs.page.nodeId, null)
         connectPrevious(graph, node)
@@ -53,6 +62,9 @@ function buildScenarioGraph(scenario: model.Scenario) {
 
       case 'click':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        if (node.triggersNavigation) {
+          graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        }
         connectPrevious(graph, node)
         break
 
