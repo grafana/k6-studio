@@ -475,6 +475,113 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
   )
 })
 
+it('should ignore standalone implicit navigations without crashing', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          source: 'address-bar',
+          url: 'https://example.com',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'implicit-goto',
+          source: 'implicit',
+          url: 'https://example.com/login',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  expect(script).toContain('await page.goto("https://example.com")')
+  expect(script).not.toContain('https://example.com/login')
+  expect(script).toContain('await page?.close()')
+})
+
+it('should keep page open for actions after implicit navigation', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'submitLocator',
+          selector: { type: 'css', selector: 'button[type="submit"]' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'submitClick',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          triggersNavigation: true,
+          inputs: {
+            locator: { nodeId: 'submitLocator' },
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'implicit-goto',
+          source: 'implicit',
+          url: 'https://example.com/login',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'usernameLocator',
+          selector: { type: 'css', selector: 'input[name="username"]' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'type-text',
+          nodeId: 'type-username',
+          value: 'alice',
+          inputs: {
+            locator: { nodeId: 'usernameLocator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  expect(script).toContain('page.waitForNavigation()')
+  expect(script).toContain('page.locator(\'input[name="username"]\').fill("alice")')
+  expect(script).toContain('} finally {')
+})
+
 it('should assert that element contains text', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
