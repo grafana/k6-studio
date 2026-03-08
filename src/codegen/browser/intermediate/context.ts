@@ -297,6 +297,14 @@ export class IntermediateContext {
       return
     }
 
+    this.#finalizeAllocationBlock(currentBlock, parentBlock, rest)
+  }
+
+  #finalizeAllocationBlock(
+    currentBlock: AllocationBlock,
+    parentBlock: Block | undefined,
+    rest: Block[]
+  ) {
     if (parentBlock === undefined) {
       throw new Error(
         'Allocation block did not have a parent block. This is a bug!'
@@ -352,6 +360,11 @@ export class IntermediateContext {
   }
 
   done() {
+    while (this.#block.type === 'allocation' && this.#block.references.size === 0) {
+      const [currentBlock, parentBlock, ...rest] = this.#blocks
+      this.#finalizeAllocationBlock(currentBlock, parentBlock, rest)
+    }
+
     if (this.#block.type !== 'function') {
       throw new Error(
         'Cannot finalize context while still inside an allocation block. This is a bug!'

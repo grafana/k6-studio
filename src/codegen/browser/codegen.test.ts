@@ -1259,3 +1259,49 @@ it('should emit two disjoint try-finally blocks', async ({ expect }) => {
     '__snapshots__/browser/disjoint-try-finally-blocks.ts'
   )
 })
+
+it('should emit cleanup for a page without actions', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/page-without-actions.ts'
+  )
+})
+
+it('should emit cleanup when page is only used by an unused locator', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: { type: 'css', selector: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/page-with-unused-locator.ts'
+  )
+})
