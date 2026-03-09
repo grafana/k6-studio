@@ -1,5 +1,6 @@
 import { BrowserWindow, dialog, Menu, shell } from 'electron'
 
+import { AppHandler } from '../handlers/app/types'
 import { reportNewIssue } from '../utils/bugReport'
 import { getPlatform } from '../utils/electron'
 
@@ -34,6 +35,28 @@ const template: Electron.MenuItemConstructorOptions[] = [
           }
 
           browserWindow.workspace.switch(selectedPath)
+        },
+      },
+      {
+        label: 'Open file...',
+        click: async (_menuItem, browserWindow) => {
+          if (browserWindow instanceof BrowserWindow === false) {
+            return
+          }
+
+          const {
+            filePaths: [selectedPath],
+          } = await dialog.showOpenDialog(browserWindow, {
+            properties: ['openFile'],
+            title: 'Open file',
+          })
+
+          if (selectedPath === undefined) {
+            return
+          }
+
+          const route = `/file/${encodeURIComponent(selectedPath)}`
+          browserWindow.webContents.send(AppHandler.DeepLink, route)
         },
       },
       { type: 'separator' },
