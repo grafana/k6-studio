@@ -5,7 +5,15 @@ import {
   selectionFeature,
 } from '@headless-tree/core'
 import { useTree } from '@headless-tree/react'
-import { FileIcon, FolderIcon, FolderOpenIcon } from 'lucide-react'
+import {
+  FileArchiveIcon,
+  FileBoxIcon,
+  FileCodeIcon,
+  FileCogIcon,
+  FileIcon,
+  FolderIcon,
+  LucideProps,
+} from 'lucide-react'
 import * as pathe from 'pathe'
 import { useNavigate } from 'react-router-dom'
 
@@ -13,6 +21,39 @@ import { useWorkspace } from '@/contexts/WorkspaceContext'
 import type { DirectoryEntry } from '@/handlers/file/types'
 import { useCurrentPath } from '@/hooks/useFileNameParam'
 import { getViewPath } from '@/utils/file'
+
+interface ItemIconProps extends LucideProps {
+  item: DirectoryEntry
+}
+
+function ItemIcon({ item, ...props }: ItemIconProps) {
+  if (item.type === 'directory') {
+    return <FolderIcon {...props} />
+  }
+
+  if (item.file === null) {
+    return <FileIcon {...props} />
+  }
+
+  switch (item.file.type) {
+    case 'script':
+      return <FileCodeIcon {...props} />
+
+    case 'recording':
+      return <FileArchiveIcon {...props} />
+
+    case 'browser-test':
+    case 'generator':
+      return <FileCogIcon {...props} />
+
+    case 'json':
+    case 'csv':
+      return <FileBoxIcon {...props} />
+
+    default:
+      return <FileIcon {...props} />
+  }
+}
 
 const loadingPlaceholder: DirectoryEntry = {
   type: 'file',
@@ -77,12 +118,6 @@ export function WorkspaceFileTree() {
     <div {...tree.getContainerProps()}>
       {tree.getItems().map((item) => {
         const data = item.getItemData()
-        const isFolder = data.type === 'directory'
-        const Icon = isFolder
-          ? item.isExpanded()
-            ? FolderOpenIcon
-            : FolderIcon
-          : FileIcon
 
         return (
           <button
@@ -121,7 +156,8 @@ export function WorkspaceFileTree() {
               }
             `}
           >
-            <Icon
+            <ItemIcon
+              item={data}
               size={16}
               css={css`
                 flex-shrink: 0;
