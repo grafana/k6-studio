@@ -11,7 +11,7 @@ export const textContentField = defineField<
   label: 'Text content',
   input: 'text',
   getValue: (locator) => locator.text,
-  setValue: (locator, value: string) => ({
+  setValue: (locator, value) => ({
     ...locator,
     text: value,
   }),

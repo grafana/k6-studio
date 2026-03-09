@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { FieldRenderer } from '../../ActionForms'
-import { urlField } from '../../ActionForms/fields/url'
+import { urlField } from '../../ActionForms/fields'
 import { buildFieldErrors } from '../../ActionForms/utils'
 import { FormPopover } from '../components/FormPopover'
 

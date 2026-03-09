@@ -11,7 +11,7 @@ export const cssSelectorField = defineField<
   label: 'CSS selector',
   input: 'textarea',
   getValue: (locator) => locator.selector,
-  setValue: (locator, value: string) => ({
+  setValue: (locator, value) => ({
     ...locator,
     selector: value,
   }),

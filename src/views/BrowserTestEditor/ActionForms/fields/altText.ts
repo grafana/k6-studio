@@ -10,11 +10,8 @@ export const altTextField = defineField<
   name: 'alt',
   label: 'Alt text',
   input: 'text',
-  getValue: (locator: Extract<ActionLocator, { type: 'alt' }>) => locator.text,
-  setValue: (
-    locator: Extract<ActionLocator, { type: 'alt' }>,
-    value: string
-  ) => ({
+  getValue: (locator) => locator.text,
+  setValue: (locator, value) => ({
     ...locator,
     text: value,
   }),

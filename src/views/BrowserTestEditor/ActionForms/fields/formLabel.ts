@@ -11,7 +11,7 @@ export const formLabelField = defineField<
   label: 'Form label',
   input: 'text',
   getValue: (locator) => locator.label,
-  setValue: (locator, value: string) => ({
+  setValue: (locator, value) => ({
     ...locator,
     label: value,
   }),
