@@ -11,8 +11,8 @@ import {
 import { LocatorWaitForAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import { LocatorInput } from './Inputs/LocatorInput/LocatorInput'
-import { UrlInput } from './Inputs/UrlInput/UrlInput'
+import { LocatorForm } from './ActionForms/forms/LocatorForm'
+import { UrlForm } from './ActionForms/forms/UrlForm'
 import { BrowserActionInstance, WithEditorMetadata } from './types'
 
 interface EditableActionProps {
@@ -153,7 +153,7 @@ function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
 
   return (
     <Grid columns="max-content auto" gap="2" align="center">
-      Navigate to <UrlInput value={action.url} onChange={handleChangeUrl} />
+      Navigate to <UrlForm value={action.url} onChange={handleChangeUrl} />
     </Grid>
   )
 }
@@ -176,7 +176,7 @@ function WaitForActionBody({ action, onUpdate }: WaitForActionBodyProps) {
   return (
     <Grid columns="max-content auto" gap="2" align="center">
       Wait for element
-      <LocatorInput state={action.locator} onChange={handleChangeLocator} />
+      <LocatorForm state={action.locator} onChange={handleChangeLocator} />
     </Grid>
   )
 }

@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import { Flex, Grid, RadioGroup, Separator } from '@radix-ui/themes'
 import { useState } from 'react'
 
@@ -7,18 +8,21 @@ import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
+import { FieldConfig, FieldRenderer } from '../../ActionForms'
+import { buildFieldErrors } from '../../ActionForms/utils'
 import { LocatorOptions } from '../../types'
-import { FormPopover } from '../Shared/FormPopover'
-
-import { AltLocator } from './AltLocator'
-import { CssLocator } from './CssLocator'
-import { LabelLocator } from './LabelLocator'
-import { initializeLocatorValues, validateLocator } from './LocatorInput.utils'
-import { PlaceholderLocator } from './PlaceholderLocator'
-import { RoleLocator } from './RoleLocator'
-import { TestIdLocator } from './TestIdLocator'
-import { TextLocator } from './TextLocator'
-import { TitleLocator } from './TitleLocator'
+import { FormPopover } from '../components/FormPopover'
+import {
+  altTextField,
+  cssSelectorField,
+  formLabelField,
+  placeholderField,
+  roleField,
+  roleNameField,
+  testIdField,
+  textContentField,
+  titleField,
+} from '../fields'
 
 const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
   role: 'ARIA Role',
@@ -31,23 +35,48 @@ const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
   css: 'CSS selector',
 }
 
-interface LocatorInputProps {
+const LOCATOR_FIELDS: Record<
+  ActionLocator['type'],
+  FieldConfig<string, ActionLocator>[]
+> = {
+  css: [cssSelectorField],
+  testid: [testIdField],
+  label: [formLabelField],
+  placeholder: [placeholderField],
+  title: [titleField],
+  alt: [altTextField],
+  text: [textContentField],
+  role: [roleField, roleNameField],
+}
+
+interface LocatorFormProps {
   state: LocatorOptions
   onChange: (value: LocatorOptions) => void
 }
 
-export function LocatorInput({
+export function LocatorForm({
   state: { current, values },
   onChange,
-}: LocatorInputProps) {
+}: LocatorFormProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [touchedTypes, setTouchedTypes] = useState(
     new Set<ActionLocator['type']>()
   )
+  const [dirtyTypes, setDirtyTypes] = useState(new Set<ActionLocator['type']>())
 
   const currentLocator = values[current] ?? initializeLocatorValues(current)
 
   const handleChangeCurrent = (type: LocatorOptions['current']) => {
+    if (dirtyTypes.has(current)) {
+      setTouchedTypes((prev) => {
+        if (prev.has(current)) {
+          return prev
+        }
+        const next = new Set(prev)
+        next.add(current)
+        return next
+      })
+    }
     const nextValues = values[type]
       ? values
       : { ...values, [type]: initializeLocatorValues(type) }
@@ -55,6 +84,14 @@ export function LocatorInput({
   }
 
   const handleLocatorChange = (locator: ActionLocator) => {
+    setDirtyTypes((prev) => {
+      if (prev.has(current)) {
+        return prev
+      }
+      const next = new Set(prev)
+      next.add(current)
+      return next
+    })
     onChange({
       current,
       values: { ...values, [current]: locator },
@@ -75,7 +112,6 @@ export function LocatorInput({
   const handlePopoverOpenChange = (open: boolean) => {
     setIsPopoverOpen(open)
     if (open) {
-      setTouchedTypes(new Set())
       return
     }
 
@@ -94,8 +130,9 @@ export function LocatorInput({
     handlePopoverOpenChange(false)
   }
 
+  const fields = LOCATOR_FIELDS[currentLocator.type]
   const validation = touchedTypes.has(current)
-    ? validateLocator(currentLocator)
+    ? validateFields(currentLocator, fields)
     : { isValid: true }
   const error = validation.isValid ? null : validation.message
 
@@ -128,110 +165,25 @@ export function LocatorInput({
           </FieldGroup>
 
           <Separator orientation="vertical" size="4" decorative />
-          <LocatorForm
-            currentLocator={currentLocator}
-            fieldErrors={validation.fieldErrors}
-            onLocatorChange={handleLocatorChange}
-            onBlur={handleFieldBlur}
-          />
+          <Flex direction="column" gap="2" align="stretch">
+            {fields.map((field) => (
+              <FieldRenderer
+                key={field.name}
+                field={field}
+                model={currentLocator}
+                onChange={handleLocatorChange}
+                onBlur={handleFieldBlur}
+                errors={buildFieldErrors(
+                  field.name,
+                  validation.fieldErrors?.[field.name]
+                )}
+              />
+            ))}
+          </Flex>
         </Grid>
       </form>
     </FormPopover>
   )
-}
-
-interface LocatorFormProps {
-  currentLocator: ActionLocator
-  onLocatorChange: (locator: ActionLocator) => void
-  fieldErrors?: Record<string, string>
-  onBlur: () => void
-}
-
-function LocatorForm({
-  currentLocator,
-  onLocatorChange,
-  fieldErrors,
-  onBlur,
-}: LocatorFormProps) {
-  switch (currentLocator.type) {
-    case 'css':
-      return (
-        <CssLocator
-          locator={currentLocator}
-          onChange={onLocatorChange}
-          onBlur={onBlur}
-          error={fieldErrors?.selector}
-        />
-      )
-    case 'testid':
-      return (
-        <TestIdLocator
-          locator={currentLocator}
-          onChange={onLocatorChange}
-          onBlur={onBlur}
-          error={fieldErrors?.testId}
-        />
-      )
-    case 'role':
-      return (
-        <RoleLocator
-          locator={currentLocator}
-          errors={{
-            role: fieldErrors?.role,
-            name: fieldErrors?.name,
-          }}
-          onChange={onLocatorChange}
-          onBlur={onBlur}
-        />
-      )
-    case 'text':
-      return (
-        <TextLocator
-          locator={currentLocator}
-          onChange={onLocatorChange}
-          onBlur={onBlur}
-          error={fieldErrors?.text}
-        />
-      )
-    case 'label':
-      return (
-        <LabelLocator
-          locator={currentLocator}
-          onChange={onLocatorChange}
-          onBlur={onBlur}
-          error={fieldErrors?.label}
-        />
-      )
-    case 'placeholder':
-      return (
-        <PlaceholderLocator
-          locator={currentLocator}
-          onChange={onLocatorChange}
-          onBlur={onBlur}
-          error={fieldErrors?.placeholder}
-        />
-      )
-    case 'title':
-      return (
-        <TitleLocator
-          locator={currentLocator}
-          onChange={onLocatorChange}
-          onBlur={onBlur}
-          error={fieldErrors?.title}
-        />
-      )
-    case 'alt':
-      return (
-        <AltLocator
-          locator={currentLocator}
-          onChange={onLocatorChange}
-          onBlur={onBlur}
-          error={fieldErrors?.text}
-        />
-      )
-    default:
-      return exhaustive(currentLocator)
-  }
 }
 
 function DisplayValue({
@@ -244,14 +196,66 @@ function DisplayValue({
     <Flex gap="1" align="center" overflow="hidden">
       <LocatorIcon locator={selector} />
       <span
-        css={{
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
-          textOverflow: 'ellipsis',
-        }}
+        css={css`
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        `}
       >
         <LocatorText locator={selector} />
       </span>
     </Flex>
   )
+}
+
+function initializeLocatorValues(type: ActionLocator['type']): ActionLocator {
+  switch (type) {
+    case 'css':
+      return { type, selector: '' }
+    case 'testid':
+      return { type, testId: '' }
+    case 'label':
+      return { type, label: '' }
+    case 'placeholder':
+      return { type, placeholder: '' }
+    case 'title':
+      return { type, title: '' }
+    case 'alt':
+    case 'text':
+      return { type, text: '' }
+    case 'role':
+      return { type, role: '' }
+    default:
+      return exhaustive(type)
+  }
+}
+
+function validateFields(
+  locator: ActionLocator,
+  fields: FieldConfig<string, ActionLocator>[]
+) {
+  const fieldErrors: Record<string, string> = {}
+  let message: string | undefined
+
+  fields.forEach((field) => {
+    if (!field.validate) {
+      return
+    }
+
+    const error = field.validate(field.getValue(locator), locator)
+
+    if (error) {
+      if (!message) {
+        message = error
+      }
+
+      fieldErrors[field.name] = error
+    }
+  })
+
+  if (!message) {
+    return { isValid: true }
+  }
+
+  return { isValid: false, message, fieldErrors }
 }

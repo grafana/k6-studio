@@ -11,22 +11,22 @@ import CreatableSelect from 'react-select/creatable'
 
 import { getThemeConfig } from '@/components/StyledReactSelect/StyledReactSelect.styles'
 
-type SuggestionOption = {
+type ComboBoxOption = {
   label: string
   value: string
 }
 
-interface SuggestionInputProps {
+interface ComboBoxProps {
   value: string
   onChange: (value: string) => void
-  options: SuggestionOption[]
+  options: ComboBoxOption[]
   disabled?: boolean
   name?: string
   id?: string
   onBlur?: () => void
 }
 
-export function SuggestionInput({
+export function ComboBox({
   value,
   onChange,
   options,
@@ -34,7 +34,7 @@ export function SuggestionInput({
   name,
   id,
   onBlur,
-}: SuggestionInputProps) {
+}: ComboBoxProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
 
@@ -46,7 +46,7 @@ export function SuggestionInput({
     : null
 
   return (
-    <CreatableSelect<SuggestionOption, false>
+    <CreatableSelect<ComboBoxOption, false>
       inputId={id}
       name={name}
       isDisabled={disabled}
@@ -91,7 +91,7 @@ export function SuggestionInput({
   )
 }
 
-function Menu({ ...props }: MenuProps<SuggestionOption>) {
+function Menu({ ...props }: MenuProps<ComboBoxOption>) {
   return (
     <Theme appearance="inherit">
       <components.Menu {...props} />
@@ -99,7 +99,7 @@ function Menu({ ...props }: MenuProps<SuggestionOption>) {
   )
 }
 
-function DropdownIndicator(props: DropdownIndicatorProps<SuggestionOption>) {
+function DropdownIndicator(props: DropdownIndicatorProps<ComboBoxOption>) {
   return (
     <components.DropdownIndicator {...props}>
       <ChevronDownIcon />
