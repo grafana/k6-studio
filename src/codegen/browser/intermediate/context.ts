@@ -361,7 +361,8 @@ export class IntermediateContext {
 
   done() {
     while (this.#block.type === 'allocation' && this.#block.references.size === 0) {
-      const [currentBlock, parentBlock, ...rest] = this.#blocks
+      const currentBlock = this.#block
+      const [, parentBlock, ...rest] = this.#blocks
       this.#finalizeAllocationBlock(currentBlock, parentBlock, rest)
     }
 
