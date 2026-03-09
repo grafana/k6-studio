@@ -60,6 +60,18 @@ const template: Electron.MenuItemConstructorOptions[] = [
         },
       },
       { type: 'separator' },
+      {
+        label: 'Save',
+        accelerator: isMac ? 'Cmd+S' : 'Ctrl+S',
+        click: (_menuItem, browserWindow) => {
+          if (browserWindow instanceof BrowserWindow === false) {
+            return
+          }
+
+          browserWindow.webContents.send(AppHandler.SaveRequested)
+        },
+      },
+      { type: 'separator' },
       { role: 'close' },
     ],
   },

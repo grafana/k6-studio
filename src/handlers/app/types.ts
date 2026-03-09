@@ -3,5 +3,6 @@ export enum AppHandler {
   ChangeRoute = 'app:change-route',
   SplashscreenClose = 'app:splashscreen-close',
   DeepLink = 'app:deep-link',
+  SaveRequested = 'app:save-requested',
   TrackEvent = 'app:track-event',
 }

@@ -7,6 +7,7 @@ import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { LogsSection } from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { FileContent } from '@/handlers/file/types'
+import { useSaveRequested } from '@/hooks/useSaveRequested'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
 
@@ -56,6 +57,8 @@ function BrowserTestEditorView({
 
     void onSave({ type: 'browser-test', data: browserTestData })
   }
+
+  useSaveRequested(handleSave)
 
   return (
     <View

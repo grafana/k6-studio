@@ -1,13 +1,13 @@
 import { Allotment } from 'allotment'
 import log from 'electron-log/renderer'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useBlocker } from 'react-router-dom'
-import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
 import { FileContent } from '@/handlers/file/types'
+import { useSaveRequested } from '@/hooks/useSaveRequested'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile, ProxyData } from '@/types'
@@ -44,11 +44,8 @@ export function Generator({ file, data, onSave }: GeneratorProps) {
   const isLoading = isLoadingRecording
 
   const isDirty = useIsGeneratorDirty(data)
-  const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)
-
-  const [, onSaveKeyPress] = useKeyboardJs(['command + s', 'ctrl + s'])
 
   const blocker = useBlocker(({ historyAction }) => {
     // Don't block navigation when redirecting home from invalid generator
@@ -84,23 +81,13 @@ export function Generator({ file, data, onSave }: GeneratorProps) {
     })
   })
 
-  useEffect(() => {
-    isDirtyRef.current = isDirty
-  }, [isDirty])
-
   const handleSaveGenerator = useCallback(() => {
     const generator = selectGeneratorData(useGeneratorStore.getState())
 
     return onSave({ type: 'generator', data: generator })
   }, [onSave])
 
-  useEffect(() => {
-    ;(async () => {
-      if (onSaveKeyPress && isDirtyRef.current === true) {
-        await handleSaveGenerator()
-      }
-    })()
-  }, [handleSaveGenerator, onSaveKeyPress])
+  useSaveRequested(handleSaveGenerator)
 
   const handleSaveGeneratorDialog = async () => {
     await handleSaveGenerator()
