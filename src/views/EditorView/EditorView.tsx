@@ -1,11 +1,16 @@
 import { Text } from '@radix-ui/themes'
 import { useQuery } from '@tanstack/react-query'
+import log from 'electron-log/renderer'
 import * as pathe from 'pathe'
+import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { View } from '@/components/Layout/View'
+import { FileContent } from '@/handlers/file/types'
+import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
+import { queryClient } from '@/utils/query'
 
 import { BrowserTestEditor } from '../BrowserTestEditor'
 import { DataFile } from '../DataFile'
@@ -26,10 +31,35 @@ function createStudioFile(path: string, type: StudioFile['type']): StudioFile {
 
 export function EditorView() {
   const { path: pathParam } = useParams()
+  const showToast = useToast()
 
   invariant(pathParam, 'path is required')
 
   const path = decodeURIComponent(pathParam)
+
+  const handleSave = useCallback(
+    async (content: FileContent) => {
+      try {
+        await window.studio.file.save({
+          content,
+          location: { type: 'path', path },
+        })
+
+        await queryClient.invalidateQueries({ queryKey: ['file', path] })
+
+        showToast({ title: 'File saved', status: 'success' })
+      } catch (error) {
+        showToast({
+          title: 'Failed to save file',
+          status: 'error',
+          description: error instanceof Error ? error.message : String(error),
+        })
+
+        log.error(error)
+      }
+    },
+    [path, showToast]
+  )
 
   const {
     data: result,
@@ -113,13 +143,20 @@ export function EditorView() {
   if (result.type === 'browser-test') {
     const file = createStudioFile(path, 'browser-test')
 
-    return <BrowserTestEditor key={path} file={file} data={result.data} />
+    return (
+      <BrowserTestEditor
+        key={path}
+        file={file}
+        data={result.data}
+        onSave={handleSave}
+      />
+    )
   }
 
   if (result.type === 'generator') {
     const file = createStudioFile(path, 'generator')
 
-    return <Generator file={file} data={result.data} />
+    return <Generator file={file} data={result.data} onSave={handleSave} />
   }
 
   if (result.type === 'unsupported-format') {

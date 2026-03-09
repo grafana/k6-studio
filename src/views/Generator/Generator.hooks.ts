@@ -12,7 +12,6 @@ import {
 } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { GeneratorFileData } from '@/types/generator'
-import { queryClient } from '@/utils/query'
 
 import {
   exportScript,
@@ -42,35 +41,6 @@ export function useUpdateValueInGeneratorFile(filePath: string) {
       const generator = await loadGeneratorFile(filePath)
       const updated = { ...generator, [key]: value }
       await window.studio.generator.saveGenerator(updated, filePath)
-    },
-  })
-}
-
-export function useSaveGeneratorFile(filePath: string) {
-  const showToast = useToast()
-
-  return useMutation({
-    mutationFn: async (generator: GeneratorFileData) => {
-      await window.studio.generator.saveGenerator(generator, filePath)
-      await queryClient.invalidateQueries({ queryKey: ['generator', filePath] })
-    },
-
-    onSuccess: () => {
-      showToast({
-        title: 'Generator saved',
-        status: 'success',
-      })
-    },
-
-    onError: (error) => {
-      console.error('Failed to save generator', error)
-
-      showToast({
-        title: 'Failed to save generator',
-        status: 'error',
-        description: error.message,
-      })
-      log.error(error)
     },
   })
 }

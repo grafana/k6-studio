@@ -7,6 +7,7 @@ import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
+import { FileContent } from '@/handlers/file/types'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile, ProxyData } from '@/types'
@@ -16,7 +17,6 @@ import {
   useIsGeneratorDirty,
   useScriptPreview,
   useLoadRecording,
-  useSaveGeneratorFile,
 } from './Generator.hooks'
 import { GeneratorControls } from './GeneratorControls'
 import { GeneratorTabs } from './GeneratorTabs'
@@ -26,9 +26,10 @@ import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 interface GeneratorProps {
   file: StudioFile
   data: GeneratorFileData
+  onSave: (content: FileContent) => void | Promise<void>
 }
 
-export function Generator({ file, data }: GeneratorProps) {
+export function Generator({ file, data, onSave }: GeneratorProps) {
   const setGeneratorFile = useGeneratorStore((store) => store.setGeneratorFile)
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
 
@@ -39,8 +40,6 @@ export function Generator({ file, data }: GeneratorProps) {
     isLoading: isLoadingRecording,
     error: harError,
   } = useLoadRecording(data.recordingPath)
-
-  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file.path)
 
   const isLoading = isLoadingRecording
 
@@ -91,8 +90,9 @@ export function Generator({ file, data }: GeneratorProps) {
 
   const handleSaveGenerator = useCallback(() => {
     const generator = selectGeneratorData(useGeneratorStore.getState())
-    return saveGenerator(generator)
-  }, [saveGenerator])
+
+    return onSave({ type: 'generator', data: generator })
+  }, [onSave])
 
   useEffect(() => {
     ;(async () => {

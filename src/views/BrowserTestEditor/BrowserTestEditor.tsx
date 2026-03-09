@@ -6,6 +6,7 @@ import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { LogsSection } from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { FileContent } from '@/handlers/file/types'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
 
@@ -16,7 +17,6 @@ import {
   useBrowserScriptPreview,
   useBrowserTestEditorLayout,
   useBrowserTestState,
-  useSaveBrowserTest,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
@@ -24,13 +24,16 @@ import { EditableBrowserActionList } from './EditableBrowserActionList'
 interface BrowserTestEditorViewProps {
   file: StudioFile
   data: BrowserTestFile
+  onSave: (content: FileContent) => void | Promise<void>
 }
 
-function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
+function BrowserTestEditorView({
+  file,
+  data,
+  onSave,
+}: BrowserTestEditorViewProps) {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
     useBrowserTestEditorLayout()
-
-  const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.path)
 
   const test = useBrowserTestState(data)
 
@@ -46,9 +49,12 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       return
     }
 
-    const browserTestData = { ...data, actions: test.plainActions }
+    const browserTestData = {
+      ...data,
+      actions: test.plainActions,
+    }
 
-    void saveBrowserTest(browserTestData)
+    void onSave({ type: 'browser-test', data: browserTestData })
   }
 
   return (
@@ -182,8 +188,20 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 interface BrowserTestEditorProps {
   file: StudioFile
   data: BrowserTestFile
+  onSave: (content: FileContent) => void | Promise<void>
 }
 
-export function BrowserTestEditor({ file, data }: BrowserTestEditorProps) {
-  return <BrowserTestEditorView key={file.path} file={file} data={data} />
+export function BrowserTestEditor({
+  file,
+  data,
+  onSave,
+}: BrowserTestEditorProps) {
+  return (
+    <BrowserTestEditorView
+      key={file.path}
+      file={file}
+      data={data}
+      onSave={onSave}
+    />
+  )
 }

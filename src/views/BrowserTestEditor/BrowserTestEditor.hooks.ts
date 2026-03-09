@@ -1,5 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import log from 'electron-log/renderer'
+import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { emitScript } from '@/codegen/browser'
@@ -12,9 +11,7 @@ import { useCurrentFile } from '@/hooks/useFileNameParam'
 import { useStateWithUndo } from '@/hooks/useStateWithUndo'
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
-import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
-import { queryClient } from '@/utils/query'
 import { exhaustive } from '@/utils/typescript'
 
 import { BrowserActionWithId } from './types'
@@ -34,35 +31,6 @@ export function useBrowserTest(fileName: string) {
       }
 
       return result.data
-    },
-  })
-}
-
-export function useSaveBrowserTest(filePath: string) {
-  const showToast = useToast()
-
-  return useMutation({
-    mutationFn: async (data: BrowserTestFile) => {
-      await window.studio.browserTest.save(filePath, data)
-      await queryClient.invalidateQueries({
-        queryKey: ['browserTest', filePath],
-      })
-    },
-
-    onSuccess: () => {
-      showToast({
-        title: 'Browser test saved',
-        status: 'success',
-      })
-    },
-
-    onError: (error) => {
-      showToast({
-        title: 'Failed to save browser test',
-        status: 'error',
-        description: error.message,
-      })
-      log.error(error)
     },
   })
 }
