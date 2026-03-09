@@ -84,9 +84,13 @@ export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
 export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
-  const { actions = [] } = browserTestFile ?? {}
+  const test = useMemo(
+    () => browserTestFile ?? { actions: [] },
+    [browserTestFile]
+  )
+
   const { state, undo, redo, push } = useStateWithUndo<BrowserActionWithId[]>(
-    actions.map((action) => ({
+    test.actions.map((action) => ({
       id: crypto.randomUUID(),
       action,
     }))
@@ -115,10 +119,10 @@ export function useBrowserTestState(
 
   const isDirty = useMemo(() => {
     return (
-      plainActions.length !== actions.length ||
-      JSON.stringify(plainActions) !== JSON.stringify(actions)
+      plainActions.length !== test.actions.length ||
+      JSON.stringify({ actions: plainActions }) !== JSON.stringify(test)
     )
-  }, [plainActions, actions])
+  }, [plainActions, test])
 
   return {
     actions: state,

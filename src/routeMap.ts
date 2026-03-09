@@ -5,6 +5,7 @@ const routes = {
   recorder: '/recorder',
   editorView: '/file/:path',
   newGenerator: '/new/generator',
+  newBrowserTest: '/new/browser-test',
   validator: '/validator/:path?',
 }
 
@@ -26,5 +27,6 @@ export const routeMap = {
   recorder: getRoutePath('recorder'),
   editorView: getRoutePath('editorView'),
   newGenerator: getRoutePath('newGenerator'),
+  newBrowserTest: getRoutePath('newBrowserTest'),
   validator: getRoutePath('validator'),
 }
