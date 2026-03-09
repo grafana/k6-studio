@@ -1,8 +1,9 @@
 import { Button } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
 import { StopCircle } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useBlocker, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom'
+import { useLocalStorage } from 'react-use'
 
 import { View } from '@/components/Layout/View'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
@@ -35,6 +36,11 @@ const INITIAL_GROUPS: Group[] = [
 
 export function Recorder() {
   const { data: settings } = useSettings()
+  const location = useLocation()
+  const [captureBrowser = true] = useLocalStorage(
+    'start-recording.capture.browser',
+    true
+  )
 
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
@@ -87,6 +93,47 @@ export function Recorder() {
       setRecorderState('recording')
     }
   }, [recorderState, proxyData.length])
+
+  // Auto-start recording when navigated with startUrl in state (e.g. from sidebar)
+  const hasProcessedAutoStart = useRef(false)
+  useEffect(() => {
+    const startUrlFromState = (location.state as { startUrl?: string })
+      ?.startUrl
+
+    if (!startUrlFromState || typeof startUrlFromState !== 'string') {
+      hasProcessedAutoStart.current = false
+
+      return
+    }
+
+    if (recorderState !== 'idle' || hasProcessedAutoStart.current) {
+      return
+    }
+
+    hasProcessedAutoStart.current = true
+
+    handleStartRecording({
+      url: startUrlFromState,
+      capture: {
+        browser: true,
+      },
+    }).catch(() => {
+      showToast({
+        title: 'Failed to start recording',
+        status: 'error',
+      })
+    })
+
+    navigate(getRoutePath('recorder'), { replace: true, state: {} })
+  }, [
+    location.state,
+    recorderState,
+    settings?.recorder.browserRecording,
+    captureBrowser,
+    handleStartRecording,
+    navigate,
+    showToast,
+  ])
 
   useEffect(() => {
     return window.studio.app.onApplicationClose(() => {

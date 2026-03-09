@@ -22,7 +22,7 @@ export function FileList({ files, noFilesMessage }: FileListProps) {
       css={css`
         list-style: none;
         padding: 0;
-        margin: var(--space-1) 0 0;
+        margin: 0;
       `}
     >
       {files.map((file) => (

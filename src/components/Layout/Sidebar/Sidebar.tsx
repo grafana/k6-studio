@@ -56,7 +56,18 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
           )}
         </Flex>
         {view === 'workspace' && <SidebarWorkspaceView />}
-        {view === 'record' && <SidebarRecordView recordings={recordings} />}
+        {view === 'record' && (
+          <Box
+            css={css`
+              flex: 1 1 0;
+              min-height: 0;
+              display: flex;
+              flex-direction: column;
+            `}
+          >
+            <SidebarRecordView recordings={recordings} />
+          </Box>
+        )}
         {view === 'build' && (
           <Box
             css={css`

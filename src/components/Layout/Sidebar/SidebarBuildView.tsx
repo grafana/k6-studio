@@ -60,7 +60,7 @@ export function SidebarBuildView({ tests, dataFiles }: SidebarBuildViewProps) {
         <SidebarPanelHeading count={dataFiles.length}>
           Data files
         </SidebarPanelHeading>
-        <Panel id="data-files" collapsible defaultSize={300} minSize={80}>
+        <Panel id="data-files" collapsible defaultSize={250} minSize={80}>
           <ScrollArea
             scrollbars="vertical"
             css={css`
