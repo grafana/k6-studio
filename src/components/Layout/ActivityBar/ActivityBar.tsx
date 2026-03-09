@@ -1,12 +1,11 @@
 import { css } from '@emotion/react'
 import { Flex, Grid, Separator } from '@radix-ui/themes'
-import { FolderTreeIcon } from 'lucide-react'
+import { BugIcon, DiscIcon, FolderTreeIcon, HammerIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import k6LogoDark from '@/assets/logo-dark.svg'
 import k6Logo from '@/assets/logo.svg'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
-import { HomeIcon } from '@/components/icons'
 import { useTheme } from '@/hooks/useTheme'
 import { getRoutePath } from '@/routeMap'
 
@@ -56,19 +55,32 @@ export function ActivityBar({
       </Link>
       <Grid gap="3" mt="4">
         <NavIconButton
-          to={getRoutePath('home')}
-          tooltip="Home"
-          active={sidebarView === 'files'}
-          onClick={() => onSidebarViewChange('files')}
-        >
-          <HomeIcon />
-        </NavIconButton>
-        <NavIconButton
           tooltip="Workspace"
           active={sidebarView === 'workspace'}
           onClick={() => onSidebarViewChange('workspace')}
         >
           <FolderTreeIcon />
+        </NavIconButton>
+        <NavIconButton
+          tooltip="Record"
+          active={sidebarView === 'record'}
+          onClick={() => onSidebarViewChange('record')}
+        >
+          <DiscIcon />
+        </NavIconButton>
+        <NavIconButton
+          tooltip="Build"
+          active={sidebarView === 'build'}
+          onClick={() => onSidebarViewChange('build')}
+        >
+          <HammerIcon />
+        </NavIconButton>
+        <NavIconButton
+          tooltip="Debug"
+          active={sidebarView === 'debug'}
+          onClick={() => onSidebarViewChange('debug')}
+        >
+          <BugIcon />
         </NavIconButton>
       </Grid>
 

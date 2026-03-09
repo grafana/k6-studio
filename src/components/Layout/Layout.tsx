@@ -11,14 +11,14 @@ import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
 
-export type SidebarView = 'files' | 'workspace'
+export type SidebarView = 'workspace' | 'record' | 'build' | 'debug'
 
 export function Layout() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(
     'isSidebarExpanded',
     true
   )
-  const [sidebarView, setSidebarView] = useState<SidebarView>('files')
+  const [sidebarView, setSidebarView] = useState<SidebarView>('workspace')
   const location = useLocation()
   useListenDeepLinks()
 
