@@ -76,7 +76,17 @@ export function LocatorInput({
     setIsPopoverOpen(open)
     if (open) {
       setTouchedTypes(new Set())
+      return
     }
+
+    setTouchedTypes((prev) => {
+      if (prev.has(current)) {
+        return prev
+      }
+      const next = new Set(prev)
+      next.add(current)
+      return next
+    })
   }
 
   const handleSubmit = (e: React.FormEvent) => {

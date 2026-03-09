@@ -109,13 +109,6 @@ export function validateLocator(locator: ActionLocator): LocatorValidation {
           fieldErrors: { role: 'Role cannot be empty' },
         }
       }
-      if (!locator.options?.name?.trim()) {
-        return {
-          isValid: false,
-          message: 'Name is required for role locator',
-          fieldErrors: { name: 'Name is required for role locator' },
-        }
-      }
       return { isValid: true }
     default:
       return exhaustive(locator)
