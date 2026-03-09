@@ -74,12 +74,7 @@ export function WorkspaceFileTree() {
   }
 
   return (
-    <div
-      {...tree.getContainerProps()}
-      css={css`
-        padding: var(--space-2) 0;
-      `}
-    >
+    <div {...tree.getContainerProps()}>
       {tree.getItems().map((item) => {
         const data = item.getItemData()
         const isFolder = data.type === 'directory'
@@ -100,9 +95,9 @@ export function WorkspaceFileTree() {
               align-items: center;
               gap: var(--space-2);
               width: 100%;
-              padding: var(--space-1) var(--space-2);
+              padding: var(--space-1);
               padding-left: calc(
-                var(--space-2) + ${item.getItemMeta().level * 16}px
+                var(--space-4) + ${item.getItemMeta().level * 16}px
               );
               font-size: 12px;
               text-align: left;

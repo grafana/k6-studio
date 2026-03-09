@@ -21,9 +21,8 @@ interface FileProps {
 
 const fileStyle = css`
   display: block;
-  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
   font-size: 12px;
-  line-height: 22px;
   color: var(--gray-11);
 `
 
@@ -37,9 +36,9 @@ export function File({ file, isSelected }: FileProps) {
       onRename={() => setEditMode(true)}
     >
       <Grid
+        className="file-item"
         columns="1fr auto"
         align="center"
-        pr="4"
         css={css`
           & > button {
             opacity: 0;
@@ -55,6 +54,7 @@ export function File({ file, isSelected }: FileProps) {
             background-color: var(--gray-4);
           }
         `}
+        pr="1"
       >
         <EditableFile
           file={file}

@@ -1,13 +1,22 @@
-import { Box, ScrollArea } from '@radix-ui/themes'
+import { ScrollArea } from '@radix-ui/themes'
+import * as pathe from 'pathe'
 
 import { WorkspaceFileTree } from '@/components/WorkspaceFileTree'
+import { useWorkspace } from '@/contexts/WorkspaceContext'
+
+import { SidebarPanelHeading } from './SidebarPanelHeading'
 
 export function SidebarWorkspaceView() {
+  const { workspacePath } = useWorkspace()
+
+  const workspaceName = workspacePath
+    ? pathe.basename(workspacePath)
+    : 'Workspace'
+
   return (
     <ScrollArea scrollbars="vertical">
-      <Box px="2">
-        <WorkspaceFileTree />
-      </Box>
+      <SidebarPanelHeading>{workspaceName}</SidebarPanelHeading>
+      <WorkspaceFileTree />
     </ScrollArea>
   )
 }

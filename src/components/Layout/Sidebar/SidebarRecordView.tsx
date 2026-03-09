@@ -1,10 +1,12 @@
-import { Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
+import { IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
 import { PlusIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { FileTree } from '@/components/FileTree'
+import { FileList } from '@/components/FileTree/FileList'
 import { FileItem } from '@/components/FileTree/types'
 import { getRoutePath } from '@/routeMap'
+
+import { SidebarPanelHeading } from './SidebarPanelHeading'
 
 interface SidebarRecordViewProps {
   recordings: FileItem[]
@@ -13,29 +15,26 @@ interface SidebarRecordViewProps {
 export function SidebarRecordView({ recordings }: SidebarRecordViewProps) {
   return (
     <ScrollArea scrollbars="vertical">
-      <Flex direction="column" gap="2" pb="2">
-        <FileTree
-          label="Recordings"
-          files={recordings}
-          noFilesMessage="No recordings found"
-          actions={
-            <>
-              <Tooltip content="New recording" side="right">
-                <IconButton
-                  asChild
-                  aria-label="New recording"
-                  variant="ghost"
-                  size="1"
-                >
-                  <Link to={getRoutePath('recorder')}>
-                    <PlusIcon />
-                  </Link>
-                </IconButton>
-              </Tooltip>
-            </>
-          }
-        />
-      </Flex>
+      <SidebarPanelHeading
+        count={recordings.length}
+        actions={
+          <Tooltip content="New recording" side="right">
+            <IconButton
+              asChild
+              aria-label="New recording"
+              variant="ghost"
+              size="1"
+            >
+              <Link to={getRoutePath('recorder')}>
+                <PlusIcon />
+              </Link>
+            </IconButton>
+          </Tooltip>
+        }
+      >
+        Recordings
+      </SidebarPanelHeading>
+      <FileList files={recordings} noFilesMessage="No recordings found" />
     </ScrollArea>
   )
 }

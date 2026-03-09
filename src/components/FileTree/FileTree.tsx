@@ -48,7 +48,13 @@ export function FileTree({
 
         {actions}
       </Flex>
-      <Collapsible.Content>
+      <Collapsible.Content
+        css={css`
+          .file-item {
+            padding-right: var(--space-4);
+          }
+        `}
+      >
         <FileList files={files} noFilesMessage={noFilesMessage} />
       </Collapsible.Content>
     </Collapsible.Root>

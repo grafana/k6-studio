@@ -1,7 +1,9 @@
-import { Flex, ScrollArea } from '@radix-ui/themes'
+import { ScrollArea } from '@radix-ui/themes'
 
-import { FileTree } from '@/components/FileTree'
+import { FileList } from '@/components/FileTree/FileList'
 import { FileItem } from '@/components/FileTree/types'
+
+import { SidebarPanelHeading } from './SidebarPanelHeading'
 
 interface SidebarDebugViewProps {
   scripts: FileItem[]
@@ -10,13 +12,8 @@ interface SidebarDebugViewProps {
 export function SidebarDebugView({ scripts }: SidebarDebugViewProps) {
   return (
     <ScrollArea scrollbars="vertical">
-      <Flex direction="column" gap="2" pb="2">
-        <FileTree
-          label="Scripts"
-          files={scripts}
-          noFilesMessage="No scripts found"
-        />
-      </Flex>
+      <SidebarPanelHeading count={scripts.length}>Scripts</SidebarPanelHeading>
+      <FileList files={scripts} noFilesMessage="No scripts found" />
     </ScrollArea>
   )
 }
