@@ -32,6 +32,7 @@ export function useLoadGeneratorFile(filePath: string) {
   return useQuery({
     queryKey: ['generator', filePath],
     queryFn: () => loadGeneratorFile(filePath),
+    enabled: !!filePath,
   })
 }
 
@@ -45,19 +46,13 @@ export function useUpdateValueInGeneratorFile(filePath: string) {
   })
 }
 
-export function useIsGeneratorDirty(
-  filePath: string,
-  initialData?: GeneratorFileData
-) {
+export function useIsGeneratorDirty(initialData: GeneratorFileData) {
   const generatorState = useGeneratorStore(selectGeneratorData)
-  const { data } = useLoadGeneratorFile(filePath)
-
-  const fileData = initialData ?? data
 
   // Comparing data without `scriptName`, which is saved to disk in the background
   // and should not be considered as a change
   const { scriptName: _, ...generatorStateData } = generatorState
-  const { scriptName: __, ...generatorFileData } = fileData || {}
+  const { scriptName: __, ...generatorFileData } = initialData
 
   // Convert to JSON instead of doing deep equal to remove
   // `property: undefined` values
@@ -129,6 +124,10 @@ export function useScriptPreview(generatorFilePath: string) {
 
   // Connect to the store on mount, disconnect on unmount, regenerate preview on state change
   useEffect(() => {
+    if (!generatorFilePath) {
+      return
+    }
+
     const updatePreview = debounce(async (state: GeneratorStore) => {
       try {
         setError(undefined)

@@ -81,10 +81,6 @@ export function initialize() {
       const fullPath = entry.fullPath
       const file = createStudioFile(fullPath)
 
-      if (file === null) {
-        continue
-      }
-
       switch (file.type) {
         case 'recording':
           recordings.push(file)

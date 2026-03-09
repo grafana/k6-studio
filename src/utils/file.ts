@@ -1,8 +1,4 @@
-import { SupportedFileType } from '@/types'
-
 import { getRoutePath } from '../routeMap'
-
-import { exhaustive } from './typescript'
 
 /** Display name for a data file path (basename). Safe for UI in browser and Node. */
 export function getDataFileDisplayName(filePath: string) {
@@ -18,25 +14,8 @@ export function getFileExtension(fileName: string) {
   return fileName.split('.').pop()
 }
 
-export function getViewPath(type: SupportedFileType, path: string) {
+export function getViewPath(path: string) {
   const encodedPath = encodeURIComponent(path)
 
-  switch (type) {
-    case 'recording':
-      return getRoutePath('editorView', { path: encodedPath })
-
-    case 'generator':
-      return getRoutePath('editorView', { path: encodedPath })
-
-    case 'browser-test':
-      return getRoutePath('editorView', { path: encodedPath })
-
-    case 'script':
-    case 'json':
-    case 'csv':
-      return getRoutePath('editorView', { path: encodedPath })
-
-    default:
-      return exhaustive(type)
-  }
+  return getRoutePath('editorView', { path: encodedPath })
 }

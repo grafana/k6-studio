@@ -3,6 +3,7 @@ import { ipcRenderer } from 'electron'
 import {
   type DirectoryEntry,
   FileHandler,
+  FileOnDisk,
   GetTempPathArgs,
   type ListDirectoryArgs,
   OpenFileResult,
@@ -16,7 +17,10 @@ export function listDirectory(args: ListDirectoryArgs) {
 }
 
 export function save(payload: SaveFilePayload) {
-  return ipcRenderer.invoke(FileHandler.Save, payload) as Promise<string>
+  return ipcRenderer.invoke(
+    FileHandler.Save,
+    payload
+  ) as Promise<FileOnDisk | null>
 }
 
 export function open(path: string) {

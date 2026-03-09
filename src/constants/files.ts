@@ -31,4 +31,5 @@ export const FileTypeToLabel: Record<StudioFile['type'], string> = {
   json: 'data file',
   csv: 'data file',
   'browser-test': 'browser test',
+  unsupported: 'unsupported',
 }

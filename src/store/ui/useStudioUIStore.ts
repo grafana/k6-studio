@@ -52,6 +52,10 @@ export const useStudioUIStore = create<StudioUIStore>()(
           case 'csv':
             state.dataFiles.set(file.path, file)
             break
+
+          case 'unsupported':
+            break
+
           default:
             exhaustive(file.type)
         }
@@ -75,6 +79,10 @@ export const useStudioUIStore = create<StudioUIStore>()(
           case 'csv':
             state.dataFiles.delete(file.path)
             break
+
+          case 'unsupported':
+            break
+
           default:
             exhaustive(file.type)
         }

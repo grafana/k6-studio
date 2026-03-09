@@ -5,7 +5,7 @@ import { StudioFile } from '@/types'
 
 export function inferFileTypeFromExtension(
   filePath: string
-): StudioFile['type'] | null {
+): StudioFile['type'] {
   const ext = path.extname(filePath).toLowerCase()
   switch (ext) {
     case '.har':
@@ -27,21 +27,15 @@ export function inferFileTypeFromExtension(
       return 'csv'
 
     default:
-      return null
+      return 'unsupported'
   }
 }
 
-export function createStudioFile(filePath: string): StudioFile | null {
-  const type = inferFileTypeFromExtension(filePath)
-
-  if (type === null) {
-    return null
-  }
-
+export function createStudioFile(filePath: string): StudioFile {
   const parsed = path.parse(filePath)
 
   return {
-    type,
+    type: inferFileTypeFromExtension(filePath),
     path: filePath,
     fileName: parsed.base,
     displayName: parsed.name,

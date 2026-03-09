@@ -45,7 +45,7 @@ export function useRenameFile(file: StudioFile) {
         )
       }
 
-      navigate(getViewPath(file.type, newPath), { replace: true })
+      navigate(getViewPath(newPath), { replace: true })
     },
   })
 }

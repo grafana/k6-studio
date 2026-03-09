@@ -104,7 +104,7 @@ export function WorkspaceFileTree() {
       const data = item.getItemData()
 
       if (data.type === 'file' && data.file) {
-        navigate(getViewPath(data.file.type, data.file.path))
+        navigate(getViewPath(data.file.path))
       }
     },
     features: [asyncDataLoaderFeature, selectionFeature, hotkeysCoreFeature],

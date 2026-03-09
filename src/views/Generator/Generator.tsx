@@ -43,7 +43,7 @@ export function Generator({ file, data, onSave }: GeneratorProps) {
 
   const isLoading = isLoadingRecording
 
-  const isDirty = useIsGeneratorDirty(file.path, data)
+  const isDirty = useIsGeneratorDirty(data)
   const isDirtyRef = useRef(isDirty)
 
   const [isAppClosing, setIsAppClosing] = useState(false)

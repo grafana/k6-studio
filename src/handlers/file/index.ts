@@ -13,7 +13,7 @@ import { GeneratorFileDataSchema } from '@/schemas/generator'
 import { RecordingSchema } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEvent, UsageEventName } from '@/services/usageTracking/types'
-import { SupportedFileType } from '@/types'
+import { FileType } from '@/types'
 import { DataRecord } from '@/types/testData'
 import { browserWindowFromEvent } from '@/utils/electron'
 import { harToProxyData } from '@/utils/harToProxyData'
@@ -51,7 +51,7 @@ async function save(
     }
 
     case 'new': {
-      return saveAs(browserWindow, content)
+      return saveAs(browserWindow, content, location.hint)
     }
 
     default: {
@@ -62,10 +62,12 @@ async function save(
 
 async function saveAs(
   browserWindow: BrowserWindow,
-  content: FileContent
+  content: FileContent,
+  hint?: string
 ): Promise<FileOnDisk | null> {
   const { filePath } = await dialog.showSaveDialog(browserWindow, {
     title: 'Save file',
+    defaultPath: hint,
     filters: [{ name: 'All files', extensions: ['*'] }],
     properties: ['showOverwriteConfirmation'],
   })
@@ -208,7 +210,7 @@ export function initialize() {
 async function parseOpenResult(
   workspace: Workspace,
   filePath: string,
-  fileType: SupportedFileType,
+  fileType: FileType,
   raw: string
 ): Promise<OpenFileResult> {
   switch (fileType) {
@@ -304,6 +306,12 @@ async function parseOpenResult(
         props: parsed.meta.fields ?? [],
         data: parsed.data.slice(0, 20),
         total: parsed.data.length,
+      }
+    }
+
+    case 'unsupported': {
+      return {
+        type: 'unsupported-format',
       }
     }
 

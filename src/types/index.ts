@@ -80,19 +80,20 @@ export interface RequestSnippetSchema {
 }
 
 export interface StudioFile {
-  type: SupportedFileType
+  type: FileType
   path: string
   displayName: string
   fileName: string
 }
 
-export type SupportedFileType =
+export type FileType =
   | 'recording'
   | 'generator'
   | 'script'
   | 'browser-test'
   | 'json'
   | 'csv'
+  | 'unsupported'
 
 export interface FolderContent {
   recordings: Map<string, StudioFile>

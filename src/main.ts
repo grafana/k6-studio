@@ -10,6 +10,7 @@ import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
 import { WorkspaceHandler } from './handlers/workspace/types'
 import { initializeDeepLinks } from './main/deepLinks'
+import { createStudioFile } from './main/file'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
 import { configureApplicationMenu } from './main/menu'
@@ -130,11 +131,17 @@ const createWindow = async () => {
   mainWindow.workspace = new Workspace(PROJECT_PATH)
 
   mainWindow.workspace.on('file:add', (event) => {
-    mainWindow.webContents.send(WorkspaceHandler.OnAddFile, event.path)
+    mainWindow.webContents.send(
+      WorkspaceHandler.OnAddFile,
+      createStudioFile(event.path)
+    )
   })
 
   mainWindow.workspace.on('file:remove', (event) => {
-    mainWindow.webContents.send(WorkspaceHandler.OnRemoveFile, event.path)
+    mainWindow.webContents.send(
+      WorkspaceHandler.OnRemoveFile,
+      createStudioFile(event.path)
+    )
   })
 
   mainWindow.workspace.on('workspace:change', (event) => {

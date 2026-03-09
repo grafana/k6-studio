@@ -17,7 +17,5 @@ export enum UIHandler {
   GetFiles = 'ui:get-files',
   RenameFile = 'ui:rename-file',
   ReportIssue = 'ui:report-issue',
-  AddFile = 'ui:add-file',
-  RemoveFile = 'ui:remove-file',
   Toast = 'ui:toast',
 }

@@ -3,8 +3,12 @@ import { RampingStage } from '@/types/testOptions'
 
 import { createEmptyRule } from './rules'
 
-export function createNewGeneratorFile(recordingPath = ''): GeneratorFileData {
+export function createNewGeneratorFile(
+  recordingPath = '',
+  isNew?: boolean
+): GeneratorFileData & { isNew?: boolean } {
   return {
+    isNew,
     version: '3.0',
     recordingPath,
     options: {

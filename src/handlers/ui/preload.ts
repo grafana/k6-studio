@@ -46,14 +46,6 @@ export function reportIssue() {
   return ipcRenderer.invoke(UIHandler.ReportIssue) as Promise<void>
 }
 
-export function onAddFile(callback: (file: StudioFile) => void) {
-  return createListener(UIHandler.AddFile, callback)
-}
-
-export function onRemoveFile(callback: (file: StudioFile) => void) {
-  return createListener(UIHandler.RemoveFile, callback)
-}
-
 export function onToast(callback: (toast: AddToastPayload) => void) {
   return createListener(UIHandler.Toast, callback)
 }

@@ -2,9 +2,9 @@ import * as pathe from 'pathe'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
-import { StudioFile, SupportedFileType } from '@/types'
+import { StudioFile, FileType } from '@/types'
 
-export function useCurrentFile(type: SupportedFileType): StudioFile {
+export function useCurrentFile(type: FileType): StudioFile {
   const { path: pathParam } = useParams()
 
   invariant(pathParam, 'path is required')

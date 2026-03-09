@@ -41,14 +41,14 @@ function useFolderContent() {
 
   useEffect(
     () =>
-      window.studio.ui.onAddFile((file) => {
+      window.studio.workspace.onAddFile((file) => {
         addFile(file)
       }),
     [addFile]
   )
 
   useEffect(() => {
-    window.studio.ui.onRemoveFile((file) => {
+    window.studio.workspace.onRemoveFile((file) => {
       removeFile(file)
     })
   }, [removeFile])
