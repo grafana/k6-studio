@@ -45,7 +45,7 @@ function buildLanes(actions: BrowserActionEvent[], time: Time) {
     }
 
     const actionStarted = action.timestamp.started
-    const actionEnded = action.timestamp.ended ?? time.end
+    const actionEnded = Math.min(action.timestamp.ended ?? time.end, time.end)
 
     const start = Math.max(0, actionStarted - time.start)
     const end = Math.min(time.total, actionEnded - time.start)
@@ -123,6 +123,8 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
   }
 
   const handleClick = (ev: MouseEvent<HTMLElement>) => {
+    // We want to allow users to drag the timeline so we only register the click
+    // if the mouse hasn't moved by more than a few pixels.
     const deltaX = ev.clientX - (mouseDownX.current ?? ev.clientX)
 
     if (Math.abs(deltaX) < 10) {
@@ -155,6 +157,8 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
             disabled={disabled}
             data-status={status}
             css={css`
+              z-index: 0;
+
               position: absolute;
               inset: 0;
               cursor: pointer;
@@ -173,7 +177,8 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               }
 
               &:hover {
-                transform: scaleY(1.75);
+                transform: scaleY(1.5);
+                z-index: 1;
               }
 
               &[data-status='success'] {
@@ -181,7 +186,7 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               }
 
               &[data-status='error'] {
-                background-color: var(--red-10);
+                background-color: var(--red-9);
               }
 
               &[data-status='aborted'] {
@@ -189,7 +194,7 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               }
 
               &[data-status='unknown'] {
-                background-color: var(--gray-11);
+                background-color: var(--gray-9);
               }
             `}
             onClick={handleClick}

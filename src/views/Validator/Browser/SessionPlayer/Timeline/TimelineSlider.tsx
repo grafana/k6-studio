@@ -78,32 +78,39 @@ export function TimelineSlider({
           css={css`
             --slider-border-radius: var(--radius-1);
 
+            z-index: 0;
+
             position: relative;
             flex: 1 1 0;
-            min-height: 16px;
+            min-height: 20px;
             border-radius: var(--slider-border-radius);
             background-color: var(--gray-5);
             box-shadow: inset 0 0 0 1px var(--gray-a6);
           `}
         >
-          <SliderPrimitive.Range
-            css={css`
-              position: absolute;
-              height: 100%;
-              background: var(--gray-8);
-              border-radius: var(--slider-border-radius);
-            `}
-          />
           <TimelineActions
             time={time}
             disabled={disabled}
             actions={actions}
             onSeek={handleChapterSeek}
           />
+          <SliderPrimitive.Range
+            css={css`
+              position: absolute;
+              top: 0;
+              height: 100%;
+              background: white;
+              opacity: 0.3;
+              border-radius: var(--slider-border-radius);
+              pointer-events: none;
+            `}
+          />
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
           aria-label="Timeline position"
           css={css`
+            z-index: 1;
+
             display: block;
             width: 4px;
             height: calc(100%);
