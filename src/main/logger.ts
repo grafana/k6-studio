@@ -27,7 +27,9 @@ function unwrapAggregateError(error: unknown): unknown[] {
 export function initializeLogger() {
   // allow logs to be triggered from the renderer process
   // https://github.com/megahertz/electron-log/blob/master/docs/initialize.md
-  log.initialize()
+  log.initialize({
+    spyRendererConsole: true,
+  })
 
   // log electron core events
   // https://github.com/megahertz/electron-log/blob/master/docs/events.md
@@ -38,9 +40,11 @@ export function initializeLogger() {
   log.errorHandler.startCatching()
 
   log.transports.file.fileName = 'k6-studio.log'
+  log.transports.file.level = 'error'
 
   if (process.env.NODE_ENV === 'development') {
     log.transports.file.fileName = 'k6-studio-dev.log'
+    log.transports.file.level = 'debug'
   }
 
   log.hooks.push((msg) => {
