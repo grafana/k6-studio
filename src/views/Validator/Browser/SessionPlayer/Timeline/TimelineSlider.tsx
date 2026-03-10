@@ -89,7 +89,7 @@ export function TimelineSlider({
             css={css`
               position: absolute;
               height: 100%;
-              background: var(--gray-a6);
+              background: var(--gray-8);
             `}
           />
           <TimelineActions

@@ -28,6 +28,7 @@ export function TimelineTooltip({
         `}
         side="top"
         align="center"
+        sideOffset={10}
         size="1"
       >
         <Flex
