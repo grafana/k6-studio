@@ -10,8 +10,8 @@ import { TimelineTooltip } from './TimelineTooltip'
 
 function isIntersecting(previous: Segment, current: Segment) {
   return (
-    (previous.end > current.start && previous.start < current.end) ||
-    (previous.start > current.start && previous.end < current.end)
+    (previous.end >= current.start && previous.start <= current.end) ||
+    (previous.start >= current.start && previous.end <= current.end)
   )
 }
 
@@ -40,6 +40,10 @@ function buildLanes(actions: BrowserActionEvent[], time: Time) {
   const segments: Segment[] = []
 
   for (const [index, action] of actions.entries()) {
+    if (action.timestamp.started > time.end) {
+      continue
+    }
+
     const actionStarted = action.timestamp.started
     const actionEnded = action.timestamp.ended ?? time.end
 
@@ -158,7 +162,6 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
 
               border: none;
               border-radius: var(--slider-border-radius);
-              box-shadow: var(--shadow-1);
 
               transition:
                 transform 0.1s ease,
@@ -169,40 +172,23 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               }
 
               &:hover {
-                transform: scaleY(1.25);
-                transform-origin: bottom;
+                transform: scaleY(1.5);
               }
 
               &[data-status='success'] {
-                background-color: var(--green-a5);
-
-                &:hover {
-                  background-color: var(--green-8);
-                }
+                background-color: var(--green-9);
               }
 
               &[data-status='error'] {
-                background-color: var(--red-a5);
-
-                &:hover {
-                  background-color: var(--red-9);
-                }
+                background-color: var(--red-10);
               }
 
               &[data-status='aborted'] {
-                background-color: var(--yellow-3);
-
-                &:hover {
-                  background-color: var(--yellow-5);
-                }
+                background-color: var(--orange-9);
               }
 
               &[data-status='unknown'] {
-                background-color: var(--gray-a7);
-
-                &:hover {
-                  background-color: var(--gray-11);
-                }
+                background-color: var(--gray-11);
               }
             `}
             onClick={handleClick}
@@ -225,7 +211,7 @@ export function TimelineActions({
   return (
     <div
       css={css`
-        padding-bottom: 8px;
+        padding-bottom: 4px;
       `}
     >
       {lanes.map(({ id, segments }) => (

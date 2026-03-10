@@ -54,7 +54,6 @@ export function TimelineSlider({
         position: relative;
         display: flex;
         align-items: center;
-        height: 20px;
         touch-action: none;
 
         // We want the thumb to slightly overflow the track, so we need to add some
@@ -107,7 +106,7 @@ export function TimelineSlider({
             display: block;
             width: 4px;
             height: calc(100%);
-            background-color: var(--gray-1);
+            background-color: white;
             border: 1px solid var(--gray-a8);
             box-shadow: var(--shadow-2);
             transition:
