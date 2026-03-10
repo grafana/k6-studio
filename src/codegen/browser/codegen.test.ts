@@ -475,6 +475,44 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
   )
 })
 
+it('should ignore standalone implicit goto after explicit goto', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'explicit-goto',
+          source: 'address-bar',
+          url: 'https://example.com/start',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'goto',
+          nodeId: 'implicit-goto',
+          source: 'implicit',
+          url: 'https://example.com/redirect',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  expect(script).toContain('await page.goto("https://example.com/start");')
+  expect(script).not.toContain('https://example.com/redirect')
+  expect(script).toContain('await page?.close();')
+})
+
 it('should assert that element contains text', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
