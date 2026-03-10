@@ -25,7 +25,7 @@ import { EditableBrowserActionList } from './EditableBrowserActionList'
 interface BrowserTestEditorViewProps {
   file: StudioFile
   data: BrowserTestFile
-  onSave: (content: FileContent) => void | Promise<void>
+  onSave: (content: FileContent, saveAs?: boolean) => void | Promise<void>
 }
 
 function BrowserTestEditorView({
@@ -45,7 +45,7 @@ function BrowserTestEditorView({
     name: file.fileName,
   })
 
-  const handleSave = () => {
+  const handleSave = (payload?: { saveAs?: boolean }) => {
     if (!test.isDirty || !data) {
       return
     }
@@ -55,7 +55,10 @@ function BrowserTestEditorView({
       actions: test.plainActions,
     }
 
-    void onSave({ type: 'browser-test', data: browserTestData })
+    void onSave(
+      { type: 'browser-test', data: browserTestData },
+      payload?.saveAs
+    )
   }
 
   useSaveRequested(handleSave)
@@ -191,7 +194,7 @@ function BrowserTestEditorView({
 interface BrowserTestEditorProps {
   file: StudioFile
   data: BrowserTestFile
-  onSave: (content: FileContent) => void | Promise<void>
+  onSave: (content: FileContent, saveAs?: boolean) => void | Promise<void>
 }
 
 export function BrowserTestEditor({

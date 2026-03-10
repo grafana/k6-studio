@@ -32,6 +32,12 @@ export function onDeepLink(callback: (url: string) => void) {
   return createListener(AppHandler.DeepLink, callback)
 }
 
-export function onSaveRequested(callback: () => void) {
-  return createListener(AppHandler.SaveRequested, () => callback())
+export interface SaveRequestedPayload {
+  saveAs?: boolean
+}
+
+export function onSaveRequested(
+  callback: (payload: SaveRequestedPayload | undefined) => void
+): () => void {
+  return createListener(AppHandler.SaveRequested, callback)
 }

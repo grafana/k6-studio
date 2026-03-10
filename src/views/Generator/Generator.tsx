@@ -26,7 +26,7 @@ import { UnsavedChangesDialog } from './UnsavedChangesDialog'
 interface GeneratorProps {
   file: StudioFile
   data: GeneratorFileData
-  onSave: (content: FileContent) => void | Promise<void>
+  onSave: (content: FileContent, saveAs?: boolean) => void | Promise<void>
 }
 
 export function Generator({ file, data, onSave }: GeneratorProps) {
@@ -81,11 +81,14 @@ export function Generator({ file, data, onSave }: GeneratorProps) {
     })
   })
 
-  const handleSaveGenerator = useCallback(() => {
-    const generator = selectGeneratorData(useGeneratorStore.getState())
+  const handleSaveGenerator = useCallback(
+    (payload?: { saveAs?: boolean }) => {
+      const generator = selectGeneratorData(useGeneratorStore.getState())
 
-    return onSave({ type: 'generator', data: generator })
-  }, [onSave])
+      return onSave({ type: 'generator', data: generator }, payload?.saveAs)
+    },
+    [onSave]
+  )
 
   useSaveRequested(handleSaveGenerator)
 

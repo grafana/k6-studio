@@ -71,6 +71,19 @@ const template: Electron.MenuItemConstructorOptions[] = [
           browserWindow.webContents.send(AppHandler.SaveRequested)
         },
       },
+      {
+        label: 'Save As...',
+        accelerator: isMac ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
+        click: (_menuItem, browserWindow) => {
+          if (browserWindow instanceof BrowserWindow === false) {
+            return
+          }
+
+          browserWindow.webContents.send(AppHandler.SaveRequested, {
+            saveAs: true,
+          })
+        },
+      },
       { type: 'separator' },
       { role: 'close' },
     ],

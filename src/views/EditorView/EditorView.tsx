@@ -3,11 +3,12 @@ import { useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import * as pathe from 'pathe'
 import { useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { View } from '@/components/Layout/View'
 import { FileContent } from '@/handlers/file/types'
+import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { queryClient } from '@/utils/query'
@@ -31,6 +32,7 @@ function createStudioFile(path: string, type: StudioFile['type']): StudioFile {
 
 export function EditorView() {
   const { path: pathParam } = useParams()
+  const navigate = useNavigate()
   const showToast = useToast()
 
   invariant(pathParam, 'path is required')
@@ -38,14 +40,31 @@ export function EditorView() {
   const path = decodeURIComponent(pathParam)
 
   const handleSave = useCallback(
-    async (content: FileContent) => {
+    async (content: FileContent, saveAs?: boolean) => {
       try {
-        await window.studio.file.save({
+        const location = saveAs
+          ? { type: 'new' as const, hint: path }
+          : { type: 'path' as const, path }
+
+        const result = await window.studio.file.save({
           content,
-          location: { type: 'path', path },
+          location,
         })
 
-        await queryClient.invalidateQueries({ queryKey: ['file', path] })
+        if (result === null) {
+          return
+        }
+
+        if (saveAs) {
+          navigate(
+            getRoutePath('editorView', {
+              path: encodeURIComponent(result.path),
+            }),
+            { replace: true }
+          )
+        }
+
+        await queryClient.invalidateQueries({ queryKey: ['file', result.path] })
 
         showToast({ title: 'File saved', status: 'success' })
       } catch (error) {
@@ -58,7 +77,7 @@ export function EditorView() {
         log.error(error)
       }
     },
-    [path, showToast]
+    [path, navigate, showToast]
   )
 
   const {
