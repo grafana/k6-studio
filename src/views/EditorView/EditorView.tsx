@@ -1,4 +1,4 @@
-import { Text } from '@radix-ui/themes'
+import { Flex, Text } from '@radix-ui/themes'
 import { useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import * as pathe from 'pathe'
@@ -181,7 +181,9 @@ export function EditorView() {
   if (result.type === 'unsupported-format') {
     return (
       <View title="File" actions={<></>}>
-        <Text>This file type is not supported.</Text>
+        <Flex align="center" justify="center" height="100%">
+          <Text>This file type is not supported.</Text>
+        </Flex>
       </View>
     )
   }
