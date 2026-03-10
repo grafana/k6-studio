@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Code, Flex, Grid, IconButton, Tooltip } from '@radix-ui/themes'
+import { Code, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
   GlobeIcon,
@@ -8,13 +8,14 @@ import {
   Trash2Icon,
 } from 'lucide-react'
 
-import { LocatorWaitForAction, PageGotoAction } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import { LocatorForm } from './ActionForms/forms/LocatorForm'
-import { UrlForm } from './ActionForms/forms/UrlForm'
-import { WaitForOptionsForm } from './ActionForms/forms/WaitForOptionsForm'
-import { BrowserActionInstance, WithEditorMetadata } from './types'
+import {
+  GoToActionBody,
+  PageReloadActionBody,
+  WaitForActionBody,
+} from './Actions'
+import { BrowserActionInstance } from './types'
 
 interface EditableActionProps {
   action: BrowserActionInstance
@@ -137,67 +138,4 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
     default:
       exhaustive(action)
   }
-}
-
-interface GoToActionBodyProps {
-  action: WithEditorMetadata<PageGotoAction>
-  onUpdate: (action: WithEditorMetadata<PageGotoAction>) => void
-}
-
-function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
-  const handleChangeUrl = (url: string) => {
-    onUpdate({
-      ...action,
-      url,
-    })
-  }
-
-  return (
-    <Grid columns="max-content auto" gap="2" align="center">
-      Navigate to <UrlForm value={action.url} onChange={handleChangeUrl} />
-    </Grid>
-  )
-}
-
-interface WaitForActionBodyProps {
-  action: WithEditorMetadata<LocatorWaitForAction>
-  onUpdate: (action: WithEditorMetadata<LocatorWaitForAction>) => void
-}
-
-function WaitForActionBody({ action, onUpdate }: WaitForActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorWaitForAction>['locator']
-  ) => {
-    onUpdate({
-      ...action,
-      locator,
-    })
-  }
-
-  const handleChangeOptions = (
-    options: Partial<LocatorWaitForAction>['options']
-  ) => {
-    onUpdate({
-      ...action,
-      options: {
-        ...action.options,
-        ...options,
-      },
-    })
-  }
-
-  return (
-    <Grid columns="max-content auto auto" gap="2" align="center">
-      Wait for element
-      <LocatorForm state={action.locator} onChange={handleChangeLocator} />
-      <WaitForOptionsForm
-        options={action.options}
-        onChange={handleChangeOptions}
-      />
-    </Grid>
-  )
-}
-
-function PageReloadActionBody() {
-  return <>Reload page</>
 }
