@@ -42,7 +42,7 @@ export function parseParams(request: Request) {
       )
     )
   } catch (e) {
-    console.error('Failed to parse query parameters', e)
+    console.info('Failed to parse query parameters', e)
     return
   }
 }
