@@ -96,6 +96,7 @@ export function TimelineSlider({
           />
           <TimelineActions
             time={time}
+            disabled={disabled}
             actions={actions}
             onSeek={handleChapterSeek}
           />
@@ -125,9 +126,7 @@ export function TimelineSlider({
             }
 
             &[data-disabled] {
-              background-color: var(--gray-3);
-              border-color: var(--gray-a6);
-              box-shadow: none;
+              cursor: not-allowed;
             }
           `}
         />

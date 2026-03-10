@@ -162,17 +162,18 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
 
               border: none;
               border-radius: var(--slider-border-radius);
+              box-shadow: 0 0 0 1px var(--black-a5);
 
               transition:
                 transform 0.1s ease,
                 background-color 0.1s ease;
 
               &:disabled {
-                cursor: not-allowed;
+                cursor: default;
               }
 
               &:hover {
-                transform: scaleY(1.5);
+                transform: scaleY(1.75);
               }
 
               &[data-status='success'] {
@@ -211,7 +212,7 @@ export function TimelineActions({
   return (
     <div
       css={css`
-        padding-bottom: 4px;
+        padding-bottom: 6px;
       `}
     >
       {lanes.map(({ id, segments }) => (
@@ -221,6 +222,12 @@ export function TimelineActions({
             position: relative;
             height: 6px;
             width: 100%;
+
+            margin-top: 1px;
+
+            &:first-child-of-type {
+              margin-top: 0;
+            }
           `}
         >
           {segments.map((segment) => (
