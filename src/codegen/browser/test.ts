@@ -355,6 +355,7 @@ function buildBrowserNodeGraphFromActions(
           inputs: {
             locator: getLocator(action.locator),
           },
+          options: action.options,
         }
       case 'page.waitForNavigation':
       case 'page.close':

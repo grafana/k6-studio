@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
-import { FieldRenderer } from '../../ActionForms'
 import { urlField } from '../../ActionForms/fields'
 import { buildFieldErrors } from '../../ActionForms/utils'
-import { FormPopover } from '../components/FormPopover'
+import { FieldRenderer, FormPopover } from '../components'
 
 interface UrlFormProps {
   value: string

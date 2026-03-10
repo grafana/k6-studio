@@ -13,6 +13,7 @@ import { exhaustive } from '@/utils/typescript'
 
 import { LocatorForm } from './ActionForms/forms/LocatorForm'
 import { UrlForm } from './ActionForms/forms/UrlForm'
+import { WaitForOptionsForm } from './ActionForms/forms/WaitForOptionsForm'
 import { BrowserActionInstance, WithEditorMetadata } from './types'
 
 interface EditableActionProps {
@@ -107,7 +108,7 @@ function ActionBody({ action, onUpdate }: ActionBodyProps) {
     case 'page.goto':
       return <GoToActionBody action={action} onUpdate={onUpdate} />
     case 'page.reload':
-      return <RefreshActionBody />
+      return <PageReloadActionBody />
     case 'locator.waitFor':
       return <WaitForActionBody action={action} onUpdate={onUpdate} />
     case 'page.waitForNavigation':
@@ -173,14 +174,30 @@ function WaitForActionBody({ action, onUpdate }: WaitForActionBodyProps) {
     })
   }
 
+  const handleChangeOptions = (
+    options: Partial<LocatorWaitForAction>['options']
+  ) => {
+    onUpdate({
+      ...action,
+      options: {
+        ...action.options,
+        ...options,
+      },
+    })
+  }
+
   return (
-    <Grid columns="max-content auto" gap="2" align="center">
+    <Grid columns="max-content auto auto" gap="2" align="center">
       Wait for element
       <LocatorForm state={action.locator} onChange={handleChangeLocator} />
+      <WaitForOptionsForm
+        options={action.options}
+        onChange={handleChangeOptions}
+      />
     </Grid>
   )
 }
 
-function RefreshActionBody() {
+function PageReloadActionBody() {
   return <>Reload page</>
 }

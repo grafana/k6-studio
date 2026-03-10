@@ -8,10 +8,10 @@ import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import { FieldConfig, FieldRenderer } from '../../ActionForms'
+import type { FieldConfig } from '../../ActionForms'
 import { buildFieldErrors } from '../../ActionForms/utils'
 import { LocatorOptions } from '../../types'
-import { FormPopover } from '../components/FormPopover'
+import { FieldRenderer, FormPopover } from '../components'
 import {
   altTextField,
   cssSelectorField,
@@ -125,11 +125,6 @@ export function LocatorForm({
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    handlePopoverOpenChange(false)
-  }
-
   const fields = LOCATOR_FIELDS[currentLocator.type]
   const validation = touchedTypes.has(current)
     ? validateFields(currentLocator, fields)
@@ -144,44 +139,42 @@ export function LocatorForm({
       width="400px"
       onOpenChange={handlePopoverOpenChange}
     >
-      <form onSubmit={handleSubmit}>
-        <Grid gap="3" columns="auto auto 1fr">
-          <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
-            <RadioGroup.Root
-              size="1"
-              name="locator-type"
-              value={current}
-              onValueChange={handleChangeCurrent}
-            >
-              {Object.entries(LOCATOR_TYPES)
-                // TODO: temporarily hide 'text' until codegen support is added
-                .filter(([type]) => type !== 'text')
-                .map(([type, label]) => (
-                  <RadioGroup.Item value={type} key={type}>
-                    {label}
-                  </RadioGroup.Item>
-                ))}
-            </RadioGroup.Root>
-          </FieldGroup>
+      <Grid gap="3" columns="auto auto 1fr">
+        <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
+          <RadioGroup.Root
+            size="1"
+            name="locator-type"
+            value={current}
+            onValueChange={handleChangeCurrent}
+          >
+            {Object.entries(LOCATOR_TYPES)
+              // TODO: temporarily hide 'text' until codegen support is added
+              .filter(([type]) => type !== 'text')
+              .map(([type, label]) => (
+                <RadioGroup.Item value={type} key={type}>
+                  {label}
+                </RadioGroup.Item>
+              ))}
+          </RadioGroup.Root>
+        </FieldGroup>
 
-          <Separator orientation="vertical" size="4" decorative />
-          <Flex direction="column" gap="2" align="stretch">
-            {fields.map((field) => (
-              <FieldRenderer
-                key={field.name}
-                field={field}
-                model={currentLocator}
-                onChange={handleLocatorChange}
-                onBlur={handleFieldBlur}
-                errors={buildFieldErrors(
-                  field.name,
-                  validation.fieldErrors?.[field.name]
-                )}
-              />
-            ))}
-          </Flex>
-        </Grid>
-      </form>
+        <Separator orientation="vertical" size="4" decorative />
+        <Flex direction="column" gap="2" align="stretch">
+          {fields.map((field) => (
+            <FieldRenderer
+              key={field.name}
+              field={field}
+              model={currentLocator}
+              onChange={handleLocatorChange}
+              onBlur={handleFieldBlur}
+              errors={buildFieldErrors(
+                field.name,
+                validation.fieldErrors?.[field.name]
+              )}
+            />
+          ))}
+        </Flex>
+      </Grid>
     </FormPopover>
   )
 }

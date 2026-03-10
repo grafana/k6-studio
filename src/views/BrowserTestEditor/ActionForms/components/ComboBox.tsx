@@ -18,6 +18,7 @@ type ComboBoxOption = {
 
 interface ComboBoxProps {
   value: string
+  placeholder?: string
   onChange: (value: string) => void
   options: ComboBoxOption[]
   disabled?: boolean
@@ -28,11 +29,12 @@ interface ComboBoxProps {
 
 export function ComboBox({
   value,
-  onChange,
+  placeholder,
   options,
   disabled,
   name,
   id,
+  onChange,
   onBlur,
 }: ComboBoxProps) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -49,6 +51,7 @@ export function ComboBox({
     <CreatableSelect<ComboBoxOption, false>
       inputId={id}
       name={name}
+      placeholder={placeholder}
       isDisabled={disabled}
       menuPlacement="auto"
       menuPosition="fixed"
