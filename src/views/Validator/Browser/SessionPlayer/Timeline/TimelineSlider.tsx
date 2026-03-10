@@ -77,10 +77,12 @@ export function TimelineSlider({
       <div>
         <SliderPrimitive.Track
           css={css`
+            --slider-border-radius: var(--radius-1);
+
             position: relative;
             flex: 1 1 0;
             min-height: 16px;
-            border-radius: var(--radius-1);
+            border-radius: var(--slider-border-radius);
             background-color: var(--gray-5);
             box-shadow: inset 0 0 0 1px var(--gray-a6);
           `}
@@ -90,6 +92,7 @@ export function TimelineSlider({
               position: absolute;
               height: 100%;
               background: var(--gray-8);
+              border-radius: var(--slider-border-radius);
             `}
           />
           <TimelineActions

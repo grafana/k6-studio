@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Reset } from '@radix-ui/themes'
-import { useState } from 'react'
+import { MouseEvent, useRef, useState } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
 
@@ -100,6 +100,8 @@ interface SegmentProps {
 }
 
 function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
+  const mouseDownX = useRef<number>(undefined)
+
   const [showTooltip, setShowTooltip] = useState(false)
 
   const left = (segment.start / time.total) * 100
@@ -112,8 +114,16 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
 
   const status = segment.action.result?.type ?? 'unknown'
 
-  const handleClick = () => {
-    onSeek(segment.start)
+  const handlePointerDown = (ev: MouseEvent<HTMLElement>) => {
+    mouseDownX.current = ev.clientX
+  }
+
+  const handleClick = (ev: MouseEvent<HTMLElement>) => {
+    const deltaX = ev.clientX - (mouseDownX.current ?? ev.clientX)
+
+    if (Math.abs(deltaX) < 10) {
+      onSeek(segment.start)
+    }
   }
 
   const handleMouseEnter = () => {
@@ -147,6 +157,7 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               box-sizing: border-box;
 
               border: none;
+              border-radius: var(--slider-border-radius);
               box-shadow: var(--shadow-1);
 
               transition:
@@ -163,26 +174,26 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               }
 
               &[data-status='success'] {
-                background-color: var(--green-a7);
+                background-color: var(--green-a5);
 
                 &:hover {
-                  background-color: var(--green-11);
+                  background-color: var(--green-8);
                 }
               }
 
               &[data-status='error'] {
-                background-color: var(--red-a7);
+                background-color: var(--red-a5);
 
                 &:hover {
-                  background-color: var(--red-11);
+                  background-color: var(--red-9);
                 }
               }
 
               &[data-status='aborted'] {
-                background-color: var(--yellow-a7);
+                background-color: var(--yellow-3);
 
                 &:hover {
-                  background-color: var(--yellow-8);
+                  background-color: var(--yellow-5);
                 }
               }
 
@@ -195,6 +206,7 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
               }
             `}
             onClick={handleClick}
+            onPointerDown={handlePointerDown}
           />
         </TimelineTooltip>
       </Reset>
