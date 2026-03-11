@@ -6,11 +6,11 @@ import { readdirp, EntryInfo, ReaddirpOptions } from 'readdirp'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS, isIgnoredSystemFile } from '@/constants/files'
-import { createStudioFile } from '@/main/file'
 import { StudioFile } from '@/types'
 import { getBrowserPath } from '@/utils/browser'
 import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast, browserWindowFromEvent } from '@/utils/electron'
+import { createStudioFile } from '@/utils/file'
 import { isNodeJsErrnoException } from '@/utils/typescript'
 
 import { UIHandler } from './types'

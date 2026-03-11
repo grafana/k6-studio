@@ -12,18 +12,20 @@ export enum FileHandler {
   ListDirectory = 'file:list-directory',
 }
 
-export type DirectoryEntry =
-  | {
-      type: 'directory'
-      basename: string
-      path: string
-    }
-  | {
-      type: 'file'
-      basename: string
-      path: string
-      file: StudioFile | null
-    }
+export interface FileEntry {
+  type: 'file'
+  basename: string
+  path: string
+  file: StudioFile | null
+}
+
+export interface SubDirectoryEntry {
+  type: 'directory'
+  basename: string
+  path: string
+}
+
+export type DirectoryEntry = FileEntry | SubDirectoryEntry
 
 export interface ListDirectoryArgs {
   path: string

@@ -50,18 +50,19 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
     super()
 
     this.#rootPath = rootPath
-    this.#watcher = watch(rootPath, { ignoreInitial: true })
-
-    this.#watcher.on('add', (filePath) => {
-      this.emit('file:add', { path: filePath })
-    })
-
-    this.#watcher.on('unlink', (filePath) => {
-      this.emit('file:remove', { path: filePath })
-    })
-
-    this.#watcher.on('change', (filePath) => {
-      this.emit('file:change', { path: filePath })
+    this.#watcher = watch(rootPath, {
+      ignoreInitial: true,
+      ignored: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/build/**',
+        '**/out/**',
+        '**/target/**',
+        '**/tmp/**',
+        '**/temp/**',
+        '**/cache/**',
+        '**/logs/**',
+      ],
     })
   }
 
@@ -69,10 +70,7 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
     this.#watcher.unwatch(this.#rootPath)
 
     this.#rootPath = newRootPath
-
-    this.#watcher = watch(newRootPath, {
-      ignoreInitial: true,
-    })
+    this.#watcher.add(newRootPath)
 
     this.emit('workspace:change', {
       path: newRootPath,
