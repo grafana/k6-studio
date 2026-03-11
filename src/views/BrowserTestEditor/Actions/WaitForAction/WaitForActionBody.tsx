@@ -9,17 +9,17 @@ import { WithEditorMetadata } from '../../types'
 
 interface WaitForActionBodyProps {
   action: WithEditorMetadata<LocatorWaitForAction>
-  onUpdate: (action: WithEditorMetadata<LocatorWaitForAction>) => void
+  onChange: (action: WithEditorMetadata<LocatorWaitForAction>) => void
 }
 
 export function WaitForActionBody({
   action,
-  onUpdate,
+  onChange,
 }: WaitForActionBodyProps) {
   const handleChangeLocator = (
     locator: WithEditorMetadata<LocatorWaitForAction>['locator']
   ) => {
-    onUpdate({
+    onChange({
       ...action,
       locator,
     })
@@ -28,7 +28,7 @@ export function WaitForActionBody({
   const handleChangeOptions = (
     options: Partial<LocatorWaitForAction>['options']
   ) => {
-    onUpdate({
+    onChange({
       ...action,
       options: {
         ...action.options,
@@ -49,7 +49,7 @@ export function WaitForActionBody({
         }
       `}
     >
-      Wait for element
+      Wait for
       <LocatorForm state={action.locator} onChange={handleChangeLocator} />
       <WaitForOptionsForm
         options={action.options}

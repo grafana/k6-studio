@@ -7,12 +7,12 @@ import { WithEditorMetadata } from '../../types'
 
 interface GoToActionBodyProps {
   action: WithEditorMetadata<PageGotoAction>
-  onUpdate: (action: WithEditorMetadata<PageGotoAction>) => void
+  onChange: (action: WithEditorMetadata<PageGotoAction>) => void
 }
 
-export function GoToActionBody({ action, onUpdate }: GoToActionBodyProps) {
+export function GoToActionBody({ action, onChange }: GoToActionBodyProps) {
   const handleChangeUrl = (url: string) => {
-    onUpdate({
+    onChange({
       ...action,
       url,
     })
