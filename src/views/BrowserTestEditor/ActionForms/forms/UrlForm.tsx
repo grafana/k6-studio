@@ -1,8 +1,10 @@
+import { Popover } from '@radix-ui/themes'
 import { useState } from 'react'
 
 import { urlField } from '../../ActionForms/fields'
 import { buildFieldErrors } from '../../ActionForms/utils'
-import { FieldRenderer, FormPopover } from '../components'
+import { FieldRenderer } from '../components'
+import { ValuePopoverBadge } from '../components/ValuePopoverBadge'
 
 interface UrlFormProps {
   value: string
@@ -16,10 +18,8 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
   const errorMessage = isTouched ? urlField.validate?.(value) : undefined
 
   return (
-    <FormPopover
+    <Popover.Root
       open={isPopoverOpen}
-      displayValue={value || 'Enter URL'}
-      error={errorMessage}
       onOpenChange={(open) => {
         setIsPopoverOpen(open)
         if (!open) {
@@ -27,13 +27,21 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
         }
       }}
     >
-      <FieldRenderer
-        field={urlField}
-        model={value}
-        onChange={onChange}
-        onBlur={() => setIsTouched(true)}
-        errors={buildFieldErrors('url', errorMessage)}
-      />
-    </FormPopover>
+      <Popover.Trigger>
+        <ValuePopoverBadge
+          displayValue={value || 'Enter URL'}
+          error={errorMessage}
+        />
+      </Popover.Trigger>
+      <Popover.Content align="start" size="1" width="300px">
+        <FieldRenderer
+          field={urlField}
+          model={value}
+          onChange={onChange}
+          onBlur={() => setIsTouched(true)}
+          errors={buildFieldErrors('url', errorMessage)}
+        />
+      </Popover.Content>
+    </Popover.Root>
   )
 }

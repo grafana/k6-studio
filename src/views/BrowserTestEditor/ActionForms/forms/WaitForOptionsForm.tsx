@@ -1,10 +1,10 @@
-import { Tooltip } from '@radix-ui/themes'
-import { SlidersHorizontalIcon } from 'lucide-react'
+import { IconButton, Popover, Tooltip } from '@radix-ui/themes'
+import { SettingsIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { LocatorWaitForAction } from '@/main/runner/schema'
 
-import { FieldRenderer, FormPopover } from '../components'
+import { FieldRenderer } from '../components'
 import { stateField, timeoutField } from '../fields'
 import { buildFieldErrors } from '../utils'
 
@@ -23,14 +23,8 @@ export function WaitForOptionsForm({
   const timeoutError = timeoutField.validate?.(options?.timeout)
 
   return (
-    <FormPopover
+    <Popover.Root
       open={isPopoverOpen}
-      displayValue={
-        <Tooltip content="Options">
-          <SlidersHorizontalIcon />
-        </Tooltip>
-      }
-      error={isTouched ? timeoutError : null}
       onOpenChange={(open) => {
         setIsPopoverOpen(open)
         if (!open) {
@@ -38,19 +32,32 @@ export function WaitForOptionsForm({
         }
       }}
     >
-      <FieldRenderer
-        field={stateField}
-        model={options}
-        onChange={(nextOptions) => onChange(nextOptions)}
-        onBlur={() => setIsTouched(true)}
-      />
-      <FieldRenderer
-        field={timeoutField}
-        model={options}
-        errors={buildFieldErrors('timeout', timeoutError)}
-        onChange={(nextOptions) => onChange(nextOptions)}
-        onBlur={() => setIsTouched(true)}
-      />
-    </FormPopover>
+      <Tooltip content="Options">
+        <Popover.Trigger>
+          <IconButton
+            aria-label="Edit options"
+            size="1"
+            variant="ghost"
+            color="gray"
+          >
+            <SettingsIcon />
+          </IconButton>
+        </Popover.Trigger>
+      </Tooltip>
+      <Popover.Content align="start" size="1" width="300px">
+        <FieldRenderer
+          field={stateField}
+          model={options}
+          onChange={(nextOptions) => onChange(nextOptions)}
+        />
+        <FieldRenderer
+          field={timeoutField}
+          model={options}
+          errors={buildFieldErrors('timeout', isTouched ? timeoutError : null)}
+          onChange={(nextOptions) => onChange(nextOptions)}
+          onBlur={() => setIsTouched(true)}
+        />
+      </Popover.Content>
+    </Popover.Root>
   )
 }

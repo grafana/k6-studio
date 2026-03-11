@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Flex, Grid, RadioGroup, Separator } from '@radix-ui/themes'
+import { Flex, Grid, Popover, RadioGroup, Separator } from '@radix-ui/themes'
 import { useState } from 'react'
 
 import { toNodeSelector } from '@/codegen/browser/selectors'
@@ -11,7 +11,8 @@ import { exhaustive } from '@/utils/typescript'
 import type { FieldConfig } from '../../ActionForms'
 import { buildFieldErrors } from '../../ActionForms/utils'
 import { LocatorOptions } from '../../types'
-import { FieldRenderer, FormPopover } from '../components'
+import { FieldRenderer } from '../components'
+import { ValuePopoverBadge } from '../components/ValuePopoverBadge'
 import {
   altTextField,
   cssSelectorField,
@@ -132,50 +133,52 @@ export function LocatorForm({
   const error = validation.isValid ? null : validation.message
 
   return (
-    <FormPopover
-      displayValue={<DisplayValue state={{ current, values }} />}
-      error={error}
-      open={isPopoverOpen}
-      width="400px"
-      onOpenChange={handlePopoverOpenChange}
-    >
-      <Grid gap="3" columns="auto auto 1fr">
-        <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
-          <RadioGroup.Root
-            size="1"
-            name="locator-type"
-            value={current}
-            onValueChange={handleChangeCurrent}
-          >
-            {Object.entries(LOCATOR_TYPES)
-              // TODO: temporarily hide 'text' until codegen support is added
-              .filter(([type]) => type !== 'text')
-              .map(([type, label]) => (
-                <RadioGroup.Item value={type} key={type}>
-                  {label}
-                </RadioGroup.Item>
-              ))}
-          </RadioGroup.Root>
-        </FieldGroup>
+    <Popover.Root open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
+      <Popover.Trigger>
+        <ValuePopoverBadge
+          displayValue={<DisplayValue state={{ current, values }} />}
+          error={error}
+        />
+      </Popover.Trigger>
+      <Popover.Content align="start" size="1" width="400px">
+        <Grid gap="3" columns="auto auto 1fr">
+          <FieldGroup name="locator-type" label="Get by" labelSize="1" mb="0">
+            <RadioGroup.Root
+              size="1"
+              name="locator-type"
+              value={current}
+              onValueChange={handleChangeCurrent}
+            >
+              {Object.entries(LOCATOR_TYPES)
+                // TODO: temporarily hide 'text' until codegen support is added
+                .filter(([type]) => type !== 'text')
+                .map(([type, label]) => (
+                  <RadioGroup.Item value={type} key={type}>
+                    {label}
+                  </RadioGroup.Item>
+                ))}
+            </RadioGroup.Root>
+          </FieldGroup>
 
-        <Separator orientation="vertical" size="4" decorative />
-        <Flex direction="column" gap="2" align="stretch">
-          {fields.map((field) => (
-            <FieldRenderer
-              key={field.name}
-              field={field}
-              model={currentLocator}
-              onChange={handleLocatorChange}
-              onBlur={handleFieldBlur}
-              errors={buildFieldErrors(
-                field.name,
-                validation.fieldErrors?.[field.name]
-              )}
-            />
-          ))}
-        </Flex>
-      </Grid>
-    </FormPopover>
+          <Separator orientation="vertical" size="4" decorative />
+          <Flex direction="column" gap="2" align="stretch">
+            {fields.map((field) => (
+              <FieldRenderer
+                key={field.name}
+                field={field}
+                model={currentLocator}
+                onChange={handleLocatorChange}
+                onBlur={handleFieldBlur}
+                errors={buildFieldErrors(
+                  field.name,
+                  validation.fieldErrors?.[field.name]
+                )}
+              />
+            ))}
+          </Flex>
+        </Grid>
+      </Popover.Content>
+    </Popover.Root>
   )
 }
 
