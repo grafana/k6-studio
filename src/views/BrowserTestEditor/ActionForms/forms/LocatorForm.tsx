@@ -11,8 +11,7 @@ import { exhaustive } from '@/utils/typescript'
 import type { FieldConfig } from '../../ActionForms'
 import { buildFieldErrors } from '../../ActionForms/utils'
 import { LocatorOptions } from '../../types'
-import { FieldRenderer } from '../components'
-import { ValuePopoverBadge } from '../components/ValuePopoverBadge'
+import { FieldRenderer, ValuePopoverBadge } from '../components'
 import {
   altTextField,
   cssSelectorField,

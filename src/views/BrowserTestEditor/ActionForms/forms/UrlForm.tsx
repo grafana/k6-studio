@@ -3,8 +3,7 @@ import { useState } from 'react'
 
 import { urlField } from '../../ActionForms/fields'
 import { buildFieldErrors } from '../../ActionForms/utils'
-import { FieldRenderer } from '../components'
-import { ValuePopoverBadge } from '../components/ValuePopoverBadge'
+import { FieldRenderer, ValuePopoverBadge } from '../components'
 
 interface UrlFormProps {
   value: string
