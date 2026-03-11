@@ -26,6 +26,25 @@ it('should emit an empty test with browser scenario options', async ({
   )
 })
 
+it('should emit browser setup and teardown for page-only scenarios', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  expect(script).toContain('const page = await browser.newPage();')
+  expect(script).toContain('await page?.close();')
+})
+
 it('should goto a url', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {

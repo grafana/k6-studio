@@ -4,12 +4,20 @@ export class CountedSet<T> {
   constructor(initial?: [T, number][]) {
     if (initial) {
       for (const [value, count] of initial) {
+        if (count <= 0) {
+          continue
+        }
+
         this.#map.set(value, count)
       }
     }
   }
 
   add(value: T, count = 1) {
+    if (count <= 0) {
+      return
+    }
+
     const currentCount = this.#map.get(value) ?? 0
 
     this.#map.set(value, currentCount + count)
