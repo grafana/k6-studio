@@ -21,7 +21,7 @@ type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
 
 interface ActionEditorProps<M extends BrowserActionInstance['method']> {
   action: ActionByMethod<M>
-  onUpdate: (action: ActionByMethod<M>) => void
+  onChange: (action: ActionByMethod<M>) => void
 }
 
 interface ActionEditorDefinition<M extends BrowserActionInstance['method']> {
@@ -55,8 +55,8 @@ const notImplementedCreate = <M extends BrowserActionInstance['method']>(
 const actionEditors: ActionEditorRegistry = {
   'page.goto': {
     icon: <GlobeIcon aria-hidden="true" />,
-    render: ({ action, onUpdate }) => (
-      <GoToActionBody action={action} onUpdate={onUpdate} />
+    render: ({ action, onChange }) => (
+      <GoToActionBody action={action} onChange={onChange} />
     ),
     create: () => ({
       id: crypto.randomUUID(),
@@ -74,8 +74,8 @@ const actionEditors: ActionEditorRegistry = {
   },
   'locator.waitFor': {
     icon: <TimerIcon aria-hidden="true" />,
-    render: ({ action, onUpdate }) => (
-      <WaitForActionBody action={action} onUpdate={onUpdate} />
+    render: ({ action, onChange }) => (
+      <WaitForActionBody action={action} onChange={onChange} />
     ),
     create: () => ({
       id: crypto.randomUUID(),

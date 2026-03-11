@@ -9,13 +9,13 @@ import { BrowserActionInstance } from './types'
 interface EditableActionProps {
   action: BrowserActionInstance
   onRemove: (actionId: string) => void
-  onUpdate: (action: BrowserActionInstance) => void
+  onChange: (action: BrowserActionInstance) => void
 }
 
 export function EditableAction({
   action,
   onRemove,
-  onUpdate,
+  onChange,
 }: EditableActionProps) {
   const handleRemove = () => {
     onRemove(action.id)
@@ -38,7 +38,7 @@ export function EditableAction({
     >
       <Flex align="center" gap="2">
         {editor.icon}
-        {editor.render({ action, onUpdate })}
+        {editor.render({ action, onChange })}
         <Tooltip content="Remove action">
           <IconButton
             size="2"
