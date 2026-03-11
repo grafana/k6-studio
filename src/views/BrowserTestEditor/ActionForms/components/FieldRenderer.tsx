@@ -9,6 +9,8 @@ import { FieldConfig } from '../fields/types'
 
 import { ComboBox } from './ComboBox'
 
+const CLEAR_SELECT_VALUE = '__field_renderer_clear__'
+
 interface FieldRendererProps<TValue, TModel> {
   field: FieldConfig<TValue, TModel>
   model: TModel
@@ -125,8 +127,14 @@ export function FieldRenderer<TValue, TModel>({
             name={field.name}
             size="1"
             value={selectValue}
-            onValueChange={(value) => {
-              handleChange(value as unknown as TValue)
+            onValueChange={(nextValue) => {
+              if (field.clearable && nextValue === CLEAR_SELECT_VALUE) {
+                handleChange(undefined as TValue)
+                onBlur?.()
+                return
+              }
+
+              handleChange(nextValue as unknown as TValue)
               onBlur?.()
             }}
           >
@@ -137,6 +145,9 @@ export function FieldRenderer<TValue, TModel>({
               `}
             />
             <Select.Content>
+              {field.clearable ? (
+                <Select.Item value={CLEAR_SELECT_VALUE}>None</Select.Item>
+              ) : null}
               {field.options?.map((opt) => (
                 <Select.Item key={opt.value} value={opt.value}>
                   {opt.label}

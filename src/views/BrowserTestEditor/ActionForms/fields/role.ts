@@ -40,10 +40,20 @@ export const roleNameField = defineField<
   label: 'Name (optional)',
   input: 'text',
   getValue: (locator) => locator.options?.name || '',
-  setValue: (locator, value) => ({
-    ...locator,
-    options: value.trim()
-      ? { ...locator.options, name: value }
-      : locator.options,
-  }),
+  setValue: (locator, value) => {
+    if (value.trim()) {
+      return {
+        ...locator,
+        options: { ...locator.options, name: value },
+      }
+    }
+
+    const nextOptions = { ...locator.options }
+    delete nextOptions.name
+
+    return {
+      ...locator,
+      options: Object.keys(nextOptions).length ? nextOptions : undefined,
+    }
+  },
 })
