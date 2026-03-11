@@ -10,14 +10,17 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { queryClient } from '@/utils/query'
-import { exhaustive } from '@/utils/typescript'
 
+import {
+  fromBrowserActionInstance,
+  toBrowserActionInstance,
+} from './actionAdapters'
+import { createActionInstance } from './actionEditorRegistry'
 import { BrowserActionInstance } from './types'
 
 export function useBrowserTestFile(): StudioFile {
@@ -126,7 +129,7 @@ export function useBrowserTestState(
   )
 
   const addAction = (method: BrowserActionInstance['method']) => {
-    const action = createNewAction(method)
+    const action = createActionInstance(method)
     setState([...state, action])
   }
 
@@ -160,102 +163,5 @@ export function useBrowserTestState(
     updateAction,
     removeAction,
     isDirty,
-  }
-}
-
-function toBrowserActionInstance(
-  action: AnyBrowserAction
-): BrowserActionInstance {
-  const id = crypto.randomUUID()
-
-  if ('locator' in action) {
-    return {
-      id,
-      ...action,
-      locator: {
-        current: action.locator.type,
-        values: {
-          [action.locator.type]: action.locator,
-        },
-      },
-    }
-  }
-
-  return { id, ...action }
-}
-
-function fromBrowserActionInstance({
-  id: _id,
-  ...action
-}: BrowserActionInstance): AnyBrowserAction {
-  if ('locator' in action) {
-    const locator = action.locator.values[action.locator.current]
-
-    if (locator === undefined) {
-      throw new Error(
-        `Current locator of type "${action.locator.current}" not found in locator values.`
-      )
-    }
-
-    return {
-      ...action,
-      locator,
-    }
-  }
-
-  return action
-}
-
-function createNewAction(
-  method: BrowserActionInstance['method']
-): BrowserActionInstance {
-  const id = crypto.randomUUID()
-  switch (method) {
-    case 'page.goto':
-      return {
-        id,
-        method,
-        url: 'https://example.com',
-      }
-    case 'page.reload':
-      return {
-        id,
-        method,
-      }
-    case 'locator.waitFor':
-      return {
-        id,
-        method,
-        locator: {
-          current: 'css',
-          values: {
-            css: {
-              type: 'css',
-              selector: '',
-            },
-          },
-        },
-      }
-    case 'page.waitForNavigation':
-    case 'page.close':
-    case 'page.*':
-    case 'locator.click':
-    case 'locator.dblclick':
-    case 'locator.fill':
-    case 'locator.type':
-    case 'locator.check':
-    case 'locator.uncheck':
-    case 'locator.selectOption':
-    case 'locator.hover':
-    case 'locator.setChecked':
-    case 'locator.tap':
-    case 'locator.clear':
-    case 'locator.press':
-    case 'locator.focus':
-    case 'locator.*':
-    case 'browserContext.*':
-      throw new Error(`Action ${method} not implemented yet`)
-    default:
-      return exhaustive(method)
   }
 }

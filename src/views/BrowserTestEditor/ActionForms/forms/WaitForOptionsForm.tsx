@@ -38,7 +38,7 @@ export function WaitForOptionsForm({
             aria-label="Edit options"
             size="1"
             variant="ghost"
-            color="gray"
+            color={timeoutError ? 'red' : 'gray'}
           >
             <SettingsIcon />
           </IconButton>
