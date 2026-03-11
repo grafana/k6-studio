@@ -2,8 +2,8 @@ import { Grid } from '@radix-ui/themes'
 
 import { PageGotoAction } from '@/main/runner/schema'
 
-import { UrlForm } from '../ActionForms/forms/UrlForm'
-import { WithEditorMetadata } from '../types'
+import { UrlForm } from '../../ActionForms/forms/UrlForm'
+import { WithEditorMetadata } from '../../types'
 
 interface GoToActionBodyProps {
   action: WithEditorMetadata<PageGotoAction>

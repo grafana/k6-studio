@@ -29,10 +29,6 @@ export function FieldRenderer<TValue, TModel>({
     onChange(field.setValue(model, nextValue))
   }
 
-  const handleTextChange = (nextValue: string) => {
-    handleChange(nextValue as unknown as TValue)
-  }
-
   const textValue = value == null ? '' : String(value)
 
   switch (field.input) {
@@ -51,7 +47,19 @@ export function FieldRenderer<TValue, TModel>({
             type="number"
             value={textValue}
             placeholder={field.placeholder}
-            onChange={(e) => handleTextChange(e.target.value)}
+            onChange={(e) => {
+              const trimmed = e.target.value.trim()
+
+              if (!trimmed) {
+                handleChange(undefined as TValue)
+                return
+              }
+
+              const parsed = Number(trimmed)
+              handleChange(
+                (Number.isNaN(parsed) ? undefined : parsed) as TValue
+              )
+            }}
             onBlur={onBlur}
           />
         </FieldGroup>
@@ -70,7 +78,7 @@ export function FieldRenderer<TValue, TModel>({
             name={field.name}
             value={textValue}
             placeholder={field.placeholder}
-            onChange={(e) => handleTextChange(e.target.value)}
+            onChange={(e) => handleChange(e.target.value as unknown as TValue)}
             onBlur={onBlur}
           />
         </FieldGroup>
@@ -97,7 +105,7 @@ export function FieldRenderer<TValue, TModel>({
             `}
             placeholder={field.placeholder}
             value={textValue}
-            onChange={(e) => handleTextChange(e.target.value)}
+            onChange={(e) => handleChange(e.target.value as unknown as TValue)}
             onBlur={onBlur}
           />
         </FieldGroup>
@@ -118,7 +126,7 @@ export function FieldRenderer<TValue, TModel>({
             size="1"
             value={selectValue}
             onValueChange={(value) => {
-              handleTextChange(value)
+              handleChange(value as unknown as TValue)
               onBlur?.()
             }}
           >
@@ -153,8 +161,10 @@ export function FieldRenderer<TValue, TModel>({
             value={textValue}
             placeholder={field.placeholder}
             options={field.options ?? []}
-            onChange={handleTextChange}
-            onBlur={onBlur}
+            onChange={(value) => {
+              handleChange(value as unknown as TValue)
+              onBlur?.()
+            }}
           />
         </FieldGroup>
       )

@@ -1,3 +1,3 @@
-export * from './GoToActionBody'
-export * from './PageReloadActionBody'
-export * from './WaitForActionBody'
+export * from './GoToAction'
+export * from './PageReloadAction'
+export * from './WaitForAction'

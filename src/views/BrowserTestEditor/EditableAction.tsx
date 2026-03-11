@@ -15,6 +15,7 @@ import {
   PageReloadActionBody,
   WaitForActionBody,
 } from './Actions'
+import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { BrowserActionInstance } from './types'
 
 interface EditableActionProps {
@@ -34,9 +35,9 @@ export function EditableAction({
 
   return (
     <Flex
-      align="center"
+      direction="column"
+      gap="1"
       p="2"
-      gap="2"
       css={css`
         font-size: var(--font-size-1);
 
@@ -45,20 +46,23 @@ export function EditableAction({
         }
       `}
     >
-      <ActionIcon method={action.method} />
-      <ActionBody action={action} onUpdate={onUpdate} />
-      <Tooltip content="Remove action">
-        <IconButton
-          size="2"
-          variant="ghost"
-          color="gray"
-          onClick={handleRemove}
-          aria-label="Remove action"
-          css={{ marginLeft: 'auto' }}
-        >
-          <Trash2Icon />
-        </IconButton>
-      </Tooltip>
+      <Flex align="center" gap="2">
+        <ActionIcon method={action.method} />
+        <ActionBody action={action} onUpdate={onUpdate} />
+        <Tooltip content="Remove action">
+          <IconButton
+            size="2"
+            variant="ghost"
+            color="gray"
+            onClick={handleRemove}
+            aria-label="Remove action"
+            css={{ marginLeft: 'auto' }}
+          >
+            <Trash2Icon />
+          </IconButton>
+        </Tooltip>
+      </Flex>
+      {'options' in action && <OptionsSummary options={action.options} />}
     </Flex>
   )
 }
