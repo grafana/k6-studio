@@ -23,23 +23,21 @@ interface TimelineActionsProps {
 }
 
 interface Lane {
-  id: number
-  segments: Segment[]
+  index: number
+  segments: [Segment, ...Segment[]]
 }
 
 interface Segment {
   id: string
-  flex: number
   start: number
   end: number
-  lane: number
   action: BrowserActionEvent
 }
 
 function buildLanes(actions: BrowserActionEvent[], time: Time) {
-  const segments: Segment[] = []
+  const lanes: Lane[] = []
 
-  for (const [index, action] of actions.entries()) {
+  for (const action of actions) {
     if (action.timestamp.started > time.end) {
       continue
     }
@@ -50,42 +48,26 @@ function buildLanes(actions: BrowserActionEvent[], time: Time) {
     const start = Math.max(0, actionStarted - time.start)
     const end = Math.min(time.total, actionEnded - time.start)
 
-    const duration = Math.max(0, end - start)
-
     const segment: Segment = {
       id: action.eventId,
-      flex: duration,
       start,
       end,
-      lane: 0,
       action,
     }
 
-    // We need to figure out which lane the segment should be in.
-    //
-    // We do this by walking backwards through the segments until we find a
-    // segment that doesn't intersect with the current segment. The segment's
-    // lane is one lane above the top-most intersecting segment's lane.
-    for (let i = index - 1; i >= 0; i--) {
-      const previous = segments[i]
+    /**
+     * From top-to-bottom, find the first lane that doesn't intersect with the current segment.
+     * This is the lane where we will put the current segment. If no such lane exists, we will
+     * hvae to create a new lane.
+     */
+    const lane = lanes.find((lane) => {
+      const lastSegment = lane.segments[lane.segments.length - 1]
 
-      if (previous === undefined || !isIntersecting(previous, segment)) {
-        break
-      }
-
-      segment.lane = Math.max(segment.lane, previous.lane + 1)
-    }
-
-    segments.push(segment)
-  }
-
-  const lanes: Lane[] = []
-
-  for (const segment of segments) {
-    const lane = lanes[segment.lane]
+      return lastSegment !== undefined && !isIntersecting(lastSegment, segment)
+    })
 
     if (lane === undefined) {
-      lanes[segment.lane] = { id: segment.lane, segments: [segment] }
+      lanes.push({ index: lanes.length, segments: [segment] })
 
       continue
     }
@@ -220,7 +202,7 @@ export function TimelineActions({
         padding-bottom: 6px;
       `}
     >
-      {lanes.map(({ id, segments }) => (
+      {lanes.map(({ index: id, segments }) => (
         <div
           key={id}
           css={css`

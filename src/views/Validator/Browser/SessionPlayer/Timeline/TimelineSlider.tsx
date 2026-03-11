@@ -61,8 +61,8 @@ export function TimelineSlider({
         // an extra element that is absolutely positioned and there's no way to target
         // it directly, so we need to target it using the :nth-child selector.
         > :nth-child(2) {
-          top: -2px;
-          bottom: -2px;
+          top: -1px;
+          bottom: -1px;
         }
       `}
       value={[time.current]}
