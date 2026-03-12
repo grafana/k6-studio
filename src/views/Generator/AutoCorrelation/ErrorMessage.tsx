@@ -1,7 +1,12 @@
 import { Button, Flex, Text } from '@radix-ui/themes'
-import { ExternalLink, KeyIcon, RefreshCw } from 'lucide-react'
+import {
+  ExternalLink as ExternalLinkIcon,
+  KeyIcon,
+  RefreshCw,
+} from 'lucide-react'
 
 import grotCrashed from '@/assets/grot-crashed.svg'
+import { ExternalLink } from '@/components/ExternalLink'
 import { useSettingsChanged } from '@/hooks/useSettings'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
@@ -49,7 +54,7 @@ function OpenAiError({ error, onRetry }: AutoCorrelationErrorProps) {
 
   const reportIssueButton = (
     <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
-      <ExternalLink />
+      <ExternalLinkIcon />
       Report issue
     </Button>
   )
@@ -59,6 +64,25 @@ function OpenAiError({ error, onRetry }: AutoCorrelationErrorProps) {
       <MessageContent
         title="Incorrect API key"
         message="The OpenAI API key is incorrect or has been revoked. Check your API key in settings."
+      >
+        {openSettingsButton}
+      </MessageContent>
+    )
+  }
+
+  if (errorMessage.includes('insufficient_quota')) {
+    return (
+      <MessageContent
+        title="Quota exceeded"
+        message={
+          <>
+            You have exceeded your OpenAI API quota. Check your{' '}
+            <ExternalLink href="https://platform.openai.com/account/billing">
+              plan and billing details
+            </ExternalLink>{' '}
+            on the OpenAI platform.
+          </>
+        }
       >
         {openSettingsButton}
       </MessageContent>
