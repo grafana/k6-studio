@@ -10,16 +10,18 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { useStateWithUndo } from '@/hooks/useStateWithUndo'
-import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { queryClient } from '@/utils/query'
-import { exhaustive } from '@/utils/typescript'
 
-import { BrowserActionWithId } from './types'
+import {
+  fromBrowserActionInstance,
+  toBrowserActionInstance,
+} from './actionAdapters'
+import { createActionInstance } from './actionEditorRegistry'
+import { BrowserActionInstance } from './types'
 
 export function useBrowserTestFile(): StudioFile {
   const { fileName } = useParams()
@@ -91,7 +93,9 @@ export function useBrowserTestEditorLayout() {
   return { drawerLayout, mainLayout, setDrawer, onTabClick }
 }
 
-export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
+export function useBrowserScriptPreview(
+  browserActions: BrowserActionInstance[]
+) {
   const [preview, setPreview] = useState('')
 
   useEffect(() => {
@@ -120,32 +124,29 @@ export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
   const { actions = [] } = browserTestFile ?? {}
-  const { state, undo, redo, push } = useStateWithUndo<BrowserActionWithId[]>(
-    actions.map((action) => ({
-      id: crypto.randomUUID(),
-      action,
-    }))
+  const [state, setState] = useState<BrowserActionInstance[]>(
+    actions.map(toBrowserActionInstance)
   )
 
-  const addAction = (method: AnyBrowserAction['method']) => {
-    const action = createNewAction(method)
-    push([...state, { id: crypto.randomUUID(), action }])
+  const addAction = (method: BrowserActionInstance['method']) => {
+    const action = createActionInstance(method)
+    setState([...state, action])
   }
 
-  const updateAction = (updatedAction: BrowserActionWithId) => {
+  const updateAction = (updatedAction: BrowserActionInstance) => {
     const newActions = state.map((action) =>
       action.id === updatedAction.id ? updatedAction : action
     )
-    push(newActions)
+    setState(newActions)
   }
 
   const removeAction = (id: string) => {
     const newActions = state.filter((actionWithId) => actionWithId.id !== id)
-    push(newActions)
+    setState(newActions)
   }
 
   const plainActions = useMemo(() => {
-    return state.map((actionWithId) => actionWithId.action)
+    return state.map(fromBrowserActionInstance)
   }, [state])
 
   const isDirty = useMemo(() => {
@@ -162,40 +163,5 @@ export function useBrowserTestState(
     updateAction,
     removeAction,
     isDirty,
-    undo,
-    redo,
-  }
-}
-
-function createNewAction(method: AnyBrowserAction['method']): AnyBrowserAction {
-  switch (method) {
-    case 'page.goto':
-      return {
-        method: 'page.goto',
-        url: 'https://example.com',
-      }
-    case 'page.reload':
-    case 'page.waitForNavigation':
-    case 'page.close':
-    case 'page.*':
-    case 'locator.click':
-    case 'locator.dblclick':
-    case 'locator.fill':
-    case 'locator.type':
-    case 'locator.check':
-    case 'locator.uncheck':
-    case 'locator.selectOption':
-    case 'locator.waitFor':
-    case 'locator.hover':
-    case 'locator.setChecked':
-    case 'locator.tap':
-    case 'locator.clear':
-    case 'locator.press':
-    case 'locator.focus':
-    case 'locator.*':
-    case 'browserContext.*':
-      throw new Error(`Action ${method} not implemented yet`)
-    default:
-      return exhaustive(method)
   }
 }

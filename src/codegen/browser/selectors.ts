@@ -1,5 +1,6 @@
 import { AriaRole } from 'react'
 
+import { ActionLocator } from '@/main/runner/schema'
 import { ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
@@ -148,6 +149,62 @@ export function getNodeSelector(selector: ElementSelector): NodeSelector {
     getTestIdSelector(selector) ??
     getCssSelector(selector)
   )
+}
+
+export function toNodeSelector(locator: ActionLocator): NodeSelector {
+  switch (locator.type) {
+    case 'css':
+      return {
+        type: 'css',
+        selector: locator.selector,
+      }
+
+    case 'role':
+      return {
+        type: 'role',
+        role: locator.role,
+        name: locator.options?.name ?? '',
+      }
+
+    case 'testid':
+      return {
+        type: 'test-id',
+        testId: locator.testId,
+      }
+
+    case 'alt':
+      return {
+        type: 'alt',
+        text: locator.text,
+      }
+
+    case 'label':
+      return {
+        type: 'label',
+        text: locator.label,
+      }
+
+    case 'placeholder':
+      return {
+        type: 'placeholder',
+        text: locator.placeholder,
+      }
+
+    case 'title':
+      return {
+        type: 'title',
+        text: locator.title,
+      }
+
+    case 'text':
+      return {
+        type: 'text',
+        text: locator.text,
+      }
+
+    default:
+      return exhaustive(locator)
+  }
 }
 
 export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
