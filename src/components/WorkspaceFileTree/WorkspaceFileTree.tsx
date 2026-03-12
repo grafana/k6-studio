@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import {
+  ContextMenu,
   DropdownMenu,
   Flex,
   IconButton,
@@ -21,6 +22,7 @@ import * as pathe from 'pathe'
 import { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate, useParams } from 'react-router-dom'
 
+import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import type {
   DirectoryEntry,
@@ -29,6 +31,7 @@ import type {
   FileOnDisk,
   SubDirectoryEntry,
 } from '@/handlers/file/types'
+import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useFeaturesStore } from '@/store/features'
 import { FileType } from '@/types'
 import { getViewPath, inferFileTypeFromExtension } from '@/utils/file'
@@ -60,6 +63,87 @@ const entryStyles = css`
     outline-offset: -1px;
   }
 `
+
+interface WorkspaceFileTreeInputProps {
+  value: string
+  selectionRange: [number, number]
+  onChange: (value: string) => void
+  onCommit: (value: string) => void
+  onCancel: () => void
+}
+
+function WorkspaceFileTreeInput({
+  value,
+  selectionRange,
+  onChange,
+  onCommit,
+  onCancel,
+}: WorkspaceFileTreeInputProps) {
+  const isInitializedRef = useRef(false)
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+
+      onCancel()
+
+      return
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault()
+
+      onCommit(value)
+
+      return
+    }
+  }
+
+  const handleBlur = () => {
+    if (value.trim() === '') {
+      onCancel()
+
+      return
+    }
+
+    onCommit(value)
+  }
+
+  const handleMount = (el: HTMLInputElement | null) => {
+    if (el === null || isInitializedRef.current) {
+      return
+    }
+
+    el.setSelectionRange(...selectionRange)
+    el.focus()
+
+    isInitializedRef.current = true
+  }
+
+  return (
+    <input
+      ref={handleMount}
+      type="text"
+      css={css`
+        font-size: 12px;
+        line-height: 18px;
+        box-sizing: border-box;
+        padding: var(--space-1) var(--space-2) var(--space-1) 0;
+        color: var(--gray-11);
+        font-weight: 400;
+        background: var(--gray-3);
+        border: none;
+        flex: 1 1 0;
+      `}
+      value={value}
+      onChange={(event) => {
+        onChange(event.target.value)
+      }}
+      onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
+    />
+  )
+}
 
 const createContentForType = (type: FileType): FileContent | null => {
   switch (type) {
@@ -97,9 +181,12 @@ interface NewFileItemProps {
 }
 
 function NewFileItem({ item, entry, onCreate, onCancel }: NewFileItemProps) {
-  const isInitializedRef = useRef(false)
-
   const [value, setValue] = useState(entry.hint)
+
+  const nameWithoutExtension = pathe.basename(
+    entry.hint,
+    pathe.extname(entry.hint)
+  )
 
   const inferredFileType = inferFileTypeFromExtension(value)
 
@@ -113,70 +200,26 @@ function NewFileItem({ item, entry, onCreate, onCancel }: NewFileItemProps) {
     onCreate({ entry, name: value, content })
   }
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Escape') {
-      event.preventDefault()
-
-      onCancel(entry)
-
-      return
-    }
-
-    if (event.key === 'Enter') {
-      event.preventDefault()
-
-      handleCreate()
-
-      return
-    }
-  }
-
-  const handleBlur = () => {
-    if (value.trim() === '') {
-      onCancel(entry)
-      return
-    }
-    handleCreate()
-  }
-
-  const handleMount = (el: HTMLInputElement | null) => {
-    if (el === null || isInitializedRef.current) {
-      return
-    }
-
-    const nameWithoutExtension = pathe.basename(
-      entry.hint,
-      pathe.extname(entry.hint)
-    )
-
-    el.setSelectionRange(0, nameWithoutExtension.length)
-    el.focus()
-
-    isInitializedRef.current = true
-  }
-
   return (
-    <div css={entryStyles} style={{ paddingLeft: `${item.level * 16}px` }}>
+    <div
+      css={[
+        entryStyles,
+        css`
+          padding-top: 0;
+          padding-bottom: 0;
+          overflow: visible;
+        `,
+      ]}
+      style={{ paddingLeft: `${item.level * 16}px` }}
+    >
       <Flex align="center" gap="1" width="100%">
         <FileEntryIcon fileType={inferredFileType} size={16} />
-        <input
-          ref={handleMount}
-          type="text"
-          css={css`
-            font-size: 12px;
-            padding: var(--space-1) var(--space-2) var(--space-1) 0;
-            color: var(--gray-11);
-            font-weight: 400;
-            background: var(--gray-3);
-            border: none;
-            flex: 1 1 0;
-          `}
+        <WorkspaceFileTreeInput
           value={value}
-          onChange={(event) => {
-            setValue(event.target.value)
-          }}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
+          selectionRange={[0, nameWithoutExtension.length]}
+          onChange={setValue}
+          onCommit={handleCreate}
+          onCancel={() => onCancel(entry)}
         />
       </Flex>
     </div>
@@ -252,75 +295,159 @@ interface DirectoryEntryProps {
   entry: SubDirectoryEntry
   item: TreeItem<FileTreeEntry>
   onNewFile: (item: TreeItem<FileTreeEntry>, entry: NewFileEntry) => void
+  onRefreshDirectory: (path: string) => void | Promise<void>
 }
 
-function DirectoryItem({ entry, item, onNewFile }: DirectoryEntryProps) {
-  return (
-    <div
-      css={[
-        entryStyles,
-        css`
-          padding: 0;
-          padding-right: var(--space-1);
+function DirectoryItem({
+  entry,
+  item,
+  onNewFile,
+  onRefreshDirectory,
+}: DirectoryEntryProps) {
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [value, setValue] = useState(entry.basename)
 
-          & > .dropdown-menu-trigger {
-            visibility: hidden;
-          }
+  const parentPath = pathe.dirname(entry.path)
 
-          &:hover > .dropdown-menu-trigger,
-          &:focus-within > .dropdown-menu-trigger,
-          & > .dropdown-menu-trigger[data-state='open'] {
-            visibility: visible;
-          }
-        `,
-      ]}
-      {...item.props.aria}
-      {...item.props.control}
-    >
-      <Reset key={entry.path}>
-        <button
-          tabIndex={-1}
-          type="button"
-          css={[
-            entryStyles,
-            css`
-              flex: 1 1 0;
-            `,
-          ]}
-          style={{ paddingLeft: item.level * 16 }}
-          onClick={() => item.toggle()}
-        >
+  const handleRename = async () => {
+    const trimmed = value.trim()
+
+    if (trimmed === '' || trimmed === entry.basename) {
+      setIsRenaming(false)
+      setValue(entry.basename)
+
+      return
+    }
+
+    try {
+      await window.studio.ui.renameFile(entry.path, trimmed)
+      await onRefreshDirectory(parentPath)
+      setIsRenaming(false)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  if (isRenaming) {
+    return (
+      <div
+        css={[
+          entryStyles,
+          css`
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: visible;
+          `,
+        ]}
+        style={{ paddingLeft: item.level * 16 }}
+      >
+        <Flex align="center" gap="1" width="100%">
           {item.expanded ? (
             <FolderOpenIcon size={16} />
           ) : (
             <FolderClosedIcon size={16} />
           )}
-          <span
-            css={css`
-              flex: 1 1 0;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            `}
-          >
-            {entry.basename}
-          </span>
-        </button>
-      </Reset>
-      <NewTestMenu
-        tabIndex={item.props.aria.tabIndex}
-        onNewFile={(type) => {
-          onNewFile(item, {
-            type: 'new-file',
-            path: newFileId,
-            hint:
-              type === 'browser-test' ? 'browser-test.k6b' : 'generator.k6g',
-            dirname: entry.path,
-            fileType: type,
-          })
-        }}
-      />
-    </div>
+          <WorkspaceFileTreeInput
+            value={value}
+            selectionRange={[0, entry.basename.length]}
+            onChange={setValue}
+            onCommit={handleRename}
+            onCancel={() => setIsRenaming(false)}
+          />
+        </Flex>
+      </div>
+    )
+  }
+
+  return (
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <div
+          css={[
+            entryStyles,
+            css`
+              padding: 0;
+              padding-right: var(--space-1);
+
+              & > .dropdown-menu-trigger {
+                visibility: hidden;
+              }
+
+              &:hover > .dropdown-menu-trigger,
+              &:focus-within > .dropdown-menu-trigger,
+              & > .dropdown-menu-trigger[data-state='open'] {
+                visibility: visible;
+              }
+            `,
+          ]}
+          {...item.props.aria}
+          {...item.props.control}
+        >
+          <Reset key={entry.path}>
+            <button
+              tabIndex={-1}
+              type="button"
+              css={[
+                entryStyles,
+                css`
+                  flex: 1 1 0;
+                `,
+              ]}
+              style={{ paddingLeft: item.level * 16 }}
+              onClick={() => item.toggle()}
+            >
+              {item.expanded ? (
+                <FolderOpenIcon size={16} />
+              ) : (
+                <FolderClosedIcon size={16} />
+              )}
+              <span
+                css={css`
+                  flex: 1 1 0;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                `}
+              >
+                {entry.basename}
+              </span>
+            </button>
+          </Reset>
+          <NewTestMenu
+            tabIndex={item.props.aria.tabIndex}
+            onNewFile={(type) => {
+              onNewFile(item, {
+                type: 'new-file',
+                path: newFileId,
+                hint:
+                  type === 'browser-test'
+                    ? 'browser-test.k6b'
+                    : 'generator.k6g',
+                dirname: entry.path,
+                fileType: type,
+              })
+            }}
+          />
+        </div>
+      </ContextMenu.Trigger>
+      <ContextMenu.Content size="1">
+        <ContextMenu.Item onSelect={() => setIsRenaming(true)}>
+          Rename
+        </ContextMenu.Item>
+        <ContextMenu.Item
+          onSelect={() =>
+            window.studio.ui.openContainingFolder({
+              type: 'recording',
+              path: entry.path,
+              fileName: entry.basename,
+              displayName: entry.basename,
+            })
+          }
+        >
+          Open containing folder
+        </ContextMenu.Item>
+      </ContextMenu.Content>
+    </ContextMenu.Root>
   )
 }
 
@@ -328,44 +455,165 @@ interface FileEntryProps {
   entry: FileEntry
   item: TreeItem<FileTreeEntry>
   selected: boolean
+  onRefreshDirectory: (path: string) => void | Promise<void>
 }
 
-function FileItem({ entry, item, selected }: FileEntryProps) {
-  return (
-    <Reset>
-      <NavLink
-        to={getViewPath(entry.path)}
-        data-selected={selected}
+function FileItem({
+  entry,
+  item,
+  selected,
+  onRefreshDirectory,
+}: FileEntryProps) {
+  const navigate = useNavigate()
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [value, setValue] = useState(entry.basename)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const parentPath = pathe.dirname(entry.path)
+
+  const studioFile = entry.file ?? {
+    type: inferFileTypeFromExtension(entry.path),
+    path: entry.path,
+    fileName: entry.basename,
+    displayName: entry.basename,
+  }
+
+  const nameWithoutExtension = pathe.basename(
+    entry.path,
+    pathe.extname(entry.path)
+  )
+
+  const deleteFile = useDeleteFile({
+    file: studioFile,
+    navigateHomeOnDelete: selected,
+  })
+
+  const handleDelete = async () => {
+    await deleteFile()
+    await onRefreshDirectory(parentPath)
+  }
+
+  useEffect(() => {
+    if (isRenaming) {
+      inputRef.current?.focus()
+      inputRef.current?.setSelectionRange(
+        0,
+        pathe.basename(entry.path, pathe.extname(entry.path)).length
+      )
+    }
+  }, [isRenaming, entry])
+
+  const handleRename = async () => {
+    const trimmed = value.trim()
+
+    if (trimmed === '' || trimmed === entry.basename) {
+      setIsRenaming(false)
+      setValue(entry.basename)
+
+      return
+    }
+
+    try {
+      await window.studio.ui.renameFile(entry.path, value)
+      await onRefreshDirectory(parentPath)
+
+      if (selected) {
+        navigate(getViewPath(pathe.join(parentPath, value)), {
+          replace: true,
+        })
+      }
+
+      setIsRenaming(false)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  if (isRenaming) {
+    return (
+      <div
         css={[
           entryStyles,
           css`
-            &[data-focused='true'],
-            &[data-selected='true'] {
-              color: var(--accent-9);
-            }
-
-            &[data-selected='true'] {
-              font-weight: 700;
-            }
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: visible;
           `,
         ]}
         style={{ paddingLeft: item.level * 16 }}
-        onClick={() => item.toggle()}
-        {...item.props.aria}
-        {...item.props.control}
       >
-        <FileEntryIcon fileType={entry.file?.type} size={16} />
-        <span
-          css={css`
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          `}
+        <Flex align="center" gap="1" width="100%">
+          <FileEntryIcon fileType={entry.file?.type} size={16} />
+          <WorkspaceFileTreeInput
+            value={value}
+            selectionRange={[0, nameWithoutExtension.length]}
+            onChange={setValue}
+            onCommit={handleRename}
+            onCancel={() => setIsRenaming(false)}
+          />
+        </Flex>
+      </div>
+    )
+  }
+
+  return (
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <Reset>
+          <NavLink
+            to={getViewPath(entry.path)}
+            data-selected={selected}
+            css={[
+              entryStyles,
+              css`
+                &[data-focused='true'],
+                &[data-selected='true'] {
+                  color: var(--accent-9);
+                }
+
+                &[data-selected='true'] {
+                  font-weight: 700;
+                }
+              `,
+            ]}
+            style={{ paddingLeft: item.level * 16 }}
+            onClick={() => item.toggle()}
+            {...item.props.aria}
+            {...item.props.control}
+          >
+            <FileEntryIcon fileType={entry.file?.type} size={16} />
+            <span
+              css={css`
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              `}
+            >
+              {entry.basename}
+            </span>
+          </NavLink>
+        </Reset>
+      </ContextMenu.Trigger>
+      <ContextMenu.Content size="1">
+        <ContextMenu.Item onSelect={() => setIsRenaming(true)}>
+          Rename
+        </ContextMenu.Item>
+        <ContextMenu.Item
+          onSelect={() => window.studio.ui.openContainingFolder(studioFile)}
         >
-          {entry.basename}
-        </span>
-      </NavLink>
-    </Reset>
+          Open containing folder
+        </ContextMenu.Item>
+        <DeleteFileDialog
+          file={studioFile}
+          onConfirm={handleDelete}
+          trigger={
+            <ContextMenu.Item color="red" onSelect={(e) => e.preventDefault()}>
+              Delete
+            </ContextMenu.Item>
+          }
+        />
+      </ContextMenu.Content>
+    </ContextMenu.Root>
   )
 }
 
@@ -550,6 +798,7 @@ export function WorkspaceFileTree() {
               entry={item.node}
               item={item}
               onNewFile={handleStartCreateFile}
+              onRefreshDirectory={loadDirectory}
             />
           )
         }
@@ -572,6 +821,7 @@ export function WorkspaceFileTree() {
             entry={item.node}
             item={item}
             selected={path === item.node.path}
+            onRefreshDirectory={loadDirectory}
           />
         )
       })}
