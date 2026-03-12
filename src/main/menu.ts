@@ -17,6 +17,48 @@ const template: Electron.MenuItemConstructorOptions[] = [
     role: 'fileMenu',
     submenu: [
       {
+        label: 'New',
+        submenu: [
+          {
+            label: 'Recording',
+            click: (_menuItem, browserWindow) => {
+              if (browserWindow instanceof BrowserWindow === false) {
+                return
+              }
+
+              browserWindow.webContents.send(AppHandler.DeepLink, '/recorder')
+            },
+          },
+          {
+            label: 'HTTP test',
+            click: (_menuItem, browserWindow) => {
+              if (browserWindow instanceof BrowserWindow === false) {
+                return
+              }
+
+              browserWindow.webContents.send(
+                AppHandler.DeepLink,
+                '/new/generator'
+              )
+            },
+          },
+          {
+            label: 'Browser test',
+            click: (_menuItem, browserWindow) => {
+              if (browserWindow instanceof BrowserWindow === false) {
+                return
+              }
+
+              browserWindow.webContents.send(
+                AppHandler.DeepLink,
+                '/new/browser-test'
+              )
+            },
+          },
+        ],
+      },
+      { type: 'separator' },
+      {
         label: 'Open workspace...',
         click: async (_menuItem, browserWindow) => {
           if (browserWindow instanceof BrowserWindow === false) {
