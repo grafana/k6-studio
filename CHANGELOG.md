@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.12.0](https://github.com/grafana/k6-studio/compare/v1.11.1...v1.12.0) (2026-03-12)
+
+
+### Features
+
+* **generator:** Move Validate and Run in Cloud buttons to Header ([#1112](https://github.com/grafana/k6-studio/issues/1112)) ([717fe3d](https://github.com/grafana/k6-studio/commit/717fe3d313ee536b768359557ca4a9c87c908c07))
+
+
+### Bug Fixes
+
+* **autocorrelation:** Handle quota exceeded error in the UI ([#1113](https://github.com/grafana/k6-studio/issues/1113)) ([4d7c419](https://github.com/grafana/k6-studio/commit/4d7c419308272afca2bb1e10a187ce3f1d3aaa7e))
+* Response is never sent when logs are sent from a browser test ([#1083](https://github.com/grafana/k6-studio/issues/1083)) ([eca2fcf](https://github.com/grafana/k6-studio/commit/eca2fcfdb5ecf23075e3b897c195529176b855b5))
+
+
+### Internal Changes
+
+* Add assistant feature toggle ([#1100](https://github.com/grafana/k6-studio/issues/1100)) ([e375792](https://github.com/grafana/k6-studio/commit/e3757928e5a21a4223c3b731120c43082ec90d82))
+
+
+### Miscellaneous Chores
+
+* Reduce sentry noise ([#1110](https://github.com/grafana/k6-studio/issues/1110)) ([2644b30](https://github.com/grafana/k6-studio/commit/2644b30a205cae2b13f52fffccdaaca5e82e9176))
+
 ## [1.11.1](https://github.com/grafana/k6-studio/compare/v1.11.0...v1.11.1) (2026-03-10)
 
 
