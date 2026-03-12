@@ -55,32 +55,64 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
             </IconButton>
           )}
         </Flex>
-        {view === 'workspace' && <SidebarWorkspaceView />}
-        {view === 'record' && (
+        <Box
+          css={css`
+            flex: 1 1 0;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+          `}
+        >
           <Box
             css={css`
               flex: 1 1 0;
               min-height: 0;
-              display: flex;
+              overflow: hidden;
+              display: ${view === 'workspace' ? 'flex' : 'none'};
               flex-direction: column;
             `}
+            aria-hidden={view !== 'workspace'}
+          >
+            <SidebarWorkspaceView />
+          </Box>
+          <Box
+            css={css`
+              flex: 1 1 0;
+              min-height: 0;
+              overflow: hidden;
+              display: ${view === 'record' ? 'flex' : 'none'};
+              flex-direction: column;
+            `}
+            aria-hidden={view !== 'record'}
           >
             <SidebarRecordView recordings={recordings} />
           </Box>
-        )}
-        {view === 'build' && (
           <Box
             css={css`
               flex: 1 1 0;
               min-height: 0;
-              display: flex;
+              overflow: hidden;
+              display: ${view === 'build' ? 'flex' : 'none'};
               flex-direction: column;
             `}
+            aria-hidden={view !== 'build'}
           >
             <SidebarBuildView tests={tests} dataFiles={dataFiles} />
           </Box>
-        )}
-        {view === 'debug' && <SidebarDebugView scripts={scripts} />}
+          <Box
+            css={css`
+              flex: 1 1 0;
+              min-height: 0;
+              overflow: hidden;
+              display: ${view === 'debug' ? 'flex' : 'none'};
+              flex-direction: column;
+            `}
+            aria-hidden={view !== 'debug'}
+          >
+            <SidebarDebugView scripts={scripts} />
+          </Box>
+        </Box>
       </Flex>
     </Box>
   )
