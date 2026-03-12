@@ -1,15 +1,21 @@
-import { DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
-import { EllipsisVerticalIcon } from 'lucide-react'
+import { DropdownMenu, Flex, IconButton, Tooltip } from '@radix-ui/themes'
+import {
+  CircleCheckBigIcon,
+  DownloadIcon,
+  EllipsisVerticalIcon,
+  SaveIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { RunInCloudButton } from '@/components/RunInCloudDialog/RunInCloudButton'
+import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { StudioFile } from '@/types'
 
 import { useScriptExport } from '../Generator.hooks'
-import { RecordingSelector } from '../RecordingSelector'
 import { ValidatorDialog } from '../ValidatorDialog'
 
 interface GeneratorControlsProps {
@@ -18,7 +24,6 @@ interface GeneratorControlsProps {
   preview: string
   error: Error | undefined
   onSave: () => void
-  onChangeRecording: () => void
 }
 
 export function GeneratorControls({
@@ -27,9 +32,10 @@ export function GeneratorControls({
   error,
   isDirty,
   onSave,
-  onChangeRecording,
 }: GeneratorControlsProps) {
   const [isValidatorDialogOpen, setIsValidatorDialogOpen] = useState(false)
+  const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
+
   const proxyStatus = useProxyStatus()
   const isScriptExportable = error === undefined && preview !== ''
 
@@ -42,15 +48,52 @@ export function GeneratorControls({
 
   return (
     <>
-      <RecordingSelector onChangeRecording={onChangeRecording} />
       <Flex align="center" justify="between" gap="2" ml="2">
-        <ButtonWithTooltip
-          onClick={onSave}
-          disabled={!isDirty}
-          tooltip={!isDirty ? 'Changes saved' : ''}
-        >
-          Save generator
-        </ButtonWithTooltip>
+        <Flex gap="4" align="center">
+          <Tooltip content={!isDirty ? 'Changes saved' : 'Save changes'}>
+            <IconButton
+              onClick={onSave}
+              disabled={!isDirty}
+              variant="ghost"
+              color="gray"
+            >
+              <SaveIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip content="Export script">
+            <IconButton
+              onClick={() => handleExportScript()}
+              disabled={!isScriptExportable}
+              variant="ghost"
+              color="gray"
+            >
+              <DownloadIcon />
+            </IconButton>
+          </Tooltip>
+        </Flex>
+        <Flex gap="4" align="center" pl="2">
+          <ButtonWithTooltip
+            variant="ghost"
+            tooltip={
+              !isScriptExportable
+                ? 'Fix script errors to enable validation'
+                : proxyStatus !== 'online'
+                  ? 'Start proxy to enable validation'
+                  : ''
+            }
+            onClick={() => setIsValidatorDialogOpen(true)}
+            disabled={!isScriptExportable || proxyStatus !== 'online'}
+          >
+            <CircleCheckBigIcon /> Validate
+          </ButtonWithTooltip>
+          <RunInCloudButton
+            variant="solid"
+            disabled={!isScriptExportable}
+            onClick={() => {
+              setIsRunInCloudDialogOpen(true)
+            }}
+          />
+        </Flex>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             <IconButton variant="ghost" color="gray">
@@ -58,19 +101,6 @@ export function GeneratorControls({
             </IconButton>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
-            <DropdownMenu.Item
-              disabled={!isScriptExportable || proxyStatus !== 'online'}
-              onSelect={() => setIsValidatorDialogOpen(true)}
-            >
-              Validate script
-            </DropdownMenu.Item>
-            <DropdownMenu.Item
-              disabled={!isScriptExportable}
-              onSelect={() => void handleExportScript()}
-            >
-              Export script
-            </DropdownMenu.Item>
-            <DropdownMenu.Separator />
             <DeleteFileDialog
               file={file}
               onConfirm={handleDelete}
@@ -87,6 +117,11 @@ export function GeneratorControls({
         </DropdownMenu.Root>
         {isScriptExportable && (
           <>
+            <RunInCloudDialog
+              open={isRunInCloudDialogOpen}
+              script={{ type: 'raw', name: file.fileName, content: preview }}
+              onOpenChange={setIsRunInCloudDialogOpen}
+            />
             <ValidatorDialog
               script={preview}
               open={isValidatorDialogOpen}

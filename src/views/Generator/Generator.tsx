@@ -125,7 +125,6 @@ export function Generator({ file, data, onSave }: GeneratorProps) {
           preview={preview}
           error={error}
           onSave={handleSaveGenerator}
-          onChangeRecording={() => setSelectedRequest(null)}
         />
       }
       loading={isLoading}
@@ -135,7 +134,6 @@ export function Generator({ file, data, onSave }: GeneratorProps) {
           <Allotment vertical>
             <Allotment.Pane minSize={200}>
               <GeneratorTabs
-                file={file}
                 preview={preview}
                 error={error}
                 selectedRequest={selectedRequest}

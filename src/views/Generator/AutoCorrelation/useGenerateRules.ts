@@ -5,12 +5,14 @@ import { TokenUsage } from '@/handlers/ai/types'
 import { RawScript } from '@/handlers/cloud/types'
 import { applyRules } from '@/rules/rules'
 import { UsageEventName } from '@/services/usageTracking/types'
+import { useFeaturesStore } from '@/store/features'
 import {
   selectFilteredRequests,
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
 import { AiCorrelationRule } from '@/types/autoCorrelation'
+import { AiProvider } from '@/types/features'
 import { CorrelationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { validateScript } from '@/utils/validateScript'
@@ -45,6 +47,13 @@ export const useGenerateRules = ({
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
 
+  const isGrafanaAssistant = useFeaturesStore(
+    (state) => state.features['grafana-assistant']
+  )
+  const provider: AiProvider = isGrafanaAssistant
+    ? 'grafana-assistant'
+    : 'openai'
+
   suggestedRulesRef.current = suggestedRules
 
   const {
@@ -57,6 +66,7 @@ export const useGenerateRules = ({
     setMessages,
   } = useChat<Message>({
     transport: new IPCChatTransport({
+      provider,
       onUsage: (usage) => {
         setTokenUsage((prev) => sumTokenUsage(prev, usage))
       },

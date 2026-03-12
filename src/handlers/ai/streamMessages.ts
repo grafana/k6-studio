@@ -5,7 +5,8 @@ import { AiHandler } from './types'
 export async function streamMessages<Tools extends ToolSet, PARTIAL_OUTPUT>(
   webContents: Electron.WebContents,
   response: StreamTextResult<Tools, PARTIAL_OUTPUT>,
-  requestId: string
+  requestId: string,
+  includeUsage: boolean
 ) {
   const stream = response.toUIMessageStream({})
 
@@ -16,7 +17,7 @@ export async function streamMessages<Tools extends ToolSet, PARTIAL_OUTPUT>(
     })
   }
 
-  const usageData = await response.usage
+  const usageData = includeUsage ? await response.usage : undefined
 
   webContents.send(AiHandler.StreamChatEnd, {
     id: requestId,

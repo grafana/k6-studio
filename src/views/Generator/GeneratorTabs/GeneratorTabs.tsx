@@ -8,7 +8,7 @@ import {
   selectHasRecording,
   useGeneratorStore,
 } from '@/store/generator'
-import { ProxyData, StudioFile } from '@/types'
+import { ProxyData } from '@/types'
 
 import { Allowlist } from '../Allowlist'
 import { TestData } from '../TestData'
@@ -18,7 +18,6 @@ import { RequestList } from './RequestList'
 import { ScriptPreview } from './ScriptPreview'
 
 interface GeneratorTabsProps {
-  file: StudioFile
   preview: string
   error: Error | undefined
   selectedRequest: ProxyData | null
@@ -26,7 +25,6 @@ interface GeneratorTabsProps {
 }
 
 export function GeneratorTabs({
-  file,
   preview,
   error,
   selectedRequest,
@@ -96,7 +94,7 @@ export function GeneratorTabs({
             min-height: 0;
           `}
         >
-          <ScriptPreview file={file} preview={preview} error={error} />
+          <ScriptPreview preview={preview} error={error} />
         </Tabs.Content>
       </Tabs.Root>
     </Flex>
