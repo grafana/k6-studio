@@ -26,7 +26,7 @@ export function FileList({ files, noFilesMessage }: FileListProps) {
       `}
     >
       {files.map((file) => (
-        <li key={file.displayName}>
+        <li key={file.path}>
           <File
             file={file}
             isSelected={

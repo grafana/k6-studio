@@ -1,6 +1,7 @@
 import { FSWatcher, watch } from 'chokidar'
 import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
+import { isMatch } from 'micromatch'
 import path from 'path'
 
 // import { EventEmitter } from 'extension/src/utils/events'
@@ -52,17 +53,19 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
     this.#rootPath = rootPath
     this.#watcher = watch(rootPath, {
       ignoreInitial: true,
-      ignored: [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/build/**',
-        '**/out/**',
-        '**/target/**',
-        '**/tmp/**',
-        '**/temp/**',
-        '**/cache/**',
-        '**/logs/**',
-      ],
+      ignored: (path) => {
+        return isMatch(path, [
+          '**/node_modules/**',
+          '**/dist/**',
+          '**/build/**',
+          '**/out/**',
+          '**/target/**',
+          '**/tmp/**',
+          '**/temp/**',
+          '**/cache/**',
+          '**/logs/**',
+        ])
+      },
     })
   }
 
