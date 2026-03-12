@@ -3,6 +3,7 @@ import { ExternalLink, KeyIcon, RefreshCw } from 'lucide-react'
 
 import grotCrashed from '@/assets/grot-crashed.svg'
 import { useSettingsChanged } from '@/hooks/useSettings'
+import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
 
 interface AutoCorrelationErrorProps {
@@ -11,6 +12,18 @@ interface AutoCorrelationErrorProps {
 }
 
 export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
+  const isGrafanaAssistant = useFeaturesStore(
+    (state) => state.features['grafana-assistant']
+  )
+
+  if (isGrafanaAssistant) {
+    return <GrafanaAssistantError error={error} onRetry={onRetry} />
+  }
+
+  return <OpenAiError error={error} onRetry={onRetry} />
+}
+
+function OpenAiError({ error, onRetry }: AutoCorrelationErrorProps) {
   const errorMessage = error.message.toLowerCase()
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
@@ -71,6 +84,34 @@ export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
       </MessageContent>
     )
   }
+
+  return (
+    <MessageContent
+      title="Something went wrong"
+      message="An unexpected error occurred during autocorrelation. Click retry to try again or report an issue if problem persists."
+    >
+      {retryButton}
+      {reportIssueButton}
+    </MessageContent>
+  )
+}
+
+function GrafanaAssistantError({ onRetry }: AutoCorrelationErrorProps) {
+  const retryButton = (
+    <Button onClick={onRetry}>
+      <RefreshCw />
+      Retry
+    </Button>
+  )
+
+  const reportIssueButton = (
+    <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
+      <ExternalLink />
+      Report issue
+    </Button>
+  )
+
+  // TODO: Add Assistant specific error handling
 
   return (
     <MessageContent
