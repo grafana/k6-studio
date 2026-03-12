@@ -71,8 +71,9 @@ export function RequestList({
       {!recordingError && (
         <Header
           filter={filter}
-          setFilter={setFilter}
           filterAllData={filterAllData}
+          onChangeRecording={() => onSelectRequest(null)}
+          setFilter={setFilter}
           setFilterAllData={setFilterAllData}
         />
       )}

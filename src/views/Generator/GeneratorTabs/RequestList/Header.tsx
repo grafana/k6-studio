@@ -1,21 +1,25 @@
 import { Flex, Switch, Text } from '@radix-ui/themes'
 
 import { Filter } from '@/components/WebLogView/Filter'
-import { RecorderIcon } from '@/components/icons'
 import { useGeneratorStore } from '@/store/generator'
-import { getFileNameWithoutExtension } from '@/utils/file'
+
+import { RecordingSelector } from '../../RecordingSelector'
+
+interface HeaderProps {
+  filter: string
+  filterAllData?: boolean
+  onChangeRecording: () => void
+  setFilter: (filter: string) => void
+  setFilterAllData: (filterAllData: boolean) => void
+}
 
 export function Header({
   filter,
   setFilter,
   filterAllData,
   setFilterAllData,
-}: {
-  filter: string
-  setFilter: (filter: string) => void
-  filterAllData?: boolean
-  setFilterAllData: (filterAllData: boolean) => void
-}) {
+  onChangeRecording,
+}: HeaderProps) {
   const previewOriginalRequests = useGeneratorStore(
     (state) => state.previewOriginalRequests
   )
@@ -24,18 +28,9 @@ export function Header({
     (store) => store.setPreviewOriginalRequests
   )
 
-  const recordingPath = useGeneratorStore((state) => state.recordingPath)
-
   return (
     <Flex justify="between" align="center" px="2" py="1" gap="2">
-      <Text color="gray" size="2" truncate>
-        <Flex align="center" gap="1">
-          <Flex flexShrink="0">
-            <RecorderIcon width="22px" />
-          </Flex>
-          <Text truncate>{getFileNameWithoutExtension(recordingPath)}</Text>
-        </Flex>
-      </Text>
+      <RecordingSelector onChangeRecording={onChangeRecording} />
       <Flex justify="end" align="center" gap="4">
         <Text
           as="label"
