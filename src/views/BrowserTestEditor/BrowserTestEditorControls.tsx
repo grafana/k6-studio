@@ -1,5 +1,16 @@
-import { Button, DropdownMenu, Flex, IconButton } from '@radix-ui/themes'
-import { EllipsisVerticalIcon } from 'lucide-react'
+import {
+  Button,
+  DropdownMenu,
+  Flex,
+  IconButton,
+  Tooltip,
+} from '@radix-ui/themes'
+import {
+  CircleCheckBigIcon,
+  DownloadIcon,
+  EllipsisVerticalIcon,
+  SaveIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
@@ -41,20 +52,40 @@ export function BrowserTestEditorControls({
   }
 
   return (
-    <Flex align="center" gap="2">
-      <Button variant="outline" onClick={onSave} disabled={!isDirty}>
-        Save
-      </Button>
-      <Button
-        variant="outline"
-        onClick={onStartDebugging}
-        loading={session.state === 'running'}
-      >
-        Debug script
-      </Button>
-      <Button onClick={() => setIsRunInCloudDialogOpen(true)}>
-        <GrafanaIcon /> Run in Grafana Cloud
-      </Button>
+    <Flex align="center" gap="2" ml="2">
+      <Flex gap="4" align="center">
+        <Tooltip content={!isDirty ? 'Changes saved' : 'Save changes'}>
+          <IconButton
+            onClick={onSave}
+            disabled={!isDirty}
+            variant="ghost"
+            color="gray"
+          >
+            <SaveIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip content="Export script">
+          <IconButton
+            onClick={() => setIsExportDialogOpen(true)}
+            variant="ghost"
+            color="gray"
+          >
+            <DownloadIcon />
+          </IconButton>
+        </Tooltip>
+      </Flex>
+      <Flex gap="4" align="center" pl="2">
+        <Button
+          variant="ghost"
+          onClick={onStartDebugging}
+          loading={session.state === 'running'}
+        >
+          <CircleCheckBigIcon /> Validate
+        </Button>
+        <Button onClick={() => setIsRunInCloudDialogOpen(true)}>
+          <GrafanaIcon /> Run in Grafana Cloud
+        </Button>
+      </Flex>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
           <IconButton variant="ghost" color="gray">
@@ -62,9 +93,6 @@ export function BrowserTestEditorControls({
           </IconButton>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <DropdownMenu.Item onClick={() => setIsExportDialogOpen(true)}>
-            Export script
-          </DropdownMenu.Item>
           <DeleteFileDialog
             file={file}
             onConfirm={handleDelete}
