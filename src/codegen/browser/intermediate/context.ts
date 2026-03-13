@@ -337,7 +337,6 @@ export class IntermediateContext {
   }
 
   done() {
-    //
     this.#tryFinalizeBlock()
 
     // Having processed all statements, we should have exhausted all references to any allocated
