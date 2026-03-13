@@ -212,7 +212,7 @@ export function TimelineActions({
 
             margin-top: 1px;
 
-            &:first-child-of-type {
+            &:first-of-type {
               margin-top: 0;
             }
           `}
