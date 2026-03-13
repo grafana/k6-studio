@@ -53,6 +53,11 @@ function buildScenarioGraph(scenario: model.Scenario) {
 
       case 'click':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+
+        if (node.waitForNavigation !== undefined) {
+          graph.connect(node.nodeId, node.waitForNavigation.page.nodeId, null)
+        }
+
         connectPrevious(graph, node)
         break
 
@@ -163,6 +168,22 @@ export class IntermediateContext {
     this.inline(node, temporary.expression)
 
     const dependencies = [...this.graph.incoming(node.nodeId)]
+
+    // If the resource has no dependencies then there is not point in emitting an entire
+    // block for it. We can just dispose of it immediately. This shouldn't come up a lot in
+    // practice, but it's a valid scenario and it does improve the quality of the generated code.
+    if (dependencies.length === 0) {
+      this.emit({
+        type: 'VariableDeclaration',
+        kind: 'const',
+        name: temporary.temp,
+        value,
+      })
+
+      this.emit(dispose(temporary.expression))
+
+      return
+    }
 
     if (this.#block.type !== 'allocation') {
       // The first allocation in a block will be a const declaration outside
@@ -283,41 +304,10 @@ export class IntermediateContext {
   }
 
   emit(statement: ir.Statement) {
-    const [currentBlock, parentBlock, ...rest] = this.#blocks
+    this.#blocks[0].statements.push(statement)
 
-    currentBlock.statements.push(statement)
-
-    // Every time we emit a statement we check if it's the last statement in an
-    // allocation block. This is the case if there are no longer any references to
-    // any resources allocated in the block.
-    if (
-      currentBlock.type !== 'allocation' ||
-      currentBlock.references.size > 0
-    ) {
-      return
-    }
-
-    if (parentBlock === undefined) {
-      throw new Error(
-        'Allocation block did not have a parent block. This is a bug!'
-      )
-    }
-
-    // Now that the allocation block is done, we can declare all its variables and emit what will
-    // eventually be the try-finally block that ensures proper disposal of the allocated resources.
-    parentBlock.statements.push({
-      type: 'Allocation',
-      declarations: currentBlock.initializers.map(({ kind, name, value }) => ({
-        type: 'VariableDeclaration',
-        kind,
-        name,
-        value,
-      })),
-      statements: currentBlock.statements,
-      disposers: currentBlock.disposers.toReversed(), // Disposers should be called in reverse order
-    })
-
-    this.#blocks = [parentBlock, ...rest]
+    // Emit may consume the final reference in this block, so try to finalize it.
+    this.#tryFinalizeBlock()
   }
 
   nodes() {
@@ -352,6 +342,11 @@ export class IntermediateContext {
   }
 
   done() {
+    this.#tryFinalizeBlock()
+
+    // Having processed all statements, we should have exhausted all references to any allocated
+    // resources and their allocation blocks should have already been finalized. If not, then the
+    // node graph must have been constructed incorrectly.
     if (this.#block.type !== 'function') {
       throw new Error(
         'Cannot finalize context while still inside an allocation block. This is a bug!'
@@ -376,5 +371,40 @@ export class IntermediateContext {
     this.#declarations.set(node.nodeId, temporary)
 
     return temporary
+  }
+
+  #tryFinalizeBlock() {
+    const [currentBlock, parentBlock, ...rest] = this.#blocks
+
+    if (currentBlock.type === 'function') {
+      return
+    }
+
+    if (parentBlock === undefined) {
+      throw new Error(
+        'Allocation block did not have a parent block. This is a bug!'
+      )
+    }
+
+    // If the allocation block still has references, then it's not done yet.
+    if (currentBlock.references.size > 0) {
+      return
+    }
+
+    // Now that the allocation block is done, we can declare all its variables and emit what will
+    // eventually be the try-finally block that ensures proper disposal of the allocated resources.
+    parentBlock.statements.push({
+      type: 'Allocation',
+      declarations: currentBlock.initializers.map(({ kind, name, value }) => ({
+        type: 'VariableDeclaration',
+        kind,
+        name,
+        value,
+      })),
+      statements: currentBlock.statements,
+      disposers: currentBlock.disposers.toReversed(), // Disposers should be called in reverse order
+    })
+
+    this.#blocks = [parentBlock, ...rest]
   }
 }
