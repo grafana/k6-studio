@@ -21,7 +21,7 @@ export async function startCallbackServer(
   signal: AbortSignal
 ): Promise<{ port: number; result: Promise<CallbackParams> }> {
   let resolveCallback!: (params: CallbackParams) => void
-  let rejectCallback!: (error: Error) => void
+  let rejectCallback!: (error: unknown) => void
 
   const result = new Promise<CallbackParams>((resolve, reject) => {
     resolveCallback = resolve
@@ -44,6 +44,10 @@ export async function startCallbackServer(
     if (!code || !state || !endpoint) {
       res.writeHead(400)
       res.end('Missing code, state, or endpoint')
+      signal.removeEventListener('abort', handleAbort)
+      if (server.listening) {
+        server.close()
+      }
       rejectCallback(new Error('Missing code, state, or endpoint in callback'))
       return
     }
@@ -51,6 +55,10 @@ export async function startCallbackServer(
     if (state !== expectedState) {
       res.writeHead(400)
       res.end('Invalid state')
+      signal.removeEventListener('abort', handleAbort)
+      if (server.listening) {
+        server.close()
+      }
       rejectCallback(new Error('State mismatch: possible CSRF attack'))
       return
     }
@@ -60,13 +68,19 @@ export async function startCallbackServer(
       '<html><body><h1>Authentication successful</h1><p>You can close this tab and return to k6 Studio.</p></body></html>'
     )
 
-    server.close()
+    signal.removeEventListener('abort', handleAbort)
+    if (server.listening) {
+      server.close()
+    }
     resolveCallback({ code, state, endpoint })
   })
 
   const handleAbort = () => {
-    server.close()
-    rejectCallback(new Error('Authentication aborted'))
+    signal.removeEventListener('abort', handleAbort)
+    if (server.listening) {
+      server.close()
+    }
+    rejectCallback(signal.reason)
   }
   signal.addEventListener('abort', handleAbort, { once: true })
 
