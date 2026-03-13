@@ -94,6 +94,7 @@
     "@emotion/styled": "^11.13.0",
     "@hookform/error-message": "^2.0.1",
     "@hookform/resolvers": "^3.9.0",
+    "@iarna/toml": "^2.2.5",
     "@medv/finder": "^4.0.2",
     "@microlink/react-json-view": "^1.27.0",
     "@monaco-editor/react": "^4.7.0",

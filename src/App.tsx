@@ -18,7 +18,7 @@ enableMapSet()
 
 function AppContent() {
   const theme = useTheme()
-  const { workspacePath } = useWorkspace()
+  const workspace = useWorkspace()
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -26,7 +26,7 @@ function AppContent() {
       <RadixTheme accentColor="orange" appearance={theme}>
         <Global styles={globalStyles} />
         <Toasts />
-        <AppRoutes key={workspacePath} />
+        <AppRoutes key={workspace?.path} />
         <DevToolsDialog />
         <SettingsDialog />
       </RadixTheme>

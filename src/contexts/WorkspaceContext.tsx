@@ -6,24 +6,22 @@ import {
   type ReactNode,
 } from 'react'
 
-interface WorkspaceContextValue {
-  workspacePath: string | null
-}
+import type { Workspace } from '@/types/workspace'
 
-const WorkspaceContext = createContext<WorkspaceContextValue | null>(null)
+const WorkspaceContext = createContext<Workspace | null>(null)
 
 interface WorkspaceProviderProps {
   children: ReactNode
 }
 
 export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
-  const [workspacePath, setWorkspacePath] = useState<string | null>(null)
+  const [workspace, setWorkspace] = useState<Workspace | null>(null)
 
   useEffect(() => {
     window.studio.workspace
-      .getWorkspacePath()
-      .then((path) => {
-        setWorkspacePath(path)
+      .getWorkspace()
+      .then((workspaceData) => {
+        setWorkspace(workspaceData)
 
         window.studio.app.closeSplashscreen()
       })
@@ -31,24 +29,18 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
   }, [])
 
   useEffect(() => {
-    return window.studio.workspace.onChangeWorkspace((path) => {
-      setWorkspacePath(path)
+    return window.studio.workspace.onChangeWorkspace(() => {
+      void window.studio.workspace.getWorkspace().then(setWorkspace)
     })
   }, [])
 
   return (
-    <WorkspaceContext.Provider value={{ workspacePath }}>
+    <WorkspaceContext.Provider value={workspace}>
       {children}
     </WorkspaceContext.Provider>
   )
 }
 
-export function useWorkspace(): WorkspaceContextValue {
-  const context = useContext(WorkspaceContext)
-
-  if (context === null) {
-    throw new Error('useWorkspace must be used within a WorkspaceProvider')
-  }
-
-  return context
+export function useWorkspace(): Workspace | null {
+  return useContext(WorkspaceContext)
 }

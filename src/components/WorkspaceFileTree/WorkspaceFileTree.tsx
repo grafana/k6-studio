@@ -657,7 +657,7 @@ type FileTreeEntry = DirectoryEntry | NewFileEntry
 export function WorkspaceFileTree() {
   const navigate = useNavigate()
 
-  const { workspacePath } = useWorkspace()
+  const workspace = useWorkspace()
   const { path } = useParams<{ path: string }>()
 
   const [entries, setEntries] = useState<Record<string, FileTreeEntry[]>>({})
@@ -671,20 +671,20 @@ export function WorkspaceFileTree() {
   }
 
   useEffect(() => {
-    if (workspacePath === null) {
+    if (workspace?.path === undefined) {
       return
     }
 
-    loadDirectory(workspacePath).catch((error) => {
+    loadDirectory(workspace.path).catch((error) => {
       console.error(error)
     })
-  }, [workspacePath])
+  }, [workspace?.path])
 
   const tree = useTree({
     root: {
       type: 'directory',
       basename: 'Workspace',
-      path: workspacePath ?? '',
+      path: workspace?.path ?? '',
     },
 
     nodes: entries,
@@ -779,7 +779,7 @@ export function WorkspaceFileTree() {
     removeNewFileEntry(entry)
   }
 
-  if (!workspacePath) {
+  if (workspace === null) {
     return null
   }
 

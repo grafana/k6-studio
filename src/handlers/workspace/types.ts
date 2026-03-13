@@ -1,5 +1,5 @@
 export enum WorkspaceHandler {
-  GetWorkspacePath = 'workspace:get-path',
+  GetWorkspace = 'workspace:get',
   OnAddFile = 'workspace:add-file',
   OnRemoveFile = 'workspace:remove-file',
   OnChangeFile = 'workspace:change-file',

@@ -7,11 +7,10 @@ import { useWorkspace } from '@/contexts/WorkspaceContext'
 import { SidebarPanelHeading } from './SidebarPanelHeading'
 
 export function SidebarWorkspaceView() {
-  const { workspacePath } = useWorkspace()
+  const workspace = useWorkspace()
 
-  const workspaceName = workspacePath
-    ? pathe.basename(workspacePath)
-    : 'Workspace'
+  const workspaceName =
+    workspace?.path !== undefined ? pathe.basename(workspace.path) : 'Workspace'
 
   return (
     <ScrollArea scrollbars="vertical">

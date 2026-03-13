@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron'
 
-import { StudioFile } from '@/types'
+import type { StudioFile } from '@/types'
+import type { Workspace } from '@/types/workspace'
 
 import { createListener } from '../utils'
 
@@ -18,8 +19,6 @@ export function onChangeWorkspace(callback: (path: string) => void) {
   return createListener(WorkspaceHandler.OnChangeWorkspace, callback)
 }
 
-export function getWorkspacePath() {
-  return ipcRenderer.invoke(
-    WorkspaceHandler.GetWorkspacePath
-  ) as Promise<string>
+export function getWorkspace(): Promise<Workspace> {
+  return ipcRenderer.invoke(WorkspaceHandler.GetWorkspace) as Promise<Workspace>
 }

@@ -23,7 +23,7 @@ import { showWindow, trackWindowState } from './main/window'
 import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
-import { getAppIcon, getPlatform } from './utils/electron'
+import { getAppIcon, getPlatform, sendToast } from './utils/electron'
 import { createStudioFile } from './utils/file'
 import { setupProjectStructure, Workspace } from './utils/workspace'
 
@@ -99,13 +99,17 @@ const createSplashWindow = async () => {
 
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
+
   if (getPlatform() === 'mac') {
     app.dock?.setIcon(icon)
   }
+
   app.setName('Grafana k6 Studio')
 
   // clean leftover proxies if any, this might happen on windows
   await cleanUpProxies()
+
+  const workspace = await Workspace.create(PROJECT_PATH)
 
   const { width, height, x, y } = k6StudioState.appSettings.windowState
 
@@ -127,7 +131,7 @@ const createWindow = async () => {
     },
   })
 
-  mainWindow.workspace = new Workspace(PROJECT_PATH)
+  mainWindow.workspace = workspace
 
   mainWindow.workspace.on('file:add', (event) => {
     mainWindow.webContents.send(
@@ -150,7 +154,14 @@ const createWindow = async () => {
   app.on('open-file', (event, path) => {
     event.preventDefault()
 
-    mainWindow.workspace.switch(path)
+    mainWindow.workspace.switch(path).catch((error) => {
+      log.error(error)
+
+      sendToast(mainWindow.webContents, {
+        title: 'Failed to open workspace',
+        status: 'error',
+      })
+    })
   })
 
   configureApplicationMenu()

@@ -1,9 +1,10 @@
 import { app, BrowserWindow, dialog, Menu, shell } from 'electron'
+import log from 'electron-log/main'
 import path from 'path'
 
 import { AppHandler } from '../handlers/app/types'
 import { reportNewIssue } from '../utils/bugReport'
-import { getPlatform } from '../utils/electron'
+import { getPlatform, sendToast } from '../utils/electron'
 
 import { openLogFolder } from './logger'
 
@@ -18,9 +19,18 @@ function getOpenRecentSubmenu(): Electron.MenuItemConstructorOptions[] {
     (filePath) => ({
       label: path.basename(filePath),
       click: (_menuItem, window) => {
-        if (window instanceof BrowserWindow && window.workspace) {
-          window.workspace.switch(filePath)
+        if (window instanceof BrowserWindow === false) {
+          return
         }
+
+        window.workspace.switch(filePath).catch((error) => {
+          log.error(error)
+
+          sendToast(window.webContents, {
+            title: 'Failed to open workspace',
+            status: 'error',
+          })
+        })
       },
     })
   )
@@ -114,7 +124,14 @@ function getMenuTemplate(): Electron.MenuItemConstructorOptions[] {
               return
             }
 
-            browserWindow.workspace.switch(selectedPath)
+            browserWindow.workspace.switch(selectedPath).catch((error) => {
+              log.error(error)
+
+              sendToast(browserWindow.webContents, {
+                title: 'Failed to open workspace',
+                status: 'error',
+              })
+            })
           },
         },
         {
