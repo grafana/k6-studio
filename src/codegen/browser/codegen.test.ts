@@ -508,9 +508,9 @@ it('should ignore standalone implicit goto after explicit goto', async ({
     scenarios: {},
   })
 
-  expect(script).toContain('await page.goto("https://example.com/start");')
-  expect(script).not.toContain('https://example.com/redirect')
-  expect(script).toContain('await page?.close();')
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/ignore-implicit-goto-after-explicit-goto.ts'
+  )
 })
 
 it('should assert that element contains text', async ({ expect }) => {
