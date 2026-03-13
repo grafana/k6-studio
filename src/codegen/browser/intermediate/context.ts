@@ -283,12 +283,39 @@ export class IntermediateContext {
   }
 
   emit(statement: ir.Statement) {
-    const [currentBlock] = this.#blocks
+    const [currentBlock, parentBlock, ...rest] = this.#blocks
 
     currentBlock.statements.push(statement)
 
-    // Emit may consume the final reference in this block, so try to flush it.
-    this.#flushAllocationBlock()
+    // Emit may consume the final reference in this block, so try to finalize it.
+    if (
+      currentBlock.type !== 'allocation' ||
+      currentBlock.references.size > 0
+    ) {
+      return
+    }
+
+    if (parentBlock === undefined) {
+      throw new Error(
+        'Allocation block did not have a parent block. This is a bug!'
+      )
+    }
+
+    // Now that the allocation block is done, we can declare all its variables and emit what will
+    // eventually be the try-finally block that ensures proper disposal of the allocated resources.
+    parentBlock.statements.push({
+      type: 'Allocation',
+      declarations: currentBlock.initializers.map(({ kind, name, value }) => ({
+        type: 'VariableDeclaration',
+        kind,
+        name,
+        value,
+      })),
+      statements: currentBlock.statements,
+      disposers: currentBlock.disposers.toReversed(), // Disposers should be called in reverse order
+    })
+
+    this.#blocks = [parentBlock, ...rest]
   }
 
   nodes() {
@@ -323,8 +350,9 @@ export class IntermediateContext {
   }
 
   done() {
-    this.#flushAllocationBlock()
-
+    // Having processed all statements, we should have exhausted all references to any allocated
+    // resources and their allocation blocks should have already been finalized. If not, then the
+    // node graph must have been constructed incorrectly.
     if (this.#block.type !== 'function') {
       throw new Error(
         'Cannot finalize context while still inside an allocation block. This is a bug!'
@@ -349,35 +377,5 @@ export class IntermediateContext {
     this.#declarations.set(node.nodeId, temporary)
 
     return temporary
-  }
-
-  #flushAllocationBlock() {
-    const [currentBlock, parentBlock, ...rest] = this.#blocks
-
-    if (currentBlock.type !== 'allocation' || currentBlock.references.size > 0) {
-      return
-    }
-
-    if (parentBlock === undefined) {
-      throw new Error(
-        'Allocation block did not have a parent block. This is a bug!'
-      )
-    }
-
-    // Now that the allocation block is done, we can declare all its variables and emit what will
-    // eventually be the try-finally block that ensures proper disposal of the allocated resources.
-    parentBlock.statements.push({
-      type: 'Allocation',
-      declarations: currentBlock.initializers.map(({ kind, name, value }) => ({
-        type: 'VariableDeclaration',
-        kind,
-        name,
-        value,
-      })),
-      statements: currentBlock.statements,
-      disposers: currentBlock.disposers.toReversed(), // Disposers should be called in reverse order
-    })
-
-    this.#blocks = [parentBlock, ...rest]
   }
 }

@@ -121,6 +121,10 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   ): TestNode | null {
     switch (event.type) {
       case 'navigate-to-page':
+        if (event.source === 'implicit') {
+          return null
+        }
+
         return {
           type: 'goto',
           nodeId: event.eventId,
@@ -274,14 +278,22 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
 function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
   const nodes: TestNode[] = []
 
-  // TODO: Add support for multiple pages
-  const pageNode: TestNode = {
-    type: 'page',
-    nodeId: crypto.randomUUID(),
-  }
+  let currentPage: PageNode | undefined = undefined
 
-  nodes.push(pageNode)
-  const page = toNodeRef(pageNode)
+  // We create the page lazily so that we don't emit a page node if
+  // the test is empty.
+  function getPage(): NodeRef {
+    if (currentPage === undefined) {
+      currentPage = {
+        type: 'page',
+        nodeId: crypto.randomUUID(),
+      }
+
+      nodes.push(currentPage)
+    }
+
+    return toNodeRef(currentPage)
+  }
 
   function toNode(action: AnyBrowserAction): TestNode {
     switch (action.method) {
@@ -292,7 +304,7 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           url: action.url,
           source: 'address-bar',
           inputs: {
-            page,
+            page: getPage(),
           },
         }
       case 'page.reload':

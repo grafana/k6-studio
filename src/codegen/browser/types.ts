@@ -27,7 +27,7 @@ export interface LocatorNode extends NodeBase {
 export interface GotoNode extends NodeBase {
   type: 'goto'
   url: string
-  source: NavigateToPageEvent['source']
+  source: Exclude<NavigateToPageEvent['source'], 'implicit'>
   inputs: {
     previous?: NodeRef
     page: NodeRef

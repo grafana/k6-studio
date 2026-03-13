@@ -405,15 +405,6 @@ it('should emit waitForNavigation on a link click', async ({ expect }) => {
             page: { nodeId: 'page' },
           },
         },
-        {
-          type: 'goto',
-          nodeId: 'goto',
-          source: 'implicit',
-          url: 'https://example.com/login',
-          inputs: {
-            page: { nodeId: 'page' },
-          },
-        },
       ],
     },
     scenarios: {},
@@ -456,15 +447,6 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
             page: { nodeId: 'page' },
           },
         },
-        {
-          type: 'goto',
-          nodeId: 'goto',
-          source: 'implicit',
-          url: 'https://example.com',
-          inputs: {
-            page: { nodeId: 'page' },
-          },
-        },
       ],
     },
     scenarios: {},
@@ -472,44 +454,6 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/form-submit-with-navigation.ts'
-  )
-})
-
-it('should ignore standalone implicit goto after explicit goto', async ({
-  expect,
-}) => {
-  const script = await emitScript({
-    defaultScenario: {
-      nodes: [
-        {
-          type: 'page',
-          nodeId: 'page',
-        },
-        {
-          type: 'goto',
-          nodeId: 'explicit-goto',
-          source: 'address-bar',
-          url: 'https://example.com/start',
-          inputs: {
-            page: { nodeId: 'page' },
-          },
-        },
-        {
-          type: 'goto',
-          nodeId: 'implicit-goto',
-          source: 'implicit',
-          url: 'https://example.com/redirect',
-          inputs: {
-            page: { nodeId: 'page' },
-          },
-        },
-      ],
-    },
-    scenarios: {},
-  })
-
-  await expect(script).toMatchFileSnapshot(
-    '__snapshots__/browser/ignore-implicit-goto-after-explicit-goto.ts'
   )
 })
 
