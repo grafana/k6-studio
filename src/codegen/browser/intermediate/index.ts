@@ -205,10 +205,11 @@ function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
     options,
   }
 
-  if (node.triggersNavigation) {
-    const page = context.reference(node.inputs.page)
+  if (node.waitForNavigation !== undefined) {
+    const page = context.reference(node.waitForNavigation.page)
 
     context.emit(wrapWithWaitForNavigation(expression, page))
+
     return
   }
 

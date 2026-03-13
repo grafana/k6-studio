@@ -156,11 +156,12 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
           nodeId: event.eventId,
           button: event.button,
           modifiers: event.modifiers,
-          triggersNavigation,
+          waitForNavigation: triggersNavigation
+            ? { page: getPage(event.tab) }
+            : undefined,
           inputs: {
             previous,
             locator: getLocator(event.tab, event.target),
-            page: getPage(event.tab),
           },
         }
       }
@@ -221,10 +222,12 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
             alt: false,
             meta: false,
           },
+          waitForNavigation: {
+            page: getPage(event.tab),
+          },
           inputs: {
             previous,
             locator: getLocator(event.tab, event.submitter),
-            page: getPage(event.tab),
           },
         }
 

@@ -51,11 +51,12 @@ export interface ClickNode extends NodeBase {
     alt: boolean
     meta: boolean
   }
-  triggersNavigation?: boolean
+  waitForNavigation?: {
+    page: NodeRef
+  }
   inputs: {
     previous?: NodeRef
     locator: NodeRef
-    page: NodeRef
   }
 }
 
