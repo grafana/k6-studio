@@ -7,6 +7,7 @@ import * as browserTest from './browserTest'
 import * as cloud from './cloud'
 import * as dataFiles from './dataFiles'
 import * as generator from './generator'
+import * as grafanaAssistant from './grafana-assistant'
 import * as har from './har'
 import * as log from './log'
 import * as proxy from './proxy'
@@ -30,4 +31,5 @@ export function initialize() {
   log.initialize()
   app.initialize()
   ai.initialize()
+  grafanaAssistant.initialize()
 }
