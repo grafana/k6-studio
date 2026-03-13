@@ -1241,3 +1241,23 @@ it('should emit two disjoint try-finally blocks', async ({ expect }) => {
     '__snapshots__/browser/disjoint-try-finally-blocks.ts'
   )
 })
+
+it('should close allocation block when resource has no references', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/close-allocation-block-when-resource-has-no-references.ts'
+  )
+})
