@@ -17,6 +17,7 @@ import {
   TEMP_PATH,
   BROWSER_TESTS_PATH,
 } from '../constants/workspace'
+import { addToRecentDocuments } from '../main/menu'
 
 const REQUIRED_FOLDERS = [
   PROJECT_PATH,
@@ -78,6 +79,8 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
     this.emit('workspace:change', {
       path: newRootPath,
     })
+
+    addToRecentDocuments(newRootPath)
   }
 
   get path() {

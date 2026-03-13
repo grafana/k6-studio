@@ -111,7 +111,6 @@ const createWindow = async () => {
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    // workspace: new Workspace(PROJECT_PATH),
     x,
     y,
     width,
@@ -146,6 +145,12 @@ const createWindow = async () => {
 
   mainWindow.workspace.on('workspace:change', (event) => {
     mainWindow.webContents.send(WorkspaceHandler.OnChangeWorkspace, event.path)
+  })
+
+  app.on('open-file', (event, path) => {
+    event.preventDefault()
+
+    mainWindow.workspace.switch(path)
   })
 
   configureApplicationMenu()
