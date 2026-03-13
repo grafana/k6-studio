@@ -53,6 +53,9 @@ function buildScenarioGraph(scenario: model.Scenario) {
 
       case 'click':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        if (node.triggersNavigation) {
+          graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        }
         connectPrevious(graph, node)
         break
 

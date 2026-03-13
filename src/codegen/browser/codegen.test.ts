@@ -415,6 +415,76 @@ it('should emit waitForNavigation on a link click', async ({ expect }) => {
   )
 })
 
+it('should keep statements after navigation click in the same try-finally block', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'first-locator',
+          selector: { type: 'css', selector: 'a' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'first-click',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          triggersNavigation: true,
+          inputs: {
+            locator: { nodeId: 'first-locator' },
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'second-locator',
+          selector: { type: 'css', selector: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'second-click',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            previous: { nodeId: 'first-click' },
+            locator: { nodeId: 'second-locator' },
+            page: { nodeId: 'page' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  expect(script.indexOf('page.locator("button").click();')).toBeGreaterThan(-1)
+  expect(script.indexOf('await page?.close();')).toBeGreaterThan(-1)
+  expect(script.indexOf('page.locator("button").click();')).toBeLessThan(
+    script.indexOf('await page?.close();')
+  )
+})
+
 it('should emit waitForNavigation on a form submit', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {
