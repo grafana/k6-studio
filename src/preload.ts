@@ -9,6 +9,7 @@ import * as browserTest from './handlers/browserTest/preload'
 import * as cloud from './handlers/cloud/preload'
 import * as data from './handlers/dataFiles/preload'
 import * as generator from './handlers/generator/preload'
+import * as grafanaAssistant from './handlers/grafana-assistant/preload'
 import * as har from './handlers/har/preload'
 import * as log from './handlers/log/preload'
 import * as proxy from './handlers/proxy/preload'
@@ -33,6 +34,7 @@ const studio = {
   browserRemote,
   cloud,
   ai,
+  grafanaAssistant,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)
