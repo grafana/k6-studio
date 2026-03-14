@@ -207,6 +207,13 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
         }
 
       case 'submit-form':
+        // Form submissions can be followed by implicit navigate events,
+        // just like click events, and must be marked accordingly so codegen
+        // can emit waitForNavigation and consume page references.
+        const triggersNavigation =
+          nextEvent?.type === 'navigate-to-page' &&
+          nextEvent.source === 'implicit'
+
         return {
           type: 'click',
           nodeId: event.eventId,
@@ -217,6 +224,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
             alt: false,
             meta: false,
           },
+          triggersNavigation,
           inputs: {
             previous,
             locator: getLocator(event.tab, event.submitter),

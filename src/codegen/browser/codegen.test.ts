@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, it, vi } from 'vitest'
 
 import { emitScript } from './codegen'
+import { convertEventsToTest } from './test'
 
 beforeAll(() => {
   vi.useFakeTimers()
@@ -473,6 +474,44 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/form-submit-with-navigation.ts'
   )
+})
+
+it('should emit script for submit-form events followed by implicit navigation', async ({
+  expect,
+}) => {
+  const test = convertEventsToTest({
+    browserEvents: [
+      {
+        type: 'submit-form',
+        eventId: 'submit',
+        timestamp: 0,
+        tab: 'tab-1',
+        form: {
+          selectors: {
+            css: 'form',
+          },
+        },
+        submitter: {
+          selectors: {
+            css: 'button[type="submit"]',
+          },
+        },
+      },
+      {
+        type: 'navigate-to-page',
+        eventId: 'goto',
+        timestamp: 1,
+        tab: 'tab-1',
+        url: 'https://example.com/after-submit',
+        source: 'implicit',
+      },
+    ],
+  })
+
+  const script = await emitScript(test)
+
+  expect(script).toContain('waitForNavigation')
+  expect(script).toContain('button[type="submit"]')
 })
 
 it('should assert that element contains text', async ({ expect }) => {
