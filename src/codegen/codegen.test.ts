@@ -26,6 +26,7 @@ import {
   generateImports,
   generateParameterizationCustomCode,
   generateRequestSnippetsFromSchemas,
+  isBinaryContent,
 } from './codegen'
 
 const fakeDate = new Date('2000-01-01T00:00:00Z')
@@ -181,6 +182,19 @@ describe('Code generation', () => {
             },
           })
         )
+      ).toBe(expectedResult)
+    })
+
+    it('should generate imports with encoding when hasBinaryContent is true', async () => {
+      const expectedResult = await prettify(`
+        import { group, sleep, check } from 'k6'
+        import http from 'k6/http'
+        import execution from "k6/execution";
+        import encoding from "k6/encoding";
+      `)
+
+      expect(
+        await prettify(generateImports(generator, { hasBinaryContent: true }))
       ).toBe(expectedResult)
     })
   })
@@ -726,6 +740,81 @@ describe('Code generation', () => {
           `function getParameterizationValue0() { ${customCodeReplaceProjectId.value.code} }`
         )
       )
+    })
+  })
+
+  describe('isBinaryContent', () => {
+    it('should return true for content with null bytes', () => {
+      expect(isBinaryContent('hello\x00world')).toBe(true)
+    })
+
+    it('should return true for content with control characters', () => {
+      expect(isBinaryContent('data\x01\x02\x03')).toBe(true)
+    })
+
+    it('should return false for normal text', () => {
+      expect(isBinaryContent('hello world')).toBe(false)
+    })
+
+    it('should return false for text with tabs, newlines, and carriage returns', () => {
+      expect(isBinaryContent('hello\tworld\nfoo\rbar')).toBe(false)
+    })
+
+    it('should return false for empty string', () => {
+      expect(isBinaryContent('')).toBe(false)
+    })
+
+    it('should return false for JSON content', () => {
+      expect(isBinaryContent('{"key": "value"}')).toBe(false)
+    })
+  })
+
+  describe('generateSingleRequestSnippet with binary content', () => {
+    it('should use encoding.b64decode for binary content', () => {
+      const binaryContent = 'hello\x00\x01\x02world'
+      const schema = {
+        data: createProxyData({
+          id: '1',
+          request: createRequest({
+            method: 'POST',
+            url: '/api/v1/upload',
+            content: binaryContent,
+            headers: [['content-type', 'application/octet-stream']],
+          }),
+        }),
+        before: [],
+        after: [],
+        checks: [],
+      }
+
+      const result = generateRequestSnippetsFromSchemas([schema], thinkTime)
+      const snippet = result[0]?.snippet ?? ''
+
+      expect(snippet).toContain("encoding.b64decode('")
+      expect(snippet).not.toContain('`hello')
+    })
+
+    it('should use backtick wrapping for text content', () => {
+      const schema = {
+        data: createProxyData({
+          id: '1',
+          request: createRequest({
+            method: 'POST',
+            url: '/api/v1/users',
+            content: '{"user": "test"}',
+            headers: [['content-type', 'application/json']],
+          }),
+        }),
+        before: [],
+        after: [],
+        checks: [],
+      }
+
+      const result = generateRequestSnippetsFromSchemas([schema], thinkTime)
+      const snippet = result[0]?.snippet ?? ''
+
+      expect(snippet).toContain('`{"user": "test"}`')
+      expect(snippet).not.toContain('encoding.b64decode')
     })
   })
 })
