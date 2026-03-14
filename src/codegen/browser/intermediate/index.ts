@@ -29,7 +29,7 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
 }
 
 function emitGotoNode(context: IntermediateContext, node: m.GotoNode) {
-  const page = context.reference(node.inputs.page)
+  const page = context.reference(node, node.inputs.page)
 
   context.emit({
     type: 'ExpressionStatement',
@@ -45,7 +45,7 @@ function emitGotoNode(context: IntermediateContext, node: m.GotoNode) {
 }
 
 function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
-  const page = context.reference(node.inputs.page)
+  const page = context.reference(node, node.inputs.page)
 
   context.emit({
     type: 'ExpressionStatement',
@@ -57,7 +57,7 @@ function emitReloadNode(context: IntermediateContext, node: m.ReloadNode) {
 }
 
 function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
-  const page = context.reference(node.inputs.page)
+  const page = context.reference(node, node.inputs.page)
 
   // We always inline locator nodes for readability. If we implement better
   // logic for generating variable names, then we could consider declaring
@@ -196,7 +196,7 @@ function wrapWithWaitForNavigation(
 }
 
 function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
-  const locator = context.reference(node.inputs.locator)
+  const locator = context.reference(node, node.inputs.locator)
   const options = getClickOptions(node)
 
   const expression: ir.ClickExpression = {
@@ -206,7 +206,7 @@ function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
   }
 
   if (node.waitForNavigation !== undefined) {
-    const page = context.reference(node.waitForNavigation.page)
+    const page = context.reference(node, node.waitForNavigation.page)
 
     context.emit(wrapWithWaitForNavigation(expression, page))
 
@@ -220,7 +220,7 @@ function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
 }
 
 function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
-  const locator = context.reference(node.inputs.locator)
+  const locator = context.reference(node, node.inputs.locator)
 
   context.emit({
     type: 'ExpressionStatement',
@@ -236,7 +236,7 @@ function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
 }
 
 function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
-  const locator = context.reference(node.inputs.locator)
+  const locator = context.reference(node, node.inputs.locator)
 
   context.emit({
     type: 'ExpressionStatement',
@@ -255,7 +255,7 @@ function emitSelectOptionsNode(
   context: IntermediateContext,
   node: m.SelectOptionsNode
 ) {
-  const locator = context.reference(node.inputs.locator)
+  const locator = context.reference(node, node.inputs.locator)
 
   context.emit({
     type: 'ExpressionStatement',
@@ -338,7 +338,7 @@ function emitAssertion(
 }
 
 function emitAssertNode(context: IntermediateContext, node: m.AssertNode) {
-  const locator = context.reference(node.inputs.locator)
+  const locator = context.reference(node, node.inputs.locator)
 
   context.emit({
     type: 'ExpressionStatement',
@@ -368,7 +368,7 @@ function getWaitForOptions(
 }
 
 function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
-  const locator = context.reference(node.inputs.locator)
+  const locator = context.reference(node, node.inputs.locator)
 
   context.emit({
     type: 'ExpressionStatement',

@@ -10,22 +10,6 @@ import { CountedSet } from './utils'
 
 type ScenarioGraph = Graph<model.TestNode, null>
 
-interface ConnectableNode {
-  nodeId: model.NodeId
-  inputs: {
-    previous?: model.NodeRef
-  }
-}
-
-function connectPrevious(
-  graph: ScenarioGraph,
-  { nodeId, inputs }: ConnectableNode
-) {
-  if (inputs.previous) {
-    graph.connect(inputs.previous.nodeId, nodeId, null)
-  }
-}
-
 function buildScenarioGraph(scenario: model.Scenario) {
   const graph = new Graph<model.TestNode, null>()
 
@@ -48,7 +32,6 @@ function buildScenarioGraph(scenario: model.Scenario) {
       case 'goto':
       case 'reload':
         graph.connect(node.nodeId, node.inputs.page.nodeId, null)
-        connectPrevious(graph, node)
         break
 
       case 'click':
@@ -58,32 +41,26 @@ function buildScenarioGraph(scenario: model.Scenario) {
           graph.connect(node.nodeId, node.waitForNavigation.page.nodeId, null)
         }
 
-        connectPrevious(graph, node)
         break
 
       case 'type-text':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
-        connectPrevious(graph, node)
         break
 
       case 'check':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
-        connectPrevious(graph, node)
         break
 
       case 'select-options':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
-        connectPrevious(graph, node)
         break
 
       case 'assert':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
-        connectPrevious(graph, node)
         break
 
       case 'wait-for':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
-        connectPrevious(graph, node)
         break
 
       default:
@@ -167,12 +144,10 @@ export class IntermediateContext {
 
     this.inline(node, temporary.expression)
 
-    const dependencies = [...this.graph.incoming(node.nodeId)]
-
     // If the resource has no dependencies then there is not point in emitting an entire
     // block for it. We can just dispose of it immediately. This shouldn't come up a lot in
     // practice, but it's a valid scenario and it does improve the quality of the generated code.
-    if (dependencies.length === 0) {
+    if (this.graph.count.edges.from(node.nodeId) === 0) {
       this.emit({
         type: 'VariableDeclaration',
         kind: 'const',
@@ -201,7 +176,9 @@ export class IntermediateContext {
       const newBlock: AllocationBlock = {
         type: 'allocation',
         initializers: [{ kind: 'const', node, name: temporary.temp, value }],
-        references: new CountedSet([[node.nodeId, dependencies.length]]),
+        references: new CountedSet([
+          [node.nodeId, this.graph.count.edges.from(node.nodeId)],
+        ]),
         disposers: [dispose(temporary.expression)],
         statements: [],
       }
@@ -237,7 +214,10 @@ export class IntermediateContext {
 
     // Add the references to the block so that it will live until all
     // dependent nodes have been processed.
-    this.#block.references.add(node.nodeId, dependencies.length)
+    this.#block.references.add(
+      node.nodeId,
+      this.graph.count.edges.from(node.nodeId)
+    )
 
     this.#block.disposers.push(dispose(temporary.expression))
 
@@ -287,17 +267,26 @@ export class IntermediateContext {
   }
 
   reference(
-    node: model.TestNode | model.NodeRef | model.NodeId
+    from: model.TestNode | model.NodeRef | model.NodeId,
+    target: model.TestNode | model.NodeRef | model.NodeId
   ): ir.Expression {
-    const id = typeof node === 'string' ? node : node.nodeId
-    const expression = this.#expressions.get(id)
+    const fromId = typeof from === 'string' ? from : from.nodeId
+    const targetId = typeof target === 'string' ? target : target.nodeId
+
+    const expression = this.#expressions.get(targetId)
 
     if (!expression) {
-      throw new Error(`Variable for node ${id} has not been declared.`)
+      throw new Error(`Variable for node ${targetId} has not been declared.`)
     }
 
-    if (this.#block.type === 'allocation') {
-      this.#block.references.delete(id)
+    // If we are taking a reference to a node that is allocated, it means we now
+    // have a dependency on that allocated node and the allocation block needs to
+    // outlive the referencing node.
+    if (
+      this.#block.type === 'allocation' &&
+      this.#block.references.delete(targetId)
+    ) {
+      this.#block.references.add(fromId, this.graph.count.edges.from(fromId))
     }
 
     return expression

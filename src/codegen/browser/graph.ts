@@ -16,6 +16,11 @@ interface QueueItem<T> {
   next: QueueItem<T> | null
 }
 
+interface ToGraphVizOptions<T, E> {
+  labelNode?: (node: GraphNode<T>) => string | null
+  labelEdge?: (edge: GraphEdge<E>) => string | null
+}
+
 class Queue<T> {
   #first: QueueItem<T> | null = null
   #last: QueueItem<T> | null = null
@@ -78,6 +83,16 @@ class EdgeMap<E> {
     return map.delete(to)
   }
 
+  count(from?: NodeId) {
+    if (from === undefined) {
+      return this.edges.size
+    }
+
+    const edges = this.edges.get(from)
+
+    return edges?.size ?? 0
+  }
+
   hasEdges(from: NodeId) {
     const edges = this.edges.get(from)
 
@@ -104,6 +119,19 @@ export class Graph<T, E> {
 
   #incoming = new EdgeMap<E>()
   #outgoing = new EdgeMap<E>()
+
+  get count() {
+    return {
+      nodes: () => this.#nodes.size,
+      edges: {
+        all: () => this.#incoming.count(),
+        from: (node: GraphNode<T> | NodeId) =>
+          this.#incoming.count(toNodeId(node)),
+        to: (node: GraphNode<T> | NodeId) =>
+          this.#outgoing.count(toNodeId(node)),
+      },
+    }
+  }
 
   add(node: GraphNode<T>) {
     this.#nodes.set(node.id, node)
@@ -265,5 +293,43 @@ export class Graph<T, E> {
     }
 
     return graph
+  }
+
+  /**
+   * A helper function to render the graph in GraphViz format. If you need a better understanding of
+   * what the graph looks like you can run this through the debugger console, copy the output and
+   * then use e.g. http://graph.flyte.org/ to visualize it.
+   */
+  toGraphViz({
+    labelNode = () => null,
+    labelEdge = () => null,
+  }: ToGraphVizOptions<T, E> = {}) {
+    const nodes = [...this.#nodes.values()]
+      .map((node) => {
+        const label = JSON.stringify(labelNode(node) ?? node.id)
+
+        return `${JSON.stringify(node.id)} [label=${label}]`
+      })
+      .join('\n')
+
+    const edges = [...this.#incoming.all()]
+      .map((edge) => {
+        const from = JSON.stringify(edge.from)
+        const to = JSON.stringify(edge.to)
+
+        const label = labelEdge(edge)
+
+        if (label === null) {
+          return `${from} -> ${to}`
+        }
+
+        return `${from} -> ${to} [label=${JSON.stringify(label)}]`
+      })
+      .join('\n')
+
+    return `digraph G { 
+  ${nodes}
+  ${edges}
+}`
   }
 }
