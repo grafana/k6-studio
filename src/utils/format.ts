@@ -38,7 +38,14 @@ export function safeBtoa(content: string) {
   try {
     return btoa(content)
   } catch {
-    return content
+    const bytes = new TextEncoder().encode(content)
+    let binary = ''
+
+    for (const byte of bytes) {
+      binary += String.fromCharCode(byte)
+    }
+
+    return btoa(binary)
   }
 }
 
