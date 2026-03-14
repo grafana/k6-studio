@@ -816,5 +816,36 @@ describe('Code generation', () => {
       expect(snippet).toContain('`{"user": "test"}`')
       expect(snippet).not.toContain('encoding.b64decode')
     })
+
+    it('should base64 encode binary content when btoa cannot handle input', () => {
+      const binaryContent = "\x00\u0100'data"
+      const bytes = new TextEncoder().encode(binaryContent)
+      let utf8Binary = ''
+      for (const byte of bytes) {
+        utf8Binary += String.fromCharCode(byte)
+      }
+      const expectedBase64Content = btoa(utf8Binary)
+      const schema = {
+        data: createProxyData({
+          id: '1',
+          request: createRequest({
+            method: 'POST',
+            url: '/api/v1/upload',
+            content: binaryContent,
+            headers: [['content-type', 'application/octet-stream']],
+          }),
+        }),
+        before: [],
+        after: [],
+        checks: [],
+      }
+
+      const result = generateRequestSnippetsFromSchemas([schema], thinkTime)
+      const snippet = result[0]?.snippet ?? ''
+
+      expect(snippet).toContain(
+        `encoding.b64decode('${expectedBase64Content}')`
+      )
+    })
   })
 })
