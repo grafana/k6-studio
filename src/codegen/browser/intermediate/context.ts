@@ -10,7 +10,7 @@ import { CountedSet } from './utils'
 
 type EdgeLabel =
   | 'previous' // Used to enforce a strict order of execution, e.g. navigate to page before clicking a locator.
-  | 'reference' // A runtime reference to another node.
+  | 'reference' // A runtime reference to another node. Used for reference counting and dereferencing nodes.
 
 type ScenarioGraph = Graph<model.TestNode, EdgeLabel>
 type ScenarioEdge = GraphEdge<EdgeLabel>
