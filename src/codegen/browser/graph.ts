@@ -84,17 +84,22 @@ class EdgeMap<E> {
   }
 
   count(from?: NodeId, filter?: (edge: GraphEdge<E>) => boolean) {
+    if (filter !== undefined) {
+      const edges =
+        from === undefined
+          ? Array.from(this.edges.values()).flatMap((map) =>
+              Array.from(map.values())
+            )
+          : this.edges.get(from)?.values()
+
+      return Array.from(edges ?? []).filter(filter).length
+    }
+
     if (from === undefined) {
       return this.edges.size
     }
 
-    const edges = this.edges.get(from)
-
-    if (filter !== undefined) {
-      return Array.from(edges?.values() ?? []).filter(filter).length
-    }
-
-    return edges?.size ?? 0
+    return this.edges.get(from)?.size ?? 0
   }
 
   hasEdges(from: NodeId) {
