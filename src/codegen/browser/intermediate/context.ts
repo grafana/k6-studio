@@ -2,16 +2,37 @@ import { groupBy } from 'lodash-es'
 
 import { exhaustive } from '@/utils/typescript'
 
-import { Graph } from '../graph'
+import { Graph, GraphEdge } from '../graph'
 import * as model from '../types'
 
 import * as ir from './ast'
 import { CountedSet } from './utils'
 
-type ScenarioGraph = Graph<model.TestNode, null>
+type EdgeLabel =
+  | 'previous' // Used to enforce a strict order of execution, e.g. navigate to page before clicking a locator.
+  | 'reference' // A runtime reference to another node.
+
+type ScenarioGraph = Graph<model.TestNode, EdgeLabel>
+type ScenarioEdge = GraphEdge<EdgeLabel>
+
+interface ConnectableNode {
+  nodeId: model.NodeId
+  inputs: {
+    previous?: model.NodeRef
+  }
+}
+
+function connectPrevious(
+  graph: ScenarioGraph,
+  { nodeId, inputs }: ConnectableNode
+) {
+  if (inputs.previous) {
+    graph.connect(inputs.previous.nodeId, nodeId, 'previous')
+  }
+}
 
 function buildScenarioGraph(scenario: model.Scenario) {
-  const graph = new Graph<model.TestNode, null>()
+  const graph = new Graph<model.TestNode, EdgeLabel>()
 
   for (const node of scenario.nodes) {
     graph.add({
@@ -26,41 +47,52 @@ function buildScenarioGraph(scenario: model.Scenario) {
         break
 
       case 'locator':
-        graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.page.nodeId, 'reference')
         break
 
       case 'goto':
       case 'reload':
-        graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.page.nodeId, 'reference')
+        connectPrevious(graph, node)
         break
 
       case 'click':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
 
         if (node.waitForNavigation !== undefined) {
-          graph.connect(node.nodeId, node.waitForNavigation.page.nodeId, null)
+          graph.connect(
+            node.nodeId,
+            node.waitForNavigation.page.nodeId,
+            'reference'
+          )
         }
 
+        connectPrevious(graph, node)
         break
 
       case 'type-text':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
+        connectPrevious(graph, node)
         break
 
       case 'check':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
+        connectPrevious(graph, node)
         break
 
       case 'select-options':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
+        connectPrevious(graph, node)
         break
 
       case 'assert':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
+        connectPrevious(graph, node)
         break
 
       case 'wait-for':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
+        connectPrevious(graph, node)
         break
 
       default:
@@ -112,6 +144,10 @@ interface AllocationBlock {
 
 type Block = FunctionBlock | AllocationBlock
 
+function isReference(edge: ScenarioEdge) {
+  return edge.data === 'reference'
+}
+
 export class IntermediateContext {
   #blocks: [Block, ...Block[]] = [
     {
@@ -144,10 +180,12 @@ export class IntermediateContext {
 
     this.inline(node, temporary.expression)
 
+    const referenceCount = this.graph.count.edges(isReference).from(node.nodeId)
+
     // If the resource has no dependencies then there is not point in emitting an entire
     // block for it. We can just dispose of it immediately. This shouldn't come up a lot in
     // practice, but it's a valid scenario and it does improve the quality of the generated code.
-    if (this.graph.count.edges.from(node.nodeId) === 0) {
+    if (referenceCount === 0) {
       this.emit({
         type: 'VariableDeclaration',
         kind: 'const',
@@ -161,9 +199,7 @@ export class IntermediateContext {
     }
 
     // Keep track of the number of direct references to the node.
-    const references = new CountedSet([
-      [node.nodeId, this.graph.count.edges.from(node.nodeId)],
-    ])
+    const references = new CountedSet([[node.nodeId, referenceCount]])
 
     // The resource must be kept alive until all indirect references to it have been
     // processed.
@@ -181,8 +217,11 @@ export class IntermediateContext {
     // finalize the allocation as soon as the Locator referenced the page. The
     // actions would then be emitted after calling `page.close()`, throwing an
     // error because the page was already closed.
-    for (const reference of this.graph.ancestors(node.nodeId)) {
-      references.add(reference.id, this.graph.count.edges.from(reference.id))
+    for (const reference of this.graph.ancestors(node.nodeId, isReference)) {
+      references.add(
+        reference.id,
+        this.graph.count.edges(isReference).from(reference.id)
+      )
     }
 
     if (this.#block.type !== 'allocation') {
@@ -287,18 +326,17 @@ export class IntermediateContext {
   }
 
   reference(
-    target: model.TestNode | model.NodeRef | model.NodeId
+    node: model.TestNode | model.NodeRef | model.NodeId
   ): ir.Expression {
-    const targetId = typeof target === 'string' ? target : target.nodeId
-
-    const expression = this.#expressions.get(targetId)
+    const id = typeof node === 'string' ? node : node.nodeId
+    const expression = this.#expressions.get(id)
 
     if (!expression) {
-      throw new Error(`Variable for node ${targetId} has not been declared.`)
+      throw new Error(`Variable for node ${id} has not been declared.`)
     }
 
     if (this.#block.type === 'allocation') {
-      this.#block.references.delete(targetId)
+      this.#block.references.delete(id)
     }
 
     return expression

@@ -1,11 +1,11 @@
 type NodeId = string
 
-interface GraphNode<T> {
+export interface GraphNode<T> {
   id: NodeId
   data: T
 }
 
-interface GraphEdge<E> {
+export interface GraphEdge<E> {
   from: NodeId
   to: NodeId
   data: E
@@ -83,12 +83,16 @@ class EdgeMap<E> {
     return map.delete(to)
   }
 
-  count(from?: NodeId) {
+  count(from?: NodeId, filter?: (edge: GraphEdge<E>) => boolean) {
     if (from === undefined) {
       return this.edges.size
     }
 
     const edges = this.edges.get(from)
+
+    if (filter !== undefined) {
+      return Array.from(edges?.values() ?? []).filter(filter).length
+    }
 
     return edges?.size ?? 0
   }
@@ -123,12 +127,14 @@ export class Graph<T, E> {
   get count() {
     return {
       nodes: () => this.#nodes.size,
-      edges: {
-        all: () => this.#incoming.count(),
-        from: (node: GraphNode<T> | NodeId) =>
-          this.#incoming.count(toNodeId(node)),
-        to: (node: GraphNode<T> | NodeId) =>
-          this.#outgoing.count(toNodeId(node)),
+      edges: (filter?: (edge: GraphEdge<E>) => boolean) => {
+        return {
+          all: () => this.#incoming.count(undefined, filter),
+          from: (node: GraphNode<T> | NodeId) =>
+            this.#incoming.count(toNodeId(node), filter),
+          to: (node: GraphNode<T> | NodeId) =>
+            this.#outgoing.count(toNodeId(node), filter),
+        }
       },
     }
   }
@@ -193,12 +199,30 @@ export class Graph<T, E> {
     return false
   }
 
-  outgoing(node: GraphNode<T> | NodeId) {
-    return this.#outgoing.of(toNodeId(node))
+  outgoing(
+    node: GraphNode<T> | NodeId,
+    filter?: (edge: GraphEdge<E>) => boolean
+  ) {
+    const edges = this.#outgoing.of(toNodeId(node))
+
+    if (filter === undefined) {
+      return edges
+    }
+
+    return Array.from(edges).filter(filter)
   }
 
-  incoming(node: GraphNode<T> | NodeId) {
-    return this.#incoming.of(toNodeId(node))
+  incoming(
+    node: GraphNode<T> | NodeId,
+    filter?: (edge: GraphEdge<E>) => boolean
+  ) {
+    const edges = this.#incoming.of(toNodeId(node))
+
+    if (filter === undefined) {
+      return edges
+    }
+
+    return Array.from(edges).filter(filter)
   }
 
   *sources() {
@@ -217,9 +241,12 @@ export class Graph<T, E> {
     }
   }
 
-  *descendants(node: GraphNode<T> | NodeId): Generator<GraphNode<T>> {
+  *descendants(
+    node: GraphNode<T> | NodeId,
+    filter?: (edge: GraphEdge<E>) => boolean
+  ): Generator<GraphNode<T>> {
     const queue = new Queue<NodeId>(
-      Array.from(this.outgoing(node)).map((edge) => edge.to)
+      Array.from(this.outgoing(node, filter)).map((edge) => edge.to)
     )
 
     let current: NodeId | undefined = queue.pop()
@@ -229,7 +256,7 @@ export class Graph<T, E> {
 
       yield node
 
-      for (const edge of this.#outgoing.of(current)) {
+      for (const edge of this.outgoing(current, filter)) {
         queue.push(edge.to)
       }
 
@@ -237,9 +264,12 @@ export class Graph<T, E> {
     }
   }
 
-  *ancestors(node: GraphNode<T> | NodeId): Generator<GraphNode<T>> {
+  *ancestors(
+    node: GraphNode<T> | NodeId,
+    filter?: (edge: GraphEdge<E>) => boolean
+  ): Generator<GraphNode<T>> {
     const queue = new Queue<NodeId>(
-      Array.from(this.incoming(node)).map((edge) => edge.from)
+      Array.from(this.incoming(node, filter)).map((edge) => edge.from)
     )
 
     let current: NodeId | undefined = queue.pop()
@@ -249,7 +279,7 @@ export class Graph<T, E> {
 
       yield node
 
-      for (const edge of this.#incoming.of(current)) {
+      for (const edge of this.incoming(current, filter)) {
         queue.push(edge.from)
       }
 
