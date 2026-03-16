@@ -177,6 +177,12 @@ export class Graph<T, E> {
       )
     }
 
+    if (edge.from === edge.to) {
+      throw new Error(
+        `Cannot connect node '${edge.from}' to itself because it would create a cycle.`
+      )
+    }
+
     if (this.isDescendant(edge.to, edge.from)) {
       throw new Error(
         `Cannot connect node '${edge.from}' to '${edge.to}' because it would create a cycle.`
@@ -193,9 +199,14 @@ export class Graph<T, E> {
   }
 
   isDescendant(root: GraphNode<T> | NodeId, target: GraphNode<T> | NodeId) {
+    const rootId = toNodeId(root)
     const targetId = toNodeId(target)
 
-    for (const descendant of this.descendants(root)) {
+    if (rootId === targetId) {
+      return false
+    }
+
+    for (const descendant of this.descendants(rootId)) {
       if (descendant.id === targetId) {
         return true
       }
