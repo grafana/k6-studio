@@ -43,10 +43,8 @@ export class CountedSet<T> {
     return this.#map.size
   }
 
-  merge(other: Iterable<[T, number]>) {
-    for (const [value, count] of other) {
-      this.add(value, count)
-    }
+  has(value: T): boolean {
+    return (this.#map.get(value) ?? 0) > 0
   }
 
   [Symbol.iterator]() {

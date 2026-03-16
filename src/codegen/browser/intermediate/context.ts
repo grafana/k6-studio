@@ -275,8 +275,13 @@ export class IntermediateContext {
     })
 
     // Add the references to the block so that it will live until all
-    // dependent nodes have been processed.
-    this.#block.references.merge(references)
+    // dependent nodes have been processed. We skip nodes that are already
+    // tracked to preserve their reference counts.
+    for (const [nodeId, count] of references) {
+      if (!this.#block.references.has(nodeId)) {
+        this.#block.references.add(nodeId, count)
+      }
+    }
 
     this.#block.disposers.push(dispose(temporary.expression))
 
