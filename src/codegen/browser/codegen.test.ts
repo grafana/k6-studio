@@ -104,7 +104,6 @@ it('should emit click on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
-            page: { nodeId: 'page' },
           },
         },
       ],
@@ -145,7 +144,6 @@ it('should emit right-click on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
-            page: { nodeId: 'page' },
           },
         },
       ],
@@ -186,7 +184,6 @@ it('should emit click with modifier keys on element', async ({ expect }) => {
           },
           inputs: {
             locator: { nodeId: 'locator' },
-            page: { nodeId: 'page' },
           },
         },
       ],
@@ -399,19 +396,11 @@ it('should emit waitForNavigation on a link click', async ({ expect }) => {
             alt: false,
             meta: false,
           },
-          triggersNavigation: true,
-          inputs: {
-            locator: { nodeId: 'locator' },
+          waitForNavigation: {
             page: { nodeId: 'page' },
           },
-        },
-        {
-          type: 'goto',
-          nodeId: 'goto',
-          source: 'implicit',
-          url: 'https://example.com/login',
           inputs: {
-            page: { nodeId: 'page' },
+            locator: { nodeId: 'locator' },
           },
         },
       ],
@@ -421,6 +410,80 @@ it('should emit waitForNavigation on a link click', async ({ expect }) => {
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/click-with-navigation.ts'
+  )
+})
+
+it('should keep page allocation block open for post-navigation interactions', async ({
+  expect,
+}) => {
+  // Regression test: click with triggersNavigation calls context.reference(page)
+  // but buildScenarioGraph does not connect click→page. Without the implicit goto
+  // node that previously balanced this, the page ref count is wrong — the block
+  // finalizes too early and page.close() runs before post-nav interactions.
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'goto',
+          nodeId: 'goto',
+          url: 'https://example.com/start',
+          source: 'address-bar',
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'linkLocator',
+          selector: { type: 'css', selector: 'a.nav-link' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          button: 'left',
+          nodeId: 'click',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          waitForNavigation: {
+            page: { nodeId: 'page' },
+          },
+          inputs: {
+            locator: { nodeId: 'linkLocator' },
+          },
+        },
+        {
+          type: 'locator',
+          nodeId: 'inputLocator',
+          selector: { type: 'css', selector: 'input[name="query"]' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'type-text',
+          nodeId: 'type-text',
+          value: 'search term',
+          inputs: {
+            locator: { nodeId: 'inputLocator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/click-navigate-then-interact.ts'
   )
 })
 
@@ -450,19 +513,11 @@ it('should emit waitForNavigation on a form submit', async ({ expect }) => {
             alt: false,
             meta: false,
           },
-          triggersNavigation: true,
-          inputs: {
-            locator: { nodeId: 'submitLocator' },
+          waitForNavigation: {
             page: { nodeId: 'page' },
           },
-        },
-        {
-          type: 'goto',
-          nodeId: 'goto',
-          source: 'implicit',
-          url: 'https://example.com',
           inputs: {
-            page: { nodeId: 'page' },
+            locator: { nodeId: 'submitLocator' },
           },
         },
       ],
@@ -874,7 +929,6 @@ it('should emit a getByTestId locator', async ({ expect }) => {
           nodeId: 'click',
           inputs: {
             locator: { nodeId: 'locator' },
-            page: { nodeId: 'page' },
           },
           button: 'left',
           modifiers: {
@@ -917,7 +971,6 @@ it('should emit a getByRole locator', async ({ expect }) => {
           nodeId: 'click',
           inputs: {
             locator: { nodeId: 'locator' },
-            page: { nodeId: 'page' },
           },
           button: 'left',
           modifiers: {
@@ -959,7 +1012,6 @@ it('should emit a css locator', async ({ expect }) => {
           nodeId: 'click',
           inputs: {
             locator: { nodeId: 'locator' },
-            page: { nodeId: 'page' },
           },
           button: 'left',
           modifiers: {
@@ -1001,7 +1053,6 @@ it('should emit a getByAltText locator', async ({ expect }) => {
           nodeId: 'click',
           inputs: {
             locator: { nodeId: 'locator' },
-            page: { nodeId: 'page' },
           },
           button: 'left',
           modifiers: {
@@ -1113,7 +1164,6 @@ it('should emit a getByTitle locator', async ({ expect }) => {
           nodeId: 'click',
           inputs: {
             locator: { nodeId: 'locator' },
-            page: { nodeId: 'page' },
           },
           button: 'left',
           modifiers: {
@@ -1257,5 +1307,25 @@ it('should emit two disjoint try-finally blocks', async ({ expect }) => {
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/disjoint-try-finally-blocks.ts'
+  )
+})
+
+it('should close allocation block when resource has no references', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/close-allocation-block-when-resource-has-no-references.ts'
   )
 })
