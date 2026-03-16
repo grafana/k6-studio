@@ -136,9 +136,9 @@ export class Graph<T, E> {
         return {
           all: () => this.#incoming.count(undefined, filter),
           from: (node: GraphNode<T> | NodeId) =>
-            this.#incoming.count(toNodeId(node), filter),
-          to: (node: GraphNode<T> | NodeId) =>
             this.#outgoing.count(toNodeId(node), filter),
+          to: (node: GraphNode<T> | NodeId) =>
+            this.#incoming.count(toNodeId(node), filter),
         }
       },
     }

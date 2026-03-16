@@ -180,7 +180,7 @@ export class IntermediateContext {
 
     this.inline(node, temporary.expression)
 
-    const referenceCount = this.graph.count.edges(isReference).from(node.nodeId)
+    const referenceCount = this.graph.count.edges(isReference).to(node.nodeId)
 
     // If the resource has no dependencies then there is not point in emitting an entire
     // block for it. We can just dispose of it immediately. This shouldn't come up a lot in
@@ -220,7 +220,7 @@ export class IntermediateContext {
     for (const reference of this.graph.ancestors(node.nodeId, isReference)) {
       references.add(
         reference.id,
-        this.graph.count.edges(isReference).from(reference.id)
+        this.graph.count.edges(isReference).to(reference.id)
       )
     }
 
