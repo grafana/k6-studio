@@ -218,9 +218,11 @@ export class Graph<T, E> {
   }
 
   *descendants(node: GraphNode<T> | NodeId): Generator<GraphNode<T>> {
-    const queue = new Queue<NodeId>()
+    const queue = new Queue<NodeId>(
+      Array.from(this.outgoing(node)).map((edge) => edge.to)
+    )
 
-    let current: NodeId | undefined = toNodeId(node)
+    let current: NodeId | undefined = queue.pop()
 
     while (current !== undefined) {
       const node = this.require(current)
@@ -236,9 +238,11 @@ export class Graph<T, E> {
   }
 
   *ancestors(node: GraphNode<T> | NodeId): Generator<GraphNode<T>> {
-    const queue = new Queue<NodeId>()
+    const queue = new Queue<NodeId>(
+      Array.from(this.incoming(node)).map((edge) => edge.from)
+    )
 
-    let current: NodeId | undefined = toNodeId(node)
+    let current: NodeId | undefined = queue.pop()
 
     while (current !== undefined) {
       const node = this.require(current)

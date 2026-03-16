@@ -42,4 +42,14 @@ export class CountedSet<T> {
   get size() {
     return this.#map.size
   }
+
+  merge(other: Iterable<[T, number]>) {
+    for (const [value, count] of other) {
+      this.add(value, count)
+    }
+  }
+
+  [Symbol.iterator]() {
+    return this.#map.entries()
+  }
 }

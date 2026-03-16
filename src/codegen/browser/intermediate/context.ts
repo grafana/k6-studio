@@ -160,6 +160,31 @@ export class IntermediateContext {
       return
     }
 
+    // Keep track of the number of direct references to the node.
+    const references = new CountedSet([
+      [node.nodeId, this.graph.count.edges.from(node.nodeId)],
+    ])
+
+    // The resource must be kept alive until all indirect references to it have been
+    // processed.
+    //
+    //    +-------+      +---------+      +---------+      +---------+
+    //    | Page  | ---> | Locator | ---> | Action A| ---> | Action B|
+    //    |       |      |         |      +---------+      +---------+
+    //    |       |      |         |
+    //    |       |      |         |      +---------+
+    //    |       |      |         | ---> | Action C|
+    //    +-------+      +---------+      +---------+
+    //
+    // In this diagram, action A, B and C are all indirectly dependent on the
+    // resource and if we were to only track direct references then we would
+    // finalize the allocation as soon as the Locator referenced the page. The
+    // actions would then be emitted after calling `page.close()`, throwing an
+    // error because the page was already closed.
+    for (const reference of this.graph.ancestors(node.nodeId)) {
+      references.add(reference.id, this.graph.count.edges.from(reference.id))
+    }
+
     if (this.#block.type !== 'allocation') {
       // The first allocation in a block will be a const declaration outside
       // of the try-finally block, like so:
@@ -176,9 +201,7 @@ export class IntermediateContext {
       const newBlock: AllocationBlock = {
         type: 'allocation',
         initializers: [{ kind: 'const', node, name: temporary.temp, value }],
-        references: new CountedSet([
-          [node.nodeId, this.graph.count.edges.from(node.nodeId)],
-        ]),
+        references,
         disposers: [dispose(temporary.expression)],
         statements: [],
       }
@@ -214,10 +237,7 @@ export class IntermediateContext {
 
     // Add the references to the block so that it will live until all
     // dependent nodes have been processed.
-    this.#block.references.add(
-      node.nodeId,
-      this.graph.count.edges.from(node.nodeId)
-    )
+    this.#block.references.merge(references)
 
     this.#block.disposers.push(dispose(temporary.expression))
 
@@ -267,10 +287,8 @@ export class IntermediateContext {
   }
 
   reference(
-    from: model.TestNode | model.NodeRef | model.NodeId,
     target: model.TestNode | model.NodeRef | model.NodeId
   ): ir.Expression {
-    const fromId = typeof from === 'string' ? from : from.nodeId
     const targetId = typeof target === 'string' ? target : target.nodeId
 
     const expression = this.#expressions.get(targetId)
@@ -279,14 +297,8 @@ export class IntermediateContext {
       throw new Error(`Variable for node ${targetId} has not been declared.`)
     }
 
-    // If we are taking a reference to a node that is allocated, it means we now
-    // have a dependency on that allocated node and the allocation block needs to
-    // outlive the referencing node.
-    if (
-      this.#block.type === 'allocation' &&
+    if (this.#block.type === 'allocation') {
       this.#block.references.delete(targetId)
-    ) {
-      this.#block.references.add(fromId, this.graph.count.edges.from(fromId))
     }
 
     return expression
