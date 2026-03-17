@@ -1,11 +1,21 @@
 import { css } from '@emotion/react'
-import { Text } from '@radix-ui/themes'
+import { Text, VisuallyHidden } from '@radix-ui/themes'
 import { useCallback } from 'react'
 
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { LogEntry } from '@/schemas/k6'
 
 import { Table } from '../Table'
+
+function formatTime(time: string) {
+  const date = new Date(time)
+
+  return date.toLocaleTimeString(navigator.language, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
 
 function findTableElement(element: HTMLElement): HTMLTableElement | null {
   let current: HTMLElement | null = element
@@ -31,6 +41,9 @@ const colors: Record<LogEntry['level'], string> = {
 const headerStyles = css`
   position: sticky;
   top: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
   --table-row-background-color: var(--color-background);
 `
 
@@ -70,18 +83,38 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
       css={css`
         height: 100%;
 
+        table {
+          display: grid;
+          grid-template-columns: 1fr auto;
+        }
+
+        thead,
+        tbody,
+        tr {
+          display: grid;
+          grid-column: 1 / -1;
+          grid-template-columns: subgrid;
+        }
+
         td {
           font-family: var(--code-font-family);
+          font-size: 13px;
         }
       `}
     >
       <Table.Header ref={setTableRef}>
-        <Table.Row>
-          <Table.ColumnHeaderCell css={headerStyles} width="230px">
-            Time
+        <Table.Row
+          css={css`
+            height: 0;
+            padding: 0;
+            margin: 0;
+          `}
+        >
+          <Table.ColumnHeaderCell css={headerStyles}>
+            <VisuallyHidden>Message</VisuallyHidden>
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell css={headerStyles}>
-            Message
+            <VisuallyHidden>Time</VisuallyHidden>
           </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
@@ -90,12 +123,9 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
           <Table.Row key={index}>
             <Table.Cell
               css={css`
-                border-left: 3px solid var(--${colors[log.level]}-9);
+                border-left: 4px solid var(--${colors[log.level]}-9);
               `}
             >
-              <Text>{log.time}</Text>
-            </Table.Cell>
-            <Table.Cell>
               <pre
                 css={css`
                   margin: 0;
@@ -104,6 +134,14 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
                 {log.msg}
               </pre>
             </Table.Cell>
+            <Text
+              asChild
+              css={css`
+                color: var(--gray-a9);
+              `}
+            >
+              <Table.Cell align="right">{formatTime(log.time)}</Table.Cell>
+            </Text>
           </Table.Row>
         ))}
       </Table.Body>
