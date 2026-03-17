@@ -31,6 +31,32 @@ function findTableElement(element: HTMLElement): HTMLTableElement | null {
   return null
 }
 
+/**
+ * LogEntry has a source property but it's not really reliable and doesn't let us
+ * distinguish between logs from the browser module and logs from the actual browser,
+ * so we use our own source mappings.
+ */
+function getSource(entry: LogEntry): string {
+  if (entry.process === 'browser') {
+    return 'browser'
+  }
+
+  // Console is ambiguous in this context because it could be referring to the console
+  // API in k6 or in the browser. To avoid confusion we re-map it to "script".
+  if (entry.source === 'console') {
+    return 'script'
+  }
+
+  return 'runtime'
+}
+
+function withSource(entry: LogEntry) {
+  return {
+    source: getSource(entry),
+    entry,
+  }
+}
+
 const colors: Record<LogEntry['level'], string> = {
   info: 'green',
   debug: 'blue',
@@ -54,6 +80,8 @@ interface LogsSectionProps {
 
 export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
   const ref = useAutoScroll<HTMLTableElement>(logs, autoScroll)
+
+  const formattedLogs = logs.map(withSource)
 
   // Radix UI's Table component wraps the table element in a ScrollArea but in
   // order to autoscroll we need to get a ref to the table element. Ideally Radix
@@ -85,7 +113,8 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
 
         table {
           display: grid;
-          grid-template-columns: 1fr auto;
+          align-items: center;
+          grid-template-columns: 1fr auto auto;
         }
 
         thead,
@@ -96,9 +125,14 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
           grid-template-columns: subgrid;
         }
 
+        tr {
+          padding-right: var(--space-2);
+        }
+
         td {
           font-family: var(--code-font-family);
           font-size: 13px;
+          padding: var(--space-2) var(--space-1);
         }
       `}
     >
@@ -114,16 +148,19 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
             <VisuallyHidden>Message</VisuallyHidden>
           </Table.ColumnHeaderCell>
           <Table.ColumnHeaderCell css={headerStyles}>
+            <VisuallyHidden>Source</VisuallyHidden>
+          </Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell css={headerStyles}>
             <VisuallyHidden>Time</VisuallyHidden>
           </Table.ColumnHeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {logs.map((log, index) => (
+        {formattedLogs.map(({ source, entry }, index) => (
           <Table.Row key={index}>
             <Table.Cell
               css={css`
-                border-left: 4px solid var(--${colors[log.level]}-9);
+                border-left: 4px solid var(--${colors[entry.level]}-9);
               `}
             >
               <pre
@@ -131,7 +168,7 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
                   margin: 0;
                 `}
               >
-                {log.msg}
+                {entry.msg}
               </pre>
             </Table.Cell>
             <Text
@@ -140,7 +177,15 @@ export function LogsSection({ logs, autoScroll }: LogsSectionProps) {
                 color: var(--gray-a9);
               `}
             >
-              <Table.Cell align="right">{formatTime(log.time)}</Table.Cell>
+              <Table.Cell align="right">[{source}]</Table.Cell>
+            </Text>
+            <Text
+              asChild
+              css={css`
+                color: var(--gray-a9);
+              `}
+            >
+              <Table.Cell align="right">{formatTime(entry.time)}</Table.Cell>
             </Text>
           </Table.Row>
         ))}
