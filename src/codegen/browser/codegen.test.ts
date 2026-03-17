@@ -1329,3 +1329,59 @@ it('should close allocation block when resource has no references', async ({
     '__snapshots__/browser/close-allocation-block-when-resource-has-no-references.ts'
   )
 })
+
+it('should emit two actions on same locator inside same try-finally block', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: { type: 'css', selector: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click1',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click2',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/two-actions-on-same-locator-inside-same-try-finally-block.ts'
+  )
+})
