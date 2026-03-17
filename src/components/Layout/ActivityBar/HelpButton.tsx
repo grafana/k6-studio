@@ -1,20 +1,10 @@
-import { Badge, DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
-import {
-  AlertTriangleIcon,
-  BookTextIcon,
-  CircleHelpIcon,
-  MessageSquareIcon,
-} from 'lucide-react'
+import { DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
+import { AlertTriangleIcon, BookTextIcon, CircleHelpIcon } from 'lucide-react'
 
 export function HelpButton() {
   const handleOpenDocs = () =>
     window.studio.browser.openExternalLink(
       'https://grafana.com/docs/k6-studio/'
-    )
-
-  const handleTakeSurvey = () =>
-    window.studio.browser.openExternalLink(
-      'https://www.userinterviews.com/projects/XwPjeHBAbA/apply'
     )
 
   const handleReportIssue = () => window.studio.ui.reportIssue()
@@ -35,12 +25,6 @@ export function HelpButton() {
       <DropdownMenu.Content side="right">
         <DropdownMenu.Item onClick={handleOpenDocs}>
           <BookTextIcon /> Documentation
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onClick={handleTakeSurvey}>
-          <MessageSquareIcon /> Take survey
-          <Badge variant="solid" color="indigo" ml="1" size="1">
-            New
-          </Badge>
         </DropdownMenu.Item>
         <DropdownMenu.Item onClick={handleReportIssue}>
           <AlertTriangleIcon /> Report issue
