@@ -142,6 +142,9 @@ interface ConsoleFilter {
 interface LogsSectionProps {
   filter: ConsoleFilter
   logs: LogEntry[]
+  browser?: boolean
+  script?: boolean
+  runtime?: boolean
   autoScroll: boolean
   onFilterChange: (filter: ConsoleFilter) => void
 }
@@ -149,6 +152,9 @@ interface LogsSectionProps {
 export function LogsSection({
   filter,
   logs,
+  browser = true,
+  script = true,
+  runtime = true,
   autoScroll,
   onFilterChange,
 }: LogsSectionProps) {
@@ -256,27 +262,33 @@ export function LogsSection({
           aria-label="Filter by log source"
           onValueChange={handleLogSourcesChange}
         >
-          <ToggleGroup.Item
-            value={'browser'}
-            css={toggleItemStyles}
-            aria-label={`Filter browser logs`}
-          >
-            Browser
-          </ToggleGroup.Item>
-          <ToggleGroup.Item
-            value={'script'}
-            css={toggleItemStyles}
-            aria-label={`Filter script logs`}
-          >
-            Script
-          </ToggleGroup.Item>
-          <ToggleGroup.Item
-            value={'runtime'}
-            css={toggleItemStyles}
-            aria-label={`Filter runtime logs`}
-          >
-            Runtime
-          </ToggleGroup.Item>
+          {browser && (
+            <ToggleGroup.Item
+              value={'browser'}
+              css={toggleItemStyles}
+              aria-label={`Filter browser logs`}
+            >
+              Browser
+            </ToggleGroup.Item>
+          )}
+          {script && (
+            <ToggleGroup.Item
+              value={'script'}
+              css={toggleItemStyles}
+              aria-label={`Filter script logs`}
+            >
+              Script
+            </ToggleGroup.Item>
+          )}
+          {runtime && (
+            <ToggleGroup.Item
+              value={'runtime'}
+              css={toggleItemStyles}
+              aria-label={`Filter runtime logs`}
+            >
+              Runtime
+            </ToggleGroup.Item>
+          )}
         </ToggleGroup.Root>
       </Flex>
       <Flex

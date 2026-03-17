@@ -76,7 +76,12 @@ export function ExecutionDetails({
           min-height: 0;
         `}
       >
-        <LogsSection {...consoleFilter} autoScroll={isRunning} logs={logs} />
+        <LogsSection
+          {...consoleFilter}
+          autoScroll={isRunning}
+          browser={false}
+          logs={logs}
+        />
       </Tabs.Content>
       {script !== undefined && (
         <Tabs.Content
