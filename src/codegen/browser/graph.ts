@@ -96,7 +96,10 @@ class EdgeMap<E> {
     }
 
     if (from === undefined) {
-      return this.edges.size
+      return Array.from(this.edges.values()).reduce(
+        (count, map) => count + map.size,
+        0
+      )
     }
 
     return this.edges.get(from)?.size ?? 0
@@ -265,12 +268,20 @@ export class Graph<T, E> {
       Array.from(this.outgoing(node, filter)).map((edge) => edge.to)
     )
 
+    const visited = new Set<NodeId>()
+
     let current: NodeId | undefined = queue.pop()
 
     while (current !== undefined) {
-      const node = this.require(current)
+      if (visited.has(current)) {
+        current = queue.pop()
 
-      yield node
+        continue
+      }
+
+      visited.add(current)
+
+      yield this.require(current)
 
       for (const edge of this.outgoing(current, filter)) {
         queue.push(edge.to)
@@ -289,11 +300,18 @@ export class Graph<T, E> {
     )
 
     let current: NodeId | undefined = queue.pop()
+    const visited = new Set<NodeId>()
 
     while (current !== undefined) {
-      const node = this.require(current)
+      if (visited.has(current)) {
+        current = queue.pop()
 
-      yield node
+        continue
+      }
+
+      visited.add(current)
+
+      yield this.require(current)
 
       for (const edge of this.incoming(current, filter)) {
         queue.push(edge.from)
