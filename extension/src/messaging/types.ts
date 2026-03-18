@@ -34,8 +34,51 @@ const CssHighlightSelectorSchema = z.object({
   selector: z.string(),
 })
 
+const GetByRoleHighlightSelectorSchema = z.object({
+  type: z.literal('role'),
+  role: z.string(),
+  name: z.string(),
+})
+
+const GetByAltTextHighlightSelectorSchema = z.object({
+  type: z.literal('alt'),
+  text: z.string(),
+})
+
+const GetByLabelHighlightSelectorSchema = z.object({
+  type: z.literal('label'),
+  text: z.string(),
+})
+
+const GetByPlaceholderHighlightSelectorSchema = z.object({
+  type: z.literal('placeholder'),
+  text: z.string(),
+})
+
+const GetByTextHighlightSelectorSchema = z.object({
+  type: z.literal('text'),
+  text: z.string(),
+})
+
+const GetByTitleHighlightSelectorSchema = z.object({
+  type: z.literal('title'),
+  text: z.string(),
+})
+
+const GetByTestIdHighlightSelectorSchema = z.object({
+  type: z.literal('test-id'),
+  testId: z.string(),
+})
+
 const HighlightSelectorSchema = z.discriminatedUnion('type', [
   CssHighlightSelectorSchema,
+  GetByRoleHighlightSelectorSchema,
+  GetByAltTextHighlightSelectorSchema,
+  GetByLabelHighlightSelectorSchema,
+  GetByPlaceholderHighlightSelectorSchema,
+  GetByTextHighlightSelectorSchema,
+  GetByTitleHighlightSelectorSchema,
+  GetByTestIdHighlightSelectorSchema,
 ])
 
 export const HighlightElementsSchema = z.object({

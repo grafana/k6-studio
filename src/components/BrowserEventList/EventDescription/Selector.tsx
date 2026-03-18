@@ -20,10 +20,7 @@ export function Selector({ selectors, onHighlight }: SelectorProps) {
       return
     }
 
-    onHighlight({
-      type: 'css',
-      selector: selectors.css,
-    })
+    onHighlight(nodeSelector)
   }
 
   return (

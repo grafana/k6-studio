@@ -1,4 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
+import {
+  getByAltText,
+  getByLabelText,
+  getByPlaceholderText,
+  getByRole,
+  getByTestId,
+  getByText,
+  getByTitle,
+  queryAllByAltText,
+  queryAllByLabelText,
+  queryAllByPlaceholderText,
+  queryAllByRole,
+  queryAllByTestId,
+  queryAllByText,
+  queryAllByTitle,
+} from '@testing-library/dom'
 
 import { HighlightSelector } from 'extension/src/messaging/types'
 
@@ -11,6 +27,39 @@ interface Highlight {
   id: number
   element: Element
   bounds: Bounds
+}
+
+function findElementsBySelector(selector: HighlightSelector): Element[] {
+  switch (selector.type) {
+    case 'css':
+      return Array.from(document.querySelectorAll(selector.selector))
+
+    case 'test-id':
+      return queryAllByTestId(document.body, selector.testId)
+
+    case 'role':
+      return queryAllByRole(document.body, selector.role, {
+        name: selector.name,
+      })
+
+    case 'alt':
+      return queryAllByAltText(document.body, selector.text)
+
+    case 'label':
+      return queryAllByLabelText(document.body, selector.text)
+
+    case 'placeholder':
+      return queryAllByPlaceholderText(document.body, selector.text)
+
+    case 'text':
+      return queryAllByText(document.body, selector.text)
+
+    case 'title':
+      return queryAllByTitle(document.body, selector.text)
+
+    default:
+      return []
+  }
 }
 
 export function useHighlightedElements() {
@@ -34,8 +83,8 @@ export function useHighlightedElements() {
     }
 
     try {
-      const elements = document.querySelectorAll(selector.selector)
-      const highlights = Array.from(elements).map((element) => {
+      const elements = findElementsBySelector(selector)
+      const highlights = elements.map((element) => {
         const bounds = getElementBounds(element)
 
         return {
