@@ -25,6 +25,7 @@ import { Toolbar } from '@/components/primitives/Toolbar'
 import { useStudioClient } from '../StudioClientProvider'
 import { Tool } from '../types'
 
+import { RecordingOptionsMenu } from './RecordingOptionsMenu'
 import { ToolBoxLogo } from './ToolBoxLogo'
 import { ToolBoxRoot } from './ToolBoxRoot'
 import { useToolboxSettings } from './ToolBoxRoot.hooks'
@@ -163,6 +164,8 @@ export function ToolBox({
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
+        <Toolbar.Separator />
+        <RecordingOptionsMenu />
         {import.meta.env.DEV && (
           <>
             <Toolbar.Separator />

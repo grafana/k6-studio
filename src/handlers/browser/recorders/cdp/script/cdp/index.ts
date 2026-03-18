@@ -12,5 +12,9 @@ if (!isInFrame()) {
 
   trackTabFocus(client)
   initializeView(client, storage)
-  startRecording(client)
+
+  // Pass settings to recording
+  startRecording(client, {
+    getClickRecordingMode: () => storage.initial.clickRecordingMode,
+  })
 }
