@@ -107,8 +107,8 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
       <PlaybackControls
         state={state}
         streaming={session.state === 'running'}
-        currentTime={time.current}
-        totalTime={time.total}
+        time={time}
+        actions={session.browser.actions}
         onPlay={handlePlay}
         onPause={handlePause}
         onSeek={handleSeek}
