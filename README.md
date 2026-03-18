@@ -141,3 +141,59 @@ After the command has finished, you start the app locally with:
 ```
 npm start
 ```
+
+### Compile a local binary (packaged app)
+
+To produce a local packaged build, set `SENTRY_DSN` and `NODE_OPTIONS` in your shell first, then run Electron Forge.
+The CI/release workflow defaults are:
+
+- `SENTRY_DSN="sentry"`
+- `NODE_OPTIONS="--max_old_space_size=8192"`
+
+Example:
+
+```bash
+export SENTRY_DSN="sentry"
+export NODE_OPTIONS="--max_old_space_size=8192"
+
+npm install
+npm run package
+```
+
+If you want installable artifacts (`.deb`, `.rpm`, etc.) instead of only a packaged app directory:
+
+```bash
+export SENTRY_DSN="sentry"
+export NODE_OPTIONS="--max_old_space_size=8192"
+
+npm install
+npm run make
+```
+
+Common output paths:
+
+- `out/` for packaged app output
+- `out/make/` for installer artifacts
+
+### Override the k6 binary used by k6 Studio
+
+This repository currently loads k6 from packaged resources, not from a `PATH` lookup or env var.
+If you need to test with a custom k6 build, replace the bundled binary in `resources` before packaging:
+
+- Linux:
+  - `resources/linux/x86_64/k6`
+  - `resources/linux/arm64/k6`
+- macOS:
+  - `resources/mac/x86_64/k6`
+  - `resources/mac/arm64/k6`
+- Windows:
+  - `resources/win/x86_64/k6.exe`
+
+Example (Linux x86_64):
+
+```bash
+cp ./k6 resources/linux/x86_64/k6
+chmod +x resources/linux/x86_64/k6
+```
+
+After replacing the binary, run `npm run package` or `npm run make` to include it in your local build.
