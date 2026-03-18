@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { LogEntry } from '@/schemas/k6'
 
-import { Table } from '../Table'
+import { AutoScrollArea } from '../AutoScrollArea'
 
 function isLogSource(value: string) {
   return value === 'browser' || value === 'runtime' || value === 'script'
@@ -113,15 +113,6 @@ const toggleItemStyles = css`
   }
 `
 
-const headerStyles = css`
-  position: sticky;
-  top: 0;
-  height: 0;
-  padding: 0;
-  margin: 0;
-  --table-row-background-color: var(--color-background);
-`
-
 export function useConsoleFilter() {
   const [filter, setFilter] = useState<ConsoleFilter>({
     levels: ALL_LOG_LEVELS,
@@ -160,7 +151,7 @@ export function LogsSection({
 }: LogsSectionProps) {
   const ref = useAutoScroll<HTMLTableElement>(logs, autoScroll)
 
-  const formattedLogs = useMemo(() => {
+  const filteredLogs = useMemo(() => {
     return logs.map(withSource).filter((log) => {
       return (
         filter.levels.includes(log.entry.level) &&
@@ -291,105 +282,96 @@ export function LogsSection({
           )}
         </ToggleGroup.Root>
       </Flex>
-      <Flex
-        css={css`
-          flex: 1;
-          min-height: 0;
-        `}
-      >
-        <Table.Root
-          size="1"
-          layout="fixed"
-          css={css`
-            height: 100%;
-            flex: 1;
+      <AutoScrollArea tail items={filteredLogs.length}>
+        <Flex height="100%">
+          <table
+            css={css`
+              height: 100%;
+              flex: 1;
 
-            table {
               display: grid;
               align-items: center;
               grid-template-columns: 1fr auto auto;
-            }
 
-            thead,
-            tbody,
-            tr {
-              display: grid;
-              grid-column: 1 / -1;
-              grid-template-columns: subgrid;
-            }
+              thead,
+              tbody,
+              tr {
+                display: grid;
+                grid-column: 1 / -1;
+                grid-template-columns: subgrid;
+              }
 
-            tr {
-              padding-right: var(--space-2);
-            }
+              tr {
+                padding-right: var(--space-2);
+              }
 
-            td {
-              font-family: var(--code-font-family);
-              font-size: 13px;
-              padding: var(--space-2) var(--space-1);
-            }
-          `}
-        >
-          <Table.Header ref={setTableRef}>
-            <Table.Row
-              css={css`
-                height: 0;
-                padding: 0;
-                margin: 0;
-              `}
-            >
-              <Table.ColumnHeaderCell css={headerStyles}>
-                <VisuallyHidden>Message</VisuallyHidden>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell css={headerStyles}>
-                <VisuallyHidden>Source</VisuallyHidden>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell css={headerStyles}>
-                <VisuallyHidden>Time</VisuallyHidden>
-              </Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {formattedLogs.map(({ source, entry }, index) => (
-              <Table.Row key={index}>
-                <Table.Cell
-                  css={css`
-                    border-left: 4px solid var(--${colors[entry.level]}-9);
-                    && {
-                      padding-left: var(--space-2);
-                    }
-                  `}
-                >
-                  <pre
+              td {
+                font-family: var(--code-font-family);
+                font-size: 13px;
+                padding: var(--space-2) var(--space-1);
+              }
+            `}
+          >
+            <thead ref={setTableRef}>
+              <tr
+                css={css`
+                  height: 0;
+                  padding: 0;
+                  margin: 0;
+                `}
+              >
+                <th>
+                  <VisuallyHidden>Message</VisuallyHidden>
+                </th>
+                <th>
+                  <VisuallyHidden>Source</VisuallyHidden>
+                </th>
+                <th>
+                  <VisuallyHidden>Time</VisuallyHidden>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLogs.map(({ source, entry }, index) => (
+                <tr key={index}>
+                  <td
                     css={css`
-                      margin: 0;
+                      border-left: 3px solid var(--${colors[entry.level]}-9);
+                      && {
+                        padding-left: var(--space-2);
+                      }
                     `}
                   >
-                    {entry.msg}
-                  </pre>
-                </Table.Cell>
-                <Text
-                  asChild
-                  css={css`
-                    color: var(--gray-a9);
-                  `}
-                >
-                  <Table.Cell align="right">[{source}]</Table.Cell>
-                </Text>
-                <Text
-                  asChild
-                  css={css`
-                    color: var(--gray-a9);
-                  `}
-                >
-                  <Table.Cell align="right">
-                    {formatTime(entry.time)}
-                  </Table.Cell>
-                </Text>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-      </Flex>
+                    <pre
+                      css={css`
+                        margin: 0;
+                      `}
+                    >
+                      {entry.msg}
+                    </pre>
+                  </td>
+                  <Text
+                    asChild
+                    css={css`
+                      color: var(--gray-a9);
+                    `}
+                  >
+                    <td align="right">[{source}]</td>
+                  </Text>
+                  <Text
+                    asChild
+                    css={css`
+                      color: var(--gray-a9);
+                    `}
+                  >
+                    <td align="right">{formatTime(entry.time)}</td>
+                  </Text>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Flex>
+      </AutoScrollArea>
     </Flex>
   )
 }
