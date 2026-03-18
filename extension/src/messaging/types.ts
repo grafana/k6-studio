@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { BrowserEventSchema } from '@/schemas/recording'
-import { NodeSelector, NodeSelectorSchema } from '@/schemas/selectors'
+import { NodeSelectorSchema } from '@/schemas/selectors'
 
 export const InBrowserSettingsSchema = z.object({
   toolbox: z.object({
@@ -93,8 +93,6 @@ export type InBrowserSettings = z.infer<typeof InBrowserSettingsSchema>
 export type RecordEvents = z.infer<typeof RecordEventsSchema>
 export type EventsRecorded = z.infer<typeof EventsRecordedSchema>
 export type HighlightElements = z.infer<typeof HighlightElementsSchema>
-
-export type HighlightSelector = NodeSelector
 export type Navigate = z.infer<typeof NavigateSchema>
 export type StopRecording = z.infer<typeof StopRecordingSchema>
 export type FocusTab = z.infer<typeof FocusTabSchema>

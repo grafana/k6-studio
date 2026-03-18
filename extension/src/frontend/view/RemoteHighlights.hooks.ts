@@ -9,7 +9,7 @@ import {
 } from '@testing-library/dom'
 import { useEffect, useRef, useState } from 'react'
 
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { useStudioClient } from './StudioClientProvider'
 import { useHighlightDebounce } from './hooks/useHighlightDebounce'
@@ -22,7 +22,7 @@ interface Highlight {
   bounds: Bounds
 }
 
-function findElementsBySelector(selector: HighlightSelector): Element[] {
+function findElementsBySelector(selector: NodeSelector): Element[] {
   switch (selector.type) {
     case 'css':
       return Array.from(document.querySelectorAll(selector.selector))
@@ -59,7 +59,7 @@ export function useHighlightedElements() {
   const client = useStudioClient()
   const idCounter = useRef(0)
 
-  const [selector, setSelector] = useState<HighlightSelector | null>(null)
+  const [selector, setSelector] = useState<NodeSelector | null>(null)
   const [highlights, setHighlights] = useState<Highlight[] | null>(null)
 
   useEffect(() => {
