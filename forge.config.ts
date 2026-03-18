@@ -122,6 +122,10 @@ const config: ForgeConfig = {
           config: 'vite.preload.config.ts',
         },
         {
+          entry: 'src/browser-script/cdp/index.ts',
+          config: 'vite.browser.config.mts',
+        },
+        {
           // Entry doesn't really matter here.
           entry: 'src/main/runner/entrypoint.ts',
           config: 'vite.script.config.ts',
