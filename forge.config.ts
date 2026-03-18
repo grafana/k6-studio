@@ -57,7 +57,6 @@ const config: ForgeConfig = {
     icon: './resources/icons/logo',
     asar: true,
     extraResource: [
-      '.vite/build/extension',
       './resources/browser',
       './resources/json_output.py',
       './resources/entrypoint.js',
@@ -123,12 +122,7 @@ const config: ForgeConfig = {
           config: 'vite.preload.config.ts',
         },
         {
-          entry: 'extension/src/background/index.ts',
-          config: 'vite.extension.config.mts',
-        },
-        {
-          // Entry doesn't really matter here.
-          entry: 'extension/src/cdp/index.ts',
+          entry: 'src/handlers/browser/recorders/cdp/script/cdp/index.ts',
           config: 'vite.browser.config.mts',
         },
         {

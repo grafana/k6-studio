@@ -1,5 +1,5 @@
 import { WaitForEvent } from '@/schemas/recording'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from '@/services/browser/types'
 
 import { Selector } from './Selector'
 

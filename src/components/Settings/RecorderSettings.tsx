@@ -108,9 +108,8 @@ export const RecorderSettings = () => {
         errors={errors}
         hint={
           <>
-            k6 Studio can record user interactions using a browser extension or
-            the Chrome DevTools Protocol (CDP). Try switching between these
-            methods if you encounter issues with one of them.
+            k6 Studio can record user interactions using the Chrome DevTools
+            Protocol (CDP).
           </>
         }
         hintType="text"
@@ -126,9 +125,6 @@ export const RecorderSettings = () => {
                   value={field.value}
                   onValueChange={field.onChange}
                 >
-                  <RadioGroup.Item value="extension">
-                    Using browser extension
-                  </RadioGroup.Item>
                   <RadioGroup.Item value="cdp">
                     Using Chrome DevTools Protocol
                   </RadioGroup.Item>

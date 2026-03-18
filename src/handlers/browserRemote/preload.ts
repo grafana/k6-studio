@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { HighlightSelector } from '@/services/browser/types'
 
 import { BrowserRemoteHandlers } from './types'
 

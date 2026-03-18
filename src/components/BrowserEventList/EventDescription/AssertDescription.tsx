@@ -1,7 +1,7 @@
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { AssertEvent } from '@/schemas/recording'
+import { HighlightSelector } from '@/services/browser/types'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
 

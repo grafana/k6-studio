@@ -24,7 +24,7 @@ export const defaultSettings: AppSettings = {
     automaticallyFindPort: true,
     sslInsecure: false,
   },
-  recorder: { detectBrowserPath: true, browserRecording: 'extension' },
+  recorder: { detectBrowserPath: true, browserRecording: 'cdp' },
   windowState: { width: 1200, height: 800, x: 0, y: 0, isMaximized: true },
   telemetry: { usageReport: true, errorReport: true },
   appearance: { theme: 'system' },

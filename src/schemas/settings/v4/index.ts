@@ -60,11 +60,7 @@ export const ProxySettingsSchema = z
 
 const RecorderDetectBrowserPathSchema = z.object({
   detectBrowserPath: z.literal(true),
-  browserRecording: z.union([
-    z.literal('extension'),
-    z.literal('cdp'),
-    z.literal('disabled'),
-  ]),
+  browserRecording: z.union([z.literal('cdp'), z.literal('disabled')]),
 })
 
 const RecorderBrowserPathSchema = RecorderDetectBrowserPathSchema.extend({
