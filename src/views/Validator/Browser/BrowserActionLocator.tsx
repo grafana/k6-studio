@@ -2,6 +2,7 @@ import { NodeSelector } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
 import { ActionLocator } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
+import { HighlightSelector } from 'extension/src/messaging/types'
 
 function toNodeSelector(locator: ActionLocator): NodeSelector {
   switch (locator.type) {
@@ -59,12 +60,70 @@ function toNodeSelector(locator: ActionLocator): NodeSelector {
   }
 }
 
-interface BrowserActionLocatorProps {
-  locator: ActionLocator
+function toCssSelector(locator: ActionLocator): string | null {
+  switch (locator.type) {
+    case 'css':
+      return locator.selector
+
+    case 'testid':
+      return `[data-testid="${locator.testId}"]`
+
+    case 'role':
+      return null
+
+    case 'alt':
+      return `[alt="${locator.text}"]`
+
+    case 'label':
+      return null
+
+    case 'placeholder':
+      return `[placeholder="${locator.placeholder}"]`
+
+    case 'text':
+      return null
+
+    case 'title':
+      return `[title="${locator.title}"]`
+
+    default:
+      return exhaustive(locator)
+  }
 }
 
-export function BrowserActionLocator({ locator }: BrowserActionLocatorProps) {
+interface BrowserActionLocatorProps {
+  locator: ActionLocator
+  onHighlight?: (selector: HighlightSelector | null) => void
+}
+
+export function BrowserActionLocator({
+  locator,
+  onHighlight,
+}: BrowserActionLocatorProps) {
   const nodeLocator = toNodeSelector(locator)
 
-  return <Locator locator={nodeLocator} />
+  const handleHighlightChange = (highlighted: boolean) => {
+    if (!highlighted || !onHighlight) {
+      onHighlight?.(null)
+      return
+    }
+
+    const cssSelector = toCssSelector(locator)
+
+    if (cssSelector === null) {
+      return
+    }
+
+    onHighlight({
+      type: 'css',
+      selector: cssSelector,
+    })
+  }
+
+  return (
+    <Locator
+      locator={nodeLocator}
+      onHighlightChange={onHighlight ? handleHighlightChange : undefined}
+    />
+  )
 }

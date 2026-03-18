@@ -14,6 +14,7 @@ import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
 import { BrowserOverviewPanel } from './BrowserOverviewPanel'
+import { DebuggerHighlightProvider, useDebuggerHighlight } from './DebuggerHighlightContext'
 import { NetworkInspector } from './NetworkInspector'
 
 interface BrowserDebuggerProps {
@@ -22,11 +23,12 @@ interface BrowserDebuggerProps {
   onDebugScript: () => void
 }
 
-export function BrowserDebugger({
+function BrowserDebuggerContent({
   script,
   session,
   onDebugScript,
 }: BrowserDebuggerProps) {
+  const { setHighlightedSelector } = useDebuggerHighlight()
   const [drawer, setDrawer] = usePanelCallbackRef()
 
   const drawerLayout = useDefaultLayout({
@@ -77,6 +79,7 @@ export function BrowserDebugger({
                 <BrowserActionsPanel
                   session={session}
                   onDebugScript={onDebugScript}
+                  onHighlight={setHighlightedSelector}
                 />
               </Panel>
             </Group>
@@ -116,5 +119,13 @@ export function BrowserDebugger({
         </Group>
       </Flex>
     </Tabs.Root>
+  )
+}
+
+export function BrowserDebugger(props: BrowserDebuggerProps) {
+  return (
+    <DebuggerHighlightProvider>
+      <BrowserDebuggerContent {...props} />
+    </DebuggerHighlightProvider>
   )
 }
