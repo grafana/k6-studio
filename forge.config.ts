@@ -122,7 +122,7 @@ const config: ForgeConfig = {
           config: 'vite.preload.config.ts',
         },
         {
-          entry: 'src/browser-script/cdp/index.ts',
+          entry: 'src/handlers/browser/recorders/cdp/script/cdp/index.ts',
           config: 'vite.browser.config.mts',
         },
         {

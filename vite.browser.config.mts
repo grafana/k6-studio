@@ -28,7 +28,7 @@ export default defineConfig((env) => {
       outDir: `resources/browser`,
       sourcemap: 'inline',
       lib: {
-        entry: 'src/browser-script/cdp/index.ts',
+        entry: 'src/handlers/browser/recorders/cdp/script/cdp/index.ts',
         formats: ['iife'],
         name: '__k6_studio_cdp__',
         fileName: () => 'index.js',

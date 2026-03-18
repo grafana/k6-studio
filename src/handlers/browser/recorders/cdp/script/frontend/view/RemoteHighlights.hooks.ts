@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { HighlightSelector } from 'src/browser-script/messaging/types'
+import { HighlightSelector } from 'src/handlers/browser/recorders/cdp/script/messaging/types'
 
 import { useStudioClient } from './StudioClientProvider'
 import { useHighlightDebounce } from './hooks/useHighlightDebounce'

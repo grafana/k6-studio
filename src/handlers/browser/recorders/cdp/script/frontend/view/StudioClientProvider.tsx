@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext } from 'react'
 
-import { BrowserExtensionClient } from 'src/browser-script/messaging'
+import { BrowserExtensionClient } from 'src/handlers/browser/recorders/cdp/script/messaging'
 
 const context = createContext<BrowserExtensionClient | null>(null)
 

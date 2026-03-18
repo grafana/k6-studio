@@ -1,8 +1,11 @@
 import { nanoid } from 'nanoid'
 
 import { BrowserEventTarget } from '@/schemas/recording'
-import { getEventTarget } from 'src/browser-script/target'
-import { ElementRole, getElementRoles } from 'src/browser-script/utils/aria'
+import { getEventTarget } from 'src/handlers/browser/recorders/cdp/script/target'
+import {
+  ElementRole,
+  getElementRoles,
+} from 'src/handlers/browser/recorders/cdp/script/utils/aria'
 
 import { Bounds } from '../types'
 import { getElementBounds } from '../utils'

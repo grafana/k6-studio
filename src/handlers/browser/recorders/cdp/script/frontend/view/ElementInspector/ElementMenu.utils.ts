@@ -1,7 +1,10 @@
 import { BrowserEventTarget } from '@/schemas/recording'
-import { getEventTarget } from 'src/browser-script/target'
-import { ElementRole, getElementRoles } from 'src/browser-script/utils/aria'
-import { findAssociatedElement } from 'src/browser-script/utils/dom'
+import { getEventTarget } from 'src/handlers/browser/recorders/cdp/script/target'
+import {
+  ElementRole,
+  getElementRoles,
+} from 'src/handlers/browser/recorders/cdp/script/utils/aria'
+import { findAssociatedElement } from 'src/handlers/browser/recorders/cdp/script/utils/dom'
 
 import { CheckAssertionData } from './assertions/types'
 import { TrackedElement } from './utils'

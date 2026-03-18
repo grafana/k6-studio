@@ -7,7 +7,7 @@ import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
-import { HighlightSelector } from 'src/browser-script/messaging/types'
+import { HighlightSelector } from 'src/handlers/browser/recorders/cdp/script/messaging/types'
 
 import { useStudioClient } from './StudioClientProvider'
 
