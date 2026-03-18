@@ -17,6 +17,7 @@ export const DEFAULT_SETTINGS: InBrowserSettings = {
       left: 50,
     },
   },
+  clickRecordingMode: 'interactive',
 }
 
 export type OnSettingsUpdateEventHandler = (settings: InBrowserSettings) => void
