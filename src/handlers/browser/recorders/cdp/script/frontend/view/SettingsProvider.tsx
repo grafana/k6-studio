@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react'
 
-import { InBrowserSettings } from 'src/handlers/browser/recorders/cdp/script/messaging/types'
+import { InBrowserSettings } from '@/handlers/browser/recorders/cdp/script/messaging/types'
 
 const context = createContext<SettingsStorage | null>(null)
 

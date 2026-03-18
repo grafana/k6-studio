@@ -1,5 +1,5 @@
-import { useInBrowserSettings } from 'src/handlers/browser/recorders/cdp/script/frontend/view/SettingsProvider'
-import { InBrowserSettings } from 'src/handlers/browser/recorders/cdp/script/messaging/types'
+import { useInBrowserSettings } from '@/handlers/browser/recorders/cdp/script/frontend/view/SettingsProvider'
+import { InBrowserSettings } from '@/handlers/browser/recorders/cdp/script/messaging/types'
 
 export function useToolboxSettings() {
   const [settings, setSettings] = useInBrowserSettings()

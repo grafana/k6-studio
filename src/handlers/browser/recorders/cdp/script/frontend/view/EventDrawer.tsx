@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
+import { HighlightSelector } from '@/handlers/browser/recorders/cdp/script/messaging/types'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
-import { HighlightSelector } from 'src/handlers/browser/recorders/cdp/script/messaging/types'
 
 import { useStudioClient } from './StudioClientProvider'
 

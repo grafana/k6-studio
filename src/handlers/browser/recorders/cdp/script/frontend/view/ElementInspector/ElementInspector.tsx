@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid'
 import { useState } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { ElementRole } from 'src/handlers/browser/recorders/cdp/script/utils/aria'
+import { ElementRole } from '@/handlers/browser/recorders/cdp/script/utils/aria'
 
 import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'

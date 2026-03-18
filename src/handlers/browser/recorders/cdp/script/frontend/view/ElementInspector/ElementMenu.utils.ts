@@ -1,10 +1,10 @@
-import { BrowserEventTarget } from '@/schemas/recording'
-import { getEventTarget } from 'src/handlers/browser/recorders/cdp/script/target'
+import { getEventTarget } from '@/handlers/browser/recorders/cdp/script/target'
 import {
   ElementRole,
   getElementRoles,
-} from 'src/handlers/browser/recorders/cdp/script/utils/aria'
-import { findAssociatedElement } from 'src/handlers/browser/recorders/cdp/script/utils/dom'
+} from '@/handlers/browser/recorders/cdp/script/utils/aria'
+import { findAssociatedElement } from '@/handlers/browser/recorders/cdp/script/utils/dom'
+import { BrowserEventTarget } from '@/schemas/recording'
 
 import { CheckAssertionData } from './assertions/types'
 import { TrackedElement } from './utils'
