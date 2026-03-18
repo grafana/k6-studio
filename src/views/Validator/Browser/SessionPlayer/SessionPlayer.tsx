@@ -2,12 +2,14 @@ import 'node_modules/rrweb/dist/style.min.css'
 
 import { css } from '@emotion/react'
 import { Flex, Spinner, Box } from '@radix-ui/themes'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { DebugSession } from '../../types'
+import { useDebuggerHighlight } from '../DebuggerHighlightContext'
 
 import { AddressBar } from './AddressBar'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
+import { ReplayerHighlights } from './ReplayerHighlights'
 import { usePlayer } from './SessionPlayer.hooks'
 import { Viewport } from './Viewport'
 import { Page } from './types'
@@ -36,12 +38,17 @@ interface SessionPlayerProps {
 
 export function SessionPlayer({ session }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
+  const { setReplayer } = useDebuggerHighlight()
 
-  const { loading, state, time, page, play, pause, seek } = usePlayer({
+  const { loading, state, time, page, play, pause, seek, player } = usePlayer({
     streaming: session.state === 'running',
     mount,
     events: session.browser.replay,
   })
+
+  useEffect(() => {
+    setReplayer(player)
+  }, [player, setReplayer])
 
   const handleSeek = ({ time, commit }: OnSeekEvent) => {
     seek(time, { scrubbing: !commit })
@@ -101,6 +108,7 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
                 display: pageState !== 'loaded' ? 'none' : 'block',
               }}
             />
+            {pageState === 'loaded' && <ReplayerHighlights />}
           </Box>
         </Viewport>
       </div>
