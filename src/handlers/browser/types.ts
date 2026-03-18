@@ -16,7 +16,7 @@ export interface LaunchBrowserOptions {
 
 export type LaunchBrowserErrorReason =
   | 'websocket-server-error'
-  | 'extension-load'
+  | 'recorder-initialization-error'
   | 'browser-launch'
   | 'unknown'
 

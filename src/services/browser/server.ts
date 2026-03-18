@@ -1,11 +1,9 @@
 import { BrowserEvent } from '@/schemas/recording'
-import { BrowserExtensionClient } from 'extension/src/messaging'
-import { WebSocketServerTransport } from 'extension/src/messaging/transports/webSocketServer'
-import {
-  BrowserExtensionMessage,
-  InBrowserSettings,
-} from 'extension/src/messaging/types'
-import { EventEmitter } from 'extension/src/utils/events'
+import { EventEmitter } from '@/utils/events'
+
+import { BrowserExtensionClient } from './client'
+import { BrowserExtensionMessage, InBrowserSettings } from './types'
+import { WebSocketServerTransport } from './websocket'
 
 export interface RecordEvent {
   source: 'record-events' | 'events-recorded'

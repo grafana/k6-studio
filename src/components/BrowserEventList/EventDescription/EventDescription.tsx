@@ -1,7 +1,7 @@
 import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { BrowserEvent } from '@/schemas/recording'
+import { HighlightSelector } from '@/services/browser/types'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { AssertDescription } from './AssertDescription'
 import { ClickDescription } from './ClickDescription'

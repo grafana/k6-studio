@@ -49,7 +49,7 @@ export function migrate(
     recorder: {
       ...settings.recorder,
       browserRecording: settings.recorder.enableBrowserRecorder
-        ? 'extension'
+        ? 'cdp'
         : 'disabled',
     },
   }

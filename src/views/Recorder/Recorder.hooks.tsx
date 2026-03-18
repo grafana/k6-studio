@@ -44,12 +44,12 @@ export function useRecordingErrorToast() {
           })
           break
 
-        case 'extension-load':
+        case 'recorder-initialization-error':
           showToast({
             status: 'error',
-            title: 'Failed to load extension',
+            title: 'Failed to initialize recorder',
             description:
-              'Loading the browser extension failed. Browser recording will not be available.',
+              'Initializing the browser recorder failed. Browser recording will not be available.',
             action: (
               <Button onClick={() => openSettingsDialog('logs')}>
                 Open log file

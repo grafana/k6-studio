@@ -3,13 +3,13 @@ import logger from 'electron-log/main'
 
 import { BrowserEvent } from '@/schemas/recording'
 import { BrowserServer } from '@/services/browser/server'
+import { HighlightSelector } from '@/services/browser/types'
 import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
+import { EventEmitter } from '@/utils/events'
 import { readResource } from '@/utils/resources'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
-import { EventEmitter } from 'extension/src/utils/events'
 
 import {
   BrowserLaunchError,
@@ -215,7 +215,7 @@ export async function launchBrowserWithDevToolsProtocol(
         .catch((error) => {
           process.kill()
 
-          reject(new BrowserLaunchError('extension-load', error))
+          reject(new BrowserLaunchError('recorder-initialization-error', error))
         })
     })
 

@@ -2,8 +2,8 @@ import { ChildProcess } from 'child_process'
 import logger from 'electron-log/main'
 import { Writable, Readable } from 'stream'
 
+import { EventEmitter } from '@/utils/events'
 import { safeJsonParse } from '@/utils/json'
-import { EventEmitter } from 'extension/src/utils/events'
 
 import { ChromeCommand, ChromeEvent, Transport } from '../client'
 

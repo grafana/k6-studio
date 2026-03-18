@@ -1,8 +1,8 @@
 import { getNodeSelector } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
 import { ElementSelector } from '@/schemas/recording'
+import { HighlightSelector } from '@/services/browser/types'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 interface SelectorProps {
   selectors: ElementSelector

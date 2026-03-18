@@ -112,7 +112,7 @@ describe('Settings migration', () => {
       const migration = v3.migrate(v3Settings)
 
       expect(migration.version).toBe('4.0')
-      expect(migration.recorder.browserRecording).toBe('extension')
+      expect(migration.recorder.browserRecording).toBe('cdp')
     })
 
     it('should set browserRecorder to "disabled" when browserRecordingEnabled is false', () => {

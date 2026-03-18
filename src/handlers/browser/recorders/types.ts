@@ -1,6 +1,6 @@
 import { BrowserEvent } from '@/schemas/recording'
-import { HighlightSelector } from 'extension/src/messaging/types'
-import { EventEmitter } from 'extension/src/utils/events'
+import { HighlightSelector } from '@/services/browser/types'
+import { EventEmitter } from '@/utils/events'
 
 import { LaunchBrowserErrorReason } from '../types'
 
@@ -10,8 +10,7 @@ export interface RecordingSessionEventMap {
   stop: void
 }
 
-export interface RecordingSession
-  extends EventEmitter<RecordingSessionEventMap> {
+export interface RecordingSession extends EventEmitter<RecordingSessionEventMap> {
   highlightElement(selector: HighlightSelector | null): void
   navigateTo(url: string): void
   stop(): void

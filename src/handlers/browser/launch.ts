@@ -2,7 +2,6 @@ import { RecorderSettings } from '@/types/settings'
 import { exhaustive } from '@/utils/typescript'
 
 import { launchBrowserWithDevToolsProtocol } from './recorders/cdp'
-import { launchBrowserWithExtension } from './recorders/extension'
 import { launchBrowserWithHttpOnly } from './recorders/http'
 import { RecordingSession } from './recorders/types'
 import { LaunchBrowserOptions } from './types'
@@ -26,9 +25,6 @@ export async function launchBrowser(
 
 function launchWithBrowserRecording({ url, settings }: LaunchBrowserArgs) {
   switch (settings.browserRecording) {
-    case 'extension':
-      return launchBrowserWithExtension(url)
-
     case 'cdp':
       return launchBrowserWithDevToolsProtocol('pipe', url)
 
