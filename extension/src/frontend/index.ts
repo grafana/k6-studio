@@ -6,4 +6,4 @@ import { initializeView } from './view'
 const storage = configureStorage()
 
 initializeView(client, storage)
-startRecording(client)
+startRecording(client, () => storage.initial)

@@ -26,6 +26,7 @@ import { useStudioClient } from '../StudioClientProvider'
 import { Tool } from '../types'
 
 import { ToolBoxLogo } from './ToolBoxLogo'
+import { ToolBoxMenu } from './ToolBoxMenu'
 import { ToolBoxRoot } from './ToolBoxRoot'
 import { useToolboxSettings } from './ToolBoxRoot.hooks'
 import { ToolBoxTooltip } from './ToolBoxTooltip'
@@ -151,6 +152,8 @@ export function ToolBox({
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
+        <Toolbar.Separator />
+        <ToolBoxMenu />
         <Toolbar.Separator />
         <Toolbar.ToggleGroup
           type="single"
