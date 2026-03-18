@@ -1,12 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
 import {
-  getByAltText,
-  getByLabelText,
-  getByPlaceholderText,
-  getByRole,
-  getByTestId,
-  getByText,
-  getByTitle,
   queryAllByAltText,
   queryAllByLabelText,
   queryAllByPlaceholderText,
@@ -15,6 +7,7 @@ import {
   queryAllByText,
   queryAllByTitle,
 } from '@testing-library/dom'
+import { useEffect, useRef, useState } from 'react'
 
 import { HighlightSelector } from 'extension/src/messaging/types'
 

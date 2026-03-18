@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { BrowserEventSchema } from '@/schemas/recording'
+import { NodeSelector, NodeSelectorSchema } from '@/schemas/selectors'
 
 export const InBrowserSettingsSchema = z.object({
   toolbox: z.object({
@@ -29,61 +30,9 @@ export const EventsRecordedSchema = z.object({
   events: z.array(BrowserEventSchema),
 })
 
-const CssHighlightSelectorSchema = z.object({
-  type: z.literal('css'),
-  selector: z.string(),
-})
-
-const GetByRoleHighlightSelectorSchema = z.object({
-  type: z.literal('role'),
-  role: z.string(),
-  name: z.string(),
-})
-
-const GetByAltTextHighlightSelectorSchema = z.object({
-  type: z.literal('alt'),
-  text: z.string(),
-})
-
-const GetByLabelHighlightSelectorSchema = z.object({
-  type: z.literal('label'),
-  text: z.string(),
-})
-
-const GetByPlaceholderHighlightSelectorSchema = z.object({
-  type: z.literal('placeholder'),
-  text: z.string(),
-})
-
-const GetByTextHighlightSelectorSchema = z.object({
-  type: z.literal('text'),
-  text: z.string(),
-})
-
-const GetByTitleHighlightSelectorSchema = z.object({
-  type: z.literal('title'),
-  text: z.string(),
-})
-
-const GetByTestIdHighlightSelectorSchema = z.object({
-  type: z.literal('test-id'),
-  testId: z.string(),
-})
-
-const HighlightSelectorSchema = z.discriminatedUnion('type', [
-  CssHighlightSelectorSchema,
-  GetByRoleHighlightSelectorSchema,
-  GetByAltTextHighlightSelectorSchema,
-  GetByLabelHighlightSelectorSchema,
-  GetByPlaceholderHighlightSelectorSchema,
-  GetByTextHighlightSelectorSchema,
-  GetByTitleHighlightSelectorSchema,
-  GetByTestIdHighlightSelectorSchema,
-])
-
 export const HighlightElementsSchema = z.object({
   type: z.literal('highlight-elements'),
-  selector: HighlightSelectorSchema.nullable(),
+  selector: NodeSelectorSchema.nullable(),
 })
 
 export const NavigateSchema = z.object({
@@ -143,8 +92,9 @@ export type InBrowserSettings = z.infer<typeof InBrowserSettingsSchema>
 
 export type RecordEvents = z.infer<typeof RecordEventsSchema>
 export type EventsRecorded = z.infer<typeof EventsRecordedSchema>
-export type HighlightSelector = z.infer<typeof HighlightSelectorSchema>
 export type HighlightElements = z.infer<typeof HighlightElementsSchema>
+
+export type HighlightSelector = NodeSelector
 export type Navigate = z.infer<typeof NavigateSchema>
 export type StopRecording = z.infer<typeof StopRecordingSchema>
 export type FocusTab = z.infer<typeof FocusTabSchema>
