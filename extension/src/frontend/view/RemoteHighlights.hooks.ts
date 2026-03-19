@@ -1,6 +1,15 @@
+import {
+  queryAllByAltText,
+  queryAllByLabelText,
+  queryAllByPlaceholderText,
+  queryAllByRole,
+  queryAllByTestId,
+  queryAllByText,
+  queryAllByTitle,
+} from '@testing-library/dom'
 import { useEffect, useRef, useState } from 'react'
 
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { useStudioClient } from './StudioClientProvider'
 import { useHighlightDebounce } from './hooks/useHighlightDebounce'
@@ -13,11 +22,44 @@ interface Highlight {
   bounds: Bounds
 }
 
+function findElementsBySelector(selector: NodeSelector): Element[] {
+  switch (selector.type) {
+    case 'css':
+      return Array.from(document.querySelectorAll(selector.selector))
+
+    case 'test-id':
+      return queryAllByTestId(document.body, selector.testId)
+
+    case 'role':
+      return queryAllByRole(document.body, selector.role, {
+        name: selector.name,
+      })
+
+    case 'alt':
+      return queryAllByAltText(document.body, selector.text)
+
+    case 'label':
+      return queryAllByLabelText(document.body, selector.text)
+
+    case 'placeholder':
+      return queryAllByPlaceholderText(document.body, selector.text)
+
+    case 'text':
+      return queryAllByText(document.body, selector.text)
+
+    case 'title':
+      return queryAllByTitle(document.body, selector.text)
+
+    default:
+      return []
+  }
+}
+
 export function useHighlightedElements() {
   const client = useStudioClient()
   const idCounter = useRef(0)
 
-  const [selector, setSelector] = useState<HighlightSelector | null>(null)
+  const [selector, setSelector] = useState<NodeSelector | null>(null)
   const [highlights, setHighlights] = useState<Highlight[] | null>(null)
 
   useEffect(() => {
@@ -34,8 +76,8 @@ export function useHighlightedElements() {
     }
 
     try {
-      const elements = document.querySelectorAll(selector.selector)
-      const highlights = Array.from(elements).map((element) => {
+      const elements = findElementsBySelector(selector)
+      const highlights = elements.map((element) => {
         const bounds = getElementBounds(element)
 
         return {

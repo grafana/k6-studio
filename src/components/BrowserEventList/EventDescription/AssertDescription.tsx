@@ -1,13 +1,13 @@
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { AssertEvent } from '@/schemas/recording'
+import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { Selector } from './Selector'
 
 interface AssertDescriptionProps {
   event: AssertEvent
-  onHighlight: (selector: HighlightSelector | null) => void
+  onHighlight: (selector: NodeSelector | null) => void
 }
 
 export function AssertDescription({
