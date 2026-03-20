@@ -212,6 +212,11 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
         }
 
       case 'submit-form':
+        const shouldWaitForNavigation =
+          nextEvent?.type === 'navigate-to-page' &&
+          nextEvent.source === 'implicit' &&
+          nextEvent.tab === event.tab
+
         return {
           type: 'click',
           nodeId: event.eventId,
@@ -222,9 +227,11 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
             alt: false,
             meta: false,
           },
-          waitForNavigation: {
-            page: getPage(event.tab),
-          },
+          waitForNavigation: shouldWaitForNavigation
+            ? {
+                page: getPage(event.tab),
+              }
+            : undefined,
           inputs: {
             previous,
             locator: getLocator(event.tab, event.submitter),
