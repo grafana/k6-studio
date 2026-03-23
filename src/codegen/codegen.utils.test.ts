@@ -11,6 +11,7 @@ import {
   stringify,
   removeWebsocketRequests,
   processRedirectChains,
+  shouldIncludeHeaderInScript,
 } from './codegen.utils'
 
 describe('Code generation - utils', () => {
@@ -322,6 +323,62 @@ describe('Code generation - utils', () => {
           expression: '(r) => r.status === 200',
         },
       ])
+    })
+  })
+
+  describe('shouldIncludeHeaderInScript', () => {
+    it('excludes original headers', () => {
+      expect(shouldIncludeHeaderInScript('Cookie')).toBe(false)
+      expect(shouldIncludeHeaderInScript('User-Agent')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Host')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Content-Length')).toBe(false)
+    })
+
+    it('excludes headers case-insensitively', () => {
+      expect(shouldIncludeHeaderInScript('cookie')).toBe(false)
+      expect(shouldIncludeHeaderInScript('COOKIE')).toBe(false)
+      expect(shouldIncludeHeaderInScript('accept-encoding')).toBe(false)
+      expect(shouldIncludeHeaderInScript('ACCEPT-ENCODING')).toBe(false)
+    })
+
+    it('excludes transport and connection headers', () => {
+      expect(shouldIncludeHeaderInScript('Connection')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Accept-Encoding')).toBe(false)
+      expect(shouldIncludeHeaderInScript('TE')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Transfer-Encoding')).toBe(false)
+    })
+
+    it('excludes browser-specific headers', () => {
+      expect(shouldIncludeHeaderInScript('Cache-Control')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Pragma')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Upgrade-Insecure-Requests')).toBe(
+        false
+      )
+      expect(shouldIncludeHeaderInScript('DNT')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Priority')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Accept-Language')).toBe(false)
+    })
+
+    it('excludes all Sec- prefixed headers', () => {
+      expect(shouldIncludeHeaderInScript('Sec-Fetch-Site')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Sec-Fetch-Mode')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Sec-Fetch-Dest')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Sec-Fetch-User')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Sec-CH-UA')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Sec-CH-UA-Mobile')).toBe(false)
+      expect(shouldIncludeHeaderInScript('Sec-CH-UA-Platform')).toBe(false)
+      expect(shouldIncludeHeaderInScript('sec-fetch-site')).toBe(false)
+      expect(shouldIncludeHeaderInScript('SEC-FETCH-SITE')).toBe(false)
+    })
+
+    it('keeps application-level headers', () => {
+      expect(shouldIncludeHeaderInScript('Content-Type')).toBe(true)
+      expect(shouldIncludeHeaderInScript('Accept')).toBe(true)
+      expect(shouldIncludeHeaderInScript('Authorization')).toBe(true)
+      expect(shouldIncludeHeaderInScript('Referer')).toBe(true)
+      expect(shouldIncludeHeaderInScript('Origin')).toBe(true)
+      expect(shouldIncludeHeaderInScript('X-Custom-Header')).toBe(true)
+      expect(shouldIncludeHeaderInScript('X-CSRF-Token')).toBe(true)
     })
   })
 
