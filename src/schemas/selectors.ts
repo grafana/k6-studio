@@ -1,0 +1,73 @@
+import { z } from 'zod'
+
+export const CssNodeSelectorSchema = z.object({
+  type: z.literal('css'),
+  selector: z.string(),
+})
+
+export const GetByRoleNodeSelectorSchema = z.object({
+  type: z.literal('role'),
+  role: z.string(),
+  name: z.string(),
+})
+
+export const GetByAltTextNodeSelectorSchema = z.object({
+  type: z.literal('alt'),
+  text: z.string(),
+})
+
+export const GetByLabelNodeSelectorSchema = z.object({
+  type: z.literal('label'),
+  text: z.string(),
+})
+
+export const GetByPlaceholderNodeSelectorSchema = z.object({
+  type: z.literal('placeholder'),
+  text: z.string(),
+})
+
+export const GetByTextNodeSelectorSchema = z.object({
+  type: z.literal('text'),
+  text: z.string(),
+})
+
+export const GetByTitleNodeSelectorSchema = z.object({
+  type: z.literal('title'),
+  text: z.string(),
+})
+
+export const GetByTestIdNodeSelectorSchema = z.object({
+  type: z.literal('test-id'),
+  testId: z.string(),
+})
+
+export const NodeSelectorSchema = z.discriminatedUnion('type', [
+  CssNodeSelectorSchema,
+  GetByRoleNodeSelectorSchema,
+  GetByAltTextNodeSelectorSchema,
+  GetByLabelNodeSelectorSchema,
+  GetByPlaceholderNodeSelectorSchema,
+  GetByTextNodeSelectorSchema,
+  GetByTitleNodeSelectorSchema,
+  GetByTestIdNodeSelectorSchema,
+])
+
+export type CssNodeSelector = z.infer<typeof CssNodeSelectorSchema>
+export type GetByRoleNodeSelector = z.infer<typeof GetByRoleNodeSelectorSchema>
+export type GetByAltTextNodeSelector = z.infer<
+  typeof GetByAltTextNodeSelectorSchema
+>
+export type GetByLabelNodeSelector = z.infer<
+  typeof GetByLabelNodeSelectorSchema
+>
+export type GetByPlaceholderNodeSelector = z.infer<
+  typeof GetByPlaceholderNodeSelectorSchema
+>
+export type GetByTextNodeSelector = z.infer<typeof GetByTextNodeSelectorSchema>
+export type GetByTitleNodeSelector = z.infer<
+  typeof GetByTitleNodeSelectorSchema
+>
+export type GetByTestIdNodeSelector = z.infer<
+  typeof GetByTestIdNodeSelectorSchema
+>
+export type NodeSelector = z.infer<typeof NodeSelectorSchema>

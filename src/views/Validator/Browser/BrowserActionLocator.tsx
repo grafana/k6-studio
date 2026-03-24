@@ -1,6 +1,6 @@
-import { NodeSelector } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
 import { ActionLocator } from '@/main/runner/schema'
+import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
 function toNodeSelector(locator: ActionLocator): NodeSelector {

@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react'
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
 import { BrowserEvent } from '@/schemas/recording'
+import { NodeSelector } from '@/schemas/selectors'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { useStudioClient } from './StudioClientProvider'
 
@@ -67,7 +67,7 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
 
   const events = useRecordedEvents()
 
-  const handleHighlight = (selector: HighlightSelector | null) => {
+  const handleHighlight = (selector: NodeSelector | null) => {
     client.send({
       type: 'highlight-elements',
       selector,
