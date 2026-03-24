@@ -1,31 +1,30 @@
-import { canonicalHeaderKey } from '@/rules/utils'
 import { ProxyData, RequestSnippetSchema } from '@/types'
 import { getLocationHeader, getUpgradeHeader } from '@/utils/headers'
 
 const HEADERS_TO_EXCLUDE = [
   // Managed by k6 automatically
-  'Cookie',
-  'User-Agent',
-  'Host',
-  'Content-Length',
+  'cookie',
+  'user-agent',
+  'host',
+  'content-length',
 
   // Transport/connection
-  'Connection',
-  'Accept-Encoding',
-  'Te',
-  'Transfer-Encoding',
+  'connection',
+  'accept-encoding',
+  'te',
+  'transfer-encoding',
 
   // Browser cache (k6 has no cache)
-  'Cache-Control',
-  'Pragma',
+  'cache-control',
+  'pragma',
 
   // Browser-specific behavior
-  'Upgrade-Insecure-Requests',
-  'Dnt',
-  'Priority',
+  'upgrade-insecure-requests',
+  'dnt',
+  'priority',
 
   // Browser preferences
-  'Accept-Language',
+  'accept-language',
 ]
 
 // Browser security metadata headers — prefix match covers all
@@ -176,7 +175,7 @@ export function shouldIncludeHeaderInScript(key: string) {
   if (HEADER_PREFIXES_TO_EXCLUDE.some((prefix) => lower.startsWith(prefix))) {
     return false
   }
-  return !HEADERS_TO_EXCLUDE.includes(canonicalHeaderKey(key))
+  return !HEADERS_TO_EXCLUDE.includes(lower)
 }
 
 export function generateScriptHeader() {
