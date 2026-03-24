@@ -23,11 +23,14 @@ import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
 import { getAppIcon, getPlatform } from './utils/electron'
+import { isMsiInstall } from './utils/installationType'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
-  // handle auto updates
-  updateElectronApp()
+  // handle auto updates (Squirrel-based, not compatible with MSI installs)
+  if (!isMsiInstall()) {
+    updateElectronApp()
+  }
 
   // initialize Sentry
   Sentry.init({

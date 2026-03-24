@@ -3,6 +3,7 @@ import { MakerDeb } from '@electron-forge/maker-deb'
 import { MakerDMG } from '@electron-forge/maker-dmg'
 import { MakerRpm } from '@electron-forge/maker-rpm'
 import { MakerSquirrel } from '@electron-forge/maker-squirrel'
+import { MakerWix } from '@electron-forge/maker-wix'
 import { MakerZIP } from '@electron-forge/maker-zip'
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { VitePlugin } from '@electron-forge/plugin-vite'
@@ -92,6 +93,17 @@ const config: ForgeConfig = {
     new MakerSquirrel({
       iconUrl:
         'https://raw.githubusercontent.com/grafana/k6-studio/refs/heads/main/resources/icons/logo.ico',
+    }),
+    new MakerWix({
+      manufacturer: 'Grafana Labs',
+      icon: './resources/icons/logo.ico',
+      features: {
+        autoUpdate: false,
+        autoLaunch: false,
+      },
+      ui: {
+        chooseDirectory: true,
+      },
     }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG(
