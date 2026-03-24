@@ -40,7 +40,7 @@ export function useRecentURLs() {
   }
 
   const removeURL = (url: string) => {
-    const updatedURLs = recentURLs.filter((u) => u !== url)
+    const updatedURLs = recentURLs.filter((u) => !areSameURL(u, url))
     setRecentURLs(updatedURLs)
   }
 

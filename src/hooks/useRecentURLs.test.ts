@@ -165,5 +165,16 @@ describe('useRecentURLs', () => {
 
       expect(result.current.recentURLs).toEqual(['https://example.com/a'])
     })
+
+    it('removes URL even with different host casing', () => {
+      seedURLs(['https://EXAMPLE.COM/Path'])
+      const { result } = renderHook(() => useRecentURLs())
+
+      act(() => {
+        result.current.removeURL('https://example.com/Path')
+      })
+
+      expect(result.current.recentURLs).toEqual([])
+    })
   })
 })
