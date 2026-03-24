@@ -163,7 +163,7 @@ export function traverse(node: ts.Node, visitor: Visitor) {
     case NodeType.ClassExpression:
       return visit(node, (node) => {
         node.id && traverse(node.id, visitor)
-        node.superClass && traverse
+        node.superClass && traverse(node.superClass, visitor)
 
         traverse(node.body, visitor)
 

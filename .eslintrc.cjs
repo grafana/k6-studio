@@ -6,7 +6,6 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-    'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:import/recommended',
     'plugin:import/electron',
@@ -47,6 +46,7 @@ module.exports = {
       {
         varsIgnorePattern: '^_',
         argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_|^error$|^e$',
       },
     ],
     '@typescript-eslint/no-floating-promises': [
@@ -73,12 +73,22 @@ module.exports = {
         alphabetize: { order: 'asc' },
       },
     ],
+    'import/namespace': 'off',
+    'import/default': 'off',
     'import/no-unresolved': ['error', { ignore: ['^k6'] }],
+    '@typescript-eslint/no-unused-expressions': [
+      'error',
+      { allowShortCircuit: true, allowTernary: true, allowTaggedTemplates: true },
+    ],
+    '@typescript-eslint/no-empty-object-type': 'off',
+    '@typescript-eslint/prefer-promise-reject-errors': 'off',
+    '@typescript-eslint/no-duplicate-type-constituents': 'off',
+    '@typescript-eslint/no-base-to-string': 'off',
+    'react/prop-types': 'off',
   },
 
   parserOptions: {
-    projectService: true,
+    project: true,
     tsconfigRootDir: __dirname,
-    project: ['./tsconfig.json'],
   },
 }

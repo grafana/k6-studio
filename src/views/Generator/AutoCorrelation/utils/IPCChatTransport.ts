@@ -67,7 +67,9 @@ export class IPCChatTransport<
           // Set up listeners for stream events
           const removeChunkListener = stream.onChunk(
             (data: StreamChatChunk) => {
-              controller.enqueue(data.chunk)
+              if (data.chunk) {
+                controller.enqueue(data.chunk)
+              }
 
               if (data.chunk?.type === 'error') {
                 controller.close()

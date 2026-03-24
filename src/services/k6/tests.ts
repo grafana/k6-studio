@@ -59,7 +59,11 @@ export class TestClient {
       const body = new FormData()
 
       body.append('name', name)
-      body.append('script', new Blob([archiveData]), 'script.tar')
+      body.append(
+        'script',
+        new Blob([new Uint8Array(archiveData)]),
+        'script.tar'
+      )
 
       const response = await fetch(url(`/projects/${projectId}/load_tests`), {
         method: 'POST',
@@ -81,7 +85,7 @@ export class TestClient {
         ...getHeaders(this.#credentials),
         'Content-Type': 'application/octet-stream',
       },
-      body: archiveData,
+      body: new Uint8Array(archiveData),
       signal,
     })
 
