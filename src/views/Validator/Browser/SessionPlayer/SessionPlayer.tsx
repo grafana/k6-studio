@@ -1,4 +1,4 @@
-import 'rrweb/dist/style.min.css'
+import 'rrweb/dist/style.css'
 
 import { css } from '@emotion/react'
 import { Flex, Spinner, Box } from '@radix-ui/themes'
