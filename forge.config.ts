@@ -163,6 +163,15 @@ const config: ForgeConfig = {
       ui: {
         chooseDirectory: true,
       },
+      // Use custom WiX template that points shortcuts directly to the real exe
+      // in the versioned subfolder, bypassing the broken stub launcher
+      // (see https://github.com/electron-userland/electron-wix-msi/issues/161)
+      beforeCreate: async (creator) => {
+        creator.wixTemplate = fs.readFileSync(
+          path.join(__dirname, 'resources', 'wix-template.xml'),
+          'utf-8'
+        )
+      },
     }),
     new MakerZIP({}, ['darwin']),
     new MakerDMG(

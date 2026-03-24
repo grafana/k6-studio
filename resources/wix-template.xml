@@ -1,0 +1,116 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Product Id="{{ProductCode}}"
+           UpgradeCode="{{UpgradeCode}}"
+           Name = "{{ApplicationName}} (Machine - MSI)"
+           Version="{{Version}}"
+           Manufacturer="{{Manufacturer}}"
+           Language="{{Language}}">
+    <Package InstallerVersion="405"
+             Compressed="yes"
+             Comments="Windows Installer Package"
+             Platform="{{Platform}}"
+             InstallScope="{{PackageScope}}"/>
+    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A later version of this product is already installed. Setup will now exit."/>
+    <Property Id="ARPSYSTEMCOMPONENT" Value="1" />
+    <Property Id="VisibleProductName" Value="{{ApplicationName}} (Machine)" />
+    <Property Id="MSIINSTALLPERUSER" Secure="yes" Value="{{InstallPerUser}}" />
+    <Property Id="REINSTALLMODE" Value="emus" />
+    <Property Id="REBOOT" Value="{{RebootMode}}" />
+    <Property Id="INSTALLLEVEL" Value="{{InstallLevel}}" />
+    <Property Id="UPDATERUSERGROUP" Value="Users" />
+    <Property Id="AUTOUPDATEENABLED" Value="1" />
+    <Property Id="INSTALLPATH">
+      <RegistrySearch Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{{ProductCode}}}.msq"
+                      Root="HKCU"
+                      Type="raw"
+                      Id="INSTALLPATH_REGSEARCH_HKCU"
+                      Name="InstallPath"
+                      Win64="{{Win64YesNo}}"/>
+      <RegistrySearch Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{{{ProductCode}}}.msq"
+                      Root="HKLM"
+                      Type="raw"
+                      Id="INSTALLPATH_REGSEARCH_HKLM"
+                      Name="InstallPath"
+                      Win64="{{Win64YesNo}}"/>
+    </Property>
+    <SetProperty Action="SetVisibleProductName" Id="VisibleProductName" Sequence="both" Before="AppSearch"  Value="{{ApplicationName}} (User)">
+      <![CDATA[MSIINSTALLPERUSER = "1"]]>
+    </SetProperty>
+    <SetProperty Action="SetProductName" Id="ProductName" Sequence="both" Before="AppSearch"  Value="{{ApplicationName}} (User - MSI)">
+      <![CDATA[MSIINSTALLPERUSER = "1"]]>
+    </SetProperty>
+
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+<!-- {{Icon}}-->
+<!-- {{UI}} -->
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="{{ProgramFilesFolder}}">
+<!-- {{Directories}} -->
+      </Directory>
+
+      <Directory Id="DesktopFolder" Name="Desktop" />
+
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="{{ShortcutFolderName}}"/>
+      </Directory>
+    </Directory>
+
+    <!-- Start Menu shortcut - targets the real exe in versioned subfolder, bypassing broken stub -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="{{ApplicationShortcutGuid}}" Win64="{{Win64YesNo}}">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="{{ShortcutName}}"
+                  Description="{{ApplicationDescription}}"
+                  Target="[APPLICATIONROOTDIRECTORY]app-{{SemanticVersion}}\{{ApplicationBinary}}.exe"
+                  WorkingDirectory="APPLICATIONROOTDIRECTORY">
+<!-- {{ShortcutProperties}} -->
+        </Shortcut>
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU"
+                       Key="Software\Microsoft\{{ApplicationShortName}}"
+                       Name="installed"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <!-- Desktop shortcut - targets the real exe in versioned subfolder, bypassing broken stub -->
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopShortcut" Guid="{{DesktopShortcutGuid}}" >
+          <Shortcut Id="MyDesktopShortcut"
+                    Name="{{ShortcutName}}"
+                    Description="{{ApplicationDescription}}"
+                    Target="[APPLICATIONROOTDIRECTORY]app-{{SemanticVersion}}\{{ApplicationBinary}}.exe"
+                    WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+          <RegistryValue Root="HKCU"
+                    Key="Software\Microsoft\{{ApplicationShortName}}"
+                    Name="installed"
+                    Type="integer"
+                    Value="1"
+                    KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
+      <Component Id="PurgeOnUninstall" Guid="{{RandomGuid}}" Win64="{{Win64YesNo}}">
+        <CreateFolder/>
+        <util:RemoveFolderEx On="uninstall" Property="INSTALLPATH" />
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="Complete" Title="{{ApplicationName}} ({{SemanticVersion}})" Description="The complete package." Display="expand" Level="1" {{ConfigurableDirectory}}>
+      <Feature Id="MainApplication" Title="Main Application" Level="1" Description="The main components to run the applications." >
+<!-- {{ComponentRefs}} -->
+        <ComponentRef Id="ApplicationShortcut" />
+        <ComponentRef Id="DesktopShortcut" />
+        <ComponentRef Id="PurgeOnUninstall" />
+      </Feature>
+<!-- {{AutoLaunchFeature}} -->
+<!-- {{AutoUpdateFeature}} -->
+    </Feature>
+<!-- {{AutoRun}} -->
+  </Product>
+</Wix>
