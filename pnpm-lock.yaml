@@ -468,6 +468,9 @@ importers:
       '@electron-forge/maker-squirrel':
         specifier: 7.11.2
         version: 7.11.2
+      '@electron-forge/maker-wix':
+        specifier: ^7.11.2
+        version: 7.11.2
       '@electron-forge/maker-zip':
         specifier: 7.11.2
         version: 7.11.2
@@ -697,6 +700,9 @@ packages:
     resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
     engines: {node: '>=6.9.0'}
 
+  '@bitdisaster/exe-icon-extractor@1.0.10':
+    resolution: {integrity: sha512-iTZ8cVGZ5dglNRyFdSj8U60mHIrC8XNIuOHN/NkM5/dQP4nsmpyqeQTAADLLQgoFCNJD+DiwQCv8dR2cCeWP4g==}
+
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
@@ -788,6 +794,10 @@ packages:
 
   '@electron-forge/maker-squirrel@7.11.2':
     resolution: {integrity: sha512-4CILo57ZDEQH1mJxjhYCSXuv+WaU7oPq67KqiTLEUOEzmiPg9u9/z7FXE34H/Tn5aKWN3dy+ngAETzv6iERCGg==}
+    engines: {node: '>= 16.4.0'}
+
+  '@electron-forge/maker-wix@7.11.2':
+    resolution: {integrity: sha512-uf+wmWCqTA23m0KabkQT7m+lyEtdB/Hbtn9Rb8KVSK4FPLrcSC/glYLlHKJhg6DikQraZVfD8JcUPKyZ1YTX2A==}
     engines: {node: '>= 16.4.0'}
 
   '@electron-forge/maker-zip@7.11.2':
@@ -3816,6 +3826,10 @@ packages:
   cross-dirname@0.1.0:
     resolution: {integrity: sha512-+R08/oI0nl3vfPcqftZRpytksBXDzOUveBq/NBVx0sUp1axwzPQrKinNx5yd5sxPu8j1wIy8AfnVQ+5eFdha6Q==}
 
+  cross-spawn-windows-exe@1.2.0:
+    resolution: {integrity: sha512-mkLtJJcYbDCxEG7Js6eUnUNndWjyUZwJ3H7bErmmtOYU/Zb99DyUkpamuIZE0b3bhmJyZ7D90uS6f+CGxRRjOw==}
+    engines: {node: '>= 10'}
+
   cross-spawn@6.0.6:
     resolution: {integrity: sha512-VqCUuhcd1iB+dsv8gxPttb5iZh/D0iubSP21g36KXdEuf6I5JiioesUVjpCdHV9MZRUfVFlvwtIUyPfxo5trtw==}
     engines: {node: '>=4.8'}
@@ -4024,6 +4038,10 @@ packages:
   electron-winstaller@5.4.0:
     resolution: {integrity: sha512-bO3y10YikuUwUuDUQRM4KfwNkKhnpVO7IPdbsrejwN9/AABJzzTQ4GeHwyzNSrVO+tEH3/Np255a3sVZpZDjvg==}
     engines: {node: '>=8.0.0'}
+
+  electron-wix-msi@5.1.3:
+    resolution: {integrity: sha512-EYj1cm1nZoVHmIIx3o0aKt784lxdEpJnXbEnyypklUCnglqSb7ni+1xi1Vp/gtrGS/mzIxnWBT+x5fIfuDjhvA==}
+    engines: {node: '>=14.0.0'}
 
   electron@42.3.0:
     resolution: {integrity: sha512-9ZiLdRXk+WDxW1OgIUz8J2rIQ5TYU9o629gCOjU48Q3dQiOmym7osWsH5Ubs/Jh4uuFLn6m6SBD2rmRXLAPz9g==}
@@ -4664,6 +4682,11 @@ packages:
   is-decimal@2.0.1:
     resolution: {integrity: sha512-AAB9hiomQs5DXWcRB1rqsxGUstbRroFOPPVAomNk/3XHR5JyEZChOyTWe2oayKnsSsr/kcGqF+z6yuH6HHpN0A==}
 
+  is-docker@2.2.1:
+    resolution: {integrity: sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==}
+    engines: {node: '>=8'}
+    hasBin: true
+
   is-extglob@2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
     engines: {node: '>=0.10.0'}
@@ -4732,6 +4755,10 @@ packages:
 
   is-url@1.2.4:
     resolution: {integrity: sha512-ITvGim8FhRiYe4IQ5uHSkj7pVaPDrCTkNd3yq3cV7iZAcJdHTUMPMEHcqSOy9xZ9qFenQCvi+2wjH9a1nXqHww==}
+
+  is-wsl@2.2.0:
+    resolution: {integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==}
+    engines: {node: '>=8'}
 
   isbinaryfile@4.0.10:
     resolution: {integrity: sha512-iHrqe5shvBUcFbmZq9zOQHBoeOhZJu6RQGrDpBgenUm/Am+F3JM2MgQj+rK3Z601fzrL5gLZWtAPH2OBaSVcyw==}
@@ -4828,6 +4855,10 @@ packages:
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
+
+  klaw@4.1.0:
+    resolution: {integrity: sha512-1zGZ9MF9H22UnkpVeuaGKOjfA2t6WrfdrJmGjy16ykcjnKQDmHVX+KI477rpbGevz/5FD4MC3xf1oxylBgcaQw==}
+    engines: {node: '>=14.14.0'}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -5687,6 +5718,14 @@ packages:
   raw-body@3.0.2:
     resolution: {integrity: sha512-K5zQjDllxWkf7Z5xJdV0/B0WTNqx6vxG70zJE4N0kBs4LovmEYWJzQGxC9bS9RAKu3bgM40lrd5zoLJ12MQ5BA==}
     engines: {node: '>= 0.10'}
+
+  rcedit@4.0.1:
+    resolution: {integrity: sha512-bZdaQi34krFWhrDn+O53ccBDw0MkAT2Vhu75SqhtvhQu4OPyFM4RoVheyYiVQYdjhUi6EJMVWQ0tR6bCIYVkUg==}
+    engines: {node: '>= 14.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+  rcinfo@0.1.3:
+    resolution: {integrity: sha512-c2XV2aYgY7x3BscO+/B/nCTtMvnclZ8w5D7R6zgK4sGOQnE0MjlXhOPynno7yp6Iw1RPNSXBwXwB1svZVRfcSw==}
 
   react-base16-styling@0.10.0:
     resolution: {integrity: sha512-H1k2eFB6M45OaiRru3PBXkuCcn2qNmx+gzLb4a9IPMR7tMH8oBRXU5jGbPDYG1Hz+82d88ED0vjR8BmqU3pQdg==}
@@ -6995,6 +7034,9 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
+  '@bitdisaster/exe-icon-extractor@1.0.10':
+    optional: true
+
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
@@ -7176,6 +7218,19 @@ snapshots:
       fs-extra: 10.1.0
     optionalDependencies:
       electron-winstaller: 5.4.0
+    transitivePeerDependencies:
+      - supports-color
+
+  '@electron-forge/maker-wix@7.11.2':
+    dependencies:
+      '@electron-forge/core-utils': 7.11.2
+      '@electron-forge/maker-base': 7.11.2
+      '@electron-forge/shared-types': 7.11.2
+      chalk: 4.1.2
+      electron-wix-msi: 5.1.3
+      log-symbols: 4.1.0
+      parse-author: 2.0.0
+      semver: 7.7.4
     transitivePeerDependencies:
       - supports-color
 
@@ -7813,7 +7868,6 @@ snapshots:
   '@malept/cross-spawn-promise@1.1.1':
     dependencies:
       cross-spawn: 7.0.6
-    optional: true
 
   '@malept/cross-spawn-promise@2.0.0':
     dependencies:
@@ -10361,6 +10415,12 @@ snapshots:
 
   cross-dirname@0.1.0: {}
 
+  cross-spawn-windows-exe@1.2.0:
+    dependencies:
+      '@malept/cross-spawn-promise': 1.1.1
+      is-wsl: 2.2.0
+      which: 2.0.2
+
   cross-spawn@6.0.6:
     dependencies:
       nice-try: 1.0.5
@@ -10597,6 +10657,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
     optional: true
+
+  electron-wix-msi@5.1.3:
+    dependencies:
+      '@electron/windows-sign': 1.2.2
+      debug: 4.4.3
+      fs-extra: 10.1.0
+      klaw: 4.1.0
+      lodash: 4.18.1
+      rcedit: 4.0.1
+      rcinfo: 0.1.3
+      semver: 7.7.4
+    optionalDependencies:
+      '@bitdisaster/exe-icon-extractor': 1.0.10
+    transitivePeerDependencies:
+      - supports-color
 
   electron@42.3.0:
     dependencies:
@@ -11376,6 +11451,8 @@ snapshots:
 
   is-decimal@2.0.1: {}
 
+  is-docker@2.2.1: {}
+
   is-extglob@2.1.1: {}
 
   is-fullwidth-code-point@3.0.0: {}
@@ -11426,6 +11503,10 @@ snapshots:
   is-unicode-supported@0.1.0: {}
 
   is-url@1.2.4: {}
+
+  is-wsl@2.2.0:
+    dependencies:
+      is-docker: 2.2.1
 
   isbinaryfile@4.0.10: {}
 
@@ -11520,6 +11601,8 @@ snapshots:
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
+
+  klaw@4.1.0: {}
 
   levn@0.4.1:
     dependencies:
@@ -12540,6 +12623,12 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.7.2
       unpipe: 1.0.0
+
+  rcedit@4.0.1:
+    dependencies:
+      cross-spawn-windows-exe: 1.2.0
+
+  rcinfo@0.1.3: {}
 
   react-base16-styling@0.10.0:
     dependencies:

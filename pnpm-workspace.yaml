@@ -2,6 +2,7 @@
 nodeLinker: hoisted
 
 allowBuilds:
+  '@bitdisaster/exe-icon-extractor': true
   '@sentry/cli': true
   electron: true
   electron-winstaller: true
