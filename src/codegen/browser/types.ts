@@ -1,6 +1,5 @@
 import { CheckState, NavigateToPageEvent } from '@/schemas/recording'
-
-import { NodeSelector } from './selectors'
+import { NodeSelector } from '@/schemas/selectors'
 
 export type NodeId = string
 
