@@ -9,11 +9,8 @@ function areSameURL(a: string, b: string): boolean {
     const urlB = new URL(b)
     // scheme and host are case-insensitive per RFC 3986
     return (
-      urlA.protocol === urlB.protocol &&
-      urlA.host.toLowerCase() === urlB.host.toLowerCase() &&
-      urlA.pathname === urlB.pathname &&
-      urlA.search === urlB.search &&
-      urlA.hash === urlB.hash
+      urlA.href === urlB.href
+   )
     )
   } catch {
     // Fallback for invalid URLs: exact match
