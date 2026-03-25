@@ -32,7 +32,7 @@ export function useRecentURLs() {
     if (!trimmedURL) return
 
     setRecentURLs((prev = []) =>
-      [trimmedURL, ...prev.filter((u) => !areSameURL(u, trimmedURL))].slice(
+      [trimmedURL, ...prev.filter((existingUrl) => !areSameURL(existingUrl, trimmedURL))].slice(
         0,
         MAX_RECENT_URLS
       )
