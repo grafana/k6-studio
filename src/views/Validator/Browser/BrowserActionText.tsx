@@ -2,15 +2,15 @@ import { ClickPill, DoubleClickPill } from '@/components/Browser/ClickPill'
 import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { Kbd } from '@/components/primitives/Kbd'
 import { AnyBrowserAction } from '@/main/runner/schema'
+import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { BrowserActionLocator } from './BrowserActionLocator'
 import { toClickDetails } from './BrowserActionText.utils'
 
 interface BrowserActionTextProps {
   action: AnyBrowserAction
-  onHighlight?: (selector: HighlightSelector | null) => void
+  onHighlight?: (selector: NodeSelector | null) => void
 }
 
 export function BrowserActionText({

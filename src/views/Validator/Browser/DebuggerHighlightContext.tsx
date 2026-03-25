@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 import { Replayer } from 'rrweb'
 
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { NodeSelector } from '@/schemas/selectors'
 
 interface DebuggerHighlightContextValue {
-  highlightedSelector: HighlightSelector | null
-  setHighlightedSelector: (selector: HighlightSelector | null) => void
+  highlightedSelector: NodeSelector | null
+  setHighlightedSelector: (selector: NodeSelector | null) => void
   replayer: Replayer | null
   setReplayer: (replayer: Replayer | null) => void
 }
@@ -34,7 +34,7 @@ export function DebuggerHighlightProvider({
   children,
 }: DebuggerHighlightProviderProps) {
   const [highlightedSelector, setHighlightedSelector] =
-    useState<HighlightSelector | null>(null)
+    useState<NodeSelector | null>(null)
   const [replayer, setReplayer] = useState<Replayer | null>(null)
 
   return (

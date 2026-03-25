@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { Box, Flex, Reset, Text } from '@radix-ui/themes'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { BrowserActionStatusIcon } from './BrowserActionStatusIcon'
 import { BrowserActionText } from './BrowserActionText'
@@ -10,7 +10,7 @@ import { BrowserActionTimer } from './BrowserActionTimer'
 
 interface BrowserActionItemProps {
   event: BrowserActionEvent
-  onHighlight?: (selector: HighlightSelector | null) => void
+  onHighlight?: (selector: NodeSelector | null) => void
 }
 
 function BrowserActionItem({ event, onHighlight }: BrowserActionItemProps) {
@@ -76,7 +76,7 @@ function BrowserActionItem({ event, onHighlight }: BrowserActionItemProps) {
 
 interface BrowserActionListProps {
   actions: BrowserActionEvent[]
-  onHighlight?: (selector: HighlightSelector | null) => void
+  onHighlight?: (selector: NodeSelector | null) => void
 }
 
 export function BrowserActionList({ actions, onHighlight }: BrowserActionListProps) {

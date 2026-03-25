@@ -1,6 +1,8 @@
 import { css } from '@emotion/react'
 import { useEffect, useRef, useState } from 'react'
 
+import { findElementsBySelector } from '@/utils/selectors'
+
 import { useDebuggerHighlight } from '../DebuggerHighlightContext'
 
 interface Bounds {
@@ -67,11 +69,12 @@ export function ReplayerHighlights() {
     }
 
     try {
-      const elements = iframe.contentDocument.querySelectorAll(
-        highlightedSelector.selector
+      const elements = findElementsBySelector(
+        iframe.contentDocument,
+        highlightedSelector
       )
 
-      const newHighlights = Array.from(elements).map((element) => {
+      const newHighlights = elements.map((element) => {
         const bounds = getElementBounds(element)
 
         return {

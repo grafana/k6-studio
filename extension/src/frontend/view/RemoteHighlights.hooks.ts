@@ -1,15 +1,7 @@
-import {
-  queryAllByAltText,
-  queryAllByLabelText,
-  queryAllByPlaceholderText,
-  queryAllByRole,
-  queryAllByTestId,
-  queryAllByText,
-  queryAllByTitle,
-} from '@testing-library/dom'
 import { useEffect, useRef, useState } from 'react'
 
 import { NodeSelector } from '@/schemas/selectors'
+import { findElementsBySelector } from '@/utils/selectors'
 
 import { useStudioClient } from './StudioClientProvider'
 import { useHighlightDebounce } from './hooks/useHighlightDebounce'
@@ -20,39 +12,6 @@ interface Highlight {
   id: number
   element: Element
   bounds: Bounds
-}
-
-function findElementsBySelector(selector: NodeSelector): Element[] {
-  switch (selector.type) {
-    case 'css':
-      return Array.from(document.querySelectorAll(selector.selector))
-
-    case 'test-id':
-      return queryAllByTestId(document.body, selector.testId)
-
-    case 'role':
-      return queryAllByRole(document.body, selector.role, {
-        name: selector.name,
-      })
-
-    case 'alt':
-      return queryAllByAltText(document.body, selector.text)
-
-    case 'label':
-      return queryAllByLabelText(document.body, selector.text)
-
-    case 'placeholder':
-      return queryAllByPlaceholderText(document.body, selector.text)
-
-    case 'text':
-      return queryAllByText(document.body, selector.text)
-
-    case 'title':
-      return queryAllByTitle(document.body, selector.text)
-
-    default:
-      return []
-  }
 }
 
 export function useHighlightedElements() {
@@ -76,7 +35,7 @@ export function useHighlightedElements() {
     }
 
     try {
-      const elements = findElementsBySelector(selector)
+      const elements = findElementsBySelector(document, selector)
       const highlights = elements.map((element) => {
         const bounds = getElementBounds(element)
 
