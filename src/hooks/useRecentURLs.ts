@@ -8,10 +8,7 @@ function areSameURL(a: string, b: string): boolean {
     const urlA = new URL(a)
     const urlB = new URL(b)
     // scheme and host are case-insensitive per RFC 3986
-    return (
-      urlA.href === urlB.href
-   )
-    )
+    return urlA.href === urlB.href
   } catch {
     // Fallback for invalid URLs: exact match
     return a === b
@@ -29,10 +26,10 @@ export function useRecentURLs() {
     if (!trimmedURL) return
 
     setRecentURLs((prev = []) =>
-      [trimmedURL, ...prev.filter((existingUrl) => !areSameURL(existingUrl, trimmedURL))].slice(
-        0,
-        MAX_RECENT_URLS
-      )
+      [
+        trimmedURL,
+        ...prev.filter((existingUrl) => !areSameURL(existingUrl, trimmedURL)),
+      ].slice(0, MAX_RECENT_URLS)
     )
   }
 
