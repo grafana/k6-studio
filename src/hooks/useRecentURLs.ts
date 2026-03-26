@@ -23,6 +23,7 @@ export function useRecentURLs() {
 
   const addURL = (url: string) => {
     const trimmedURL = url.trim()
+
     if (!trimmedURL) return
 
     setRecentURLs((prev = []) =>
@@ -34,8 +35,9 @@ export function useRecentURLs() {
   }
 
   const removeURL = (url: string) => {
-    const updatedURLs = recentURLs.filter((u) => !areSameURL(u, url))
-    setRecentURLs(updatedURLs)
+    setRecentURLs((prev = []) =>
+      prev.filter((existingUrl) => !areSameURL(existingUrl, url))
+    )
   }
 
   return {
