@@ -12,7 +12,7 @@ export const defaultFeatures: Record<Feature, boolean> = {
   'dummy-feature': false,
   'typeahead-json': false,
   'browser-test-editor': import.meta.env.DEV,
-  'grafana-assistant': false,
+  'grafana-assistant': import.meta.env.DEV,
 }
 
 export const useFeaturesStore = create<FeaturesStore>()(
