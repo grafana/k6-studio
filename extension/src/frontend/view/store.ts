@@ -19,3 +19,17 @@ export const useInBrowserUIStore = create<InBrowserUIStore>((set) => {
     unblockEventCapture: () => set({ isCaptureBlocked: false }),
   }
 })
+
+export function useBlockEventCapture() {
+  const blockEventCapture = useInBrowserUIStore(
+    (state) => state.blockEventCapture
+  )
+  const unblockEventCapture = useInBrowserUIStore(
+    (state) => state.unblockEventCapture
+  )
+
+  return {
+    blockEventCapture,
+    unblockEventCapture,
+  }
+}

@@ -53,7 +53,7 @@ export function configureStorage(): SettingsStorage {
   })
 
   return {
-    get initial() {
+    getCurrent() {
       return storedSettings
     },
     load() {

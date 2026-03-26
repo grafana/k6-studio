@@ -6,7 +6,7 @@ import { RemoteHighlights } from './RemoteHighlights'
 import { useStudioClient } from './StudioClientProvider'
 import { TextSelectionPopover } from './TextSelectionPopover'
 import { ToolBox } from './ToolBox'
-import { useInBrowserUIStore } from './store'
+import { useBlockEventCapture, useInBrowserUIStore } from './store'
 
 export function InBrowserControls() {
   const client = useStudioClient()
@@ -16,6 +16,8 @@ export function InBrowserControls() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
+  const { blockEventCapture, unblockEventCapture } = useBlockEventCapture()
+
   const handleDeselectTool = () => {
     selectTool(null)
   }
@@ -24,6 +26,16 @@ export function InBrowserControls() {
     client.send({
       type: 'stop-recording',
     })
+  }
+
+  const handleDrawerOpenChange = (open: boolean) => {
+    if (open) {
+      blockEventCapture()
+    } else {
+      unblockEventCapture()
+    }
+
+    setIsDrawerOpen(open)
   }
 
   return (
@@ -38,12 +50,12 @@ export function InBrowserControls() {
         tool={tool}
         onSelectTool={selectTool}
         onStopRecording={handleStopRecording}
-        onToggleDrawer={setIsDrawerOpen}
+        onToggleDrawer={handleDrawerOpenChange}
       />
       <EventDrawer
         open={isDrawerOpen}
         editing={tool !== null}
-        onOpenChange={setIsDrawerOpen}
+        onOpenChange={handleDrawerOpenChange}
       />
     </>
   )

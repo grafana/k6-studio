@@ -13,7 +13,6 @@ import {
 import { css } from '@emotion/react'
 import {
   PanelRight,
-  RotateCcwIcon,
   SquareDashedMousePointerIcon,
   SquareStopIcon,
   TextCursorIcon,
@@ -22,11 +21,9 @@ import {
 import { Flex } from '@/components/primitives/Flex'
 import { Toolbar } from '@/components/primitives/Toolbar'
 
-import { useStudioClient } from '../StudioClientProvider'
 import { Tool } from '../types'
 
 import { ToolBoxLogo } from './ToolBoxLogo'
-import { ToolBoxMenu } from './ToolBoxMenu'
 import { ToolBoxRoot } from './ToolBoxRoot'
 import { useToolboxSettings } from './ToolBoxRoot.hooks'
 import { ToolBoxTooltip } from './ToolBoxTooltip'
@@ -69,8 +66,6 @@ export function ToolBox({
   onToggleDrawer,
 }: ToolBoxProps) {
   const [settings, setSettings] = useToolboxSettings()
-
-  const client = useStudioClient()
 
   const mouse = useSensor(MouseSensor)
   const sensors = useSensors(mouse)
@@ -134,7 +129,6 @@ export function ToolBox({
           </ToolBoxTooltip>
           <span>Recording</span>
         </Flex>
-
         <Toolbar.Separator />
         <Toolbar.ToggleGroup
           type="single"
@@ -153,44 +147,17 @@ export function ToolBox({
           </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
         <Toolbar.Separator />
-        <ToolBoxMenu />
-        <Toolbar.Separator />
         <Toolbar.ToggleGroup
           type="single"
           value={isDrawerOpen ? 'events' : ''}
           onValueChange={handleDrawerToggle}
         >
-          <ToolBoxTooltip content="Toggle event list">
+          <ToolBoxTooltip content="Toggle sidepanel">
             <Toolbar.ToggleItem value="events">
               <PanelRight />
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
-        {import.meta.env.DEV && (
-          <>
-            <Toolbar.Separator />
-            <ToolBoxTooltip content="Reload extension (dev only)">
-              <Toolbar.Button
-                onClick={() => {
-                  client.send({
-                    type: 'reload-extension',
-                  })
-
-                  setTimeout(() => {
-                    window.location.reload()
-                  }, 500)
-                }}
-              >
-                <RotateCcwIcon
-                  css={css`
-                    stroke-width: 2px !important;
-                    color: var(--red-10);
-                  `}
-                />
-              </Toolbar.Button>
-            </ToolBoxTooltip>
-          </>
-        )}
       </ToolBoxRoot>
     </DndContext>
   )

@@ -1,4 +1,3 @@
-import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as RadixDropdownMenu from '@radix-ui/react-dropdown-menu'
 
@@ -57,8 +56,10 @@ const RadioItem = styled(RadixDropdownMenu.RadioItem)`
   display: flex;
   align-items: center;
   gap: var(--studio-spacing-2);
+
   padding: var(--studio-spacing-2);
-  padding-left: var(--studio-spacing-4);
+  padding-left: var(--studio-spacing-8);
+
   font-size: var(--studio-font-size-1);
   cursor: pointer;
   outline: none;
@@ -74,13 +75,11 @@ const RadioItem = styled(RadixDropdownMenu.RadioItem)`
 `
 
 const ItemIndicator = styled(RadixDropdownMenu.ItemIndicator)`
-  position: absolute;
-  left: var(--studio-spacing-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 12px;
-  height: 12px;
+  position: absolute;
+  left: var(--studio-spacing-2);
 `
 
 const Separator = styled(RadixDropdownMenu.Separator)`
