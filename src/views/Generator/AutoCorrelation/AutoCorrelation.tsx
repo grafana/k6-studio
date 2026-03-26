@@ -76,7 +76,13 @@ export function AutoCorrelation({
   }
 
   if (error) {
-    return <ErrorMessage error={error} onRetry={restart} />
+    return (
+      <ErrorMessage
+        error={error}
+        onRetry={restart}
+        onReset={() => onCorrelationStatusChange('not-started')}
+      />
+    )
   }
 
   return (

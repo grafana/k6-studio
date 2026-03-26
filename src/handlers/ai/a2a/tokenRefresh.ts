@@ -1,4 +1,5 @@
 import log from 'electron-log/main'
+import { z } from 'zod'
 
 import {
   AssistantTokenData,
@@ -10,12 +11,14 @@ const PREFIX = '[GrafanaAssistant]'
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
 
-interface RefreshResponse {
-  token: string
-  refresh_token: string
-  expires_at: string
-  refresh_expires_at: string
-}
+const RefreshResponseSchema = z.object({
+  data: z.object({
+    token: z.string(),
+    refresh_token: z.string(),
+    expires_at: z.string(),
+    refresh_expires_at: z.string(),
+  }),
+})
 
 export function isTokenExpiringSoon(tokens: AssistantTokenData): boolean {
   return Date.now() + REFRESH_THRESHOLD_MS >= tokens.expiresAt
@@ -53,7 +56,8 @@ export async function refreshAndSaveTokens(
     )
   }
 
-  const data = (await response.json()) as RefreshResponse
+  const body = RefreshResponseSchema.parse(await response.json())
+  const data = body.data
 
   const refreshedTokens: AssistantTokenData = {
     accessToken: data.token,

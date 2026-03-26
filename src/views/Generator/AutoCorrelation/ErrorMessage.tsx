@@ -2,11 +2,14 @@ import { Button, Flex, Text } from '@radix-ui/themes'
 import {
   ExternalLink as ExternalLinkIcon,
   KeyIcon,
+  LinkIcon,
   RefreshCw,
+  UserRoundIcon,
 } from 'lucide-react'
 
 import grotCrashed from '@/assets/grot-crashed.svg'
 import { ExternalLink } from '@/components/ExternalLink'
+import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
 import { useSettingsChanged } from '@/hooks/useSettings'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
@@ -14,21 +17,35 @@ import { useStudioUIStore } from '@/store/ui'
 interface AutoCorrelationErrorProps {
   error: Error
   onRetry: () => void
+  onReset: () => void
 }
 
-export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
+export function ErrorMessage({
+  error,
+  onRetry,
+  onReset,
+}: AutoCorrelationErrorProps) {
   const isGrafanaAssistant = useFeaturesStore(
     (state) => state.features['grafana-assistant']
   )
 
   if (isGrafanaAssistant) {
-    return <GrafanaAssistantError error={error} onRetry={onRetry} />
+    return (
+      <GrafanaAssistantError
+        error={error}
+        onRetry={onRetry}
+        onReset={onReset}
+      />
+    )
   }
 
   return <OpenAiError error={error} onRetry={onRetry} />
 }
 
-function OpenAiError({ error, onRetry }: AutoCorrelationErrorProps) {
+function OpenAiError({
+  error,
+  onRetry,
+}: Pick<AutoCorrelationErrorProps, 'error' | 'onRetry'>) {
   const errorMessage = error.message.toLowerCase()
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
@@ -120,30 +137,68 @@ function OpenAiError({ error, onRetry }: AutoCorrelationErrorProps) {
   )
 }
 
-function GrafanaAssistantError({ onRetry }: AutoCorrelationErrorProps) {
-  const retryButton = (
-    <Button onClick={onRetry}>
-      <RefreshCw />
-      Retry
-    </Button>
-  )
+function GrafanaAssistantError({
+  error,
+  onRetry,
+  onReset,
+}: AutoCorrelationErrorProps) {
+  const errorMessage = error.message.toLowerCase()
+  const openProfileDialog = useStudioUIStore((s) => s.openProfileDialog)
+  const { mutate: signOut } = useAssistantSignOut()
 
-  const reportIssueButton = (
-    <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
-      <ExternalLink />
-      Report issue
-    </Button>
-  )
+  const isAuthError =
+    errorMessage.includes('not authenticated') ||
+    errorMessage.includes('refresh token') ||
+    errorMessage.includes('token refresh failed')
 
-  // TODO: Add Assistant specific error handling
+  const isNotSignedIn = errorMessage.includes('no grafana cloud stack')
+
+  if (isAuthError) {
+    return (
+      <MessageContent
+        title="Session expired"
+        message="Your Grafana Assistant session has expired. Please reconnect to continue."
+      >
+        <Button
+          onClick={() => {
+            signOut()
+            onReset()
+          }}
+        >
+          <LinkIcon />
+          Reconnect
+        </Button>
+      </MessageContent>
+    )
+  }
+
+  if (isNotSignedIn) {
+    return (
+      <MessageContent
+        title="Not signed in"
+        message="Sign in to Grafana Cloud to use the Grafana Assistant."
+      >
+        <Button onClick={openProfileDialog}>
+          <UserRoundIcon />
+          Sign in to Grafana Cloud
+        </Button>
+      </MessageContent>
+    )
+  }
 
   return (
     <MessageContent
       title="Something went wrong"
       message="An unexpected error occurred during autocorrelation. Click retry to try again or report an issue if problem persists."
     >
-      {retryButton}
-      {reportIssueButton}
+      <Button onClick={onRetry}>
+        <RefreshCw />
+        Retry
+      </Button>
+      <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
+        <ExternalLinkIcon />
+        Report issue
+      </Button>
     </MessageContent>
   )
 }
