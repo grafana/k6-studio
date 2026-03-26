@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/modifiers'
 import { css } from '@emotion/react'
 import {
-  PanelRight,
+  PanelRightIcon,
   RotateCcwIcon,
   SquareDashedMousePointerIcon,
   SquareStopIcon,
@@ -23,7 +23,6 @@ import { Flex } from '@/components/primitives/Flex'
 import { Toolbar } from '@/components/primitives/Toolbar'
 
 import { useStudioClient } from '../StudioClientProvider'
-import { Badge } from '../components/Badge'
 import { Tool } from '../types'
 
 import { ToolBoxLogo } from './ToolBoxLogo'
@@ -161,18 +160,27 @@ export function ToolBox({
           onValueChange={handleDrawerToggle}
         >
           <ToolBoxTooltip content="Toggle event list">
-            <Toolbar.ToggleItem value="events">
+            <Toolbar.ToggleItem
+              value="events"
+              css={css`
+                position: relative;
+              `}
+            >
+              <PanelRightIcon />
               <span
                 css={css`
-                  display: flex;
-                  align-items: center;
-                  gap: var(--studio-spacing-1);
+                  display: block;
+                  border-radius: 50%;
+                  padding: 2px;
+                  position: absolute;
+                  right: 0px;
+                  bottom: 0px;
+                  background-color: var(--studio-background);
+                  color: var(--studio-foreground);
+                  font-size: 0.7em;
                 `}
               >
-                <PanelRight />
-                <Badge highContrast={recordedEventCount > 0}>
-                  {recordedEventCount}
-                </Badge>
+                {recordedEventCount}
               </span>
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
