@@ -11,7 +11,6 @@ import {
   restrictToWindowEdges,
 } from '@dnd-kit/modifiers'
 import { css } from '@emotion/react'
-import { Badge } from '@radix-ui/themes'
 import {
   PanelRight,
   RotateCcwIcon,
@@ -24,6 +23,7 @@ import { Flex } from '@/components/primitives/Flex'
 import { Toolbar } from '@/components/primitives/Toolbar'
 
 import { useStudioClient } from '../StudioClientProvider'
+import { Badge } from '../components/Badge'
 import { Tool } from '../types'
 
 import { ToolBoxLogo } from './ToolBoxLogo'
@@ -170,12 +170,7 @@ export function ToolBox({
                 `}
               >
                 <PanelRight />
-                <Badge
-                  radius="full"
-                  color="gray"
-                  size="1"
-                  highContrast={recordedEventCount > 0}
-                >
+                <Badge highContrast={recordedEventCount > 0}>
                   {recordedEventCount}
                 </Badge>
               </span>
