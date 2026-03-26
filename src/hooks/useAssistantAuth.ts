@@ -1,10 +1,23 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 
+import { useStudioUIStore } from '@/store/ui'
 import { queryClient } from '@/utils/query'
 
 const QUERY_KEY = ['assistant-auth-status'] as const
 
 export function useAssistantAuthStatus() {
+  const qc = useQueryClient()
+  const isProfileOpen = useStudioUIStore((s) => s.isProfileDialogOpen)
+  const wasOpen = useRef(false)
+
+  useEffect(() => {
+    if (wasOpen.current && !isProfileOpen) {
+      void qc.invalidateQueries({ queryKey: QUERY_KEY })
+    }
+    wasOpen.current = isProfileOpen
+  }, [isProfileOpen, qc])
+
   return useQuery({
     queryKey: QUERY_KEY,
     queryFn: window.studio.ai.assistantGetStatus,

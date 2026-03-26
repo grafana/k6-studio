@@ -5,6 +5,7 @@ import {
   KeyIcon,
   LinkIcon,
   UnlinkIcon,
+  UserRoundIcon,
   WandSparkles,
 } from 'lucide-react'
 
@@ -76,6 +77,7 @@ function GrafanaAssistantIntro() {
     error: signInError,
   } = useAssistantSignIn()
   const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
+  const openProfileDialog = useStudioUIStore((state) => state.openProfileDialog)
 
   const isAuthenticated = authStatus?.authenticated ?? false
   const isSignedIn = !!authStatus?.stackId
@@ -91,6 +93,7 @@ function GrafanaAssistantIntro() {
         onSignIn={() => signIn()}
         onCancelSignIn={cancelAssistantSignIn}
         onSignOut={signOut}
+        onOpenProfile={openProfileDialog}
       />
       {signInError && (
         <Callout.Root color="red" size="1">
@@ -116,6 +119,7 @@ interface AssistantAuthStatusProps {
   onSignIn: () => void
   onCancelSignIn: () => void
   onSignOut: () => void
+  onOpenProfile: () => void
 }
 
 function AssistantAuthStatus({
@@ -127,6 +131,7 @@ function AssistantAuthStatus({
   onSignIn,
   onCancelSignIn,
   onSignOut,
+  onOpenProfile,
 }: AssistantAuthStatusProps) {
   if (isLoading) {
     return (
@@ -138,9 +143,15 @@ function AssistantAuthStatus({
 
   if (!isSignedIn) {
     return (
-      <Text size="2" color="gray">
-        Sign in to Grafana Cloud to use the Grafana Assistant.
-      </Text>
+      <>
+        <Text size="2" color="gray">
+          Sign in to Grafana Cloud to use the Grafana Assistant.
+        </Text>
+        <Button size="3" onClick={onOpenProfile}>
+          <UserRoundIcon />
+          Sign in to Grafana Cloud
+        </Button>
+      </>
     )
   }
 
