@@ -10,7 +10,7 @@ import { DebugSession } from '../../types'
 
 import { AddressBar } from './AddressBar'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
-import { ReplayerHighlights } from './ReplayerHighlights'
+import { SelectorHighlights } from './SelectorHighlights'
 import { usePlayer } from './SessionPlayer.hooks'
 import { Viewport } from './Viewport'
 import { Page } from './types'
@@ -109,7 +109,7 @@ export function SessionPlayer({
               }}
             />
             {pageState === 'loaded' && (
-              <ReplayerHighlights
+              <SelectorHighlights
                 player={player}
                 selector={highlightedSelector ?? null}
               />

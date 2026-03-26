@@ -2,7 +2,8 @@ import { css } from '@emotion/react'
 import { nanoid } from 'nanoid'
 import { useState } from 'react'
 
-import { Overlay } from '../../../../src/components/Browser/Overlay'
+import { Overlay } from '@/components/Browser/Overlay'
+
 import { getTabId } from '../utils'
 
 import { ElementPopover } from './ElementInspector/ElementPopover'
