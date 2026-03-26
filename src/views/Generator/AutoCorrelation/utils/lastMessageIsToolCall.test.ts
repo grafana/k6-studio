@@ -44,7 +44,7 @@ describe('lastMessageIsToolCall', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
-        { type: 'tool-addRule', state: 'input-available' },
+        { type: 'tool-addRuleRegex', state: 'input-available' },
         { type: 'tool-runValidation', state: 'output-available' },
       ]),
     ]
@@ -52,7 +52,7 @@ describe('lastMessageIsToolCall', () => {
     expect(result).toBe(false)
   })
 
-  it('returns false when the last tool call is the finish tool', () => {
+  it('returns true when the last tool call is the finish tool', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
@@ -61,7 +61,7 @@ describe('lastMessageIsToolCall', () => {
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
-    expect(result).toBe(false)
+    expect(result).toBe(true)
   })
 
   it('returns true when all tool calls complete and last is not finish', () => {
@@ -69,7 +69,7 @@ describe('lastMessageIsToolCall', () => {
       createAssistantMessage([
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-available' },
+        { type: 'tool-addRuleRegex', state: 'output-available' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
@@ -85,7 +85,7 @@ describe('lastMessageIsToolCall', () => {
         // Second (last) step - complete tool calls
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-available' },
+        { type: 'tool-addRuleRegex', state: 'output-available' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })
@@ -97,7 +97,7 @@ describe('lastMessageIsToolCall', () => {
       createAssistantMessage([
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-error' },
+        { type: 'tool-addRuleRegex', state: 'output-error' },
       ]),
     ]
     const result = lastMessageIsToolCall({ messages })

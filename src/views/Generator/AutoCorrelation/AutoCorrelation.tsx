@@ -34,10 +34,11 @@ export function AutoCorrelation({
     isLoading,
     correlationStatus,
     outcomeReason,
-    tokenUsage,
     error,
     stop,
     restart,
+    tokenUsage,
+    provider,
   } = useGenerateRules({
     clearValidation: clearValidation,
   })
@@ -124,9 +125,13 @@ export function AutoCorrelation({
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        <Flex align="center">
-          <TokenUsageIndicator tokenUsage={tokenUsage} />
-        </Flex>
+        {provider === 'openai' ? (
+          <div>
+            <TokenUsageIndicator tokenUsage={tokenUsage} />
+          </div>
+        ) : (
+          <div />
+        )}
         <Flex gap="3">
           <Button
             variant="outline"

@@ -1,6 +1,7 @@
 import { OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
 import { convertToModelMessages, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
+import log from 'electron-log/main'
 
 import * as assistantAuth from './a2a/assistantAuth'
 import { getGrafanaAssistantModel, getOpenAiModel } from './model'
@@ -37,6 +38,11 @@ async function handleStreamChat(
         messages,
         tools,
         abortSignal: abortController.signal,
+        providerOptions: {
+          grafanaAssistant: {
+            chatId: request.id,
+          },
+        },
       })
 
       await streamMessages(event.sender, response, request.id, false)
@@ -45,7 +51,6 @@ async function handleStreamChat(
 
       const response = streamText({
         model: aiModel,
-        toolChoice: 'required',
         messages,
         tools,
         abortSignal: abortController.signal,
@@ -62,8 +67,9 @@ async function handleStreamChat(
 
       await streamMessages(event.sender, response, request.id, true)
     }
+  } catch (error) {
+    log.error('handleStreamChat error:', error)
   } finally {
-    // Clean up the AbortController after streaming completes or fails
     activeAbortControllers.delete(request.id)
   }
 }

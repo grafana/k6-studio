@@ -31,7 +31,7 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
   )
 
   if (isGrafanaAssistant) {
-    return <GrafanaAssistantIntro />
+    return <GrafanaAssistantIntro onStart={onStart} />
   }
 
   return <OpenAiIntro onStart={onStart} />
@@ -69,7 +69,8 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   )
 }
 
-function GrafanaAssistantIntro() {
+function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
+  const proxyStatus = useProxyStatus()
   const { data: authStatus, isLoading } = useAssistantAuthStatus()
   const {
     mutate: signIn,
@@ -90,6 +91,8 @@ function GrafanaAssistantIntro() {
         isAuthenticated={isAuthenticated}
         isSigningIn={isSigningIn}
         isSigningOut={isSigningOut}
+        proxyStatus={proxyStatus}
+        onStart={onStart}
         onSignIn={() => signIn()}
         onCancelSignIn={cancelAssistantSignIn}
         onSignOut={signOut}
@@ -116,6 +119,8 @@ interface AssistantAuthStatusProps {
   isAuthenticated: boolean
   isSigningIn: boolean
   isSigningOut: boolean
+  proxyStatus: string
+  onStart: () => void
   onSignIn: () => void
   onCancelSignIn: () => void
   onSignOut: () => void
@@ -128,6 +133,8 @@ function AssistantAuthStatus({
   isAuthenticated,
   isSigningIn,
   isSigningOut,
+  proxyStatus,
+  onStart,
   onSignIn,
   onCancelSignIn,
   onSignOut,
@@ -178,10 +185,7 @@ function AssistantAuthStatus({
 
   return (
     <Flex direction="column" align="center" gap="2">
-      <Flex align="center" gap="2">
-        <CheckCircleIcon size={16} color="var(--green-9)" />
-        <Text size="2">Connected to Grafana Assistant.</Text>
-      </Flex>
+      <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
       <Button
         variant="ghost"
         size="1"

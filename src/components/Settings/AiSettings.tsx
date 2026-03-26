@@ -1,18 +1,35 @@
-import { Box, Button, Callout, Flex, Text, TextField } from '@radix-ui/themes'
+import {
+  Box,
+  Button,
+  Callout,
+  Flex,
+  Separator,
+  Text,
+  TextField,
+} from '@radix-ui/themes'
 import {
   AlertTriangleIcon,
+  CheckCircleIcon,
   EyeIcon,
   EyeOffIcon,
   InfoIcon,
   KeyIcon,
+  LinkIcon,
   TrashIcon,
+  UnlinkIcon,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { ExternalLink } from '@/components/ExternalLink'
 import { FieldGroup } from '@/components/Form'
+import {
+  useAssistantAuthStatus,
+  useAssistantSignIn,
+  useAssistantSignOut,
+} from '@/hooks/useAssistantAuth'
 import { useSettings } from '@/hooks/useSettings'
+import { useFeaturesStore } from '@/store/features'
 import { AppSettings } from '@/types/settings'
 
 import { SettingsSection } from './SettingsSection'
@@ -30,6 +47,9 @@ export function AiSettings() {
   const [showApiKey, setShowApiKey] = useState(false)
   const isEncryptionAvailable = useEncryptionAvailable()
   const inputRef = useRef<HTMLInputElement>(null)
+  const isGrafanaAssistant = useFeaturesStore(
+    (state) => state.features['grafana-assistant']
+  )
 
   const currentFormValue = watch('ai.apiKey')
 
@@ -63,6 +83,12 @@ export function AiSettings() {
 
   return (
     <SettingsSection>
+      {isGrafanaAssistant && (
+        <>
+          <GrafanaAssistantConnection />
+          <Separator size="4" my="4" />
+        </>
+      )}
       <DisclaimerTerms />
       <FieldGroup
         name="ai.apiKey"
@@ -134,6 +160,64 @@ export function AiSettings() {
         </Flex>
       </FieldGroup>
     </SettingsSection>
+  )
+}
+
+function GrafanaAssistantConnection() {
+  const { data: authStatus, isLoading } = useAssistantAuthStatus()
+  const { mutate: signIn, isPending: isSigningIn } = useAssistantSignIn()
+  const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
+
+  if (isLoading) {
+    return null
+  }
+
+  const isAuthenticated = authStatus?.authenticated ?? false
+  const stackName = authStatus?.stackName
+
+  return (
+    <Flex direction="column" gap="3">
+      <Text size="3" weight="bold">
+        Grafana Assistant
+      </Text>
+      {isAuthenticated ? (
+        <Flex align="center" gap="3">
+          <Flex align="center" gap="2" css={{ flex: 1 }}>
+            <CheckCircleIcon size={16} color="var(--green-9)" />
+            <Text size="2">Connected{stackName ? ` to ${stackName}` : ''}</Text>
+          </Flex>
+          <Button
+            variant="outline"
+            color="red"
+            size="2"
+            onClick={() => signOut()}
+            disabled={isSigningOut}
+          >
+            <UnlinkIcon size={16} />
+            Disconnect
+          </Button>
+        </Flex>
+      ) : (
+        <Flex direction="column" gap="2">
+          {!authStatus?.stackId && (
+            <Text size="2" color="gray">
+              Sign in to Grafana Cloud first to connect the Grafana Assistant.
+            </Text>
+          )}
+          {authStatus?.stackId && (
+            <Button
+              size="2"
+              onClick={() => signIn()}
+              disabled={isSigningIn}
+              css={{ alignSelf: 'start' }}
+            >
+              <LinkIcon size={16} />
+              {isSigningIn ? 'Connecting...' : 'Connect to Grafana Assistant'}
+            </Button>
+          )}
+        </Flex>
+      )}
+    </Flex>
   )
 }
 

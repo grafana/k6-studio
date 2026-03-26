@@ -63,6 +63,7 @@ export const useGenerateRules = ({
     stop: stopGeneration,
     clearError,
     setMessages,
+    messages,
   } = useChat<Message>({
     transport: new IPCChatTransport({
       provider,
@@ -70,6 +71,7 @@ export const useGenerateRules = ({
         setTokenUsage((prev) => sumTokenUsage(prev, usage))
       },
     }),
+
     // Keep calling tools without user input
     sendAutomaticallyWhen: lastMessageIsToolCall,
     onError: (error) => {
@@ -102,7 +104,10 @@ export const useGenerateRules = ({
     const { toolName } = toolCall
 
     switch (toolName) {
-      case 'addRule': {
+      case 'addRuleBeginEnd':
+      case 'addRuleRegex':
+      case 'addRuleJson':
+      case 'addRuleHeaderName': {
         return addRule(toolCall.input.rule)
       }
 
@@ -144,7 +149,7 @@ export const useGenerateRules = ({
           })
         }
         setOutcomeReason(toolCall.input.reason)
-        return
+        return toolCall.input.outcome
 
       default:
         return exhaustive(toolName)
@@ -152,19 +157,20 @@ export const useGenerateRules = ({
   }
 
   function addRule(rule: AiCorrelationRule) {
+    const validRule = AiCorrelationRuleToCorrelationRule(rule)
     const applyResult = applyRules(recording, [
       ...suggestedRulesRef.current,
-      rule,
+      validRule,
     ])
 
     const matchedRequestsIds =
       applyResult.ruleInstances[0]?.state.matchedRequestIds
 
     if (!matchedRequestsIds || matchedRequestsIds.length === 0) {
-      return []
+      return 'The provided rule did not match any requests in the recording. Review the rule and try again.'
     }
 
-    setSuggestedRules((prev) => [...prev, rule])
+    setSuggestedRules((prev) => [...prev, validRule])
     return matchedRequestsIds
   }
 
@@ -220,6 +226,7 @@ export const useGenerateRules = ({
       setCorrelationStatus('analyzing')
       return sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
+        // text: 'list tools and their input schema in json available to you',
       })
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -240,7 +247,6 @@ export const useGenerateRules = ({
     setSuggestedRules([])
     setMessages([])
     clearError()
-    setTokenUsage(undefined)
     return start()
   }
 
@@ -259,9 +265,11 @@ export const useGenerateRules = ({
     isLoading,
     correlationStatus,
     outcomeReason,
-    tokenUsage,
     restart,
     stop: useCallback(stop, [stopGeneration]),
+    messages,
+    tokenUsage,
+    provider,
   }
 }
 
@@ -274,11 +282,25 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
     case 'getRequestsMetadata':
     case 'getRequestDetails':
       return 'analyzing'
-    case 'addRule':
+    case 'addRuleBeginEnd':
+    case 'addRuleRegex':
+    case 'addRuleJson':
+    case 'addRuleHeaderName':
       return 'creating-rules'
     case 'finish':
       return toolCall.input.outcome
     default:
       return exhaustive(toolName)
+  }
+}
+
+function AiCorrelationRuleToCorrelationRule(
+  rule: AiCorrelationRule
+): CorrelationRule {
+  return {
+    ...rule,
+    id: `autocorrelation_rule_${crypto.randomUUID()}`,
+    type: 'correlation',
+    enabled: true,
   }
 }
