@@ -1,39 +1,34 @@
 import { css, keyframes } from '@emotion/react'
-import * as Accordion from '@radix-ui/react-accordion'
 import * as Dialog from '@radix-ui/react-dialog'
-import { ChevronDownIcon, XIcon } from 'lucide-react'
+import { XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
-import { Flex } from '@/components/primitives/Flex'
-import { RadioGroup } from '@/components/primitives/RadioGroup'
-import { Text } from '@/components/primitives/Text'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
 import { HighlightSelector } from 'extension/src/messaging/types'
 
-import { eventManager } from '../manager'
-
+import { RecorderSettings } from './RecorderSettings'
 import { useInBrowserSettings } from './SettingsProvider'
 import { useStudioClient } from './StudioClientProvider'
 import { ToolBoxLogo } from './ToolBox/ToolBoxLogo'
 
-const accordionSlideDown = keyframes`
+const slideIn = keyframes`
   from {
-    height: 0;
+    transform: translateX(100%);
   }
   to {
-    height: var(--radix-accordion-content-height);
+    transform: translateX(0);
   }
 `
 
-const accordionSlideUp = keyframes`
+const slideOut = keyframes`
   from {
-    height: var(--radix-accordion-content-height);
+    transform: translateX(0);
   }
   to {
-    height: 0;
+    transform: translateX(100%);
   }
 `
 
@@ -81,44 +76,17 @@ function useRecordedEvents() {
   return events
 }
 
-interface SectionHeadingProps {
-  className?: string
-  children: React.ReactNode
-}
-
-function SectionHeading({ className, children }: SectionHeadingProps) {
-  return (
-    <h2
-      className={className}
-      css={css`
-        margin: 0 0 var(--studio-spacing-3);
-        font-size: var(--studio-font-size-3);
-        font-weight: 700;
-      `}
-    >
-      {children}
-    </h2>
-  )
-}
-
 interface EventDrawerProps {
   open: boolean
-  editing: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
+export function EventDrawer({ open, onOpenChange }: EventDrawerProps) {
   const client = useStudioClient()
   const container = useContainerElement()
   const [settings, setSettings] = useInBrowserSettings()
 
   const events = useRecordedEvents()
-
-  const handleClickRecordingModeChange = (value: string) => {
-    if (value === 'interactive-only' || value === 'any') {
-      setSettings({ clickRecordingMode: value })
-    }
-  }
 
   const handleHighlight = (selector: HighlightSelector | null) => {
     client.send({
@@ -137,10 +105,31 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
   return (
     <RecordingContext recording>
       <Dialog.Root modal={true} open={open} onOpenChange={onOpenChange}>
-        <Dialog.Portal container={container} forceMount>
-          <Dialog.Overlay />
+        <Dialog.Portal container={container}>
+          <Dialog.Overlay
+            css={css`
+              position: fixed;
+              inset: 0;
+              z-index: var(--studio-layer-0);
+              background: rgb(0 0 0 / 0.28);
+              opacity: 0;
+              pointer-events: none;
+              transition: opacity 0.2s ease-out;
+
+              &[data-state='open'] {
+                opacity: 1;
+                pointer-events: auto;
+              }
+
+              @media (prefers-reduced-motion: reduce) {
+                transition: none;
+              }
+            `}
+            onPointerDown={() => {
+              onOpenChange(false)
+            }}
+          />
           <Dialog.Content
-            forceMount
             css={css`
               position: fixed;
               top: 0;
@@ -160,32 +149,18 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
               overflow-y: hidden;
               overscroll-behavior: contain;
 
-              /* Default closed state */
-              transform: translateX(100%);
-              transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-
               &[data-state='open'] {
-                transform: translateX(0);
+                animation: ${slideIn} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
               }
 
               &[data-state='closed'] {
-                transform: translateX(100%);
+                animation: ${slideOut} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
               }
 
               @media (prefers-reduced-motion: reduce) {
                 transition: none;
               }
             `}
-            onEscapeKeyDown={(event) => {
-              // If the user is currently editing something, the escape key should deselect
-              // the tool and not close the drawer.
-              if (editing) {
-                event.preventDefault()
-              }
-            }}
-            onPointerDownOutside={(ev) => {
-              eventManager.block('click', ev.target)
-            }}
           >
             <div
               css={css`
@@ -240,13 +215,6 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
                 flex: 1 1 0;
               `}
             >
-              <SectionHeading
-                css={css`
-                  padding: 0 var(--studio-spacing-4);
-                `}
-              >
-                Events ({events.length})
-              </SectionHeading>
               <div
                 css={css`
                   overflow-x: auto;
@@ -271,144 +239,19 @@ export function EventDrawer({ open, editing, onOpenChange }: EventDrawerProps) {
                 background-color: inherit;
               `}
             >
-              <SectionHeading>Settings</SectionHeading>
-              <Accordion.Root type="single" collapsible>
-                <Accordion.Item value="click-options">
-                  <Accordion.Header
-                    css={css`
-                      margin: 0;
-                    `}
-                  >
-                    <Accordion.Trigger
-                      css={css`
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        gap: var(--studio-spacing-2);
-                        width: 100%;
-                        padding: 0;
-                        border: none;
-                        background: transparent;
-                        cursor: pointer;
-                        font: inherit;
-                        font-size: var(--studio-font-size-2);
-                        font-weight: 500;
-                        color: var(--studio-foreground);
-                        text-align: left;
-
-                        &:hover {
-                          color: var(--studio-accent-11);
-                        }
-
-                        &[data-state='open'] svg {
-                          transform: rotate(180deg);
-                        }
-
-                        @media (prefers-reduced-motion: reduce) {
-                          &[data-state='open'] svg {
-                            transform: none;
-                          }
-                        }
-                      `}
-                    >
-                      Click event options
-                      <ChevronDownIcon
-                        aria-hidden
-                        width={16}
-                        height={16}
-                        css={css`
-                          flex-shrink: 0;
-                          transition: transform 0.2s ease;
-
-                          @media (prefers-reduced-motion: reduce) {
-                            transition: none;
-                          }
-                        `}
-                      />
-                    </Accordion.Trigger>
-                  </Accordion.Header>
-                  <Accordion.Content
-                    css={css`
-                      overflow: hidden;
-
-                      &[data-state='open'] {
-                        animation: ${accordionSlideDown} 0.2s ease-out;
-                      }
-
-                      &[data-state='closed'] {
-                        animation: ${accordionSlideUp} 0.2s ease-out;
-                      }
-
-                      @media (prefers-reduced-motion: reduce) {
-                        animation: none;
-                      }
-                    `}
-                  >
-                    <div
-                      css={css`
-                        padding-top: var(--studio-spacing-3);
-                      `}
-                    >
-                      <RadioGroup.Root
-                        value={settings.clickRecordingMode}
-                        onValueChange={handleClickRecordingModeChange}
-                        aria-label="Click event options"
-                      >
-                        <Flex direction="column" gap="3" align="stretch">
-                          <label
-                            css={css`
-                              display: flex;
-                              gap: var(--studio-spacing-2);
-                              align-items: flex-start;
-                              cursor: pointer;
-                            `}
-                          >
-                            <RadioGroup.Item
-                              value="interactive-only"
-                              css={css`
-                                flex-shrink: 0;
-                                margin-top: 2px;
-                              `}
-                            />
-                            <Flex direction="column" gap="1" align="start">
-                              <Text weight="medium">Interactive only</Text>
-                              <Text size="1" weight="light">
-                                Only records clicks on interactive controls such
-                                as buttons and links. Clicks on non-interactive
-                                areas are ignored.
-                              </Text>
-                            </Flex>
-                          </label>
-                          <label
-                            css={css`
-                              display: flex;
-                              gap: var(--studio-spacing-2);
-                              align-items: flex-start;
-                              cursor: pointer;
-                            `}
-                          >
-                            <RadioGroup.Item
-                              value="any"
-                              css={css`
-                                flex-shrink: 0;
-                                margin-top: 2px;
-                              `}
-                            />
-                            <Flex direction="column" gap="1" align="start">
-                              <Text weight="medium">Any element</Text>
-                              <Text size="1" weight="light">
-                                Records all clicks. When the click is inside a
-                                control, the recording uses that control;
-                                otherwise the exact target is used.
-                              </Text>
-                            </Flex>
-                          </label>
-                        </Flex>
-                      </RadioGroup.Root>
-                    </div>
-                  </Accordion.Content>
-                </Accordion.Item>
-              </Accordion.Root>
+              <h2
+                css={css`
+                  margin: 0 0 var(--studio-spacing-3);
+                  font-size: var(--studio-font-size-3);
+                  font-weight: 700;
+                `}
+              >
+                Settings
+              </h2>
+              <RecorderSettings
+                settings={settings}
+                onSettingsChange={setSettings}
+              />
             </div>
           </Dialog.Content>
         </Dialog.Portal>
