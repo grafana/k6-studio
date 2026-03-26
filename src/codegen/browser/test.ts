@@ -115,6 +115,22 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     return toNodeRef(previousLocator)
   }
 
+  function getWaitForNavigation(
+    currentEvent: BrowserEvent,
+    nextEvent?: BrowserEvent
+  ): { page: NodeRef } | undefined {
+    if (
+      nextEvent === undefined ||
+      nextEvent.type !== 'navigate-to-page' ||
+      nextEvent.source !== 'implicit' ||
+      nextEvent.tab !== currentEvent.tab
+    ) {
+      return undefined
+    }
+
+    return { page: getPage(nextEvent.tab) }
+  }
+
   function toNode(
     event: BrowserEvent,
     nextEvent?: BrowserEvent
@@ -147,18 +163,12 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
         }
 
       case 'click': {
-        const triggersNavigation =
-          nextEvent?.type === 'navigate-to-page' &&
-          nextEvent.source === 'implicit'
-
         return {
           type: 'click',
           nodeId: event.eventId,
           button: event.button,
           modifiers: event.modifiers,
-          waitForNavigation: triggersNavigation
-            ? { page: getPage(event.tab) }
-            : undefined,
+          waitForNavigation: getWaitForNavigation(event, nextEvent),
           inputs: {
             previous,
             locator: getLocator(event.tab, event.target),
@@ -211,7 +221,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
           },
         }
 
-      case 'submit-form':
+      case 'submit-form': {
         return {
           type: 'click',
           nodeId: event.eventId,
@@ -222,14 +232,13 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
             alt: false,
             meta: false,
           },
-          waitForNavigation: {
-            page: getPage(event.tab),
-          },
+          waitForNavigation: getWaitForNavigation(event, nextEvent),
           inputs: {
             previous,
             locator: getLocator(event.tab, event.submitter),
           },
         }
+      }
 
       case 'assert': {
         return {
