@@ -1,103 +1,21 @@
-import { css } from '@emotion/react'
-import { useEffect, useRef, useState } from 'react'
+import { Replayer } from 'rrweb'
 
-import { findElementsBySelector } from '@/utils/selectors'
+import { ElementHighlights } from '@/components/Browser/ElementHighlights'
+import { NodeSelector } from '@/schemas/selectors'
 
-import { useDebuggerHighlight } from '../DebuggerHighlightContext'
-
-interface Bounds {
-  top: number
-  left: number
-  width: number
-  height: number
+interface ReplayerHighlightsProps {
+  player: Replayer | null
+  selector: NodeSelector | null
 }
 
-interface Highlight {
-  id: number
-  bounds: Bounds
-}
-
-function getElementBounds(element: Element): Bounds {
-  const rect = element.getBoundingClientRect()
-
-  return {
-    top: rect.top,
-    left: rect.left,
-    width: rect.width,
-    height: rect.height,
-  }
-}
-
-function ElementOutline({ bounds }: { bounds: Bounds }) {
+export function ReplayerHighlights({
+  player,
+  selector,
+}: ReplayerHighlightsProps) {
   return (
-    <div
-      css={css`
-        position: absolute;
-        pointer-events: none;
-        z-index: 999999;
-        border: 2px solid var(--gray-6);
-        outline: 2px solid var(--gray-12);
-        outline-offset: 2px;
-        background-color: var(--blue-a3);
-      `}
-      style={{
-        top: bounds.top,
-        left: bounds.left,
-        width: bounds.width,
-        height: bounds.height,
-      }}
+    <ElementHighlights
+      element={player?.iframe?.contentDocument?.documentElement ?? null}
+      selector={selector}
     />
-  )
-}
-
-export function ReplayerHighlights() {
-  const { highlightedSelector, replayer } = useDebuggerHighlight()
-  const [highlights, setHighlights] = useState<Highlight[] | null>(null)
-  const idCounter = useRef(0)
-
-  useEffect(() => {
-    if (highlightedSelector === null || replayer === null) {
-      setHighlights(null)
-      return
-    }
-
-    const iframe = replayer.iframe
-
-    if (!iframe || !iframe.contentDocument) {
-      setHighlights(null)
-      return
-    }
-
-    try {
-      const elements = findElementsBySelector(
-        iframe.contentDocument,
-        highlightedSelector
-      )
-
-      const newHighlights = elements.map((element) => {
-        const bounds = getElementBounds(element)
-
-        return {
-          id: idCounter.current++,
-          bounds,
-        }
-      })
-
-      setHighlights(newHighlights)
-    } catch {
-      setHighlights([])
-    }
-  }, [highlightedSelector, replayer])
-
-  if (highlights === null) {
-    return null
-  }
-
-  return (
-    <>
-      {highlights.map((highlight) => (
-        <ElementOutline key={highlight.id} bounds={highlight.bounds} />
-      ))}
-    </>
   )
 }

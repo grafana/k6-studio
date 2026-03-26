@@ -6,9 +6,9 @@ import { useState } from 'react'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { ElementRole } from 'extension/src/utils/aria'
 
+import { Overlay } from '../../../../../src/components/Browser/Overlay'
 import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'
-import { Overlay } from '../Overlay'
 import { useStudioClient } from '../StudioClientProvider'
 import { useEscape } from '../hooks/useEscape'
 

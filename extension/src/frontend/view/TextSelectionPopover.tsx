@@ -2,6 +2,7 @@ import { css } from '@emotion/react'
 import { nanoid } from 'nanoid'
 import { useState } from 'react'
 
+import { Overlay } from '../../../../src/components/Browser/Overlay'
 import { getTabId } from '../utils'
 
 import { ElementPopover } from './ElementInspector/ElementPopover'
@@ -9,7 +10,6 @@ import { TextAssertionEditor } from './ElementInspector/assertions/TextAssertion
 import { TextAssertionData } from './ElementInspector/assertions/types'
 import { useElementHighlight, usePinnedElement } from './ElementInspector/hooks'
 import { useGlobalClass } from './GlobalStyles'
-import { Overlay } from './Overlay'
 import { useStudioClient } from './StudioClientProvider'
 import { useTextSelection } from './TextSelectionPopover.hooks'
 import { TextSelection } from './TextSelectionPopover.types'

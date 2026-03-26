@@ -2,10 +2,11 @@ import 'node_modules/rrweb/dist/style.min.css'
 
 import { css } from '@emotion/react'
 import { Flex, Spinner, Box } from '@radix-ui/themes'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+
+import { NodeSelector } from '@/schemas/selectors'
 
 import { DebugSession } from '../../types'
-import { useDebuggerHighlight } from '../DebuggerHighlightContext'
 
 import { AddressBar } from './AddressBar'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
@@ -34,21 +35,20 @@ const DEFAULT_PAGE: Page = {
 
 interface SessionPlayerProps {
   session: DebugSession
+  highlightedSelector: NodeSelector | null
 }
 
-export function SessionPlayer({ session }: SessionPlayerProps) {
+export function SessionPlayer({
+  session,
+  highlightedSelector,
+}: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
-  const { setReplayer } = useDebuggerHighlight()
 
   const { loading, state, time, page, play, pause, seek, player } = usePlayer({
     streaming: session.state === 'running',
     mount,
     events: session.browser.replay,
   })
-
-  useEffect(() => {
-    setReplayer(player)
-  }, [player, setReplayer])
 
   const handleSeek = ({ time, commit }: OnSeekEvent) => {
     seek(time, { scrubbing: !commit })
@@ -108,7 +108,12 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
                 display: pageState !== 'loaded' ? 'none' : 'block',
               }}
             />
-            {pageState === 'loaded' && <ReplayerHighlights />}
+            {pageState === 'loaded' && (
+              <ReplayerHighlights
+                player={player}
+                selector={highlightedSelector ?? null}
+              />
+            )}
           </Box>
         </Viewport>
       </div>

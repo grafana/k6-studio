@@ -15,37 +15,35 @@ import { NodeSelector } from '@/schemas/selectors'
  * This function supports all selector types (css, role, test-id, alt, label, placeholder, text, title).
  */
 export function findElementsBySelector(
-  container: HTMLElement | Document,
+  container: HTMLElement,
   selector: NodeSelector
 ): Element[] {
-  const root = container instanceof Document ? container.body : container
-
   switch (selector.type) {
     case 'css':
-      return Array.from(root.querySelectorAll(selector.selector))
+      return Array.from(container.querySelectorAll(selector.selector))
 
     case 'test-id':
-      return queryAllByTestId(root, selector.testId)
+      return queryAllByTestId(container, selector.testId)
 
     case 'role':
-      return queryAllByRole(root, selector.role, {
+      return queryAllByRole(container, selector.role, {
         name: selector.name,
       })
 
     case 'alt':
-      return queryAllByAltText(root, selector.text)
+      return queryAllByAltText(container, selector.text)
 
     case 'label':
-      return queryAllByLabelText(root, selector.text)
+      return queryAllByLabelText(container, selector.text)
 
     case 'placeholder':
-      return queryAllByPlaceholderText(root, selector.text)
+      return queryAllByPlaceholderText(container, selector.text)
 
     case 'text':
-      return queryAllByText(root, selector.text)
+      return queryAllByText(container, selector.text)
 
     case 'title':
-      return queryAllByTitle(root, selector.text)
+      return queryAllByTitle(container, selector.text)
 
     default:
       return []

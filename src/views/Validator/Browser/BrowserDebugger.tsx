@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
+import { useState } from 'react'
 
 import { LogsSection } from '@/components/Validator/LogsSection'
 import {
@@ -9,12 +10,12 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
 import { BrowserOverviewPanel } from './BrowserOverviewPanel'
-import { DebuggerHighlightProvider, useDebuggerHighlight } from './DebuggerHighlightContext'
 import { NetworkInspector } from './NetworkInspector'
 
 interface BrowserDebuggerProps {
@@ -23,12 +24,14 @@ interface BrowserDebuggerProps {
   onDebugScript: () => void
 }
 
-function BrowserDebuggerContent({
+export function BrowserDebugger({
   script,
   session,
   onDebugScript,
 }: BrowserDebuggerProps) {
-  const { setHighlightedSelector } = useDebuggerHighlight()
+  const [highlightedSelector, setHighlightedSelector] =
+    useState<NodeSelector | null>(null)
+
   const [drawer, setDrawer] = usePanelCallbackRef()
 
   const drawerLayout = useDefaultLayout({
@@ -72,7 +75,11 @@ function BrowserDebuggerContent({
               `}
             >
               <Panel id="main" minSize={400}>
-                <BrowserOverviewPanel script={script} session={session} />
+                <BrowserOverviewPanel
+                  script={script}
+                  session={session}
+                  highlightedSelector={highlightedSelector}
+                />
               </Panel>
               <Separator />
               <Panel id="actions" minSize={400}>
@@ -119,13 +126,5 @@ function BrowserDebuggerContent({
         </Group>
       </Flex>
     </Tabs.Root>
-  )
-}
-
-export function BrowserDebugger(props: BrowserDebuggerProps) {
-  return (
-    <DebuggerHighlightProvider>
-      <BrowserDebuggerContent {...props} />
-    </DebuggerHighlightProvider>
   )
 }
