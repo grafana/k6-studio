@@ -11,6 +11,7 @@ import {
   restrictToWindowEdges,
 } from '@dnd-kit/modifiers'
 import { css } from '@emotion/react'
+import { Badge } from '@radix-ui/themes'
 import {
   PanelRight,
   RotateCcwIcon,
@@ -55,6 +56,7 @@ const restrictToolBoxToWindowEdges: Modifier = ({
 interface ToolBoxProps {
   tool: Tool | null
   isDrawerOpen: boolean
+  recordedEventCount: number
   onSelectTool: (value: Tool | null) => void
   onStopRecording: () => void
   onToggleDrawer: (open: boolean) => void
@@ -62,6 +64,7 @@ interface ToolBoxProps {
 
 export function ToolBox({
   isDrawerOpen,
+  recordedEventCount,
   tool,
   onSelectTool,
   onStopRecording,
@@ -159,7 +162,23 @@ export function ToolBox({
         >
           <ToolBoxTooltip content="Toggle event list">
             <Toolbar.ToggleItem value="events">
-              <PanelRight />
+              <span
+                css={css`
+                  display: flex;
+                  align-items: center;
+                  gap: var(--studio-spacing-1);
+                `}
+              >
+                <PanelRight />
+                <Badge
+                  radius="full"
+                  color="gray"
+                  size="1"
+                  highContrast={recordedEventCount > 0}
+                >
+                  {recordedEventCount}
+                </Badge>
+              </span>
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
