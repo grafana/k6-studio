@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ElementInspector } from './ElementInspector'
 import { EventDrawer } from './EventDrawer'
+import { useRecordedEvents } from './EventDrawer.hooks'
 import { RemoteHighlights } from './RemoteHighlights'
 import { useStudioClient } from './StudioClientProvider'
 import { TextSelectionPopover } from './TextSelectionPopover'
@@ -14,6 +15,7 @@ export function InBrowserControls() {
   const tool = useInBrowserUIStore((state) => state.tool)
   const selectTool = useInBrowserUIStore((state) => state.selectTool)
 
+  const events = useRecordedEvents()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
   const handleDeselectTool = () => {
@@ -35,6 +37,7 @@ export function InBrowserControls() {
       )}
       <ToolBox
         isDrawerOpen={isDrawerOpen}
+        recordedEventCount={events.length}
         tool={tool}
         onSelectTool={selectTool}
         onStopRecording={handleStopRecording}
@@ -43,6 +46,7 @@ export function InBrowserControls() {
       <EventDrawer
         open={isDrawerOpen}
         editing={tool !== null}
+        events={events}
         onOpenChange={setIsDrawerOpen}
       />
     </>

@@ -55,6 +55,7 @@ const restrictToolBoxToWindowEdges: Modifier = ({
 interface ToolBoxProps {
   tool: Tool | null
   isDrawerOpen: boolean
+  recordedEventCount: number
   onSelectTool: (value: Tool | null) => void
   onStopRecording: () => void
   onToggleDrawer: (open: boolean) => void
@@ -62,6 +63,7 @@ interface ToolBoxProps {
 
 export function ToolBox({
   isDrawerOpen,
+  recordedEventCount,
   tool,
   onSelectTool,
   onStopRecording,
@@ -158,8 +160,32 @@ export function ToolBox({
           onValueChange={handleDrawerToggle}
         >
           <ToolBoxTooltip content="Toggle event list">
-            <Toolbar.ToggleItem value="events">
-              <PanelRight />
+            <Toolbar.ToggleItem
+              value="events"
+              aria-label={`Toggle event list, ${recordedEventCount} recorded events`}
+            >
+              <span
+                css={css`
+                  display: inline-flex;
+                  align-items: center;
+                  gap: var(--studio-spacing-1);
+                `}
+              >
+                <PanelRight />
+                <span
+                  css={css`
+                    font-size: var(--studio-font-size-1);
+                    font-weight: 600;
+                    font-variant-numeric: tabular-nums;
+                    line-height: 1;
+                    min-width: 1em;
+                    text-align: center;
+                  `}
+                  aria-hidden
+                >
+                  {recordedEventCount > 999 ? '999+' : recordedEventCount}
+                </span>
+              </span>
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
