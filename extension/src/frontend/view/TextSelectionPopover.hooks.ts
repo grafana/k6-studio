@@ -7,8 +7,11 @@ import { toTrackedElement } from './ElementInspector/utils'
 import { TextSelection } from './TextSelectionPopover.types'
 
 function measureRange(range: Range) {
+  const ownerWindow = range.startContainer.ownerDocument?.defaultView ?? window
   return {
-    highlights: Array.from(range.getClientRects()).map(toBounds),
+    highlights: Array.from(range.getClientRects()).map((rect) =>
+      toBounds(rect, ownerWindow)
+    ),
     bounds: getElementBounds(range),
   }
 }

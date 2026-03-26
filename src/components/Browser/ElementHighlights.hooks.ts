@@ -65,7 +65,7 @@ export function useHighlightedElements(
       })
     })
 
-    observer.observe(document.body)
+    observer.observe(element)
 
     return () => {
       observer.disconnect()
