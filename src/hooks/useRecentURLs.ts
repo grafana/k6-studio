@@ -36,22 +36,20 @@ export function useRecentURLs() {
       return
     }
 
-    const newUrls = recentURLs.filter(
-      (existingUrl) => !areSameURL(existingUrl, trimmedURL)
-    )
+    setRecentURLs((prev = []) => {
+      const newUrls = prev.filter(
+        (existingUrl) => !areSameURL(existingUrl, trimmedURL)
+      )
 
-    setRecentURLs([trimmedURL, ...newUrls].slice(0, MAX_RECENT_URLS))
+      return [trimmedURL, ...newUrls].slice(0, MAX_RECENT_URLS)
+    })
   }
 
   const removeURL = (url: string) => {
-    setRecentURLs(
-      recentURLs.filter((existingUrl) => !areSameURL(existingUrl, url))
-    )
+    setRecentURLs((prev = []) => {
+      return prev.filter((existingUrl) => !areSameURL(existingUrl, url))
+    })
   }
 
-  return {
-    recentURLs,
-    addURL,
-    removeURL,
-  }
+  return { recentURLs, addURL, removeURL }
 }
