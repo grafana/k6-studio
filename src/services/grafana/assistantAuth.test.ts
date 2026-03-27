@@ -5,6 +5,7 @@ import {
   CallbackResult,
   exchangeAssistantCode,
   handleCallbackRequest,
+  startCallbackServer,
 } from './assistantAuth'
 
 describe('exchangeAssistantCode', () => {
@@ -216,5 +217,34 @@ describe('handleCallbackRequest', () => {
     )
     expect(resolve).not.toHaveBeenCalled()
     expect(closeServer).toHaveBeenCalled()
+  })
+})
+
+describe('startCallbackServer', () => {
+  it('resolves with the correct port when the first port is occupied', async () => {
+    const CALLBACK_PORT_MIN = 54321
+
+    // Occupy the first port with a dummy server
+    const blocker = http.createServer()
+    await new Promise<void>((resolve) => {
+      blocker.listen(CALLBACK_PORT_MIN, '127.0.0.1', resolve)
+    })
+
+    try {
+      const abortController = new AbortController()
+      const { port, waitForCallback } = await startCallbackServer(
+        abortController.signal
+      )
+
+      expect(port).not.toBe(CALLBACK_PORT_MIN)
+      expect(port).toBeGreaterThan(CALLBACK_PORT_MIN)
+
+      // Catch the expected rejection from aborting the callback promise
+      const callbackPromise = waitForCallback().catch(() => {})
+      abortController.abort()
+      await callbackPromise
+    } finally {
+      blocker.close()
+    }
   })
 })

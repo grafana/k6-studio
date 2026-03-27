@@ -210,6 +210,8 @@ function listenOnAvailablePort(
       return
     }
 
+    server.removeAllListeners('listening')
+
     server.once('error', () => {
       tryPort(port + 1)
     })
