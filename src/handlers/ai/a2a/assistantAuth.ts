@@ -2,6 +2,7 @@ import { app, ipcMain, shell } from 'electron'
 import log from 'electron-log/main'
 
 import { getProfileData } from '@/handlers/auth/fs'
+import { isEncryptionAvailable } from '@/main/encryption'
 import {
   buildAssistantAuthUrl,
   exchangeAssistantCode,
@@ -130,6 +131,14 @@ export function initialize() {
 
       if (!stack) {
         return { type: 'error', error: 'Current stack not found in profile.' }
+      }
+
+      if (!isEncryptionAvailable()) {
+        return {
+          type: 'error',
+          error:
+            'Encryption is not available on this system. Assistant authentication requires secure storage for tokens.',
+        }
       }
 
       if (pendingAbortController) {
