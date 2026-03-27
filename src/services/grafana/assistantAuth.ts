@@ -182,17 +182,17 @@ export function handleCallbackRequest(
   const isSuccess = !error && code && state
 
   res.writeHead(200, { 'Content-Type': 'text/html' })
-  res.end(isSuccess ? successPage() : cancelledPage())
+  res.end(isSuccess ? successPage() : cancelledPage(), () => {
+    if (error) {
+      rejectCallback(new Error(`Authorization denied: ${error}`))
+    } else if (code && state) {
+      resolveCallback({ code, state, endpoint, tenant, email })
+    } else {
+      rejectCallback(new Error('Missing code or state in auth callback'))
+    }
 
-  if (error) {
-    rejectCallback(new Error(`Authorization denied: ${error}`))
-  } else if (code && state) {
-    resolveCallback({ code, state, endpoint, tenant, email })
-  } else {
-    rejectCallback(new Error('Missing code or state in auth callback'))
-  }
-
-  closeServer()
+    closeServer()
+  })
 }
 
 function listenOnAvailablePort(

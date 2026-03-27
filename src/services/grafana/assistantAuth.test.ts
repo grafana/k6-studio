@@ -143,7 +143,9 @@ describe('handleCallbackRequest', () => {
   function createMockReqRes(url: string) {
     const req = { url } as http.IncomingMessage
     const writeHead = vi.fn()
-    const end = vi.fn()
+    const end = vi.fn((_data?: unknown, cb?: () => void) => {
+      cb?.()
+    })
     const res = { writeHead, end } as unknown as http.ServerResponse
     return { req, res, writeHead, end }
   }
