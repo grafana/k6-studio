@@ -4,7 +4,7 @@ const LOCAL_STORAGE_KEY = 'recentURLs'
 const MAX_RECENT_URLS = 3
 
 function hasScheme(url: string): boolean {
-  return url.startsWith('http://') || url.startsWith('https://')
+  return /^https?:\/\//i.test(url)
 }
 
 function areSameURL(a: string, b: string): boolean {
