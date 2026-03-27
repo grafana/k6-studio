@@ -74,12 +74,17 @@ export async function getAssistantTokens(
     return null
   }
 
-  return {
-    accessToken: decryptString(encrypted.accessToken),
-    refreshToken: decryptString(encrypted.refreshToken),
-    apiEndpoint: encrypted.apiEndpoint,
-    expiresAt: encrypted.expiresAt,
-    refreshExpiresAt: encrypted.refreshExpiresAt,
+  try {
+    return {
+      accessToken: decryptString(encrypted.accessToken),
+      refreshToken: decryptString(encrypted.refreshToken),
+      apiEndpoint: encrypted.apiEndpoint,
+      expiresAt: encrypted.expiresAt,
+      refreshExpiresAt: encrypted.refreshExpiresAt,
+    }
+  } catch (error) {
+    log.warn('[TokenStore] Failed to decrypt tokens for stack', stackId, error)
+    return null
   }
 }
 

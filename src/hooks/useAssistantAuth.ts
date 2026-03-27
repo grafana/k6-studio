@@ -45,7 +45,10 @@ export function useAssistantSignIn() {
 
   return {
     ...mutation,
-    cancel: () => window.studio.ai.assistantCancelSignIn(),
+    cancel: () => {
+      mutation.reset()
+      return window.studio.ai.assistantCancelSignIn()
+    },
   }
 }
 

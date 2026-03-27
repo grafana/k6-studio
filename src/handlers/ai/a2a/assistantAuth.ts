@@ -32,6 +32,21 @@ export interface AssistantAuthStatus {
   stackName: string | null
 }
 
+function isAllowedEndpoint(endpoint: string, stackUrl: string): boolean {
+  try {
+    const endpointHost = new URL(endpoint).hostname
+    const stackHost = new URL(stackUrl).hostname
+
+    return (
+      endpointHost === stackHost ||
+      endpointHost.endsWith('.grafana.net') ||
+      endpointHost.endsWith('.grafana-dev.net')
+    )
+  } catch {
+    return false
+  }
+}
+
 let pendingAbortController: AbortController | null = null
 
 async function performSignIn(
@@ -75,6 +90,18 @@ async function performSignIn(
       return {
         type: 'error',
         error: 'No API endpoint received from auth callback.',
+      }
+    }
+
+    if (!isAllowedEndpoint(callback.endpoint, stackUrl)) {
+      log.error(
+        PREFIX,
+        'Callback endpoint does not match expected stack URL:',
+        callback.endpoint
+      )
+      return {
+        type: 'error',
+        error: 'Unexpected API endpoint received from auth callback.',
       }
     }
 
