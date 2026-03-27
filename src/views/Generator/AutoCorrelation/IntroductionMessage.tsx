@@ -11,7 +11,6 @@ import {
 
 import grotIllustration from '@/assets/grot-magic.svg'
 import {
-  cancelAssistantSignIn,
   useAssistantAuthStatus,
   useAssistantSignIn,
   useAssistantSignOut,
@@ -70,39 +69,9 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
 }
 
 function GrafanaAssistantIntro() {
-  const { data: authStatus, isLoading } = useAssistantAuthStatus()
-  const {
-    mutate: signIn,
-    isPending: isSigningIn,
-    error: signInError,
-  } = useAssistantSignIn()
-  const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
-  const openProfileDialog = useStudioUIStore((state) => state.openProfileDialog)
-
-  const isAuthenticated = authStatus?.authenticated ?? false
-  const isSignedIn = !!authStatus?.stackId
-
   return (
     <IntroLayout subtitle="Powered by Grafana Assistant">
-      <AssistantAuthStatus
-        isLoading={isLoading}
-        isSignedIn={isSignedIn}
-        isAuthenticated={isAuthenticated}
-        isSigningIn={isSigningIn}
-        isSigningOut={isSigningOut}
-        onSignIn={() => signIn()}
-        onCancelSignIn={cancelAssistantSignIn}
-        onSignOut={signOut}
-        onOpenProfile={openProfileDialog}
-      />
-      {signInError && (
-        <Callout.Root color="red" size="1">
-          <Callout.Icon>
-            <AlertTriangleIcon size={16} />
-          </Callout.Icon>
-          <Callout.Text>{signInError.message}</Callout.Text>
-        </Callout.Root>
-      )}
+      <AssistantAuthStatus />
       <Text size="1" color="gray" mt="1">
         This feature is in public preview and subject to change.
       </Text>
@@ -110,29 +79,20 @@ function GrafanaAssistantIntro() {
   )
 }
 
-interface AssistantAuthStatusProps {
-  isLoading: boolean
-  isSignedIn: boolean
-  isAuthenticated: boolean
-  isSigningIn: boolean
-  isSigningOut: boolean
-  onSignIn: () => void
-  onCancelSignIn: () => void
-  onSignOut: () => void
-  onOpenProfile: () => void
-}
+function AssistantAuthStatus() {
+  const { data: authStatus, isLoading } = useAssistantAuthStatus()
+  const {
+    mutate: signIn,
+    isPending: isSigningIn,
+    error: signInError,
+    cancel: cancelSignIn,
+  } = useAssistantSignIn()
+  const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
+  const openProfileDialog = useStudioUIStore((state) => state.openProfileDialog)
 
-function AssistantAuthStatus({
-  isLoading,
-  isSignedIn,
-  isAuthenticated,
-  isSigningIn,
-  isSigningOut,
-  onSignIn,
-  onCancelSignIn,
-  onSignOut,
-  onOpenProfile,
-}: AssistantAuthStatusProps) {
+  const isAuthenticated = authStatus?.authenticated ?? false
+  const isSignedIn = !!authStatus?.stackId
+
   if (isLoading) {
     return (
       <Text size="2" color="gray">
@@ -147,7 +107,7 @@ function AssistantAuthStatus({
         <Text size="2" color="gray">
           Sign in to Grafana Cloud to use the Grafana Assistant.
         </Text>
-        <Button size="3" onClick={onOpenProfile}>
+        <Button size="3" onClick={openProfileDialog}>
           <UserRoundIcon />
           Sign in to Grafana Cloud
         </Button>
@@ -157,22 +117,32 @@ function AssistantAuthStatus({
 
   if (!isAuthenticated) {
     return (
-      <Flex align="center" gap="2">
-        <Button size="3" onClick={onSignIn} disabled={isSigningIn}>
-          <LinkIcon />
-          {isSigningIn ? 'Connecting...' : 'Connect to Grafana Assistant'}
-        </Button>
-        {isSigningIn && (
-          <Button
-            variant="outline"
-            size="3"
-            onClick={onCancelSignIn}
-            aria-label="Cancel sign in"
-          >
-            Cancel
+      <>
+        <Flex align="center" gap="2">
+          <Button size="3" onClick={() => signIn()} disabled={isSigningIn}>
+            <LinkIcon />
+            {isSigningIn ? 'Connecting...' : 'Connect to Grafana Assistant'}
           </Button>
+          {isSigningIn && (
+            <Button
+              variant="outline"
+              size="3"
+              onClick={cancelSignIn}
+              aria-label="Cancel sign in"
+            >
+              Cancel
+            </Button>
+          )}
+        </Flex>
+        {signInError && (
+          <Callout.Root color="red" size="1">
+            <Callout.Icon>
+              <AlertTriangleIcon size={16} />
+            </Callout.Icon>
+            <Callout.Text>{signInError.message}</Callout.Text>
+          </Callout.Root>
         )}
-      </Flex>
+      </>
     )
   }
 
@@ -186,7 +156,7 @@ function AssistantAuthStatus({
         variant="ghost"
         size="1"
         color="red"
-        onClick={onSignOut}
+        onClick={() => signOut()}
         disabled={isSigningOut}
       >
         <UnlinkIcon size={14} />
