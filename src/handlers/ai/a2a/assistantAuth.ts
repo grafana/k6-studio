@@ -80,8 +80,13 @@ async function performSignIn(
     const tokenResponse = await exchangeAssistantCode(
       callback.endpoint,
       callback.code,
-      codeVerifier
+      codeVerifier,
+      abortController.signal
     )
+
+    if (abortController.signal.aborted) {
+      return { type: 'aborted' }
+    }
 
     await saveAssistantTokens(stackId, {
       accessToken: tokenResponse.token,

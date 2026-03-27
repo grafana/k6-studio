@@ -90,6 +90,53 @@ describe('exchangeAssistantCode', () => {
       exchangeAssistantCode('https://api.grafana.net', 'code', 'verifier')
     ).rejects.toThrow()
   })
+
+  it('rejects when signal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+
+    mockFetch.mockImplementation((_url: string, init: RequestInit) => {
+      if (init.signal?.aborted) {
+        return Promise.reject(
+          new DOMException('The operation was aborted.', 'AbortError')
+        )
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(validResponse),
+      })
+    })
+
+    await expect(
+      exchangeAssistantCode(
+        'https://api.grafana.net',
+        'code',
+        'verifier',
+        controller.signal
+      )
+    ).rejects.toThrow('The operation was aborted.')
+  })
+
+  it('passes signal to fetch so it can be aborted externally', async () => {
+    const controller = new AbortController()
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(validResponse),
+    })
+
+    await exchangeAssistantCode(
+      'https://api.grafana.net',
+      'code',
+      'verifier',
+      controller.signal
+    )
+
+    const fetchOptions = mockFetch.mock.calls[0]![1] as RequestInit
+    // Signal should respond to the external controller, not just a timeout
+    controller.abort()
+    expect(fetchOptions.signal?.aborted).toBe(true)
+  })
 })
 
 describe('handleCallbackRequest', () => {

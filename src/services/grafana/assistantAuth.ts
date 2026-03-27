@@ -66,27 +66,44 @@ const ExchangeApiResponseSchema = z.object({
 export async function exchangeAssistantCode(
   apiEndpoint: string,
   code: string,
-  codeVerifier: string
+  codeVerifier: string,
+  signal?: AbortSignal
 ): Promise<AssistantTokenResponse> {
   const url = `${normalizeStackUrl(apiEndpoint)}/api/cli/v1/auth/exchange`
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, code_verifier: codeVerifier }),
-    signal: AbortSignal.timeout(30_000),
-  })
+  const timeoutController = new AbortController()
+  const timeout = setTimeout(() => timeoutController.abort(), 30_000)
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error')
-    throw new Error(
-      `Assistant auth exchange failed (${response.status}): ${text}`
-    )
+  if (signal) {
+    signal.addEventListener('abort', () => timeoutController.abort(), {
+      once: true,
+    })
+    if (signal.aborted) {
+      timeoutController.abort()
+    }
   }
 
-  const body = ExchangeApiResponseSchema.parse(await response.json())
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, code_verifier: codeVerifier }),
+      signal: timeoutController.signal,
+    })
 
-  return body.data
+    if (!response.ok) {
+      const text = await response.text().catch(() => 'Unknown error')
+      throw new Error(
+        `Assistant auth exchange failed (${response.status}): ${text}`
+      )
+    }
+
+    const body = ExchangeApiResponseSchema.parse(await response.json())
+
+    return body.data
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 export interface CallbackResult {
