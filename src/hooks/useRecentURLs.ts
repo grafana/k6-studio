@@ -3,7 +3,15 @@ import { useLocalStorage } from 'react-use'
 const LOCAL_STORAGE_KEY = 'recentURLs'
 const MAX_RECENT_URLS = 3
 
+function hasScheme(url: string): boolean {
+  return url.startsWith('http://') || url.startsWith('https://')
+}
+
 function areSameURL(a: string, b: string): boolean {
+  if (!hasScheme(a) && !hasScheme(b)) {
+    return areSameURL('http://' + a, 'http://' + b)
+  }
+
   try {
     const urlA = new URL(a)
     const urlB = new URL(b)
@@ -24,19 +32,20 @@ export function useRecentURLs() {
   const addURL = (url: string) => {
     const trimmedURL = url.trim()
 
-    if (!trimmedURL) return
+    if (!trimmedURL) {
+      return
+    }
 
-    setRecentURLs((prev = []) =>
-      [
-        trimmedURL,
-        ...prev.filter((existingUrl) => !areSameURL(existingUrl, trimmedURL)),
-      ].slice(0, MAX_RECENT_URLS)
+    const newUrls = recentURLs.filter(
+      (existingUrl) => !areSameURL(existingUrl, trimmedURL)
     )
+
+    setRecentURLs([trimmedURL, ...newUrls].slice(0, MAX_RECENT_URLS))
   }
 
   const removeURL = (url: string) => {
-    setRecentURLs((prev = []) =>
-      prev.filter((existingUrl) => !areSameURL(existingUrl, url))
+    setRecentURLs(
+      recentURLs.filter((existingUrl) => !areSameURL(existingUrl, url))
     )
   }
 
