@@ -8,21 +8,19 @@ import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
-import type { FieldConfig } from '../../ActionForms'
-import { buildFieldErrors } from '../../ActionForms/utils'
 import { LocatorOptions } from '../../types'
-import { FieldRenderer, ValuePopoverBadge } from '../components'
+import { ValuePopoverBadge } from '../components'
+
 import {
-  altTextField,
-  cssSelectorField,
-  formLabelField,
-  placeholderField,
-  roleField,
-  roleNameField,
-  testIdField,
-  textContentField,
-  titleField,
-} from '../fields'
+  GetByAltTextForm,
+  GetByCssForm,
+  GetByLabelForm,
+  GetByPlaceholderForm,
+  GetByRoleForm,
+  GetByTestIdForm,
+  GetByTextForm,
+  GetByTitleForm,
+} from './locators'
 
 const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
   role: 'ARIA Role',
@@ -33,20 +31,6 @@ const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
   text: 'Text content',
   title: 'Title',
   css: 'CSS selector',
-}
-
-const LOCATOR_FIELDS: Record<
-  ActionLocator['type'],
-  FieldConfig<string, ActionLocator>[]
-> = {
-  css: [cssSelectorField],
-  testid: [testIdField],
-  label: [formLabelField],
-  placeholder: [placeholderField],
-  title: [titleField],
-  alt: [altTextField],
-  text: [textContentField],
-  role: [roleField, roleNameField],
 }
 
 interface LocatorFormProps {
@@ -110,9 +94,8 @@ export function LocatorForm({
     })
   }
 
-  const fields = LOCATOR_FIELDS[currentLocator.type]
   const validation = touchedTypes.has(current)
-    ? validateFields(currentLocator, fields)
+    ? validateLocator(currentLocator)
     : { isValid: true }
   const error = validation.isValid ? null : validation.message
 
@@ -145,25 +128,154 @@ export function LocatorForm({
           </FieldGroup>
 
           <Separator orientation="vertical" size="4" decorative />
-          <Flex direction="column" gap="2" align="stretch">
-            {fields.map((field) => (
-              <FieldRenderer
-                key={field.name}
-                field={field}
-                model={currentLocator}
-                onChange={handleLocatorChange}
-                onBlur={handleFieldBlur}
-                errors={buildFieldErrors(
-                  field.name,
-                  validation.fieldErrors?.[field.name]
-                )}
-              />
-            ))}
-          </Flex>
+          <LocatorFieldsForm
+            locator={currentLocator}
+            errors={validation.fieldErrors}
+            onChange={handleLocatorChange}
+            onBlur={handleFieldBlur}
+          />
         </Grid>
       </Popover.Content>
     </Popover.Root>
   )
+}
+
+interface LocatorFieldsFormProps {
+  locator: ActionLocator
+  errors?: Record<string, string>
+  onChange: (locator: ActionLocator) => void
+  onBlur?: () => void
+}
+
+function LocatorFieldsForm({
+  locator,
+  errors,
+  onChange,
+  onBlur,
+}: LocatorFieldsFormProps) {
+  switch (locator.type) {
+    case 'role':
+      return (
+        <GetByRoleForm
+          locator={locator}
+          errors={errors}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      )
+    case 'css':
+      return (
+        <GetByCssForm
+          locator={locator}
+          errors={errors}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      )
+    case 'testid':
+      return (
+        <GetByTestIdForm
+          locator={locator}
+          errors={errors}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      )
+    case 'label':
+      return (
+        <GetByLabelForm
+          locator={locator}
+          errors={errors}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      )
+    case 'placeholder':
+      return (
+        <GetByPlaceholderForm
+          locator={locator}
+          errors={errors}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      )
+    case 'title':
+      return (
+        <GetByTitleForm
+          locator={locator}
+          errors={errors}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      )
+    case 'alt':
+      return (
+        <GetByAltTextForm
+          locator={locator}
+          errors={errors}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      )
+    case 'text':
+      return (
+        <GetByTextForm
+          locator={locator}
+          errors={errors}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      )
+    default:
+      return exhaustive(locator)
+  }
+}
+
+function validateLocator(locator: ActionLocator) {
+  const fieldErrors: Record<string, string> = {}
+
+  switch (locator.type) {
+    case 'css':
+      if (!locator.selector.trim())
+        fieldErrors['css-selector'] = 'CSS selector cannot be empty'
+      break
+    case 'testid':
+      if (!locator.testId.trim())
+        fieldErrors['test-id'] = 'Test ID cannot be empty'
+      break
+    case 'label':
+      if (!locator.label.trim())
+        fieldErrors['form-label'] = 'Label cannot be empty'
+      break
+    case 'placeholder':
+      if (!locator.placeholder.trim())
+        fieldErrors['placeholder'] = 'Placeholder cannot be empty'
+      break
+    case 'title':
+      if (!locator.title.trim()) fieldErrors['title'] = 'Title cannot be empty'
+      break
+    case 'alt':
+    case 'text':
+      if (!locator.text.trim())
+        fieldErrors[locator.type === 'alt' ? 'alt' : 'text-content'] =
+          locator.type === 'alt'
+            ? 'Alt text cannot be empty'
+            : 'Text cannot be empty'
+      break
+    case 'role':
+      if (!locator.role.trim()) fieldErrors['role'] = 'Role cannot be empty'
+      break
+    default:
+      exhaustive(locator)
+  }
+
+  const message = Object.values(fieldErrors)[0]
+
+  if (!message) {
+    return { isValid: true }
+  }
+
+  return { isValid: false, message, fieldErrors }
 }
 
 function DisplayValue({
@@ -208,36 +320,6 @@ function initializeLocatorValues(type: ActionLocator['type']): ActionLocator {
     default:
       return exhaustive(type)
   }
-}
-
-function validateFields(
-  locator: ActionLocator,
-  fields: FieldConfig<string, ActionLocator>[]
-) {
-  const fieldErrors: Record<string, string> = {}
-  let message: string | undefined
-
-  fields.forEach((field) => {
-    if (!field.validate) {
-      return
-    }
-
-    const error = field.validate(field.getValue(locator), locator)
-
-    if (error) {
-      if (!message) {
-        message = error
-      }
-
-      fieldErrors[field.name] = error
-    }
-  })
-
-  if (!message) {
-    return { isValid: true }
-  }
-
-  return { isValid: false, message, fieldErrors }
 }
 
 function addIfAbsent<T>(set: Set<T>, value: T) {

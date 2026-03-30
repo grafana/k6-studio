@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
+import { debounce } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
@@ -98,11 +99,12 @@ export function useBrowserScriptPreview(
 ) {
   const [preview, setPreview] = useState('')
 
-  useEffect(() => {
-    async function generatePreview() {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const generatePreview = useCallback(
+    debounce(async (actions: BrowserActionInstance[]) => {
       try {
         const test = convertActionsToTest({
-          browserActions,
+          browserActions: actions,
         })
 
         const script = await emitScript(test)
@@ -112,10 +114,15 @@ export function useBrowserScriptPreview(
           `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
         )
       }
-    }
+    }, 300),
+    []
+  )
 
-    void generatePreview()
-  }, [browserActions])
+  useEffect(() => {
+    void generatePreview(browserActions)
+
+    return () => generatePreview.cancel()
+  }, [browserActions, generatePreview])
 
   return preview
 }

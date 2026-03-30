@@ -1,12 +1,9 @@
 import { FieldErrors } from 'react-hook-form'
 
-export function buildFieldErrors(
+export function toFieldErrors(
   name: string,
-  message?: string | null
+  message?: string
 ): FieldErrors | undefined {
-  if (!message) {
-    return undefined
-  }
-
+  if (!message) return undefined
   return { [name]: { message } } as FieldErrors
 }
