@@ -116,7 +116,7 @@ function getMenuTemplate(): Electron.MenuItemConstructorOptions[] {
             const {
               filePaths: [selectedPath],
             } = await dialog.showOpenDialog(browserWindow, {
-              properties: ['openDirectory'],
+              properties: ['openDirectory', 'createDirectory'],
               title: 'Open workspace',
             })
 
