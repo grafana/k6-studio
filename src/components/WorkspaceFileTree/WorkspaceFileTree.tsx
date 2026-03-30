@@ -10,7 +10,14 @@ import {
 import Fuse, { IFuseOptions } from 'fuse.js'
 import { FolderClosedIcon, FolderOpenIcon, PlusIcon } from 'lucide-react'
 import * as pathe from 'pathe'
-import { KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { NavLink, useNavigate, useParams } from 'react-router-dom'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
@@ -664,6 +671,54 @@ function isDescendantPath(descendantPath: string, ancestorPath: string) {
   return descendantPath.startsWith(prefix)
 }
 
+function pathIsWorkspaceDescendant(
+  candidatePath: string,
+  workspaceRoot: string
+): boolean {
+  const normalizedPath = pathe.normalize(candidatePath)
+
+  if (normalizedPath === workspaceRoot) {
+    return true
+  }
+
+  const normalizedRoot = pathe.normalize(workspaceRoot)
+
+  const prefix = !normalizedRoot.endsWith(pathe.sep)
+    ? `${normalizedRoot}${pathe.sep}`
+    : normalizedRoot
+
+  return normalizedPath.startsWith(prefix)
+}
+
+/** Drop cached directory listings that are the removed path or under it. */
+function pruneLoadedDirectoryKeys(
+  prev: Record<string, FileTreeEntry[]>,
+  removedPath: string
+): Record<string, FileTreeEntry[]> {
+  const next: Record<string, FileTreeEntry[]> = {}
+
+  const normalized = pathe.normalize(removedPath)
+
+  const removedPrefix = !normalized.endsWith(pathe.sep)
+    ? `${normalized}${pathe.sep}`
+    : normalized
+
+  for (const [key, value] of Object.entries(prev)) {
+    const normalizedKey = pathe.normalize(key)
+
+    if (
+      normalizedKey === normalized ||
+      normalizedKey.startsWith(removedPrefix)
+    ) {
+      continue
+    }
+
+    next[key] = value
+  }
+
+  return next
+}
+
 interface WorkspaceFileTreeProps {
   /** When non-empty, only entries matching this filter (loaded folders/files) are shown. */
   nameFilter?: string
@@ -677,23 +732,78 @@ export function WorkspaceFileTree({ nameFilter = '' }: WorkspaceFileTreeProps) {
 
   const [entries, setEntries] = useState<Record<string, FileTreeEntry[]>>({})
 
-  function loadDirectory(path: string) {
-    return window.studio.file.listDirectory({ path }).then((entries) => {
-      setEntries((prev) => {
-        return { ...prev, [path]: entries }
-      })
+  const loadDirectory = useCallback((dirPath: string) => {
+    return window.studio.file.listDirectory({ path: dirPath }).then((list) => {
+      setEntries((prev) => ({ ...prev, [dirPath]: list }))
     })
-  }
+  }, [])
 
   useEffect(() => {
     if (workspace?.path === undefined) {
       return
     }
 
+    setEntries({})
+
     loadDirectory(workspace.path).catch((error) => {
       console.error(error)
     })
-  }, [workspace?.path])
+  }, [workspace?.path, loadDirectory])
+
+  const entriesRef = useRef(entries)
+
+  useEffect(() => {
+    entriesRef.current = entries
+  })
+
+  const reloadListedDirectory = useCallback(
+    (root: string, changedPath: string) => {
+      const dirPath = pathe.dirname(changedPath)
+
+      if (dirPath !== root && entriesRef.current[dirPath] === undefined) {
+        return
+      }
+
+      loadDirectory(dirPath).catch((error) => {
+        console.error(error)
+      })
+    },
+    [loadDirectory]
+  )
+
+  useEffect(() => {
+    const root = workspace?.path
+
+    if (root === undefined) {
+      return
+    }
+
+    return window.studio.workspace.onAddFile(({ path }) => {
+      if (!pathIsWorkspaceDescendant(path, root)) {
+        return
+      }
+
+      reloadListedDirectory(root, path)
+    })
+  }, [workspace?.path, reloadListedDirectory])
+
+  useEffect(() => {
+    const root = workspace?.path
+
+    if (root === undefined) {
+      return
+    }
+
+    return window.studio.workspace.onRemoveFile(({ path }) => {
+      if (!pathIsWorkspaceDescendant(path, root)) {
+        return
+      }
+
+      setEntries((prev) => pruneLoadedDirectoryKeys(prev, path))
+
+      reloadListedDirectory(root, path)
+    })
+  }, [workspace?.path, reloadListedDirectory])
 
   const tree = useTree({
     root: {

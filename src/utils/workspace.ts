@@ -106,6 +106,18 @@ export const setupProjectStructure = async () => {
   }
 }
 
+function normalizeRootPath(rootPath: string) {
+  const normalized = path.normalize(rootPath)
+
+  // Strip trailing sep except for the filesystem root (`/` or `C:\`), where that
+  // would yield an empty or ambiguous path.
+  if (normalized.endsWith(path.sep) && normalized.length > path.sep.length) {
+    return normalized.slice(0, -1)
+  }
+
+  return normalized
+}
+
 interface WorkspaceEventMap {
   'file:add': { path: string }
   'file:remove': { path: string }
@@ -127,13 +139,13 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
   constructor(rootPath: string, config: WorkspaceConfig) {
     super()
 
-    this.#rootPath = rootPath
+    this.#rootPath = normalizeRootPath(rootPath)
     this.#config = config
 
-    this.#watcher = watch(rootPath, {
+    this.#watcher = watch(this.#rootPath, {
       ignoreInitial: true,
-      ignored: (path) => {
-        return isMatch(path, [
+      ignored: (targetPath) => {
+        return isMatch(targetPath, [
           '**/node_modules/**',
           '**/dist/**',
           '**/build/**',
@@ -146,20 +158,55 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
         ])
       },
     })
+
+    const emitFsEvent = (
+      type: 'file:add' | 'file:remove' | 'file:change',
+      filePath: string
+    ) => {
+      const normalized = path.normalize(filePath)
+      const rootPrefix = this.#rootPath + path.sep
+
+      if (normalized !== this.#rootPath && !normalized.startsWith(rootPrefix)) {
+        return
+      }
+
+      this.emit(type, { path: normalized })
+    }
+
+    this.#watcher.on('add', (filePath) => {
+      emitFsEvent('file:add', filePath)
+    })
+
+    this.#watcher.on('addDir', (dirPath) => {
+      emitFsEvent('file:add', dirPath)
+    })
+
+    this.#watcher.on('unlink', (filePath) => {
+      emitFsEvent('file:remove', filePath)
+    })
+
+    this.#watcher.on('unlinkDir', (dirPath) => {
+      emitFsEvent('file:remove', dirPath)
+    })
+
+    this.#watcher.on('change', (filePath) => {
+      emitFsEvent('file:change', filePath)
+    })
   }
 
   async switch(newRootPath: string) {
     this.#watcher.unwatch(this.#rootPath)
 
-    this.#rootPath = newRootPath
-    this.#config = await loadWorkspaceConfig(newRootPath)
-    this.#watcher.add(newRootPath)
+    this.#rootPath = normalizeRootPath(newRootPath)
+
+    this.#config = await loadWorkspaceConfig(this.#rootPath)
+    this.#watcher.add(this.#rootPath)
 
     this.emit('workspace:change', {
-      path: newRootPath,
+      path: this.#rootPath,
     })
 
-    addToRecentDocuments(newRootPath)
+    addToRecentDocuments(this.#rootPath)
   }
 
   get path() {
@@ -195,8 +242,11 @@ export class Workspace extends EventEmitter<WorkspaceEventMap> {
     }
   }
 
-  isInside(path: string) {
-    return path.startsWith(this.#rootPath)
+  isInside(candidatePath: string) {
+    const normalized = path.normalize(candidatePath)
+    const root = this.#rootPath
+
+    return normalized === root || normalized.startsWith(root + path.sep)
   }
 
   async close() {
