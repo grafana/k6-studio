@@ -5,6 +5,7 @@ import type {
 import log from 'electron-log/main'
 
 import { sendTaskCancel } from './a2a/cancelTask'
+import { AssistantError, classifyError } from './a2a/classifyError'
 import { getA2AConfig } from './a2a/config'
 import {
   buildA2ARequest,
@@ -76,7 +77,14 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
         { once: true }
       )
     }
-    const config = await getA2AConfig()
+
+    let config: Awaited<ReturnType<typeof getA2AConfig>>
+    try {
+      config = await getA2AConfig()
+    } catch (error) {
+      throw toAssistantError(error)
+    }
+
     const userText = extractLatestUserText(options.prompt)
     const body = buildA2ARequest(
       userText,
@@ -88,26 +96,39 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       `Sending A2A request for chatId=${chatId}, contextId=${contextId}`
     )
 
-    const response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
-        Authorization: `Bearer ${config.bearerToken}`,
-        'X-A2A-Extensions': config.remoteToolExtension,
-        'X-App-Source': 'k6-studio',
-      },
-      body: JSON.stringify(body),
-      signal: sessionAbortController.signal,
-    })
+    let response: Response
+    try {
+      response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+          Authorization: `Bearer ${config.bearerToken}`,
+          'X-A2A-Extensions': config.remoteToolExtension,
+          'X-App-Source': 'k6-studio',
+        },
+        body: JSON.stringify(body),
+        signal: sessionAbortController.signal,
+      })
+    } catch (error) {
+      throw toAssistantError(error)
+    }
 
     if (!response.ok) {
       const text = await response.text().catch(() => 'Unknown error')
-      throw new Error(`A2A request failed (${response.status}): ${text}`)
+      const message = `A2A request failed (${response.status}): ${text}`
+      const errorInfo = classifyError(message, {
+        httpStatus: response.status,
+        apiEndpoint: config.baseUrl.replace('/api/cli/v1/a2a', ''),
+      })
+      throw new AssistantError(message, errorInfo)
     }
 
     if (!response.body) {
-      throw new Error('A2A response has no body')
+      throw new AssistantError(
+        'A2A response has no body',
+        classifyError('A2A response has no body')
+      )
     }
 
     const session: ActiveA2ASession = {
@@ -184,6 +205,17 @@ function findChatIdForSession(session: ActiveA2ASession): string {
     }
   }
   return 'unknown'
+}
+
+function toAssistantError(error: unknown): AssistantError {
+  if (error instanceof AssistantError) {
+    return error
+  }
+  const message = error instanceof Error ? error.message : 'Unknown error'
+  const errorInfo = classifyError(message, {
+    isTypeError: error instanceof TypeError,
+  })
+  return new AssistantError(message, errorInfo)
 }
 
 function cleanupSession(chatId: string): void {

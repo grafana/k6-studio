@@ -39,6 +39,7 @@ export function AutoCorrelation({
     restart,
     tokenUsage,
     provider,
+    assistantErrorInfo,
   } = useGenerateRules({
     clearValidation: clearValidation,
   })
@@ -81,6 +82,7 @@ export function AutoCorrelation({
         error={error}
         onRetry={restart}
         onReset={() => onCorrelationStatusChange('not-started')}
+        assistantErrorInfo={assistantErrorInfo}
       />
     )
   }

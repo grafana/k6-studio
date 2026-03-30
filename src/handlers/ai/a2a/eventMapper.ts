@@ -1,6 +1,7 @@
 import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
 import log from 'electron-log/main'
 
+import { AssistantError, classifyError } from './classifyError'
 import { handleRemoteToolRequest, tryMatchToolRequests } from './toolMatcher'
 import type {
   A2AArtifact,
@@ -37,13 +38,13 @@ export function processA2AEvent(
   session: ActiveA2ASession
 ): LanguageModelV2StreamPart[] {
   if (event.error) {
-    log.error(PREFIX, `A2A error (${event.error.code}):`, event.error.message)
+    const message = `A2A error (${event.error.code}): ${event.error.message}`
+    log.error(PREFIX, message)
+    const errorInfo = classifyError(message)
     return [
       {
         type: 'error',
-        error: new Error(
-          `A2A error (${event.error.code}): ${event.error.message}`
-        ),
+        error: new AssistantError(message, errorInfo),
       },
     ]
   }
@@ -102,7 +103,10 @@ function handleStatusUpdate(
       statusMessage || `A2A task ${state} (taskId=${event.taskId})`
 
     log.error(PREFIX, `Task ${state}:`, errorMessage)
-    return [{ type: 'error', error: new Error(errorMessage) }]
+    const errorInfo = classifyError(errorMessage)
+    return [
+      { type: 'error', error: new AssistantError(errorMessage, errorInfo) },
+    ]
   }
 
   return []

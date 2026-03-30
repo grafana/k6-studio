@@ -4,6 +4,7 @@ import { ipcMain, IpcMainEvent } from 'electron'
 import log from 'electron-log/main'
 
 import * as assistantAuth from './a2a/assistantAuth'
+import { AssistantError } from './a2a/classifyError'
 import { getGrafanaAssistantModel, getOpenAiModel } from './model'
 import { streamMessages } from './streamMessages'
 import { tools } from './tools'
@@ -23,6 +24,7 @@ async function handleStreamChat(
   request: StreamChatRequest
 ) {
   const provider = request.provider ?? 'openai'
+
   const messages = convertToModelMessages(request.messages)
 
   const abortController = new AbortController()
@@ -69,6 +71,14 @@ async function handleStreamChat(
     }
   } catch (error) {
     log.error('handleStreamChat error:', error)
+
+    if (error instanceof AssistantError) {
+      event.sender.send(AiHandler.StreamChatChunk, {
+        id: request.id,
+        chunk: { type: 'error', errorText: error.message },
+        errorInfo: error.errorInfo,
+      })
+    }
   } finally {
     activeAbortControllers.delete(request.id)
   }

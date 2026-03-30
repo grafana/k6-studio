@@ -2,6 +2,8 @@ import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { sendTaskCancel } from './a2a/cancelTask'
+import { AssistantError } from './a2a/classifyError'
+import { getA2AConfig } from './a2a/config'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 
 vi.mock('electron-log/main', () => ({
@@ -324,6 +326,135 @@ describe('GrafanaAssistantLanguageModel', () => {
       await drainStream(result)
 
       expect(sendTaskCancelMock).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('error classification', () => {
+    it('throws AssistantError with no-stack when config has no stack', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      const getA2AConfigMock = vi.mocked(getA2AConfig)
+      getA2AConfigMock.mockRejectedValueOnce(
+        new Error(
+          'No Grafana Cloud stack selected. Please sign in to Grafana Cloud first.'
+        )
+      )
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      try {
+        await model.doStream(makeOptions('chat-1', 'Hello'))
+        expect.unreachable('should have thrown')
+      } catch (error) {
+        expect(error).toBeInstanceOf(AssistantError)
+        expect((error as AssistantError).errorInfo.category).toBe('no-stack')
+      }
+    })
+
+    it('throws AssistantError with auth-expired when not authenticated', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      const getA2AConfigMock = vi.mocked(getA2AConfig)
+      getA2AConfigMock.mockRejectedValueOnce(
+        new Error(
+          'Not authenticated with Grafana Assistant. Please connect to Grafana Assistant first.'
+        )
+      )
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      try {
+        await model.doStream(makeOptions('chat-1', 'Hello'))
+      } catch (error) {
+        expect(error).toBeInstanceOf(AssistantError)
+        expect((error as AssistantError).errorInfo.category).toBe(
+          'auth-expired'
+        )
+      }
+    })
+
+    it('throws AssistantError with auth-expired for HTTP 401', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      fetchSpy.mockResolvedValueOnce(
+        new Response('Unauthorized', { status: 401 })
+      )
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      try {
+        await model.doStream(makeOptions('chat-1', 'Hello'))
+      } catch (error) {
+        expect(error).toBeInstanceOf(AssistantError)
+        expect((error as AssistantError).errorInfo.category).toBe(
+          'auth-expired'
+        )
+      }
+    })
+
+    it('throws AssistantError with rate-limit for HTTP 429', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      fetchSpy.mockResolvedValueOnce(
+        new Response('Too many requests', { status: 429 })
+      )
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      try {
+        await model.doStream(makeOptions('chat-1', 'Hello'))
+      } catch (error) {
+        expect(error).toBeInstanceOf(AssistantError)
+        expect((error as AssistantError).errorInfo.category).toBe('rate-limit')
+      }
+    })
+
+    it('throws AssistantError with quota-exceeded for HTTP 429 with quota message', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      fetchSpy.mockResolvedValueOnce(
+        new Response('RESOURCE_LIMIT_EXCEEDED: Monthly prompt limit reached', {
+          status: 429,
+        })
+      )
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      try {
+        await model.doStream(makeOptions('chat-1', 'Hello'))
+      } catch (error) {
+        expect(error).toBeInstanceOf(AssistantError)
+        expect((error as AssistantError).errorInfo.category).toBe(
+          'quota-exceeded'
+        )
+      }
+    })
+
+    it('throws AssistantError with service-unavailable for HTTP 503', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      fetchSpy.mockResolvedValueOnce(
+        new Response('Service unavailable', { status: 503 })
+      )
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      try {
+        await model.doStream(makeOptions('chat-1', 'Hello'))
+      } catch (error) {
+        expect(error).toBeInstanceOf(AssistantError)
+        expect((error as AssistantError).errorInfo.category).toBe(
+          'service-unavailable'
+        )
+      }
+    })
+
+    it('throws AssistantError with network for fetch TypeError', async () => {
+      vi.stubGlobal('fetch', fetchSpy)
+      fetchSpy.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+
+      const model = new GrafanaAssistantLanguageModel()
+
+      try {
+        await model.doStream(makeOptions('chat-1', 'Hello'))
+      } catch (error) {
+        expect(error).toBeInstanceOf(AssistantError)
+        expect((error as AssistantError).errorInfo.category).toBe('network')
+      }
     })
   })
 

@@ -9,21 +9,25 @@ import {
 
 import grotCrashed from '@/assets/grot-crashed.svg'
 import { ExternalLink } from '@/components/ExternalLink'
+import { classifyError } from '@/handlers/ai/a2a/classifyError'
 import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
 import { useSettingsChanged } from '@/hooks/useSettings'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
+import { AssistantErrorInfo, isRetryable } from '@/types/assistant'
 
 interface AutoCorrelationErrorProps {
   error: Error
   onRetry: () => void
   onReset: () => void
+  assistantErrorInfo?: AssistantErrorInfo
 }
 
 export function ErrorMessage({
   error,
   onRetry,
   onReset,
+  assistantErrorInfo,
 }: AutoCorrelationErrorProps) {
   const isGrafanaAssistant = useFeaturesStore(
     (state) => state.features['grafana-assistant']
@@ -35,6 +39,7 @@ export function ErrorMessage({
         error={error}
         onRetry={onRetry}
         onReset={onReset}
+        assistantErrorInfo={assistantErrorInfo}
       />
     )
   }
@@ -141,30 +146,91 @@ function GrafanaAssistantError({
   error,
   onRetry,
   onReset,
+  assistantErrorInfo,
 }: AutoCorrelationErrorProps) {
-  const errorMessage = error.message.toLowerCase()
   const openProfileDialog = useStudioUIStore((s) => s.openProfileDialog)
   const { mutate: signOut } = useAssistantSignOut()
 
-  const isAuthError =
-    errorMessage.includes('not authenticated') ||
-    errorMessage.includes('refresh token') ||
-    errorMessage.includes('token refresh failed')
+  const errorInfo = assistantErrorInfo ?? classifyError(error.message)
 
-  const isNotSignedIn = errorMessage.includes('no grafana cloud stack')
+  return (
+    <ClassifiedError
+      errorInfo={errorInfo}
+      onRetry={onRetry}
+      onReset={onReset}
+      onReconnect={() => {
+        signOut()
+        onReset()
+      }}
+      onSignIn={openProfileDialog}
+    />
+  )
+}
 
-  if (isAuthError) {
+const ERROR_CONTENT: Record<
+  AssistantErrorInfo['category'],
+  { title: string; message: string }
+> = {
+  'auth-expired': {
+    title: 'Session expired',
+    message:
+      'Your Grafana Assistant session has expired. Please reconnect to continue.',
+  },
+  'no-stack': {
+    title: 'Not signed in',
+    message: 'Sign in to Grafana Cloud to use the Grafana Assistant.',
+  },
+  'rate-limit': {
+    title: 'Too many requests',
+    message:
+      "You've sent too many requests. Please wait a moment and try again.",
+  },
+  'quota-exceeded': {
+    title: 'Usage limit reached',
+    message: "You've reached your monthly prompt limit.",
+  },
+  'context-window': {
+    title: 'Recording too large',
+    message:
+      'The recording exceeds the token limit. Try reducing the number of allowed hosts or work with a smaller recording.',
+  },
+  'service-unavailable': {
+    title: 'Service unavailable',
+    message:
+      'Grafana Assistant is temporarily unavailable. Please try again later.',
+  },
+  network: {
+    title: 'Connection error',
+    message:
+      'Could not connect to Grafana Assistant. Check your internet connection and try again.',
+  },
+  unknown: {
+    title: 'Something went wrong',
+    message:
+      'An unexpected error occurred. Click retry to try again or report an issue if the problem persists.',
+  },
+}
+
+function ClassifiedError({
+  errorInfo,
+  onRetry,
+  onReset,
+  onReconnect,
+  onSignIn,
+}: {
+  errorInfo: AssistantErrorInfo
+  onRetry: () => void
+  onReset: () => void
+  onReconnect: () => void
+  onSignIn: () => void
+}) {
+  const { category } = errorInfo
+  const { title, message } = ERROR_CONTENT[category]
+
+  if (category === 'auth-expired') {
     return (
-      <MessageContent
-        title="Session expired"
-        message="Your Grafana Assistant session has expired. Please reconnect to continue."
-      >
-        <Button
-          onClick={() => {
-            signOut()
-            onReset()
-          }}
-        >
+      <MessageContent title={title} message={message}>
+        <Button onClick={onReconnect}>
           <LinkIcon />
           Reconnect
         </Button>
@@ -172,13 +238,10 @@ function GrafanaAssistantError({
     )
   }
 
-  if (isNotSignedIn) {
+  if (category === 'no-stack') {
     return (
-      <MessageContent
-        title="Not signed in"
-        message="Sign in to Grafana Cloud to use the Grafana Assistant."
-      >
-        <Button onClick={openProfileDialog}>
+      <MessageContent title={title} message={message}>
+        <Button onClick={onSignIn}>
           <UserRoundIcon />
           Sign in to Grafana Cloud
         </Button>
@@ -186,19 +249,51 @@ function GrafanaAssistantError({
     )
   }
 
+  if (category === 'quota-exceeded') {
+    return (
+      <MessageContent title={title} message={message}>
+        {errorInfo.upgradeUrl && (
+          <ExternalLink href={errorInfo.upgradeUrl}>
+            <Button variant="outline">
+              <ExternalLinkIcon />
+              Upgrade plan
+            </Button>
+          </ExternalLink>
+        )}
+        <Button onClick={onReset} variant="outline">
+          Go back
+        </Button>
+      </MessageContent>
+    )
+  }
+
+  if (category === 'context-window') {
+    return (
+      <MessageContent title={title} message={message}>
+        <Button onClick={onReset} variant="outline">
+          Go back
+        </Button>
+      </MessageContent>
+    )
+  }
+
   return (
-    <MessageContent
-      title="Something went wrong"
-      message="An unexpected error occurred during autocorrelation. Click retry to try again or report an issue if problem persists."
-    >
-      <Button onClick={onRetry}>
-        <RefreshCw />
-        Retry
-      </Button>
-      <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
-        <ExternalLinkIcon />
-        Report issue
-      </Button>
+    <MessageContent title={title} message={message}>
+      {isRetryable(category) && (
+        <Button onClick={onRetry}>
+          <RefreshCw />
+          Retry
+        </Button>
+      )}
+      {category === 'unknown' && (
+        <Button
+          onClick={() => window.studio.ui.reportIssue()}
+          variant="outline"
+        >
+          <ExternalLinkIcon />
+          Report issue
+        </Button>
+      )}
     </MessageContent>
   )
 }

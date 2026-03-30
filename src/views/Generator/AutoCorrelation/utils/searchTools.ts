@@ -40,7 +40,7 @@ export function getRequestsMetadata(
       id: data.id,
       method: data.request.method,
       url: data.request.url,
-      statusCode: data.response?.statusCode,
+      statusCode: data.response?.statusCode ?? null,
       hasRequestBody: !!data.request.content,
       hasResponseBody: !!data.response?.content,
     }))
@@ -68,7 +68,7 @@ export function searchRequests(
     id: result.item.id,
     method: result.item.request.method,
     url: result.item.request.url,
-    statusCode: result.item.response?.statusCode,
+    statusCode: result.item.response?.statusCode ?? null,
   }))
 }
 

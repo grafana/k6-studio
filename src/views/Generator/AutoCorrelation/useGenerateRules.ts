@@ -10,6 +10,7 @@ import {
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
+import { AssistantErrorInfo } from '@/types/assistant'
 import { AiCorrelationRule } from '@/types/autoCorrelation'
 import { AiProvider } from '@/types/features'
 import { CorrelationRule } from '@/types/rules'
@@ -41,6 +42,8 @@ export const useGenerateRules = ({
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
   const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
+  const [assistantErrorInfo, setAssistantErrorInfo] =
+    useState<AssistantErrorInfo>()
   const suggestedRulesRef = useRef(suggestedRules)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
@@ -69,6 +72,9 @@ export const useGenerateRules = ({
       provider,
       onUsage: (usage) => {
         setTokenUsage((prev) => sumTokenUsage(prev, usage))
+      },
+      onErrorInfo: (errorInfo) => {
+        setAssistantErrorInfo(errorInfo)
       },
     }),
 
@@ -211,6 +217,7 @@ export const useGenerateRules = ({
     })
     setCorrelationStatus('validating')
     clearError()
+    setAssistantErrorInfo(undefined)
 
     try {
       const validationResult = await runValidation()
@@ -247,6 +254,7 @@ export const useGenerateRules = ({
     setSuggestedRules([])
     setMessages([])
     clearError()
+    setAssistantErrorInfo(undefined)
     return start()
   }
 
@@ -270,6 +278,7 @@ export const useGenerateRules = ({
     messages,
     tokenUsage,
     provider,
+    assistantErrorInfo,
   }
 }
 

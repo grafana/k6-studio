@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import { AssistantError } from './classifyError'
 import { processA2AEvent } from './eventMapper'
 import type { A2ASSEEvent, ActiveA2ASession } from './types'
 
@@ -264,5 +265,100 @@ describe('processA2AEvent', () => {
     const event: A2ASSEEvent = { jsonrpc: '2.0', id: 1 }
     const parts = processA2AEvent(event, createSession())
     expect(parts).toHaveLength(0)
+  })
+
+  describe('AssistantError classification', () => {
+    it('returns AssistantError for JSON-RPC errors', () => {
+      const event: A2ASSEEvent = {
+        jsonrpc: '2.0',
+        id: 1,
+        error: { code: -32600, message: 'Invalid request' },
+      }
+
+      const parts = processA2AEvent(event, createSession())
+      const error = (parts[0] as { type: 'error'; error: Error }).error
+
+      expect(error).toBeInstanceOf(AssistantError)
+      expect((error as AssistantError).errorInfo.category).toBe('unknown')
+    })
+
+    it('classifies auth-related JSON-RPC error as auth-expired', () => {
+      const event: A2ASSEEvent = {
+        jsonrpc: '2.0',
+        id: 1,
+        error: { code: -32600, message: 'Unauthorized' },
+      }
+
+      const parts = processA2AEvent(event, createSession())
+      const error = (parts[0] as { type: 'error'; error: AssistantError }).error
+
+      expect(error.errorInfo.category).toBe('auth-expired')
+    })
+
+    it('returns AssistantError for failed task status', () => {
+      const event: A2ASSEEvent = {
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          kind: 'status-update',
+          taskId: 't1',
+          contextId: 'c1',
+          status: {
+            state: 'failed',
+            message: { parts: [{ text: 'Something went wrong' }] },
+          },
+        },
+      }
+
+      const parts = processA2AEvent(event, createSession())
+      const error = (parts[0] as { type: 'error'; error: Error }).error
+
+      expect(error).toBeInstanceOf(AssistantError)
+    })
+
+    it('classifies failed task with quota message as quota-exceeded', () => {
+      const event: A2ASSEEvent = {
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          kind: 'status-update',
+          taskId: 't1',
+          contextId: 'c1',
+          status: {
+            state: 'failed',
+            message: {
+              parts: [
+                {
+                  text: 'RESOURCE_LIMIT_EXCEEDED: Monthly prompt limit reached',
+                },
+              ],
+            },
+          },
+        },
+      }
+
+      const parts = processA2AEvent(event, createSession())
+      const error = (parts[0] as { type: 'error'; error: AssistantError }).error
+
+      expect(error.errorInfo.category).toBe('quota-exceeded')
+    })
+
+    it('classifies canceled task as unknown', () => {
+      const event: A2ASSEEvent = {
+        jsonrpc: '2.0',
+        id: 1,
+        result: {
+          kind: 'status-update',
+          taskId: 't1',
+          contextId: 'c1',
+          status: { state: 'canceled' },
+        },
+      }
+
+      const parts = processA2AEvent(event, createSession())
+      const error = (parts[0] as { type: 'error'; error: AssistantError }).error
+
+      expect(error.errorInfo.category).toBe('unknown')
+    })
   })
 })
