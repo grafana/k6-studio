@@ -3,10 +3,10 @@ import { app } from 'electron'
 import log from 'electron-log/main'
 import path from 'path'
 
+import { NodeSelector } from '@/schemas/selectors'
 import { BrowserServer } from '@/services/browser/server'
 import { ChromeDevToolsClient } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
-import { HighlightSelector } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
 import {
@@ -51,7 +51,7 @@ class BrowserExtensionRecordingSession
     })
   }
 
-  highlightElement(selector: HighlightSelector | null): void {
+  highlightElement(selector: NodeSelector | null): void {
     this.#server.send({
       type: 'highlight-elements',
       selector,

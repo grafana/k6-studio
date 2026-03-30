@@ -7,7 +7,6 @@ import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { getRoutePath } from '@/routeMap'
 
-import { Banner } from './Banner'
 import { NavigationCard } from './NavigationCard'
 
 export function Home() {
@@ -28,7 +27,6 @@ export function Home() {
 
   return (
     <Flex direction="column" height="100%" position="relative">
-      <Banner />
       <Flex
         direction="column"
         align="center"

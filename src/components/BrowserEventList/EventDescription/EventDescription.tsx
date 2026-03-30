@@ -1,7 +1,7 @@
 import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { BrowserEvent } from '@/schemas/recording'
+import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 import { AssertDescription } from './AssertDescription'
 import { ClickDescription } from './ClickDescription'
@@ -13,7 +13,7 @@ import { WaitForDescription } from './WaitForDescription'
 interface EventDescriptionProps {
   event: BrowserEvent
   onNavigate: (url: string) => void
-  onHighlight: (selector: HighlightSelector | null) => void
+  onHighlight: (selector: NodeSelector | null) => void
 }
 
 export function EventDescription({

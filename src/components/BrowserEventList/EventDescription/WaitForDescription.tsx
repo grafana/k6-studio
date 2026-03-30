@@ -1,11 +1,11 @@
 import { WaitForEvent } from '@/schemas/recording'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { Selector } from './Selector'
 
 interface WaitForDescriptionProps {
   event: WaitForEvent
-  onHighlight: (selector: HighlightSelector | null) => void
+  onHighlight: (selector: NodeSelector | null) => void
 }
 
 export function WaitForDescription({

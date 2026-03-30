@@ -9,6 +9,7 @@ import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
 import { DataFile, Variable } from '@/types/testData'
 import { ThinkTime } from '@/types/testOptions'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { safeBtoa } from '@/utils/format'
 import { makeRelativePath } from '@/utils/fs/path'
 import { groupProxyData } from '@/utils/groups'
 import { getContentTypeWithCharsetHeader } from '@/utils/headers'
@@ -34,10 +35,14 @@ export function generateScript({
   recording,
   generator,
 }: GenerateScriptParams): string {
+  const hasBinaryContent = recording.some(
+    ({ request }) => request.content != null && isBinaryContent(request.content)
+  )
+
   return `
     // ${generateScriptHeader()}
 
-    ${generateImports(generator)}
+    ${generateImports(generator, { hasBinaryContent })}
 
     export const options = ${generateOptions(generator.options)}
 
@@ -51,7 +56,14 @@ export function generateScript({
   `
 }
 
-export function generateImports(generator: GeneratorFileData): string {
+interface GenerateImportsOptions {
+  hasBinaryContent?: boolean
+}
+
+export function generateImports(
+  generator: GeneratorFileData,
+  options: GenerateImportsOptions = {}
+): string {
   const hasCSVDataFiles = generator.testData.files.some((file: DataFile) =>
     pathe.basename(file.path).toLowerCase().endsWith('csv')
   )
@@ -66,6 +78,8 @@ export function generateImports(generator: GeneratorFileData): string {
     ...(hasCSVDataFiles
       ? [K6_EXPORTS['k6/experimental/csv'], K6_EXPORTS['k6/experimental/fs']]
       : []),
+    // Import k6/encoding for binary content
+    ...(options.hasBinaryContent ? [K6_EXPORTS['k6/encoding']] : []),
   ]
 
   return imports.map(generateImportStatement).join('\n')
@@ -244,19 +258,24 @@ export function generateSingleRequestSnippet(
 
   try {
     if (request.content) {
-      const escapedContent = escapeBackticks(request.content)
-      content = `\`${escapedContent}\``
+      if (isBinaryContent(request.content)) {
+        const base64Content = safeBtoa(request.content)
+        content = `encoding.b64decode('${base64Content}')`
+      } else {
+        const escapedContent = escapeBackticks(request.content)
+        content = `\`${escapedContent}\``
 
-      // if we have postData parameters we need to pass an object to the k6 post function because if it receives
-      // a stringified json it won't correctly post the data.
-      const contentTypeHeader =
-        getContentTypeWithCharsetHeader(request.headers) ?? ''
-      if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
-        content = `JSON.parse(\`${escapedContent}\`)`
-      }
+        // if we have postData parameters we need to pass an object to the k6 post function because if it receives
+        // a stringified json it won't correctly post the data.
+        const contentTypeHeader =
+          getContentTypeWithCharsetHeader(request.headers) ?? ''
+        if (contentTypeHeader.includes('application/x-www-form-urlencoded')) {
+          content = `JSON.parse(\`${escapedContent}\`)`
+        }
 
-      if (contentTypeHeader.includes('multipart/form-data')) {
-        content = `\`${escapedContent.replace(/(?:\r\n|\r|\n)/g, '\\r\\n')}\``
+        if (contentTypeHeader.includes('multipart/form-data')) {
+          content = `\`${escapedContent.replace(/(?:\r\n|\r|\n)/g, '\\r\\n')}\``
+        }
       }
     }
   } catch (error) {
@@ -328,6 +347,17 @@ export function generateParameterizationCustomCode(
       )
     )
     .join('\n')
+}
+
+export function isBinaryContent(content: string): boolean {
+  for (let i = 0; i < content.length; i++) {
+    const code = content.charCodeAt(i)
+    // Null byte or control character that isn't whitespace (tab, newline, carriage return)
+    if (code === 0 || (code < 32 && code !== 9 && code !== 10 && code !== 13)) {
+      return true
+    }
+  }
+  return false
 }
 
 function escapeBackticks(content: string): string {

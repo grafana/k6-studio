@@ -263,5 +263,6 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     play,
     pause,
     seek,
+    player,
   }
 }

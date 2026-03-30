@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Bounds, Position } from '@/components/Browser/types'
+
 import { useGlobalClass } from '../GlobalStyles'
 import { useHighlightDebounce } from '../hooks/useHighlightDebounce'
 import { usePreventClick } from '../hooks/usePreventClick'
-import { Bounds, Position } from '../types'
 
 import { usePinnedElement } from './hooks'
 import { toTrackedElement, TrackedElement } from './utils'

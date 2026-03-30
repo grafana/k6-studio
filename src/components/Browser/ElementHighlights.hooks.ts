@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { NodeSelector } from '@/schemas/selectors'
+import { findElementsBySelector } from '@/utils/selectors'
 
-import { useStudioClient } from './StudioClientProvider'
-import { useHighlightDebounce } from './hooks/useHighlightDebounce'
 import { Bounds } from './types'
 import { getElementBounds } from './utils'
 
@@ -13,29 +13,23 @@ interface Highlight {
   bounds: Bounds
 }
 
-export function useHighlightedElements() {
-  const client = useStudioClient()
+export function useHighlightedElements(
+  element: HTMLElement | null,
+  selector: NodeSelector | null
+) {
   const idCounter = useRef(0)
-
-  const [selector, setSelector] = useState<HighlightSelector | null>(null)
   const [highlights, setHighlights] = useState<Highlight[] | null>(null)
 
   useEffect(() => {
-    return client.on('highlight-elements', ({ data }) => {
-      setSelector(data.selector)
-    })
-  }, [client])
-
-  useEffect(() => {
-    if (selector === null) {
+    if (element === null || selector === null) {
       setHighlights(null)
 
       return
     }
 
     try {
-      const elements = document.querySelectorAll(selector.selector)
-      const highlights = Array.from(elements).map((element) => {
+      const elements = findElementsBySelector(element, selector)
+      const highlights = elements.map((element) => {
         const bounds = getElementBounds(element)
 
         return {
@@ -49,10 +43,10 @@ export function useHighlightedElements() {
     } catch {
       setHighlights([])
     }
-  }, [selector])
+  }, [element, selector])
 
   useEffect(() => {
-    if (selector === null) {
+    if (element === null || selector === null) {
       return
     }
 
@@ -76,7 +70,11 @@ export function useHighlightedElements() {
     return () => {
       observer.disconnect()
     }
-  }, [selector])
+  }, [element, selector])
 
-  return useHighlightDebounce(highlights)
+  return useDebouncedValue({
+    value: highlights,
+    delay: 30,
+    maxWait: 60,
+  })
 }

@@ -1,6 +1,5 @@
 import { CheckState, NavigateToPageEvent } from '@/schemas/recording'
-
-import { NodeSelector } from './selectors'
+import { NodeSelector } from '@/schemas/selectors'
 
 export type NodeId = string
 
@@ -27,7 +26,7 @@ export interface LocatorNode extends NodeBase {
 export interface GotoNode extends NodeBase {
   type: 'goto'
   url: string
-  source: NavigateToPageEvent['source']
+  source: Exclude<NavigateToPageEvent['source'], 'implicit'>
   inputs: {
     previous?: NodeRef
     page: NodeRef
@@ -51,11 +50,12 @@ export interface ClickNode extends NodeBase {
     alt: boolean
     meta: boolean
   }
-  triggersNavigation?: boolean
+  waitForNavigation?: {
+    page: NodeRef
+  }
   inputs: {
     previous?: NodeRef
     locator: NodeRef
-    page: NodeRef
   }
 }
 

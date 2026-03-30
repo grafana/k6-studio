@@ -1,11 +1,11 @@
 type NodeId = string
 
-interface GraphNode<T> {
+export interface GraphNode<T> {
   id: NodeId
   data: T
 }
 
-interface GraphEdge<E> {
+export interface GraphEdge<E> {
   from: NodeId
   to: NodeId
   data: E
@@ -14,6 +14,11 @@ interface GraphEdge<E> {
 interface QueueItem<T> {
   value: T
   next: QueueItem<T> | null
+}
+
+interface ToGraphVizOptions<T, E> {
+  labelNode?: (node: GraphNode<T>) => string | null
+  labelEdge?: (edge: GraphEdge<E>) => string | null
 }
 
 class Queue<T> {
@@ -78,6 +83,28 @@ class EdgeMap<E> {
     return map.delete(to)
   }
 
+  count(from?: NodeId, filter?: (edge: GraphEdge<E>) => boolean) {
+    if (filter !== undefined) {
+      const edges =
+        from === undefined
+          ? Array.from(this.edges.values()).flatMap((map) =>
+              Array.from(map.values())
+            )
+          : this.edges.get(from)?.values()
+
+      return Array.from(edges ?? []).filter(filter).length
+    }
+
+    if (from === undefined) {
+      return Array.from(this.edges.values()).reduce(
+        (count, map) => count + map.size,
+        0
+      )
+    }
+
+    return this.edges.get(from)?.size ?? 0
+  }
+
   hasEdges(from: NodeId) {
     const edges = this.edges.get(from)
 
@@ -104,6 +131,21 @@ export class Graph<T, E> {
 
   #incoming = new EdgeMap<E>()
   #outgoing = new EdgeMap<E>()
+
+  get count() {
+    return {
+      nodes: () => this.#nodes.size,
+      edges: (filter?: (edge: GraphEdge<E>) => boolean) => {
+        return {
+          all: () => this.#incoming.count(undefined, filter),
+          from: (node: GraphNode<T> | NodeId) =>
+            this.#outgoing.count(toNodeId(node), filter),
+          to: (node: GraphNode<T> | NodeId) =>
+            this.#incoming.count(toNodeId(node), filter),
+        }
+      },
+    }
+  }
 
   add(node: GraphNode<T>) {
     this.#nodes.set(node.id, node)
@@ -138,6 +180,12 @@ export class Graph<T, E> {
       )
     }
 
+    if (edge.from === edge.to) {
+      throw new Error(
+        `Cannot connect node '${edge.from}' to itself because it would create a cycle.`
+      )
+    }
+
     if (this.isDescendant(edge.to, edge.from)) {
       throw new Error(
         `Cannot connect node '${edge.from}' to '${edge.to}' because it would create a cycle.`
@@ -154,9 +202,14 @@ export class Graph<T, E> {
   }
 
   isDescendant(root: GraphNode<T> | NodeId, target: GraphNode<T> | NodeId) {
+    const rootId = toNodeId(root)
     const targetId = toNodeId(target)
 
-    for (const descendant of this.descendants(root)) {
+    if (rootId === targetId) {
+      return false
+    }
+
+    for (const descendant of this.descendants(rootId)) {
       if (descendant.id === targetId) {
         return true
       }
@@ -165,12 +218,30 @@ export class Graph<T, E> {
     return false
   }
 
-  outgoing(node: GraphNode<T> | NodeId) {
-    return this.#outgoing.of(toNodeId(node))
+  outgoing(
+    node: GraphNode<T> | NodeId,
+    filter?: (edge: GraphEdge<E>) => boolean
+  ) {
+    const edges = this.#outgoing.of(toNodeId(node))
+
+    if (filter === undefined) {
+      return edges
+    }
+
+    return Array.from(edges).filter(filter)
   }
 
-  incoming(node: GraphNode<T> | NodeId) {
-    return this.#incoming.of(toNodeId(node))
+  incoming(
+    node: GraphNode<T> | NodeId,
+    filter?: (edge: GraphEdge<E>) => boolean
+  ) {
+    const edges = this.#incoming.of(toNodeId(node))
+
+    if (filter === undefined) {
+      return edges
+    }
+
+    return Array.from(edges).filter(filter)
   }
 
   *sources() {
@@ -189,17 +260,30 @@ export class Graph<T, E> {
     }
   }
 
-  *descendants(node: GraphNode<T> | NodeId): Generator<GraphNode<T>> {
-    const queue = new Queue<NodeId>()
+  *descendants(
+    node: GraphNode<T> | NodeId,
+    filter?: (edge: GraphEdge<E>) => boolean
+  ): Generator<GraphNode<T>> {
+    const queue = new Queue<NodeId>(
+      Array.from(this.outgoing(node, filter)).map((edge) => edge.to)
+    )
 
-    let current: NodeId | undefined = toNodeId(node)
+    const visited = new Set<NodeId>()
+
+    let current: NodeId | undefined = queue.pop()
 
     while (current !== undefined) {
-      const node = this.require(current)
+      if (visited.has(current)) {
+        current = queue.pop()
 
-      yield node
+        continue
+      }
 
-      for (const edge of this.#outgoing.of(current)) {
+      visited.add(current)
+
+      yield this.require(current)
+
+      for (const edge of this.outgoing(current, filter)) {
         queue.push(edge.to)
       }
 
@@ -207,17 +291,29 @@ export class Graph<T, E> {
     }
   }
 
-  *ancestors(node: GraphNode<T> | NodeId): Generator<GraphNode<T>> {
-    const queue = new Queue<NodeId>()
+  *ancestors(
+    node: GraphNode<T> | NodeId,
+    filter?: (edge: GraphEdge<E>) => boolean
+  ): Generator<GraphNode<T>> {
+    const queue = new Queue<NodeId>(
+      Array.from(this.incoming(node, filter)).map((edge) => edge.from)
+    )
 
-    let current: NodeId | undefined = toNodeId(node)
+    let current: NodeId | undefined = queue.pop()
+    const visited = new Set<NodeId>()
 
     while (current !== undefined) {
-      const node = this.require(current)
+      if (visited.has(current)) {
+        current = queue.pop()
 
-      yield node
+        continue
+      }
 
-      for (const edge of this.#incoming.of(current)) {
+      visited.add(current)
+
+      yield this.require(current)
+
+      for (const edge of this.incoming(current, filter)) {
         queue.push(edge.from)
       }
 
@@ -265,5 +361,43 @@ export class Graph<T, E> {
     }
 
     return graph
+  }
+
+  /**
+   * A helper function to render the graph in GraphViz format. If you need a better understanding of
+   * what the graph looks like you can run this through the debugger console, copy the output and
+   * then use e.g. http://graph.flyte.org/ to visualize it.
+   */
+  toGraphViz({
+    labelNode = () => null,
+    labelEdge = () => null,
+  }: ToGraphVizOptions<T, E> = {}) {
+    const nodes = [...this.#nodes.values()]
+      .map((node) => {
+        const label = JSON.stringify(labelNode(node) ?? node.id)
+
+        return `${JSON.stringify(node.id)} [label=${label}]`
+      })
+      .join('\n')
+
+    const edges = [...this.#incoming.all()]
+      .map((edge) => {
+        const from = JSON.stringify(edge.from)
+        const to = JSON.stringify(edge.to)
+
+        const label = labelEdge(edge)
+
+        if (label === null) {
+          return `${from} -> ${to}`
+        }
+
+        return `${from} -> ${to} [label=${JSON.stringify(label)}]`
+      })
+      .join('\n')
+
+    return `digraph G { 
+  ${nodes}
+  ${edges}
+}`
   }
 }
