@@ -85,12 +85,7 @@ export function LocatorForm({
 
   const handleLocatorChange = (locator: ActionLocator) => {
     setDirtyTypes((prev) => {
-      if (prev.has(current)) {
-        return prev
-      }
-      const next = new Set(prev)
-      next.add(current)
-      return next
+      return addIfAbsent(prev, current)
     })
     onChange({
       current,
@@ -100,12 +95,7 @@ export function LocatorForm({
 
   const handleFieldBlur = () => {
     setTouchedTypes((prev) => {
-      if (prev.has(current)) {
-        return prev
-      }
-      const next = new Set(prev)
-      next.add(current)
-      return next
+      return addIfAbsent(prev, current)
     })
   }
 
@@ -116,12 +106,7 @@ export function LocatorForm({
     }
 
     setTouchedTypes((prev) => {
-      if (prev.has(current)) {
-        return prev
-      }
-      const next = new Set(prev)
-      next.add(current)
-      return next
+      return addIfAbsent(prev, current)
     })
   }
 
@@ -253,4 +238,8 @@ function validateFields(
   }
 
   return { isValid: false, message, fieldErrors }
+}
+
+function addIfAbsent<T>(set: Set<T>, value: T) {
+  return set.has(value) ? set : new Set(set).add(value)
 }

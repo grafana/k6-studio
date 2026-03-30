@@ -169,6 +169,6 @@ export function FieldRenderer<TValue, TModel>({
         </FieldGroup>
       )
     default:
-      return exhaustive(field.input)
+      return exhaustive(field)
   }
 }
