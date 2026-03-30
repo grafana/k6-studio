@@ -1,6 +1,11 @@
 import { css } from '@emotion/react'
 import { Flex, Grid, Separator } from '@radix-ui/themes'
-import { FolderTreeIcon, HammerIcon, PlayIcon, VideoIcon } from 'lucide-react'
+import {
+  FileVideoCamera,
+  FolderTreeIcon,
+  HammerIcon,
+  PlayIcon,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import k6LogoDark from '@/assets/logo-dark.svg'
@@ -66,7 +71,7 @@ export function ActivityBar({
           active={sidebarView === 'record'}
           onClick={() => onSidebarViewChange('record')}
         >
-          <VideoIcon />
+          <FileVideoCamera />
         </NavIconButton>
         <NavIconButton
           tooltip="Build"

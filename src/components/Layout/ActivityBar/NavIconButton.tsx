@@ -26,6 +26,7 @@ export function NavIconButton({
           color: var(--gray-9);
 
           &[data-active='true'] {
+            background-color: var(--accent-a3);
             color: var(--accent-9);
           }
 

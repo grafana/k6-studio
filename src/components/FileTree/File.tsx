@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Grid, Tooltip } from '@radix-ui/themes'
+import { Flex, Grid, Tooltip } from '@radix-ui/themes'
 import { useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useBoolean } from 'react-use'
@@ -11,6 +11,7 @@ import { getFileExtension, getViewPath } from '@/utils/file'
 import { HighlightedText } from '../HighlightedText'
 
 import { FileActionsMenu, FileContextMenu } from './FileContextMenu'
+import { FileEntryIcon } from './FileEntryIcon'
 import { InlineEditor } from './InlineEditor'
 import { FileItem } from './types'
 
@@ -19,11 +20,20 @@ interface FileProps {
   isSelected: boolean
 }
 
-const fileStyle = css`
-  display: block;
-  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
+const fileRowStyle = css`
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--file-entry-spacing) var(--file-entry-spacing)
+    var(--file-entry-spacing) var(--space-4);
   font-size: 12px;
   color: var(--gray-11);
+`
+
+const fileStyle = css`
+  flex: 1 1 0;
+  min-width: 0;
 `
 
 export function File({ file, isSelected }: FileProps) {
@@ -93,12 +103,27 @@ function EditableFile({
 
   if (editMode) {
     return (
-      <InlineEditor
-        value={file.displayName}
-        onSave={handleSave}
-        onCancel={() => setEditMode(false)}
-        style={fileStyle}
-      />
+      <Flex align="center" gap="1" css={fileRowStyle} minWidth="0">
+        <FileEntryIcon
+          fileType={file.type}
+          size={16}
+          css={css`
+            flex-shrink: 0;
+          `}
+        />
+        <InlineEditor
+          value={file.displayName}
+          onSave={handleSave}
+          onCancel={() => setEditMode(false)}
+          style={[
+            fileStyle,
+            css`
+              flex: 1 1 0;
+              min-width: 0;
+            `,
+          ]}
+        />
+      </Flex>
     )
   }
 
@@ -112,13 +137,11 @@ function EditableFile({
       <NavLink
         ref={linkRef}
         css={[
+          fileRowStyle,
           fileStyle,
           css`
             border-radius: 4px;
             font-weight: ${isSelected ? 700 : 400};
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
             text-decoration: none;
 
             &:focus-visible {
@@ -133,12 +156,39 @@ function EditableFile({
         ]}
         to={getViewPath(file.path)}
       >
-        <HighlightedText text={file.displayName} matches={file.matches} />
+        <FileEntryIcon
+          fileType={file.type}
+          size={16}
+          css={css`
+            flex-shrink: 0;
+          `}
+        />
+        <span
+          css={css`
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+          `}
+        >
+          <HighlightedText text={file.displayName} matches={file.matches} />
+        </span>
       </NavLink>
     </Tooltip>
   )
 }
 
 export function NoFileMessage({ message }: { message: string }) {
-  return <span css={fileStyle}>{message}</span>
+  return (
+    <span
+      css={css`
+        display: block;
+        padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
+        font-size: 12px;
+        color: var(--gray-11);
+      `}
+    >
+      {message}
+    </span>
+  )
 }

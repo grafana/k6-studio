@@ -7,22 +7,13 @@ import {
   Reset,
   Tooltip,
 } from '@radix-ui/themes'
-import {
-  FileArchiveIcon,
-  FileBoxIcon,
-  FileCodeIcon,
-  FileCogIcon,
-  FileIcon,
-  FolderClosedIcon,
-  FolderOpenIcon,
-  LucideProps,
-  PlusIcon,
-} from 'lucide-react'
+import { FolderClosedIcon, FolderOpenIcon, PlusIcon } from 'lucide-react'
 import * as pathe from 'pathe'
 import { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate, useParams } from 'react-router-dom'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { FileEntryIcon } from '@/components/FileTree/FileEntryIcon'
 import { useWorkspace } from '@/contexts/WorkspaceContext'
 import type {
   DirectoryEntry,
@@ -40,10 +31,13 @@ import { createNewGeneratorFile } from '@/utils/generator'
 import { TreeItem, useTree } from './WorkspaceFileTree.hooks'
 
 const entryStyles = css`
+  --spacing: calc(var(--space-1) * 1.5);
+
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1);
+  padding: var(--file-entry-spacing) var(--file-entry-spacing)
+    var(--file-entry-spacing) var(--space-4);
 
   font-size: 12px;
   color: var(--gray-11);
@@ -615,31 +609,6 @@ function FileItem({
       </ContextMenu.Content>
     </ContextMenu.Root>
   )
-}
-
-interface ItemIconProps extends LucideProps {
-  fileType: FileType | undefined
-}
-
-function FileEntryIcon({ fileType, ...props }: ItemIconProps) {
-  switch (fileType) {
-    case 'script':
-      return <FileCodeIcon {...props} />
-
-    case 'recording':
-      return <FileArchiveIcon {...props} />
-
-    case 'browser-test':
-    case 'generator':
-      return <FileCogIcon {...props} />
-
-    case 'json':
-    case 'csv':
-      return <FileBoxIcon {...props} />
-
-    default:
-      return <FileIcon {...props} />
-  }
 }
 
 const newFileId = Symbol('new-file')

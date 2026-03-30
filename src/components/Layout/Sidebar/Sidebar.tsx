@@ -25,6 +25,9 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
 
   return (
     <Box
+      css={css`
+        --file-entry-spacing: calc(var(--space-1) * 1.5);
+      `}
       height="100%"
       maxHeight="100%"
       maxWidth="100%"
