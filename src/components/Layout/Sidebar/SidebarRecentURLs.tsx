@@ -21,7 +21,8 @@ export function SidebarRecentURLs({ urls }: SidebarRecentURLsProps) {
       <span
         css={css`
           display: block;
-          padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
+          padding: var(--file-entry-spacing) var(--file-entry-spacing)
+            var(--file-entry-spacing) var(--space-4);
           font-size: 12px;
           color: var(--gray-9);
         `}
