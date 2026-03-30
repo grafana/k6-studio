@@ -10,6 +10,7 @@ export enum FileHandler {
   Open = 'file:open',
   GetTempPath = 'file:get-temp-path',
   ListDirectory = 'file:list-directory',
+  CreateDirectory = 'file:create-directory',
 }
 
 export interface FileEntry {
@@ -29,6 +30,11 @@ export type DirectoryEntry = FileEntry | SubDirectoryEntry
 
 export interface ListDirectoryArgs {
   path: string
+}
+
+export interface CreateDirectoryArgs {
+  parentPath: string
+  name: string
 }
 
 export interface GetTempPathArgs {

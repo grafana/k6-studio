@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron'
 
 import {
+  type CreateDirectoryArgs,
   type DirectoryEntry,
   FileHandler,
   FileOnDisk,
@@ -14,6 +15,10 @@ export function listDirectory(args: ListDirectoryArgs) {
   return ipcRenderer.invoke(FileHandler.ListDirectory, args) as Promise<
     DirectoryEntry[]
   >
+}
+
+export function createDirectory(args: CreateDirectoryArgs) {
+  return ipcRenderer.invoke(FileHandler.CreateDirectory, args) as Promise<void>
 }
 
 export function save(payload: SaveFilePayload) {

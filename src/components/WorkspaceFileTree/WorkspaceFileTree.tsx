@@ -5,7 +5,6 @@ import {
   Flex,
   IconButton,
   Reset,
-  Tooltip,
 } from '@radix-ui/themes'
 import Fuse, { IFuseOptions } from 'fuse.js'
 import { FolderClosedIcon, FolderOpenIcon, PlusIcon } from 'lucide-react'
@@ -171,6 +170,32 @@ const createContentForType = (type: FileType): FileContent | null => {
     }
   }
 }
+
+function newFilePlaceholderPath(dirname: string) {
+  return `__new-file__:${dirname}`
+}
+
+function newFolderPlaceholderPath(dirname: string) {
+  return `__new-folder__:${dirname}`
+}
+
+interface NewFileEntry {
+  type: 'new-file'
+  path: string
+  hint: string
+  dirname: string
+  fileType: 'browser-test' | 'generator'
+}
+
+interface NewFolderEntry {
+  type: 'new-folder'
+  path: string
+  hint: string
+  dirname: string
+}
+
+type FileTreeEntry = DirectoryEntry | NewFileEntry | NewFolderEntry
+
 interface NewFileItemProps {
   item: TreeItem<FileTreeEntry>
   entry: NewFileEntry
@@ -229,41 +254,70 @@ function NewFileItem({ item, entry, onCreate, onCancel }: NewFileItemProps) {
 }
 
 interface NewTestMenuProps {
-  tabIndex: number
   onNewFile: (fileType: 'browser-test' | 'generator') => void
+  onNewFolder: () => void
 }
 
-export function NewTestMenu({ onNewFile }: NewTestMenuProps) {
+export function NewTestMenu({ onNewFile, onNewFolder }: NewTestMenuProps) {
   const [open, setOpen] = useState(false)
 
   const isBrowserEditorEnabled = useFeaturesStore(
     (state) => state.features['browser-test-editor']
   )
 
+  const folderItem = (
+    <DropdownMenu.Item
+      onSelect={(event) => {
+        event.preventDefault()
+
+        onNewFolder()
+        setOpen(false)
+      }}
+    >
+      New folder
+    </DropdownMenu.Item>
+  )
+
   if (!isBrowserEditorEnabled) {
     return (
-      <Tooltip content="New generator" side="right">
-        <IconButton
-          aria-label="New generator"
-          variant="ghost"
-          size="1"
-          color="gray"
-          onClick={(event) => {
-            event.preventDefault()
+      <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+        <DropdownMenu.Trigger className="dropdown-menu-trigger">
+          <IconButton
+            aria-label="New in folder"
+            variant="ghost"
+            size="1"
+            color="gray"
+          >
+            <PlusIcon />
+          </IconButton>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content side="right" align="start" size="1">
+          <DropdownMenu.Item
+            onSelect={(event) => {
+              event.preventDefault()
 
-            onNewFile('generator')
-          }}
-        >
-          <PlusIcon />
-        </IconButton>
-      </Tooltip>
+              onNewFile('generator')
+              setOpen(false)
+            }}
+          >
+            HTTP test
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          {folderItem}
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     )
   }
 
   return (
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       <DropdownMenu.Trigger className="dropdown-menu-trigger">
-        <IconButton aria-label="New test" variant="ghost" color="gray" size="1">
+        <IconButton
+          aria-label="New in folder"
+          variant="ghost"
+          color="gray"
+          size="1"
+        >
           <PlusIcon />
         </IconButton>
       </DropdownMenu.Trigger>
@@ -288,6 +342,8 @@ export function NewTestMenu({ onNewFile }: NewTestMenuProps) {
         >
           Browser test
         </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        {folderItem}
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )
@@ -297,6 +353,7 @@ interface DirectoryEntryProps {
   entry: SubDirectoryEntry
   item: TreeItem<FileTreeEntry>
   onNewFile: (item: TreeItem<FileTreeEntry>, entry: NewFileEntry) => void
+  onNewFolder: (item: TreeItem<FileTreeEntry>, entry: NewFolderEntry) => void
   onRefreshDirectory: (path: string) => void | Promise<void>
 }
 
@@ -304,6 +361,7 @@ function DirectoryItem({
   entry,
   item,
   onNewFile,
+  onNewFolder,
   onRefreshDirectory,
 }: DirectoryEntryProps) {
   const [isRenaming, setIsRenaming] = useState(false)
@@ -417,17 +475,24 @@ function DirectoryItem({
               </button>
             </Reset>
             <NewTestMenu
-              tabIndex={item.props.aria.tabIndex}
               onNewFile={(type) => {
                 onNewFile(item, {
                   type: 'new-file',
-                  path: newFileId,
+                  path: newFilePlaceholderPath(entry.path),
                   hint:
                     type === 'browser-test'
                       ? 'browser-test.k6b'
                       : 'generator.k6g',
                   dirname: entry.path,
                   fileType: type,
+                })
+              }}
+              onNewFolder={() => {
+                onNewFolder(item, {
+                  type: 'new-folder',
+                  path: newFolderPlaceholderPath(entry.path),
+                  hint: 'New folder',
+                  dirname: entry.path,
                 })
               }}
             />
@@ -456,7 +521,6 @@ function DirectoryItem({
           css={[
             entryStyles,
             css`
-              padding: 0;
               padding-right: var(--space-1);
               font-style: italic;
               color: var(--gray-10);
@@ -638,17 +702,54 @@ function FileItem({
   )
 }
 
-const newFileId = Symbol('new-file')
-
-interface NewFileEntry {
-  type: 'new-file'
-  path: typeof newFileId
-  hint: string
-  dirname: string
-  fileType: 'browser-test' | 'generator'
+interface NewFolderItemProps {
+  item: TreeItem<FileTreeEntry>
+  entry: NewFolderEntry
+  onCreate: (payload: { entry: NewFolderEntry; name: string }) => void
+  onCancel: (entry: NewFolderEntry) => void
 }
 
-type FileTreeEntry = DirectoryEntry | NewFileEntry
+function NewFolderItem({
+  item,
+  entry,
+  onCreate,
+  onCancel,
+}: NewFolderItemProps) {
+  const [value, setValue] = useState(entry.hint)
+
+  const handleCreate = () => {
+    if (!value.trim()) {
+      return
+    }
+
+    onCreate({ entry, name: value })
+  }
+
+  return (
+    <div
+      css={[
+        entryStyles,
+        css`
+          padding-top: 0;
+          padding-bottom: 0;
+          overflow: visible;
+        `,
+      ]}
+      style={{ paddingLeft: `${(item.level + 1) * 16}px` }}
+    >
+      <Flex align="center" gap="1" width="100%">
+        <FolderClosedIcon size={16} />
+        <WorkspaceFileTreeInput
+          value={value}
+          selectionRange={[0, entry.hint.length]}
+          onChange={setValue}
+          onCommit={handleCreate}
+          onCancel={() => onCancel(entry)}
+        />
+      </Flex>
+    </div>
+  )
+}
 
 const workspaceNameFuseOptions: IFuseOptions<{
   path: string
@@ -852,9 +953,38 @@ export function WorkspaceFileTree({ nameFilter = '' }: WorkspaceFileTreeProps) {
     Promise.resolve(item.toggle(true))
       .then(() => {
         setEntries((prev) => {
-          const entries = prev[entry.dirname] ?? []
+          const list = prev[entry.dirname] ?? []
 
-          return { ...prev, [entry.dirname]: [...entries, entry] }
+          return {
+            ...prev,
+            [entry.dirname]: [
+              ...list.filter((e) => e.type !== 'new-file'),
+              entry,
+            ],
+          }
+        })
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  }
+
+  const handleStartCreateFolder = (
+    item: TreeItem<FileTreeEntry>,
+    entry: NewFolderEntry
+  ) => {
+    Promise.resolve(item.toggle(true))
+      .then(() => {
+        setEntries((prev) => {
+          const list = prev[entry.dirname] ?? []
+
+          return {
+            ...prev,
+            [entry.dirname]: [
+              ...list.filter((e) => e.type !== 'new-folder'),
+              entry,
+            ],
+          }
         })
       })
       .catch((error) => {
@@ -869,6 +999,17 @@ export function WorkspaceFileTree({ nameFilter = '' }: WorkspaceFileTreeProps) {
       return {
         ...prev,
         [entry.dirname]: entries.filter((e) => e.type !== 'new-file'),
+      }
+    })
+  }
+
+  const removeNewFolderEntry = (entry: NewFolderEntry) => {
+    setEntries((prev) => {
+      const list = prev[entry.dirname] ?? []
+
+      return {
+        ...prev,
+        [entry.dirname]: list.filter((e) => e.type !== 'new-folder'),
       }
     })
   }
@@ -904,6 +1045,27 @@ export function WorkspaceFileTree({ nameFilter = '' }: WorkspaceFileTreeProps) {
     removeNewFileEntry(entry)
   }
 
+  const handleCreateFolder = ({
+    entry,
+    name,
+  }: {
+    entry: NewFolderEntry
+    name: string
+  }) => {
+    window.studio.file
+      .createDirectory({ parentPath: entry.dirname, name })
+      .then(() => loadDirectory(entry.dirname))
+      .catch((error) => {
+        console.error(error)
+      })
+
+    removeNewFolderEntry(entry)
+  }
+
+  const handleCancelCreateFolder = (entry: NewFolderEntry) => {
+    removeNewFolderEntry(entry)
+  }
+
   const matchedPaths = useMemo(() => {
     if (nameFilter.match(/^\s*$/)) {
       return null
@@ -937,7 +1099,7 @@ export function WorkspaceFileTree({ nameFilter = '' }: WorkspaceFileTreeProps) {
     return tree.items.filter((treeItem) => {
       const node = treeItem.node
 
-      if (node.type === 'new-file') {
+      if (node.type === 'new-file' || node.type === 'new-folder') {
         return true
       }
 
@@ -978,6 +1140,7 @@ export function WorkspaceFileTree({ nameFilter = '' }: WorkspaceFileTreeProps) {
               entry={item.node}
               item={item}
               onNewFile={handleStartCreateFile}
+              onNewFolder={handleStartCreateFolder}
               onRefreshDirectory={loadDirectory}
             />
           )
@@ -986,11 +1149,23 @@ export function WorkspaceFileTree({ nameFilter = '' }: WorkspaceFileTreeProps) {
         if (item.node.type === 'new-file') {
           return (
             <NewFileItem
-              key={String(item.node.path)}
+              key={item.node.path}
               item={item}
               entry={item.node}
               onCreate={handleCreateFile}
               onCancel={handleCancelCreateFile}
+            />
+          )
+        }
+
+        if (item.node.type === 'new-folder') {
+          return (
+            <NewFolderItem
+              key={item.node.path}
+              item={item}
+              entry={item.node}
+              onCreate={handleCreateFolder}
+              onCancel={handleCancelCreateFolder}
             />
           )
         }

@@ -1,11 +1,11 @@
 import { BrowserWindow, dialog, ipcMain } from 'electron'
 import log from 'electron-log/main'
-import { readFile, writeFile } from 'fs/promises'
+import { mkdir, readFile, writeFile } from 'fs/promises'
 import { parse as parseCSV } from 'papaparse'
 import path from 'path'
 import { EntryInfo, readdirp, ReaddirpOptions } from 'readdirp'
 
-import { isIgnoredSystemFile } from '@/constants/files'
+import { INVALID_FILENAME_CHARS, isIgnoredSystemFile } from '@/constants/files'
 import { TEMP_PATH } from '@/constants/workspace'
 import { BrowserTestFileSchema } from '@/schemas/browserTest/v1'
 import { GeneratorFileDataSchema } from '@/schemas/generator'
@@ -23,6 +23,7 @@ import { exhaustive } from '@/utils/typescript'
 import { Workspace } from '@/utils/workspace'
 
 import {
+  type CreateDirectoryArgs,
   type DirectoryEntry,
   FileContent,
   FileHandler,
@@ -129,6 +130,47 @@ export function initialize() {
       const basename = `${prefix}-${crypto.randomUUID()}${ext}`
 
       return path.join(TEMP_PATH, basename)
+    }
+  )
+
+  ipcMain.handle(
+    FileHandler.CreateDirectory,
+    async (event, payload: CreateDirectoryArgs): Promise<void> => {
+      console.info(`${FileHandler.CreateDirectory} event received`)
+
+      const browserWindow = browserWindowFromEvent(event)
+      const workspacePath = browserWindow.workspace.path
+
+      const name = payload.name.trim()
+
+      if (name === '' || name === '.' || name === '..') {
+        throw new Error('Invalid folder name')
+      }
+
+      if (INVALID_FILENAME_CHARS.test(name)) {
+        throw new Error('Invalid folder name')
+      }
+
+      if (name !== path.basename(name)) {
+        throw new Error('Invalid folder name')
+      }
+
+      const resolvedParent = path.resolve(payload.parentPath)
+      const relativeParent = path.relative(workspacePath, resolvedParent)
+
+      if (relativeParent.startsWith('..') || path.isAbsolute(relativeParent)) {
+        throw new Error('Path is outside workspace')
+      }
+
+      const newDirPath = path.join(resolvedParent, name)
+      const resolvedNewDir = path.resolve(newDirPath)
+      const relativeNew = path.relative(workspacePath, resolvedNewDir)
+
+      if (relativeNew.startsWith('..') || path.isAbsolute(relativeNew)) {
+        throw new Error('Path is outside workspace')
+      }
+
+      await mkdir(resolvedNewDir, { recursive: false })
     }
   )
 
