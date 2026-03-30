@@ -1,12 +1,12 @@
 import { getNodeSelector } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
 import { ElementSelector } from '@/schemas/recording'
+import { NodeSelector } from '@/schemas/selectors'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
-import { HighlightSelector } from 'extension/src/messaging/types'
 
 interface SelectorProps {
   selectors: ElementSelector
-  onHighlight: (selector: HighlightSelector | null) => void
+  onHighlight: (selector: NodeSelector | null) => void
 }
 
 export function Selector({ selectors, onHighlight }: SelectorProps) {
@@ -20,10 +20,7 @@ export function Selector({ selectors, onHighlight }: SelectorProps) {
       return
     }
 
-    onHighlight({
-      type: 'css',
-      selector: selectors.css,
-    })
+    onHighlight(nodeSelector)
   }
 
   return (

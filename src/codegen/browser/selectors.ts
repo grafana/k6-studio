@@ -1,61 +1,20 @@
-import { AriaRole } from 'react'
-
 import { ActionLocator } from '@/main/runner/schema'
 import { ElementSelector } from '@/schemas/recording'
+import {
+  GetByAltTextNodeSelector,
+  GetByLabelNodeSelector,
+  GetByRoleNodeSelector,
+  GetByPlaceholderNodeSelector,
+  GetByTitleNodeSelector,
+  GetByTestIdNodeSelector,
+  CssNodeSelector,
+  NodeSelector,
+} from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
-export interface CssSelector {
-  type: 'css'
-  selector: string
-}
-
-export interface GetByRoleSelector {
-  type: 'role'
-  role: AriaRole
-  name: string
-}
-
-export interface GetByAltTextSelector {
-  type: 'alt'
-  text: string
-}
-
-export interface GetByLabelSelector {
-  type: 'label'
-  text: string
-}
-
-export interface GetByPlaceholderSelector {
-  type: 'placeholder'
-  text: string
-}
-
-export interface GetByTextSelector {
-  type: 'text'
-  text: string
-}
-
-export interface GetByTitleSelector {
-  type: 'title'
-  text: string
-}
-
-export interface GetByTestIdSelector {
-  type: 'test-id'
-  testId: string
-}
-
-export type NodeSelector =
-  | CssSelector
-  | GetByRoleSelector
-  | GetByAltTextSelector
-  | GetByLabelSelector
-  | GetByPlaceholderSelector
-  | GetByTextSelector
-  | GetByTitleSelector
-  | GetByTestIdSelector
-
-function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
+function getRoleSelector(
+  selectors: ElementSelector
+): GetByRoleNodeSelector | null {
   if (selectors.role === undefined) {
     return null
   }
@@ -69,7 +28,7 @@ function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
 
 function getAltTextSelector(
   selectors: ElementSelector
-): GetByAltTextSelector | null {
+): GetByAltTextNodeSelector | null {
   if (selectors.alt === undefined) {
     return null
   }
@@ -82,7 +41,7 @@ function getAltTextSelector(
 
 function getLabelSelector(
   selectors: ElementSelector
-): GetByLabelSelector | null {
+): GetByLabelNodeSelector | null {
   if (selectors.label === undefined) {
     return null
   }
@@ -95,7 +54,7 @@ function getLabelSelector(
 
 function getPlaceholderSelector(
   selectors: ElementSelector
-): GetByPlaceholderSelector | null {
+): GetByPlaceholderNodeSelector | null {
   if (selectors.placeholder === undefined) {
     return null
   }
@@ -108,7 +67,7 @@ function getPlaceholderSelector(
 
 function getTitleSelector(
   selectors: ElementSelector
-): GetByTitleSelector | null {
+): GetByTitleNodeSelector | null {
   if (selectors.title === undefined) {
     return null
   }
@@ -121,7 +80,7 @@ function getTitleSelector(
 
 function getTestIdSelector(
   selectors: ElementSelector
-): GetByTestIdSelector | null {
+): GetByTestIdNodeSelector | null {
   if (selectors.testId === undefined || selectors.testId.trim() === '') {
     return null
   }
@@ -132,7 +91,7 @@ function getTestIdSelector(
   }
 }
 
-function getCssSelector(selectors: ElementSelector): CssSelector {
+function getCssSelector(selectors: ElementSelector): CssNodeSelector {
   return {
     type: 'css',
     selector: selectors.css,

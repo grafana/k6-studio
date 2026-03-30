@@ -1,8 +1,14 @@
 import { Button, Flex, Text } from '@radix-ui/themes'
-import { ExternalLink, KeyIcon, RefreshCw } from 'lucide-react'
+import {
+  ExternalLink as ExternalLinkIcon,
+  KeyIcon,
+  RefreshCw,
+} from 'lucide-react'
 
 import grotCrashed from '@/assets/grot-crashed.svg'
+import { ExternalLink } from '@/components/ExternalLink'
 import { useSettingsChanged } from '@/hooks/useSettings'
+import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
 
 interface AutoCorrelationErrorProps {
@@ -11,6 +17,18 @@ interface AutoCorrelationErrorProps {
 }
 
 export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
+  const isGrafanaAssistant = useFeaturesStore(
+    (state) => state.features['grafana-assistant']
+  )
+
+  if (isGrafanaAssistant) {
+    return <GrafanaAssistantError error={error} onRetry={onRetry} />
+  }
+
+  return <OpenAiError error={error} onRetry={onRetry} />
+}
+
+function OpenAiError({ error, onRetry }: AutoCorrelationErrorProps) {
   const errorMessage = error.message.toLowerCase()
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
@@ -36,7 +54,7 @@ export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
 
   const reportIssueButton = (
     <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
-      <ExternalLink />
+      <ExternalLinkIcon />
       Report issue
     </Button>
   )
@@ -46,6 +64,25 @@ export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
       <MessageContent
         title="Incorrect API key"
         message="The OpenAI API key is incorrect or has been revoked. Check your API key in settings."
+      >
+        {openSettingsButton}
+      </MessageContent>
+    )
+  }
+
+  if (errorMessage.includes('insufficient_quota')) {
+    return (
+      <MessageContent
+        title="Quota exceeded"
+        message={
+          <>
+            You have exceeded your OpenAI API quota. Check your{' '}
+            <ExternalLink href="https://platform.openai.com/account/billing">
+              plan and billing details
+            </ExternalLink>{' '}
+            on the OpenAI platform.
+          </>
+        }
       >
         {openSettingsButton}
       </MessageContent>
@@ -71,6 +108,34 @@ export function ErrorMessage({ error, onRetry }: AutoCorrelationErrorProps) {
       </MessageContent>
     )
   }
+
+  return (
+    <MessageContent
+      title="Something went wrong"
+      message="An unexpected error occurred during autocorrelation. Click retry to try again or report an issue if problem persists."
+    >
+      {retryButton}
+      {reportIssueButton}
+    </MessageContent>
+  )
+}
+
+function GrafanaAssistantError({ onRetry }: AutoCorrelationErrorProps) {
+  const retryButton = (
+    <Button onClick={onRetry}>
+      <RefreshCw />
+      Retry
+    </Button>
+  )
+
+  const reportIssueButton = (
+    <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
+      <ExternalLink />
+      Report issue
+    </Button>
+  )
+
+  // TODO: Add Assistant specific error handling
 
   return (
     <MessageContent

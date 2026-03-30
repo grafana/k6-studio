@@ -4,6 +4,7 @@ import { CheckCircleIcon, KeyIcon, WandSparkles } from 'lucide-react'
 import grotIllustration from '@/assets/grot-magic.svg'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useSettings } from '@/hooks/useSettings'
+import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
 
 interface IntroductionMessageProps {
@@ -11,12 +12,23 @@ interface IntroductionMessageProps {
 }
 
 export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
+  const isGrafanaAssistant = useFeaturesStore(
+    (state) => state.features['grafana-assistant']
+  )
+
+  if (isGrafanaAssistant) {
+    return <GrafanaAssistantIntro onStart={onStart} />
+  }
+
+  return <OpenAiIntro onStart={onStart} />
+}
+
+function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   const openSettingsDialog = useStudioUIStore(
     (state) => state.openSettingsDialog
   )
   const { data: settings } = useSettings()
   const isAiConfigured = !!settings?.ai.apiKey
-
   const proxyStatus = useProxyStatus()
 
   return (
@@ -85,6 +97,52 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
             </Button>
           </>
         )}
+        <Text size="1" color="gray" mt="1">
+          This feature is in public preview and subject to change.
+        </Text>
+      </Flex>
+    </Flex>
+  )
+}
+
+function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
+  return (
+    <Flex
+      direction="column"
+      align="center"
+      gap="6"
+      justify="center"
+      height="100%"
+    >
+      <img
+        src={grotIllustration}
+        role="img"
+        aria-label="Grafana mascot illustration"
+        css={{ maxWidth: 250 }}
+      />
+
+      <Flex
+        direction="column"
+        align="center"
+        gap="4"
+        maxWidth="600px"
+        css={{ textAlign: 'center' }}
+      >
+        <Badge color="orange" variant="soft">
+          Coming Soon
+        </Badge>
+        <Text size="3" weight="bold">
+          Automatically correlate dynamic values
+        </Text>
+        <Text size="2" color="gray" mb="2">
+          Powered by Grafana Assistant
+        </Text>
+
+        <Button onClick={onStart} size="3" disabled>
+          <WandSparkles />
+          Analyze recording
+        </Button>
+
         <Text size="1" color="gray" mt="1">
           This feature is in public preview and subject to change.
         </Text>

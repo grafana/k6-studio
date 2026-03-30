@@ -118,12 +118,32 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     return toNodeRef(previousLocator)
   }
 
+  function getWaitForNavigation(
+    currentEvent: BrowserEvent,
+    nextEvent?: BrowserEvent
+  ): { page: NodeRef } | undefined {
+    if (
+      nextEvent === undefined ||
+      nextEvent.type !== 'navigate-to-page' ||
+      nextEvent.source !== 'implicit' ||
+      nextEvent.tab !== currentEvent.tab
+    ) {
+      return undefined
+    }
+
+    return { page: getPage(nextEvent.tab) }
+  }
+
   function toNode(
     event: BrowserEvent,
     nextEvent?: BrowserEvent
   ): TestNode | null {
     switch (event.type) {
       case 'navigate-to-page':
+        if (event.source === 'implicit') {
+          return null
+        }
+
         return {
           type: 'goto',
           nodeId: event.eventId,
@@ -146,20 +166,15 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
         }
 
       case 'click': {
-        const triggersNavigation =
-          nextEvent?.type === 'navigate-to-page' &&
-          nextEvent.source === 'implicit'
-
         return {
           type: 'click',
           nodeId: event.eventId,
           button: event.button,
           modifiers: event.modifiers,
-          triggersNavigation,
+          waitForNavigation: getWaitForNavigation(event, nextEvent),
           inputs: {
             previous,
             locator: getLocator(event.tab, event.target),
-            page: getPage(event.tab),
           },
         }
       }
@@ -209,7 +224,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
           },
         }
 
-      case 'submit-form':
+      case 'submit-form': {
         return {
           type: 'click',
           nodeId: event.eventId,
@@ -220,12 +235,13 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
             alt: false,
             meta: false,
           },
+          waitForNavigation: getWaitForNavigation(event, nextEvent),
           inputs: {
             previous,
             locator: getLocator(event.tab, event.submitter),
-            page: getPage(event.tab),
           },
         }
+      }
 
       case 'assert': {
         return {
@@ -280,14 +296,22 @@ function buildBrowserNodeGraphFromActions(
   const nodes: TestNode[] = []
   let previousLocatorNode: LocatorNode | null = null
 
-  // TODO: Add support for multiple pages
-  const pageNode: TestNode = {
-    type: 'page',
-    nodeId: crypto.randomUUID(),
-  }
+  let currentPage: PageNode | undefined = undefined
 
-  nodes.push(pageNode)
-  const page = toNodeRef(pageNode)
+  // We create the page lazily so that we don't emit a page node if
+  // the test is empty.
+  function getPage(): NodeRef {
+    if (currentPage === undefined) {
+      currentPage = {
+        type: 'page',
+        nodeId: crypto.randomUUID(),
+      }
+
+      nodes.push(currentPage)
+    }
+
+    return toNodeRef(currentPage)
+  }
 
   function getLocator({ current, values }: LocatorOptions): NodeRef {
     const currentLocator = values[current]
@@ -311,14 +335,14 @@ function buildBrowserNodeGraphFromActions(
     if (
       previousLocatorNode === null ||
       !isSelectorEqual(selector, previousLocatorNode.selector) ||
-      previousLocatorNode.inputs.page.nodeId !== page.nodeId
+      previousLocatorNode.inputs.page.nodeId !== getPage().nodeId
     ) {
       previousLocatorNode = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
         selector,
         inputs: {
-          page,
+          page: getPage(),
         },
       }
 
@@ -337,7 +361,7 @@ function buildBrowserNodeGraphFromActions(
           url: action.url,
           source: 'address-bar',
           inputs: {
-            page,
+            page: getPage(),
           },
         }
       case 'page.reload':
@@ -345,7 +369,7 @@ function buildBrowserNodeGraphFromActions(
           type: 'reload',
           nodeId: crypto.randomUUID(),
           inputs: {
-            page,
+            page: getPage(),
           },
         }
       case 'locator.waitFor':

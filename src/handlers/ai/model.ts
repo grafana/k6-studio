@@ -3,20 +3,27 @@ import { LanguageModel } from 'ai'
 
 import { getDecryptedAiKey } from '@/main/settings'
 
-let model: LanguageModel | null = null
+import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 
-export async function setupAiModel() {
-  if (model) {
-    return model
+let openAiModel: LanguageModel | null = null
+const grafanaAssistantModel = new GrafanaAssistantLanguageModel()
+
+export async function getOpenAiModel() {
+  if (openAiModel) {
+    return openAiModel
   }
 
   const apiKey = await getDecryptedAiKey()
   const provider = createOpenAI({ apiKey })
-  model = provider('gpt-5')
+  openAiModel = provider('gpt-5')
 
-  return model
+  return openAiModel
 }
 
-export function resetAiModel() {
-  model = null
+export function resetOpenAiModel() {
+  openAiModel = null
+}
+
+export function getGrafanaAssistantModel() {
+  return grafanaAssistantModel
 }

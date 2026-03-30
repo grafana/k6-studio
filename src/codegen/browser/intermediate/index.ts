@@ -29,11 +29,6 @@ function emitPageNode(context: IntermediateContext, node: m.PageNode) {
 }
 
 function emitGotoNode(context: IntermediateContext, node: m.GotoNode) {
-  // Skip goto for implicit navigation, as it will be triggered by preceding action
-  if (node.source === 'implicit') {
-    return
-  }
-
   const page = context.reference(node.inputs.page)
 
   context.emit({
@@ -210,10 +205,11 @@ function emitClickNode(context: IntermediateContext, node: m.ClickNode) {
     options,
   }
 
-  if (node.triggersNavigation) {
-    const page = context.reference(node.inputs.page)
+  if (node.waitForNavigation !== undefined) {
+    const page = context.reference(node.waitForNavigation.page)
 
     context.emit(wrapWithWaitForNavigation(expression, page))
+
     return
   }
 

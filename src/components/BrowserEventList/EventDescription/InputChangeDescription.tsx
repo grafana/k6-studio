@@ -3,7 +3,7 @@ import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 
 import { InputChangeEvent } from '@/schemas/recording'
-import { HighlightSelector } from 'extension/src/messaging/types'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { Selector } from './Selector'
 
@@ -69,7 +69,7 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
 
 interface InputChangeDescriptionProps {
   event: InputChangeEvent
-  onHighlight: (selector: HighlightSelector | null) => void
+  onHighlight: (selector: NodeSelector | null) => void
 }
 
 export function InputChangeDescription({
