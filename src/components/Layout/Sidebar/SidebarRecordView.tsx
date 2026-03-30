@@ -1,86 +1,89 @@
 import { css } from '@emotion/react'
-import { Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
-import { PlusIcon } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Flex, ScrollArea } from '@radix-ui/themes'
+import { FileVideoCamera } from 'lucide-react'
+import { useState } from 'react'
 
 import { FileList } from '@/components/FileTree/FileList'
-import { FileItem } from '@/components/FileTree/types'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { useRecentURLs } from '@/hooks/useRecentURLs'
-import { getRoutePath } from '@/routeMap'
+import { useStudioUIStore } from '@/store/ui'
 
+import { orderByFileName, useFuzzyFileList } from './Sidebar.hooks'
 import { SidebarPanelHeading } from './SidebarPanelHeading'
 import { SidebarRecentURLs } from './SidebarRecentURLs'
+import { SidebarSearchField } from './SidebarSearchField'
+import { SidebarViewLayout } from './SidebarViewLayout'
 
 interface SidebarRecordViewProps {
-  recordings: FileItem[]
+  onCollapseSidebar: () => void
 }
 
-export function SidebarRecordView({ recordings }: SidebarRecordViewProps) {
+export function SidebarRecordView({
+  onCollapseSidebar,
+}: SidebarRecordViewProps) {
   const { recentURLs } = useRecentURLs()
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const recordings = useStudioUIStore((s) => orderByFileName(s.recordings))
+  const filteredRecordings = useFuzzyFileList(recordings, searchTerm)
 
   return (
-    <Flex
-      direction="column"
-      css={css`
-        flex: 1 1 0;
-        min-height: 0;
-      `}
+    <SidebarViewLayout
+      icon={<FileVideoCamera aria-hidden />}
+      heading="Record"
+      onCollapseSidebar={onCollapseSidebar}
     >
-      <Group
-        orientation="vertical"
+      <Flex
+        direction="column"
+        gap="2"
         css={css`
           flex: 1 1 0;
           min-height: 0;
         `}
       >
-        <Panel id="recordings" minSize={80}>
-          <ScrollArea
-            scrollbars="vertical"
-            css={css`
-              height: 100%;
-            `}
-          >
-            <SidebarPanelHeading
-              count={recordings.length}
-              actions={
-                <Tooltip content="New recording" side="right">
-                  <IconButton
-                    asChild
-                    aria-label="New recording"
-                    variant="ghost"
-                    size="1"
-                  >
-                    <Link to={getRoutePath('recorder')}>
-                      <PlusIcon />
-                    </Link>
-                  </IconButton>
-                </Tooltip>
-              }
+        <SidebarSearchField
+          filter={searchTerm}
+          placeholder="Search recordings..."
+          onChange={setSearchTerm}
+        />
+        <Group
+          orientation="vertical"
+          css={css`
+            flex: 1 1 0;
+            min-height: 0;
+          `}
+        >
+          <Panel id="recordings" minSize={80}>
+            <ScrollArea
+              scrollbars="vertical"
+              css={css`
+                height: 100%;
+              `}
             >
-              Recordings
-            </SidebarPanelHeading>
-
-            <FileList files={recordings} noFilesMessage="No recordings found" />
-          </ScrollArea>
-        </Panel>
-        <Separator />
-        <SidebarPanelHeading count={recentURLs.length}>
-          Recent URLs
-        </SidebarPanelHeading>
-        <Panel id="recent-urls" collapsible defaultSize={250} minSize={80}>
-          <ScrollArea
-            scrollbars="vertical"
-            css={css`
-              height: 100%;
-            `}
-          >
-            <Flex direction="column">
-              <SidebarRecentURLs urls={recentURLs} />
-            </Flex>
-          </ScrollArea>
-        </Panel>
-      </Group>
-    </Flex>
+              <FileList
+                files={filteredRecordings}
+                noFilesMessage="No recordings found"
+              />
+            </ScrollArea>
+          </Panel>
+          <Separator />
+          <SidebarPanelHeading count={recentURLs.length}>
+            Recent URLs
+          </SidebarPanelHeading>
+          <Panel id="recent-urls" collapsible defaultSize={250} minSize={80}>
+            <ScrollArea
+              scrollbars="vertical"
+              css={css`
+                height: 100%;
+              `}
+            >
+              <Flex direction="column">
+                <SidebarRecentURLs urls={recentURLs} />
+              </Flex>
+            </ScrollArea>
+          </Panel>
+        </Group>
+      </Flex>
+    </SidebarViewLayout>
   )
 }

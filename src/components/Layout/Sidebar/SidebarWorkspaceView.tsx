@@ -1,21 +1,52 @@
-import { ScrollArea } from '@radix-ui/themes'
-import * as pathe from 'pathe'
+import { css } from '@emotion/react'
+import { Flex, ScrollArea } from '@radix-ui/themes'
+import { FolderTreeIcon } from 'lucide-react'
+import { useState } from 'react'
 
 import { WorkspaceFileTree } from '@/components/WorkspaceFileTree'
-import { useWorkspace } from '@/contexts/WorkspaceContext'
 
-import { SidebarPanelHeading } from './SidebarPanelHeading'
+import { SidebarSearchField } from './SidebarSearchField'
+import { SidebarViewLayout } from './SidebarViewLayout'
 
-export function SidebarWorkspaceView() {
-  const workspace = useWorkspace()
+interface SidebarWorkspaceViewProps {
+  onCollapseSidebar: () => void
+}
 
-  const workspaceName =
-    workspace?.path !== undefined ? pathe.basename(workspace.path) : 'Workspace'
+export function SidebarWorkspaceView({
+  onCollapseSidebar,
+}: SidebarWorkspaceViewProps) {
+  const [searchTerm, setSearchTerm] = useState('')
 
   return (
-    <ScrollArea scrollbars="vertical">
-      <SidebarPanelHeading>{workspaceName}</SidebarPanelHeading>
-      <WorkspaceFileTree />
-    </ScrollArea>
+    <SidebarViewLayout
+      icon={<FolderTreeIcon aria-hidden />}
+      heading="Workspace"
+      onCollapseSidebar={onCollapseSidebar}
+    >
+      <Flex
+        direction="column"
+        gap="2"
+        css={css`
+          flex: 1 1 0;
+          min-height: 0;
+        `}
+      >
+        <SidebarSearchField
+          filter={searchTerm}
+          placeholder="Find files..."
+          onChange={setSearchTerm}
+        />
+        <ScrollArea
+          scrollbars="vertical"
+          css={css`
+            flex: 1 1 0;
+            min-height: 0;
+            height: 100%;
+          `}
+        >
+          <WorkspaceFileTree nameFilter={searchTerm} />
+        </ScrollArea>
+      </Flex>
+    </SidebarViewLayout>
   )
 }

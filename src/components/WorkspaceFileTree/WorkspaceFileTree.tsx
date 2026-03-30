@@ -7,9 +7,10 @@ import {
   Reset,
   Tooltip,
 } from '@radix-ui/themes'
+import Fuse, { IFuseOptions } from 'fuse.js'
 import { FolderClosedIcon, FolderOpenIcon, PlusIcon } from 'lucide-react'
 import * as pathe from 'pathe'
-import { KeyboardEvent, useEffect, useRef, useState } from 'react'
+import { KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useNavigate, useParams } from 'react-router-dom'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
@@ -204,7 +205,7 @@ function NewFileItem({ item, entry, onCreate, onCancel }: NewFileItemProps) {
           overflow: visible;
         `,
       ]}
-      style={{ paddingLeft: `${item.level * 16}px` }}
+      style={{ paddingLeft: `${(item.level + 1) * 16}px` }}
     >
       <Flex align="center" gap="1" width="100%">
         <FileEntryIcon fileType={inferredFileType} size={16} />
@@ -333,7 +334,7 @@ function DirectoryItem({
             overflow: visible;
           `,
         ]}
-        style={{ paddingLeft: item.level * 16 }}
+        style={{ paddingLeft: (item.level + 1) * 16 }}
       >
         <Flex align="center" gap="1" width="100%">
           {item.expanded ? (
@@ -354,94 +355,113 @@ function DirectoryItem({
   }
 
   return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger>
+    <>
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <div
+            css={[
+              entryStyles,
+              css`
+                padding: 0;
+                padding-right: var(--space-1);
+
+                & > .dropdown-menu-trigger {
+                  visibility: hidden;
+                }
+
+                &:hover > .dropdown-menu-trigger,
+                &:focus-within > .dropdown-menu-trigger,
+                & > .dropdown-menu-trigger[data-state='open'] {
+                  visibility: visible;
+                }
+              `,
+            ]}
+            {...item.props.aria}
+            {...item.props.control}
+          >
+            <Reset key={entry.path}>
+              <button
+                tabIndex={-1}
+                type="button"
+                css={[
+                  entryStyles,
+                  css`
+                    flex: 1 1 0;
+                  `,
+                ]}
+                style={{ paddingLeft: (item.level + 1) * 16 }}
+                onClick={() => item.toggle()}
+              >
+                {item.expanded ? (
+                  <FolderOpenIcon size={16} />
+                ) : (
+                  <FolderClosedIcon size={16} />
+                )}
+                <span
+                  css={css`
+                    flex: 1 1 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                  `}
+                >
+                  {entry.basename}
+                </span>
+              </button>
+            </Reset>
+            <NewTestMenu
+              tabIndex={item.props.aria.tabIndex}
+              onNewFile={(type) => {
+                onNewFile(item, {
+                  type: 'new-file',
+                  path: newFileId,
+                  hint:
+                    type === 'browser-test'
+                      ? 'browser-test.k6b'
+                      : 'generator.k6g',
+                  dirname: entry.path,
+                  fileType: type,
+                })
+              }}
+            />
+          </div>
+        </ContextMenu.Trigger>
+        <ContextMenu.Content size="1">
+          <ContextMenu.Item onSelect={() => setIsRenaming(true)}>
+            Rename
+          </ContextMenu.Item>
+          <ContextMenu.Item
+            onSelect={() =>
+              window.studio.ui.openContainingFolder({
+                type: 'recording',
+                path: entry.path,
+                fileName: entry.basename,
+                displayName: entry.basename,
+              })
+            }
+          >
+            Open containing folder
+          </ContextMenu.Item>
+        </ContextMenu.Content>
+      </ContextMenu.Root>
+      {item.expanded && item.children?.length === 0 && (
         <div
           css={[
             entryStyles,
             css`
               padding: 0;
               padding-right: var(--space-1);
-
-              & > .dropdown-menu-trigger {
-                visibility: hidden;
-              }
-
-              &:hover > .dropdown-menu-trigger,
-              &:focus-within > .dropdown-menu-trigger,
-              & > .dropdown-menu-trigger[data-state='open'] {
-                visibility: visible;
-              }
+              font-style: italic;
+              color: var(--gray-10);
+              pointer-events: none;
             `,
           ]}
-          {...item.props.aria}
-          {...item.props.control}
+          style={{ paddingLeft: (item.level + 2) * 16 }}
         >
-          <Reset key={entry.path}>
-            <button
-              tabIndex={-1}
-              type="button"
-              css={[
-                entryStyles,
-                css`
-                  flex: 1 1 0;
-                `,
-              ]}
-              style={{ paddingLeft: item.level * 16 }}
-              onClick={() => item.toggle()}
-            >
-              {item.expanded ? (
-                <FolderOpenIcon size={16} />
-              ) : (
-                <FolderClosedIcon size={16} />
-              )}
-              <span
-                css={css`
-                  flex: 1 1 0;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                `}
-              >
-                {entry.basename}
-              </span>
-            </button>
-          </Reset>
-          <NewTestMenu
-            tabIndex={item.props.aria.tabIndex}
-            onNewFile={(type) => {
-              onNewFile(item, {
-                type: 'new-file',
-                path: newFileId,
-                hint:
-                  type === 'browser-test'
-                    ? 'browser-test.k6b'
-                    : 'generator.k6g',
-                dirname: entry.path,
-                fileType: type,
-              })
-            }}
-          />
+          Directory is empty
         </div>
-      </ContextMenu.Trigger>
-      <ContextMenu.Content size="1">
-        <ContextMenu.Item onSelect={() => setIsRenaming(true)}>
-          Rename
-        </ContextMenu.Item>
-        <ContextMenu.Item
-          onSelect={() =>
-            window.studio.ui.openContainingFolder({
-              type: 'recording',
-              path: entry.path,
-              fileName: entry.basename,
-              displayName: entry.basename,
-            })
-          }
-        >
-          Open containing folder
-        </ContextMenu.Item>
-      </ContextMenu.Content>
-    </ContextMenu.Root>
+      )}
+    </>
   )
 }
 
@@ -534,7 +554,7 @@ function FileItem({
             overflow: visible;
           `,
         ]}
-        style={{ paddingLeft: item.level * 16 }}
+        style={{ paddingLeft: (item.level + 1) * 16 }}
       >
         <Flex align="center" gap="1" width="100%">
           <FileEntryIcon fileType={entry.file?.type} size={16} />
@@ -570,7 +590,7 @@ function FileItem({
                 }
               `,
             ]}
-            style={{ paddingLeft: item.level * 16 }}
+            style={{ paddingLeft: (item.level + 1) * 16 }}
             onClick={() => item.toggle()}
             {...item.props.aria}
             {...item.props.control}
@@ -623,7 +643,33 @@ interface NewFileEntry {
 
 type FileTreeEntry = DirectoryEntry | NewFileEntry
 
-export function WorkspaceFileTree() {
+const workspaceNameFuseOptions: IFuseOptions<{
+  path: string
+  basename: string
+}> = {
+  ignoreLocation: true,
+  distance: 1,
+  keys: ['basename'],
+}
+
+function isDescendantPath(descendantPath: string, ancestorPath: string) {
+  if (descendantPath === ancestorPath) {
+    return false
+  }
+
+  const prefix = ancestorPath.endsWith(pathe.sep)
+    ? ancestorPath
+    : `${ancestorPath}${pathe.sep}`
+
+  return descendantPath.startsWith(prefix)
+}
+
+interface WorkspaceFileTreeProps {
+  /** When non-empty, only entries matching this filter (loaded folders/files) are shown. */
+  nameFilter?: string
+}
+
+export function WorkspaceFileTree({ nameFilter = '' }: WorkspaceFileTreeProps) {
   const navigate = useNavigate()
 
   const workspace = useWorkspace()
@@ -652,7 +698,7 @@ export function WorkspaceFileTree() {
   const tree = useTree({
     root: {
       type: 'directory',
-      basename: 'Workspace',
+      basename: pathe.basename(workspace?.path ?? ''),
       path: workspace?.path ?? '',
     },
 
@@ -748,6 +794,61 @@ export function WorkspaceFileTree() {
     removeNewFileEntry(entry)
   }
 
+  const matchedPaths = useMemo(() => {
+    if (nameFilter.match(/^\s*$/)) {
+      return null
+    }
+
+    const q = nameFilter.trim()
+    const searchable: { path: string; basename: string }[] = []
+
+    for (const list of Object.values(entries)) {
+      for (const e of list ?? []) {
+        if (e.type === 'file' || e.type === 'directory') {
+          searchable.push({ path: e.path, basename: e.basename })
+        }
+      }
+    }
+
+    if (searchable.length === 0) {
+      return new Set<string>()
+    }
+
+    const fuse = new Fuse(searchable, workspaceNameFuseOptions)
+
+    return new Set(fuse.search(q).map((r) => r.item.path))
+  }, [entries, nameFilter])
+
+  const visibleTreeItems = useMemo(() => {
+    if (matchedPaths === null) {
+      return tree.items
+    }
+
+    return tree.items.filter((treeItem) => {
+      const node = treeItem.node
+
+      if (node.type === 'new-file') {
+        return true
+      }
+
+      if (node.type === 'file') {
+        return matchedPaths.has(node.path)
+      }
+
+      if (matchedPaths.has(node.path)) {
+        return true
+      }
+
+      for (const p of matchedPaths) {
+        if (isDescendantPath(p, node.path)) {
+          return true
+        }
+      }
+
+      return false
+    })
+  }, [tree.items, matchedPaths])
+
   if (workspace === null) {
     return null
   }
@@ -759,7 +860,7 @@ export function WorkspaceFileTree() {
       overflow="hidden"
       {...tree.props}
     >
-      {tree.items.map((item) => {
+      {visibleTreeItems.map((item) => {
         if (item.node.type === 'directory') {
           return (
             <DirectoryItem

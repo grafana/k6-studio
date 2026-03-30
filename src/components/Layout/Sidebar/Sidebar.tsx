@@ -1,13 +1,9 @@
 import { css } from '@emotion/react'
-import { Box, Flex, IconButton } from '@radix-ui/themes'
-import { PanelLeftCloseIcon } from 'lucide-react'
-import { useState } from 'react'
-
-import { SearchField } from '@/components/SearchField'
+import { Box, Flex } from '@radix-ui/themes'
 
 import type { SidebarView } from '../Layout'
 
-import { useFiles } from './Sidebar.hooks'
+import { useWorkspaceFolderSync } from './Sidebar.hooks'
 import { SidebarBuildView } from './SidebarBuildView'
 import { SidebarDebugView } from './SidebarDebugView'
 import { SidebarRecordView } from './SidebarRecordView'
@@ -19,9 +15,8 @@ interface SidebarProps {
   onCollapseSidebar: () => void
 }
 
-export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const { recordings, tests, scripts, dataFiles } = useFiles(searchTerm)
+export function Sidebar({ view, onCollapseSidebar }: SidebarProps) {
+  useWorkspaceFolderSync()
 
   return (
     <Box
@@ -36,28 +31,6 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
       asChild
     >
       <Flex direction="column">
-        <Flex align="center" justify="end" m="2" gap="2">
-          <SearchField
-            css={css`
-              flex: 1 1 0;
-            `}
-            filter={searchTerm}
-            placeholder="Find files..."
-            size="1"
-            onChange={setSearchTerm}
-          />
-
-          {isExpanded && (
-            <IconButton
-              size="1"
-              variant="ghost"
-              color="gray"
-              onClick={onCollapseSidebar}
-            >
-              <PanelLeftCloseIcon />
-            </IconButton>
-          )}
-        </Flex>
         <Box
           css={css`
             flex: 1 1 0;
@@ -77,7 +50,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
             `}
             aria-hidden={view !== 'workspace'}
           >
-            <SidebarWorkspaceView />
+            <SidebarWorkspaceView onCollapseSidebar={onCollapseSidebar} />
           </Box>
           <Box
             css={css`
@@ -89,7 +62,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
             `}
             aria-hidden={view !== 'record'}
           >
-            <SidebarRecordView recordings={recordings} />
+            <SidebarRecordView onCollapseSidebar={onCollapseSidebar} />
           </Box>
           <Box
             css={css`
@@ -101,7 +74,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
             `}
             aria-hidden={view !== 'build'}
           >
-            <SidebarBuildView tests={tests} dataFiles={dataFiles} />
+            <SidebarBuildView onCollapseSidebar={onCollapseSidebar} />
           </Box>
           <Box
             css={css`
@@ -113,7 +86,7 @@ export function Sidebar({ isExpanded, onCollapseSidebar, view }: SidebarProps) {
             `}
             aria-hidden={view !== 'debug'}
           >
-            <SidebarDebugView scripts={scripts} />
+            <SidebarDebugView onCollapseSidebar={onCollapseSidebar} />
           </Box>
         </Box>
       </Flex>

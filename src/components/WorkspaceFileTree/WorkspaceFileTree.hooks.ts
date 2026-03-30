@@ -26,6 +26,8 @@ export interface TreeItem<T> {
   expanded: boolean
   /** True if children are being loaded (expanded but getChildren returns empty) */
   isLoading: boolean
+  /** Children of the node */
+  children: T[] | null
   /** Toggle expand/collapse state */
   toggle: (expanded?: boolean) => Promise<void> | void
   /** ARIA and DOM props to spread on the treeitem element */
@@ -46,6 +48,7 @@ export interface TreeItem<T> {
 }
 
 function buildTree<T>(
+  includeRoot: boolean,
   root: T,
   nodes: Record<NodeId, T[] | null>,
   expandedIds: Set<NodeId>,
@@ -59,7 +62,7 @@ function buildTree<T>(
     setSize: number
   }> = []
 
-  function traverse(parents: T[], item: T) {
+  function traverseChildren(parents: T[], item: T) {
     const id = getId(item)
 
     if (!isFolder(item) || !expandedIds.has(id)) {
@@ -88,11 +91,34 @@ function buildTree<T>(
         setSize: children.length,
       })
 
-      traverse(newParents, child)
+      traverseChild(newParents, child)
     }
   }
 
-  traverse([], root)
+  function traverseChild(parents: T[], item: T) {
+    const id = getId(item)
+
+    if (!isFolder(item) || !expandedIds.has(id)) {
+      return
+    }
+
+    const newParents = [...parents, item]
+
+    traverseChildren(newParents, item)
+  }
+
+  if (includeRoot) {
+    result.push({
+      item: root,
+      level: 0,
+      posInSet: 1,
+      setSize: 1,
+    })
+
+    traverseChildren([], root)
+  } else {
+    traverseChild([], root)
+  }
 
   return result
 }
@@ -158,7 +184,7 @@ export function useTree<T>(options: UseTreeOptions<T>) {
   )
 
   const flatItems = useMemo(() => {
-    return buildTree(root, nodes, expandedIds, getId, isFolder)
+    return buildTree(true, root, nodes, expandedIds, getId, isFolder)
   }, [root, expandedIds, nodes, getId, isFolder])
 
   const handleKeyDown = useCallback(
@@ -311,6 +337,7 @@ export function useTree<T>(options: UseTreeOptions<T>) {
         level,
         expanded: isExpanded,
         isLoading,
+        children,
         props,
         toggle: (expanded) => toggle(item, expanded),
       }
