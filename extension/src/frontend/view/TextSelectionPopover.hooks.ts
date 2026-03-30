@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect } from 'react'
 
+import { getElementBounds, toBounds } from '@/components/Browser/utils'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
 
 import { toTrackedElement } from './ElementInspector/utils'
 import { TextSelection } from './TextSelectionPopover.types'
-import { getElementBounds, toBounds } from './utils'
 
 function measureRange(range: Range) {
   return {

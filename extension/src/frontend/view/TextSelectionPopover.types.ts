@@ -1,5 +1,6 @@
+import { Bounds } from '@/components/Browser/types'
+
 import { TrackedElement } from './ElementInspector/utils'
-import { Bounds } from './types'
 
 export interface TextSelection {
   text: string

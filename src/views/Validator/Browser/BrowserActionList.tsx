@@ -2,6 +2,7 @@ import { css } from '@emotion/react'
 import { Box, Flex, Reset, Text } from '@radix-ui/themes'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { BrowserActionStatusIcon } from './BrowserActionStatusIcon'
 import { BrowserActionText } from './BrowserActionText'
@@ -9,9 +10,10 @@ import { BrowserActionTimer } from './BrowserActionTimer'
 
 interface BrowserActionItemProps {
   event: BrowserActionEvent
+  onHighlight?: (selector: NodeSelector | null) => void
 }
 
-function BrowserActionItem({ event }: BrowserActionItemProps) {
+function BrowserActionItem({ event, onHighlight }: BrowserActionItemProps) {
   const result = event.type === 'end' ? event.result : null
 
   return (
@@ -49,7 +51,7 @@ function BrowserActionItem({ event }: BrowserActionItemProps) {
             white-space: nowrap;
           `}
         >
-          <BrowserActionText action={event.action} />
+          <BrowserActionText action={event.action} onHighlight={onHighlight} />
         </Box>
         <Box pr="2">
           <BrowserActionTimer
@@ -74,14 +76,15 @@ function BrowserActionItem({ event }: BrowserActionItemProps) {
 
 interface BrowserActionListProps {
   actions: BrowserActionEvent[]
+  onHighlight?: (selector: NodeSelector | null) => void
 }
 
-export function BrowserActionList({ actions }: BrowserActionListProps) {
+export function BrowserActionList({ actions, onHighlight }: BrowserActionListProps) {
   return (
     <Reset>
       <ul>
         {actions.map((action) => (
-          <BrowserActionItem key={action.eventId} event={action} />
+          <BrowserActionItem key={action.eventId} event={action} onHighlight={onHighlight} />
         ))}
       </ul>
     </Reset>
