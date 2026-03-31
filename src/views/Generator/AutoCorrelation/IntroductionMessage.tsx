@@ -5,15 +5,18 @@ import {
   KeyIcon,
   LinkIcon,
   UnlinkIcon,
-  UserRoundIcon,
   WandSparkles,
 } from 'lucide-react'
+import { useState } from 'react'
 
 import grotIllustration from '@/assets/grot-magic.svg'
+import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import {
   useAssistantAuthStatus,
   useAssistantSignIn,
   useAssistantSignOut,
+  invalidateAssistantAuthStatus,
 } from '@/hooks/useAssistantAuth'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useSettings } from '@/hooks/useSettings'
@@ -69,9 +72,32 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
 }
 
 function GrafanaAssistantIntro() {
+  const { data: authStatus, isLoading } = useAssistantAuthStatus()
+  const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
+
+  const isSignedIn = !!authStatus?.stackId
+
+  if (!isSignedIn && isCloudSigningIn) {
+    return (
+      <Flex direction="column" align="center" justify="center" height="100%">
+        <GrafanaCloudSignIn
+          onSignIn={() => {
+            setIsCloudSigningIn(false)
+            void invalidateAssistantAuthStatus()
+          }}
+          onAbort={() => setIsCloudSigningIn(false)}
+        />
+      </Flex>
+    )
+  }
+
   return (
     <IntroLayout subtitle="Powered by Grafana Assistant">
-      <AssistantAuthStatus />
+      <AssistantAuthStatus
+        authStatus={authStatus}
+        isLoading={isLoading}
+        onSignIn={() => setIsCloudSigningIn(true)}
+      />
       <Text size="1" color="gray" mt="1">
         This feature is in public preview and subject to change.
       </Text>
@@ -79,8 +105,17 @@ function GrafanaAssistantIntro() {
   )
 }
 
-function AssistantAuthStatus() {
-  const { data: authStatus, isLoading } = useAssistantAuthStatus()
+interface AssistantAuthStatusProps {
+  authStatus: ReturnType<typeof useAssistantAuthStatus>['data']
+  isLoading: boolean
+  onSignIn: () => void
+}
+
+function AssistantAuthStatus({
+  authStatus,
+  isLoading,
+  onSignIn,
+}: AssistantAuthStatusProps) {
   const {
     mutate: signIn,
     isPending: isSigningIn,
@@ -88,7 +123,6 @@ function AssistantAuthStatus() {
     cancel: cancelSignIn,
   } = useAssistantSignIn()
   const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
-  const openProfileDialog = useStudioUIStore((state) => state.openProfileDialog)
 
   const isAuthenticated = authStatus?.authenticated ?? false
   const isSignedIn = !!authStatus?.stackId
@@ -107,8 +141,8 @@ function AssistantAuthStatus() {
         <Text size="2" color="gray">
           Sign in to Grafana Cloud to use the Grafana Assistant.
         </Text>
-        <Button size="3" onClick={openProfileDialog}>
-          <UserRoundIcon />
+        <Button size="3" onClick={onSignIn}>
+          <GrafanaIcon />
           Sign in to Grafana Cloud
         </Button>
       </>

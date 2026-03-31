@@ -6,13 +6,17 @@ import { queryClient } from '@/utils/query'
 
 const QUERY_KEY = ['assistant-auth-status'] as const
 
+export function invalidateAssistantAuthStatus() {
+  return queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+}
+
 export function useAssistantAuthStatus() {
   const isProfileOpen = useStudioUIStore((s) => s.isProfileDialogOpen)
   const wasOpen = useRef(false)
 
   useEffect(() => {
     if (wasOpen.current && !isProfileOpen) {
-      void queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      void invalidateAssistantAuthStatus()
     }
     wasOpen.current = isProfileOpen
   }, [isProfileOpen])
@@ -38,7 +42,7 @@ export function useAssistantSignIn() {
     },
     onSuccess: (result) => {
       if (result.type === 'authenticated') {
-        return queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+        return invalidateAssistantAuthStatus()
       }
     },
   })
@@ -56,7 +60,7 @@ export function useAssistantSignOut() {
   return useMutation({
     mutationFn: window.studio.ai.assistantSignOut,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+      await invalidateAssistantAuthStatus()
     },
   })
 }
