@@ -60,9 +60,7 @@ async function performSignIn(
     const { codeVerifier, codeChallenge } = generatePKCE()
     const state = generateState()
 
-    const { port, waitForCallback } = await startCallbackServer(
-      abortController.signal
-    )
+    const { port, result } = await startCallbackServer(abortController.signal)
 
     const authUrl = buildAssistantAuthUrl(stackUrl, codeChallenge, state, port)
 
@@ -75,7 +73,7 @@ async function performSignIn(
     )
     void shell.openExternal(authUrl)
 
-    const callback = await waitForCallback()
+    const callback = await result
     app.focus({ steal: true })
 
     if (callback.state !== state) {

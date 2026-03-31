@@ -141,82 +141,70 @@ describe('exchangeAssistantCode', () => {
 })
 
 describe('handleCallbackRequest', () => {
-  function createMockReqRes(url: string) {
+  function createMockServer() {
+    const server = new http.Server()
+    return server
+  }
+
+  function emitRequest(server: http.Server, url: string) {
     const req = { url } as http.IncomingMessage
     const writeHead = vi.fn()
     const end = vi.fn((_data?: unknown, cb?: () => void) => {
       cb?.()
     })
     const res = { writeHead, end } as unknown as http.ServerResponse
-    return { req, res, writeHead, end }
+
+    server.emit('request', req, res)
+
+    return { writeHead, end }
   }
 
   it('returns 404 for non-/callback paths', () => {
-    const { req, res, writeHead, end } = createMockReqRes('/favicon.ico')
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+    const server = createMockServer()
+    void handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    const { writeHead, end } = emitRequest(server, '/favicon.ico')
 
     expect(writeHead).toHaveBeenCalledWith(404)
     expect(end).toHaveBeenCalled()
-    expect(resolve).not.toHaveBeenCalled()
-    expect(reject).not.toHaveBeenCalled()
-    expect(closeServer).not.toHaveBeenCalled()
   })
 
-  it('resolves with callback data on success', () => {
-    const { req, res } = createMockReqRes(
+  it('resolves with callback data on success', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
+
+    emitRequest(
+      server,
       '/callback?code=abc&state=xyz&endpoint=https://api.grafana.net&tenant=t1&email=a@b.com'
     )
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
-
-    expect(resolve).toHaveBeenCalledWith({
+    await expect(result).resolves.toEqual({
       code: 'abc',
       state: 'xyz',
       endpoint: 'https://api.grafana.net',
       tenant: 't1',
       email: 'a@b.com',
     } satisfies CallbackResult)
-    expect(reject).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
   })
 
-  it('rejects with error when error param is present', () => {
-    const { req, res } = createMockReqRes(
-      '/callback?error=user_cancelled&state=xyz'
-    )
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+  it('rejects with error when error param is present', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    emitRequest(server, '/callback?error=user_cancelled&state=xyz')
 
-    expect(reject).toHaveBeenCalledWith(
-      new Error('Authorization denied: user_cancelled')
-    )
-    expect(resolve).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
+    await expect(result).rejects.toThrow('Authorization denied: user_cancelled')
   })
 
-  it('rejects when code or state is missing', () => {
-    const { req, res } = createMockReqRes('/callback?code=abc')
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+  it('rejects when code or state is missing', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    emitRequest(server, '/callback?code=abc')
 
-    expect(reject).toHaveBeenCalledWith(
-      new Error('Missing code or state in auth callback')
+    await expect(result).rejects.toThrow(
+      'Missing code or state in auth callback'
     )
-    expect(resolve).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
   })
 })
 
@@ -232,15 +220,13 @@ describe('startCallbackServer', () => {
 
     try {
       const abortController = new AbortController()
-      const { port, waitForCallback } = await startCallbackServer(
-        abortController.signal
-      )
+      const { port, result } = await startCallbackServer(abortController.signal)
 
       expect(port).not.toBe(CALLBACK_PORT_MIN)
       expect(port).toBeGreaterThan(CALLBACK_PORT_MIN)
 
       // Catch the expected rejection from aborting the callback promise
-      const callbackPromise = waitForCallback().catch(() => {})
+      const callbackPromise = result.catch(() => {})
       abortController.abort()
       await callbackPromise
     } finally {
