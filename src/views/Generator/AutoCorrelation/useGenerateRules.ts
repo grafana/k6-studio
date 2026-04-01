@@ -73,7 +73,7 @@ export const useGenerateRules = ({
     }),
 
     // Keep calling tools without user input
-    sendAutomaticallyWhen: lastMessageIsToolCall,
+    sendAutomaticallyWhen: (args) => lastMessageIsToolCall(args, provider),
     onError: (error) => {
       setCorrelationStatus('error')
       console.error(error)

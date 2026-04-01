@@ -34,7 +34,6 @@ async function handleStreamChat(
 
       const response = streamText({
         model: aiModel,
-        toolChoice: 'required',
         messages,
         tools,
         abortSignal: abortController.signal,
@@ -51,6 +50,7 @@ async function handleStreamChat(
 
       const response = streamText({
         model: aiModel,
+        toolChoice: 'required',
         messages,
         tools,
         abortSignal: abortController.signal,
