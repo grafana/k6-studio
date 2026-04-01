@@ -2,6 +2,7 @@ import { OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
 import { convertToModelMessages, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
 
+import * as assistantAuth from './a2a/assistantAuth'
 import { getGrafanaAssistantModel, getOpenAiModel } from './model'
 import { streamMessages } from './streamMessages'
 import { tools } from './tools'
@@ -13,6 +14,7 @@ const activeAbortControllers = new Map<string, AbortController>()
 export function initialize() {
   ipcMain.on(AiHandler.StreamChat, handleStreamChat)
   ipcMain.on(AiHandler.AbortStreamChat, handleAbortStreamChat)
+  assistantAuth.initialize()
 }
 
 async function handleStreamChat(
