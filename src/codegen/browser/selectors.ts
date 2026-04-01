@@ -22,7 +22,9 @@ function getRoleSelector(
   return {
     type: 'role',
     role: selectors.role.role,
-    name: selectors.role.name ? { value: selectors.role.name } : undefined,
+    name: selectors.role.name
+      ? { value: selectors.role.name, exact: true }
+      : undefined,
   }
 }
 

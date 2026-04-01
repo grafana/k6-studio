@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, IconButton, TextField, Tooltip } from '@radix-ui/themes'
-import { CaseSensitiveIcon } from 'lucide-react'
+import { WholeWordIcon } from 'lucide-react'
 
 import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
@@ -79,11 +79,11 @@ export function GetByRoleForm({
           onBlur={onBlur}
         >
           <TextField.Slot side="right">
-            <Tooltip content="Match case">
+            <Tooltip content="Exact match">
               <IconButton
                 size="1"
                 disabled={!locator.options?.name}
-                aria-label="Toggle case sensitivity"
+                aria-label="Toggle exact match"
                 aria-pressed={locator.options?.exact ? 'true' : 'false'}
                 variant="ghost"
                 color={locator.options?.exact ? 'orange' : 'gray'}
@@ -101,7 +101,7 @@ export function GetByRoleForm({
                   margin: 0;
                 `}
               >
-                <CaseSensitiveIcon />
+                <WholeWordIcon />
               </IconButton>
             </Tooltip>
           </TextField.Slot>
