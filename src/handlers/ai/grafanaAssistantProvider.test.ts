@@ -4,10 +4,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sendTaskCancel } from './a2a/cancelTask'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 
-vi.mock('electron-log/main', () => ({
-  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-}))
-
 vi.mock('./tools', () => ({
   getToolDefinitionsForA2A: () => [],
 }))

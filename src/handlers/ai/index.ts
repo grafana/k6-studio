@@ -18,7 +18,7 @@ export function initialize() {
   assistantAuth.initialize()
 }
 
-async function handleStreamChat(
+export async function handleStreamChat(
   event: IpcMainEvent,
   request: StreamChatRequest
 ) {
@@ -69,6 +69,13 @@ async function handleStreamChat(
     }
   } catch (error) {
     log.error('handleStreamChat error:', error)
+    event.sender.send(AiHandler.StreamChatChunk, {
+      id: request.id,
+      chunk: {
+        type: 'error',
+        errorText: error instanceof Error ? error.message : 'Unknown error',
+      },
+    })
   } finally {
     activeAbortControllers.delete(request.id)
   }

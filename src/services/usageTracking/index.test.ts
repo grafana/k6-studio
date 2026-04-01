@@ -11,12 +11,6 @@ vi.mock('electron', () => ({
   },
 }))
 
-vi.mock('electron-log/main', () => ({
-  default: {
-    error: vi.fn(),
-  },
-}))
-
 vi.mock('fs/promises')
 
 vi.mock('@/utils/electron', () => ({

@@ -1,11 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { handleRemoteToolRequest, tryMatchToolRequests } from './toolMatcher'
 import type { A2ARemoteToolRequestEvent, ActiveA2ASession } from './types'
-
-vi.mock('electron-log/main', () => ({
-  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-}))
 
 function createSession(
   overrides?: Partial<ActiveA2ASession>

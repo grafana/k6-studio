@@ -4,10 +4,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { createA2AStream } from './stream'
 import type { ActiveA2ASession } from './types'
 
-vi.mock('electron-log/main', () => ({
-  default: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-}))
-
 /** Encode SSE events as the A2A server would send them. */
 function encodeSSE(
   events: Array<Record<string, unknown>>

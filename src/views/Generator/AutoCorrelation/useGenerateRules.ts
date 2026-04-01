@@ -226,7 +226,6 @@ export const useGenerateRules = ({
       setCorrelationStatus('analyzing')
       return sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
-        // text: 'list tools and their input schema in json available to you',
       })
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -247,6 +246,7 @@ export const useGenerateRules = ({
     setSuggestedRules([])
     setMessages([])
     clearError()
+    setTokenUsage(undefined)
     return start()
   }
 
