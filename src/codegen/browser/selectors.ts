@@ -180,7 +180,12 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
       return b.type === 'test-id' && a.testId === b.testId
 
     case 'role':
-      return b.type === 'role' && a.role === b.role && a.name === b.name
+      return (
+        b.type === 'role' &&
+        a.role === b.role &&
+        a.name?.value === b.name?.value &&
+        a.name?.exact === b.name?.exact
+      )
 
     case 'alt':
       return b.type === 'alt' && a.text === b.text
