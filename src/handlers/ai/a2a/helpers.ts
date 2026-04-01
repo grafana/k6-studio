@@ -21,49 +21,42 @@ export function extractChatId(options: LanguageModelV2CallOptions): string {
 export function extractLatestUserText(
   prompt: LanguageModelV2CallOptions['prompt']
 ): string {
-  for (let i = prompt.length - 1; i >= 0; i--) {
-    const msg = prompt[i]
-    if (msg?.role === 'user') {
-      const textParts: string[] = []
-      for (const part of msg.content) {
-        if (part.type === 'text') {
-          textParts.push(part.text)
-        }
-      }
-      return textParts.join('\n')
-    }
-  }
+  const lastUserMsg = prompt.findLast((msg) => msg.role === 'user')
+  if (!lastUserMsg) return ''
 
-  return ''
+  return lastUserMsg.content
+    .filter(
+      (
+        part
+      ): part is Extract<
+        (typeof lastUserMsg.content)[number],
+        { type: 'text' }
+      > => part.type === 'text'
+    )
+    .map((part) => part.text)
+    .join('\n')
 }
 
 export function extractToolResults(
   prompt: LanguageModelV2CallOptions['prompt']
 ): Array<{ toolCallId: string; toolName: string; output: unknown }> {
-  const results: Array<{
-    toolCallId: string
-    toolName: string
-    output: unknown
-  }> = []
+  const lastMsg = prompt.at(-1)
+  if (!lastMsg || lastMsg.role !== 'tool') return []
 
-  const lastMsg = prompt[prompt.length - 1]
-  if (!lastMsg || lastMsg.role !== 'tool') {
-    return results
-  }
-
-  for (const part of lastMsg.content) {
-    if (part.type === 'tool-result') {
-      const output = 'output' in part ? resolveToolOutput(part.output) : part
-
-      results.push({
-        toolCallId: part.toolCallId,
-        toolName: part.toolName,
-        output,
-      })
-    }
-  }
-
-  return results
+  return lastMsg.content
+    .filter(
+      (
+        part
+      ): part is Extract<
+        (typeof lastMsg.content)[number],
+        { type: 'tool-result' }
+      > => part.type === 'tool-result'
+    )
+    .map((part) => ({
+      toolCallId: part.toolCallId,
+      toolName: part.toolName,
+      output: 'output' in part ? resolveToolOutput(part.output) : part,
+    }))
 }
 
 function resolveToolOutput(

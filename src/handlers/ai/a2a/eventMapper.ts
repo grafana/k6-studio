@@ -1,6 +1,7 @@
 import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
 import log from 'electron-log/main'
 
+import { LOG_PREFIX } from './constants'
 import { handleRemoteToolRequest, tryMatchToolRequests } from './toolMatcher'
 import type {
   A2AArtifact,
@@ -13,8 +14,6 @@ import type {
   A2AToolCallData,
   ActiveA2ASession,
 } from './types'
-
-const PREFIX = '[GrafanaAssistant]'
 
 function isRemoteToolRequest(
   result: A2ASSEResult
@@ -37,7 +36,11 @@ export function processA2AEvent(
   session: ActiveA2ASession
 ): LanguageModelV2StreamPart[] {
   if (event.error) {
-    log.error(PREFIX, `A2A error (${event.error.code}):`, event.error.message)
+    log.error(
+      LOG_PREFIX,
+      `A2A error (${event.error.code}):`,
+      event.error.message
+    )
     return [
       {
         type: 'error',
@@ -101,7 +104,7 @@ function handleStatusUpdate(
     const errorMessage =
       statusMessage || `A2A task ${state} (taskId=${event.taskId})`
 
-    log.error(PREFIX, `Task ${state}:`, errorMessage)
+    log.error(LOG_PREFIX, `Task ${state}:`, errorMessage)
     return [{ type: 'error', error: new Error(errorMessage) }]
   }
 

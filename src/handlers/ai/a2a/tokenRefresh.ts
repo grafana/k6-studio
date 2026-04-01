@@ -1,13 +1,12 @@
 import log from 'electron-log/main'
 import { z } from 'zod'
 
+import { LOG_PREFIX } from './constants'
 import {
   AssistantTokenData,
   getAssistantTokens,
   saveAssistantTokens,
 } from './tokenStore'
-
-const PREFIX = '[GrafanaAssistant]'
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
 
@@ -38,7 +37,7 @@ export async function refreshAndSaveTokens(
     )
   }
 
-  log.info(PREFIX, 'Refreshing assistant token for stack', stackId)
+  log.info(LOG_PREFIX, 'Refreshing assistant token for stack', stackId)
 
   const response = await fetch(
     `${tokens.apiEndpoint}/api/cli/v1/auth/refresh`,
@@ -88,7 +87,7 @@ export async function getValidAssistantTokens(
   try {
     return await refreshAndSaveTokens(stackId, tokens)
   } catch (error) {
-    log.error(PREFIX, 'Failed to refresh assistant token:', error)
+    log.error(LOG_PREFIX, 'Failed to refresh assistant token:', error)
     return null
   }
 }

@@ -1,8 +1,7 @@
 import log from 'electron-log/main'
 
+import { LOG_PREFIX } from './constants'
 import type { A2ARemoteToolRequestEvent, ActiveA2ASession } from './types'
-
-const PREFIX = '[GrafanaAssistant]'
 
 export function handleRemoteToolRequest(
   session: ActiveA2ASession,
@@ -22,42 +21,58 @@ export function handleRemoteToolRequest(
  * and waiting for our remote tool response.
  */
 export function tryMatchToolRequests(session: ActiveA2ASession): void {
-  const unmatchedCalls = session.unmatchedToolCalls
-  const unmatchedRequests = session.unmatchedRemoteRequests
+  const { matched, remainingCalls, remainingRequests } =
+    session.unmatchedToolCalls.reduce<{
+      matched: Array<{
+        call: (typeof session.unmatchedToolCalls)[number]
+        req: (typeof session.unmatchedRemoteRequests)[number]
+      }>
+      remainingCalls: typeof session.unmatchedToolCalls
+      remainingRequests: typeof session.unmatchedRemoteRequests
+    }>(
+      (acc, call) => {
+        const reqIndex = acc.remainingRequests.findIndex(
+          (r) => r.toolName === call.toolName
+        )
 
-  let matchedAny = false
-  let i = 0
-  while (i < unmatchedCalls.length && unmatchedRequests.length > 0) {
-    const call = unmatchedCalls[i]
-    if (!call) break
+        if (reqIndex !== -1) {
+          const req = acc.remainingRequests[reqIndex]!
+          acc.matched.push({ call, req })
+          acc.remainingRequests = acc.remainingRequests.filter(
+            (_, i) => i !== reqIndex
+          )
+        } else {
+          acc.remainingCalls.push(call)
+        }
 
-    const reqIndex = unmatchedRequests.findIndex(
-      (r) => r.toolName === call.toolName
+        return acc
+      },
+      {
+        matched: [],
+        remainingCalls: [],
+        remainingRequests: [...session.unmatchedRemoteRequests],
+      }
     )
 
-    if (reqIndex !== -1) {
-      const req = unmatchedRequests[reqIndex]
-      if (req) {
-        session.pendingToolRequests.set(call.toolId, {
-          requestId: req.requestId,
-          chatId: req.chatId,
-        })
-        log.info(
-          PREFIX,
-          `Matched: toolId=${call.toolId} ↔ requestId=${req.requestId} (${call.toolName})`
-        )
-      }
-      unmatchedRequests.splice(reqIndex, 1)
-      unmatchedCalls.splice(i, 1)
-      matchedAny = true
-    } else {
-      i++
-    }
-  }
+  matched.forEach(({ call, req }) => {
+    session.pendingToolRequests.set(call.toolId, {
+      requestId: req.requestId,
+      chatId: req.chatId,
+    })
+    log.info(
+      LOG_PREFIX,
+      `Matched: toolId=${call.toolId} ↔ requestId=${req.requestId} (${call.toolName})`
+    )
+  })
+
+  session.unmatchedToolCalls.length = 0
+  session.unmatchedToolCalls.push(...remainingCalls)
+  session.unmatchedRemoteRequests.length = 0
+  session.unmatchedRemoteRequests.push(...remainingRequests)
 
   if (
-    matchedAny &&
-    unmatchedCalls.length === 0 &&
+    matched.length > 0 &&
+    remainingCalls.length === 0 &&
     session.pendingToolRequests.size > 0
   ) {
     session.readyToFinishForTools = true

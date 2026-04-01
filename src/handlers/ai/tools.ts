@@ -35,7 +35,7 @@ const addRuleBeginEndSchema = addRuleBaseSchema.extend({
 
 const addRuleRegexSchema = addRuleBaseSchema.extend({
   extractor: addRuleBaseSchema.shape.extractor.extend({
-    selector: RegexSelectorSchema.extend({}),
+    selector: RegexSelectorSchema,
   }),
 })
 
@@ -127,7 +127,7 @@ export const tools = {
   }),
 
   addRuleRegex: tool({
-    description: 'Create a correlation rule with a regex selector..',
+    description: 'Create a correlation rule with a regex selector.',
     inputSchema: z.object({ rule: addRuleRegexSchema }),
   }),
 

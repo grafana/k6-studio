@@ -1,8 +1,7 @@
 import log from 'electron-log/main'
 
+import { LOG_PREFIX } from './constants'
 import type { A2ASessionConfig } from './types'
-
-const PREFIX = '[GrafanaAssistant]'
 
 export async function sendTaskCancel(
   config: A2ASessionConfig,
@@ -28,7 +27,7 @@ export async function sendTaskCancel(
   if (!response.ok) {
     const text = await response.text().catch(() => 'Unknown error')
     log.error(
-      PREFIX,
+      LOG_PREFIX,
       `Failed to cancel task ${taskId} (${response.status}):`,
       text
     )

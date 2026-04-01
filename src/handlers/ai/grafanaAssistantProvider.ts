@@ -5,7 +5,8 @@ import type {
 import log from 'electron-log/main'
 
 import { sendTaskCancel } from './a2a/cancelTask'
-import { getA2AConfig } from './a2a/config'
+import { type A2AConfig, getA2AConfig } from './a2a/config'
+import { LOG_PREFIX } from './a2a/constants'
 import {
   buildA2ARequest,
   extractChatId,
@@ -16,8 +17,6 @@ import { sendRemoteToolResponse } from './a2a/remoteToolResponse'
 import { createA2AStream } from './a2a/stream'
 import type { ActiveA2ASession } from './a2a/types'
 import { getToolDefinitionsForA2A } from './tools'
-
-const PREFIX = '[GrafanaAssistant]'
 
 /** Active SSE sessions keyed by chatId */
 const activeSessions = new Map<string, ActiveA2ASession>()
@@ -44,15 +43,16 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     const toolResults = extractToolResults(options.prompt)
 
     if (existingSession && toolResults.length > 0) {
-      log.info(PREFIX, `doStream (continuation) chatId=${chatId}`)
+      log.info(LOG_PREFIX, `doStream (continuation) chatId=${chatId}`)
       return this.handleToolResultContinuation(
+        chatId,
         existingSession,
         toolResults,
         options.abortSignal
       )
     }
 
-    log.info(PREFIX, `doStream (new message) chatId=${chatId}`)
+    log.info(LOG_PREFIX, `doStream (new message) chatId=${chatId}`)
     return this.handleNewMessage(chatId, options)
   }
 
@@ -84,34 +84,18 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       getToolDefinitionsForA2A()
     )
     log.info(
-      PREFIX,
+      LOG_PREFIX,
       `Sending A2A request for chatId=${chatId}, contextId=${contextId}`
     )
 
-    const response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
-        Authorization: `Bearer ${config.bearerToken}`,
-        'X-A2A-Extensions': config.remoteToolExtension,
-        'X-App-Source': 'k6-studio',
-      },
-      body: JSON.stringify(body),
-      signal: sessionAbortController.signal,
-    })
-
-    if (!response.ok) {
-      const text = await response.text().catch(() => 'Unknown error')
-      throw new Error(`A2A request failed (${response.status}): ${text}`)
-    }
-
-    if (!response.body) {
-      throw new Error('A2A response has no body')
-    }
+    const reader = await fetchA2AReader(
+      config,
+      body,
+      sessionAbortController.signal
+    )
 
     const session: ActiveA2ASession = {
-      reader: response.body.getReader(),
+      reader,
       contextId,
       taskId: undefined,
       sessionAbortController,
@@ -133,6 +117,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
   }
 
   private async handleToolResultContinuation(
+    chatId: string,
     session: ActiveA2ASession,
     toolResults: Array<{
       toolCallId: string
@@ -155,7 +140,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       const pending = session.pendingToolRequests.get(result.toolCallId)
       if (!pending) {
         log.warn(
-          PREFIX,
+          LOG_PREFIX,
           `No pending request for toolCallId=${result.toolCallId}. Skipping.`
         )
         continue
@@ -171,19 +156,39 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       session.pendingToolRequests.delete(result.toolCallId)
     }
 
-    const chatId = findChatIdForSession(session)
     const stream = createA2AStream(session, () => cleanupSession(chatId))
     return { stream }
   }
 }
 
-function findChatIdForSession(session: ActiveA2ASession): string {
-  for (const [chatId, s] of activeSessions.entries()) {
-    if (s === session) {
-      return chatId
-    }
+async function fetchA2AReader(
+  config: A2AConfig,
+  body: Record<string, unknown>,
+  signal: AbortSignal
+): Promise<ReadableStreamDefaultReader<Uint8Array>> {
+  const response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+      Authorization: `Bearer ${config.bearerToken}`,
+      'X-A2A-Extensions': config.remoteToolExtension,
+      'X-App-Source': 'k6-studio',
+    },
+    body: JSON.stringify(body),
+    signal,
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Unknown error')
+    throw new Error(`A2A request failed (${response.status}): ${text}`)
   }
-  return 'unknown'
+
+  if (!response.body) {
+    throw new Error('A2A response has no body')
+  }
+
+  return response.body.getReader()
 }
 
 function cleanupSession(chatId: string): void {
@@ -194,7 +199,7 @@ function cleanupSession(chatId: string): void {
 
   if (session.taskId && session.sessionAbortController.signal.aborted) {
     sendTaskCancel(session.config, session.taskId).catch((error) => {
-      log.error(PREFIX, 'Failed to cancel A2A task:', error)
+      log.error(LOG_PREFIX, 'Failed to cancel A2A task:', error)
     })
   }
 
