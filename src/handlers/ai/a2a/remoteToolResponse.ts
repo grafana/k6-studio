@@ -1,8 +1,4 @@
-import log from 'electron-log/main'
-
 import type { A2ASessionConfig } from './types'
-
-const PREFIX = '[GrafanaAssistant]'
 
 export async function sendRemoteToolResponse(
   config: A2ASessionConfig,
@@ -26,10 +22,8 @@ export async function sendRemoteToolResponse(
 
   if (!response.ok) {
     const text = await response.text().catch(() => 'Unknown error')
-    log.error(
-      PREFIX,
-      `Failed to send remote tool response (${response.status}):`,
-      text
+    throw new Error(
+      `Failed to send remote tool response (${response.status}): ${text}`
     )
   }
 }
