@@ -80,7 +80,8 @@ export function LocatorText({ locator }: LocatorComponentProps) {
     case 'role':
       return (
         <>
-          <strong>{locator.role}</strong> {quote(locator.name)}
+          <strong>{locator.role}</strong>{' '}
+          {locator.name?.value ? quote(locator.name.value) : ''}
         </>
       )
 

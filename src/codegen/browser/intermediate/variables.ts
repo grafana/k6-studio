@@ -53,6 +53,8 @@ function substituteExpression(
     case 'NullLiteral':
     case 'NewPageExpression':
     case 'ClickOptionsExpression':
+    case 'WaitForOptionsExpression':
+    case 'RoleLocatorOptionsExpression':
       return node
 
     case 'ClosePageExpression':
@@ -71,8 +73,10 @@ function substituteExpression(
       return {
         type: 'NewRoleLocatorExpression',
         role: substituteExpression(node.role, substitutions),
-        name: substituteExpression(node.name, substitutions),
         page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewLabelLocatorExpression':
@@ -186,9 +190,6 @@ function substituteExpression(
           ? substituteExpression(node.options, substitutions)
           : null,
       }
-
-    case 'WaitForOptionsExpression':
-      return node
 
     case 'WaitForNavigationExpression':
       return {

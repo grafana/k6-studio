@@ -1,4 +1,6 @@
-import { Flex, TextField } from '@radix-ui/themes'
+import { css } from '@emotion/react'
+import { Flex, IconButton, TextField, Tooltip } from '@radix-ui/themes'
+import { CaseSensitiveIcon } from 'lucide-react'
 
 import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
@@ -48,7 +50,7 @@ export function GetByRoleForm({
           value={locator.role}
           options={ROLE_OPTIONS}
           onChange={(value) => {
-            onChange({ ...locator, role: value })
+            onChange({ ...locator, role: value.trim() })
             onBlur?.()
           }}
         />
@@ -68,13 +70,42 @@ export function GetByRoleForm({
             const value = e.target.value
             onChange({
               ...locator,
-              options: value.trim()
-                ? { ...locator.options, name: value }
-                : locator.options,
+              options: {
+                ...locator.options,
+                name: value.trim() ? value : undefined,
+              },
             })
           }}
           onBlur={onBlur}
-        />
+        >
+          <TextField.Slot side="right">
+            <Tooltip content="Match case">
+              <IconButton
+                size="1"
+                disabled={!locator.options?.name}
+                aria-label="Toggle case sensitivity"
+                aria-pressed={locator.options?.exact ? 'true' : 'false'}
+                variant="ghost"
+                color={locator.options?.exact ? 'orange' : 'gray'}
+                onClick={() => {
+                  onChange({
+                    ...locator,
+                    options: {
+                      ...locator.options,
+                      exact: !locator.options?.exact,
+                    },
+                  })
+                  onBlur?.()
+                }}
+                css={css`
+                  margin: 0;
+                `}
+              >
+                <CaseSensitiveIcon />
+              </IconButton>
+            </Tooltip>
+          </TextField.Slot>
+        </TextField.Root>
       </FieldGroup>
     </Flex>
   )

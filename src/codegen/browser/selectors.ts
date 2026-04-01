@@ -22,7 +22,7 @@ function getRoleSelector(
   return {
     type: 'role',
     role: selectors.role.role,
-    name: selectors.role.name,
+    name: selectors.role.name ? { value: selectors.role.name } : undefined,
   }
 }
 
@@ -122,7 +122,12 @@ export function toNodeSelector(locator: ActionLocator): NodeSelector {
       return {
         type: 'role',
         role: locator.role,
-        name: locator.options?.name ?? '',
+        name: locator.options?.name
+          ? {
+              value: locator.options.name,
+              exact: locator.options.exact,
+            }
+          : undefined,
       }
 
     case 'testid':

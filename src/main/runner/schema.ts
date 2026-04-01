@@ -24,6 +24,7 @@ const GetByRoleLocatorSchema = z.object({
   options: z
     .object({
       name: z.string().optional(),
+      exact: z.boolean().optional(),
     })
     .optional(),
 })

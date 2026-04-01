@@ -32,7 +32,7 @@ function findElementsBySelector(selector: NodeSelector): Element[] {
 
     case 'role':
       return queryAllByRole(document.body, selector.role, {
-        name: selector.name,
+        name: selector.name?.value,
       })
 
     case 'alt':
