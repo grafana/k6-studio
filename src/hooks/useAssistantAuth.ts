@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
@@ -6,17 +6,20 @@ import { queryClient } from '@/utils/query'
 
 const QUERY_KEY = ['assistant-auth-status'] as const
 
+export function invalidateAssistantAuthStatus() {
+  return queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+}
+
 export function useAssistantAuthStatus() {
-  const qc = useQueryClient()
   const isProfileOpen = useStudioUIStore((s) => s.isProfileDialogOpen)
   const wasOpen = useRef(false)
 
   useEffect(() => {
     if (wasOpen.current && !isProfileOpen) {
-      void qc.invalidateQueries({ queryKey: QUERY_KEY })
+      void invalidateAssistantAuthStatus()
     }
     wasOpen.current = isProfileOpen
-  }, [isProfileOpen, qc])
+  }, [isProfileOpen])
 
   return useQuery({
     queryKey: QUERY_KEY,
@@ -25,7 +28,7 @@ export function useAssistantAuthStatus() {
 }
 
 export function useAssistantSignIn() {
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async () => {
       const result = await window.studio.ai.assistantSignIn()
 
@@ -39,23 +42,25 @@ export function useAssistantSignIn() {
     },
     onSuccess: (result) => {
       if (result.type === 'authenticated') {
-        return queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+        return invalidateAssistantAuthStatus()
       }
     },
   })
-}
 
-export function cancelAssistantSignIn() {
-  return window.studio.ai.assistantCancelSignIn()
+  return {
+    ...mutation,
+    cancel: () => {
+      mutation.reset()
+      return window.studio.ai.assistantCancelSignIn()
+    },
+  }
 }
 
 export function useAssistantSignOut() {
   return useMutation({
     mutationFn: window.studio.ai.assistantSignOut,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: QUERY_KEY,
-      })
+      await invalidateAssistantAuthStatus()
     },
   })
 }

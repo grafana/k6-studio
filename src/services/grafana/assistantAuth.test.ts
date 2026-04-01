@@ -5,6 +5,7 @@ import {
   CallbackResult,
   exchangeAssistantCode,
   handleCallbackRequest,
+  startCallbackServer,
 } from './assistantAuth'
 
 describe('exchangeAssistantCode', () => {
@@ -90,82 +91,146 @@ describe('exchangeAssistantCode', () => {
       exchangeAssistantCode('https://api.grafana.net', 'code', 'verifier')
     ).rejects.toThrow()
   })
+
+  it('rejects when signal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+
+    mockFetch.mockImplementation((_url: string, init: RequestInit) => {
+      if (init.signal?.aborted) {
+        return Promise.reject(
+          new DOMException('The operation was aborted.', 'AbortError')
+        )
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(validResponse),
+      })
+    })
+
+    await expect(
+      exchangeAssistantCode(
+        'https://api.grafana.net',
+        'code',
+        'verifier',
+        controller.signal
+      )
+    ).rejects.toThrow('The operation was aborted.')
+  })
+
+  it('passes signal to fetch so it can be aborted externally', async () => {
+    const controller = new AbortController()
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(validResponse),
+    })
+
+    await exchangeAssistantCode(
+      'https://api.grafana.net',
+      'code',
+      'verifier',
+      controller.signal
+    )
+
+    const fetchOptions = mockFetch.mock.calls[0]![1] as RequestInit
+    // Signal should respond to the external controller, not just a timeout
+    controller.abort()
+    expect(fetchOptions.signal?.aborted).toBe(true)
+  })
 })
 
 describe('handleCallbackRequest', () => {
-  function createMockReqRes(url: string) {
+  function createMockServer() {
+    const server = new http.Server()
+    return server
+  }
+
+  function emitRequest(server: http.Server, url: string) {
     const req = { url } as http.IncomingMessage
     const writeHead = vi.fn()
-    const end = vi.fn()
+    const end = vi.fn((_data?: unknown, cb?: () => void) => {
+      cb?.()
+    })
     const res = { writeHead, end } as unknown as http.ServerResponse
-    return { req, res, writeHead, end }
+
+    server.emit('request', req, res)
+
+    return { writeHead, end }
   }
 
   it('returns 404 for non-/callback paths', () => {
-    const { req, res, writeHead, end } = createMockReqRes('/favicon.ico')
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+    const server = createMockServer()
+    void handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    const { writeHead, end } = emitRequest(server, '/favicon.ico')
 
     expect(writeHead).toHaveBeenCalledWith(404)
     expect(end).toHaveBeenCalled()
-    expect(resolve).not.toHaveBeenCalled()
-    expect(reject).not.toHaveBeenCalled()
-    expect(closeServer).not.toHaveBeenCalled()
   })
 
-  it('resolves with callback data on success', () => {
-    const { req, res } = createMockReqRes(
+  it('resolves with callback data on success', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
+
+    emitRequest(
+      server,
       '/callback?code=abc&state=xyz&endpoint=https://api.grafana.net&tenant=t1&email=a@b.com'
     )
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
-
-    expect(resolve).toHaveBeenCalledWith({
+    await expect(result).resolves.toEqual({
       code: 'abc',
       state: 'xyz',
       endpoint: 'https://api.grafana.net',
       tenant: 't1',
       email: 'a@b.com',
     } satisfies CallbackResult)
-    expect(reject).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
   })
 
-  it('rejects with error when error param is present', () => {
-    const { req, res } = createMockReqRes(
-      '/callback?error=user_cancelled&state=xyz'
-    )
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+  it('rejects with error when error param is present', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    emitRequest(server, '/callback?error=user_cancelled&state=xyz')
 
-    expect(reject).toHaveBeenCalledWith(
-      new Error('Authorization denied: user_cancelled')
-    )
-    expect(resolve).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
+    await expect(result).rejects.toThrow('Authorization denied: user_cancelled')
   })
 
-  it('rejects when code or state is missing', () => {
-    const { req, res } = createMockReqRes('/callback?code=abc')
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+  it('rejects when code or state is missing', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    emitRequest(server, '/callback?code=abc')
 
-    expect(reject).toHaveBeenCalledWith(
-      new Error('Missing code or state in auth callback')
+    await expect(result).rejects.toThrow(
+      'Missing code or state in auth callback'
     )
-    expect(resolve).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
+  })
+})
+
+describe('startCallbackServer', () => {
+  it('resolves with the correct port when the first port is occupied', async () => {
+    const CALLBACK_PORT_MIN = 54321
+
+    // Occupy the first port with a dummy server
+    const blocker = http.createServer()
+    await new Promise<void>((resolve) => {
+      blocker.listen(CALLBACK_PORT_MIN, '127.0.0.1', resolve)
+    })
+
+    try {
+      const abortController = new AbortController()
+      const { port, result } = await startCallbackServer(abortController.signal)
+
+      expect(port).not.toBe(CALLBACK_PORT_MIN)
+      expect(port).toBeGreaterThan(CALLBACK_PORT_MIN)
+
+      // Catch the expected rejection from aborting the callback promise
+      const callbackPromise = result.catch(() => {})
+      abortController.abort()
+      await callbackPromise
+    } finally {
+      blocker.close()
+    }
   })
 })

@@ -2,6 +2,7 @@ import { app, ipcMain, shell } from 'electron'
 import log from 'electron-log/main'
 
 import { getProfileData } from '@/handlers/auth/fs'
+import { isEncryptionAvailable } from '@/main/encryption'
 import {
   buildAssistantAuthUrl,
   exchangeAssistantCode,
@@ -31,6 +32,21 @@ export interface AssistantAuthStatus {
   stackName: string | null
 }
 
+function isAllowedEndpoint(endpoint: string, stackUrl: string): boolean {
+  try {
+    const endpointHost = new URL(endpoint).hostname
+    const stackHost = new URL(stackUrl).hostname
+
+    return (
+      endpointHost === stackHost ||
+      endpointHost.endsWith('.grafana.net') ||
+      endpointHost.endsWith('.grafana-dev.net')
+    )
+  } catch {
+    return false
+  }
+}
+
 let pendingAbortController: AbortController | null = null
 
 async function performSignIn(
@@ -44,9 +60,7 @@ async function performSignIn(
     const { codeVerifier, codeChallenge } = generatePKCE()
     const state = generateState()
 
-    const { port, waitForCallback } = await startCallbackServer(
-      abortController.signal
-    )
+    const { port, result } = await startCallbackServer(abortController.signal)
 
     const authUrl = buildAssistantAuthUrl(stackUrl, codeChallenge, state, port)
 
@@ -59,7 +73,7 @@ async function performSignIn(
     )
     void shell.openExternal(authUrl)
 
-    const callback = await waitForCallback()
+    const callback = await result
     app.focus({ steal: true })
 
     if (callback.state !== state) {
@@ -77,11 +91,28 @@ async function performSignIn(
       }
     }
 
+    if (!isAllowedEndpoint(callback.endpoint, stackUrl)) {
+      log.error(
+        PREFIX,
+        'Callback endpoint does not match expected stack URL:',
+        callback.endpoint
+      )
+      return {
+        type: 'error',
+        error: 'Unexpected API endpoint received from auth callback.',
+      }
+    }
+
     const tokenResponse = await exchangeAssistantCode(
       callback.endpoint,
       callback.code,
-      codeVerifier
+      codeVerifier,
+      abortController.signal
     )
+
+    if (abortController.signal.aborted) {
+      return { type: 'aborted' }
+    }
 
     await saveAssistantTokens(stackId, {
       accessToken: tokenResponse.token,
@@ -125,6 +156,14 @@ export function initialize() {
 
       if (!stack) {
         return { type: 'error', error: 'Current stack not found in profile.' }
+      }
+
+      if (!isEncryptionAvailable()) {
+        return {
+          type: 'error',
+          error:
+            'Encryption is not available on this system. Assistant authentication requires secure storage for tokens.',
+        }
       }
 
       if (pendingAbortController) {

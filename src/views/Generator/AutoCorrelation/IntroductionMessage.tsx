@@ -5,16 +5,18 @@ import {
   KeyIcon,
   LinkIcon,
   UnlinkIcon,
-  UserRoundIcon,
   WandSparkles,
 } from 'lucide-react'
+import { useState } from 'react'
 
 import grotIllustration from '@/assets/grot-magic.svg'
+import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import {
-  cancelAssistantSignIn,
   useAssistantAuthStatus,
   useAssistantSignIn,
   useAssistantSignOut,
+  invalidateAssistantAuthStatus,
 } from '@/hooks/useAssistantAuth'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useSettings } from '@/hooks/useSettings'
@@ -70,42 +72,33 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
 }
 
 function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
-  const proxyStatus = useProxyStatus()
   const { data: authStatus, isLoading } = useAssistantAuthStatus()
-  const {
-    mutate: signIn,
-    isPending: isSigningIn,
-    error: signInError,
-  } = useAssistantSignIn()
-  const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
-  const openProfileDialog = useStudioUIStore((state) => state.openProfileDialog)
+  const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
 
-  const isAuthenticated = authStatus?.authenticated ?? false
   const isSignedIn = !!authStatus?.stackId
+
+  if (!isSignedIn && isCloudSigningIn) {
+    return (
+      <Flex direction="column" align="center" justify="center" height="100%">
+        <GrafanaCloudSignIn
+          onSignIn={() => {
+            setIsCloudSigningIn(false)
+            void invalidateAssistantAuthStatus()
+          }}
+          onAbort={() => setIsCloudSigningIn(false)}
+        />
+      </Flex>
+    )
+  }
 
   return (
     <IntroLayout subtitle="Powered by Grafana Assistant">
       <AssistantAuthStatus
+        authStatus={authStatus}
         isLoading={isLoading}
-        isSignedIn={isSignedIn}
-        isAuthenticated={isAuthenticated}
-        isSigningIn={isSigningIn}
-        isSigningOut={isSigningOut}
-        proxyStatus={proxyStatus}
         onStart={onStart}
-        onSignIn={() => signIn()}
-        onCancelSignIn={cancelAssistantSignIn}
-        onSignOut={signOut}
-        onOpenProfile={openProfileDialog}
+        onSignIn={() => setIsCloudSigningIn(true)}
       />
-      {signInError && (
-        <Callout.Root color="red" size="1">
-          <Callout.Icon>
-            <AlertTriangleIcon size={16} />
-          </Callout.Icon>
-          <Callout.Text>{signInError.message}</Callout.Text>
-        </Callout.Root>
-      )}
       <Text size="1" color="gray" mt="1">
         This feature is in public preview and subject to change.
       </Text>
@@ -114,32 +107,30 @@ function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
 }
 
 interface AssistantAuthStatusProps {
+  authStatus: ReturnType<typeof useAssistantAuthStatus>['data']
   isLoading: boolean
-  isSignedIn: boolean
-  isAuthenticated: boolean
-  isSigningIn: boolean
-  isSigningOut: boolean
-  proxyStatus: string
   onStart: () => void
   onSignIn: () => void
-  onCancelSignIn: () => void
-  onSignOut: () => void
-  onOpenProfile: () => void
 }
 
 function AssistantAuthStatus({
+  authStatus,
   isLoading,
-  isSignedIn,
-  isAuthenticated,
-  isSigningIn,
-  isSigningOut,
-  proxyStatus,
   onStart,
   onSignIn,
-  onCancelSignIn,
-  onSignOut,
-  onOpenProfile,
 }: AssistantAuthStatusProps) {
+  const {
+    mutate: signIn,
+    isPending: isSigningIn,
+    error: signInError,
+    cancel: cancelSignIn,
+  } = useAssistantSignIn()
+  const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
+  const proxyStatus = useProxyStatus()
+
+  const isAuthenticated = authStatus?.authenticated ?? false
+  const isSignedIn = !!authStatus?.stackId
+
   if (isLoading) {
     return (
       <Text size="2" color="gray">
@@ -154,8 +145,8 @@ function AssistantAuthStatus({
         <Text size="2" color="gray">
           Sign in to Grafana Cloud to use the Grafana Assistant.
         </Text>
-        <Button size="3" onClick={onOpenProfile}>
-          <UserRoundIcon />
+        <Button size="3" onClick={onSignIn}>
+          <GrafanaIcon />
           Sign in to Grafana Cloud
         </Button>
       </>
@@ -164,22 +155,32 @@ function AssistantAuthStatus({
 
   if (!isAuthenticated) {
     return (
-      <Flex align="center" gap="2">
-        <Button size="3" onClick={onSignIn} disabled={isSigningIn}>
-          <LinkIcon />
-          {isSigningIn ? 'Connecting...' : 'Connect to Grafana Assistant'}
-        </Button>
-        {isSigningIn && (
-          <Button
-            variant="outline"
-            size="3"
-            onClick={onCancelSignIn}
-            aria-label="Cancel sign in"
-          >
-            Cancel
+      <>
+        <Flex align="center" gap="2">
+          <Button size="3" onClick={() => signIn()} disabled={isSigningIn}>
+            <LinkIcon />
+            {isSigningIn ? 'Connecting...' : 'Connect to Grafana Assistant'}
           </Button>
+          {isSigningIn && (
+            <Button
+              variant="outline"
+              size="3"
+              onClick={cancelSignIn}
+              aria-label="Cancel sign in"
+            >
+              Cancel
+            </Button>
+          )}
+        </Flex>
+        {signInError && (
+          <Callout.Root color="red" size="1">
+            <Callout.Icon>
+              <AlertTriangleIcon size={16} />
+            </Callout.Icon>
+            <Callout.Text>{signInError.message}</Callout.Text>
+          </Callout.Root>
         )}
-      </Flex>
+      </>
     )
   }
 
@@ -190,7 +191,7 @@ function AssistantAuthStatus({
         variant="ghost"
         size="1"
         color="red"
-        onClick={onSignOut}
+        onClick={() => signOut()}
         disabled={isSigningOut}
       >
         <UnlinkIcon size={14} />

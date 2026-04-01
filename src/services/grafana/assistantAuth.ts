@@ -66,27 +66,44 @@ const ExchangeApiResponseSchema = z.object({
 export async function exchangeAssistantCode(
   apiEndpoint: string,
   code: string,
-  codeVerifier: string
+  codeVerifier: string,
+  signal?: AbortSignal
 ): Promise<AssistantTokenResponse> {
   const url = `${normalizeStackUrl(apiEndpoint)}/api/cli/v1/auth/exchange`
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, code_verifier: codeVerifier }),
-    signal: AbortSignal.timeout(30_000),
-  })
+  const timeoutController = new AbortController()
+  const timeout = setTimeout(() => timeoutController.abort(), 30_000)
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error')
-    throw new Error(
-      `Assistant auth exchange failed (${response.status}): ${text}`
-    )
+  if (signal) {
+    signal.addEventListener('abort', () => timeoutController.abort(), {
+      once: true,
+    })
+    if (signal.aborted) {
+      timeoutController.abort()
+    }
   }
 
-  const body = ExchangeApiResponseSchema.parse(await response.json())
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, code_verifier: codeVerifier }),
+      signal: timeoutController.signal,
+    })
 
-  return body.data
+    if (!response.ok) {
+      const text = await response.text().catch(() => 'Unknown error')
+      throw new Error(
+        `Assistant auth exchange failed (${response.status}): ${text}`
+      )
+    }
+
+    const body = ExchangeApiResponseSchema.parse(await response.json())
+
+    return body.data
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 export interface CallbackResult {
@@ -102,96 +119,100 @@ export interface CallbackResult {
  * The server listens on a random port in the 54321-54399 range and
  * shuts down after receiving the callback or when the signal is aborted.
  */
-export function startCallbackServer(
+export async function startCallbackServer(
   signal: AbortSignal
-): Promise<{ port: number; waitForCallback: () => Promise<CallbackResult> }> {
-  return new Promise((resolve, reject) => {
-    const server = http.createServer({ keepAliveTimeout: 0 })
+): Promise<{ port: number; result: Promise<CallbackResult> }> {
+  const server = http.createServer({ keepAliveTimeout: 0 })
 
-    function closeServer() {
-      server.close()
-      server.closeAllConnections()
+  function closeServer() {
+    if (server.address() === null) {
+      return
     }
 
-    const callbackPromise = new Promise<CallbackResult>(
-      (resolveCallback, rejectCallback) => {
-        signal.addEventListener(
-          'abort',
-          () => {
-            closeServer()
-            rejectCallback(new Error('Auth flow aborted'))
-          },
-          { once: true }
-        )
+    server.close()
+    server.closeAllConnections()
+  }
 
-        server.on('request', (req, res) =>
-          handleCallbackRequest(
-            req,
-            res,
-            closeServer,
-            resolveCallback,
-            rejectCallback
-          )
-        )
+  // Not awaited because these will occur sometime in the future
+  // and should be listened to by the caller of this function
+  const aborted = rejectOnAbort(signal)
+  const result = handleCallbackRequest(server)
+
+  const port = await listenOnAvailablePort(server)
+
+  return {
+    port,
+    result: Promise.race([result, aborted]).finally(closeServer),
+  }
+}
+
+function rejectOnAbort(signal: AbortSignal) {
+  // Typed as `never` to guarantee it will never be resolved and
+  // can be ruled out during type inference of `Promise.race`.
+  const { promise, reject } = Promise.withResolvers<never>()
+
+  function abort() {
+    reject(new Error('Auth flow aborted'))
+  }
+
+  if (signal.aborted) {
+    abort()
+
+    return promise
+  }
+
+  signal.addEventListener('abort', abort)
+
+  return promise
+}
+
+export function handleCallbackRequest(server: http.Server) {
+  const { promise, resolve, reject } = Promise.withResolvers<CallbackResult>()
+
+  server.on('request', (req, res) => {
+    const url = new URL(req.url ?? '/', 'http://localhost')
+
+    if (url.pathname !== '/callback') {
+      res.writeHead(404)
+      res.end()
+      return
+    }
+
+    const code = url.searchParams.get('code')
+    const state = url.searchParams.get('state')
+    const error = url.searchParams.get('error')
+    const endpoint = url.searchParams.get('endpoint')
+    const tenant = url.searchParams.get('tenant')
+    const email = url.searchParams.get('email')
+
+    const isSuccess = !error && code && state
+
+    res.writeHead(200, { 'Content-Type': 'text/html' })
+    res.end(isSuccess ? successPage() : cancelledPage(), () => {
+      if (error) {
+        reject(new Error(`Authorization denied: ${error}`))
+      } else if (code && state) {
+        resolve({ code, state, endpoint, tenant, email })
+      } else {
+        reject(new Error('Missing code or state in auth callback'))
       }
-    )
-
-    listenOnAvailablePort(server, resolve, reject, callbackPromise)
+    })
   })
+
+  return promise
 }
 
-export function handleCallbackRequest(
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  closeServer: () => void,
-  resolveCallback: (result: CallbackResult) => void,
-  rejectCallback: (error: Error) => void
-) {
-  const url = new URL(req.url ?? '/', 'http://localhost')
+function listenOnAvailablePort(server: http.Server) {
+  const { promise, resolve, reject } = Promise.withResolvers<number>()
 
-  if (url.pathname !== '/callback') {
-    res.writeHead(404)
-    res.end()
-    return
-  }
-
-  const code = url.searchParams.get('code')
-  const state = url.searchParams.get('state')
-  const error = url.searchParams.get('error')
-  const endpoint = url.searchParams.get('endpoint')
-  const tenant = url.searchParams.get('tenant')
-  const email = url.searchParams.get('email')
-
-  const isSuccess = !error && code && state
-
-  res.writeHead(200, { 'Content-Type': 'text/html' })
-  res.end(isSuccess ? successPage() : cancelledPage())
-
-  if (error) {
-    rejectCallback(new Error(`Authorization denied: ${error}`))
-  } else if (code && state) {
-    resolveCallback({ code, state, endpoint, tenant, email })
-  } else {
-    rejectCallback(new Error('Missing code or state in auth callback'))
-  }
-
-  closeServer()
-}
-
-function listenOnAvailablePort(
-  server: http.Server,
-  resolve: (value: {
-    port: number
-    waitForCallback: () => Promise<CallbackResult>
-  }) => void,
-  reject: (error: Error) => void,
-  callbackPromise: Promise<CallbackResult>
-) {
   const tryPort = (port: number) => {
     if (port > CALLBACK_PORT_MAX) {
       reject(new Error('No available port for OAuth callback server'))
+
       return
     }
+
+    server.removeAllListeners('listening')
 
     server.once('error', () => {
       tryPort(port + 1)
@@ -199,14 +220,14 @@ function listenOnAvailablePort(
 
     server.listen(port, '127.0.0.1', () => {
       server.removeAllListeners('error')
-      resolve({
-        port,
-        waitForCallback: () => callbackPromise,
-      })
+
+      resolve(port)
     })
   }
 
   tryPort(CALLBACK_PORT_MIN)
+
+  return promise
 }
 
 function normalizeStackUrl(stackUrl: string): string {
