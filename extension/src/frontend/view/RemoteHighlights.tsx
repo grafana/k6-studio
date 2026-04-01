@@ -1,47 +1,23 @@
-import { css } from '@emotion/react'
-import { ComponentProps, forwardRef } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Overlay } from './Overlay'
-import { useHighlightedElements } from './RemoteHighlights.hooks'
-import { Bounds } from './types'
+import { ElementHighlights } from '@/components/Browser/ElementHighlights'
+import { NodeSelector } from '@/schemas/selectors'
 
-interface ElementHighlightProps extends ComponentProps<'div'> {
-  bounds: Bounds
-}
-
-const ElementOutline = forwardRef<HTMLDivElement, ElementHighlightProps>(
-  function ElementOutline(props, ref) {
-    return (
-      <Overlay
-        ref={ref}
-        css={css`
-          z-index: var(--studio-layer-0);
-          border: 2px solid var(--gray-6);
-          outline: 2px solid var(--gray-12);
-          outline-offset: 2px;
-          background-color: var(--blue-a3);
-        `}
-        {...props}
-      />
-    )
-  }
-)
+import { useStudioClient } from './StudioClientProvider'
 
 /**
  * Highlights elements when hovering over selectors inside k6 Studio.
  */
 export function RemoteHighlights() {
-  const highlights = useHighlightedElements()
+  const client = useStudioClient()
 
-  if (highlights === null) {
-    return null
-  }
+  const [selector, setSelector] = useState<NodeSelector | null>(null)
 
-  return (
-    <>
-      {highlights.map((highlight) => {
-        return <ElementOutline key={highlight.id} bounds={highlight.bounds} />
-      })}
-    </>
-  )
+  useEffect(() => {
+    return client.on('highlight-elements', ({ data }) => {
+      setSelector(data.selector)
+    })
+  }, [client])
+
+  return <ElementHighlights element={document.body} selector={selector} />
 }

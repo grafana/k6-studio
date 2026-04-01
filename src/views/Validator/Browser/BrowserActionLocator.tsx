@@ -61,10 +61,28 @@ function toNodeSelector(locator: ActionLocator): NodeSelector {
 
 interface BrowserActionLocatorProps {
   locator: ActionLocator
+  onHighlight?: (selector: NodeSelector | null) => void
 }
 
-export function BrowserActionLocator({ locator }: BrowserActionLocatorProps) {
+export function BrowserActionLocator({
+  locator,
+  onHighlight,
+}: BrowserActionLocatorProps) {
   const nodeLocator = toNodeSelector(locator)
 
-  return <Locator locator={nodeLocator} />
+  const handleHighlightChange = (highlighted: boolean) => {
+    if (!highlighted || !onHighlight) {
+      onHighlight?.(null)
+      return
+    }
+
+    onHighlight(nodeLocator)
+  }
+
+  return (
+    <Locator
+      locator={nodeLocator}
+      onHighlightChange={onHighlight ? handleHighlightChange : undefined}
+    />
+  )
 }

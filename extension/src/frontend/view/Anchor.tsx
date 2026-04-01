@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { forwardRef } from 'react'
 
-import { Position } from './types'
+import { Position } from '@/components/Browser/types'
 
 interface AnchorProps {
   position: Position
