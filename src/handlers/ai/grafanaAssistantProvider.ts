@@ -66,8 +66,8 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
 
     if (existingSession) {
       existingSession.sessionAbortController.abort()
+      cleanupSession(chatId, existingSession)
     }
-    cleanupSession(chatId)
 
     const sessionAbortController = new AbortController()
     if (options.abortSignal) {
@@ -113,7 +113,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     }
     activeSessions.set(chatId, session)
 
-    const stream = createA2AStream(session, () => cleanupSession(chatId))
+    const stream = createA2AStream(session, () => cleanupSession(chatId, session))
     return { stream }
   }
 
@@ -157,7 +157,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       session.pendingToolRequests.delete(result.toolCallId)
     }
 
-    const stream = createA2AStream(session, () => cleanupSession(chatId))
+    const stream = createA2AStream(session, () => cleanupSession(chatId, session))
     return { stream }
   }
 }
@@ -190,9 +190,14 @@ async function fetchA2AReader(
   return response.body.getReader()
 }
 
-function cleanupSession(chatId: string): void {
+function cleanupSession(chatId: string, specificSession?: ActiveA2ASession): void {
   const session = activeSessions.get(chatId)
   if (!session) {
+    return
+  }
+
+  // If a specific session was provided, only clean up if it matches the current one
+  if (specificSession && session !== specificSession) {
     return
   }
 

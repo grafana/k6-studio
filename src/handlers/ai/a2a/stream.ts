@@ -138,11 +138,13 @@ export function createA2AStream(
             return
           case 'done':
             finished = true
-            controller.enqueue(
-              result.emittedToolCalls ? FINISH_TOOL_CALLS : FINISH_STOP
-            )
+            if (result.emittedToolCalls) {
+              controller.enqueue(FINISH_TOOL_CALLS)
+            } else {
+              controller.enqueue(FINISH_STOP)
+              cleanupSession()
+            }
             controller.close()
-            cleanupSession()
             return
           case 'finish':
             finished = true
