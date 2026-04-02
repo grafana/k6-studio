@@ -162,56 +162,12 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
   }
 }
 
-// After idle, a refreshed token may not be recognized by the A2A server
-// immediately. Retry once after a short delay for this specific case.
-const PERMISSION_RETRY_DELAY_MS = 3000
-
 async function fetchA2AReader(
   config: A2AConfig,
   body: Record<string, unknown>,
   signal: AbortSignal
 ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
-  const response = await sendA2ARequest(config, body, signal)
-
-  if (response.ok) {
-    return getReaderFromResponse(response)
-  }
-
-  const text = await response.text().catch(() => 'Unknown error')
-
-  if (
-    response.status === 500 &&
-    text.includes('Permission check failed') &&
-    !signal.aborted
-  ) {
-    log.warn(
-      LOG_PREFIX,
-      `Permission check failed, retrying in ${PERMISSION_RETRY_DELAY_MS}ms`
-    )
-    await new Promise((resolve) =>
-      setTimeout(resolve, PERMISSION_RETRY_DELAY_MS)
-    )
-    const retryResponse = await sendA2ARequest(config, body, signal)
-
-    if (retryResponse.ok) {
-      return getReaderFromResponse(retryResponse)
-    }
-
-    const retryText = await retryResponse.text().catch(() => 'Unknown error')
-    throw new Error(
-      `A2A request failed (${retryResponse.status}): ${retryText}`
-    )
-  }
-
-  throw new Error(`A2A request failed (${response.status}): ${text}`)
-}
-
-function sendA2ARequest(
-  config: A2AConfig,
-  body: Record<string, unknown>,
-  signal: AbortSignal
-) {
-  return fetch(`${config.baseUrl}/agents/${config.agentId}`, {
+  const response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
     method: 'POST',
     headers: {
       ...buildA2AHeaders(config),
@@ -221,14 +177,16 @@ function sendA2ARequest(
     body: JSON.stringify(body),
     signal,
   })
-}
 
-function getReaderFromResponse(
-  response: Response
-): ReadableStreamDefaultReader<Uint8Array> {
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Unknown error')
+    throw new Error(`A2A request failed (${response.status}): ${text}`)
+  }
+
   if (!response.body) {
     throw new Error('A2A response has no body')
   }
+
   return response.body.getReader()
 }
 

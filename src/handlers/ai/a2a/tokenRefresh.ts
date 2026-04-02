@@ -9,6 +9,8 @@ import {
 } from './tokenStore'
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
+const MIN_REFRESH_DELAY_MS = 30 * 1000
+const MAX_REFRESH_RETRIES = 3
 
 const RefreshResponseSchema = z.object({
   data: z.object({
@@ -69,6 +71,57 @@ export async function refreshAndSaveTokens(
   await saveAssistantTokens(stackId, refreshedTokens)
 
   return refreshedTokens
+}
+
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+let retryCount = 0
+
+// After a token refresh, the A2A server needs time to recognize the new token.
+// If we refresh on-demand (when the old token is already expired), requests
+// fail with "Permission check failed" until the server catches up.
+// Refreshing proactively while the old token is still valid avoids this.
+export function scheduleTokenRefresh(
+  stackId: string,
+  tokens: AssistantTokenData
+) {
+  if (refreshTimer) {
+    clearTimeout(refreshTimer)
+  }
+
+  const delay = Math.max(
+    MIN_REFRESH_DELAY_MS,
+    tokens.expiresAt - REFRESH_THRESHOLD_MS - Date.now()
+  )
+
+  log.info(
+    LOG_PREFIX,
+    `Scheduled token refresh in ${Math.round(delay / 1000)}s`
+  )
+
+  refreshTimer = setTimeout(async () => {
+    refreshTimer = null
+
+    try {
+      const currentTokens = await getAssistantTokens(stackId)
+      if (!currentTokens) {
+        return
+      }
+
+      const refreshed = await refreshAndSaveTokens(stackId, currentTokens)
+      retryCount = 0
+      scheduleTokenRefresh(stackId, refreshed)
+    } catch (error) {
+      log.error(LOG_PREFIX, 'Scheduled token refresh failed:', error)
+
+      retryCount++
+      if (retryCount < MAX_REFRESH_RETRIES) {
+        scheduleTokenRefresh(stackId, tokens)
+      } else {
+        log.error(LOG_PREFIX, 'Max refresh retries reached, giving up')
+        retryCount = 0
+      }
+    }
+  }, delay)
 }
 
 export async function getValidAssistantTokens(

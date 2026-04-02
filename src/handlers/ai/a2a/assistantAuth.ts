@@ -14,8 +14,10 @@ import {
 import { AssistantAuthHandler } from '../types'
 
 import { LOG_PREFIX } from './constants'
+import { scheduleTokenRefresh } from './tokenRefresh'
 import {
   clearAssistantTokens,
+  getAssistantTokens,
   hasAssistantTokens,
   saveAssistantTokens,
 } from './tokenStore'
@@ -43,6 +45,24 @@ function isAllowedEndpoint(endpoint: string, stackUrl: string): boolean {
     )
   } catch {
     return false
+  }
+}
+
+async function initializeTokenRefreshSchedule() {
+  try {
+    const profile = await getProfileData()
+    const stackId = profile.profiles.currentStack
+
+    if (!stackId) {
+      return
+    }
+
+    const tokens = await getAssistantTokens(stackId)
+    if (tokens) {
+      scheduleTokenRefresh(stackId, tokens)
+    }
+  } catch (error) {
+    log.warn(LOG_PREFIX, 'Failed to initialize token refresh schedule:', error)
   }
 }
 
@@ -113,13 +133,16 @@ async function performSignIn(
       return { type: 'aborted' }
     }
 
-    await saveAssistantTokens(stackId, {
+    const tokens = {
       accessToken: tokenResponse.token,
       refreshToken: tokenResponse.refresh_token,
       apiEndpoint: tokenResponse.api_endpoint,
       expiresAt: new Date(tokenResponse.expires_at).getTime(),
       refreshExpiresAt: new Date(tokenResponse.refresh_expires_at).getTime(),
-    })
+    }
+
+    await saveAssistantTokens(stackId, tokens)
+    scheduleTokenRefresh(stackId, tokens)
 
     log.info(LOG_PREFIX, 'Assistant auth completed for stack', stackId)
     return { type: 'authenticated' }
@@ -141,6 +164,8 @@ async function performSignIn(
 }
 
 export function initialize() {
+  void initializeTokenRefreshSchedule()
+
   ipcMain.handle(
     AssistantAuthHandler.SignIn,
     async (): Promise<AssistantAuthResult> => {
