@@ -1,5 +1,4 @@
-import { ipcMain, dialog } from 'electron'
-import { copyFile } from 'fs/promises'
+import { ipcMain } from 'electron'
 import path from 'path'
 
 import { trackEvent } from '@/services/usageTracking'
@@ -34,37 +33,4 @@ export function initialize() {
       return path.join(browserWindow.workspace.paths.recordings, fileName)
     }
   )
-
-  ipcMain.handle(HarHandler.ImportFile, async (event) => {
-    console.info(`${HarHandler.ImportFile} event received`)
-
-    const browserWindow = browserWindowFromEvent(event)
-
-    const dialogResult = await dialog.showOpenDialog(browserWindow, {
-      message: 'Import HAR file',
-      properties: ['openFile'],
-      defaultPath: browserWindow.workspace.paths.recordings,
-      filters: [{ name: 'HAR', extensions: ['har'] }],
-    })
-
-    const filePath = dialogResult.filePaths[0]
-
-    if (dialogResult.canceled || !filePath) {
-      return
-    }
-
-    await copyFile(
-      filePath,
-      path.join(
-        browserWindow.workspace.paths.recordings,
-        path.basename(filePath)
-      )
-    )
-
-    trackEvent({
-      event: UsageEventName.RecordingImported,
-    })
-
-    return path.basename(filePath)
-  })
 }

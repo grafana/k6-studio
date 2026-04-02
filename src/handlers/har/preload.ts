@@ -11,9 +11,3 @@ export function saveFile(data: RecordingData, prefix: string) {
     prefix
   ) as Promise<string>
 }
-
-export function importFile() {
-  return ipcRenderer.invoke(HarHandler.ImportFile) as Promise<
-    string | undefined
-  >
-}

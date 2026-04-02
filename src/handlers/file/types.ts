@@ -8,6 +8,7 @@ import { JsonObject } from '@/utils/json'
 export enum FileHandler {
   Save = 'file:save',
   Open = 'file:open',
+  PickOpenFile = 'file:pick-open',
   GetTempPath = 'file:get-temp-path',
   ListDirectory = 'file:list-directory',
   CreateDirectory = 'file:create-directory',

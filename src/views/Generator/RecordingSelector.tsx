@@ -1,9 +1,10 @@
 import { css } from '@emotion/react'
 import { Flex, IconButton, Select, Text, Tooltip } from '@radix-ui/themes'
 import log from 'electron-log/renderer'
-import { AlertTriangleIcon, PlusIcon } from 'lucide-react'
+import { AlertTriangleIcon, FolderOpenIcon } from 'lucide-react'
 import * as pathe from 'pathe'
 
+import { UsageEventName } from '@/services/usageTracking/types'
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
@@ -33,7 +34,7 @@ export function RecordingSelector({
   const isRecordingMissing =
     selectedRecording === undefined && recordingPath !== ''
 
-  const handleOpen = async (filePath: string) => {
+  const handleOpen = async (filePath: string): Promise<boolean> => {
     try {
       const result = await window.studio.file.open(filePath)
 
@@ -43,25 +44,35 @@ export function RecordingSelector({
 
       setRecording(result.data.requests, filePath)
       onChangeRecording?.()
+      return true
     } catch (error) {
       showToast({
         title: 'Failed to open recording',
         status: 'error',
       })
       log.error(error)
+      return false
     }
   }
 
-  const handleImport = async () => {
+  const handlePickFromDisk = async () => {
     try {
-      const filePath = await window.studio.har.importFile()
+      const filePath = await window.studio.file.pickOpenFile()
 
-      if (!filePath) return
+      if (filePath === null) {
+        return
+      }
 
-      await handleOpen(filePath)
+      const opened = await handleOpen(filePath)
+
+      if (opened) {
+        window.studio.app.trackEvent({
+          event: UsageEventName.RecordingImported,
+        })
+      }
     } catch (error) {
       showToast({
-        title: 'Failed to import recording',
+        title: 'Failed to open recording',
         status: 'error',
       })
       log.error(error)
@@ -111,13 +122,11 @@ export function RecordingSelector({
           ))}
         </Select.Content>
       </Select.Root>
-      {!compact && (
-        <Tooltip content="Import recording">
-          <IconButton variant="ghost" color="gray" onClick={handleImport}>
-            <PlusIcon />
-          </IconButton>
-        </Tooltip>
-      )}
+      <Tooltip content="Open HAR from disk">
+        <IconButton variant="ghost" color="gray" onClick={handlePickFromDisk}>
+          <FolderOpenIcon />
+        </IconButton>
+      </Tooltip>
     </Flex>
   )
 }

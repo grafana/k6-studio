@@ -32,6 +32,10 @@ export function open(path: string) {
   return ipcRenderer.invoke(FileHandler.Open, path) as Promise<OpenFileResult>
 }
 
+export function pickOpenFile() {
+  return ipcRenderer.invoke(FileHandler.PickOpenFile) as Promise<string | null>
+}
+
 export function getTempPath(payload?: GetTempPathArgs) {
   return ipcRenderer.invoke(FileHandler.GetTempPath, payload) as Promise<string>
 }

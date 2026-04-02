@@ -124,6 +124,30 @@ export function initialize() {
   )
 
   ipcMain.handle(
+    FileHandler.PickOpenFile,
+    async (event): Promise<string | null> => {
+      console.info(`${FileHandler.PickOpenFile} event received`)
+
+      const browserWindow = browserWindowFromEvent(event)
+
+      const dialogResult = await dialog.showOpenDialog(browserWindow, {
+        title: 'Open HAR file',
+        properties: ['openFile'],
+        defaultPath: browserWindow.workspace.paths.recordings,
+        filters: [{ name: 'HAR', extensions: ['har'] }],
+      })
+
+      const filePath = dialogResult.filePaths[0]
+
+      if (dialogResult.canceled || filePath === undefined) {
+        return null
+      }
+
+      return filePath
+    }
+  )
+
+  ipcMain.handle(
     FileHandler.GetTempPath,
     (_event, { prefix = 'k6s', extension }: GetTempPathArgs = {}): string => {
       const ext = extension?.replace(/^\.?/, '.') ?? ''
