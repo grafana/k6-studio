@@ -1,4 +1,5 @@
 import log from 'electron-log/renderer'
+import { lazy } from 'react'
 import {
   Navigate,
   Route,
@@ -9,16 +10,35 @@ import {
 } from 'react-router-dom'
 
 import { Layout } from '@/components/Layout/Layout'
-import { BrowserTestEditor } from '@/views/BrowserTestEditor'
-import { Home } from '@/views/Home'
-import { Recorder } from '@/views/Recorder'
-import { RecordingPreviewer } from '@/views/RecordingPreviewer'
-import { Validator } from '@/views/Validator'
 
 import { ErrorElement } from './ErrorElement'
 import { routeMap } from './routeMap'
-import { DataFile } from './views/DataFile'
-import { Generator } from './views/Generator'
+
+const Home = lazy(() =>
+  import('@/views/Home').then((module) => ({ default: module.Home }))
+)
+const Recorder = lazy(() =>
+  import('@/views/Recorder').then((module) => ({ default: module.Recorder }))
+)
+const RecordingPreviewer = lazy(() =>
+  import('@/views/RecordingPreviewer').then((module) => ({
+    default: module.RecordingPreviewer,
+  }))
+)
+const Generator = lazy(() =>
+  import('@/views/Generator').then((module) => ({ default: module.Generator }))
+)
+const BrowserTestEditor = lazy(() =>
+  import('@/views/BrowserTestEditor').then((module) => ({
+    default: module.BrowserTestEditor,
+  }))
+)
+const Validator = lazy(() =>
+  import('@/views/Validator').then((module) => ({ default: module.Validator }))
+)
+const DataFile = lazy(() =>
+  import('@/views/DataFile').then((module) => ({ default: module.DataFile }))
+)
 
 const router = createHashRouter(
   createRoutesFromChildren(

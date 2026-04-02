@@ -25,15 +25,8 @@ function LoadingSpinner() {
       `}
       align="center"
       justify="center"
-      maxHeight="800px"
     >
-      {showSpinner && (
-        <Spinner
-          css={css`
-            transform: translateY(-50%);
-          `}
-        />
-      )}
+      {showSpinner && <Spinner />}
     </Flex>
   )
 }

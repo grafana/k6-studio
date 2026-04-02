@@ -8,10 +8,6 @@ import { AppHandler } from './types'
 
 export const platform = process.platform
 
-export function closeSplashscreen() {
-  ipcRenderer.send(AppHandler.SplashscreenClose)
-}
-
 export function onApplicationClose(callback: () => void) {
   return createListener(AppHandler.Close, callback)
 }

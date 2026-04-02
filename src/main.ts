@@ -7,7 +7,7 @@ import { updateElectronApp } from 'update-electron-app'
 
 import * as handlers from './handlers'
 import { ProxyHandler } from './handlers/proxy/types'
-import { initializeDeepLinks } from './main/deepLinks'
+import { initializeDeepLinks, replayPendingDeepLink } from './main/deepLinks'
 import * as mainState from './main/k6StudioState'
 import { initializeLogger } from './main/logger'
 import { configureApplicationMenu } from './main/menu'
@@ -54,47 +54,6 @@ handlers.initialize()
 mainState.initialize()
 initializeDeepLinks()
 
-const createSplashWindow = async () => {
-  k6StudioState.splashscreenWindow = new BrowserWindow({
-    width: 600,
-    height: 400,
-    frame: false,
-    show: false,
-    alwaysOnTop: true,
-  })
-
-  let splashscreenFile: string
-
-  // if we are in dev server we take resources directly, otherwise look in the app resources folder.
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    splashscreenFile = path.join(
-      app.getAppPath(),
-      'resources',
-      'splashscreen.html'
-    )
-  } else {
-    splashscreenFile = path.join(process.resourcesPath, 'splashscreen.html')
-  }
-
-  // Open the DevTools.
-  if (process.env.NODE_ENV === 'development') {
-    k6StudioState.splashscreenWindow.webContents.openDevTools({
-      mode: 'detach',
-    })
-  }
-
-  // wait for the window to be ready before showing it. It prevents showing a white page on longer load times.
-  k6StudioState.splashscreenWindow.once('ready-to-show', () => {
-    if (k6StudioState.splashscreenWindow) {
-      k6StudioState.splashscreenWindow.show()
-    }
-  })
-
-  await k6StudioState.splashscreenWindow.loadFile(splashscreenFile)
-
-  return k6StudioState.splashscreenWindow
-}
-
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
   if (getPlatform() === 'mac') {
@@ -125,6 +84,10 @@ const createWindow = async () => {
     },
   })
 
+  mainWindow.once('ready-to-show', () => {
+    showWindow(mainWindow)
+  })
+
   configureApplicationMenu()
   configureWatcher(mainWindow)
   k6StudioState.wasAppClosedByClient = false
@@ -141,7 +104,6 @@ const createWindow = async () => {
   k6StudioState.currentProxyProcess =
     await launchProxyAndAttachEmitter(mainWindow)
 
-  // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     await mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL)
   } else {
@@ -150,9 +112,10 @@ const createWindow = async () => {
     )
   }
 
-  // Open the DevTools.
+  replayPendingDeepLink()
+
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.webContents.openDevTools({ mode: 'detach' })
+    mainWindow.webContents.openDevTools({ mode: 'right' })
   }
 
   mainWindow.on('closed', () =>
@@ -186,7 +149,6 @@ app.whenReady().then(
     await initSettings()
     k6StudioState.appSettings = await getSettings()
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
-    await createSplashWindow()
 
     await setupProjectStructure()
     await initEventTracking()
