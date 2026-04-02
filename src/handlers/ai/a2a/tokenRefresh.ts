@@ -82,14 +82,17 @@ let retryCount = 0
 // Refreshing proactively while the old token is still valid avoids this.
 export function scheduleTokenRefresh(
   stackId: string,
-  tokens: AssistantTokenData
+  tokens: AssistantTokenData,
+  isRetry = false
 ) {
   if (refreshTimer) {
     clearTimeout(refreshTimer)
   }
 
-  // Reset retry count when scheduling a new refresh cycle
-  retryCount = 0
+  // Reset retry count only when scheduling a genuinely new refresh cycle
+  if (!isRetry) {
+    retryCount = 0
+  }
 
   const delay = Math.max(
     MIN_REFRESH_DELAY_MS,
@@ -111,14 +114,13 @@ export function scheduleTokenRefresh(
       }
 
       const refreshed = await refreshAndSaveTokens(stackId, currentTokens)
-      retryCount = 0
       scheduleTokenRefresh(stackId, refreshed)
     } catch (error) {
       log.error(LOG_PREFIX, 'Scheduled token refresh failed:', error)
 
       retryCount++
       if (retryCount < MAX_REFRESH_RETRIES) {
-        scheduleTokenRefresh(stackId, tokens)
+        scheduleTokenRefresh(stackId, tokens, true)
       } else {
         log.error(LOG_PREFIX, 'Max refresh retries reached, giving up')
         retryCount = 0
