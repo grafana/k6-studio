@@ -2,27 +2,18 @@ import { css } from '@emotion/react'
 import { Box, Flex, IconButton, Spinner } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { PanelLeftOpenIcon } from 'lucide-react'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
+import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
 import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
 
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
 
 function RouteLoadingFallback() {
-  const [showSpinner, setShowSpinner] = useState(false)
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setShowSpinner(true)
-    }, 50)
-
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [])
+  const showSpinner = useDelayedVisibility()
 
   return (
     <Flex

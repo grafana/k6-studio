@@ -1,22 +1,13 @@
 import { css } from '@emotion/react'
 import { Flex, Spinner } from '@radix-ui/themes'
-import { PropsWithChildren, ReactNode, useEffect, useState } from 'react'
+import { PropsWithChildren, ReactNode } from 'react'
+
+import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
 
 import { ViewHeading } from './ViewHeading'
 
 function LoadingSpinner() {
-  const [showSpinner, setShowSpinner] = useState(false)
-
-  useEffect(() => {
-    // Only show the spinner if loading takes more than 50ms to avoid flickering
-    const timeout = setTimeout(() => {
-      setShowSpinner(true)
-    }, 50)
-
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [])
+  const showSpinner = useDelayedVisibility()
 
   return (
     <Flex
