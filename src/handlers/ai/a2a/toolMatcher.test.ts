@@ -1,29 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { handleRemoteToolRequest, tryMatchToolRequests } from './toolMatcher'
-import type { A2ARemoteToolRequestEvent, ActiveA2ASession } from './types'
+import { createA2ASession } from '@/test/factories/a2aSession'
 
-function createSession(
-  overrides?: Partial<ActiveA2ASession>
-): ActiveA2ASession {
-  return {
-    reader: undefined as unknown as ReadableStreamDefaultReader<Uint8Array>,
-    contextId: undefined,
-    taskId: undefined,
-    sessionAbortController: new AbortController(),
-    config: { baseUrl: '', agentId: '', bearerToken: '' },
-    pendingToolRequests: new Map(),
-    unmatchedToolCalls: [],
-    unmatchedRemoteRequests: [],
-    sseBuffer: '',
-    readyToFinishForTools: false,
-    ...overrides,
-  }
-}
+import { handleRemoteToolRequest, tryMatchToolRequests } from './toolMatcher'
+import type { A2ARemoteToolRequestEvent } from './types'
 
 describe('tryMatchToolRequests', () => {
   it('matches tool call with remote request by toolName', () => {
-    const session = createSession({
+    const session = createA2ASession({
       unmatchedToolCalls: [{ toolId: 'tool-1', toolName: 'searchRequests' }],
       unmatchedRemoteRequests: [
         { requestId: 'req-1', chatId: 'chat-1', toolName: 'searchRequests' },
@@ -42,7 +26,7 @@ describe('tryMatchToolRequests', () => {
   })
 
   it('sets readyToFinishForTools when all calls are matched', () => {
-    const session = createSession({
+    const session = createA2ASession({
       unmatchedToolCalls: [{ toolId: 'tool-1', toolName: 'addRuleRegex' }],
       unmatchedRemoteRequests: [
         { requestId: 'req-1', chatId: 'chat-1', toolName: 'addRuleRegex' },
@@ -55,7 +39,7 @@ describe('tryMatchToolRequests', () => {
   })
 
   it('does not set readyToFinishForTools when unmatched calls remain', () => {
-    const session = createSession({
+    const session = createA2ASession({
       unmatchedToolCalls: [
         { toolId: 'tool-1', toolName: 'searchRequests' },
         { toolId: 'tool-2', toolName: 'getDetails' },
@@ -73,7 +57,7 @@ describe('tryMatchToolRequests', () => {
   })
 
   it('leaves unmatched entries in queues when names differ', () => {
-    const session = createSession({
+    const session = createA2ASession({
       unmatchedToolCalls: [{ toolId: 'tool-1', toolName: 'toolA' }],
       unmatchedRemoteRequests: [
         { requestId: 'req-1', chatId: 'chat-1', toolName: 'toolB' },
@@ -90,7 +74,7 @@ describe('tryMatchToolRequests', () => {
 
 describe('handleRemoteToolRequest', () => {
   it('queues the remote request and attempts matching', () => {
-    const session = createSession({
+    const session = createA2ASession({
       unmatchedToolCalls: [
         { toolId: 'tool-1', toolName: 'getRequestsMetadata' },
       ],
@@ -116,7 +100,7 @@ describe('handleRemoteToolRequest', () => {
   })
 
   it('queues without matching when no tool call exists yet', () => {
-    const session = createSession()
+    const session = createA2ASession()
 
     const event: A2ARemoteToolRequestEvent = {
       type: 'REMOTE_TOOL_REQUEST',

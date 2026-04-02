@@ -1,6 +1,8 @@
 import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { encodeSSEChunked } from '@/test/utils/sse'
+
 import { sendTaskCancel } from './a2a/cancelTask'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 
@@ -22,32 +24,6 @@ vi.mock('./a2a/config', () => ({
 vi.mock('./a2a/cancelTask', () => ({
   sendTaskCancel: vi.fn(() => Promise.resolve()),
 }))
-
-/**
- * Creates a ReadableStream where each SSE event is a separate chunk,
- * delivered one per pull() call. This is required for the stream's
- * readyToFinishForTools logic to work between pull cycles.
- */
-function encodeSSEChunked(
-  events: Array<Record<string, unknown>>
-): ReadableStream<Uint8Array> {
-  const encoder = new TextEncoder()
-  const chunks = events.map((e) =>
-    encoder.encode(`data: ${JSON.stringify(e)}\n\n`)
-  )
-  let index = 0
-  return new ReadableStream({
-    pull(controller) {
-      if (index < chunks.length) {
-        const chunk = chunks[index]
-        if (chunk) controller.enqueue(chunk)
-        index++
-      } else {
-        controller.close()
-      }
-    },
-  })
-}
 
 function makeSSEResponse(sseStream: ReadableStream<Uint8Array>): Response {
   return new Response(sseStream, {

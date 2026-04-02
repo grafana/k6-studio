@@ -1,63 +1,20 @@
 import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
 import { describe, expect, it, vi } from 'vitest'
 
+import { createA2ASession } from '@/test/factories/a2aSession'
+import { encodeSSE, encodeSSEChunked } from '@/test/utils/sse'
+
 import { createA2AStream } from './stream'
 import type { ActiveA2ASession } from './types'
 
-/** Encode SSE events as the A2A server would send them. */
-function encodeSSE(
-  events: Array<Record<string, unknown>>
-): ReadableStream<Uint8Array> {
-  const encoder = new TextEncoder()
-  return new ReadableStream({
-    start(controller) {
-      for (const event of events) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
-      }
-      controller.close()
-    },
-  })
-}
-
-/** Encode SSE events where each event is a separate chunk. */
-function encodeSSEChunked(
-  events: Array<Record<string, unknown>>
-): ReadableStream<Uint8Array> {
-  const encoder = new TextEncoder()
-  const chunks = events.map((e) =>
-    encoder.encode(`data: ${JSON.stringify(e)}\n\n`)
-  )
-  let index = 0
-  return new ReadableStream({
-    pull(controller) {
-      if (index < chunks.length) {
-        const chunk = chunks[index]
-        if (chunk) controller.enqueue(chunk)
-        index++
-      } else {
-        controller.close()
-      }
-    },
-  })
-}
-
-function createSession(
+function createSessionWithStream(
   sseStream: ReadableStream<Uint8Array>,
   overrides?: Partial<ActiveA2ASession>
 ): ActiveA2ASession {
-  return {
+  return createA2ASession({
     reader: sseStream.getReader(),
-    contextId: undefined,
-    taskId: undefined,
-    sessionAbortController: new AbortController(),
-    config: { baseUrl: '', agentId: '', bearerToken: '' },
-    pendingToolRequests: new Map(),
-    unmatchedToolCalls: [],
-    unmatchedRemoteRequests: [],
-    sseBuffer: '',
-    readyToFinishForTools: false,
     ...overrides,
-  }
+  })
 }
 
 async function collectStreamParts(
@@ -102,7 +59,7 @@ describe('createA2AStream', () => {
     ])
 
     const cleanup = vi.fn()
-    const session = createSession(sseStream)
+    const session = createSessionWithStream(sseStream)
     const stream = createA2AStream(session, cleanup)
     const parts = await collectStreamParts(stream)
 
@@ -128,7 +85,7 @@ describe('createA2AStream', () => {
     ])
 
     const cleanup = vi.fn()
-    const session = createSession(sseStream)
+    const session = createSessionWithStream(sseStream)
     const stream = createA2AStream(session, cleanup)
     const parts = await collectStreamParts(stream)
 
@@ -187,7 +144,7 @@ describe('createA2AStream', () => {
     ])
 
     const cleanup = vi.fn()
-    const session = createSession(sseStream)
+    const session = createSessionWithStream(sseStream)
     const stream = createA2AStream(session, cleanup)
     const parts = await collectStreamParts(stream)
 
@@ -264,7 +221,7 @@ describe('createA2AStream', () => {
       },
     ])
 
-    const session = createSession(sseStream)
+    const session = createSessionWithStream(sseStream)
     const stream = createA2AStream(session, vi.fn())
     const parts = await collectStreamParts(stream)
 
@@ -312,7 +269,7 @@ describe('createA2AStream', () => {
       },
     ])
 
-    const session = createSession(sseStream)
+    const session = createSessionWithStream(sseStream)
     const stream = createA2AStream(session, vi.fn())
     const parts = await collectStreamParts(stream)
 

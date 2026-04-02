@@ -8,6 +8,7 @@ import { sendTaskCancel } from './a2a/cancelTask'
 import { type A2AConfig, getA2AConfig } from './a2a/config'
 import { LOG_PREFIX } from './a2a/constants'
 import {
+  buildA2AHeaders,
   buildA2ARequest,
   extractChatId,
   extractLatestUserText,
@@ -169,11 +170,9 @@ async function fetchA2AReader(
   const response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      ...buildA2AHeaders(config),
       Accept: 'text/event-stream',
-      Authorization: `Bearer ${config.bearerToken}`,
       'X-A2A-Extensions': config.remoteToolExtension,
-      'X-App-Source': 'k6-studio',
     },
     body: JSON.stringify(body),
     signal,

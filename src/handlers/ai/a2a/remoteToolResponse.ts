@@ -1,3 +1,4 @@
+import { buildA2AHeaders } from './helpers'
 import type { A2ASessionConfig } from './types'
 
 export async function sendRemoteToolResponse(
@@ -12,11 +13,7 @@ export async function sendRemoteToolResponse(
 ): Promise<void> {
   const response = await fetch(`${config.baseUrl}/remote-tool-response`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.bearerToken}`,
-      'X-App-Source': 'k6-studio',
-    },
+    headers: buildA2AHeaders(config),
     body: JSON.stringify(payload),
   })
 

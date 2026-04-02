@@ -2,6 +2,18 @@ import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 
 import type { RemoteToolDefinition } from '../tools'
 
+import type { A2ASessionConfig } from './types'
+
+export function buildA2AHeaders(
+  config: A2ASessionConfig
+): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${config.bearerToken}`,
+    'X-App-Source': 'k6-studio',
+  }
+}
+
 export function extractChatId(options: LanguageModelV2CallOptions): string {
   const grafanaOpts = options.providerOptions?.grafanaAssistant as
     | Record<string, unknown>

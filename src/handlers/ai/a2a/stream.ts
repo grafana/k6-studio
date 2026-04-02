@@ -3,16 +3,10 @@ import log from 'electron-log/main'
 
 import { isAbortError } from '@/utils/errors'
 
-import { LOG_PREFIX } from './constants'
+import { EMPTY_USAGE, LOG_PREFIX } from './constants'
 import { processA2AEvent } from './eventMapper'
 import { extractSSEEvents } from './sseParser'
 import type { ActiveA2ASession } from './types'
-
-const EMPTY_USAGE = {
-  inputTokens: undefined,
-  outputTokens: undefined,
-  totalTokens: undefined,
-} as const
 
 const FINISH_TOOL_CALLS: LanguageModelV2StreamPart = {
   type: 'finish',

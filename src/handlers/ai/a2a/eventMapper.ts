@@ -1,7 +1,7 @@
 import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
 import log from 'electron-log/main'
 
-import { LOG_PREFIX } from './constants'
+import { EMPTY_USAGE, LOG_PREFIX } from './constants'
 import { handleRemoteToolRequest, tryMatchToolRequests } from './toolMatcher'
 import type {
   A2AArtifact,
@@ -82,17 +82,7 @@ function handleStatusUpdate(
   const state = event.status.state
 
   if (state === 'completed') {
-    return [
-      {
-        type: 'finish',
-        finishReason: 'stop',
-        usage: {
-          inputTokens: undefined,
-          outputTokens: undefined,
-          totalTokens: undefined,
-        },
-      },
-    ]
+    return [{ type: 'finish', finishReason: 'stop', usage: EMPTY_USAGE }]
   }
 
   if (state === 'failed' || state === 'canceled') {
@@ -157,7 +147,7 @@ function handleToolCallArtifact(
 
   return [
     {
-      type: 'tool-call' as const,
+      type: 'tool-call',
       toolCallId: toolId,
       toolName,
       input: args,
@@ -174,17 +164,7 @@ function handleStepComplete(
   // Only emit finish for non-tool-use steps. Tool-use finishes are handled
   // by the readyToFinishForTools flag set in tryMatchToolRequests.
   if (data?.stopReason !== 'tool_use') {
-    return [
-      {
-        type: 'finish' as const,
-        finishReason: 'stop' as const,
-        usage: {
-          inputTokens: undefined,
-          outputTokens: undefined,
-          totalTokens: undefined,
-        },
-      },
-    ]
+    return [{ type: 'finish', finishReason: 'stop', usage: EMPTY_USAGE }]
   }
 
   return []

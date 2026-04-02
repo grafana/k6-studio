@@ -1,28 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { extractSSEEvents } from './sseParser'
-import type { ActiveA2ASession } from './types'
+import { createA2ASession } from '@/test/factories/a2aSession'
 
-function createSession(buffer = ''): ActiveA2ASession {
-  return {
-    sseBuffer: buffer,
-    reader: undefined as unknown as ReadableStreamDefaultReader<Uint8Array>,
-    contextId: undefined,
-    taskId: undefined,
-    sessionAbortController: new AbortController(),
-    config: { baseUrl: '', agentId: '', bearerToken: '' },
-    pendingToolRequests: new Map(),
-    unmatchedToolCalls: [],
-    unmatchedRemoteRequests: [],
-    readyToFinishForTools: false,
-  }
-}
+import { extractSSEEvents } from './sseParser'
 
 describe('extractSSEEvents', () => {
   it('parses a single complete event', () => {
-    const session = createSession(
-      'data: {"jsonrpc":"2.0","id":1,"result":{"kind":"status-update","taskId":"t1","contextId":"c1","status":{"state":"working"}}}\n\n'
-    )
+    const session = createA2ASession({
+      sseBuffer:
+        'data: {"jsonrpc":"2.0","id":1,"result":{"kind":"status-update","taskId":"t1","contextId":"c1","status":{"state":"working"}}}\n\n',
+    })
 
     const events = extractSSEEvents(session)
 
@@ -37,7 +24,9 @@ describe('extractSSEEvents', () => {
     const event2 =
       '{"jsonrpc":"2.0","id":2,"result":{"kind":"status-update","taskId":"t1","contextId":"c1","status":{"state":"completed"}}}'
 
-    const session = createSession(`data: ${event1}\n\ndata: ${event2}\n\n`)
+    const session = createA2ASession({
+      sseBuffer: `data: ${event1}\n\ndata: ${event2}\n\n`,
+    })
 
     const events = extractSSEEvents(session)
 
@@ -45,7 +34,9 @@ describe('extractSSEEvents', () => {
   })
 
   it('keeps incomplete events in the buffer', () => {
-    const session = createSession('data: {"jsonrpc":"2.0","id":1}')
+    const session = createA2ASession({
+      sseBuffer: 'data: {"jsonrpc":"2.0","id":1}',
+    })
 
     const events = extractSSEEvents(session)
 
@@ -54,9 +45,9 @@ describe('extractSSEEvents', () => {
   })
 
   it('joins multi-line data fields', () => {
-    const session = createSession(
-      'data: {"jsonrpc":"2.0",\ndata: "id":1,"result":null}\n\n'
-    )
+    const session = createA2ASession({
+      sseBuffer: 'data: {"jsonrpc":"2.0",\ndata: "id":1,"result":null}\n\n',
+    })
 
     const events = extractSSEEvents(session)
 
@@ -65,9 +56,10 @@ describe('extractSSEEvents', () => {
   })
 
   it('skips malformed JSON gracefully', () => {
-    const session = createSession(
-      'data: not-json\n\ndata: {"jsonrpc":"2.0","id":2,"result":null}\n\n'
-    )
+    const session = createA2ASession({
+      sseBuffer:
+        'data: not-json\n\ndata: {"jsonrpc":"2.0","id":2,"result":null}\n\n',
+    })
 
     const events = extractSSEEvents(session)
 
@@ -76,15 +68,16 @@ describe('extractSSEEvents', () => {
   })
 
   it('returns empty array for empty buffer', () => {
-    const session = createSession('')
+    const session = createA2ASession({ sseBuffer: '' })
     const events = extractSSEEvents(session)
     expect(events).toHaveLength(0)
   })
 
   it('handles mixed complete and incomplete events', () => {
-    const session = createSession(
-      'data: {"jsonrpc":"2.0","id":1,"result":null}\n\ndata: {"incomplete'
-    )
+    const session = createA2ASession({
+      sseBuffer:
+        'data: {"jsonrpc":"2.0","id":1,"result":null}\n\ndata: {"incomplete',
+    })
 
     const events = extractSSEEvents(session)
 

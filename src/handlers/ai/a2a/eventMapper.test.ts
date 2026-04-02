@@ -1,25 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { processA2AEvent } from './eventMapper'
-import type { A2ASSEEvent, ActiveA2ASession } from './types'
+import { createA2ASession } from '@/test/factories/a2aSession'
 
-function createSession(
-  overrides?: Partial<ActiveA2ASession>
-): ActiveA2ASession {
-  return {
-    reader: undefined as unknown as ReadableStreamDefaultReader<Uint8Array>,
-    contextId: undefined,
-    taskId: undefined,
-    sessionAbortController: new AbortController(),
-    config: { baseUrl: '', agentId: '', bearerToken: '' },
-    pendingToolRequests: new Map(),
-    unmatchedToolCalls: [],
-    unmatchedRemoteRequests: [],
-    sseBuffer: '',
-    readyToFinishForTools: false,
-    ...overrides,
-  }
-}
+import { processA2AEvent } from './eventMapper'
+import type { A2ASSEEvent } from './types'
 
 describe('processA2AEvent', () => {
   it('returns error part for JSON-RPC errors', () => {
@@ -29,7 +13,7 @@ describe('processA2AEvent', () => {
       error: { code: -32600, message: 'Invalid request' },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
 
     expect(parts).toHaveLength(1)
     expect(parts[0]?.type).toBe('error')
@@ -47,7 +31,7 @@ describe('processA2AEvent', () => {
       },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
     expect(parts).toHaveLength(0)
   })
 
@@ -63,7 +47,7 @@ describe('processA2AEvent', () => {
       },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
 
     expect(parts).toHaveLength(1)
     expect(parts[0]).toEqual(
@@ -83,7 +67,7 @@ describe('processA2AEvent', () => {
       },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
 
     expect(parts).toHaveLength(1)
     expect(parts[0]?.type).toBe('error')
@@ -104,14 +88,14 @@ describe('processA2AEvent', () => {
       },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
     const error = (parts[0] as { type: 'error'; error: Error }).error
 
     expect(error.message).toBe('Rate limit exceeded')
   })
 
   it('updates session taskId and contextId on status-update', () => {
-    const session = createSession()
+    const session = createA2ASession()
     const event: A2ASSEEvent = {
       jsonrpc: '2.0',
       id: 1,
@@ -154,7 +138,7 @@ describe('processA2AEvent', () => {
       },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
 
     expect(parts).toHaveLength(1)
     expect(parts[0]).toEqual({
@@ -181,7 +165,7 @@ describe('processA2AEvent', () => {
       },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
     expect(parts).toHaveLength(0)
   })
 
@@ -201,7 +185,7 @@ describe('processA2AEvent', () => {
       },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
 
     expect(parts).toHaveLength(1)
     expect(parts[0]).toEqual(
@@ -225,7 +209,7 @@ describe('processA2AEvent', () => {
       },
     }
 
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
 
     expect(parts).toEqual([
       { type: 'text-start', id: 'msg-1' },
@@ -235,7 +219,7 @@ describe('processA2AEvent', () => {
   })
 
   it('returns empty and updates session for REMOTE_TOOL_REQUEST', () => {
-    const session = createSession()
+    const session = createA2ASession()
     const event: A2ASSEEvent = {
       jsonrpc: '2.0',
       id: 1,
@@ -258,7 +242,7 @@ describe('processA2AEvent', () => {
 
   it('returns empty for event with no result and no error', () => {
     const event: A2ASSEEvent = { jsonrpc: '2.0', id: 1 }
-    const parts = processA2AEvent(event, createSession())
+    const parts = processA2AEvent(event, createA2ASession())
     expect(parts).toHaveLength(0)
   })
 })

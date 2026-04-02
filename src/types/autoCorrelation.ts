@@ -68,6 +68,7 @@ Used to match value by regex, must have a capture group.
 
 export const JsonSelectorSchema = GeneratorSchema.JsonSelectorSchema.extend({
   type: z.enum(['json']),
+  from: z.enum(['body']),
 }).describe(`
 Used to match value by json path. For example:
   json:
