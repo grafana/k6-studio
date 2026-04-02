@@ -88,6 +88,9 @@ export function scheduleTokenRefresh(
     clearTimeout(refreshTimer)
   }
 
+  // Reset retry count when scheduling a new refresh cycle
+  retryCount = 0
+
   const delay = Math.max(
     MIN_REFRESH_DELAY_MS,
     tokens.expiresAt - REFRESH_THRESHOLD_MS - Date.now()
