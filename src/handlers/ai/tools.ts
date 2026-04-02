@@ -1,7 +1,21 @@
-import { tool, ToolSet } from 'ai'
+import { asSchema, tool, ToolSet } from 'ai'
 import { z } from 'zod'
 
 import { AiCorrelationRuleSchema } from '@/types/autoCorrelation'
+
+export interface RemoteToolDefinition {
+  name: string
+  description: string
+  inputSchema: Record<string, unknown>
+}
+
+export function getToolDefinitionsForA2A(): RemoteToolDefinition[] {
+  return Object.entries(tools).map(([name, t]) => ({
+    name,
+    description: t.description ?? '',
+    inputSchema: asSchema(t.inputSchema).jsonSchema as Record<string, unknown>,
+  }))
+}
 
 export const tools = {
   runValidation: tool({

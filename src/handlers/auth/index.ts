@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 
+import { clearAssistantTokens } from '@/handlers/ai/a2a/tokenStore'
 import { UserProfiles, Profile, StackInfo } from '@/schemas/profile'
 import { SignInResult } from '@/types/auth'
 import { browserWindowFromEvent } from '@/utils/electron'
@@ -82,6 +83,7 @@ export function initialize() {
 
       delete profileData.tokens[stack.id]
       delete profileData.profiles.stacks[stack.id]
+      await clearAssistantTokens(stack.id)
 
       if (profileData.profiles.currentStack === stack.id) {
         const [firstStack] = Object.values(profileData.profiles.stacks)
