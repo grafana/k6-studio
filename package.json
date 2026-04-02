@@ -10,7 +10,7 @@
   },
   "scripts": {
     "preinstall": "node install-k6.js",
-    "start": "electron-forge start",
+    "start": "electron-forge start -- --remote-debugging-port=9223",
     "start:extension": "STANDALONE_EXTENSION=true vite --config vite.extension.config.mts",
     "watch:extension": "vite --config vite.extension.config.mts",
     "package": "electron-forge package",
