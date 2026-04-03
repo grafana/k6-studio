@@ -122,9 +122,7 @@ function ThinkingBlock({
         color="gray"
         css={isExpanded ? expandedStyle : previewStyle}
       >
-        {isExpanded
-          ? text
-          : text.slice(0, 120) + (text.length > 120 ? '...' : '')}
+        {text}
       </Text>
     </Box>
   )

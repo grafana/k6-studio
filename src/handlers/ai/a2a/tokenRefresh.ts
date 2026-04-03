@@ -2,9 +2,11 @@ import log from 'electron-log/main'
 import { z } from 'zod'
 
 import { LOG_PREFIX } from './constants'
+import { safeResponseText } from './helpers'
 import {
-  AssistantTokenData,
+  type AssistantTokenData,
   getAssistantTokens,
+  mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
 
@@ -49,22 +51,14 @@ export async function refreshAndSaveTokens(
   )
 
   if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error')
+    const text = await safeResponseText(response)
     throw new Error(
       `Assistant token refresh failed (${response.status}): ${text}`
     )
   }
 
   const body = RefreshResponseSchema.parse(await response.json())
-  const data = body.data
-
-  const refreshedTokens: AssistantTokenData = {
-    accessToken: data.token,
-    refreshToken: data.refresh_token,
-    apiEndpoint: tokens.apiEndpoint,
-    expiresAt: new Date(data.expires_at).getTime(),
-    refreshExpiresAt: new Date(data.refresh_expires_at).getTime(),
-  }
+  const refreshedTokens = mapTokenResponse(body.data, tokens.apiEndpoint)
 
   await saveAssistantTokens(stackId, refreshedTokens)
 

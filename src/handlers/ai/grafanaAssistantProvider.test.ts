@@ -1,5 +1,5 @@
 import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { drainStream, encodeSSEChunked } from '@/test/utils/sse'
 
@@ -115,13 +115,16 @@ describe('GrafanaAssistantLanguageModel', () => {
   const fetchSpy =
     vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>()
 
+  beforeEach(() => {
+    vi.stubGlobal('fetch', fetchSpy)
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
   describe('handleNewMessage contextId preservation', () => {
     it('passes contextId from previous session in the next request', async () => {
-      vi.stubGlobal('fetch', fetchSpy)
 
       const model = new GrafanaAssistantLanguageModel()
 
@@ -160,7 +163,6 @@ describe('GrafanaAssistantLanguageModel', () => {
 
   describe('task cancellation on abort', () => {
     it('sends tasks/cancel when session with taskId is aborted', async () => {
-      vi.stubGlobal('fetch', fetchSpy)
       const sendTaskCancelMock = vi.mocked(sendTaskCancel)
 
       const model = new GrafanaAssistantLanguageModel()
@@ -203,7 +205,6 @@ describe('GrafanaAssistantLanguageModel', () => {
     })
 
     it('does NOT send tasks/cancel when session finishes normally', async () => {
-      vi.stubGlobal('fetch', fetchSpy)
       const sendTaskCancelMock = vi.mocked(sendTaskCancel)
 
       const model = new GrafanaAssistantLanguageModel()
@@ -244,7 +245,6 @@ describe('GrafanaAssistantLanguageModel', () => {
 
   describe('handleNewMessage aborts existing session', () => {
     it('cancels old task when a new message replaces an active session', async () => {
-      vi.stubGlobal('fetch', fetchSpy)
       const sendTaskCancelMock = vi.mocked(sendTaskCancel)
 
       const model = new GrafanaAssistantLanguageModel()

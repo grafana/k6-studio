@@ -55,16 +55,9 @@ function extractToolsFromMostRecentStep(parts: Message['parts']): ToolPart[] {
 }
 
 function findMostRecentStepBoundary(parts: unknown[]) {
-  let boundaryPosition = -1
-
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i] as { type?: string }
-    if (part.type === 'step-start') {
-      boundaryPosition = i
-    }
-  }
-
-  return boundaryPosition
+  return parts.findLastIndex(
+    (part) => (part as { type?: string }).type === 'step-start'
+  )
 }
 
 function hasCompletedTools(toolParts: ToolPart[]) {

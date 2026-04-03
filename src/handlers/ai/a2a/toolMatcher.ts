@@ -21,40 +21,21 @@ export function handleRemoteToolRequest(
  * and waiting for our remote tool response.
  */
 export function tryMatchToolRequests(session: ActiveA2ASession): void {
-  const { matched, remainingCalls, remainingRequests } =
-    session.unmatchedToolCalls.reduce<{
-      matched: Array<{
-        call: (typeof session.unmatchedToolCalls)[number]
-        req: (typeof session.unmatchedRemoteRequests)[number]
-      }>
-      remainingCalls: typeof session.unmatchedToolCalls
-      remainingRequests: typeof session.unmatchedRemoteRequests
-    }>(
-      (acc, call) => {
-        const reqIndex = acc.remainingRequests.findIndex(
-          (r) => r.toolName === call.toolName
-        )
+  const remainingRequests = [...session.unmatchedRemoteRequests]
+  const unmatchedCalls: typeof session.unmatchedToolCalls = []
+  let matchCount = 0
 
-        if (reqIndex !== -1) {
-          const req = acc.remainingRequests[reqIndex]!
-          acc.matched.push({ call, req })
-          acc.remainingRequests = acc.remainingRequests.filter(
-            (_, i) => i !== reqIndex
-          )
-        } else {
-          acc.remainingCalls.push(call)
-        }
-
-        return acc
-      },
-      {
-        matched: [],
-        remainingCalls: [],
-        remainingRequests: [...session.unmatchedRemoteRequests],
-      }
+  for (const call of session.unmatchedToolCalls) {
+    const reqIndex = remainingRequests.findIndex(
+      (r) => r.toolName === call.toolName
     )
 
-  matched.forEach(({ call, req }) => {
+    if (reqIndex === -1) {
+      unmatchedCalls.push(call)
+      continue
+    }
+
+    const req = remainingRequests.splice(reqIndex, 1)[0]!
     session.pendingToolRequests.set(call.toolId, {
       requestId: req.requestId,
       chatId: req.chatId,
@@ -63,14 +44,15 @@ export function tryMatchToolRequests(session: ActiveA2ASession): void {
       LOG_PREFIX,
       `Matched: toolId=${call.toolId} ↔ requestId=${req.requestId} (${call.toolName})`
     )
-  })
+    matchCount++
+  }
 
-  session.unmatchedToolCalls = remainingCalls
+  session.unmatchedToolCalls = unmatchedCalls
   session.unmatchedRemoteRequests = remainingRequests
 
   if (
-    matched.length > 0 &&
-    remainingCalls.length === 0 &&
+    matchCount > 0 &&
+    unmatchedCalls.length === 0 &&
     session.pendingToolRequests.size > 0
   ) {
     session.readyToFinishForTools = true

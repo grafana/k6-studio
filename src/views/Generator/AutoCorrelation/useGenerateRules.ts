@@ -158,7 +158,7 @@ export const useGenerateRules = ({
   }
 
   function addRule(rule: AiCorrelationRule) {
-    const validRule = AiCorrelationRuleToCorrelationRule(rule)
+    const validRule = toCorrelationRule(rule)
     const applyResult = applyRules(recording, [
       ...suggestedRulesRef.current,
       validRule,
@@ -295,9 +295,7 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
   }
 }
 
-function AiCorrelationRuleToCorrelationRule(
-  rule: AiCorrelationRule
-): CorrelationRule {
+function toCorrelationRule(rule: AiCorrelationRule): CorrelationRule {
   return {
     ...rule,
     id: `autocorrelation_rule_${crypto.randomUUID()}`,

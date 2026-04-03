@@ -12,7 +12,7 @@ export const BeginEndSelectorSchema =
     // Need to use enum because literals are not supported by Assistant
     type: z.enum(['begin-end']),
   }).describe(`
-Used to match value when being and end string are known.  example:
+Used to match value when begin and end string are known.  example:
   headers:
     Authorization: Bearer 123;
   begin: Bearer

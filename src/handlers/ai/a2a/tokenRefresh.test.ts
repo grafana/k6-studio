@@ -4,6 +4,16 @@ import { refreshAndSaveTokens } from './tokenRefresh'
 import type { AssistantTokenData } from './tokenStore'
 
 vi.mock('./tokenStore', () => ({
+  mapTokenResponse: (
+    response: { token: string; refresh_token: string; expires_at: string; refresh_expires_at: string },
+    apiEndpoint: string
+  ) => ({
+    accessToken: response.token,
+    refreshToken: response.refresh_token,
+    apiEndpoint,
+    expiresAt: new Date(response.expires_at).getTime(),
+    refreshExpiresAt: new Date(response.refresh_expires_at).getTime(),
+  }),
   saveAssistantTokens: vi.fn(),
 }))
 

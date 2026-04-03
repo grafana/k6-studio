@@ -17,6 +17,7 @@ import { LOG_PREFIX } from './constants'
 import {
   clearAssistantTokens,
   hasAssistantTokens,
+  mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
 
@@ -79,7 +80,7 @@ async function performSignIn(
       log.error(LOG_PREFIX, 'State mismatch in assistant auth callback')
       return {
         type: 'error',
-        error: 'State mismatch — possible CSRF attack. Please try again.',
+        error: 'State mismatch, possible CSRF attack. Please try again.',
       }
     }
 
@@ -113,13 +114,7 @@ async function performSignIn(
       return { type: 'aborted' }
     }
 
-    const tokens = {
-      accessToken: tokenResponse.token,
-      refreshToken: tokenResponse.refresh_token,
-      apiEndpoint: tokenResponse.api_endpoint,
-      expiresAt: new Date(tokenResponse.expires_at).getTime(),
-      refreshExpiresAt: new Date(tokenResponse.refresh_expires_at).getTime(),
-    }
+    const tokens = mapTokenResponse(tokenResponse, tokenResponse.api_endpoint)
 
     await saveAssistantTokens(stackId, tokens)
 

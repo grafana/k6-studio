@@ -1,3 +1,6 @@
+import log from 'electron-log/main'
+
+import { LOG_PREFIX } from './constants'
 import type { A2ASSEEvent, ActiveA2ASession } from './types'
 
 /**
@@ -19,7 +22,7 @@ export function extractSSEEvents(session: ActiveA2ASession): A2ASSEEvent[] {
           const parsed = JSON.parse(dataLines.join('\n')) as A2ASSEEvent
           events.push(parsed)
         } catch {
-          // Skip malformed events
+          log.warn(LOG_PREFIX, 'Skipping malformed SSE event:', dataLines.join('\n'))
         }
       }
       dataLines = []

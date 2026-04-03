@@ -56,12 +56,6 @@ export interface A2AArtifactMetadata {
   'agent-traceability'?: {
     usage?: A2ATokenUsage
   }
-}
-
-export interface A2AStepCompleteMetadata {
-  'agent-traceability'?: {
-    usage?: A2ATokenUsage
-  }
   model?: string
   provider?: string
 }
@@ -74,7 +68,7 @@ export interface A2AArtifact {
   parts: A2AArtifactPart[]
   index?: number
   lastChunk?: boolean
-  metadata?: A2AArtifactMetadata | A2AStepCompleteMetadata
+  metadata?: A2AArtifactMetadata
 }
 
 export interface A2AArtifactUpdateEvent {

@@ -4,6 +4,10 @@ import type { RemoteToolDefinition } from '../tools'
 
 import type { A2ASessionConfig } from './types'
 
+export function safeResponseText(response: Response): Promise<string> {
+  return response.text().catch(() => 'Unknown error')
+}
+
 export function buildA2AHeaders(
   config: A2ASessionConfig
 ): Record<string, string> {
@@ -63,26 +67,31 @@ export function extractToolResults(
     .map((part) => ({
       toolCallId: part.toolCallId,
       toolName: part.toolName,
-      output: 'output' in part ? resolveToolOutput(part.output) : part,
+      output: part.output.value,
     }))
 }
 
-function resolveToolOutput(
-  output:
-    | { type: string; value: unknown }
-    | Array<{ type: string; value: unknown }>
-): unknown {
-  if (Array.isArray(output)) {
-    return output.map((o) => o.value)
+export interface A2AJsonRpcRequest {
+  jsonrpc: '2.0'
+  id: string
+  method: 'message/stream'
+  params: {
+    message: {
+      kind: 'message'
+      role: 'user'
+      messageId: string
+      parts: Array<{ kind: 'text'; text: string }>
+    }
+    contextId?: string
+    metadata?: Record<string, unknown>
   }
-  return output.value
 }
 
 export function buildA2ARequest(
   userText: string,
   contextId?: string,
   tools?: RemoteToolDefinition[]
-): Record<string, unknown> {
+): A2AJsonRpcRequest {
   return {
     jsonrpc: '2.0',
     id: crypto.randomUUID(),

@@ -50,7 +50,7 @@ function createRequest(
 }
 
 afterEach(() => {
-  vi.clearAllMocks()
+  vi.restoreAllMocks()
 })
 
 describe('handleStreamChat', () => {

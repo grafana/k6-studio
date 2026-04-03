@@ -1,7 +1,7 @@
 import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
 import log from 'electron-log/main'
 
-import { LOG_PREFIX } from './constants'
+import { ARTIFACT_NAME, LOG_PREFIX, NO_USAGE } from './constants'
 import { handleRemoteToolRequest, tryMatchToolRequests } from './toolMatcher'
 import type {
   A2AArtifact,
@@ -12,9 +12,8 @@ import type {
   A2ASSEEvent,
   A2ASSEResult,
   A2AStatusUpdateEvent,
-  A2AStepCompleteMetadata,
+  A2ATaskState,
   A2AToolCallData,
-  A2ATokenUsage,
   ActiveA2ASession,
 } from './types'
 
@@ -79,6 +78,13 @@ export function processA2AEvent(
   return []
 }
 
+const TERMINAL_ERROR_STATES: ReadonlySet<A2ATaskState> = new Set([
+  'failed',
+  'canceled',
+  'rejected',
+  'auth-required',
+])
+
 function handleStatusUpdate(
   session: ActiveA2ASession,
   event: A2AStatusUpdateEvent
@@ -94,16 +100,20 @@ function handleStatusUpdate(
       {
         type: 'finish',
         finishReason: 'stop',
-        usage: {
-          inputTokens: undefined,
-          outputTokens: undefined,
-          totalTokens: undefined,
-        },
+        usage: NO_USAGE,
       },
     ]
   }
 
-  if (state === 'failed' || state === 'canceled' || state === 'rejected' || state === 'auth-required') {
+  if (state === 'input-required') {
+    log.warn(
+      LOG_PREFIX,
+      `Task entered input-required state (taskId=${event.taskId})`
+    )
+    return [{ type: 'error', error: new Error('A2A task requires input') }]
+  }
+
+  if (TERMINAL_ERROR_STATES.has(state)) {
     const statusMessage = event.status.message?.parts
       ?.map((p) => p.text)
       .filter(Boolean)
@@ -126,17 +136,17 @@ function handleArtifactUpdate(
   const { artifact } = event
 
   switch (artifact.name) {
-    case 'step.toolCall':
+    case ARTIFACT_NAME.STEP_TOOL_CALL:
       return handleToolCallArtifact(session, artifact)
-    case 'step.complete':
+    case ARTIFACT_NAME.STEP_COMPLETE:
       return handleStepComplete(artifact)
-    case 'step.message':
+    case ARTIFACT_NAME.STEP_MESSAGE:
       return handleMessageArtifact(session, artifact)
-    case 'message.stream.start':
-    case 'message.content.delta':
-    case 'message.stream.complete':
+    case ARTIFACT_NAME.MESSAGE_STREAM_START:
+    case ARTIFACT_NAME.MESSAGE_CONTENT_DELTA:
+    case ARTIFACT_NAME.MESSAGE_STREAM_COMPLETE:
       return handleTokenStreamArtifact(session, artifact)
-    case 'step.toolResult':
+    case ARTIFACT_NAME.STEP_TOOL_RESULT:
       return []
     default:
       log.warn(LOG_PREFIX, `Unknown artifact name: ${artifact.name}`)
@@ -176,13 +186,8 @@ function handleToolCallArtifact(
   ]
 }
 
-interface A2AUsage {
-  inputTokens: number | undefined
-  outputTokens: number | undefined
-  totalTokens: number | undefined
-}
-
-function extractUsageFromTokenUsage(usage: A2ATokenUsage | undefined): A2AUsage {
+function extractUsage(artifact: A2AArtifact) {
+  const usage = artifact.metadata?.['agent-traceability']?.usage
   return {
     inputTokens: usage?.InputTokens,
     outputTokens: usage?.OutputTokens,
@@ -191,12 +196,6 @@ function extractUsageFromTokenUsage(usage: A2ATokenUsage | undefined): A2AUsage 
         ? usage.InputTokens + usage.OutputTokens
         : undefined,
   }
-}
-
-function extractUsage(artifact: A2AArtifact): A2AUsage {
-  const metadata = artifact.metadata as A2AStepCompleteMetadata | undefined
-  const usage = metadata?.['agent-traceability']?.usage
-  return extractUsageFromTokenUsage(usage)
 }
 
 function handleStepComplete(
@@ -249,13 +248,13 @@ function handleTokenStreamArtifact(
   const id = artifact.artifactId
 
   switch (artifact.name) {
-    case 'message.stream.start':
+    case ARTIFACT_NAME.MESSAGE_STREAM_START:
       session.activeStreamArtifactId = id
       session.activeStreamContentType = undefined
       return []
-    case 'message.content.delta':
+    case ARTIFACT_NAME.MESSAGE_CONTENT_DELTA:
       return handleContentDelta(session, artifact)
-    case 'message.stream.complete': {
+    case ARTIFACT_NAME.MESSAGE_STREAM_COMPLETE: {
       const parts = closeActiveContentBlock(session)
       session.activeStreamArtifactId = undefined
       session.activeStreamContentType = undefined

@@ -68,6 +68,10 @@ export async function handleStreamChat(
       await streamMessages(event.sender, response, request.id)
     }
   } catch (error) {
+    if (abortController.signal.aborted) {
+      return
+    }
+
     log.error('handleStreamChat error:', error)
     event.sender.send(AiHandler.StreamChatChunk, {
       id: request.id,

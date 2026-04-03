@@ -1,4 +1,4 @@
-import { buildA2AHeaders } from './helpers'
+import { buildA2AHeaders, safeResponseText } from './helpers'
 import type { A2ASessionConfig } from './types'
 
 type RemoteToolPayload = {
@@ -17,7 +17,7 @@ export async function sendRemoteToolResponse(
   })
 
   if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error')
+    const text = await safeResponseText(response)
     throw new Error(
       `Failed to send remote tool response (${response.status}): ${text}`
     )

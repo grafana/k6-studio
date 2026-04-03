@@ -1,7 +1,7 @@
 import log from 'electron-log/main'
 
 import { LOG_PREFIX } from './constants'
-import { buildA2AHeaders } from './helpers'
+import { buildA2AHeaders, safeResponseText } from './helpers'
 import type { A2ASessionConfig } from './types'
 
 export async function sendTaskCancel(
@@ -22,7 +22,7 @@ export async function sendTaskCancel(
   })
 
   if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error')
+    const text = await safeResponseText(response)
     log.error(
       LOG_PREFIX,
       `Failed to cancel task ${taskId} (${response.status}):`,

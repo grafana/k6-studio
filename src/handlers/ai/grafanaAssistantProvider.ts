@@ -8,11 +8,13 @@ import { sendTaskCancel } from './a2a/cancelTask'
 import { type A2AConfig, getA2AConfig } from './a2a/config'
 import { LOG_PREFIX } from './a2a/constants'
 import {
+  type A2AJsonRpcRequest,
   buildA2AHeaders,
   buildA2ARequest,
   extractChatId,
   extractLatestUserText,
   extractToolResults,
+  safeResponseText,
 } from './a2a/helpers'
 import { sendRemoteToolResponse } from './a2a/remoteToolResponse'
 import { createA2AStream } from './a2a/stream'
@@ -23,9 +25,12 @@ function forwardAbortSignal(
   source: AbortSignal | undefined,
   target: AbortController
 ): void {
-  if (source) {
-    source.addEventListener('abort', () => target.abort(), { once: true })
+  if (!source) return
+  if (source.aborted) {
+    target.abort()
+    return
   }
+  source.addEventListener('abort', () => target.abort(), { once: true })
 }
 
 /** Active SSE sessions keyed by chatId */
@@ -179,7 +184,7 @@ function createSession(
 
 async function fetchA2AReader(
   config: A2AConfig,
-  body: Record<string, unknown>,
+  body: A2AJsonRpcRequest,
   signal: AbortSignal
 ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
   const response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
@@ -194,7 +199,7 @@ async function fetchA2AReader(
   })
 
   if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error')
+    const text = await safeResponseText(response)
     throw new Error(`A2A request failed (${response.status}): ${text}`)
   }
 
@@ -225,7 +230,9 @@ function cleanupSession(
     })
   }
 
-  session.reader.cancel().catch(() => {})
+  session.reader.cancel().catch(() => {
+    // AbortError is expected when cancelling an active reader
+  })
 
   activeSessions.delete(chatId)
 }
