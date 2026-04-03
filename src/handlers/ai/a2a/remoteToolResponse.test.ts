@@ -12,7 +12,7 @@ const config: A2ASessionConfig = {
 const payload = {
   requestId: 'req-1',
   chatId: 'chat-1',
-  success: true,
+  success: true as const,
   result: { output: 'test' },
 }
 

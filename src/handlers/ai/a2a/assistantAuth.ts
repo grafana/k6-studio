@@ -113,13 +113,15 @@ async function performSignIn(
       return { type: 'aborted' }
     }
 
-    await saveAssistantTokens(stackId, {
+    const tokens = {
       accessToken: tokenResponse.token,
       refreshToken: tokenResponse.refresh_token,
       apiEndpoint: tokenResponse.api_endpoint,
       expiresAt: new Date(tokenResponse.expires_at).getTime(),
       refreshExpiresAt: new Date(tokenResponse.refresh_expires_at).getTime(),
-    })
+    }
+
+    await saveAssistantTokens(stackId, tokens)
 
     log.info(LOG_PREFIX, 'Assistant auth completed for stack', stackId)
     return { type: 'authenticated' }

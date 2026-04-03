@@ -65,10 +65,8 @@ export function tryMatchToolRequests(session: ActiveA2ASession): void {
     )
   })
 
-  session.unmatchedToolCalls.length = 0
-  session.unmatchedToolCalls.push(...remainingCalls)
-  session.unmatchedRemoteRequests.length = 0
-  session.unmatchedRemoteRequests.push(...remainingRequests)
+  session.unmatchedToolCalls = remainingCalls
+  session.unmatchedRemoteRequests = remainingRequests
 
   if (
     matched.length > 0 &&

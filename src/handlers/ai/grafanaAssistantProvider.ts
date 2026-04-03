@@ -16,8 +16,17 @@ import {
 } from './a2a/helpers'
 import { sendRemoteToolResponse } from './a2a/remoteToolResponse'
 import { createA2AStream } from './a2a/stream'
-import type { ActiveA2ASession } from './a2a/types'
+import type { ActiveA2ASession, A2ASessionConfig } from './a2a/types'
 import { getToolDefinitionsForA2A } from './tools'
+
+function forwardAbortSignal(
+  source: AbortSignal | undefined,
+  target: AbortController
+): void {
+  if (source) {
+    source.addEventListener('abort', () => target.abort(), { once: true })
+  }
+}
 
 /** Active SSE sessions keyed by chatId */
 const activeSessions = new Map<string, ActiveA2ASession>()
@@ -66,17 +75,12 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
 
     if (existingSession) {
       existingSession.sessionAbortController.abort()
+      cleanupSession(chatId, existingSession)
     }
-    cleanupSession(chatId)
 
     const sessionAbortController = new AbortController()
-    if (options.abortSignal) {
-      options.abortSignal.addEventListener(
-        'abort',
-        () => sessionAbortController.abort(),
-        { once: true }
-      )
-    }
+    forwardAbortSignal(options.abortSignal, sessionAbortController)
+
     const config = await getA2AConfig()
     const userText = extractLatestUserText(options.prompt)
     const body = buildA2ARequest(
@@ -95,25 +99,18 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       sessionAbortController.signal
     )
 
-    const session: ActiveA2ASession = {
+    const { extensions: _, ...sessionConfig } = config
+    const session = createSession(
       reader,
       contextId,
-      taskId: undefined,
       sessionAbortController,
-      config: {
-        baseUrl: config.baseUrl,
-        agentId: config.agentId,
-        bearerToken: config.bearerToken,
-      },
-      pendingToolRequests: new Map(),
-      unmatchedToolCalls: [],
-      unmatchedRemoteRequests: [],
-      sseBuffer: '',
-      readyToFinishForTools: false,
-    }
+      sessionConfig
+    )
     activeSessions.set(chatId, session)
 
-    const stream = createA2AStream(session, () => cleanupSession(chatId))
+    const stream = createA2AStream(session, () =>
+      cleanupSession(chatId, session)
+    )
     return { stream }
   }
 
@@ -127,13 +124,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     }>,
     abortSignal?: AbortSignal
   ): Promise<Awaited<ReturnType<LanguageModelV2['doStream']>>> {
-    if (abortSignal) {
-      abortSignal.addEventListener(
-        'abort',
-        () => session.sessionAbortController.abort(),
-        { once: true }
-      )
-    }
+    forwardAbortSignal(abortSignal, session.sessionAbortController)
 
     session.readyToFinishForTools = false
 
@@ -157,8 +148,32 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       session.pendingToolRequests.delete(result.toolCallId)
     }
 
-    const stream = createA2AStream(session, () => cleanupSession(chatId))
+    const stream = createA2AStream(session, () =>
+      cleanupSession(chatId, session)
+    )
     return { stream }
+  }
+}
+
+function createSession(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  contextId: string | undefined,
+  sessionAbortController: AbortController,
+  config: A2ASessionConfig
+): ActiveA2ASession {
+  return {
+    reader,
+    contextId,
+    taskId: undefined,
+    sessionAbortController,
+    config,
+    pendingToolRequests: new Map(),
+    unmatchedToolCalls: [],
+    unmatchedRemoteRequests: [],
+    sseBuffer: '',
+    readyToFinishForTools: false,
+    activeStreamArtifactId: undefined,
+    activeStreamContentType: undefined,
   }
 }
 
@@ -172,7 +187,7 @@ async function fetchA2AReader(
     headers: {
       ...buildA2AHeaders(config),
       Accept: 'text/event-stream',
-      'X-A2A-Extensions': config.remoteToolExtension,
+      'X-A2A-Extensions': config.extensions,
     },
     body: JSON.stringify(body),
     signal,
@@ -190,9 +205,17 @@ async function fetchA2AReader(
   return response.body.getReader()
 }
 
-function cleanupSession(chatId: string): void {
+function cleanupSession(
+  chatId: string,
+  specificSession: ActiveA2ASession
+): void {
   const session = activeSessions.get(chatId)
   if (!session) {
+    return
+  }
+
+  // Only clean up if the given session matches the current one
+  if (session !== specificSession) {
     return
   }
 
@@ -202,11 +225,7 @@ function cleanupSession(chatId: string): void {
     })
   }
 
-  try {
-    session.reader.cancel().catch(() => {})
-  } catch {
-    // Ignore
-  }
+  session.reader.cancel().catch(() => {})
 
   activeSessions.delete(chatId)
 }

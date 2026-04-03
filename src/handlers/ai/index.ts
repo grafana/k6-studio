@@ -44,7 +44,7 @@ export async function handleStreamChat(
         },
       })
 
-      await streamMessages(event.sender, response, request.id, false)
+      await streamMessages(event.sender, response, request.id)
     } else {
       const aiModel = await getOpenAiModel()
 
@@ -65,7 +65,7 @@ export async function handleStreamChat(
         },
       })
 
-      await streamMessages(event.sender, response, request.id, true)
+      await streamMessages(event.sender, response, request.id)
     }
   } catch (error) {
     log.error('handleStreamChat error:', error)

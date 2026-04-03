@@ -14,6 +14,8 @@ export function createA2ASession(
     unmatchedRemoteRequests: [],
     sseBuffer: '',
     readyToFinishForTools: false,
+    activeStreamArtifactId: undefined,
+    activeStreamContentType: undefined,
     ...overrides,
   }
 }

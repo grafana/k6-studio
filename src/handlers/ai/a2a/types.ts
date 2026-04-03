@@ -1,21 +1,49 @@
+import type { A2AConfig } from './config'
+
+export type A2ATaskState =
+  | 'working'
+  | 'completed'
+  | 'failed'
+  | 'canceled'
+  | 'input-required'
+
 export interface A2AStatusUpdateEvent {
   kind: 'status-update'
   taskId: string
   contextId: string
-  status: { state: string; message?: { parts?: Array<{ text?: string }> } }
+  status: {
+    state: A2ATaskState
+    message?: { parts?: Array<{ text?: string }> }
+  }
   final?: boolean
 }
 
-export interface A2AArtifactPart {
-  kind: string
-  text?: string
-  data?: Record<string, unknown>
+export interface A2ATextPart {
+  kind: 'text'
+  text: string
+}
+
+export interface A2ADataPart {
+  kind: 'data'
+  data: Record<string, unknown>
+}
+
+export type A2AArtifactPart = A2ATextPart | A2ADataPart
+
+export interface A2AArtifactMetadata {
+  'agent-traceability'?: {
+    usage?: {
+      InputTokens?: number
+      OutputTokens?: number
+    }
+  }
 }
 
 export interface A2AArtifact {
   name: string
   artifactId: string
   parts: A2AArtifactPart[]
+  metadata?: A2AArtifactMetadata
 }
 
 export interface A2AArtifactUpdateEvent {
@@ -42,12 +70,6 @@ export interface A2AToolCallData {
   inputs?: Record<string, unknown> | string
 }
 
-export interface A2AStepCompleteData {
-  stepId?: string
-  stopReason?: string
-  usage?: { inputTokens?: number; outputTokens?: number }
-}
-
 export type A2ASSEResult =
   | A2AStatusUpdateEvent
   | A2AArtifactUpdateEvent
@@ -65,11 +87,7 @@ export interface PendingToolRequest {
   chatId: string
 }
 
-export interface A2ASessionConfig {
-  baseUrl: string
-  agentId: string
-  bearerToken: string
-}
+export type A2ASessionConfig = Omit<A2AConfig, 'extensions'>
 
 export interface ActiveA2ASession {
   reader: ReadableStreamDefaultReader<Uint8Array>
@@ -91,4 +109,8 @@ export interface ActiveA2ASession {
   sseBuffer: string
   /** Set to true when all emitted tool calls have been matched with REMOTE_TOOL_REQUESTs */
   readyToFinishForTools: boolean
+  /** Artifact ID of the active token-streaming block (set by message.stream.start) */
+  activeStreamArtifactId: string | undefined
+  /** Content type of the currently open streaming block ('text' | 'reasoning') */
+  activeStreamContentType: 'text' | 'reasoning' | undefined
 }

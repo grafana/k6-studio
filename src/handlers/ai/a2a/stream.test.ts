@@ -1,8 +1,11 @@
-import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
 import { describe, expect, it, vi } from 'vitest'
 
 import { createA2ASession } from '@/test/factories/a2aSession'
-import { encodeSSE, encodeSSEChunked } from '@/test/utils/sse'
+import {
+  collectStreamParts,
+  encodeSSE,
+  encodeSSEChunked,
+} from '@/test/utils/sse'
 
 import { createA2AStream } from './stream'
 import type { ActiveA2ASession } from './types'
@@ -15,22 +18,6 @@ function createSessionWithStream(
     reader: sseStream.getReader(),
     ...overrides,
   })
-}
-
-async function collectStreamParts(
-  stream: ReadableStream<LanguageModelV2StreamPart>
-): Promise<LanguageModelV2StreamPart[]> {
-  const parts: LanguageModelV2StreamPart[] = []
-  const reader = stream.getReader()
-
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    parts.push(value)
-  }
-
-  return parts
 }
 
 describe('createA2AStream', () => {

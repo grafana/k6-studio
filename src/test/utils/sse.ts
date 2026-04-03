@@ -13,6 +13,28 @@ export function encodeSSE(
   })
 }
 
+/** Read a stream to completion, discarding all values. */
+export async function drainStream(stream: ReadableStream): Promise<void> {
+  const reader = stream.getReader()
+  while (!(await reader.read()).done) {
+    /* consume */
+  }
+}
+
+/** Read a stream to completion, collecting all values. */
+export async function collectStreamParts<T>(
+  stream: ReadableStream<T>
+): Promise<T[]> {
+  const parts: T[] = []
+  const reader = stream.getReader()
+  let result = await reader.read()
+  while (!result.done) {
+    parts.push(result.value)
+    result = await reader.read()
+  }
+  return parts
+}
+
 /** Encode SSE events where each event is a separate chunk (one per pull). */
 export function encodeSSEChunked(
   events: Array<Record<string, unknown>>

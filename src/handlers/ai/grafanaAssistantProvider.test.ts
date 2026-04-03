@@ -1,7 +1,7 @@
 import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { encodeSSEChunked } from '@/test/utils/sse'
+import { drainStream, encodeSSEChunked } from '@/test/utils/sse'
 
 import { sendTaskCancel } from './a2a/cancelTask'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
@@ -15,7 +15,7 @@ vi.mock('./a2a/config', () => ({
     Promise.resolve({
       baseUrl: 'http://test-a2a',
       agentId: 'test-agent',
-      remoteToolExtension: 'test-ext',
+      extensions: 'test-ext',
       bearerToken: 'test-token',
     })
   ),
@@ -32,6 +32,75 @@ function makeSSEResponse(sseStream: ReadableStream<Uint8Array>): Response {
   })
 }
 
+function makeToolCallSSEEvents(
+  taskId: string,
+  contextId: string,
+  chatId: string,
+  toolName = 'searchRequests'
+) {
+  return [
+    {
+      jsonrpc: '2.0',
+      id: 1,
+      result: {
+        kind: 'status-update',
+        taskId,
+        contextId,
+        status: { state: 'working' },
+      },
+    },
+    {
+      jsonrpc: '2.0',
+      id: 2,
+      result: {
+        kind: 'artifact-update',
+        taskId,
+        contextId,
+        artifact: {
+          name: 'step.toolCall',
+          artifactId: 'art-1',
+          parts: [
+            {
+              kind: 'data',
+              data: {
+                toolId: 'tool-1',
+                toolName,
+                inputs: {},
+              },
+            },
+          ],
+        },
+      },
+    },
+    {
+      jsonrpc: '2.0',
+      id: 3,
+      result: {
+        type: 'REMOTE_TOOL_REQUEST',
+        data: {
+          requestId: 'req-1',
+          chatId,
+          toolName,
+          toolInput: {},
+        },
+      },
+    },
+  ]
+}
+
+function makeCompletedSSEEvent(taskId: string, contextId: string) {
+  return {
+    jsonrpc: '2.0',
+    id: 4,
+    result: {
+      kind: 'status-update',
+      taskId,
+      contextId,
+      status: { state: 'completed' },
+    },
+  }
+}
+
 function makeOptions(
   chatId: string,
   userText: string
@@ -40,15 +109,6 @@ function makeOptions(
     prompt: [{ role: 'user', content: [{ type: 'text', text: userText }] }],
     providerOptions: { grafanaAssistant: { chatId } },
   } as unknown as LanguageModelV2CallOptions
-}
-
-async function drainStream(
-  result: Awaited<ReturnType<GrafanaAssistantLanguageModel['doStream']>>
-): Promise<void> {
-  const reader = result.stream.getReader()
-  while (!(await reader.read()).done) {
-    /* consume */
-  }
 }
 
 describe('GrafanaAssistantLanguageModel', () => {
@@ -66,82 +126,24 @@ describe('GrafanaAssistantLanguageModel', () => {
       const model = new GrafanaAssistantLanguageModel()
 
       // First call: SSE stream finishes with tool-calls, keeping session alive.
-      // The status-update sets contextId on the session, and the tool-call +
-      // REMOTE_TOOL_REQUEST matching causes a tool-calls finish (no cleanup).
       fetchSpy.mockResolvedValueOnce(
         makeSSEResponse(
-          encodeSSEChunked([
-            {
-              jsonrpc: '2.0',
-              id: 1,
-              result: {
-                kind: 'status-update',
-                taskId: 't1',
-                contextId: 'ctx-from-server',
-                status: { state: 'working' },
-              },
-            },
-            {
-              jsonrpc: '2.0',
-              id: 2,
-              result: {
-                kind: 'artifact-update',
-                taskId: 't1',
-                contextId: 'ctx-from-server',
-                artifact: {
-                  name: 'step.toolCall',
-                  artifactId: 'art-1',
-                  parts: [
-                    {
-                      kind: 'data',
-                      data: {
-                        toolId: 'tool-1',
-                        toolName: 'searchRequests',
-                        inputs: { query: 'login' },
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-            {
-              jsonrpc: '2.0',
-              id: 3,
-              result: {
-                type: 'REMOTE_TOOL_REQUEST',
-                data: {
-                  requestId: 'req-1',
-                  chatId: 'chat-1',
-                  toolName: 'searchRequests',
-                  toolInput: { query: 'login' },
-                },
-              },
-            },
-          ])
+          encodeSSEChunked(
+            makeToolCallSSEEvents('t1', 'ctx-from-server', 'chat-1')
+          )
         )
       )
 
       const firstResult = await model.doStream(
         makeOptions('chat-1', 'First message')
       )
-      await drainStream(firstResult)
+      await drainStream(firstResult.stream)
 
       // Second call: new user message (no tool results) → handleNewMessage.
       // The contextId from the surviving session should be included.
       fetchSpy.mockResolvedValueOnce(
         makeSSEResponse(
-          encodeSSEChunked([
-            {
-              jsonrpc: '2.0',
-              id: 4,
-              result: {
-                kind: 'status-update',
-                taskId: 't2',
-                contextId: 'ctx-from-server',
-                status: { state: 'completed' },
-              },
-            },
-          ])
+          encodeSSEChunked([makeCompletedSSEEvent('t2', 'ctx-from-server')])
         )
       )
 
@@ -166,65 +168,19 @@ describe('GrafanaAssistantLanguageModel', () => {
 
       fetchSpy.mockResolvedValueOnce(
         makeSSEResponse(
-          encodeSSEChunked([
-            {
-              jsonrpc: '2.0',
-              id: 1,
-              result: {
-                kind: 'status-update',
-                taskId: 'task-to-cancel',
-                contextId: 'c1',
-                status: { state: 'working' },
-              },
-            },
-            {
-              jsonrpc: '2.0',
-              id: 2,
-              result: {
-                kind: 'artifact-update',
-                taskId: 'task-to-cancel',
-                contextId: 'c1',
-                artifact: {
-                  name: 'step.toolCall',
-                  artifactId: 'art-1',
-                  parts: [
-                    {
-                      kind: 'data',
-                      data: {
-                        toolId: 'tool-1',
-                        toolName: 'searchRequests',
-                        inputs: {},
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-            {
-              jsonrpc: '2.0',
-              id: 3,
-              result: {
-                type: 'REMOTE_TOOL_REQUEST',
-                data: {
-                  requestId: 'req-1',
-                  chatId: 'abort-chat',
-                  toolName: 'searchRequests',
-                  toolInput: {},
-                },
-              },
-            },
-          ])
+          encodeSSEChunked(
+            makeToolCallSSEEvents('task-to-cancel', 'c1', 'abort-chat')
+          )
         )
       )
 
-      const result = await model.doStream(
-        makeOptions('abort-chat', 'Hello') as LanguageModelV2CallOptions & {
-          abortSignal: AbortSignal
-        }
-      )
+      const result = await model.doStream({
+        ...makeOptions('abort-chat', 'Hello'),
+        abortSignal: abortController.signal,
+      })
 
       // Drain the stream to consume the tool-calls finish
-      await drainStream(result)
+      await drainStream(result.stream)
 
       // Now abort — this should trigger cleanupSession with the abort flag
       abortController.abort()
@@ -232,26 +188,13 @@ describe('GrafanaAssistantLanguageModel', () => {
       // Start a new message for the same chatId so handleNewMessage cleans up
       // the old session (which now has taskId='task-to-cancel').
       fetchSpy.mockResolvedValueOnce(
-        makeSSEResponse(
-          encodeSSEChunked([
-            {
-              jsonrpc: '2.0',
-              id: 4,
-              result: {
-                kind: 'status-update',
-                taskId: 't2',
-                contextId: 'c1',
-                status: { state: 'completed' },
-              },
-            },
-          ])
-        )
+        makeSSEResponse(encodeSSEChunked([makeCompletedSSEEvent('t2', 'c1')]))
       )
 
       const result2 = await model.doStream(
         makeOptions('abort-chat', 'New message')
       )
-      await drainStream(result2)
+      await drainStream(result2.stream)
 
       expect(sendTaskCancelMock).toHaveBeenCalledWith(
         expect.objectContaining({ bearerToken: 'test-token' }),
@@ -293,7 +236,7 @@ describe('GrafanaAssistantLanguageModel', () => {
       )
 
       const result = await model.doStream(makeOptions('normal-chat', 'Hello'))
-      await drainStream(result)
+      await drainStream(result.stream)
 
       expect(sendTaskCancelMock).not.toHaveBeenCalled()
     })
@@ -309,85 +252,29 @@ describe('GrafanaAssistantLanguageModel', () => {
       // First call finishes with tool-calls, keeping session alive with a taskId
       fetchSpy.mockResolvedValueOnce(
         makeSSEResponse(
-          encodeSSEChunked([
-            {
-              jsonrpc: '2.0',
-              id: 1,
-              result: {
-                kind: 'status-update',
-                taskId: 'old-task',
-                contextId: 'c1',
-                status: { state: 'working' },
-              },
-            },
-            {
-              jsonrpc: '2.0',
-              id: 2,
-              result: {
-                kind: 'artifact-update',
-                taskId: 'old-task',
-                contextId: 'c1',
-                artifact: {
-                  name: 'step.toolCall',
-                  artifactId: 'art-1',
-                  parts: [
-                    {
-                      kind: 'data',
-                      data: {
-                        toolId: 'tool-1',
-                        toolName: 'searchRequests',
-                        inputs: {},
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-            {
-              jsonrpc: '2.0',
-              id: 3,
-              result: {
-                type: 'REMOTE_TOOL_REQUEST',
-                data: {
-                  requestId: 'req-1',
-                  chatId: 'replace-chat',
-                  toolName: 'searchRequests',
-                  toolInput: {},
-                },
-              },
-            },
-          ])
+          encodeSSEChunked(
+            makeToolCallSSEEvents('old-task', 'c1', 'replace-chat')
+          )
         )
       )
 
       const firstResult = await model.doStream(
         makeOptions('replace-chat', 'First message')
       )
-      await drainStream(firstResult)
+      await drainStream(firstResult.stream)
 
       // Second call: new user message replaces the still-active session.
       // handleNewMessage should abort the old session and cancel its task.
       fetchSpy.mockResolvedValueOnce(
         makeSSEResponse(
-          encodeSSEChunked([
-            {
-              jsonrpc: '2.0',
-              id: 4,
-              result: {
-                kind: 'status-update',
-                taskId: 'new-task',
-                contextId: 'c1',
-                status: { state: 'completed' },
-              },
-            },
-          ])
+          encodeSSEChunked([makeCompletedSSEEvent('new-task', 'c1')])
         )
       )
 
       const secondResult = await model.doStream(
         makeOptions('replace-chat', 'Second message')
       )
-      await drainStream(secondResult)
+      await drainStream(secondResult.stream)
 
       expect(sendTaskCancelMock).toHaveBeenCalledWith(
         expect.objectContaining({ bearerToken: 'test-token' }),

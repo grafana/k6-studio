@@ -31,6 +31,8 @@ import { useSettings } from '@/hooks/useSettings'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
 
+import { AssistantTestChat } from './AssistantTestChat'
+
 interface IntroductionMessageProps {
   onStart: () => void
 }
@@ -200,6 +202,7 @@ function AssistantAuthStatus({
   return (
     <Flex direction="column" align="center" gap="2">
       <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
+      <AssistantTestChat />
       <Button
         variant="ghost"
         size="1"

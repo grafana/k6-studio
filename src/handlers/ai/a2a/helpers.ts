@@ -15,13 +15,9 @@ export function buildA2AHeaders(
 }
 
 export function extractChatId(options: LanguageModelV2CallOptions): string {
-  const grafanaOpts = options.providerOptions?.grafanaAssistant as
-    | Record<string, unknown>
-    | undefined
+  const chatId = options.providerOptions?.grafanaAssistant?.chatId
 
-  const chatId = grafanaOpts?.chatId as string | undefined
-
-  if (!chatId) {
+  if (typeof chatId !== 'string') {
     throw new Error(
       'GrafanaAssistantProvider requires providerOptions.grafanaAssistant.chatId'
     )

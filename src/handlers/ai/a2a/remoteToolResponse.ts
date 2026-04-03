@@ -1,15 +1,14 @@
 import { buildA2AHeaders } from './helpers'
 import type { A2ASessionConfig } from './types'
 
+type RemoteToolPayload = {
+  requestId: string
+  chatId: string
+} & ({ success: true; result: unknown } | { success: false; error: string })
+
 export async function sendRemoteToolResponse(
   config: A2ASessionConfig,
-  payload: {
-    requestId: string
-    chatId: string
-    success: boolean
-    result?: unknown
-    error?: string
-  }
+  payload: RemoteToolPayload
 ): Promise<void> {
   const response = await fetch(`${config.baseUrl}/remote-tool-response`, {
     method: 'POST',

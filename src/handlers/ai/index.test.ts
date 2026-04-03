@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { IpcMainEvent } from 'electron'
+import type { IpcMainEvent } from 'electron'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { AiHandler, StreamChatRequest } from './types'
