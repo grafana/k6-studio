@@ -1,11 +1,14 @@
 import type { A2AConfig } from './config'
 
 export type A2ATaskState =
+  | 'submitted'
   | 'working'
   | 'completed'
   | 'failed'
   | 'canceled'
   | 'input-required'
+  | 'rejected'
+  | 'auth-required'
 
 export interface A2AStatusUpdateEvent {
   kind: 'status-update'
@@ -30,20 +33,48 @@ export interface A2ADataPart {
 
 export type A2AArtifactPart = A2ATextPart | A2ADataPart
 
+export interface A2ACost {
+  inputCost: number
+  outputCost: number
+  cacheReadCost: number
+  cacheCreationCost: number
+  totalCost: number
+  currency: string
+}
+
+export interface A2ATokenUsage {
+  InputTokens?: number
+  OutputTokens?: number
+  CacheCreationInputTokens?: number
+  CacheReadInputTokens?: number
+  Model?: string
+  Provider?: string
+  Cost?: A2ACost
+}
+
 export interface A2AArtifactMetadata {
   'agent-traceability'?: {
-    usage?: {
-      InputTokens?: number
-      OutputTokens?: number
-    }
+    usage?: A2ATokenUsage
   }
 }
 
+export interface A2AStepCompleteMetadata {
+  'agent-traceability'?: {
+    usage?: A2ATokenUsage
+  }
+  model?: string
+  provider?: string
+}
+
 export interface A2AArtifact {
-  name: string
+  kind: string
   artifactId: string
+  name: string
+  description?: string
   parts: A2AArtifactPart[]
-  metadata?: A2AArtifactMetadata
+  index?: number
+  lastChunk?: boolean
+  metadata?: A2AArtifactMetadata | A2AStepCompleteMetadata
 }
 
 export interface A2AArtifactUpdateEvent {

@@ -12,7 +12,9 @@ import type {
   A2ASSEEvent,
   A2ASSEResult,
   A2AStatusUpdateEvent,
+  A2AStepCompleteMetadata,
   A2AToolCallData,
+  A2ATokenUsage,
   ActiveA2ASession,
 } from './types'
 
@@ -101,7 +103,7 @@ function handleStatusUpdate(
     ]
   }
 
-  if (state === 'failed' || state === 'canceled') {
+  if (state === 'failed' || state === 'canceled' || state === 'rejected' || state === 'auth-required') {
     const statusMessage = event.status.message?.parts
       ?.map((p) => p.text)
       .filter(Boolean)
@@ -180,10 +182,7 @@ interface A2AUsage {
   totalTokens: number | undefined
 }
 
-function extractUsage(artifact: A2AArtifact): A2AUsage {
-  const traceability = artifact.metadata?.['agent-traceability']
-  const usage = traceability?.usage
-
+function extractUsageFromTokenUsage(usage: A2ATokenUsage | undefined): A2AUsage {
   return {
     inputTokens: usage?.InputTokens,
     outputTokens: usage?.OutputTokens,
@@ -192,6 +191,12 @@ function extractUsage(artifact: A2AArtifact): A2AUsage {
         ? usage.InputTokens + usage.OutputTokens
         : undefined,
   }
+}
+
+function extractUsage(artifact: A2AArtifact): A2AUsage {
+  const metadata = artifact.metadata as A2AStepCompleteMetadata | undefined
+  const usage = metadata?.['agent-traceability']?.usage
+  return extractUsageFromTokenUsage(usage)
 }
 
 function handleStepComplete(

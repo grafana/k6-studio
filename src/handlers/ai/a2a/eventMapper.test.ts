@@ -73,6 +73,42 @@ describe('processA2AEvent', () => {
     expect(parts[0]?.type).toBe('error')
   })
 
+  it('returns error for status-update(rejected)', () => {
+    const event: A2ASSEEvent = {
+      jsonrpc: '2.0',
+      id: 1,
+      result: {
+        kind: 'status-update',
+        taskId: 't1',
+        contextId: 'c1',
+        status: { state: 'rejected' },
+      },
+    }
+
+    const parts = processA2AEvent(event, createA2ASession())
+
+    expect(parts).toHaveLength(1)
+    expect(parts[0]?.type).toBe('error')
+  })
+
+  it('returns error for status-update(auth-required)', () => {
+    const event: A2ASSEEvent = {
+      jsonrpc: '2.0',
+      id: 1,
+      result: {
+        kind: 'status-update',
+        taskId: 't1',
+        contextId: 'c1',
+        status: { state: 'auth-required' },
+      },
+    }
+
+    const parts = processA2AEvent(event, createA2ASession())
+
+    expect(parts).toHaveLength(1)
+    expect(parts[0]?.type).toBe('error')
+  })
+
   it('includes status message text in failed error', () => {
     const event: A2ASSEEvent = {
       jsonrpc: '2.0',
@@ -122,6 +158,7 @@ describe('processA2AEvent', () => {
         taskId: 't1',
         contextId: 'c1',
         artifact: {
+          kind: 'artifact',
           name: 'step.toolCall',
           artifactId: 'art-1',
           parts: [
@@ -158,6 +195,7 @@ describe('processA2AEvent', () => {
         taskId: 't1',
         contextId: 'c1',
         artifact: {
+          kind: 'artifact',
           name: 'step.complete',
           artifactId: 'art-1',
           parts: [{ kind: 'data', data: { stopReason: 'tool_use' } }],
@@ -178,6 +216,7 @@ describe('processA2AEvent', () => {
         taskId: 't1',
         contextId: 'c1',
         artifact: {
+          kind: 'artifact',
           name: 'step.complete',
           artifactId: 'art-1',
           parts: [{ kind: 'data', data: { stopReason: 'end_turn' } }],
@@ -202,6 +241,7 @@ describe('processA2AEvent', () => {
         taskId: 't1',
         contextId: 'c1',
         artifact: {
+          kind: 'artifact',
           name: 'step.message',
           artifactId: 'msg-1',
           parts: [{ kind: 'text', text: 'Hello world' }],
@@ -260,6 +300,7 @@ describe('processA2AEvent', () => {
           taskId: 't1',
           contextId: 'c1',
           artifact: {
+            kind: 'artifact',
             name: 'message.content.delta',
             artifactId,
             parts: [{ kind: 'data', data: { delta, contentType } }],
@@ -278,6 +319,7 @@ describe('processA2AEvent', () => {
           taskId: 't1',
           contextId: 'c1',
           artifact: {
+            kind: 'artifact',
             name: 'message.stream.start',
             artifactId: 'stream-1',
             parts: [],
@@ -354,6 +396,7 @@ describe('processA2AEvent', () => {
           taskId: 't1',
           contextId: 'c1',
           artifact: {
+            kind: 'artifact',
             name: 'message.stream.complete',
             artifactId: 'complete-1',
             parts: [],
@@ -382,6 +425,7 @@ describe('processA2AEvent', () => {
           taskId: 't1',
           contextId: 'c1',
           artifact: {
+            kind: 'artifact',
             name: 'step.message',
             artifactId: 'msg-1',
             parts: [{ kind: 'text', text: 'Full message text' }],
@@ -406,6 +450,7 @@ describe('processA2AEvent', () => {
           taskId: 't1',
           contextId: 'c1',
           artifact: {
+            kind: 'artifact',
             name: 'message.content.delta',
             artifactId: 'delta-1',
             parts: [{ kind: 'data', data: { someOther: 'field' } }],
