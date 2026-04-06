@@ -62,8 +62,21 @@ async function handleStreamChat(
 
       await streamMessages(event.sender, response, request.id, true)
     }
+  } catch (error) {
+    if (!event.sender.isDestroyed()) {
+      event.sender.send(AiHandler.StreamChatChunk, {
+        id: request.id,
+        chunk: {
+          type: 'error' as const,
+          errorText:
+            error instanceof Error ? error.message : 'Unknown streaming error',
+        },
+      })
+      event.sender.send(AiHandler.StreamChatEnd, {
+        id: request.id,
+      })
+    }
   } finally {
-    // Clean up the AbortController after streaming completes or fails
     activeAbortControllers.delete(request.id)
   }
 }
