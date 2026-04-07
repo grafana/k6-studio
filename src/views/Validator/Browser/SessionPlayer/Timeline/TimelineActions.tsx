@@ -35,18 +35,31 @@ interface Segment {
 }
 
 function buildLanes(actions: BrowserActionEvent[], time: Time) {
+  const firstAction = actions[0]
+
+  if (firstAction === undefined) {
+    return { totalTime: time.total, lanes: [] }
+  }
+
+  const lastAction = actions[actions.length - 1] ?? firstAction
+
+  const startTime = Math.min(time.start, firstAction.timestamp.started)
+  const endTime = Math.max(time.end, lastAction.timestamp.ended ?? time.end)
+
+  const totalTime = endTime - startTime
+
   const lanes: Lane[] = []
 
   for (const action of actions) {
-    if (action.timestamp.started > time.end) {
+    if (action.timestamp.started > endTime) {
       continue
     }
 
     const actionStarted = action.timestamp.started
-    const actionEnded = Math.min(action.timestamp.ended ?? time.end, time.end)
+    const actionEnded = Math.min(action.timestamp.ended ?? endTime, endTime)
 
-    const start = Math.max(0, actionStarted - time.start)
-    const end = Math.min(time.total, actionEnded - time.start)
+    const start = Math.max(0, actionStarted - startTime)
+    const end = Math.min(totalTime, actionEnded - startTime)
 
     const segment: Segment = {
       id: action.eventId,
@@ -75,23 +88,26 @@ function buildLanes(actions: BrowserActionEvent[], time: Time) {
     lane.segments.push(segment)
   }
 
-  return lanes
+  return {
+    totalTime,
+    lanes,
+  }
 }
 
 interface SegmentProps {
-  time: Time
   disabled?: boolean
   segment: Segment
+  totalTime: number
   onSeek: (time: number) => void
 }
 
-function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
+function Segment({ disabled, segment, totalTime, onSeek }: SegmentProps) {
   const mouseDownX = useRef<number>(undefined)
 
   const [showTooltip, setShowTooltip] = useState(false)
 
-  const left = (segment.start / time.total) * 100
-  const width = ((segment.end - segment.start) / time.total) * 100
+  const left = (segment.start / totalTime) * 100
+  const width = ((segment.end - segment.start) / totalTime) * 100
 
   const style = {
     left: `${left}%`,
@@ -140,6 +156,8 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
             data-status={status}
             css={css`
               z-index: 0;
+
+              padding: 0;
 
               position: absolute;
               inset: 0;
@@ -194,7 +212,7 @@ export function TimelineActions({
   time,
   onSeek,
 }: TimelineActionsProps) {
-  const lanes = buildLanes(actions, time)
+  const { totalTime, lanes } = buildLanes(actions, time)
 
   return (
     <div
@@ -212,7 +230,7 @@ export function TimelineActions({
 
             margin-top: 1px;
 
-            &:first-child-of-type {
+            &:first-of-type {
               margin-top: 0;
             }
           `}
@@ -220,7 +238,7 @@ export function TimelineActions({
           {segments.map((segment) => (
             <Segment
               key={segment.id}
-              time={time}
+              totalTime={totalTime}
               disabled={disabled}
               segment={segment}
               onSeek={onSeek}
