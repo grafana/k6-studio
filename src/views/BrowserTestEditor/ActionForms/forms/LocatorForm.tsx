@@ -295,7 +295,17 @@ function DisplayValue({
   const selector = toNodeSelector(values[current]!)
   return (
     <Flex gap="1" align="center" overflow="hidden">
-      <LocatorIcon locator={selector} />
+      <LocatorIcon
+        locator={selector}
+        css={css`
+          && {
+            width: 12px;
+            height: 12px;
+            min-width: 12px;
+            min-height: 12px;
+          }
+        `}
+      />
       <span
         css={css`
           overflow: hidden;
