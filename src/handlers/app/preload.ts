@@ -27,7 +27,7 @@ export function trackEvent(event: UsageEvent) {
 let pendingDeepLink: string | null = null
 let deepLinkCallback: ((url: string) => void) | null = null
 
-ipcRenderer.on(AppHandler.DeepLink, (_, url: string) => {
+ipcRenderer.on(AppHandler.Navigate, (_, url: string) => {
   if (deepLinkCallback) {
     deepLinkCallback(url)
   } else {

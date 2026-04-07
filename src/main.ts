@@ -115,7 +115,7 @@ const createWindow = async () => {
   replayPendingDeepLink()
 
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.webContents.openDevTools({ mode: 'right' })
+    mainWindow.webContents.openDevTools()
   }
 
   mainWindow.on('closed', () =>

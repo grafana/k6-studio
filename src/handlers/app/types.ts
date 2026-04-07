@@ -1,6 +1,6 @@
 export enum AppHandler {
   Close = 'app:close',
   ChangeRoute = 'app:change-route',
-  DeepLink = 'app:deep-link',
+  Navigate = 'app:navigate',
   TrackEvent = 'app:track-event',
 }

@@ -88,7 +88,7 @@ function handleDeepLink(url: string) {
 
   const path = parsedUrl.searchParams.get('path')
 
-  mainWindow.webContents.send(AppHandler.DeepLink, path)
+  mainWindow.webContents.send(AppHandler.Navigate, path)
 
   // Restore and focus the main window, needed for windows
   if (mainWindow.isMinimized()) {
