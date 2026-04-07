@@ -70,7 +70,7 @@ export function parseContent(format: string | undefined, data: ProxyData) {
         return
     }
   } catch (e) {
-    console.error('Failed to parse content', e)
+    console.info('Failed to parse content', e)
     return
   }
 }

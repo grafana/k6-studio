@@ -584,9 +584,7 @@ correlation_vars['correlation_${generatedUniqueId}'] = resp.json()${json_path}`
   }
 }
 
-// @ts-expect-error we have commonjs set as module option
 if (import.meta.vitest) {
-  // @ts-expect-error we have commonjs set as module option
   const { it, expect } = import.meta.vitest
 
   const generateResponse = (content: string): Response => {

@@ -19,13 +19,11 @@ import { RequestList } from './RequestList'
 import { ScriptPreview } from './ScriptPreview'
 
 interface GeneratorTabsProps {
-  fileName: string
   selectedRequest: ProxyData | null
   onSelectRequest: (request: ProxyData | null) => void
 }
 
 export function GeneratorTabs({
-  fileName,
   selectedRequest,
   onSelectRequest,
 }: GeneratorTabsProps) {
@@ -94,7 +92,7 @@ export function GeneratorTabs({
             min-height: 0;
           `}
         >
-          <ScriptPreview fileName={fileName} />
+          <ScriptPreview />
         </Tabs.Content>
       </Tabs.Root>
     </Flex>

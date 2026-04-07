@@ -10,7 +10,7 @@ import {
   WholeWordIcon,
 } from 'lucide-react'
 
-import { NodeSelector } from '@/codegen/browser/selectors'
+import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
 import { RoleLocatorIcon } from './RoleLocatorIcon'

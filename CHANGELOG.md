@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.12.0](https://github.com/grafana/k6-studio/compare/v1.11.1...v1.12.0) (2026-03-17)
+
+
+### Features
+
+* **generator:** Move Validate and Run in Cloud buttons to Header ([#1112](https://github.com/grafana/k6-studio/issues/1112)) ([717fe3d](https://github.com/grafana/k6-studio/commit/717fe3d313ee536b768359557ca4a9c87c908c07))
+
+
+### Bug Fixes
+
+* **autocorrelation:** Handle quota exceeded error in the UI ([#1113](https://github.com/grafana/k6-studio/issues/1113)) ([4d7c419](https://github.com/grafana/k6-studio/commit/4d7c419308272afca2bb1e10a187ce3f1d3aaa7e))
+* Binary request bodies are inlined as raw binary characters breaking the script ([#1120](https://github.com/grafana/k6-studio/issues/1120)) ([fe38e32](https://github.com/grafana/k6-studio/commit/fe38e32266beda6414e8a7bb96e28a749c543f14))
+* **browser-codegen:** Can't export browser test when recording contains implicit navigations ([#1107](https://github.com/grafana/k6-studio/issues/1107)) ([27f337a](https://github.com/grafana/k6-studio/commit/27f337a956f1996deada32c9a38ba90d3d3400c5))
+* **browser:** Actions are called after `page.close` when multiple actions are performed on same locator ([#1124](https://github.com/grafana/k6-studio/issues/1124)) ([7494257](https://github.com/grafana/k6-studio/commit/7494257695ea0b8c6777cd4a74bf3f695391d691))
+* remove survey banner ([#1125](https://github.com/grafana/k6-studio/issues/1125)) ([033e81a](https://github.com/grafana/k6-studio/commit/033e81aa1ad2eee6b82eabbfed964c2da16df82f))
+* Response is never sent when logs are sent from a browser test ([#1083](https://github.com/grafana/k6-studio/issues/1083)) ([eca2fcf](https://github.com/grafana/k6-studio/commit/eca2fcfdb5ecf23075e3b897c195529176b855b5))
+
+
+### Internal Changes
+
+* Add assistant feature toggle ([#1100](https://github.com/grafana/k6-studio/issues/1100)) ([e375792](https://github.com/grafana/k6-studio/commit/e3757928e5a21a4223c3b731120c43082ec90d82))
+
+
+### Miscellaneous Chores
+
+* Reduce sentry noise ([#1110](https://github.com/grafana/k6-studio/issues/1110)) ([2644b30](https://github.com/grafana/k6-studio/commit/2644b30a205cae2b13f52fffccdaaca5e82e9176))
+
+## [1.11.1](https://github.com/grafana/k6-studio/compare/v1.11.0...v1.11.1) (2026-03-10)
+
+
+### Bug Fixes
+
+* Allow to modify requests in a redirect chain ([#1077](https://github.com/grafana/k6-studio/issues/1077)) ([4951e57](https://github.com/grafana/k6-studio/commit/4951e57af104513721fae687fc1fb534b8fb4095))
+* **browser:** Pages are not disposed of properly at end of test ([#1090](https://github.com/grafana/k6-studio/issues/1090)) ([188008a](https://github.com/grafana/k6-studio/commit/188008a13607e7e9835caa9f0e0d1b7e2be5863d))
+
+
+### Miscellaneous Chores
+
+* **deps:** update basic-ftp version ([#1099](https://github.com/grafana/k6-studio/issues/1099)) ([c05d136](https://github.com/grafana/k6-studio/commit/c05d136c75fe9bed26a764436a6e5c20480f581c))
+* Improve error logging ([#1106](https://github.com/grafana/k6-studio/issues/1106)) ([11adece](https://github.com/grafana/k6-studio/commit/11adece5bf2004d27f04cae95de5b7ad74c0389e))
+* Update electron forge to latest version ([#1088](https://github.com/grafana/k6-studio/issues/1088)) ([52471ce](https://github.com/grafana/k6-studio/commit/52471ceaa2336a9b60688358eb7151f33dee084d))
+* Update electron to latest version ([#1089](https://github.com/grafana/k6-studio/issues/1089)) ([b532c38](https://github.com/grafana/k6-studio/commit/b532c3880ac184f51076a9552021bba5b06e8e8d))
+
+
+### Build System
+
+* Fix macos build error and improve local build/hmr performance ([#1097](https://github.com/grafana/k6-studio/issues/1097)) ([3b5230b](https://github.com/grafana/k6-studio/commit/3b5230bdf65a27c753a0d19a3ef5aa1d2bea0402))
+
 ## [1.11.0](https://github.com/grafana/k6-studio/compare/v1.10.0...v1.11.0) (2026-02-04)
 
 

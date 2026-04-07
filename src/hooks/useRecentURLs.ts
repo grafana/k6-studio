@@ -3,6 +3,26 @@ import { useLocalStorage } from 'react-use'
 const LOCAL_STORAGE_KEY = 'recentURLs'
 const MAX_RECENT_URLS = 3
 
+function hasScheme(url: string): boolean {
+  return /^https?:\/\//i.test(url)
+}
+
+function areSameURL(a: string, b: string): boolean {
+  if (!hasScheme(a) && !hasScheme(b)) {
+    return areSameURL('http://' + a, 'http://' + b)
+  }
+
+  try {
+    const urlA = new URL(a)
+    const urlB = new URL(b)
+    // scheme and host are case-insensitive per RFC 3986
+    return urlA.href === urlB.href
+  } catch {
+    // Fallback for invalid URLs: exact match
+    return a === b
+  }
+}
+
 export function useRecentURLs() {
   const [recentURLs = [], setRecentURLs] = useLocalStorage<string[]>(
     LOCAL_STORAGE_KEY,
@@ -10,25 +30,26 @@ export function useRecentURLs() {
   )
 
   const addURL = (url: string) => {
-    const normalizedURL = url.toLowerCase().trim()
-    if (!normalizedURL) return
+    const trimmedURL = url.trim()
 
-    setRecentURLs((prev = []) =>
-      [normalizedURL, ...prev.filter((u) => u !== normalizedURL)].slice(
-        0,
-        MAX_RECENT_URLS
+    if (!trimmedURL) {
+      return
+    }
+
+    setRecentURLs((prev = []) => {
+      const newUrls = prev.filter(
+        (existingUrl) => !areSameURL(existingUrl, trimmedURL)
       )
-    )
+
+      return [trimmedURL, ...newUrls].slice(0, MAX_RECENT_URLS)
+    })
   }
 
   const removeURL = (url: string) => {
-    const updatedURLs = recentURLs.filter((u) => u !== url)
-    setRecentURLs(updatedURLs)
+    setRecentURLs((prev = []) => {
+      return prev.filter((existingUrl) => !areSameURL(existingUrl, url))
+    })
   }
 
-  return {
-    recentURLs,
-    addURL,
-    removeURL,
-  }
+  return { recentURLs, addURL, removeURL }
 }

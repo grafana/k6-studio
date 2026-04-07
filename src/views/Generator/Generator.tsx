@@ -154,11 +154,7 @@ export function Generator() {
         />
       }
       actions={
-        <GeneratorControls
-          onSave={handleSaveGenerator}
-          isDirty={isDirty}
-          onChangeRecording={() => setSelectedRequest(null)}
-        />
+        <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }
       loading={isLoading}
     >
@@ -167,7 +163,6 @@ export function Generator() {
           <Allotment vertical>
             <Allotment.Pane minSize={200}>
               <GeneratorTabs
-                fileName={fileName}
                 selectedRequest={selectedRequest}
                 onSelectRequest={setSelectedRequest}
               />

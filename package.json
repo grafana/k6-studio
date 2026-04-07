@@ -1,7 +1,7 @@
 {
   "name": "k6-studio",
   "productName": "k6 Studio",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "k6 Studio",
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
@@ -11,7 +11,7 @@
   "scripts": {
     "preinstall": "node install-k6.js",
     "postinstall": "patch-package",
-    "start": "electron-forge start",
+    "start": "electron-forge start -- --remote-debugging-port=9223",
     "start:extension": "STANDALONE_EXTENSION=true vite --config vite.extension.config.mts",
     "watch:extension": "vite --config vite.extension.config.mts",
     "package": "electron-forge package",
@@ -58,7 +58,7 @@
     "@typescript-eslint/types": "^8.21.0",
     "dedent": "^1.7.0",
     "dotenv": "^17.0.0",
-    "electron": "40.4.1",
+    "electron": "40.8.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -175,6 +175,8 @@
     ]
   },
   "overrides": {
-    "esbuild": "^0.27.0"
+    "esbuild": "^0.27.0",
+    "nan": "^2.25.0",
+    "basic-ftp": "^5.2.0"
   }
 }

@@ -4,7 +4,7 @@ import constrainedEditor, {
   ConstrainedEditorInstance,
   RestrictionObject,
 } from 'constrained-editor-plugin'
-import * as monacoTypes from 'monaco-editor/esm/vs/editor/editor.api'
+import type * as monacoTypes from 'monaco-editor'
 import { useEffect, useRef, useState } from 'react'
 
 import { ReactMonacoEditor } from './ReactMonacoEditor'

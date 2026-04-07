@@ -16,6 +16,11 @@ export function configureRendererProcess(
         }
         return null
       },
+      integrations: [
+        SentryRenderer.captureConsoleIntegration({
+          levels: ['error'],
+        }),
+      ],
     })
 
     // attach event listener to catch unhandled promise rejections

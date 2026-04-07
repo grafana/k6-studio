@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/modifiers'
 import { css } from '@emotion/react'
 import {
-  PanelRight,
+  PanelRightIcon,
   RotateCcwIcon,
   SquareDashedMousePointerIcon,
   SquareStopIcon,
@@ -55,6 +55,7 @@ const restrictToolBoxToWindowEdges: Modifier = ({
 interface ToolBoxProps {
   tool: Tool | null
   isDrawerOpen: boolean
+  recordedEventCount: number
   onSelectTool: (value: Tool | null) => void
   onStopRecording: () => void
   onToggleDrawer: (open: boolean) => void
@@ -62,6 +63,7 @@ interface ToolBoxProps {
 
 export function ToolBox({
   isDrawerOpen,
+  recordedEventCount,
   tool,
   onSelectTool,
   onStopRecording,
@@ -158,39 +160,56 @@ export function ToolBox({
           onValueChange={handleDrawerToggle}
         >
           <ToolBoxTooltip content="Toggle event list">
-            <Toolbar.ToggleItem value="events">
-              <PanelRight />
+            <Toolbar.ToggleItem
+              value="events"
+              css={css`
+                position: relative;
+              `}
+            >
+              <PanelRightIcon />
+              <span
+                css={css`
+                  display: block;
+                  border-radius: 50%;
+                  padding: 2px;
+                  position: absolute;
+                  right: 0px;
+                  bottom: 0px;
+                  background-color: var(--studio-background);
+                  color: var(--studio-foreground);
+                  font-size: 0.7em;
+                `}
+              >
+                {recordedEventCount}
+              </span>
             </Toolbar.ToggleItem>
           </ToolBoxTooltip>
         </Toolbar.ToggleGroup>
-        {
-          // @ts-expect-error we have commonjs set as module option
-          import.meta.env.DEV && (
-            <>
-              <Toolbar.Separator />
-              <ToolBoxTooltip content="Reload extension (dev only)">
-                <Toolbar.Button
-                  onClick={() => {
-                    client.send({
-                      type: 'reload-extension',
-                    })
+        {import.meta.env.DEV && (
+          <>
+            <Toolbar.Separator />
+            <ToolBoxTooltip content="Reload extension (dev only)">
+              <Toolbar.Button
+                onClick={() => {
+                  client.send({
+                    type: 'reload-extension',
+                  })
 
-                    setTimeout(() => {
-                      window.location.reload()
-                    }, 500)
-                  }}
-                >
-                  <RotateCcwIcon
-                    css={css`
-                      stroke-width: 2px !important;
-                      color: var(--red-10);
-                    `}
-                  />
-                </Toolbar.Button>
-              </ToolBoxTooltip>
-            </>
-          )
-        }
+                  setTimeout(() => {
+                    window.location.reload()
+                  }, 500)
+                }}
+              >
+                <RotateCcwIcon
+                  css={css`
+                    stroke-width: 2px !important;
+                    color: var(--red-10);
+                  `}
+                />
+              </Toolbar.Button>
+            </ToolBoxTooltip>
+          </>
+        )}
       </ToolBoxRoot>
     </DndContext>
   )

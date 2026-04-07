@@ -10,8 +10,10 @@ import {
   StreamChatRequest,
   TokenUsage,
 } from '@/handlers/ai/types'
+import { AiProvider } from '@/types/features'
 
-export interface IPCChatTransportOptions {
+interface IPCChatTransportOptions {
+  provider: AiProvider
   onUsage?: (usage: TokenUsage) => void
 }
 
@@ -19,14 +21,17 @@ export interface IPCChatTransportOptions {
  * Custom ChatTransport implementation that uses Electron IPC for communication
  * between renderer and main process for AI streaming responses.
  */
-export class IPCChatTransport<Message extends UIMessage>
-  implements ChatTransport<Message>
-{
+export class IPCChatTransport<
+  Message extends UIMessage,
+> implements ChatTransport<Message> {
+  private provider: AiProvider
   private onUsage?: (usage: TokenUsage) => void
 
-  constructor(options?: IPCChatTransportOptions) {
-    this.onUsage = options?.onUsage
+  constructor(options: IPCChatTransportOptions) {
+    this.provider = options.provider
+    this.onUsage = options.onUsage
   }
+
   sendMessages(
     options: {
       trigger: 'submit-message' | 'regenerate-message'
@@ -48,9 +53,9 @@ export class IPCChatTransport<Message extends UIMessage>
       messages: options.messages,
       headers,
       body: options.body,
+      provider: this.provider,
     }
 
-    // Capture callback reference for use inside start()
     const onUsageCallback = this.onUsage
 
     // Create a ReadableStream that will receive chunks via IPC

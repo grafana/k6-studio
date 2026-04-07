@@ -28,7 +28,6 @@ const createUserDataDir = async () => {
   // with some preferences that make developing the extension easier
   // (e.g. whitelisting content scripts in the debugger).
   //
-  // @ts-expect-error - Electron apps are built as CJS.
   if (import.meta.env.DEV) {
     try {
       const defaultProfilePath = path.join(userDataDir, 'Default')
