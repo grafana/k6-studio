@@ -1,4 +1,4 @@
-import './index.tsx'
+import './index'
 import { setMonacoEnv } from './components/Monaco/setMonacoEnv'
 import * as Sentry from './sentry'
 import { ProxyData } from './types'

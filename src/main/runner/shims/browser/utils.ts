@@ -236,6 +236,7 @@ export function createProxy<T extends object>({
         }
 
         try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           const result: unknown = original(...args)
 
           // We can't use await here because it would make the proxy function

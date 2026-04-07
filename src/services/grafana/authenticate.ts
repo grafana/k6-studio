@@ -173,7 +173,9 @@ export async function authenticate({
 }: AuthenticateOptions): Promise<AuthenticateResult> {
   const config = new Configuration(metadata, GRAFANA_CLIENT_ID)
 
-  config[customFetch] = fetchAndPatch
+  config[customFetch] = fetchAndPatch as NonNullable<
+    (typeof config)[typeof customFetch]
+  >
 
   const initResponse = await initiateDeviceAuthorization(config, {
     scope: 'openid email profile stacks:read',

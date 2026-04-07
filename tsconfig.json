@@ -9,14 +9,14 @@
     "esModuleInterop": true,
     "noImplicitAny": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "outDir": "dist",
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"],
+      "extension/*": ["./extension/*"]
     },
     "types": [
       "vite/client",
@@ -24,8 +24,5 @@
       "vitest/importMeta",
       "@types/k6"
     ]
-  },
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
   }
 }
