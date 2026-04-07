@@ -12,20 +12,20 @@ import { EmptyMessage } from '@/components/EmptyMessage'
 import { AnyBrowserAction } from '@/main/runner/schema'
 
 import { EditableAction } from './EditableAction'
-import { BrowserActionWithId } from './types'
+import { BrowserActionInstance } from './types'
 
 interface EditableBrowserActionListProps {
-  actions: BrowserActionWithId[]
-  onAddAction: (method: AnyBrowserAction['method']) => void
+  actions: BrowserActionInstance[]
+  onAddAction: (method: BrowserActionInstance['method']) => void
   onRemoveAction: (actionId: string) => void
-  onUpdateAction: (action: BrowserActionWithId) => void
+  onChangeAction: (action: BrowserActionInstance) => void
 }
 
 export function EditableBrowserActionList({
   actions,
   onAddAction,
   onRemoveAction,
-  onUpdateAction,
+  onChangeAction,
 }: EditableBrowserActionListProps) {
   return (
     <Flex direction="column" height="100%">
@@ -54,7 +54,7 @@ export function EditableBrowserActionList({
               key={action.id}
               action={action}
               onRemove={onRemoveAction}
-              onUpdate={onUpdateAction}
+              onChange={onChangeAction}
             />
           ))
         )}
@@ -82,6 +82,20 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
           }}
         >
           Navigate to URL
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.waitFor')
+          }}
+        >
+          Wait for element
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('page.reload')
+          }}
+        >
+          Reload page
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>

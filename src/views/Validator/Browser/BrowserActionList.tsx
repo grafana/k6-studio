@@ -79,12 +79,19 @@ interface BrowserActionListProps {
   onHighlight?: (selector: NodeSelector | null) => void
 }
 
-export function BrowserActionList({ actions, onHighlight }: BrowserActionListProps) {
+export function BrowserActionList({
+  actions,
+  onHighlight,
+}: BrowserActionListProps) {
   return (
     <Reset>
       <ul>
         {actions.map((action) => (
-          <BrowserActionItem key={action.eventId} event={action} onHighlight={onHighlight} />
+          <BrowserActionItem
+            key={action.eventId}
+            event={action}
+            onHighlight={onHighlight}
+          />
         ))}
       </ul>
     </Reset>

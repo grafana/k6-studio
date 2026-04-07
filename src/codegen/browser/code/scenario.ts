@@ -56,12 +56,33 @@ function emitNewRoleLocatorExpression(
 ): ts.Expression {
   const page = emitExpression(context, expression.page)
   const role = emitExpression(context, expression.role)
-  const name = emitExpression(context, expression.name)
+
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
 
   return new ExpressionBuilder(page)
     .member('getByRole')
-    .call([role, fromObjectLiteral({ name, exact: true })])
+    .call([role, ...options])
     .done()
+}
+
+function emitRoleLocatorOptionsExpression(
+  context: ScenarioContext,
+  expression: ir.RoleLocatorOptionsExpression
+): ts.Expression {
+  if (!expression.name) {
+    return emitExpression(context, { type: 'NullLiteral' })
+  }
+
+  const name = expression.name.value
+  const exact = expression.name.exact
+
+  return ObjectBuilder.from({
+    ...(name && { name }),
+    ...(exact && { exact }),
+  })
 }
 
 function emitNewLabelLocatorExpression(
@@ -432,6 +453,9 @@ function emitExpression(
 
     case 'NewRoleLocatorExpression':
       return emitNewRoleLocatorExpression(context, expression)
+
+    case 'RoleLocatorOptionsExpression':
+      return emitRoleLocatorOptionsExpression(context, expression)
 
     case 'NewLabelLocatorExpression':
       return emitNewLabelLocatorExpression(context, expression)

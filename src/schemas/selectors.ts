@@ -8,7 +8,12 @@ export const CssNodeSelectorSchema = z.object({
 export const GetByRoleNodeSelectorSchema = z.object({
   type: z.literal('role'),
   role: z.string(),
-  name: z.string(),
+  name: z
+    .object({
+      value: z.string(),
+      exact: z.boolean().optional(),
+    })
+    .optional(),
 })
 
 export const GetByAltTextNodeSelectorSchema = z.object({

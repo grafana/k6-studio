@@ -1,3 +1,4 @@
+import { ActionLocator } from '@/main/runner/schema'
 import { ElementSelector } from '@/schemas/recording'
 import {
   GetByAltTextNodeSelector,
@@ -21,7 +22,9 @@ function getRoleSelector(
   return {
     type: 'role',
     role: selectors.role.role,
-    name: selectors.role.name,
+    name: selectors.role.name
+      ? { value: selectors.role.name, exact: true }
+      : undefined,
   }
 }
 
@@ -109,6 +112,67 @@ export function getNodeSelector(selector: ElementSelector): NodeSelector {
   )
 }
 
+export function toNodeSelector(locator: ActionLocator): NodeSelector {
+  switch (locator.type) {
+    case 'css':
+      return {
+        type: 'css',
+        selector: locator.selector,
+      }
+
+    case 'role':
+      return {
+        type: 'role',
+        role: locator.role,
+        name: locator.options?.name
+          ? {
+              value: locator.options.name,
+              exact: locator.options.exact,
+            }
+          : undefined,
+      }
+
+    case 'testid':
+      return {
+        type: 'test-id',
+        testId: locator.testId,
+      }
+
+    case 'alt':
+      return {
+        type: 'alt',
+        text: locator.text,
+      }
+
+    case 'label':
+      return {
+        type: 'label',
+        text: locator.label,
+      }
+
+    case 'placeholder':
+      return {
+        type: 'placeholder',
+        text: locator.placeholder,
+      }
+
+    case 'title':
+      return {
+        type: 'title',
+        text: locator.title,
+      }
+
+    case 'text':
+      return {
+        type: 'text',
+        text: locator.text,
+      }
+
+    default:
+      return exhaustive(locator)
+  }
+}
+
 export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
   switch (a.type) {
     case 'css':
@@ -118,7 +182,12 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
       return b.type === 'test-id' && a.testId === b.testId
 
     case 'role':
-      return b.type === 'role' && a.role === b.role && a.name === b.name
+      return (
+        b.type === 'role' &&
+        a.role === b.role &&
+        a.name?.value === b.name?.value &&
+        a.name?.exact === b.name?.exact
+      )
 
     case 'alt':
       return b.type === 'alt' && a.text === b.text

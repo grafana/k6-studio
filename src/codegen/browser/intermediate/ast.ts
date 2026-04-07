@@ -57,11 +57,19 @@ export interface NewTitleLocatorExpression {
   page: Expression
 }
 
+export interface RoleLocatorOptionsExpression {
+  type: 'RoleLocatorOptionsExpression'
+  name?: {
+    value: string
+    exact?: boolean
+  }
+}
+
 export interface NewRoleLocatorExpression {
   type: 'NewRoleLocatorExpression'
   role: Expression
-  name: Expression
   page: Expression
+  options: Expression | null
 }
 
 export interface GotoExpression {
@@ -187,6 +195,7 @@ export type Expression =
   | NewPageExpression
   | ClosePageExpression
   | NewRoleLocatorExpression
+  | RoleLocatorOptionsExpression
   | NewLabelLocatorExpression
   | NewPlaceholderLocatorExpression
   | NewTitleLocatorExpression
