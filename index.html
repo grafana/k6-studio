@@ -13,7 +13,37 @@
     <title>Grafana k6 Studio</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-loading">
+        <div class="app-loading-spinner"></div>
+      </div>
+    </div>
+    <style>
+      body { margin: 0; }
+      .app-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100dvh;
+        background: #fff;
+      }
+      .app-loading-spinner {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #e5e5e5;
+        border-top-color: #999;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-color-scheme: dark) {
+        .app-loading { background: #111110; }
+        .app-loading-spinner {
+          border-color: #333;
+          border-top-color: #888;
+        }
+      }
+    </style>
     <script type="module" src="/src/renderer.ts"></script>
   </body>
 </html>

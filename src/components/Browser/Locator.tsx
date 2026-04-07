@@ -23,7 +23,7 @@ function quote(str: string) {
   return `"${str}"`
 }
 
-function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
+export function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
   switch (locator.type) {
     case 'css':
       return <BracesIcon {...props} />
@@ -54,7 +54,7 @@ function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
   }
 }
 
-function LocatorText({ locator }: LocatorComponentProps) {
+export function LocatorText({ locator }: LocatorComponentProps) {
   switch (locator.type) {
     case 'css':
       return locator.selector
@@ -80,7 +80,8 @@ function LocatorText({ locator }: LocatorComponentProps) {
     case 'role':
       return (
         <>
-          <strong>{locator.role}</strong> {quote(locator.name)}
+          <strong>{locator.role}</strong>{' '}
+          {locator.name?.value ? quote(locator.name.value) : ''}
         </>
       )
 

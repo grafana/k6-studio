@@ -72,7 +72,10 @@ export function BrowserActionsPanel({
           </DebuggerEmptyState>
         )}
         {session.state !== 'pending' && (
-          <BrowserActionList actions={session.browser.actions} onHighlight={onHighlight} />
+          <BrowserActionList
+            actions={session.browser.actions}
+            onHighlight={onHighlight}
+          />
         )}
       </AutoScrollArea>
     </Flex>

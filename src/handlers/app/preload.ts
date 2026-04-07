@@ -8,10 +8,6 @@ import { AppHandler } from './types'
 
 export const platform = process.platform
 
-export function closeSplashscreen() {
-  ipcRenderer.send(AppHandler.SplashscreenClose)
-}
-
 export function onApplicationClose(callback: () => void) {
   return createListener(AppHandler.Close, callback)
 }
@@ -28,6 +24,26 @@ export function trackEvent(event: UsageEvent) {
   return ipcRenderer.send(AppHandler.TrackEvent, event)
 }
 
+let pendingDeepLink: string | null = null
+let deepLinkCallback: ((url: string) => void) | null = null
+
+ipcRenderer.on(AppHandler.Navigate, (_, url: string) => {
+  if (deepLinkCallback) {
+    deepLinkCallback(url)
+  } else {
+    pendingDeepLink = url
+  }
+})
+
 export function onDeepLink(callback: (url: string) => void) {
-  return createListener(AppHandler.DeepLink, callback)
+  deepLinkCallback = callback
+
+  if (pendingDeepLink) {
+    callback(pendingDeepLink)
+    pendingDeepLink = null
+  }
+
+  return () => {
+    deepLinkCallback = null
+  }
 }

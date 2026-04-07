@@ -962,7 +962,7 @@ it('should emit a getByRole locator', async ({ expect }) => {
           selector: {
             type: 'role',
             role: 'button',
-            name: 'Submit',
+            name: { value: 'Submit' },
           },
           inputs: { page: { nodeId: 'page' } },
         },

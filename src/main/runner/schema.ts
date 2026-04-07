@@ -24,6 +24,7 @@ const GetByRoleLocatorSchema = z.object({
   options: z
     .object({
       name: z.string().optional(),
+      exact: z.boolean().optional(),
     })
     .optional(),
 })
@@ -160,7 +161,19 @@ const LocatorSelectOptionActionSchema = z.object({
 const LocatorWaitForActionSchema = z.object({
   method: z.literal('locator.waitFor'),
   locator: ActionLocatorSchema,
-  options: GenericOptions.optional(),
+  options: z
+    .object({
+      state: z
+        .union([
+          z.literal('attached'),
+          z.literal('detached'),
+          z.literal('visible'),
+          z.literal('hidden'),
+        ])
+        .optional(),
+      timeout: z.number().optional(),
+    })
+    .optional(),
 })
 
 const LocatorHoverActionSchema = z.object({

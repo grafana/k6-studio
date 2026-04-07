@@ -10,4 +10,4 @@ function migrate(profile: v1.Profile) {
 
 export const ProfileSchema = AnyProfileSchema.transform(migrate)
 
-export { UserProfiles, Profile, UserInfo, StackInfo } from './v1'
+export type { UserProfiles, Profile, UserInfo, StackInfo } from './v1'

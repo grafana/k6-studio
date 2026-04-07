@@ -51,14 +51,22 @@ export function BrowserActionText({
     case 'locator.check':
       return (
         <>
-          Check <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          Check{' '}
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
     case 'locator.clear':
       return (
         <>
-          Clear <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          Clear{' '}
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -66,7 +74,10 @@ export function BrowserActionText({
       return (
         <>
           <ClickPill details={toClickDetails(action)} /> on{' '}
-          <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -74,29 +85,44 @@ export function BrowserActionText({
       return (
         <>
           <DoubleClickPill details={toClickDetails(action)} /> on{' '}
-          <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
     case 'locator.fill':
       return (
         <>
-          Fill <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} /> with text{' '}
-          <code>{`"${action.value}"`}</code>
+          Fill{' '}
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />{' '}
+          with text <code>{`"${action.value}"`}</code>
         </>
       )
 
     case 'locator.focus':
       return (
         <>
-          Focus on <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          Focus on{' '}
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
     case 'locator.hover':
       return (
         <>
-          Hover over <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          Hover over{' '}
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -104,7 +130,10 @@ export function BrowserActionText({
       return (
         <>
           Press key <Kbd>{`"${action.key}"`}</Kbd> on{' '}
-          <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -112,7 +141,10 @@ export function BrowserActionText({
       return (
         <>
           Select options <SelectOptions options={action.values} /> on{' '}
-          <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -120,14 +152,21 @@ export function BrowserActionText({
       return (
         <>
           Set {'"checked"'} to <code>{action.checked.toString()}</code> on{' '}
-          <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
     case 'locator.tap':
       return (
         <>
-          Tap on <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          Tap on{' '}
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -135,21 +174,32 @@ export function BrowserActionText({
       return (
         <>
           Type <code>{`"${action.text}"`}</code> into{' '}
-          <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
     case 'locator.uncheck':
       return (
         <>
-          Uncheck <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          Uncheck{' '}
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
     case 'locator.waitFor':
       return (
         <>
-          Wait for element <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          Wait for element{' '}
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 
@@ -157,7 +207,10 @@ export function BrowserActionText({
       return (
         <>
           Call <code>{action.name}</code> on{' '}
-          <BrowserActionLocator locator={action.locator} onHighlight={onHighlight} />
+          <BrowserActionLocator
+            locator={action.locator}
+            onHighlight={onHighlight}
+          />
         </>
       )
 

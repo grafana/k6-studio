@@ -15,7 +15,7 @@ export default async function () {
   const page = await browser.newPage();
 
   try {
-    await page.getByRole("button", { name: "Submit", exact: true }).click();
+    await page.getByRole("button", { name: "Submit" }).click();
   } finally {
     await page?.close();
   }

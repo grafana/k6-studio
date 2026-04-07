@@ -13,6 +13,7 @@ type FieldGroupProps = BoxProps & {
   errors?: FieldErrors
   name: string
   label?: React.ReactNode
+  labelSize?: '1' | '2' | '3'
   hint?: React.ReactNode
   hintType?: 'tooltip' | 'text'
 }
@@ -20,6 +21,7 @@ type FieldGroupProps = BoxProps & {
 export function FieldGroup({
   children,
   label,
+  labelSize = '2',
   name,
   errors,
   hint,
@@ -32,7 +34,7 @@ export function FieldGroup({
         <>
           <Flex align="center" gap="1" mb="1">
             <Label.Root htmlFor={name}>
-              <Text size="2" weight="medium">
+              <Text size={labelSize} weight="medium">
                 {label}
               </Text>
             </Label.Root>

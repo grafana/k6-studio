@@ -27,7 +27,7 @@ export function findElementsBySelector(
 
     case 'role':
       return queryAllByRole(container, selector.role, {
-        name: selector.name,
+        name: selector.name?.value,
       })
 
     case 'alt':
