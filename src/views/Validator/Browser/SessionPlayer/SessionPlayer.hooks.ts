@@ -106,8 +106,8 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
 
       switch (parsedEvent.data.tag) {
         case 'recording-end':
-          newPlayer.setConfig({ liveMode: false })
           newPlayer.stopLive()
+          newPlayer.setConfig({ liveMode: false })
 
           setState('ended')
 
