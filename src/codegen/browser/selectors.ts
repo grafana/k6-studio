@@ -37,7 +37,7 @@ function getAltTextSelector(
 
   return {
     type: 'alt',
-    text: { value: selectors.alt },
+    text: { value: selectors.alt, exact: true },
   }
 }
 
@@ -50,7 +50,7 @@ function getLabelSelector(
 
   return {
     type: 'label',
-    text: { value: selectors.label },
+    text: { value: selectors.label, exact: true },
   }
 }
 
@@ -63,7 +63,7 @@ function getPlaceholderSelector(
 
   return {
     type: 'placeholder',
-    text: { value: selectors.placeholder },
+    text: { value: selectors.placeholder, exact: true },
   }
 }
 
@@ -76,7 +76,7 @@ function getTitleSelector(
 
   return {
     type: 'title',
-    text: { value: selectors.title },
+    text: { value: selectors.title, exact: true },
   }
 }
 
