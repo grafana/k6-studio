@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 
 import { saveSettings } from './settings'
@@ -10,7 +10,7 @@ export function showWindow(browserWindow: BrowserWindow) {
   } else {
     browserWindow.show()
   }
-  browserWindow.focus()
+  app.focus({ steal: true })
 }
 
 export async function trackWindowState(browserWindow: BrowserWindow) {
