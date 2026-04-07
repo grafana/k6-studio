@@ -1,8 +1,7 @@
-import { TextField } from '@radix-ui/themes'
-
 import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 
+import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
 type AltLocator = Extract<ActionLocator, { type: 'alt' }>
@@ -28,11 +27,14 @@ export function GetByAltTextForm({
       mb="0"
       errors={toFieldErrors('alt', errors?.['alt'])}
     >
-      <TextField.Root
-        size="1"
+      <TextFieldWithExactToggle
         name="alt"
         value={locator.text}
-        onChange={(e) => onChange({ ...locator, text: e.target.value })}
+        exact={locator.options?.exact}
+        onValueChange={(value) => onChange({ ...locator, text: value })}
+        onExactChange={(exact) => {
+          onChange({ ...locator, options: { ...locator.options, exact } })
+        }}
         onBlur={onBlur}
       />
     </FieldGroup>

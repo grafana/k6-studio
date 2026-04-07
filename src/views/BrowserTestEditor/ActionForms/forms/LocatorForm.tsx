@@ -1,11 +1,20 @@
 import { css } from '@emotion/react'
-import { Flex, Grid, Popover, RadioGroup, Separator } from '@radix-ui/themes'
+import {
+  Flex,
+  Grid,
+  Popover,
+  RadioGroup,
+  Separator,
+  Tooltip,
+} from '@radix-ui/themes'
+import { WholeWordIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { toNodeSelector } from '@/codegen/browser/selectors'
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
+import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
 import { LocatorOptions } from '../../types'
@@ -296,8 +305,27 @@ function DisplayValue({
       >
         <LocatorText locator={selector} />
       </span>
+      <ExactIcon locator={selector} />
     </Flex>
   )
+}
+
+function ExactIcon({ locator }: { locator: NodeSelector }) {
+  if (locator.type === 'test-id' || locator.type === 'css') {
+    return null
+  }
+
+  const exact =
+    locator.type === 'role' ? locator.name?.exact : locator.text.exact
+  if (exact) {
+    return (
+      <Tooltip content="Exact match">
+        <WholeWordIcon aria-label="Exact match" />
+      </Tooltip>
+    )
+  }
+
+  return null
 }
 
 function initializeLocatorValues(type: ActionLocator['type']): ActionLocator {

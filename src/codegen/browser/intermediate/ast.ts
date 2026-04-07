@@ -37,24 +37,33 @@ export interface NewAltTextLocatorExpression {
   type: 'NewAltTextLocatorExpression'
   text: Expression
   page: Expression
+  options: Expression | null
 }
 
 export interface NewLabelLocatorExpression {
   type: 'NewLabelLocatorExpression'
   text: Expression
   page: Expression
+  options: Expression | null
 }
 
 export interface NewPlaceholderLocatorExpression {
   type: 'NewPlaceholderLocatorExpression'
   text: Expression
   page: Expression
+  options: Expression | null
 }
 
 export interface NewTitleLocatorExpression {
   type: 'NewTitleLocatorExpression'
   text: Expression
   page: Expression
+  options: Expression | null
+}
+
+export interface TextLocatorOptionsExpression {
+  type: 'TextLocatorOptionsExpression'
+  exact?: boolean
 }
 
 export interface RoleLocatorOptionsExpression {
@@ -196,6 +205,7 @@ export type Expression =
   | ClosePageExpression
   | NewRoleLocatorExpression
   | RoleLocatorOptionsExpression
+  | TextLocatorOptionsExpression
   | NewLabelLocatorExpression
   | NewPlaceholderLocatorExpression
   | NewTitleLocatorExpression

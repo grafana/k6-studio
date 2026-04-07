@@ -31,19 +31,19 @@ export function findElementsBySelector(
       })
 
     case 'alt':
-      return queryAllByAltText(container, selector.text)
+      return queryAllByAltText(container, selector.text.value)
 
     case 'label':
-      return queryAllByLabelText(container, selector.text)
+      return queryAllByLabelText(container, selector.text.value)
 
     case 'placeholder':
-      return queryAllByPlaceholderText(container, selector.text)
+      return queryAllByPlaceholderText(container, selector.text.value)
 
     case 'text':
-      return queryAllByText(container, selector.text)
+      return queryAllByText(container, selector.text.value)
 
     case 'title':
-      return queryAllByTitle(container, selector.text)
+      return queryAllByTitle(container, selector.text.value)
 
     default:
       return []

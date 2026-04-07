@@ -37,7 +37,7 @@ function getAltTextSelector(
 
   return {
     type: 'alt',
-    text: selectors.alt,
+    text: { value: selectors.alt },
   }
 }
 
@@ -50,7 +50,7 @@ function getLabelSelector(
 
   return {
     type: 'label',
-    text: selectors.label,
+    text: { value: selectors.label },
   }
 }
 
@@ -63,7 +63,7 @@ function getPlaceholderSelector(
 
   return {
     type: 'placeholder',
-    text: selectors.placeholder,
+    text: { value: selectors.placeholder },
   }
 }
 
@@ -76,7 +76,7 @@ function getTitleSelector(
 
   return {
     type: 'title',
-    text: selectors.title,
+    text: { value: selectors.title },
   }
 }
 
@@ -141,31 +141,31 @@ export function toNodeSelector(locator: ActionLocator): NodeSelector {
     case 'alt':
       return {
         type: 'alt',
-        text: locator.text,
+        text: { value: locator.text, exact: locator.options?.exact },
       }
 
     case 'label':
       return {
         type: 'label',
-        text: locator.label,
+        text: { value: locator.label, exact: locator.options?.exact },
       }
 
     case 'placeholder':
       return {
         type: 'placeholder',
-        text: locator.placeholder,
+        text: { value: locator.placeholder, exact: locator.options?.exact },
       }
 
     case 'title':
       return {
         type: 'title',
-        text: locator.title,
+        text: { value: locator.title, exact: locator.options?.exact },
       }
 
     case 'text':
       return {
         type: 'text',
-        text: locator.text,
+        text: { value: locator.text, exact: locator.options?.exact },
       }
 
     default:
@@ -190,19 +190,39 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
       )
 
     case 'alt':
-      return b.type === 'alt' && a.text === b.text
+      return (
+        b.type === 'alt' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'label':
-      return b.type === 'label' && a.text === b.text
+      return (
+        b.type === 'label' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'placeholder':
-      return b.type === 'placeholder' && a.text === b.text
+      return (
+        b.type === 'placeholder' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'text':
-      return b.type === 'text' && a.text === b.text
+      return (
+        b.type === 'text' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'title':
-      return b.type === 'title' && a.text === b.text
+      return (
+        b.type === 'title' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     default:
       return exhaustive(a)
