@@ -1,7 +1,19 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, screen } from 'electron'
 import log from 'electron-log/main'
 
 import { saveSettings } from './settings'
+
+export function isWindowOnScreen(bounds: Electron.Rectangle): boolean {
+  const display = screen.getDisplayMatching(bounds)
+  const { workArea } = display
+
+  return (
+    bounds.x < workArea.x + workArea.width &&
+    bounds.x + bounds.width > workArea.x &&
+    bounds.y < workArea.y + workArea.height &&
+    bounds.y + bounds.height > workArea.y
+  )
+}
 
 export function showWindow(browserWindow: BrowserWindow) {
   const { isMaximized } = k6StudioState.appSettings.windowState

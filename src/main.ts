@@ -18,7 +18,7 @@ import {
 } from './main/proxy'
 import { getSettings, initSettings } from './main/settings'
 import { closeWatcher, configureWatcher } from './main/watcher'
-import { showWindow, trackWindowState } from './main/window'
+import { isWindowOnScreen, showWindow, trackWindowState } from './main/window'
 import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
@@ -106,11 +106,11 @@ const createWindow = async () => {
   await cleanUpProxies()
 
   const { width, height, x, y } = k6StudioState.appSettings.windowState
+  const onScreen = isWindowOnScreen({ x, y, width, height })
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    x,
-    y,
+    ...(onScreen ? { x, y } : {}),
     width,
     height,
     minWidth: 800,
