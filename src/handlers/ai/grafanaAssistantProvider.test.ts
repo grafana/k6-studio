@@ -125,7 +125,6 @@ describe('GrafanaAssistantLanguageModel', () => {
 
   describe('handleNewMessage contextId preservation', () => {
     it('passes contextId from previous session in the next request', async () => {
-
       const model = new GrafanaAssistantLanguageModel()
 
       // First call: SSE stream finishes with tool-calls, keeping session alive.
@@ -206,6 +205,7 @@ describe('GrafanaAssistantLanguageModel', () => {
 
     it('does NOT send tasks/cancel when session finishes normally', async () => {
       const sendTaskCancelMock = vi.mocked(sendTaskCancel)
+      sendTaskCancelMock.mockClear()
 
       const model = new GrafanaAssistantLanguageModel()
 
