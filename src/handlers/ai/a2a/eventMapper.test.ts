@@ -3,7 +3,50 @@ import { describe, expect, it } from 'vitest'
 import { createA2ASession } from '@/test/factories/a2aSession'
 
 import { processA2AEvent } from './eventMapper'
-import type { A2ASSEEvent } from './types'
+import type {
+  A2AArtifactPart,
+  A2ASSEEvent,
+  A2AStatusUpdateEvent,
+  A2ATaskState,
+} from './types'
+
+function makeStatusUpdateEvent(
+  state: A2ATaskState,
+  statusOverrides?: Partial<A2AStatusUpdateEvent['status']>
+): A2ASSEEvent {
+  return {
+    jsonrpc: '2.0',
+    id: 1,
+    result: {
+      kind: 'status-update',
+      taskId: 't1',
+      contextId: 'c1',
+      status: { state, ...statusOverrides },
+    },
+  }
+}
+
+function makeArtifactUpdateEvent(
+  name: string,
+  parts: A2AArtifactPart[],
+  overrides?: { artifactId?: string }
+): A2ASSEEvent {
+  return {
+    jsonrpc: '2.0',
+    id: 1,
+    result: {
+      kind: 'artifact-update',
+      taskId: 't1',
+      contextId: 'c1',
+      artifact: {
+        kind: 'artifact',
+        name,
+        artifactId: overrides?.artifactId ?? 'art-1',
+        parts,
+      },
+    },
+  }
+}
 
 describe('processA2AEvent', () => {
   it('returns error part for JSON-RPC errors', () => {
@@ -20,34 +63,18 @@ describe('processA2AEvent', () => {
   })
 
   it('returns empty for status-update(working)', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'status-update',
-        taskId: 't1',
-        contextId: 'c1',
-        status: { state: 'working' },
-      },
-    }
-
-    const parts = processA2AEvent(event, createA2ASession())
+    const parts = processA2AEvent(
+      makeStatusUpdateEvent('working'),
+      createA2ASession()
+    )
     expect(parts).toHaveLength(0)
   })
 
   it('returns finish(stop) for status-update(completed)', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'status-update',
-        taskId: 't1',
-        contextId: 'c1',
-        status: { state: 'completed' },
-      },
-    }
-
-    const parts = processA2AEvent(event, createA2ASession())
+    const parts = processA2AEvent(
+      makeStatusUpdateEvent('completed'),
+      createA2ASession()
+    )
 
     expect(parts).toHaveLength(1)
     expect(parts[0]).toEqual(
@@ -56,73 +83,39 @@ describe('processA2AEvent', () => {
   })
 
   it('returns error for status-update(failed)', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'status-update',
-        taskId: 't1',
-        contextId: 'c1',
-        status: { state: 'failed' },
-      },
-    }
-
-    const parts = processA2AEvent(event, createA2ASession())
+    const parts = processA2AEvent(
+      makeStatusUpdateEvent('failed'),
+      createA2ASession()
+    )
 
     expect(parts).toHaveLength(1)
     expect(parts[0]?.type).toBe('error')
   })
 
   it('returns error for status-update(rejected)', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'status-update',
-        taskId: 't1',
-        contextId: 'c1',
-        status: { state: 'rejected' },
-      },
-    }
-
-    const parts = processA2AEvent(event, createA2ASession())
+    const parts = processA2AEvent(
+      makeStatusUpdateEvent('rejected'),
+      createA2ASession()
+    )
 
     expect(parts).toHaveLength(1)
     expect(parts[0]?.type).toBe('error')
   })
 
   it('returns error for status-update(auth-required)', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'status-update',
-        taskId: 't1',
-        contextId: 'c1',
-        status: { state: 'auth-required' },
-      },
-    }
-
-    const parts = processA2AEvent(event, createA2ASession())
+    const parts = processA2AEvent(
+      makeStatusUpdateEvent('auth-required'),
+      createA2ASession()
+    )
 
     expect(parts).toHaveLength(1)
     expect(parts[0]?.type).toBe('error')
   })
 
   it('includes status message text in failed error', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'status-update',
-        taskId: 't1',
-        contextId: 'c1',
-        status: {
-          state: 'failed',
-          message: { parts: [{ text: 'Rate limit exceeded' }] },
-        },
-      },
-    }
+    const event = makeStatusUpdateEvent('failed', {
+      message: { parts: [{ text: 'Rate limit exceeded' }] },
+    })
 
     const parts = processA2AEvent(event, createA2ASession())
     const error = (parts[0] as { type: 'error'; error: Error }).error
@@ -150,30 +143,16 @@ describe('processA2AEvent', () => {
   })
 
   it('returns tool-call for step.toolCall artifact', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'artifact-update',
-        taskId: 't1',
-        contextId: 'c1',
-        artifact: {
-          kind: 'artifact',
-          name: 'step.toolCall',
-          artifactId: 'art-1',
-          parts: [
-            {
-              kind: 'data',
-              data: {
-                toolId: 'tool-1',
-                toolName: 'searchRequests',
-                inputs: { query: 'login' },
-              },
-            },
-          ],
+    const event = makeArtifactUpdateEvent('step.toolCall', [
+      {
+        kind: 'data',
+        data: {
+          toolId: 'tool-1',
+          toolName: 'searchRequests',
+          inputs: { query: 'login' },
         },
       },
-    }
+    ])
 
     const parts = processA2AEvent(event, createA2ASession())
 
@@ -187,42 +166,18 @@ describe('processA2AEvent', () => {
   })
 
   it('returns empty for step.complete with stopReason=tool_use', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'artifact-update',
-        taskId: 't1',
-        contextId: 'c1',
-        artifact: {
-          kind: 'artifact',
-          name: 'step.complete',
-          artifactId: 'art-1',
-          parts: [{ kind: 'data', data: { stopReason: 'tool_use' } }],
-        },
-      },
-    }
+    const event = makeArtifactUpdateEvent('step.complete', [
+      { kind: 'data', data: { stopReason: 'tool_use' } },
+    ])
 
     const parts = processA2AEvent(event, createA2ASession())
     expect(parts).toHaveLength(0)
   })
 
   it('returns finish(stop) for step.complete with stopReason=end_turn', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'artifact-update',
-        taskId: 't1',
-        contextId: 'c1',
-        artifact: {
-          kind: 'artifact',
-          name: 'step.complete',
-          artifactId: 'art-1',
-          parts: [{ kind: 'data', data: { stopReason: 'end_turn' } }],
-        },
-      },
-    }
+    const event = makeArtifactUpdateEvent('step.complete', [
+      { kind: 'data', data: { stopReason: 'end_turn' } },
+    ])
 
     const parts = processA2AEvent(event, createA2ASession())
 
@@ -233,21 +188,11 @@ describe('processA2AEvent', () => {
   })
 
   it('returns text parts for step.message artifact', () => {
-    const event: A2ASSEEvent = {
-      jsonrpc: '2.0',
-      id: 1,
-      result: {
-        kind: 'artifact-update',
-        taskId: 't1',
-        contextId: 'c1',
-        artifact: {
-          kind: 'artifact',
-          name: 'step.message',
-          artifactId: 'msg-1',
-          parts: [{ kind: 'text', text: 'Hello world' }],
-        },
-      },
-    }
+    const event = makeArtifactUpdateEvent(
+      'step.message',
+      [{ kind: 'text', text: 'Hello world' }],
+      { artifactId: 'msg-1' }
+    )
 
     const parts = processA2AEvent(event, createA2ASession())
 
@@ -311,21 +256,9 @@ describe('processA2AEvent', () => {
 
     it('tracks activeStreamArtifactId on message.stream.start', () => {
       const session = createA2ASession()
-      const event: A2ASSEEvent = {
-        jsonrpc: '2.0',
-        id: 1,
-        result: {
-          kind: 'artifact-update',
-          taskId: 't1',
-          contextId: 'c1',
-          artifact: {
-            kind: 'artifact',
-            name: 'message.stream.start',
-            artifactId: 'stream-1',
-            parts: [],
-          },
-        },
-      }
+      const event = makeArtifactUpdateEvent('message.stream.start', [], {
+        artifactId: 'stream-1',
+      })
 
       const parts = processA2AEvent(event, session)
 
@@ -388,21 +321,9 @@ describe('processA2AEvent', () => {
         activeStreamContentType: 'text',
       })
 
-      const event: A2ASSEEvent = {
-        jsonrpc: '2.0',
-        id: 3,
-        result: {
-          kind: 'artifact-update',
-          taskId: 't1',
-          contextId: 'c1',
-          artifact: {
-            kind: 'artifact',
-            name: 'message.stream.complete',
-            artifactId: 'complete-1',
-            parts: [],
-          },
-        },
-      }
+      const event = makeArtifactUpdateEvent('message.stream.complete', [], {
+        artifactId: 'complete-1',
+      })
 
       const parts = processA2AEvent(event, session)
 
@@ -417,21 +338,11 @@ describe('processA2AEvent', () => {
         activeStreamContentType: 'text',
       })
 
-      const event: A2ASSEEvent = {
-        jsonrpc: '2.0',
-        id: 4,
-        result: {
-          kind: 'artifact-update',
-          taskId: 't1',
-          contextId: 'c1',
-          artifact: {
-            kind: 'artifact',
-            name: 'step.message',
-            artifactId: 'msg-1',
-            parts: [{ kind: 'text', text: 'Full message text' }],
-          },
-        },
-      }
+      const event = makeArtifactUpdateEvent(
+        'step.message',
+        [{ kind: 'text', text: 'Full message text' }],
+        { artifactId: 'msg-1' }
+      )
 
       const parts = processA2AEvent(event, session)
 
@@ -442,21 +353,11 @@ describe('processA2AEvent', () => {
     it('ignores message.content.delta with non-string delta', () => {
       const session = createA2ASession({ activeStreamArtifactId: 'stream-1' })
 
-      const event: A2ASSEEvent = {
-        jsonrpc: '2.0',
-        id: 2,
-        result: {
-          kind: 'artifact-update',
-          taskId: 't1',
-          contextId: 'c1',
-          artifact: {
-            kind: 'artifact',
-            name: 'message.content.delta',
-            artifactId: 'delta-1',
-            parts: [{ kind: 'data', data: { someOther: 'field' } }],
-          },
-        },
-      }
+      const event = makeArtifactUpdateEvent(
+        'message.content.delta',
+        [{ kind: 'data', data: { someOther: 'field' } }],
+        { artifactId: 'delta-1' }
+      )
 
       const parts = processA2AEvent(event, session)
       expect(parts).toHaveLength(0)
