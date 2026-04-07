@@ -17,7 +17,9 @@ export async function streamMessages<Tools extends ToolSet, PARTIAL_OUTPUT>(
     })
   }
 
-  const usageData = includeUsage ? await response.usage : undefined
+  const usageData = includeUsage
+    ? await response.usage.catch(() => undefined)
+    : undefined
 
   webContents.send(AiHandler.StreamChatEnd, {
     id: requestId,

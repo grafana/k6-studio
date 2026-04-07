@@ -1,4 +1,5 @@
 import { OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
+import { getErrorMessage } from '@ai-sdk/provider-utils'
 import { convertToModelMessages, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
 
@@ -22,12 +23,12 @@ async function handleStreamChat(
   request: StreamChatRequest
 ) {
   const provider = request.provider ?? 'openai'
-  const messages = convertToModelMessages(request.messages)
-
   const abortController = new AbortController()
   activeAbortControllers.set(request.id, abortController)
 
   try {
+    const messages = convertToModelMessages(request.messages)
+
     if (provider === 'grafana-assistant') {
       const aiModel = getGrafanaAssistantModel()
 
@@ -62,8 +63,15 @@ async function handleStreamChat(
 
       await streamMessages(event.sender, response, request.id, true)
     }
+  } catch (error) {
+    event.sender.send(AiHandler.StreamChatChunk, {
+      id: request.id,
+      chunk: { type: 'error', errorText: getErrorMessage(error) },
+    })
+    event.sender.send(AiHandler.StreamChatEnd, {
+      id: request.id,
+    })
   } finally {
-    // Clean up the AbortController after streaming completes or fails
     activeAbortControllers.delete(request.id)
   }
 }
