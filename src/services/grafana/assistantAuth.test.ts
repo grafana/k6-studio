@@ -16,7 +16,7 @@ describe('exchangeAssistantCode', () => {
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.resetAllMocks()
   })
 
   const validResponse = {
