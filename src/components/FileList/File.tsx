@@ -1,5 +1,13 @@
 import { css } from '@emotion/react'
 import { Grid, Tooltip } from '@radix-ui/themes'
+import {
+  FileBracesIcon,
+  FileQuestionMarkIcon,
+  FileSpreadsheetIcon,
+  MonitorIcon,
+  ServerCogIcon,
+  VideoIcon,
+} from 'lucide-react'
 import { useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useBoolean } from 'react-use'
@@ -21,7 +29,7 @@ interface FileProps {
 
 const fileStyle = css`
   display: block;
-  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
+  padding: var(--space-1) var(--space-2);
   font-size: 12px;
   line-height: 22px;
   color: var(--gray-11);
@@ -37,9 +45,10 @@ export function File({ file, isSelected }: FileProps) {
       onRename={() => setEditMode(true)}
     >
       <Grid
-        columns="1fr auto"
+        columns="min-content 1fr auto"
         align="center"
         pr="4"
+        pl="2"
         css={css`
           & > button {
             opacity: 0;
@@ -56,6 +65,7 @@ export function File({ file, isSelected }: FileProps) {
           }
         `}
       >
+        <FileIcon file={file} />
         <EditableFile
           file={file}
           isSelected={isSelected}
@@ -141,4 +151,40 @@ function EditableFile({
 
 export function NoFileMessage({ message }: { message: string }) {
   return <span css={fileStyle}>{message}</span>
+}
+
+function FileIcon({ file }: { file: FileItem }) {
+  if (file.type === 'recording') {
+    return <VideoIcon aria-hidden color="var(--accent-9)" />
+  }
+
+  if (file.type === 'generator') {
+    return <ServerCogIcon aria-label="HTTP test" color="var(--accent-9)" />
+  }
+
+  if (file.type === 'browser-test') {
+    return <MonitorIcon aria-label="Browser test" color="var(--indigo-9)" />
+  }
+
+  if (file.type === 'script') {
+    return <FileBracesIcon aria-hidden color="var(--accent-9)" />
+  }
+
+  if (file.type === 'data-file') {
+    return file.fileName.endsWith('.json') ? (
+      <FileBracesIcon aria-label="JSON data file" color="var(--indigo-9)" />
+    ) : (
+      <FileSpreadsheetIcon
+        aria-label="Spreadsheet data file"
+        color="var(--accent-9)"
+      />
+    )
+  }
+
+  return (
+    <FileQuestionMarkIcon
+      aria-label="Unknown file type"
+      color="var(--gray-9)"
+    />
+  )
 }

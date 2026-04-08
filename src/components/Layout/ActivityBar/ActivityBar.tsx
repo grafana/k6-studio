@@ -1,23 +1,35 @@
 import { css } from '@emotion/react'
-import { Flex, Grid, Separator } from '@radix-ui/themes'
+import { Flex, Separator } from '@radix-ui/themes'
+import { FileBracesIcon, VideoIcon, WrenchIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import k6LogoDark from '@/assets/logo-dark.svg'
 import k6Logo from '@/assets/logo.svg'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
-import { HomeIcon } from '@/components/icons'
 import { useTheme } from '@/hooks/useTheme'
 import { getRoutePath } from '@/routeMap'
 
+import { selectFileCountPerType } from '../../../store/ui/selectors'
+import { useStudioUIStore } from '../../../store/ui/useStudioUIStore'
+import { SidebarTab } from '../Layout.types'
+
 import { HelpButton } from './HelpButton'
-import { NavIconButton } from './NavIconButton'
+import { VerticalTabButton } from './NavIconButton'
 import { Profile } from './Profile'
 import { ProxyStatusIndicator } from './ProxyStatusIndicator'
 import { SettingsButton } from './SettingsButton'
 import { VersionLabel } from './VersionLabel'
 
-export function ActivityBar() {
+interface ActivityBarProps {
+  activeTab: SidebarTab
+  onTabChange: (tab: SidebarTab) => void
+}
+
+export function ActivityBar({ activeTab, onTabChange }: ActivityBarProps) {
   const theme = useTheme()
+  const { recordings, generators, browserTests, scripts } = useStudioUIStore(
+    selectFileCountPerType
+  )
 
   return (
     <Flex
@@ -43,13 +55,29 @@ export function ActivityBar() {
           width="32"
         />
       </Link>
-      <Grid gap="5" mt="4">
-        <NavIconButton
-          to={getRoutePath('home')}
-          icon={<HomeIcon />}
-          tooltip="Home"
+      <Flex direction="column" align="center" gap="1" mt="4" width="100%">
+        <VerticalTabButton
+          icon={<VideoIcon />}
+          itemCount={recordings}
+          tooltip="Record"
+          active={activeTab === 'record'}
+          onClick={() => onTabChange('record')}
         />
-      </Grid>
+        <VerticalTabButton
+          icon={<WrenchIcon />}
+          itemCount={generators + browserTests}
+          tooltip="Build"
+          active={activeTab === 'build'}
+          onClick={() => onTabChange('build')}
+        />
+        <VerticalTabButton
+          icon={<FileBracesIcon />}
+          itemCount={scripts}
+          tooltip="Validate"
+          active={activeTab === 'validate'}
+          onClick={() => onTabChange('validate')}
+        />
+      </Flex>
 
       <Flex direction="column" align="center" gap="3" mt="auto">
         <ThemeSwitcher />
