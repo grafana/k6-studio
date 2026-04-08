@@ -315,12 +315,12 @@ function DisplayValue({
       >
         <LocatorText locator={selector} />
       </span>
-      <ExactIcon locator={selector} />
+      <ExactMatchIndicator locator={selector} />
     </Flex>
   )
 }
 
-function ExactIcon({ locator }: { locator: NodeSelector }) {
+function ExactMatchIndicator({ locator }: { locator: NodeSelector }) {
   if (locator.type === 'test-id' || locator.type === 'css') {
     return null
   }
