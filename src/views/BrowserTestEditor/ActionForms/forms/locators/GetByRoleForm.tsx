@@ -64,7 +64,6 @@ export function GetByRoleForm({
           name="name"
           value={locator.options?.name || ''}
           exact={locator.options?.exact}
-          exactDisabled={!locator.options?.name}
           onValueChange={(value) => {
             onChange({
               ...locator,

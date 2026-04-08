@@ -5,9 +5,9 @@ import {
   CaseSensitiveIcon,
   ImageIcon,
   LucideProps,
-  SquareDashedIcon,
   TagIcon,
   TestTubeDiagonalIcon,
+  WholeWordIcon,
 } from 'lucide-react'
 
 import { NodeSelector } from '@/schemas/selectors'
@@ -38,7 +38,7 @@ export function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
       return <TagIcon {...props} />
 
     case 'placeholder':
-      return <SquareDashedIcon {...props} />
+      return <WholeWordIcon {...props} />
 
     case 'title':
       return <CaptionsIcon {...props} />
