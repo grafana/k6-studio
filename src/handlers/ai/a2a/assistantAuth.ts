@@ -1,4 +1,4 @@
-import { app, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import log from 'electron-log/main'
 
 import { getProfileData } from '@/handlers/auth/fs'
@@ -10,6 +10,7 @@ import {
   generateState,
   startCallbackServer,
 } from '@/services/grafana/assistantAuth'
+import { browserWindowFromEvent } from '@/utils/electron'
 
 import { AssistantAuthHandler } from '../types'
 
@@ -47,11 +48,23 @@ function isAllowedEndpoint(endpoint: string, stackUrl: string): boolean {
   }
 }
 
+function verificationCode(codeChallenge: string): string {
+  try {
+    const hex = Buffer.from(codeChallenge, 'base64url')
+      .subarray(0, 4)
+      .toString('hex')
+    return hex.slice(0, 4) + '-' + hex.slice(4)
+  } catch {
+    return '----'
+  }
+}
+
 let pendingAbortController: AbortController | null = null
 
 async function performSignIn(
   stackId: string,
-  stackUrl: string
+  stackUrl: string,
+  browserWindow: BrowserWindow
 ): Promise<AssistantAuthResult> {
   const abortController = new AbortController()
   pendingAbortController = abortController
@@ -72,6 +85,9 @@ async function performSignIn(
       port
     )
     void shell.openExternal(authUrl)
+
+    const code = verificationCode(codeChallenge)
+    browserWindow.webContents.send(AssistantAuthHandler.VerificationCode, code)
 
     const callback = await result
     app.focus({ steal: true })
@@ -140,7 +156,8 @@ async function performSignIn(
 export function initialize() {
   ipcMain.handle(
     AssistantAuthHandler.SignIn,
-    async (): Promise<AssistantAuthResult> => {
+    async (event): Promise<AssistantAuthResult> => {
+      const browserWindow = browserWindowFromEvent(event)
       const profile = await getProfileData()
       const stackId = profile.profiles.currentStack
 
@@ -166,7 +183,7 @@ export function initialize() {
         pendingAbortController.abort()
       }
 
-      return performSignIn(stackId, stack.url)
+      return performSignIn(stackId, stack.url, browserWindow)
     }
   )
 
