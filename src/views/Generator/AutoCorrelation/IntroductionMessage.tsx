@@ -1,4 +1,12 @@
-import { Badge, Button, Callout, Flex, Text, Tooltip } from '@radix-ui/themes'
+import {
+  Badge,
+  Button,
+  Callout,
+  Flex,
+  Spinner,
+  Text,
+  Tooltip,
+} from '@radix-ui/themes'
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
@@ -22,6 +30,8 @@ import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useSettings } from '@/hooks/useSettings'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
+
+import { AssistantTestChat } from './AssistantTestChat'
 
 interface IntroductionMessageProps {
   onStart: () => void
@@ -149,25 +159,30 @@ function AssistantAuthStatus({
     )
   }
 
+  if (!isAuthenticated && isSigningIn) {
+    return (
+      <Flex direction="column" align="center" gap="3">
+        <Flex align="center" gap="2">
+          <Spinner />
+          <Text size="2">Waiting for approval</Text>
+        </Flex>
+        <Text size="2" color="gray">
+          Complete the sign-in in your browser.
+        </Text>
+        <Button variant="ghost" onClick={cancelSignIn}>
+          Cancel
+        </Button>
+      </Flex>
+    )
+  }
+
   if (!isAuthenticated) {
     return (
       <>
-        <Flex align="center" gap="2">
-          <Button size="3" onClick={() => signIn()} disabled={isSigningIn}>
-            <LinkIcon />
-            {isSigningIn ? 'Connecting...' : 'Connect to Grafana Assistant'}
-          </Button>
-          {isSigningIn && (
-            <Button
-              variant="outline"
-              size="3"
-              onClick={cancelSignIn}
-              aria-label="Cancel sign in"
-            >
-              Cancel
-            </Button>
-          )}
-        </Flex>
+        <Button size="3" onClick={() => signIn()}>
+          <LinkIcon />
+          Connect to Grafana Assistant
+        </Button>
         {signInError && (
           <Callout.Root color="red" size="1">
             <Callout.Icon>
@@ -182,10 +197,7 @@ function AssistantAuthStatus({
 
   return (
     <Flex direction="column" align="center" gap="2">
-      <Flex align="center" gap="2">
-        <CheckCircleIcon size={16} color="var(--green-9)" />
-        <Text size="2">Connected to Grafana Assistant.</Text>
-      </Flex>
+      <AssistantTestChat />
       <Button
         variant="ghost"
         size="1"
