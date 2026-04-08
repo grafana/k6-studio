@@ -70,6 +70,9 @@ describe('handleStreamChat', () => {
         errorText: 'API key missing',
       },
     })
+    expect(event.sender.send).toHaveBeenCalledWith(AiHandler.StreamChatEnd, {
+      id: 'test-request-id',
+    })
   })
 
   it('sends error chunk when streamMessages throws mid-stream', async () => {
@@ -94,6 +97,9 @@ describe('handleStreamChat', () => {
         errorText: 'Connection reset',
       },
     })
+    expect(event.sender.send).toHaveBeenCalledWith(AiHandler.StreamChatEnd, {
+      id: 'test-request-id',
+    })
   })
 
   it('sends Unknown error when catch receives a non-Error value', async () => {
@@ -111,6 +117,9 @@ describe('handleStreamChat', () => {
         type: 'error',
         errorText: 'Unknown error',
       },
+    })
+    expect(event.sender.send).toHaveBeenCalledWith(AiHandler.StreamChatEnd, {
+      id: 'test-request-id',
     })
   })
 })

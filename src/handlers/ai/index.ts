@@ -80,6 +80,9 @@ export async function handleStreamChat(
         errorText: error instanceof Error ? error.message : 'Unknown error',
       },
     })
+    event.sender.send(AiHandler.StreamChatEnd, {
+      id: request.id,
+    })
   } finally {
     activeAbortControllers.delete(request.id)
   }
