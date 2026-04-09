@@ -2,12 +2,14 @@ import { Code } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
   GlobeIcon,
+  MousePointerClickIcon,
   RefreshCwIcon,
   TimerIcon,
 } from 'lucide-react'
 import { ReactElement, ReactNode } from 'react'
 
 import {
+  ClickActionBody,
   GoToActionBody,
   PageReloadActionBody,
   WaitForActionBody,
@@ -53,6 +55,25 @@ const notImplementedCreate = <M extends BrowserActionInstance['method']>(
 }
 
 const actionEditors: ActionEditorRegistry = {
+  'locator.click': {
+    icon: <MousePointerClickIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ClickActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.click',
+      locator: {
+        current: 'css',
+        values: {
+          css: {
+            type: 'css',
+            selector: '',
+          },
+        },
+      },
+    }),
+  },
   'page.goto': {
     icon: <GlobeIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
