@@ -47,9 +47,9 @@ export function useRecordingErrorToast() {
         case 'extension-load':
           showToast({
             status: 'error',
-            title: 'Failed to load extension',
+            title: 'Failed to start browser recorder',
             description:
-              'Loading the browser extension failed. Browser recording will not be available.',
+              'Connecting to the Chrome DevTools Protocol (CDP) failed. Browser event recording will not be available.',
             action: (
               <Button onClick={() => openSettingsDialog('logs')}>
                 Open log file
