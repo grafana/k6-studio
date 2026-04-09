@@ -78,6 +78,13 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
       <DropdownMenu.Content>
         <DropdownMenu.Item
           onClick={() => {
+            onAddAction('locator.click')
+          }}
+        >
+          Click element
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
             onAddAction('page.goto')
           }}
         >
