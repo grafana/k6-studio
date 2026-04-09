@@ -115,10 +115,6 @@ export const runScript = async ({
     browserWindow.webContents.send(ScriptHandler.Finished, result)
   })
 
-  testRun.on('abort', () => {
-    browserWindow.webContents.send(ScriptHandler.Stopped)
-  })
-
   testRun.on('error', (error) => {
     log.error(error)
 
