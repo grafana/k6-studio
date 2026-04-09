@@ -35,36 +35,17 @@ interface Segment {
 }
 
 function buildLanes(actions: BrowserActionEvent[], time: Time) {
-  const firstAction = actions[0]
-
-  if (firstAction === undefined) {
-    return { totalTime: time.total, lanes: [] }
-  }
-
-  const lastAction = actions[actions.length - 1] ?? firstAction
-
-  const startTime = Math.min(time.start, firstAction.timestamp.started)
-  const endTime = Math.max(time.end, lastAction.timestamp.ended ?? time.end)
-
-  const totalTime = endTime - startTime
-
   const lanes: Lane[] = []
 
   for (const action of actions) {
-    if (action.timestamp.started > endTime) {
+    if (action.timestamp.started > time.end) {
       continue
     }
 
-    const actionStarted = action.timestamp.started
-    const actionEnded = Math.min(action.timestamp.ended ?? endTime, endTime)
-
-    const start = Math.max(0, actionStarted - startTime)
-    const end = Math.min(totalTime, actionEnded - startTime)
-
     const segment: Segment = {
       id: action.eventId,
-      start,
-      end,
+      start: action.timestamp.started,
+      end: Math.min(time.end, action.timestamp.ended ?? time.end),
       action,
     }
 
@@ -88,26 +69,26 @@ function buildLanes(actions: BrowserActionEvent[], time: Time) {
     lane.segments.push(segment)
   }
 
-  return {
-    totalTime,
-    lanes,
-  }
+  return lanes
 }
 
 interface SegmentProps {
+  time: Time
   disabled?: boolean
   segment: Segment
-  totalTime: number
   onSeek: (time: number) => void
 }
 
-function Segment({ disabled, segment, totalTime, onSeek }: SegmentProps) {
-  const mouseDownX = useRef<number>(undefined)
-
+function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
   const [showTooltip, setShowTooltip] = useState(false)
 
-  const left = (segment.start / totalTime) * 100
-  const width = ((segment.end - segment.start) / totalTime) * 100
+  const mouseDownX = useRef<number>(undefined)
+
+  const start = segment.start - time.start
+  const end = segment.end - time.start
+
+  const left = (start / time.total) * 100
+  const width = ((end - start) / time.total) * 100
 
   const style = {
     left: `${left}%`,
@@ -212,7 +193,7 @@ export function TimelineActions({
   time,
   onSeek,
 }: TimelineActionsProps) {
-  const { totalTime, lanes } = buildLanes(actions, time)
+  const lanes = buildLanes(actions, time)
 
   return (
     <div
@@ -238,7 +219,7 @@ export function TimelineActions({
           {segments.map((segment) => (
             <Segment
               key={segment.id}
-              totalTime={totalTime}
+              time={time}
               disabled={disabled}
               segment={segment}
               onSeek={onSeek}
