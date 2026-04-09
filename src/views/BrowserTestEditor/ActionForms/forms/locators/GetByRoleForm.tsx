@@ -8,7 +8,7 @@ import { ActionLocator } from '@/main/runner/schema'
 import { ComboBox } from '../../components'
 import { toFieldErrors } from '../utils'
 
-const ROLE_OPTIONS = [
+const DEFAULT_ROLES = [
   'button',
   'link',
   'checkbox',
@@ -19,7 +19,11 @@ const ROLE_OPTIONS = [
   'combobox',
   'listbox',
   'option',
-].map((role) => ({ value: role, label: role }))
+]
+
+function toRoleOptions(roles: string[]) {
+  return roles.map((role) => ({ value: role, label: role }))
+}
 
 type RoleLocator = Extract<ActionLocator, { type: 'role' }>
 
@@ -28,6 +32,7 @@ interface GetByRoleFormProps {
   errors?: Record<string, string>
   onChange: (locator: ActionLocator) => void
   onBlur?: () => void
+  suggestedRoles?: string[]
 }
 
 export function GetByRoleForm({
@@ -35,6 +40,7 @@ export function GetByRoleForm({
   errors,
   onChange,
   onBlur,
+  suggestedRoles,
 }: GetByRoleFormProps) {
   return (
     <Flex direction="column" gap="2" align="stretch">
@@ -48,7 +54,7 @@ export function GetByRoleForm({
         <ComboBox
           id="role"
           value={locator.role}
-          options={ROLE_OPTIONS}
+          options={toRoleOptions(suggestedRoles ?? DEFAULT_ROLES)}
           onChange={(value) => {
             onChange({ ...locator, role: value.trim() })
             onBlur?.()

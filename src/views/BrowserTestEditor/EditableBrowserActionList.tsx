@@ -85,6 +85,13 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => {
+            onAddAction('locator.fill')
+          }}
+        >
+          Fill input
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
             onAddAction('page.goto')
           }}
         >

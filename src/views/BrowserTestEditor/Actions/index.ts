@@ -1,4 +1,5 @@
 export * from './ClickAction'
+export * from './FillAction'
 export * from './GoToAction'
 export * from './PageReloadAction'
 export * from './WaitForAction'

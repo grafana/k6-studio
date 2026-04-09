@@ -4,12 +4,14 @@ import {
   GlobeIcon,
   MousePointerClickIcon,
   RefreshCwIcon,
+  TextCursorInputIcon,
   TimerIcon,
 } from 'lucide-react'
 import { ReactElement, ReactNode } from 'react'
 
 import {
   ClickActionBody,
+  FillActionBody,
   GoToActionBody,
   PageReloadActionBody,
   WaitForActionBody,
@@ -64,6 +66,18 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.click',
+      locator: createDefaultLocatorOptions(),
+    }),
+  },
+  'locator.fill': {
+    icon: <TextCursorInputIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <FillActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.fill',
+      value: '',
       locator: createDefaultLocatorOptions(),
     }),
   },
