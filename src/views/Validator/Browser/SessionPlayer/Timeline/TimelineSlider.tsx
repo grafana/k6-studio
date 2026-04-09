@@ -2,11 +2,35 @@ import { css } from '@emotion/react'
 import * as SliderPrimitive from '@radix-ui/react-slider'
 import { useCallback } from 'react'
 
+import { useTheme } from '@/hooks/useTheme'
 import { BrowserActionEvent } from '@/main/runner/schema'
 
 import { Time } from '../types'
 
 import { TimelineActions } from './TimelineActions'
+
+const rangeStyles = {
+  container: {
+    dark: css`
+      background-color: #777;
+      mix-blend-mode: multiply;
+    `,
+    light: css`
+      background-color: #777;
+      mix-blend-mode: screen;
+    `,
+  },
+  range: {
+    dark: css`
+      mix-blend-mode: screen;
+      background-color: #fff;
+    `,
+    light: css`
+      mix-blend-mode: multiply;
+      background-color: #000;
+    `,
+  },
+}
 
 interface TimelineSliderProps {
   className?: string
@@ -23,6 +47,8 @@ export function TimelineSlider({
   disabled = false,
   onSeek,
 }: TimelineSliderProps) {
+  const theme = useTheme()
+
   const handleSeek = useCallback(
     (newTime: number, commit = true) => {
       onSeek(newTime - time.start, commit)
@@ -100,17 +126,28 @@ export function TimelineSlider({
             actions={actions}
             onSeek={handleSeek}
           />
-          <SliderPrimitive.Range
-            css={css`
-              position: absolute;
-              top: 0;
-              height: 100%;
-              background: white;
-              opacity: 0.3;
-              border-radius: var(--slider-border-radius);
-              pointer-events: none;
-            `}
-          />
+          <div
+            css={[
+              css`
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+              `,
+              rangeStyles.container[theme],
+            ]}
+          >
+            <SliderPrimitive.Range
+              css={[
+                css`
+                  position: absolute;
+                  top: 0;
+                  height: 100%;
+                  border-radius: var(--slider-border-radius);
+                `,
+                rangeStyles.range[theme],
+              ]}
+            />
+          </div>
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
           aria-label="Timeline position"
