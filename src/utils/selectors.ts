@@ -31,19 +31,29 @@ export function findElementsBySelector(
       })
 
     case 'alt':
-      return queryAllByAltText(container, selector.text.value)
+      return queryAllByAltText(container, selector.text.value, {
+        exact: selector.text.exact,
+      })
 
     case 'label':
-      return queryAllByLabelText(container, selector.text.value)
+      return queryAllByLabelText(container, selector.text.value, {
+        exact: selector.text.exact,
+      })
 
     case 'placeholder':
-      return queryAllByPlaceholderText(container, selector.text.value)
+      return queryAllByPlaceholderText(container, selector.text.value, {
+        exact: selector.text.exact,
+      })
 
     case 'text':
-      return queryAllByText(container, selector.text.value)
+      return queryAllByText(container, selector.text.value, {
+        exact: selector.text.exact,
+      })
 
     case 'title':
-      return queryAllByTitle(container, selector.text.value)
+      return queryAllByTitle(container, selector.text.value, {
+        exact: selector.text.exact,
+      })
 
     default:
       return []
