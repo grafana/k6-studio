@@ -88,7 +88,7 @@ export function useBrowserSession() {
         })
 
         // Insert action end events for all actions that were running when the script stopped.
-        const actionEnds = actions
+        const actionEnds = session.actions
           .filter((action) => action.type === 'begin')
           .map((action) =>
             createReplayEvent({
