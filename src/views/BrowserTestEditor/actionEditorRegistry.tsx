@@ -15,6 +15,7 @@ import {
   WaitForActionBody,
 } from './Actions'
 import { BrowserActionInstance } from './types'
+import { createDefaultLocatorOptions } from './utils'
 
 type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
   BrowserActionInstance,
@@ -63,15 +64,7 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.click',
-      locator: {
-        current: 'css',
-        values: {
-          css: {
-            type: 'css',
-            selector: '',
-          },
-        },
-      },
+      locator: createDefaultLocatorOptions(),
     }),
   },
   'page.goto': {
@@ -101,15 +94,7 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.waitFor',
-      locator: {
-        current: 'css',
-        values: {
-          css: {
-            type: 'css',
-            selector: '',
-          },
-        },
-      },
+      locator: createDefaultLocatorOptions(),
     }),
   },
 }
