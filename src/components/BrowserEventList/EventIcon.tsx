@@ -6,6 +6,7 @@ import {
   EyeIcon,
   GlobeIcon,
   ListFilterPlusIcon,
+  MonitorIcon,
   RefreshCwIcon,
   TargetIcon,
   TextCursorInputIcon,
@@ -21,6 +22,10 @@ interface EventIconProps {
 
 export function EventIcon({ event }: EventIconProps) {
   switch (event.type) {
+    case 'open-window':
+    case 'resize-window':
+      return <MonitorIcon />
+
     case 'navigate-to-page':
       return <GlobeIcon />
 
