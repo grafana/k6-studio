@@ -55,6 +55,7 @@ function substituteExpression(
     case 'ClickOptionsExpression':
     case 'WaitForOptionsExpression':
     case 'RoleLocatorOptionsExpression':
+    case 'TextLocatorOptionsExpression':
       return node
 
     case 'ClosePageExpression':
@@ -84,6 +85,9 @@ function substituteExpression(
         type: 'NewLabelLocatorExpression',
         text: substituteExpression(node.text, substitutions),
         page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewCssLocatorExpression':
@@ -96,8 +100,11 @@ function substituteExpression(
     case 'NewAltTextLocatorExpression':
       return {
         type: 'NewAltTextLocatorExpression',
-        page: substituteExpression(node.page, substitutions),
         text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewPlaceholderLocatorExpression':
@@ -105,6 +112,9 @@ function substituteExpression(
         type: 'NewPlaceholderLocatorExpression',
         text: substituteExpression(node.text, substitutions),
         page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewTitleLocatorExpression':
@@ -112,6 +122,9 @@ function substituteExpression(
         type: 'NewTitleLocatorExpression',
         text: substituteExpression(node.text, substitutions),
         page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewTestIdLocatorExpression':

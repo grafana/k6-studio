@@ -1,8 +1,7 @@
-import { TextField } from '@radix-ui/themes'
-
 import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 
+import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
 type TitleLocator = Extract<ActionLocator, { type: 'title' }>
@@ -28,11 +27,14 @@ export function GetByTitleForm({
       mb="0"
       errors={toFieldErrors('title', errors?.['title'])}
     >
-      <TextField.Root
-        size="1"
+      <TextFieldWithExactToggle
         name="title"
         value={locator.title}
-        onChange={(e) => onChange({ ...locator, title: e.target.value })}
+        exact={locator.options?.exact}
+        onValueChange={(value) => onChange({ ...locator, title: value })}
+        onExactChange={(exact) => {
+          onChange({ ...locator, options: { ...locator.options, exact } })
+        }}
         onBlur={onBlur}
       />
     </FieldGroup>

@@ -37,6 +37,7 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'ReloadExpression':
       case 'NewRoleLocatorExpression':
       case 'RoleLocatorOptionsExpression':
+      case 'TextLocatorOptionsExpression':
       case 'NewLabelLocatorExpression':
       case 'NewCssLocatorExpression':
       case 'NewAltTextLocatorExpression':

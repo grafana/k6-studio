@@ -34,29 +34,40 @@ const GetByTestIdLocatorSchema = z.object({
   testId: z.string(),
 })
 
+const TextLocatorOptions = z
+  .object({
+    exact: z.boolean().optional(),
+  })
+  .optional()
+
 const GetByAltTextLocatorSchema = z.object({
   type: z.literal('alt'),
   text: z.string(),
+  options: TextLocatorOptions,
 })
 
 const GetByLabelLocatorSchema = z.object({
   type: z.literal('label'),
   label: z.string(),
+  options: TextLocatorOptions,
 })
 
 const GetByPlaceholderLocatorSchema = z.object({
   type: z.literal('placeholder'),
   placeholder: z.string(),
+  options: TextLocatorOptions,
 })
 
 const GetByTitleLocatorSchema = z.object({
   type: z.literal('title'),
   title: z.string(),
+  options: TextLocatorOptions,
 })
 
 const GetByTextLocatorSchema = z.object({
   type: z.literal('text'),
   text: z.string(),
+  options: TextLocatorOptions,
 })
 
 const ActionLocatorSchema = z.discriminatedUnion('type', [

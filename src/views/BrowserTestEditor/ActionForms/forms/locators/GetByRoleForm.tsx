@@ -1,11 +1,9 @@
-import { css } from '@emotion/react'
-import { Flex, IconButton, TextField, Tooltip } from '@radix-ui/themes'
-import { WholeWordIcon } from 'lucide-react'
+import { Flex } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 
-import { ComboBox } from '../../components'
+import { ComboBox, TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
 const ROLE_OPTIONS = [
@@ -62,12 +60,11 @@ export function GetByRoleForm({
         mb="0"
         errors={toFieldErrors('name', errors?.['name'])}
       >
-        <TextField.Root
-          size="1"
+        <TextFieldWithExactToggle
           name="name"
           value={locator.options?.name || ''}
-          onChange={(e) => {
-            const value = e.target.value
+          exact={locator.options?.exact}
+          onValueChange={(value) => {
             onChange({
               ...locator,
               options: {
@@ -76,36 +73,17 @@ export function GetByRoleForm({
               },
             })
           }}
+          onExactChange={(exact) => {
+            onChange({
+              ...locator,
+              options: {
+                ...locator.options,
+                exact,
+              },
+            })
+          }}
           onBlur={onBlur}
-        >
-          <TextField.Slot side="right">
-            <Tooltip content="Exact match">
-              <IconButton
-                size="1"
-                disabled={!locator.options?.name}
-                aria-label="Toggle exact match"
-                aria-pressed={locator.options?.exact ? 'true' : 'false'}
-                variant="ghost"
-                color={locator.options?.exact ? 'orange' : 'gray'}
-                onClick={() => {
-                  onChange({
-                    ...locator,
-                    options: {
-                      ...locator.options,
-                      exact: !locator.options?.exact,
-                    },
-                  })
-                  onBlur?.()
-                }}
-                css={css`
-                  margin: 0;
-                `}
-              >
-                <WholeWordIcon />
-              </IconButton>
-            </Tooltip>
-          </TextField.Slot>
-        </TextField.Root>
+        />
       </FieldGroup>
     </Flex>
   )
