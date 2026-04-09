@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Separator } from '@radix-ui/themes'
-import { FileBracesIcon, VideoIcon, WrenchIcon } from 'lucide-react'
+import { BugPlay, HammerIcon, VideoIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import k6LogoDark from '@/assets/logo-dark.svg'
@@ -13,6 +13,7 @@ import { selectFileCountPerType } from '../../../store/ui/selectors'
 import { useStudioUIStore } from '../../../store/ui/useStudioUIStore'
 import { SidebarTab } from '../Layout.types'
 
+import { CreateNewPopover } from './CreateNewPopover'
 import { HelpButton } from './HelpButton'
 import { VerticalTabButton } from './NavIconButton'
 import { Profile } from './Profile'
@@ -56,6 +57,8 @@ export function ActivityBar({ activeTab, onTabChange }: ActivityBarProps) {
         />
       </Link>
       <Flex direction="column" align="center" gap="1" mt="4" width="100%">
+        <CreateNewPopover />
+        <Separator orientation="horizontal" size="2" my="2" />
         <VerticalTabButton
           icon={<VideoIcon />}
           itemCount={recordings}
@@ -64,16 +67,16 @@ export function ActivityBar({ activeTab, onTabChange }: ActivityBarProps) {
           onClick={() => onTabChange('record')}
         />
         <VerticalTabButton
-          icon={<WrenchIcon />}
+          icon={<HammerIcon />}
           itemCount={generators + browserTests}
           tooltip="Build"
           active={activeTab === 'build'}
           onClick={() => onTabChange('build')}
         />
         <VerticalTabButton
-          icon={<FileBracesIcon />}
+          icon={<BugPlay />}
           itemCount={scripts}
-          tooltip="Validate"
+          tooltip="Debug"
           active={activeTab === 'validate'}
           onClick={() => onTabChange('validate')}
         />

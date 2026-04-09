@@ -6,6 +6,7 @@ import { ReactNode } from 'react'
 interface SidebarHeaderProps {
   icon: ReactNode
   title: string
+  variant?: 'primary' | 'secondary'
   actions?: ReactNode
   onCollapseSidebar: () => void
 }
@@ -14,6 +15,7 @@ export function SidebarHeader({
   icon,
   title,
   actions,
+  variant = 'primary',
   onCollapseSidebar,
 }: SidebarHeaderProps) {
   return (
@@ -25,22 +27,24 @@ export function SidebarHeader({
         font-size: var(--font-size-1);
         font-weight: 600;
         text-transform: uppercase;
+        color: ${variant === 'primary' ? 'var(--gray-12)' : 'var(--gray-11)'};
       `}
     >
       {icon}
       {title}
-      {actions}
-      <IconButton
-        size="1"
-        variant="ghost"
-        color="gray"
-        css={css`
-          margin-left: auto;
-        `}
-        onClick={onCollapseSidebar}
-      >
-        <PanelLeftCloseIcon />
-      </IconButton>
+      <Flex align="center" gap="2" ml="auto">
+        {actions}
+        {variant === 'primary' && (
+          <IconButton
+            size="1"
+            variant="ghost"
+            color="gray"
+            onClick={onCollapseSidebar}
+          >
+            <PanelLeftCloseIcon />
+          </IconButton>
+        )}
+      </Flex>
     </Flex>
   )
 }

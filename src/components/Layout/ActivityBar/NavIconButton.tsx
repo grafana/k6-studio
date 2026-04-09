@@ -4,9 +4,10 @@ import { ReactNode } from 'react'
 
 interface NavIconButtonProps {
   icon: ReactNode
-  itemCount: number
-  active: boolean
+  itemCount?: number
+  active?: boolean
   tooltip: string
+  ref?: React.Ref<HTMLButtonElement>
   onClick?: () => void
 }
 
@@ -15,6 +16,7 @@ export function VerticalTabButton({
   tooltip,
   itemCount,
   active,
+  ref,
   onClick,
 }: NavIconButtonProps) {
   return (
@@ -42,6 +44,7 @@ export function VerticalTabButton({
         }
       >
         <IconButton
+          ref={ref}
           aria-label={tooltip}
           variant="ghost"
           color={active ? 'orange' : 'gray'}
@@ -58,7 +61,7 @@ export function VerticalTabButton({
         >
           {icon}
         </IconButton>
-        {itemCount > 0 && (
+        {itemCount && itemCount > 0 && (
           <Badge
             radius="full"
             variant="solid"

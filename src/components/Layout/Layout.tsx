@@ -8,6 +8,7 @@ import { useLocalStorage } from 'react-use'
 
 import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
 import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
+import { useWatchFileChanges } from '@/hooks/useWatchFileChanges'
 
 import { ActivityBar } from './ActivityBar'
 import { SidebarTab } from './Layout.types'
@@ -41,10 +42,16 @@ export function Layout() {
   )
   const location = useLocation()
   useListenDeepLinks()
+  useWatchFileChanges()
 
   const handleVisibleChange = (index: number, visible: boolean) => {
     if (index !== 1) return
     setIsSidebarExpanded(visible)
+  }
+
+  const handleTabChange = (tab: SidebarTab) => {
+    setActiveTab(tab)
+    setIsSidebarExpanded(true)
   }
 
   useEffect(() => {
@@ -85,7 +92,7 @@ export function Layout() {
       )}
       <Allotment onVisibleChange={handleVisibleChange}>
         <Allotment.Pane minSize={64} maxSize={64}>
-          <ActivityBar activeTab={activeTab} onTabChange={setActiveTab} />
+          <ActivityBar activeTab={activeTab} onTabChange={handleTabChange} />
         </Allotment.Pane>
         <Allotment.Pane
           minSize={200}

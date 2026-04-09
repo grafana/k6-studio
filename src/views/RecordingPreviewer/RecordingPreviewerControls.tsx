@@ -1,12 +1,17 @@
-import { css } from '@emotion/react'
-import { Button, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
-import { ChevronDownIcon, EllipsisVerticalIcon } from 'lucide-react'
+import { Button, DropdownMenu, IconButton } from '@radix-ui/themes'
+import {
+  ChevronDownIcon,
+  EllipsisVerticalIcon,
+  MonitorIcon,
+  ServerCogIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
 import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath } from '@/routeMap'
@@ -105,12 +110,14 @@ export function RecordingPreviewControls({
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
-          <MenuItem
+          <RichDropdownMenuItem
+            icon={<ServerCogIcon />}
             label="HTTP test"
             description="Generate a k6 script from HTTP requests using rules"
             onClick={handleCreateGenerator}
           />
-          <MenuItem
+          <RichDropdownMenuItem
+            icon={<MonitorIcon />}
             label="Browser test"
             description="Export a k6 script simulating browser interactions"
             disabled={browserEvents.length === 0}
@@ -146,29 +153,5 @@ export function RecordingPreviewControls({
         onExport={handleExportBrowserScript}
       />
     </>
-  )
-}
-
-interface MenuItemProps {
-  label: string
-  description?: string
-  disabled?: boolean
-  onClick?: () => void
-}
-
-function MenuItem({ label, description, disabled, onClick }: MenuItemProps) {
-  return (
-    <DropdownMenu.Item
-      disabled={disabled}
-      onClick={onClick}
-      css={css`
-        height: auto;
-      `}
-    >
-      <Flex direction="column" align="start" py="1" maxWidth="320px">
-        <Text>{label}</Text>
-        {description && <Text size="1">{description}</Text>}
-      </Flex>
-    </DropdownMenu.Item>
   )
 }
