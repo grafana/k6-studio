@@ -1,4 +1,3 @@
-import { css } from '@emotion/react'
 import { IconButton, TextField, Tooltip } from '@radix-ui/themes'
 import { WholeWordIcon } from 'lucide-react'
 
@@ -40,9 +39,6 @@ export function TextFieldWithExactToggle({
                 onExactChange(!exact)
                 onBlur?.()
               }}
-              css={css`
-                margin-right: -var(--space-1);
-              `}
             >
               <WholeWordIcon />
             </IconButton>
