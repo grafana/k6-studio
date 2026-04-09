@@ -26,25 +26,23 @@ export function TextFieldWithExactToggle({
       onChange={(e) => onValueChange(e.target.value)}
       onBlur={onBlur}
     >
-      {value.trim().length > 0 && (
-        <TextField.Slot side="right">
-          <Tooltip content="Exact match">
-            <IconButton
-              size="1"
-              aria-label="Toggle exact match"
-              aria-pressed={exact ? 'true' : 'false'}
-              variant="ghost"
-              color={exact ? 'orange' : 'gray'}
-              onClick={() => {
-                onExactChange(!exact)
-                onBlur?.()
-              }}
-            >
-              <WholeWordIcon />
-            </IconButton>
-          </Tooltip>
-        </TextField.Slot>
-      )}
+      <TextField.Slot side="right">
+        <Tooltip content="Exact match">
+          <IconButton
+            size="1"
+            aria-label="Toggle exact match"
+            aria-pressed={exact ? 'true' : 'false'}
+            variant="ghost"
+            color={exact ? 'orange' : 'gray'}
+            onClick={() => {
+              onExactChange(!exact)
+              onBlur?.()
+            }}
+          >
+            <WholeWordIcon />
+          </IconButton>
+        </Tooltip>
+      </TextField.Slot>
     </TextField.Root>
   )
 }
