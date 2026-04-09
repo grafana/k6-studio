@@ -47,7 +47,6 @@ const RrwebCustomEventSchema = z.object({
 
 export type RecordingEndEvent = z.infer<typeof RecordingEndEventSchema>
 export type PageStartEvent = z.infer<typeof PageStartEventSchema>
-export type ActionBeginEvent = z.infer<typeof ActionBeginEventSchema>
 
 export type CustomReplayEvent = z.infer<typeof CustomReplayEventSchema>
 
