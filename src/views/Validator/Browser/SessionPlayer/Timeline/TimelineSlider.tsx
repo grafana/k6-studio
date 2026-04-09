@@ -23,27 +23,33 @@ export function TimelineSlider({
   disabled = false,
   onSeek,
 }: TimelineSliderProps) {
-  const handleChapterSeek = useCallback(
-    (time: number) => {
-      onSeek(time, true)
+  const handleSeek = useCallback(
+    (newTime: number, commit = true) => {
+      onSeek(newTime - time.start, commit)
     },
-    [onSeek]
+    [time.start, onSeek]
   )
 
   const handleValueChange = useCallback(
     ([value]: number[]) => {
-      if (value === undefined) return
-      onSeek(value, false)
+      if (value === undefined) {
+        return
+      }
+
+      handleSeek(value, false)
     },
-    [onSeek]
+    [handleSeek]
   )
 
   const handleValueCommit = useCallback(
     ([value]: number[]) => {
-      if (value === undefined) return
-      onSeek(value, true)
+      if (value === undefined) {
+        return
+      }
+
+      handleSeek(value, true)
     },
-    [onSeek]
+    [handleSeek]
   )
 
   return (
@@ -65,9 +71,9 @@ export function TimelineSlider({
           bottom: -1px;
         }
       `}
-      value={[time.current]}
-      min={0}
-      max={time.total}
+      value={[time.start + time.current]}
+      min={time.start}
+      max={time.start + time.total}
       step={0.001}
       disabled={disabled}
       onValueChange={handleValueChange}
@@ -92,7 +98,7 @@ export function TimelineSlider({
             time={time}
             disabled={disabled}
             actions={actions}
-            onSeek={handleChapterSeek}
+            onSeek={handleSeek}
           />
           <SliderPrimitive.Range
             css={css`

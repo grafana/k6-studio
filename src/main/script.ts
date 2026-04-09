@@ -12,7 +12,6 @@ import { ArchiveError, K6Client } from '@/utils/k6/client'
 import { createTrackingServer } from '@/utils/k6/tracking'
 
 import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
-import { createReplayEvent } from './runner/rrweb'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -127,10 +126,6 @@ export const runScript = async ({
   })
 
   testRun.on('stop', () => {
-    browserWindow.webContents.send(ScriptHandler.BrowserReplay, [
-      createReplayEvent('recording-end', {}),
-    ])
-
     browserWindow.webContents.send(ScriptHandler.Stopped)
 
     trackingServer?.dispose()

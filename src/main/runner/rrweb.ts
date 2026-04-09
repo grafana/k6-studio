@@ -18,9 +18,25 @@ const PageStartEventSchema = z.object({
   }),
 })
 
+const ActionBeginEventSchema = z.object({
+  tag: z.literal('action-begin'),
+  payload: z.object({
+    actionId: z.string(),
+  }),
+})
+
+const ActionEndEventSchema = z.object({
+  tag: z.literal('action-end'),
+  payload: z.object({
+    actionId: z.string(),
+  }),
+})
+
 const CustomReplayEventSchema = z.discriminatedUnion('tag', [
   RecordingEndEventSchema,
   PageStartEventSchema,
+  ActionBeginEventSchema,
+  ActionEndEventSchema,
 ])
 
 const RrwebCustomEventSchema = z.object({
@@ -31,6 +47,7 @@ const RrwebCustomEventSchema = z.object({
 
 export type RecordingEndEvent = z.infer<typeof RecordingEndEventSchema>
 export type PageStartEvent = z.infer<typeof PageStartEventSchema>
+export type ActionBeginEvent = z.infer<typeof ActionBeginEventSchema>
 
 export type CustomReplayEvent = z.infer<typeof CustomReplayEventSchema>
 
@@ -42,13 +59,20 @@ export function parseReplayEvent(event: unknown) {
   return RrwebCustomEventSchema.parse(event)
 }
 
-export function createReplayEvent<T extends CustomReplayEvent['tag']>(
-  tag: T,
+interface CreateReplayEventOptions<T extends keyof CustomReplayEventMap> {
+  tag: T
   payload: CustomReplayEventMap[T]['payload']
-): BrowserReplayEvent {
+  timestamp?: number
+}
+
+export function createReplayEvent<T extends keyof CustomReplayEventMap>({
+  tag,
+  payload,
+  timestamp,
+}: CreateReplayEventOptions<T>): BrowserReplayEvent {
   return {
     type: EventType.Custom,
-    timestamp: Date.now(),
+    timestamp: timestamp ?? Date.now(),
     data: {
       tag,
       payload,

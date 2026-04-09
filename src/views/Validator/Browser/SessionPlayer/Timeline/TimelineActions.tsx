@@ -126,7 +126,7 @@ function Segment({ disabled, segment, totalTime, onSeek }: SegmentProps) {
     const deltaX = ev.clientX - (mouseDownX.current ?? ev.clientX)
 
     if (Math.abs(deltaX) < 10) {
-      onSeek(segment.start)
+      onSeek(segment.action.timestamp.started)
     }
   }
 

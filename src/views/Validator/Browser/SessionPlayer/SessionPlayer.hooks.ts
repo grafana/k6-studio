@@ -74,7 +74,6 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
 
   // Start at 1 to make slider be 100% at the beginning of the session
   const [currentTime, setCurrentTime] = useState(1)
-  const [totalTime, setTotalTime] = useState(0)
 
   const [state, setState] = useState<PlaybackState>('playing')
 
@@ -101,6 +100,10 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
       mouseTail: false,
     })
 
+    newPlayer.on(ReplayerEvents.Finish, () => {
+      setState('ended')
+    })
+
     newPlayer.on(ReplayerEvents.CustomEvent, (ev) => {
       const parsedEvent = parseReplayEvent(ev)
 
@@ -108,8 +111,6 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
         case 'recording-end':
           newPlayer.stopLive()
           newPlayer.setConfig({ liveMode: false })
-
-          setState('ended')
 
           break
 
@@ -165,7 +166,6 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
 
       // We currently don't allow seeking and pausing while streaming, so
       // we keep the total time and the current time in sync.
-      setTotalTime(totalTime)
       setCurrentTime(totalTime)
 
       frame = requestAnimationFrame(tick)
@@ -176,7 +176,9 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     }
   }, [player, state, streaming])
 
-  function play() {
+  const totalTime = player?.getTotalTime() ?? 0
+
+  const play = () => {
     switch (state) {
       case 'playing':
         break
@@ -195,7 +197,7 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     setState('playing')
   }
 
-  function pause() {
+  const pause = () => {
     if (state !== 'playing') {
       return
     }
@@ -205,7 +207,7 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     setState('paused')
   }
 
-  function seek(time: number, { scrubbing = false } = {}) {
+  const seek = (time: number, { scrubbing = false } = {}) => {
     const newCurrentTime = Math.min(time, totalTime)
 
     setCurrentTime(newCurrentTime)
