@@ -1,8 +1,8 @@
 import logger from 'electron-log/main'
 import { z } from 'zod'
 
+import { EventEmitter } from '@/recording/events'
 import { safeJsonParse } from '@/utils/json'
-import { EventEmitter } from 'extension/src/utils/events'
 
 import { ChromeCommand, ChromeEvent, Transport } from '../client'
 

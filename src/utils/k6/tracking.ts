@@ -12,8 +12,8 @@ import {
   BrowserReplayEvent,
   SessionReplayEventSchema,
 } from '@/main/runner/schema'
+import { EventEmitter } from '@/recording/events'
 import { LogEntry, LogEntrySchema } from '@/schemas/k6'
-import { EventEmitter } from 'extension/src/utils/events'
 
 function getPort(address: AddressInfo | string | null): number {
   if (address === null) {

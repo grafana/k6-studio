@@ -1,6 +1,7 @@
 import { ChildProcess, spawn } from 'child_process'
 import logger from 'electron-log/main'
 
+import { EventEmitter } from '@/recording/events'
 import { BrowserEvent } from '@/schemas/recording'
 import { NodeSelector } from '@/schemas/selectors'
 import { BrowserServer } from '@/services/browser/server'
@@ -9,7 +10,6 @@ import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
 import { readResource } from '@/utils/resources'
 import { exhaustive } from '@/utils/typescript'
-import { EventEmitter } from 'extension/src/utils/events'
 
 import {
   BrowserLaunchError,

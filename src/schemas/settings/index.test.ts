@@ -18,7 +18,6 @@ describe('Settings migration', () => {
       },
       recorder: {
         detectBrowserPath: true,
-        enableBrowserRecorder: true,
       },
       windowState: {
         width: 1200,
@@ -52,7 +51,6 @@ describe('Settings migration', () => {
       },
       recorder: {
         detectBrowserPath: true,
-        enableBrowserRecorder: true,
       },
       windowState: {
         width: 1200,
@@ -76,7 +74,7 @@ describe('Settings migration', () => {
   })
 
   describe('v3 to v4', () => {
-    it('should set browserRecorder to "extension" when browserRecordingEnabled is true', () => {
+    it('should migrate from v3 to latest', () => {
       const v3Settings: v3.AppSettings = {
         version: '3.0',
         proxy: {
@@ -87,7 +85,6 @@ describe('Settings migration', () => {
         },
         recorder: {
           detectBrowserPath: true,
-          enableBrowserRecorder: true,
         },
         windowState: {
           width: 1200,
@@ -112,46 +109,6 @@ describe('Settings migration', () => {
       const migration = v3.migrate(v3Settings)
 
       expect(migration.version).toBe('4.0')
-      expect(migration.recorder.browserRecording).toBe('extension')
-    })
-
-    it('should set browserRecorder to "disabled" when browserRecordingEnabled is false', () => {
-      const v3Settings: v3.AppSettings = {
-        version: '3.0',
-        proxy: {
-          mode: 'regular',
-          port: 6000,
-          automaticallyFindPort: true,
-          sslInsecure: false,
-        },
-        recorder: {
-          detectBrowserPath: true,
-          enableBrowserRecorder: false,
-        },
-        windowState: {
-          width: 1200,
-          height: 800,
-          x: 0,
-          y: 0,
-          isMaximized: true,
-        },
-        telemetry: {
-          usageReport: true,
-          errorReport: true,
-        },
-        appearance: {
-          theme: 'system',
-        },
-        ai: {
-          provider: 'openai',
-          apiKey: 'abcdef',
-        },
-      }
-
-      const migration = v3.migrate(v3Settings)
-
-      expect(migration.version).toBe('4.0')
-      expect(migration.recorder.browserRecording).toBe('disabled')
     })
   })
 })

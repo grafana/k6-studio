@@ -19,7 +19,7 @@ export default defineConfig((env) => {
       // fix for react-is lib in packaged mode
       process: JSON.stringify({
         env: {
-          NODE_ENV: nodeEnv
+          NODE_ENV: nodeEnv,
         },
       }),
     },
@@ -28,7 +28,7 @@ export default defineConfig((env) => {
       outDir: `resources/browser`,
       sourcemap: 'inline',
       lib: {
-        entry: 'extension/src/cdp/index.ts',
+        entry: 'src/recording/index.ts',
         formats: ['iife'],
         name: '__k6_studio_cdp__',
         fileName: () => 'index.js',

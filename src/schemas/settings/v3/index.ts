@@ -48,9 +48,6 @@ export function migrate(
     version: '4.0',
     recorder: {
       ...settings.recorder,
-      browserRecording: settings.recorder.enableBrowserRecorder
-        ? 'extension'
-        : 'disabled',
     },
   }
 }

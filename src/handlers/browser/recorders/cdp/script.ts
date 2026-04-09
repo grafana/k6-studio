@@ -1,5 +1,5 @@
+import { EventEmitter } from '@/recording/events'
 import { ChromeDevToolsClient } from '@/utils/cdp/client'
-import { EventEmitter } from 'extension/src/utils/events'
 
 interface ScriptEventMap {
   reload: EmptyObject

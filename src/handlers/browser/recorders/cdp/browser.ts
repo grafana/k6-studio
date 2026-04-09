@@ -1,7 +1,7 @@
+import { EventEmitter } from '@/recording/events'
 import { NavigateToPageEvent, ReloadPageEvent } from '@/schemas/recording'
 import { ChromeDevToolsClient, Target, ChromeEvent } from '@/utils/cdp/client'
 import { readResource } from '@/utils/resources'
-import { EventEmitter } from 'extension/src/utils/events'
 
 import { Page } from './page'
 import { Script } from './script'

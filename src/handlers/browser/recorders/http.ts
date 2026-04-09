@@ -1,6 +1,6 @@
 import { ChildProcess, spawn } from 'child_process'
 
-import { EventEmitter } from 'extension/src/utils/events'
+import { EventEmitter } from '@/recording/events'
 
 import {
   BrowserLaunchError,

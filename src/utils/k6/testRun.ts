@@ -1,8 +1,8 @@
 import { ChildProcessWithoutNullStreams } from 'child_process'
 import readline from 'readline/promises'
 
+import { EventEmitter } from '@/recording/events'
 import { Check, CheckArraySchema, LogEntry, LogEntrySchema } from '@/schemas/k6'
-import { EventEmitter } from 'extension/src/utils/events'
 
 import { parseJsonAsSchema } from '../json'
 
