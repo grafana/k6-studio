@@ -45,11 +45,13 @@ const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
 interface LocatorFormProps {
   state: LocatorOptions
   onChange: (value: LocatorOptions) => void
+  suggestedRoles?: string[]
 }
 
 export function LocatorForm({
   state: { current, values },
   onChange,
+  suggestedRoles,
 }: LocatorFormProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [touchedTypes, setTouchedTypes] = useState(
@@ -142,6 +144,7 @@ export function LocatorForm({
             errors={validation.fieldErrors}
             onChange={handleLocatorChange}
             onBlur={handleFieldBlur}
+            suggestedRoles={suggestedRoles}
           />
         </Grid>
       </Popover.Content>
@@ -154,6 +157,7 @@ interface LocatorFieldsFormProps {
   errors?: Record<string, string>
   onChange: (locator: ActionLocator) => void
   onBlur?: () => void
+  suggestedRoles?: string[]
 }
 
 function LocatorFieldsForm({
@@ -161,6 +165,7 @@ function LocatorFieldsForm({
   errors,
   onChange,
   onBlur,
+  suggestedRoles,
 }: LocatorFieldsFormProps) {
   switch (locator.type) {
     case 'role':
@@ -170,6 +175,7 @@ function LocatorFieldsForm({
           errors={errors}
           onChange={onChange}
           onBlur={onBlur}
+          suggestedRoles={suggestedRoles}
         />
       )
     case 'css':

@@ -396,11 +396,19 @@ function buildBrowserNodeGraphFromActions(
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.fill':
+        return {
+          type: 'type-text',
+          nodeId: crypto.randomUUID(),
+          value: action.value,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
       case 'page.waitForNavigation':
       case 'page.close':
       case 'page.*':
       case 'locator.dblclick':
-      case 'locator.fill':
       case 'locator.type':
       case 'locator.check':
       case 'locator.uncheck':
