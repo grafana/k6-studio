@@ -78,10 +78,24 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
       <DropdownMenu.Content>
         <DropdownMenu.Item
           onClick={() => {
+            onAddAction('locator.check')
+          }}
+        >
+          Check input
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
             onAddAction('locator.click')
           }}
         >
           Click element
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.uncheck')
+          }}
+        >
+          Uncheck input
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => {

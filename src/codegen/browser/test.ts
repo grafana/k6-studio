@@ -396,6 +396,24 @@ function buildBrowserNodeGraphFromActions(
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.check':
+        return {
+          type: 'check',
+          nodeId: crypto.randomUUID(),
+          checked: true,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.uncheck':
+        return {
+          type: 'check',
+          nodeId: crypto.randomUUID(),
+          checked: false,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
       case 'locator.fill':
         return {
           type: 'type-text',
@@ -410,8 +428,6 @@ function buildBrowserNodeGraphFromActions(
       case 'page.*':
       case 'locator.dblclick':
       case 'locator.type':
-      case 'locator.check':
-      case 'locator.uncheck':
       case 'locator.selectOption':
       case 'locator.hover':
       case 'locator.setChecked':
