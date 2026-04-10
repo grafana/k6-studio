@@ -1,11 +1,7 @@
-import { RecorderSettings } from '@/types/settings'
-
 import { launchBrowserWithDevToolsProtocol } from './recorders/cdp'
 import { launchBrowserWithHttpOnly } from './recorders/http'
 import { RecordingSession } from './recorders/types'
 import { LaunchBrowserOptions } from './types'
-
-type LaunchBrowserArgs = LaunchBrowserOptions & { settings: RecorderSettings }
 
 /**
  * Starts a browser instance for recording. Throws if the browser fails to start.
@@ -13,7 +9,7 @@ type LaunchBrowserArgs = LaunchBrowserOptions & { settings: RecorderSettings }
  * `RecordingSession` instance.
  */
 export async function launchBrowser(
-  args: LaunchBrowserArgs
+  args: LaunchBrowserOptions
 ): Promise<RecordingSession> {
   if (args.capture.browser) {
     return launchBrowserWithDevToolsProtocol('pipe', args.url)

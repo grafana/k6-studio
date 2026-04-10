@@ -5,7 +5,6 @@ import invariant from 'tiny-invariant'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
-import { useSettings } from '@/hooks/useSettings'
 import { BrowserEvent } from '@/schemas/recording'
 import { ProxyData, StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
@@ -16,8 +15,6 @@ import { RecordingInspector } from '../Recorder/RecordingInspector'
 import { RecordingPreviewControls } from './RecordingPreviewerControls'
 
 export function RecordingPreviewer() {
-  useSettings()
-
   const [proxyData, setProxyData] = useState<ProxyData[]>([])
   const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
 
