@@ -40,10 +40,6 @@ export function GetByRoleForm({
   onBlur,
   suggestedRoles,
 }: GetByRoleFormProps) {
-  const roleOptions = allowedRoles
-    ? ALL_ROLE_OPTIONS.filter((opt) => allowedRoles.includes(opt.value))
-    : ALL_ROLE_OPTIONS
-
   return (
     <Flex direction="column" gap="2" align="stretch">
       <FieldGroup

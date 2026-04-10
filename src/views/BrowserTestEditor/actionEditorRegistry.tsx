@@ -70,7 +70,15 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.check',
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'checkbox',
+          },
+        },
+      },
     }),
   },
   'locator.uncheck': {
@@ -81,7 +89,15 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.uncheck',
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'checkbox',
+          },
+        },
+      },
     }),
   },
   'locator.click': {
@@ -104,7 +120,15 @@ const actionEditors: ActionEditorRegistry = {
       id: crypto.randomUUID(),
       method: 'locator.fill',
       value: '',
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'textbox',
+          },
+        },
+      },
     }),
   },
   'page.goto': {
