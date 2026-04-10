@@ -10,6 +10,7 @@ import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
+import { SessionPlayer } from '@src/views/Validator/Browser/SessionPlayer/SessionPlayer'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'
 import { useDebugSession } from '../Validator/Validator.hooks'
@@ -95,27 +96,25 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   `}
                 >
                   <Panel id="main" minSize={200}>
-                    <Tabs.Root asChild defaultValue="script">
+                    <Tabs.Root asChild defaultValue="replay">
                       <Flex direction="column" height="100%" width="100%">
                         <Tabs.List>
-                          <Tabs.Trigger
-                            disabled
-                            css={css`
-                              /* 
-                             * Since we currently only have a single tab, we disable the
-                             * hover styling. This should be removed once we have more tabs.
-                             */
-                              cursor: default;
-
-                              &:hover .rt-TabsTriggerInner {
-                                background-color: transparent;
-                              }
-                            `}
-                            value="script"
-                          >
-                            Script
-                          </Tabs.Trigger>
+                          <Tabs.Trigger value="replay">Replay</Tabs.Trigger>
+                          <Tabs.Trigger value="script">Script</Tabs.Trigger>
                         </Tabs.List>
+                        <Tabs.Content
+                          css={css`
+                            flex: 1 1 0;
+                            overflow: hidden;
+                          `}
+                          value="replay"
+                        >
+                          <SessionPlayer
+                            key={session.id}
+                            session={session}
+                            highlightedSelector={null}
+                          />
+                        </Tabs.Content>
                         <Tabs.Content
                           css={css`
                             flex: 1 1 0;
