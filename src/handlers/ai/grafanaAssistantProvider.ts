@@ -17,8 +17,8 @@ import {
   safeResponseText,
 } from './a2a/helpers'
 import { sendRemoteToolResponse } from './a2a/remoteToolResponse'
+import { ActiveA2ASession } from './a2a/session'
 import { createA2AStream } from './a2a/stream'
-import type { ActiveA2ASession, A2ASessionConfig } from './a2a/types'
 import { getToolDefinitionsForA2A } from './tools'
 
 function forwardAbortSignal(
@@ -105,7 +105,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     )
 
     const { extensions: _, ...sessionConfig } = config
-    const session = createSession(
+    const session = new ActiveA2ASession(
       reader,
       contextId,
       sessionAbortController,
@@ -157,28 +157,6 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       cleanupSession(chatId, session)
     )
     return { stream }
-  }
-}
-
-function createSession(
-  reader: ReadableStreamDefaultReader<Uint8Array>,
-  contextId: string | undefined,
-  sessionAbortController: AbortController,
-  config: A2ASessionConfig
-): ActiveA2ASession {
-  return {
-    reader,
-    contextId,
-    taskId: undefined,
-    sessionAbortController,
-    config,
-    pendingToolRequests: new Map(),
-    unmatchedToolCalls: [],
-    unmatchedRemoteRequests: [],
-    sseBuffer: '',
-    readyToFinishForTools: false,
-    activeStreamArtifactId: undefined,
-    activeStreamContentType: undefined,
   }
 }
 

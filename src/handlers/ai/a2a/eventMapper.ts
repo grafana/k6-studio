@@ -2,7 +2,7 @@ import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
 import log from 'electron-log/main'
 
 import { ARTIFACT_NAME, LOG_PREFIX, NO_USAGE } from './constants'
-import { handleRemoteToolRequest, tryMatchToolRequests } from './toolMatcher'
+import type { ActiveA2ASession } from './session'
 import type {
   A2AArtifact,
   A2AArtifactPart,
@@ -14,7 +14,6 @@ import type {
   A2AStatusUpdateEvent,
   A2ATaskState,
   A2AToolCallData,
-  ActiveA2ASession,
 } from './types'
 
 function isDataPart(part: A2AArtifactPart): part is A2ADataPart {
@@ -63,7 +62,7 @@ export function processA2AEvent(
   }
 
   if (isRemoteToolRequest(result)) {
-    handleRemoteToolRequest(session, result)
+    session.handleRemoteToolRequest(result)
     return []
   }
 
@@ -174,7 +173,7 @@ function handleToolCallArtifact(
     typeof inputs === 'string' ? inputs : JSON.stringify(inputs ?? {})
 
   session.unmatchedToolCalls.push({ toolId, toolName })
-  tryMatchToolRequests(session)
+  session.tryMatchToolRequests()
 
   return [
     {

@@ -9,6 +9,8 @@ export interface A2AConfig {
   bearerToken: string
 }
 
+export type A2ASessionConfig = Omit<A2AConfig, 'extensions'>
+
 const AGENT_ID = 'grafana_assistant_k6_studio'
 const REMOTE_TOOL_EXTENSION =
   'https://grafana.com/extensions/remote-tool-execution/v1'

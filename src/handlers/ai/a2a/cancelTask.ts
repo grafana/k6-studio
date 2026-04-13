@@ -1,8 +1,8 @@
 import log from 'electron-log/main'
 
+import type { A2ASessionConfig } from './config'
 import { LOG_PREFIX } from './constants'
 import { buildA2AHeaders, safeResponseText } from './helpers'
-import type { A2ASessionConfig } from './types'
 
 export async function sendTaskCancel(
   config: A2ASessionConfig,

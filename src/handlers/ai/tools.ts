@@ -10,10 +10,13 @@ export interface RemoteToolDefinition {
 }
 
 export function getToolDefinitionsForA2A(): RemoteToolDefinition[] {
-  return Object.entries(tools).map(([name, t]) => ({
+  return Object.entries(tools).map(([name, toolDef]) => ({
     name,
-    description: t.description ?? '',
-    inputSchema: asSchema(t.inputSchema).jsonSchema as Record<string, unknown>,
+    description: toolDef.description ?? '',
+    inputSchema: asSchema(toolDef.inputSchema).jsonSchema as Record<
+      string,
+      unknown
+    >,
   }))
 }
 

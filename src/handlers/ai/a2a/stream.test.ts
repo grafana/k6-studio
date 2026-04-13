@@ -7,8 +7,8 @@ import {
   encodeSSEChunked,
 } from '@/test/utils/sse'
 
+import type { ActiveA2ASession } from './session'
 import { createA2AStream } from './stream'
-import type { ActiveA2ASession } from './types'
 
 function createSessionWithStream(
   sseStream: ReadableStream<Uint8Array>,
