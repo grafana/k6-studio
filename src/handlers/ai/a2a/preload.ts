@@ -4,6 +4,7 @@ import { createListener } from '../../utils'
 import { AssistantAuthHandler } from '../types'
 
 import type { AssistantAuthResult, AssistantAuthStatus } from './assistantAuth'
+import type { StackHealthStatus } from './stackHealth'
 
 export function onAssistantVerificationCode(callback: (code: string) => void) {
   return createListener(AssistantAuthHandler.VerificationCode, callback)
@@ -27,4 +28,10 @@ export function assistantGetStatus() {
 
 export function assistantSignOut() {
   return ipcRenderer.invoke(AssistantAuthHandler.SignOut) as Promise<void>
+}
+
+export function assistantCheckStackHealth() {
+  return ipcRenderer.invoke(
+    AssistantAuthHandler.CheckStackHealth
+  ) as Promise<StackHealthStatus>
 }

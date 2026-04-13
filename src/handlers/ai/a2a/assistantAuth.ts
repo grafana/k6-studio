@@ -15,6 +15,7 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { AssistantAuthHandler } from '../types'
 
 import { LOG_PREFIX } from './constants'
+import { checkStackHealth, type StackHealthStatus } from './stackHealth'
 import {
   clearAssistantTokens,
   hasAssistantTokens,
@@ -214,6 +215,26 @@ export function initialize() {
       pendingAbortController = null
     }
   })
+
+  ipcMain.handle(
+    AssistantAuthHandler.CheckStackHealth,
+    async (): Promise<StackHealthStatus> => {
+      const profile = await getProfileData()
+      const stackId = profile.profiles.currentStack
+
+      if (!stackId) {
+        return 'loading'
+      }
+
+      const stack = profile.profiles.stacks[stackId]
+
+      if (!stack) {
+        return 'loading'
+      }
+
+      return checkStackHealth(stack.url)
+    }
+  )
 
   ipcMain.handle(AssistantAuthHandler.SignOut, async (): Promise<void> => {
     const profile = await getProfileData()
