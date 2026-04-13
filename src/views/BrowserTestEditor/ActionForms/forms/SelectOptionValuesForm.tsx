@@ -97,7 +97,15 @@ export function SelectOptionValuesForm({
             nonEmptyValues.length === 0 ? (
               'option(s)'
             ) : (
-              <SelectOptions options={nonEmptyValues} />
+              <span
+                css={css`
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                  overflow: hidden;
+                `}
+              >
+                <SelectOptions options={nonEmptyValues} />
+              </span>
             )
           }
           error={null}

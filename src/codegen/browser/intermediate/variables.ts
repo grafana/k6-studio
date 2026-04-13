@@ -55,6 +55,7 @@ function substituteExpression(
     case 'ClickOptionsExpression':
     case 'WaitForOptionsExpression':
     case 'RoleLocatorOptionsExpression':
+    case 'SelectOptionValueExpression':
     case 'TextLocatorOptionsExpression':
       return node
 
@@ -169,9 +170,6 @@ function substituteExpression(
         checked: node.checked,
         locator: substituteExpression(node.locator, substitutions),
       }
-
-    case 'SelectOptionValueExpression':
-      return node
 
     case 'SelectOptionsExpression':
       return {
