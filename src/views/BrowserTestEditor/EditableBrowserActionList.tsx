@@ -90,6 +90,13 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
         >
           Fill input
         </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.selectOption')
+          }}
+        >
+          Select option
+        </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item
           onClick={() => {

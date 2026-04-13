@@ -423,12 +423,23 @@ function buildBrowserNodeGraphFromActions(
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.selectOption':
+        return {
+          type: 'select-options',
+          nodeId: crypto.randomUUID(),
+          selected: action.values.map(
+            (v) => v.value ?? v.label ?? String(v.index ?? '')
+          ),
+          multiple: action.values.length > 1,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
       case 'page.waitForNavigation':
       case 'page.close':
       case 'page.*':
       case 'locator.dblclick':
       case 'locator.type':
-      case 'locator.selectOption':
       case 'locator.hover':
       case 'locator.setChecked':
       case 'locator.tap':

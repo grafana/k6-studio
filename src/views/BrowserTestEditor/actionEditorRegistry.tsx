@@ -2,6 +2,7 @@ import { Code } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
   GlobeIcon,
+  ListChecksIcon,
   MousePointerClickIcon,
   RefreshCwIcon,
   SquareCheckBigIcon,
@@ -17,6 +18,7 @@ import {
   FillActionBody,
   GoToActionBody,
   PageReloadActionBody,
+  SelectOptionActionBody,
   UncheckActionBody,
   WaitForActionBody,
 } from './Actions'
@@ -129,6 +131,18 @@ const actionEditors: ActionEditorRegistry = {
           },
         },
       },
+    }),
+  },
+  'locator.selectOption': {
+    icon: <ListChecksIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <SelectOptionActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.selectOption',
+      values: [{ value: '' }],
+      locator: createDefaultLocatorOptions(),
     }),
   },
   'page.goto': {
