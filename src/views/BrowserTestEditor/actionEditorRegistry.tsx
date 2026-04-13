@@ -4,16 +4,20 @@ import {
   GlobeIcon,
   MousePointerClickIcon,
   RefreshCwIcon,
+  SquareCheckBigIcon,
+  SquareIcon,
   TextCursorInputIcon,
   TimerIcon,
 } from 'lucide-react'
 import { ReactElement, ReactNode } from 'react'
 
 import {
+  CheckActionBody,
   ClickActionBody,
   FillActionBody,
   GoToActionBody,
   PageReloadActionBody,
+  UncheckActionBody,
   WaitForActionBody,
 } from './Actions'
 import { BrowserActionInstance } from './types'
@@ -58,6 +62,44 @@ const notImplementedCreate = <M extends BrowserActionInstance['method']>(
 }
 
 const actionEditors: ActionEditorRegistry = {
+  'locator.check': {
+    icon: <SquareCheckBigIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <CheckActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.check',
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'checkbox',
+          },
+        },
+      },
+    }),
+  },
+  'locator.uncheck': {
+    icon: <SquareIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <UncheckActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.uncheck',
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'checkbox',
+          },
+        },
+      },
+    }),
+  },
   'locator.click': {
     icon: <MousePointerClickIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
@@ -78,7 +120,15 @@ const actionEditors: ActionEditorRegistry = {
       id: crypto.randomUUID(),
       method: 'locator.fill',
       value: '',
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'textbox',
+          },
+        },
+      },
     }),
   },
   'page.goto': {

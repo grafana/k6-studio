@@ -90,19 +90,37 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
         >
           Fill input
         </DropdownMenu.Item>
+        <DropdownMenu.Separator />
         <DropdownMenu.Item
           onClick={() => {
-            onAddAction('page.goto')
+            onAddAction('locator.check')
           }}
         >
-          Navigate to URL
+          Check input
         </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.uncheck')
+          }}
+        >
+          Uncheck input
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+
         <DropdownMenu.Item
           onClick={() => {
             onAddAction('locator.waitFor')
           }}
         >
           Wait for element
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('page.goto')
+          }}
+        >
+          Navigate to URL
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => {
