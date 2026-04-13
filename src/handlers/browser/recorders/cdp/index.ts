@@ -215,7 +215,7 @@ export async function launchBrowserWithDevToolsProtocol(
         .catch((error) => {
           process.kill()
 
-          reject(new BrowserLaunchError('extension-load', error))
+          reject(new BrowserLaunchError('unknown', error))
         })
     })
 
