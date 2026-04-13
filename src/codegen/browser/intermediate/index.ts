@@ -288,10 +288,19 @@ function emitSelectOptionsNode(
     expression: {
       type: 'SelectOptionsExpression',
       locator,
-      selected: node.selected.map((value) => ({
-        type: 'StringLiteral',
-        value,
-      })),
+      selected: node.selected.map((value) => {
+        if (typeof value === 'string') {
+          return {
+            type: 'StringLiteral',
+            value,
+          }
+        }
+
+        return {
+          type: 'SelectOptionValueExpression',
+          ...value,
+        }
+      }),
       multiple: node.multiple,
     },
   })

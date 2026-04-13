@@ -21,6 +21,12 @@ type SelectOptionValue = LocatorSelectOptionAction['values'][number]
 
 type MatchType = 'value' | 'label' | 'index'
 
+function isNonEmptyValue(entry: SelectOptionValue): boolean {
+  if (entry.label !== undefined) return entry.label !== ''
+  if (entry.index !== undefined) return true
+  return (entry.value ?? '') !== ''
+}
+
 function getMatchType(entry: SelectOptionValue): MatchType {
   if (entry.label !== undefined) return 'label'
   if (entry.index !== undefined) return 'index'
@@ -54,6 +60,14 @@ export function SelectOptionValuesForm({
   onChange,
 }: SelectOptionValuesFormProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [isTouched, setIsTouched] = useState(false)
+
+  const handlePopoverOpenChange = (open: boolean) => {
+    setIsPopoverOpen(open)
+    if (!open) {
+      setIsTouched(true)
+    }
+  }
 
   const handleChangeType = (index: number, type: MatchType) => {
     const current = values[index]
@@ -81,14 +95,24 @@ export function SelectOptionValuesForm({
     onChange(values.filter((_, i) => i !== index))
   }
 
+  const nonEmptyValues = values.filter(isNonEmptyValue)
+
   return (
-    <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+    <Popover.Root open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
       <Popover.Trigger>
         <ValuePopoverBadge
           displayValue={
-            values.length === 0 ? '(none)' : <SelectOptions options={values} />
+            nonEmptyValues.length === 0 ? (
+              'option(s)'
+            ) : (
+              <SelectOptions options={nonEmptyValues} />
+            )
           }
-          error={values.length === 0 ? 'At least one option is required' : null}
+          error={
+            isTouched && nonEmptyValues.length === 0
+              ? 'At least one option is required'
+              : null
+          }
         />
       </Popover.Trigger>
       <Popover.Content align="start" size="1" width="360px">

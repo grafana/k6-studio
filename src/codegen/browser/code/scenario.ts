@@ -298,6 +298,16 @@ function emitSelectOptionsExpression(
     .done()
 }
 
+function emitSelectOptionValueExpression(
+  expression: ir.SelectOptionValueExpression
+): ts.Expression {
+  return fromObjectLiteral({
+    value: expression.value,
+    label: expression.label,
+    index: expression.index,
+  })
+}
+
 function emitExpectExpression(
   context: ScenarioContext,
   expression: ir.ExpectExpression
@@ -526,6 +536,9 @@ function emitExpression(
 
     case 'CheckExpression':
       return emitCheckExpression(context, expression)
+
+    case 'SelectOptionValueExpression':
+      return emitSelectOptionValueExpression(expression)
 
     case 'SelectOptionsExpression':
       return emitSelectOptionsExpression(context, expression)

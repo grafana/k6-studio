@@ -57,6 +57,7 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'Identifier':
       case 'StringLiteral':
       case 'NullLiteral':
+      case 'SelectOptionValueExpression':
       case 'PromiseAllExpression':
         return false
 

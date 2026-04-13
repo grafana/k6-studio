@@ -33,15 +33,15 @@ export function SelectOptionActionBody({
       width="100%"
     >
       Select
-      <LocatorForm
-        state={action.locator}
-        onChange={handleChangeLocator}
-        suggestedRoles={['combobox', 'listbox']}
-      />
-      with
       <SelectOptionValuesForm
         values={action.values}
         onChange={handleChangeValues}
+      />
+      in
+      <LocatorForm
+        state={action.locator}
+        onChange={handleChangeLocator}
+        suggestedRoles={['combobox', 'listbox', 'menu', 'radiogroup']}
       />
     </Grid>
   )

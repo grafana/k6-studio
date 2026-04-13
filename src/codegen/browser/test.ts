@@ -423,18 +423,24 @@ function buildBrowserNodeGraphFromActions(
             locator: getLocator(action.locator),
           },
         }
-      case 'locator.selectOption':
+      case 'locator.selectOption': {
+        const nonEmpty = action.values.filter(
+          (v) =>
+            (v.value !== undefined && v.value !== '') ||
+            (v.label !== undefined && v.label !== '') ||
+            v.index !== undefined
+        )
+        const selected = nonEmpty.length > 0 ? nonEmpty : ['']
         return {
           type: 'select-options',
           nodeId: crypto.randomUUID(),
-          selected: action.values.map(
-            (v) => v.value ?? v.label ?? String(v.index ?? '')
-          ),
-          multiple: action.values.length > 1,
+          selected,
+          multiple: nonEmpty.length > 1,
           inputs: {
             locator: getLocator(action.locator),
           },
         }
+      }
       case 'page.waitForNavigation':
       case 'page.close':
       case 'page.*':

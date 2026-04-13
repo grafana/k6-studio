@@ -142,7 +142,15 @@ const actionEditors: ActionEditorRegistry = {
       id: crypto.randomUUID(),
       method: 'locator.selectOption',
       values: [{ value: '' }],
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'combobox',
+          },
+        },
+      },
     }),
   },
   'page.goto': {

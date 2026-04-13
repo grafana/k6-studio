@@ -170,6 +170,9 @@ function substituteExpression(
         locator: substituteExpression(node.locator, substitutions),
       }
 
+    case 'SelectOptionValueExpression':
+      return node
+
     case 'SelectOptionsExpression':
       return {
         type: 'SelectOptionsExpression',
