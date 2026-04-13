@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 
 import { clearAssistantTokens } from '@/handlers/ai/a2a/tokenStore'
+import { abortAllActiveAssistantSessions } from '@/handlers/ai/grafanaAssistantProvider'
 import { UserProfiles, Profile, StackInfo } from '@/schemas/profile'
 import { SignInResult } from '@/types/auth'
 import { browserWindowFromEvent } from '@/utils/electron'
@@ -83,6 +84,7 @@ export function initialize() {
 
       delete profileData.tokens[stack.id]
       delete profileData.profiles.stacks[stack.id]
+      abortAllActiveAssistantSessions()
       await clearAssistantTokens(stack.id)
 
       if (profileData.profiles.currentStack === stack.id) {

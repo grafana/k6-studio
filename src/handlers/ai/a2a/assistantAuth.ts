@@ -12,6 +12,7 @@ import {
 } from '@/services/grafana/assistantAuth'
 import { browserWindowFromEvent } from '@/utils/electron'
 
+import { abortAllActiveAssistantSessions } from '../grafanaAssistantProvider'
 import { AssistantAuthHandler } from '../types'
 
 import { LOG_PREFIX } from './constants'
@@ -220,6 +221,7 @@ export function initialize() {
     const stackId = profile.profiles.currentStack
 
     if (stackId) {
+      abortAllActiveAssistantSessions()
       await clearAssistantTokens(stackId)
       log.info(LOG_PREFIX, 'Cleared assistant tokens for stack', stackId)
     }

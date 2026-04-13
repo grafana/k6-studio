@@ -36,6 +36,19 @@ function forwardAbortSignal(
 /** Active SSE sessions keyed by chatId */
 const activeSessions = new Map<string, ActiveA2ASession>()
 
+/**
+ * Aborts all in-flight A2A SSE sessions (e.g. on assistant sign-out or Grafana sign-out).
+ * Must run before clearing assistant tokens so cleanup can still cancel tasks with the
+ * session's in-memory config.
+ */
+export function abortAllActiveAssistantSessions(): void {
+  const entries = [...activeSessions.entries()]
+  for (const [chatId, session] of entries) {
+    session.sessionAbortController.abort()
+    cleanupSession(chatId, session)
+  }
+}
+
 export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
   readonly specificationVersion = 'v2' as const
   readonly provider = 'grafana-assistant'
