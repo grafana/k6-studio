@@ -166,7 +166,7 @@ function substituteExpression(
     case 'CheckExpression':
       return {
         type: 'CheckExpression',
-        checked: substituteExpression(node.checked, substitutions),
+        checked: node.checked,
         locator: substituteExpression(node.locator, substitutions),
       }
 

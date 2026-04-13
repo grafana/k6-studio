@@ -272,10 +272,7 @@ function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
     expression: {
       type: 'CheckExpression',
       locator,
-      checked: {
-        type: 'StringLiteral',
-        value: node.checked ? 'checked' : 'unchecked',
-      },
+      checked: node.checked,
     },
   })
 }

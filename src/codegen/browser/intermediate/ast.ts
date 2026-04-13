@@ -113,7 +113,7 @@ export interface ClickExpression {
 export interface CheckExpression {
   type: 'CheckExpression'
   locator: Expression
-  checked: Expression
+  checked: boolean
 }
 
 export interface SelectOptionsExpression {
