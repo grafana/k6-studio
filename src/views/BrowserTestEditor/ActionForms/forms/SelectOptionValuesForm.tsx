@@ -60,14 +60,6 @@ export function SelectOptionValuesForm({
   onChange,
 }: SelectOptionValuesFormProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-  const [isTouched, setIsTouched] = useState(false)
-
-  const handlePopoverOpenChange = (open: boolean) => {
-    setIsPopoverOpen(open)
-    if (!open) {
-      setIsTouched(true)
-    }
-  }
 
   const handleChangeType = (index: number, type: MatchType) => {
     const current = values[index]
@@ -98,7 +90,7 @@ export function SelectOptionValuesForm({
   const nonEmptyValues = values.filter(isNonEmptyValue)
 
   return (
-    <Popover.Root open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
+    <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
       <Popover.Trigger>
         <ValuePopoverBadge
           displayValue={
@@ -108,11 +100,7 @@ export function SelectOptionValuesForm({
               <SelectOptions options={nonEmptyValues} />
             )
           }
-          error={
-            isTouched && nonEmptyValues.length === 0
-              ? 'At least one option is required'
-              : null
-          }
+          error={null}
         />
       </Popover.Trigger>
       <Popover.Content align="start" size="1" width="360px">
