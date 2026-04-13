@@ -1,5 +1,14 @@
 import http from 'node:http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 
 import {
   CallbackResult,
@@ -209,28 +218,69 @@ describe('handleCallbackRequest', () => {
 })
 
 describe('startCallbackServer', () => {
-  it('resolves with the correct port when the first port is occupied', async () => {
-    const CALLBACK_PORT_MIN = 54321
+  // The callback server's reject() fires from Node's HTTP parser,
+  // which can trigger a brief "unhandled rejection" before Promise.race
+  // processes it. This is harmless and only affects tests with real TCP.
+  const pendingRejections = new Set<Promise<unknown>>()
+  function trackRejection(promise: Promise<unknown>) {
+    pendingRejections.add(promise)
+  }
+  function clearTracked(promise: Promise<unknown>) {
+    pendingRejections.delete(promise)
+  }
 
-    // Occupy the first port with a dummy server
-    const blocker = http.createServer()
-    await new Promise<void>((resolve) => {
-      blocker.listen(CALLBACK_PORT_MIN, '127.0.0.1', resolve)
+  beforeAll(() => {
+    process.on('unhandledRejection', trackRejection)
+    process.on('rejectionHandled', clearTracked)
+  })
+
+  afterAll(() => {
+    process.off('unhandledRejection', trackRejection)
+    process.off('rejectionHandled', clearTracked)
+  })
+
+  function sendCallback(port: number, state: string) {
+    return new Promise<void>((resolve, reject) => {
+      http
+        .get(
+          `http://127.0.0.1:${port}/callback?error=user_cancelled&state=${state}`,
+          (res) => {
+            res.resume()
+            res.on('end', resolve)
+          }
+        )
+        .on('error', reject)
+        .end()
     })
+  }
 
-    try {
-      const abortController = new AbortController()
-      const { port, result } = await startCallbackServer(abortController.signal)
+  it('assigns a port and rejects on cancel callback', async () => {
+    const ctrl = new AbortController()
+    const { port, result } = await startCallbackServer(ctrl.signal)
 
-      expect(port).not.toBe(CALLBACK_PORT_MIN)
-      expect(port).toBeGreaterThan(CALLBACK_PORT_MIN)
+    expect(port).toBeGreaterThanOrEqual(1024)
 
-      // Catch the expected rejection from aborting the callback promise
-      const callbackPromise = result.catch(() => {})
-      abortController.abort()
-      await callbackPromise
-    } finally {
-      blocker.close()
-    }
+    await sendCallback(port, 's1')
+    await expect(result).rejects.toThrow('Authorization denied')
+  })
+
+  it('handles sequential cancel-and-retry without hanging', async () => {
+    const ctrl1 = new AbortController()
+    const { port: port1, result: result1 } = await startCallbackServer(
+      ctrl1.signal
+    )
+
+    await sendCallback(port1, 's1')
+    await expect(result1).rejects.toThrow('Authorization denied')
+
+    const ctrl2 = new AbortController()
+    const { port: port2, result: result2 } = await startCallbackServer(
+      ctrl2.signal
+    )
+
+    expect(port2).not.toBe(port1)
+
+    await sendCallback(port2, 's2')
+    await expect(result2).rejects.toThrow('Authorization denied')
   })
 })

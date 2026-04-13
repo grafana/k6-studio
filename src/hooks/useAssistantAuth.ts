@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
 import { queryClient } from '@/utils/query'
@@ -28,6 +28,12 @@ export function useAssistantAuthStatus() {
 }
 
 export function useAssistantSignIn() {
+  const [verificationCode, setVerificationCode] = useState<string | null>(null)
+
+  useEffect(() => {
+    return window.studio.ai.onAssistantVerificationCode(setVerificationCode)
+  }, [])
+
   const mutation = useMutation({
     mutationFn: async () => {
       const result = await window.studio.ai.assistantSignIn()
@@ -45,12 +51,17 @@ export function useAssistantSignIn() {
         return invalidateAssistantAuthStatus()
       }
     },
+    onSettled: () => {
+      setVerificationCode(null)
+    },
   })
 
   return {
     ...mutation,
+    verificationCode,
     cancel: () => {
       mutation.reset()
+      setVerificationCode(null)
       return window.studio.ai.assistantCancelSignIn()
     },
   }

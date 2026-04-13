@@ -1,8 +1,13 @@
 import { ipcRenderer } from 'electron'
 
+import { createListener } from '../../utils'
 import { AssistantAuthHandler } from '../types'
 
 import type { AssistantAuthResult, AssistantAuthStatus } from './assistantAuth'
+
+export function onAssistantVerificationCode(callback: (code: string) => void) {
+  return createListener(AssistantAuthHandler.VerificationCode, callback)
+}
 
 export function assistantSignIn() {
   return ipcRenderer.invoke(

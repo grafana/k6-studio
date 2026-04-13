@@ -1,5 +1,7 @@
 import crypto from 'node:crypto'
+import { once } from 'node:events'
 import http from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { z } from 'zod'
 
 import { cancelledPage, successPage } from './assistantAuthCallbackPage'
@@ -22,9 +24,6 @@ export function generatePKCE(): PKCE {
 export function generateState(): string {
   return crypto.randomBytes(16).toString('base64url')
 }
-
-const CALLBACK_PORT_MIN = 54321
-const CALLBACK_PORT_MAX = 54399
 
 export function buildAssistantAuthUrl(
   stackUrl: string,
@@ -116,8 +115,7 @@ export interface CallbackResult {
 
 /**
  * Starts a temporary local HTTP server to receive the OAuth callback.
- * The server listens on a random port in the 54321-54399 range and
- * shuts down after receiving the callback or when the signal is aborted.
+ * Uses an OS-assigned port to avoid reuse conflicts with lingering sockets.
  */
 export async function startCallbackServer(
   signal: AbortSignal
@@ -133,12 +131,12 @@ export async function startCallbackServer(
     server.closeAllConnections()
   }
 
-  // Not awaited because these will occur sometime in the future
-  // and should be listened to by the caller of this function
   const aborted = rejectOnAbort(signal)
   const result = handleCallbackRequest(server)
 
-  const port = await listenOnAvailablePort(server)
+  server.listen(0, '127.0.0.1')
+  await once(server, 'listening')
+  const { port } = server.address() as AddressInfo
 
   return {
     port,
@@ -198,34 +196,6 @@ export function handleCallbackRequest(server: http.Server) {
       }
     })
   })
-
-  return promise
-}
-
-function listenOnAvailablePort(server: http.Server) {
-  const { promise, resolve, reject } = Promise.withResolvers<number>()
-
-  const tryPort = (port: number) => {
-    if (port > CALLBACK_PORT_MAX) {
-      reject(new Error('No available port for OAuth callback server'))
-
-      return
-    }
-
-    server.removeAllListeners('listening')
-
-    server.once('error', () => {
-      tryPort(port + 1)
-    })
-
-    server.listen(port, '127.0.0.1', () => {
-      server.removeAllListeners('error')
-
-      resolve(port)
-    })
-  }
-
-  tryPort(CALLBACK_PORT_MIN)
 
   return promise
 }
