@@ -32,8 +32,6 @@ import { useSettings } from '@/hooks/useSettings'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
 
-import { AssistantTestChat } from './AssistantTestChat'
-
 interface IntroductionMessageProps {
   onStart: () => void
 }
@@ -44,7 +42,7 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
   )
 
   if (isGrafanaAssistant) {
-    return <GrafanaAssistantIntro />
+    return <GrafanaAssistantIntro onStart={onStart} />
   }
 
   return <OpenAiIntro onStart={onStart} />
@@ -82,10 +80,11 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   )
 }
 
-function GrafanaAssistantIntro() {
+function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
   const { data: authStatus, isLoading } = useAssistantAuthStatus()
   const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
   const signIn = useAssistantSignIn()
+  const proxyStatus = useProxyStatus()
 
   const isSignedIn = !!authStatus?.stackId
   const isAuthenticated = authStatus?.authenticated ?? false
@@ -154,6 +153,8 @@ function GrafanaAssistantIntro() {
         isLoading={isLoading}
         onSignIn={() => setIsCloudSigningIn(true)}
         onConnect={() => signIn.mutate()}
+        onStart={onStart}
+        proxyStatus={proxyStatus}
         connectError={signIn.error}
       />
       <Text size="1" color="gray" mt="1">
@@ -169,6 +170,8 @@ interface AssistantAuthStatusProps {
   isLoading: boolean
   onSignIn: () => void
   onConnect: () => void
+  onStart: () => void
+  proxyStatus: string
   connectError: Error | null
 }
 
@@ -178,6 +181,8 @@ function AssistantAuthStatus({
   isLoading,
   onSignIn,
   onConnect,
+  onStart,
+  proxyStatus,
   connectError,
 }: AssistantAuthStatusProps) {
   const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
@@ -225,7 +230,7 @@ function AssistantAuthStatus({
 
   return (
     <Flex direction="column" align="center" gap="2">
-      <AssistantTestChat />
+      <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
       <Button
         variant="ghost"
         size="1"
