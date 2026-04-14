@@ -1,10 +1,12 @@
 import { css } from '@emotion/react'
 import { Button, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
+import log from 'electron-log/renderer'
 import { ChevronDownIcon, EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
+import { convertEventsToActions } from '@/codegen/browser/convertEventsToActions'
 import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
@@ -53,6 +55,28 @@ export function RecordingPreviewControls({
   const handleDeleteRecordingConfirm = async () => {
     await handleDelete()
     navigate(getRoutePath('home'))
+  }
+
+  const handleCreateBrowserTest = async () => {
+    try {
+      const actions = convertEventsToActions(browserEvents)
+      const newFileName = await window.studio.browserTest.create()
+      await window.studio.browserTest.save(newFileName, {
+        version: '1.0',
+        actions,
+      })
+      navigate(
+        getRoutePath('browserTestEditor', {
+          fileName: encodeURIComponent(newFileName),
+        })
+      )
+    } catch (err) {
+      log.error(err)
+      showToast({
+        title: 'Failed to create browser test.',
+        status: 'error',
+      })
+    }
   }
 
   const handleExportBrowserScript = (fileName: string) => {
@@ -112,6 +136,12 @@ export function RecordingPreviewControls({
           />
           <MenuItem
             label="Browser test"
+            description="Create a browser test from recorded interactions"
+            disabled={browserEvents.length === 0}
+            onClick={handleCreateBrowserTest}
+          />
+          <MenuItem
+            label="Browser script"
             description="Export a k6 script simulating browser interactions"
             disabled={browserEvents.length === 0}
             onClick={() => setShowExportDialog(true)}
