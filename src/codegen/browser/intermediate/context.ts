@@ -2,13 +2,18 @@ import { groupBy } from 'lodash-es'
 
 import { exhaustive } from '@/utils/typescript'
 
-import { Graph } from '../graph'
+import { Graph, GraphEdge } from '../graph'
 import * as model from '../types'
 
 import * as ir from './ast'
 import { CountedSet } from './utils'
 
-type ScenarioGraph = Graph<model.TestNode, null>
+type EdgeLabel =
+  | 'previous' // Used to enforce a strict order of execution, e.g. navigate to page before clicking a locator.
+  | 'reference' // A runtime reference to another node. Used for reference counting and dereferencing nodes.
+
+type ScenarioGraph = Graph<model.TestNode, EdgeLabel>
+type ScenarioEdge = GraphEdge<EdgeLabel>
 
 interface ConnectableNode {
   nodeId: model.NodeId
@@ -22,12 +27,12 @@ function connectPrevious(
   { nodeId, inputs }: ConnectableNode
 ) {
   if (inputs.previous) {
-    graph.connect(inputs.previous.nodeId, nodeId, null)
+    graph.connect(inputs.previous.nodeId, nodeId, 'previous')
   }
 }
 
 function buildScenarioGraph(scenario: model.Scenario) {
-  const graph = new Graph<model.TestNode, null>()
+  const graph = new Graph<model.TestNode, EdgeLabel>()
 
   for (const node of scenario.nodes) {
     graph.add({
@@ -42,47 +47,51 @@ function buildScenarioGraph(scenario: model.Scenario) {
         break
 
       case 'locator':
-        graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.page.nodeId, 'reference')
         break
 
       case 'goto':
       case 'reload':
-        graph.connect(node.nodeId, node.inputs.page.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.page.nodeId, 'reference')
         connectPrevious(graph, node)
         break
 
       case 'click':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
 
         if (node.waitForNavigation !== undefined) {
-          graph.connect(node.nodeId, node.waitForNavigation.page.nodeId, null)
+          graph.connect(
+            node.nodeId,
+            node.waitForNavigation.page.nodeId,
+            'reference'
+          )
         }
 
         connectPrevious(graph, node)
         break
 
       case 'type-text':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
         connectPrevious(graph, node)
         break
 
       case 'check':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
         connectPrevious(graph, node)
         break
 
       case 'select-options':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
         connectPrevious(graph, node)
         break
 
       case 'assert':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
         connectPrevious(graph, node)
         break
 
       case 'wait-for':
-        graph.connect(node.nodeId, node.inputs.locator.nodeId, null)
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
         connectPrevious(graph, node)
         break
 
@@ -135,6 +144,10 @@ interface AllocationBlock {
 
 type Block = FunctionBlock | AllocationBlock
 
+function isReference(edge: ScenarioEdge) {
+  return edge.data === 'reference'
+}
+
 export class IntermediateContext {
   #blocks: [Block, ...Block[]] = [
     {
@@ -167,12 +180,12 @@ export class IntermediateContext {
 
     this.inline(node, temporary.expression)
 
-    const dependencies = [...this.graph.incoming(node.nodeId)]
+    const referenceCount = this.graph.count.edges(isReference).to(node.nodeId)
 
     // If the resource has no dependencies then there is not point in emitting an entire
     // block for it. We can just dispose of it immediately. This shouldn't come up a lot in
     // practice, but it's a valid scenario and it does improve the quality of the generated code.
-    if (dependencies.length === 0) {
+    if (referenceCount === 0) {
       this.emit({
         type: 'VariableDeclaration',
         kind: 'const',
@@ -183,6 +196,32 @@ export class IntermediateContext {
       this.emit(dispose(temporary.expression))
 
       return
+    }
+
+    // Keep track of the number of direct references to the node.
+    const references = new CountedSet([[node.nodeId, referenceCount]])
+
+    // The resource must be kept alive until all indirect references to it have been
+    // processed.
+    //
+    //    +-------+      +---------+      +---------+      +---------+
+    //    | Page  | ---> | Locator | ---> | Action A| ---> | Action B|
+    //    |       |      |         |      +---------+      +---------+
+    //    |       |      |         |
+    //    |       |      |         |      +---------+
+    //    |       |      |         | ---> | Action C|
+    //    +-------+      +---------+      +---------+
+    //
+    // In this diagram, action A, B and C are all indirectly dependent on the
+    // resource and if we were to only track direct references then we would
+    // finalize the allocation as soon as the Locator referenced the page. The
+    // actions would then be emitted after calling `page.close()`, throwing an
+    // error because the page was already closed.
+    for (const reference of this.graph.ancestors(node.nodeId, isReference)) {
+      references.add(
+        reference.id,
+        this.graph.count.edges(isReference).to(reference.id)
+      )
     }
 
     if (this.#block.type !== 'allocation') {
@@ -201,7 +240,7 @@ export class IntermediateContext {
       const newBlock: AllocationBlock = {
         type: 'allocation',
         initializers: [{ kind: 'const', node, name: temporary.temp, value }],
-        references: new CountedSet([[node.nodeId, dependencies.length]]),
+        references,
         disposers: [dispose(temporary.expression)],
         statements: [],
       }
@@ -236,8 +275,13 @@ export class IntermediateContext {
     })
 
     // Add the references to the block so that it will live until all
-    // dependent nodes have been processed.
-    this.#block.references.add(node.nodeId, dependencies.length)
+    // dependent nodes have been processed. We skip nodes that are already
+    // tracked to preserve their reference counts.
+    for (const [nodeId, count] of references) {
+      if (!this.#block.references.has(nodeId)) {
+        this.#block.references.add(nodeId, count)
+      }
+    }
 
     this.#block.disposers.push(dispose(temporary.expression))
 

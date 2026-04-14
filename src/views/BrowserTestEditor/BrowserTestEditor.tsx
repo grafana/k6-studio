@@ -43,7 +43,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const test = useBrowserTestState(data)
 
-  const preview = useBrowserScriptPreview(test.plainActions)
+  const preview = useBrowserScriptPreview(test.actions)
   const { session, startDebugging } = useDebugSession({
     type: 'raw',
     content: preview,
@@ -143,7 +143,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                       actions={test.actions}
                       onAddAction={test.addAction}
                       onRemoveAction={test.removeAction}
-                      onUpdateAction={test.updateAction}
+                      onChangeAction={test.updateAction}
                     />
                   </Panel>
                 </Group>

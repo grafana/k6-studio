@@ -3,6 +3,7 @@ import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { DebugSession } from '../types'
 
@@ -11,11 +12,13 @@ import { SessionPlayer } from './SessionPlayer/SessionPlayer'
 interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
+  highlightedSelector: NodeSelector | null
 }
 
 export function BrowserOverviewPanel({
   script,
   session,
+  highlightedSelector,
 }: BrowserOverviewPanelProps) {
   const [tab, setTab] = useState('script')
 
@@ -69,7 +72,11 @@ export function BrowserOverviewPanel({
           value="replay"
           forceMount
         >
-          <SessionPlayer key={session.id} session={session} />
+          <SessionPlayer
+            key={session.id}
+            session={session}
+            highlightedSelector={highlightedSelector}
+          />
         </Tabs.Content>
       </Flex>
     </Tabs.Root>

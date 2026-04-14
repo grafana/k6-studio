@@ -56,12 +56,44 @@ function emitNewRoleLocatorExpression(
 ): ts.Expression {
   const page = emitExpression(context, expression.page)
   const role = emitExpression(context, expression.role)
-  const name = emitExpression(context, expression.name)
+
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
 
   return new ExpressionBuilder(page)
     .member('getByRole')
-    .call([role, fromObjectLiteral({ name, exact: true })])
+    .call([role, ...options])
     .done()
+}
+
+function emitRoleLocatorOptionsExpression(
+  context: ScenarioContext,
+  expression: ir.RoleLocatorOptionsExpression
+): ts.Expression {
+  if (!expression.name) {
+    return emitExpression(context, { type: 'NullLiteral' })
+  }
+
+  const name = expression.name.value
+  const exact = expression.name.exact
+
+  return ObjectBuilder.from({
+    ...(name && { name }),
+    ...(exact && { exact }),
+  })
+}
+
+function emitTextLocatorOptionsExpression(
+  _context: ScenarioContext,
+  expression: ir.TextLocatorOptionsExpression
+): ts.Expression {
+  const exact = expression.exact
+
+  return ObjectBuilder.from({
+    ...(exact && { exact }),
+  })
 }
 
 function emitNewLabelLocatorExpression(
@@ -71,9 +103,14 @@ function emitNewLabelLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByLabel')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -84,9 +121,14 @@ function emitNewAltTextLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByAltText')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -97,9 +139,14 @@ function emitNewPlaceholderLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByPlaceholder')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -110,9 +157,14 @@ function emitNewTitleLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByTitle')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -432,6 +484,12 @@ function emitExpression(
 
     case 'NewRoleLocatorExpression':
       return emitNewRoleLocatorExpression(context, expression)
+
+    case 'RoleLocatorOptionsExpression':
+      return emitRoleLocatorOptionsExpression(context, expression)
+
+    case 'TextLocatorOptionsExpression':
+      return emitTextLocatorOptionsExpression(context, expression)
 
     case 'NewLabelLocatorExpression':
       return emitNewLabelLocatorExpression(context, expression)

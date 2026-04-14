@@ -42,4 +42,12 @@ export class CountedSet<T> {
   get size() {
     return this.#map.size
   }
+
+  has(value: T): boolean {
+    return (this.#map.get(value) ?? 0) > 0
+  }
+
+  [Symbol.iterator]() {
+    return this.#map.entries()
+  }
 }

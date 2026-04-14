@@ -1,11 +1,10 @@
 import { nanoid } from 'nanoid'
 
+import { Bounds } from '@/components/Browser/types'
+import { getElementBounds } from '@/components/Browser/utils'
 import { BrowserEventTarget } from '@/schemas/recording'
 import { getEventTarget } from 'extension/src/target'
 import { ElementRole, getElementRoles } from 'extension/src/utils/aria'
-
-import { Bounds } from '../types'
-import { getElementBounds } from '../utils'
 
 export interface TrackedElement {
   id: string

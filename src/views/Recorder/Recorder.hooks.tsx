@@ -44,20 +44,6 @@ export function useRecordingErrorToast() {
           })
           break
 
-        case 'extension-load':
-          showToast({
-            status: 'error',
-            title: 'Failed to load extension',
-            description:
-              'Loading the browser extension failed. Browser recording will not be available.',
-            action: (
-              <Button onClick={() => openSettingsDialog('logs')}>
-                Open log file
-              </Button>
-            ),
-          })
-          break
-
         case 'unknown':
           showToast({
             status: 'error',

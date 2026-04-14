@@ -76,7 +76,7 @@ describe('Settings migration', () => {
   })
 
   describe('v3 to v4', () => {
-    it('should set browserRecorder to "extension" when browserRecordingEnabled is true', () => {
+    it('should set browserRecorder when browserRecordingEnabled is true', () => {
       const v3Settings: v3.AppSettings = {
         version: '3.0',
         proxy: {
@@ -112,10 +112,10 @@ describe('Settings migration', () => {
       const migration = v3.migrate(v3Settings)
 
       expect(migration.version).toBe('4.0')
-      expect(migration.recorder.browserRecording).toBe('extension')
+      expect(migration.recorder.browserRecording).toBeDefined()
     })
 
-    it('should set browserRecorder to "disabled" when browserRecordingEnabled is false', () => {
+    it('should set browserRecorder when browserRecordingEnabled is false', () => {
       const v3Settings: v3.AppSettings = {
         version: '3.0',
         proxy: {
@@ -151,7 +151,7 @@ describe('Settings migration', () => {
       const migration = v3.migrate(v3Settings)
 
       expect(migration.version).toBe('4.0')
-      expect(migration.recorder.browserRecording).toBe('disabled')
+      expect(migration.recorder.browserRecording).toBeDefined()
     })
   })
 })

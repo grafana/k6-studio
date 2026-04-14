@@ -1,9 +1,9 @@
 import { css } from '@emotion/react'
 import { Dialog, Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { UserRoundIcon, XIcon } from 'lucide-react'
-import { useState } from 'react'
 
 import { Profile as ProfileContent } from '@/components/Profile'
+import { useStudioUIStore } from '@/store/ui'
 
 function ProfileDialog({
   open,
@@ -36,7 +36,11 @@ function ProfileDialog({
 }
 
 export function Profile() {
-  const [open, setOpen] = useState(false)
+  const isOpen = useStudioUIStore((state) => state.isProfileDialogOpen)
+  const openProfileDialog = useStudioUIStore((state) => state.openProfileDialog)
+  const closeProfileDialog = useStudioUIStore(
+    (state) => state.closeProfileDialog
+  )
 
   return (
     <>
@@ -45,7 +49,7 @@ export function Profile() {
           area-label="Profile"
           color="gray"
           variant="ghost"
-          onClick={() => setOpen(true)}
+          onClick={openProfileDialog}
           css={css`
             font-size: 24px;
           `}
@@ -53,7 +57,14 @@ export function Profile() {
           <UserRoundIcon />
         </IconButton>
       </Tooltip>
-      <ProfileDialog open={open} onOpenChange={setOpen} />
+      <ProfileDialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeProfileDialog()
+          }
+        }}
+      />
     </>
   )
 }

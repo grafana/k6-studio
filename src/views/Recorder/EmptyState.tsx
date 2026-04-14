@@ -56,8 +56,6 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
     true
   )
 
-  const browserRecorder = settings?.recorder.browserRecording ?? 'disabled'
-
   const {
     register,
     handleSubmit,
@@ -82,7 +80,7 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
 
     onStart({
       url,
-      capture: { browser: browserRecorder !== 'disabled' && captureBrowser },
+      capture: { browser: captureBrowser },
     })
   }
 
@@ -176,20 +174,18 @@ export function EmptyState({ isLoading, onStart }: EmptyStateProps) {
             />
           </div>
 
-          {browserRecorder !== 'disabled' && (
-            <BrowserEventsSection>
-              <Text as="label" size="2">
-                <Flex gap="2" align="center">
-                  <Checkbox
-                    disabled={!canRecord}
-                    checked={captureBrowser}
-                    onCheckedChange={handleCaptureBrowserChange}
-                  />
-                  <span>Capture browser events</span>
-                </Flex>
-              </Text>
-            </BrowserEventsSection>
-          )}
+          <BrowserEventsSection>
+            <Text as="label" size="2">
+              <Flex gap="2" align="center">
+                <Checkbox
+                  disabled={!canRecord}
+                  checked={captureBrowser}
+                  onCheckedChange={handleCaptureBrowserChange}
+                />
+                <span>Capture browser events</span>
+              </Flex>
+            </Text>
+          </BrowserEventsSection>
         </Flex>
       </form>
     </Flex>

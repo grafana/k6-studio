@@ -962,7 +962,7 @@ it('should emit a getByRole locator', async ({ expect }) => {
           selector: {
             type: 'role',
             role: 'button',
-            name: 'Submit',
+            name: { value: 'Submit' },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1044,7 +1044,7 @@ it('should emit a getByAltText locator', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'alt',
-            text: 'Grot is happy',
+            text: { value: 'Grot is happy', exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1085,7 +1085,7 @@ it('should emit a getByLabel locator', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'label',
-            text: 'Username',
+            text: { value: 'Username', exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1120,7 +1120,7 @@ it('should emit a getByPlaceholder locator', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'placeholder',
-            text: 'Enter your email',
+            text: { value: 'Enter your email', exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1155,7 +1155,7 @@ it('should emit a getByTitle locator', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'title',
-            text: 'Submit your form',
+            text: { value: 'Submit your form', exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1196,7 +1196,7 @@ it('should emit a waitFor statement', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'title',
-            text: 'Submit your form',
+            text: { value: 'Submit your form', exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1327,5 +1327,61 @@ it('should close allocation block when resource has no references', async ({
 
   await expect(script).toMatchFileSnapshot(
     '__snapshots__/browser/close-allocation-block-when-resource-has-no-references.ts'
+  )
+})
+
+it('should emit two actions on same locator inside same try-finally block', async ({
+  expect,
+}) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'locator',
+          nodeId: 'locator',
+          selector: { type: 'css', selector: 'button' },
+          inputs: {
+            page: { nodeId: 'page' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click1',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+        {
+          type: 'click',
+          nodeId: 'click2',
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: { nodeId: 'locator' },
+          },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/two-actions-on-same-locator-inside-same-try-finally-block.ts'
   )
 })

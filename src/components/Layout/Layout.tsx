@@ -1,15 +1,33 @@
 import { css } from '@emotion/react'
-import { Box, IconButton } from '@radix-ui/themes'
+import { Box, Flex, IconButton, Spinner } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { PanelLeftOpenIcon } from 'lucide-react'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
+import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
 import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
 
 import { ActivityBar } from './ActivityBar'
 import { Sidebar } from './Sidebar'
+
+function RouteLoadingFallback() {
+  const showSpinner = useDelayedVisibility()
+
+  return (
+    <Flex
+      align="center"
+      justify="center"
+      css={css`
+        width: 100%;
+        height: 100%;
+      `}
+    >
+      {showSpinner && <Spinner />}
+    </Flex>
+  )
+}
 
 export function Layout() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(
@@ -78,7 +96,9 @@ export function Layout() {
         </Allotment.Pane>
 
         <Allotment.Pane>
-          <Outlet />
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <Outlet />
+          </Suspense>
         </Allotment.Pane>
       </Allotment>
     </Box>
