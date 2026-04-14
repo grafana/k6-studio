@@ -48,7 +48,7 @@ export function File({ file, isSelected }: FileProps) {
         columns="min-content 1fr auto"
         align="center"
         pr="4"
-        pl="2"
+        pl="3"
         css={css`
           & > button {
             opacity: 0;

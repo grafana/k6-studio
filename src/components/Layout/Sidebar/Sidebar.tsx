@@ -15,12 +15,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeTab, onCollapseSidebar }: SidebarProps) {
-  // const { recordings, tests, scripts, dataFiles } = useFiles(searchTerm)
-  // const handleImportDataFile = useImportDataFile()
-  // const isBrowserEditorEnabled = useFeaturesStore(
-  //   (state) => state.features['browser-test-editor']
-  // )
-
   return (
     <Box
       height="100%"

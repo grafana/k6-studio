@@ -21,7 +21,7 @@ export function SidebarHeader({
   return (
     <Flex
       align="center"
-      p="2"
+      p="3"
       gap="2"
       css={css`
         font-size: var(--font-size-1);

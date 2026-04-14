@@ -1,10 +1,9 @@
 import { css } from '@emotion/react'
-import { Badge, Flex, IconButton, Tooltip } from '@radix-ui/themes'
+import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 
-interface NavIconButtonProps {
+interface VerticalTabButtonProps {
   icon: ReactNode
-  itemCount?: number
   active?: boolean
   tooltip: string
   ref?: React.Ref<HTMLButtonElement>
@@ -14,11 +13,10 @@ interface NavIconButtonProps {
 export function VerticalTabButton({
   icon,
   tooltip,
-  itemCount,
   active,
   ref,
   onClick,
-}: NavIconButtonProps) {
+}: VerticalTabButtonProps) {
   return (
     <Tooltip content={tooltip} side="right">
       <Flex
@@ -45,44 +43,18 @@ export function VerticalTabButton({
       >
         <IconButton
           ref={ref}
+          highContrast
           aria-label={tooltip}
           variant="ghost"
           color={active ? 'orange' : 'gray'}
           size="4"
           css={css`
             margin: 0;
-
-            svg {
-              width: 24px;
-              height: 24px;
-            }
           `}
           onClick={onClick}
         >
           {icon}
         </IconButton>
-        {itemCount && itemCount > 0 && (
-          <Badge
-            radius="full"
-            variant="solid"
-            color={active ? 'orange' : 'gray'}
-            size="1"
-            css={css`
-              position: absolute;
-              top: -4px;
-              right: 4px;
-              cursor: default;
-              font-size: 9px;
-              line-height: 12px;
-              min-height: 16px;
-              min-width: 16px;
-              justify-content: center;
-              padding: 0 2px;
-            `}
-          >
-            {itemCount > 99 ? '99+' : itemCount}
-          </Badge>
-        )}
       </Flex>
     </Tooltip>
   )

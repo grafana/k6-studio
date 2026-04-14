@@ -9,17 +9,15 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { useTheme } from '@/hooks/useTheme'
 import { getRoutePath } from '@/routeMap'
 
-import { selectFileCountPerType } from '../../../store/ui/selectors'
-import { useStudioUIStore } from '../../../store/ui/useStudioUIStore'
 import { SidebarTab } from '../Layout.types'
 
 import { CreateNewPopover } from './CreateNewPopover'
 import { HelpButton } from './HelpButton'
-import { VerticalTabButton } from './NavIconButton'
 import { Profile } from './Profile'
 import { ProxyStatusIndicator } from './ProxyStatusIndicator'
 import { SettingsButton } from './SettingsButton'
 import { VersionLabel } from './VersionLabel'
+import { VerticalTabButton } from './VerticalTabButton'
 
 interface ActivityBarProps {
   activeTab: SidebarTab
@@ -28,9 +26,6 @@ interface ActivityBarProps {
 
 export function ActivityBar({ activeTab, onTabChange }: ActivityBarProps) {
   const theme = useTheme()
-  const { recordings, generators, browserTests, scripts } = useStudioUIStore(
-    selectFileCountPerType
-  )
 
   return (
     <Flex
@@ -61,21 +56,18 @@ export function ActivityBar({ activeTab, onTabChange }: ActivityBarProps) {
         <Separator orientation="horizontal" size="2" my="2" />
         <VerticalTabButton
           icon={<VideoIcon />}
-          itemCount={recordings}
           tooltip="Record"
           active={activeTab === 'record'}
           onClick={() => onTabChange('record')}
         />
         <VerticalTabButton
           icon={<HammerIcon />}
-          itemCount={generators + browserTests}
           tooltip="Build"
           active={activeTab === 'build'}
           onClick={() => onTabChange('build')}
         />
         <VerticalTabButton
           icon={<BugPlay />}
-          itemCount={scripts}
           tooltip="Debug"
           active={activeTab === 'validate'}
           onClick={() => onTabChange('validate')}

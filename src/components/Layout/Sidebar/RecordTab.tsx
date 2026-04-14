@@ -44,7 +44,7 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
       />
       <SearchField
         css={css`
-          margin: 0 var(--space-2);
+          margin: var(--space-2) var(--space-3);
           height: var(--space-5);
         `}
         filter={searchTerm}

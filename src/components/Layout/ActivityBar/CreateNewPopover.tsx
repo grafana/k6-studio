@@ -4,7 +4,7 @@ import { MonitorIcon, PlusIcon, ServerCogIcon, VideoIcon } from 'lucide-react'
 
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 
-import { VerticalTabButton } from './NavIconButton'
+import { VerticalTabButton } from './VerticalTabButton'
 
 export function CreateNewPopover() {
   return (
