@@ -1,14 +1,12 @@
-import { css } from '@emotion/react'
-import { Flex, IconButton, TextField, Tooltip } from '@radix-ui/themes'
-import { WholeWordIcon } from 'lucide-react'
+import { Flex } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
 import { ActionLocator } from '@/main/runner/schema'
 
-import { ComboBox } from '../../components'
+import { ComboBox, TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
-const ROLE_OPTIONS = [
+const DEFAULT_ROLES = [
   'button',
   'link',
   'checkbox',
@@ -19,7 +17,11 @@ const ROLE_OPTIONS = [
   'combobox',
   'listbox',
   'option',
-].map((role) => ({ value: role, label: role }))
+]
+
+function toRoleOptions(roles: string[]) {
+  return roles.map((role) => ({ value: role, label: role }))
+}
 
 type RoleLocator = Extract<ActionLocator, { type: 'role' }>
 
@@ -28,6 +30,7 @@ interface GetByRoleFormProps {
   errors?: Record<string, string>
   onChange: (locator: ActionLocator) => void
   onBlur?: () => void
+  suggestedRoles?: string[]
 }
 
 export function GetByRoleForm({
@@ -35,6 +38,7 @@ export function GetByRoleForm({
   errors,
   onChange,
   onBlur,
+  suggestedRoles,
 }: GetByRoleFormProps) {
   return (
     <Flex direction="column" gap="2" align="stretch">
@@ -48,7 +52,7 @@ export function GetByRoleForm({
         <ComboBox
           id="role"
           value={locator.role}
-          options={ROLE_OPTIONS}
+          options={toRoleOptions(suggestedRoles ?? DEFAULT_ROLES)}
           onChange={(value) => {
             onChange({ ...locator, role: value.trim() })
             onBlur?.()
@@ -62,12 +66,11 @@ export function GetByRoleForm({
         mb="0"
         errors={toFieldErrors('name', errors?.['name'])}
       >
-        <TextField.Root
-          size="1"
+        <TextFieldWithExactToggle
           name="name"
           value={locator.options?.name || ''}
-          onChange={(e) => {
-            const value = e.target.value
+          exact={locator.options?.exact}
+          onValueChange={(value) => {
             onChange({
               ...locator,
               options: {
@@ -76,36 +79,17 @@ export function GetByRoleForm({
               },
             })
           }}
+          onExactChange={(exact) => {
+            onChange({
+              ...locator,
+              options: {
+                ...locator.options,
+                exact,
+              },
+            })
+          }}
           onBlur={onBlur}
-        >
-          <TextField.Slot side="right">
-            <Tooltip content="Exact match">
-              <IconButton
-                size="1"
-                disabled={!locator.options?.name}
-                aria-label="Toggle exact match"
-                aria-pressed={locator.options?.exact ? 'true' : 'false'}
-                variant="ghost"
-                color={locator.options?.exact ? 'orange' : 'gray'}
-                onClick={() => {
-                  onChange({
-                    ...locator,
-                    options: {
-                      ...locator.options,
-                      exact: !locator.options?.exact,
-                    },
-                  })
-                  onBlur?.()
-                }}
-                css={css`
-                  margin: 0;
-                `}
-              >
-                <WholeWordIcon />
-              </IconButton>
-            </Tooltip>
-          </TextField.Slot>
-        </TextField.Root>
+        />
       </FieldGroup>
     </Flex>
   )

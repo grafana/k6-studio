@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import {
   Badge,
   Button,
@@ -43,7 +44,7 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
   )
 
   if (isGrafanaAssistant) {
-    return <GrafanaAssistantIntro onStart={onStart} />
+    return <GrafanaAssistantIntro />
   }
 
   return <OpenAiIntro onStart={onStart} />
@@ -81,11 +82,14 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   )
 }
 
-function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
+function GrafanaAssistantIntro() {
   const { data: authStatus, isLoading } = useAssistantAuthStatus()
   const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
+  const signIn = useAssistantSignIn()
 
   const isSignedIn = !!authStatus?.stackId
+  const isAuthenticated = authStatus?.authenticated ?? false
+  const isAwaitingApproval = !isAuthenticated && signIn.isPending
 
   if (!isSignedIn && isCloudSigningIn) {
     return (
@@ -101,13 +105,56 @@ function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
     )
   }
 
+  if (isAwaitingApproval) {
+    return (
+      <Flex
+        direction="column"
+        align="center"
+        gap="3"
+        justify="center"
+        height="100%"
+        maxWidth="300px"
+        mx="auto"
+      >
+        <Flex align="center" gap="2">
+          <Spinner />
+          <Text size="2">Waiting for approval</Text>
+        </Flex>
+        <Text size="2" color="gray">
+          Complete the sign-in in your browser.
+        </Text>
+        {signIn.verificationCode && (
+          <Callout.Root
+            css={css`
+              align-self: stretch;
+              justify-content: center;
+            `}
+            size="3"
+          >
+            <Callout.Text align="center">
+              Verification code <br />
+              <Text align="center" weight="bold" size="6">
+                {signIn.verificationCode}
+              </Text>
+            </Callout.Text>
+          </Callout.Root>
+        )}
+        <Button variant="ghost" onClick={signIn.cancel}>
+          Cancel
+        </Button>
+      </Flex>
+    )
+  }
+
   return (
     <IntroLayout subtitle="Powered by Grafana Assistant">
       <AssistantAuthStatus
-        authStatus={authStatus}
+        isSignedIn={isSignedIn}
+        isAuthenticated={isAuthenticated}
         isLoading={isLoading}
-        onStart={onStart}
         onSignIn={() => setIsCloudSigningIn(true)}
+        onConnect={() => signIn.mutate()}
+        connectError={signIn.error}
       />
       <Text size="1" color="gray" mt="1">
         This feature is in public preview and subject to change.
@@ -117,29 +164,23 @@ function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
 }
 
 interface AssistantAuthStatusProps {
-  authStatus: ReturnType<typeof useAssistantAuthStatus>['data']
+  isSignedIn: boolean
+  isAuthenticated: boolean
   isLoading: boolean
-  onStart: () => void
   onSignIn: () => void
+  onConnect: () => void
+  connectError: Error | null
 }
 
 function AssistantAuthStatus({
-  authStatus,
+  isSignedIn,
+  isAuthenticated,
   isLoading,
-  onStart,
   onSignIn,
+  onConnect,
+  connectError,
 }: AssistantAuthStatusProps) {
-  const {
-    mutate: signIn,
-    isPending: isSigningIn,
-    error: signInError,
-    cancel: cancelSignIn,
-  } = useAssistantSignIn()
   const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
-  const proxyStatus = useProxyStatus()
-
-  const isAuthenticated = authStatus?.authenticated ?? false
-  const isSignedIn = !!authStatus?.stackId
 
   if (isLoading) {
     return (
@@ -163,36 +204,19 @@ function AssistantAuthStatus({
     )
   }
 
-  if (!isAuthenticated && isSigningIn) {
-    return (
-      <Flex direction="column" align="center" gap="3">
-        <Flex align="center" gap="2">
-          <Spinner />
-          <Text size="2">Waiting for approval</Text>
-        </Flex>
-        <Text size="2" color="gray">
-          Complete the sign-in in your browser.
-        </Text>
-        <Button variant="ghost" onClick={cancelSignIn}>
-          Cancel
-        </Button>
-      </Flex>
-    )
-  }
-
   if (!isAuthenticated) {
     return (
       <>
-        <Button size="3" onClick={() => signIn()}>
+        <Button size="3" onClick={onConnect}>
           <LinkIcon />
           Connect to Grafana Assistant
         </Button>
-        {signInError && (
+        {connectError && (
           <Callout.Root color="red" size="1">
             <Callout.Icon>
               <AlertTriangleIcon size={16} />
             </Callout.Icon>
-            <Callout.Text>{signInError.message}</Callout.Text>
+            <Callout.Text>{connectError.message}</Callout.Text>
           </Callout.Root>
         )}
       </>
@@ -201,7 +225,6 @@ function AssistantAuthStatus({
 
   return (
     <Flex direction="column" align="center" gap="2">
-      <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
       <AssistantTestChat />
       <Button
         variant="ghost"

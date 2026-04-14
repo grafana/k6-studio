@@ -5,7 +5,12 @@ import type { AssistantTokenData } from './tokenStore'
 
 vi.mock('./tokenStore', () => ({
   mapTokenResponse: (
-    response: { token: string; refresh_token: string; expires_at: string; refresh_expires_at: string },
+    response: {
+      token: string
+      refresh_token: string
+      expires_at: string
+      refresh_expires_at: string
+    },
     apiEndpoint: string
   ) => ({
     accessToken: response.token,

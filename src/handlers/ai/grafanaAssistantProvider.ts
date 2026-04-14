@@ -17,8 +17,8 @@ import {
   safeResponseText,
 } from './a2a/helpers'
 import { sendRemoteToolResponse } from './a2a/remoteToolResponse'
+import { ActiveA2ASession } from './a2a/session'
 import { createA2AStream } from './a2a/stream'
-import type { ActiveA2ASession, A2ASessionConfig } from './a2a/types'
 import { getToolDefinitionsForA2A } from './tools'
 
 function forwardAbortSignal(
@@ -35,6 +35,19 @@ function forwardAbortSignal(
 
 /** Active SSE sessions keyed by chatId */
 const activeSessions = new Map<string, ActiveA2ASession>()
+
+/**
+ * Aborts all in-flight A2A SSE sessions (e.g. on assistant sign-out or Grafana sign-out).
+ * Must run before clearing assistant tokens so cleanup can still cancel tasks with the
+ * session's in-memory config.
+ */
+export function abortAllActiveAssistantSessions(): void {
+  const entries = [...activeSessions.entries()]
+  for (const [chatId, session] of entries) {
+    session.sessionAbortController.abort()
+    cleanupSession(chatId, session)
+  }
+}
 
 export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
   readonly specificationVersion = 'v2' as const
@@ -105,7 +118,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     )
 
     const { extensions: _, ...sessionConfig } = config
-    const session = createSession(
+    const session = new ActiveA2ASession(
       reader,
       contextId,
       sessionAbortController,
@@ -157,28 +170,6 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
       cleanupSession(chatId, session)
     )
     return { stream }
-  }
-}
-
-function createSession(
-  reader: ReadableStreamDefaultReader<Uint8Array>,
-  contextId: string | undefined,
-  sessionAbortController: AbortController,
-  config: A2ASessionConfig
-): ActiveA2ASession {
-  return {
-    reader,
-    contextId,
-    taskId: undefined,
-    sessionAbortController,
-    config,
-    pendingToolRequests: new Map(),
-    unmatchedToolCalls: [],
-    unmatchedRemoteRequests: [],
-    sseBuffer: '',
-    readyToFinishForTools: false,
-    activeStreamArtifactId: undefined,
-    activeStreamContentType: undefined,
   }
 }
 
