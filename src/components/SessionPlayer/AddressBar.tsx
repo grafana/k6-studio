@@ -6,10 +6,13 @@ import { Page } from './types'
 
 interface AddressBarProps {
   loading: boolean
-  page: Page | undefined
+  placeholder: string
+  page: Page
 }
 
-export function AddressBar({ loading, page }: AddressBarProps) {
+export function AddressBar({ loading, placeholder, page }: AddressBarProps) {
+  const isPlaceholder = page.href.trim() === ''
+
   return (
     <Flex
       css={css`
@@ -30,11 +33,16 @@ export function AddressBar({ loading, page }: AddressBarProps) {
         >
           <GlobeIcon />
           <span
+            data-placeholder={isPlaceholder}
             css={css`
               flex: 1;
+
+              &[data-placeholder='true'] {
+                color: var(--gray-a6);
+              }
             `}
           >
-            {page?.href}
+            {isPlaceholder ? placeholder : page.href}
           </span>
           {loading && <Spinner />}
         </Flex>

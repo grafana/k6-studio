@@ -1,10 +1,12 @@
 import { css } from '@emotion/react'
-import { Flex, Tabs } from '@radix-ui/themes'
+import { Flex, Tabs, Text } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
 
+import LogoGradient from '@/assets/logo-gradient.svg'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import { LogsSection } from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { routeMap } from '@/routeMap'
@@ -95,27 +97,52 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   `}
                 >
                   <Panel id="main" minSize={200}>
-                    <Tabs.Root asChild defaultValue="script">
+                    <Tabs.Root asChild defaultValue="preview">
                       <Flex direction="column" height="100%" width="100%">
                         <Tabs.List>
-                          <Tabs.Trigger
-                            disabled
-                            css={css`
-                              /* 
-                             * Since we currently only have a single tab, we disable the
-                             * hover styling. This should be removed once we have more tabs.
-                             */
-                              cursor: default;
-
-                              &:hover .rt-TabsTriggerInner {
-                                background-color: transparent;
-                              }
-                            `}
-                            value="script"
-                          >
-                            Script
-                          </Tabs.Trigger>
+                          <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
+                          <Tabs.Trigger value="script">Script</Tabs.Trigger>
                         </Tabs.List>
+                        <Tabs.Content
+                          css={css`
+                            flex: 1 1 0;
+                            overflow: hidden;
+                          `}
+                          value="preview"
+                        >
+                          <SessionPlayer
+                            key={session.id}
+                            initialPage={{
+                              title: 'k6 Studio',
+                              href: '',
+                              width: 1280,
+                              height: 720,
+                            }}
+                            placeholder="Waiting for the initial URL..."
+                            initialContent={
+                              <Flex
+                                align="center"
+                                justify="center"
+                                direction="column"
+                                gap="2"
+                              >
+                                <img
+                                  src={LogoGradient}
+                                  alt="k6 Studio"
+                                  css={css`
+                                    width: 64px;
+                                    height: 64px;
+                                  `}
+                                />
+                                <Text size="2" color="gray">
+                                  Run the test to see a preview...
+                                </Text>
+                              </Flex>
+                            }
+                            session={session}
+                            highlightedSelector={null}
+                          />
+                        </Tabs.Content>
                         <Tabs.Content
                           css={css`
                             flex: 1 1 0;

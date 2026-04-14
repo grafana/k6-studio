@@ -1,8 +1,8 @@
 import 'node_modules/rrweb/dist/style.min.css'
 
 import { css } from '@emotion/react'
-import { Flex, Spinner, Box } from '@radix-ui/themes'
-import { useState } from 'react'
+import { Flex, Box } from '@radix-ui/themes'
+import { ReactNode, useState } from 'react'
 
 import { NodeSelector } from '@/schemas/selectors'
 import { DebugSession } from '@/views/Validator/types'
@@ -11,18 +11,9 @@ import { AddressBar } from './AddressBar'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
 import { SelectorHighlights } from './SelectorHighlights'
 import { usePlayer } from './SessionPlayer.hooks'
+import { getPageState } from './SessionPlayer.utils'
 import { Viewport } from './Viewport'
 import { Page } from './types'
-
-type PageState =
-  /** We're streaming, but haven't received the first page yet. */
-  | 'waiting-for-initial'
-  /** We have a page, but we're still waiting on the first frame for it. */
-  | 'transitioning'
-  /** We've received the first frame for the page and can start showing the content. */
-  | 'loaded'
-  /** The session ended without any page loads. */
-  | 'no-page'
 
 const DEFAULT_PAGE: Page = {
   href: 'about:blank',
@@ -34,11 +25,17 @@ const DEFAULT_PAGE: Page = {
 
 interface SessionPlayerProps {
   session: DebugSession
+  placeholder?: string
+  initialPage?: Page
+  initialContent?: ReactNode
   highlightedSelector: NodeSelector | null
 }
 
 export function SessionPlayer({
   session,
+  placeholder = 'Enter a URL to start...',
+  initialPage = DEFAULT_PAGE,
+  initialContent,
   highlightedSelector,
 }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
@@ -61,16 +58,8 @@ export function SessionPlayer({
     pause()
   }
 
-  const pageState: PageState =
-    session.state === 'stopped' && page === undefined
-      ? 'no-page'
-      : page === undefined
-        ? 'waiting-for-initial'
-        : loading
-          ? 'transitioning'
-          : 'loaded'
-
-  const pageWithFallback = page ?? DEFAULT_PAGE
+  const pageState = getPageState(session, page, loading)
+  const pageWithFallback = page ?? initialPage
 
   return (
     <Flex direction="column" height="100%" width="100%">
@@ -88,9 +77,9 @@ export function SessionPlayer({
           }
         `}
       >
-        {pageState === 'waiting-for-initial' && <Spinner size="2" />}
-        <Viewport show={pageState !== 'waiting-for-initial'}>
+        <Viewport show>
           <AddressBar
+            placeholder={placeholder}
             loading={pageState === 'transitioning'}
             page={pageWithFallback}
           />
@@ -101,6 +90,17 @@ export function SessionPlayer({
               minHeight: pageWithFallback.height,
             }}
           >
+            {pageState === 'pending' && (
+              <Viewport.Message>{initialContent}</Viewport.Message>
+            )}
+            {pageState === 'waiting-for-initial' && (
+              <Viewport.Message>
+                Waiting for the initial page...
+              </Viewport.Message>
+            )}
+            {pageState === 'no-page' && (
+              <Viewport.Message>No page was loaded.</Viewport.Message>
+            )}
             <div
               ref={setMount}
               style={{
