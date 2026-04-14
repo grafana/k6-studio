@@ -1,9 +1,9 @@
-import { asSchema, tool, ToolSet } from 'ai'
+import { asSchema, JSONSchema7, tool, ToolSet } from 'ai'
 import { z } from 'zod'
 
 import {
+  BaseExtractorSchema,
   BeginEndSelectorSchema,
-  FilterSchema,
   HeaderNameSelectorSchema,
   JsonSelectorSchema,
   RegexSelectorSchema,
@@ -12,50 +12,30 @@ import {
 export interface RemoteToolDefinition {
   name: string
   description: string
-  inputSchema: Record<string, unknown>
+  inputSchema: JSONSchema7
 }
 
-const addRuleBaseSchema = z.object({
-  extractor: z.object({
-    filter: FilterSchema,
-    extractionMode: z
-      .enum(['single', 'multiple'])
-      .default('single')
-      .describe(
-        'single: use the first extracted value; multiple: use the latest value when extracted from multiple requests'
-      ),
-  }),
+const addRuleBeginEndSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: BeginEndSelectorSchema }),
 })
 
-const addRuleBeginEndSchema = addRuleBaseSchema.extend({
-  extractor: addRuleBaseSchema.shape.extractor.extend({
-    selector: BeginEndSelectorSchema,
-  }),
+const addRuleRegexSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: RegexSelectorSchema }),
 })
 
-const addRuleRegexSchema = addRuleBaseSchema.extend({
-  extractor: addRuleBaseSchema.shape.extractor.extend({
-    selector: RegexSelectorSchema,
-  }),
+const addRuleJsonSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: JsonSelectorSchema }),
 })
 
-const addRuleJsonSchema = addRuleBaseSchema.extend({
-  extractor: addRuleBaseSchema.shape.extractor.extend({
-    selector: JsonSelectorSchema,
-  }),
-})
-
-const addRuleHeaderNameSchema = addRuleBaseSchema.extend({
-  extractor: addRuleBaseSchema.shape.extractor.extend({
-    selector: HeaderNameSelectorSchema,
-  }),
+const addRuleHeaderNameSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: HeaderNameSelectorSchema }),
 })
 
 export function getToolDefinitionsForA2A(): RemoteToolDefinition[] {
   return Object.entries(tools).map(([name, t]) => ({
     name,
     description: t.description ?? '',
-    inputSchema: asSchema(t.inputSchema).jsonSchema as Record<string, unknown>,
+    inputSchema: asSchema(t.inputSchema).jsonSchema,
   }))
 }
 

@@ -31,6 +31,12 @@ import { prepareRequestsForAI } from './utils/stripRequestData'
 import { sumTokenUsage } from './utils/sumTokenUsage'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
+const outcomeEvents = {
+  success: UsageEventName.AutocorrelationSucceeded,
+  'partial-success': UsageEventName.AutocorrelationPartiallySucceeded,
+  failure: UsageEventName.AutocorrelationFailed,
+} as const
+
 export const useGenerateRules = ({
   clearValidation,
 }: {
@@ -63,7 +69,6 @@ export const useGenerateRules = ({
     stop: stopGeneration,
     clearError,
     setMessages,
-    messages,
   } = useChat<Message>({
     transport: new IPCChatTransport({
       provider,
@@ -131,23 +136,9 @@ export const useGenerateRules = ({
       }
 
       case 'finish':
-        if (toolCall.input.outcome === 'success') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationSucceeded,
-          })
-        }
-
-        if (toolCall.input.outcome === 'partial-success') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationPartiallySucceeded,
-          })
-        }
-
-        if (toolCall.input.outcome === 'failure') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationFailed,
-          })
-        }
+        window.studio.app.trackEvent({
+          event: outcomeEvents[toolCall.input.outcome],
+        })
         setOutcomeReason(toolCall.input.reason)
         return toolCall.input.outcome
 
@@ -267,7 +258,6 @@ export const useGenerateRules = ({
     outcomeReason,
     restart,
     stop: useCallback(stop, [stopGeneration]),
-    messages,
     tokenUsage,
     provider,
   }

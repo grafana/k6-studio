@@ -54,10 +54,8 @@ function extractToolsFromMostRecentStep(parts: Message['parts']): ToolPart[] {
   return partsAfterLastStep.filter(isToolOrDynamicToolUIPart)
 }
 
-function findMostRecentStepBoundary(parts: unknown[]) {
-  return parts.findLastIndex(
-    (part) => (part as { type?: string }).type === 'step-start'
-  )
+function findMostRecentStepBoundary(parts: Message['parts']) {
+  return parts.findLastIndex((part) => part.type === 'step-start')
 }
 
 function hasCompletedTools(toolParts: ToolPart[]) {

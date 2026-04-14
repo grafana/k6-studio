@@ -171,7 +171,7 @@ describe('buildA2ARequest', () => {
       {
         name: 'searchRequests',
         description: 'Search for requests',
-        inputSchema: { type: 'object' },
+        inputSchema: { type: 'object' as const },
       },
     ]
 

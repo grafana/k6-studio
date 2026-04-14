@@ -54,13 +54,10 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   )
   const { data: settings } = useSettings()
   const isAiConfigured = !!settings?.ai.apiKey
-  const proxyStatus = useProxyStatus()
 
   return (
     <IntroLayout>
-      {isAiConfigured && (
-        <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
-      )}
+      {isAiConfigured && <AnalyzeButton onStart={onStart} />}
       {!isAiConfigured && (
         <>
           <Text size="2" color="gray">
@@ -84,7 +81,6 @@ function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
   const { data: authStatus, isLoading } = useAssistantAuthStatus()
   const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
   const signIn = useAssistantSignIn()
-  const proxyStatus = useProxyStatus()
 
   const isSignedIn = !!authStatus?.stackId
   const isAuthenticated = authStatus?.authenticated ?? false
@@ -154,7 +150,6 @@ function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
         onSignIn={() => setIsCloudSigningIn(true)}
         onConnect={() => signIn.mutate()}
         onStart={onStart}
-        proxyStatus={proxyStatus}
         connectError={signIn.error}
       />
       <Text size="1" color="gray" mt="1">
@@ -171,7 +166,6 @@ interface AssistantAuthStatusProps {
   onSignIn: () => void
   onConnect: () => void
   onStart: () => void
-  proxyStatus: string
   connectError: Error | null
 }
 
@@ -182,7 +176,6 @@ function AssistantAuthStatus({
   onSignIn,
   onConnect,
   onStart,
-  proxyStatus,
   connectError,
 }: AssistantAuthStatusProps) {
   const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
@@ -230,7 +223,7 @@ function AssistantAuthStatus({
 
   return (
     <Flex direction="column" align="center" gap="2">
-      <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
+      <AnalyzeButton onStart={onStart} />
       <Button
         variant="ghost"
         size="1"
@@ -245,13 +238,8 @@ function AssistantAuthStatus({
   )
 }
 
-function AnalyzeButton({
-  onStart,
-  proxyStatus,
-}: {
-  onStart: () => void
-  proxyStatus: string
-}) {
+function AnalyzeButton({ onStart }: { onStart: () => void }) {
+  const proxyStatus = useProxyStatus()
   return (
     <Tooltip
       content={`Proxy is ${proxyStatus}`}
