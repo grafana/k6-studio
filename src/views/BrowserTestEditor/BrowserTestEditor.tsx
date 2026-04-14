@@ -169,7 +169,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   >
                     <LogsSection
                       {...consoleFilter}
-                      autoScroll={false}
+                      autoScroll={session.state === 'running'}
                       logs={session.logs}
                     />
                   </Tabs.Content>
