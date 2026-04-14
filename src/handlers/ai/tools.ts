@@ -32,10 +32,10 @@ const addRuleHeaderNameSchema = z.object({
 })
 
 export function getToolDefinitionsForA2A(): RemoteToolDefinition[] {
-  return Object.entries(tools).map(([name, t]) => ({
+  return Object.entries(tools).map(([name, toolDef]) => ({
     name,
-    description: t.description ?? '',
-    inputSchema: asSchema(t.inputSchema).jsonSchema,
+    description: toolDef.description ?? '',
+    inputSchema: asSchema(toolDef.inputSchema).jsonSchema,
   }))
 }
 
