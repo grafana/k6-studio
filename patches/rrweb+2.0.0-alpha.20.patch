@@ -66,7 +66,7 @@ index 92d2c5f..b4cd061 100644
      enableInteract(): void;
      disableInteract(): void;
 diff --git a/node_modules/rrweb/dist/rrweb.js b/node_modules/rrweb/dist/rrweb.js
-index 553c605..78f9bfc 100644
+index 553c605..bf92559 100644
 --- a/node_modules/rrweb/dist/rrweb.js
 +++ b/node_modules/rrweb/dist/rrweb.js
 @@ -14735,6 +14735,10 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
@@ -74,23 +74,13 @@ index 553c605..78f9bfc 100644
          live: {
            on: {
 +            STOP_LIVE: {
-+              target: "paused",
++              target: 'paused',
 +              actions: ["pause"]
 +            },
              ADD_EVENT: {
                target: "live",
                actions: ["addEvent"]
-@@ -14822,6 +14826,9 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
-             return Date.now();
-           }
-         }),
-+        stopLive() {
-+          this.service.send({ type: "STOP_LIVE" });
-+        },
-         addEvent: o((ctx, machineEvent) => {
-           const { baselineTime, timer, events } = ctx;
-           if (machineEvent.type === "ADD_EVENT") {
-@@ -15861,6 +15868,9 @@ class Replayer {
+@@ -15861,6 +15865,9 @@ class Replayer {
    startLive(baselineTime) {
      this.service.send({ type: "TO_LIVE", payload: { baselineTime } });
    }
