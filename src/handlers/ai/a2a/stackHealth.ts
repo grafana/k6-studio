@@ -22,14 +22,12 @@ export async function checkStackHealth(
     const response = await fetch(`${normalizedUrl}/api/health`, {
       signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
     })
-    log.info('response', response)
 
     if (!response.ok) {
       return 'loading'
     }
 
     const body = HealthResponseSchema.parse(await response.json())
-    log.info('body', body)
 
     if (body.database !== 'ok') {
       return 'loading'

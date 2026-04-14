@@ -13,7 +13,6 @@ export function useStackHealth(enabled: boolean) {
       result.state.data === 'ready' ? false : POLL_INTERVAL_MS,
     enabled,
   })
-  console.log('query', query.data)
 
   return {
     ...query,
