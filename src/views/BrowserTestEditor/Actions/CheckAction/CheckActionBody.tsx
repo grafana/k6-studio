@@ -27,7 +27,11 @@ export function CheckActionBody({ action, onChange }: CheckActionBodyProps) {
       width="100%"
     >
       Check input
-      <LocatorForm state={action.locator} suggestedRoles={CHECK_ROLES} onChange={handleChangeLocator} />
+      <LocatorForm
+        state={action.locator}
+        suggestedRoles={CHECK_ROLES}
+        onChange={handleChangeLocator}
+      />
     </Grid>
   )
 }

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "preinstall": "node install-k6.js",
+    "postinstall": "patch-package",
     "start": "electron-forge start -- --remote-debugging-port=9223",
     "package": "electron-forge package",
     "make": "electron-forge make",
@@ -64,6 +65,7 @@
     "husky": "^9.0.11",
     "jsdom": "^25.0.0",
     "lint-staged": "^15.2.5",
+    "patch-package": "^8.0.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "vite": "^6.4.1",
