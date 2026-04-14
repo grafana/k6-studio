@@ -3,9 +3,8 @@ import { Flex, Popover } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 
 import { BrowserActionEvent } from '@/main/runner/schema'
-
-import { BrowserActionStatusIcon } from '../../BrowserActionStatusIcon'
-import { BrowserActionText } from '../../BrowserActionText'
+import { BrowserActionStatusIcon } from '@/views/Validator/Browser/BrowserActionStatusIcon'
+import { BrowserActionText } from '@/views/Validator/Browser/BrowserActionText'
 
 interface TimelineTooltipProps {
   open: boolean

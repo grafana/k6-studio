@@ -5,8 +5,7 @@ import { Flex, Spinner, Box } from '@radix-ui/themes'
 import { useState } from 'react'
 
 import { NodeSelector } from '@/schemas/selectors'
-
-import { DebugSession } from '../../types'
+import { DebugSession } from '@/views/Validator/types'
 
 import { AddressBar } from './AddressBar'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'

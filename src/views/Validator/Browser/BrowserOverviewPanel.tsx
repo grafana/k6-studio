@@ -3,11 +3,10 @@ import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import { NodeSelector } from '@/schemas/selectors'
 
 import { DebugSession } from '../types'
-
-import { SessionPlayer } from './SessionPlayer/SessionPlayer'
 
 interface BrowserOverviewPanelProps {
   script: string
