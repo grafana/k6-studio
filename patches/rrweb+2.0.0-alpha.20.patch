@@ -1,9 +1,9 @@
 diff --git a/node_modules/rrweb/dist/rrweb.cjs b/node_modules/rrweb/dist/rrweb.cjs
-index d455aa0..86e7de1 100644
+index 7d09b21..48fd3a1 100644
 --- a/node_modules/rrweb/dist/rrweb.cjs
 +++ b/node_modules/rrweb/dist/rrweb.cjs
-@@ -14576,6 +14576,10 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
-         }, 
+@@ -14737,6 +14737,10 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
+         },
          live: {
            on: {
 +            STOP_LIVE: {
@@ -13,7 +13,7 @@ index d455aa0..86e7de1 100644
              ADD_EVENT: {
                target: "live",
                actions: ["addEvent"]
-@@ -15702,6 +15706,9 @@ class Replayer {
+@@ -15863,6 +15867,9 @@ class Replayer {
    startLive(baselineTime) {
      this.service.send({ type: "TO_LIVE", payload: { baselineTime } });
    }
@@ -23,11 +23,11 @@ index d455aa0..86e7de1 100644
    addEvent(rawEvent) {
      const event = this.config.unpackFn ? this.config.unpackFn(rawEvent) : rawEvent;
      if (indicatesTouchDevice(event)) {
-diff --git a/node_modules/rrweb/dist/rrweb.d.ts b/node_modules/rrweb/dist/rrweb.d.ts
-index 95305d6..66540cb 100644
---- a/node_modules/rrweb/dist/rrweb.d.ts
-+++ b/node_modules/rrweb/dist/rrweb.d.ts
-@@ -182,6 +182,8 @@ declare type PlayerEvent = {
+diff --git a/node_modules/rrweb/dist/rrweb.d.cts b/node_modules/rrweb/dist/rrweb.d.cts
+index 92d2c5f..b4cd061 100644
+--- a/node_modules/rrweb/dist/rrweb.d.cts
++++ b/node_modules/rrweb/dist/rrweb.d.cts
+@@ -178,6 +178,8 @@ declare type PlayerEvent = {
      };
  } | {
      type: 'PAUSE';
@@ -36,7 +36,28 @@ index 95305d6..66540cb 100644
  } | {
      type: 'TO_LIVE';
      payload: {
-@@ -299,6 +301,7 @@ export declare class Replayer {
+@@ -295,6 +297,7 @@ export declare class Replayer {
+     resume(timeOffset?: number): void;
+     destroy(): void;
+     startLive(baselineTime?: number): void;
++    stopLive(): void;
+     addEvent(rawEvent: eventWithTime | string): void;
+     enableInteract(): void;
+     disableInteract(): void;
+diff --git a/node_modules/rrweb/dist/rrweb.d.ts b/node_modules/rrweb/dist/rrweb.d.ts
+index 92d2c5f..b4cd061 100644
+--- a/node_modules/rrweb/dist/rrweb.d.ts
++++ b/node_modules/rrweb/dist/rrweb.d.ts
+@@ -178,6 +178,8 @@ declare type PlayerEvent = {
+     };
+ } | {
+     type: 'PAUSE';
++} | {
++    type: 'STOP_LIVE';
+ } | {
+     type: 'TO_LIVE';
+     payload: {
+@@ -295,6 +297,7 @@ export declare class Replayer {
      resume(timeOffset?: number): void;
      destroy(): void;
      startLive(baselineTime?: number): void;
@@ -45,21 +66,31 @@ index 95305d6..66540cb 100644
      enableInteract(): void;
      disableInteract(): void;
 diff --git a/node_modules/rrweb/dist/rrweb.js b/node_modules/rrweb/dist/rrweb.js
-index 5d38597..13a9d10 100644
+index 553c605..78f9bfc 100644
 --- a/node_modules/rrweb/dist/rrweb.js
 +++ b/node_modules/rrweb/dist/rrweb.js
-@@ -14574,6 +14574,10 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
+@@ -14735,6 +14735,10 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
          },
          live: {
            on: {
 +            STOP_LIVE: {
-+              target: 'paused',
++              target: "paused",
 +              actions: ["pause"]
-+            }, 
++            },
              ADD_EVENT: {
                target: "live",
                actions: ["addEvent"]
-@@ -15700,6 +15704,9 @@ class Replayer {
+@@ -14822,6 +14826,9 @@ function createPlayerService(context, { getCastFn, applyEventsSynchronously, emi
+             return Date.now();
+           }
+         }),
++        stopLive() {
++          this.service.send({ type: "STOP_LIVE" });
++        },
+         addEvent: o((ctx, machineEvent) => {
+           const { baselineTime, timer, events } = ctx;
+           if (machineEvent.type === "ADD_EVENT") {
+@@ -15861,6 +15868,9 @@ class Replayer {
    startLive(baselineTime) {
      this.service.send({ type: "TO_LIVE", payload: { baselineTime } });
    }
