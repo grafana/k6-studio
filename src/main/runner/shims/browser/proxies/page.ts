@@ -53,6 +53,13 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         }
       },
 
+      waitForTimeout(timeout: number) {
+        return {
+          method: 'page.waitForTimeout',
+          timeout,
+        }
+      },
+
       close() {
         return {
           method: 'page.close',
