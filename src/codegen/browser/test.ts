@@ -423,6 +423,14 @@ function buildBrowserNodeGraphFromActions(
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.clear':
+        return {
+          type: 'clear',
+          nodeId: crypto.randomUUID(),
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
       case 'page.waitForNavigation':
       case 'page.close':
       case 'page.*':
@@ -432,7 +440,6 @@ function buildBrowserNodeGraphFromActions(
       case 'locator.hover':
       case 'locator.setChecked':
       case 'locator.tap':
-      case 'locator.clear':
       case 'locator.press':
       case 'locator.focus':
       case 'locator.*':

@@ -1,6 +1,7 @@
 import { Code } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
+  EraserIcon,
   GlobeIcon,
   MousePointerClickIcon,
   RefreshCwIcon,
@@ -13,6 +14,7 @@ import { ReactElement, ReactNode } from 'react'
 
 import {
   CheckActionBody,
+  ClearActionBody,
   ClickActionBody,
   FillActionBody,
   GoToActionBody,
@@ -95,6 +97,25 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'checkbox',
+          },
+        },
+      },
+    }),
+  },
+  'locator.clear': {
+    icon: <EraserIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ClearActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.clear',
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'textbox',
           },
         },
       },
