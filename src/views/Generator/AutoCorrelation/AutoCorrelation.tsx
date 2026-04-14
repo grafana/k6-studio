@@ -37,6 +37,7 @@ export function AutoCorrelation({
     error,
     stop,
     restart,
+    reset,
     tokenUsage,
     provider,
   } = useGenerateRules({
@@ -76,13 +77,7 @@ export function AutoCorrelation({
   }
 
   if (error) {
-    return (
-      <ErrorMessage
-        error={error}
-        onRetry={restart}
-        onReset={() => onCorrelationStatusChange('not-started')}
-      />
-    )
+    return <ErrorMessage error={error} onRetry={restart} onReset={reset} />
   }
 
   return (

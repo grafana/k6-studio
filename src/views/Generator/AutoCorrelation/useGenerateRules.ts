@@ -233,11 +233,17 @@ export const useGenerateRules = ({
     abortControllerRef.current?.abort()
   }
 
-  function restart() {
+  function reset() {
     setSuggestedRules([])
     setMessages([])
     clearError()
     setTokenUsage(undefined)
+    setCorrelationStatus('not-started')
+    setOutcomeReason('')
+  }
+
+  function restart() {
+    reset()
     return start()
   }
 
@@ -257,6 +263,7 @@ export const useGenerateRules = ({
     correlationStatus,
     outcomeReason,
     restart,
+    reset,
     stop: useCallback(stop, [stopGeneration]),
     tokenUsage,
     provider,
