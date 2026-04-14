@@ -1,9 +1,8 @@
 import { css } from '@emotion/react'
 import * as ToggleGroup from '@radix-ui/react-toggle-group'
 import { Flex, Separator, Text, VisuallyHidden } from '@radix-ui/themes'
-import { useCallback, useMemo, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 
-import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { LogEntry } from '@/schemas/k6'
 
 import { AutoScrollArea } from '../AutoScrollArea'
@@ -29,20 +28,6 @@ function formatTime(time: string) {
     minute: '2-digit',
     second: '2-digit',
   })
-}
-
-function findTableElement(element: HTMLElement): HTMLTableElement | null {
-  let current: HTMLElement | null = element
-
-  while (current !== null) {
-    if (current instanceof HTMLTableElement) {
-      return current
-    }
-
-    current = current.parentElement
-  }
-
-  return null
 }
 
 /**
@@ -74,7 +59,7 @@ function withSource(entry: LogEntry) {
 const colors: Record<LogEntry['level'], string> = {
   info: 'green',
   debug: 'blue',
-  warning: 'orange',
+  warning: 'yellow',
   error: 'red',
 }
 
@@ -99,15 +84,13 @@ const toggleGroupStyles = css`
 const toggleItemStyles = css`
   box-sizing: border-box;
   padding: var(--space-1) var(--space-2);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-2);
   border: none;
   border-radius: var(--radius-2);
   cursor: pointer;
   color: var(--gray-11);
   background-color: transparent;
 
-  &:hover,
   &[data-state='on'] {
     background-color: var(--gray-a4);
   }
@@ -125,6 +108,125 @@ export function useConsoleFilter() {
   }
 }
 
+function LogMessage({ children }: { children: ReactNode }) {
+  return (
+    <Text size="2" color="gray" asChild>
+      <Flex align="center" justify="center" height="100%" flexGrow="1">
+        {children}
+      </Flex>
+    </Text>
+  )
+}
+
+interface LogsContentProps {
+  filter: ConsoleFilter
+  logs: LogEntry[]
+}
+
+function LogsContent({ filter, logs }: LogsContentProps) {
+  const filteredLogs = useMemo(() => {
+    return logs.map(withSource).filter((log) => {
+      return (
+        filter.levels.includes(log.entry.level) &&
+        filter.sources.includes(log.source)
+      )
+    })
+  }, [logs, filter])
+
+  if (logs.length === 0) {
+    return <LogMessage>No logs available.</LogMessage>
+  }
+
+  if (filteredLogs.length === 0) {
+    return <LogMessage>No logs match the filter.</LogMessage>
+  }
+
+  return (
+    <table
+      css={css`
+        display: grid;
+        align-items: center;
+        grid-template-columns: 1fr auto auto;
+
+        thead,
+        tbody,
+        tr {
+          display: grid;
+          grid-column: 1 / -1;
+          grid-template-columns: subgrid;
+        }
+
+        tr {
+          padding-right: var(--space-2);
+        }
+
+        td {
+          font-family: var(--code-font-family);
+          font-size: 13px;
+          padding: var(--space-2) var(--space-1);
+        }
+      `}
+    >
+      <thead>
+        <tr
+          css={css`
+            height: 0;
+            padding: 0;
+            margin: 0;
+          `}
+        >
+          <th>
+            <VisuallyHidden>Message</VisuallyHidden>
+          </th>
+          <th>
+            <VisuallyHidden>Source</VisuallyHidden>
+          </th>
+          <th>
+            <VisuallyHidden>Time</VisuallyHidden>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredLogs.map(({ source, entry }, index) => (
+          <tr key={index}>
+            <td
+              css={css`
+                border-left: 4px solid var(--${colors[entry.level]}-9);
+                && {
+                  padding-left: var(--space-2);
+                }
+              `}
+            >
+              <pre
+                css={css`
+                  margin: 0;
+                `}
+              >
+                {entry.msg}
+              </pre>
+            </td>
+            <Text
+              asChild
+              css={css`
+                color: var(--gray-a9);
+              `}
+            >
+              <td align="right">[{source}]</td>
+            </Text>
+            <Text
+              asChild
+              css={css`
+                color: var(--gray-a9);
+              `}
+            >
+              <td align="right">{formatTime(entry.time)}</td>
+            </Text>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
 interface ConsoleFilter {
   levels: Array<LogEntry['level']>
   sources: Array<ReturnType<typeof getSource>>
@@ -149,38 +251,6 @@ export function LogsSection({
   autoScroll,
   onFilterChange,
 }: LogsSectionProps) {
-  const ref = useAutoScroll<HTMLTableElement>(logs, autoScroll)
-
-  const filteredLogs = useMemo(() => {
-    return logs.map(withSource).filter((log) => {
-      return (
-        filter.levels.includes(log.entry.level) &&
-        filter.sources.includes(log.source)
-      )
-    })
-  }, [logs, filter])
-
-  // Radix UI's Table component wraps the table element in a ScrollArea but in
-  // order to autoscroll we need to get a ref to the table element. Ideally Radix
-  // would provide a way to do this, but instead we have to get the ref to an
-  // inner element and find the table element from there.
-  const setTableRef = useCallback(
-    (element: HTMLTableSectionElement | null) => {
-      if (element === null) {
-        return
-      }
-
-      const table = findTableElement(element)
-
-      if (table === null) {
-        return
-      }
-
-      ref.current = table
-    },
-    [ref]
-  )
-
   const handleLogLevelsChange = (values: string[]) => {
     onFilterChange({
       ...filter,
@@ -205,10 +275,19 @@ export function LogsSection({
         gap="2"
         minHeight="40px"
         css={css`
+          font-size: var(--font-size-2);
+          line-height: 1em;
           flex-shrink: 0;
           border-bottom: 1px solid var(--gray-a6);
         `}
       >
+        <div
+          css={css`
+            padding: var(--space-1) 0;
+          `}
+        >
+          Filters:
+        </div>
         <ToggleGroup.Root
           type="multiple"
           value={filter.levels}
@@ -282,95 +361,8 @@ export function LogsSection({
           )}
         </ToggleGroup.Root>
       </Flex>
-      <AutoScrollArea tail items={filteredLogs.length}>
-        <Flex height="100%">
-          <table
-            css={css`
-              height: 100%;
-              flex: 1;
-
-              display: grid;
-              align-items: center;
-              grid-template-columns: 1fr auto auto;
-
-              thead,
-              tbody,
-              tr {
-                display: grid;
-                grid-column: 1 / -1;
-                grid-template-columns: subgrid;
-              }
-
-              tr {
-                padding-right: var(--space-2);
-              }
-
-              td {
-                font-family: var(--code-font-family);
-                font-size: 13px;
-                padding: var(--space-2) var(--space-1);
-              }
-            `}
-          >
-            <thead ref={setTableRef}>
-              <tr
-                css={css`
-                  height: 0;
-                  padding: 0;
-                  margin: 0;
-                `}
-              >
-                <th>
-                  <VisuallyHidden>Message</VisuallyHidden>
-                </th>
-                <th>
-                  <VisuallyHidden>Source</VisuallyHidden>
-                </th>
-                <th>
-                  <VisuallyHidden>Time</VisuallyHidden>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLogs.map(({ source, entry }, index) => (
-                <tr key={index}>
-                  <td
-                    css={css`
-                      border-left: 3px solid var(--${colors[entry.level]}-9);
-                      && {
-                        padding-left: var(--space-2);
-                      }
-                    `}
-                  >
-                    <pre
-                      css={css`
-                        margin: 0;
-                      `}
-                    >
-                      {entry.msg}
-                    </pre>
-                  </td>
-                  <Text
-                    asChild
-                    css={css`
-                      color: var(--gray-a9);
-                    `}
-                  >
-                    <td align="right">[{source}]</td>
-                  </Text>
-                  <Text
-                    asChild
-                    css={css`
-                      color: var(--gray-a9);
-                    `}
-                  >
-                    <td align="right">{formatTime(entry.time)}</td>
-                  </Text>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Flex>
+      <AutoScrollArea tail={autoScroll} items={logs.length}>
+        <LogsContent filter={filter} logs={logs} />
       </AutoScrollArea>
     </Flex>
   )
