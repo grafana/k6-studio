@@ -97,6 +97,12 @@ const PageWaitForNavigationActionSchema = z.object({
   options: GenericOptions.optional(),
 })
 
+const PageWaitForTimeoutActionSchema = z.object({
+  method: z.literal('page.waitForTimeout'),
+  /** Duration in milliseconds. */
+  timeout: z.number(),
+})
+
 const PageCloseActionSchema = z.object({
   method: z.literal('page.close'),
 })
@@ -253,6 +259,7 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
   PageGotoActionSchema,
   PageReloadActionSchema,
   PageWaitForNavigationActionSchema,
+  PageWaitForTimeoutActionSchema,
   PageCloseActionSchema,
   GenericPageActionSchema,
 
@@ -350,6 +357,9 @@ export type PageGotoAction = z.infer<typeof PageGotoActionSchema>
 export type PageReloadAction = z.infer<typeof PageReloadActionSchema>
 export type PageWaitForNavigationAction = z.infer<
   typeof PageWaitForNavigationActionSchema
+>
+export type PageWaitForTimeoutAction = z.infer<
+  typeof PageWaitForTimeoutActionSchema
 >
 export type GenericPageAction = z.infer<typeof GenericPageActionSchema>
 

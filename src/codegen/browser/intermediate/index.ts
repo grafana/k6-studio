@@ -406,6 +406,22 @@ function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
   })
 }
 
+function emitWaitForTimeoutNode(
+  context: IntermediateContext,
+  node: m.WaitForTimeoutNode
+) {
+  const page = context.reference(node.inputs.page)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'WaitForTimeoutExpression',
+      target: page,
+      timeout: node.timeout,
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -437,6 +453,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'wait-for':
       return emitWaitForNode(context, node)
+
+    case 'wait-for-timeout':
+      return emitWaitForTimeoutNode(context, node)
 
     default:
       return exhaustive(node)
