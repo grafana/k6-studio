@@ -127,26 +127,35 @@ export function TimelineSlider({
             onSeek={handleSeek}
           />
           <div
-            css={[
-              css`
-                position: absolute;
-                inset: 0;
-                pointer-events: none;
-              `,
-              rangeStyles.container[theme],
-            ]}
+            css={css`
+              position: absolute;
+              inset: 0;
+              border-radius: var(--slider-border-radius);
+              overflow: hidden;
+              pointer-events: none;
+            `}
           >
-            <SliderPrimitive.Range
+            <div
               css={[
                 css`
-                  position: absolute;
-                  top: 0;
+                  background-color: var(--gray-5);
+                  width: 100%;
                   height: 100%;
-                  border-radius: var(--slider-border-radius);
                 `,
-                rangeStyles.range[theme],
+                rangeStyles.container[theme],
               ]}
-            />
+            >
+              <SliderPrimitive.Range
+                css={[
+                  css`
+                    position: absolute;
+                    top: 0;
+                    height: 100%;
+                  `,
+                  rangeStyles.range[theme],
+                ]}
+              />
+            </div>
           </div>
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
