@@ -1,0 +1,8 @@
+export { GetByAltTextForm } from './GetByAltTextForm'
+export { GetByCssForm } from './GetByCssForm'
+export { GetByLabelForm } from './GetByLabelForm'
+export { GetByPlaceholderForm } from './GetByPlaceholderForm'
+export { GetByRoleForm } from './GetByRoleForm'
+export { GetByTestIdForm } from './GetByTestIdForm'
+export { GetByTextForm } from './GetByTextForm'
+export { GetByTitleForm } from './GetByTitleForm'

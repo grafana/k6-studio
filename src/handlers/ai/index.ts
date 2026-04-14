@@ -1,6 +1,7 @@
 import { OpenAIResponsesProviderOptions } from '@ai-sdk/openai'
 import { convertToModelMessages, streamText } from 'ai'
 import { ipcMain, IpcMainEvent } from 'electron'
+import log from 'electron-log/main'
 
 import * as assistantAuth from './a2a/assistantAuth'
 import { getGrafanaAssistantModel, getOpenAiModel } from './model'
@@ -17,7 +18,7 @@ export function initialize() {
   assistantAuth.initialize()
 }
 
-async function handleStreamChat(
+export async function handleStreamChat(
   event: IpcMainEvent,
   request: StreamChatRequest
 ) {
@@ -33,13 +34,17 @@ async function handleStreamChat(
 
       const response = streamText({
         model: aiModel,
-        toolChoice: 'required',
         messages,
         tools,
         abortSignal: abortController.signal,
+        providerOptions: {
+          grafanaAssistant: {
+            chatId: request.id,
+          },
+        },
       })
 
-      await streamMessages(event.sender, response, request.id, false)
+      await streamMessages(event.sender, response, request.id)
     } else {
       const aiModel = await getOpenAiModel()
 
@@ -60,10 +65,25 @@ async function handleStreamChat(
         },
       })
 
-      await streamMessages(event.sender, response, request.id, true)
+      await streamMessages(event.sender, response, request.id)
     }
+  } catch (error) {
+    if (abortController.signal.aborted) {
+      return
+    }
+
+    log.error('handleStreamChat error:', error)
+    event.sender.send(AiHandler.StreamChatChunk, {
+      id: request.id,
+      chunk: {
+        type: 'error',
+        errorText: error instanceof Error ? error.message : 'Unknown error',
+      },
+    })
+    event.sender.send(AiHandler.StreamChatEnd, {
+      id: request.id,
+    })
   } finally {
-    // Clean up the AbortController after streaming completes or fails
     activeAbortControllers.delete(request.id)
   }
 }

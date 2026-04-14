@@ -87,34 +87,39 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
           },
         })
       },
-      getByAltText(target, text) {
+      getByAltText(target, text, options) {
         return locatorProxy(target, {
           type: 'alt',
           text: text.toString(),
+          options,
         })
       },
-      getByLabel(target, label) {
+      getByLabel(target, label, options) {
         return locatorProxy(target, {
           type: 'label',
           label: label.toString(),
+          options,
         })
       },
-      getByPlaceholder(target, placeholder) {
+      getByPlaceholder(target, placeholder, options) {
         return locatorProxy(target, {
           type: 'placeholder',
           placeholder: placeholder.toString(),
+          options,
         })
       },
-      getByTitle(target, title) {
+      getByTitle(target, title, options) {
         return locatorProxy(target, {
           type: 'title',
           title: title.toString(),
+          options,
         })
       },
-      getByText(target, text) {
+      getByText(target, text, options) {
         return locatorProxy(target, {
           type: 'text',
           text: text.toString(),
+          options,
         })
       },
       getByTestId(target, testId) {

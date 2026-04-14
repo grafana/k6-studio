@@ -1,4 +1,4 @@
-import { app, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import log from 'electron-log/main'
 
 import { getProfileData } from '@/handlers/auth/fs'
@@ -10,16 +10,18 @@ import {
   generateState,
   startCallbackServer,
 } from '@/services/grafana/assistantAuth'
+import { browserWindowFromEvent } from '@/utils/electron'
 
+import { abortAllActiveAssistantSessions } from '../grafanaAssistantProvider'
 import { AssistantAuthHandler } from '../types'
 
+import { LOG_PREFIX } from './constants'
 import {
   clearAssistantTokens,
   hasAssistantTokens,
+  mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
-
-const PREFIX = '[GrafanaAssistant]'
 
 export type AssistantAuthResult =
   | { type: 'authenticated' }
@@ -47,11 +49,23 @@ function isAllowedEndpoint(endpoint: string, stackUrl: string): boolean {
   }
 }
 
+function verificationCode(codeChallenge: string): string {
+  try {
+    const hex = Buffer.from(codeChallenge, 'base64url')
+      .subarray(0, 4)
+      .toString('hex')
+    return hex.slice(0, 4) + '-' + hex.slice(4)
+  } catch {
+    return '----'
+  }
+}
+
 let pendingAbortController: AbortController | null = null
 
 async function performSignIn(
   stackId: string,
-  stackUrl: string
+  stackUrl: string,
+  browserWindow: BrowserWindow
 ): Promise<AssistantAuthResult> {
   const abortController = new AbortController()
   pendingAbortController = abortController
@@ -65,7 +79,7 @@ async function performSignIn(
     const authUrl = buildAssistantAuthUrl(stackUrl, codeChallenge, state, port)
 
     log.info(
-      PREFIX,
+      LOG_PREFIX,
       'Initiating assistant auth for stack',
       stackId,
       'on port',
@@ -73,14 +87,17 @@ async function performSignIn(
     )
     void shell.openExternal(authUrl)
 
+    const code = verificationCode(codeChallenge)
+    browserWindow.webContents.send(AssistantAuthHandler.VerificationCode, code)
+
     const callback = await result
     app.focus({ steal: true })
 
     if (callback.state !== state) {
-      log.error(PREFIX, 'State mismatch in assistant auth callback')
+      log.error(LOG_PREFIX, 'State mismatch in assistant auth callback')
       return {
         type: 'error',
-        error: 'State mismatch — possible CSRF attack. Please try again.',
+        error: 'State mismatch, possible CSRF attack. Please try again.',
       }
     }
 
@@ -93,7 +110,7 @@ async function performSignIn(
 
     if (!isAllowedEndpoint(callback.endpoint, stackUrl)) {
       log.error(
-        PREFIX,
+        LOG_PREFIX,
         'Callback endpoint does not match expected stack URL:',
         callback.endpoint
       )
@@ -114,22 +131,18 @@ async function performSignIn(
       return { type: 'aborted' }
     }
 
-    await saveAssistantTokens(stackId, {
-      accessToken: tokenResponse.token,
-      refreshToken: tokenResponse.refresh_token,
-      apiEndpoint: tokenResponse.api_endpoint,
-      expiresAt: new Date(tokenResponse.expires_at).getTime(),
-      refreshExpiresAt: new Date(tokenResponse.refresh_expires_at).getTime(),
-    })
+    const tokens = mapTokenResponse(tokenResponse, tokenResponse.api_endpoint)
 
-    log.info(PREFIX, 'Assistant auth completed for stack', stackId)
+    await saveAssistantTokens(stackId, tokens)
+
+    log.info(LOG_PREFIX, 'Assistant auth completed for stack', stackId)
     return { type: 'authenticated' }
   } catch (error) {
     if (abortController.signal.aborted) {
       return { type: 'aborted' }
     }
 
-    log.error(PREFIX, 'Assistant auth failed:', error)
+    log.error(LOG_PREFIX, 'Assistant auth failed:', error)
     return {
       type: 'error',
       error: error instanceof Error ? error.message : 'Authentication failed',
@@ -144,7 +157,8 @@ async function performSignIn(
 export function initialize() {
   ipcMain.handle(
     AssistantAuthHandler.SignIn,
-    async (): Promise<AssistantAuthResult> => {
+    async (event): Promise<AssistantAuthResult> => {
+      const browserWindow = browserWindowFromEvent(event)
       const profile = await getProfileData()
       const stackId = profile.profiles.currentStack
 
@@ -170,7 +184,7 @@ export function initialize() {
         pendingAbortController.abort()
       }
 
-      return performSignIn(stackId, stack.url)
+      return performSignIn(stackId, stack.url, browserWindow)
     }
   )
 
@@ -207,8 +221,9 @@ export function initialize() {
     const stackId = profile.profiles.currentStack
 
     if (stackId) {
+      abortAllActiveAssistantSessions()
       await clearAssistantTokens(stackId)
-      log.info(PREFIX, 'Cleared assistant tokens for stack', stackId)
+      log.info(LOG_PREFIX, 'Cleared assistant tokens for stack', stackId)
     }
   })
 }
