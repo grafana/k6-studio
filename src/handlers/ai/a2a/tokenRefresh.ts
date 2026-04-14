@@ -82,6 +82,10 @@ export async function getValidAssistantTokens(
     return await refreshAndSaveTokens(stackId, tokens)
   } catch (error) {
     log.error(LOG_PREFIX, 'Failed to refresh assistant token:', error)
+    if (Date.now() < tokens.expiresAt) {
+      return tokens
+    }
+
     return null
   }
 }

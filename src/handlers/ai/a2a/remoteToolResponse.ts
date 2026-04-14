@@ -1,5 +1,5 @@
+import type { A2ASessionConfig } from './config'
 import { buildA2AHeaders, safeResponseText } from './helpers'
-import type { A2ASessionConfig } from './types'
 
 type RemoteToolPayload = {
   requestId: string

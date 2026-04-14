@@ -1,5 +1,3 @@
-import type { A2AConfig } from './config'
-
 export type A2ATaskState =
   | 'submitted'
   | 'working'
@@ -105,37 +103,4 @@ export interface A2ASSEEvent {
   id: string | number
   result?: A2ASSEResult
   error?: { code: number; message: string; data?: string }
-}
-
-export interface PendingToolRequest {
-  requestId: string
-  chatId: string
-}
-
-export type A2ASessionConfig = Omit<A2AConfig, 'extensions'>
-
-export interface ActiveA2ASession {
-  reader: ReadableStreamDefaultReader<Uint8Array>
-  contextId: string | undefined
-  taskId: string | undefined
-  sessionAbortController: AbortController
-  config: A2ASessionConfig
-  /** Maps toolId (from step.toolCall) → remote tool request info */
-  pendingToolRequests: Map<string, PendingToolRequest>
-  /** Queue of tool calls that haven't been matched to a REMOTE_TOOL_REQUEST yet */
-  unmatchedToolCalls: Array<{ toolId: string; toolName: string }>
-  /** Queue of remote requests that haven't been matched to a step.toolCall yet */
-  unmatchedRemoteRequests: Array<{
-    requestId: string
-    chatId: string
-    toolName: string
-  }>
-  /** Leftover bytes from SSE parsing between reads */
-  sseBuffer: string
-  /** Set to true when all emitted tool calls have been matched with REMOTE_TOOL_REQUESTs */
-  readyToFinishForTools: boolean
-  /** Artifact ID of the active token-streaming block (set by message.stream.start) */
-  activeStreamArtifactId: string | undefined
-  /** Content type of the currently open streaming block ('text' | 'reasoning') */
-  activeStreamContentType: 'text' | 'reasoning' | undefined
 }

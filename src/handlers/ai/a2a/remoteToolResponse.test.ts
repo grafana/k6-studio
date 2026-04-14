@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { A2ASessionConfig } from './config'
 import { sendRemoteToolResponse } from './remoteToolResponse'
-import type { A2ASessionConfig } from './types'
 
 const config: A2ASessionConfig = {
   baseUrl: 'https://api.grafana.net/api/cli/v1/a2a',

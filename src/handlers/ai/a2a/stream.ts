@@ -5,8 +5,7 @@ import { isAbortError } from '@/utils/errors'
 
 import { LOG_PREFIX, NO_USAGE } from './constants'
 import { processA2AEvent } from './eventMapper'
-import { extractSSEEvents } from './sseParser'
-import type { ActiveA2ASession } from './types'
+import type { ActiveA2ASession } from './session'
 
 const FINISH_TOOL_CALLS: LanguageModelV2StreamPart = {
   type: 'finish',
@@ -71,7 +70,7 @@ export function createA2AStream(
         }
 
         session.sseBuffer += decoder.decode(value, { stream: true })
-        const events = extractSSEEvents(session)
+        const events = session.extractSSEEvents()
 
         for (const event of events) {
           const parts = processA2AEvent(event, session)

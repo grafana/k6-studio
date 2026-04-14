@@ -85,6 +85,17 @@ function emitRoleLocatorOptionsExpression(
   })
 }
 
+function emitTextLocatorOptionsExpression(
+  _context: ScenarioContext,
+  expression: ir.TextLocatorOptionsExpression
+): ts.Expression {
+  const exact = expression.exact
+
+  return ObjectBuilder.from({
+    ...(exact && { exact }),
+  })
+}
+
 function emitNewLabelLocatorExpression(
   context: ScenarioContext,
   expression: ir.NewLabelLocatorExpression
@@ -92,9 +103,14 @@ function emitNewLabelLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByLabel')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -105,9 +121,14 @@ function emitNewAltTextLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByAltText')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -118,9 +139,14 @@ function emitNewPlaceholderLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByPlaceholder')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -131,9 +157,14 @@ function emitNewTitleLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByTitle')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -456,6 +487,9 @@ function emitExpression(
 
     case 'RoleLocatorOptionsExpression':
       return emitRoleLocatorOptionsExpression(context, expression)
+
+    case 'TextLocatorOptionsExpression':
+      return emitTextLocatorOptionsExpression(context, expression)
 
     case 'NewLabelLocatorExpression':
       return emitNewLabelLocatorExpression(context, expression)

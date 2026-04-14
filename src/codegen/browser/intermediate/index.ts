@@ -91,9 +91,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewLabelLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.selector.text.value,
         },
         page,
+        options: node.selector.text.exact
+          ? {
+              type: 'TextLocatorOptionsExpression',
+              exact: node.selector.text.exact,
+            }
+          : null,
       })
       break
 
@@ -102,9 +108,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewPlaceholderLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.selector.text.value,
         },
         page,
+        options: node.selector.text.exact
+          ? {
+              type: 'TextLocatorOptionsExpression',
+              exact: node.selector.text.exact,
+            }
+          : null,
       })
       break
 
@@ -113,9 +125,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewTitleLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.selector.text.value,
         },
         page,
+        options: node.selector.text.exact
+          ? {
+              type: 'TextLocatorOptionsExpression',
+              exact: node.selector.text.exact,
+            }
+          : null,
       })
       break
 
@@ -124,9 +142,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewAltTextLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.selector.text.value,
         },
         page,
+        options: node.selector.text.exact
+          ? {
+              type: 'TextLocatorOptionsExpression',
+              exact: node.selector.text.exact,
+            }
+          : null,
       })
       break
 
@@ -248,10 +272,7 @@ function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
     expression: {
       type: 'CheckExpression',
       locator,
-      checked: {
-        type: 'StringLiteral',
-        value: node.checked ? 'checked' : 'unchecked',
-      },
+      checked: node.checked,
     },
   })
 }

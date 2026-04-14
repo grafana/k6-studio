@@ -63,19 +63,19 @@ export function LocatorText({ locator }: LocatorComponentProps) {
       return locator.testId
 
     case 'label':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'placeholder':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'title':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'alt':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'text':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'role':
       return (
