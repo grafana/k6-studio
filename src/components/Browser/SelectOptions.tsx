@@ -1,3 +1,4 @@
+import { css } from '@emotion/react'
 import { Fragment } from 'react'
 
 interface SelectOption {
@@ -10,35 +11,56 @@ interface SelectOptionsProps {
   options: Array<SelectOption | string>
 }
 
-export function SelectOptions({ options }: SelectOptionsProps) {
-  const normalizedOptions = options.map((option) => {
-    if (typeof option === 'string') {
-      return option
-    }
+function quote(str: string) {
+  return `"${str}"`
+}
 
-    return option.value ?? option.label ?? option.index?.toString() ?? ''
-  })
-
-  if (normalizedOptions.length === 1) {
-    return <code>{normalizedOptions[0]}</code>
+function formatOption(option: SelectOption | string) {
+  if (typeof option === 'string') {
+    return quote(option)
   }
 
-  const last = normalizedOptions[options.length - 1]
+  if (option.label !== undefined) {
+    return option.label.length ? (
+      option.label
+    ) : (
+      <span
+        css={css`
+          opacity: 0.8;
+          font-style: italic;
+        `}
+      >
+        (empty)
+      </span>
+    )
+  }
 
-  if (last === undefined) {
+  if (option.index !== undefined) {
+    return option.index.toString()
+  }
+
+  return quote(option.value ?? '')
+}
+
+export function SelectOptions({ options }: SelectOptionsProps) {
+  if (options.length === 0) {
     return null
   }
 
+  if (options.length === 1) {
+    return <code>{formatOption(options[0]!)}</code>
+  }
+
+  const last = options[options.length - 1]!
+
   return (
     <>
-      {normalizedOptions.slice(0, -1).map((option, index) => {
-        return (
-          <Fragment key={index}>
-            <code>{option}</code>,{' '}
-          </Fragment>
-        )
-      })}{' '}
-      and <code>{last}</code>
+      {options.slice(0, -1).map((option, index) => (
+        <Fragment key={index}>
+          <code>{formatOption(option)}</code>,{' '}
+        </Fragment>
+      ))}{' '}
+      and <code>{formatOption(last)}</code>
     </>
   )
 }
