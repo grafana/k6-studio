@@ -1,13 +1,11 @@
+import { keyBy } from 'lodash-es'
+
 import {
   Assertion,
   BrowserEvent,
   BrowserEventTarget,
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
-import {
-  dedupeSelectOptions,
-  isNonEmptySelectOption,
-} from '@/views/BrowserTestEditor/Actions/SelectOptionAction/utils'
 import {
   BrowserActionInstance,
   LocatorOptions,
@@ -436,8 +434,13 @@ function buildBrowserNodeGraphFromActions(
           },
         }
       case 'locator.selectOption': {
-        const nonEmpty = action.values.filter(isNonEmptySelectOption)
-        const deduped = dedupeSelectOptions(nonEmpty)
+        const deduped = Object.values(
+          keyBy(action.values, (v) => {
+            if (v.value !== undefined) return `value:${v.value}`
+            if (v.label !== undefined) return `label:${v.label}`
+            return `index:${v.index}`
+          })
+        )
         const selected = deduped.length > 0 ? deduped : ['']
 
         return {
