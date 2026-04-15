@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import path from 'path'
 
@@ -31,14 +31,13 @@ function listenMacOsDeepLink() {
   app.on('open-url', (_, url) => {
     handleDeepLink(url)
   })
+}
 
-  // Handle the case when the app is launched with a custom protocol link
-  ipcMain.on(AppHandler.SplashscreenClose, () => {
-    if (deepLinkUrl) {
-      handleDeepLink(deepLinkUrl)
-      deepLinkUrl = null
-    }
-  })
+export function replayPendingDeepLink() {
+  if (deepLinkUrl) {
+    handleDeepLink(deepLinkUrl)
+    deepLinkUrl = null
+  }
 }
 
 // Windows and linux emit second-instance event rather than the open-url event ,
@@ -74,7 +73,7 @@ function listenWindowsDeepLink() {
 function handleDeepLink(url: string) {
   const mainWindow = BrowserWindow.getAllWindows()[0]
 
-  // Main window not ready yet, store the URL until splash screen is closed
+  // Main window not ready yet, store the URL until the renderer has loaded
   if (!mainWindow) {
     deepLinkUrl = url
     return
@@ -89,7 +88,7 @@ function handleDeepLink(url: string) {
 
   const path = parsedUrl.searchParams.get('path')
 
-  mainWindow.webContents.send(AppHandler.DeepLink, path)
+  mainWindow.webContents.send(AppHandler.Navigate, path)
 
   // Restore and focus the main window, needed for windows
   if (mainWindow.isMinimized()) {

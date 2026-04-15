@@ -1,9 +1,12 @@
 import { css } from '@emotion/react'
-import { Text, Flex, Slider } from '@radix-ui/themes'
+import { Text, Flex } from '@radix-ui/themes'
+
+import { BrowserActionEvent } from '@/main/runner/schema'
 
 import { PlayButton } from './PlayButton'
 import { formatTime } from './PlaybackControls.utils'
-import { PlaybackState } from './types'
+import { TimelineSlider } from './Timeline/TimelineSlider'
+import { PlaybackState, Time } from './types'
 
 export interface OnSeekEvent {
   time: number
@@ -13,8 +16,8 @@ export interface OnSeekEvent {
 interface PlaybackControlsProps {
   state: PlaybackState
   streaming: boolean
-  currentTime: number
-  totalTime: number
+  time: Time
+  actions: BrowserActionEvent[]
   onPlay: () => void
   onPause: () => void
   onSeek: ({ time, commit }: OnSeekEvent) => void
@@ -23,26 +26,14 @@ interface PlaybackControlsProps {
 export function PlaybackControls({
   state,
   streaming,
-  currentTime,
-  totalTime,
+  time,
+  actions = [],
   onPlay,
   onPause,
   onSeek,
 }: PlaybackControlsProps) {
-  const handlePositionChange = ([newTime]: number[]) => {
-    if (newTime === undefined) {
-      return
-    }
-
-    onSeek({ time: newTime, commit: false })
-  }
-
-  const handlePositionCommit = ([newTime]: number[]) => {
-    if (newTime === undefined) {
-      return
-    }
-
-    onSeek({ time: newTime, commit: true })
+  const handleSeek = (seekTime: number, commit: boolean) => {
+    onSeek({ time: seekTime, commit })
   }
 
   return (
@@ -51,10 +42,11 @@ export function PlaybackControls({
         background-color: var(--gray-2);
         border-top: 1px solid var(--gray-a5);
       `}
-      py="2"
-      px="4"
       align="center"
       gap="4"
+      py="2"
+      px="4"
+      minHeight="40px"
     >
       <PlayButton
         playing={state === 'playing'}
@@ -63,15 +55,15 @@ export function PlaybackControls({
         onPause={onPause}
       />
 
-      <Slider
-        size="1"
+      <TimelineSlider
+        css={css`
+          flex: 1 1 0;
+          min-width: 0;
+        `}
+        time={time}
+        actions={actions}
         disabled={streaming}
-        value={[currentTime]}
-        step={0.001}
-        min={0}
-        max={totalTime}
-        onValueChange={handlePositionChange}
-        onValueCommit={handlePositionCommit}
+        onSeek={handleSeek}
       />
       <Text
         asChild
@@ -82,7 +74,7 @@ export function PlaybackControls({
         `}
       >
         <Flex align="center" justify="end" minWidth="80px">
-          {formatTime(currentTime)} / {formatTime(totalTime)}
+          {formatTime(time.current)} / {formatTime(time.total)}
         </Flex>
       </Text>
     </Flex>

@@ -9,6 +9,7 @@ interface State extends FolderContent {
   proxyStatus: ProxyStatus
   isSettingsDialogOpen: boolean
   selectedSettingsTab: SettingsTabValue
+  isProfileDialogOpen: boolean
 }
 
 interface Actions {
@@ -18,6 +19,8 @@ interface Actions {
   setProxyStatus: (status: ProxyStatus) => void
   openSettingsDialog: (tab?: SettingsTabValue) => void
   closeSettingsDialog: () => void
+  openProfileDialog: () => void
+  closeProfileDialog: () => void
 }
 
 export type StudioUIStore = State & Actions
@@ -32,6 +35,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
     proxyStatus: 'offline',
     isSettingsDialogOpen: false,
     selectedSettingsTab: 'proxy',
+    isProfileDialogOpen: false,
 
     addFile: (file) =>
       set((state) => {
@@ -104,6 +108,14 @@ export const useStudioUIStore = create<StudioUIStore>()(
       set((state) => {
         state.isSettingsDialogOpen = false
         state.selectedSettingsTab = 'proxy'
+      }),
+    openProfileDialog: () =>
+      set((state) => {
+        state.isProfileDialogOpen = true
+      }),
+    closeProfileDialog: () =>
+      set((state) => {
+        state.isProfileDialogOpen = false
       }),
   }))
 )

@@ -34,3 +34,11 @@ export interface StreamChatEnd {
 export interface AbortStreamChatRequest {
   id: string
 }
+
+export enum AssistantAuthHandler {
+  SignIn = 'ai:assistant-auth',
+  CancelSignIn = 'ai:assistant-cancel-sign-in',
+  GetStatus = 'ai:assistant-auth-status',
+  SignOut = 'ai:assistant-sign-out',
+  VerificationCode = 'ai:assistant-verification-code',
+}

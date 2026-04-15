@@ -10,7 +10,7 @@ import {
   WholeWordIcon,
 } from 'lucide-react'
 
-import { NodeSelector } from '@/codegen/browser/selectors'
+import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
 import { RoleLocatorIcon } from './RoleLocatorIcon'
@@ -23,7 +23,7 @@ function quote(str: string) {
   return `"${str}"`
 }
 
-function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
+export function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
   switch (locator.type) {
     case 'css':
       return <BracesIcon {...props} />
@@ -54,7 +54,7 @@ function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
   }
 }
 
-function LocatorText({ locator }: LocatorComponentProps) {
+export function LocatorText({ locator }: LocatorComponentProps) {
   switch (locator.type) {
     case 'css':
       return locator.selector
@@ -63,24 +63,25 @@ function LocatorText({ locator }: LocatorComponentProps) {
       return locator.testId
 
     case 'label':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'placeholder':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'title':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'alt':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'text':
-      return quote(locator.text)
+      return quote(locator.text.value)
 
     case 'role':
       return (
         <>
-          <strong>{locator.role}</strong> {quote(locator.name)}
+          <strong>{locator.role}</strong>{' '}
+          {locator.name?.value ? quote(locator.name.value) : ''}
         </>
       )
 

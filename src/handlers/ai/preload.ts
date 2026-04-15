@@ -9,6 +9,8 @@ import {
   TokenUsage,
 } from './types'
 
+export * from './a2a/preload'
+
 export function streamChat(request: StreamChatRequest) {
   // Send the initial request
   ipcRenderer.send(AiHandler.StreamChat, request)

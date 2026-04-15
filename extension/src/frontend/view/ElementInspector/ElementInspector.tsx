@@ -3,12 +3,12 @@ import { upperFirst } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { useState } from 'react'
 
+import { Overlay } from '@/components/Browser/Overlay'
 import { Tooltip } from '@/components/primitives/Tooltip'
 import { ElementRole } from 'extension/src/utils/aria'
 
 import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'
-import { Overlay } from '../Overlay'
 import { useStudioClient } from '../StudioClientProvider'
 import { useEscape } from '../hooks/useEscape'
 

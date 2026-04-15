@@ -7,7 +7,6 @@ import { DevToolsDialog } from '@/components/DevToolsDialog'
 import { SettingsDialog } from '@/components/Settings/SettingsDialog'
 import { Toasts } from '@/components/Toast/Toasts'
 import { Theme as StudioTheme } from '@/components/primitives/Theme'
-import { useCloseSplashScreen } from '@/hooks/useCloseSplashScreen'
 import { useTheme } from '@/hooks/useTheme'
 import { queryClient } from '@/utils/query'
 
@@ -18,7 +17,6 @@ enableMapSet()
 
 export function App() {
   const theme = useTheme()
-  useCloseSplashScreen()
 
   return (
     <QueryClientProvider client={queryClient}>

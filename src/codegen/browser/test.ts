@@ -1,12 +1,17 @@
-import { AnyBrowserAction } from '@/main/runner/schema'
+import { keyBy } from 'lodash-es'
+
 import {
   Assertion,
   BrowserEvent,
   BrowserEventTarget,
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
+import {
+  BrowserActionInstance,
+  LocatorOptions,
+} from '@/views/BrowserTestEditor/types'
 
-import { isSelectorEqual, getNodeSelector } from './selectors'
+import { isSelectorEqual, getNodeSelector, toNodeSelector } from './selectors'
 import {
   TestNode,
   PageNode,
@@ -115,6 +120,22 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     return toNodeRef(previousLocator)
   }
 
+  function getWaitForNavigation(
+    currentEvent: BrowserEvent,
+    nextEvent?: BrowserEvent
+  ): { page: NodeRef } | undefined {
+    if (
+      nextEvent === undefined ||
+      nextEvent.type !== 'navigate-to-page' ||
+      nextEvent.source !== 'implicit' ||
+      nextEvent.tab !== currentEvent.tab
+    ) {
+      return undefined
+    }
+
+    return { page: getPage(nextEvent.tab) }
+  }
+
   function toNode(
     event: BrowserEvent,
     nextEvent?: BrowserEvent
@@ -147,18 +168,12 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
         }
 
       case 'click': {
-        const triggersNavigation =
-          nextEvent?.type === 'navigate-to-page' &&
-          nextEvent.source === 'implicit'
-
         return {
           type: 'click',
           nodeId: event.eventId,
           button: event.button,
           modifiers: event.modifiers,
-          waitForNavigation: triggersNavigation
-            ? { page: getPage(event.tab) }
-            : undefined,
+          waitForNavigation: getWaitForNavigation(event, nextEvent),
           inputs: {
             previous,
             locator: getLocator(event.tab, event.target),
@@ -211,7 +226,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
           },
         }
 
-      case 'submit-form':
+      case 'submit-form': {
         return {
           type: 'click',
           nodeId: event.eventId,
@@ -222,14 +237,13 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
             alt: false,
             meta: false,
           },
-          waitForNavigation: {
-            page: getPage(event.tab),
-          },
+          waitForNavigation: getWaitForNavigation(event, nextEvent),
           inputs: {
             previous,
             locator: getLocator(event.tab, event.submitter),
           },
         }
+      }
 
       case 'assert': {
         return {
@@ -278,8 +292,11 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
   return nodes
 }
 
-function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
+function buildBrowserNodeGraphFromActions(
+  browserActions: BrowserActionInstance[]
+) {
   const nodes: TestNode[] = []
+  let previousLocatorNode: LocatorNode | null = null
 
   let currentPage: PageNode | undefined = undefined
 
@@ -298,7 +315,46 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
     return toNodeRef(currentPage)
   }
 
-  function toNode(action: AnyBrowserAction): TestNode {
+  function getLocator({ current, values }: LocatorOptions): NodeRef {
+    const currentLocator = values[current]
+    if (!currentLocator) {
+      throw new Error(
+        `Current locator of type "${current}" not found in locator values.`
+      )
+    }
+
+    // Group sequential locators together, so that we reuse the same locator
+    // multiple actions have occurred on the same element, e.g:
+    // ```
+    // const input = page.locator("input")
+    //
+    // await input.focus()
+    // await input.type("Hello")
+    // await input.press("Enter")
+
+    const selector = toNodeSelector(currentLocator)
+
+    if (
+      previousLocatorNode === null ||
+      !isSelectorEqual(selector, previousLocatorNode.selector) ||
+      previousLocatorNode.inputs.page.nodeId !== getPage().nodeId
+    ) {
+      previousLocatorNode = {
+        type: 'locator',
+        nodeId: crypto.randomUUID(),
+        selector,
+        inputs: {
+          page: getPage(),
+        },
+      }
+
+      nodes.push(previousLocatorNode)
+    }
+
+    return toNodeRef(previousLocatorNode)
+  }
+
+  function toNode(action: BrowserActionInstance): TestNode {
     switch (action.method) {
       case 'page.goto':
         return {
@@ -311,21 +367,100 @@ function buildBrowserNodeGraphFromActions(browserActions: AnyBrowserAction[]) {
           },
         }
       case 'page.reload':
+        return {
+          type: 'reload',
+          nodeId: crypto.randomUUID(),
+          inputs: {
+            page: getPage(),
+          },
+        }
+      case 'locator.waitFor':
+        return {
+          type: 'wait-for',
+          nodeId: crypto.randomUUID(),
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+          options: action.options,
+        }
+      case 'locator.click':
+        return {
+          type: 'click',
+          nodeId: crypto.randomUUID(),
+          button: 'left',
+          modifiers: {
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+          },
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.check':
+        return {
+          type: 'check',
+          nodeId: crypto.randomUUID(),
+          checked: true,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.uncheck':
+        return {
+          type: 'check',
+          nodeId: crypto.randomUUID(),
+          checked: false,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.fill':
+        return {
+          type: 'type-text',
+          nodeId: crypto.randomUUID(),
+          value: action.value,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.clear':
+        return {
+          type: 'clear',
+          nodeId: crypto.randomUUID(),
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.selectOption': {
+        const deduped = Object.values(
+          keyBy(action.values, (v) => {
+            if (v.value !== undefined) return `value:${v.value}`
+            if (v.label !== undefined) return `label:${v.label}`
+            return `index:${v.index}`
+          })
+        )
+        const selected = deduped.length > 0 ? deduped : ['']
+
+        return {
+          type: 'select-options',
+          nodeId: crypto.randomUUID(),
+          selected,
+          multiple: selected.length > 1,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      }
       case 'page.waitForNavigation':
       case 'page.close':
       case 'page.*':
-      case 'locator.click':
       case 'locator.dblclick':
-      case 'locator.fill':
       case 'locator.type':
-      case 'locator.check':
-      case 'locator.uncheck':
-      case 'locator.selectOption':
-      case 'locator.waitFor':
       case 'locator.hover':
       case 'locator.setChecked':
       case 'locator.tap':
-      case 'locator.clear':
       case 'locator.press':
       case 'locator.focus':
       case 'locator.*':
@@ -357,7 +492,7 @@ export function convertEventsToTest({ browserEvents }: Recording): Test {
 export function convertActionsToTest({
   browserActions,
 }: {
-  browserActions: AnyBrowserAction[]
+  browserActions: BrowserActionInstance[]
 }): Test {
   return {
     defaultScenario: {

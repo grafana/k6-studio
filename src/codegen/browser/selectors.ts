@@ -1,60 +1,20 @@
-import { AriaRole } from 'react'
-
+import { ActionLocator } from '@/main/runner/schema'
 import { ElementSelector } from '@/schemas/recording'
+import {
+  GetByAltTextNodeSelector,
+  GetByLabelNodeSelector,
+  GetByRoleNodeSelector,
+  GetByPlaceholderNodeSelector,
+  GetByTitleNodeSelector,
+  GetByTestIdNodeSelector,
+  CssNodeSelector,
+  NodeSelector,
+} from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
-export interface CssSelector {
-  type: 'css'
-  selector: string
-}
-
-export interface GetByRoleSelector {
-  type: 'role'
-  role: AriaRole
-  name: string
-}
-
-export interface GetByAltTextSelector {
-  type: 'alt'
-  text: string
-}
-
-export interface GetByLabelSelector {
-  type: 'label'
-  text: string
-}
-
-export interface GetByPlaceholderSelector {
-  type: 'placeholder'
-  text: string
-}
-
-export interface GetByTextSelector {
-  type: 'text'
-  text: string
-}
-
-export interface GetByTitleSelector {
-  type: 'title'
-  text: string
-}
-
-export interface GetByTestIdSelector {
-  type: 'test-id'
-  testId: string
-}
-
-export type NodeSelector =
-  | CssSelector
-  | GetByRoleSelector
-  | GetByAltTextSelector
-  | GetByLabelSelector
-  | GetByPlaceholderSelector
-  | GetByTextSelector
-  | GetByTitleSelector
-  | GetByTestIdSelector
-
-function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
+function getRoleSelector(
+  selectors: ElementSelector
+): GetByRoleNodeSelector | null {
   if (selectors.role === undefined) {
     return null
   }
@@ -62,65 +22,67 @@ function getRoleSelector(selectors: ElementSelector): GetByRoleSelector | null {
   return {
     type: 'role',
     role: selectors.role.role,
-    name: selectors.role.name,
+    name: selectors.role.name
+      ? { value: selectors.role.name, exact: true }
+      : undefined,
   }
 }
 
 function getAltTextSelector(
   selectors: ElementSelector
-): GetByAltTextSelector | null {
+): GetByAltTextNodeSelector | null {
   if (selectors.alt === undefined) {
     return null
   }
 
   return {
     type: 'alt',
-    text: selectors.alt,
+    text: { value: selectors.alt, exact: true },
   }
 }
 
 function getLabelSelector(
   selectors: ElementSelector
-): GetByLabelSelector | null {
+): GetByLabelNodeSelector | null {
   if (selectors.label === undefined) {
     return null
   }
 
   return {
     type: 'label',
-    text: selectors.label,
+    text: { value: selectors.label, exact: true },
   }
 }
 
 function getPlaceholderSelector(
   selectors: ElementSelector
-): GetByPlaceholderSelector | null {
+): GetByPlaceholderNodeSelector | null {
   if (selectors.placeholder === undefined) {
     return null
   }
 
   return {
     type: 'placeholder',
-    text: selectors.placeholder,
+    text: { value: selectors.placeholder, exact: true },
   }
 }
 
 function getTitleSelector(
   selectors: ElementSelector
-): GetByTitleSelector | null {
+): GetByTitleNodeSelector | null {
   if (selectors.title === undefined) {
     return null
   }
 
   return {
     type: 'title',
-    text: selectors.title,
+    text: { value: selectors.title, exact: true },
   }
 }
 
 function getTestIdSelector(
   selectors: ElementSelector
-): GetByTestIdSelector | null {
+): GetByTestIdNodeSelector | null {
   if (selectors.testId === undefined || selectors.testId.trim() === '') {
     return null
   }
@@ -131,7 +93,7 @@ function getTestIdSelector(
   }
 }
 
-function getCssSelector(selectors: ElementSelector): CssSelector {
+function getCssSelector(selectors: ElementSelector): CssNodeSelector {
   return {
     type: 'css',
     selector: selectors.css,
@@ -150,6 +112,67 @@ export function getNodeSelector(selector: ElementSelector): NodeSelector {
   )
 }
 
+export function toNodeSelector(locator: ActionLocator): NodeSelector {
+  switch (locator.type) {
+    case 'css':
+      return {
+        type: 'css',
+        selector: locator.selector,
+      }
+
+    case 'role':
+      return {
+        type: 'role',
+        role: locator.role,
+        name: locator.options?.name
+          ? {
+              value: locator.options.name,
+              exact: locator.options.exact,
+            }
+          : undefined,
+      }
+
+    case 'testid':
+      return {
+        type: 'test-id',
+        testId: locator.testId,
+      }
+
+    case 'alt':
+      return {
+        type: 'alt',
+        text: { value: locator.text, exact: locator.options?.exact },
+      }
+
+    case 'label':
+      return {
+        type: 'label',
+        text: { value: locator.label, exact: locator.options?.exact },
+      }
+
+    case 'placeholder':
+      return {
+        type: 'placeholder',
+        text: { value: locator.placeholder, exact: locator.options?.exact },
+      }
+
+    case 'title':
+      return {
+        type: 'title',
+        text: { value: locator.title, exact: locator.options?.exact },
+      }
+
+    case 'text':
+      return {
+        type: 'text',
+        text: { value: locator.text, exact: locator.options?.exact },
+      }
+
+    default:
+      return exhaustive(locator)
+  }
+}
+
 export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
   switch (a.type) {
     case 'css':
@@ -159,22 +182,47 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
       return b.type === 'test-id' && a.testId === b.testId
 
     case 'role':
-      return b.type === 'role' && a.role === b.role && a.name === b.name
+      return (
+        b.type === 'role' &&
+        a.role === b.role &&
+        a.name?.value === b.name?.value &&
+        a.name?.exact === b.name?.exact
+      )
 
     case 'alt':
-      return b.type === 'alt' && a.text === b.text
+      return (
+        b.type === 'alt' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'label':
-      return b.type === 'label' && a.text === b.text
+      return (
+        b.type === 'label' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'placeholder':
-      return b.type === 'placeholder' && a.text === b.text
+      return (
+        b.type === 'placeholder' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'text':
-      return b.type === 'text' && a.text === b.text
+      return (
+        b.type === 'text' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'title':
-      return b.type === 'title' && a.text === b.text
+      return (
+        b.type === 'title' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     default:
       return exhaustive(a)

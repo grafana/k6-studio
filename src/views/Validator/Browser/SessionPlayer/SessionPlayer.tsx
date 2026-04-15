@@ -4,10 +4,13 @@ import { css } from '@emotion/react'
 import { Flex, Spinner, Box } from '@radix-ui/themes'
 import { useState } from 'react'
 
+import { NodeSelector } from '@/schemas/selectors'
+
 import { DebugSession } from '../../types'
 
 import { AddressBar } from './AddressBar'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
+import { SelectorHighlights } from './SelectorHighlights'
 import { usePlayer } from './SessionPlayer.hooks'
 import { Viewport } from './Viewport'
 import { Page } from './types'
@@ -32,12 +35,16 @@ const DEFAULT_PAGE: Page = {
 
 interface SessionPlayerProps {
   session: DebugSession
+  highlightedSelector: NodeSelector | null
 }
 
-export function SessionPlayer({ session }: SessionPlayerProps) {
+export function SessionPlayer({
+  session,
+  highlightedSelector,
+}: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
 
-  const { loading, state, time, page, play, pause, seek } = usePlayer({
+  const { loading, state, time, page, play, pause, seek, player } = usePlayer({
     streaming: session.state === 'running',
     mount,
     events: session.browser.replay,
@@ -101,14 +108,20 @@ export function SessionPlayer({ session }: SessionPlayerProps) {
                 display: pageState !== 'loaded' ? 'none' : 'block',
               }}
             />
+            {pageState === 'loaded' && (
+              <SelectorHighlights
+                player={player}
+                selector={highlightedSelector ?? null}
+              />
+            )}
           </Box>
         </Viewport>
       </div>
       <PlaybackControls
         state={state}
         streaming={session.state === 'running'}
-        currentTime={time.current}
-        totalTime={time.total}
+        time={time}
+        actions={session.browser.actions}
         onPlay={handlePlay}
         onPause={handlePause}
         onSeek={handleSeek}

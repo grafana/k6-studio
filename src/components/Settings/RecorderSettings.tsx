@@ -1,11 +1,11 @@
-import { Flex, Text, Checkbox, Callout, RadioGroup } from '@radix-ui/themes'
+import { Flex, Text, Checkbox, Callout } from '@radix-ui/themes'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { AppSettings } from '@/types/settings'
 
-import { FieldGroup, FileUploadInput } from '../Form'
+import { FileUploadInput } from '../Form'
 
 import { SettingsSection } from './SettingsSection'
 
@@ -92,53 +92,6 @@ export const RecorderSettings = () => {
             </Callout.Text>
           </Callout.Root>
         )}
-
-      <FieldGroup
-        label={
-          <Flex align="center" gap="1">
-            <span>
-              Browser Recording{' '}
-              <Text size="1" weight="light">
-                (Preview)
-              </Text>{' '}
-            </span>
-          </Flex>
-        }
-        name="recorder.browserRecording"
-        errors={errors}
-        hint={
-          <>
-            k6 Studio can record user interactions using a browser extension or
-            the Chrome DevTools Protocol (CDP). Try switching between these
-            methods if you encounter issues with one of them.
-          </>
-        }
-        hintType="text"
-      >
-        <Flex>
-          <Controller
-            control={control}
-            name="recorder.browserRecording"
-            render={({ field }) => (
-              <>
-                <RadioGroup.Root
-                  name={field.name}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <RadioGroup.Item value="extension">
-                    Using browser extension
-                  </RadioGroup.Item>
-                  <RadioGroup.Item value="cdp">
-                    Using Chrome DevTools Protocol
-                  </RadioGroup.Item>
-                  <RadioGroup.Item value="disabled">Disable</RadioGroup.Item>
-                </RadioGroup.Root>
-              </>
-            )}
-          />
-        </Flex>
-      </FieldGroup>
     </SettingsSection>
   )
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'fs/promises'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { initEventTracking } from './index'
 
@@ -17,7 +17,18 @@ vi.mock('electron-log/main', () => ({
   },
 }))
 
-vi.mock('fs/promises')
+const { mockReadFile, mockWriteFile } = vi.hoisted(() => ({
+  mockReadFile: vi.fn(),
+  mockWriteFile: vi.fn(),
+}))
+
+vi.mock('fs/promises', () => {
+  return {
+    default: { readFile: mockReadFile, writeFile: mockWriteFile },
+    readFile: mockReadFile,
+    writeFile: mockWriteFile,
+  }
+})
 
 vi.mock('@/utils/electron', () => ({
   getArch: vi.fn(() => 'x64'),
@@ -47,65 +58,63 @@ global.k6StudioState = {
   },
 } as typeof global.k6StudioState
 
+const mockUserDataPath = '/mock/user/data'
+const mockInstallationIdFile = `${mockUserDataPath}/.installation_id`
+
 describe('initEventTracking', () => {
-  const mockUserDataPath = '/mock/user/data'
-  const mockInstallationIdFile = `${mockUserDataPath}/.installation_id`
-
-  const mockedLog = vi.mocked(log)
-  const mockedReadFile = vi.mocked(readFile)
-  const mockedWriteFile = vi.mocked(writeFile)
-  const mockedFetch = vi.mocked(fetch)
-
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
     process.env.NODE_ENV = 'production'
-    mockedWriteFile.mockReset()
+  })
+
+  afterAll(() => {
+    vi.resetAllMocks()
   })
 
   describe('when installation id file exists', () => {
     it('should not send a request or create the file', async () => {
-      mockedReadFile.mockResolvedValue('existing-installation-id')
+      vi.mocked(readFile).mockResolvedValue('existing-installation-id')
 
       await initEventTracking()
       await new Promise(process.nextTick)
 
-      expect(mockedReadFile).toHaveBeenCalledWith(
+      expect(vi.mocked(readFile)).toHaveBeenCalledWith(
         mockInstallationIdFile,
         'utf-8'
       )
 
-      expect(mockedWriteFile).not.toHaveBeenCalled()
-      expect(mockedFetch).not.toHaveBeenCalled()
-      expect(mockedLog.error).not.toHaveBeenCalled()
+      expect(vi.mocked(writeFile)).not.toHaveBeenCalled()
+      expect(vi.mocked(fetch)).not.toHaveBeenCalled()
+      expect(vi.mocked(log).error).not.toHaveBeenCalled()
     })
   })
 
   describe('when installation id file does not exist', () => {
     it('should create the file and send an event', async () => {
-      mockedReadFile
+      vi.mocked(readFile)
         .mockRejectedValueOnce(new Error('File not found')) // installationIdExists check
         .mockResolvedValueOnce('test-uuid-123') // getInstallationId call from trackEvent
 
-      mockedFetch.mockResolvedValue({
+      vi.mocked(fetch).mockResolvedValue({
         ok: true,
         statusText: 'OK',
       } as Response)
 
       await initEventTracking()
 
-      expect(mockedReadFile).toHaveBeenCalledWith(
+      expect(vi.mocked(readFile)).toHaveBeenCalledWith(
         mockInstallationIdFile,
         'utf-8'
       )
 
-      expect(mockedWriteFile).toHaveBeenCalledWith(
+      expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
         mockInstallationIdFile,
         'test-uuid-123'
       )
 
       await new Promise(process.nextTick)
 
-      expect(mockedFetch).toHaveBeenCalledWith(
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
         'MOCK_TRACKING_URL',
         expect.objectContaining({
           method: 'POST',
@@ -114,52 +123,52 @@ describe('initEventTracking', () => {
         })
       )
 
-      expect(mockedFetch).toHaveBeenCalledTimes(1)
-      expect(mockedLog.error).not.toHaveBeenCalled()
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+      expect(vi.mocked(log).error).not.toHaveBeenCalled()
     })
 
     it('should log error if file creation fails', async () => {
-      mockedReadFile.mockRejectedValue(new Error('File not found'))
+      vi.mocked(readFile).mockRejectedValue(new Error('File not found'))
 
       const writeError = new Error('Permission denied')
-      mockedWriteFile.mockRejectedValue(writeError)
+      vi.mocked(writeFile).mockRejectedValue(writeError)
 
       await initEventTracking()
       await new Promise(process.nextTick)
 
-      expect(mockedWriteFile).toHaveBeenCalledWith(
+      expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
         mockInstallationIdFile,
         'test-uuid-123'
       )
 
-      expect(mockedFetch).not.toHaveBeenCalled()
+      expect(vi.mocked(fetch)).not.toHaveBeenCalled()
 
-      expect(mockedLog.error).toHaveBeenCalledWith(
+      expect(vi.mocked(log).error).toHaveBeenCalledWith(
         'Error tracking installation:',
         writeError
       )
     })
 
     it('should log error if HTTP request fails', async () => {
-      mockedReadFile
+      vi.mocked(readFile)
         .mockRejectedValueOnce(new Error('File not found')) // installationIdExists check
         .mockResolvedValueOnce('test-uuid-123') // getInstallationId call from trackEvent
 
       const fetchError = new Error('Network error')
-      mockedFetch.mockRejectedValue(fetchError)
+      vi.mocked(fetch).mockRejectedValue(fetchError)
 
       await initEventTracking()
 
-      expect(mockedWriteFile).toHaveBeenCalledWith(
+      expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
         mockInstallationIdFile,
         'test-uuid-123'
       )
 
       await new Promise(process.nextTick)
 
-      expect(mockedFetch).toHaveBeenCalled()
+      expect(vi.mocked(fetch)).toHaveBeenCalled()
 
-      expect(mockedLog.error).toHaveBeenCalledWith(
+      expect(vi.mocked(log).error).toHaveBeenCalledWith(
         'Failed to send usage statistic event:',
         fetchError
       )
@@ -173,10 +182,10 @@ describe('initEventTracking', () => {
       await initEventTracking()
       await new Promise(process.nextTick)
 
-      expect(mockedReadFile).not.toHaveBeenCalled()
-      expect(mockedWriteFile).not.toHaveBeenCalled()
-      expect(mockedFetch).not.toHaveBeenCalled()
-      expect(mockedLog.error).not.toHaveBeenCalled()
+      expect(vi.mocked(readFile)).not.toHaveBeenCalled()
+      expect(vi.mocked(writeFile)).not.toHaveBeenCalled()
+      expect(vi.mocked(fetch)).not.toHaveBeenCalled()
+      expect(vi.mocked(log).error).not.toHaveBeenCalled()
     })
   })
 })

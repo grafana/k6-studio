@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { BrowserEventSchema } from '@/schemas/recording'
+import { NodeSelectorSchema } from '@/schemas/selectors'
 
 export const InBrowserSettingsSchema = z.object({
   toolbox: z.object({
@@ -33,18 +34,9 @@ export const EventsRecordedSchema = z.object({
   events: z.array(BrowserEventSchema),
 })
 
-const CssHighlightSelectorSchema = z.object({
-  type: z.literal('css'),
-  selector: z.string(),
-})
-
-const HighlightSelectorSchema = z.discriminatedUnion('type', [
-  CssHighlightSelectorSchema,
-])
-
 export const HighlightElementsSchema = z.object({
   type: z.literal('highlight-elements'),
-  selector: HighlightSelectorSchema.nullable(),
+  selector: NodeSelectorSchema.nullable(),
 })
 
 export const NavigateSchema = z.object({
@@ -104,7 +96,6 @@ export type InBrowserSettings = z.infer<typeof InBrowserSettingsSchema>
 
 export type RecordEvents = z.infer<typeof RecordEventsSchema>
 export type EventsRecorded = z.infer<typeof EventsRecordedSchema>
-export type HighlightSelector = z.infer<typeof HighlightSelectorSchema>
 export type HighlightElements = z.infer<typeof HighlightElementsSchema>
 export type Navigate = z.infer<typeof NavigateSchema>
 export type StopRecording = z.infer<typeof StopRecordingSchema>

@@ -2,13 +2,13 @@ import { ChildProcess, spawn } from 'child_process'
 import logger from 'electron-log/main'
 
 import { BrowserEvent } from '@/schemas/recording'
+import { NodeSelector } from '@/schemas/selectors'
 import { BrowserServer } from '@/services/browser/server'
 import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
 import { readResource } from '@/utils/resources'
 import { exhaustive } from '@/utils/typescript'
-import { HighlightSelector } from 'extension/src/messaging/types'
 import { EventEmitter } from 'extension/src/utils/events'
 
 import {
@@ -99,7 +99,7 @@ class CDPRecordingSession
     })
   }
 
-  highlightElement(selector: HighlightSelector | null): void {
+  highlightElement(selector: NodeSelector | null): void {
     this.#server.send({ type: 'highlight-elements', selector })
   }
 
@@ -215,7 +215,7 @@ export async function launchBrowserWithDevToolsProtocol(
         .catch((error) => {
           process.kill()
 
-          reject(new BrowserLaunchError('extension-load', error))
+          reject(new BrowserLaunchError('unknown', error))
         })
     })
 

@@ -36,12 +36,15 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'GotoExpression':
       case 'ReloadExpression':
       case 'NewRoleLocatorExpression':
+      case 'RoleLocatorOptionsExpression':
+      case 'TextLocatorOptionsExpression':
       case 'NewLabelLocatorExpression':
       case 'NewCssLocatorExpression':
       case 'NewAltTextLocatorExpression':
       case 'NewPlaceholderLocatorExpression':
       case 'NewTitleLocatorExpression':
       case 'NewTestIdLocatorExpression':
+      case 'ClearExpression':
       case 'ClickExpression':
       case 'ClickOptionsExpression':
       case 'FillTextExpression':
@@ -55,6 +58,7 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'Identifier':
       case 'StringLiteral':
       case 'NullLiteral':
+      case 'SelectOptionValueExpression':
       case 'PromiseAllExpression':
         return false
 
