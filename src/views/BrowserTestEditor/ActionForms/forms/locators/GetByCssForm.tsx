@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { TextArea } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/browserTest/v1'
 
 import { toFieldErrors } from '../utils'
 

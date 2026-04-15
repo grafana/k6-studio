@@ -1,21 +1,19 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorClearAction } from '@/main/runner/schema'
-
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
+import { BrowserActionInstance } from '../../types'
 
 const CLEAR_ROLES = ['textbox', 'searchbox', 'combobox']
 
+type Action = Extract<BrowserActionInstance, { method: 'locator.clear' }>
+
 interface ClearActionBodyProps {
-  action: WithEditorMetadata<LocatorClearAction>
-  onChange: (action: WithEditorMetadata<LocatorClearAction>) => void
+  action: Action
+  onChange: (action: Action) => void
 }
 
 export function ClearActionBody({ action, onChange }: ClearActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorClearAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: Action['locator']) => {
     onChange({ ...action, locator })
   }
 

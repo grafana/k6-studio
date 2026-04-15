@@ -1,19 +1,17 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorClickAction } from '@/main/runner/schema'
-
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
+import { BrowserActionInstance } from '../../types'
+
+type Action = Extract<BrowserActionInstance, { method: 'locator.click' }>
 
 interface ClickActionBodyProps {
-  action: WithEditorMetadata<LocatorClickAction>
-  onChange: (action: WithEditorMetadata<LocatorClickAction>) => void
+  action: Action
+  onChange: (action: Action) => void
 }
 
 export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorClickAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: Action['locator']) => {
     onChange({ ...action, locator })
   }
 

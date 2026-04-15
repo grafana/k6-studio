@@ -1,13 +1,13 @@
 import { Grid } from '@radix-ui/themes'
 
-import { PageGotoAction } from '@/main/runner/schema'
-
 import { UrlForm } from '../../ActionForms/forms/UrlForm'
-import { WithEditorMetadata } from '../../types'
+import { BrowserActionInstance } from '../../types'
+
+type Action = Extract<BrowserActionInstance, { method: 'page.goto' }>
 
 interface GoToActionBodyProps {
-  action: WithEditorMetadata<PageGotoAction>
-  onChange: (action: WithEditorMetadata<PageGotoAction>) => void
+  action: Action
+  onChange: (action: Action) => void
 }
 
 export function GoToActionBody({ action, onChange }: GoToActionBodyProps) {

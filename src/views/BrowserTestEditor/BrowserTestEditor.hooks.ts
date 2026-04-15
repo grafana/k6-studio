@@ -152,20 +152,20 @@ export function useBrowserTestState(
     setState(newActions)
   }
 
-  const plainActions = useMemo(() => {
+  const fileActions = useMemo(() => {
     return state.map(fromBrowserActionInstance)
   }, [state])
 
   const isDirty = useMemo(() => {
     return (
-      plainActions.length !== actions.length ||
-      JSON.stringify(plainActions) !== JSON.stringify(actions)
+      fileActions.length !== actions.length ||
+      JSON.stringify(fileActions) !== JSON.stringify(actions)
     )
-  }, [plainActions, actions])
+  }, [fileActions, actions])
 
   return {
     actions: state,
-    plainActions,
+    fileActions,
     addAction,
     updateAction,
     removeAction,

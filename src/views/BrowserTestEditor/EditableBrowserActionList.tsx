@@ -9,7 +9,6 @@ import {
 import { CirclePlusIcon } from 'lucide-react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
-import { AnyBrowserAction } from '@/main/runner/schema'
 
 import { EditableAction } from './EditableAction'
 import { BrowserActionInstance } from './types'
@@ -64,7 +63,7 @@ export function EditableBrowserActionList({
 }
 
 interface NewActionMenuProps {
-  onAddAction: (method: AnyBrowserAction['method']) => void
+  onAddAction: (method: BrowserActionInstance['method']) => void
 }
 
 function NewActionMenu({ onAddAction }: NewActionMenuProps) {

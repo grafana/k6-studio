@@ -13,11 +13,10 @@ import { useState } from 'react'
 import { toNodeSelector } from '@/codegen/browser/selectors'
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator, LocatorOptions } from '@/schemas/browserTest/v1'
 import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
-import { LocatorOptions } from '../../types'
 import { ValuePopoverBadge } from '../components'
 
 import {

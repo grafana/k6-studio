@@ -1,4 +1,5 @@
-import { AnyBrowserAction, ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/main/runner/schema'
+import { BrowserTestAction, LocatorOptions } from '@/schemas/browserTest/v1'
 import {
   BrowserEvent,
   BrowserEventTarget,
@@ -6,9 +7,36 @@ import {
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
-function toActionLocator(selector: ElementSelector): ActionLocator {
+function toLocatorOptions(selector: ElementSelector): LocatorOptions {
+  const values: Partial<Record<ActionLocator['type'], ActionLocator>> = {}
+
+  values.css = { type: 'css', selector: selector.css }
+
+  if (selector.testId !== undefined && selector.testId.trim() !== '') {
+    values.testid = { type: 'testid', testId: selector.testId }
+  }
+
+  if (selector.alt !== undefined) {
+    values.alt = { type: 'alt', text: selector.alt }
+  }
+
+  if (selector.label !== undefined) {
+    values.label = { type: 'label', label: selector.label }
+  }
+
+  if (selector.placeholder !== undefined) {
+    values.placeholder = {
+      type: 'placeholder',
+      placeholder: selector.placeholder,
+    }
+  }
+
+  if (selector.title !== undefined) {
+    values.title = { type: 'title', title: selector.title }
+  }
+
   if (selector.role !== undefined) {
-    return {
+    values.role = {
       type: 'role',
       role: selector.role.role,
       options: selector.role.name
@@ -17,31 +45,24 @@ function toActionLocator(selector: ElementSelector): ActionLocator {
     }
   }
 
-  if (selector.label !== undefined) {
-    return { type: 'label', label: selector.label }
-  }
+  const current = pickBestLocatorType(selector)
 
-  if (selector.alt !== undefined) {
-    return { type: 'alt', text: selector.alt }
-  }
-
-  if (selector.placeholder !== undefined) {
-    return { type: 'placeholder', placeholder: selector.placeholder }
-  }
-
-  if (selector.title !== undefined) {
-    return { type: 'title', title: selector.title }
-  }
-
-  if (selector.testId !== undefined && selector.testId.trim() !== '') {
-    return { type: 'testid', testId: selector.testId }
-  }
-
-  return { type: 'css', selector: selector.css }
+  return { current, values }
 }
 
-function getLocator(target: BrowserEventTarget): ActionLocator {
-  return toActionLocator(target.selectors)
+function pickBestLocatorType(selector: ElementSelector): ActionLocator['type'] {
+  if (selector.role !== undefined) return 'role'
+  if (selector.label !== undefined) return 'label'
+  if (selector.alt !== undefined) return 'alt'
+  if (selector.placeholder !== undefined) return 'placeholder'
+  if (selector.title !== undefined) return 'title'
+  if (selector.testId !== undefined && selector.testId.trim() !== '')
+    return 'testid'
+  return 'css'
+}
+
+function getLocatorOptions(target: BrowserEventTarget): LocatorOptions {
+  return toLocatorOptions(target.selectors)
 }
 
 function toClickModifiers(modifiers: {
@@ -58,7 +79,7 @@ function toClickModifiers(modifiers: {
   return result
 }
 
-function toAction(event: BrowserEvent): AnyBrowserAction | null {
+function toAction(event: BrowserEvent): BrowserTestAction | null {
   switch (event.type) {
     case 'navigate-to-page':
       if (event.source === 'implicit') {
@@ -76,7 +97,7 @@ function toAction(event: BrowserEvent): AnyBrowserAction | null {
 
       return {
         method: 'locator.click',
-        locator: getLocator(event.target),
+        locator: getLocatorOptions(event.target),
         ...(hasNonDefaultOptions && {
           options: {
             button: event.button,
@@ -89,42 +110,47 @@ function toAction(event: BrowserEvent): AnyBrowserAction | null {
     case 'input-change':
       return {
         method: 'locator.fill',
-        locator: getLocator(event.target),
+        locator: getLocatorOptions(event.target),
         value: event.value,
       }
 
     case 'check-change':
       return event.checked
-        ? { method: 'locator.check', locator: getLocator(event.target) }
-        : { method: 'locator.uncheck', locator: getLocator(event.target) }
+        ? {
+            method: 'locator.check',
+            locator: getLocatorOptions(event.target),
+          }
+        : {
+            method: 'locator.uncheck',
+            locator: getLocatorOptions(event.target),
+          }
 
     case 'radio-change':
       return {
         method: 'locator.check',
-        locator: getLocator(event.target),
+        locator: getLocatorOptions(event.target),
       }
 
     case 'select-change':
       return {
         method: 'locator.selectOption',
-        locator: getLocator(event.target),
+        locator: getLocatorOptions(event.target),
         values: event.selected.map((value) => ({ value })),
       }
 
     case 'submit-form':
       return {
         method: 'locator.click',
-        locator: getLocator(event.submitter),
+        locator: getLocatorOptions(event.submitter),
       }
 
     case 'assert':
-      // TODO: Add assertion support
       return null
 
     case 'wait-for':
       return {
         method: 'locator.waitFor',
-        locator: getLocator(event.target),
+        locator: getLocatorOptions(event.target),
         options: event.options,
       }
 
@@ -135,8 +161,8 @@ function toAction(event: BrowserEvent): AnyBrowserAction | null {
 
 export function convertEventsToActions(
   events: BrowserEvent[]
-): AnyBrowserAction[] {
-  const actions: AnyBrowserAction[] = []
+): BrowserTestAction[] {
+  const actions: BrowserTestAction[] = []
 
   for (const event of events) {
     const action = toAction(event)

@@ -1,15 +1,13 @@
 import { keyBy } from 'lodash-es'
 
+import { LocatorOptions } from '@/schemas/browserTest/v1'
 import {
   Assertion,
   BrowserEvent,
   BrowserEventTarget,
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
-import {
-  BrowserActionInstance,
-  LocatorOptions,
-} from '@/views/BrowserTestEditor/types'
+import { BrowserActionInstance } from '@/views/BrowserTestEditor/types'
 
 import { isSelectorEqual, getNodeSelector, toNodeSelector } from './selectors'
 import {
