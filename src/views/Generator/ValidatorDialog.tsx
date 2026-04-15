@@ -37,7 +37,7 @@ export function ValidatorDialog({
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
-        window.studio.script.stopScript()
+        void window.studio.script.stopScript()
         setIsRunning(false)
         resetState()
       }

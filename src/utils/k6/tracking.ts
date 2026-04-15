@@ -38,7 +38,10 @@ interface ReportingServerEventMap {
   }
 }
 
-class TestRunTrackingServer extends EventEmitter<ReportingServerEventMap> {
+export class TestRunTrackingServer
+  extends EventEmitter<ReportingServerEventMap>
+  implements AsyncDisposable
+{
   #server: Server
 
   get port() {
@@ -55,8 +58,15 @@ class TestRunTrackingServer extends EventEmitter<ReportingServerEventMap> {
     })
   }
 
-  dispose() {
-    this.#server.close()
+  [Symbol.asyncDispose](): Promise<void> {
+    return new Promise((resolve) => {
+      this.#server.close((err) => {
+        if (err) {
+          log.warn('Tracking server close:', err)
+        }
+        resolve()
+      })
+    })
   }
 }
 

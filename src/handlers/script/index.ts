@@ -83,13 +83,18 @@ export function initialize() {
     })
   })
 
-  ipcMain.on(ScriptHandler.Stop, () => {
+  ipcMain.handle(ScriptHandler.Stop, async () => {
     console.info(`${ScriptHandler.Stop} event received`)
-    if (currentTestRun) {
-      currentTestRun.stop().catch((error) => {
-        log.error('Failed to stop the test run', error)
-      })
 
+    if (!currentTestRun) {
+      return
+    }
+
+    try {
+      await currentTestRun.stop()
+    } catch (error) {
+      log.error('Failed to stop the test run', error)
+    } finally {
       currentTestRun = null
     }
   })

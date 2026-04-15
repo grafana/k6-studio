@@ -28,7 +28,7 @@ export async function validateScript(
     if (signal) {
       signal.addEventListener('abort', () => {
         cleanup()
-        window.studio.script.stopScript()
+        void window.studio.script.stopScript()
         reject(new DOMException('Aborted', 'AbortError'))
       })
     }

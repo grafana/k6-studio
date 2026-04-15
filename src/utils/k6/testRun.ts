@@ -127,6 +127,7 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
   #process: ChildProcessWithoutNullStreams
 
   #checks: Check[] = []
+  #disposables: Array<AsyncDisposable | Disposable> = []
 
   constructor(process: ChildProcessWithoutNullStreams) {
     super()
@@ -176,16 +177,33 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
     return this.#process.pid != undefined && this.#process.exitCode === null
   }
 
-  stop(): Promise<void> {
+  async stop(): Promise<void> {
+    await Promise.all([
+      this.#kill(),
+      ...this.#disposables.map((disposable) => {
+        if (Symbol.asyncDispose in disposable) {
+          return disposable[Symbol.asyncDispose]()
+        }
+
+        return disposable[Symbol.dispose]()
+      }),
+    ])
+  }
+
+  #kill() {
     if (!this.isRunning()) {
       return Promise.resolve()
     }
 
-    return new Promise((resolve) => {
-      this.#process.once('close', resolve)
+    const { promise, resolve } = Promise.withResolvers<void>()
 
-      this.#process.kill()
+    this.#process.once('close', () => {
+      resolve()
     })
+
+    this.#process.kill()
+
+    return promise
   }
 
   #handleStart = () => {
@@ -236,5 +254,9 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
 
   #emitStop = () => {
     this.emit('stop', undefined)
+  }
+
+  addDisposable(disposable: AsyncDisposable | Disposable) {
+    this.#disposables.push(disposable)
   }
 }

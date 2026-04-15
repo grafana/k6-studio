@@ -5,11 +5,13 @@ import { useNavigate } from 'react-router-dom'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
+import { useViewBlocker } from '@/hooks/useViewBlocker'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 
+import { AbortDialog } from './AbortDialog'
 import { Debugger } from './Debugger'
 import { useDebugSession, useScript, useScriptPath } from './Validator.hooks'
 import { ValidatorControls } from './ValidatorControls'
@@ -30,6 +32,8 @@ function Content({ scriptPath }: ValidatorProps) {
     type: 'file',
     path: scriptPath,
   })
+
+  const blocker = useViewBlocker(session.state === 'running')
 
   const isRunning = session?.state === 'running'
 
@@ -72,6 +76,16 @@ function Content({ scriptPath }: ValidatorProps) {
       title: 'Script execution stopped',
       description: 'The script execution was stopped by the user',
     })
+  }
+
+  function handleCancelAbortDebugging() {
+    blocker.cancel()
+  }
+
+  async function handleConfirmAbortDebugging() {
+    await stopDebugging()
+
+    blocker.confirm()
   }
 
   useEffect(() => {
@@ -128,6 +142,11 @@ function Content({ scriptPath }: ValidatorProps) {
           onOpenChange={setShowRunInCloudDialog}
         />
       )}
+      <AbortDialog
+        open={blocker.blocked}
+        onCancel={handleCancelAbortDebugging}
+        onAbort={handleConfirmAbortDebugging}
+      />
     </View>
   )
 }

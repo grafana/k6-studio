@@ -78,12 +78,12 @@ export function useDebugSession(script: Script) {
     })
   }, [resetSession, script.type, input])
 
-  const stopDebugging = useCallback(() => {
-    window.studio.script.stopScript()
-
-    setState('stopped')
-
-    return Promise.resolve()
+  const stopDebugging = useCallback(async () => {
+    try {
+      await window.studio.script.stopScript()
+    } finally {
+      setState('stopped')
+    }
   }, [])
 
   useEffect(() => {
