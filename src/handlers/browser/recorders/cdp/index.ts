@@ -1,9 +1,9 @@
 import { ChildProcess, spawn } from 'child_process'
 import logger from 'electron-log/main'
 
+import { BrowserServer } from '@/recorder/server'
 import { BrowserEvent } from '@/schemas/recording'
 import { NodeSelector } from '@/schemas/selectors'
-import { BrowserServer } from '@/services/browser/server'
 import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
