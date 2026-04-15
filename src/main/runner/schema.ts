@@ -99,8 +99,13 @@ const PageWaitForNavigationActionSchema = z.object({
 
 const PageWaitForTimeoutActionSchema = z.object({
   method: z.literal('page.waitForTimeout'),
-  /** Duration in milliseconds. */
-  timeout: z.number(),
+  // NaN is converted to null by `JSON.stringify` so we type this
+  // as nullable and transform it back to NaN to allow invalid data
+  // to be saved.
+  timeout: z
+    .number()
+    .nullable()
+    .transform((value) => value ?? NaN),
 })
 
 const PageCloseActionSchema = z.object({
