@@ -5,6 +5,10 @@ import {
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 import {
+  dedupeSelectOptions,
+  isNonEmptySelectOption,
+} from '@/views/BrowserTestEditor/Actions/SelectOptionAction/utils'
+import {
   BrowserActionInstance,
   LocatorOptions,
 } from '@/views/BrowserTestEditor/types'
@@ -432,18 +436,15 @@ function buildBrowserNodeGraphFromActions(
           },
         }
       case 'locator.selectOption': {
-        const nonEmpty = action.values.filter(
-          (v) =>
-            (v.value !== undefined && v.value !== '') ||
-            (v.label !== undefined && v.label !== '') ||
-            v.index !== undefined
-        )
-        const selected = nonEmpty.length > 0 ? nonEmpty : ['']
+        const nonEmpty = action.values.filter(isNonEmptySelectOption)
+        const deduped = dedupeSelectOptions(nonEmpty)
+        const selected = deduped.length > 0 ? deduped : ['']
+
         return {
           type: 'select-options',
           nodeId: crypto.randomUUID(),
           selected,
-          multiple: nonEmpty.length > 1,
+          multiple: selected.length > 1,
           inputs: {
             locator: getLocator(action.locator),
           },

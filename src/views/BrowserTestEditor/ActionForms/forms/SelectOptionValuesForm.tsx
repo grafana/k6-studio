@@ -14,18 +14,13 @@ import { Fragment, useState } from 'react'
 import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { FieldGroup } from '@/components/Form'
 import { LocatorSelectOptionAction } from '@/main/runner/schema'
+import { isNonEmptySelectOption } from '@/views/BrowserTestEditor/Actions/SelectOptionAction/utils'
 
 import { ValuePopoverBadge } from '../components'
 
 type SelectOptionValue = LocatorSelectOptionAction['values'][number]
 
 type MatchType = 'value' | 'label' | 'index'
-
-function isNonEmptyValue(entry: SelectOptionValue): boolean {
-  if (entry.label !== undefined) return entry.label !== ''
-  if (entry.index !== undefined) return true
-  return (entry.value ?? '') !== ''
-}
 
 function getMatchType(entry: SelectOptionValue): MatchType {
   if (entry.label !== undefined) return 'label'
@@ -87,7 +82,7 @@ export function SelectOptionValuesForm({
     onChange(values.filter((_, i) => i !== index))
   }
 
-  const nonEmptyValues = values.filter(isNonEmptyValue)
+  const nonEmptyValues = values.filter(isNonEmptySelectOption)
 
   return (
     <Popover.Root open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
