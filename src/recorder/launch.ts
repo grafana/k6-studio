@@ -1,7 +1,8 @@
-import { launchBrowserWithDevToolsProtocol } from './recorders/cdp'
-import { launchBrowserWithHttpOnly } from './recorders/http'
-import { RecordingSession } from './recorders/types'
-import { LaunchBrowserOptions } from './types'
+import { LaunchBrowserOptions } from '@/recorder/types'
+
+import { launchBrowserWithDevToolsProtocol } from './launchers/cdp'
+import { launchBrowserWithHttpOnly } from './launchers/http'
+import { RecordingSession } from './launchers/types'
 
 /**
  * Starts a browser instance for recording. Throws if the browser fails to start.

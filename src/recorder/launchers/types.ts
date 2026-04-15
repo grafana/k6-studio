@@ -1,8 +1,7 @@
+import { LaunchBrowserErrorReason } from '@/recorder/types'
 import { BrowserEvent } from '@/schemas/recording'
 import { NodeSelector } from '@/schemas/selectors'
 import { EventEmitter } from '@/utils/events'
-
-import { LaunchBrowserErrorReason } from '../types'
 
 export interface RecordingSessionEventMap {
   error: { error: unknown }

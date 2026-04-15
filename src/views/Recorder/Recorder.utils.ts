@@ -1,7 +1,7 @@
 import { debounce } from 'lodash-es'
 import { useState, useMemo, useEffect } from 'react'
 
-import { LaunchBrowserOptions } from '@/handlers/browser/types'
+import { LaunchBrowserOptions } from '@/recorder/types'
 import { ProxyData, Request } from '@/types'
 import { getContentTypeWithCharsetHeader, upsertHeader } from '@/utils/headers'
 
