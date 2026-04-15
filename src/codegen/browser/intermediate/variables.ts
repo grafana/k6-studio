@@ -163,6 +163,12 @@ function substituteExpression(
         value: substituteExpression(node.value, substitutions),
       }
 
+    case 'ClearExpression':
+      return {
+        type: 'ClearExpression',
+        locator: substituteExpression(node.locator, substitutions),
+      }
+
     case 'CheckExpression':
       return {
         type: 'CheckExpression',

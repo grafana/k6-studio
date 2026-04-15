@@ -1,4 +1,5 @@
 export * from './CheckAction'
+export * from './ClearAction'
 export * from './ClickAction'
 export * from './FillAction'
 export * from './GoToAction'
