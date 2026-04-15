@@ -252,7 +252,17 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
     }
   }
 
-  #emitStop = () => {
+  #emitStop = async () => {
+    await Promise.all(
+      this.#disposables.map((disposable) => {
+        if (Symbol.asyncDispose in disposable) {
+          return disposable[Symbol.asyncDispose]()
+        }
+
+        return disposable[Symbol.dispose]()
+      })
+    )
+
     this.emit('stop', undefined)
   }
 
