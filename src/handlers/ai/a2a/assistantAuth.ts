@@ -15,6 +15,7 @@ import { browserWindowFromEvent } from '@/utils/electron'
 import { abortAllActiveAssistantSessions } from '../grafanaAssistantProvider'
 import { AssistantAuthHandler } from '../types'
 
+import { getCurrentStackUrl } from './config'
 import { LOG_PREFIX } from './constants'
 import {
   checkStackHealth,
@@ -222,39 +223,13 @@ export function initialize() {
   })
 
   ipcMain.handle(AssistantAuthHandler.WakeStack, async (): Promise<void> => {
-    const profile = await getProfileData()
-    const stackId = profile.profiles.currentStack
-
-    if (!stackId) {
-      throw new Error('No stack selected')
-    }
-
-    const stack = profile.profiles.stacks[stackId]
-
-    if (!stack) {
-      throw new Error(`Stack ${stackId} not found in profile`)
-    }
-
-    return wakeStack(stack.url)
+    return wakeStack(await getCurrentStackUrl())
   })
 
   ipcMain.handle(
     AssistantAuthHandler.CheckStackHealth,
     async (): Promise<StackHealthStatus> => {
-      const profile = await getProfileData()
-      const stackId = profile.profiles.currentStack
-
-      if (!stackId) {
-        throw new Error('No stack selected')
-      }
-
-      const stack = profile.profiles.stacks[stackId]
-
-      if (!stack) {
-        throw new Error(`Stack ${stackId} not found in profile`)
-      }
-
-      return checkStackHealth(stack.url)
+      return checkStackHealth(await getCurrentStackUrl())
     }
   )
 

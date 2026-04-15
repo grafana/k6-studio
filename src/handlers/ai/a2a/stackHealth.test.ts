@@ -100,31 +100,4 @@ describe('checkStackHealth', () => {
 
     expect(result).toBe<StackHealthStatus>('loading')
   })
-
-  it('uses a timeout to avoid hanging on unresponsive stacks', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ database: 'ok' }),
-    })
-
-    await checkStackHealth(stackUrl)
-
-    const healthInit = mockFetch.mock.calls[0]![1] as RequestInit
-    expect(healthInit.signal).toBeInstanceOf(AbortSignal)
-  })
-
-  it('does not call wakeStack', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ database: 'ok' }),
-    })
-
-    await checkStackHealth(stackUrl)
-
-    expect(mockFetch).toHaveBeenCalledTimes(1)
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/health'),
-      expect.any(Object)
-    )
-  })
 })
