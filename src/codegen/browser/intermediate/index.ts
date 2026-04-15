@@ -264,6 +264,18 @@ function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
   })
 }
 
+function emitClearNode(context: IntermediateContext, node: m.ClearNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'ClearExpression',
+      locator,
+    },
+  })
+}
+
 function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
   const locator = context.reference(node.inputs.locator)
 
@@ -428,6 +440,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'reload':
       return emitReloadNode(context, node)
+
+    case 'clear':
+      return emitClearNode(context, node)
 
     case 'click':
       return emitClickNode(context, node)

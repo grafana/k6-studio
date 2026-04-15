@@ -123,6 +123,14 @@ export interface AssertNode extends NodeBase {
   }
 }
 
+export interface ClearNode extends NodeBase {
+  type: 'clear'
+  inputs: {
+    previous?: NodeRef
+    locator: NodeRef
+  }
+}
+
 export interface WaitForNode extends NodeBase {
   type: 'wait-for'
   inputs: {
@@ -140,6 +148,7 @@ export type TestNode =
   | GotoNode
   | ReloadNode
   | LocatorNode
+  | ClearNode
   | ClickNode
   | TypeTextNode
   | SelectOptionsNode

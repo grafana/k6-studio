@@ -92,6 +92,13 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => {
+            onAddAction('locator.clear')
+          }}
+        >
+          Clear input
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
             onAddAction('locator.selectOption')
           }}
         >

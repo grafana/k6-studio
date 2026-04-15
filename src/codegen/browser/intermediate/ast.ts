@@ -110,6 +110,11 @@ export interface ClickExpression {
   options: Expression | null
 }
 
+export interface ClearExpression {
+  type: 'ClearExpression'
+  locator: Expression
+}
+
 export interface CheckExpression {
   type: 'CheckExpression'
   locator: Expression
@@ -221,6 +226,7 @@ export type Expression =
   | NewTestIdLocatorExpression
   | GotoExpression
   | ReloadExpression
+  | ClearExpression
   | ClickExpression
   | ClickOptionsExpression
   | FillTextExpression

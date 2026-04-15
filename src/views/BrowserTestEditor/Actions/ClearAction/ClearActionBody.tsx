@@ -1,20 +1,20 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorCheckAction } from '@/main/runner/schema'
+import { LocatorClearAction } from '@/main/runner/schema'
 
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { WithEditorMetadata } from '../../types'
 
-const CHECK_ROLES = ['checkbox', 'radio', 'switch']
+const CLEAR_ROLES = ['textbox', 'searchbox', 'combobox']
 
-interface CheckActionBodyProps {
-  action: WithEditorMetadata<LocatorCheckAction>
-  onChange: (action: WithEditorMetadata<LocatorCheckAction>) => void
+interface ClearActionBodyProps {
+  action: WithEditorMetadata<LocatorClearAction>
+  onChange: (action: WithEditorMetadata<LocatorClearAction>) => void
 }
 
-export function CheckActionBody({ action, onChange }: CheckActionBodyProps) {
+export function ClearActionBody({ action, onChange }: ClearActionBodyProps) {
   const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorCheckAction>['locator']
+    locator: WithEditorMetadata<LocatorClearAction>['locator']
   ) => {
     onChange({ ...action, locator })
   }
@@ -26,11 +26,11 @@ export function CheckActionBody({ action, onChange }: CheckActionBodyProps) {
       align="center"
       width="100%"
     >
-      Check input
+      Clear
       <LocatorForm
         state={action.locator}
-        suggestedRoles={CHECK_ROLES}
         onChange={handleChangeLocator}
+        suggestedRoles={CLEAR_ROLES}
       />
     </Grid>
   )

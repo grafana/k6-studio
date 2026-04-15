@@ -5,8 +5,7 @@ import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { Script } from '@/handlers/cloud/types'
-import { useBrowserActions } from '@/hooks/useBrowserActions'
-import { useBrowserReplay } from '@/hooks/useBrowserSession'
+import { useBrowserSession } from '@/hooks/useBrowserSession'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
@@ -43,8 +42,7 @@ export function useDebugSession(script: Script) {
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
 
-  const { browserActions, resetBrowserActions } = useBrowserActions()
-  const { browserReplay, resetBrowserReplay } = useBrowserReplay()
+  const { browserSession, resetBrowserSession } = useBrowserSession()
 
   const input = script.type === 'file' ? script.path : script.content
 
@@ -52,17 +50,10 @@ export function useDebugSession(script: Script) {
     setSessionId(nanoid())
 
     resetProxyData()
-    resetBrowserActions()
-    resetBrowserReplay()
+    resetBrowserSession()
     resetLogs()
     resetChecks()
-  }, [
-    resetChecks,
-    resetLogs,
-    resetProxyData,
-    resetBrowserActions,
-    resetBrowserReplay,
-  ])
+  }, [resetChecks, resetLogs, resetProxyData, resetBrowserSession])
 
   // Reset session when script or script path changes.
   useEffect(() => {
@@ -106,14 +97,11 @@ export function useDebugSession(script: Script) {
       id: sessionId,
       state,
       requests: proxyData,
-      browser: {
-        actions: browserActions,
-        replay: browserReplay,
-      },
+      browser: browserSession,
       logs,
       checks,
     }
-  }, [sessionId, state, checks, logs, proxyData, browserActions, browserReplay])
+  }, [sessionId, state, checks, logs, proxyData, browserSession])
 
   return {
     session,
