@@ -263,6 +263,19 @@ function emitTypeTextExpression(
     .done()
 }
 
+function emitClearExpression(
+  context: ScenarioContext,
+  expression: ir.ClearExpression
+): ts.Expression {
+  const locator = emitExpression(context, expression.locator)
+
+  return new ExpressionBuilder(locator)
+    .member('clear')
+    .call([])
+    .await(context)
+    .done()
+}
+
 function emitCheckExpression(
   context: ScenarioContext,
   expression: ir.CheckExpression
@@ -523,6 +536,9 @@ function emitExpression(
 
     case 'FillTextExpression':
       return emitTypeTextExpression(context, expression)
+
+    case 'ClearExpression':
+      return emitClearExpression(context, expression)
 
     case 'CheckExpression':
       return emitCheckExpression(context, expression)
