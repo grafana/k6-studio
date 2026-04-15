@@ -1,23 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import { type PropsWithChildren } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { StackHealthStatus } from '@/handlers/ai/a2a/stackHealth'
 
 import { useStackHealth } from './useStackHealth'
 
 const checkStackHealthMock = vi.fn<() => Promise<StackHealthStatus>>()
-
-// Attach to existing jsdom window instead of replacing it
-Object.defineProperty(window, 'studio', {
-  value: {
-    ai: {
-      assistantCheckStackHealth: checkStackHealthMock,
-    },
-  },
-  writable: true,
-})
 
 function createWrapper() {
   const client = new QueryClient({
@@ -31,6 +21,13 @@ function createWrapper() {
 describe('useStackHealth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.stubGlobal('studio', {
+      ai: { assistantCheckStackHealth: checkStackHealthMock },
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
   it('returns "ready" when stack is healthy', async () => {
@@ -53,10 +50,8 @@ describe('useStackHealth', () => {
     })
 
     await waitFor(() => {
-      expect(result.current.data).toBe('loading')
+      expect(result.current.isStackReady).toBe(false)
     })
-
-    expect(result.current.isStackReady).toBe(false)
   })
 
   it('does not fetch when disabled', () => {

@@ -21,15 +21,11 @@ async function wakeStack(stackUrl: string): Promise<void> {
     const response = await fetch(`${stackUrl}/login?disableAutoLogin=true`, {
       signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
     })
-    log.info(
-      LOG_PREFIX,
-      `Wake request sent to ${stackUrl}/login, status: ${response.status}`
-    )
 
     // Consume body to release the connection
     await response.text()
-  } catch {
-    // Wake request is best-effort; health check determines actual status
+  } catch (error) {
+    log.debug(LOG_PREFIX, 'Wake request failed:', error)
   }
 }
 
@@ -40,16 +36,13 @@ export async function checkStackHealth(
     ? stackUrl.slice(0, -1)
     : stackUrl
 
-  await wakeStack(normalizedUrl)
+  // Fire-and-forget: wake is best-effort, no need to block the health check
+  void wakeStack(normalizedUrl)
 
   try {
     const response = await fetch(`${normalizedUrl}/api/health`, {
       signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
     })
-    log.info(
-      LOG_PREFIX,
-      `Health check response from ${normalizedUrl}/api/health, status: ${response.status}`
-    )
 
     if (!response.ok) {
       return 'loading'

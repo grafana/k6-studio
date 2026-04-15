@@ -224,13 +224,13 @@ export function initialize() {
       const stackId = profile.profiles.currentStack
 
       if (!stackId) {
-        return 'loading'
+        throw new Error('No stack selected')
       }
 
       const stack = profile.profiles.stacks[stackId]
 
       if (!stack) {
-        return 'loading'
+        throw new Error(`Stack ${stackId} not found in profile`)
       }
 
       return checkStackHealth(stack.url)

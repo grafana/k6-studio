@@ -12,6 +12,7 @@ describe('checkStackHealth', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
   function mockWakeResponse() {
