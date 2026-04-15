@@ -1,11 +1,11 @@
-import { getTabId } from './frontend/utils'
+import { BrowserExtensionClient } from './messaging'
+import { InBrowserSettings } from './messaging/types'
+import { getTabId } from './utils'
 import {
   DEFAULT_SETTINGS,
   OnSettingsUpdateEventHandler,
   SettingsStorage,
-} from './frontend/view/SettingsProvider'
-import { BrowserExtensionClient } from './messaging'
-import { InBrowserSettings } from './messaging/types'
+} from './view/SettingsProvider'
 
 export function configureStorage(
   client: BrowserExtensionClient

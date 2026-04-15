@@ -2,8 +2,10 @@ import { nanoid } from 'nanoid'
 
 import { BrowserEvent } from '@/schemas/recording'
 
-import { BrowserExtensionClient } from '../messaging'
-import { getEventTarget } from '../target'
+import { WindowEventManager } from './manager'
+import { BrowserExtensionClient } from './messaging'
+import { getEventTarget } from './target'
+import { getTabId } from './utils'
 import {
   findAssociatedElement,
   findInteractiveElement,
@@ -11,10 +13,7 @@ import {
   isNativeCheckbox,
   isNativeRadio,
   isNonButtonInput,
-} from '../utils/dom'
-
-import { WindowEventManager } from './manager'
-import { getTabId } from './utils'
+} from './utils/dom'
 
 export function startRecording(client: BrowserExtensionClient) {
   function getButton(button: number) {
