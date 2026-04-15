@@ -2,8 +2,8 @@ import logger from 'electron-log/main'
 
 import { NavigateToPageEvent, ReloadPageEvent } from '@/schemas/recording'
 import { ChromeDevToolsClient, Page as CdpPage } from '@/utils/cdp/client'
+import { EventEmitter } from '@/utils/events'
 import { uuid } from '@/utils/uuid'
-import { EventEmitter } from 'extension/src/utils/events'
 
 import { Script } from './script'
 

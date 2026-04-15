@@ -1,6 +1,6 @@
 import { BrowserEvent } from '@/schemas/recording'
 import { NodeSelector } from '@/schemas/selectors'
-import { EventEmitter } from 'extension/src/utils/events'
+import { EventEmitter } from '@/utils/events'
 
 import { LaunchBrowserErrorReason } from '../types'
 

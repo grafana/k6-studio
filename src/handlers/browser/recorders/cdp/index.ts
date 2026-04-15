@@ -7,9 +7,9 @@ import { BrowserServer } from '@/services/browser/server'
 import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
+import { EventEmitter } from '@/utils/events'
 import { readResource } from '@/utils/resources'
 import { exhaustive } from '@/utils/typescript'
-import { EventEmitter } from 'extension/src/utils/events'
 
 import {
   BrowserLaunchError,

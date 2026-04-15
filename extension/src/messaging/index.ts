@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { EventEmitter } from '../utils/events'
+import { EventEmitter } from '@/utils/events'
 
 import { NullTransport } from './transports/null'
 import { Sender, SenderSchema, Transport } from './transports/transport'
