@@ -16,7 +16,7 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000
  * The /api/health endpoint does not wake hibernating stacks on its own.
  * See: https://github.com/grafana/terraform-provider-grafana/blob/6d9acfb3939ef17e5cff4f144ff91ecec88c2d97/internal/resources/cloud/resource_cloud_stack.go#L704-L705
  */
-async function wakeStack(stackUrl: string): Promise<void> {
+export async function wakeStack(stackUrl: string): Promise<void> {
   try {
     const response = await fetch(`${stackUrl}/login?disableAutoLogin=true`, {
       signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
@@ -32,15 +32,8 @@ async function wakeStack(stackUrl: string): Promise<void> {
 export async function checkStackHealth(
   stackUrl: string
 ): Promise<StackHealthStatus> {
-  const normalizedUrl = stackUrl.endsWith('/')
-    ? stackUrl.slice(0, -1)
-    : stackUrl
-
-  // Fire-and-forget: wake is best-effort, no need to block the health check
-  void wakeStack(normalizedUrl)
-
   try {
-    const response = await fetch(`${normalizedUrl}/api/health`, {
+    const response = await fetch(`${stackUrl}/api/health`, {
       signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
     })
 

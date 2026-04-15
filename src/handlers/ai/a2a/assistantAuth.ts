@@ -16,7 +16,11 @@ import { abortAllActiveAssistantSessions } from '../grafanaAssistantProvider'
 import { AssistantAuthHandler } from '../types'
 
 import { LOG_PREFIX } from './constants'
-import { checkStackHealth, type StackHealthStatus } from './stackHealth'
+import {
+  checkStackHealth,
+  wakeStack,
+  type StackHealthStatus,
+} from './stackHealth'
 import {
   clearAssistantTokens,
   hasAssistantTokens,
@@ -215,6 +219,23 @@ export function initialize() {
       pendingAbortController.abort()
       pendingAbortController = null
     }
+  })
+
+  ipcMain.handle(AssistantAuthHandler.WakeStack, async (): Promise<void> => {
+    const profile = await getProfileData()
+    const stackId = profile.profiles.currentStack
+
+    if (!stackId) {
+      throw new Error('No stack selected')
+    }
+
+    const stack = profile.profiles.stacks[stackId]
+
+    if (!stack) {
+      throw new Error(`Stack ${stackId} not found in profile`)
+    }
+
+    return wakeStack(stack.url)
   })
 
   ipcMain.handle(

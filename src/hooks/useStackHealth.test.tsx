@@ -8,6 +8,7 @@ import type { StackHealthStatus } from '@/handlers/ai/a2a/stackHealth'
 import { useStackHealth } from './useStackHealth'
 
 const checkStackHealthMock = vi.fn<() => Promise<StackHealthStatus>>()
+const wakeStackMock = vi.fn<() => Promise<void>>()
 
 function createWrapper() {
   const client = new QueryClient({
@@ -22,7 +23,10 @@ describe('useStackHealth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.stubGlobal('studio', {
-      ai: { assistantCheckStackHealth: checkStackHealthMock },
+      ai: {
+        assistantCheckStackHealth: checkStackHealthMock,
+        assistantWakeStack: wakeStackMock,
+      },
     })
   })
 
@@ -73,5 +77,25 @@ describe('useStackHealth', () => {
 
     // placeholderData should make it ready while query is pending
     expect(result.current.isStackReady).toBe(true)
+  })
+
+  it('calls wake once when enabled', async () => {
+    checkStackHealthMock.mockResolvedValue('ready')
+
+    renderHook(() => useStackHealth(true), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(wakeStackMock).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('does not call wake when disabled', () => {
+    renderHook(() => useStackHealth(false), {
+      wrapper: createWrapper(),
+    })
+
+    expect(wakeStackMock).not.toHaveBeenCalled()
   })
 })
