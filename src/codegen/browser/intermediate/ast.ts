@@ -121,6 +121,13 @@ export interface CheckExpression {
   checked: boolean
 }
 
+export interface SelectOptionValueExpression {
+  type: 'SelectOptionValueExpression'
+  value?: string
+  label?: string
+  index?: number
+}
+
 export interface SelectOptionsExpression {
   type: 'SelectOptionsExpression'
   locator: Expression
@@ -224,6 +231,7 @@ export type Expression =
   | ClickOptionsExpression
   | FillTextExpression
   | CheckExpression
+  | SelectOptionValueExpression
   | SelectOptionsExpression
   | ExpectExpression
   | WaitForExpression

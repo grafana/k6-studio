@@ -3,6 +3,7 @@ import {
   CircleQuestionMarkIcon,
   EraserIcon,
   GlobeIcon,
+  ListChecksIcon,
   MousePointerClickIcon,
   RefreshCwIcon,
   SquareCheckBigIcon,
@@ -19,6 +20,7 @@ import {
   FillActionBody,
   GoToActionBody,
   PageReloadActionBody,
+  SelectOptionActionBody,
   UncheckActionBody,
   WaitForActionBody,
 } from './Actions'
@@ -147,6 +149,26 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'textbox',
+          },
+        },
+      },
+    }),
+  },
+  'locator.selectOption': {
+    icon: <ListChecksIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <SelectOptionActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.selectOption',
+      values: [{ value: '' }],
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'combobox',
           },
         },
       },

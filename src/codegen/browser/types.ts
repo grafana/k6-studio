@@ -70,7 +70,7 @@ export interface TypeTextNode extends NodeBase {
 
 export interface SelectOptionsNode extends NodeBase {
   type: 'select-options'
-  selected: string[]
+  selected: (string | { value?: string; label?: string; index?: number })[]
   multiple: boolean
   inputs: {
     previous?: NodeRef
