@@ -27,7 +27,9 @@ export function ExecutionDetails({
     script !== undefined ? 'script' : 'logs'
   )
 
-  const consoleFilter = useConsoleFilter()
+  const consoleFilter = useConsoleFilter({
+    browser: false,
+  })
 
   const handleTabChange = (value: string) => {
     if (value !== 'logs' && value !== 'checks' && value !== 'script') {
@@ -76,12 +78,7 @@ export function ExecutionDetails({
           min-height: 0;
         `}
       >
-        <LogsSection
-          {...consoleFilter}
-          autoScroll={isRunning}
-          browser={false}
-          logs={logs}
-        />
+        <LogsSection {...consoleFilter} autoScroll={isRunning} logs={logs} />
       </Tabs.Content>
       {script !== undefined && (
         <Tabs.Content

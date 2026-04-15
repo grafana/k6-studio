@@ -6,9 +6,9 @@ import { AutoScrollArea } from '@/components/AutoScrollArea'
 import { LogEntry } from '@/schemas/k6'
 
 import { LogFilter } from './LogFilter'
-import { getSource, withSource } from './LogsSection.utils'
+import { withSource } from './LogsSection.utils'
 import { LogsTable } from './LogsTable'
-import { ConsoleFilter } from './types'
+import { ConsoleFilter, LogSource, SourcesOptions } from './types'
 
 const ALL_LOG_LEVELS: Array<LogEntry['level']> = [
   'info',
@@ -17,21 +17,45 @@ const ALL_LOG_LEVELS: Array<LogEntry['level']> = [
   'error',
 ]
 
-const ALL_LOG_SOURCES: Array<ReturnType<typeof getSource>> = [
-  'browser',
-  'runtime',
-  'script',
-]
+const ALL_LOG_SOURCES: Array<LogSource> = ['browser', 'runtime', 'script']
 
-export function useConsoleFilter() {
+interface AvailableSources {
+  browser?: boolean
+  runtime?: boolean
+  script?: boolean
+}
+
+export function useConsoleFilter({
+  browser = true,
+  runtime = true,
+  script = true,
+}: AvailableSources = {}) {
+  function filterSources(source: LogSource) {
+    return (
+      (source === 'browser' && browser) ||
+      (source === 'runtime' && runtime) ||
+      (source === 'script' && script)
+    )
+  }
+
   const [filter, setFilter] = useState<ConsoleFilter>({
     levels: ALL_LOG_LEVELS,
-    sources: ALL_LOG_SOURCES,
+    sources: ALL_LOG_SOURCES.filter(filterSources),
   })
 
   return {
+    sources: {
+      browser,
+      runtime,
+      script,
+    },
     filter,
-    onFilterChange: setFilter,
+    onFilterChange: (filter: ConsoleFilter) => {
+      setFilter({
+        ...filter,
+        sources: filter.sources.filter(filterSources),
+      })
+    },
   }
 }
 
@@ -72,21 +96,17 @@ function LogsContent({ filter, logs }: LogsContentProps) {
 }
 
 interface LogsSectionProps {
+  sources: SourcesOptions
   filter: ConsoleFilter
   logs: LogEntry[]
-  browser?: boolean
-  script?: boolean
-  runtime?: boolean
   autoScroll: boolean
   onFilterChange: (filter: ConsoleFilter) => void
 }
 
 export function LogsSection({
+  sources,
   filter,
   logs,
-  browser = true,
-  script = true,
-  runtime = true,
   autoScroll,
   onFilterChange,
 }: LogsSectionProps) {
@@ -114,10 +134,8 @@ export function LogsSection({
           Filters:
         </div>
         <LogFilter
+          sources={sources}
           filter={filter}
-          browser={browser}
-          script={script}
-          runtime={runtime}
           onChange={onFilterChange}
         />
       </Flex>

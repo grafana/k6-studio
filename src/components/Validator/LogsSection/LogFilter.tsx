@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import * as ToggleGroup from '@radix-ui/react-toggle-group'
 import { Separator } from '@radix-ui/themes'
 
-import { ConsoleFilter } from './types'
+import { ConsoleFilter, SourcesOptions } from './types'
 
 function isLogSource(value: string) {
   return value === 'browser' || value === 'runtime' || value === 'script'
@@ -38,20 +38,12 @@ const toggleItemStyles = css`
 `
 
 interface LogFilterProps {
+  sources: SourcesOptions
   filter: ConsoleFilter
-  browser?: boolean
-  script?: boolean
-  runtime?: boolean
   onChange: (filter: ConsoleFilter) => void
 }
 
-export function LogFilter({
-  filter,
-  browser = true,
-  script = true,
-  runtime = true,
-  onChange,
-}: LogFilterProps) {
+export function LogFilter({ sources, filter, onChange }: LogFilterProps) {
   const handleLogLevelsChange = (values: string[]) => {
     onChange({
       ...filter,
@@ -112,7 +104,7 @@ export function LogFilter({
         aria-label="Filter by log source"
         onValueChange={handleLogSourcesChange}
       >
-        {browser && (
+        {sources.browser && (
           <ToggleGroup.Item
             value={'browser'}
             css={toggleItemStyles}
@@ -121,7 +113,7 @@ export function LogFilter({
             Browser
           </ToggleGroup.Item>
         )}
-        {script && (
+        {sources.script && (
           <ToggleGroup.Item
             value={'script'}
             css={toggleItemStyles}
@@ -130,7 +122,7 @@ export function LogFilter({
             Script
           </ToggleGroup.Item>
         )}
-        {runtime && (
+        {sources.runtime && (
           <ToggleGroup.Item
             value={'runtime'}
             css={toggleItemStyles}
