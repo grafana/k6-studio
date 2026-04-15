@@ -1,5 +1,5 @@
-import { useInBrowserSettings } from 'extension/src/frontend/view/SettingsProvider'
-import { InBrowserSettings } from 'extension/src/messaging/types'
+import { useInBrowserSettings } from '@/recorder/browser/frontend/view/SettingsProvider'
+import { InBrowserSettings } from '@/recorder/browser/messaging/types'
 
 export function useToolboxSettings() {
   const [settings, setSettings] = useInBrowserSettings()

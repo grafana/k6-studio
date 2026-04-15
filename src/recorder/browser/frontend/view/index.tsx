@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client'
 
 import { ContainerProvider } from '@/components/primitives/ContainerProvider'
 import { Theme } from '@/components/primitives/Theme'
-import { BrowserExtensionClient } from 'extension/src/messaging'
+import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 
 import { GlobalStyles } from './GlobalStyles'
 import { InBrowserControls } from './InBrowserControls'

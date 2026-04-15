@@ -1,5 +1,5 @@
+import { ElementRole } from '@/recorder/browser/utils/aria'
 import { ElementSelector } from '@/schemas/recording'
-import { ElementRole } from 'extension/src/utils/aria'
 
 /**
  * Adapted list of widgets that are interacted with a simple click, regardless where the item

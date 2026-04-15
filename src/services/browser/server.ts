@@ -1,11 +1,11 @@
-import { BrowserEvent } from '@/schemas/recording'
-import { EventEmitter } from '@/utils/events'
-import { BrowserExtensionClient } from 'extension/src/messaging'
-import { WebSocketServerTransport } from 'extension/src/messaging/transports/webSocketServer'
+import { BrowserExtensionClient } from '@/recorder/browser/messaging'
+import { WebSocketServerTransport } from '@/recorder/browser/messaging/transports/webSocketServer'
 import {
   BrowserExtensionMessage,
   InBrowserSettings,
-} from 'extension/src/messaging/types'
+} from '@/recorder/browser/messaging/types'
+import { BrowserEvent } from '@/schemas/recording'
+import { EventEmitter } from '@/utils/events'
 
 export interface RecordEvent {
   source: 'record-events' | 'events-recorded'

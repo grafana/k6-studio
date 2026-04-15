@@ -1,6 +1,6 @@
-import { BrowserExtensionClient } from '../messaging'
-import { BufferedTransport } from '../messaging/transports/buffered'
-import { WebSocketTransport } from '../messaging/transports/webSocket'
+import { BrowserExtensionClient } from './messaging'
+import { BufferedTransport } from './messaging/transports/buffered'
+import { WebSocketTransport } from './messaging/transports/webSocket'
 
 const frontend = new BrowserExtensionClient('frontend')
 

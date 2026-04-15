@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext } from 'react'
 
-import { BrowserExtensionClient } from 'extension/src/messaging'
+import { BrowserExtensionClient } from '@/recorder/browser/messaging'
 
 const context = createContext<BrowserExtensionClient | null>(null)
 

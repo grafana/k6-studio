@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { Overlay } from '@/components/Browser/Overlay'
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { ElementRole } from 'extension/src/utils/aria'
+import { ElementRole } from '@/recorder/browser/utils/aria'
 
 import { getTabId } from '../../utils'
 import { Anchor } from '../Anchor'

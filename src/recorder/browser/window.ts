@@ -1,4 +1,4 @@
-import { BrowserExtensionClient } from '../messaging'
+import { BrowserExtensionClient } from './messaging'
 
 let wasFocused = false
 

@@ -1,6 +1,5 @@
-import { startRecording } from '../frontend/recording'
-import { initializeView } from '../frontend/view'
-
+import { startRecording } from './frontend/recording'
+import { initializeView } from './frontend/view'
 import { client } from './routing'
 import { configureStorage } from './storage'
 import { isInFrame } from './utils'
