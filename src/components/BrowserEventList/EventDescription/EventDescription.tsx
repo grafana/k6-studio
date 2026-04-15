@@ -22,6 +22,20 @@ export function EventDescription({
   onHighlight,
 }: EventDescriptionProps) {
   switch (event.type) {
+    case 'open-window':
+      return (
+        <>
+          Opened window ({event.dimensions.width}×{event.dimensions.height})
+        </>
+      )
+
+    case 'resize-window':
+      return (
+        <>
+          Resized window to ({event.dimensions.width}×{event.dimensions.height})
+        </>
+      )
+
     case 'navigate-to-page':
       return <PageNavigationDescription event={event} onNavigate={onNavigate} />
 

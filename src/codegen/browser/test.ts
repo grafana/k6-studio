@@ -139,6 +139,10 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     nextEvent?: BrowserEvent
   ): TestNode | null {
     switch (event.type) {
+      case 'open-window':
+      case 'resize-window':
+        return null
+
       case 'navigate-to-page':
         if (event.source === 'implicit') {
           return null

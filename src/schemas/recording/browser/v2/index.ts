@@ -31,6 +31,23 @@ const BrowserEventBaseSchema = z.object({
   timestamp: z.number(),
 })
 
+const WindowDimensionsSchema = z.object({
+  width: z.number().int().nonnegative(),
+  height: z.number().int().nonnegative(),
+})
+
+const OpenWindowEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('open-window'),
+  tab: z.string(),
+  dimensions: WindowDimensionsSchema,
+})
+
+const ResizeWindowEventSchema = BrowserEventBaseSchema.extend({
+  type: z.literal('resize-window'),
+  tab: z.string(),
+  dimensions: WindowDimensionsSchema,
+})
+
 const NavigateToPageEventSchema = BrowserEventBaseSchema.extend({
   type: z.literal('navigate-to-page'),
   tab: z.string(),
@@ -163,6 +180,8 @@ const WaitForEventSchema = BrowserEventBaseSchema.extend({
 })
 
 export const BrowserEventSchema = z.discriminatedUnion('type', [
+  OpenWindowEventSchema,
+  ResizeWindowEventSchema,
   NavigateToPageEventSchema,
   ReloadPageEventSchema,
   ClickEventSchema,
@@ -197,6 +216,8 @@ export type SelectChangeEvent = z.infer<typeof SelectChangeEventSchema>
 export type SubmitFormEvent = z.infer<typeof SubmitFormEventSchema>
 export type AssertEvent = z.infer<typeof AssertEventSchema>
 export type WaitForEvent = z.infer<typeof WaitForEventSchema>
+export type OpenWindowEvent = z.infer<typeof OpenWindowEventSchema>
+export type ResizeWindowEvent = z.infer<typeof ResizeWindowEventSchema>
 
 export type TextAssertion = z.infer<typeof TextAssertionSchema>
 export type VisibilityAssertion = z.infer<typeof VisibilityAssertionSchema>

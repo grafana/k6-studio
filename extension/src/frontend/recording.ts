@@ -17,6 +17,8 @@ import { WindowEventManager } from './manager'
 import { getTabId } from './utils'
 
 export function startRecording(client: BrowserExtensionClient) {
+  const RESIZE_DEBOUNCE_MS = 250
+
   function getButton(button: number) {
     switch (button) {
       case 0:
@@ -41,6 +43,53 @@ export function startRecording(client: BrowserExtensionClient) {
   }
 
   const manager = new WindowEventManager()
+
+  // Record initial window size once when recording starts.
+  recordEvents({
+    type: 'open-window',
+    eventId: nanoid(),
+    timestamp: Date.now(),
+    tab: getTabId(),
+    dimensions: { width: window.innerWidth, height: window.innerHeight },
+  })
+
+  // Record resize once the resize interaction has "settled".
+  let resizeDebounce: ReturnType<typeof setTimeout> | null = null
+  let lastEmittedSize: { width: number; height: number } | null = null
+
+  window.addEventListener(
+    'resize',
+    () => {
+      if (resizeDebounce !== null) {
+        clearTimeout(resizeDebounce)
+      }
+
+      resizeDebounce = setTimeout(() => {
+        resizeDebounce = null
+
+        const dimensions = { width: window.innerWidth, height: window.innerHeight }
+
+        if (
+          lastEmittedSize !== null &&
+          lastEmittedSize.width === dimensions.width &&
+          lastEmittedSize.height === dimensions.height
+        ) {
+          return
+        }
+
+        lastEmittedSize = dimensions
+
+        recordEvents({
+          type: 'resize-window',
+          eventId: nanoid(),
+          timestamp: Date.now(),
+          tab: getTabId(),
+          dimensions,
+        })
+      }, RESIZE_DEBOUNCE_MS)
+    },
+    { capture: true }
+  )
 
   manager.capture('click', (ev, manager) => {
     if (ev.target instanceof Element === false) {
