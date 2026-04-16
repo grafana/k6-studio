@@ -8,14 +8,9 @@ import { useBlocker } from 'react-router-dom'
 export function useViewBlocker(block: boolean) {
   const [isAppClosing, setIsAppClosing] = useState(false)
 
-  const isBlockingRef = useRef(block)
   const isConfirmedRef = useRef(false)
 
   const blocker = useBlocker(block)
-
-  useEffect(() => {
-    isBlockingRef.current = block
-  }, [block])
 
   // After confirm(), `isConfirmedRef` prevents double submission until the block condition
   // clears (e.g. debugging stopped). Reset so a later blocking session can confirm again.
@@ -27,7 +22,7 @@ export function useViewBlocker(block: boolean) {
 
   useEffect(() => {
     return window.studio.app.onApplicationClose(() => {
-      if (isBlockingRef.current) {
+      if (block) {
         setIsAppClosing(true)
 
         return
@@ -35,7 +30,7 @@ export function useViewBlocker(block: boolean) {
 
       window.studio.app.closeApplication()
     })
-  }, [])
+  }, [block])
 
   const cancel = useCallback(() => {
     setIsAppClosing(false)
