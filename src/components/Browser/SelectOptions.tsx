@@ -1,6 +1,3 @@
-import { css } from '@emotion/react'
-import { Fragment } from 'react'
-
 interface SelectOption {
   value?: string
   label?: string
@@ -15,31 +12,20 @@ function quote(str: string) {
   return `"${str}"`
 }
 
-function formatOption(option: SelectOption | string) {
+export function formatOption(option: SelectOption | string) {
   if (typeof option === 'string') {
     return quote(option)
   }
 
   if (option.label !== undefined) {
-    return option.label.length ? (
-      option.label
-    ) : (
-      <span
-        css={css`
-          opacity: 0.8;
-          font-style: italic;
-        `}
-      >
-        (empty)
-      </span>
-    )
+    return `label: ${quote(option.label)}`
   }
 
   if (option.index !== undefined) {
-    return option.index.toString()
+    return `index: ${option.index.toString()}`
   }
 
-  return quote(option.value ?? '')
+  return `value: ${quote(option.value ?? '')}`
 }
 
 export function SelectOptions({ options }: SelectOptionsProps) {
@@ -51,16 +37,5 @@ export function SelectOptions({ options }: SelectOptionsProps) {
     return <code>{formatOption(options[0]!)}</code>
   }
 
-  const last = options[options.length - 1]!
-
-  return (
-    <>
-      {options.slice(0, -1).map((option, index) => (
-        <Fragment key={index}>
-          <code>{formatOption(option)}</code>,{' '}
-        </Fragment>
-      ))}{' '}
-      and <code>{formatOption(last)}</code>
-    </>
-  )
+  return <>{options.length} options</>
 }
