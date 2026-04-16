@@ -1,4 +1,4 @@
-import { css } from '@emotion/react'
+import { css, keyframes } from '@emotion/react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
 
@@ -8,23 +8,39 @@ import { BrowserEvent } from '@/schemas/recording'
 import { NodeSelector } from '@/schemas/selectors'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
 
+import { RecorderSettings } from './RecorderSettings'
+import { useInBrowserSettings } from './SettingsProvider'
 import { useStudioClient } from './StudioClientProvider'
+import { ToolBoxLogo } from './ToolBox/ToolBoxLogo'
+
+const slideIn = keyframes`
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+`
+
+const slideOut = keyframes`
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+`
 
 interface EventDrawerProps {
   open: boolean
-  editing: boolean
   events: BrowserEvent[]
   onOpenChange: (open: boolean) => void
 }
 
-export function EventDrawer({
-  open,
-  editing,
-  events,
-  onOpenChange,
-}: EventDrawerProps) {
+export function EventDrawer({ open, events, onOpenChange }: EventDrawerProps) {
   const client = useStudioClient()
   const container = useContainerElement()
+  const [settings, setSettings] = useInBrowserSettings()
 
   const handleHighlight = (selector: NodeSelector | null) => {
     client.send({
@@ -42,11 +58,32 @@ export function EventDrawer({
 
   return (
     <RecordingContext recording>
-      <Dialog.Root modal={false} open={open} onOpenChange={onOpenChange}>
-        <Dialog.Portal container={container} forceMount>
-          <Dialog.Overlay />
+      <Dialog.Root modal={true} open={open} onOpenChange={onOpenChange}>
+        <Dialog.Portal container={container}>
+          <Dialog.Overlay
+            css={css`
+              position: fixed;
+              inset: 0;
+              z-index: var(--studio-layer-0);
+              background: rgb(0 0 0 / 0.28);
+              opacity: 0;
+              pointer-events: none;
+              transition: opacity 0.2s ease-out;
+
+              &[data-state='open'] {
+                opacity: 1;
+                pointer-events: auto;
+              }
+
+              @media (prefers-reduced-motion: reduce) {
+                transition: none;
+              }
+            `}
+            onPointerDown={() => {
+              onOpenChange(false)
+            }}
+          />
           <Dialog.Content
-            forceMount
             css={css`
               position: fixed;
               top: 0;
@@ -66,32 +103,18 @@ export function EventDrawer({
               overflow-y: hidden;
               overscroll-behavior: contain;
 
-              /* Default closed state */
-              transform: translateX(100%);
-              transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-
               &[data-state='open'] {
-                transform: translateX(0);
+                animation: ${slideIn} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
               }
 
               &[data-state='closed'] {
-                transform: translateX(100%);
+                animation: ${slideOut} 0.3s cubic-bezier(0.22, 1, 0.36, 1);
               }
 
               @media (prefers-reduced-motion: reduce) {
                 transition: none;
               }
             `}
-            onEscapeKeyDown={(event) => {
-              // If the user is currently editing something, the escape key should deselect
-              // the tool and not close the drawer.
-              if (editing) {
-                event.preventDefault()
-              }
-            }}
-            onInteractOutside={(event) => {
-              event.preventDefault()
-            }}
           >
             <div
               css={css`
@@ -108,9 +131,13 @@ export function EventDrawer({
               <Dialog.Title
                 css={css`
                   margin: 0;
+                  display: flex;
+                  align-items: center;
+                  gap: var(--studio-spacing-2);
                 `}
               >
-                Events
+                <ToolBoxLogo size={24} />
+                <span>k6 Studio</span>
               </Dialog.Title>
               <Dialog.Close
                 aria-label="Close event list"
@@ -137,16 +164,47 @@ export function EventDrawer({
             </div>
             <div
               css={css`
-                padding: 0 var(--studio-spacing-4);
-                overflow-x: auto;
-                overscroll-behavior: contain;
+                display: flex;
+                flex-direction: column;
                 flex: 1 1 0;
               `}
             >
-              <BrowserEventList
-                events={events}
-                onNavigate={handleNavigate}
-                onHighlight={handleHighlight}
+              <div
+                css={css`
+                  overflow-x: auto;
+                  overflow-y: auto;
+                  overscroll-behavior: contain;
+                  flex: 1 1 0;
+                  min-height: 0;
+                `}
+              >
+                <BrowserEventList
+                  events={events}
+                  onNavigate={handleNavigate}
+                  onHighlight={handleHighlight}
+                />
+              </div>
+            </div>
+            <div
+              css={css`
+                flex-shrink: 0;
+                border-top: 1px solid var(--studio-border-color);
+                padding: var(--studio-spacing-4);
+                background-color: inherit;
+              `}
+            >
+              <h2
+                css={css`
+                  margin: 0 0 var(--studio-spacing-3);
+                  font-size: var(--studio-font-size-3);
+                  font-weight: 700;
+                `}
+              >
+                Settings
+              </h2>
+              <RecorderSettings
+                settings={settings}
+                onSettingsChange={setSettings}
               />
             </div>
           </Dialog.Content>

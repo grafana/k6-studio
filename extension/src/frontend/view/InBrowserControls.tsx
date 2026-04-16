@@ -8,6 +8,7 @@ import { TextSelectionPopover } from './TextSelectionPopover'
 import { ToolBox } from './ToolBox'
 import { useRecordedEvents } from './hooks/useRecordedEvents'
 import { useInBrowserUIStore } from './store'
+import { Tool } from './types'
 
 export function InBrowserControls() {
   const client = useStudioClient()
@@ -19,8 +20,21 @@ export function InBrowserControls() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
+  const handleSelectTool = (tool: Tool | null) => {
+    setIsDrawerOpen(false)
+    selectTool(tool)
+  }
+
   const handleDeselectTool = () => {
     selectTool(null)
+  }
+
+  const handleToggleDrawer = (open: boolean) => {
+    if (open) {
+      selectTool(null)
+    }
+
+    setIsDrawerOpen(open)
   }
 
   const handleStopRecording = () => {
@@ -40,15 +54,14 @@ export function InBrowserControls() {
         isDrawerOpen={isDrawerOpen}
         recordedEventCount={recordedEvents.length}
         tool={tool}
-        onSelectTool={selectTool}
+        onSelectTool={handleSelectTool}
         onStopRecording={handleStopRecording}
-        onToggleDrawer={setIsDrawerOpen}
+        onToggleDrawer={handleToggleDrawer}
       />
       <EventDrawer
         open={isDrawerOpen}
-        editing={tool !== null}
         events={recordedEvents}
-        onOpenChange={setIsDrawerOpen}
+        onOpenChange={handleToggleDrawer}
       />
     </>
   )
