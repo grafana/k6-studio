@@ -1,10 +1,17 @@
 import { z } from 'zod'
 
 import {
-  ActionLocatorSchema,
+  CssLocatorSchema,
   GenericBrowserContextActionSchema,
   GenericLocatorActionSchema,
   GenericPageActionSchema,
+  GetByAltTextLocatorSchema,
+  GetByLabelLocatorSchema,
+  GetByPlaceholderLocatorSchema,
+  GetByRoleLocatorSchema,
+  GetByTestIdLocatorSchema,
+  GetByTextLocatorSchema,
+  GetByTitleLocatorSchema,
   LocatorCheckActionSchema,
   LocatorClearActionSchema,
   LocatorClickActionSchema,
@@ -42,9 +49,20 @@ const ActionLocatorTypeSchema = z.enum([
   'text',
 ])
 
+const LocatorValuesSchema = z.object({
+  css: CssLocatorSchema.optional(),
+  role: GetByRoleLocatorSchema.optional(),
+  testid: GetByTestIdLocatorSchema.optional(),
+  alt: GetByAltTextLocatorSchema.optional(),
+  label: GetByLabelLocatorSchema.optional(),
+  placeholder: GetByPlaceholderLocatorSchema.optional(),
+  title: GetByTitleLocatorSchema.optional(),
+  text: GetByTextLocatorSchema.optional(),
+})
+
 export const LocatorOptionsSchema = z.object({
   current: ActionLocatorTypeSchema,
-  values: z.record(ActionLocatorTypeSchema, ActionLocatorSchema),
+  values: LocatorValuesSchema,
 })
 
 export type LocatorOptions = z.infer<typeof LocatorOptionsSchema>

@@ -13,12 +13,12 @@ function safe<T>(schema: z.ZodType<T>) {
 // Generic options schema to allow any options object. Should be refined later.
 const GenericOptions = z.unknown()
 
-const CssLocatorSchema = z.object({
+export const CssLocatorSchema = z.object({
   type: z.literal('css'),
   selector: z.string(),
 })
 
-const GetByRoleLocatorSchema = z.object({
+export const GetByRoleLocatorSchema = z.object({
   type: z.literal('role'),
   role: z.string(),
   options: z
@@ -29,7 +29,7 @@ const GetByRoleLocatorSchema = z.object({
     .optional(),
 })
 
-const GetByTestIdLocatorSchema = z.object({
+export const GetByTestIdLocatorSchema = z.object({
   type: z.literal('testid'),
   testId: z.string(),
 })
@@ -40,31 +40,31 @@ const TextLocatorOptions = z
   })
   .optional()
 
-const GetByAltTextLocatorSchema = z.object({
+export const GetByAltTextLocatorSchema = z.object({
   type: z.literal('alt'),
   text: z.string(),
   options: TextLocatorOptions,
 })
 
-const GetByLabelLocatorSchema = z.object({
+export const GetByLabelLocatorSchema = z.object({
   type: z.literal('label'),
   label: z.string(),
   options: TextLocatorOptions,
 })
 
-const GetByPlaceholderLocatorSchema = z.object({
+export const GetByPlaceholderLocatorSchema = z.object({
   type: z.literal('placeholder'),
   placeholder: z.string(),
   options: TextLocatorOptions,
 })
 
-const GetByTitleLocatorSchema = z.object({
+export const GetByTitleLocatorSchema = z.object({
   type: z.literal('title'),
   title: z.string(),
   options: TextLocatorOptions,
 })
 
-const GetByTextLocatorSchema = z.object({
+export const GetByTextLocatorSchema = z.object({
   type: z.literal('text'),
   text: z.string(),
   options: TextLocatorOptions,

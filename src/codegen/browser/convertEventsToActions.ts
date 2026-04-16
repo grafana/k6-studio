@@ -1,4 +1,3 @@
-import { ActionLocator } from '@/main/runner/schema'
 import { BrowserTestAction, LocatorOptions } from '@/schemas/browserTest/v1'
 import {
   BrowserEvent,
@@ -8,7 +7,7 @@ import {
 import { exhaustive } from '@/utils/typescript'
 
 function toLocatorOptions(selector: ElementSelector): LocatorOptions {
-  const values: Partial<Record<ActionLocator['type'], ActionLocator>> = {}
+  const values: LocatorOptions['values'] = {}
 
   values.css = { type: 'css', selector: selector.css }
 
@@ -50,7 +49,9 @@ function toLocatorOptions(selector: ElementSelector): LocatorOptions {
   return { current, values }
 }
 
-function pickBestLocatorType(selector: ElementSelector): ActionLocator['type'] {
+function pickBestLocatorType(
+  selector: ElementSelector
+): LocatorOptions['current'] {
   if (selector.role !== undefined) return 'role'
   if (selector.label !== undefined) return 'label'
   if (selector.alt !== undefined) return 'alt'
