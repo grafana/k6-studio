@@ -13,7 +13,7 @@ export function useStackHealth(enabled: boolean) {
 
   const query = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: window.studio.ai.assistantCheckStackHealth,
+    queryFn: () => window.studio.ai.assistantCheckStackHealth(),
     networkMode: 'always',
     refetchInterval: (result) =>
       result.state.data === 'ready' ? false : POLL_INTERVAL_MS,
