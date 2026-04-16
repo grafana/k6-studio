@@ -6,7 +6,10 @@ import { useNavigate } from 'react-router-dom'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
-import { LogsSection } from '@/components/Validator/LogsSection'
+import {
+  LogsSection,
+  useConsoleFilter,
+} from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { useViewBlocker } from '@/hooks/useViewBlocker'
 import { routeMap } from '@/routeMap'
@@ -37,6 +40,8 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     useBrowserTestEditorLayout()
 
   const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.fileName)
+
+  const consoleFilter = useConsoleFilter()
 
   const test = useBrowserTestState(data)
 
@@ -177,7 +182,11 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                     `}
                     value="console"
                   >
-                    <LogsSection autoScroll={false} logs={session.logs} />
+                    <LogsSection
+                      {...consoleFilter}
+                      autoScroll={session.state === 'running'}
+                      logs={session.logs}
+                    />
                   </Tabs.Content>
                   <Tabs.Content
                     css={css`

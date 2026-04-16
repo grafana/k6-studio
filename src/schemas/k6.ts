@@ -6,6 +6,7 @@ export const LogEntrySchema = z.object({
   source: z.string().optional(),
   time: z.string(),
   error: z.string().optional(),
+  process: z.union([z.literal('k6'), z.literal('browser')]).default('k6'),
 })
 
 export const CheckSchema = z.object({
