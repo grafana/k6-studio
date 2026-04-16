@@ -19,7 +19,8 @@ import {
 import { createScriptDataSlice, ScriptDataStore } from './slices/script'
 
 export interface GeneratorStore
-  extends RecordingSliceStore,
+  extends
+    RecordingSliceStore,
     RulesSliceStore,
     TestDataStore,
     TestOptionsStore,

@@ -19,7 +19,7 @@ export default defineConfig((env) => {
       // fix for react-is lib in packaged mode
       process: JSON.stringify({
         env: {
-          NODE_ENV: nodeEnv
+          NODE_ENV: nodeEnv,
         },
       }),
     },

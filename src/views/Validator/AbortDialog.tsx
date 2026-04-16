@@ -1,5 +1,5 @@
 import { Box, Button, Dialog, Flex, Text } from '@radix-ui/themes'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface AbortDialogProps {
   open: boolean
@@ -9,6 +9,12 @@ interface AbortDialogProps {
 
 export function AbortDialog({ open, onCancel, onAbort }: AbortDialogProps) {
   const [isAborting, setIsAborting] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setIsAborting(false)
+    }
+  }, [open])
 
   const handleAbort = () => {
     setIsAborting(true)
