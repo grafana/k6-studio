@@ -5,6 +5,7 @@ import {
   Popover,
   RadioGroup,
   Separator,
+  Text,
   Tooltip,
 } from '@radix-ui/themes'
 import { WholeWordIcon } from 'lucide-react'
@@ -59,6 +60,12 @@ export function LocatorForm({
   const [dirtyTypes, setDirtyTypes] = useState(new Set<ActionLocator['type']>())
 
   const currentLocator = values[current] ?? initializeLocatorValues(current)
+
+  const configuredTypes = new Set(
+    Object.entries(values)
+      .filter(([, locator]) => locator && isLocatorConfigured(locator))
+      .map(([type]) => type)
+  )
 
   const handleChangeCurrent = (type: LocatorOptions['current']) => {
     if (dirtyTypes.has(current)) {
@@ -131,7 +138,12 @@ export function LocatorForm({
                 .filter(([type]) => type !== 'text')
                 .map(([type, label]) => (
                   <RadioGroup.Item value={type} key={type}>
-                    {label}
+                    <Text
+                      weight={configuredTypes.has(type) ? 'medium' : 'regular'}
+                      color={configuredTypes.has(type) ? undefined : 'gray'}
+                    >
+                      {label}
+                    </Text>
                   </RadioGroup.Item>
                 ))}
             </RadioGroup.Root>
@@ -363,6 +375,14 @@ function initializeLocatorValues(type: ActionLocator['type']): ActionLocator {
     default:
       return exhaustive(type)
   }
+}
+
+function isLocatorConfigured(locator: ActionLocator | undefined): boolean {
+  if (!locator) return false
+
+  // Since validateLocator only checks for empty values, we re-use it to check if the locator is configured.
+  // This isn't perfect, but it's a good enough approximation.
+  return validateLocator(locator).isValid
 }
 
 function addIfAbsent<T>(set: Set<T>, value: T) {
