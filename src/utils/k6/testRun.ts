@@ -189,8 +189,6 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
     // been disposed and ignore the error. `disposeAsync` is idempotent so calling it
     // multiple times is safe.
     await Promise.allSettled([this.#kill(), this.#disposer.disposeAsync()])
-
-    this.emit('stop', {})
   }
 
   #kill() {
