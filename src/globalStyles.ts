@@ -14,9 +14,10 @@ export const globalStyles = css`
   }
 
   .radix-themes {
-    --default-font-family: 'InterVariable', -apple-system, BlinkMacSystemFont,
-      'Segoe UI (Custom)', Roboto, 'Helvetica Neue', 'Open Sans (Custom)',
-      system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --default-font-family:
+      'InterVariable', -apple-system, BlinkMacSystemFont, 'Segoe UI (Custom)',
+      Roboto, 'Helvetica Neue', 'Open Sans (Custom)', system-ui, sans-serif,
+      'Apple Color Emoji', 'Segoe UI Emoji';
 
     --cursor-button: pointer;
   }

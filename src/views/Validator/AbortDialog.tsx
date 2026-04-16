@@ -1,4 +1,5 @@
 import { Box, Button, Dialog, Flex, Text } from '@radix-ui/themes'
+import { useState } from 'react'
 
 interface AbortDialogProps {
   open: boolean
@@ -7,11 +8,22 @@ interface AbortDialogProps {
 }
 
 export function AbortDialog({ open, onCancel, onAbort }: AbortDialogProps) {
+  const [isAborting, setIsAborting] = useState(false)
+
+  async function handleAbort() {
+    setIsAborting(true)
+    try {
+      await onAbort()
+    } finally {
+      setIsAborting(false)
+    }
+  }
+
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) {
+        if (!nextOpen && !isAborting) {
           onCancel()
         }
       }}
@@ -26,11 +38,16 @@ export function AbortDialog({ open, onCancel, onAbort }: AbortDialogProps) {
           </Box>
           <Flex justify="end" gap="3">
             <Dialog.Close>
-              <Button variant="outline" color="orange">
+              <Button variant="outline" color="orange" disabled={isAborting}>
                 Cancel
               </Button>
             </Dialog.Close>
-            <Button color="red" onClick={onAbort}>
+            <Button
+              color="red"
+              onClick={handleAbort}
+              disabled={isAborting}
+              loading={isAborting}
+            >
               Abort
             </Button>
           </Flex>
