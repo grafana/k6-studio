@@ -1,6 +1,6 @@
 import { css, keyframes } from '@emotion/react'
 import * as Accordion from '@radix-ui/react-accordion'
-import { ChevronDownIcon } from 'lucide-react'
+import { MinusIcon, PlusIcon } from 'lucide-react'
 
 import { Flex } from '@/components/primitives/Flex'
 import { RadioGroup } from '@/components/primitives/RadioGroup'
@@ -73,31 +73,28 @@ export function RecorderSettings({
                 color: var(--studio-accent-11);
               }
 
-              &[data-state='open'] svg {
-                transform: rotate(180deg);
+              svg.lucide-plus {
+                display: block;
               }
 
-              @media (prefers-reduced-motion: reduce) {
-                &[data-state='open'] svg {
-                  transform: none;
+              svg.lucide-minus {
+                display: none;
+              }
+
+              &[data-state='open'] {
+                .lucide-plus {
+                  display: none;
+                }
+
+                .lucide-minus {
+                  display: block;
                 }
               }
             `}
           >
             Click event options
-            <ChevronDownIcon
-              aria-hidden
-              width={16}
-              height={16}
-              css={css`
-                flex-shrink: 0;
-                transition: transform 0.2s ease;
-
-                @media (prefers-reduced-motion: reduce) {
-                  transition: none;
-                }
-              `}
-            />
+            <PlusIcon aria-hidden width={16} height={16} />
+            <MinusIcon aria-hidden width={16} height={16} />
           </Accordion.Trigger>
         </Accordion.Header>
         <Accordion.Content
