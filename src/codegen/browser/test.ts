@@ -1,3 +1,5 @@
+import { keyBy } from 'lodash-es'
+
 import {
   Assertion,
   BrowserEvent,
@@ -423,6 +425,34 @@ function buildBrowserNodeGraphFromActions(
             locator: getLocator(action.locator),
           },
         }
+      case 'locator.clear':
+        return {
+          type: 'clear',
+          nodeId: crypto.randomUUID(),
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      case 'locator.selectOption': {
+        const deduped = Object.values(
+          keyBy(action.values, (v) => {
+            if (v.value !== undefined) return `value:${v.value}`
+            if (v.label !== undefined) return `label:${v.label}`
+            return `index:${v.index}`
+          })
+        )
+        const selected = deduped.length > 0 ? deduped : ['']
+
+        return {
+          type: 'select-options',
+          nodeId: crypto.randomUUID(),
+          selected,
+          multiple: selected.length > 1,
+          inputs: {
+            locator: getLocator(action.locator),
+          },
+        }
+      }
       case 'page.waitForTimeout':
         return {
           type: 'wait-for-timeout',
@@ -437,11 +467,9 @@ function buildBrowserNodeGraphFromActions(
       case 'page.*':
       case 'locator.dblclick':
       case 'locator.type':
-      case 'locator.selectOption':
       case 'locator.hover':
       case 'locator.setChecked':
       case 'locator.tap':
-      case 'locator.clear':
       case 'locator.press':
       case 'locator.focus':
       case 'locator.*':

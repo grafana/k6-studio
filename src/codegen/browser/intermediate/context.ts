@@ -76,6 +76,11 @@ function buildScenarioGraph(scenario: model.Scenario) {
         connectPrevious(graph, node)
         break
 
+      case 'clear':
+        graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
+        connectPrevious(graph, node)
+        break
+
       case 'check':
         graph.connect(node.nodeId, node.inputs.locator.nodeId, 'reference')
         connectPrevious(graph, node)
