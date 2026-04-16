@@ -1,6 +1,7 @@
 import { css } from '@emotion/react'
 import { Flex, IconButton, Tooltip } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 import { OptionsSummary } from './Actions/components/OptionsSummary'
 import { getActionEditorForAction } from './actionEditorRegistry'
@@ -10,12 +11,14 @@ interface EditableActionProps {
   action: BrowserActionInstance
   onRemove: (actionId: string) => void
   onChange: (action: BrowserActionInstance) => void
+  leadingSlot?: ReactNode
 }
 
 export function EditableAction({
   action,
   onRemove,
   onChange,
+  leadingSlot,
 }: EditableActionProps) {
   const handleRemove = () => {
     onRemove(action.id)
@@ -30,13 +33,10 @@ export function EditableAction({
       p="2"
       css={css`
         font-size: var(--font-size-1);
-
-        & + & {
-          border-top: 1px solid var(--studio-border-color);
-        }
       `}
     >
       <Flex align="center" gap="2">
+        {leadingSlot}
         {editor.icon}
         {editor.render({ action, onChange })}
         <Tooltip content="Remove action">

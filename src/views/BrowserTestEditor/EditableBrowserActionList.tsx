@@ -11,7 +11,7 @@ import { CirclePlusIcon } from 'lucide-react'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { AnyBrowserAction } from '@/main/runner/schema'
 
-import { EditableAction } from './EditableAction'
+import { SortableBrowserActionList } from './SortableBrowserActionList'
 import { BrowserActionInstance } from './types'
 
 interface EditableBrowserActionListProps {
@@ -19,6 +19,7 @@ interface EditableBrowserActionListProps {
   onAddAction: (method: BrowserActionInstance['method']) => void
   onRemoveAction: (actionId: string) => void
   onChangeAction: (action: BrowserActionInstance) => void
+  onSwapActions: (idA: string, idB: string) => void
 }
 
 export function EditableBrowserActionList({
@@ -26,6 +27,7 @@ export function EditableBrowserActionList({
   onAddAction,
   onRemoveAction,
   onChangeAction,
+  onSwapActions,
 }: EditableBrowserActionListProps) {
   return (
     <Flex direction="column" height="100%">
@@ -49,14 +51,12 @@ export function EditableBrowserActionList({
         {actions.length === 0 ? (
           <EmptyMessage message="Build your browser test by adding actions." />
         ) : (
-          actions.map((action) => (
-            <EditableAction
-              key={action.id}
-              action={action}
-              onRemove={onRemoveAction}
-              onChange={onChangeAction}
-            />
-          ))
+          <SortableBrowserActionList
+            actions={actions}
+            onSwapActions={onSwapActions}
+            onRemoveAction={onRemoveAction}
+            onChangeAction={onChangeAction}
+          />
         )}
       </ScrollArea>
     </Flex>

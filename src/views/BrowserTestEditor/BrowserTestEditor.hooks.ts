@@ -152,6 +152,25 @@ export function useBrowserTestState(
     setState(newActions)
   }
 
+  const swapActions = useCallback((idA: string, idB: string) => {
+    setState((prev) => {
+      const indexA = prev.findIndex((a) => a.id === idA)
+      const indexB = prev.findIndex((a) => a.id === idB)
+      if (indexA === -1 || indexB === -1) {
+        return prev
+      }
+      const next = [...prev]
+      const actionA = next[indexA]
+      const actionB = next[indexB]
+      if (!actionA || !actionB) {
+        return prev
+      }
+      next[indexA] = actionB
+      next[indexB] = actionA
+      return next
+    })
+  }, [])
+
   const plainActions = useMemo(() => {
     return state.map(fromBrowserActionInstance)
   }, [state])
@@ -169,6 +188,7 @@ export function useBrowserTestState(
     addAction,
     updateAction,
     removeAction,
+    swapActions,
     isDirty,
   }
 }
