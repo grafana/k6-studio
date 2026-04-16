@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid'
 
 import { BrowserEvent } from '@/schemas/recording'
 
-import { WindowEventManager } from './manager'
+import { eventManager } from './manager'
 import { BrowserExtensionClient } from './messaging'
 import { getEventTarget } from './target'
 import { getTabId } from './utils'
@@ -14,8 +14,29 @@ import {
   isNativeRadio,
   isNonButtonInput,
 } from './utils/dom'
+import { SettingsStorage } from './view/SettingsProvider'
 
-export function startRecording(client: BrowserExtensionClient) {
+export function startRecording(
+  client: BrowserExtensionClient,
+  settings: SettingsStorage
+) {
+  function findClickTarget(element: Element): Element | null {
+    switch (settings.getCurrent().clickRecordingMode) {
+      case 'interactive-only':
+        return findInteractiveElement(element)
+
+      case 'any':
+        // From the user's point of view, they clicked a button and not a `<span />` inside a
+        // button. So whenever we record a click we try to find the underlying interactive
+        // element. Only if there's no such element do we record a click on the actual
+        // target.
+        return findInteractiveElement(element) ?? element
+
+      default:
+        return null
+    }
+  }
+
   function getButton(button: number) {
     switch (button) {
       case 0:
@@ -39,31 +60,19 @@ export function startRecording(client: BrowserExtensionClient) {
     })
   }
 
-  const manager = new WindowEventManager()
+  const manager = eventManager
 
   manager.capture('click', (ev, manager) => {
     if (ev.target instanceof Element === false) {
       return
     }
 
-    // From the user's point of view, they clicked a button and not a `<span />` inside a
-    // button. So whenever we record a click we try to find the underlying interactive
-    // element. Only if there's no such element do we record a click on the actual
-    // target.
-    //
-    // In the future, we might want to have this behavior configurable:
-    //
-    // - Ignore any click on non-interactive elements
-    // - Record click on the interactive element with fallback (current behavior).
-    // - Record all clicks exactly as they happened.
-    //
-    // The first option would be especially useful since it can reduce noise
-    // in the recordings.
-    const clickTarget = findInteractiveElement(ev.target) ?? ev.target
+    const clickTarget = findClickTarget(ev.target)
 
     // We don't want to capture clicks on form elements since they will be
     // interacted with using e.g. the `selectOption` or `type` functions.
     if (
+      clickTarget === null ||
       isNonButtonInput(clickTarget) ||
       clickTarget instanceof HTMLTextAreaElement ||
       clickTarget instanceof HTMLSelectElement ||

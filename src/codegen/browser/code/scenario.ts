@@ -311,6 +311,16 @@ function emitSelectOptionsExpression(
     .done()
 }
 
+function emitSelectOptionValueExpression(
+  expression: ir.SelectOptionValueExpression
+): ts.Expression {
+  return fromObjectLiteral({
+    value: expression.value,
+    label: expression.label,
+    index: expression.index,
+  })
+}
+
 function emitExpectExpression(
   context: ScenarioContext,
   expression: ir.ExpectExpression
@@ -459,6 +469,19 @@ function emitWaitForNavigationExpression(
     .done()
 }
 
+function emitWaitForTimeoutExpression(
+  context: ScenarioContext,
+  expression: ir.WaitForTimeoutExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  return new ExpressionBuilder(target)
+    .member('waitForTimeout')
+    .call([literal({ value: expression.timeout })])
+    .await(context)
+    .done()
+}
+
 function emitPromiseAllExpression(
   context: ScenarioContext,
   expression: ir.PromiseAllExpression
@@ -543,6 +566,9 @@ function emitExpression(
     case 'CheckExpression':
       return emitCheckExpression(context, expression)
 
+    case 'SelectOptionValueExpression':
+      return emitSelectOptionValueExpression(expression)
+
     case 'SelectOptionsExpression':
       return emitSelectOptionsExpression(context, expression)
 
@@ -557,6 +583,9 @@ function emitExpression(
 
     case 'WaitForNavigationExpression':
       return emitWaitForNavigationExpression(context, expression)
+
+    case 'WaitForTimeoutExpression':
+      return emitWaitForTimeoutExpression(context, expression)
 
     case 'PromiseAllExpression':
       return emitPromiseAllExpression(context, expression)

@@ -11,5 +11,5 @@ if (!isInFrame()) {
 
   trackTabFocus(client)
   initializeView(client, storage)
-  startRecording(client)
+  startRecording(client, storage)
 }

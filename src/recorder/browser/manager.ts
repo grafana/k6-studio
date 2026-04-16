@@ -27,7 +27,14 @@ export class WindowEventManager {
    * avoid recording follow-up events that are triggered as a side-effect of the
    * original event.
    */
-  block<T extends keyof WindowEventMap>(type: T, target: EventTarget): this {
+  block<T extends keyof WindowEventMap>(
+    type: T,
+    target: EventTarget | null
+  ): this {
+    if (target === null) {
+      return this
+    }
+
     let blockedForType = this.#blockedEvents[type]
 
     if (blockedForType === undefined) {
@@ -106,3 +113,5 @@ export class WindowEventManager {
     return blockedForType.delete(ev.target)
   }
 }
+
+export const eventManager = new WindowEventManager()

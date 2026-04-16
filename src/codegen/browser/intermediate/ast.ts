@@ -121,6 +121,13 @@ export interface CheckExpression {
   checked: boolean
 }
 
+export interface SelectOptionValueExpression {
+  type: 'SelectOptionValueExpression'
+  value?: string
+  label?: string
+  index?: number
+}
+
 export interface SelectOptionsExpression {
   type: 'SelectOptionsExpression'
   locator: Expression
@@ -143,6 +150,12 @@ export interface WaitForExpression {
 export interface WaitForNavigationExpression {
   type: 'WaitForNavigationExpression'
   target: Expression
+}
+
+export interface WaitForTimeoutExpression {
+  type: 'WaitForTimeoutExpression'
+  target: Expression
+  timeout: number
 }
 
 export interface PromiseAllExpression {
@@ -224,11 +237,13 @@ export type Expression =
   | ClickOptionsExpression
   | FillTextExpression
   | CheckExpression
+  | SelectOptionValueExpression
   | SelectOptionsExpression
   | ExpectExpression
   | WaitForExpression
   | WaitForOptionsExpression
   | WaitForNavigationExpression
+  | WaitForTimeoutExpression
   | PromiseAllExpression
 
 export interface VariableDeclaration {

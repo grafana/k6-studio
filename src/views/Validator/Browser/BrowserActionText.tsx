@@ -38,6 +38,13 @@ export function BrowserActionText({
     case 'page.waitForNavigation':
       return <>Waiting for page navigation</>
 
+    case 'page.waitForTimeout':
+      return (
+        <>
+          Wait for <strong>{action.timeout}</strong> ms
+        </>
+      )
+
     case 'page.close':
       return <>Close page</>
 

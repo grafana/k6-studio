@@ -70,7 +70,7 @@ export interface TypeTextNode extends NodeBase {
 
 export interface SelectOptionsNode extends NodeBase {
   type: 'select-options'
-  selected: string[]
+  selected: (string | { value?: string; label?: string; index?: number })[]
   multiple: boolean
   inputs: {
     previous?: NodeRef
@@ -143,6 +143,15 @@ export interface WaitForNode extends NodeBase {
   }
 }
 
+export interface WaitForTimeoutNode extends NodeBase {
+  type: 'wait-for-timeout'
+  timeout: number
+  inputs: {
+    previous?: NodeRef
+    page: NodeRef
+  }
+}
+
 export type TestNode =
   | PageNode
   | GotoNode
@@ -155,6 +164,7 @@ export type TestNode =
   | CheckNode
   | AssertNode
   | WaitForNode
+  | WaitForTimeoutNode
 
 export interface Scenario {
   nodes: TestNode[]

@@ -52,6 +52,7 @@ function buildScenarioGraph(scenario: model.Scenario) {
 
       case 'goto':
       case 'reload':
+      case 'wait-for-timeout':
         graph.connect(node.nodeId, node.inputs.page.nodeId, 'reference')
         connectPrevious(graph, node)
         break

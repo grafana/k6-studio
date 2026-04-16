@@ -17,12 +17,13 @@ export const DEFAULT_SETTINGS: InBrowserSettings = {
       left: 50,
     },
   },
+  clickRecordingMode: 'interactive-only',
 }
 
 export type OnSettingsUpdateEventHandler = (settings: InBrowserSettings) => void
 
 export interface SettingsStorage {
-  initial: InBrowserSettings
+  getCurrent(): InBrowserSettings
   load(): Promise<InBrowserSettings>
   save(settings: Partial<InBrowserSettings>): Promise<void>
   onUpdate(callback: (settings: InBrowserSettings) => void): void
@@ -43,7 +44,9 @@ function useSettingsStorage(): SettingsStorage {
 export function useInBrowserSettings() {
   const storage = useSettingsStorage()
 
-  const [settings, setSettings] = useState<InBrowserSettings>(storage.initial)
+  const [settings, setSettings] = useState<InBrowserSettings>(
+    storage.getCurrent()
+  )
 
   useEffect(() => {
     // We sync the settings here just in case the weren't loaded before the UI mounted.

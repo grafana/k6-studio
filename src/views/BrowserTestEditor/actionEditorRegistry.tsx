@@ -1,8 +1,10 @@
 import { Code } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
+  ClockIcon,
   EraserIcon,
   GlobeIcon,
+  ListChecksIcon,
   MousePointerClickIcon,
   RefreshCwIcon,
   SquareCheckBigIcon,
@@ -19,8 +21,10 @@ import {
   FillActionBody,
   GoToActionBody,
   PageReloadActionBody,
+  SelectOptionActionBody,
   UncheckActionBody,
   WaitForActionBody,
+  WaitForTimeoutActionBody,
 } from './Actions'
 import { BrowserActionInstance } from './types'
 import { createDefaultLocatorOptions } from './utils'
@@ -152,6 +156,26 @@ const actionEditors: ActionEditorRegistry = {
       },
     }),
   },
+  'locator.selectOption': {
+    icon: <ListChecksIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <SelectOptionActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.selectOption',
+      values: [{ value: '' }],
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'combobox',
+          },
+        },
+      },
+    }),
+  },
   'page.goto': {
     icon: <GlobeIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
@@ -169,6 +193,17 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'page.reload',
+    }),
+  },
+  'page.waitForTimeout': {
+    icon: <ClockIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <WaitForTimeoutActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'page.waitForTimeout',
+      timeout: 1000,
     }),
   },
   'locator.waitFor': {

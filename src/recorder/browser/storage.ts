@@ -29,7 +29,7 @@ export function configureStorage(
   })
 
   return {
-    get initial() {
+    getCurrent() {
       return settings
     },
     load() {
