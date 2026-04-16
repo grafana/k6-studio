@@ -48,6 +48,7 @@ export function TimeoutForm({ timeout, onChange }: TimeoutForm) {
             size="1"
             name="timeout"
             type="number"
+            min={0}
             value={isNaN(timeout) ? '' : timeout}
             onChange={(e) => {
               const trimmed = e.target.value.trim()
