@@ -1,7 +1,9 @@
 import { Code } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
+  EraserIcon,
   GlobeIcon,
+  ListChecksIcon,
   MousePointerClickIcon,
   RefreshCwIcon,
   SquareCheckBigIcon,
@@ -13,10 +15,12 @@ import { ReactElement, ReactNode } from 'react'
 
 import {
   CheckActionBody,
+  ClearActionBody,
   ClickActionBody,
   FillActionBody,
   GoToActionBody,
   PageReloadActionBody,
+  SelectOptionActionBody,
   UncheckActionBody,
   WaitForActionBody,
 } from './Actions'
@@ -100,6 +104,25 @@ const actionEditors: ActionEditorRegistry = {
       },
     }),
   },
+  'locator.clear': {
+    icon: <EraserIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ClearActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.clear',
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'textbox',
+          },
+        },
+      },
+    }),
+  },
   'locator.click': {
     icon: <MousePointerClickIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
@@ -126,6 +149,26 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'textbox',
+          },
+        },
+      },
+    }),
+  },
+  'locator.selectOption': {
+    icon: <ListChecksIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <SelectOptionActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.selectOption',
+      values: [{ value: '' }],
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'combobox',
           },
         },
       },

@@ -55,6 +55,7 @@ function substituteExpression(
     case 'ClickOptionsExpression':
     case 'WaitForOptionsExpression':
     case 'RoleLocatorOptionsExpression':
+    case 'SelectOptionValueExpression':
     case 'TextLocatorOptionsExpression':
       return node
 
@@ -161,6 +162,12 @@ function substituteExpression(
         type: 'FillTextExpression',
         target: substituteExpression(node.target, substitutions),
         value: substituteExpression(node.value, substitutions),
+      }
+
+    case 'ClearExpression':
+      return {
+        type: 'ClearExpression',
+        locator: substituteExpression(node.locator, substitutions),
       }
 
     case 'CheckExpression':

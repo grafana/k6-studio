@@ -264,6 +264,18 @@ function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
   })
 }
 
+function emitClearNode(context: IntermediateContext, node: m.ClearNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'ClearExpression',
+      locator,
+    },
+  })
+}
+
 function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
   const locator = context.reference(node.inputs.locator)
 
@@ -288,10 +300,19 @@ function emitSelectOptionsNode(
     expression: {
       type: 'SelectOptionsExpression',
       locator,
-      selected: node.selected.map((value) => ({
-        type: 'StringLiteral',
-        value,
-      })),
+      selected: node.selected.map((value) => {
+        if (typeof value === 'string') {
+          return {
+            type: 'StringLiteral',
+            value,
+          }
+        }
+
+        return {
+          type: 'SelectOptionValueExpression',
+          ...value,
+        }
+      }),
       multiple: node.multiple,
     },
   })
@@ -419,6 +440,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'reload':
       return emitReloadNode(context, node)
+
+    case 'clear':
+      return emitClearNode(context, node)
 
     case 'click':
       return emitClickNode(context, node)
