@@ -2,7 +2,10 @@ import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
 import { useState } from 'react'
 
-import { LogsSection } from '@/components/Validator/LogsSection'
+import {
+  LogsSection,
+  useConsoleFilter,
+} from '@/components/Validator/LogsSection'
 import {
   Group,
   Panel,
@@ -33,6 +36,8 @@ export function BrowserDebugger({
     useState<NodeSelector | null>(null)
 
   const [drawer, setDrawer] = usePanelCallbackRef()
+
+  const consoleFilter = useConsoleFilter()
 
   const drawerLayout = useDefaultLayout({
     groupId: 'browser-debugger-drawer',
@@ -110,7 +115,11 @@ export function BrowserDebugger({
                 `}
                 value="console"
               >
-                <LogsSection autoScroll={false} logs={session.logs} />
+                <LogsSection
+                  {...consoleFilter}
+                  autoScroll={session.state === 'running'}
+                  logs={session.logs}
+                />
               </Tabs.Content>
               <Tabs.Content
                 css={css`

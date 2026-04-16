@@ -120,13 +120,19 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
           Uncheck input
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
-
         <DropdownMenu.Item
           onClick={() => {
             onAddAction('locator.waitFor')
           }}
         >
           Wait for element
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('page.waitForTimeout')
+          }}
+        >
+          Wait for timeout
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item

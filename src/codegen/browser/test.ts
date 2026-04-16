@@ -453,6 +453,15 @@ function buildBrowserNodeGraphFromActions(
           },
         }
       }
+      case 'page.waitForTimeout':
+        return {
+          type: 'wait-for-timeout',
+          nodeId: crypto.randomUUID(),
+          timeout: action.timeout,
+          inputs: {
+            page: getPage(),
+          },
+        }
       case 'page.waitForNavigation':
       case 'page.close':
       case 'page.*':

@@ -217,6 +217,13 @@ function substituteExpression(
         target: substituteExpression(node.target, substitutions),
       }
 
+    case 'WaitForTimeoutExpression':
+      return {
+        type: 'WaitForTimeoutExpression',
+        target: substituteExpression(node.target, substitutions),
+        timeout: node.timeout,
+      }
+
     default:
       return exhaustive(node)
   }
