@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
@@ -55,15 +55,18 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const blocker = useViewBlocker(session.state === 'running')
 
+  const confirmRef = useRef(blocker.confirm)
+  confirmRef.current = blocker.confirm
+
   useEffect(() => {
     if (!blocker.blocked) {
       return
     }
 
     void stopDebugging().finally(() => {
-      blocker.confirm()
+      confirmRef.current()
     })
-  }, [blocker, stopDebugging])
+  }, [blocker.blocked, stopDebugging])
 
   const handleSave = () => {
     if (!test.isDirty || !data) {
