@@ -28,7 +28,9 @@ export class ActiveA2ASession {
   }> = []
   /** Leftover bytes from SSE parsing between reads */
   sseBuffer = ''
-  /** Set to true when all emitted tool calls have been matched with REMOTE_TOOL_REQUESTs */
+  /** Set to true when step.complete(tool_use) signals all tool calls for this step are emitted */
+  allToolCallsReceived = false
+  /** Set to true when allToolCallsReceived AND all tool calls matched with REMOTE_TOOL_REQUESTs */
   readyToFinishForTools = false
   /** Artifact ID of the active token-streaming block (set by message.stream.start) */
   activeStreamArtifactId: string | undefined
@@ -108,7 +110,6 @@ export class ActiveA2ASession {
   tryMatchToolRequests(): void {
     const remainingRequests = [...this.unmatchedRemoteRequests]
     const unmatchedCalls: typeof this.unmatchedToolCalls = []
-    let matchCount = 0
 
     for (const call of this.unmatchedToolCalls) {
       const reqIndex = remainingRequests.findIndex(
@@ -129,18 +130,14 @@ export class ActiveA2ASession {
         LOG_PREFIX,
         `Matched: toolId=${call.toolId} ↔ requestId=${req.requestId} (${call.toolName})`
       )
-      matchCount++
     }
 
     this.unmatchedToolCalls = unmatchedCalls
     this.unmatchedRemoteRequests = remainingRequests
 
-    if (
-      matchCount > 0 &&
+    this.readyToFinishForTools =
+      this.allToolCallsReceived &&
       unmatchedCalls.length === 0 &&
       this.pendingToolRequests.size > 0
-    ) {
-      this.readyToFinishForTools = true
-    }
   }
 }

@@ -144,7 +144,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
   ): Promise<Awaited<ReturnType<LanguageModelV2['doStream']>>> {
     forwardAbortSignal(abortSignal, session.sessionAbortController)
 
-    session.readyToFinishForTools = false
+    session.allToolCallsReceived = false
 
     for (const result of toolResults) {
       const pending = session.pendingToolRequests.get(result.toolCallId)
