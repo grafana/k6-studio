@@ -115,7 +115,7 @@ interface TestRunEventMap {
    * Called when the test run has stopped, i.e. after the
    * done, abort or error events have been emitted.
    */
-  stop: void
+  stop: EmptyObject
 
   /**
    * Fired when a log entry is emitted by the test run.
@@ -125,12 +125,19 @@ interface TestRunEventMap {
 
 export class TestRun extends EventEmitter<TestRunEventMap> {
   #process: ChildProcessWithoutNullStreams
+  #disposer = new AsyncDisposableStack()
 
   #checks: Check[] = []
-  #disposables: Array<AsyncDisposable | Disposable> = []
 
-  constructor(process: ChildProcessWithoutNullStreams) {
+  constructor(
+    process: ChildProcessWithoutNullStreams,
+    disposables: Array<AsyncDisposable | Disposable> = []
+  ) {
     super()
+
+    for (const disposable of disposables) {
+      this.#disposer.use(disposable)
+    }
 
     process.on('spawn', this.#handleStart)
 
@@ -168,9 +175,9 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
 
     this.#process = process
 
-    this.on('done', this.#emitStop)
-    this.on('abort', this.#emitStop)
-    this.on('error', this.#emitStop)
+    this.on('done', this.#handleStop)
+    this.on('abort', this.#handleStop)
+    this.on('error', this.#handleStop)
   }
 
   isRunning(): boolean {
@@ -178,16 +185,12 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
   }
 
   async stop(): Promise<void> {
-    await Promise.all([
-      this.#kill(),
-      ...this.#disposables.map((disposable) => {
-        if (Symbol.asyncDispose in disposable) {
-          return disposable[Symbol.asyncDispose]()
-        }
+    // If we encounter an error while disposing we assume the resources have already
+    // been disposed and ignore the error. `disposeAsync` is idempotent so calling it
+    // multiple times is safe.
+    await Promise.allSettled([this.#kill(), this.#disposer.disposeAsync()])
 
-        return disposable[Symbol.dispose]()
-      }),
-    ])
+    this.emit('stop', {})
   }
 
   #kill() {
@@ -252,11 +255,13 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
     }
   }
 
-  #emitStop = () => {
-    this.emit('stop', undefined)
-  }
-
-  addDisposable(disposable: AsyncDisposable | Disposable) {
-    this.#disposables.push(disposable)
+  #handleStop = async () => {
+    try {
+      await this.#disposer.disposeAsync()
+    } catch (error) {
+      console.error('Error disposing children of test run', error)
+    } finally {
+      this.emit('stop', {})
+    }
   }
 }

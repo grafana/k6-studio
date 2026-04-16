@@ -100,9 +100,8 @@ export const runScript = async ({
       K6_BROWSER_ARGS: proxyArgs.join(','),
       K6_TESTING_COLORIZE: 'false',
     },
+    disposables: [trackingServer],
   })
-
-  testRun.addDisposable(trackingServer)
 
   testRun.on('log', ({ entry }) => {
     browserWindow.webContents.send(ScriptHandler.Log, entry)

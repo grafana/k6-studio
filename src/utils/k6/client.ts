@@ -49,6 +49,7 @@ interface RunArgs {
   insecureSkipTLSVerify?: boolean
   noUsageReport?: boolean
   env?: Record<string, string>
+  disposables?: Array<AsyncDisposable | Disposable>
 }
 
 export class ArchiveError extends Error {
@@ -119,6 +120,7 @@ export class K6Client {
     insecureSkipTLSVerify,
     noUsageReport,
     env = {},
+    disposables = [],
   }: RunArgs): TestRun {
     const args = [
       ['--log-format', 'json'],
@@ -133,7 +135,7 @@ export class K6Client {
       env,
     })
 
-    return new TestRun(process)
+    return new TestRun(process, disposables)
   }
 
   #wait(k6: ChildProcessWithoutNullStreams): Promise<SpawnResult> {
