@@ -6,31 +6,35 @@ import {
 } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
+function hasNonEmptyValue(value: string | undefined): value is string {
+  return value !== undefined && value.trim() !== ''
+}
+
 function toLocatorOptions(selector: ElementSelector): LocatorOptions {
   const values: LocatorOptions['values'] = {}
 
   values.css = { type: 'css', selector: selector.css }
 
-  if (selector.testId !== undefined && selector.testId.trim() !== '') {
+  if (hasNonEmptyValue(selector.testId)) {
     values.testid = { type: 'testid', testId: selector.testId }
   }
 
-  if (selector.alt !== undefined) {
+  if (hasNonEmptyValue(selector.alt)) {
     values.alt = { type: 'alt', text: selector.alt }
   }
 
-  if (selector.label !== undefined) {
+  if (hasNonEmptyValue(selector.label)) {
     values.label = { type: 'label', label: selector.label }
   }
 
-  if (selector.placeholder !== undefined) {
+  if (hasNonEmptyValue(selector.placeholder)) {
     values.placeholder = {
       type: 'placeholder',
       placeholder: selector.placeholder,
     }
   }
 
-  if (selector.title !== undefined) {
+  if (hasNonEmptyValue(selector.title)) {
     values.title = { type: 'title', title: selector.title }
   }
 
@@ -53,12 +57,11 @@ function pickBestLocatorType(
   selector: ElementSelector
 ): LocatorOptions['current'] {
   if (selector.role !== undefined) return 'role'
-  if (selector.label !== undefined) return 'label'
-  if (selector.alt !== undefined) return 'alt'
-  if (selector.placeholder !== undefined) return 'placeholder'
-  if (selector.title !== undefined) return 'title'
-  if (selector.testId !== undefined && selector.testId.trim() !== '')
-    return 'testid'
+  if (hasNonEmptyValue(selector.label)) return 'label'
+  if (hasNonEmptyValue(selector.alt)) return 'alt'
+  if (hasNonEmptyValue(selector.placeholder)) return 'placeholder'
+  if (hasNonEmptyValue(selector.title)) return 'title'
+  if (hasNonEmptyValue(selector.testId)) return 'testid'
   return 'css'
 }
 
