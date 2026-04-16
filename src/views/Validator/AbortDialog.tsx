@@ -10,10 +10,6 @@ interface AbortDialogProps {
 export function AbortDialog({ open, onCancel, onAbort }: AbortDialogProps) {
   const [isAborting, setIsAborting] = useState(false)
 
-  const handleCancel = () => {
-    onCancel()
-  }
-
   const handleAbort = () => {
     setIsAborting(true)
 
@@ -40,12 +36,7 @@ export function AbortDialog({ open, onCancel, onAbort }: AbortDialogProps) {
           </Box>
           <Flex justify="end" gap="3">
             <Dialog.Close>
-              <Button
-                disabled={isAborting}
-                variant="outline"
-                color="orange"
-                onClick={handleCancel}
-              >
+              <Button disabled={isAborting} variant="outline" color="orange">
                 Cancel
               </Button>
             </Dialog.Close>
