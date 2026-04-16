@@ -1,6 +1,7 @@
 import { Code } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
+  ClockIcon,
   EraserIcon,
   GlobeIcon,
   ListChecksIcon,
@@ -23,6 +24,7 @@ import {
   SelectOptionActionBody,
   UncheckActionBody,
   WaitForActionBody,
+  WaitForTimeoutActionBody,
 } from './Actions'
 import { BrowserActionInstance } from './types'
 import { createDefaultLocatorOptions } from './utils'
@@ -191,6 +193,17 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'page.reload',
+    }),
+  },
+  'page.waitForTimeout': {
+    icon: <ClockIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <WaitForTimeoutActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'page.waitForTimeout',
+      timeout: 1000,
     }),
   },
   'locator.waitFor': {
