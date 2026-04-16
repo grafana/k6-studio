@@ -83,9 +83,9 @@ function Content({ scriptPath }: ValidatorProps) {
   }
 
   async function handleConfirmAbortDebugging() {
-    await stopDebugging()
-
-    blocker.confirm()
+    await stopDebugging().finally(() => {
+      blocker.confirm()
+    })
   }
 
   useEffect(() => {
