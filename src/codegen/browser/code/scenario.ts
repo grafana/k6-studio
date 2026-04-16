@@ -469,6 +469,19 @@ function emitWaitForNavigationExpression(
     .done()
 }
 
+function emitWaitForTimeoutExpression(
+  context: ScenarioContext,
+  expression: ir.WaitForTimeoutExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  return new ExpressionBuilder(target)
+    .member('waitForTimeout')
+    .call([literal({ value: expression.timeout })])
+    .await(context)
+    .done()
+}
+
 function emitPromiseAllExpression(
   context: ScenarioContext,
   expression: ir.PromiseAllExpression
@@ -570,6 +583,9 @@ function emitExpression(
 
     case 'WaitForNavigationExpression':
       return emitWaitForNavigationExpression(context, expression)
+
+    case 'WaitForTimeoutExpression':
+      return emitWaitForTimeoutExpression(context, expression)
 
     case 'PromiseAllExpression':
       return emitPromiseAllExpression(context, expression)

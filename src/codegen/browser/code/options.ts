@@ -53,6 +53,7 @@ function isBrowserScenario(scenario: ir.Scenario) {
       case 'WaitForExpression':
       case 'WaitForOptionsExpression':
       case 'WaitForNavigationExpression':
+      case 'WaitForTimeoutExpression':
         return true
 
       case 'Identifier':

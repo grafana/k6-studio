@@ -97,6 +97,17 @@ export const PageWaitForNavigationActionSchema = z.object({
   options: GenericOptions.optional(),
 })
 
+export const PageWaitForTimeoutActionSchema = z.object({
+  method: z.literal('page.waitForTimeout'),
+  // NaN is converted to null by `JSON.stringify` so we type this
+  // as nullable and transform it back to NaN to allow invalid data
+  // to be saved.
+  timeout: z
+    .number()
+    .nullable()
+    .transform((value) => value ?? NaN),
+})
+
 export const PageCloseActionSchema = z.object({
   method: z.literal('page.close'),
 })
@@ -253,6 +264,7 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
   PageGotoActionSchema,
   PageReloadActionSchema,
   PageWaitForNavigationActionSchema,
+  PageWaitForTimeoutActionSchema,
   PageCloseActionSchema,
   GenericPageActionSchema,
 
@@ -350,6 +362,9 @@ export type PageGotoAction = z.infer<typeof PageGotoActionSchema>
 export type PageReloadAction = z.infer<typeof PageReloadActionSchema>
 export type PageWaitForNavigationAction = z.infer<
   typeof PageWaitForNavigationActionSchema
+>
+export type PageWaitForTimeoutAction = z.infer<
+  typeof PageWaitForTimeoutActionSchema
 >
 export type GenericPageAction = z.infer<typeof GenericPageActionSchema>
 

@@ -30,6 +30,7 @@ import {
   PageGotoActionSchema,
   PageReloadActionSchema,
   PageWaitForNavigationActionSchema,
+  PageWaitForTimeoutActionSchema,
 } from '@/main/runner/schema'
 
 export type {
@@ -74,6 +75,7 @@ const BrowserTestActionSchema = z.discriminatedUnion('method', [
   PageGotoActionSchema,
   PageReloadActionSchema,
   PageWaitForNavigationActionSchema,
+  PageWaitForTimeoutActionSchema,
   PageCloseActionSchema,
   GenericPageActionSchema,
 

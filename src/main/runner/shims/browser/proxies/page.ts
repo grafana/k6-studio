@@ -5,10 +5,10 @@ import { createSingleEntryGuard, ProxyOptions, trackLog } from '../utils'
 import { locatorProxy } from './locator'
 import { isLocatorMethod } from './utils'
 
-const isPageInstrumented = createSingleEntryGuard()
+const shouldInstrument = createSingleEntryGuard()
 
 export function pageProxy(target: Page): ProxyOptions<Page> {
-  if (!isPageInstrumented(target)) {
+  if (shouldInstrument(target)) {
     target.on('console', (msg) => {
       const type = msg.type()
 
@@ -27,6 +27,7 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
         msg: msg.text(),
         time: new Date().toISOString(),
         source: 'browser',
+        process: 'browser',
       })
     })
   }
@@ -50,6 +51,13 @@ export function pageProxy(target: Page): ProxyOptions<Page> {
       waitForNavigation() {
         return {
           method: 'page.waitForNavigation',
+        }
+      },
+
+      waitForTimeout(timeout: number) {
+        return {
+          method: 'page.waitForTimeout',
+          timeout,
         }
       },
 
