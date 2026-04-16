@@ -9,6 +9,10 @@ export const InBrowserSettingsSchema = z.object({
       left: z.number(),
     }),
   }),
+  clickRecordingMode: z
+    .union([z.literal('interactive-only'), z.literal('any')])
+    .optional()
+    .default('interactive-only'),
 })
 
 export const LoadEventsSchema = z.object({
