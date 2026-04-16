@@ -14,7 +14,7 @@ export function AbortDialog({ open, onCancel, onAbort }: AbortDialogProps) {
     if (!open) {
       setIsAborting(false)
     }
-  }, [open, onCancel])
+  }, [open])
 
   const handleAbort = () => {
     setIsAborting(true)
