@@ -64,19 +64,17 @@ describe('useStackHealth', () => {
     })
 
     expect(checkStackHealthMock).not.toHaveBeenCalled()
-    // Still reports ready via placeholder (no blocking when disabled)
     expect(result.current.isStackReady).toBe(true)
   })
 
-  it('assumes ready as placeholder while loading', () => {
+  it('reports not ready while first health check is pending', () => {
     checkStackHealthMock.mockReturnValue(new Promise(() => {})) // never resolves
 
     const { result } = renderHook(() => useStackHealth(true), {
       wrapper: createWrapper(),
     })
 
-    // placeholderData should make it ready while query is pending
-    expect(result.current.isStackReady).toBe(true)
+    expect(result.current.isStackReady).toBe(false)
   })
 
   it('calls wake once when enabled', async () => {
