@@ -38,12 +38,16 @@ export function string(value: string): ts.StringLiteral {
 
 export function literal({
   value,
-}: NodeOptions<ts.Literal, 'value'>): ts.Literal {
+}: NodeOptions<ts.Literal, 'value'>): ts.Expression {
   switch (typeof value) {
     case 'string':
       return string(value)
 
     case 'number':
+      if (isNaN(value)) {
+        return identifier('NaN')
+      }
+
       return {
         ...baseProps,
         type: NodeType.Literal,

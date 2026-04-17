@@ -264,6 +264,18 @@ function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
   })
 }
 
+function emitClearNode(context: IntermediateContext, node: m.ClearNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'ClearExpression',
+      locator,
+    },
+  })
+}
+
 function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
   const locator = context.reference(node.inputs.locator)
 
@@ -288,10 +300,19 @@ function emitSelectOptionsNode(
     expression: {
       type: 'SelectOptionsExpression',
       locator,
-      selected: node.selected.map((value) => ({
-        type: 'StringLiteral',
-        value,
-      })),
+      selected: node.selected.map((value) => {
+        if (typeof value === 'string') {
+          return {
+            type: 'StringLiteral',
+            value,
+          }
+        }
+
+        return {
+          type: 'SelectOptionValueExpression',
+          ...value,
+        }
+      }),
       multiple: node.multiple,
     },
   })
@@ -406,6 +427,22 @@ function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
   })
 }
 
+function emitWaitForTimeoutNode(
+  context: IntermediateContext,
+  node: m.WaitForTimeoutNode
+) {
+  const page = context.reference(node.inputs.page)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'WaitForTimeoutExpression',
+      target: page,
+      timeout: node.timeout,
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -419,6 +456,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'reload':
       return emitReloadNode(context, node)
+
+    case 'clear':
+      return emitClearNode(context, node)
 
     case 'click':
       return emitClickNode(context, node)
@@ -437,6 +477,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'wait-for':
       return emitWaitForNode(context, node)
+
+    case 'wait-for-timeout':
+      return emitWaitForTimeoutNode(context, node)
 
     default:
       return exhaustive(node)

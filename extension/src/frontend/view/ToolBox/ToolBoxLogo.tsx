@@ -2,7 +2,11 @@ import { css } from '@emotion/react'
 
 import LogoGradient from '@/assets/logo-gradient.svg'
 
-export function ToolBoxLogo() {
+interface ToolBoxLogoProps {
+  size?: number
+}
+
+export function ToolBoxLogo({ size = 16 }: ToolBoxLogoProps) {
   return (
     <div
       css={css`
@@ -13,8 +17,8 @@ export function ToolBoxLogo() {
     >
       <img
         css={css`
-          width: 16px;
-          height: 16px;
+          width: ${size}px;
+          height: ${size}px;
         `}
         src={LogoGradient}
         alt="k6 Studio"

@@ -34,10 +34,11 @@ export function PlayButton({
       css={css`
         svg {
           fill: var(--accent-9);
-          width: 14px !important;
-          height: 14px !important;
-          min-width: 14px !important;
-          min-height: 14px !important;
+          width: 18px !important;
+          height: 18px !important;
+          min-width: 18px !important;
+          min-height: 18px !important;
+          stroke-width: 0 !important;
           stroke-linecap: butt !important;
           stroke-linejoin: round;
         }
