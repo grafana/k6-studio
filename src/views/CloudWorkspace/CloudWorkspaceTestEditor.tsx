@@ -1,10 +1,11 @@
 import { css } from '@emotion/react'
 import { Box, Button, Flex, Spinner, Text } from '@radix-ui/themes'
-import { PlayIcon, SaveIcon } from 'lucide-react'
+import { SaveIcon } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { ReactMonacoEditor } from '@/components/Monaco/ReactMonacoEditor'
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import {
   type CloudTestRefString,
   parseCloudTestRef,
@@ -146,19 +147,14 @@ export function CloudWorkspaceTestEditor() {
             </Text>
           )}
           <Button
-            size="1"
-            variant="soft"
+            variant="surface"
             disabled={status !== 'idle' || !isDirty}
             onClick={() => void handleSave()}
           >
-            <SaveIcon size={14} /> Save
+            <SaveIcon size={16} /> Save
           </Button>
-          <Button
-            size="1"
-            disabled={status !== 'idle'}
-            onClick={() => void handleRun()}
-          >
-            <PlayIcon size={14} /> Run in cloud
+          <Button disabled={status !== 'idle'} onClick={() => void handleRun()}>
+            <GrafanaIcon /> Run in Grafana Cloud
           </Button>
         </Flex>
       </Flex>
