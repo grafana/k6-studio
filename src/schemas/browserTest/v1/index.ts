@@ -35,8 +35,6 @@ import {
 
 export type {
   ActionLocator,
-  LocatorSelectOptionAction,
-  LocatorWaitForAction,
 } from '@/main/runner/schema'
 
 const ActionLocatorTypeSchema = z.enum([
@@ -98,6 +96,14 @@ const BrowserTestActionSchema = z.discriminatedUnion('method', [
 ])
 
 export type BrowserTestAction = z.infer<typeof BrowserTestActionSchema>
+export type LocatorSelectOptionAction = Extract<
+  BrowserTestAction,
+  { method: 'locator.selectOption' }
+>
+export type LocatorWaitForAction = Extract<
+  BrowserTestAction,
+  { method: 'locator.waitFor' }
+>
 
 export const BrowserTestFileSchema = z.object({
   version: z.literal('1.0'),
