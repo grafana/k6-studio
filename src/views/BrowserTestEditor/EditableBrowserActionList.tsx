@@ -19,7 +19,7 @@ interface EditableBrowserActionListProps {
   onAddAction: (method: BrowserActionInstance['method']) => void
   onRemoveAction: (actionId: string) => void
   onChangeAction: (action: BrowserActionInstance) => void
-  onSwapActions: (idA: string, idB: string) => void
+  onReorderActions: (activeId: string, overId: string) => void
 }
 
 export function EditableBrowserActionList({
@@ -27,7 +27,7 @@ export function EditableBrowserActionList({
   onAddAction,
   onRemoveAction,
   onChangeAction,
-  onSwapActions,
+  onReorderActions,
 }: EditableBrowserActionListProps) {
   return (
     <Flex direction="column" height="100%">
@@ -53,7 +53,7 @@ export function EditableBrowserActionList({
         ) : (
           <SortableBrowserActionList
             actions={actions}
-            onSwapActions={onSwapActions}
+            onReorderActions={onReorderActions}
             onRemoveAction={onRemoveAction}
             onChangeAction={onChangeAction}
           />

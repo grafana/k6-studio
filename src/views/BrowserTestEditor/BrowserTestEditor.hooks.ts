@@ -1,3 +1,4 @@
+import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { debounce } from 'lodash-es'
@@ -152,22 +153,14 @@ export function useBrowserTestState(
     setState(newActions)
   }
 
-  const swapActions = useCallback((idA: string, idB: string) => {
+  const reorderActions = useCallback((activeId: string, overId: string) => {
     setState((prev) => {
-      const indexA = prev.findIndex((a) => a.id === idA)
-      const indexB = prev.findIndex((a) => a.id === idB)
-      if (indexA === -1 || indexB === -1) {
+      const oldIndex = prev.findIndex((a) => a.id === activeId)
+      const newIndex = prev.findIndex((a) => a.id === overId)
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
         return prev
       }
-      const next = [...prev]
-      const actionA = next[indexA]
-      const actionB = next[indexB]
-      if (!actionA || !actionB) {
-        return prev
-      }
-      next[indexA] = actionB
-      next[indexB] = actionA
-      return next
+      return arrayMove(prev, oldIndex, newIndex)
     })
   }, [])
 
@@ -188,7 +181,7 @@ export function useBrowserTestState(
     addAction,
     updateAction,
     removeAction,
-    swapActions,
+    reorderActions,
     isDirty,
   }
 }

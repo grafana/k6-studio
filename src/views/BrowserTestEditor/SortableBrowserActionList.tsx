@@ -35,14 +35,14 @@ enum Position {
 
 interface SortableBrowserActionListProps {
   actions: BrowserActionInstance[]
-  onSwapActions: (idA: string, idB: string) => void
+  onReorderActions: (activeId: string, overId: string) => void
   onRemoveAction: (actionId: string) => void
   onChangeAction: (action: BrowserActionInstance) => void
 }
 
 export function SortableBrowserActionList({
   actions,
-  onSwapActions,
+  onReorderActions,
   onRemoveAction,
   onChangeAction,
 }: SortableBrowserActionListProps) {
@@ -58,7 +58,7 @@ export function SortableBrowserActionList({
     const { active: activeItem, over } = event
 
     if (over && activeItem.id !== over.id) {
-      onSwapActions(activeItem.id as string, over.id as string)
+      onReorderActions(activeItem.id as string, over.id as string)
     }
 
     setActive(null)
