@@ -18,19 +18,21 @@ export function CloudWorkspaceTestEditor() {
   const [source, setSource] = useState('')
   const [savedSource, setSavedSource] = useState('')
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [status, setStatus] = useState<'idle' | 'loading' | 'saving' | 'running'>(
-    'idle'
-  )
+  const [status, setStatus] = useState<
+    'idle' | 'loading' | 'saving' | 'running'
+  >('idle')
 
   const isDirty = source !== savedSource
 
   useEffect(() => {
-    if (parsed === null) {
+    if (parsed?.testId === undefined || parsed?.projectId === undefined) {
       setLoadError('Invalid test link.')
+
       return
     }
 
     let cancelled = false
+
     setStatus('loading')
     setLoadError(null)
 
@@ -44,14 +46,16 @@ export function CloudWorkspaceTestEditor() {
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        setLoadError(err instanceof Error ? err.message : 'Failed to load script.')
+        setLoadError(
+          err instanceof Error ? err.message : 'Failed to load script.'
+        )
         setStatus('idle')
       })
 
     return () => {
       cancelled = true
     }
-  }, [parsed, ref])
+  }, [parsed?.testId, parsed?.projectId, ref])
 
   const handleSave = useCallback(async () => {
     if (parsed === null) return
@@ -64,7 +68,9 @@ export function CloudWorkspaceTestEditor() {
       )
       setSavedSource(source)
     } catch (err: unknown) {
-      setLoadError(err instanceof Error ? err.message : 'Failed to save script.')
+      setLoadError(
+        err instanceof Error ? err.message : 'Failed to save script.'
+      )
     } finally {
       setStatus('idle')
     }
@@ -81,7 +87,9 @@ export function CloudWorkspaceTestEditor() {
     try {
       await window.studio.cloudWorkspace.runTest(ref as CloudTestRefString)
     } catch (err: unknown) {
-      setLoadError(err instanceof Error ? err.message : 'Failed to start test run.')
+      setLoadError(
+        err instanceof Error ? err.message : 'Failed to start test run.'
+      )
     } finally {
       setStatus('idle')
     }
@@ -124,7 +132,11 @@ export function CloudWorkspaceTestEditor() {
           flex-shrink: 0;
         `}
       >
-        <Text size="2" weight="medium" css={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Text
+          size="2"
+          weight="medium"
+          css={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+        >
           Cloud test · {ref}
         </Text>
         <Flex gap="2" align="center">
