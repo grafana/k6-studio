@@ -29,8 +29,8 @@ import { EditableActionDragHandle } from './EditableActionDragHandle'
 import { BrowserActionInstance } from './types'
 
 enum Position {
-  Before = -1,
-  After = 1,
+  Before = 'before',
+  After = 'after',
 }
 
 interface SortableBrowserActionListProps {
@@ -142,6 +142,7 @@ function SortableEditableAction({
     <Flex
       ref={setNodeRef}
       direction="column"
+      data-position={insertPosition}
       css={css`
         position: relative;
         transition: ${transition};
@@ -149,18 +150,44 @@ function SortableEditableAction({
         opacity: ${isDragging ? 0.5 : 1};
         border-bottom: 1px solid var(--studio-border-color);
 
+        &::before,
+        &::after {
+          content: '';
+          position: absolute;
+          background: var(--accent-5);
+          width: 100%;
+          height: 2px;
+          opacity: 0;
+        }
+
         &::before {
+          top: 0px;
+        }
+
+        &::after {
+          bottom: 0px;
+        }
+
+        &[data-position='before']::before {
+          opacity: 1;
+        }
+
+        &[data-position='after']::after {
+          opacity: 1;
+        }
+
+        /* &::before {
           content: '';
           position: absolute;
           width: 100%;
           left: 0;
-          top: ${insertPosition === Position.Before ? '-4px' : 'auto'};
-          bottom: ${insertPosition === Position.After ? '-4px' : 'auto'};
+          top: ${insertPosition === Position.Before ? '-2px' : 'auto'};
+          bottom: ${insertPosition === Position.After ? '-2px' : 'auto'};
           height: 2px;
           background: var(--accent-5);
           border-radius: var(--radius-1);
           opacity: ${insertPosition !== undefined ? 1 : 0};
-        }
+        } */
       `}
     >
       <EditableAction
