@@ -1,33 +1,29 @@
 import { css } from '@emotion/react'
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorWaitForAction } from '@/main/runner/schema'
-
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { WaitForOptionsForm } from '../../ActionForms/forms/WaitForOptionsForm'
-import { WithEditorMetadata } from '../../types'
+import { BrowserActionInstance } from '../../types'
+
+type Action = Extract<BrowserActionInstance, { method: 'locator.waitFor' }>
 
 interface WaitForActionBodyProps {
-  action: WithEditorMetadata<LocatorWaitForAction>
-  onChange: (action: WithEditorMetadata<LocatorWaitForAction>) => void
+  action: Action
+  onChange: (action: Action) => void
 }
 
 export function WaitForActionBody({
   action,
   onChange,
 }: WaitForActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorWaitForAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: Action['locator']) => {
     onChange({
       ...action,
       locator,
     })
   }
 
-  const handleChangeOptions = (
-    options: Partial<LocatorWaitForAction>['options']
-  ) => {
+  const handleChangeOptions = (options: Partial<Action>['options']) => {
     onChange({
       ...action,
       options: {

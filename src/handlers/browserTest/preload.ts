@@ -4,8 +4,8 @@ import { BrowserTestFile } from '@/schemas/browserTest/v1'
 
 import { BrowserTestHandler } from './types'
 
-export function create() {
-  return ipcRenderer.invoke(BrowserTestHandler.Create) as Promise<string>
+export function create(data?: BrowserTestFile) {
+  return ipcRenderer.invoke(BrowserTestHandler.Create, data) as Promise<string>
 }
 
 export function open(fileName: string) {

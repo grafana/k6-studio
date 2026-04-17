@@ -10,7 +10,7 @@ import { SettingsIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { FieldGroup } from '@/components/Form'
-import { LocatorWaitForAction } from '@/main/runner/schema'
+import { LocatorWaitForAction } from '@/schemas/browserTest/v1'
 
 import { toFieldErrors } from './utils'
 

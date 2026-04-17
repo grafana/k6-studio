@@ -1,22 +1,20 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorFillAction } from '@/main/runner/schema'
-
 import { FillValueForm } from '../../ActionForms/forms/FillValueForm'
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
+import { BrowserActionInstance } from '../../types'
 
 const FILL_ROLES = ['textbox', 'searchbox', 'combobox']
 
+type Action = Extract<BrowserActionInstance, { method: 'locator.fill' }>
+
 interface FillActionBodyProps {
-  action: WithEditorMetadata<LocatorFillAction>
-  onChange: (action: WithEditorMetadata<LocatorFillAction>) => void
+  action: Action
+  onChange: (action: Action) => void
 }
 
 export function FillActionBody({ action, onChange }: FillActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorFillAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: Action['locator']) => {
     onChange({ ...action, locator })
   }
 

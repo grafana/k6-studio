@@ -14,7 +14,7 @@ import { Fragment, useState } from 'react'
 
 import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { FieldGroup } from '@/components/Form'
-import { LocatorSelectOptionAction } from '@/main/runner/schema'
+import { LocatorSelectOptionAction } from '@/schemas/browserTest/v1'
 
 import { ValuePopoverBadge } from '../components'
 

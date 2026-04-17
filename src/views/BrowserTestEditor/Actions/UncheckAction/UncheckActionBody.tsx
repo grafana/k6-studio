@@ -1,24 +1,22 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorUncheckAction } from '@/main/runner/schema'
-
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
-import { WithEditorMetadata } from '../../types'
+import { BrowserActionInstance } from '../../types'
 
 const UNCHECK_ROLES = ['checkbox', 'radio', 'switch']
 
+type Action = Extract<BrowserActionInstance, { method: 'locator.uncheck' }>
+
 interface UncheckActionBodyProps {
-  action: WithEditorMetadata<LocatorUncheckAction>
-  onChange: (action: WithEditorMetadata<LocatorUncheckAction>) => void
+  action: Action
+  onChange: (action: Action) => void
 }
 
 export function UncheckActionBody({
   action,
   onChange,
 }: UncheckActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorUncheckAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: Action['locator']) => {
     onChange({ ...action, locator })
   }
 

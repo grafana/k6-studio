@@ -1,27 +1,25 @@
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorSelectOptionAction } from '@/main/runner/schema'
-
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { SelectOptionValuesForm } from '../../ActionForms/forms/SelectOptionValuesForm'
-import { WithEditorMetadata } from '../../types'
+import { BrowserActionInstance } from '../../types'
+
+type Action = Extract<BrowserActionInstance, { method: 'locator.selectOption' }>
 
 interface SelectOptionActionBodyProps {
-  action: WithEditorMetadata<LocatorSelectOptionAction>
-  onChange: (action: WithEditorMetadata<LocatorSelectOptionAction>) => void
+  action: Action
+  onChange: (action: Action) => void
 }
 
 export function SelectOptionActionBody({
   action,
   onChange,
 }: SelectOptionActionBodyProps) {
-  const handleChangeLocator = (
-    locator: WithEditorMetadata<LocatorSelectOptionAction>['locator']
-  ) => {
+  const handleChangeLocator = (locator: Action['locator']) => {
     onChange({ ...action, locator })
   }
 
-  const handleChangeValues = (values: LocatorSelectOptionAction['values']) => {
+  const handleChangeValues = (values: Action['values']) => {
     onChange({ ...action, values })
   }
 

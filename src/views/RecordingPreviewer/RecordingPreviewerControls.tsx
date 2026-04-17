@@ -7,10 +7,12 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { emitScript } from '@/codegen/browser'
 import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
+import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
 import { getRoutePath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
+import { useFeaturesStore } from '@/store/features'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
@@ -29,7 +31,12 @@ export function RecordingPreviewControls({
   const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
+  const createBrowserTest = useCreateBrowserTest()
   const { fileName } = useParams()
+
+  const isBrowserEditorEnabled = useFeaturesStore(
+    (state) => state.features['browser-test-editor']
+  )
 
   // TODO: https://github.com/grafana/k6-studio/issues/277
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -39,6 +46,8 @@ export function RecordingPreviewControls({
   const isDiscardable = Boolean(state?.discardable)
 
   const handleCreateGenerator = () => createTestGenerator(fileName)
+
+  const handleCreateBrowserTest = () => createBrowserTest(browserEvents)
 
   const handleDelete = useDeleteFile({
     file,
@@ -110,8 +119,16 @@ export function RecordingPreviewControls({
             description="Generate a k6 script from HTTP requests using rules"
             onClick={handleCreateGenerator}
           />
+          {isBrowserEditorEnabled && (
+            <MenuItem
+              label="Browser test"
+              description="Create a browser test from recorded interactions"
+              disabled={browserEvents.length === 0}
+              onClick={handleCreateBrowserTest}
+            />
+          )}
           <MenuItem
-            label="Browser test"
+            label="Browser script"
             description="Export a k6 script simulating browser interactions"
             disabled={browserEvents.length === 0}
             onClick={() => setShowExportDialog(true)}

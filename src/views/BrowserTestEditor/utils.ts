@@ -1,4 +1,4 @@
-import { LocatorOptions } from './types'
+import { LocatorOptions } from '@/schemas/browserTest/v1'
 
 export function createDefaultLocatorOptions(): LocatorOptions {
   return {
