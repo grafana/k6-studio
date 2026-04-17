@@ -133,9 +133,11 @@ function SortableEditableAction({
 
   const insertPosition =
     over?.id === action.id
-      ? index > activeIndex
-        ? Position.After
-        : Position.Before
+      ? index === activeIndex
+        ? undefined
+        : index > activeIndex
+          ? Position.After
+          : Position.Before
       : undefined
 
   return (
@@ -175,19 +177,6 @@ function SortableEditableAction({
         &[data-position='after']::after {
           opacity: 1;
         }
-
-        /* &::before {
-          content: '';
-          position: absolute;
-          width: 100%;
-          left: 0;
-          top: ${insertPosition === Position.Before ? '-2px' : 'auto'};
-          bottom: ${insertPosition === Position.After ? '-2px' : 'auto'};
-          height: 2px;
-          background: var(--accent-5);
-          border-radius: var(--radius-1);
-          opacity: ${insertPosition !== undefined ? 1 : 0};
-        } */
       `}
     >
       <EditableAction
