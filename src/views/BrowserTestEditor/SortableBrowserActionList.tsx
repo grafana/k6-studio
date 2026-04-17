@@ -21,11 +21,11 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { css } from '@emotion/react'
-import { Flex, IconButton } from '@radix-ui/themes'
-import { GripVerticalIcon } from 'lucide-react'
+import { Flex } from '@radix-ui/themes'
 import { useState } from 'react'
 
 import { EditableAction } from './EditableAction'
+import { EditableActionDragHandle } from './EditableActionDragHandle'
 import { BrowserActionInstance } from './types'
 
 enum Position {
@@ -60,13 +60,12 @@ export function SortableBrowserActionList({
     if (over && activeItem.id !== over.id) {
       onSwapActions(activeItem.id as string, over.id as string)
     }
+
     setActive(null)
   }
 
   function handleDragStart(event: DragStartEvent) {
-    setActive(
-      actions.find((action) => action.id === event.active.id) ?? null
-    )
+    setActive(actions.find((action) => action.id === event.active.id) ?? null)
   }
 
   return (
@@ -86,29 +85,17 @@ export function SortableBrowserActionList({
             <SortableEditableAction
               key={action.id}
               action={action}
-              onRemove={onRemoveAction}
               onChange={onChangeAction}
+              onRemove={onRemoveAction}
             />
           ))}
           <DragOverlay modifiers={[restrictToFirstScrollableAncestor]}>
             {active ? (
               <EditableAction
                 action={active}
-                onRemove={onRemoveAction}
+                dragHandle={<EditableActionDragHandle overlay />}
                 onChange={onChangeAction}
-                leadingSlot={
-                  <IconButton
-                    size="2"
-                    variant="ghost"
-                    color="gray"
-                    aria-hidden
-                    css={css`
-                      cursor: grabbing;
-                    `}
-                  >
-                    <GripVerticalIcon color="gray" aria-hidden />
-                  </IconButton>
-                }
+                onRemove={onRemoveAction}
               />
             ) : null}
           </DragOverlay>
@@ -178,23 +165,9 @@ function SortableEditableAction({
     >
       <EditableAction
         action={action}
-        onRemove={onRemove}
+        dragHandle={<EditableActionDragHandle {...attributes} {...listeners} />}
         onChange={onChange}
-        leadingSlot={
-          <IconButton
-            size="2"
-            variant="ghost"
-            color="gray"
-            aria-label="Drag to reorder"
-            css={css`
-              cursor: grab;
-            `}
-            {...attributes}
-            {...listeners}
-          >
-            <GripVerticalIcon color="gray" aria-hidden />
-          </IconButton>
-        }
+        onRemove={onRemove}
       />
     </Flex>
   )

@@ -11,14 +11,14 @@ interface EditableActionProps {
   action: BrowserActionInstance
   onRemove: (actionId: string) => void
   onChange: (action: BrowserActionInstance) => void
-  leadingSlot?: ReactNode
+  dragHandle?: ReactNode
 }
 
 export function EditableAction({
   action,
+  dragHandle,
   onRemove,
   onChange,
-  leadingSlot,
 }: EditableActionProps) {
   const handleRemove = () => {
     onRemove(action.id)
@@ -36,7 +36,7 @@ export function EditableAction({
       `}
     >
       <Flex align="center" gap="2">
-        {leadingSlot}
+        {dragHandle}
         {editor.icon}
         {editor.render({ action, onChange })}
         <Tooltip content="Remove action">
