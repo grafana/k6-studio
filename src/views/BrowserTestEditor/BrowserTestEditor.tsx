@@ -61,7 +61,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     }
 
     void stopDebugging().finally(() => {
-      blocker.confirm()
+      blocker.proceed()
     })
   }, [blocker, stopDebugging])
 

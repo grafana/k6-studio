@@ -1,66 +1,68 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useBlocker } from 'react-router-dom'
+
+type CloseState = 'close-requested' | 'closing' | 'none'
 
 /**
  * This hook is similar to react-router's useBlocker, but it also handles the case where the app is closing.
  * It returns a boolean indicating if the view is blocked, and two functions to cancel or confirm the blocking.
  */
 export function useViewBlocker(block: boolean) {
-  const [isAppClosing, setIsAppClosing] = useState(false)
-
-  const isConfirmedRef = useRef(false)
+  const [refresh, setRefresh] = useState(0)
 
   const blocker = useBlocker(block)
 
-  // After confirm(), `isConfirmedRef` prevents double submission until the block condition
-  // clears (e.g. debugging stopped). Reset so a later blocking session can confirm again.
+  const blockerRef = useRef(blocker)
+  const closeStateRef = useRef<CloseState>('none')
+
   useEffect(() => {
-    if (!block) {
-      isConfirmedRef.current = false
-    }
-  }, [block])
+    blockerRef.current = blocker
+  }, [blocker])
 
   useEffect(() => {
     return window.studio.app.onApplicationClose(() => {
       if (block) {
-        setIsAppClosing(true)
+        closeStateRef.current = 'close-requested'
+
+        setRefresh((prev) => prev + 1)
 
         return
       }
 
-      window.studio.app.closeApplication()
+      closeStateRef.current = 'closing'
+
+      void window.studio.app.closeApplication()
     })
   }, [block])
 
-  const cancel = useCallback(() => {
-    setIsAppClosing(false)
-
-    blocker.reset?.()
-  }, [blocker.reset])
-
-  const confirm = useCallback(() => {
-    if (isConfirmedRef.current) {
-      return
-    }
-
-    isConfirmedRef.current = true
-
-    if (isAppClosing) {
-      window.studio.app.closeApplication()
-
-      return
-    }
-
-    blocker.proceed?.()
-  }, [blocker.proceed, isAppClosing])
-
-  const blocked = blocker.state === 'blocked' || isAppClosing
-
   return useMemo(() => {
     return {
-      blocked,
-      cancel,
-      confirm,
+      blocked: blocker.state === 'blocked' || closeStateRef.current !== 'none',
+      proceed() {
+        if (closeStateRef.current === 'closing') {
+          return
+        }
+
+        if (closeStateRef.current === 'close-requested') {
+          closeStateRef.current = 'closing'
+
+          void window.studio.app.closeApplication()
+
+          return
+        }
+
+        blockerRef.current?.proceed?.()
+      },
+      cancel() {
+        if (closeStateRef.current === 'closing') {
+          return
+        }
+
+        closeStateRef.current = 'none'
+        blockerRef.current?.reset?.()
+
+        setRefresh((prev) => prev + 1)
+      },
     }
-  }, [blocked, cancel, confirm])
+  }, [blocker.state, refresh])
 }
