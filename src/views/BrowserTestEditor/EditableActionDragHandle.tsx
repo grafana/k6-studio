@@ -11,7 +11,7 @@ export function EditableActionDragHandle({
       size="2"
       variant="ghost"
       color="gray"
-      aria-label={overlay ? 'Drag to reorder' : undefined}
+      aria-label="Drag to reorder"
       data-overlay={overlay}
       css={css`
         cursor: grab;
