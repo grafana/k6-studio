@@ -3,7 +3,7 @@ import { Box, Flex, IconButton, Spinner } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
 import { PanelLeftOpenIcon } from 'lucide-react'
 import { Suspense, useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useMatch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 
 import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
@@ -35,6 +35,9 @@ export function Layout() {
     true
   )
   const location = useLocation()
+  const isCloudWorkspaceRoute = Boolean(
+    useMatch({ path: '/cloud-workspace', end: false })
+  )
   useListenDeepLinks()
 
   const handleVisibleChange = (index: number, visible: boolean) => {
@@ -92,6 +95,7 @@ export function Layout() {
           <Sidebar
             isExpanded={isSidebarExpanded}
             onCollapseSidebar={() => setIsSidebarExpanded(false)}
+            variant={isCloudWorkspaceRoute ? 'cloud-workspace' : 'local'}
           />
         </Allotment.Pane>
 

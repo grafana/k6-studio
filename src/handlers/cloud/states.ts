@@ -238,7 +238,7 @@ export class RunInCloudStateMachine extends EventEmitter<RunInCloudEventMap> {
       type: 'done',
       result: {
         type: 'started',
-        testRunUrl: `${state.stack.url}/a/k6-app/runs/${run.id}`,
+        testRunUrl: run.test_run_details_page_url,
       },
     }
   }

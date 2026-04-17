@@ -11,6 +11,19 @@ export class ProjectClient {
     this.#credentials = credentials
   }
 
+  async listAll({ signal }: CloudRequest) {
+    const response = await fetch(url(`/projects?$top=1000`), {
+      headers: getHeaders(this.#credentials),
+      signal,
+    })
+
+    if (!response.ok) {
+      throw new HttpError('Failed to fetch projects.', response)
+    }
+
+    return parse(response, ListCloudProjectsSchema)
+  }
+
   async findDefault({ signal }: CloudRequest) {
     const response = await fetch(url(`/projects`), {
       headers: getHeaders(this.#credentials),

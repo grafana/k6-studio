@@ -8,6 +8,8 @@ const routes = {
   generator: '/generator/:fileName',
   browserTestEditor: '/editor/:fileName',
   dataFilePreviewer: '/data-file/:fileName',
+  cloudWorkspace: '/cloud-workspace',
+  cloudWorkspaceTest: '/cloud-workspace/test/:ref',
 }
 
 export type RouteName = keyof typeof routes
@@ -31,4 +33,6 @@ export const routeMap = {
   browserTestEditor: getRoutePath('browserTestEditor'),
   validator: getRoutePath('validator'),
   dataFilePreviewer: getRoutePath('dataFilePreviewer'),
+  cloudWorkspace: getRoutePath('cloudWorkspace'),
+  cloudWorkspaceTest: getRoutePath('cloudWorkspaceTest'),
 }

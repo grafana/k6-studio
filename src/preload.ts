@@ -7,6 +7,7 @@ import * as browser from './handlers/browser/preload'
 import * as browserRemote from './handlers/browserRemote/preload'
 import * as browserTest from './handlers/browserTest/preload'
 import * as cloud from './handlers/cloud/preload'
+import * as cloudWorkspace from './handlers/cloudWorkspace/preload'
 import * as data from './handlers/dataFiles/preload'
 import * as generator from './handlers/generator/preload'
 import * as har from './handlers/har/preload'
@@ -32,6 +33,7 @@ const studio = {
   settings,
   browserRemote,
   cloud,
+  cloudWorkspace,
   ai,
 } as const
 

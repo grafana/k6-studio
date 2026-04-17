@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Grid, Separator } from '@radix-ui/themes'
+import { CloudIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import k6LogoDark from '@/assets/logo-dark.svg'
@@ -48,6 +49,11 @@ export function ActivityBar() {
           to={getRoutePath('home')}
           icon={<HomeIcon />}
           tooltip="Home"
+        />
+        <NavIconButton
+          to={getRoutePath('cloudWorkspace')}
+          icon={<CloudIcon />}
+          tooltip="Cloud workspace"
         />
       </Grid>
 

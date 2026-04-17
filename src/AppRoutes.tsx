@@ -39,6 +39,16 @@ const Validator = lazy(() =>
 const DataFile = lazy(() =>
   import('@/views/DataFile').then((module) => ({ default: module.DataFile }))
 )
+const CloudWorkspaceHome = lazy(() =>
+  import('@/views/CloudWorkspace/CloudWorkspaceHome').then((module) => ({
+    default: module.CloudWorkspaceHome,
+  }))
+)
+const CloudWorkspaceTestEditor = lazy(() =>
+  import('@/views/CloudWorkspace/CloudWorkspaceTestEditor').then((module) => ({
+    default: module.CloudWorkspaceTestEditor,
+  }))
+)
 
 const router = createHashRouter(
   createRoutesFromChildren(
@@ -60,6 +70,11 @@ const router = createHashRouter(
       />
       <Route path={routeMap.validator} element={<Validator />} />
       <Route path={routeMap.dataFilePreviewer} element={<DataFile />} />
+      <Route path={routeMap.cloudWorkspace} element={<CloudWorkspaceHome />} />
+      <Route
+        path={routeMap.cloudWorkspaceTest}
+        element={<CloudWorkspaceTestEditor />}
+      />
       <Route path="*" element={<NoRouteFound />} />
     </Route>
   )
