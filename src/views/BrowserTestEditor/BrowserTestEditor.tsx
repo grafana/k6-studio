@@ -60,8 +60,9 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       return
     }
 
+    const capturedBlocker = blocker
     void stopDebugging().finally(() => {
-      blocker.proceed()
+      capturedBlocker.proceed()
     })
   }, [blocker, stopDebugging])
 

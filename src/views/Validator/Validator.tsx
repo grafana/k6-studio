@@ -83,8 +83,9 @@ function Content({ scriptPath }: ValidatorProps) {
   }
 
   async function handleConfirmAbortDebugging() {
+    const capturedBlocker = blocker
     await stopDebugging().finally(() => {
-      blocker.proceed()
+      capturedBlocker.proceed()
     })
   }
 
