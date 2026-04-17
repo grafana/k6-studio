@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import styled from '@emotion/styled'
 import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { Allotment } from 'allotment'
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { ExecutionDetails } from '@/components/Validator/ExecutionDetails'
@@ -23,12 +23,14 @@ interface HttpDebuggerProps {
   script: string
   session: DebugSession
   onDebugScript: () => void
+  scriptSlot?: ReactNode
 }
 
 export function HttpDebugger({
   script,
   session,
   onDebugScript,
+  scriptSlot,
 }: HttpDebuggerProps) {
   const [tab, setTab] = useState('script')
 
@@ -61,11 +63,13 @@ export function HttpDebugger({
                   <Tabs.Trigger value="requests">Requests</Tabs.Trigger>
                 </Tabs.List>
                 <TabsContent value="script">
-                  <ReadOnlyEditor
-                    value={script}
-                    showToolbar={false}
-                    language="typescript"
-                  />
+                  {scriptSlot ?? (
+                    <ReadOnlyEditor
+                      value={script}
+                      showToolbar={false}
+                      language="typescript"
+                    />
+                  )}
                 </TabsContent>
                 <TabsContent value="requests">
                   {session.state === 'pending' && (

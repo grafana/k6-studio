@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
 
 import {
   LogsSection,
@@ -25,12 +25,14 @@ interface BrowserDebuggerProps {
   script: string
   session: DebugSession
   onDebugScript: () => void
+  scriptSlot?: ReactNode
 }
 
 export function BrowserDebugger({
   script,
   session,
   onDebugScript,
+  scriptSlot,
 }: BrowserDebuggerProps) {
   const [highlightedSelector, setHighlightedSelector] =
     useState<NodeSelector | null>(null)
@@ -84,6 +86,7 @@ export function BrowserDebugger({
                   script={script}
                   session={session}
                   highlightedSelector={highlightedSelector}
+                  scriptSlot={scriptSlot}
                 />
               </Panel>
               <Separator />

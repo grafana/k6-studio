@@ -2,6 +2,7 @@ import { ipcRenderer } from 'electron'
 
 import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
+import { K6TestOptions } from '@/utils/k6/schema'
 
 import { createListener } from '../utils'
 
@@ -16,6 +17,13 @@ export function openScript(scriptPath: string) {
     ScriptHandler.Open,
     scriptPath
   ) as Promise<OpenScriptResult>
+}
+
+export function inspectScript(script: string) {
+  return ipcRenderer.invoke(
+    ScriptHandler.Inspect,
+    script
+  ) as Promise<K6TestOptions>
 }
 
 export function runScriptFromGenerator(script: string, shouldTrack = true) {

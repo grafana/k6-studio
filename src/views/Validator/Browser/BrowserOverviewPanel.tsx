@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Box, Flex, Tabs } from '@radix-ui/themes'
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { NodeSelector } from '@/schemas/selectors'
@@ -13,12 +13,14 @@ interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
   highlightedSelector: NodeSelector | null
+  scriptSlot?: ReactNode
 }
 
 export function BrowserOverviewPanel({
   script,
   session,
   highlightedSelector,
+  scriptSlot,
 }: BrowserOverviewPanelProps) {
   const [tab, setTab] = useState('script')
 
@@ -52,11 +54,13 @@ export function BrowserOverviewPanel({
           value="script"
           forceMount
         >
-          <ReadOnlyEditor
-            value={script}
-            showToolbar={false}
-            language="typescript"
-          />
+          {scriptSlot ?? (
+            <ReadOnlyEditor
+              value={script}
+              showToolbar={false}
+              language="typescript"
+            />
+          )}
         </Tabs.Content>
         <Tabs.Content
           css={css`
