@@ -209,63 +209,65 @@ function CloudWorkspaceTestEditorInner({ urlRef }: { urlRef: string }) {
         <FileNameHeader file={cloudFile} canRename={false} isDirty={isDirty} />
       }
       actions={
-        <>
-          {isRunning && (
-            <>
-              <TextSpinner text="Running" />
-              <Button variant="outline" onClick={() => void handleStop()}>
-                Stop run
-              </Button>
-            </>
-          )}
-          {!isRunning && (
-            <>
-              <Tooltip content={isDirty ? 'Save changes' : 'Changes saved'}>
-                <IconButton
-                  onClick={() => void handleSave()}
-                  disabled={status !== 'idle' || !isDirty}
-                  variant="ghost"
-                  color="gray"
-                >
-                  <SaveIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip
-                content={`Proxy is ${proxyStatus}`}
-                hidden={proxyStatus === 'online'}
-              >
-                <Button
-                  variant="ghost"
-                  onClick={() => void handleValidate()}
-                  disabled={proxyStatus !== 'online' || status !== 'idle'}
-                >
-                  <CircleCheckBigIcon /> Validate
+        <Flex align="center" gap="2" ml="2">
+          <Flex gap="4" align="center">
+            {isRunning && (
+              <>
+                <TextSpinner text="Running" />
+                <Button variant="outline" onClick={() => void handleStop()}>
+                  Stop run
                 </Button>
-              </Tooltip>
-              <Button
-                disabled={status !== 'idle'}
-                loading={status === 'running'}
-                onClick={() => void handleRunInCloud()}
+              </>
+            )}
+            {!isRunning && (
+              <>
+                <Tooltip content={isDirty ? 'Save changes' : 'Changes saved'}>
+                  <IconButton
+                    onClick={() => void handleSave()}
+                    disabled={status !== 'idle' || !isDirty}
+                    variant="ghost"
+                    color="gray"
+                  >
+                    <SaveIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip
+                  content={`Proxy is ${proxyStatus}`}
+                  hidden={proxyStatus === 'online'}
+                >
+                  <Button
+                    variant="ghost"
+                    onClick={() => void handleValidate()}
+                    disabled={proxyStatus !== 'online' || status !== 'idle'}
+                  >
+                    <CircleCheckBigIcon /> Validate
+                  </Button>
+                </Tooltip>
+                <Button
+                  disabled={status !== 'idle'}
+                  loading={status === 'running'}
+                  onClick={() => void handleRunInCloud()}
+                >
+                  <GrafanaIcon /> Run in Grafana Cloud
+                </Button>
+              </>
+            )}
+            {loadError && (
+              <Text
+                size="1"
+                color="red"
+                css={css`
+                  max-width: 200px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                `}
               >
-                <GrafanaIcon /> Run in Grafana Cloud
-              </Button>
-            </>
-          )}
-          {loadError && (
-            <Text
-              size="1"
-              color="red"
-              css={css`
-                max-width: 200px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-              `}
-            >
-              {loadError}
-            </Text>
-          )}
-        </>
+                {loadError}
+              </Text>
+            )}
+          </Flex>
+        </Flex>
       }
     >
       <Flex flexGrow="1" direction="column" minHeight="0" align="stretch">
