@@ -240,7 +240,7 @@ function toEntry(type: MatchType, input: string): SelectOptionValue {
 function validateSelectOptionEntry(
   entry: SelectOptionValue
 ): string | undefined {
-  if (entry.label !== undefined && entry.label.trim() === '') {
+  if (entry.label !== undefined && entry.label === '') {
     return 'Label cannot be empty'
   }
   if (entry.index !== undefined && !Number.isInteger(entry.index)) {

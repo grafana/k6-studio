@@ -1221,6 +1221,30 @@ it('should emit a waitFor statement', async ({ expect }) => {
   )
 })
 
+it('should emit page.waitForTimeout', async ({ expect }) => {
+  const script = await emitScript({
+    defaultScenario: {
+      nodes: [
+        {
+          type: 'page',
+          nodeId: 'page',
+        },
+        {
+          type: 'wait-for-timeout',
+          nodeId: 'wait-for-timeout',
+          timeout: 1500,
+          inputs: { page: { nodeId: 'page' } },
+        },
+      ],
+    },
+    scenarios: {},
+  })
+
+  await expect(script).toMatchFileSnapshot(
+    '__snapshots__/browser/wait-for-timeout-statement.ts'
+  )
+})
+
 it('should emit merged try-finally blocks', async ({ expect }) => {
   const script = await emitScript({
     defaultScenario: {

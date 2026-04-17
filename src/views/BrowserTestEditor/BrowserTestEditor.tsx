@@ -7,7 +7,10 @@ import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
-import { LogsSection } from '@/components/Validator/LogsSection'
+import {
+  LogsSection,
+  useConsoleFilter,
+} from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
@@ -37,6 +40,8 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     useBrowserTestEditorLayout()
 
   const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.fileName)
+
+  const consoleFilter = useConsoleFilter()
 
   const test = useBrowserTestState(data)
 
@@ -166,6 +171,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                       onAddAction={test.addAction}
                       onRemoveAction={test.removeAction}
                       onChangeAction={test.updateAction}
+                      onReorderActions={test.reorderActions}
                     />
                   </Panel>
                 </Group>
@@ -189,7 +195,11 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                     `}
                     value="console"
                   >
-                    <LogsSection autoScroll={false} logs={session.logs} />
+                    <LogsSection
+                      {...consoleFilter}
+                      autoScroll={session.state === 'running'}
+                      logs={session.logs}
+                    />
                   </Tabs.Content>
                   <Tabs.Content
                     css={css`

@@ -152,6 +152,12 @@ export interface WaitForNavigationExpression {
   target: Expression
 }
 
+export interface WaitForTimeoutExpression {
+  type: 'WaitForTimeoutExpression'
+  target: Expression
+  timeout: number
+}
+
 export interface PromiseAllExpression {
   type: 'PromiseAllExpression'
   expressions: Expression[]
@@ -237,6 +243,7 @@ export type Expression =
   | WaitForExpression
   | WaitForOptionsExpression
   | WaitForNavigationExpression
+  | WaitForTimeoutExpression
   | PromiseAllExpression
 
 export interface VariableDeclaration {
