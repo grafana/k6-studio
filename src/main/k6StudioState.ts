@@ -1,7 +1,7 @@
 import { FSWatcher } from 'chokidar'
 import eventEmitter from 'events'
 
-import { RecordingSession } from '@/handlers/browser/recorders/types'
+import { RecordingSession } from '@/recorder/launchers/types'
 
 import { ProxyStatus } from '../types'
 import { AppSettings } from '../types/settings'
