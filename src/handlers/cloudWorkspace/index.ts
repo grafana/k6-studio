@@ -2,14 +2,33 @@ import { ipcMain, shell } from 'electron'
 
 import { getProfileData } from '@/handlers/auth/fs'
 import { ProjectClient } from '@/services/k6/projects'
+import type { CloudTest } from '@/services/k6/schemas'
 import { TestClient } from '@/services/k6/tests'
 import { CloudCredentials } from '@/services/k6/types'
 
 import {
   CloudWorkspaceHandlers,
+  CloudWorkspaceTestEntry,
   CloudWorkspaceTree,
   parseCloudTestRef,
 } from './types'
+
+function mapTestsForProject(
+  projectId: number,
+  projectTests: CloudTest[]
+): CloudWorkspaceTestEntry[] {
+  const entries: CloudWorkspaceTestEntry[] = projectTests.map((t) => ({
+    projectId: t.project_id ?? projectId,
+    testId: t.id,
+    name: t.name,
+  }))
+
+  entries.sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  )
+
+  return entries
+}
 
 async function getCredentials(): Promise<{
   credentials: CloudCredentials
@@ -43,30 +62,31 @@ export function initialize() {
     async (): Promise<CloudWorkspaceTree> => {
       const { credentials, stackName } = await getCredentials()
       const projects = new ProjectClient(credentials)
-      const tests = new TestClient(credentials)
 
       const list = await projects.listAll({})
-      const entries: CloudWorkspaceTree['tests'] = []
-
-      for (const project of list.value) {
-        const projectTests = await tests.listInProject({
+      const projectFolders: CloudWorkspaceTree['projects'] = list.value.map(
+        (project) => ({
           projectId: project.id,
+          name: project.name,
         })
+      )
 
-        for (const t of projectTests) {
-          entries.push({
-            projectId: t.project_id ?? project.id,
-            testId: t.id,
-            name: t.name,
-          })
-        }
-      }
-
-      entries.sort((a, b) =>
+      projectFolders.sort((a, b) =>
         a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
       )
 
-      return { stackName, tests: entries }
+      return { stackName, projects: projectFolders }
+    }
+  )
+
+  ipcMain.handle(
+    CloudWorkspaceHandlers.ListProjectTests,
+    async (_event, projectId: number): Promise<CloudWorkspaceTestEntry[]> => {
+      const { credentials } = await getCredentials()
+      const tests = new TestClient(credentials)
+      const projectTests = await tests.listInProject({ projectId })
+
+      return mapTestsForProject(projectId, projectTests)
     }
   )
 

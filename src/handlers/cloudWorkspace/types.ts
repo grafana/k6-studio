@@ -1,5 +1,6 @@
 export enum CloudWorkspaceHandlers {
   GetTree = 'cloud-workspace:get-tree',
+  ListProjectTests = 'cloud-workspace:list-project-tests',
   GetScript = 'cloud-workspace:get-script',
   SaveScript = 'cloud-workspace:save-script',
   RunTest = 'cloud-workspace:run-test',
@@ -14,9 +15,15 @@ export interface CloudWorkspaceTestEntry {
   name: string
 }
 
+export interface CloudWorkspaceProjectSummary {
+  projectId: number
+  name: string
+}
+
 export interface CloudWorkspaceTree {
   stackName: string
-  tests: CloudWorkspaceTestEntry[]
+  /** Projects in the stack (tests are loaded when a folder is expanded). */
+  projects: CloudWorkspaceProjectSummary[]
 }
 
 export function parseCloudTestRef(ref: string): {

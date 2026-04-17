@@ -2,12 +2,24 @@ import { ipcRenderer } from 'electron'
 
 import {
   CloudWorkspaceHandlers,
+  CloudWorkspaceTestEntry,
   CloudWorkspaceTree,
   CloudTestRefString,
 } from './types'
 
 export function getTree(): Promise<CloudWorkspaceTree> {
-  return ipcRenderer.invoke(CloudWorkspaceHandlers.GetTree) as Promise<CloudWorkspaceTree>
+  return ipcRenderer.invoke(
+    CloudWorkspaceHandlers.GetTree
+  ) as Promise<CloudWorkspaceTree>
+}
+
+export function listProjectTests(
+  projectId: number
+): Promise<CloudWorkspaceTestEntry[]> {
+  return ipcRenderer.invoke(
+    CloudWorkspaceHandlers.ListProjectTests,
+    projectId
+  ) as Promise<CloudWorkspaceTestEntry[]>
 }
 
 export function getScript(ref: CloudTestRefString): Promise<string> {
