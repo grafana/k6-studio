@@ -144,6 +144,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                       onAddAction={test.addAction}
                       onRemoveAction={test.removeAction}
                       onChangeAction={test.updateAction}
+                      onReorderActions={test.reorderActions}
                     />
                   </Panel>
                 </Group>
