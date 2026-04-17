@@ -29,6 +29,7 @@ import {
 } from '@/hooks/useAssistantAuth'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useSettings } from '@/hooks/useSettings'
+import { useStackHealth } from '@/hooks/useStackHealth'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
 
@@ -181,6 +182,7 @@ function AssistantAuthStatus({
   connectError,
 }: AssistantAuthStatusProps) {
   const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
+  const { isStackReady } = useStackHealth(isAuthenticated)
 
   if (isLoading) {
     return (
@@ -220,6 +222,17 @@ function AssistantAuthStatus({
           </Callout.Root>
         )}
       </>
+    )
+  }
+
+  if (!isStackReady) {
+    return (
+      <Flex align="center" gap="2">
+        <Spinner />
+        <Text size="2" color="gray">
+          Your Grafana instance is loading...
+        </Text>
+      </Flex>
     )
   }
 
