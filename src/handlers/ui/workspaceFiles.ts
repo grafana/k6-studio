@@ -10,9 +10,9 @@ import {
   BROWSER_TESTS_PATH,
   VALIDATOR_RUNS_PATH,
 } from '@/constants/workspace'
+import type { GetFilesResponse } from '@/handlers/ui/types'
 import { getStudioFileFromPath } from '@/main/file'
 import type { StudioFile } from '@/types'
-import type { GetFilesResponse } from '@/handlers/ui/types'
 
 async function collectValidatorRunHarPaths(dir: string): Promise<string[]> {
   const paths: string[] = []

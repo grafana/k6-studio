@@ -11,8 +11,8 @@ import { reportNewIssue } from '@/utils/bugReport'
 import { sendToast } from '@/utils/electron'
 import { isNodeJsErrnoException } from '@/utils/typescript'
 
-import { loadWorkspaceFiles } from './workspaceFiles'
 import { UIHandler } from './types'
+import { loadWorkspaceFiles } from './workspaceFiles'
 
 export function initialize() {
   ipcMain.on(UIHandler.ToggleTheme, () => {

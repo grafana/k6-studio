@@ -6,11 +6,6 @@ import invariant from 'tiny-invariant'
 
 import { createBridgeScriptSink } from '@/bridge/sinks'
 import {
-  createBridgeRecordingSink,
-  runRecordingSessionWithSink,
-} from '@/handlers/browser/recordingSession'
-import { BrowserHandler } from '@/handlers/browser/types'
-import {
   INVALID_FILENAME_CHARS,
   K6_GENERATOR_FILE_EXTENSION,
 } from '@/constants/files'
@@ -21,25 +16,20 @@ import {
   TEMP_GENERATOR_SCRIPT_PATH,
   VALIDATOR_RUNS_PATH,
 } from '@/constants/workspace'
+import {
+  createBridgeRecordingSink,
+  runRecordingSessionWithSink,
+} from '@/handlers/browser/recordingSession'
+import { BrowserHandler } from '@/handlers/browser/types'
 import { GeneratorHandler } from '@/handlers/generator/types'
 import { HarHandler } from '@/handlers/har/types'
 import { ProxyHandler } from '@/handlers/proxy/types'
-import { ScriptHandler } from '@/handlers/script/types'
 import { getScriptTestRun, setScriptTestRun } from '@/handlers/script/state'
+import { ScriptHandler } from '@/handlers/script/types'
 import { SettingsHandler } from '@/handlers/settings/types'
-import { ValidatorRunHandler } from '@/handlers/validatorRun/types'
 import { UIHandler } from '@/handlers/ui/types'
 import { loadWorkspaceFiles } from '@/handlers/ui/workspaceFiles'
-import type { LaunchBrowserOptions } from '@/recorder/types'
-import { RecordingSchema } from '@/schemas/recording'
-import { GeneratorFileDataSchema } from '@/schemas/generator'
-import {
-  applySettings,
-  getSettings,
-  saveSettings,
-  selectBrowserExecutable,
-  selectUpstreamCertificate,
-} from '@/main/settings'
+import { ValidatorRunHandler } from '@/handlers/validatorRun/types'
 import { isEncryptionAvailable } from '@/main/encryption'
 import { checkProxyHealth } from '@/main/healthCheck'
 import {
@@ -48,19 +38,28 @@ import {
   waitForProxy,
 } from '@/main/proxy'
 import { runScriptWithSink } from '@/main/script'
-import { AppSettings } from '@/types/settings'
-import { GeneratorFileData } from '@/types/generator'
-import { Recording } from '@/schemas/recording'
+import {
+  applySettings,
+  getSettings,
+  saveSettings,
+  selectBrowserExecutable,
+  selectUpstreamCertificate,
+} from '@/main/settings'
+import type { LaunchBrowserOptions } from '@/recorder/types'
+import { GeneratorFileDataSchema } from '@/schemas/generator'
+import { RecordingSchema , Recording } from '@/schemas/recording'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
+import { GeneratorFileData } from '@/types/generator'
+import { AppSettings } from '@/types/settings'
 import { getBrowserPath } from '@/utils/browser'
-import { K6Client } from '@/utils/k6/client'
 import { reportNewIssue } from '@/utils/bugReport'
 import {
   createFileWithUniqueName,
   createValidatorRunHarFile,
 } from '@/utils/fileSystem'
 import { createNewGeneratorFile } from '@/utils/generator'
+import { K6Client } from '@/utils/k6/client'
 import { isExternalScript } from '@/utils/workspace'
 
 function mainWindowOrThrow(): BrowserWindow {

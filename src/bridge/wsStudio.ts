@@ -1,7 +1,6 @@
 import { nanoid } from 'nanoid'
 
 import type { BridgeServerMessage } from '@/bridge/protocol'
-import type { Studio } from '@/preload'
 import {
   BrowserHandler,
   type LaunchBrowserError,
@@ -11,13 +10,14 @@ import { HarHandler } from '@/handlers/har/types'
 import { ProxyHandler } from '@/handlers/proxy/types'
 import { ScriptHandler } from '@/handlers/script/types'
 import { SettingsHandler } from '@/handlers/settings/types'
-import { ValidatorRunHandler } from '@/handlers/validatorRun/types'
 import { UIHandler } from '@/handlers/ui/types'
-import type { AppSettings } from '@/types/settings'
-import type { ProxyData, ProxyStatus, StudioFile } from '@/types'
-import type { BrowserEvent, Recording } from '@/schemas/recording'
+import { ValidatorRunHandler } from '@/handlers/validatorRun/types'
+import type { Studio } from '@/preload'
 import type { LaunchBrowserOptions } from '@/recorder/types'
+import type { BrowserEvent, Recording } from '@/schemas/recording'
+import type { ProxyData, ProxyStatus, StudioFile } from '@/types'
 import type { GeneratorFileData } from '@/types/generator'
+import type { AppSettings } from '@/types/settings'
 import { runValidatorSession as runValidatorSessionImpl } from '@/utils/runValidatorSession'
 
 type Pending = {
@@ -118,7 +118,7 @@ function buildWsRuntime(ws: WebSocket) {
     }
     set.add(handler)
     return () => {
-      set!.delete(handler)
+      set.delete(handler)
     }
   }
 
@@ -204,7 +204,7 @@ export function createBridgedStudio(ws: WebSocket, offline: Studio): Studio {
     settings: {
       getSettings: () => rt.invoke<AppSettings>(SettingsHandler.Get),
       saveSettings: (settings: AppSettings) =>
-        rt.invoke(SettingsHandler.Save, [settings]) as Promise<AppSettings>,
+        rt.invoke(SettingsHandler.Save, [settings]),
       selectBrowserExecutable: () =>
         rt.invoke(SettingsHandler.SelectBrowserExecutable),
       selectUpstreamCertificate: () =>

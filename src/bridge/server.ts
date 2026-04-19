@@ -5,11 +5,11 @@ import {
   dispatchBridgeInvoke,
   dispatchBridgeSend,
 } from '@/bridge/dispatch'
-import type { BridgeClientMessage } from '@/bridge/protocol'
 import {
   assignBridgeClient,
   removeBridgeClient,
 } from '@/bridge/hub'
+import type { BridgeClientMessage } from '@/bridge/protocol'
 
 /**
  * Starts a localhost WebSocket server so a browser build can reuse the Electron
