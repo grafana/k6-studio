@@ -1,6 +1,7 @@
 import { watch } from 'chokidar'
 import { BrowserWindow } from 'electron'
 
+import { broadcastBridgeEvent } from '@/bridge/hub'
 import {
   RECORDINGS_PATH,
   GENERATORS_PATH,
@@ -37,6 +38,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
     }
 
     browserWindow.webContents.send(UIHandler.AddFile, file)
+    broadcastBridgeEvent(UIHandler.AddFile, [file])
   })
 
   k6StudioState.watcher.on('unlink', (filePath) => {
@@ -47,6 +49,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
     }
 
     browserWindow.webContents.send(UIHandler.RemoveFile, file)
+    broadcastBridgeEvent(UIHandler.RemoveFile, [file])
   })
 }
 

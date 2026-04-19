@@ -9,6 +9,8 @@ import path from 'path'
 import readline from 'readline/promises'
 import kill from 'tree-kill'
 
+import { broadcastBridgeEvent } from '@/bridge/hub'
+
 import { ProxyHandler } from '../handlers/proxy/types'
 import { ProxyData } from '../types'
 import { ProxySettings } from '../types/settings'
@@ -104,6 +106,7 @@ export const launchProxy = (
     const proxyData = safeJsonParse<ProxyData>(data)
     if (proxyData) {
       browserWindow.webContents.send(ProxyHandler.Data, proxyData)
+      broadcastBridgeEvent(ProxyHandler.Data, [proxyData])
     } else {
       // the proxy outputs some errors to stdout
       // example: [Errno 48] HTTP(S) proxy failed to listen on *:6001
@@ -125,6 +128,7 @@ export const launchProxy = (
     }
 
     browserWindow.webContents.send(ProxyHandler.Close, code)
+    broadcastBridgeEvent(ProxyHandler.Close, [code])
     onFailure?.()
   })
 

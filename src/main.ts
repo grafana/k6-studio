@@ -22,8 +22,26 @@ import { showWindow, trackWindowState } from './main/window'
 import { configureSystemProxy } from './services/http'
 import { initEventTracking } from './services/usageTracking'
 import { ProxyStatus } from './types'
+import { getStudioBridgePort } from './bridge/argv'
+import { broadcastBridgeEvent } from './bridge/hub'
+import { startStudioBridgeServer } from './bridge/server'
+import { getBridgeModePageHtml } from './main/bridgeModeHtml'
 import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
+
+function isStudioBridgeMode(): boolean {
+  return getStudioBridgePort() !== undefined
+}
+
+function attachProxyStatusForwarding(mainWindow: BrowserWindow) {
+  k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
+    k6StudioState.proxyStatus = status
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.webContents.send(ProxyHandler.ChangeStatus, status)
+    }
+    broadcastBridgeEvent(ProxyHandler.ChangeStatus, [status])
+  })
+}
 
 if (process.env.NODE_ENV !== 'development') {
   // handle auto updates
@@ -53,6 +71,79 @@ initializeLogger()
 handlers.initialize()
 mainState.initialize()
 initializeDeepLinks()
+
+const createBridgeModeWindow = async () => {
+  const icon = getAppIcon(process.env.NODE_ENV === 'development')
+  if (getPlatform() === 'mac') {
+    app.dock?.setIcon(icon)
+  }
+  app.setName('Grafana k6 Studio')
+
+  const bridgePort = getStudioBridgePort()
+  if (bridgePort === undefined) {
+    throw new Error('createBridgeModeWindow requires --studio-bridge-port')
+  }
+
+  const appearance = k6StudioState.appSettings.appearance.theme
+  const resolvedTheme =
+    appearance === 'system'
+      ? nativeTheme.shouldUseDarkColors
+        ? 'dark'
+        : 'light'
+      : appearance
+
+  await cleanUpProxies()
+
+  const mainWindow = new BrowserWindow({
+    width: 520,
+    height: 340,
+    minWidth: 400,
+    minHeight: 280,
+    show: false,
+    icon,
+    title: 'Grafana k6 Studio — Bridge',
+    backgroundColor: resolvedTheme === 'light' ? '#fff' : '#111110',
+    resizable: true,
+    maximizable: false,
+    fullscreenable: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      devTools: process.env.NODE_ENV === 'development',
+    },
+  })
+
+  mainWindow.once('ready-to-show', () => {
+    showWindow(mainWindow)
+  })
+
+  configureApplicationMenu()
+  // Same workspace file watching as the full UI so web clients (via the bridge)
+  // receive ui:add-file / ui:remove-file through broadcastBridgeEvent.
+  configureWatcher(mainWindow)
+  k6StudioState.wasAppClosedByClient = false
+
+  attachProxyStatusForwarding(mainWindow)
+
+  await configureSystemProxy()
+
+  k6StudioState.currentProxyProcess =
+    await launchProxyAndAttachEmitter(mainWindow)
+
+  const html = getBridgeModePageHtml({
+    bridgePort,
+    theme: resolvedTheme,
+  })
+  await mainWindow.loadURL(
+    'data:text/html;charset=utf-8,' + encodeURIComponent(html)
+  )
+
+  mainWindow.on('closed', () => {
+    k6StudioState.proxyEmitter.removeAllListeners('status:change')
+    app.quit()
+  })
+
+  return mainWindow
+}
 
 const createWindow = async () => {
   const icon = getAppIcon(process.env.NODE_ENV === 'development')
@@ -92,10 +183,7 @@ const createWindow = async () => {
   configureWatcher(mainWindow)
   k6StudioState.wasAppClosedByClient = false
 
-  k6StudioState.proxyEmitter.on('status:change', (status: ProxyStatus) => {
-    k6StudioState.proxyStatus = status
-    mainWindow.webContents.send(ProxyHandler.ChangeStatus, status)
-  })
+  attachProxyStatusForwarding(mainWindow)
 
   // Configure proxy settings for `fetch`.
   await configureSystemProxy()
@@ -152,7 +240,17 @@ app.whenReady().then(
 
     await setupProjectStructure()
     await initEventTracking()
-    await createWindow()
+
+    const bridgePort = getStudioBridgePort()
+    if (bridgePort !== undefined) {
+      startStudioBridgeServer(bridgePort)
+    }
+
+    if (isStudioBridgeMode()) {
+      await createBridgeModeWindow()
+    } else {
+      await createWindow()
+    }
   },
   (error) => {
     log.error(error)
@@ -175,7 +273,11 @@ app.on('activate', async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    await createWindow()
+    if (isStudioBridgeMode()) {
+      await createBridgeModeWindow()
+    } else {
+      await createWindow()
+    }
     // Window is already shown by the 'ready-to-show' event handler
   }
 })

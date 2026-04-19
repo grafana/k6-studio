@@ -8,4 +8,5 @@ export interface LaunchBrowserOptions {
 export type LaunchBrowserErrorReason =
   | 'websocket-server-error'
   | 'browser-launch'
+  | 'recording-session'
   | 'unknown'

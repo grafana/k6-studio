@@ -58,6 +58,20 @@ export function useRecordingErrorToast() {
 
           break
 
+        case 'recording-session':
+          showToast({
+            status: 'error',
+            title: 'Recording interrupted',
+            description:
+              'An error occurred during the recording session. Check the logs for details.',
+            action: (
+              <Button onClick={() => openSettingsDialog('logs')}>
+                Open log file
+              </Button>
+            ),
+          })
+          break
+
         default:
           exhaustive(error.reason)
           break

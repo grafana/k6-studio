@@ -5,19 +5,17 @@ import path from 'path'
 
 import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'
-import { showScriptSelectDialog, runScript } from '@/main/script'
+import { runScript, showScriptSelectDialog } from '@/main/script'
+import { getScriptTestRun, setScriptTestRun } from '@/handlers/script/state'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { browserWindowFromEvent, sendToast } from '@/utils/electron'
 import { K6Client } from '@/utils/k6/client'
-import { TestRun } from '@/utils/k6/testRun'
 import { isExternalScript } from '@/utils/workspace'
 
 import { ScriptHandler } from './types'
 
 export function initialize() {
-  let currentTestRun: TestRun | null
-
   ipcMain.handle(ScriptHandler.Select, async (event) => {
     console.info(`${ScriptHandler.Select} event received`)
     const browserWindow = browserWindowFromEvent(event)
@@ -68,12 +66,14 @@ export function initialize() {
       ? scriptPath
       : path.join(SCRIPTS_PATH, scriptPath)
 
-    currentTestRun = await runScript({
-      browserWindow,
-      scriptPath: resolvedScriptPath,
-      proxySettings: k6StudioState.appSettings.proxy,
-      usageReport: k6StudioState.appSettings.telemetry.usageReport,
-    })
+    setScriptTestRun(
+      await runScript({
+        browserWindow,
+        scriptPath: resolvedScriptPath,
+        proxySettings: k6StudioState.appSettings.proxy,
+        usageReport: k6StudioState.appSettings.telemetry.usageReport,
+      })
+    )
 
     trackEvent({
       event: UsageEventName.ScriptValidated,
@@ -85,12 +85,13 @@ export function initialize() {
 
   ipcMain.on(ScriptHandler.Stop, () => {
     console.info(`${ScriptHandler.Stop} event received`)
-    if (currentTestRun) {
-      currentTestRun.stop().catch((error) => {
+    const run = getScriptTestRun()
+    if (run) {
+      run.stop().catch((error) => {
         log.error('Failed to stop the test run', error)
       })
 
-      currentTestRun = null
+      setScriptTestRun(null)
     }
   })
 
@@ -102,12 +103,14 @@ export function initialize() {
 
       const browserWindow = browserWindowFromEvent(event)
 
-      currentTestRun = await runScript({
-        browserWindow,
-        scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
-        proxySettings: k6StudioState.appSettings.proxy,
-        usageReport: k6StudioState.appSettings.telemetry.usageReport,
-      })
+      setScriptTestRun(
+        await runScript({
+          browserWindow,
+          scriptPath: TEMP_GENERATOR_SCRIPT_PATH,
+          proxySettings: k6StudioState.appSettings.proxy,
+          usageReport: k6StudioState.appSettings.telemetry.usageReport,
+        })
+      )
 
       if (shouldTrack) {
         trackEvent({

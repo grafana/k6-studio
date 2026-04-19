@@ -4,6 +4,7 @@ import { writeFile, unlink } from 'fs/promises'
 import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'path'
 
+import type { ScriptIpcSink } from '@/bridge/scriptSinkTypes'
 import { TEMP_K6_ARCHIVE_PATH, TEMP_SCRIPT_SUFFIX } from '@/constants/workspace'
 import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
@@ -14,6 +15,16 @@ import { createTrackingServer } from '@/utils/k6/tracking'
 import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
 
 export type K6Process = ChildProcessWithoutNullStreams
+
+export type { ScriptIpcSink }
+
+function sinkFromBrowserWindow(browserWindow: BrowserWindow): ScriptIpcSink {
+  return {
+    send(channel: string, ...args: unknown[]) {
+      browserWindow.webContents.send(channel, ...(args as never[]))
+    },
+  }
+}
 
 export const showScriptSelectDialog = async (browserWindow: BrowserWindow) => {
   const result = await dialog.showOpenDialog(browserWindow, {
@@ -38,17 +49,21 @@ interface RunScriptOptions {
   browserWindow: BrowserWindow
 }
 
-export const runScript = async ({
+export interface RunScriptWithSinkOptions {
+  scriptPath: string
+  usageReport: boolean
+  proxySettings: ProxySettings
+  sink: ScriptIpcSink
+}
+
+export const runScriptWithSink = async ({
   scriptPath,
   usageReport,
   proxySettings,
-  browserWindow,
-}: RunScriptOptions) => {
-  // 1. Get an instrumented version of the script content
+  sink,
+}: RunScriptWithSinkOptions) => {
   const modifiedScript = await instrumentScriptFromPath(scriptPath)
 
-  // 2. Save the enhanced script content to a temp file in the same directory as the original script
-  // (k6 will look for modules/data files in the same directory as the script)
   const dirname = path.dirname(scriptPath)
 
   const tempFileName = getTempScriptName()
@@ -56,10 +71,8 @@ export const runScript = async ({
 
   await writeFile(tempScriptPath, modifiedScript)
 
-  // 3. Archive the script and its dependencies
-  const archivePath = await archiveScript(tempScriptPath, browserWindow)
+  const archivePath = await archiveScriptWithSink(tempScriptPath, sink)
 
-  // 4. Delete the temp script file
   await unlink(tempScriptPath)
 
   const proxyArgs = await getProxyArguments(proxySettings, {
@@ -69,22 +82,21 @@ export const runScript = async ({
   const trackingServer = await createTrackingServer()
 
   trackingServer.on('begin', (ev) => {
-    browserWindow.webContents.send(ScriptHandler.BrowserAction, ev)
+    sink.send(ScriptHandler.BrowserAction, ev)
   })
 
   trackingServer.on('end', (ev) => {
-    browserWindow.webContents.send(ScriptHandler.BrowserAction, ev)
+    sink.send(ScriptHandler.BrowserAction, ev)
   })
 
   trackingServer.on('log', (ev) => {
-    browserWindow.webContents.send(ScriptHandler.Log, ev.entry)
+    sink.send(ScriptHandler.Log, ev.entry)
   })
 
   trackingServer.on('replay', (ev) => {
-    browserWindow.webContents.send(ScriptHandler.BrowserReplay, ev.events)
+    sink.send(ScriptHandler.BrowserReplay, ev.events)
   })
 
-  // 5. Run the test
   const client = new K6Client()
 
   const testRun = client.run({
@@ -103,26 +115,26 @@ export const runScript = async ({
   })
 
   testRun.on('log', ({ entry }) => {
-    browserWindow.webContents.send(ScriptHandler.Log, entry)
+    sink.send(ScriptHandler.Log, entry)
   })
 
   testRun.on('start', () => {
-    browserWindow.webContents.send(ScriptHandler.Started, {})
+    sink.send(ScriptHandler.Started, {})
   })
 
   testRun.on('done', ({ result, checks }) => {
-    browserWindow.webContents.send(ScriptHandler.Check, checks)
-    browserWindow.webContents.send(ScriptHandler.Finished, result)
+    sink.send(ScriptHandler.Check, checks)
+    sink.send(ScriptHandler.Finished, result)
   })
 
   testRun.on('error', (error) => {
     log.error(error)
 
-    browserWindow.webContents.send(ScriptHandler.Failed)
+    sink.send(ScriptHandler.Failed)
   })
 
   testRun.on('stop', () => {
-    browserWindow.webContents.send(ScriptHandler.Stopped)
+    sink.send(ScriptHandler.Stopped)
 
     trackingServer?.dispose()
   })
@@ -130,14 +142,27 @@ export const runScript = async ({
   return testRun
 }
 
-const archiveScript = async (
+export const runScript = async ({
+  scriptPath,
+  usageReport,
+  proxySettings,
+  browserWindow,
+}: RunScriptOptions) => {
+  return runScriptWithSink({
+    scriptPath,
+    usageReport,
+    proxySettings,
+    sink: sinkFromBrowserWindow(browserWindow),
+  })
+}
+
+const archiveScriptWithSink = async (
   scriptPath: string,
-  browserWindow: BrowserWindow
+  sink: ScriptIpcSink
 ): Promise<string> => {
   try {
     const client = new K6Client()
 
-    // Set cwd to script directory for import resolution on Windows
     const scriptDir = path.dirname(scriptPath)
 
     await client.archive({
@@ -148,11 +173,11 @@ const archiveScript = async (
 
     return TEMP_K6_ARCHIVE_PATH
   } catch (error) {
-    browserWindow.webContents.send(ScriptHandler.Failed)
+    sink.send(ScriptHandler.Failed)
 
     if (error instanceof ArchiveError) {
-      for (const log of error.stderr) {
-        browserWindow.webContents.send(ScriptHandler.Log, log)
+      for (const logEntry of error.stderr) {
+        sink.send(ScriptHandler.Log, logEntry)
       }
     }
 

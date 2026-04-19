@@ -5,6 +5,10 @@ import { AppSettings } from './types/settings'
 export function configureRendererProcess(
   getSettingsFn?: () => Promise<AppSettings>
 ) {
+  if (import.meta.env.VITE_TARGET === 'web') {
+    return
+  }
+
   if (process.env.NODE_ENV !== 'development') {
     SentryRenderer.init({
       // conditionally send the event based on the user's settings

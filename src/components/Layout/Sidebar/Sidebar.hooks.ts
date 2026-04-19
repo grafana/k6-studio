@@ -51,11 +51,13 @@ function useFolderContent() {
     [addFile]
   )
 
-  useEffect(() => {
-    window.studio.ui.onRemoveFile((file) => {
-      removeFile(file)
-    })
-  }, [removeFile])
+  useEffect(
+    () =>
+      window.studio.ui.onRemoveFile((file) => {
+        removeFile(file)
+      }),
+    [removeFile]
+  )
 
   return {
     recordings,
