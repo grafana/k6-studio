@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { nanoid } from 'nanoid'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
@@ -46,6 +46,8 @@ export function useDebugSession(script: Script) {
 
   const input = script.type === 'file' ? script.path : script.content
 
+  const lastRunStartedAtMs = useRef(Date.now())
+
   const resetSession = useCallback(() => {
     setSessionId(nanoid())
 
@@ -65,6 +67,7 @@ export function useDebugSession(script: Script) {
     setState('running')
 
     resetSession()
+    lastRunStartedAtMs.current = Date.now()
 
     if (script.type === 'raw') {
       await window.studio.script.runScriptFromGenerator(input).catch(() => {
@@ -107,5 +110,6 @@ export function useDebugSession(script: Script) {
     session,
     startDebugging,
     stopDebugging,
+    lastRunStartedAtMs,
   }
 }

@@ -32,6 +32,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
     scripts: new Map(),
     dataFiles: new Map(),
     browserTests: new Map(),
+    validatorRuns: new Map(),
     proxyStatus: 'offline',
     isSettingsDialogOpen: false,
     selectedSettingsTab: 'proxy',
@@ -55,6 +56,9 @@ export const useStudioUIStore = create<StudioUIStore>()(
           case 'data-file':
             state.dataFiles.set(file.fileName, file)
             break
+          case 'validator-run':
+            state.validatorRuns.set(file.fileName, file)
+            break
           default:
             exhaustive(file.type)
         }
@@ -77,6 +81,9 @@ export const useStudioUIStore = create<StudioUIStore>()(
           case 'data-file':
             state.dataFiles.delete(file.fileName)
             break
+          case 'validator-run':
+            state.validatorRuns.delete(file.fileName)
+            break
           default:
             exhaustive(file.type)
         }
@@ -87,6 +94,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
       browserTests,
       scripts,
       dataFiles,
+      validatorRuns,
     }) =>
       set((state) => {
         state.recordings = recordings
@@ -94,6 +102,7 @@ export const useStudioUIStore = create<StudioUIStore>()(
         state.browserTests = browserTests
         state.scripts = scripts
         state.dataFiles = dataFiles
+        state.validatorRuns = validatorRuns
       }),
     setProxyStatus: (status) =>
       set((state) => {

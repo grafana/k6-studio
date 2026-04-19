@@ -36,6 +36,11 @@ const BrowserTestEditor = lazy(() =>
 const Validator = lazy(() =>
   import('@/views/Validator').then((module) => ({ default: module.Validator }))
 )
+const ValidatorRunPreviewer = lazy(() =>
+  import('@/views/ValidatorRunPreviewer').then((module) => ({
+    default: module.ValidatorRunPreviewer,
+  }))
+)
 const DataFile = lazy(() =>
   import('@/views/DataFile').then((module) => ({ default: module.DataFile }))
 )
@@ -59,6 +64,10 @@ const router = createHashRouter(
         element={<BrowserTestEditor />}
       />
       <Route path={routeMap.validator} element={<Validator />} />
+      <Route
+        path={routeMap.validatorRunPreviewer}
+        element={<ValidatorRunPreviewer />}
+      />
       <Route path={routeMap.dataFilePreviewer} element={<DataFile />} />
       <Route path="*" element={<NoRouteFound />} />
     </Route>

@@ -88,7 +88,13 @@ export interface RequestSnippetSchema {
 }
 
 export interface StudioFile {
-  type: 'recording' | 'generator' | 'script' | 'data-file' | 'browser-test'
+  type:
+    | 'recording'
+    | 'generator'
+    | 'script'
+    | 'data-file'
+    | 'browser-test'
+    | 'validator-run'
   displayName: string
   fileName: string
 }
@@ -101,6 +107,7 @@ export interface FolderContent {
   browserTests: Map<string, StudioFile>
   scripts: Map<string, StudioFile>
   dataFiles: Map<string, StudioFile>
+  validatorRuns: Map<string, StudioFile>
 }
 
 export type ProxyStatus = 'online' | 'offline' | 'starting'

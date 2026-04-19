@@ -16,4 +16,5 @@ export const FileTypeToLabel: Record<StudioFile['type'], string> = {
   script: 'script',
   'data-file': 'data file',
   'browser-test': 'browser test',
+  'validator-run': 'validator run',
 }

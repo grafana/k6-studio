@@ -13,12 +13,14 @@ import * as proxy from './proxy'
 import * as script from './script'
 import * as settings from './settings'
 import * as ui from './ui'
+import * as validatorRun from './validatorRun'
 
 export function initialize() {
   browserRemote.initialize()
   auth.initialize()
   cloud.initialize()
   har.initialize()
+  validatorRun.initialize()
   browser.initialize()
   script.initialize()
   settings.initialize()

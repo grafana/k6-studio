@@ -11,6 +11,7 @@ import {
   SCRIPTS_PATH,
   DATA_FILES_PATH,
   BROWSER_TESTS_PATH,
+  VALIDATOR_RUNS_PATH,
 } from '@/constants/workspace'
 import { StudioFile } from '@/types'
 import { exhaustive } from '@/utils/typescript'
@@ -18,8 +19,10 @@ import { exhaustive } from '@/utils/typescript'
 export function getStudioFileFromPath(
   filePath: string
 ): StudioFile | undefined {
+  const named = path.parse(filePath)
+
   const file = {
-    displayName: path.parse(filePath).name,
+    displayName: named.name,
     fileName: path.basename(filePath),
   }
 
@@ -69,6 +72,18 @@ export function getStudioFileFromPath(
       ...file,
     }
   }
+
+  if (
+    filePath.startsWith(VALIDATOR_RUNS_PATH) &&
+    path.extname(filePath) === '.har'
+  ) {
+    const relative = path.relative(VALIDATOR_RUNS_PATH, filePath)
+    return {
+      type: 'validator-run',
+      displayName: named.name,
+      fileName: relative.split(path.sep).join('/'),
+    }
+  }
 }
 
 export function getFilePath(
@@ -85,6 +100,11 @@ export function getFilePath(
       return path.join(SCRIPTS_PATH, file.fileName)
     case 'data-file':
       return path.join(DATA_FILES_PATH, file.fileName)
+    case 'validator-run':
+      return path.join(
+        VALIDATOR_RUNS_PATH,
+        ...file.fileName.split(/[/\\]/).filter(Boolean)
+      )
     default:
       return exhaustive(file.type)
   }

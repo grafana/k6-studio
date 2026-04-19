@@ -4,7 +4,7 @@ import { FilePlusIcon, PanelLeftCloseIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { FileTree } from '@/components/FileTree'
+import { FileTree, ValidatorRunsFileTree } from '@/components/FileTree'
 import { NewTestMenu } from '@/components/NewTestMenu'
 import { SearchField } from '@/components/SearchField'
 import { useImportDataFile } from '@/hooks/useImportDataFile'
@@ -20,7 +20,8 @@ interface SidebarProps {
 
 export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const { recordings, tests, scripts, dataFiles } = useFiles(searchTerm)
+  const { recordings, tests, scripts, dataFiles, validatorRuns } =
+    useFiles(searchTerm)
   const handleImportDataFile = useImportDataFile()
   const isBrowserEditorEnabled = useFeaturesStore(
     (state) => state.features['browser-test-editor']
@@ -95,6 +96,10 @@ export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
               label="Scripts"
               files={scripts}
               noFilesMessage="No scripts found"
+            />
+            <ValidatorRunsFileTree
+              files={validatorRuns}
+              noFilesMessage="No validator runs yet"
             />
             <FileTree
               label="Data files"

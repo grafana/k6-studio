@@ -20,6 +20,9 @@ function useFolderContent() {
   const browserTests = useStudioUIStore((s) => orderByFileName(s.browserTests))
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
   const dataFiles = useStudioUIStore((s) => orderByFileName(s.dataFiles))
+  const validatorRuns = useStudioUIStore((s) =>
+    orderByFileName(s.validatorRuns)
+  )
 
   const addFile = useStudioUIStore((s) => s.addFile)
   const removeFile = useStudioUIStore((s) => s.removeFile)
@@ -35,6 +38,7 @@ function useFolderContent() {
         scripts: toFileMap(files.scripts),
         dataFiles: toFileMap(files.dataFiles),
         browserTests: toFileMap(files.browserTests),
+        validatorRuns: toFileMap(files.validatorRuns),
       })
     })()
   }, [setFolderContent])
@@ -60,6 +64,7 @@ function useFolderContent() {
     ),
     scripts,
     dataFiles,
+    validatorRuns,
   }
 }
 
@@ -84,6 +89,7 @@ export function useFiles(searchTerm: string) {
       tests: new Fuse(files.tests, options),
       scripts: new Fuse(files.scripts, options),
       dataFiles: new Fuse(files.dataFiles, options),
+      validatorRuns: new Fuse(files.validatorRuns, options),
     }
   }, [files])
 
@@ -97,6 +103,9 @@ export function useFiles(searchTerm: string) {
       tests: searchIndex.tests.search(searchTerm).map(withMatches),
       scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
       dataFiles: searchIndex.dataFiles.search(searchTerm).map(withMatches),
+      validatorRuns: searchIndex.validatorRuns
+        .search(searchTerm)
+        .map(withMatches),
     }
   }, [files, searchIndex, searchTerm])
 }

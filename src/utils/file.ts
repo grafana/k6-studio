@@ -31,6 +31,11 @@ export function getViewPath(type: StudioFileType, fileName: string) {
     case 'data-file':
       return getRoutePath('dataFilePreviewer', { fileName: encodedFileName })
 
+    case 'validator-run':
+      return getRoutePath('validatorRunPreviewer', {
+        fileName: encodedFileName,
+      })
+
     default:
       return exhaustive(type)
   }

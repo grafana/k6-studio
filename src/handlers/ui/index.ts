@@ -12,6 +12,7 @@ import {
   TEMP_SCRIPT_SUFFIX,
   DATA_FILES_PATH,
   BROWSER_TESTS_PATH,
+  VALIDATOR_RUNS_PATH,
 } from '@/constants/workspace'
 import { getFilePath, getStudioFileFromPath } from '@/main/file'
 import { StudioFile } from '@/types'
@@ -21,6 +22,20 @@ import { sendToast } from '@/utils/electron'
 import { isNodeJsErrnoException } from '@/utils/typescript'
 
 import { UIHandler } from './types'
+
+async function collectValidatorRunHarPaths(dir: string): Promise<string[]> {
+  const paths: string[] = []
+  const entries = await readdir(dir, { withFileTypes: true })
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name)
+    if (entry.isFile() && entry.name.endsWith('.har')) {
+      paths.push(full)
+    } else if (entry.isDirectory()) {
+      paths.push(...(await collectValidatorRunHarPaths(full)))
+    }
+  }
+  return paths
+}
 
 export function initialize() {
   ipcMain.on(UIHandler.ToggleTheme, () => {
@@ -90,12 +105,20 @@ export function initialize() {
       .map((f) => getStudioFileFromPath(path.join(DATA_FILES_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
+    const validatorHarPaths = await collectValidatorRunHarPaths(
+      VALIDATOR_RUNS_PATH
+    )
+    const validatorRuns = validatorHarPaths
+      .map((p) => getStudioFileFromPath(p))
+      .filter((f): f is StudioFile => f !== undefined)
+
     return {
       recordings,
       generators,
       browserTests,
       scripts,
       dataFiles,
+      validatorRuns,
     }
   })
 

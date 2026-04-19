@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 import { Box, Button, Dialog, Flex, Spinner } from '@radix-ui/themes'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { ProxyHealthBadge } from '@/components/ProxyHealthWarning'
@@ -8,21 +8,32 @@ import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
+import { ProxyData } from '@/types'
+import { persistValidatorHttpTraffic } from '@/utils/persistValidatorHttpTraffic'
 import { ValidatorResult } from '@/views/Generator/ValidatorResult'
 
 interface ValidatorDialogProps {
   script: string
+  /** Generator base name (no extension), used for persisted run folder hierarchy. */
+  generatorDisplayName: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 export function ValidatorDialog({
   script,
+  generatorDisplayName,
   open,
   onOpenChange,
 }: ValidatorDialogProps) {
   const [isRunning, setIsRunning] = useState(false)
   const { proxyData, resetProxyData } = useListenProxyData()
+  const proxyDataRef = useRef<ProxyData[]>([])
+  const runStartedAtMsRef = useRef(Date.now())
+
+  useEffect(() => {
+    proxyDataRef.current = proxyData
+  }, [proxyData])
   const { logs, resetLogs } = useRunLogs()
   const { checks, resetChecks } = useRunChecks()
 
@@ -39,16 +50,16 @@ export function ValidatorDialog({
       if (!open) {
         window.studio.script.stopScript()
         setIsRunning(false)
-        resetState()
       }
 
       onOpenChange(open)
     },
-    [onOpenChange, resetState]
+    [onOpenChange]
   )
 
   const handleRunScript = useCallback(async () => {
     resetState()
+    runStartedAtMsRef.current = Date.now()
     setIsRunning(true)
 
     await window.studio.script.runScriptFromGenerator(script)
@@ -73,6 +84,16 @@ export function ValidatorDialog({
       setIsRunning(false)
     })
   }, [])
+
+  useEffect(() => {
+    return window.studio.script.onScriptStopped(() => {
+      void persistValidatorHttpTraffic(
+        proxyDataRef.current,
+        generatorDisplayName,
+        runStartedAtMsRef.current
+      )
+    })
+  }, [generatorDisplayName])
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>

@@ -13,10 +13,12 @@ import {
 import { AiCorrelationRule } from '@/types/autoCorrelation'
 import { AiProvider } from '@/types/features'
 import { CorrelationRule } from '@/types/rules'
+import { getFileNameWithoutExtension } from '@/utils/file'
 import { exhaustive } from '@/utils/typescript'
 import { validateScript } from '@/utils/validateScript'
 
 import { generateScriptPreview } from '../Generator.utils'
+import { useGeneratorParams } from '../Generator.hooks'
 
 import { systemPrompt } from './constants'
 import { CorrelationStatus, Message, ToolCall } from './types'
@@ -43,6 +45,7 @@ export const useGenerateRules = ({
   const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
   const suggestedRulesRef = useRef(suggestedRules)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const { fileName: generatorFileName } = useGeneratorParams()
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
 
@@ -181,7 +184,8 @@ export const useGenerateRules = ({
     const validationResult = await validateScript(
       script,
       abortControllerRef.current?.signal,
-      false
+      false,
+      getFileNameWithoutExtension(generatorFileName)
     )
 
     const result = validationMatchesRecording(

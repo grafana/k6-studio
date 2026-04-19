@@ -10,6 +10,7 @@ import {
   SCRIPTS_PATH,
   TEMP_PATH,
   BROWSER_TESTS_PATH,
+  VALIDATOR_RUNS_PATH,
 } from '../constants/workspace'
 
 const REQUIRED_FOLDERS = [
@@ -20,6 +21,7 @@ const REQUIRED_FOLDERS = [
   TEMP_PATH,
   DATA_FILES_PATH,
   BROWSER_TESTS_PATH,
+  VALIDATOR_RUNS_PATH,
 ]
 
 export const setupProjectStructure = async () => {

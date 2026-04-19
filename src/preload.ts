@@ -15,6 +15,7 @@ import * as proxy from './handlers/proxy/preload'
 import * as script from './handlers/script/preload'
 import * as settings from './handlers/settings/preload'
 import * as ui from './handlers/ui/preload'
+import * as validatorRun from './handlers/validatorRun/preload'
 import * as Sentry from './sentry'
 
 const studio = {
@@ -25,6 +26,7 @@ const studio = {
   data,
   har,
   ui,
+  validatorRun,
   generator,
   browserTest,
   app,

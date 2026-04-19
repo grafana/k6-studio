@@ -8,6 +8,7 @@ import {
   DATA_FILES_PATH,
   TEMP_SCRIPT_SUFFIX,
   BROWSER_TESTS_PATH,
+  VALIDATOR_RUNS_PATH,
 } from '@/constants/workspace'
 import { UIHandler } from '@/handlers/ui/types'
 
@@ -21,6 +22,7 @@ export function configureWatcher(browserWindow: BrowserWindow) {
       BROWSER_TESTS_PATH,
       SCRIPTS_PATH,
       DATA_FILES_PATH,
+      VALIDATOR_RUNS_PATH,
     ],
     {
       ignoreInitial: true,

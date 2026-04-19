@@ -1,5 +1,5 @@
 import { Flex } from '@radix-ui/themes'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
@@ -7,8 +7,9 @@ import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
-import { StudioFile } from '@/types'
+import { ProxyData, StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
+import { persistValidatorHttpTraffic } from '@/utils/persistValidatorHttpTraffic'
 
 import { Debugger } from './Debugger'
 import { useDebugSession, useScript, useScriptPath } from './Validator.hooks'
@@ -26,10 +27,31 @@ function Content({ scriptPath }: ValidatorProps) {
   const navigate = useNavigate()
   const showToast = useToast()
 
-  const { session, startDebugging, stopDebugging } = useDebugSession({
-    type: 'file',
-    path: scriptPath,
-  })
+  const { session, startDebugging, stopDebugging, lastRunStartedAtMs } =
+    useDebugSession({
+      type: 'file',
+      path: scriptPath,
+    })
+
+  const requestsRef = useRef<ProxyData[]>([])
+
+  useEffect(() => {
+    requestsRef.current = session?.requests ?? []
+  }, [session?.requests])
+
+  useEffect(() => {
+    return window.studio.script.onScriptStopped(() => {
+      const runSourceLabel = getFileNameWithoutExtension(
+        decodeURIComponent(scriptPath)
+      )
+
+      void persistValidatorHttpTraffic(
+        requestsRef.current,
+        runSourceLabel,
+        lastRunStartedAtMs.current
+      )
+    })
+  }, [scriptPath])
 
   const isRunning = session?.state === 'running'
 

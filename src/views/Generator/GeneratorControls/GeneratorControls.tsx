@@ -128,6 +128,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
           />
           <ValidatorDialog
             script={preview}
+            generatorDisplayName={getFileNameWithoutExtension(fileName)}
             open={isValidatorDialogOpen}
             onOpenChange={setIsValidatorDialogOpen}
           />
