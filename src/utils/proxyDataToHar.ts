@@ -1,4 +1,8 @@
-import { BrowserEvent, Recording } from '@/schemas/recording'
+import {
+  BrowserEvent,
+  Recording,
+  ValidatorBrowserPersist,
+} from '@/schemas/recording'
 import { GroupedProxyData, ProxyData, Request, Response } from '@/types'
 import { HarEntry, HarPage } from '@/types/recording'
 
@@ -7,18 +11,25 @@ import { getContentTypeWithCharsetHeader } from './headers'
 
 export function proxyDataToHar(
   data: ProxyData[],
-  browserEvents: BrowserEvent[]
+  browserEvents: BrowserEvent[],
+  validatorBrowser?: ValidatorBrowserPersist
 ): Recording {
   const groups = groupProxyData(data)
   return {
-    log: createLog(createPages(groups), createEntries(groups), browserEvents),
+    log: createLog(
+      createPages(groups),
+      createEntries(groups),
+      browserEvents,
+      validatorBrowser
+    ),
   }
 }
 
 function createLog(
   pages: HarPage[],
   entries: HarEntry[],
-  events: BrowserEvent[]
+  events: BrowserEvent[],
+  validatorBrowser?: ValidatorBrowserPersist
 ): Recording['log'] {
   return {
     version: '1.2',
@@ -32,6 +43,9 @@ function createLog(
       version: '2',
       events,
     },
+    ...(validatorBrowser !== undefined
+      ? { _k6StudioValidatorBrowser: validatorBrowser }
+      : {}),
   }
 }
 

@@ -35,6 +35,8 @@ The app uses hash routing:
 
 The renderer exposes `window.studio` with IPC APIs (accessible via `evaluate_script`): `auth`, `proxy`, `browser`, `script`, `data`, `har`, `ui`, `generator`, `browserTest`, `app`, `log`, `settings`, `browserRemote`, `cloud`, `ai`.
 
+To run k6 through Validator (instrumented script, Studio proxy, logs and checks): `await window.studio.script.runValidatorSession({ mode: 'inline', script })` or `{ mode: 'path', scriptPath }` (path is workspace-relative or absolute, same as the Validator route). Returns `{ proxyData, logs, checks }`.
+
 ## Architecture
 
 Electron desktop app for generating k6 test scripts. Three main components:

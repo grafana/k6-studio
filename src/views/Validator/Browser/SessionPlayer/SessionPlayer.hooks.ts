@@ -67,15 +67,27 @@ interface UsePlayerOptions {
   streaming: boolean
   mount: HTMLDivElement | null
   events: BrowserReplayEvent[]
+  /** Recorded replay (e.g. opened validator run): start at 00:00 paused. */
+  startPausedAtBeginning?: boolean
 }
 
-export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
+export function usePlayer({
+  streaming,
+  mount,
+  events,
+  startPausedAtBeginning = false,
+}: UsePlayerOptions) {
   const [player, setPlayer] = useState<EnhancedReplayer | null>(null)
 
-  // Start at 1 to make slider be 100% at the beginning of the session
-  const [currentTime, setCurrentTime] = useState(1)
+  // Live streaming: offset 1ms avoids edge cases with the slider range; archived
+  // replay starts explicitly at 0 via startPausedAtBeginning.
+  const [currentTime, setCurrentTime] = useState(() =>
+    startPausedAtBeginning ? 0 : 1
+  )
 
-  const [state, setState] = useState<PlaybackState>('playing')
+  const [state, setState] = useState<PlaybackState>(() =>
+    startPausedAtBeginning ? 'paused' : 'playing'
+  )
 
   const [scrubbing, setScrubbing] = useState(false)
 
@@ -130,10 +142,14 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
 
     if (streaming) {
       newPlayer.play()
+    } else if (startPausedAtBeginning) {
+      newPlayer.pause(0)
+      setCurrentTime(0)
+      setState('paused')
     }
 
     setPlayer(newPlayer)
-  }, [player, mount, streaming, events])
+  }, [player, mount, streaming, events, startPausedAtBeginning])
 
   // Keep track of the current time for non-streaming playback.
   useEffect(() => {

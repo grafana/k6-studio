@@ -25,12 +25,17 @@ interface BrowserDebuggerProps {
   script: string
   session: DebugSession
   onDebugScript: () => void
+  overviewInitialTab?: 'script' | 'replay'
+  /** Saved validator run: replay timeline starts at 00:00. */
+  replayStartsAtBeginning?: boolean
 }
 
 export function BrowserDebugger({
   script,
   session,
   onDebugScript,
+  overviewInitialTab,
+  replayStartsAtBeginning,
 }: BrowserDebuggerProps) {
   const [highlightedSelector, setHighlightedSelector] =
     useState<NodeSelector | null>(null)
@@ -84,6 +89,8 @@ export function BrowserDebugger({
                   script={script}
                   session={session}
                   highlightedSelector={highlightedSelector}
+                  initialTab={overviewInitialTab}
+                  replayStartsAtBeginning={replayStartsAtBeginning}
                 />
               </Panel>
               <Separator />

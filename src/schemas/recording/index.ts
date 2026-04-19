@@ -3,6 +3,7 @@ import { z } from 'zod'
 import * as v1 from './browser/v1'
 import * as v2 from './browser/v2'
 import { LogSchema } from './har'
+import { ValidatorBrowserPersistSchema } from './validatorBrowser'
 
 // Schema for any version stored on disk
 const AnyBrowserEventsSchema = z.union([
@@ -26,8 +27,11 @@ export const RecordingSchema = z.object({
   log: LogSchema.extend({
     // _browserEvents is versioned individually from the HAR file
     _browserEvents: BrowserEventsSchema.optional(),
+    /** k6 browser module: actions + rrweb replay (Validator only) */
+    _k6StudioValidatorBrowser: ValidatorBrowserPersistSchema.optional(),
   }),
 })
 
 export * from './browser/v2'
+export * from './validatorBrowser'
 export type Recording = z.infer<typeof RecordingSchema>

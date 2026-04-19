@@ -6,6 +6,7 @@ import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { getRoutePath } from '@/routeMap'
+import { LogEntry } from '@/schemas/k6'
 import { useToast } from '@/store/ui/useToast'
 import { ProxyData, StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
@@ -34,10 +35,20 @@ function Content({ scriptPath }: ValidatorProps) {
     })
 
   const requestsRef = useRef<ProxyData[]>([])
+  const browserSessionRef = useRef(session.browser)
+  const logsRef = useRef<LogEntry[]>(session.logs)
 
   useEffect(() => {
     requestsRef.current = session?.requests ?? []
   }, [session?.requests])
+
+  useEffect(() => {
+    browserSessionRef.current = session.browser
+  }, [session.browser])
+
+  useEffect(() => {
+    logsRef.current = session.logs
+  }, [session.logs])
 
   useEffect(() => {
     return window.studio.script.onScriptStopped(() => {
@@ -48,7 +59,9 @@ function Content({ scriptPath }: ValidatorProps) {
       void persistValidatorHttpTraffic(
         requestsRef.current,
         runSourceLabel,
-        lastRunStartedAtMs.current
+        lastRunStartedAtMs.current,
+        browserSessionRef.current,
+        logsRef.current
       )
     })
   }, [scriptPath])

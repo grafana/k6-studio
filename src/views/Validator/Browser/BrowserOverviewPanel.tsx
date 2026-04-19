@@ -13,14 +13,20 @@ interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
   highlightedSelector: NodeSelector | null
+  /** Default tab when there is no live script run (e.g. historical validator run). */
+  initialTab?: 'script' | 'replay'
+  /** Saved validator run replay: timeline at 00:00. */
+  replayStartsAtBeginning?: boolean
 }
 
 export function BrowserOverviewPanel({
   script,
   session,
   highlightedSelector,
+  initialTab = 'script',
+  replayStartsAtBeginning = false,
 }: BrowserOverviewPanelProps) {
-  const [tab, setTab] = useState('script')
+  const [tab, setTab] = useState(initialTab)
 
   useEffect(() => {
     return window.studio.script.onScriptStarted(() => {
@@ -28,8 +34,16 @@ export function BrowserOverviewPanel({
     })
   }, [])
 
+  const handleTabChange = (value: string) => {
+    if (value !== 'script' && value !== 'replay') {
+      return
+    }
+
+    setTab(value)
+  }
+
   return (
-    <Tabs.Root asChild value={tab} onValueChange={setTab}>
+    <Tabs.Root asChild value={tab} onValueChange={handleTabChange}>
       <Flex direction="column" height="100%">
         <Box asChild flexShrink="0">
           <Tabs.List>
@@ -76,6 +90,7 @@ export function BrowserOverviewPanel({
             key={session.id}
             session={session}
             highlightedSelector={highlightedSelector}
+            startPausedAtBeginning={replayStartsAtBeginning}
           />
         </Tabs.Content>
       </Flex>

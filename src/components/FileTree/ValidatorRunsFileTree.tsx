@@ -45,13 +45,14 @@ function buildSourceDateTree(
     if (parts.length === 1) {
       add(SOURCE_ROOT, DATE_DIRECT, file)
     } else if (parts.length === 2) {
-      if (DAY_FOLDER_RE.test(parts[0])) {
-        add(SOURCE_OLDER_LAYOUT, parts[0], file)
+      const source = parts[0]!
+      if (DAY_FOLDER_RE.test(source)) {
+        add(SOURCE_OLDER_LAYOUT, source, file)
       } else {
-        add(parts[0], DATE_DIRECT, file)
+        add(source, DATE_DIRECT, file)
       }
     } else if (parts.length >= 3) {
-      add(parts[0], parts[1], file)
+      add(parts[0]!, parts[1]!, file)
     }
   }
 
@@ -66,18 +67,18 @@ function buildSourceDateTree(
 
 function sortSourceKeys(keys: string[]): string[] {
   const specials = new Set([SOURCE_ROOT, SOURCE_OLDER_LAYOUT])
-  const normal = keys.filter((k) => !specials.has(k)).sort((a, b) =>
-    a.localeCompare(b)
-  )
+  const normal = keys
+    .filter((k) => !specials.has(k))
+    .sort((a, b) => a.localeCompare(b))
   const older = keys.includes(SOURCE_OLDER_LAYOUT) ? [SOURCE_OLDER_LAYOUT] : []
   const root = keys.includes(SOURCE_ROOT) ? [SOURCE_ROOT] : []
   return [...normal, ...older, ...root]
 }
 
 function sortDateKeys(keys: string[]): string[] {
-  const dated = keys.filter((k) => DAY_FOLDER_RE.test(k)).sort((a, b) =>
-    b.localeCompare(a)
-  )
+  const dated = keys
+    .filter((k) => DAY_FOLDER_RE.test(k))
+    .sort((a, b) => b.localeCompare(a))
   const undated = keys.filter((k) => !DAY_FOLDER_RE.test(k)).sort()
   return [...dated, ...undated]
 }
@@ -121,7 +122,8 @@ export function ValidatorRunsFileTree({
           <span
             css={css`
               display: block;
-              padding: var(--space-1) var(--space-2) var(--space-1) var(--space-5);
+              padding: var(--space-1) var(--space-2) var(--space-1)
+                var(--space-5);
               font-size: 12px;
               line-height: 22px;
               color: var(--gray-11);
@@ -235,7 +237,11 @@ function SourceGroup({ title, dates, currentFile }: SourceGroupProps) {
               if (dateKey === DATE_DIRECT) {
                 return (
                   <li key={`${title}-${dateKey}`}>
-                    <FileRowList files={list} currentFile={currentFile} indent />
+                    <FileRowList
+                      files={list}
+                      currentFile={currentFile}
+                      indent
+                    />
                   </li>
                 )
               }
@@ -292,11 +298,7 @@ function DateSubGroup({ label, files, currentFile }: DateSubGroupProps) {
               }
             `}
           >
-            {open ? (
-              <ChevronDownIcon size={14} />
-            ) : (
-              <ChevronRight size={14} />
-            )}
+            {open ? <ChevronDownIcon size={14} /> : <ChevronRight size={14} />}
             <span
               css={css`
                 flex: 1 1 0;

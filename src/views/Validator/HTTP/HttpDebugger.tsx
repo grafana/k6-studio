@@ -20,7 +20,7 @@ const TabsContent = styled(Tabs.Content)`
 `
 
 interface HttpDebuggerProps {
-  script: string
+  script?: string
   session: DebugSession
   onDebugScript: () => void
 }
@@ -30,12 +30,24 @@ export function HttpDebugger({
   session,
   onDebugScript,
 }: HttpDebuggerProps) {
-  const [tab, setTab] = useState('script')
+  const hasScript = script !== undefined && script !== ''
+
+  const [tab, setTab] = useState<'script' | 'requests'>(() =>
+    hasScript ? 'script' : 'requests'
+  )
 
   const [selectedRequest, setSelectedRequest] = useState<ProxyData | null>(null)
   const groups = useProxyDataGroups(session.requests)
 
   const isRunning = session.state === 'running'
+
+  const handleMainTabChange = (value: string) => {
+    if (value !== 'script' && value !== 'requests') {
+      return
+    }
+
+    setTab(value)
+  }
 
   // Clear selected request when starting a new run
   useEffect(() => {
@@ -50,23 +62,27 @@ export function HttpDebugger({
       <Allotment.Pane minSize={250}>
         <Allotment vertical defaultSizes={[2, 1]}>
           <Allotment.Pane>
-            <Tabs.Root asChild value={tab} onValueChange={setTab}>
+            <Tabs.Root asChild value={tab} onValueChange={handleMainTabChange}>
               <Flex direction="column" height="100%" overflow="hidden">
                 <Tabs.List
                   css={css`
                     flex-shrink: 0;
                   `}
                 >
-                  <Tabs.Trigger value="script">Script</Tabs.Trigger>
+                  {hasScript && (
+                    <Tabs.Trigger value="script">Script</Tabs.Trigger>
+                  )}
                   <Tabs.Trigger value="requests">Requests</Tabs.Trigger>
                 </Tabs.List>
-                <TabsContent value="script">
-                  <ReadOnlyEditor
-                    value={script}
-                    showToolbar={false}
-                    language="typescript"
-                  />
-                </TabsContent>
+                {hasScript && (
+                  <TabsContent value="script">
+                    <ReadOnlyEditor
+                      value={script ?? ''}
+                      showToolbar={false}
+                      language="typescript"
+                    />
+                  </TabsContent>
+                )}
                 <TabsContent value="requests">
                   {session.state === 'pending' && (
                     <DebuggerEmptyState onDebugScript={onDebugScript}>

@@ -1,8 +1,5 @@
 import { ProxyData } from '@/types'
-import {
-  mergeRequestsById,
-  findCachedResponse,
-} from '@/views/Recorder/Recorder.utils'
+import { findCachedResponse, mergeRequestsById } from '@/utils/proxyMerge'
 
 /**
  * Process incoming proxy data by handling 304 responses and merging with existing data

@@ -2,10 +2,17 @@ import { ipcRenderer } from 'electron'
 
 import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
+import {
+  runValidatorSession as runValidatorSessionImpl,
+  type RunValidatorSessionOptions,
+  type ValidatorSessionResult,
+} from '@/utils/runValidatorSession'
 
 import { createListener } from '../utils'
 
 import { OpenScriptResult, ScriptHandler } from './types'
+
+export type { RunValidatorSessionOptions, ValidatorSessionResult }
 
 export function showScriptSelectDialog() {
   return ipcRenderer.invoke(ScriptHandler.Select) as Promise<string | void>
@@ -74,4 +81,8 @@ export function onBrowserReplay(
   callback: (events: BrowserReplayEvent[]) => void
 ) {
   return createListener(ScriptHandler.BrowserReplay, callback)
+}
+
+export function runValidatorSession(options: RunValidatorSessionOptions) {
+  return runValidatorSessionImpl(options)
 }

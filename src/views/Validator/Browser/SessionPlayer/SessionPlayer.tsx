@@ -36,11 +36,14 @@ const DEFAULT_PAGE: Page = {
 interface SessionPlayerProps {
   session: DebugSession
   highlightedSelector: NodeSelector | null
+  /** Historical / saved replay: timeline starts at 00:00 (paused). */
+  startPausedAtBeginning?: boolean
 }
 
 export function SessionPlayer({
   session,
   highlightedSelector,
+  startPausedAtBeginning = false,
 }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
 
@@ -48,6 +51,7 @@ export function SessionPlayer({
     streaming: session.state === 'running',
     mount,
     events: session.browser.replay,
+    startPausedAtBeginning,
   })
 
   const handleSeek = ({ time, commit }: OnSeekEvent) => {

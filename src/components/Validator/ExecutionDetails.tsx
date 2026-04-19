@@ -23,8 +23,10 @@ export function ExecutionDetails({
   logs,
   checks,
 }: ExecutionDetailsProps) {
+  const hasScript = script !== undefined && script !== ''
+
   const [selectedTab, setSelectedTab] = useState<'logs' | 'checks' | 'script'>(
-    script !== undefined ? 'script' : 'logs'
+    hasScript ? 'script' : 'logs'
   )
 
   const consoleFilter = useConsoleFilter({
@@ -45,7 +47,13 @@ export function ExecutionDetails({
     })
   }, [])
 
-  const handleCopy = useTrackScriptCopy(script, 'debugger')
+  useEffect(() => {
+    if (!hasScript && selectedTab === 'script') {
+      setSelectedTab('logs')
+    }
+  }, [hasScript, selectedTab])
+
+  const handleCopy = useTrackScriptCopy(script ?? '', 'debugger')
 
   return (
     <Tabs.Root
@@ -66,9 +74,7 @@ export function ExecutionDetails({
         <Tabs.Trigger value="checks" disabled={checks.length === 0}>
           Checks ({checks.length})
         </Tabs.Trigger>
-        {script !== undefined && (
-          <Tabs.Trigger value="script">Script</Tabs.Trigger>
-        )}
+        {hasScript && <Tabs.Trigger value="script">Script</Tabs.Trigger>}
       </Tabs.List>
 
       <Tabs.Content
@@ -80,7 +86,7 @@ export function ExecutionDetails({
       >
         <LogsSection {...consoleFilter} autoScroll={isRunning} logs={logs} />
       </Tabs.Content>
-      {script !== undefined && (
+      {hasScript && (
         <Tabs.Content
           value="script"
           css={css`
@@ -89,7 +95,7 @@ export function ExecutionDetails({
         >
           <ReadOnlyEditor
             language="javascript"
-            value={script}
+            value={script ?? ''}
             onCopy={handleCopy}
           />
         </Tabs.Content>

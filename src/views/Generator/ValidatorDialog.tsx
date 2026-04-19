@@ -8,6 +8,7 @@ import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { useProxyHealthCheck } from '@/hooks/useProxyHealthCheck'
 import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
+import { LogEntry } from '@/schemas/k6'
 import { ProxyData } from '@/types'
 import { persistValidatorHttpTraffic } from '@/utils/persistValidatorHttpTraffic'
 import { ValidatorResult } from '@/views/Generator/ValidatorResult'
@@ -29,12 +30,17 @@ export function ValidatorDialog({
   const [isRunning, setIsRunning] = useState(false)
   const { proxyData, resetProxyData } = useListenProxyData()
   const proxyDataRef = useRef<ProxyData[]>([])
+  const logsRef = useRef<LogEntry[]>([])
   const runStartedAtMsRef = useRef(Date.now())
 
   useEffect(() => {
     proxyDataRef.current = proxyData
   }, [proxyData])
   const { logs, resetLogs } = useRunLogs()
+
+  useEffect(() => {
+    logsRef.current = logs
+  }, [logs])
   const { checks, resetChecks } = useRunChecks()
 
   const resetState = useCallback(() => {
@@ -90,7 +96,9 @@ export function ValidatorDialog({
       void persistValidatorHttpTraffic(
         proxyDataRef.current,
         generatorDisplayName,
-        runStartedAtMsRef.current
+        runStartedAtMsRef.current,
+        undefined,
+        logsRef.current
       )
     })
   }, [generatorDisplayName])
