@@ -26,6 +26,7 @@ import {
   useBrowserTestFile,
   useBrowserTestState,
   useSaveBrowserTest,
+  useValidatorScript,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
@@ -45,10 +46,12 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const test = useBrowserTestState(data)
 
-  const preview = useBrowserScriptPreview(test.actions)
+  const previewScript = useBrowserScriptPreview(test.actions)
+  const validatorScript = useValidatorScript(test.actions)
+
   const { session, startDebugging } = useDebugSession({
     type: 'raw',
-    content: preview,
+    content: validatorScript,
     name: file.fileName,
   })
 
@@ -69,7 +72,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       actions={
         <BrowserTestEditorControls
           file={file}
-          preview={preview}
+          preview={previewScript}
           session={session}
           isDirty={test.isDirty}
           onStartDebugging={startDebugging}
@@ -156,7 +159,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                           value="script"
                         >
                           <ReadOnlyEditor
-                            value={preview}
+                            value={previewScript}
                             showToolbar={false}
                             language="typescript"
                           />
