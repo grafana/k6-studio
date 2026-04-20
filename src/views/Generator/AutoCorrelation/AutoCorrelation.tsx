@@ -34,10 +34,12 @@ export function AutoCorrelation({
     isLoading,
     correlationStatus,
     outcomeReason,
-    tokenUsage,
     error,
     stop,
     restart,
+    reset,
+    tokenUsage,
+    provider,
   } = useGenerateRules({
     clearValidation: clearValidation,
   })
@@ -75,7 +77,7 @@ export function AutoCorrelation({
   }
 
   if (error) {
-    return <ErrorMessage error={error} onRetry={restart} />
+    return <ErrorMessage error={error} onRetry={restart} onReset={reset} />
   }
 
   return (
@@ -117,16 +119,16 @@ export function AutoCorrelation({
 
       <Flex
         gap="3"
-        justify="between"
+        justify={provider === 'openai' ? 'between' : 'end'}
         align="center"
         p="3"
         css={{
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        <Flex align="center">
+        {provider === 'openai' && (
           <TokenUsageIndicator tokenUsage={tokenUsage} />
-        </Flex>
+        )}
         <Flex gap="3">
           <Button
             variant="outline"

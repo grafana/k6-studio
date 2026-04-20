@@ -31,6 +31,12 @@ import { prepareRequestsForAI } from './utils/stripRequestData'
 import { sumTokenUsage } from './utils/sumTokenUsage'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
+const outcomeEvents = {
+  success: UsageEventName.AutocorrelationSucceeded,
+  'partial-success': UsageEventName.AutocorrelationPartiallySucceeded,
+  failure: UsageEventName.AutocorrelationFailed,
+} as const
+
 export const useGenerateRules = ({
   clearValidation,
 }: {
@@ -70,8 +76,9 @@ export const useGenerateRules = ({
         setTokenUsage((prev) => sumTokenUsage(prev, usage))
       },
     }),
+
     // Keep calling tools without user input
-    sendAutomaticallyWhen: lastMessageIsToolCall,
+    sendAutomaticallyWhen: (args) => lastMessageIsToolCall(args, provider),
     onError: (error) => {
       setCorrelationStatus('error')
       console.error(error)
@@ -102,7 +109,10 @@ export const useGenerateRules = ({
     const { toolName } = toolCall
 
     switch (toolName) {
-      case 'addRule': {
+      case 'addRuleBeginEnd':
+      case 'addRuleRegex':
+      case 'addRuleJson':
+      case 'addRuleHeaderName': {
         return addRule(toolCall.input.rule)
       }
 
@@ -126,25 +136,11 @@ export const useGenerateRules = ({
       }
 
       case 'finish':
-        if (toolCall.input.outcome === 'success') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationSucceeded,
-          })
-        }
-
-        if (toolCall.input.outcome === 'partial-success') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationPartiallySucceeded,
-          })
-        }
-
-        if (toolCall.input.outcome === 'failure') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationFailed,
-          })
-        }
+        window.studio.app.trackEvent({
+          event: outcomeEvents[toolCall.input.outcome],
+        })
         setOutcomeReason(toolCall.input.reason)
-        return
+        return toolCall.input.outcome
 
       default:
         return exhaustive(toolName)
@@ -152,19 +148,20 @@ export const useGenerateRules = ({
   }
 
   function addRule(rule: AiCorrelationRule) {
+    const validRule = toCorrelationRule(rule)
     const applyResult = applyRules(recording, [
       ...suggestedRulesRef.current,
-      rule,
+      validRule,
     ])
 
     const matchedRequestsIds =
       applyResult.ruleInstances[0]?.state.matchedRequestIds
 
     if (!matchedRequestsIds || matchedRequestsIds.length === 0) {
-      return []
+      return 'The provided rule did not match any requests in the recording. Review the rule and try again.'
     }
 
-    setSuggestedRules((prev) => [...prev, rule])
+    setSuggestedRules((prev) => [...prev, validRule])
     return matchedRequestsIds
   }
 
@@ -236,11 +233,17 @@ export const useGenerateRules = ({
     abortControllerRef.current?.abort()
   }
 
-  function restart() {
+  function reset() {
     setSuggestedRules([])
     setMessages([])
     clearError()
     setTokenUsage(undefined)
+    setCorrelationStatus('not-started')
+    setOutcomeReason('')
+  }
+
+  function restart() {
+    reset()
     return start()
   }
 
@@ -259,9 +262,11 @@ export const useGenerateRules = ({
     isLoading,
     correlationStatus,
     outcomeReason,
-    tokenUsage,
     restart,
+    reset,
     stop: useCallback(stop, [stopGeneration]),
+    tokenUsage,
+    provider,
   }
 }
 
@@ -274,11 +279,23 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
     case 'getRequestsMetadata':
     case 'getRequestDetails':
       return 'analyzing'
-    case 'addRule':
+    case 'addRuleBeginEnd':
+    case 'addRuleRegex':
+    case 'addRuleJson':
+    case 'addRuleHeaderName':
       return 'creating-rules'
     case 'finish':
       return toolCall.input.outcome
     default:
       return exhaustive(toolName)
+  }
+}
+
+function toCorrelationRule(rule: AiCorrelationRule): CorrelationRule {
+  return {
+    ...rule,
+    id: `autocorrelation_rule_${crypto.randomUUID()}`,
+    type: 'correlation',
+    enabled: true,
   }
 }

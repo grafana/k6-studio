@@ -17,15 +17,16 @@ function createUserMessage(parts: MessageParts): Message {
 
 describe('lastMessageIsToolCall', () => {
   it('returns false when there are no messages', () => {
-    const result = lastMessageIsToolCall({
-      messages: [] as unknown as Message[],
-    })
+    const result = lastMessageIsToolCall(
+      { messages: [] as unknown as Message[] },
+      'openai'
+    )
     expect(result).toBe(false)
   })
 
   it('returns false when last message is not from assistant', () => {
     const messages = [createUserMessage([])]
-    const result = lastMessageIsToolCall({ messages })
+    const result = lastMessageIsToolCall({ messages }, 'openai')
     expect(result).toBe(false)
   })
 
@@ -36,7 +37,7 @@ describe('lastMessageIsToolCall', () => {
         { type: 'text', text: 'some content' },
       ]),
     ]
-    const result = lastMessageIsToolCall({ messages })
+    const result = lastMessageIsToolCall({ messages }, 'openai')
     expect(result).toBe(false)
   })
 
@@ -44,23 +45,11 @@ describe('lastMessageIsToolCall', () => {
     const messages = [
       createAssistantMessage([
         { type: 'step-start' },
-        { type: 'tool-addRule', state: 'input-available' },
+        { type: 'tool-addRuleRegex', state: 'input-available' },
         { type: 'tool-runValidation', state: 'output-available' },
       ]),
     ]
-    const result = lastMessageIsToolCall({ messages })
-    expect(result).toBe(false)
-  })
-
-  it('returns false when the last tool call is the finish tool', () => {
-    const messages = [
-      createAssistantMessage([
-        { type: 'step-start' },
-        { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-finish', state: 'output-available' },
-      ]),
-    ]
-    const result = lastMessageIsToolCall({ messages })
+    const result = lastMessageIsToolCall({ messages }, 'openai')
     expect(result).toBe(false)
   })
 
@@ -69,10 +58,10 @@ describe('lastMessageIsToolCall', () => {
       createAssistantMessage([
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-available' },
+        { type: 'tool-addRuleRegex', state: 'output-available' },
       ]),
     ]
-    const result = lastMessageIsToolCall({ messages })
+    const result = lastMessageIsToolCall({ messages }, 'openai')
     expect(result).toBe(true)
   })
 
@@ -85,10 +74,10 @@ describe('lastMessageIsToolCall', () => {
         // Second (last) step - complete tool calls
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-available' },
+        { type: 'tool-addRuleRegex', state: 'output-available' },
       ]),
     ]
-    const result = lastMessageIsToolCall({ messages })
+    const result = lastMessageIsToolCall({ messages }, 'openai')
     expect(result).toBe(true)
   })
 
@@ -97,10 +86,48 @@ describe('lastMessageIsToolCall', () => {
       createAssistantMessage([
         { type: 'step-start' },
         { type: 'tool-runValidation', state: 'output-available' },
-        { type: 'tool-addRule', state: 'output-error' },
+        { type: 'tool-addRuleRegex', state: 'output-error' },
       ]),
     ]
-    const result = lastMessageIsToolCall({ messages })
+    const result = lastMessageIsToolCall({ messages }, 'openai')
     expect(result).toBe(true)
+  })
+
+  describe('openai provider', () => {
+    it('returns false when the only completed tool is finish', () => {
+      const messages = [
+        createAssistantMessage([
+          { type: 'step-start' },
+          { type: 'tool-finish', state: 'output-available' },
+        ]),
+      ]
+      const result = lastMessageIsToolCall({ messages }, 'openai')
+      expect(result).toBe(false)
+    })
+
+    it('returns true when finish is present alongside other tools', () => {
+      const messages = [
+        createAssistantMessage([
+          { type: 'step-start' },
+          { type: 'tool-runValidation', state: 'output-available' },
+          { type: 'tool-finish', state: 'output-available' },
+        ]),
+      ]
+      const result = lastMessageIsToolCall({ messages }, 'openai')
+      expect(result).toBe(true)
+    })
+  })
+
+  describe('grafana-assistant provider', () => {
+    it('returns true when the only completed tool is finish', () => {
+      const messages = [
+        createAssistantMessage([
+          { type: 'step-start' },
+          { type: 'tool-finish', state: 'output-available' },
+        ]),
+      ]
+      const result = lastMessageIsToolCall({ messages }, 'grafana-assistant')
+      expect(result).toBe(true)
+    })
   })
 })
