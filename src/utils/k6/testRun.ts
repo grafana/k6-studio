@@ -115,7 +115,7 @@ interface TestRunEventMap {
    * Called when the test run has stopped, i.e. after the
    * done, abort or error events have been emitted.
    */
-  stop: void
+  stop: EmptyObject
 
   /**
    * Fired when a log entry is emitted by the test run.
@@ -125,11 +125,19 @@ interface TestRunEventMap {
 
 export class TestRun extends EventEmitter<TestRunEventMap> {
   #process: ChildProcessWithoutNullStreams
+  #disposer = new AsyncDisposableStack()
 
   #checks: Check[] = []
 
-  constructor(process: ChildProcessWithoutNullStreams) {
+  constructor(
+    process: ChildProcessWithoutNullStreams,
+    disposables: Array<AsyncDisposable | Disposable> = []
+  ) {
     super()
+
+    for (const disposable of disposables) {
+      this.#disposer.use(disposable)
+    }
 
     process.on('spawn', this.#handleStart)
 
@@ -167,25 +175,36 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
 
     this.#process = process
 
-    this.on('done', this.#emitStop)
-    this.on('abort', this.#emitStop)
-    this.on('error', this.#emitStop)
+    this.on('done', this.#handleStop)
+    this.on('abort', this.#handleStop)
+    this.on('error', this.#handleStop)
   }
 
   isRunning(): boolean {
     return this.#process.pid != undefined && this.#process.exitCode === null
   }
 
-  stop(): Promise<void> {
+  async stop(): Promise<void> {
+    // If we encounter an error while disposing we assume the resources have already
+    // been disposed and ignore the error. `disposeAsync` is idempotent so calling it
+    // multiple times is safe.
+    await Promise.allSettled([this.#kill(), this.#disposer.disposeAsync()])
+  }
+
+  #kill() {
     if (!this.isRunning()) {
       return Promise.resolve()
     }
 
-    return new Promise((resolve) => {
-      this.#process.once('close', resolve)
+    const { promise, resolve } = Promise.withResolvers<void>()
 
-      this.#process.kill()
+    this.#process.once('close', () => {
+      resolve()
     })
+
+    this.#process.kill()
+
+    return promise
   }
 
   #handleStart = () => {
@@ -234,7 +253,13 @@ export class TestRun extends EventEmitter<TestRunEventMap> {
     }
   }
 
-  #emitStop = () => {
-    this.emit('stop', undefined)
+  #handleStop = async () => {
+    try {
+      await this.#disposer.disposeAsync()
+    } catch (error) {
+      console.error('Error disposing children of test run', error)
+    } finally {
+      this.emit('stop', {})
+    }
   }
 }

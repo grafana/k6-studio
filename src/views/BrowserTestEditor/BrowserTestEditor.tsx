@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
@@ -10,6 +11,7 @@ import {
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { useViewBlocker } from '@/hooks/useViewBlocker'
 import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
@@ -44,11 +46,24 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const test = useBrowserTestState(data)
 
   const preview = useBrowserScriptPreview(test.actions)
-  const { session, startDebugging } = useDebugSession({
+
+  const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'raw',
     content: preview,
     name: file.fileName,
   })
+
+  const blocker = useViewBlocker(session.state === 'running')
+
+  useEffect(() => {
+    if (!blocker.blocked) {
+      return
+    }
+
+    void stopDebugging().finally(() => {
+      blocker.proceed()
+    })
+  }, [blocker, stopDebugging])
 
   const handleSave = () => {
     if (!test.isDirty || !data) {

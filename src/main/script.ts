@@ -96,10 +96,11 @@ export const runScript = async ({
       HTTP_PROXY: `http://localhost:${proxySettings.port}`,
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
-      K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
+      K6_TRACKING_SERVER_PORT: String(trackingServer.port),
       K6_BROWSER_ARGS: proxyArgs.join(','),
       K6_TESTING_COLORIZE: 'false',
     },
+    disposables: [trackingServer],
   })
 
   testRun.on('log', ({ entry }) => {
@@ -123,8 +124,6 @@ export const runScript = async ({
 
   testRun.on('stop', () => {
     browserWindow.webContents.send(ScriptHandler.Stopped)
-
-    trackingServer?.dispose()
   })
 
   return testRun

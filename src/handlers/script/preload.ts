@@ -39,7 +39,7 @@ export function runScript(scriptPath: string) {
 }
 
 export function stopScript() {
-  ipcRenderer.send(ScriptHandler.Stop)
+  return ipcRenderer.invoke(ScriptHandler.Stop) as Promise<void>
 }
 
 export function onScriptLog(callback: (data: LogEntry) => void) {
