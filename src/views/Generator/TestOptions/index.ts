@@ -1,1 +1,1 @@
-export * from './TestOptions'
+export * from './TestOptionsDialog'

@@ -13,7 +13,6 @@ import { ExternalLink } from '@/components/ExternalLink'
 import { FieldGroup } from '@/components/Form'
 import { Table } from '@/components/Table'
 import { LoadZoneSchema } from '@/schemas/generator/v1/loadZone'
-import { useGeneratorStore } from '@/store/generator/useGeneratorStore'
 import { LoadZoneData } from '@/types/testOptions'
 
 import { LoadZoneRow } from './LoadZoneRow'
@@ -23,10 +22,12 @@ import {
   LOAD_ZONES_REGIONS_OPTIONS,
 } from './LoadZones.utils'
 
-export function LoadZones() {
-  const loadZones = useGeneratorStore((store) => store.loadZones)
-  const setLoadZones = useGeneratorStore((store) => store.setLoadZones)
+interface LoadZonesProps {
+  loadZones: LoadZoneData
+  onLoadZonesChange: (loadZones: LoadZoneData) => void
+}
 
+export function LoadZones({ loadZones, onLoadZonesChange }: LoadZonesProps) {
   const formMethods = useForm<LoadZoneData>({
     resolver: zodResolver(LoadZoneSchema),
     shouldFocusError: false,
@@ -38,8 +39,13 @@ export function LoadZones() {
     watch,
     control,
     setValue,
+    reset,
     formState: { errors },
   } = formMethods
+
+  useEffect(() => {
+    reset(loadZones)
+  }, [loadZones, reset])
 
   const { append, remove, fields } = useFieldArray<LoadZoneData>({
     control,
@@ -60,9 +66,9 @@ export function LoadZones() {
 
   const onSubmit = useCallback(
     (data: LoadZoneData) => {
-      setLoadZones(data)
+      onLoadZonesChange(data)
     },
-    [setLoadZones]
+    [onLoadZonesChange]
   )
 
   // Submit onChange

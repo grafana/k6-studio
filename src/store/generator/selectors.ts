@@ -73,7 +73,7 @@ export function selectGeneratorData(state: GeneratorStore): GeneratorFileData {
   }
 }
 
-function selectLoadProfile({
+export function selectLoadProfileExecutorOptions({
   executor,
   stages,
   vus,
@@ -94,6 +94,10 @@ function selectLoadProfile({
     default:
       return exhaustive(executor)
   }
+}
+
+function selectLoadProfile(state: GeneratorStore): TestOptions['loadProfile'] {
+  return selectLoadProfileExecutorOptions(state)
 }
 
 export function selectHasVerificationRule(state: GeneratorStore) {

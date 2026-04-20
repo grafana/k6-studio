@@ -14,24 +14,36 @@ import {
 import { FieldGroup } from '@/components/Form'
 import { Table } from '@/components/Table'
 import { TestDataSchema } from '@/schemas/generator'
-import { useGeneratorStore } from '@/store/generator'
+import { TestRule } from '@/types/rules'
 import { TestData } from '@/types/testData'
 
-export function VariablesEditor() {
-  const variables = useGeneratorStore((store) => store.variables)
-  const setVariables = useGeneratorStore((store) => store.setVariables)
+interface VariablesEditorProps {
+  variables: TestData['variables']
+  rules: TestRule[]
+  onVariablesChange: (variables: TestData['variables']) => void
+}
 
+export function VariablesEditor({
+  variables,
+  rules,
+  onVariablesChange,
+}: VariablesEditorProps) {
   const {
     handleSubmit,
     register,
     control,
     watch,
+    reset,
     formState: { errors },
   } = useForm<Pick<TestData, 'variables'>>({
     resolver: zodResolver(TestDataSchema.pick({ variables: true })),
     shouldFocusError: false,
     defaultValues: { variables },
   })
+
+  useEffect(() => {
+    reset({ variables })
+  }, [variables, reset])
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -42,9 +54,9 @@ export function VariablesEditor() {
 
   const onSubmit = useCallback(
     (data: Pick<TestData, 'variables'>) => {
-      setVariables(data.variables)
+      onVariablesChange(data.variables)
     },
-    [setVariables]
+    [onVariablesChange]
   )
 
   // Submit onChange
@@ -80,6 +92,7 @@ export function VariablesEditor() {
               register={register}
               errors={errors}
               onRemove={remove}
+              rules={rules}
             />
           ))}
           <Table.Row>
@@ -101,6 +114,7 @@ interface VariableRowProps {
   register: UseFormRegister<Pick<TestData, 'variables'>>
   errors: FieldErrors<Pick<TestData, 'variables'>>
   onRemove: UseFieldArrayRemove
+  rules: TestRule[]
 }
 
 function VariableRow({
@@ -109,14 +123,13 @@ function VariableRow({
   errors,
   register,
   onRemove,
+  rules,
 }: VariableRowProps) {
-  const isVariableInUse = useGeneratorStore((state) =>
-    state.rules.some(
-      (rule) =>
-        rule.type === 'parameterization' &&
-        rule.value.type === 'variable' &&
-        rule.value.variableName === field.name
-    )
+  const isVariableInUse = rules.some(
+    (rule) =>
+      rule.type === 'parameterization' &&
+      rule.value.type === 'variable' &&
+      rule.value.variableName === field.name
   )
 
   return (

@@ -4,15 +4,51 @@ import { SettingsIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
+import { TestRule } from '@/types/rules'
+import { TestData } from '@/types/testData'
+import {
+  LoadProfileExecutorOptions,
+  LoadZoneData,
+  ThinkTime,
+  Threshold,
+} from '@/types/testOptions'
 
 import { VariablesEditor } from '../TestData/VariablesEditor'
 
 import { LoadProfile } from './LoadProfile'
 import { LoadZones } from './LoadZones'
-import { ThinkTime } from './ThinkTime'
+import { ThinkTime as ThinkTimePanel } from './ThinkTime'
 import { Thresholds } from './Thresholds'
 
-export function TestOptions() {
+export interface TestOptionsDialogProps {
+  loadProfile: LoadProfileExecutorOptions
+  onLoadProfileChange: (data: LoadProfileExecutorOptions) => void
+  thinkTime: Pick<ThinkTime, 'sleepType' | 'timing'>
+  onThinkTimeChange: (data: Pick<ThinkTime, 'sleepType' | 'timing'>) => void
+  hasGroups: boolean
+  thresholds: Threshold[]
+  onThresholdsChange: (thresholds: Threshold[]) => void
+  loadZones: LoadZoneData
+  onLoadZonesChange: (loadZones: LoadZoneData) => void
+  variables: TestData['variables']
+  onVariablesChange: (variables: TestData['variables']) => void
+  rules: TestRule[]
+}
+
+export function TestOptionsDialog({
+  loadProfile,
+  onLoadProfileChange,
+  thinkTime,
+  onThinkTimeChange,
+  hasGroups,
+  thresholds,
+  onThresholdsChange,
+  loadZones,
+  onLoadZonesChange,
+  variables,
+  onVariablesChange,
+  rules,
+}: TestOptionsDialogProps) {
   const [selectedTab, setSelectedTab] = useState('loadProfile')
 
   return (
@@ -46,19 +82,36 @@ export function TestOptions() {
           >
             <Box p="3" pt="0" css={{ '.rt-TabsContent': { outline: 'none' } }}>
               <Tabs.Content value="loadProfile">
-                <LoadProfile />
+                <LoadProfile
+                  loadProfile={loadProfile}
+                  onLoadProfileChange={onLoadProfileChange}
+                />
               </Tabs.Content>
               <Tabs.Content value="thinkTime">
-                <ThinkTime />
+                <ThinkTimePanel
+                  thinkTime={thinkTime}
+                  hasGroups={hasGroups}
+                  onThinkTimeChange={onThinkTimeChange}
+                />
               </Tabs.Content>
               <Tabs.Content value="variables">
-                <VariablesEditor />
+                <VariablesEditor
+                  variables={variables}
+                  rules={rules}
+                  onVariablesChange={onVariablesChange}
+                />
               </Tabs.Content>
               <Tabs.Content value="thresholds">
-                <Thresholds />
+                <Thresholds
+                  thresholds={thresholds}
+                  onThresholdsChange={onThresholdsChange}
+                />
               </Tabs.Content>
               <Tabs.Content value="loadZones">
-                <LoadZones />
+                <LoadZones
+                  loadZones={loadZones}
+                  onLoadZonesChange={onLoadZonesChange}
+                />
               </Tabs.Content>
             </Box>
           </ScrollArea>

@@ -4,53 +4,38 @@ import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 import { LoadProfileExecutorOptionsSchema } from '@/schemas/generator'
-import { useGeneratorStore } from '@/store/generator'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
 
 import { Executor } from './components/Executor'
 import { ExecutorOptions } from './components/ExecutorOptions'
 
-export function LoadProfile() {
-  const executor = useGeneratorStore((store) => store.executor)
-  const setExecutor = useGeneratorStore((store) => store.setExecutor)
+interface LoadProfileProps {
+  loadProfile: LoadProfileExecutorOptions
+  onLoadProfileChange: (data: LoadProfileExecutorOptions) => void
+}
 
-  const stages = useGeneratorStore((store) => store.stages)
-  const setStages = useGeneratorStore((store) => store.setStages)
-
-  const vus = useGeneratorStore((store) => store.vus)
-  const setVus = useGeneratorStore((store) => store.setVus)
-
-  const iterations = useGeneratorStore((store) => store.iterations)
-  const setIterations = useGeneratorStore((store) => store.setIterations)
-
+export function LoadProfile({
+  loadProfile,
+  onLoadProfileChange,
+}: LoadProfileProps) {
   const formMethods = useForm<LoadProfileExecutorOptions>({
     resolver: zodResolver(LoadProfileExecutorOptionsSchema),
     shouldFocusError: false,
-    defaultValues: {
-      executor,
-      stages,
-      vus,
-      iterations,
-    },
+    defaultValues: loadProfile,
   })
-  const { watch, handleSubmit } = formMethods
+  const { watch, handleSubmit, reset } = formMethods
+
+  useEffect(() => {
+    reset(loadProfile)
+  }, [loadProfile, reset])
 
   const data = formMethods.watch()
 
   const onSubmit = useCallback(
     (data: LoadProfileExecutorOptions) => {
-      setExecutor(data.executor)
-
-      if (data.executor === 'ramping-vus') {
-        setStages(data.stages)
-      }
-
-      if (data.executor === 'shared-iterations') {
-        setVus(data.vus)
-        setIterations(data.iterations)
-      }
+      onLoadProfileChange(data)
     },
-    [setExecutor, setIterations, setStages, setVus]
+    [onLoadProfileChange]
   )
 
   // Submit onChange

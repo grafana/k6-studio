@@ -4,12 +4,16 @@ import { ArchiveIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { PopoverDialog } from '@/components/PopoverDialogs'
+import { useGeneratorStore } from '@/store/generator'
 
 import { DataFiles } from './DataFiles'
 import { VariablesEditor } from './VariablesEditor'
 
 export function TestData() {
   const [selectedTab, setSelectedTab] = useState('variables')
+  const variables = useGeneratorStore((store) => store.variables)
+  const setVariables = useGeneratorStore((store) => store.setVariables)
+  const rules = useGeneratorStore((store) => store.rules)
 
   return (
     <PopoverDialog
@@ -40,7 +44,11 @@ export function TestData() {
           >
             <Box p="3" pt="0" css={{ '.rt-TabsContent': { outline: 'none' } }}>
               <Tabs.Content value="variables">
-                <VariablesEditor />
+                <VariablesEditor
+                  variables={variables}
+                  rules={rules}
+                  onVariablesChange={setVariables}
+                />
               </Tabs.Content>
               <Tabs.Content value="dataFiles">
                 <DataFiles />

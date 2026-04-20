@@ -1,19 +1,28 @@
 import { css } from '@emotion/react'
 import { Box, Flex, Tabs } from '@radix-ui/themes'
 import { CircleXIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useScriptPreview } from '@/hooks/useScriptPreview'
 import {
   selectFilteredRequests,
+  selectHasGroups,
   selectHasRecording,
+  selectLoadProfileExecutorOptions,
   useGeneratorStore,
 } from '@/store/generator'
 import { ProxyData } from '@/types'
+import type { TestData as GeneratorTestData } from '@/types/testData'
+import type {
+  LoadProfileExecutorOptions,
+  LoadZoneData,
+  ThinkTime,
+  Threshold,
+} from '@/types/testOptions'
 
 import { Allowlist } from '../Allowlist'
 import { TestData } from '../TestData'
-import { TestOptions } from '../TestOptions'
+import { TestOptionsDialog } from '../TestOptions'
 
 import { RequestList } from './RequestList'
 import { ScriptPreview } from './ScriptPreview'
@@ -32,6 +41,59 @@ export function GeneratorTabs({
   const { hasError } = useScriptPreview()
 
   const hasRecording = useGeneratorStore(selectHasRecording)
+
+  const loadProfile = useGeneratorStore(selectLoadProfileExecutorOptions)
+  const sleepType = useGeneratorStore((store) => store.sleepType)
+  const timing = useGeneratorStore((store) => store.timing)
+  const hasGroups = useGeneratorStore(selectHasGroups)
+  const thresholds = useGeneratorStore((store) => store.thresholds)
+  const loadZones = useGeneratorStore((store) => store.loadZones)
+  const variables = useGeneratorStore((store) => store.variables)
+  const rules = useGeneratorStore((store) => store.rules)
+
+  const handleLoadProfileChange = useCallback(
+    (data: LoadProfileExecutorOptions) => {
+      const {
+        setExecutor,
+        setStages,
+        setVus,
+        setIterations,
+      } = useGeneratorStore.getState()
+      setExecutor(data.executor)
+      if (data.executor === 'ramping-vus') {
+        setStages(data.stages)
+      }
+      if (data.executor === 'shared-iterations') {
+        setVus(data.vus)
+        setIterations(data.iterations)
+      }
+    },
+    []
+  )
+
+  const handleThinkTimeChange = useCallback(
+    (data: Pick<ThinkTime, 'sleepType' | 'timing'>) => {
+      const { setSleepType, setTiming } = useGeneratorStore.getState()
+      setSleepType(data.sleepType)
+      setTiming(data.timing)
+    },
+    []
+  )
+
+  const handleThresholdsChange = useCallback((next: Threshold[]) => {
+    useGeneratorStore.getState().setThresholds(next)
+  }, [])
+
+  const handleLoadZonesChange = useCallback((next: LoadZoneData) => {
+    useGeneratorStore.getState().setLoadZones(next)
+  }, [])
+
+  const handleVariablesChange = useCallback(
+    (next: GeneratorTestData['variables']) => {
+      useGeneratorStore.getState().setVariables(next)
+    },
+    []
+  )
 
   return (
     <Flex direction="column" height="100%" minHeight="0" asChild>
@@ -65,7 +127,20 @@ export function GeneratorTabs({
                 </Tabs.Trigger>
               </Flex>
               <Flex pr="2" pl="4" gap="4">
-                <TestOptions />
+                <TestOptionsDialog
+                  loadProfile={loadProfile}
+                  onLoadProfileChange={handleLoadProfileChange}
+                  thinkTime={{ sleepType, timing }}
+                  onThinkTimeChange={handleThinkTimeChange}
+                  hasGroups={hasGroups}
+                  thresholds={thresholds}
+                  onThresholdsChange={handleThresholdsChange}
+                  loadZones={loadZones}
+                  onLoadZonesChange={handleLoadZonesChange}
+                  variables={variables}
+                  onVariablesChange={handleVariablesChange}
+                  rules={rules}
+                />
                 <TestData />
                 <Allowlist />
               </Flex>

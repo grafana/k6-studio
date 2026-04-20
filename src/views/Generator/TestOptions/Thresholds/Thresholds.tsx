@@ -6,15 +6,19 @@ import { useForm, useFieldArray, FormProvider } from 'react-hook-form'
 import { ExternalLink } from '@/components/ExternalLink'
 import { Table } from '@/components/Table'
 import { ThresholdDataSchema } from '@/schemas/generator'
-import { useGeneratorStore } from '@/store/generator'
 import { Threshold, ThresholdData } from '@/types/testOptions'
 
 import { ThresholdRow } from './ThresholdRow'
 
-export function Thresholds() {
-  const thresholds = useGeneratorStore((store) => store.thresholds)
-  const setThresholds = useGeneratorStore((store) => store.setThresholds)
+interface ThresholdsProps {
+  thresholds: Threshold[]
+  onThresholdsChange: (thresholds: Threshold[]) => void
+}
 
+export function Thresholds({
+  thresholds,
+  onThresholdsChange,
+}: ThresholdsProps) {
   const formMethods = useForm<{ thresholds: Threshold[] }>({
     resolver: zodResolver(ThresholdDataSchema),
     shouldFocusError: false,
@@ -23,7 +27,11 @@ export function Thresholds() {
     },
   })
 
-  const { handleSubmit, control, watch } = formMethods
+  const { handleSubmit, control, watch, reset } = formMethods
+
+  useEffect(() => {
+    reset({ thresholds })
+  }, [thresholds, reset])
 
   const { append, remove, fields } = useFieldArray<ThresholdData>({
     control,
@@ -45,9 +53,9 @@ export function Thresholds() {
 
   const onSubmit = useCallback(
     (data: ThresholdData) => {
-      setThresholds(data.thresholds)
+      onThresholdsChange(data.thresholds)
     },
-    [setThresholds]
+    [onThresholdsChange]
   )
 
   // Submit onChange

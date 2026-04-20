@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form'
 import { FieldGroup } from '@/components/Form'
 import { ControlledRadioGroup } from '@/components/Form/ControllerRadioGroup'
 import { ThinkTimeSchema } from '@/schemas/generator'
-import { selectHasGroups, useGeneratorStore } from '@/store/generator'
 import type { ThinkTime } from '@/types/testOptions'
 import { stringAsNullableNumber, stringAsOptionalNumber } from '@/utils/form'
 
@@ -21,19 +20,24 @@ const SLEEP_TYPE_OPTIONS = [
   { value: 'iterations', label: 'End of iteration' },
 ]
 
-export function ThinkTime() {
-  const sleepType = useGeneratorStore((store) => store.sleepType)
-  const timing = useGeneratorStore((store) => store.timing)
-  const setSleepType = useGeneratorStore((store) => store.setSleepType)
-  const setTiming = useGeneratorStore((store) => store.setTiming)
-  const hasGroups = useGeneratorStore(selectHasGroups)
+interface ThinkTimeProps {
+  thinkTime: Pick<ThinkTime, 'sleepType' | 'timing'>
+  hasGroups: boolean
+  onThinkTimeChange: (data: Pick<ThinkTime, 'sleepType' | 'timing'>) => void
+}
 
+export function ThinkTime({
+  thinkTime: { sleepType, timing },
+  hasGroups,
+  onThinkTimeChange,
+}: ThinkTimeProps) {
   const {
     register,
     handleSubmit,
     watch,
     control,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<ThinkTime>({
     resolver: zodResolver(ThinkTimeSchema),
@@ -44,14 +48,20 @@ export function ThinkTime() {
     shouldFocusError: false,
   })
 
+  useEffect(() => {
+    reset({ sleepType, timing })
+  }, [sleepType, timing, reset])
+
   const data = watch()
 
   const onSubmit = useCallback(
     (data: ThinkTime) => {
-      setSleepType(data.sleepType)
-      setTiming(data.timing)
+      onThinkTimeChange({
+        sleepType: data.sleepType,
+        timing: data.timing,
+      })
     },
-    [setSleepType, setTiming]
+    [onThinkTimeChange]
   )
 
   useEffect(() => {
