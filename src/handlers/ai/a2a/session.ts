@@ -30,8 +30,6 @@ export class ActiveA2ASession {
   sseBuffer = ''
   /** Set to true when step.complete(tool_use) signals all tool calls for this step are emitted */
   allToolCallsReceived = false
-  /** Set to true when allToolCallsReceived AND all tool calls matched with REMOTE_TOOL_REQUESTs */
-  readyToFinishForTools = false
   /** Artifact ID of the active token-streaming block (set by message.stream.start) */
   activeStreamArtifactId: string | undefined
   /** Content type of the currently open streaming block ('text' | 'reasoning') */
@@ -100,12 +98,22 @@ export class ActiveA2ASession {
   }
 
   /**
+   * True once step.complete(tool_use) has fired AND every emitted tool call
+   * is matched with a REMOTE_TOOL_REQUEST — the A2A server is now blocking
+   * and waiting for our remote tool response, so the stream can emit
+   * `finish(tool-calls)`.
+   */
+  get readyToFinishForTools(): boolean {
+    return (
+      this.allToolCallsReceived &&
+      this.unmatchedToolCalls.length === 0 &&
+      this.pendingToolRequests.size > 0
+    )
+  }
+
+  /**
    * Match unmatched tool calls with unmatched remote requests by toolName.
    * Since parallel tool calls are disabled, they arrive in order.
-   *
-   * When ALL unmatched tool calls have been matched, sets `readyToFinishForTools`
-   * so the stream emits `finish(tool-calls)` — the A2A server is now blocking
-   * and waiting for our remote tool response.
    */
   tryMatchToolRequests(): void {
     const remainingRequests = [...this.unmatchedRemoteRequests]
@@ -134,10 +142,5 @@ export class ActiveA2ASession {
 
     this.unmatchedToolCalls = unmatchedCalls
     this.unmatchedRemoteRequests = remainingRequests
-
-    this.readyToFinishForTools =
-      this.allToolCallsReceived &&
-      unmatchedCalls.length === 0 &&
-      this.pendingToolRequests.size > 0
   }
 }
