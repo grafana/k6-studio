@@ -85,7 +85,7 @@ Viewport.Message = function Message({ children }: { children: ReactNode }) {
       right="0"
       bottom="0"
     >
-      <Text size="2" color="gray">
+      <Text as="div" size="2" color="gray">
         {children}
       </Text>
     </Flex>
