@@ -1,7 +1,43 @@
 import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { drainStream, encodeSSEChunked } from '@/test/utils/sse'
+import {
+  collectStreamParts,
+  drainStream,
+  encodeSSEChunked,
+} from '@/test/utils/sse'
+
+/**
+ * Encode SSE events where the stream stays OPEN after the last chunk, mimicking
+ * a live SSE connection that waits for server pushes. Consumers must explicitly
+ * end the stream via the returned `end()` callback.
+ */
+function encodeSSEOpen(events: Array<Record<string, unknown>>): {
+  stream: ReadableStream<Uint8Array>
+  end: () => void
+} {
+  const encoder = new TextEncoder()
+  const chunks = events.map((e) =>
+    encoder.encode(`data: ${JSON.stringify(e)}\n\n`)
+  )
+  let index = 0
+  let endController: ReadableStreamDefaultController<Uint8Array> | null = null
+  const stream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      endController = controller
+      if (index < chunks.length) {
+        const chunk = chunks[index]
+        if (chunk) controller.enqueue(chunk)
+        index++
+      }
+      // Do NOT close when chunks exhausted — caller must invoke end().
+    },
+  })
+  return {
+    stream,
+    end: () => endController?.close(),
+  }
+}
 
 import { sendTaskCancel } from './a2a/cancelTask'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
@@ -23,6 +59,10 @@ vi.mock('./a2a/config', () => ({
 
 vi.mock('./a2a/cancelTask', () => ({
   sendTaskCancel: vi.fn(() => Promise.resolve()),
+}))
+
+vi.mock('./a2a/remoteToolResponse', () => ({
+  sendRemoteToolResponse: vi.fn(() => Promise.resolve()),
 }))
 
 function makeSSEResponse(sseStream: ReadableStream<Uint8Array>): Response {
@@ -240,6 +280,152 @@ describe('GrafanaAssistantLanguageModel', () => {
       await drainStream(result.stream)
 
       expect(sendTaskCancelMock).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleToolResultContinuation', () => {
+    it('finishes when continuation stream receives tool_call + request without a new step.complete', async () => {
+      // Repro: parallel tool calls arrive fragmented across streams.
+      // Stream 1 sees step.complete(tool_use) + tool_call_1, then closes after
+      // req_1 is matched. Continuation stream 2 reads tool_call_2 +
+      // REMOTE_TOOL_REQUEST_2 from the same still-open SSE, but the server
+      // does NOT emit another step.complete. Stream 2 must still finish for
+      // tool-calls so the client can send the second tool result.
+      const model = new GrafanaAssistantLanguageModel()
+
+      const openSSE = encodeSSEOpen([
+        {
+          jsonrpc: '2.0',
+          id: 1,
+          result: {
+            kind: 'status-update',
+            taskId: 't1',
+            contextId: 'c1',
+            status: { state: 'working' },
+          },
+        },
+        {
+          jsonrpc: '2.0',
+          id: 2,
+          result: {
+            kind: 'artifact-update',
+            taskId: 't1',
+            contextId: 'c1',
+            artifact: {
+              name: 'step.toolCall',
+              artifactId: 'art-1',
+              parts: [
+                {
+                  kind: 'data',
+                  data: {
+                    toolId: 'tool-1',
+                    toolName: 'addRuleBeginEnd',
+                    inputs: {},
+                  },
+                },
+              ],
+            },
+          },
+        },
+        {
+          jsonrpc: '2.0',
+          id: 3,
+          result: {
+            kind: 'artifact-update',
+            taskId: 't1',
+            contextId: 'c1',
+            artifact: {
+              name: 'step.complete',
+              artifactId: 'complete-1',
+              parts: [{ kind: 'data', data: { stopReason: 'tool_use' } }],
+            },
+          },
+        },
+        {
+          jsonrpc: '2.0',
+          id: 4,
+          result: {
+            type: 'REMOTE_TOOL_REQUEST',
+            data: {
+              requestId: 'req-1',
+              chatId: 'chat-fragment',
+              toolName: 'addRuleBeginEnd',
+              toolInput: {},
+            },
+          },
+        },
+        // Second tool_call + request arrive after the first stream closes.
+        // Server does NOT emit a new step.complete for this tool.
+        {
+          jsonrpc: '2.0',
+          id: 5,
+          result: {
+            kind: 'artifact-update',
+            taskId: 't1',
+            contextId: 'c1',
+            artifact: {
+              name: 'step.toolCall',
+              artifactId: 'art-2',
+              parts: [
+                {
+                  kind: 'data',
+                  data: {
+                    toolId: 'tool-2',
+                    toolName: 'addRuleJson',
+                    inputs: {},
+                  },
+                },
+              ],
+            },
+          },
+        },
+        {
+          jsonrpc: '2.0',
+          id: 6,
+          result: {
+            type: 'REMOTE_TOOL_REQUEST',
+            data: {
+              requestId: 'req-2',
+              chatId: 'chat-fragment',
+              toolName: 'addRuleJson',
+              toolInput: {},
+            },
+          },
+        },
+      ])
+
+      fetchSpy.mockResolvedValueOnce(makeSSEResponse(openSSE.stream))
+
+      const first = await model.doStream(makeOptions('chat-fragment', 'Hello'))
+      await drainStream(first.stream)
+
+      const continuationOptions: LanguageModelV2CallOptions = {
+        prompt: [
+          {
+            role: 'tool',
+            content: [
+              {
+                type: 'tool-result',
+                toolCallId: 'tool-1',
+                toolName: 'addRuleBeginEnd',
+                output: { type: 'json', value: 'ok' },
+              },
+            ],
+          },
+        ],
+        providerOptions: { grafanaAssistant: { chatId: 'chat-fragment' } },
+      } as unknown as LanguageModelV2CallOptions
+
+      const second = await model.doStream(continuationOptions)
+      const parts = await collectStreamParts(second.stream)
+
+      openSSE.end()
+
+      expect(
+        parts.some(
+          (p) => p.type === 'finish' && p.finishReason === 'tool-calls'
+        )
+      ).toBe(true)
     })
   })
 

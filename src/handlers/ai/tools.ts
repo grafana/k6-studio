@@ -1,22 +1,41 @@
-import { asSchema, tool, ToolSet } from 'ai'
+import { asSchema, JSONSchema7, tool, ToolSet } from 'ai'
 import { z } from 'zod'
 
-import { AiCorrelationRuleSchema } from '@/types/autoCorrelation'
+import {
+  BaseExtractorSchema,
+  BeginEndSelectorSchema,
+  HeaderNameSelectorSchema,
+  JsonSelectorSchema,
+  RegexSelectorSchema,
+} from '@/types/autoCorrelation'
 
 export interface RemoteToolDefinition {
   name: string
   description: string
-  inputSchema: Record<string, unknown>
+  inputSchema: JSONSchema7
 }
+
+const addRuleBeginEndSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: BeginEndSelectorSchema }),
+})
+
+const addRuleRegexSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: RegexSelectorSchema }),
+})
+
+const addRuleJsonSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: JsonSelectorSchema }),
+})
+
+const addRuleHeaderNameSchema = z.object({
+  extractor: BaseExtractorSchema.extend({ selector: HeaderNameSelectorSchema }),
+})
 
 export function getToolDefinitionsForA2A(): RemoteToolDefinition[] {
   return Object.entries(tools).map(([name, toolDef]) => ({
     name,
     description: toolDef.description ?? '',
-    inputSchema: asSchema(toolDef.inputSchema).jsonSchema as Record<
-      string,
-      unknown
-    >,
+    inputSchema: asSchema(toolDef.inputSchema).jsonSchema,
   }))
 }
 
@@ -82,10 +101,24 @@ export const tools = {
     }),
   }),
 
-  addRule: tool({
-    description:
-      'Create a correlation rule. It will return array of matched request ids. If no requests matched, rule will not be added and you need to create another one.',
-    inputSchema: z.object({ rule: AiCorrelationRuleSchema }),
+  addRuleBeginEnd: tool({
+    description: 'Create a correlation rule with a begin-end selector.',
+    inputSchema: z.object({ rule: addRuleBeginEndSchema }),
+  }),
+
+  addRuleRegex: tool({
+    description: 'Create a correlation rule with a regex selector.',
+    inputSchema: z.object({ rule: addRuleRegexSchema }),
+  }),
+
+  addRuleJson: tool({
+    description: 'Create a correlation rule with a JSON-path selector.',
+    inputSchema: z.object({ rule: addRuleJsonSchema }),
+  }),
+
+  addRuleHeaderName: tool({
+    description: 'Create a correlation rule with a header-name selector.',
+    inputSchema: z.object({ rule: addRuleHeaderNameSchema }),
   }),
 
   finish: tool({
