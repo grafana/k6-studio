@@ -67,6 +67,7 @@ export function Viewport({ show, children }: ViewportProps) {
         transform: scale(${scale}) translate(-50%, -50%);
         transform-origin: top left;
         border: 1px solid var(--gray-a5);
+        overflow: hidden;
       `}
     >
       {children}
