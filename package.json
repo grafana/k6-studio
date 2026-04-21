@@ -172,6 +172,8 @@
   "overrides": {
     "esbuild": "^0.27.0",
     "nan": "^2.25.0",
-    "basic-ftp": "^5.2.0"
+    "basic-ftp": "^5.2.0",
+    "tar": "^7.5.13",
+    "dompurify": "^3.4.0"
   }
 }
