@@ -1,9 +1,10 @@
 import { css } from '@emotion/react'
-import { Box, Flex, Tabs } from '@radix-ui/themes'
+import { Box, Flex } from '@radix-ui/themes'
 import { useEffect, useState } from 'react'
 
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
+import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { NodeSelector } from '@/schemas/selectors'
 
 import { DebugSession } from '../types'
@@ -28,25 +29,25 @@ export function BrowserOverviewPanel({
   }, [])
 
   return (
-    <Tabs.Root asChild value={tab} onValueChange={setTab}>
+    <PersistentTabs.Root asChild value={tab} onValueChange={setTab}>
       <Flex direction="column" height="100%">
         <Box asChild flexShrink="0">
-          <Tabs.List>
-            <Tabs.Trigger value="script">Script</Tabs.Trigger>
-            <Tabs.Trigger value="replay" disabled={session.state === 'pending'}>
+          <PersistentTabs.List>
+            <PersistentTabs.Trigger value="script">
+              Script
+            </PersistentTabs.Trigger>
+            <PersistentTabs.Trigger
+              value="replay"
+              disabled={session.state === 'pending'}
+            >
               Replay
-            </Tabs.Trigger>
-          </Tabs.List>
+            </PersistentTabs.Trigger>
+          </PersistentTabs.List>
         </Box>
-        <Tabs.Content
+        <PersistentTabs.Content
           css={css`
-            display: none;
             flex: 1 1 0;
             overflow: hidden;
-
-            &[data-state='active'] {
-              display: flex;
-            }
           `}
           value="script"
           forceMount
@@ -56,17 +57,11 @@ export function BrowserOverviewPanel({
             showToolbar={false}
             language="typescript"
           />
-        </Tabs.Content>
-        <Tabs.Content
+        </PersistentTabs.Content>
+        <PersistentTabs.Content
           css={css`
-            display: none;
             flex: 1 1 0;
-
             overflow: hidden;
-
-            &[data-state='active'] {
-              display: flex;
-            }
           `}
           value="replay"
           forceMount
@@ -76,8 +71,8 @@ export function BrowserOverviewPanel({
             session={session}
             highlightedSelector={highlightedSelector}
           />
-        </Tabs.Content>
+        </PersistentTabs.Content>
       </Flex>
-    </Tabs.Root>
+    </PersistentTabs.Root>
   )
 }

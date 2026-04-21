@@ -11,6 +11,7 @@ import {
   LogsSection,
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
+import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
@@ -105,13 +106,17 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   `}
                 >
                   <Panel id="main" minSize={200}>
-                    <Tabs.Root asChild defaultValue="preview">
+                    <PersistentTabs.Root asChild defaultValue="preview">
                       <Flex direction="column" height="100%" width="100%">
-                        <Tabs.List>
-                          <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
-                          <Tabs.Trigger value="script">Script</Tabs.Trigger>
-                        </Tabs.List>
-                        <Tabs.Content
+                        <PersistentTabs.List>
+                          <PersistentTabs.Trigger value="preview">
+                            Preview
+                          </PersistentTabs.Trigger>
+                          <PersistentTabs.Trigger value="script">
+                            Script
+                          </PersistentTabs.Trigger>
+                        </PersistentTabs.List>
+                        <PersistentTabs.Content
                           css={css`
                             flex: 1 1 0;
                             overflow: hidden;
@@ -150,8 +155,8 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                             session={session}
                             highlightedSelector={null}
                           />
-                        </Tabs.Content>
-                        <Tabs.Content
+                        </PersistentTabs.Content>
+                        <PersistentTabs.Content
                           css={css`
                             flex: 1 1 0;
                             overflow: hidden;
@@ -163,9 +168,9 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                             showToolbar={false}
                             language="typescript"
                           />
-                        </Tabs.Content>
+                        </PersistentTabs.Content>
                       </Flex>
-                    </Tabs.Root>
+                    </PersistentTabs.Root>
                   </Panel>
                   <Separator />
                   <Panel id="actions" minSize={400}>
