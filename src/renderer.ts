@@ -7,6 +7,5 @@ setMonacoEnv()
 
 Sentry.configureRendererProcess()
 
-// Proxy
-
+// `window.studio` is ensured in index.tsx before React mounts (browser fallback).
 window.studio.proxy.onProxyData((_data: ProxyData) => {})

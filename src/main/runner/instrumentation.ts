@@ -6,6 +6,8 @@ import { baseProps, NodeType } from '@/codegen/estree/nodes'
 import { traverse } from '@/codegen/estree/traverse'
 import { readResource } from '@/utils/resources'
 
+export type InstrumentEntryKind = 'browser' | 'http'
+
 interface InstrumentScriptOptions {
   entryScript: string
   replayScript: string
@@ -59,9 +61,16 @@ export const instrumentScript = ({
   return generate(entryAst)
 }
 
-export const instrumentScriptFromPath = async (scriptPath: string) => {
-  const entryScript = await readResource('entrypoint-script')
-  const replayScript = await readResource('replay-script')
+export const instrumentScriptFromPath = async (
+  scriptPath: string,
+  kind: InstrumentEntryKind = 'browser'
+) => {
+  const entryResource =
+    kind === 'browser' ? 'entrypoint-script' : 'http-entrypoint-script'
+
+  const entryScript = await readResource(entryResource)
+  const replayScript =
+    kind === 'browser' ? await readResource('replay-script') : ''
 
   return instrumentScript({
     entryScript,

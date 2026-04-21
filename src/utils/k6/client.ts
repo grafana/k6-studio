@@ -1,5 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { app } from 'electron'
+import { mkdir } from 'fs/promises'
 import path from 'path'
 import readline from 'readline/promises'
 
@@ -54,12 +55,35 @@ interface RunArgs {
 export class ArchiveError extends Error {
   code: number | null
   stderr: LogEntry[]
+  rawStderrLines: string[]
 
-  constructor(code: number | null, stderr: LogEntry[]) {
-    super('Failed to archive script')
+  constructor(
+    code: number | null,
+    stderr: LogEntry[],
+    rawStderrLines: string[]
+  ) {
+    const fromLogs = stderr
+      .map((e) => e.msg.trim())
+      .filter(Boolean)
+      .join('\n')
+    const fromRaw = rawStderrLines
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join('\n')
+    const detail = fromLogs || fromRaw
 
+    super(
+      detail
+        ? `Failed to archive script: ${detail}`
+        : code !== null && code !== undefined
+          ? `Failed to archive script (exit ${code})`
+          : 'Failed to archive script'
+    )
+
+    this.name = 'ArchiveError'
     this.code = code
     this.stderr = stderr
+    this.rawStderrLines = rawStderrLines
   }
 }
 
@@ -71,6 +95,10 @@ export class K6Client {
   }
 
   async archive({ scriptPath, outputPath, cwd }: ArchiveArgs): Promise<void> {
+    if (outputPath && outputPath !== '-') {
+      await mkdir(path.dirname(outputPath), { recursive: true })
+    }
+
     const process = this.#spawn('archive', {
       args: [
         outputPath && ['--archive-out', outputPath],
@@ -88,7 +116,7 @@ export class K6Client {
         .filter((entry) => entry.success)
         .map((entry) => entry.data)
 
-      throw new ArchiveError(code, parsedErrors)
+      throw new ArchiveError(code, parsedErrors, stderr)
     }
   }
 

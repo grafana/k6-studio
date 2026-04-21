@@ -60,6 +60,7 @@ const config: ForgeConfig = {
       './resources/browser',
       './resources/json_output.py',
       './resources/entrypoint.js',
+      './resources/http-entrypoint.js',
       './resources/replay.js',
       ...getPlatformSpecificResources(),
     ],
@@ -127,6 +128,10 @@ const config: ForgeConfig = {
           // Entry doesn't really matter here.
           entry: 'src/main/runner/entrypoint.ts',
           config: 'vite.script.config.ts',
+        },
+        {
+          entry: 'src/main/runner/httpEntrypoint.ts',
+          config: 'vite.httpScript.config.ts',
         },
         {
           // Entry doesn't really matter here.

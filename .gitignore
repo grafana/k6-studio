@@ -113,4 +113,5 @@ resources/browser
 
 # Entry script
 resources/entrypoint.js
+resources/http-entrypoint.js
 resources/replay.js

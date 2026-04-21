@@ -10,9 +10,13 @@ import { ScriptHandler } from '@/handlers/script/types'
 import { getProxyArguments } from '@/main/proxy'
 import { ProxySettings } from '@/types/settings'
 import { ArchiveError, K6Client } from '@/utils/k6/client'
+import { shouldUseBrowserInstrumentation } from '@/utils/k6/shouldUseBrowserInstrumentation'
 import { createTrackingServer } from '@/utils/k6/tracking'
 
-import { instrumentScriptFromPath as instrumentScriptFromPath } from './runner/instrumentation'
+import {
+  instrumentScriptFromPath,
+  type InstrumentEntryKind,
+} from './runner/instrumentation'
 
 export type K6Process = ChildProcessWithoutNullStreams
 
@@ -62,7 +66,14 @@ export const runScriptWithSink = async ({
   proxySettings,
   sink,
 }: RunScriptWithSinkOptions) => {
-  const modifiedScript = await instrumentScriptFromPath(scriptPath)
+  const useBrowserInstrumentation =
+    await shouldUseBrowserInstrumentation(scriptPath)
+
+  const entryKind: InstrumentEntryKind = useBrowserInstrumentation
+    ? 'browser'
+    : 'http'
+
+  const modifiedScript = await instrumentScriptFromPath(scriptPath, entryKind)
 
   const dirname = path.dirname(scriptPath)
 
@@ -79,23 +90,27 @@ export const runScriptWithSink = async ({
     prefix: '',
   })
 
-  const trackingServer = await createTrackingServer()
+  const trackingServer = useBrowserInstrumentation
+    ? await createTrackingServer()
+    : null
 
-  trackingServer.on('begin', (ev) => {
-    sink.send(ScriptHandler.BrowserAction, ev)
-  })
+  if (trackingServer) {
+    trackingServer.on('begin', (ev) => {
+      sink.send(ScriptHandler.BrowserAction, ev)
+    })
 
-  trackingServer.on('end', (ev) => {
-    sink.send(ScriptHandler.BrowserAction, ev)
-  })
+    trackingServer.on('end', (ev) => {
+      sink.send(ScriptHandler.BrowserAction, ev)
+    })
 
-  trackingServer.on('log', (ev) => {
-    sink.send(ScriptHandler.Log, ev.entry)
-  })
+    trackingServer.on('log', (ev) => {
+      sink.send(ScriptHandler.Log, ev.entry)
+    })
 
-  trackingServer.on('replay', (ev) => {
-    sink.send(ScriptHandler.BrowserReplay, ev.events)
-  })
+    trackingServer.on('replay', (ev) => {
+      sink.send(ScriptHandler.BrowserReplay, ev.events)
+    })
+  }
 
   const client = new K6Client()
 
@@ -108,8 +123,12 @@ export const runScriptWithSink = async ({
       HTTP_PROXY: `http://localhost:${proxySettings.port}`,
       HTTPS_PROXY: `http://localhost:${proxySettings.port}`,
       NO_PROXY: 'jslib.k6.io',
-      K6_TRACKING_SERVER_PORT: String(trackingServer?.port),
-      K6_BROWSER_ARGS: proxyArgs.join(','),
+      ...(trackingServer && {
+        K6_TRACKING_SERVER_PORT: String(trackingServer.port),
+      }),
+      ...(useBrowserInstrumentation && {
+        K6_BROWSER_ARGS: proxyArgs.join(','),
+      }),
       K6_TESTING_COLORIZE: 'false',
     },
   })
