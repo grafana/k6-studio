@@ -65,7 +65,7 @@ export function PlaybackControls({
         `}
         time={time}
         actions={actions}
-        disabled={disabled}
+        disabled={streaming || disabled}
         onSeek={handleSeek}
       />
       <Text
