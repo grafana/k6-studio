@@ -81,6 +81,12 @@ export function LocatorForm({
     }
   }, [isPopoverOpen, currentLocator, highlightSelector])
 
+  useEffect(() => {
+    return () => {
+      highlightSelector(null)
+    }
+  }, [highlightSelector])
+
   const handlePointerEnter = () => {
     highlightSelector(toNodeSelector(currentLocator))
   }
