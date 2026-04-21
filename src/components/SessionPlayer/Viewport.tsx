@@ -1,4 +1,5 @@
 import { css } from '@emotion/react'
+import { Flex, Text } from '@radix-ui/themes'
 import { ReactNode, useLayoutEffect, useState } from 'react'
 
 export function useViewportScale(mount: HTMLElement | null) {
@@ -70,5 +71,23 @@ export function Viewport({ show, children }: ViewportProps) {
     >
       {children}
     </div>
+  )
+}
+
+Viewport.Message = function Message({ children }: { children: ReactNode }) {
+  return (
+    <Flex
+      align="center"
+      justify="center"
+      position="absolute"
+      top="0"
+      left="0"
+      right="0"
+      bottom="0"
+    >
+      <Text as="div" size="2" color="gray">
+        {children}
+      </Text>
+    </Flex>
   )
 }

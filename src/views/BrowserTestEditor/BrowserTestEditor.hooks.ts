@@ -128,6 +128,25 @@ export function useBrowserScriptPreview(
   return preview
 }
 
+export function useValidatorScript(browserActions: BrowserActionInstance[]) {
+  // We add a timeout to the end of the script to give the page time to load the page, so that
+  // there's something that the user can interact with. If we don't do this, k6 will stop before
+  // any DOM mutations have been recorded.
+  const validatorActions: BrowserActionInstance[] = useMemo(
+    () => [
+      ...browserActions,
+      {
+        id: '_validator_timeout_',
+        method: 'page.waitForTimeout',
+        timeout: 3000,
+      },
+    ],
+    [browserActions]
+  )
+
+  return useBrowserScriptPreview(validatorActions)
+}
+
 export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {

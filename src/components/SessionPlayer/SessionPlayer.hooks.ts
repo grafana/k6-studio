@@ -3,6 +3,7 @@ import { EventType, Replayer, ReplayerEvents } from 'rrweb'
 
 import { parseReplayEvent } from '@/main/runner/rrweb'
 import { BrowserReplayEvent } from '@/main/runner/schema'
+import { DebugSession } from '@/views/Validator/types'
 
 import { Page, PlaybackState } from './types'
 
@@ -64,24 +65,27 @@ interface Pages {
 }
 
 interface UsePlayerOptions {
-  streaming: boolean
+  session: DebugSession
   mount: HTMLDivElement | null
-  events: BrowserReplayEvent[]
 }
 
-export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
+export function usePlayer({ session, mount }: UsePlayerOptions) {
+  const events = session.browser.replay
+
   const [player, setPlayer] = useState<EnhancedReplayer | null>(null)
 
   // Start at 1 to make slider be 100% at the beginning of the session
   const [currentTime, setCurrentTime] = useState(1)
 
-  const [state, setState] = useState<PlaybackState>('playing')
+  const [state, setState] = useState<PlaybackState>(
+    session.state === 'running' ? 'playing' : 'paused'
+  )
 
   const [scrubbing, setScrubbing] = useState(false)
 
   const [pages, setPages] = useState<Pages | null>(null)
 
-  useEventSync(player, events)
+  useEventSync(player, session.browser.replay)
 
   useEffect(() => {
     // Initialize the rrweb Replayer instance once we have a mount point
@@ -90,13 +94,13 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
       return
     }
 
-    if (events.length < 2) {
+    if (session.state === 'pending' || events.length < 2) {
       return
     }
 
     const newPlayer = new EnhancedReplayer(events, {
       root: mount,
-      liveMode: streaming,
+      liveMode: session.state === 'running',
       mouseTail: false,
     })
 
@@ -128,16 +132,18 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
       }
     })
 
-    if (streaming) {
+    if (session.state === 'running') {
       newPlayer.play()
+
+      setState('playing')
     }
 
     setPlayer(newPlayer)
-  }, [player, mount, streaming, events])
+  }, [player, mount, session.state, events])
 
   // Keep track of the current time for non-streaming playback.
   useEffect(() => {
-    if (streaming || state !== 'playing' || scrubbing) {
+    if (session.state === 'running' || state !== 'playing' || scrubbing) {
       return
     }
 
@@ -153,11 +159,11 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     return () => {
       cancelAnimationFrame(frame)
     }
-  }, [player, state, streaming, scrubbing])
+  }, [player, state, session.state, scrubbing])
 
   // Keep track of the total time, as well as the current time, while streaming
   useEffect(() => {
-    if (!streaming) {
+    if (session.state !== 'running') {
       return
     }
 
@@ -174,7 +180,7 @@ export function usePlayer({ streaming, mount, events }: UsePlayerOptions) {
     return () => {
       cancelAnimationFrame(frame)
     }
-  }, [player, state, streaming])
+  }, [player, state, session.state])
 
   const totalTime = player?.getTotalTime() ?? 0
 

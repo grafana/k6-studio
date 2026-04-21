@@ -55,12 +55,6 @@ export function useDebugSession(script: Script) {
     resetChecks()
   }, [resetChecks, resetLogs, resetProxyData, resetBrowserSession])
 
-  // Reset session when script or script path changes.
-  useEffect(() => {
-    setState('pending')
-    resetSession()
-  }, [input, resetSession])
-
   const startDebugging = useCallback(async () => {
     setState('running')
 

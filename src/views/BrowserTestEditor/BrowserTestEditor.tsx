@@ -1,14 +1,17 @@
 import { css } from '@emotion/react'
-import { Flex, Tabs } from '@radix-ui/themes'
+import { Flex, Tabs, Text } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
 
+import LogoGradient from '@/assets/logo-gradient.svg'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
+import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import {
   LogsSection,
   useConsoleFilter,
 } from '@/components/Validator/LogsSection'
+import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
@@ -24,6 +27,7 @@ import {
   useBrowserTestFile,
   useBrowserTestState,
   useSaveBrowserTest,
+  useValidatorScript,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
@@ -43,10 +47,12 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const test = useBrowserTestState(data)
 
-  const preview = useBrowserScriptPreview(test.actions)
+  const previewScript = useBrowserScriptPreview(test.actions)
+  const validatorScript = useValidatorScript(test.actions)
+
   const { session, startDebugging } = useDebugSession({
     type: 'raw',
-    content: preview,
+    content: validatorScript,
     name: file.fileName,
   })
 
@@ -67,7 +73,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       actions={
         <BrowserTestEditorControls
           file={file}
-          preview={preview}
+          preview={previewScript}
           session={session}
           isDirty={test.isDirty}
           onStartDebugging={startDebugging}
@@ -100,28 +106,57 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                   `}
                 >
                   <Panel id="main" minSize={200}>
-                    <Tabs.Root asChild defaultValue="script">
+                    <PersistentTabs.Root asChild defaultValue="preview">
                       <Flex direction="column" height="100%" width="100%">
-                        <Tabs.List>
-                          <Tabs.Trigger
-                            disabled
-                            css={css`
-                              /* 
-                             * Since we currently only have a single tab, we disable the
-                             * hover styling. This should be removed once we have more tabs.
-                             */
-                              cursor: default;
-
-                              &:hover .rt-TabsTriggerInner {
-                                background-color: transparent;
-                              }
-                            `}
-                            value="script"
-                          >
+                        <PersistentTabs.List>
+                          <PersistentTabs.Trigger value="preview">
+                            Preview
+                          </PersistentTabs.Trigger>
+                          <PersistentTabs.Trigger value="script">
                             Script
-                          </Tabs.Trigger>
-                        </Tabs.List>
-                        <Tabs.Content
+                          </PersistentTabs.Trigger>
+                        </PersistentTabs.List>
+                        <PersistentTabs.Content
+                          css={css`
+                            flex: 1 1 0;
+                            overflow: hidden;
+                          `}
+                          value="preview"
+                        >
+                          <SessionPlayer
+                            key={session.id}
+                            initialPage={{
+                              title: 'k6 Studio',
+                              href: '',
+                              width: 1280,
+                              height: 720,
+                            }}
+                            placeholder="Waiting for the initial URL..."
+                            initialContent={
+                              <Flex
+                                align="center"
+                                justify="center"
+                                direction="column"
+                                gap="2"
+                              >
+                                <img
+                                  src={LogoGradient}
+                                  alt="k6 Studio"
+                                  css={css`
+                                    width: 64px;
+                                    height: 64px;
+                                  `}
+                                />
+                                <Text size="2" color="gray">
+                                  Run the test to see a preview...
+                                </Text>
+                              </Flex>
+                            }
+                            session={session}
+                            highlightedSelector={null}
+                          />
+                        </PersistentTabs.Content>
+                        <PersistentTabs.Content
                           css={css`
                             flex: 1 1 0;
                             overflow: hidden;
@@ -129,13 +164,13 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                           value="script"
                         >
                           <ReadOnlyEditor
-                            value={preview}
+                            value={previewScript}
                             showToolbar={false}
                             language="typescript"
                           />
-                        </Tabs.Content>
+                        </PersistentTabs.Content>
                       </Flex>
-                    </Tabs.Root>
+                    </PersistentTabs.Root>
                   </Panel>
                   <Separator />
                   <Panel id="actions" minSize={400}>
