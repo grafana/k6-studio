@@ -1,18 +1,15 @@
 import { ipcRenderer } from 'electron'
 
-import type {
-  AssistantAuthResult,
-  AssistantAuthStatus,
-} from './a2a/assistantAuth'
 import {
   AbortStreamChatRequest,
   AiHandler,
-  AssistantAuthHandler,
   StreamChatChunk,
   StreamChatEnd,
   StreamChatRequest,
   TokenUsage,
 } from './types'
+
+export * from './a2a/preload'
 
 export function streamChat(request: StreamChatRequest) {
   // Send the initial request
@@ -52,24 +49,4 @@ export function streamChat(request: StreamChatRequest) {
       ipcRenderer.send(AiHandler.AbortStreamChat, abortRequest)
     },
   }
-}
-
-export function assistantSignIn() {
-  return ipcRenderer.invoke(
-    AssistantAuthHandler.SignIn
-  ) as Promise<AssistantAuthResult>
-}
-
-export function assistantCancelSignIn() {
-  return ipcRenderer.invoke(AssistantAuthHandler.CancelSignIn) as Promise<void>
-}
-
-export function assistantGetStatus() {
-  return ipcRenderer.invoke(
-    AssistantAuthHandler.GetStatus
-  ) as Promise<AssistantAuthStatus>
-}
-
-export function assistantSignOut() {
-  return ipcRenderer.invoke(AssistantAuthHandler.SignOut) as Promise<void>
 }

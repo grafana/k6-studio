@@ -13,7 +13,7 @@ import {
   SessionReplayEventSchema,
 } from '@/main/runner/schema'
 import { LogEntry, LogEntrySchema } from '@/schemas/k6'
-import { EventEmitter } from 'extension/src/utils/events'
+import { EventEmitter } from '@/utils/events'
 
 function getPort(address: AddressInfo | string | null): number {
   if (address === null) {

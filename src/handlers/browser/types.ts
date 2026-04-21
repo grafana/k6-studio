@@ -1,3 +1,5 @@
+import type { LaunchBrowserErrorReason } from '@/recorder/types'
+
 export enum BrowserHandler {
   Start = 'browser:start',
   Stop = 'browser:stop',
@@ -6,19 +8,6 @@ export enum BrowserHandler {
   OpenExternalLink = 'browser:open:external:link',
   BrowserEvent = 'browser:event',
 }
-
-export interface LaunchBrowserOptions {
-  url?: string
-  capture: {
-    browser: boolean
-  }
-}
-
-export type LaunchBrowserErrorReason =
-  | 'websocket-server-error'
-  | 'extension-load'
-  | 'browser-launch'
-  | 'unknown'
 
 export interface LaunchBrowserError {
   fatal: boolean

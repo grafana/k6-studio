@@ -1,8 +1,7 @@
 import { FSWatcher } from 'chokidar'
-import { BrowserWindow } from 'electron'
 import eventEmitter from 'events'
 
-import { RecordingSession } from '@/handlers/browser/recorders/types'
+import { RecordingSession } from '@/recorder/launchers/types'
 
 import { ProxyStatus } from '../types'
 import { AppSettings } from '../types/settings'
@@ -21,7 +20,6 @@ export type k6StudioState = {
   appShuttingDown: boolean
   currentClientRoute: string
   wasAppClosedByClient: boolean
-  splashscreenWindow: BrowserWindow | null
   watcher: FSWatcher | null
 }
 
@@ -43,8 +41,6 @@ export function initialize() {
     // Used to track the current route in the client side
     currentClientRoute: '/',
     wasAppClosedByClient: false,
-
-    splashscreenWindow: null,
     watcher: null,
   }
 }

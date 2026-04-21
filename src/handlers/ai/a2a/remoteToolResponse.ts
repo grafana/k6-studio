@@ -1,35 +1,25 @@
-import log from 'electron-log/main'
+import type { A2ASessionConfig } from './config'
+import { buildA2AHeaders, safeResponseText } from './helpers'
 
-import type { A2ASessionConfig } from './types'
-
-const PREFIX = '[GrafanaAssistant]'
+type RemoteToolPayload = {
+  requestId: string
+  chatId: string
+} & ({ success: true; result: unknown } | { success: false; error: string })
 
 export async function sendRemoteToolResponse(
   config: A2ASessionConfig,
-  payload: {
-    requestId: string
-    chatId: string
-    success: boolean
-    result?: unknown
-    error?: string
-  }
+  payload: RemoteToolPayload
 ): Promise<void> {
   const response = await fetch(`${config.baseUrl}/remote-tool-response`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.bearerToken}`,
-      'X-App-Source': 'k6-studio',
-    },
+    headers: buildA2AHeaders(config),
     body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error')
-    log.error(
-      PREFIX,
-      `Failed to send remote tool response (${response.status}):`,
-      text
+    const text = await safeResponseText(response)
+    throw new Error(
+      `Failed to send remote tool response (${response.status}): ${text}`
     )
   }
 }

@@ -21,6 +21,26 @@ const AssistantTokenStoreSchema = z.object({
 
 export type AssistantTokenData = z.infer<typeof AssistantTokenDataSchema>
 
+export interface TokenResponseFields {
+  token: string
+  refresh_token: string
+  expires_at: string
+  refresh_expires_at: string
+}
+
+export function mapTokenResponse(
+  response: TokenResponseFields,
+  apiEndpoint: string
+): AssistantTokenData {
+  return {
+    accessToken: response.token,
+    refreshToken: response.refresh_token,
+    apiEndpoint,
+    expiresAt: new Date(response.expires_at).getTime(),
+    refreshExpiresAt: new Date(response.refresh_expires_at).getTime(),
+  }
+}
+
 type AssistantTokenStore = z.infer<typeof AssistantTokenStoreSchema>
 
 const fileName =
@@ -74,12 +94,17 @@ export async function getAssistantTokens(
     return null
   }
 
-  return {
-    accessToken: decryptString(encrypted.accessToken),
-    refreshToken: decryptString(encrypted.refreshToken),
-    apiEndpoint: encrypted.apiEndpoint,
-    expiresAt: encrypted.expiresAt,
-    refreshExpiresAt: encrypted.refreshExpiresAt,
+  try {
+    return {
+      accessToken: decryptString(encrypted.accessToken),
+      refreshToken: decryptString(encrypted.refreshToken),
+      apiEndpoint: encrypted.apiEndpoint,
+      expiresAt: encrypted.expiresAt,
+      refreshExpiresAt: encrypted.refreshExpiresAt,
+    }
+  } catch (error) {
+    log.warn('[TokenStore] Failed to decrypt tokens for stack', stackId, error)
+    return null
   }
 }
 

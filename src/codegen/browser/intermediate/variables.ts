@@ -53,6 +53,10 @@ function substituteExpression(
     case 'NullLiteral':
     case 'NewPageExpression':
     case 'ClickOptionsExpression':
+    case 'WaitForOptionsExpression':
+    case 'RoleLocatorOptionsExpression':
+    case 'SelectOptionValueExpression':
+    case 'TextLocatorOptionsExpression':
       return node
 
     case 'ClosePageExpression':
@@ -71,8 +75,10 @@ function substituteExpression(
       return {
         type: 'NewRoleLocatorExpression',
         role: substituteExpression(node.role, substitutions),
-        name: substituteExpression(node.name, substitutions),
         page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewLabelLocatorExpression':
@@ -80,6 +86,9 @@ function substituteExpression(
         type: 'NewLabelLocatorExpression',
         text: substituteExpression(node.text, substitutions),
         page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewCssLocatorExpression':
@@ -92,8 +101,11 @@ function substituteExpression(
     case 'NewAltTextLocatorExpression':
       return {
         type: 'NewAltTextLocatorExpression',
-        page: substituteExpression(node.page, substitutions),
         text: substituteExpression(node.text, substitutions),
+        page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewPlaceholderLocatorExpression':
@@ -101,6 +113,9 @@ function substituteExpression(
         type: 'NewPlaceholderLocatorExpression',
         text: substituteExpression(node.text, substitutions),
         page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewTitleLocatorExpression':
@@ -108,6 +123,9 @@ function substituteExpression(
         type: 'NewTitleLocatorExpression',
         text: substituteExpression(node.text, substitutions),
         page: substituteExpression(node.page, substitutions),
+        options: node.options
+          ? substituteExpression(node.options, substitutions)
+          : null,
       }
 
     case 'NewTestIdLocatorExpression':
@@ -146,10 +164,16 @@ function substituteExpression(
         value: substituteExpression(node.value, substitutions),
       }
 
+    case 'ClearExpression':
+      return {
+        type: 'ClearExpression',
+        locator: substituteExpression(node.locator, substitutions),
+      }
+
     case 'CheckExpression':
       return {
         type: 'CheckExpression',
-        checked: substituteExpression(node.checked, substitutions),
+        checked: node.checked,
         locator: substituteExpression(node.locator, substitutions),
       }
 
@@ -187,13 +211,17 @@ function substituteExpression(
           : null,
       }
 
-    case 'WaitForOptionsExpression':
-      return node
-
     case 'WaitForNavigationExpression':
       return {
         type: 'WaitForNavigationExpression',
         target: substituteExpression(node.target, substitutions),
+      }
+
+    case 'WaitForTimeoutExpression':
+      return {
+        type: 'WaitForTimeoutExpression',
+        target: substituteExpression(node.target, substitutions),
+        timeout: node.timeout,
       }
 
     default:

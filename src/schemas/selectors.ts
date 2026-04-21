@@ -5,35 +5,40 @@ export const CssNodeSelectorSchema = z.object({
   selector: z.string(),
 })
 
+const TextWithExact = z.object({
+  value: z.string(),
+  exact: z.boolean().optional(),
+})
+
 export const GetByRoleNodeSelectorSchema = z.object({
   type: z.literal('role'),
   role: z.string(),
-  name: z.string(),
+  name: TextWithExact.optional(),
 })
 
 export const GetByAltTextNodeSelectorSchema = z.object({
   type: z.literal('alt'),
-  text: z.string(),
+  text: TextWithExact,
 })
 
 export const GetByLabelNodeSelectorSchema = z.object({
   type: z.literal('label'),
-  text: z.string(),
+  text: TextWithExact,
 })
 
 export const GetByPlaceholderNodeSelectorSchema = z.object({
   type: z.literal('placeholder'),
-  text: z.string(),
+  text: TextWithExact,
 })
 
 export const GetByTextNodeSelectorSchema = z.object({
   type: z.literal('text'),
-  text: z.string(),
+  text: TextWithExact,
 })
 
 export const GetByTitleNodeSelectorSchema = z.object({
   type: z.literal('title'),
-  text: z.string(),
+  text: TextWithExact,
 })
 
 export const GetByTestIdNodeSelectorSchema = z.object({

@@ -61,6 +61,12 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
       watch: command === 'serve' ? {} : null,
       minify: command === 'build',
       sourcemap: command === 'serve',
+      // Match the Chromium in our Electron version. Legacy defaults (chrome87,
+      // …) make esbuild fail when transpiling modern deps (destructuring/rest).
+      target: 'esnext',
+    },
+    esbuild: {
+      target: 'esnext',
     },
     clearScreen: false,
   }

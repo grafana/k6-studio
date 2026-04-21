@@ -2,14 +2,26 @@ import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
 
 import type { RemoteToolDefinition } from '../tools'
 
+import type { A2ASessionConfig } from './config'
+
+export function safeResponseText(response: Response): Promise<string> {
+  return response.text().catch(() => 'Unknown error')
+}
+
+export function buildA2AHeaders(
+  config: A2ASessionConfig
+): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${config.bearerToken}`,
+    'X-App-Source': 'k6-studio',
+  }
+}
+
 export function extractChatId(options: LanguageModelV2CallOptions): string {
-  const grafanaOpts = options.providerOptions?.grafanaAssistant as
-    | Record<string, unknown>
-    | undefined
+  const chatId = options.providerOptions?.grafanaAssistant?.chatId
 
-  const chatId = grafanaOpts?.chatId as string | undefined
-
-  if (!chatId) {
+  if (typeof chatId !== 'string') {
     throw new Error(
       'GrafanaAssistantProvider requires providerOptions.grafanaAssistant.chatId'
     )
@@ -21,67 +33,65 @@ export function extractChatId(options: LanguageModelV2CallOptions): string {
 export function extractLatestUserText(
   prompt: LanguageModelV2CallOptions['prompt']
 ): string {
-  for (let i = prompt.length - 1; i >= 0; i--) {
-    const msg = prompt[i]
-    if (msg?.role === 'user') {
-      const textParts: string[] = []
-      for (const part of msg.content) {
-        if (part.type === 'text') {
-          textParts.push(part.text)
-        }
-      }
-      return textParts.join('\n')
-    }
-  }
+  const lastUserMsg = prompt.findLast((msg) => msg.role === 'user')
+  if (!lastUserMsg) return ''
 
-  return ''
+  return lastUserMsg.content
+    .filter(
+      (
+        part
+      ): part is Extract<
+        (typeof lastUserMsg.content)[number],
+        { type: 'text' }
+      > => part.type === 'text'
+    )
+    .map((part) => part.text)
+    .join('\n')
 }
 
 export function extractToolResults(
   prompt: LanguageModelV2CallOptions['prompt']
 ): Array<{ toolCallId: string; toolName: string; output: unknown }> {
-  const results: Array<{
-    toolCallId: string
-    toolName: string
-    output: unknown
-  }> = []
+  const lastMsg = prompt.at(-1)
+  if (!lastMsg || lastMsg.role !== 'tool') return []
 
-  const lastMsg = prompt[prompt.length - 1]
-  if (!lastMsg || lastMsg.role !== 'tool') {
-    return results
-  }
-
-  for (const part of lastMsg.content) {
-    if (part.type === 'tool-result') {
-      const output = 'output' in part ? resolveToolOutput(part.output) : part
-
-      results.push({
-        toolCallId: part.toolCallId,
-        toolName: part.toolName,
-        output,
-      })
-    }
-  }
-
-  return results
+  return lastMsg.content
+    .filter(
+      (
+        part
+      ): part is Extract<
+        (typeof lastMsg.content)[number],
+        { type: 'tool-result' }
+      > => part.type === 'tool-result'
+    )
+    .map((part) => ({
+      toolCallId: part.toolCallId,
+      toolName: part.toolName,
+      output: part.output.value,
+    }))
 }
 
-function resolveToolOutput(
-  output:
-    | { type: string; value: unknown }
-    | Array<{ type: string; value: unknown }>
-): unknown {
-  if (Array.isArray(output)) {
-    return output.map((o) => o.value)
+export interface A2AJsonRpcRequest {
+  jsonrpc: '2.0'
+  id: string
+  method: 'message/stream'
+  params: {
+    message: {
+      kind: 'message'
+      role: 'user'
+      messageId: string
+      parts: Array<{ kind: 'text'; text: string }>
+    }
+    contextId?: string
+    metadata?: Record<string, unknown>
   }
-  return output.value
 }
 
 export function buildA2ARequest(
   userText: string,
   contextId?: string,
   tools?: RemoteToolDefinition[]
-): Record<string, unknown> {
+): A2AJsonRpcRequest {
   return {
     jsonrpc: '2.0',
     id: crypto.randomUUID(),

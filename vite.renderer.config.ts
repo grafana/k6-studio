@@ -23,6 +23,15 @@ export default defineConfig((env) => {
     build: {
       outDir: `.vite/renderer/${name}`,
       sourcemap: true,
+      // Electron always ships a current Chromium; avoid esbuild's legacy
+      // browser targets (chrome87, …) which break dep pre-bundling for
+      // packages that use destructuring + rest (e.g. @radix-ui/react-select).
+      target: 'esnext',
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        target: 'esnext',
+      },
     },
     plugins: [
       react({

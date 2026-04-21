@@ -83,7 +83,7 @@ export function initialize() {
     })
   })
 
-  ipcMain.on(ScriptHandler.Stop, (event) => {
+  ipcMain.on(ScriptHandler.Stop, () => {
     console.info(`${ScriptHandler.Stop} event received`)
     if (currentTestRun) {
       currentTestRun.stop().catch((error) => {
@@ -92,9 +92,6 @@ export function initialize() {
 
       currentTestRun = null
     }
-
-    const browserWindow = browserWindowFromEvent(event)
-    browserWindow.webContents.send(ScriptHandler.Stopped)
   })
 
   ipcMain.handle(

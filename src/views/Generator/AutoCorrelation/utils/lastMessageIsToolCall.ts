@@ -1,13 +1,24 @@
 import { DynamicToolUIPart, isToolOrDynamicToolUIPart, ToolUIPart } from 'ai'
 
+import { AiProvider } from '@/types/features'
+
 import { Message, Tools } from '../types'
 
 type ToolPart = DynamicToolUIPart | ToolUIPart<Tools>
 
 /**
- * Determines if the final message contains completed tool invocations.
+ * Determines if the final message contains completed tool invocations
+ * that should trigger an automatic follow-up request.
+ *
+ * For OpenAI, returns false when the only completed tool is `finish`
+ * to prevent an infinite loop (toolChoice: 'required' would force
+ * another tool call). For A2A, always returns true so the finish
+ * result is sent back via sendRemoteToolResponse.
  */
-export function lastMessageIsToolCall({ messages }: { messages: Message[] }) {
+export function lastMessageIsToolCall(
+  { messages }: { messages: Message[] },
+  provider: AiProvider
+) {
   const finalMessage = extractFinalMessage(messages)
   if (!finalMessage) {
     return false
@@ -15,7 +26,15 @@ export function lastMessageIsToolCall({ messages }: { messages: Message[] }) {
 
   const toolsInLastStep = extractToolsFromMostRecentStep(finalMessage.parts)
 
-  return hasCompletedTools(toolsInLastStep)
+  if (!hasCompletedTools(toolsInLastStep)) {
+    return false
+  }
+
+  if (provider === 'openai' && everyToolIsFinish(toolsInLastStep)) {
+    return false
+  }
+
+  return true
 }
 
 function extractFinalMessage(messages: Message[]) {
@@ -35,17 +54,8 @@ function extractToolsFromMostRecentStep(parts: Message['parts']): ToolPart[] {
   return partsAfterLastStep.filter(isToolOrDynamicToolUIPart)
 }
 
-function findMostRecentStepBoundary(parts: unknown[]) {
-  let boundaryPosition = -1
-
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i] as { type?: string }
-    if (part.type === 'step-start') {
-      boundaryPosition = i
-    }
-  }
-
-  return boundaryPosition
+function findMostRecentStepBoundary(parts: Message['parts']) {
+  return parts.findLastIndex((part) => part.type === 'step-start')
 }
 
 function hasCompletedTools(toolParts: ToolPart[]) {
@@ -58,4 +68,8 @@ function hasCompletedTools(toolParts: ToolPart[]) {
 
 function isToolComplete(tool: ToolPart) {
   return tool.state === 'output-available' || tool.state === 'output-error'
+}
+
+function everyToolIsFinish(toolParts: ToolPart[]) {
+  return toolParts.every((tool) => tool.type === 'tool-finish')
 }

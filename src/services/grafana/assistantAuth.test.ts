@@ -1,10 +1,20 @@
 import http from 'node:http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 
 import {
   CallbackResult,
   exchangeAssistantCode,
   handleCallbackRequest,
+  startCallbackServer,
 } from './assistantAuth'
 
 describe('exchangeAssistantCode', () => {
@@ -15,7 +25,7 @@ describe('exchangeAssistantCode', () => {
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.resetAllMocks()
   })
 
   const validResponse = {
@@ -90,82 +100,187 @@ describe('exchangeAssistantCode', () => {
       exchangeAssistantCode('https://api.grafana.net', 'code', 'verifier')
     ).rejects.toThrow()
   })
+
+  it('rejects when signal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+
+    mockFetch.mockImplementation((_url: string, init: RequestInit) => {
+      if (init.signal?.aborted) {
+        return Promise.reject(
+          new DOMException('The operation was aborted.', 'AbortError')
+        )
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(validResponse),
+      })
+    })
+
+    await expect(
+      exchangeAssistantCode(
+        'https://api.grafana.net',
+        'code',
+        'verifier',
+        controller.signal
+      )
+    ).rejects.toThrow('The operation was aborted.')
+  })
+
+  it('passes signal to fetch so it can be aborted externally', async () => {
+    const controller = new AbortController()
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(validResponse),
+    })
+
+    await exchangeAssistantCode(
+      'https://api.grafana.net',
+      'code',
+      'verifier',
+      controller.signal
+    )
+
+    const fetchOptions = mockFetch.mock.calls[0]![1] as RequestInit
+    // Signal should respond to the external controller, not just a timeout
+    controller.abort()
+    expect(fetchOptions.signal?.aborted).toBe(true)
+  })
 })
 
 describe('handleCallbackRequest', () => {
-  function createMockReqRes(url: string) {
+  function createMockServer() {
+    const server = new http.Server()
+    return server
+  }
+
+  function emitRequest(server: http.Server, url: string) {
     const req = { url } as http.IncomingMessage
     const writeHead = vi.fn()
-    const end = vi.fn()
+    const end = vi.fn((_data?: unknown, cb?: () => void) => {
+      cb?.()
+    })
     const res = { writeHead, end } as unknown as http.ServerResponse
-    return { req, res, writeHead, end }
+
+    server.emit('request', req, res)
+
+    return { writeHead, end }
   }
 
   it('returns 404 for non-/callback paths', () => {
-    const { req, res, writeHead, end } = createMockReqRes('/favicon.ico')
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+    const server = createMockServer()
+    void handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    const { writeHead, end } = emitRequest(server, '/favicon.ico')
 
     expect(writeHead).toHaveBeenCalledWith(404)
     expect(end).toHaveBeenCalled()
-    expect(resolve).not.toHaveBeenCalled()
-    expect(reject).not.toHaveBeenCalled()
-    expect(closeServer).not.toHaveBeenCalled()
   })
 
-  it('resolves with callback data on success', () => {
-    const { req, res } = createMockReqRes(
+  it('resolves with callback data on success', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
+
+    emitRequest(
+      server,
       '/callback?code=abc&state=xyz&endpoint=https://api.grafana.net&tenant=t1&email=a@b.com'
     )
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
-
-    expect(resolve).toHaveBeenCalledWith({
+    await expect(result).resolves.toEqual({
       code: 'abc',
       state: 'xyz',
       endpoint: 'https://api.grafana.net',
       tenant: 't1',
       email: 'a@b.com',
     } satisfies CallbackResult)
-    expect(reject).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
   })
 
-  it('rejects with error when error param is present', () => {
-    const { req, res } = createMockReqRes(
-      '/callback?error=user_cancelled&state=xyz'
-    )
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+  it('rejects with error when error param is present', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    emitRequest(server, '/callback?error=user_cancelled&state=xyz')
 
-    expect(reject).toHaveBeenCalledWith(
-      new Error('Authorization denied: user_cancelled')
-    )
-    expect(resolve).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
+    await expect(result).rejects.toThrow('Authorization denied: user_cancelled')
   })
 
-  it('rejects when code or state is missing', () => {
-    const { req, res } = createMockReqRes('/callback?code=abc')
-    const closeServer = vi.fn()
-    const resolve = vi.fn()
-    const reject = vi.fn()
+  it('rejects when code or state is missing', async () => {
+    const server = createMockServer()
+    const result = handleCallbackRequest(server)
 
-    handleCallbackRequest(req, res, closeServer, resolve, reject)
+    emitRequest(server, '/callback?code=abc')
 
-    expect(reject).toHaveBeenCalledWith(
-      new Error('Missing code or state in auth callback')
+    await expect(result).rejects.toThrow(
+      'Missing code or state in auth callback'
     )
-    expect(resolve).not.toHaveBeenCalled()
-    expect(closeServer).toHaveBeenCalled()
+  })
+})
+
+describe('startCallbackServer', () => {
+  // The callback server's reject() fires from Node's HTTP parser,
+  // which can trigger a brief "unhandled rejection" before Promise.race
+  // processes it. This is harmless and only affects tests with real TCP.
+  const pendingRejections = new Set<Promise<unknown>>()
+  function trackRejection(promise: Promise<unknown>) {
+    pendingRejections.add(promise)
+  }
+  function clearTracked(promise: Promise<unknown>) {
+    pendingRejections.delete(promise)
+  }
+
+  beforeAll(() => {
+    process.on('unhandledRejection', trackRejection)
+    process.on('rejectionHandled', clearTracked)
+  })
+
+  afterAll(() => {
+    process.off('unhandledRejection', trackRejection)
+    process.off('rejectionHandled', clearTracked)
+  })
+
+  function sendCallback(port: number, state: string) {
+    return new Promise<void>((resolve, reject) => {
+      http
+        .get(
+          `http://127.0.0.1:${port}/callback?error=user_cancelled&state=${state}`,
+          (res) => {
+            res.resume()
+            res.on('end', resolve)
+          }
+        )
+        .on('error', reject)
+        .end()
+    })
+  }
+
+  it('assigns a port and rejects on cancel callback', async () => {
+    const ctrl = new AbortController()
+    const { port, result } = await startCallbackServer(ctrl.signal)
+
+    expect(port).toBeGreaterThanOrEqual(1024)
+
+    await sendCallback(port, 's1')
+    await expect(result).rejects.toThrow('Authorization denied')
+  })
+
+  it('handles sequential cancel-and-retry without hanging', async () => {
+    const ctrl1 = new AbortController()
+    const { port: port1, result: result1 } = await startCallbackServer(
+      ctrl1.signal
+    )
+
+    await sendCallback(port1, 's1')
+    await expect(result1).rejects.toThrow('Authorization denied')
+
+    const ctrl2 = new AbortController()
+    const { port: port2, result: result2 } = await startCallbackServer(
+      ctrl2.signal
+    )
+
+    expect(port2).not.toBe(port1)
+
+    await sendCallback(port2, 's2')
+    await expect(result2).rejects.toThrow('Authorization denied')
   })
 })

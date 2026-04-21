@@ -5,13 +5,34 @@ import { getValidAssistantTokens } from './tokenRefresh'
 export interface A2AConfig {
   baseUrl: string
   agentId: string
-  remoteToolExtension: string
+  extensions: string
   bearerToken: string
 }
+
+export type A2ASessionConfig = Omit<A2AConfig, 'extensions'>
 
 const AGENT_ID = 'grafana_assistant_k6_studio'
 const REMOTE_TOOL_EXTENSION =
   'https://grafana.com/extensions/remote-tool-execution/v1'
+const TOKEN_STREAMING_EXTENSION =
+  'https://grafana.com/extensions/token-streaming/v1'
+
+export async function getCurrentStackUrl(): Promise<string> {
+  const profile = await getProfileData()
+  const stackId = profile.profiles.currentStack
+
+  if (!stackId) {
+    throw new Error('No stack selected')
+  }
+
+  const stack = profile.profiles.stacks[stackId]
+
+  if (!stack) {
+    throw new Error(`Stack ${stackId} not found in profile`)
+  }
+
+  return stack.url
+}
 
 export async function getA2AConfig(): Promise<A2AConfig> {
   const profile = await getProfileData()
@@ -34,7 +55,7 @@ export async function getA2AConfig(): Promise<A2AConfig> {
   return {
     baseUrl: `${tokens.apiEndpoint}/api/cli/v1/a2a`,
     agentId: AGENT_ID,
-    remoteToolExtension: REMOTE_TOOL_EXTENSION,
+    extensions: [REMOTE_TOOL_EXTENSION, TOKEN_STREAMING_EXTENSION].join(', '),
     bearerToken: tokens.accessToken,
   }
 }

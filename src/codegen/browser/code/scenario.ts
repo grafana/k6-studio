@@ -56,12 +56,44 @@ function emitNewRoleLocatorExpression(
 ): ts.Expression {
   const page = emitExpression(context, expression.page)
   const role = emitExpression(context, expression.role)
-  const name = emitExpression(context, expression.name)
+
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
 
   return new ExpressionBuilder(page)
     .member('getByRole')
-    .call([role, fromObjectLiteral({ name, exact: true })])
+    .call([role, ...options])
     .done()
+}
+
+function emitRoleLocatorOptionsExpression(
+  context: ScenarioContext,
+  expression: ir.RoleLocatorOptionsExpression
+): ts.Expression {
+  if (!expression.name) {
+    return emitExpression(context, { type: 'NullLiteral' })
+  }
+
+  const name = expression.name.value
+  const exact = expression.name.exact
+
+  return ObjectBuilder.from({
+    ...(name && { name }),
+    ...(exact && { exact }),
+  })
+}
+
+function emitTextLocatorOptionsExpression(
+  _context: ScenarioContext,
+  expression: ir.TextLocatorOptionsExpression
+): ts.Expression {
+  const exact = expression.exact
+
+  return ObjectBuilder.from({
+    ...(exact && { exact }),
+  })
 }
 
 function emitNewLabelLocatorExpression(
@@ -71,9 +103,14 @@ function emitNewLabelLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByLabel')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -84,9 +121,14 @@ function emitNewAltTextLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByAltText')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -97,9 +139,14 @@ function emitNewPlaceholderLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByPlaceholder')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -110,9 +157,14 @@ function emitNewTitleLocatorExpression(
   const page = emitExpression(context, expression.page)
   const text = emitExpression(context, expression.text)
 
+  const options =
+    expression.options !== null
+      ? [emitExpression(context, expression.options)]
+      : []
+
   return new ExpressionBuilder(page)
     .member('getByTitle')
-    .call([text, ObjectBuilder.from({ exact: true })])
+    .call([text, ...options])
     .done()
 }
 
@@ -211,6 +263,19 @@ function emitTypeTextExpression(
     .done()
 }
 
+function emitClearExpression(
+  context: ScenarioContext,
+  expression: ir.ClearExpression
+): ts.Expression {
+  const locator = emitExpression(context, expression.locator)
+
+  return new ExpressionBuilder(locator)
+    .member('clear')
+    .call([])
+    .await(context)
+    .done()
+}
+
 function emitCheckExpression(
   context: ScenarioContext,
   expression: ir.CheckExpression
@@ -244,6 +309,16 @@ function emitSelectOptionsExpression(
     .call([selected])
     .await(context)
     .done()
+}
+
+function emitSelectOptionValueExpression(
+  expression: ir.SelectOptionValueExpression
+): ts.Expression {
+  return fromObjectLiteral({
+    value: expression.value,
+    label: expression.label,
+    index: expression.index,
+  })
 }
 
 function emitExpectExpression(
@@ -394,6 +469,19 @@ function emitWaitForNavigationExpression(
     .done()
 }
 
+function emitWaitForTimeoutExpression(
+  context: ScenarioContext,
+  expression: ir.WaitForTimeoutExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  return new ExpressionBuilder(target)
+    .member('waitForTimeout')
+    .call([literal({ value: expression.timeout })])
+    .await(context)
+    .done()
+}
+
 function emitPromiseAllExpression(
   context: ScenarioContext,
   expression: ir.PromiseAllExpression
@@ -433,6 +521,12 @@ function emitExpression(
     case 'NewRoleLocatorExpression':
       return emitNewRoleLocatorExpression(context, expression)
 
+    case 'RoleLocatorOptionsExpression':
+      return emitRoleLocatorOptionsExpression(context, expression)
+
+    case 'TextLocatorOptionsExpression':
+      return emitTextLocatorOptionsExpression(context, expression)
+
     case 'NewLabelLocatorExpression':
       return emitNewLabelLocatorExpression(context, expression)
 
@@ -466,8 +560,14 @@ function emitExpression(
     case 'FillTextExpression':
       return emitTypeTextExpression(context, expression)
 
+    case 'ClearExpression':
+      return emitClearExpression(context, expression)
+
     case 'CheckExpression':
       return emitCheckExpression(context, expression)
+
+    case 'SelectOptionValueExpression':
+      return emitSelectOptionValueExpression(expression)
 
     case 'SelectOptionsExpression':
       return emitSelectOptionsExpression(context, expression)
@@ -483,6 +583,9 @@ function emitExpression(
 
     case 'WaitForNavigationExpression':
       return emitWaitForNavigationExpression(context, expression)
+
+    case 'WaitForTimeoutExpression':
+      return emitWaitForTimeoutExpression(context, expression)
 
     case 'PromiseAllExpression':
       return emitPromiseAllExpression(context, expression)

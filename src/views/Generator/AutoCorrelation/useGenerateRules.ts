@@ -32,6 +32,12 @@ import { prepareRequestsForAI } from './utils/stripRequestData'
 import { sumTokenUsage } from './utils/sumTokenUsage'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
+const outcomeEvents = {
+  success: UsageEventName.AutocorrelationSucceeded,
+  'partial-success': UsageEventName.AutocorrelationPartiallySucceeded,
+  failure: UsageEventName.AutocorrelationFailed,
+} as const
+
 export const useGenerateRules = ({
   clearValidation,
 }: {
@@ -66,7 +72,6 @@ export const useGenerateRules = ({
     stop: stopGeneration,
     clearError,
     setMessages,
-    messages,
   } = useChat<Message>({
     transport: new IPCChatTransport({
       provider,
@@ -79,7 +84,7 @@ export const useGenerateRules = ({
     }),
 
     // Keep calling tools without user input
-    sendAutomaticallyWhen: lastMessageIsToolCall,
+    sendAutomaticallyWhen: (args) => lastMessageIsToolCall(args, provider),
     onError: (error) => {
       setCorrelationStatus('error')
       console.error(error)
@@ -137,23 +142,9 @@ export const useGenerateRules = ({
       }
 
       case 'finish':
-        if (toolCall.input.outcome === 'success') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationSucceeded,
-          })
-        }
-
-        if (toolCall.input.outcome === 'partial-success') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationPartiallySucceeded,
-          })
-        }
-
-        if (toolCall.input.outcome === 'failure') {
-          window.studio.app.trackEvent({
-            event: UsageEventName.AutocorrelationFailed,
-          })
-        }
+        window.studio.app.trackEvent({
+          event: outcomeEvents[toolCall.input.outcome],
+        })
         setOutcomeReason(toolCall.input.reason)
         return toolCall.input.outcome
 
@@ -163,7 +154,7 @@ export const useGenerateRules = ({
   }
 
   function addRule(rule: AiCorrelationRule) {
-    const validRule = AiCorrelationRuleToCorrelationRule(rule)
+    const validRule = toCorrelationRule(rule)
     const applyResult = applyRules(recording, [
       ...suggestedRulesRef.current,
       validRule,
@@ -233,7 +224,6 @@ export const useGenerateRules = ({
       setCorrelationStatus('analyzing')
       return sendMessage({
         text: `${systemPrompt} \n\n Validation result: ${JSON.stringify(validationResult)}`,
-        // text: 'list tools and their input schema in json available to you',
       })
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -250,11 +240,18 @@ export const useGenerateRules = ({
     abortControllerRef.current?.abort()
   }
 
-  function restart() {
+  function reset() {
     setSuggestedRules([])
     setMessages([])
     clearError()
     setAssistantErrorInfo(undefined)
+    setTokenUsage(undefined)
+    setCorrelationStatus('not-started')
+    setOutcomeReason('')
+  }
+
+  function restart() {
+    reset()
     return start()
   }
 
@@ -274,8 +271,8 @@ export const useGenerateRules = ({
     correlationStatus,
     outcomeReason,
     restart,
+    reset,
     stop: useCallback(stop, [stopGeneration]),
-    messages,
     tokenUsage,
     provider,
     assistantErrorInfo,
@@ -303,9 +300,7 @@ function toolCallToStep(toolCall: ToolCall): CorrelationStatus {
   }
 }
 
-function AiCorrelationRuleToCorrelationRule(
-  rule: AiCorrelationRule
-): CorrelationRule {
+function toCorrelationRule(rule: AiCorrelationRule): CorrelationRule {
   return {
     ...rule,
     id: `autocorrelation_rule_${crypto.randomUUID()}`,

@@ -7,10 +7,9 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 import { View } from '@/components/Layout/View'
 import TextSpinner from '@/components/TextSpinner/TextSpinner'
 import { DEFAULT_GROUP_NAME } from '@/constants'
-import { LaunchBrowserOptions } from '@/handlers/browser/types'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
-import { useSettings } from '@/hooks/useSettings'
+import { LaunchBrowserOptions } from '@/recorder/types'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { Group, ProxyData } from '@/types'
@@ -27,7 +26,6 @@ import {
 } from './Recorder.utils'
 import { RecordingContext } from './RecordingContext'
 import { RecordingInspector } from './RecordingInspector'
-import { RequestLog } from './RequestLog'
 import { RecorderState } from './types'
 
 const INITIAL_GROUPS: Group[] = [
@@ -35,8 +33,6 @@ const INITIAL_GROUPS: Group[] = [
 ]
 
 export function Recorder() {
-  const { data: settings } = useSettings()
-
   const [startUrl, setStartUrl] = useState<string>()
   const [groups, setGroups] = useState<Group[]>(() => INITIAL_GROUPS)
 
@@ -231,30 +227,17 @@ export function Recorder() {
           <EmptyState isLoading={isLoading} onStart={handleStartRecording} />
         )}
 
-        {recorderState !== 'idle' &&
-          settings?.recorder.browserRecording !== 'disabled' && (
-            <RecordingInspector
-              recorderState={recorderState}
-              groups={groups}
-              requests={debouncedProxyData}
-              browserEvents={browserEvents}
-              onCreateGroup={handleCreateGroup}
-              onUpdateGroup={handleUpdateGroup}
-              onResetRecording={handleResetRecording}
-            />
-          )}
-
-        {recorderState !== 'idle' &&
-          settings?.recorder.browserRecording === 'disabled' && (
-            <RequestLog
-              recorderState={recorderState}
-              groups={groups}
-              requests={debouncedProxyData}
-              onUpdateGroup={handleUpdateGroup}
-              onResetRecording={handleResetRecording}
-              onCreateGroup={handleCreateGroup}
-            />
-          )}
+        {recorderState !== 'idle' && (
+          <RecordingInspector
+            recorderState={recorderState}
+            groups={groups}
+            requests={debouncedProxyData}
+            browserEvents={browserEvents}
+            onCreateGroup={handleCreateGroup}
+            onUpdateGroup={handleUpdateGroup}
+            onResetRecording={handleResetRecording}
+          />
+        )}
 
         <ConfirmNavigationDialog
           open={blocker.state === 'blocked' || isAppClosing}

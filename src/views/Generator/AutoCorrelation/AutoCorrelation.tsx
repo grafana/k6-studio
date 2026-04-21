@@ -37,6 +37,7 @@ export function AutoCorrelation({
     error,
     stop,
     restart,
+    reset,
     tokenUsage,
     provider,
     assistantErrorInfo,
@@ -81,7 +82,7 @@ export function AutoCorrelation({
       <ErrorMessage
         error={error}
         onRetry={restart}
-        onReset={() => onCorrelationStatusChange('not-started')}
+        onReset={reset}
         assistantErrorInfo={assistantErrorInfo}
       />
     )
@@ -126,19 +127,15 @@ export function AutoCorrelation({
 
       <Flex
         gap="3"
-        justify="between"
+        justify={provider === 'openai' ? 'between' : 'end'}
         align="center"
         p="3"
         css={{
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        {provider === 'openai' ? (
-          <div>
-            <TokenUsageIndicator tokenUsage={tokenUsage} />
-          </div>
-        ) : (
-          <div />
+        {provider === 'openai' && (
+          <TokenUsageIndicator tokenUsage={tokenUsage} />
         )}
         <Flex gap="3">
           <Button

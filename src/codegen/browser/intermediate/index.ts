@@ -70,13 +70,18 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
           type: 'StringLiteral',
           value: node.selector.role,
         },
-        name: {
-          type: 'StringLiteral',
-          // getByRole creates an internal selector, e.g. internal:role=link[name='Hello's] that is passed
-          // to the browser. Since the string literal value is wrapped in single quotes, we need to escape
-          // any single quotes in the name. Bug report: https://github.com/grafana/k6/issues/5360
-          value: node.selector.name.replaceAll("'", "\\'"),
-        },
+        options: node.selector.name
+          ? {
+              type: 'RoleLocatorOptionsExpression',
+              name: {
+                // getByRole creates an internal selector, e.g. internal:role=link[name='Hello's] that is passed
+                // to the browser. Since the string literal value is wrapped in single quotes, we need to escape
+                // any single quotes in the name. Bug report: https://github.com/grafana/k6/issues/5360
+                value: node.selector.name.value.replaceAll("'", "\\'"),
+                exact: node.selector.name.exact || undefined,
+              },
+            }
+          : null,
         page,
       })
       break
@@ -86,9 +91,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewLabelLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.selector.text.value,
         },
         page,
+        options: node.selector.text.exact
+          ? {
+              type: 'TextLocatorOptionsExpression',
+              exact: node.selector.text.exact,
+            }
+          : null,
       })
       break
 
@@ -97,9 +108,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewPlaceholderLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.selector.text.value,
         },
         page,
+        options: node.selector.text.exact
+          ? {
+              type: 'TextLocatorOptionsExpression',
+              exact: node.selector.text.exact,
+            }
+          : null,
       })
       break
 
@@ -108,9 +125,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewTitleLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.selector.text.value,
         },
         page,
+        options: node.selector.text.exact
+          ? {
+              type: 'TextLocatorOptionsExpression',
+              exact: node.selector.text.exact,
+            }
+          : null,
       })
       break
 
@@ -119,9 +142,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewAltTextLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.selector.text.value,
         },
         page,
+        options: node.selector.text.exact
+          ? {
+              type: 'TextLocatorOptionsExpression',
+              exact: node.selector.text.exact,
+            }
+          : null,
       })
       break
 
@@ -235,6 +264,18 @@ function emitTypeTextNode(context: IntermediateContext, node: m.TypeTextNode) {
   })
 }
 
+function emitClearNode(context: IntermediateContext, node: m.ClearNode) {
+  const locator = context.reference(node.inputs.locator)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'ClearExpression',
+      locator,
+    },
+  })
+}
+
 function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
   const locator = context.reference(node.inputs.locator)
 
@@ -243,10 +284,7 @@ function emitCheckNode(context: IntermediateContext, node: m.CheckNode) {
     expression: {
       type: 'CheckExpression',
       locator,
-      checked: {
-        type: 'StringLiteral',
-        value: node.checked ? 'checked' : 'unchecked',
-      },
+      checked: node.checked,
     },
   })
 }
@@ -262,10 +300,19 @@ function emitSelectOptionsNode(
     expression: {
       type: 'SelectOptionsExpression',
       locator,
-      selected: node.selected.map((value) => ({
-        type: 'StringLiteral',
-        value,
-      })),
+      selected: node.selected.map((value) => {
+        if (typeof value === 'string') {
+          return {
+            type: 'StringLiteral',
+            value,
+          }
+        }
+
+        return {
+          type: 'SelectOptionValueExpression',
+          ...value,
+        }
+      }),
       multiple: node.multiple,
     },
   })
@@ -380,6 +427,22 @@ function emitWaitForNode(context: IntermediateContext, node: m.WaitForNode) {
   })
 }
 
+function emitWaitForTimeoutNode(
+  context: IntermediateContext,
+  node: m.WaitForTimeoutNode
+) {
+  const page = context.reference(node.inputs.page)
+
+  context.emit({
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'WaitForTimeoutExpression',
+      target: page,
+      timeout: node.timeout,
+    },
+  })
+}
+
 function emitNode(context: IntermediateContext, node: m.TestNode) {
   switch (node.type) {
     case 'page':
@@ -393,6 +456,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'reload':
       return emitReloadNode(context, node)
+
+    case 'clear':
+      return emitClearNode(context, node)
 
     case 'click':
       return emitClickNode(context, node)
@@ -411,6 +477,9 @@ function emitNode(context: IntermediateContext, node: m.TestNode) {
 
     case 'wait-for':
       return emitWaitForNode(context, node)
+
+    case 'wait-for-timeout':
+      return emitWaitForTimeoutNode(context, node)
 
     default:
       return exhaustive(node)

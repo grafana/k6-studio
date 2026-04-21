@@ -1,3 +1,4 @@
+import { ActionLocator } from '@/main/runner/schema'
 import { ElementSelector } from '@/schemas/recording'
 import {
   GetByAltTextNodeSelector,
@@ -21,7 +22,9 @@ function getRoleSelector(
   return {
     type: 'role',
     role: selectors.role.role,
-    name: selectors.role.name,
+    name: selectors.role.name
+      ? { value: selectors.role.name, exact: true }
+      : undefined,
   }
 }
 
@@ -34,7 +37,7 @@ function getAltTextSelector(
 
   return {
     type: 'alt',
-    text: selectors.alt,
+    text: { value: selectors.alt, exact: true },
   }
 }
 
@@ -47,7 +50,7 @@ function getLabelSelector(
 
   return {
     type: 'label',
-    text: selectors.label,
+    text: { value: selectors.label, exact: true },
   }
 }
 
@@ -60,7 +63,7 @@ function getPlaceholderSelector(
 
   return {
     type: 'placeholder',
-    text: selectors.placeholder,
+    text: { value: selectors.placeholder, exact: true },
   }
 }
 
@@ -73,7 +76,7 @@ function getTitleSelector(
 
   return {
     type: 'title',
-    text: selectors.title,
+    text: { value: selectors.title, exact: true },
   }
 }
 
@@ -109,6 +112,67 @@ export function getNodeSelector(selector: ElementSelector): NodeSelector {
   )
 }
 
+export function toNodeSelector(locator: ActionLocator): NodeSelector {
+  switch (locator.type) {
+    case 'css':
+      return {
+        type: 'css',
+        selector: locator.selector,
+      }
+
+    case 'role':
+      return {
+        type: 'role',
+        role: locator.role,
+        name: locator.options?.name
+          ? {
+              value: locator.options.name,
+              exact: locator.options.exact,
+            }
+          : undefined,
+      }
+
+    case 'testid':
+      return {
+        type: 'test-id',
+        testId: locator.testId,
+      }
+
+    case 'alt':
+      return {
+        type: 'alt',
+        text: { value: locator.text, exact: locator.options?.exact },
+      }
+
+    case 'label':
+      return {
+        type: 'label',
+        text: { value: locator.label, exact: locator.options?.exact },
+      }
+
+    case 'placeholder':
+      return {
+        type: 'placeholder',
+        text: { value: locator.placeholder, exact: locator.options?.exact },
+      }
+
+    case 'title':
+      return {
+        type: 'title',
+        text: { value: locator.title, exact: locator.options?.exact },
+      }
+
+    case 'text':
+      return {
+        type: 'text',
+        text: { value: locator.text, exact: locator.options?.exact },
+      }
+
+    default:
+      return exhaustive(locator)
+  }
+}
+
 export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
   switch (a.type) {
     case 'css':
@@ -118,22 +182,47 @@ export function isSelectorEqual(a: NodeSelector, b: NodeSelector): boolean {
       return b.type === 'test-id' && a.testId === b.testId
 
     case 'role':
-      return b.type === 'role' && a.role === b.role && a.name === b.name
+      return (
+        b.type === 'role' &&
+        a.role === b.role &&
+        a.name?.value === b.name?.value &&
+        a.name?.exact === b.name?.exact
+      )
 
     case 'alt':
-      return b.type === 'alt' && a.text === b.text
+      return (
+        b.type === 'alt' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'label':
-      return b.type === 'label' && a.text === b.text
+      return (
+        b.type === 'label' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'placeholder':
-      return b.type === 'placeholder' && a.text === b.text
+      return (
+        b.type === 'placeholder' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'text':
-      return b.type === 'text' && a.text === b.text
+      return (
+        b.type === 'text' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     case 'title':
-      return b.type === 'title' && a.text === b.text
+      return (
+        b.type === 'title' &&
+        a.text.value === b.text.value &&
+        a.text.exact === b.text.exact
+      )
 
     default:
       return exhaustive(a)

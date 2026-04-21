@@ -1,11 +1,12 @@
 import { ipcMain, shell } from 'electron'
 
-import { launchBrowser } from '@/handlers/browser/launch'
 import { waitForProxy } from '@/main/proxy'
+import { launchBrowser } from '@/recorder/launch'
+import { BrowserLaunchError } from '@/recorder/launchers/types'
+import { LaunchBrowserOptions } from '@/recorder/types'
 import { browserWindowFromEvent } from '@/utils/electron'
 
-import { BrowserLaunchError } from './recorders/types'
-import { BrowserHandler, LaunchBrowserOptions } from './types'
+import { BrowserHandler } from './types'
 
 export function initialize() {
   ipcMain.handle(
@@ -18,10 +19,7 @@ export function initialize() {
       const browserWindow = browserWindowFromEvent(event)
 
       try {
-        k6StudioState.currentRecordingSession = await launchBrowser({
-          ...options,
-          settings: k6StudioState.appSettings.recorder,
-        })
+        k6StudioState.currentRecordingSession = await launchBrowser(options)
 
         k6StudioState.currentRecordingSession.on('record', (event) => {
           browserWindow.webContents.send(

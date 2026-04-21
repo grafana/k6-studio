@@ -1,7 +1,11 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
+import { useState } from 'react'
 
-import { LogsSection } from '@/components/Validator/LogsSection'
+import {
+  LogsSection,
+  useConsoleFilter,
+} from '@/components/Validator/LogsSection'
 import {
   Group,
   Panel,
@@ -9,6 +13,7 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
+import { NodeSelector } from '@/schemas/selectors'
 
 import { DebugSession } from '../types'
 
@@ -27,7 +32,12 @@ export function BrowserDebugger({
   session,
   onDebugScript,
 }: BrowserDebuggerProps) {
+  const [highlightedSelector, setHighlightedSelector] =
+    useState<NodeSelector | null>(null)
+
   const [drawer, setDrawer] = usePanelCallbackRef()
+
+  const consoleFilter = useConsoleFilter()
 
   const drawerLayout = useDefaultLayout({
     groupId: 'browser-debugger-drawer',
@@ -70,13 +80,18 @@ export function BrowserDebugger({
               `}
             >
               <Panel id="main" minSize={400}>
-                <BrowserOverviewPanel script={script} session={session} />
+                <BrowserOverviewPanel
+                  script={script}
+                  session={session}
+                  highlightedSelector={highlightedSelector}
+                />
               </Panel>
               <Separator />
               <Panel id="actions" minSize={400}>
                 <BrowserActionsPanel
                   session={session}
                   onDebugScript={onDebugScript}
+                  onHighlight={setHighlightedSelector}
                 />
               </Panel>
             </Group>
@@ -100,7 +115,11 @@ export function BrowserDebugger({
                 `}
                 value="console"
               >
-                <LogsSection autoScroll={false} logs={session.logs} />
+                <LogsSection
+                  {...consoleFilter}
+                  autoScroll={session.state === 'running'}
+                  logs={session.logs}
+                />
               </Tabs.Content>
               <Tabs.Content
                 css={css`

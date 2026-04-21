@@ -1,5 +1,7 @@
+import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
+import { debounce } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
@@ -10,16 +12,18 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { useStateWithUndo } from '@/hooks/useStateWithUndo'
-import { AnyBrowserAction } from '@/main/runner/schema'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 import { getFileNameWithoutExtension } from '@/utils/file'
 import { queryClient } from '@/utils/query'
-import { exhaustive } from '@/utils/typescript'
 
-import { BrowserActionWithId } from './types'
+import {
+  fromBrowserActionInstance,
+  toBrowserActionInstance,
+} from './actionAdapters'
+import { createActionInstance } from './actionEditorRegistry'
+import { BrowserActionInstance } from './types'
 
 export function useBrowserTestFile(): StudioFile {
   const { fileName } = useParams()
@@ -91,14 +95,17 @@ export function useBrowserTestEditorLayout() {
   return { drawerLayout, mainLayout, setDrawer, onTabClick }
 }
 
-export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
+export function useBrowserScriptPreview(
+  browserActions: BrowserActionInstance[]
+) {
   const [preview, setPreview] = useState('')
 
-  useEffect(() => {
-    async function generatePreview() {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const generatePreview = useCallback(
+    debounce(async (actions: BrowserActionInstance[]) => {
       try {
         const test = convertActionsToTest({
-          browserActions,
+          browserActions: actions,
         })
 
         const script = await emitScript(test)
@@ -108,44 +115,76 @@ export function useBrowserScriptPreview(browserActions: AnyBrowserAction[]) {
           `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
         )
       }
-    }
+    }, 300),
+    []
+  )
 
-    void generatePreview()
-  }, [browserActions])
+  useEffect(() => {
+    void generatePreview(browserActions)
+
+    return () => generatePreview.cancel()
+  }, [browserActions, generatePreview])
 
   return preview
+}
+
+export function useValidatorScript(browserActions: BrowserActionInstance[]) {
+  // We add a timeout to the end of the script to give the page time to load the page, so that
+  // there's something that the user can interact with. If we don't do this, k6 will stop before
+  // any DOM mutations have been recorded.
+  const validatorActions: BrowserActionInstance[] = useMemo(
+    () => [
+      ...browserActions,
+      {
+        id: '_validator_timeout_',
+        method: 'page.waitForTimeout',
+        timeout: 3000,
+      },
+    ],
+    [browserActions]
+  )
+
+  return useBrowserScriptPreview(validatorActions)
 }
 
 export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
   const { actions = [] } = browserTestFile ?? {}
-  const { state, undo, redo, push } = useStateWithUndo<BrowserActionWithId[]>(
-    actions.map((action) => ({
-      id: crypto.randomUUID(),
-      action,
-    }))
+  const [state, setState] = useState<BrowserActionInstance[]>(
+    actions.map(toBrowserActionInstance)
   )
 
-  const addAction = (method: AnyBrowserAction['method']) => {
-    const action = createNewAction(method)
-    push([...state, { id: crypto.randomUUID(), action }])
+  const addAction = (method: BrowserActionInstance['method']) => {
+    const action = createActionInstance(method)
+    setState([...state, action])
   }
 
-  const updateAction = (updatedAction: BrowserActionWithId) => {
+  const updateAction = (updatedAction: BrowserActionInstance) => {
     const newActions = state.map((action) =>
       action.id === updatedAction.id ? updatedAction : action
     )
-    push(newActions)
+    setState(newActions)
   }
 
   const removeAction = (id: string) => {
     const newActions = state.filter((actionWithId) => actionWithId.id !== id)
-    push(newActions)
+    setState(newActions)
   }
 
+  const reorderActions = useCallback((activeId: string, overId: string) => {
+    setState((prev) => {
+      const oldIndex = prev.findIndex((a) => a.id === activeId)
+      const newIndex = prev.findIndex((a) => a.id === overId)
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        return prev
+      }
+      return arrayMove(prev, oldIndex, newIndex)
+    })
+  }, [])
+
   const plainActions = useMemo(() => {
-    return state.map((actionWithId) => actionWithId.action)
+    return state.map(fromBrowserActionInstance)
   }, [state])
 
   const isDirty = useMemo(() => {
@@ -161,41 +200,7 @@ export function useBrowserTestState(
     addAction,
     updateAction,
     removeAction,
+    reorderActions,
     isDirty,
-    undo,
-    redo,
-  }
-}
-
-function createNewAction(method: AnyBrowserAction['method']): AnyBrowserAction {
-  switch (method) {
-    case 'page.goto':
-      return {
-        method: 'page.goto',
-        url: 'https://example.com',
-      }
-    case 'page.reload':
-    case 'page.waitForNavigation':
-    case 'page.close':
-    case 'page.*':
-    case 'locator.click':
-    case 'locator.dblclick':
-    case 'locator.fill':
-    case 'locator.type':
-    case 'locator.check':
-    case 'locator.uncheck':
-    case 'locator.selectOption':
-    case 'locator.waitFor':
-    case 'locator.hover':
-    case 'locator.setChecked':
-    case 'locator.tap':
-    case 'locator.clear':
-    case 'locator.press':
-    case 'locator.focus':
-    case 'locator.*':
-    case 'browserContext.*':
-      throw new Error(`Action ${method} not implemented yet`)
-    default:
-      return exhaustive(method)
   }
 }

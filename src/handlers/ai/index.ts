@@ -19,12 +19,11 @@ export function initialize() {
   assistantAuth.initialize()
 }
 
-async function handleStreamChat(
+export async function handleStreamChat(
   event: IpcMainEvent,
   request: StreamChatRequest
 ) {
   const provider = request.provider ?? 'openai'
-
   const messages = convertToModelMessages(request.messages)
 
   const abortController = new AbortController()
@@ -36,7 +35,6 @@ async function handleStreamChat(
 
       const response = streamText({
         model: aiModel,
-        toolChoice: 'required',
         messages,
         tools,
         abortSignal: abortController.signal,
@@ -47,12 +45,13 @@ async function handleStreamChat(
         },
       })
 
-      await streamMessages(event.sender, response, request.id, false)
+      await streamMessages(event.sender, response, request.id)
     } else {
       const aiModel = await getOpenAiModel()
 
       const response = streamText({
         model: aiModel,
+        toolChoice: 'required',
         messages,
         tools,
         abortSignal: abortController.signal,
@@ -67,18 +66,25 @@ async function handleStreamChat(
         },
       })
 
-      await streamMessages(event.sender, response, request.id, true)
+      await streamMessages(event.sender, response, request.id)
     }
   } catch (error) {
-    log.error('handleStreamChat error:', error)
-
-    if (error instanceof AssistantError) {
-      event.sender.send(AiHandler.StreamChatChunk, {
-        id: request.id,
-        chunk: { type: 'error', errorText: error.message },
-        errorInfo: error.errorInfo,
-      })
+    if (abortController.signal.aborted) {
+      return
     }
+
+    log.error('handleStreamChat error:', error)
+    event.sender.send(AiHandler.StreamChatChunk, {
+      id: request.id,
+      chunk: {
+        type: 'error',
+        errorText: error instanceof Error ? error.message : 'Unknown error',
+      },
+      errorInfo: error instanceof AssistantError ? error.errorInfo : undefined,
+    })
+    event.sender.send(AiHandler.StreamChatEnd, {
+      id: request.id,
+    })
   } finally {
     activeAbortControllers.delete(request.id)
   }

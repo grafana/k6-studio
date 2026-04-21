@@ -11,21 +11,23 @@ import { CirclePlusIcon } from 'lucide-react'
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { AnyBrowserAction } from '@/main/runner/schema'
 
-import { EditableAction } from './EditableAction'
-import { BrowserActionWithId } from './types'
+import { SortableBrowserActionList } from './SortableBrowserActionList'
+import { BrowserActionInstance } from './types'
 
 interface EditableBrowserActionListProps {
-  actions: BrowserActionWithId[]
-  onAddAction: (method: AnyBrowserAction['method']) => void
+  actions: BrowserActionInstance[]
+  onAddAction: (method: BrowserActionInstance['method']) => void
   onRemoveAction: (actionId: string) => void
-  onUpdateAction: (action: BrowserActionWithId) => void
+  onChangeAction: (action: BrowserActionInstance) => void
+  onReorderActions: (activeId: string, overId: string) => void
 }
 
 export function EditableBrowserActionList({
   actions,
   onAddAction,
   onRemoveAction,
-  onUpdateAction,
+  onChangeAction,
+  onReorderActions,
 }: EditableBrowserActionListProps) {
   return (
     <Flex direction="column" height="100%">
@@ -49,14 +51,12 @@ export function EditableBrowserActionList({
         {actions.length === 0 ? (
           <EmptyMessage message="Build your browser test by adding actions." />
         ) : (
-          actions.map((action) => (
-            <EditableAction
-              key={action.id}
-              action={action}
-              onRemove={onRemoveAction}
-              onUpdate={onUpdateAction}
-            />
-          ))
+          <SortableBrowserActionList
+            actions={actions}
+            onReorderActions={onReorderActions}
+            onRemoveAction={onRemoveAction}
+            onChangeAction={onChangeAction}
+          />
         )}
       </ScrollArea>
     </Flex>
@@ -78,10 +78,76 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
       <DropdownMenu.Content>
         <DropdownMenu.Item
           onClick={() => {
+            onAddAction('locator.click')
+          }}
+        >
+          Click element
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.fill')
+          }}
+        >
+          Fill input
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.clear')
+          }}
+        >
+          Clear input
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.selectOption')
+          }}
+        >
+          Select option
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.check')
+          }}
+        >
+          Check input
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.uncheck')
+          }}
+        >
+          Uncheck input
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('locator.waitFor')
+          }}
+        >
+          Wait for element
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('page.waitForTimeout')
+          }}
+        >
+          Wait for timeout
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item
+          onClick={() => {
             onAddAction('page.goto')
           }}
         >
           Navigate to URL
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            onAddAction('page.reload')
+          }}
+        >
+          Reload page
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>

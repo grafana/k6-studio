@@ -1,23 +1,35 @@
-import { Badge, Button, Callout, Flex, Text, Tooltip } from '@radix-ui/themes'
+import { css } from '@emotion/react'
+import {
+  Badge,
+  Button,
+  Callout,
+  Flex,
+  Spinner,
+  Text,
+  Tooltip,
+} from '@radix-ui/themes'
 import {
   AlertTriangleIcon,
   CheckCircleIcon,
   KeyIcon,
   LinkIcon,
   UnlinkIcon,
-  UserRoundIcon,
   WandSparkles,
 } from 'lucide-react'
+import { useState } from 'react'
 
 import grotIllustration from '@/assets/grot-magic.svg'
+import { GrafanaCloudSignIn } from '@/components/Profile/GrafanaCloudSignIn'
+import { GrafanaIcon } from '@/components/icons/GrafanaIcon'
 import {
-  cancelAssistantSignIn,
   useAssistantAuthStatus,
   useAssistantSignIn,
   useAssistantSignOut,
+  invalidateAssistantAuthStatus,
 } from '@/hooks/useAssistantAuth'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useSettings } from '@/hooks/useSettings'
+import { useStackHealth } from '@/hooks/useStackHealth'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
 
@@ -43,13 +55,10 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   )
   const { data: settings } = useSettings()
   const isAiConfigured = !!settings?.ai.apiKey
-  const proxyStatus = useProxyStatus()
 
   return (
     <IntroLayout>
-      {isAiConfigured && (
-        <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
-      )}
+      {isAiConfigured && <AnalyzeButton onStart={onStart} />}
       {!isAiConfigured && (
         <>
           <Text size="2" color="gray">
@@ -70,42 +79,80 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
 }
 
 function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
-  const proxyStatus = useProxyStatus()
   const { data: authStatus, isLoading } = useAssistantAuthStatus()
-  const {
-    mutate: signIn,
-    isPending: isSigningIn,
-    error: signInError,
-  } = useAssistantSignIn()
-  const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
-  const openProfileDialog = useStudioUIStore((state) => state.openProfileDialog)
+  const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
+  const signIn = useAssistantSignIn()
 
-  const isAuthenticated = authStatus?.authenticated ?? false
   const isSignedIn = !!authStatus?.stackId
+  const isAuthenticated = authStatus?.authenticated ?? false
+  const isAwaitingApproval = !isAuthenticated && signIn.isPending
+
+  if (!isSignedIn && isCloudSigningIn) {
+    return (
+      <Flex direction="column" align="center" justify="center" height="100%">
+        <GrafanaCloudSignIn
+          onSignIn={() => {
+            setIsCloudSigningIn(false)
+            void invalidateAssistantAuthStatus()
+          }}
+          onAbort={() => setIsCloudSigningIn(false)}
+        />
+      </Flex>
+    )
+  }
+
+  if (isAwaitingApproval) {
+    return (
+      <Flex
+        direction="column"
+        align="center"
+        gap="3"
+        justify="center"
+        height="100%"
+        maxWidth="300px"
+        mx="auto"
+      >
+        <Flex align="center" gap="2">
+          <Spinner />
+          <Text size="2">Waiting for approval</Text>
+        </Flex>
+        <Text size="2" color="gray">
+          Complete the sign-in in your browser.
+        </Text>
+        {signIn.verificationCode && (
+          <Callout.Root
+            css={css`
+              align-self: stretch;
+              justify-content: center;
+            `}
+            size="3"
+          >
+            <Callout.Text align="center">
+              Verification code <br />
+              <Text align="center" weight="bold" size="6">
+                {signIn.verificationCode}
+              </Text>
+            </Callout.Text>
+          </Callout.Root>
+        )}
+        <Button variant="ghost" onClick={signIn.cancel}>
+          Cancel
+        </Button>
+      </Flex>
+    )
+  }
 
   return (
     <IntroLayout subtitle="Powered by Grafana Assistant">
       <AssistantAuthStatus
-        isLoading={isLoading}
         isSignedIn={isSignedIn}
         isAuthenticated={isAuthenticated}
-        isSigningIn={isSigningIn}
-        isSigningOut={isSigningOut}
-        proxyStatus={proxyStatus}
+        isLoading={isLoading}
+        onSignIn={() => setIsCloudSigningIn(true)}
+        onConnect={() => signIn.mutate()}
         onStart={onStart}
-        onSignIn={() => signIn()}
-        onCancelSignIn={cancelAssistantSignIn}
-        onSignOut={signOut}
-        onOpenProfile={openProfileDialog}
+        connectError={signIn.error}
       />
-      {signInError && (
-        <Callout.Root color="red" size="1">
-          <Callout.Icon>
-            <AlertTriangleIcon size={16} />
-          </Callout.Icon>
-          <Callout.Text>{signInError.message}</Callout.Text>
-        </Callout.Root>
-      )}
       <Text size="1" color="gray" mt="1">
         This feature is in public preview and subject to change.
       </Text>
@@ -114,32 +161,27 @@ function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
 }
 
 interface AssistantAuthStatusProps {
-  isLoading: boolean
   isSignedIn: boolean
   isAuthenticated: boolean
-  isSigningIn: boolean
-  isSigningOut: boolean
-  proxyStatus: string
-  onStart: () => void
+  isLoading: boolean
   onSignIn: () => void
-  onCancelSignIn: () => void
-  onSignOut: () => void
-  onOpenProfile: () => void
+  onConnect: () => void
+  onStart: () => void
+  connectError: Error | null
 }
 
 function AssistantAuthStatus({
-  isLoading,
   isSignedIn,
   isAuthenticated,
-  isSigningIn,
-  isSigningOut,
-  proxyStatus,
-  onStart,
+  isLoading,
   onSignIn,
-  onCancelSignIn,
-  onSignOut,
-  onOpenProfile,
+  onConnect,
+  onStart,
+  connectError,
 }: AssistantAuthStatusProps) {
+  const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
+  const { isStackReady } = useStackHealth(isAuthenticated)
+
   if (isLoading) {
     return (
       <Text size="2" color="gray">
@@ -154,8 +196,8 @@ function AssistantAuthStatus({
         <Text size="2" color="gray">
           Sign in to Grafana Cloud to use the Grafana Assistant.
         </Text>
-        <Button size="3" onClick={onOpenProfile}>
-          <UserRoundIcon />
+        <Button size="3" onClick={onSignIn}>
+          <GrafanaIcon />
           Sign in to Grafana Cloud
         </Button>
       </>
@@ -164,33 +206,42 @@ function AssistantAuthStatus({
 
   if (!isAuthenticated) {
     return (
-      <Flex align="center" gap="2">
-        <Button size="3" onClick={onSignIn} disabled={isSigningIn}>
+      <>
+        <Button size="3" onClick={onConnect}>
           <LinkIcon />
-          {isSigningIn ? 'Connecting...' : 'Connect to Grafana Assistant'}
+          Connect to Grafana Assistant
         </Button>
-        {isSigningIn && (
-          <Button
-            variant="outline"
-            size="3"
-            onClick={onCancelSignIn}
-            aria-label="Cancel sign in"
-          >
-            Cancel
-          </Button>
+        {connectError && (
+          <Callout.Root color="red" size="1">
+            <Callout.Icon>
+              <AlertTriangleIcon size={16} />
+            </Callout.Icon>
+            <Callout.Text>{connectError.message}</Callout.Text>
+          </Callout.Root>
         )}
+      </>
+    )
+  }
+
+  if (!isStackReady) {
+    return (
+      <Flex align="center" gap="2">
+        <Spinner />
+        <Text size="2" color="gray">
+          Your Grafana instance is loading...
+        </Text>
       </Flex>
     )
   }
 
   return (
     <Flex direction="column" align="center" gap="2">
-      <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
+      <AnalyzeButton onStart={onStart} />
       <Button
         variant="ghost"
         size="1"
         color="red"
-        onClick={onSignOut}
+        onClick={() => signOut()}
         disabled={isSigningOut}
       >
         <UnlinkIcon size={14} />
@@ -200,13 +251,8 @@ function AssistantAuthStatus({
   )
 }
 
-function AnalyzeButton({
-  onStart,
-  proxyStatus,
-}: {
-  onStart: () => void
-  proxyStatus: string
-}) {
+function AnalyzeButton({ onStart }: { onStart: () => void }) {
+  const proxyStatus = useProxyStatus()
   return (
     <Tooltip
       content={`Proxy is ${proxyStatus}`}

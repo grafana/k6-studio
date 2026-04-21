@@ -1,13 +1,14 @@
 import log from 'electron-log/main'
 import { z } from 'zod'
 
+import { LOG_PREFIX } from './constants'
+import { safeResponseText } from './helpers'
 import {
-  AssistantTokenData,
+  type AssistantTokenData,
   getAssistantTokens,
+  mapTokenResponse,
   saveAssistantTokens,
 } from './tokenStore'
-
-const PREFIX = '[GrafanaAssistant]'
 
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
 
@@ -38,7 +39,7 @@ export async function refreshAndSaveTokens(
     )
   }
 
-  log.info(PREFIX, 'Refreshing assistant token for stack', stackId)
+  log.info(LOG_PREFIX, 'Refreshing assistant token for stack', stackId)
 
   const response = await fetch(
     `${tokens.apiEndpoint}/api/cli/v1/auth/refresh`,
@@ -50,22 +51,14 @@ export async function refreshAndSaveTokens(
   )
 
   if (!response.ok) {
-    const text = await response.text().catch(() => 'Unknown error')
+    const text = await safeResponseText(response)
     throw new Error(
       `Assistant token refresh failed (${response.status}): ${text}`
     )
   }
 
   const body = RefreshResponseSchema.parse(await response.json())
-  const data = body.data
-
-  const refreshedTokens: AssistantTokenData = {
-    accessToken: data.token,
-    refreshToken: data.refresh_token,
-    apiEndpoint: tokens.apiEndpoint,
-    expiresAt: new Date(data.expires_at).getTime(),
-    refreshExpiresAt: new Date(data.refresh_expires_at).getTime(),
-  }
+  const refreshedTokens = mapTokenResponse(body.data, tokens.apiEndpoint)
 
   await saveAssistantTokens(stackId, refreshedTokens)
 
@@ -88,7 +81,11 @@ export async function getValidAssistantTokens(
   try {
     return await refreshAndSaveTokens(stackId, tokens)
   } catch (error) {
-    log.error(PREFIX, 'Failed to refresh assistant token:', error)
+    log.error(LOG_PREFIX, 'Failed to refresh assistant token:', error)
+    if (Date.now() < tokens.expiresAt) {
+      return tokens
+    }
+
     return null
   }
 }

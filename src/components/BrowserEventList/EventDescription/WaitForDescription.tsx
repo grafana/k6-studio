@@ -15,8 +15,7 @@ export function WaitForDescription({
   return (
     <>
       Wait for{' '}
-      <Selector selectors={event.target.selectors} onHighlight={onHighlight} />{' '}
-      to be {event.options?.state ?? 'visible'}
+      <Selector selectors={event.target.selectors} onHighlight={onHighlight} />
     </>
   )
 }

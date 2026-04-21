@@ -1,4 +1,3 @@
-import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { BrowserEvent } from '@/schemas/recording'
 import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
@@ -7,6 +6,7 @@ import { AssertDescription } from './AssertDescription'
 import { ClickDescription } from './ClickDescription'
 import { InputChangeDescription } from './InputChangeDescription'
 import { PageNavigationDescription } from './PageNavigationDescription'
+import { SelectChangeDescription } from './SelectChangeDescription'
 import { Selector } from './Selector'
 import { WaitForDescription } from './WaitForDescription'
 
@@ -58,15 +58,7 @@ export function EventDescription({
       )
 
     case 'select-change':
-      return (
-        <>
-          Selected <SelectOptions options={event.selected} /> from{' '}
-          <Selector
-            selectors={event.target.selectors}
-            onHighlight={onHighlight}
-          />
-        </>
-      )
+      return <SelectChangeDescription event={event} onHighlight={onHighlight} />
 
     case 'submit-form':
       return (

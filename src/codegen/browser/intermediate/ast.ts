@@ -37,31 +37,48 @@ export interface NewAltTextLocatorExpression {
   type: 'NewAltTextLocatorExpression'
   text: Expression
   page: Expression
+  options: Expression | null
 }
 
 export interface NewLabelLocatorExpression {
   type: 'NewLabelLocatorExpression'
   text: Expression
   page: Expression
+  options: Expression | null
 }
 
 export interface NewPlaceholderLocatorExpression {
   type: 'NewPlaceholderLocatorExpression'
   text: Expression
   page: Expression
+  options: Expression | null
 }
 
 export interface NewTitleLocatorExpression {
   type: 'NewTitleLocatorExpression'
   text: Expression
   page: Expression
+  options: Expression | null
+}
+
+export interface TextLocatorOptionsExpression {
+  type: 'TextLocatorOptionsExpression'
+  exact?: boolean
+}
+
+export interface RoleLocatorOptionsExpression {
+  type: 'RoleLocatorOptionsExpression'
+  name?: {
+    value: string
+    exact?: boolean
+  }
 }
 
 export interface NewRoleLocatorExpression {
   type: 'NewRoleLocatorExpression'
   role: Expression
-  name: Expression
   page: Expression
+  options: Expression | null
 }
 
 export interface GotoExpression {
@@ -93,10 +110,22 @@ export interface ClickExpression {
   options: Expression | null
 }
 
+export interface ClearExpression {
+  type: 'ClearExpression'
+  locator: Expression
+}
+
 export interface CheckExpression {
   type: 'CheckExpression'
   locator: Expression
-  checked: Expression
+  checked: boolean
+}
+
+export interface SelectOptionValueExpression {
+  type: 'SelectOptionValueExpression'
+  value?: string
+  label?: string
+  index?: number
 }
 
 export interface SelectOptionsExpression {
@@ -121,6 +150,12 @@ export interface WaitForExpression {
 export interface WaitForNavigationExpression {
   type: 'WaitForNavigationExpression'
   target: Expression
+}
+
+export interface WaitForTimeoutExpression {
+  type: 'WaitForTimeoutExpression'
+  target: Expression
+  timeout: number
 }
 
 export interface PromiseAllExpression {
@@ -187,6 +222,8 @@ export type Expression =
   | NewPageExpression
   | ClosePageExpression
   | NewRoleLocatorExpression
+  | RoleLocatorOptionsExpression
+  | TextLocatorOptionsExpression
   | NewLabelLocatorExpression
   | NewPlaceholderLocatorExpression
   | NewTitleLocatorExpression
@@ -195,15 +232,18 @@ export type Expression =
   | NewTestIdLocatorExpression
   | GotoExpression
   | ReloadExpression
+  | ClearExpression
   | ClickExpression
   | ClickOptionsExpression
   | FillTextExpression
   | CheckExpression
+  | SelectOptionValueExpression
   | SelectOptionsExpression
   | ExpectExpression
   | WaitForExpression
   | WaitForOptionsExpression
   | WaitForNavigationExpression
+  | WaitForTimeoutExpression
   | PromiseAllExpression
 
 export interface VariableDeclaration {

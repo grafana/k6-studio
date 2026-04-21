@@ -1,5 +1,5 @@
 import type { LanguageModelV2CallOptions } from '@ai-sdk/provider'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   buildA2ARequest,
@@ -10,6 +10,10 @@ import {
 
 beforeEach(() => {
   vi.stubGlobal('crypto', { randomUUID: () => 'test-uuid' })
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('extractChatId', () => {
@@ -158,9 +162,8 @@ describe('buildA2ARequest', () => {
 
   it('includes contextId when provided', () => {
     const req = buildA2ARequest('Hello', 'ctx-1')
-    const params = req.params as Record<string, unknown>
 
-    expect(params.contextId).toBe('ctx-1')
+    expect(req.params.contextId).toBe('ctx-1')
   })
 
   it('includes metadata with tools when tools are provided', () => {
@@ -168,30 +171,26 @@ describe('buildA2ARequest', () => {
       {
         name: 'searchRequests',
         description: 'Search for requests',
-        inputSchema: { type: 'object' },
+        inputSchema: { type: 'object' as const },
       },
     ]
 
     const req = buildA2ARequest('Hello', undefined, tools)
-    const params = req.params as Record<string, unknown>
-    const metadata = params.metadata as Record<string, unknown>
 
-    expect(metadata).toEqual({
+    expect(req.params.metadata).toEqual({
       'https://grafana.com/extensions/client-provided-tools/v1': { tools },
     })
   })
 
   it('omits metadata when tools is an empty array', () => {
     const req = buildA2ARequest('Hello', undefined, [])
-    const params = req.params as Record<string, unknown>
 
-    expect(params.metadata).toBeUndefined()
+    expect(req.params.metadata).toBeUndefined()
   })
 
   it('omits metadata when tools is undefined', () => {
     const req = buildA2ARequest('Hello')
-    const params = req.params as Record<string, unknown>
 
-    expect(params.metadata).toBeUndefined()
+    expect(req.params.metadata).toBeUndefined()
   })
 })

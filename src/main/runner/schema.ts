@@ -24,6 +24,7 @@ const GetByRoleLocatorSchema = z.object({
   options: z
     .object({
       name: z.string().optional(),
+      exact: z.boolean().optional(),
     })
     .optional(),
 })
@@ -33,29 +34,40 @@ const GetByTestIdLocatorSchema = z.object({
   testId: z.string(),
 })
 
+const TextLocatorOptions = z
+  .object({
+    exact: z.boolean().optional(),
+  })
+  .optional()
+
 const GetByAltTextLocatorSchema = z.object({
   type: z.literal('alt'),
   text: z.string(),
+  options: TextLocatorOptions,
 })
 
 const GetByLabelLocatorSchema = z.object({
   type: z.literal('label'),
   label: z.string(),
+  options: TextLocatorOptions,
 })
 
 const GetByPlaceholderLocatorSchema = z.object({
   type: z.literal('placeholder'),
   placeholder: z.string(),
+  options: TextLocatorOptions,
 })
 
 const GetByTitleLocatorSchema = z.object({
   type: z.literal('title'),
   title: z.string(),
+  options: TextLocatorOptions,
 })
 
 const GetByTextLocatorSchema = z.object({
   type: z.literal('text'),
   text: z.string(),
+  options: TextLocatorOptions,
 })
 
 const ActionLocatorSchema = z.discriminatedUnion('type', [
@@ -83,6 +95,17 @@ const PageReloadActionSchema = z.object({
 const PageWaitForNavigationActionSchema = z.object({
   method: z.literal('page.waitForNavigation'),
   options: GenericOptions.optional(),
+})
+
+const PageWaitForTimeoutActionSchema = z.object({
+  method: z.literal('page.waitForTimeout'),
+  // NaN is converted to null by `JSON.stringify` so we type this
+  // as nullable and transform it back to NaN to allow invalid data
+  // to be saved.
+  timeout: z
+    .number()
+    .nullable()
+    .transform((value) => value ?? NaN),
 })
 
 const PageCloseActionSchema = z.object({
@@ -160,7 +183,19 @@ const LocatorSelectOptionActionSchema = z.object({
 const LocatorWaitForActionSchema = z.object({
   method: z.literal('locator.waitFor'),
   locator: ActionLocatorSchema,
-  options: GenericOptions.optional(),
+  options: z
+    .object({
+      state: z
+        .union([
+          z.literal('attached'),
+          z.literal('detached'),
+          z.literal('visible'),
+          z.literal('hidden'),
+        ])
+        .optional(),
+      timeout: z.number().optional(),
+    })
+    .optional(),
 })
 
 const LocatorHoverActionSchema = z.object({
@@ -229,6 +264,7 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
   PageGotoActionSchema,
   PageReloadActionSchema,
   PageWaitForNavigationActionSchema,
+  PageWaitForTimeoutActionSchema,
   PageCloseActionSchema,
   GenericPageActionSchema,
 
@@ -259,7 +295,9 @@ export const ActionBeginEventSchema = ActionEventSchemaBase.extend({
   type: z.literal('begin'),
   timestamp: z.object({
     started: z.number(),
+    ended: z.undefined().optional(),
   }),
+  result: z.undefined().optional(),
 })
 
 export const ActionSuccessSchema = z.object({
@@ -324,6 +362,9 @@ export type PageGotoAction = z.infer<typeof PageGotoActionSchema>
 export type PageReloadAction = z.infer<typeof PageReloadActionSchema>
 export type PageWaitForNavigationAction = z.infer<
   typeof PageWaitForNavigationActionSchema
+>
+export type PageWaitForTimeoutAction = z.infer<
+  typeof PageWaitForTimeoutActionSchema
 >
 export type GenericPageAction = z.infer<typeof GenericPageActionSchema>
 
