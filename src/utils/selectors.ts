@@ -42,9 +42,10 @@ export function findElementsBySelector(
       }
 
       return queryAllByRole(container, role, {
-        name: !name.exact
-          ? (accessibleName) => fuzzyMatch(accessibleName, name.value)
-          : name.value,
+        name:
+          name.exact === false
+            ? (accessibleName) => fuzzyMatch(accessibleName, name.value)
+            : name.value,
       })
     }
 
