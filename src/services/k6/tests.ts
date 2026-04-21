@@ -1,10 +1,13 @@
 import { readFile } from 'fs/promises'
 
 import {
-  CloudTestRun,
-  CloudTestRunSchema,
+  CloudTest,
   CloudTestSchema,
+  ListCloudTestsPage,
+  ListCloudTestsPageSchema,
   ListCloudTestsSchema,
+  StartCloudTestRun,
+  StartCloudTestRunSchema,
 } from './schemas'
 import { CloudCredentials, CloudRequest } from './types'
 import { getHeaders, parse, url } from './utils'
@@ -18,6 +21,10 @@ interface RunTestArgs extends CloudRequest {
   testId: number
 }
 
+interface ListTestsInProjectArgs extends CloudRequest {
+  projectId: number
+}
+
 interface UploadArchiveArgs extends CloudRequest {
   projectId: number
   name: string
@@ -29,6 +36,36 @@ export class TestClient {
 
   constructor(credentials: CloudCredentials) {
     this.#credentials = credentials
+  }
+
+  async listInProject({
+    projectId,
+    signal,
+  }: ListTestsInProjectArgs): Promise<CloudTest[]> {
+    const collected: CloudTest[] = []
+    let nextUrl: string | null = url(
+      `/projects/${projectId}/load_tests?$top=1000`
+    )
+
+    while (nextUrl !== null) {
+      const response: Response = await fetch(nextUrl, {
+        headers: getHeaders(this.#credentials),
+        signal,
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch tests.')
+      }
+
+      const page: ListCloudTestsPage = await parse(
+        response,
+        ListCloudTestsPageSchema
+      )
+      collected.push(...page.value)
+      nextUrl = page['@nextLink'] ?? null
+    }
+
+    return collected
   }
 
   async findByName({ projectId, name, signal }: GetByTestNameArgs) {
@@ -92,7 +129,7 @@ export class TestClient {
     return test
   }
 
-  async run({ testId, signal }: RunTestArgs): Promise<CloudTestRun> {
+  async run({ testId, signal }: RunTestArgs): Promise<StartCloudTestRun> {
     const response = await fetch(url(`/load_tests/${testId}/start`), {
       method: 'POST',
       headers: getHeaders(this.#credentials),
@@ -103,6 +140,42 @@ export class TestClient {
       throw new Error('Failed to run the test.')
     }
 
-    return parse(response, CloudTestRunSchema)
+    return parse(response, StartCloudTestRunSchema)
+  }
+
+  async getScriptSource({ testId, signal }: RunTestArgs): Promise<string> {
+    const response = await fetch(url(`/load_tests/${testId}/script`), {
+      headers: {
+        ...getHeaders(this.#credentials),
+        Accept: 'text/javascript',
+      },
+      signal,
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to download the test script.')
+    }
+
+    return response.text()
+  }
+
+  async putScriptSource({
+    testId,
+    source,
+    signal,
+  }: RunTestArgs & { source: string }): Promise<void> {
+    const response = await fetch(url(`/load_tests/${testId}/script`), {
+      method: 'PUT',
+      headers: {
+        ...getHeaders(this.#credentials),
+        'Content-Type': 'application/octet-stream',
+      },
+      body: new TextEncoder().encode(source),
+      signal,
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to upload the test script.')
+    }
   }
 }

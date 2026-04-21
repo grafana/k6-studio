@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import { K6TestOptions } from '@/utils/k6/schema'
 
 import { BrowserDebugger } from './Browser/BrowserDebugger'
@@ -15,6 +17,8 @@ interface DebuggerProps {
   options: K6TestOptions
   session: DebugSession
   onDebugScript: () => void
+  /** When set, replaces the read-only script editor (e.g. editable Monaco). */
+  scriptSlot?: ReactNode
 }
 
 export function Debugger({
@@ -22,6 +26,7 @@ export function Debugger({
   options,
   session,
   onDebugScript,
+  scriptSlot,
 }: DebuggerProps) {
   if (isBrowserTest(options)) {
     return (
@@ -29,6 +34,7 @@ export function Debugger({
         script={script}
         session={session}
         onDebugScript={onDebugScript}
+        scriptSlot={scriptSlot}
       />
     )
   }
@@ -38,6 +44,7 @@ export function Debugger({
       script={script}
       session={session}
       onDebugScript={onDebugScript}
+      scriptSlot={scriptSlot}
     />
   )
 }

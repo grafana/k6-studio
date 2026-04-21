@@ -3,6 +3,7 @@ import { K6TestOptions } from '@/utils/k6/schema'
 export enum ScriptHandler {
   Select = 'script:select',
   Open = 'script:open',
+  Inspect = 'script:inspect',
   Run = 'script:run',
   Stop = 'script:stop',
   Save = 'script:save',

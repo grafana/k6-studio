@@ -11,20 +11,35 @@ import { useImportDataFile } from '@/hooks/useImportDataFile'
 import { getRoutePath } from '@/routeMap'
 import { useFeaturesStore } from '@/store/features'
 
+import { CloudWorkspaceSidebar } from './CloudWorkspaceSidebar'
 import { useFiles } from './Sidebar.hooks'
 
 interface SidebarProps {
   isExpanded?: boolean
   onCollapseSidebar: () => void
+  variant?: 'local' | 'cloud-workspace'
 }
 
-export function Sidebar({ isExpanded, onCollapseSidebar }: SidebarProps) {
+export function Sidebar({
+  isExpanded,
+  onCollapseSidebar,
+  variant = 'local',
+}: SidebarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { recordings, tests, scripts, dataFiles } = useFiles(searchTerm)
   const handleImportDataFile = useImportDataFile()
   const isBrowserEditorEnabled = useFeaturesStore(
     (state) => state.features['browser-test-editor']
   )
+
+  if (variant === 'cloud-workspace') {
+    return (
+      <CloudWorkspaceSidebar
+        isExpanded={isExpanded}
+        onCollapseSidebar={onCollapseSidebar}
+      />
+    )
+  }
 
   return (
     <Box

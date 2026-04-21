@@ -1,9 +1,14 @@
+import { randomUUID } from 'crypto'
 import { ipcMain } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile, unlink } from 'fs/promises'
 import path from 'path'
 
-import { SCRIPTS_PATH, TEMP_GENERATOR_SCRIPT_PATH } from '@/constants/workspace'
+import {
+  SCRIPTS_PATH,
+  TEMP_GENERATOR_SCRIPT_PATH,
+  TEMP_PATH,
+} from '@/constants/workspace'
 import { waitForProxy } from '@/main/proxy'
 import { showScriptSelectDialog, runScript } from '@/main/script'
 import { trackEvent } from '@/services/usageTracking'
@@ -54,6 +59,24 @@ export function initialize() {
       script,
       options: options ?? {},
       isExternal: isExternalScript(resolvedScriptPath),
+    }
+  })
+
+  ipcMain.handle(ScriptHandler.Inspect, async (_, script: string) => {
+    const tempPath = path.join(TEMP_PATH, `inspect-${randomUUID()}.js`)
+
+    await writeFile(tempPath, script, 'utf-8')
+
+    try {
+      const options = await new K6Client()
+        .inspect({ scriptPath: tempPath })
+        .catch(() => null)
+
+      return options ?? {}
+    } finally {
+      await unlink(tempPath).catch(() => {
+        /* temp may already be gone */
+      })
     }
   })
 
