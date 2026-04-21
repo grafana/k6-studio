@@ -4,6 +4,7 @@ import { PauseIcon, PlayIcon } from 'lucide-react'
 
 interface PlayButtonProps {
   playing: boolean
+  disabled: boolean
   streaming: boolean
   onPlay: () => void
   onPause: () => void
@@ -11,6 +12,7 @@ interface PlayButtonProps {
 
 export function PlayButton({
   playing,
+  disabled,
   streaming,
   onPlay,
   onPause,
@@ -43,6 +45,7 @@ export function PlayButton({
           stroke-linejoin: round;
         }
       `}
+      disabled={disabled}
       variant="ghost"
       size="1"
       radius="full"

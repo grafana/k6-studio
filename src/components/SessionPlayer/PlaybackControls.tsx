@@ -15,6 +15,7 @@ export interface OnSeekEvent {
 
 interface PlaybackControlsProps {
   state: PlaybackState
+  disabled: boolean
   streaming: boolean
   time: Time
   actions: BrowserActionEvent[]
@@ -25,6 +26,7 @@ interface PlaybackControlsProps {
 
 export function PlaybackControls({
   state,
+  disabled,
   streaming,
   time,
   actions = [],
@@ -49,8 +51,9 @@ export function PlaybackControls({
       minHeight="40px"
     >
       <PlayButton
-        playing={state === 'playing'}
+        disabled={disabled}
         streaming={streaming}
+        playing={state === 'playing'}
         onPlay={onPlay}
         onPause={onPause}
       />
@@ -62,7 +65,7 @@ export function PlaybackControls({
         `}
         time={time}
         actions={actions}
-        disabled={streaming}
+        disabled={disabled}
         onSeek={handleSeek}
       />
       <Text

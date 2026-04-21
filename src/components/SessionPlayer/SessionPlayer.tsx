@@ -41,9 +41,8 @@ export function SessionPlayer({
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
 
   const { loading, state, time, page, play, pause, seek, player } = usePlayer({
-    streaming: session.state === 'running',
+    session,
     mount,
-    events: session.browser.replay,
   })
 
   const handleSeek = ({ time, commit }: OnSeekEvent) => {
@@ -118,6 +117,7 @@ export function SessionPlayer({
       </div>
       <PlaybackControls
         state={state}
+        disabled={session.state === 'pending'}
         streaming={session.state === 'running'}
         time={time}
         actions={session.browser.actions}
