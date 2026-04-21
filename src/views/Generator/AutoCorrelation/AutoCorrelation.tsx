@@ -127,7 +127,9 @@ export function AutoCorrelation({
         }}
       >
         {provider === 'openai' && (
-          <TokenUsageIndicator tokenUsage={tokenUsage} />
+          <div>
+            <TokenUsageIndicator tokenUsage={tokenUsage} />
+          </div>
         )}
         <Flex gap="3">
           <Button
