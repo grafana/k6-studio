@@ -4,6 +4,10 @@ import { useNavigate } from 'react-router-dom'
 
 import LogoGradient from '@/assets/logo-gradient.svg'
 import { FileNameHeader } from '@/components/FileNameHeader'
+import {
+  HighlightSelectorProvider,
+  useHighlightedSelector,
+} from '@/components/HighlightSelectorProvider'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
@@ -44,6 +48,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.fileName)
 
   const consoleFilter = useConsoleFilter()
+  const highlightedSelector = useHighlightedSelector()
 
   const test = useBrowserTestState(data)
 
@@ -153,7 +158,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                               </Flex>
                             }
                             session={session}
-                            highlightedSelector={null}
+                            highlightedSelector={highlightedSelector}
                           />
                         </PersistentTabs.Content>
                         <PersistentTabs.Content
@@ -243,5 +248,9 @@ export function BrowserTestEditor() {
     return null
   }
 
-  return <BrowserTestEditorView key={file.fileName} file={file} data={data} />
+  return (
+    <HighlightSelectorProvider>
+      <BrowserTestEditorView key={file.fileName} file={file} data={data} />
+    </HighlightSelectorProvider>
+  )
 }

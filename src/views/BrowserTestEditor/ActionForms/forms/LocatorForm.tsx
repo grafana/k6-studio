@@ -8,11 +8,12 @@ import {
   Tooltip,
 } from '@radix-ui/themes'
 import { WholeWordIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { toNodeSelector } from '@/codegen/browser/selectors'
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
+import { useHighlightSelector } from '@/components/HighlightSelectorProvider'
 import { ActionLocator } from '@/main/runner/schema'
 import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
@@ -53,13 +54,44 @@ export function LocatorForm({
   onChange,
   suggestedRoles,
 }: LocatorFormProps) {
+  const highlightSelector = useHighlightSelector()
+
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+
   const [touchedTypes, setTouchedTypes] = useState(
     new Set<ActionLocator['type']>()
   )
   const [dirtyTypes, setDirtyTypes] = useState(new Set<ActionLocator['type']>())
 
   const currentLocator = values[current] ?? initializeLocatorValues(current)
+
+  useEffect(() => {
+    if (!isPopoverOpen) {
+      highlightSelector(null)
+
+      return
+    }
+
+    const debounce = setTimeout(() => {
+      highlightSelector(toNodeSelector(currentLocator))
+    }, 100)
+
+    return () => {
+      clearTimeout(debounce)
+    }
+  }, [isPopoverOpen, currentLocator, highlightSelector])
+
+  const handlePointerEnter = () => {
+    highlightSelector(toNodeSelector(currentLocator))
+  }
+
+  const handlePointerLeave = () => {
+    if (isPopoverOpen) {
+      return
+    }
+
+    highlightSelector(null)
+  }
 
   const handleChangeCurrent = (type: LocatorOptions['current']) => {
     if (dirtyTypes.has(current)) {
@@ -72,9 +104,11 @@ export function LocatorForm({
         return next
       })
     }
+
     const nextValues = values[type]
       ? values
       : { ...values, [type]: initializeLocatorValues(type) }
+
     onChange({ current: type, values: nextValues })
   }
 
@@ -108,11 +142,15 @@ export function LocatorForm({
   const validation = touchedTypes.has(current)
     ? validateLocator(currentLocator)
     : { isValid: true }
+
   const error = validation.isValid ? null : validation.message
 
   return (
     <Popover.Root open={isPopoverOpen} onOpenChange={handlePopoverOpenChange}>
-      <Popover.Trigger>
+      <Popover.Trigger
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+      >
         <ValuePopoverBadge
           displayValue={<DisplayValue state={{ current, values }} />}
           error={error}

@@ -13,14 +13,14 @@ import {
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
 
+import {
+  HighlightSelectorProvider,
+  useHighlightedSelector,
+} from '../../../components/HighlightSelectorProvider'
 import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
 import { BrowserOverviewPanel } from './BrowserOverviewPanel'
-import {
-  HighlightSelectorProvider,
-  useHighlightedSelector,
-} from './HighlightSelectorProvider'
 import { NetworkInspector } from './NetworkInspector'
 
 interface BrowserDebuggerProps {

@@ -2,7 +2,7 @@ import { toNodeSelector } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
 import { ActionLocator } from '@/main/runner/schema'
 
-import { useHighlightSelector } from './HighlightSelectorProvider'
+import { useHighlightSelector } from '../../../components/HighlightSelectorProvider'
 
 interface BrowserActionLocatorProps {
   locator: ActionLocator
