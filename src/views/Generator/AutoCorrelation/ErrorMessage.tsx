@@ -56,24 +56,10 @@ function OpenAiError({
     onRetry()
   })
 
-  const retryButton = (
-    <Button onClick={onRetry}>
-      <RefreshCw />
-      Retry
-    </Button>
-  )
-
   const openSettingsButton = (
     <Button onClick={() => openSettingsDialog('ai')}>
       <KeyIcon />
       Settings
-    </Button>
-  )
-
-  const reportIssueButton = (
-    <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
-      <ExternalLinkIcon />
-      Report issue
     </Button>
   )
 
@@ -122,7 +108,7 @@ function OpenAiError({
         title="Too many requests"
         message="You have exceeded the API rate limit. Wait a moment and try again."
       >
-        {retryButton}
+        {retryButton(onRetry)}
       </MessageContent>
     )
   }
@@ -132,7 +118,7 @@ function OpenAiError({
       title="Something went wrong"
       message="An unexpected error occurred during autocorrelation. Click retry to try again or report an issue if problem persists."
     >
-      {retryButton}
+      {retryButton(onRetry)}
       {reportIssueButton}
     </MessageContent>
   )
@@ -169,10 +155,7 @@ interface ErrorActionHandlers {
 type ErrorContent = {
   title: string
   message: string
-  renderActions: (
-    handlers: ErrorActionHandlers,
-    errorInfo: AssistantErrorInfo
-  ) => React.ReactNode
+  renderActions: (handlers: ErrorActionHandlers) => React.ReactNode
 }
 
 const retryButton = (onRetry: () => void) => (
@@ -247,7 +230,7 @@ function ClassifiedError({ errorInfo, handlers }: ClassifiedErrorProps) {
 
   return (
     <MessageContent title={title} message={message}>
-      {renderActions(handlers, errorInfo)}
+      {renderActions(handlers)}
     </MessageContent>
   )
 }

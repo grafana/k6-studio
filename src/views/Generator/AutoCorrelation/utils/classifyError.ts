@@ -26,13 +26,8 @@ export function classifyError(message: string): AssistantErrorInfo {
     return { category: 'quota-exceeded', message }
   }
 
-  const statusMatch = message.match(/request failed \((\d+)\)/i)
-  const status = statusMatch ? Number(statusMatch[1]) : undefined
-  if (status === 401 || status === 403) {
-    return { category: 'auth-expired', message }
-  }
-
   if (
+    /request failed \((401|403)\)/i.test(message) ||
     lowerMessage.includes('not authenticated') ||
     lowerMessage.includes('refresh token') ||
     lowerMessage.includes('token refresh failed')
