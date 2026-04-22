@@ -27,7 +27,6 @@ import {
   WaitForTimeoutActionBody,
 } from './Actions'
 import { BrowserActionInstance } from './types'
-import { createDefaultLocatorOptions } from './utils'
 
 type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
   BrowserActionInstance,
@@ -82,6 +81,9 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'checkbox',
+            options: {
+              exact: false,
+            },
           },
         },
       },
@@ -101,6 +103,9 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'checkbox',
+            options: {
+              exact: false,
+            },
           },
         },
       },
@@ -120,6 +125,9 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'textbox',
+            options: {
+              exact: false,
+            },
           },
         },
       },
@@ -133,7 +141,18 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.click',
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'button',
+            options: {
+              exact: false,
+            },
+          },
+        },
+      },
     }),
   },
   'locator.fill': {
@@ -151,6 +170,9 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'textbox',
+            options: {
+              exact: false,
+            },
           },
         },
       },
@@ -171,6 +193,9 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'combobox',
+            options: {
+              exact: false,
+            },
           },
         },
       },
@@ -214,7 +239,18 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.waitFor',
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: '',
+            options: {
+              exact: false,
+            },
+          },
+        },
+      },
     }),
   },
 }
