@@ -4,7 +4,6 @@ import { ipcMain, IpcMainEvent } from 'electron'
 import log from 'electron-log/main'
 
 import * as assistantAuth from './a2a/assistantAuth'
-import { AssistantError } from './a2a/classifyError'
 import { getGrafanaAssistantModel, getOpenAiModel } from './model'
 import { streamMessages } from './streamMessages'
 import { tools } from './tools'
@@ -80,7 +79,6 @@ export async function handleStreamChat(
         type: 'error',
         errorText: error instanceof Error ? error.message : 'Unknown error',
       },
-      errorInfo: error instanceof AssistantError ? error.errorInfo : undefined,
     })
     event.sender.send(AiHandler.StreamChatEnd, {
       id: request.id,

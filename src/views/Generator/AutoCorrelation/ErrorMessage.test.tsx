@@ -1,11 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import type {
-  AssistantErrorCategory,
-  AssistantErrorInfo,
-} from '@/types/assistant'
-
 import { ErrorMessage } from './ErrorMessage'
 
 vi.mock('@/hooks/useAssistantAuth', () => ({
@@ -30,63 +25,49 @@ vi.mock('@/assets/grot-crashed.svg', () => ({
   default: 'grot-crashed.svg',
 }))
 
-function makeErrorInfo(
-  category: AssistantErrorCategory,
-  overrides?: Partial<AssistantErrorInfo>
-): AssistantErrorInfo {
-  return {
-    category,
-    message: 'test error',
-    ...overrides,
-  }
-}
-
-const defaultProps = {
-  error: new Error('test error'),
+const baseProps = {
   onRetry: vi.fn(),
   onReset: vi.fn(),
 }
 
 afterEach(cleanup)
 
-describe('ErrorMessage with assistantErrorInfo', () => {
-  it('renders "Session expired" for auth-expired', () => {
+describe('ErrorMessage (grafana-assistant)', () => {
+  it('renders "Session expired" for HTTP 401 error text', () => {
     render(
       <ErrorMessage
-        {...defaultProps}
-        assistantErrorInfo={makeErrorInfo('auth-expired')}
+        {...baseProps}
+        error={new Error('A2A request failed (401): Unauthorized')}
       />
     )
     expect(screen.getByText('Session expired')).toBeDefined()
     expect(screen.getByText(/Reconnect/)).toBeDefined()
   })
 
-  it('renders "Connection error" for network', () => {
-    render(
-      <ErrorMessage
-        {...defaultProps}
-        assistantErrorInfo={makeErrorInfo('network')}
-      />
-    )
+  it('renders "Connection error" for fetch failure', () => {
+    render(<ErrorMessage {...baseProps} error={new Error('Failed to fetch')} />)
     expect(screen.getByText('Connection error')).toBeDefined()
     expect(screen.getByRole('button', { name: /Retry/ })).toBeDefined()
   })
 
-  it('renders "Something went wrong" for unknown', () => {
+  it('renders "Usage limit reached" for quota error text', () => {
     render(
       <ErrorMessage
-        {...defaultProps}
-        assistantErrorInfo={makeErrorInfo('unknown')}
+        {...baseProps}
+        error={
+          new Error('Monthly prompt limit of 10 reached for your account.')
+        }
       />
+    )
+    expect(screen.getByText('Usage limit reached')).toBeDefined()
+  })
+
+  it('renders "Something went wrong" for unknown error', () => {
+    render(
+      <ErrorMessage {...baseProps} error={new Error('Something unexpected')} />
     )
     expect(screen.getByText('Something went wrong')).toBeDefined()
     expect(screen.getByRole('button', { name: /Retry/ })).toBeDefined()
     expect(screen.getByRole('button', { name: /Report issue/ })).toBeDefined()
-  })
-
-  it('falls back to string matching when assistantErrorInfo is absent', () => {
-    render(<ErrorMessage {...defaultProps} />)
-    // Should render the legacy fallback (grafana-assistant path, no assistantErrorInfo)
-    expect(screen.getByText('Something went wrong')).toBeDefined()
   })
 })

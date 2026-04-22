@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import { createA2ASession } from '@/test/factories/a2aSession'
 
-import { AssistantError } from './classifyError'
 import { processA2AEvent } from './eventMapper'
 import type {
   A2AArtifactPart,
@@ -365,8 +364,8 @@ describe('processA2AEvent', () => {
     })
   })
 
-  describe('AssistantError classification', () => {
-    it('returns AssistantError for JSON-RPC errors', () => {
+  describe('error emission', () => {
+    it('emits error for JSON-RPC errors', () => {
       const event: A2ASSEEvent = {
         jsonrpc: '2.0',
         id: 1,
@@ -376,11 +375,11 @@ describe('processA2AEvent', () => {
       const parts = processA2AEvent(event, createA2ASession())
       const error = (parts[0] as { type: 'error'; error: Error }).error
 
-      expect(error).toBeInstanceOf(AssistantError)
-      expect((error as AssistantError).errorInfo.category).toBe('unknown')
+      expect(error).toBeInstanceOf(Error)
+      expect(error.message).toContain('Invalid request')
     })
 
-    it('returns AssistantError for failed task status', () => {
+    it('emits error for failed task status with message text', () => {
       const parts = processA2AEvent(
         makeStatusUpdateEvent('failed', {
           message: {
@@ -391,17 +390,17 @@ describe('processA2AEvent', () => {
       )
       const error = (parts[0] as { type: 'error'; error: Error }).error
 
-      expect(error).toBeInstanceOf(AssistantError)
+      expect(error.message).toBe('Something went wrong')
     })
 
-    it('classifies canceled task as unknown', () => {
+    it('emits error for canceled task', () => {
       const parts = processA2AEvent(
         makeStatusUpdateEvent('canceled'),
         createA2ASession()
       )
-      const error = (parts[0] as { type: 'error'; error: AssistantError }).error
+      const error = (parts[0] as { type: 'error'; error: Error }).error
 
-      expect(error.errorInfo.category).toBe('unknown')
+      expect(error).toBeInstanceOf(Error)
     })
   })
 })

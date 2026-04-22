@@ -5,7 +5,6 @@ import type {
 import log from 'electron-log/main'
 
 import { sendTaskCancel } from './a2a/cancelTask'
-import { AssistantError, classifyError } from './a2a/classifyError'
 import { type A2AConfig, getA2AConfig } from './a2a/config'
 import { LOG_PREFIX } from './a2a/constants'
 import {
@@ -100,13 +99,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     const sessionAbortController = new AbortController()
     forwardAbortSignal(options.abortSignal, sessionAbortController)
 
-    let config: A2AConfig
-    try {
-      config = await getA2AConfig()
-    } catch (error) {
-      throw toAssistantError(error)
-    }
-
+    const config = await getA2AConfig()
     const userText = extractLatestUserText(options.prompt)
     const body = buildA2ARequest(
       userText,
@@ -190,48 +183,27 @@ async function fetchA2AReader(
   body: A2AJsonRpcRequest,
   signal: AbortSignal
 ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
-  let response: Response
-  try {
-    response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
-      method: 'POST',
-      headers: {
-        ...buildA2AHeaders(config),
-        Accept: 'text/event-stream',
-        'X-A2A-Extensions': config.extensions,
-      },
-      body: JSON.stringify(body),
-      signal,
-    })
-  } catch (error) {
-    throw toAssistantError(error)
-  }
+  const response = await fetch(`${config.baseUrl}/agents/${config.agentId}`, {
+    method: 'POST',
+    headers: {
+      ...buildA2AHeaders(config),
+      Accept: 'text/event-stream',
+      'X-A2A-Extensions': config.extensions,
+    },
+    body: JSON.stringify(body),
+    signal,
+  })
 
   if (!response.ok) {
     const text = await safeResponseText(response)
-    const message = `A2A request failed (${response.status}): ${text}`
-    const errorInfo = classifyError(message, {
-      httpStatus: response.status,
-    })
-    throw new AssistantError(message, errorInfo)
+    throw new Error(`A2A request failed (${response.status}): ${text}`)
   }
 
   if (!response.body) {
-    const message = 'A2A response has no body'
-    throw new AssistantError(message, { category: 'unknown', message })
+    throw new Error('A2A response has no body')
   }
 
   return response.body.getReader()
-}
-
-function toAssistantError(error: unknown): AssistantError {
-  if (error instanceof AssistantError) {
-    return error
-  }
-  const message = error instanceof Error ? error.message : 'Unknown error'
-  const errorInfo = classifyError(message, {
-    isTypeError: error instanceof TypeError,
-  })
-  return new AssistantError(message, errorInfo)
 }
 
 function cleanupSession(

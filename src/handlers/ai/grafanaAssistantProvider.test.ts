@@ -40,8 +40,6 @@ function encodeSSEOpen(events: Array<Record<string, unknown>>): {
 }
 
 import { sendTaskCancel } from './a2a/cancelTask'
-import { AssistantError } from './a2a/classifyError'
-import { getA2AConfig } from './a2a/config'
 import { GrafanaAssistantLanguageModel } from './grafanaAssistantProvider'
 
 vi.mock('./tools', () => ({
@@ -467,57 +465,6 @@ describe('GrafanaAssistantLanguageModel', () => {
       expect(sendTaskCancelMock).toHaveBeenCalledWith(
         expect.objectContaining({ bearerToken: 'test-token' }),
         'old-task'
-      )
-    })
-  })
-
-  describe('error classification', () => {
-    async function expectAssistantErrorCategory(
-      model: GrafanaAssistantLanguageModel,
-      category: string
-    ) {
-      await expect(
-        model.doStream(makeOptions('chat-1', 'Hello'))
-      ).rejects.toSatisfy((error) => {
-        expect(error).toBeInstanceOf(AssistantError)
-        expect((error as AssistantError).errorInfo.category).toBe(category)
-        return true
-      })
-    }
-
-    it('throws AssistantError with auth-expired when not authenticated', async () => {
-      vi.stubGlobal('fetch', fetchSpy)
-      vi.mocked(getA2AConfig).mockRejectedValueOnce(
-        new Error(
-          'Not authenticated with Grafana Assistant. Please connect to Grafana Assistant first.'
-        )
-      )
-
-      await expectAssistantErrorCategory(
-        new GrafanaAssistantLanguageModel(),
-        'auth-expired'
-      )
-    })
-
-    it('throws AssistantError with auth-expired for HTTP 401', async () => {
-      vi.stubGlobal('fetch', fetchSpy)
-      fetchSpy.mockResolvedValueOnce(
-        new Response('Unauthorized', { status: 401 })
-      )
-
-      await expectAssistantErrorCategory(
-        new GrafanaAssistantLanguageModel(),
-        'auth-expired'
-      )
-    })
-
-    it('throws AssistantError with network for fetch TypeError', async () => {
-      vi.stubGlobal('fetch', fetchSpy)
-      fetchSpy.mockRejectedValueOnce(new TypeError('Failed to fetch'))
-
-      await expectAssistantErrorCategory(
-        new GrafanaAssistantLanguageModel(),
-        'network'
       )
     })
   })

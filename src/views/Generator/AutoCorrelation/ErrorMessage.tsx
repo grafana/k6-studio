@@ -8,25 +8,23 @@ import {
 
 import grotCrashed from '@/assets/grot-crashed.svg'
 import { ExternalLink } from '@/components/ExternalLink'
-import { classifyError } from '@/handlers/ai/a2a/classifyError'
 import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
 import { useSettingsChanged } from '@/hooks/useSettings'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
-import { AssistantErrorInfo } from '@/types/assistant'
+
+import { AssistantErrorInfo, classifyError } from './utils/classifyError'
 
 interface AutoCorrelationErrorProps {
   error: Error
   onRetry: () => void
   onReset: () => void
-  assistantErrorInfo?: AssistantErrorInfo
 }
 
 export function ErrorMessage({
   error,
   onRetry,
   onReset,
-  assistantErrorInfo,
 }: AutoCorrelationErrorProps) {
   const isGrafanaAssistant = useFeaturesStore(
     (state) => state.features['grafana-assistant']
@@ -38,7 +36,6 @@ export function ErrorMessage({
         error={error}
         onRetry={onRetry}
         onReset={onReset}
-        assistantErrorInfo={assistantErrorInfo}
       />
     )
   }
@@ -145,15 +142,12 @@ function GrafanaAssistantError({
   error,
   onRetry,
   onReset,
-  assistantErrorInfo,
 }: AutoCorrelationErrorProps) {
   const { mutate: signOut } = useAssistantSignOut()
 
-  const errorInfo = assistantErrorInfo ?? classifyError(error.message)
-
   return (
     <ClassifiedError
-      errorInfo={errorInfo}
+      errorInfo={classifyError(error.message)}
       handlers={{
         onRetry,
         onReset,

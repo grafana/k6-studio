@@ -1,7 +1,6 @@
 import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
 import log from 'electron-log/main'
 
-import { AssistantError, classifyError } from './classifyError'
 import { ARTIFACT_NAME, LOG_PREFIX, NO_USAGE } from './constants'
 import type { ActiveA2ASession } from './session'
 import type {
@@ -44,13 +43,7 @@ export function processA2AEvent(
   if (event.error) {
     const message = `A2A error (${event.error.code}): ${event.error.message}`
     log.error(LOG_PREFIX, message)
-    const errorInfo = classifyError(message)
-    return [
-      {
-        type: 'error',
-        error: new AssistantError(message, errorInfo),
-      },
-    ]
+    return [{ type: 'error', error: new Error(message) }]
   }
 
   const result = event.result
@@ -106,13 +99,7 @@ function handleStatusUpdate(
       LOG_PREFIX,
       `Task entered input-required state (taskId=${event.taskId})`
     )
-    const message = 'A2A task requires input'
-    return [
-      {
-        type: 'error',
-        error: new AssistantError(message, { category: 'unknown', message }),
-      },
-    ]
+    return [{ type: 'error', error: new Error('A2A task requires input') }]
   }
 
   if (TERMINAL_ERROR_STATES.has(state)) {
@@ -125,10 +112,7 @@ function handleStatusUpdate(
       statusMessage || `A2A task ${state} (taskId=${event.taskId})`
 
     log.error(LOG_PREFIX, `Task ${state}:`, errorMessage)
-    const errorInfo = classifyError(errorMessage)
-    return [
-      { type: 'error', error: new AssistantError(errorMessage, errorInfo) },
-    ]
+    return [{ type: 'error', error: new Error(errorMessage) }]
   }
 
   return []

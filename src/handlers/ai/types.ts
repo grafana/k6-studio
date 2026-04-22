@@ -1,6 +1,5 @@
 import { LanguageModelUsage, UIMessage, UIMessageChunk } from 'ai'
 
-import { AssistantErrorInfo } from '@/types/assistant'
 import { AiProvider } from '@/types/features'
 
 export enum AiHandler {
@@ -23,7 +22,6 @@ export interface StreamChatRequest {
 export interface StreamChatChunk {
   id: string
   chunk?: UIMessageChunk
-  errorInfo?: AssistantErrorInfo
 }
 
 export type TokenUsage = LanguageModelUsage

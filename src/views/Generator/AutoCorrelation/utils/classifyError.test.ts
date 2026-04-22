@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { AssistantError, classifyError } from './classifyError'
+import { classifyError } from './classifyError'
 
 describe('classifyError', () => {
-  describe('config errors', () => {
+  describe('auth errors', () => {
     it('classifies "Not authenticated" as auth-expired', () => {
       const result = classifyError(
         'Not authenticated with Grafana Assistant. Please connect to Grafana Assistant first.'
@@ -24,35 +24,40 @@ describe('classifyError', () => {
       )
       expect(result.category).toBe('auth-expired')
     })
-  })
 
-  describe('HTTP status codes', () => {
-    it('classifies HTTP 401 as auth-expired', () => {
-      const result = classifyError('Unauthorized', { httpStatus: 401 })
+    it('classifies "A2A request failed (401)" as auth-expired', () => {
+      const result = classifyError('A2A request failed (401): Unauthorized')
       expect(result.category).toBe('auth-expired')
     })
 
-    it('classifies HTTP 500 as unknown', () => {
-      const result = classifyError('Internal server error', { httpStatus: 500 })
+    it('classifies "A2A request failed (403)" as auth-expired', () => {
+      const result = classifyError('A2A request failed (403): Forbidden')
+      expect(result.category).toBe('auth-expired')
+    })
+
+    it('classifies "A2A request failed (500)" as unknown', () => {
+      const result = classifyError(
+        'A2A request failed (500): Internal server error'
+      )
       expect(result.category).toBe('unknown')
     })
   })
 
-  describe('permission errors', () => {
-    it('classifies HTTP 403 as auth-expired', () => {
-      const result = classifyError('Forbidden', { httpStatus: 403 })
-      expect(result.category).toBe('auth-expired')
+  describe('quota errors', () => {
+    it('classifies "limit reached" as quota-exceeded', () => {
+      const result = classifyError(
+        'Monthly prompt limit of 10 reached for your account.'
+      )
+      expect(result.category).toBe('quota-exceeded')
+    })
+
+    it('classifies "quota exceeded" as quota-exceeded', () => {
+      const result = classifyError('Anthropic quota exceeded')
+      expect(result.category).toBe('quota-exceeded')
     })
   })
 
   describe('network errors', () => {
-    it('classifies TypeError as network error', () => {
-      const result = classifyError('Failed to fetch', {
-        isTypeError: true,
-      })
-      expect(result.category).toBe('network')
-    })
-
     it('classifies "Failed to fetch" message as network error', () => {
       const result = classifyError('Failed to fetch')
       expect(result.category).toBe('network')
@@ -74,22 +79,5 @@ describe('classifyError', () => {
       const result = classifyError('Something unexpected happened')
       expect(result.message).toBe('Something unexpected happened')
     })
-  })
-})
-
-describe('AssistantError', () => {
-  it('is an instance of Error', () => {
-    const error = new AssistantError('test', {
-      category: 'unknown',
-      message: 'test',
-    })
-    expect(error).toBeInstanceOf(Error)
-  })
-
-  it('carries errorInfo', () => {
-    const errorInfo = { category: 'auth-expired' as const, message: 'expired' }
-    const error = new AssistantError('expired', errorInfo)
-    expect(error.errorInfo).toEqual(errorInfo)
-    expect(error.message).toBe('expired')
   })
 })

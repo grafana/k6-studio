@@ -10,13 +10,11 @@ import {
   StreamChatRequest,
   TokenUsage,
 } from '@/handlers/ai/types'
-import { AssistantErrorInfo } from '@/types/assistant'
 import { AiProvider } from '@/types/features'
 
 interface IPCChatTransportOptions {
   provider: AiProvider
   onUsage?: (usage: TokenUsage) => void
-  onErrorInfo?: (errorInfo: AssistantErrorInfo) => void
 }
 
 /**
@@ -28,12 +26,10 @@ export class IPCChatTransport<
 > implements ChatTransport<Message> {
   private provider: AiProvider
   private onUsage?: (usage: TokenUsage) => void
-  private onErrorInfo?: (errorInfo: AssistantErrorInfo) => void
 
   constructor(options: IPCChatTransportOptions) {
     this.provider = options.provider
     this.onUsage = options.onUsage
-    this.onErrorInfo = options.onErrorInfo
   }
 
   sendMessages(
@@ -61,7 +57,6 @@ export class IPCChatTransport<
     }
 
     const onUsageCallback = this.onUsage
-    const onErrorInfoCallback = this.onErrorInfo
 
     // Create a ReadableStream that will receive chunks via IPC
     return Promise.resolve(
@@ -72,10 +67,6 @@ export class IPCChatTransport<
           // Set up listeners for stream events
           const removeChunkListener = stream.onChunk(
             (data: StreamChatChunk) => {
-              if (data.errorInfo && onErrorInfoCallback) {
-                onErrorInfoCallback(data.errorInfo)
-              }
-
               controller.enqueue(data.chunk)
 
               if (data.chunk?.type === 'error') {
