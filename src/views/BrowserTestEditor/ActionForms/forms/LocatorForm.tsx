@@ -392,19 +392,26 @@ function initializeLocatorValues(type: ActionLocator['type']): ActionLocator {
   switch (type) {
     case 'css':
       return { type, selector: '' }
+
     case 'testid':
       return { type, testId: '' }
+
     case 'label':
-      return { type, label: '' }
+      return { type, label: '', options: { exact: false } }
+
     case 'placeholder':
-      return { type, placeholder: '' }
+      return { type, placeholder: '', options: { exact: false } }
+
     case 'title':
-      return { type, title: '' }
+      return { type, title: '', options: { exact: false } }
+
     case 'alt':
     case 'text':
-      return { type, text: '' }
+      return { type, text: '', options: { exact: false } }
+
     case 'role':
-      return { type, role: '' }
+      return { type, role: '', options: { exact: false } }
+
     default:
       return exhaustive(type)
   }
