@@ -8,8 +8,10 @@ import { useLocalStorage } from 'react-use'
 
 import { useDelayedVisibility } from '@/hooks/useDelayedVisibility'
 import { useListenDeepLinks } from '@/hooks/useListenDeepLinks'
+import { useWatchFileChanges } from '@/hooks/useWatchFileChanges'
 
 import { ActivityBar } from './ActivityBar'
+import { SidebarTab } from './Layout.types'
 import { Sidebar } from './Sidebar'
 
 function RouteLoadingFallback() {
@@ -30,16 +32,26 @@ function RouteLoadingFallback() {
 }
 
 export function Layout() {
+  const [activeTab = 'record', setActiveTab] = useLocalStorage<SidebarTab>(
+    'activeTab',
+    'record'
+  )
   const [isSidebarExpanded, setIsSidebarExpanded] = useLocalStorage(
     'isSidebarExpanded',
     true
   )
   const location = useLocation()
   useListenDeepLinks()
+  useWatchFileChanges()
 
   const handleVisibleChange = (index: number, visible: boolean) => {
     if (index !== 1) return
     setIsSidebarExpanded(visible)
+  }
+
+  const handleTabChange = (tab: SidebarTab) => {
+    setActiveTab(tab)
+    setIsSidebarExpanded(true)
   }
 
   useEffect(() => {
@@ -80,7 +92,7 @@ export function Layout() {
       )}
       <Allotment onVisibleChange={handleVisibleChange}>
         <Allotment.Pane minSize={64} maxSize={64}>
-          <ActivityBar />
+          <ActivityBar activeTab={activeTab} onTabChange={handleTabChange} />
         </Allotment.Pane>
         <Allotment.Pane
           minSize={200}
@@ -90,6 +102,7 @@ export function Layout() {
           snap
         >
           <Sidebar
+            activeTab={activeTab}
             isExpanded={isSidebarExpanded}
             onCollapseSidebar={() => setIsSidebarExpanded(false)}
           />

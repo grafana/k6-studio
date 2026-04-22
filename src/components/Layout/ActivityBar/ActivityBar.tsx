@@ -1,22 +1,30 @@
 import { css } from '@emotion/react'
-import { Flex, Grid, Separator } from '@radix-ui/themes'
+import { Flex, Separator } from '@radix-ui/themes'
+import { BugPlay, HammerIcon, VideoIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import k6LogoDark from '@/assets/logo-dark.svg'
 import k6Logo from '@/assets/logo.svg'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
-import { HomeIcon } from '@/components/icons'
 import { useTheme } from '@/hooks/useTheme'
 import { getRoutePath } from '@/routeMap'
 
+import { SidebarTab } from '../Layout.types'
+
+import { CreateNewPopover } from './CreateNewPopover'
 import { HelpButton } from './HelpButton'
-import { NavIconButton } from './NavIconButton'
 import { Profile } from './Profile'
 import { ProxyStatusIndicator } from './ProxyStatusIndicator'
 import { SettingsButton } from './SettingsButton'
 import { VersionLabel } from './VersionLabel'
+import { VerticalTabButton } from './VerticalTabButton'
 
-export function ActivityBar() {
+interface ActivityBarProps {
+  activeTab: SidebarTab
+  onTabChange: (tab: SidebarTab) => void
+}
+
+export function ActivityBar({ activeTab, onTabChange }: ActivityBarProps) {
   const theme = useTheme()
 
   return (
@@ -43,13 +51,28 @@ export function ActivityBar() {
           width="32"
         />
       </Link>
-      <Grid gap="5" mt="4">
-        <NavIconButton
-          to={getRoutePath('home')}
-          icon={<HomeIcon />}
-          tooltip="Home"
+      <Flex direction="column" align="center" gap="1" mt="4" width="100%">
+        <CreateNewPopover />
+        <Separator orientation="horizontal" size="2" my="2" />
+        <VerticalTabButton
+          icon={<VideoIcon />}
+          tooltip="Record"
+          active={activeTab === 'record'}
+          onClick={() => onTabChange('record')}
         />
-      </Grid>
+        <VerticalTabButton
+          icon={<HammerIcon />}
+          tooltip="Build"
+          active={activeTab === 'build'}
+          onClick={() => onTabChange('build')}
+        />
+        <VerticalTabButton
+          icon={<BugPlay />}
+          tooltip="Debug"
+          active={activeTab === 'validate'}
+          onClick={() => onTabChange('validate')}
+        />
+      </Flex>
 
       <Flex direction="column" align="center" gap="3" mt="auto">
         <ThemeSwitcher />
