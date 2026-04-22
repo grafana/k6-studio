@@ -100,7 +100,7 @@ export class GrafanaAssistantLanguageModel implements LanguageModelV2 {
     const sessionAbortController = new AbortController()
     forwardAbortSignal(options.abortSignal, sessionAbortController)
 
-    let config: Awaited<ReturnType<typeof getA2AConfig>>
+    let config: A2AConfig
     try {
       config = await getA2AConfig()
     } catch (error) {
@@ -211,16 +211,13 @@ async function fetchA2AReader(
     const message = `A2A request failed (${response.status}): ${text}`
     const errorInfo = classifyError(message, {
       httpStatus: response.status,
-      apiEndpoint: config.baseUrl.replace('/api/cli/v1/a2a', ''),
     })
     throw new AssistantError(message, errorInfo)
   }
 
   if (!response.body) {
-    throw new AssistantError(
-      'A2A response has no body',
-      classifyError('A2A response has no body')
-    )
+    const message = 'A2A response has no body'
+    throw new AssistantError(message, { category: 'unknown', message })
   }
 
   return response.body.getReader()

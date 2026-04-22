@@ -106,7 +106,13 @@ function handleStatusUpdate(
       LOG_PREFIX,
       `Task entered input-required state (taskId=${event.taskId})`
     )
-    return [{ type: 'error', error: new Error('A2A task requires input') }]
+    const message = 'A2A task requires input'
+    return [
+      {
+        type: 'error',
+        error: new AssistantError(message, { category: 'unknown', message }),
+      },
+    ]
   }
 
   if (TERMINAL_ERROR_STATES.has(state)) {

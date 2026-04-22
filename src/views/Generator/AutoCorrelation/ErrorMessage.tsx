@@ -4,7 +4,6 @@ import {
   KeyIcon,
   LinkIcon,
   RefreshCw,
-  UserRoundIcon,
 } from 'lucide-react'
 
 import grotCrashed from '@/assets/grot-crashed.svg'
@@ -14,7 +13,7 @@ import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
 import { useSettingsChanged } from '@/hooks/useSettings'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
-import { AssistantErrorInfo, isRetryable } from '@/types/assistant'
+import { AssistantErrorInfo } from '@/types/assistant'
 
 interface AutoCorrelationErrorProps {
   error: Error
@@ -148,7 +147,6 @@ function GrafanaAssistantError({
   onReset,
   assistantErrorInfo,
 }: AutoCorrelationErrorProps) {
-  const openProfileDialog = useStudioUIStore((s) => s.openProfileDialog)
   const { mutate: signOut } = useAssistantSignOut()
 
   const errorInfo = assistantErrorInfo ?? classifyError(error.message)
@@ -156,144 +154,106 @@ function GrafanaAssistantError({
   return (
     <ClassifiedError
       errorInfo={errorInfo}
-      onRetry={onRetry}
-      onReset={onReset}
-      onReconnect={() => {
-        signOut()
-        onReset()
+      handlers={{
+        onRetry,
+        onReset,
+        onReconnect: () => {
+          signOut()
+          onReset()
+        },
       }}
-      onSignIn={openProfileDialog}
     />
   )
 }
 
-const ERROR_CONTENT: Record<
-  AssistantErrorInfo['category'],
-  { title: string; message: string }
-> = {
+interface ErrorActionHandlers {
+  onRetry: () => void
+  onReset: () => void
+  onReconnect: () => void
+}
+
+type ErrorContent = {
+  title: string
+  message: string
+  renderActions: (
+    handlers: ErrorActionHandlers,
+    errorInfo: AssistantErrorInfo
+  ) => React.ReactNode
+}
+
+const retryButton = (onRetry: () => void) => (
+  <Button onClick={onRetry}>
+    <RefreshCw />
+    Retry
+  </Button>
+)
+
+const reportIssueButton = (
+  <Button onClick={() => window.studio.ui.reportIssue()} variant="outline">
+    <ExternalLinkIcon />
+    Report issue
+  </Button>
+)
+
+const ERROR_CONTENT: Record<AssistantErrorInfo['category'], ErrorContent> = {
   'auth-expired': {
     title: 'Session expired',
     message:
       'Your Grafana Assistant session has expired. Please reconnect to continue.',
-  },
-  'no-stack': {
-    title: 'Not signed in',
-    message: 'Sign in to Grafana Cloud to use the Grafana Assistant.',
-  },
-  'rate-limit': {
-    title: 'Too many requests',
-    message:
-      "You've sent too many requests. Please wait a moment and try again.",
+    renderActions: ({ onReconnect }) => (
+      <Button onClick={onReconnect}>
+        <LinkIcon />
+        Reconnect
+      </Button>
+    ),
   },
   'quota-exceeded': {
     title: 'Usage limit reached',
     message: "You've reached your monthly prompt limit.",
-  },
-  'context-window': {
-    title: 'Recording too large',
-    message:
-      'The recording exceeds the token limit. Try reducing the number of allowed hosts or work with a smaller recording.',
-  },
-  'service-unavailable': {
-    title: 'Service unavailable',
-    message:
-      'Grafana Assistant is temporarily unavailable. Please try again later.',
+    renderActions: ({ onReset }) => (
+      <>
+        <ExternalLink href="https://grafana.com/pricing/">
+          <Button variant="outline">
+            <ExternalLinkIcon />
+            Upgrade plan
+          </Button>
+        </ExternalLink>
+        <Button onClick={onReset} variant="outline">
+          Go back
+        </Button>
+      </>
+    ),
   },
   network: {
     title: 'Connection error',
     message:
       'Could not connect to Grafana Assistant. Check your internet connection and try again.',
+    renderActions: ({ onRetry }) => retryButton(onRetry),
   },
   unknown: {
     title: 'Something went wrong',
     message:
       'An unexpected error occurred. Click retry to try again or report an issue if the problem persists.',
+    renderActions: ({ onRetry }) => (
+      <>
+        {retryButton(onRetry)}
+        {reportIssueButton}
+      </>
+    ),
   },
 }
 
-function ClassifiedError({
-  errorInfo,
-  onRetry,
-  onReset,
-  onReconnect,
-  onSignIn,
-}: {
+interface ClassifiedErrorProps {
   errorInfo: AssistantErrorInfo
-  onRetry: () => void
-  onReset: () => void
-  onReconnect: () => void
-  onSignIn: () => void
-}) {
-  const { category } = errorInfo
-  const { title, message } = ERROR_CONTENT[category]
+  handlers: ErrorActionHandlers
+}
 
-  if (category === 'auth-expired') {
-    return (
-      <MessageContent title={title} message={message}>
-        <Button onClick={onReconnect}>
-          <LinkIcon />
-          Reconnect
-        </Button>
-      </MessageContent>
-    )
-  }
-
-  if (category === 'no-stack') {
-    return (
-      <MessageContent title={title} message={message}>
-        <Button onClick={onSignIn}>
-          <UserRoundIcon />
-          Sign in to Grafana Cloud
-        </Button>
-      </MessageContent>
-    )
-  }
-
-  if (category === 'quota-exceeded') {
-    return (
-      <MessageContent title={title} message={message}>
-        {errorInfo.upgradeUrl && (
-          <ExternalLink href={errorInfo.upgradeUrl}>
-            <Button variant="outline">
-              <ExternalLinkIcon />
-              Upgrade plan
-            </Button>
-          </ExternalLink>
-        )}
-        <Button onClick={onReset} variant="outline">
-          Go back
-        </Button>
-      </MessageContent>
-    )
-  }
-
-  if (category === 'context-window') {
-    return (
-      <MessageContent title={title} message={message}>
-        <Button onClick={onReset} variant="outline">
-          Go back
-        </Button>
-      </MessageContent>
-    )
-  }
+function ClassifiedError({ errorInfo, handlers }: ClassifiedErrorProps) {
+  const { title, message, renderActions } = ERROR_CONTENT[errorInfo.category]
 
   return (
     <MessageContent title={title} message={message}>
-      {isRetryable(category) && (
-        <Button onClick={onRetry}>
-          <RefreshCw />
-          Retry
-        </Button>
-      )}
-      {category === 'unknown' && (
-        <Button
-          onClick={() => window.studio.ui.reportIssue()}
-          variant="outline"
-        >
-          <ExternalLinkIcon />
-          Report issue
-        </Button>
-      )}
+      {renderActions(handlers, errorInfo)}
     </MessageContent>
   )
 }

@@ -380,19 +380,6 @@ describe('processA2AEvent', () => {
       expect((error as AssistantError).errorInfo.category).toBe('unknown')
     })
 
-    it('classifies auth-related JSON-RPC error as auth-expired', () => {
-      const event: A2ASSEEvent = {
-        jsonrpc: '2.0',
-        id: 1,
-        error: { code: -32600, message: 'Unauthorized' },
-      }
-
-      const parts = processA2AEvent(event, createA2ASession())
-      const error = (parts[0] as { type: 'error'; error: AssistantError }).error
-
-      expect(error.errorInfo.category).toBe('auth-expired')
-    })
-
     it('returns AssistantError for failed task status', () => {
       const parts = processA2AEvent(
         makeStatusUpdateEvent('failed', {
@@ -405,24 +392,6 @@ describe('processA2AEvent', () => {
       const error = (parts[0] as { type: 'error'; error: Error }).error
 
       expect(error).toBeInstanceOf(AssistantError)
-    })
-
-    it('classifies failed task with quota message as quota-exceeded', () => {
-      const parts = processA2AEvent(
-        makeStatusUpdateEvent('failed', {
-          message: {
-            parts: [
-              {
-                text: 'RESOURCE_LIMIT_EXCEEDED: Monthly prompt limit reached',
-              },
-            ],
-          },
-        }),
-        createA2ASession()
-      )
-      const error = (parts[0] as { type: 'error'; error: AssistantError }).error
-
-      expect(error.errorInfo.category).toBe('quota-exceeded')
     })
 
     it('classifies canceled task as unknown', () => {
