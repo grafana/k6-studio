@@ -1,6 +1,10 @@
 import { ipcRenderer } from 'electron'
 
-import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
+import {
+  BrowserActionEvent,
+  BrowserAssertionEvent,
+  BrowserReplayEvent,
+} from '@/main/runner/schema'
 import { Check, LogEntry } from '@/schemas/k6'
 
 import { createListener } from '../utils'
@@ -68,6 +72,12 @@ export function onScriptCheck(callback: (data: Check[]) => void) {
 
 export function onBrowserAction(callback: (data: BrowserActionEvent) => void) {
   return createListener(ScriptHandler.BrowserAction, callback)
+}
+
+export function onBrowserAssertion(
+  callback: (data: BrowserAssertionEvent) => void
+) {
+  return createListener(ScriptHandler.BrowserAssertion, callback)
 }
 
 export function onBrowserReplay(

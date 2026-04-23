@@ -570,10 +570,10 @@ declare module 'https://jslib.k6.io/k6-testing/*/index.js' {
           error: AnyError
         }
   }
-  export interface ExpectPlugin {
+  export interface ExpectPlugin<State = unknown> {
     name: string
-    onBegin(context: OnBeginContext): void
-    onEnd(context: OnEndContext): void
+    onBegin(context: OnBeginContext): State
+    onEnd(context: OnEndContext, state: State): void
   }
   /**
    * The display format to use.

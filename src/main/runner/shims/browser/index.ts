@@ -1,7 +1,9 @@
 // @ts-expect-error - This is just a temporary shim to test things.
 // eslint-disable-next-line import/no-unresolved
-import { expect } from 'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/faed7cc1f70fcc673e4cd8fb5a5c7c0b682643d9/index.js'
+import { expect } from 'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/410f9fdb85ec4fcb53d1cd4149b0699258c72d75/k6-testing.js'
 import { BrowserContext, browser } from 'k6/browser'
+
+import type { AssertionBeginEvent, AssertionEndEvent } from '../../schema'
 
 import { pageProxy } from './proxies/page'
 import {
@@ -9,7 +11,8 @@ import {
   createProxy,
   ProxyOptions,
   TRACKING_SERVER_URL,
-  trackLog,
+  beginAssertion,
+  endAssertion,
 } from './utils'
 
 declare module 'k6/browser' {
@@ -25,23 +28,22 @@ declare module 'k6/browser' {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 expect.use({
-  onBegin() {
-    trackLog({
-      level: 'info',
-      msg: 'Assertion called',
-      time: new Date().toISOString(),
-      source: 'browser',
-      process: 'browser',
-    })
+  name: 'k6-studio-tracking',
+  onBegin(context: {
+    negated: boolean
+    matcher: { name: string; args: unknown[] }
+  }) {
+    return beginAssertion(
+      context.matcher.name,
+      context.negated,
+      context.matcher.args
+    )
   },
-  onEnd() {
-    trackLog({
-      level: 'info',
-      msg: 'Assertion ended',
-      time: new Date().toISOString(),
-      source: 'browser',
-      process: 'browser',
-    })
+  onEnd(
+    context: { result: AssertionEndEvent['result'] },
+    state: AssertionBeginEvent | null
+  ) {
+    endAssertion(state, context.result)
   },
 })
 

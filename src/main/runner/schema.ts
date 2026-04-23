@@ -287,12 +287,13 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
 ])
 
 const ActionEventSchemaBase = z.object({
+  type: z.literal('action'),
   eventId: z.string(),
   action: AnyBrowserActionSchema,
 })
 
 export const ActionBeginEventSchema = ActionEventSchemaBase.extend({
-  type: z.literal('begin'),
+  state: z.literal('begin'),
   timestamp: z.object({
     started: z.number(),
     ended: z.undefined().optional(),
@@ -321,7 +322,7 @@ export const ActionResult = z.discriminatedUnion('type', [
 ])
 
 export const ActionEndEventSchema = ActionEventSchemaBase.extend({
-  type: z.literal('end'),
+  state: z.literal('end'),
   timestamp: z.object({
     started: z.number(),
     ended: z.number(),
@@ -343,7 +344,7 @@ export const SessionReplayEventSchema = z.object({
   ),
 })
 
-export const BrowserActionEventSchema = z.discriminatedUnion('type', [
+export const BrowserActionEventSchema = z.discriminatedUnion('state', [
   ActionBeginEventSchema,
   ActionEndEventSchema,
 ])
@@ -417,55 +418,55 @@ function optionalArg<T extends z.ZodTypeAny>(schema: T) {
 
 // Locator assertions
 const ExpectToBeCheckedSchema = z.object({
-  method: z.literal('expect.toBeChecked'),
+  method: z.literal('toBeChecked'),
   negated: z.boolean(),
   args: optionalArg(RetryConfigSchema.partial()),
 })
 
 const ExpectToBeDisabledSchema = z.object({
-  method: z.literal('expect.toBeDisabled'),
+  method: z.literal('toBeDisabled'),
   negated: z.boolean(),
   args: optionalArg(RetryConfigSchema.partial()),
 })
 
 const ExpectToBeEditableSchema = z.object({
-  method: z.literal('expect.toBeEditable'),
+  method: z.literal('toBeEditable'),
   negated: z.boolean(),
   args: optionalArg(RetryConfigSchema.partial()),
 })
 
 const ExpectToBeEmptySchema = z.object({
-  method: z.literal('expect.toBeEmpty'),
+  method: z.literal('toBeEmpty'),
   negated: z.boolean(),
   args: optionalArg(RetryConfigSchema.partial()),
 })
 
 const ExpectToBeEnabledSchema = z.object({
-  method: z.literal('expect.toBeEnabled'),
+  method: z.literal('toBeEnabled'),
   negated: z.boolean(),
   args: optionalArg(RetryConfigSchema.partial()),
 })
 
 const ExpectToBeHiddenSchema = z.object({
-  method: z.literal('expect.toBeHidden'),
+  method: z.literal('toBeHidden'),
   negated: z.boolean(),
   args: optionalArg(RetryConfigSchema.partial()),
 })
 
 const ExpectToBeVisibleSchema = z.object({
-  method: z.literal('expect.toBeVisible'),
+  method: z.literal('toBeVisible'),
   negated: z.boolean(),
   args: optionalArg(RetryConfigSchema.partial()),
 })
 
 const ExpectToHaveAttributeSchema = z.object({
-  method: z.literal('expect.toHaveAttribute'),
+  method: z.literal('toHaveAttribute'),
   negated: z.boolean(),
   args: z.union([z.tuple([z.string()]), z.tuple([z.string(), z.string()])]),
 })
 
 const ExpectToHaveTextSchema = z.object({
-  method: z.literal('expect.toHaveText'),
+  method: z.literal('toHaveText'),
   negated: z.boolean(),
   // RegExp | string — RegExp does not survive JSON serialization
   args: z.union([
@@ -475,7 +476,7 @@ const ExpectToHaveTextSchema = z.object({
 })
 
 const ExpectToContainTextSchema = z.object({
-  method: z.literal('expect.toContainText'),
+  method: z.literal('toContainText'),
   negated: z.boolean(),
   args: z.union([
     z.tuple([z.unknown()]),
@@ -484,7 +485,7 @@ const ExpectToContainTextSchema = z.object({
 })
 
 const ExpectToHaveTitleSchema = z.object({
-  method: z.literal('expect.toHaveTitle'),
+  method: z.literal('toHaveTitle'),
   negated: z.boolean(),
   args: z.union([
     z.tuple([z.unknown()]),
@@ -493,7 +494,7 @@ const ExpectToHaveTitleSchema = z.object({
 })
 
 const ExpectToHaveValueSchema = z.object({
-  method: z.literal('expect.toHaveValue'),
+  method: z.literal('toHaveValue'),
   negated: z.boolean(),
   args: z.union([
     z.tuple([z.string()]),
@@ -503,122 +504,122 @@ const ExpectToHaveValueSchema = z.object({
 
 // Generic value assertions
 const ExpectToBeSchema = z.object({
-  method: z.literal('expect.toBe'),
+  method: z.literal('toBe'),
   negated: z.boolean(),
   args: z.tuple([z.unknown()]),
 })
 
 const ExpectToBeCloseToSchema = z.object({
-  method: z.literal('expect.toBeCloseTo'),
+  method: z.literal('toBeCloseTo'),
   negated: z.boolean(),
   args: z.union([z.tuple([z.number()]), z.tuple([z.number(), z.number()])]),
 })
 
 const ExpectToBeGreaterThanSchema = z.object({
-  method: z.literal('expect.toBeGreaterThan'),
+  method: z.literal('toBeGreaterThan'),
   negated: z.boolean(),
   args: z.tuple([z.union([z.number(), z.bigint()])]),
 })
 
 const ExpectToBeGreaterThanOrEqualSchema = z.object({
-  method: z.literal('expect.toBeGreaterThanOrEqual'),
+  method: z.literal('toBeGreaterThanOrEqual'),
   negated: z.boolean(),
   args: z.tuple([z.union([z.number(), z.bigint()])]),
 })
 
 const ExpectToBeLessThanSchema = z.object({
-  method: z.literal('expect.toBeLessThan'),
+  method: z.literal('toBeLessThan'),
   negated: z.boolean(),
   args: z.tuple([z.union([z.number(), z.bigint()])]),
 })
 
 const ExpectToBeLessThanOrEqualSchema = z.object({
-  method: z.literal('expect.toBeLessThanOrEqual'),
+  method: z.literal('toBeLessThanOrEqual'),
   negated: z.boolean(),
   args: z.tuple([z.union([z.number(), z.bigint()])]),
 })
 
 const ExpectToBeDefinedSchema = z.object({
-  method: z.literal('expect.toBeDefined'),
+  method: z.literal('toBeDefined'),
   negated: z.boolean(),
   args: z.tuple([]),
 })
 
 const ExpectToBeFalsySchema = z.object({
-  method: z.literal('expect.toBeFalsy'),
+  method: z.literal('toBeFalsy'),
   negated: z.boolean(),
   args: z.tuple([]),
 })
 
 const ExpectToBeInstanceOfSchema = z.object({
-  method: z.literal('expect.toBeInstanceOf'),
+  method: z.literal('toBeInstanceOf'),
   negated: z.boolean(),
   // Function does not survive JSON serialization
   args: z.tuple([z.unknown()]),
 })
 
 const ExpectToBeNaNSchema = z.object({
-  method: z.literal('expect.toBeNaN'),
+  method: z.literal('toBeNaN'),
   negated: z.boolean(),
   args: z.tuple([]),
 })
 
 const ExpectToBeNullSchema = z.object({
-  method: z.literal('expect.toBeNull'),
+  method: z.literal('toBeNull'),
   negated: z.boolean(),
   args: z.tuple([]),
 })
 
 const ExpectToBeTruthySchema = z.object({
-  method: z.literal('expect.toBeTruthy'),
+  method: z.literal('toBeTruthy'),
   negated: z.boolean(),
   args: z.tuple([]),
 })
 
 const ExpectToBeUndefinedSchema = z.object({
-  method: z.literal('expect.toBeUndefined'),
+  method: z.literal('toBeUndefined'),
   negated: z.boolean(),
   args: z.tuple([]),
 })
 
 const ExpectToEqualSchema = z.object({
-  method: z.literal('expect.toEqual'),
+  method: z.literal('toEqual'),
   negated: z.boolean(),
   args: z.tuple([z.unknown()]),
 })
 
 const ExpectToContainSchema = z.object({
-  method: z.literal('expect.toContain'),
+  method: z.literal('toContain'),
   negated: z.boolean(),
   args: z.tuple([z.unknown()]),
 })
 
 const ExpectToContainEqualSchema = z.object({
-  method: z.literal('expect.toContainEqual'),
+  method: z.literal('toContainEqual'),
   negated: z.boolean(),
   args: z.tuple([z.unknown()]),
 })
 
 const ExpectToHaveLengthSchema = z.object({
-  method: z.literal('expect.toHaveLength'),
+  method: z.literal('toHaveLength'),
   negated: z.boolean(),
   args: z.tuple([z.number()]),
 })
 
 const ExpectToHavePropertySchema = z.object({
-  method: z.literal('expect.toHaveProperty'),
+  method: z.literal('toHaveProperty'),
   negated: z.boolean(),
   args: z.union([z.tuple([z.string()]), z.tuple([z.string(), z.unknown()])]),
 })
 
 const GenericAssertionSchema = z.object({
-  method: z.literal('expect.*'),
+  method: z.literal('*'),
   name: z.string(),
   negated: z.boolean(),
   args: z.array(z.unknown()),
 })
 
-export const AnyAssertionSchema = z.discriminatedUnion('method', [
+export const AnyAssertionSchema = z.union([
   ExpectToBeCheckedSchema,
   ExpectToBeDisabledSchema,
   ExpectToBeEditableSchema,
@@ -707,7 +708,6 @@ const ReceivedOnlyErrorSchema = z.object({
 
 interface TraceError {
   format: 'trace'
-  // AnyError is recursive; inner is left untyped to avoid a circular reference
   inner: AssertionError
   trace: string[]
   message?: string
@@ -715,7 +715,6 @@ interface TraceError {
 
 const TraceErrorSchema = z.object({
   format: z.literal('trace'),
-  // AnyError is recursive; inner is left untyped to avoid a circular reference
   inner: z.lazy(() => AssertionErrorSchema),
   trace: z.array(z.string()),
   message: z.string().optional(),
@@ -740,7 +739,7 @@ export const AssertionErrorSchema: z.ZodType<AssertionError> = z.union([
   UnknownAssertionErrorSchema,
 ]) satisfies z.ZodType<AssertionError>
 
-type AssertionError =
+export type AssertionError =
   | z.infer<typeof ExpectedReceivedErrorSchema>
   | z.infer<typeof RelationalComparisonErrorSchema>
   | z.infer<typeof TextMatchErrorSchema>
@@ -755,26 +754,30 @@ type AssertionError =
 // =============================================================================
 
 const AssertionPassResultSchema = z.object({
-  type: z.literal('pass'),
+  passed: z.literal(true),
 })
 
 const AssertionFailResultSchema = z.object({
-  type: z.literal('fail'),
+  passed: z.literal(false),
+  message: z.object({
+    custom: z.string().optional(),
+  }),
   error: AssertionErrorSchema,
 })
 
-export const AssertionResultSchema = z.discriminatedUnion('type', [
+export const AssertionResultSchema = z.discriminatedUnion('passed', [
   AssertionPassResultSchema,
   AssertionFailResultSchema,
 ])
 
 const AssertionEventBaseSchema = z.object({
+  type: z.literal('assertion'),
   eventId: z.string(),
   assertion: AnyAssertionSchema,
 })
 
 export const AssertionBeginEventSchema = AssertionEventBaseSchema.extend({
-  type: z.literal('begin'),
+  state: z.literal('begin'),
   timestamp: z.object({
     started: z.number(),
     ended: z.undefined().optional(),
@@ -783,7 +786,7 @@ export const AssertionBeginEventSchema = AssertionEventBaseSchema.extend({
 })
 
 export const AssertionEndEventSchema = AssertionEventBaseSchema.extend({
-  type: z.literal('end'),
+  state: z.literal('end'),
   timestamp: z.object({
     started: z.number(),
     ended: z.number(),
@@ -791,7 +794,7 @@ export const AssertionEndEventSchema = AssertionEventBaseSchema.extend({
   result: AssertionResultSchema,
 })
 
-export const BrowserAssertionEventSchema = z.discriminatedUnion('type', [
+export const BrowserAssertionEventSchema = z.discriminatedUnion('state', [
   AssertionBeginEventSchema,
   AssertionEndEventSchema,
 ])
@@ -801,3 +804,11 @@ export type AssertionResult = z.infer<typeof AssertionResultSchema>
 export type AssertionBeginEvent = z.infer<typeof AssertionBeginEventSchema>
 export type AssertionEndEvent = z.infer<typeof AssertionEndEventSchema>
 export type BrowserAssertionEvent = z.infer<typeof BrowserAssertionEventSchema>
+
+export type BrowserDebuggerEvent = BrowserActionEvent | BrowserAssertionEvent
+
+export function isBrowserActionEvent(
+  event: BrowserDebuggerEvent
+): event is BrowserActionEvent {
+  return 'action' in event
+}

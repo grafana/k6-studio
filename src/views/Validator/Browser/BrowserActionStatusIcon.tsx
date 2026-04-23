@@ -12,7 +12,7 @@ interface BrowserActionStatusIconProps {
 export function BrowserActionStatusIcon({
   event,
 }: BrowserActionStatusIconProps) {
-  if (event.type === 'begin') {
+  if (event.state === 'begin') {
     return (
       <div
         css={css`

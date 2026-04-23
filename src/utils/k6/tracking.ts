@@ -9,6 +9,10 @@ import {
   ActionBeginEventSchema,
   ActionEndEvent,
   ActionEndEventSchema,
+  AssertionBeginEvent,
+  AssertionBeginEventSchema,
+  AssertionEndEvent,
+  AssertionEndEventSchema,
   BrowserReplayEvent,
   SessionReplayEventSchema,
 } from '@/main/runner/schema'
@@ -27,9 +31,13 @@ function getPort(address: AddressInfo | string | null): number {
   return address.port
 }
 
-interface ReportingServerEventMap {
-  begin: ActionBeginEvent
-  end: ActionEndEvent
+interface TrackingServerEventMap {
+  begin:
+    | { type: 'action'; action: ActionBeginEvent }
+    | { type: 'assertion'; assertion: AssertionBeginEvent }
+  end:
+    | { type: 'action'; action: ActionEndEvent }
+    | { type: 'assertion'; assertion: AssertionEndEvent }
   replay: {
     events: BrowserReplayEvent[]
   }
@@ -38,7 +46,7 @@ interface ReportingServerEventMap {
   }
 }
 
-class TestRunTrackingServer extends EventEmitter<ReportingServerEventMap> {
+class TestRunTrackingServer extends EventEmitter<TrackingServerEventMap> {
   #server: Server
 
   get port() {
@@ -89,7 +97,10 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
       return
     }
 
-    trackingServer.emit('begin', parsed.data)
+    trackingServer.emit('begin', {
+      type: 'action',
+      action: parsed.data,
+    })
 
     res.status(204).send()
   })
@@ -105,7 +116,51 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
       return
     }
 
-    trackingServer.emit('end', parsed.data)
+    trackingServer.emit('end', {
+      type: 'action',
+      action: parsed.data,
+    })
+
+    res.status(204).send()
+  })
+
+  app.post('/assert/:id/begin', (req, res) => {
+    const parsed = AssertionBeginEventSchema.safeParse(req.body)
+
+    if (!parsed.success) {
+      log.warn(
+        'Received invalid begin assertion event: ',
+        parsed.error.format()
+      )
+
+      res.status(400).send()
+
+      return
+    }
+
+    trackingServer.emit('begin', {
+      type: 'assertion',
+      assertion: parsed.data,
+    })
+
+    res.status(204).send()
+  })
+
+  app.post('/assert/:id/end', (req, res) => {
+    const parsed = AssertionEndEventSchema.safeParse(req.body)
+
+    if (!parsed.success) {
+      log.warn('Received invalid end assertion event: ', parsed.error.format())
+
+      res.status(400).send()
+
+      return
+    }
+
+    trackingServer.emit('end', {
+      type: 'assertion',
+      assertion: parsed.data,
+    })
 
     res.status(204).send()
   })

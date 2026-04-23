@@ -12,7 +12,7 @@ interface BrowserActionItemProps {
 }
 
 function BrowserActionItem({ event }: BrowserActionItemProps) {
-  const result = event.type === 'end' ? event.result : null
+  const result = event.state === 'end' ? event.result : null
 
   return (
     <Text asChild size="1">
@@ -54,7 +54,7 @@ function BrowserActionItem({ event }: BrowserActionItemProps) {
         <Box pr="2">
           <BrowserActionTimer
             started={event.timestamp.started}
-            ended={event.type === 'end' && event.timestamp.ended}
+            ended={event.state === 'end' && event.timestamp.ended}
           />
         </Box>
         {result?.type === 'error' && (

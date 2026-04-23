@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { AutoScrollArea } from '@/components/AutoScrollArea'
 import { Label } from '@/components/Label'
+import { isBrowserActionEvent } from '@/main/runner/schema'
 
 import { DebuggerEmptyState } from '../DebuggerEmptyState'
 import { DebugSession } from '../types'
@@ -20,6 +21,8 @@ export function BrowserActionsPanel({
   onDebugScript,
 }: BrowserActionsPanelProps) {
   const [tailActions, setTailActions] = useState(true)
+
+  const actions = session.browser.actions.filter(isBrowserActionEvent)
 
   const handleActionsScrollBack = () => {
     setTailActions(false)
@@ -45,7 +48,7 @@ export function BrowserActionsPanel({
               align-items: center;
             `}
           >
-            Browser actions ({session.browser.actions.length})
+            Browser actions ({actions.length})
           </Heading>
         </Flex>
 
@@ -60,7 +63,7 @@ export function BrowserActionsPanel({
       </Flex>
       <AutoScrollArea
         tail={session.state === 'running' && tailActions}
-        items={session.browser.actions.length}
+        items={actions.length}
         onScrollBack={handleActionsScrollBack}
       >
         {session.state === 'pending' && (
@@ -68,9 +71,7 @@ export function BrowserActionsPanel({
             Debug the script to inspect browser actions.
           </DebuggerEmptyState>
         )}
-        {session.state !== 'pending' && (
-          <BrowserActionList actions={session.browser.actions} />
-        )}
+        {session.state !== 'pending' && <BrowserActionList actions={actions} />}
       </AutoScrollArea>
     </Flex>
   )

@@ -7,6 +7,8 @@ import {
   ActionEndEvent,
   ActionResult,
   AnyBrowserAction,
+  AssertionBeginEvent,
+  AssertionEndEvent,
 } from '../../schema'
 
 export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
@@ -17,7 +19,12 @@ export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
  * Never proxy actions originating from the k6-testing library.
  */
 function isTestingLibrary() {
-  return new Error().stack?.includes('k6-testing') ?? false
+  const stack = new Error().stack ?? ''
+
+  return (
+    stack.includes('k6-testing') ||
+    stack.includes('https://gist.githubusercontent.com')
+  )
 }
 
 export function createSequence() {
@@ -59,7 +66,8 @@ function begin(action: AnyBrowserAction | undefined | null) {
   }
 
   const event = {
-    type: 'begin',
+    type: 'action' as const,
+    state: 'begin' as const,
     eventId: nextId(),
     timestamp: {
       started: Date.now(),
@@ -90,7 +98,7 @@ function end(event: ActionBeginEvent | null, result: ActionResult) {
   try {
     const body = {
       ...event,
-      type: 'end',
+      state: 'end',
       timestamp: {
         ...event.timestamp,
         ended: Date.now(),
@@ -251,6 +259,114 @@ export function createProxy<T extends object>({
       }
     },
   })
+}
+
+function toAssertionMethod(
+  name: string
+): AssertionBeginEvent['assertion']['method'] {
+  switch (name) {
+    case 'toBeChecked':
+    case 'toBeDisabled':
+    case 'toBeEditable':
+    case 'toBeEmpty':
+    case 'toBeEnabled':
+    case 'toBeHidden':
+    case 'toBeVisible':
+    case 'toHaveAttribute':
+    case 'toHaveText':
+    case 'toContainText':
+    case 'toHaveTitle':
+    case 'toHaveValue':
+    case 'toBe':
+    case 'toBeCloseTo':
+    case 'toBeGreaterThan':
+    case 'toBeGreaterThanOrEqual':
+    case 'toBeLessThan':
+    case 'toBeLessThanOrEqual':
+    case 'toBeDefined':
+    case 'toBeFalsy':
+    case 'toBeInstanceOf':
+    case 'toBeNaN':
+    case 'toBeNull':
+    case 'toBeTruthy':
+    case 'toBeUndefined':
+    case 'toEqual':
+    case 'toContain':
+    case 'toContainEqual':
+    case 'toHaveLength':
+    case 'toHaveProperty':
+      return name
+
+    default:
+      return '*'
+  }
+}
+
+export function beginAssertion(
+  name: string,
+  negated: boolean,
+  args: unknown[]
+): AssertionBeginEvent | null {
+  if (TRACKING_SERVER_URL === null) {
+    return null
+  }
+
+  const method = toAssertionMethod(name)
+
+  const event: AssertionBeginEvent = {
+    type: 'assertion',
+    state: 'begin',
+    eventId: nextId(),
+    timestamp: { started: Date.now() },
+    assertion: {
+      method: method,
+      name: method === '*' ? name : undefined,
+      negated,
+      args,
+    } as AssertionBeginEvent['assertion'],
+  }
+
+  try {
+    http.post(
+      `${TRACKING_SERVER_URL}/assert/${event.eventId}/begin`,
+      JSON.stringify(event),
+      { headers: { 'Content-Type': 'application/json' } }
+    )
+  } catch {
+    return null
+  }
+
+  return event
+}
+
+export function endAssertion(
+  event: AssertionBeginEvent | null,
+  result: AssertionEndEvent['result']
+) {
+  if (event === null) {
+    return
+  }
+
+  try {
+    const body: AssertionEndEvent = {
+      ...event,
+      state: 'end',
+      timestamp: {
+        ...event.timestamp,
+        ended: Date.now(),
+      },
+      result,
+    }
+
+    http.post(
+      `${TRACKING_SERVER_URL}/assert/${event.eventId}/end`,
+      JSON.stringify(body),
+      { headers: { 'Content-Type': 'application/json' } }
+    )
+  } catch {
+    // We don't want to interfere with the script execution so
+    // we swallow all errors here.
+  }
 }
 
 /**
