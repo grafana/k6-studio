@@ -1,7 +1,11 @@
 import { ClickPill, DoubleClickPill } from '@/components/Browser/ClickPill'
 import { SelectOptions } from '@/components/Browser/SelectOptions'
 import { Kbd } from '@/components/primitives/Kbd'
-import { AnyBrowserAction } from '@/main/runner/schema'
+import {
+  AnyBrowserAction,
+  BrowserAssertionEvent,
+  BrowserDebuggerEvent,
+} from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
 import { BrowserActionLocator } from './BrowserActionLocator'
@@ -11,7 +15,7 @@ interface BrowserActionTextProps {
   action: AnyBrowserAction
 }
 
-export function BrowserActionText({ action }: BrowserActionTextProps) {
+function BrowserActionText({ action }: BrowserActionTextProps) {
   switch (action.method) {
     case 'browserContext.*':
       return (
@@ -166,4 +170,48 @@ export function BrowserActionText({ action }: BrowserActionTextProps) {
     default:
       return exhaustive(action)
   }
+}
+
+function formatAssertionText(event: BrowserAssertionEvent) {
+  const { assertion } = event
+  const notPart = assertion.negated ? '.not' : ''
+
+  const args = assertion.args
+    .map((arg) => {
+      if (typeof arg === 'string') return `"${arg}"`
+
+      if (typeof arg === 'number' || typeof arg === 'boolean')
+        return String(arg)
+
+      if (arg === null || arg === undefined) return String(arg)
+
+      return '...'
+    })
+    .join(', ')
+
+  return `expect(actual)${notPart}.${assertion.method}(${args})`
+}
+
+interface BrowserAssertionTextProps {
+  event: BrowserAssertionEvent
+}
+
+function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
+  return (
+    <>
+      <code>{formatAssertionText(event)}</code>
+    </>
+  )
+}
+
+interface DebuggerEventTextProps {
+  event: BrowserDebuggerEvent
+}
+
+export function DebuggerEventText({ event }: DebuggerEventTextProps) {
+  if (event.type === 'action') {
+    return <BrowserActionText action={event.action} />
+  }
+
+  return <BrowserAssertionText event={event} />
 }

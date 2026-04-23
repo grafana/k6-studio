@@ -7,7 +7,7 @@ import { BrowserActionEvent } from '@/main/runner/schema'
 
 import { Time } from '../types'
 
-import { TimelineActions } from './TimelineActions'
+import { TimelineEvents } from './TimelineEvents'
 
 const rangeStyles = {
   container: {
@@ -120,7 +120,7 @@ export function TimelineSlider({
             box-shadow: inset 0 0 0 1px var(--gray-a6);
           `}
         >
-          <TimelineActions
+          <TimelineEvents
             time={time}
             disabled={disabled}
             actions={actions}

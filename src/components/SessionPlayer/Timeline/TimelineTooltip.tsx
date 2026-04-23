@@ -2,13 +2,13 @@ import { css } from '@emotion/react'
 import { Flex, Popover } from '@radix-ui/themes'
 import { ReactNode } from 'react'
 
-import { BrowserActionEvent } from '@/main/runner/schema'
-import { BrowserActionStatusIcon } from '@/views/Validator/Browser/BrowserActionStatusIcon'
-import { BrowserActionText } from '@/views/Validator/Browser/BrowserActionText'
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
+import { DebuggerEventStatusIcon } from '@/views/Validator/Browser/DebuggerEventStatusIcon'
+import { DebuggerEventText } from '@/views/Validator/Browser/DebuggerEventText'
 
 interface TimelineTooltipProps {
   open: boolean
-  action: BrowserActionEvent
+  action: BrowserDebuggerEvent
   children: ReactNode
 }
 
@@ -54,8 +54,8 @@ export function TimelineTooltip({
               `}
             >
               <Flex align="center" gap="2">
-                <BrowserActionStatusIcon event={action} />
-                <BrowserActionText action={action.action} />
+                <DebuggerEventStatusIcon event={action} />
+                <DebuggerEventText event={action} />
               </Flex>
             </Flex>
           )}

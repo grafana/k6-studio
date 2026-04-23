@@ -748,20 +748,25 @@ export const BrowserActionEventSchema = z.discriminatedUnion('state', [
 ])
 
 const AssertionPassResultSchema = z.object({
-  passed: z.literal(true),
+  type: z.literal('success'),
 })
 
 const AssertionFailResultSchema = z.object({
-  passed: z.literal(false),
+  type: z.literal('error'),
   message: z.object({
     custom: z.string().optional(),
   }),
   error: AssertionErrorSchema,
 })
 
-export const AssertionResultSchema = z.discriminatedUnion('passed', [
+const AssertionAbortedResultSchema = z.object({
+  type: z.literal('aborted'),
+})
+
+export const AssertionResultSchema = z.discriminatedUnion('type', [
   AssertionPassResultSchema,
   AssertionFailResultSchema,
+  AssertionAbortedResultSchema,
 ])
 
 const AssertionEventBaseSchema = z.object({

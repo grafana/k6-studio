@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { Reset } from '@radix-ui/themes'
 import { MouseEvent, useRef, useState } from 'react'
 
-import { BrowserActionEvent } from '@/main/runner/schema'
+import { BrowserActionEvent, BrowserDebuggerEvent } from '@/main/runner/schema'
 
 import { Time } from '../types'
 
@@ -15,7 +15,7 @@ function isIntersecting(previous: Segment, current: Segment) {
   )
 }
 
-interface TimelineActionsProps {
+interface TimelineEventsProps {
   disabled?: boolean
   time: Time
   actions: BrowserActionEvent[]
@@ -31,10 +31,10 @@ interface Segment {
   id: string
   start: number
   end: number
-  action: BrowserActionEvent
+  action: BrowserDebuggerEvent
 }
 
-function buildLanes(actions: BrowserActionEvent[], time: Time) {
+function buildLanes(actions: BrowserDebuggerEvent[], time: Time) {
   const lanes: Lane[] = []
 
   for (const action of actions) {
@@ -187,12 +187,12 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
   )
 }
 
-export function TimelineActions({
+export function TimelineEvents({
   disabled = false,
   actions,
   time,
   onSeek,
-}: TimelineActionsProps) {
+}: TimelineEventsProps) {
   const lanes = buildLanes(actions, time)
 
   return (

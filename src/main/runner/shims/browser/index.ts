@@ -40,10 +40,14 @@ expect.use({
     )
   },
   onEnd(
-    context: { result: AssertionEndEvent['result'] },
+    context: { result: { passed: true } | { passed: false; error: Error } },
     state: AssertionBeginEvent | null
   ) {
-    endAssertion(state, context.result)
+    const result = context.result.passed
+      ? { type: 'success' }
+      : { type: 'error', error: context.result.error }
+
+    endAssertion(state, result as AssertionEndEvent['result'])
   },
 })
 
