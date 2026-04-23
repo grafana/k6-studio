@@ -4,7 +4,6 @@ import { useState } from 'react'
 
 import { AutoScrollArea } from '@/components/AutoScrollArea'
 import { Label } from '@/components/Label'
-import { NodeSelector } from '@/schemas/selectors'
 
 import { DebuggerEmptyState } from '../DebuggerEmptyState'
 import { DebugSession } from '../types'
@@ -14,13 +13,11 @@ import { BrowserActionList } from './BrowserActionList'
 interface BrowserActionsPanelProps {
   session: DebugSession
   onDebugScript: () => void
-  onHighlight?: (selector: NodeSelector | null) => void
 }
 
 export function BrowserActionsPanel({
   session,
   onDebugScript,
-  onHighlight,
 }: BrowserActionsPanelProps) {
   const [tailActions, setTailActions] = useState(true)
 
@@ -72,10 +69,7 @@ export function BrowserActionsPanel({
           </DebuggerEmptyState>
         )}
         {session.state !== 'pending' && (
-          <BrowserActionList
-            actions={session.browser.actions}
-            onHighlight={onHighlight}
-          />
+          <BrowserActionList actions={session.browser.actions} />
         )}
       </AutoScrollArea>
     </Flex>

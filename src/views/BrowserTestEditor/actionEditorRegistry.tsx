@@ -1,7 +1,10 @@
 import { Code } from '@radix-ui/themes'
 import {
   CircleQuestionMarkIcon,
+  ClockIcon,
+  EraserIcon,
   GlobeIcon,
+  ListChecksIcon,
   MousePointerClickIcon,
   RefreshCwIcon,
   SquareCheckBigIcon,
@@ -13,15 +16,17 @@ import { ReactElement, ReactNode } from 'react'
 
 import {
   CheckActionBody,
+  ClearActionBody,
   ClickActionBody,
   FillActionBody,
   GoToActionBody,
   PageReloadActionBody,
+  SelectOptionActionBody,
   UncheckActionBody,
   WaitForActionBody,
+  WaitForTimeoutActionBody,
 } from './Actions'
 import { BrowserActionInstance } from './types'
-import { createDefaultLocatorOptions } from './utils'
 
 type ActionByMethod<M extends BrowserActionInstance['method']> = Extract<
   BrowserActionInstance,
@@ -76,6 +81,9 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'checkbox',
+            options: {
+              exact: false,
+            },
           },
         },
       },
@@ -95,6 +103,31 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'checkbox',
+            options: {
+              exact: false,
+            },
+          },
+        },
+      },
+    }),
+  },
+  'locator.clear': {
+    icon: <EraserIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <ClearActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.clear',
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'textbox',
+            options: {
+              exact: false,
+            },
           },
         },
       },
@@ -108,7 +141,18 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.click',
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'button',
+            options: {
+              exact: false,
+            },
+          },
+        },
+      },
     }),
   },
   'locator.fill': {
@@ -126,6 +170,32 @@ const actionEditors: ActionEditorRegistry = {
           role: {
             type: 'role',
             role: 'textbox',
+            options: {
+              exact: false,
+            },
+          },
+        },
+      },
+    }),
+  },
+  'locator.selectOption': {
+    icon: <ListChecksIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <SelectOptionActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'locator.selectOption',
+      values: [{ value: '' }],
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: 'combobox',
+            options: {
+              exact: false,
+            },
           },
         },
       },
@@ -150,6 +220,17 @@ const actionEditors: ActionEditorRegistry = {
       method: 'page.reload',
     }),
   },
+  'page.waitForTimeout': {
+    icon: <ClockIcon aria-hidden="true" />,
+    render: ({ action, onChange }) => (
+      <WaitForTimeoutActionBody action={action} onChange={onChange} />
+    ),
+    create: () => ({
+      id: crypto.randomUUID(),
+      method: 'page.waitForTimeout',
+      timeout: 1000,
+    }),
+  },
   'locator.waitFor': {
     icon: <TimerIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
@@ -158,7 +239,18 @@ const actionEditors: ActionEditorRegistry = {
     create: () => ({
       id: crypto.randomUUID(),
       method: 'locator.waitFor',
-      locator: createDefaultLocatorOptions(),
+      locator: {
+        current: 'role',
+        values: {
+          role: {
+            type: 'role',
+            role: '',
+            options: {
+              exact: false,
+            },
+          },
+        },
+      },
     }),
   },
 }

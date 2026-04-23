@@ -10,6 +10,15 @@ import {
 
 import { NodeSelector } from '@/schemas/selectors'
 
+// Same implementation as `@testing-library/dom` `fuzzyMatches` with identity normalizer.
+function fuzzyMatch(accessibleName: string, substring: string): boolean {
+  if (typeof accessibleName !== 'string') {
+    return false
+  }
+
+  return accessibleName.toLowerCase().includes(substring.toLowerCase())
+}
+
 /**
  * Find elements in the DOM using a NodeSelector.
  * This function supports all selector types (css, role, test-id, alt, label, placeholder, text, title).
@@ -25,10 +34,20 @@ export function findElementsBySelector(
     case 'test-id':
       return queryAllByTestId(container, selector.testId)
 
-    case 'role':
-      return queryAllByRole(container, selector.role, {
-        name: selector.name?.value,
+    case 'role': {
+      const { role, name } = selector
+
+      if (name === undefined) {
+        return queryAllByRole(container, role)
+      }
+
+      return queryAllByRole(container, role, {
+        name:
+          name.exact === false
+            ? (accessibleName) => fuzzyMatch(accessibleName, name.value)
+            : name.value,
       })
+    }
 
     case 'alt':
       return queryAllByAltText(container, selector.text.value, {

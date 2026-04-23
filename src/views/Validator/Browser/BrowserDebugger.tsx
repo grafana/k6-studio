@@ -1,8 +1,10 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
-import { useState } from 'react'
 
-import { LogsSection } from '@/components/Validator/LogsSection'
+import {
+  LogsSection,
+  useConsoleFilter,
+} from '@/components/Validator/LogsSection'
 import {
   Group,
   Panel,
@@ -10,8 +12,11 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { NodeSelector } from '@/schemas/selectors'
 
+import {
+  HighlightSelectorProvider,
+  useHighlightedSelector,
+} from '../../../components/HighlightSelectorProvider'
 import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
@@ -24,15 +29,16 @@ interface BrowserDebuggerProps {
   onDebugScript: () => void
 }
 
-export function BrowserDebugger({
+export function BrowserDebuggerContent({
   script,
   session,
   onDebugScript,
 }: BrowserDebuggerProps) {
-  const [highlightedSelector, setHighlightedSelector] =
-    useState<NodeSelector | null>(null)
+  const highlightedSelector = useHighlightedSelector()
 
   const [drawer, setDrawer] = usePanelCallbackRef()
+
+  const consoleFilter = useConsoleFilter()
 
   const drawerLayout = useDefaultLayout({
     groupId: 'browser-debugger-drawer',
@@ -86,7 +92,6 @@ export function BrowserDebugger({
                 <BrowserActionsPanel
                   session={session}
                   onDebugScript={onDebugScript}
-                  onHighlight={setHighlightedSelector}
                 />
               </Panel>
             </Group>
@@ -110,7 +115,11 @@ export function BrowserDebugger({
                 `}
                 value="console"
               >
-                <LogsSection autoScroll={false} logs={session.logs} />
+                <LogsSection
+                  {...consoleFilter}
+                  autoScroll={session.state === 'running'}
+                  logs={session.logs}
+                />
               </Tabs.Content>
               <Tabs.Content
                 css={css`
@@ -126,5 +135,13 @@ export function BrowserDebugger({
         </Group>
       </Flex>
     </Tabs.Root>
+  )
+}
+
+export function BrowserDebugger(props: BrowserDebuggerProps) {
+  return (
+    <HighlightSelectorProvider>
+      <BrowserDebuggerContent {...props} />
+    </HighlightSelectorProvider>
   )
 }

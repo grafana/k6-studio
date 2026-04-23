@@ -110,10 +110,22 @@ export interface ClickExpression {
   options: Expression | null
 }
 
+export interface ClearExpression {
+  type: 'ClearExpression'
+  locator: Expression
+}
+
 export interface CheckExpression {
   type: 'CheckExpression'
   locator: Expression
   checked: boolean
+}
+
+export interface SelectOptionValueExpression {
+  type: 'SelectOptionValueExpression'
+  value?: string
+  label?: string
+  index?: number
 }
 
 export interface SelectOptionsExpression {
@@ -138,6 +150,12 @@ export interface WaitForExpression {
 export interface WaitForNavigationExpression {
   type: 'WaitForNavigationExpression'
   target: Expression
+}
+
+export interface WaitForTimeoutExpression {
+  type: 'WaitForTimeoutExpression'
+  target: Expression
+  timeout: number
 }
 
 export interface PromiseAllExpression {
@@ -214,15 +232,18 @@ export type Expression =
   | NewTestIdLocatorExpression
   | GotoExpression
   | ReloadExpression
+  | ClearExpression
   | ClickExpression
   | ClickOptionsExpression
   | FillTextExpression
   | CheckExpression
+  | SelectOptionValueExpression
   | SelectOptionsExpression
   | ExpectExpression
   | WaitForExpression
   | WaitForOptionsExpression
   | WaitForNavigationExpression
+  | WaitForTimeoutExpression
   | PromiseAllExpression
 
 export interface VariableDeclaration {

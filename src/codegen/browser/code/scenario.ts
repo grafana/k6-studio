@@ -263,6 +263,19 @@ function emitTypeTextExpression(
     .done()
 }
 
+function emitClearExpression(
+  context: ScenarioContext,
+  expression: ir.ClearExpression
+): ts.Expression {
+  const locator = emitExpression(context, expression.locator)
+
+  return new ExpressionBuilder(locator)
+    .member('clear')
+    .call([])
+    .await(context)
+    .done()
+}
+
 function emitCheckExpression(
   context: ScenarioContext,
   expression: ir.CheckExpression
@@ -296,6 +309,16 @@ function emitSelectOptionsExpression(
     .call([selected])
     .await(context)
     .done()
+}
+
+function emitSelectOptionValueExpression(
+  expression: ir.SelectOptionValueExpression
+): ts.Expression {
+  return fromObjectLiteral({
+    value: expression.value,
+    label: expression.label,
+    index: expression.index,
+  })
 }
 
 function emitExpectExpression(
@@ -449,6 +472,19 @@ function emitWaitForNavigationExpression(
     .done()
 }
 
+function emitWaitForTimeoutExpression(
+  context: ScenarioContext,
+  expression: ir.WaitForTimeoutExpression
+): ts.Expression {
+  const target = emitExpression(context, expression.target)
+
+  return new ExpressionBuilder(target)
+    .member('waitForTimeout')
+    .call([literal({ value: expression.timeout })])
+    .await(context)
+    .done()
+}
+
 function emitPromiseAllExpression(
   context: ScenarioContext,
   expression: ir.PromiseAllExpression
@@ -527,8 +563,14 @@ function emitExpression(
     case 'FillTextExpression':
       return emitTypeTextExpression(context, expression)
 
+    case 'ClearExpression':
+      return emitClearExpression(context, expression)
+
     case 'CheckExpression':
       return emitCheckExpression(context, expression)
+
+    case 'SelectOptionValueExpression':
+      return emitSelectOptionValueExpression(expression)
 
     case 'SelectOptionsExpression':
       return emitSelectOptionsExpression(context, expression)
@@ -544,6 +586,9 @@ function emitExpression(
 
     case 'WaitForNavigationExpression':
       return emitWaitForNavigationExpression(context, expression)
+
+    case 'WaitForTimeoutExpression':
+      return emitWaitForTimeoutExpression(context, expression)
 
     case 'PromiseAllExpression':
       return emitPromiseAllExpression(context, expression)

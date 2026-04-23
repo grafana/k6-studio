@@ -31,6 +31,7 @@ expect.use({
       msg: 'Assertion called',
       time: new Date().toISOString(),
       source: 'browser',
+      process: 'browser',
     })
   },
   onEnd() {
@@ -39,6 +40,7 @@ expect.use({
       msg: 'Assertion ended',
       time: new Date().toISOString(),
       source: 'browser',
+      process: 'browser',
     })
   },
 })

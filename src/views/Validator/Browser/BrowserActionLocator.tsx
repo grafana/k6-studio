@@ -1,32 +1,28 @@
 import { toNodeSelector } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
 import { ActionLocator } from '@/main/runner/schema'
-import { NodeSelector } from '@/schemas/selectors'
+
+import { useHighlightSelector } from '../../../components/HighlightSelectorProvider'
 
 interface BrowserActionLocatorProps {
   locator: ActionLocator
-  onHighlight?: (selector: NodeSelector | null) => void
 }
 
-export function BrowserActionLocator({
-  locator,
-  onHighlight,
-}: BrowserActionLocatorProps) {
+export function BrowserActionLocator({ locator }: BrowserActionLocatorProps) {
   const nodeLocator = toNodeSelector(locator)
+  const setHighlightedSelector = useHighlightSelector()
 
   const handleHighlightChange = (highlighted: boolean) => {
-    if (!highlighted || !onHighlight) {
-      onHighlight?.(null)
+    if (!highlighted) {
+      setHighlightedSelector(null)
+
       return
     }
 
-    onHighlight(nodeLocator)
+    setHighlightedSelector(nodeLocator)
   }
 
   return (
-    <Locator
-      locator={nodeLocator}
-      onHighlightChange={onHighlight ? handleHighlightChange : undefined}
-    />
+    <Locator locator={nodeLocator} onHighlightChange={handleHighlightChange} />
   )
 }

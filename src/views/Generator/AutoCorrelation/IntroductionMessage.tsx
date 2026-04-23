@@ -29,10 +29,9 @@ import {
 } from '@/hooks/useAssistantAuth'
 import { useProxyStatus } from '@/hooks/useProxyStatus'
 import { useSettings } from '@/hooks/useSettings'
+import { useStackHealth } from '@/hooks/useStackHealth'
 import { useFeaturesStore } from '@/store/features'
 import { useStudioUIStore } from '@/store/ui'
-
-import { AssistantTestChat } from './AssistantTestChat'
 
 interface IntroductionMessageProps {
   onStart: () => void
@@ -44,7 +43,7 @@ export function IntroductionMessage({ onStart }: IntroductionMessageProps) {
   )
 
   if (isGrafanaAssistant) {
-    return <GrafanaAssistantIntro />
+    return <GrafanaAssistantIntro onStart={onStart} />
   }
 
   return <OpenAiIntro onStart={onStart} />
@@ -56,13 +55,10 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   )
   const { data: settings } = useSettings()
   const isAiConfigured = !!settings?.ai.apiKey
-  const proxyStatus = useProxyStatus()
 
   return (
     <IntroLayout>
-      {isAiConfigured && (
-        <AnalyzeButton onStart={onStart} proxyStatus={proxyStatus} />
-      )}
+      {isAiConfigured && <AnalyzeButton onStart={onStart} />}
       {!isAiConfigured && (
         <>
           <Text size="2" color="gray">
@@ -82,7 +78,7 @@ function OpenAiIntro({ onStart }: IntroductionMessageProps) {
   )
 }
 
-function GrafanaAssistantIntro() {
+function GrafanaAssistantIntro({ onStart }: IntroductionMessageProps) {
   const { data: authStatus, isLoading } = useAssistantAuthStatus()
   const [isCloudSigningIn, setIsCloudSigningIn] = useState(false)
   const signIn = useAssistantSignIn()
@@ -154,6 +150,7 @@ function GrafanaAssistantIntro() {
         isLoading={isLoading}
         onSignIn={() => setIsCloudSigningIn(true)}
         onConnect={() => signIn.mutate()}
+        onStart={onStart}
         connectError={signIn.error}
       />
       <Text size="1" color="gray" mt="1">
@@ -169,6 +166,7 @@ interface AssistantAuthStatusProps {
   isLoading: boolean
   onSignIn: () => void
   onConnect: () => void
+  onStart: () => void
   connectError: Error | null
 }
 
@@ -178,9 +176,11 @@ function AssistantAuthStatus({
   isLoading,
   onSignIn,
   onConnect,
+  onStart,
   connectError,
 }: AssistantAuthStatusProps) {
   const { mutate: signOut, isPending: isSigningOut } = useAssistantSignOut()
+  const { isStackReady } = useStackHealth(isAuthenticated)
 
   if (isLoading) {
     return (
@@ -223,9 +223,20 @@ function AssistantAuthStatus({
     )
   }
 
+  if (!isStackReady) {
+    return (
+      <Flex align="center" gap="2">
+        <Spinner />
+        <Text size="2" color="gray">
+          Your Grafana instance is loading...
+        </Text>
+      </Flex>
+    )
+  }
+
   return (
     <Flex direction="column" align="center" gap="2">
-      <AssistantTestChat />
+      <AnalyzeButton onStart={onStart} />
       <Button
         variant="ghost"
         size="1"
@@ -240,13 +251,8 @@ function AssistantAuthStatus({
   )
 }
 
-function AnalyzeButton({
-  onStart,
-  proxyStatus,
-}: {
-  onStart: () => void
-  proxyStatus: string
-}) {
+function AnalyzeButton({ onStart }: { onStart: () => void }) {
+  const proxyStatus = useProxyStatus()
   return (
     <Tooltip
       content={`Proxy is ${proxyStatus}`}

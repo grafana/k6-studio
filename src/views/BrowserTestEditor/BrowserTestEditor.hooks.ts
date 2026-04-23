@@ -1,3 +1,4 @@
+import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { debounce } from 'lodash-es'
@@ -127,6 +128,25 @@ export function useBrowserScriptPreview(
   return preview
 }
 
+export function useValidatorScript(browserActions: BrowserActionInstance[]) {
+  // We add a timeout to the end of the script to give the page time to load the page, so that
+  // there's something that the user can interact with. If we don't do this, k6 will stop before
+  // any DOM mutations have been recorded.
+  const validatorActions: BrowserActionInstance[] = useMemo(
+    () => [
+      ...browserActions,
+      {
+        id: '_validator_timeout_',
+        method: 'page.waitForTimeout',
+        timeout: 3000,
+      },
+    ],
+    [browserActions]
+  )
+
+  return useBrowserScriptPreview(validatorActions)
+}
+
 export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
@@ -152,6 +172,17 @@ export function useBrowserTestState(
     setState(newActions)
   }
 
+  const reorderActions = useCallback((activeId: string, overId: string) => {
+    setState((prev) => {
+      const oldIndex = prev.findIndex((a) => a.id === activeId)
+      const newIndex = prev.findIndex((a) => a.id === overId)
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        return prev
+      }
+      return arrayMove(prev, oldIndex, newIndex)
+    })
+  }, [])
+
   const plainActions = useMemo(() => {
     return state.map(fromBrowserActionInstance)
   }, [state])
@@ -169,6 +200,7 @@ export function useBrowserTestState(
     addAction,
     updateAction,
     removeAction,
+    reorderActions,
     isDirty,
   }
 }

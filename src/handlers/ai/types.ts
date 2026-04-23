@@ -41,4 +41,6 @@ export enum AssistantAuthHandler {
   GetStatus = 'ai:assistant-auth-status',
   SignOut = 'ai:assistant-sign-out',
   VerificationCode = 'ai:assistant-verification-code',
+  CheckStackHealth = 'ai:assistant-check-stack-health',
+  WakeStack = 'ai:assistant-wake-stack',
 }
