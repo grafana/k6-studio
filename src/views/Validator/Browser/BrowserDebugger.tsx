@@ -1,6 +1,5 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs } from '@radix-ui/themes'
-import { useState } from 'react'
 
 import {
   LogsSection,
@@ -13,8 +12,11 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { NodeSelector } from '@/schemas/selectors'
 
+import {
+  HighlightSelectorProvider,
+  useHighlightedSelector,
+} from '../../../components/HighlightSelectorProvider'
 import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
@@ -27,13 +29,12 @@ interface BrowserDebuggerProps {
   onDebugScript: () => void
 }
 
-export function BrowserDebugger({
+export function BrowserDebuggerContent({
   script,
   session,
   onDebugScript,
 }: BrowserDebuggerProps) {
-  const [highlightedSelector, setHighlightedSelector] =
-    useState<NodeSelector | null>(null)
+  const highlightedSelector = useHighlightedSelector()
 
   const [drawer, setDrawer] = usePanelCallbackRef()
 
@@ -91,7 +92,6 @@ export function BrowserDebugger({
                 <BrowserActionsPanel
                   session={session}
                   onDebugScript={onDebugScript}
-                  onHighlight={setHighlightedSelector}
                 />
               </Panel>
             </Group>
@@ -135,5 +135,13 @@ export function BrowserDebugger({
         </Group>
       </Flex>
     </Tabs.Root>
+  )
+}
+
+export function BrowserDebugger(props: BrowserDebuggerProps) {
+  return (
+    <HighlightSelectorProvider>
+      <BrowserDebuggerContent {...props} />
+    </HighlightSelectorProvider>
   )
 }
