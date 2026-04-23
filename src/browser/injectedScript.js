@@ -14,9 +14,28 @@
  * limitations under the License.
  */
 
+// ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+//
+// IF YOU COPY A NEWER VERSION OF THIS FILE FROM THE K6 REPO, MAKE SURE TO ALSO COPY THE CHANGES MADE HERE.
+// WE LOAD THE PAGE SO EARLY THAT THE DOCUMENT ELEMENT DOES NOT EXIST YET. WE HAVE TO DO THIS LOOP TO GET
+// TO CATCH THE MOMEMENT WHEN THE DOCUMENT ELEMENT IS CREATED.
+//
+// ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+//
 // k6BrowserNative allows accessing native browser objects
 // even if the page under test has overridden them.
-const k6BrowserNative = (() => {
+const k6BrowserNative = {
+  Set,
+  Map,
+}
+
+function waitForElement() {
+  if (!document.documentElement) {
+    setTimeout(waitForElement, 1)
+
+    return
+  }
+
   const iframe = document.createElement('iframe')
   // hide it offscreen with zero size
   iframe.style.position = 'absolute'
@@ -32,12 +51,13 @@ const k6BrowserNative = (() => {
   const win = iframe.contentWindow
   document.documentElement.removeChild(iframe)
 
-  return {
-    Set: win.Set,
-    Map: win.Map,
-    // Add other native browser objects as needed.
-  }
-})()
+  k6BrowserNative.Set = win.Set
+  k6BrowserNative.Map = win.Map
+}
+
+waitForElement()
+
+// ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
 
 // packages/playwright-core/src/utils/isomorphic/stringUtils.ts
 var normalizedWhitespaceCache
