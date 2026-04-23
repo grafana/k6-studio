@@ -1,13 +1,6 @@
 import { finder } from '@medv/finder'
-import {
-  queryAllByAltText,
-  queryAllByLabelText,
-  queryAllByPlaceholderText,
-  queryAllByRole,
-  queryAllByTestId,
-  queryAllByTitle,
-} from '@testing-library/dom'
 
+import { InjectedScript } from '@/browser/injectedScript'
 import {
   AriaDetails,
   BrowserEventTarget,
@@ -16,6 +9,20 @@ import {
 } from '@/schemas/recording'
 
 import { getAriaDetails } from './utils/aria'
+
+let _injectedScript: InjectedScript | null = null
+
+function getInjectedScript(): InjectedScript {
+  if (!_injectedScript) {
+    _injectedScript = new InjectedScript()
+  }
+  return _injectedScript
+}
+
+function queryAll(parts: { name: string; body: string }[]): Element[] {
+  const result = getInjectedScript().querySelectorAll({ parts }, document.body)
+  return typeof result === 'string' ? [] : result
+}
 
 function generateRoleSelector(
   element: Element,
@@ -36,7 +43,12 @@ function generateRoleSelector(
   }
 
   const [selector] = applicableRoles.flatMap((role) => {
-    const matches = queryAllByRole(document.body, role, { name })
+    const matches = queryAll([
+      {
+        name: 'internal:role',
+        body: `${role}[name=${JSON.stringify(name)}s]`,
+      },
+    ])
 
     if (!matches.includes(element)) {
       return []
@@ -74,7 +86,9 @@ function generateAltTextSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAllByAltText(document.body, alt, { exact: true })
+  const matches = queryAll([
+    { name: 'internal:attr', body: `[alt=${JSON.stringify(alt)}s]` },
+  ])
 
   if (matches.length !== 1) {
     return undefined
@@ -94,9 +108,9 @@ function generateLabelSelector(
   for (const label of labels) {
     const trimmed = label.trim()
 
-    const matches = queryAllByLabelText(document.body, trimmed, {
-      exact: true,
-    })
+    const matches = queryAll([
+      { name: 'internal:label', body: `${JSON.stringify(trimmed)}s` },
+    ])
 
     if (!matches.includes(element)) {
       continue
@@ -126,9 +140,12 @@ function generatePlaceholderSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAllByPlaceholderText(document.body, placeholder, {
-    exact: true,
-  })
+  const matches = queryAll([
+    {
+      name: 'internal:attr',
+      body: `[placeholder=${JSON.stringify(placeholder)}s]`,
+    },
+  ])
 
   if (matches.length !== 1) {
     return undefined
@@ -152,7 +169,9 @@ function generateTitleSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAllByTitle(document.body, title, { exact: true })
+  const matches = queryAll([
+    { name: 'internal:attr', body: `[title=${JSON.stringify(title)}s]` },
+  ])
 
   if (matches.length !== 1) {
     return undefined
@@ -176,7 +195,9 @@ function generateTestIdSelector(element: Element): string | undefined {
     return undefined
   }
 
-  const matches = queryAllByTestId(document.body, testId)
+  const matches = queryAll([
+    { name: 'internal:attr', body: `[data-testid=${JSON.stringify(testId)}s]` },
+  ])
 
   if (matches.length > 1 || !matches.includes(element)) {
     return undefined
