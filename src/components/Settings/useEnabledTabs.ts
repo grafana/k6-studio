@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { useFeaturesStore } from '@/store/features'
 import { Feature } from '@/types/features'
 
-import { AiSettings } from './AiSettings'
 import { AppearanceSettings } from './AppearanceSettings'
 import { LogsSettings } from './LogsSettings'
 import { ProxySettings } from './ProxySettings'
@@ -28,11 +27,6 @@ const TABS: Array<{
     label: 'Appearance',
     value: 'appearance',
     component: AppearanceSettings,
-  },
-  {
-    label: 'AI',
-    value: 'ai',
-    component: AiSettings,
   },
   {
     label: 'Logs',

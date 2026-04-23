@@ -1,17 +1,14 @@
 import { useChat } from '@ai-sdk/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { TokenUsage } from '@/handlers/ai/types'
 import { applyRules } from '@/rules/rules'
 import { UsageEventName } from '@/services/usageTracking/types'
-import { useFeaturesStore } from '@/store/features'
 import {
   selectFilteredRequests,
   selectGeneratorData,
   useGeneratorStore,
 } from '@/store/generator'
 import { AiCorrelationRule } from '@/types/autoCorrelation'
-import { AiProvider } from '@/types/features'
 import { CorrelationRule } from '@/types/rules'
 import { exhaustive } from '@/utils/typescript'
 import { validateScript } from '@/utils/validateScript'
@@ -28,7 +25,6 @@ import {
   searchRequests,
 } from './utils/searchTools'
 import { prepareRequestsForAI } from './utils/stripRequestData'
-import { sumTokenUsage } from './utils/sumTokenUsage'
 import { validationMatchesRecording } from './utils/validationMatchesRecording'
 
 const outcomeEvents = {
@@ -46,18 +42,10 @@ export const useGenerateRules = ({
   const [correlationStatus, setCorrelationStatus] =
     useState<CorrelationStatus>('not-started')
   const [outcomeReason, setOutcomeReason] = useState('')
-  const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
   const suggestedRulesRef = useRef(suggestedRules)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
-
-  const isGrafanaAssistant = useFeaturesStore(
-    (state) => state.features['grafana-assistant']
-  )
-  const provider: AiProvider = isGrafanaAssistant
-    ? 'grafana-assistant'
-    : 'openai'
 
   suggestedRulesRef.current = suggestedRules
 
@@ -70,15 +58,10 @@ export const useGenerateRules = ({
     clearError,
     setMessages,
   } = useChat<Message>({
-    transport: new IPCChatTransport({
-      provider,
-      onUsage: (usage) => {
-        setTokenUsage((prev) => sumTokenUsage(prev, usage))
-      },
-    }),
+    transport: new IPCChatTransport(),
 
     // Keep calling tools without user input
-    sendAutomaticallyWhen: (args) => lastMessageIsToolCall(args, provider),
+    sendAutomaticallyWhen: lastMessageIsToolCall,
     onError: (error) => {
       setCorrelationStatus('error')
       console.error(error)
@@ -237,7 +220,6 @@ export const useGenerateRules = ({
     setSuggestedRules([])
     setMessages([])
     clearError()
-    setTokenUsage(undefined)
     setCorrelationStatus('not-started')
     setOutcomeReason('')
   }
@@ -265,8 +247,6 @@ export const useGenerateRules = ({
     restart,
     reset,
     stop: useCallback(stop, [stopGeneration]),
-    tokenUsage,
-    provider,
   }
 }
 
