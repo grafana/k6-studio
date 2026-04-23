@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 
+import { UsageEventName } from '@/services/usageTracking/types'
 import { useStudioUIStore } from '@/store/ui'
 import { queryClient } from '@/utils/query'
 
@@ -48,6 +49,9 @@ export function useAssistantSignIn() {
     },
     onSuccess: (result) => {
       if (result.type === 'authenticated') {
+        window.studio.app.trackEvent({
+          event: UsageEventName.AssistantSignInSucceeded,
+        })
         return invalidateAssistantAuthStatus()
       }
     },

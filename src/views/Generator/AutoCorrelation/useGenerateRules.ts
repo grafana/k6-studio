@@ -37,6 +37,13 @@ const outcomeEvents = {
   failure: UsageEventName.AutocorrelationFailed,
 } as const
 
+const LOADING_STATES: CorrelationStatus[] = [
+  'validating',
+  'analyzing',
+  'creating-rules',
+  'finalizing',
+]
+
 export const useGenerateRules = ({
   clearValidation,
 }: {
@@ -48,6 +55,7 @@ export const useGenerateRules = ({
   const [outcomeReason, setOutcomeReason] = useState('')
   const [tokenUsage, setTokenUsage] = useState<TokenUsage>()
   const suggestedRulesRef = useRef(suggestedRules)
+  const correlationStatusRef = useRef(correlationStatus)
   const abortControllerRef = useRef<AbortController | null>(null)
   const recording = useGeneratorStore(selectFilteredRequests)
   const generator = useGeneratorStore(selectGeneratorData)
@@ -60,6 +68,7 @@ export const useGenerateRules = ({
     : 'openai'
 
   suggestedRulesRef.current = suggestedRules
+  correlationStatusRef.current = correlationStatus
 
   const {
     sendMessage,
@@ -81,6 +90,9 @@ export const useGenerateRules = ({
     sendAutomaticallyWhen: (args) => lastMessageIsToolCall(args, provider),
     onError: (error) => {
       setCorrelationStatus('error')
+      window.studio.app.trackEvent({
+        event: UsageEventName.AutocorrelationErrored,
+      })
       console.error(error)
     },
     onToolCall: async ({ toolCall }) => {
@@ -189,12 +201,7 @@ export const useGenerateRules = ({
     return result
   }
 
-  const isLoading = [
-    'validating',
-    'analyzing',
-    'creating-rules',
-    'finalizing',
-  ].includes(correlationStatus)
+  const isLoading = LOADING_STATES.includes(correlationStatus)
 
   async function start() {
     window.studio.app.trackEvent({
@@ -228,6 +235,14 @@ export const useGenerateRules = ({
   }
 
   function stop() {
+    if (!LOADING_STATES.includes(correlationStatusRef.current)) {
+      return
+    }
+
+    window.studio.app.trackEvent({
+      event: UsageEventName.AutocorrelationAborted,
+      payload: { status: correlationStatusRef.current },
+    })
     void stopGeneration()
     setCorrelationStatus('aborted')
     abortControllerRef.current?.abort()
