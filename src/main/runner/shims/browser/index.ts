@@ -1,6 +1,6 @@
 // @ts-expect-error - This is just a temporary shim to test things.
 // eslint-disable-next-line import/no-unresolved
-import { expect } from 'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/9879811e4238a1a70b6adf7a3ddaca4b3982fe73/index.js'
+import { expect } from 'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/faed7cc1f70fcc673e4cd8fb5a5c7c0b682643d9/index.js'
 import { BrowserContext, browser } from 'k6/browser'
 
 import { pageProxy } from './proxies/page'
