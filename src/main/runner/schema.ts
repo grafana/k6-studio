@@ -286,50 +286,6 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
   GenericLocatorActionSchema,
 ])
 
-const ActionEventSchemaBase = z.object({
-  type: z.literal('action'),
-  eventId: z.string(),
-  action: AnyBrowserActionSchema,
-})
-
-export const ActionBeginEventSchema = ActionEventSchemaBase.extend({
-  state: z.literal('begin'),
-  timestamp: z.object({
-    started: z.number(),
-    ended: z.undefined().optional(),
-  }),
-  result: z.undefined().optional(),
-})
-
-export const ActionSuccessSchema = z.object({
-  type: z.literal('success'),
-  returnValue: z.unknown().optional(),
-})
-
-export const ActionErrorSchema = z.object({
-  type: z.literal('error'),
-  error: z.string(),
-})
-
-export const ActionAbortedSchema = z.object({
-  type: z.literal('aborted'),
-})
-
-export const ActionResult = z.discriminatedUnion('type', [
-  ActionSuccessSchema,
-  ActionErrorSchema,
-  ActionAbortedSchema,
-])
-
-export const ActionEndEventSchema = ActionEventSchemaBase.extend({
-  state: z.literal('end'),
-  timestamp: z.object({
-    started: z.number(),
-    ended: z.number(),
-  }),
-  result: ActionResult,
-})
-
 export const SessionReplayEventSchema = z.object({
   events: z.array(
     // Check the basic structure of events, but don't bother parsing them fully. We
@@ -344,20 +300,9 @@ export const SessionReplayEventSchema = z.object({
   ),
 })
 
-export const BrowserActionEventSchema = z.discriminatedUnion('state', [
-  ActionBeginEventSchema,
-  ActionEndEventSchema,
-])
-
 export type ActionLocator = z.infer<typeof ActionLocatorSchema>
 
-export type ActionBeginEvent = z.infer<typeof ActionBeginEventSchema>
-export type ActionEndEvent = z.infer<typeof ActionEndEventSchema>
-
-export type BrowserActionEvent = z.infer<typeof BrowserActionEventSchema>
 export type BrowserReplayEvent = eventWithTime
-
-export type ActionResult = z.infer<typeof ActionResult>
 
 export type PageGotoAction = z.infer<typeof PageGotoActionSchema>
 export type PageReloadAction = z.infer<typeof PageReloadActionSchema>
@@ -753,6 +698,55 @@ export type AssertionError =
 // Assertion Result + Event Schemas
 // =============================================================================
 
+const ActionEventSchemaBase = z.object({
+  type: z.literal('action'),
+  eventId: z.string(),
+  action: AnyBrowserActionSchema,
+})
+
+export const ActionBeginEventSchema = ActionEventSchemaBase.extend({
+  state: z.literal('begin'),
+  timestamp: z.object({
+    started: z.number(),
+    ended: z.undefined().optional(),
+  }),
+  result: z.undefined().optional(),
+})
+
+export const ActionSuccessSchema = z.object({
+  type: z.literal('success'),
+  returnValue: z.unknown().optional(),
+})
+
+export const ActionErrorSchema = z.object({
+  type: z.literal('error'),
+  error: z.string(),
+})
+
+export const ActionAbortedSchema = z.object({
+  type: z.literal('aborted'),
+})
+
+export const ActionResultSchema = z.discriminatedUnion('type', [
+  ActionSuccessSchema,
+  ActionErrorSchema,
+  ActionAbortedSchema,
+])
+
+export const ActionEndEventSchema = ActionEventSchemaBase.extend({
+  state: z.literal('end'),
+  timestamp: z.object({
+    started: z.number(),
+    ended: z.number(),
+  }),
+  result: ActionResultSchema,
+})
+
+export const BrowserActionEventSchema = z.discriminatedUnion('state', [
+  ActionBeginEventSchema,
+  ActionEndEventSchema,
+])
+
 const AssertionPassResultSchema = z.object({
   passed: z.literal(true),
 })
@@ -799,13 +793,38 @@ export const BrowserAssertionEventSchema = z.discriminatedUnion('state', [
   AssertionEndEventSchema,
 ])
 
+export const BrowserDebuggerBeginEventSchema = z.discriminatedUnion('type', [
+  ActionBeginEventSchema,
+  AssertionBeginEventSchema,
+])
+
+export const BrowserDebuggerEndEventSchema = z.discriminatedUnion('type', [
+  ActionEndEventSchema,
+  AssertionEndEventSchema,
+])
+
 export type AnyAssertion = z.infer<typeof AnyAssertionSchema>
+
+export type ActionBeginEvent = z.infer<typeof ActionBeginEventSchema>
+export type ActionEndEvent = z.infer<typeof ActionEndEventSchema>
+export type BrowserActionEvent = z.infer<typeof BrowserActionEventSchema>
+export type ActionResultSchema = z.infer<typeof ActionResultSchema>
+
 export type AssertionResult = z.infer<typeof AssertionResultSchema>
 export type AssertionBeginEvent = z.infer<typeof AssertionBeginEventSchema>
 export type AssertionEndEvent = z.infer<typeof AssertionEndEventSchema>
 export type BrowserAssertionEvent = z.infer<typeof BrowserAssertionEventSchema>
 
-export type BrowserDebuggerEvent = BrowserActionEvent | BrowserAssertionEvent
+export type BrowserDebuggerBeginEvent = z.infer<
+  typeof BrowserDebuggerBeginEventSchema
+>
+export type BrowserDebuggerEndEvent = z.infer<
+  typeof BrowserDebuggerEndEventSchema
+>
+
+export type BrowserDebuggerEvent =
+  | BrowserDebuggerBeginEvent
+  | BrowserDebuggerEndEvent
 
 export function isBrowserActionEvent(
   event: BrowserDebuggerEvent

@@ -4,11 +4,12 @@ import { LogEntry } from '@/schemas/k6'
 
 import {
   ActionBeginEvent,
-  ActionEndEvent,
-  ActionResult,
+  ActionResultSchema,
   AnyBrowserAction,
   AssertionBeginEvent,
   AssertionEndEvent,
+  BrowserDebuggerBeginEvent,
+  BrowserDebuggerEndEvent,
 } from '../../schema'
 
 export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
@@ -56,25 +57,7 @@ export function trackLog(entry: LogEntry) {
     })
 }
 
-function begin(action: AnyBrowserAction | undefined | null) {
-  if (TRACKING_SERVER_URL === null) {
-    return null
-  }
-
-  if (action === undefined || action === null) {
-    return null
-  }
-
-  const event = {
-    type: 'action' as const,
-    state: 'begin' as const,
-    eventId: nextId(),
-    timestamp: {
-      started: Date.now(),
-    },
-    action,
-  } satisfies ActionBeginEvent
-
+function sendBeginEvent<T extends BrowserDebuggerBeginEvent>(event: T) {
   try {
     const body = JSON.stringify(event)
 
@@ -90,33 +73,53 @@ function begin(action: AnyBrowserAction | undefined | null) {
   return event
 }
 
-function end(event: ActionBeginEvent | null, result: ActionResult) {
-  if (event === null) {
-    return
-  }
-
+function sendEndEvent<T extends BrowserDebuggerEndEvent>(event: T) {
   try {
-    const body = {
-      ...event,
-      state: 'end',
-      timestamp: {
-        ...event.timestamp,
-        ended: Date.now(),
-      },
-      result,
-    } satisfies ActionEndEvent
+    const body = JSON.stringify(event)
 
-    http.post(
-      `${TRACKING_SERVER_URL}/track/${event.eventId}/end`,
-      JSON.stringify(body),
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
+    http.post(`${TRACKING_SERVER_URL}/track/${event.eventId}/end`, body, {
+      headers: { 'Content-Type': 'application/json' },
+    })
   } catch {
     // We don't want to interfere with the script execution so
     // we swallow all errors here.
   }
+}
+
+function beginAction(action: AnyBrowserAction | undefined | null) {
+  if (TRACKING_SERVER_URL === null) {
+    return null
+  }
+
+  if (action === undefined || action === null) {
+    return null
+  }
+
+  return sendBeginEvent({
+    type: 'action',
+    state: 'begin',
+    eventId: nextId(),
+    timestamp: {
+      started: Date.now(),
+    },
+    action,
+  })
+}
+
+function endAction(event: ActionBeginEvent | null, result: ActionResultSchema) {
+  if (event === null) {
+    return
+  }
+
+  sendEndEvent({
+    ...event,
+    state: 'end',
+    timestamp: {
+      ...event.timestamp,
+      ended: Date.now(),
+    },
+    result,
+  })
 }
 
 // Type inference won't work without using the `any` type.
@@ -204,10 +207,10 @@ export function createProxy<T extends object>({
       // values based on the provided configuration.
       return function (...args: ArgsOf<T[keyof T]>): unknown {
         const action = track?.(...args)
-        const eventId = begin(action)
+        const eventId = beginAction(action)
 
         const handleSuccess = (result: unknown) => {
-          end(eventId, {
+          endAction(eventId, {
             type: 'success',
             returnValue: result,
           })
@@ -235,7 +238,7 @@ export function createProxy<T extends object>({
         }
 
         const handleError = (error: unknown) => {
-          end(eventId, {
+          endAction(eventId, {
             type: 'error',
             error: String(error),
           })
@@ -313,7 +316,7 @@ export function beginAssertion(
 
   const method = toAssertionMethod(name)
 
-  const event: AssertionBeginEvent = {
+  return sendBeginEvent({
     type: 'assertion',
     state: 'begin',
     eventId: nextId(),
@@ -324,19 +327,7 @@ export function beginAssertion(
       negated,
       args,
     } as AssertionBeginEvent['assertion'],
-  }
-
-  try {
-    http.post(
-      `${TRACKING_SERVER_URL}/assert/${event.eventId}/begin`,
-      JSON.stringify(event),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-  } catch {
-    return null
-  }
-
-  return event
+  })
 }
 
 export function endAssertion(
@@ -347,26 +338,15 @@ export function endAssertion(
     return
   }
 
-  try {
-    const body: AssertionEndEvent = {
-      ...event,
-      state: 'end',
-      timestamp: {
-        ...event.timestamp,
-        ended: Date.now(),
-      },
-      result,
-    }
-
-    http.post(
-      `${TRACKING_SERVER_URL}/assert/${event.eventId}/end`,
-      JSON.stringify(body),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
-  } catch {
-    // We don't want to interfere with the script execution so
-    // we swallow all errors here.
-  }
+  sendEndEvent({
+    ...event,
+    state: 'end',
+    timestamp: {
+      ...event.timestamp,
+      ended: Date.now(),
+    },
+    result,
+  })
 }
 
 /**

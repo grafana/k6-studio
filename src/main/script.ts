@@ -69,23 +69,11 @@ export const runScript = async ({
   const trackingServer = await createTrackingServer()
 
   trackingServer.on('begin', (ev) => {
-    if (ev.type === 'action') {
-      browserWindow.webContents.send(ScriptHandler.BrowserAction, ev.action)
-
-      return
-    }
-
-    browserWindow.webContents.send(ScriptHandler.BrowserAssertion, ev.assertion)
+    browserWindow.webContents.send(ScriptHandler.BrowserAction, ev)
   })
 
   trackingServer.on('end', (ev) => {
-    if (ev.type === 'action') {
-      browserWindow.webContents.send(ScriptHandler.BrowserAction, ev.action)
-
-      return
-    }
-
-    browserWindow.webContents.send(ScriptHandler.BrowserAssertion, ev.assertion)
+    browserWindow.webContents.send(ScriptHandler.BrowserAction, ev)
   })
 
   trackingServer.on('log', (ev) => {

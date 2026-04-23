@@ -5,14 +5,10 @@ import { Server } from 'http'
 import { AddressInfo } from 'net'
 
 import {
-  ActionBeginEvent,
-  ActionBeginEventSchema,
-  ActionEndEvent,
-  ActionEndEventSchema,
-  AssertionBeginEvent,
-  AssertionBeginEventSchema,
-  AssertionEndEvent,
-  AssertionEndEventSchema,
+  BrowserDebuggerBeginEvent,
+  BrowserDebuggerBeginEventSchema,
+  BrowserDebuggerEndEvent,
+  BrowserDebuggerEndEventSchema,
   BrowserReplayEvent,
   SessionReplayEventSchema,
 } from '@/main/runner/schema'
@@ -32,12 +28,8 @@ function getPort(address: AddressInfo | string | null): number {
 }
 
 interface TrackingServerEventMap {
-  begin:
-    | { type: 'action'; action: ActionBeginEvent }
-    | { type: 'assertion'; assertion: AssertionBeginEvent }
-  end:
-    | { type: 'action'; action: ActionEndEvent }
-    | { type: 'assertion'; assertion: AssertionEndEvent }
+  begin: BrowserDebuggerBeginEvent
+  end: BrowserDebuggerEndEvent
   replay: {
     events: BrowserReplayEvent[]
   }
@@ -87,7 +79,7 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
   )
 
   app.post('/track/:id/begin', (req, res) => {
-    const parsed = ActionBeginEventSchema.safeParse(req.body)
+    const parsed = BrowserDebuggerBeginEventSchema.safeParse(req.body)
 
     if (!parsed.success) {
       log.warn('Received invalid begin action event: ', parsed.error.format())
@@ -97,16 +89,13 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
       return
     }
 
-    trackingServer.emit('begin', {
-      type: 'action',
-      action: parsed.data,
-    })
+    trackingServer.emit('begin', parsed.data)
 
     res.status(204).send()
   })
 
   app.post('/track/:id/end', (req, res) => {
-    const parsed = ActionEndEventSchema.safeParse(req.body)
+    const parsed = BrowserDebuggerEndEventSchema.safeParse(req.body)
 
     if (!parsed.success) {
       log.warn('Received invalid end action event: ', parsed.error.format())
@@ -116,51 +105,7 @@ export async function createTrackingServer(): Promise<TestRunTrackingServer> {
       return
     }
 
-    trackingServer.emit('end', {
-      type: 'action',
-      action: parsed.data,
-    })
-
-    res.status(204).send()
-  })
-
-  app.post('/assert/:id/begin', (req, res) => {
-    const parsed = AssertionBeginEventSchema.safeParse(req.body)
-
-    if (!parsed.success) {
-      log.warn(
-        'Received invalid begin assertion event: ',
-        parsed.error.format()
-      )
-
-      res.status(400).send()
-
-      return
-    }
-
-    trackingServer.emit('begin', {
-      type: 'assertion',
-      assertion: parsed.data,
-    })
-
-    res.status(204).send()
-  })
-
-  app.post('/assert/:id/end', (req, res) => {
-    const parsed = AssertionEndEventSchema.safeParse(req.body)
-
-    if (!parsed.success) {
-      log.warn('Received invalid end assertion event: ', parsed.error.format())
-
-      res.status(400).send()
-
-      return
-    }
-
-    trackingServer.emit('end', {
-      type: 'assertion',
-      assertion: parsed.data,
-    })
+    trackingServer.emit('end', parsed.data)
 
     res.status(204).send()
   })

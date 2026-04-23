@@ -14,7 +14,6 @@ export enum ScriptHandler {
   Check = 'script:check',
   RunFromGenerator = 'script:run-from-generator',
   BrowserAction = 'script:browser-action',
-  BrowserAssertion = 'script:browser-assertion',
   BrowserReplay = 'script:browser-replay',
 }
 
