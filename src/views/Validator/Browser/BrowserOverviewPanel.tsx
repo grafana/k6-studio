@@ -5,14 +5,14 @@ import { useEffect, useState } from 'react'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import { PersistentTabs } from '@/components/primitives/PersistentTabs'
-import { NodeSelector } from '@/schemas/selectors'
+import { ActionLocator } from '@/main/runner/schema'
 
 import { DebugSession } from '../types'
 
 interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
-  highlightedSelector: NodeSelector | null
+  highlightedSelector: ActionLocator | null
 }
 
 export function BrowserOverviewPanel({

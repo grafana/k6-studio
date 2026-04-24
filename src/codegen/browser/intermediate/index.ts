@@ -70,15 +70,15 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
           type: 'StringLiteral',
           value: node.selector.role,
         },
-        options: node.selector.name
+        options: node.selector.options?.name
           ? {
               type: 'RoleLocatorOptionsExpression',
               name: {
                 // getByRole creates an internal selector, e.g. internal:role=link[name='Hello's] that is passed
                 // to the browser. Since the string literal value is wrapped in single quotes, we need to escape
                 // any single quotes in the name. Bug report: https://github.com/grafana/k6/issues/5360
-                value: node.selector.name.value.replaceAll("'", "\\'"),
-                exact: node.selector.name.exact || undefined,
+                value: node.selector.options.name.replaceAll("'", "\\'"),
+                exact: node.selector.options.exact || undefined,
               },
             }
           : null,
@@ -91,13 +91,13 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewLabelLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text.value,
+          value: node.selector.label,
         },
         page,
-        options: node.selector.text.exact
+        options: node.selector.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.selector.text.exact,
+              exact: node.selector.options.exact,
             }
           : null,
       })
@@ -108,13 +108,13 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewPlaceholderLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text.value,
+          value: node.selector.placeholder,
         },
         page,
-        options: node.selector.text.exact
+        options: node.selector.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.selector.text.exact,
+              exact: node.selector.options.exact,
             }
           : null,
       })
@@ -125,13 +125,13 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewTitleLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text.value,
+          value: node.selector.title,
         },
         page,
-        options: node.selector.text.exact
+        options: node.selector.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.selector.text.exact,
+              exact: node.selector.options.exact,
             }
           : null,
       })
@@ -142,19 +142,19 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewAltTextLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text.value,
+          value: node.selector.text,
         },
         page,
-        options: node.selector.text.exact
+        options: node.selector.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.selector.text.exact,
+              exact: node.selector.options.exact,
             }
           : null,
       })
       break
 
-    case 'test-id':
+    case 'testid':
       context.inline(node, {
         type: 'NewTestIdLocatorExpression',
         testId: {

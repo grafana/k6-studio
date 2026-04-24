@@ -1,9 +1,9 @@
 import { ChildProcess, spawn } from 'child_process'
 import logger from 'electron-log/main'
 
+import { ActionLocator } from '@/main/runner/schema'
 import { BrowserServer } from '@/recorder/server'
 import { BrowserEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
 import { WebSocketTransport } from '@/utils/cdp/transports/webSocket'
@@ -99,7 +99,7 @@ class CDPRecordingSession
     })
   }
 
-  highlightElement(selector: NodeSelector | null): void {
+  highlightElement(selector: ActionLocator | null): void {
     this.#server.send({ type: 'highlight-elements', selector })
   }
 

@@ -1,5 +1,5 @@
 import { InjectedScript } from '@/browser/injectedScript'
-import { NodeSelector } from '@/schemas/selectors'
+import { ActionLocator } from '@/main/runner/schema'
 
 let _injectedScript: InjectedScript | null = null
 
@@ -21,12 +21,12 @@ function attrBody(attr: string, value: string, exact?: boolean): string {
 }
 
 /**
- * Find elements in the DOM using a NodeSelector.
+ * Find elements in the DOM using an ActionLocator.
  * Uses the same selector engine as k6 browser (Playwright) for consistent behavior.
  */
 export function findElementsBySelector(
   container: HTMLElement,
-  selector: NodeSelector
+  selector: ActionLocator
 ): Element[] {
   const script = getInjectedScript()
 
@@ -37,7 +37,7 @@ export function findElementsBySelector(
       parts = [{ name: 'css', body: selector.selector }]
       break
 
-    case 'test-id':
+    case 'testid':
       parts = [
         {
           name: 'internal:attr',
@@ -48,8 +48,8 @@ export function findElementsBySelector(
 
     case 'role': {
       let body = selector.role
-      if (selector.name !== undefined) {
-        body += `[name=${JSON.stringify(selector.name.value)}${selector.name.exact === true ? 's' : 'i'}]`
+      if (selector.options?.name !== undefined) {
+        body += `[name=${JSON.stringify(selector.options.name)}${selector.options.exact === true ? 's' : 'i'}]`
       }
       parts = [{ name: 'internal:role', body }]
       break
@@ -59,7 +59,7 @@ export function findElementsBySelector(
       parts = [
         {
           name: 'internal:attr',
-          body: attrBody('alt', selector.text.value, selector.text.exact),
+          body: attrBody('alt', selector.text, selector.options?.exact),
         },
       ]
       break
@@ -68,7 +68,7 @@ export function findElementsBySelector(
       parts = [
         {
           name: 'internal:label',
-          body: textMatcherBody(selector.text.value, selector.text.exact),
+          body: textMatcherBody(selector.label, selector.options?.exact),
         },
       ]
       break
@@ -79,8 +79,8 @@ export function findElementsBySelector(
           name: 'internal:attr',
           body: attrBody(
             'placeholder',
-            selector.text.value,
-            selector.text.exact
+            selector.placeholder,
+            selector.options?.exact
           ),
         },
       ]
@@ -90,7 +90,7 @@ export function findElementsBySelector(
       parts = [
         {
           name: 'internal:text',
-          body: textMatcherBody(selector.text.value, selector.text.exact),
+          body: textMatcherBody(selector.text, selector.options?.exact),
         },
       ]
       break
@@ -99,7 +99,7 @@ export function findElementsBySelector(
       parts = [
         {
           name: 'internal:attr',
-          body: attrBody('title', selector.text.value, selector.text.exact),
+          body: attrBody('title', selector.title, selector.options?.exact),
         },
       ]
       break

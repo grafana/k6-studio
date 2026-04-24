@@ -10,13 +10,13 @@ import {
   WholeWordIcon,
 } from 'lucide-react'
 
-import { NodeSelector } from '@/schemas/selectors'
+import { ActionLocator } from '@/main/runner/schema'
 import { exhaustive } from '@/utils/typescript'
 
 import { RoleLocatorIcon } from './RoleLocatorIcon'
 
 interface LocatorComponentProps extends LucideProps {
-  locator: NodeSelector
+  locator: ActionLocator
 }
 
 function quote(str: string) {
@@ -28,7 +28,7 @@ export function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
     case 'css':
       return <BracesIcon {...props} />
 
-    case 'test-id':
+    case 'testid':
       return <TestTubeDiagonalIcon {...props} />
 
     case 'alt':
@@ -59,29 +59,29 @@ export function LocatorText({ locator }: LocatorComponentProps) {
     case 'css':
       return locator.selector
 
-    case 'test-id':
+    case 'testid':
       return locator.testId
 
     case 'label':
-      return quote(locator.text.value)
+      return quote(locator.label)
 
     case 'placeholder':
-      return quote(locator.text.value)
+      return quote(locator.placeholder)
 
     case 'title':
-      return quote(locator.text.value)
+      return quote(locator.title)
 
     case 'alt':
-      return quote(locator.text.value)
+      return quote(locator.text)
 
     case 'text':
-      return quote(locator.text.value)
+      return quote(locator.text)
 
     case 'role':
       return (
         <>
           <strong>{locator.role}</strong>{' '}
-          {locator.name?.value ? quote(locator.name.value) : ''}
+          {locator.options?.name ? quote(locator.options.name) : ''}
         </>
       )
 
@@ -91,7 +91,7 @@ export function LocatorText({ locator }: LocatorComponentProps) {
 }
 
 interface LocatorProps {
-  locator: NodeSelector
+  locator: ActionLocator
   onHighlightChange?: (highlighted: boolean) => void
 }
 

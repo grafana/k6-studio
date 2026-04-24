@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { NodeSelector } from '@/schemas/selectors'
+import { ActionLocator } from '@/main/runner/schema'
 import { findElementsBySelector } from '@/utils/selectors'
 
 import { Bounds } from './types'
@@ -15,7 +15,7 @@ interface Highlight {
 
 export function useHighlightedElements(
   element: HTMLElement | null,
-  selector: NodeSelector | null
+  selector: ActionLocator | null
 ) {
   const idCounter = useRef(0)
   const [highlights, setHighlights] = useState<Highlight[] | null>(null)

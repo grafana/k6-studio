@@ -1,4 +1,3 @@
-import { toNodeSelector } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
 import { ActionLocator } from '@/main/runner/schema'
 
@@ -9,7 +8,6 @@ interface BrowserActionLocatorProps {
 }
 
 export function BrowserActionLocator({ locator }: BrowserActionLocatorProps) {
-  const nodeLocator = toNodeSelector(locator)
   const setHighlightedSelector = useHighlightSelector()
 
   const handleHighlightChange = (highlighted: boolean) => {
@@ -19,10 +17,8 @@ export function BrowserActionLocator({ locator }: BrowserActionLocatorProps) {
       return
     }
 
-    setHighlightedSelector(nodeLocator)
+    setHighlightedSelector(locator)
   }
 
-  return (
-    <Locator locator={nodeLocator} onHighlightChange={handleHighlightChange} />
-  )
+  return <Locator locator={locator} onHighlightChange={handleHighlightChange} />
 }

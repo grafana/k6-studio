@@ -919,7 +919,7 @@ it('should emit a getByTestId locator', async ({ expect }) => {
         {
           type: 'locator',
           nodeId: 'locator',
-          selector: { type: 'test-id', testId: 'submit-button' },
+          selector: { type: 'testid', testId: 'submit-button' },
           inputs: {
             page: { nodeId: 'page' },
           },
@@ -962,7 +962,7 @@ it('should emit a getByRole locator', async ({ expect }) => {
           selector: {
             type: 'role',
             role: 'button',
-            name: { value: 'Submit' },
+            options: { name: 'Submit' },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1044,7 +1044,8 @@ it('should emit a getByAltText locator', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'alt',
-            text: { value: 'Grot is happy', exact: true },
+            text: 'Grot is happy',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1085,7 +1086,8 @@ it('should emit a getByLabel locator', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'label',
-            text: { value: 'Username', exact: true },
+            label: 'Username',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1120,7 +1122,8 @@ it('should emit a getByPlaceholder locator', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'placeholder',
-            text: { value: 'Enter your email', exact: true },
+            placeholder: 'Enter your email',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1155,7 +1158,8 @@ it('should emit a getByTitle locator', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'title',
-            text: { value: 'Submit your form', exact: true },
+            title: 'Submit your form',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },
@@ -1196,7 +1200,8 @@ it('should emit a waitFor statement', async ({ expect }) => {
           nodeId: 'locator',
           selector: {
             type: 'title',
-            text: { value: 'Submit your form', exact: true },
+            title: 'Submit your form',
+            options: { exact: true },
           },
           inputs: { page: { nodeId: 'page' } },
         },

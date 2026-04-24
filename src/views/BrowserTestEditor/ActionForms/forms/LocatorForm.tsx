@@ -10,12 +10,10 @@ import {
 import { WholeWordIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { toNodeSelector } from '@/codegen/browser/selectors'
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
 import { useHighlightSelector } from '@/components/HighlightSelectorProvider'
 import { ActionLocator } from '@/main/runner/schema'
-import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
 import { LocatorOptions } from '../../types'
@@ -73,7 +71,7 @@ export function LocatorForm({
     }
 
     const debounce = setTimeout(() => {
-      highlightSelector(toNodeSelector(currentLocator))
+      highlightSelector(currentLocator)
     }, 100)
 
     return () => {
@@ -88,7 +86,7 @@ export function LocatorForm({
   }, [highlightSelector])
 
   const handlePointerEnter = () => {
-    highlightSelector(toNodeSelector(currentLocator))
+    highlightSelector(currentLocator)
   }
 
   const handlePointerLeave = () => {
@@ -342,11 +340,11 @@ function DisplayValue({
 }: {
   state: LocatorOptions
 }) {
-  const selector = toNodeSelector(values[current]!)
+  const locator = values[current]!
   return (
     <Flex gap="1" align="center" overflow="hidden">
       <LocatorIcon
-        locator={selector}
+        locator={locator}
         css={css`
           && {
             width: 12px;
@@ -363,20 +361,19 @@ function DisplayValue({
           text-overflow: ellipsis;
         `}
       >
-        <LocatorText locator={selector} />
+        <LocatorText locator={locator} />
       </span>
-      <ExactMatchIndicator locator={selector} />
+      <ExactMatchIndicator locator={locator} />
     </Flex>
   )
 }
 
-function ExactMatchIndicator({ locator }: { locator: NodeSelector }) {
-  if (locator.type === 'test-id' || locator.type === 'css') {
+function ExactMatchIndicator({ locator }: { locator: ActionLocator }) {
+  if (locator.type === 'testid' || locator.type === 'css') {
     return null
   }
 
-  const exact =
-    locator.type === 'role' ? locator.name?.exact : locator.text.exact
+  const exact = locator.options?.exact
   if (exact) {
     return (
       <Tooltip content="Exact match">

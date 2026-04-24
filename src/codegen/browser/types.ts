@@ -1,5 +1,5 @@
+import { ActionLocator } from '@/main/runner/schema'
 import { CheckState, NavigateToPageEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 
 export type NodeId = string
 
@@ -17,7 +17,7 @@ export interface PageNode extends NodeBase {
 
 export interface LocatorNode extends NodeBase {
   type: 'locator'
-  selector: NodeSelector
+  selector: ActionLocator
   inputs: {
     page: NodeRef
   }

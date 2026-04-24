@@ -11,7 +11,7 @@ import {
   LocatorOptions,
 } from '@/views/BrowserTestEditor/types'
 
-import { isSelectorEqual, getNodeSelector, toNodeSelector } from './selectors'
+import { isSelectorEqual, getNodeSelector } from './selectors'
 import {
   TestNode,
   PageNode,
@@ -332,17 +332,15 @@ function buildBrowserNodeGraphFromActions(
     // await input.type("Hello")
     // await input.press("Enter")
 
-    const selector = toNodeSelector(currentLocator)
-
     if (
       previousLocatorNode === null ||
-      !isSelectorEqual(selector, previousLocatorNode.selector) ||
+      !isSelectorEqual(currentLocator, previousLocatorNode.selector) ||
       previousLocatorNode.inputs.page.nodeId !== getPage().nodeId
     ) {
       previousLocatorNode = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
-        selector,
+        selector: currentLocator,
         inputs: {
           page: getPage(),
         },

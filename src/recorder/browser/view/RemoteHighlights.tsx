@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { ElementHighlights } from '@/components/Browser/ElementHighlights'
-import { NodeSelector } from '@/schemas/selectors'
+import { ActionLocator } from '@/main/runner/schema'
 
 import { useStudioClient } from './StudioClientProvider'
 
@@ -11,7 +11,7 @@ import { useStudioClient } from './StudioClientProvider'
 export function RemoteHighlights() {
   const client = useStudioClient()
 
-  const [selector, setSelector] = useState<NodeSelector | null>(null)
+  const [selector, setSelector] = useState<ActionLocator | null>(null)
 
   useEffect(() => {
     return client.on('highlight-elements', ({ data }) => {

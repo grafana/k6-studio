@@ -4,7 +4,7 @@ import { css } from '@emotion/react'
 import { Flex, Box } from '@radix-ui/themes'
 import { ReactNode, useState } from 'react'
 
-import { NodeSelector } from '@/schemas/selectors'
+import { ActionLocator } from '@/main/runner/schema'
 import { DebugSession } from '@/views/Validator/types'
 
 import { AddressBar } from './AddressBar'
@@ -28,7 +28,7 @@ interface SessionPlayerProps {
   placeholder?: string
   initialPage?: Page
   initialContent?: ReactNode
-  highlightedSelector: NodeSelector | null
+  highlightedSelector: ActionLocator | null
 }
 
 export function SessionPlayer({

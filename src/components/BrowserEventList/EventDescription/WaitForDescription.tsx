@@ -1,11 +1,11 @@
+import { ActionLocator } from '@/main/runner/schema'
 import { WaitForEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 
 import { Selector } from './Selector'
 
 interface WaitForDescriptionProps {
   event: WaitForEvent
-  onHighlight: (selector: NodeSelector | null) => void
+  onHighlight: (selector: ActionLocator | null) => void
 }
 
 export function WaitForDescription({

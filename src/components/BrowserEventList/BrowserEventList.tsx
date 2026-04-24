@@ -2,8 +2,8 @@ import { css } from '@emotion/react'
 
 import { Flex } from '@/components/primitives/Flex'
 import { Table } from '@/components/primitives/Table'
+import { ActionLocator } from '@/main/runner/schema'
 import { BrowserEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 
 import { EventDescription } from './EventDescription'
 import { EventIcon } from './EventIcon'
@@ -11,7 +11,7 @@ import { EventIcon } from './EventIcon'
 interface BrowserEventListProps {
   events: BrowserEvent[]
   onNavigate: (url: string) => void
-  onHighlight: (selector: NodeSelector | null) => void
+  onHighlight: (selector: ActionLocator | null) => void
 }
 
 export function BrowserEventList({

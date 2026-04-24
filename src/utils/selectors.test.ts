@@ -8,7 +8,7 @@ describe('findElementsBySelector', () => {
     const matches = findElementsBySelector(document.body, {
       type: 'role',
       role: 'button',
-      name: { value: 'Sub', exact: false },
+      options: { name: 'Sub', exact: false },
     })
     expect(matches).toHaveLength(1)
     expect(matches[0]).toBeInstanceOf(HTMLButtonElement)
@@ -19,14 +19,14 @@ describe('findElementsBySelector', () => {
     const partial = findElementsBySelector(document.body, {
       type: 'role',
       role: 'button',
-      name: { value: 'Sub', exact: true },
+      options: { name: 'Sub', exact: true },
     })
     expect(partial).toHaveLength(0)
 
     const full = findElementsBySelector(document.body, {
       type: 'role',
       role: 'button',
-      name: { value: 'Submit', exact: true },
+      options: { name: 'Submit', exact: true },
     })
     expect(full).toHaveLength(1)
   })
@@ -36,7 +36,7 @@ describe('findElementsBySelector', () => {
     const partial = findElementsBySelector(document.body, {
       type: 'role',
       role: 'button',
-      name: { value: 'Sub' },
+      options: { name: 'Sub' },
     })
     expect(partial).toHaveLength(1)
   })
