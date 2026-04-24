@@ -10,7 +10,7 @@ import { DEFAULT_GROUP_NAME } from '@/constants'
 import { useListenBrowserEvent } from '@/hooks/useListenBrowserEvent'
 import { useListenProxyData } from '@/hooks/useListenProxyData'
 import { LaunchBrowserOptions } from '@/recorder/types'
-import { getRoutePath, getViewPath } from '@/routeMap'
+import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { Group, ProxyData } from '@/types'
 import { proxyDataToHar } from '@/utils/proxyDataToHar'
@@ -195,8 +195,7 @@ export function Recorder() {
 
       navigate(getViewPath('recording', fileName), {
         state: { discardable: true },
-      }
-      )
+      })
     })
   }, [validateAndSaveHarFile, showToast, navigate, blocker.state, isAppClosing])
 
