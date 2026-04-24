@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
+import { basename } from 'pathe'
 import { useCallback } from 'react'
 
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
@@ -24,25 +25,29 @@ export function useLoadGeneratorFile(fileName: string) {
   })
 }
 
-export function useUpdateValueInGeneratorFile(fileName: string) {
+export function useUpdateValueInGeneratorFile(filePath: string) {
   return useMutation({
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
-      const generator = await loadGeneratorFile(fileName)
+      const generator = await loadGeneratorFile(basename(filePath))
+
       await window.studio.generator.saveGenerator(
         { ...generator, [key]: value },
-        fileName
+        filePath
       )
     },
   })
 }
 
-export function useSaveGeneratorFile(fileName: string) {
+export function useSaveGeneratorFile(filePath: string) {
   const showToast = useToast()
 
   return useMutation({
     mutationFn: async (generator: GeneratorFileData) => {
-      await window.studio.generator.saveGenerator(generator, fileName)
-      await queryClient.invalidateQueries({ queryKey: ['generator', fileName] })
+      await window.studio.generator.saveGenerator(generator, filePath)
+
+      await queryClient.invalidateQueries({
+        queryKey: ['generator', basename(filePath)],
+      })
     },
 
     onSuccess: () => {
@@ -81,11 +86,11 @@ export function useIsGeneratorDirty(fileName: string) {
   )
 }
 
-export function useScriptExport(generatorFileName: string) {
+export function useScriptExport(generatorFilePath: string) {
   const showToast = useToast()
   const setScriptName = useGeneratorStore((store) => store.setScriptName)
   const { mutateAsync: updateGeneratorFile } =
-    useUpdateValueInGeneratorFile(generatorFileName)
+    useUpdateValueInGeneratorFile(generatorFilePath)
 
   return useCallback(
     async (scriptName: string) => {

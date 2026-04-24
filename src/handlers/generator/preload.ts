@@ -11,11 +11,11 @@ export function createGenerator(recordingPath: string) {
   ) as Promise<string>
 }
 
-export function saveGenerator(generator: GeneratorFileData, fileName: string) {
+export function saveGenerator(generator: GeneratorFileData, filePath: string) {
   return ipcRenderer.invoke(
     GeneratorHandler.Save,
     generator,
-    fileName
+    filePath
   ) as Promise<void>
 }
 

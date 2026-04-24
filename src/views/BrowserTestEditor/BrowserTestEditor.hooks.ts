@@ -2,6 +2,7 @@ import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { debounce } from 'lodash-es'
+import { basename } from 'pathe'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { emitScript } from '@/codegen/browser'
@@ -30,14 +31,14 @@ export function useBrowserTest(fileName: string) {
   })
 }
 
-export function useSaveBrowserTest(fileName: string) {
+export function useSaveBrowserTest(filePath: string) {
   const showToast = useToast()
 
   return useMutation({
     mutationFn: async (data: BrowserTestFile) => {
-      await window.studio.browserTest.save(fileName, data)
+      await window.studio.browserTest.save(filePath, data)
       await queryClient.invalidateQueries({
-        queryKey: ['browserTest', fileName],
+        queryKey: ['browserTest', basename(filePath)],
       })
     },
 
