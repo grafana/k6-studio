@@ -1,6 +1,6 @@
 // @ts-expect-error - This is just a temporary shim to test things.
 // eslint-disable-next-line import/no-unresolved
-import { expect } from 'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/410f9fdb85ec4fcb53d1cd4149b0699258c72d75/k6-testing.js'
+import { expect } from 'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/f8cf49c6dc7884fe71f2675f6744e2ad881b9fb7/k6-testing.js'
 import { BrowserContext, browser } from 'k6/browser'
 
 import type { AssertionBeginEvent, AssertionEndEvent } from '../../schema'
@@ -37,8 +37,9 @@ interface OnBeginContext {
 
 interface OnEndContext {
   result:
-    | { passed: true }
-    | { passed: false; message: { custom?: string }; error: Error }
+    | { state: 'pass' }
+    | { state: 'fail'; message: { custom?: string }; error: unknown }
+    | { state: 'error'; error: unknown }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -53,13 +54,20 @@ expect.use({
     )
   },
   onEnd(context: OnEndContext, state: AssertionBeginEvent | null) {
-    const result = context.result.passed
-      ? { type: 'success' }
-      : {
-          type: 'error',
-          message: context.result.message,
-          error: context.result.error,
-        }
+    const result =
+      context.result.state === 'pass'
+        ? { type: 'pass' }
+        : context.result.state === 'fail'
+          ? {
+              type: 'fail',
+              message: context.result.message,
+              error: context.result.error,
+            }
+          : {
+              type: 'error',
+              message: String(context.result.error),
+              error: context.result.error,
+            }
 
     endAssertion(state, result as AssertionEndEvent['result'])
   },

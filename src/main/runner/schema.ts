@@ -371,7 +371,10 @@ const SymbolValueSchema = z.object({
   value: z.string(),
 })
 
-const LocatorValueSchema = z.object({ type: z.literal('locator') })
+const LocatorValueSchema = z.object({
+  type: z.literal('locator'),
+  locator: ActionLocatorSchema,
+})
 
 const PageValueSchema = z.object({ type: z.literal('page') })
 
@@ -406,8 +409,8 @@ export const SerializedValueSchema: z.ZodType<SerializedValue> = z.lazy(() =>
     z.boolean(),
     z.number(),
     z.null(),
-    UndefinedValueSchema,
     z.array(SerializedValueSchema),
+    UndefinedValueSchema,
     ObjectValueSchema,
     DateValueSchema,
     RegexValueSchema,
@@ -792,7 +795,7 @@ export const ActionBeginEventSchema = ActionEventSchemaBase.extend({
 })
 
 export const ActionSuccessSchema = z.object({
-  type: z.literal('success'),
+  type: z.literal('pass'),
   returnValue: z.unknown().optional(),
 })
 
@@ -826,15 +829,19 @@ export const BrowserActionEventSchema = z.discriminatedUnion('state', [
 ])
 
 const AssertionPassResultSchema = z.object({
-  type: z.literal('success'),
+  type: z.literal('pass'),
 })
 
 const AssertionFailResultSchema = z.object({
-  type: z.literal('error'),
-  message: z.object({
-    custom: z.string().optional(),
-  }),
+  type: z.literal('fail'),
+  message: z.string().optional(),
   error: AssertionErrorSchema,
+})
+
+const AssertionErrorResultSchema = z.object({
+  type: z.literal('error'),
+  message: z.string().optional(),
+  error: z.unknown(),
 })
 
 const AssertionAbortedResultSchema = z.object({
@@ -844,6 +851,7 @@ const AssertionAbortedResultSchema = z.object({
 export const AssertionResultSchema = z.discriminatedUnion('type', [
   AssertionPassResultSchema,
   AssertionFailResultSchema,
+  AssertionErrorResultSchema,
   AssertionAbortedResultSchema,
 ])
 

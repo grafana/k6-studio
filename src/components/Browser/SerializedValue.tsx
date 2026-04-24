@@ -1,7 +1,8 @@
 import { css } from '@emotion/react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { SerializedValue } from '@/main/runner/schema'
+import { ActionLocator, SerializedValue } from '@/main/runner/schema'
+import { BrowserActionLocator } from '@/views/Validator/Browser/BrowserActionLocator'
 
 function StringValue({ value }: { value: string }) {
   return (
@@ -104,12 +105,12 @@ function SymbolValue({ value }: { value: string }) {
   )
 }
 
-function LocatorValue() {
-  return (
-    <Tooltip content="Locator">
-      <code>locator</code>
-    </Tooltip>
-  )
+interface LocatorValueProps {
+  locator: ActionLocator
+}
+
+function LocatorValue({ locator }: LocatorValueProps) {
+  return <BrowserActionLocator locator={locator} />
 }
 
 function PageValue() {
@@ -165,7 +166,7 @@ export function SerializedValueDisplay({ value }: SerializedValueDisplayProps) {
       return <SymbolValue value={value.value} />
 
     case 'locator':
-      return <LocatorValue />
+      return <LocatorValue locator={value.locator} />
 
     case 'page':
       return <PageValue />

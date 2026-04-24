@@ -8,7 +8,11 @@ interface DebuggerEventErrorProps {
 }
 
 export function DebuggerEventError({ event }: DebuggerEventErrorProps) {
-  if (event.state === 'begin' || event.result.type !== 'error') {
+  if (
+    event.state === 'begin' ||
+    event.result.type === 'aborted' ||
+    event.result.type === 'pass'
+  ) {
     return null
   }
 
@@ -23,9 +27,12 @@ export function DebuggerEventError({ event }: DebuggerEventErrorProps) {
       {event.type === 'assertion' && (
         <>
           Assertion failed:{' '}
-          <pre>
-            <code>{JSON.stringify(event.result.error, null, 2)}</code>
-          </pre>
+          {event.result.type === 'fail' && (
+            <pre>
+              <code>{JSON.stringify(event.result.error, null, 2)}</code>
+            </pre>
+          )}
+          {event.result.type === 'error' && event.result.message}
         </>
       )}
     </Box>

@@ -1,4 +1,6 @@
-import { SerializedValue } from '../../schema'
+import { ActionLocator, SerializedValue } from '../../schema'
+
+import { locatorDetail, pageDetail } from './proxies/symbols'
 
 export function serializeValue(value: unknown): SerializedValue {
   if (value === null) {
@@ -30,6 +32,17 @@ export function serializeValue(value: unknown): SerializedValue {
 
       if (value instanceof RegExp) {
         return { type: 'regex', pattern: value.source, flags: value.flags }
+      }
+
+      if (locatorDetail in value) {
+        return {
+          type: 'locator',
+          locator: value[locatorDetail] as ActionLocator,
+        }
+      }
+
+      if (pageDetail in value) {
+        return { type: 'page' }
       }
 
       if (Array.isArray(value)) {

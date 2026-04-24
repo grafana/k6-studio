@@ -327,7 +327,7 @@ function emitExpectExpression(
 ): ts.Expression {
   context.import(
     ['expect'],
-    'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/410f9fdb85ec4fcb53d1cd4149b0699258c72d75/k6-testing.js'
+    'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/f8cf49c6dc7884fe71f2675f6744e2ad881b9fb7/k6-testing.js'
   )
 
   const locator = emitExpression(context, expression.actual)

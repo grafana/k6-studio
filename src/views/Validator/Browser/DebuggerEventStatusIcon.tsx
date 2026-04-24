@@ -30,9 +30,10 @@ export function DebuggerEventStatusIcon({
   }
 
   switch (event.result.type) {
-    case 'success':
+    case 'pass':
       return <CircleCheckIcon color="var(--green-11)" />
 
+    case 'fail':
     case 'error':
       return <CircleXIcon color="var(--red-11)" />
 

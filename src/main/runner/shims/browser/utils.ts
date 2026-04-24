@@ -213,7 +213,7 @@ export function createProxy<T extends object>({
 
         const handleSuccess = (result: unknown) => {
           endAction(eventId, {
-            type: 'success',
+            type: 'pass',
             returnValue: result,
           })
 
