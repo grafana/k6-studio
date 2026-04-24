@@ -26,14 +26,25 @@ declare module 'k6/browser' {
   }
 }
 
+interface OnBeginContext {
+  received: unknown
+  negated: boolean
+  matcher: {
+    name: string
+    args: unknown[]
+  }
+}
+
+interface OnEndContext {
+  result:
+    | { passed: true }
+    | { passed: false; message: { custom?: string }; error: Error }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 expect.use({
   name: 'k6-studio-tracking',
-  onBegin(context: {
-    received: unknown
-    negated: boolean
-    matcher: { name: string; args: unknown[] }
-  }) {
+  onBegin(context: OnBeginContext) {
     return beginAssertion(
       context.matcher.name,
       context.negated,
@@ -41,13 +52,14 @@ expect.use({
       context.matcher.args
     )
   },
-  onEnd(
-    context: { result: { passed: true } | { passed: false; error: Error } },
-    state: AssertionBeginEvent | null
-  ) {
+  onEnd(context: OnEndContext, state: AssertionBeginEvent | null) {
     const result = context.result.passed
       ? { type: 'success' }
-      : { type: 'error', error: context.result.error }
+      : {
+          type: 'error',
+          message: context.result.message,
+          error: context.result.error,
+        }
 
     endAssertion(state, result as AssertionEndEvent['result'])
   },

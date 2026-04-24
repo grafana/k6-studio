@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Box } from 'lucide-react'
+import { Box } from '@radix-ui/themes'
 
 import { BrowserDebuggerEvent } from '@/main/runner/schema'
 

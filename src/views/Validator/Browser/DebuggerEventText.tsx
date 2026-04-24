@@ -1,5 +1,6 @@
 import { ClickPill, DoubleClickPill } from '@/components/Browser/ClickPill'
 import { SelectOptions } from '@/components/Browser/SelectOptions'
+import { SerializedValueDisplay } from '@/components/Browser/SerializedValue'
 import { Kbd } from '@/components/primitives/Kbd'
 import {
   AnyBrowserAction,
@@ -172,23 +173,13 @@ function BrowserActionText({ action }: BrowserActionTextProps) {
   }
 }
 
-function formatValue(value: unknown): string {
-  if (typeof value === 'string') return `"${value}"`
-  if (typeof value === 'bigint') return String(value)
-  if (typeof value === 'number' || typeof value === 'boolean')
-    return String(value)
-  if (value === null) return 'null'
-  if (value === undefined) return 'undefined'
-  return '...'
-}
-
 interface BrowserAssertionTextProps {
   event: BrowserAssertionEvent
 }
 
 function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
   const { assertion } = event
-  const actual = <code>actual</code>
+  const actual = <SerializedValueDisplay value={event.actual} />
   const not = assertion.negated ? ' not' : ''
 
   switch (assertion.method) {
@@ -262,7 +253,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} have text{' '}
-          <code>{formatValue(assertion.args[0])}</code>
+          <SerializedValueDisplay value={assertion.args[0]} />
         </>
       )
 
@@ -270,7 +261,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} contain text{' '}
-          <code>{formatValue(assertion.args[0])}</code>
+          <SerializedValueDisplay value={assertion.args[0]} />
         </>
       )
 
@@ -278,7 +269,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} have title{' '}
-          <code>{formatValue(assertion.args[0])}</code>
+          <SerializedValueDisplay value={assertion.args[0]} />
         </>
       )
 
@@ -293,7 +284,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be{' '}
-          <code>{formatValue(assertion.args[0])}</code>
+          <SerializedValueDisplay value={assertion.args[0]} />
         </>
       )
 
@@ -363,7 +354,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be an instance of{' '}
-          <code>{formatValue(assertion.args[0])}</code>
+          <SerializedValueDisplay value={assertion.args[0]} />
         </>
       )
 
@@ -399,7 +390,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be equal to{' '}
-          <code>{formatValue(assertion.args[0])}</code>
+          <SerializedValueDisplay value={assertion.args[0]} />
         </>
       )
 
@@ -407,7 +398,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} contain{' '}
-          <code>{formatValue(assertion.args[0])}</code>
+          <SerializedValueDisplay value={assertion.args[0]} />
         </>
       )
 
@@ -415,7 +406,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} contain an item equal to{' '}
-          <code>{formatValue(assertion.args[0])}</code>
+          <SerializedValueDisplay value={assertion.args[0]} />
         </>
       )
 
@@ -432,7 +423,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
           <>
             Expect {actual} to{not} have property{' '}
             <code>{assertion.args[0]}</code> equal to{' '}
-            <code>{formatValue(assertion.args[1])}</code>
+            <SerializedValueDisplay value={assertion.args[1]} />
           </>
         )
       }
