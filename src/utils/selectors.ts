@@ -1,80 +1,113 @@
-import {
-  queryAllByAltText,
-  queryAllByLabelText,
-  queryAllByPlaceholderText,
-  queryAllByRole,
-  queryAllByTestId,
-  queryAllByText,
-  queryAllByTitle,
-} from '@testing-library/dom'
-
+import { InjectedScript } from '@/browser/injectedScript'
 import { NodeSelector } from '@/schemas/selectors'
 
-// Same implementation as `@testing-library/dom` `fuzzyMatches` with identity normalizer.
-function fuzzyMatch(accessibleName: string, substring: string): boolean {
-  if (typeof accessibleName !== 'string') {
-    return false
-  }
+let _injectedScript: InjectedScript | null = null
 
-  return accessibleName.toLowerCase().includes(substring.toLowerCase())
+function getInjectedScript(): InjectedScript {
+  if (!_injectedScript) {
+    _injectedScript = new InjectedScript()
+  }
+  return _injectedScript
+}
+
+// exact: true → "value"s (case-sensitive exact match)
+// exact: false | undefined → "value"i (case-insensitive substring match, Playwright default)
+function textMatcherBody(value: string, exact?: boolean): string {
+  return `${JSON.stringify(value)}${exact === true ? 's' : 'i'}`
+}
+
+function attrBody(attr: string, value: string, exact?: boolean): string {
+  return `[${attr}=${JSON.stringify(value)}${exact === true ? 's' : 'i'}]`
 }
 
 /**
  * Find elements in the DOM using a NodeSelector.
- * This function supports all selector types (css, role, test-id, alt, label, placeholder, text, title).
+ * Uses the same selector engine as k6 browser (Playwright) for consistent behavior.
  */
 export function findElementsBySelector(
   container: HTMLElement,
   selector: NodeSelector
 ): Element[] {
+  const script = getInjectedScript()
+
+  let parts: { name: string; body: string }[]
+
   switch (selector.type) {
     case 'css':
-      return Array.from(container.querySelectorAll(selector.selector))
+      parts = [{ name: 'css', body: selector.selector }]
+      break
 
     case 'test-id':
-      return queryAllByTestId(container, selector.testId)
+      parts = [
+        {
+          name: 'internal:attr',
+          body: `[data-testid=${JSON.stringify(selector.testId)}s]`,
+        },
+      ]
+      break
 
     case 'role': {
-      const { role, name } = selector
-
-      if (name === undefined) {
-        return queryAllByRole(container, role)
+      let body = selector.role
+      if (selector.name !== undefined) {
+        body += `[name=${JSON.stringify(selector.name.value)}${selector.name.exact === true ? 's' : 'i'}]`
       }
-
-      return queryAllByRole(container, role, {
-        name:
-          name.exact === false
-            ? (accessibleName) => fuzzyMatch(accessibleName, name.value)
-            : name.value,
-      })
+      parts = [{ name: 'internal:role', body }]
+      break
     }
 
     case 'alt':
-      return queryAllByAltText(container, selector.text.value, {
-        exact: selector.text.exact,
-      })
+      parts = [
+        {
+          name: 'internal:attr',
+          body: attrBody('alt', selector.text.value, selector.text.exact),
+        },
+      ]
+      break
 
     case 'label':
-      return queryAllByLabelText(container, selector.text.value, {
-        exact: selector.text.exact,
-      })
+      parts = [
+        {
+          name: 'internal:label',
+          body: textMatcherBody(selector.text.value, selector.text.exact),
+        },
+      ]
+      break
 
     case 'placeholder':
-      return queryAllByPlaceholderText(container, selector.text.value, {
-        exact: selector.text.exact,
-      })
+      parts = [
+        {
+          name: 'internal:attr',
+          body: attrBody(
+            'placeholder',
+            selector.text.value,
+            selector.text.exact
+          ),
+        },
+      ]
+      break
 
     case 'text':
-      return queryAllByText(container, selector.text.value, {
-        exact: selector.text.exact,
-      })
+      parts = [
+        {
+          name: 'internal:text',
+          body: textMatcherBody(selector.text.value, selector.text.exact),
+        },
+      ]
+      break
 
     case 'title':
-      return queryAllByTitle(container, selector.text.value, {
-        exact: selector.text.exact,
-      })
+      parts = [
+        {
+          name: 'internal:attr',
+          body: attrBody('title', selector.text.value, selector.text.exact),
+        },
+      ]
+      break
 
     default:
       return []
   }
+
+  const result = script.querySelectorAll({ parts }, container)
+  return typeof result === 'string' ? [] : result
 }
