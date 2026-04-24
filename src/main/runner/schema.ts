@@ -1,5 +1,5 @@
 import { EventType, type eventWithTime } from '@rrweb/types'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 /**
  * Creates a fault-tolerant schema that returns `undefined` on failure. This is used
