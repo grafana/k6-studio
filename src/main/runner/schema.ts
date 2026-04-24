@@ -344,6 +344,74 @@ export type GenericBrowserContextAction = z.infer<
 export type AnyBrowserAction = z.infer<typeof AnyBrowserActionSchema>
 
 // =============================================================================
+// Serialized Value Schemas
+// =============================================================================
+
+const UndefinedValueSchema = z.object({ type: z.literal('undefined') })
+
+const DateValueSchema = z.object({
+  type: z.literal('date'),
+  timestamp: z.number(),
+})
+
+const RegexValueSchema = z.object({
+  type: z.literal('regex'),
+  pattern: z.string(),
+  flags: z.string(),
+})
+
+const FunctionValueSchema = z.object({
+  type: z.literal('function'),
+  name: z.string(),
+  source: z.string(),
+})
+
+const LocatorValueSchema = z.object({ type: z.literal('locator') })
+
+const PageValueSchema = z.object({ type: z.literal('page') })
+
+interface ObjectValue {
+  type: 'object'
+  value: Record<string, SerializedValue>
+}
+
+const ObjectValueSchema: z.ZodType<ObjectValue> = z.object({
+  type: z.literal('object'),
+  value: z.record(z.lazy(() => SerializedValueSchema)),
+})
+
+export type SerializedValue =
+  | string
+  | boolean
+  | number
+  | null
+  | z.infer<typeof UndefinedValueSchema>
+  | SerializedValue[]
+  | ObjectValue
+  | z.infer<typeof DateValueSchema>
+  | z.infer<typeof RegexValueSchema>
+  | z.infer<typeof FunctionValueSchema>
+  | z.infer<typeof LocatorValueSchema>
+  | z.infer<typeof PageValueSchema>
+
+export const SerializedValueSchema: z.ZodType<SerializedValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.boolean(),
+    z.number(),
+    z.null(),
+    UndefinedValueSchema,
+    z.array(SerializedValueSchema),
+    ObjectValueSchema,
+    DateValueSchema,
+    RegexValueSchema,
+    FunctionValueSchema,
+    LocatorValueSchema,
+    PageValueSchema,
+  ])
+)
+
+// =============================================================================
 // Assertion Schemas
 // =============================================================================
 
@@ -415,8 +483,8 @@ const ExpectToHaveTextSchema = z.object({
   negated: z.boolean(),
   // RegExp | string — RegExp does not survive JSON serialization
   args: z.union([
-    z.tuple([z.unknown()]),
-    z.tuple([z.unknown(), TextMatchOptionsSchema.partial()]),
+    z.tuple([SerializedValueSchema]),
+    z.tuple([SerializedValueSchema, TextMatchOptionsSchema.partial()]),
   ]),
 })
 
@@ -424,8 +492,8 @@ const ExpectToContainTextSchema = z.object({
   method: z.literal('toContainText'),
   negated: z.boolean(),
   args: z.union([
-    z.tuple([z.unknown()]),
-    z.tuple([z.unknown(), TextMatchOptionsSchema.partial()]),
+    z.tuple([SerializedValueSchema]),
+    z.tuple([SerializedValueSchema, TextMatchOptionsSchema.partial()]),
   ]),
 })
 
@@ -433,8 +501,8 @@ const ExpectToHaveTitleSchema = z.object({
   method: z.literal('toHaveTitle'),
   negated: z.boolean(),
   args: z.union([
-    z.tuple([z.unknown()]),
-    z.tuple([z.unknown(), RetryConfigSchema.partial()]),
+    z.tuple([SerializedValueSchema]),
+    z.tuple([SerializedValueSchema, RetryConfigSchema.partial()]),
   ]),
 })
 
@@ -451,7 +519,7 @@ const ExpectToHaveValueSchema = z.object({
 const ExpectToBeSchema = z.object({
   method: z.literal('toBe'),
   negated: z.boolean(),
-  args: z.tuple([z.unknown()]),
+  args: z.tuple([SerializedValueSchema]),
 })
 
 const ExpectToBeCloseToSchema = z.object({
@@ -500,7 +568,7 @@ const ExpectToBeInstanceOfSchema = z.object({
   method: z.literal('toBeInstanceOf'),
   negated: z.boolean(),
   // Function does not survive JSON serialization
-  args: z.tuple([z.unknown()]),
+  args: z.tuple([SerializedValueSchema]),
 })
 
 const ExpectToBeNaNSchema = z.object({
@@ -530,19 +598,19 @@ const ExpectToBeUndefinedSchema = z.object({
 const ExpectToEqualSchema = z.object({
   method: z.literal('toEqual'),
   negated: z.boolean(),
-  args: z.tuple([z.unknown()]),
+  args: z.tuple([SerializedValueSchema]),
 })
 
 const ExpectToContainSchema = z.object({
   method: z.literal('toContain'),
   negated: z.boolean(),
-  args: z.tuple([z.unknown()]),
+  args: z.tuple([SerializedValueSchema]),
 })
 
 const ExpectToContainEqualSchema = z.object({
   method: z.literal('toContainEqual'),
   negated: z.boolean(),
-  args: z.tuple([z.unknown()]),
+  args: z.tuple([SerializedValueSchema]),
 })
 
 const ExpectToHaveLengthSchema = z.object({
@@ -554,14 +622,17 @@ const ExpectToHaveLengthSchema = z.object({
 const ExpectToHavePropertySchema = z.object({
   method: z.literal('toHaveProperty'),
   negated: z.boolean(),
-  args: z.union([z.tuple([z.string()]), z.tuple([z.string(), z.unknown()])]),
+  args: z.union([
+    z.tuple([z.string()]),
+    z.tuple([z.string(), SerializedValueSchema]),
+  ]),
 })
 
 const GenericAssertionSchema = z.object({
   method: z.literal('*'),
   name: z.string(),
   negated: z.boolean(),
-  args: z.array(z.unknown()),
+  args: z.array(SerializedValueSchema),
 })
 
 export const AnyAssertionSchema = z.union([
@@ -611,8 +682,8 @@ const RelationalOperatorSchema = z.union([
 
 const ExpectedReceivedErrorSchema = z.object({
   format: z.literal('expected-received'),
-  expected: z.unknown(),
-  received: z.unknown(),
+  expected: SerializedValueSchema,
+  received: SerializedValueSchema,
   message: z.string().optional(),
 })
 
@@ -627,27 +698,27 @@ const RelationalComparisonErrorSchema = z.object({
 const TextMatchErrorSchema = z.object({
   format: z.literal('text-match'),
   // RegExp does not survive JSON serialization
-  expected: z.unknown(),
+  expected: SerializedValueSchema,
   received: z.string(),
   message: z.string().optional(),
 })
 
 const TypeMismatchErrorSchema = z.object({
   format: z.literal('type-mismatch'),
-  expected: z.array(z.unknown()),
-  received: z.unknown(),
+  expected: z.array(SerializedValueSchema),
+  received: SerializedValueSchema,
   message: z.string().optional(),
 })
 
 const CustomErrorSchema = z.object({
   format: z.literal('custom'),
-  content: z.unknown(),
+  content: SerializedValueSchema,
   message: z.string().optional(),
 })
 
 const ReceivedOnlyErrorSchema = z.object({
   format: z.literal('received'),
-  received: z.unknown(),
+  received: SerializedValueSchema,
   message: z.string().optional(),
 })
 
@@ -772,6 +843,7 @@ export const AssertionResultSchema = z.discriminatedUnion('type', [
 const AssertionEventBaseSchema = z.object({
   type: z.literal('assertion'),
   eventId: z.string(),
+  actual: SerializedValueSchema,
   assertion: AnyAssertionSchema,
 })
 

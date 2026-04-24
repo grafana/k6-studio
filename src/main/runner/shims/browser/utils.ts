@@ -316,6 +316,7 @@ export function beginAssertion(
 
   const method = toAssertionMethod(name)
 
+  // @ts-expect-error Not yet implemented
   return sendBeginEvent({
     type: 'assertion',
     state: 'begin',
