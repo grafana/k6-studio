@@ -30,12 +30,14 @@ declare module 'k6/browser' {
 expect.use({
   name: 'k6-studio-tracking',
   onBegin(context: {
+    received: unknown
     negated: boolean
     matcher: { name: string; args: unknown[] }
   }) {
     return beginAssertion(
       context.matcher.name,
       context.negated,
+      context.received,
       context.matcher.args
     )
   },

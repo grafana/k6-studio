@@ -12,6 +12,8 @@ import {
   BrowserDebuggerEndEvent,
 } from '../../schema'
 
+import { serializeValue } from './serialize'
+
 export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
   ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
   : null
@@ -308,6 +310,7 @@ function toAssertionMethod(
 export function beginAssertion(
   name: string,
   negated: boolean,
+  actual: unknown,
   args: unknown[]
 ): AssertionBeginEvent | null {
   if (TRACKING_SERVER_URL === null) {
@@ -316,17 +319,17 @@ export function beginAssertion(
 
   const method = toAssertionMethod(name)
 
-  // @ts-expect-error Not yet implemented
   return sendBeginEvent({
     type: 'assertion',
     state: 'begin',
     eventId: nextId(),
     timestamp: { started: Date.now() },
+    actual: serializeValue(actual),
     assertion: {
       method: method,
       name: method === '*' ? name : undefined,
       negated,
-      args,
+      args: args.map(serializeValue),
     } as AssertionBeginEvent['assertion'],
   })
 }
