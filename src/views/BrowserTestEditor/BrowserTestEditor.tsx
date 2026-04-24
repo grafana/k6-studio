@@ -17,6 +17,7 @@ import {
 } from '@/components/Validator/LogsSection'
 import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
@@ -28,7 +29,6 @@ import {
   useBrowserScriptPreview,
   useBrowserTest,
   useBrowserTestEditorLayout,
-  useBrowserTestFile,
   useBrowserTestState,
   useSaveBrowserTest,
   useValidatorScript,
@@ -234,7 +234,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 }
 
 export function BrowserTestEditor() {
-  const file = useBrowserTestFile()
+  const file = useCurrentFile('browser-test')
   const navigate = useNavigate()
 
   const { data, isLoading } = useBrowserTest(file.fileName)
