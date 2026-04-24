@@ -1,8 +1,9 @@
 import { SerializedValue } from '../../schema'
 
 export function serializeValue(value: unknown): SerializedValue {
-  if (value === null) return null
-  if (value === undefined) return { type: 'undefined' }
+  if (value === null) {
+    return null
+  }
 
   switch (typeof value) {
     case 'string':
@@ -13,14 +14,16 @@ export function serializeValue(value: unknown): SerializedValue {
     case 'bigint':
       return Number(value)
 
+    case 'symbol':
+      return { type: 'symbol', value: value.toString() }
+
     case 'function':
       return { type: 'function', name: value.name, source: value.toString() }
 
-    case 'object': {
-      if (value === null) {
-        return null
-      }
+    case 'undefined':
+      return { type: 'undefined' }
 
+    case 'object': {
       if (value instanceof Date) {
         return { type: 'date', timestamp: value.getTime() }
       }

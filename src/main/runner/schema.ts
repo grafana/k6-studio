@@ -366,6 +366,11 @@ const FunctionValueSchema = z.object({
   source: z.string(),
 })
 
+const SymbolValueSchema = z.object({
+  type: z.literal('symbol'),
+  value: z.string(),
+})
+
 const LocatorValueSchema = z.object({ type: z.literal('locator') })
 
 const PageValueSchema = z.object({ type: z.literal('page') })
@@ -391,6 +396,7 @@ export type SerializedValue =
   | z.infer<typeof DateValueSchema>
   | z.infer<typeof RegexValueSchema>
   | z.infer<typeof FunctionValueSchema>
+  | z.infer<typeof SymbolValueSchema>
   | z.infer<typeof LocatorValueSchema>
   | z.infer<typeof PageValueSchema>
 
@@ -406,6 +412,7 @@ export const SerializedValueSchema: z.ZodType<SerializedValue> = z.lazy(() =>
     DateValueSchema,
     RegexValueSchema,
     FunctionValueSchema,
+    SymbolValueSchema,
     LocatorValueSchema,
     PageValueSchema,
   ])
