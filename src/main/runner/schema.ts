@@ -70,7 +70,7 @@ const GetByTextLocatorSchema = z.object({
   options: TextLocatorOptions,
 })
 
-const ActionLocatorSchema = z.discriminatedUnion('type', [
+export const ActionLocatorSchema = z.discriminatedUnion('type', [
   CssLocatorSchema,
   GetByRoleLocatorSchema,
   GetByTestIdLocatorSchema,
