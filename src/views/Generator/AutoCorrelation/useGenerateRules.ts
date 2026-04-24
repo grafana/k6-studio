@@ -67,8 +67,15 @@ export const useGenerateRules = ({
     ? 'grafana-assistant'
     : 'openai'
 
-  suggestedRulesRef.current = suggestedRules
-  correlationStatusRef.current = correlationStatus
+  // Sync refs after commit (not during render) so aborted renders in
+  // concurrent mode can't leave refs pointing at uncommitted state.
+  useEffect(() => {
+    suggestedRulesRef.current = suggestedRules
+  })
+
+  useEffect(() => {
+    correlationStatusRef.current = correlationStatus
+  })
 
   const {
     sendMessage,
