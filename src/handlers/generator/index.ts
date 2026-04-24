@@ -21,7 +21,7 @@ export function initialize() {
   ipcMain.handle(GeneratorHandler.Create, async (_, recordingPath: string) => {
     console.log(`${GeneratorHandler.Create} event received`)
     const generator = createNewGeneratorFile(recordingPath)
-    const fileName = await createFileWithUniqueName({
+    const filePath = await createFileWithUniqueName({
       data: JSON.stringify(generator, null, 2),
       directory: GENERATORS_PATH,
       ext: K6_GENERATOR_FILE_EXTENSION,
@@ -32,7 +32,7 @@ export function initialize() {
       event: UsageEventName.GeneratorCreated,
     })
 
-    return fileName
+    return filePath
   })
 
   ipcMain.handle(

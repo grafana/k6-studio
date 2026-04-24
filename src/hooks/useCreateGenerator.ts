@@ -2,7 +2,7 @@ import log from 'electron-log/renderer'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { getRoutePath } from '@/routeMap'
+import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 
 export function useCreateGenerator() {
@@ -15,9 +15,7 @@ export function useCreateGenerator() {
         const fileName =
           await window.studio.generator.createGenerator(recordingPath)
 
-        navigate(
-          getRoutePath('generator', { fileName: encodeURIComponent(fileName) })
-        )
+        navigate(getViewPath('generator', fileName))
       } catch (error) {
         showToast({
           status: 'error',

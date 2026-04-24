@@ -37,7 +37,7 @@ export function initialize() {
       COPYFILE_EXCL
     )
 
-    return path.basename(filePath)
+    return path.join(DATA_FILES_PATH, path.basename(filePath))
   })
 
   ipcMain.handle(
