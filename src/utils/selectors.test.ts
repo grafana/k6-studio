@@ -31,13 +31,13 @@ describe('findElementsBySelector', () => {
     expect(full).toHaveLength(1)
   })
 
-  it('defaults role name to exact match when exact is omitted', () => {
+  it('defaults role name to substring match when exact is omitted', () => {
     document.body.innerHTML = '<button type="button">Submit</button>'
     const partial = findElementsBySelector(document.body, {
       type: 'role',
       role: 'button',
       name: { value: 'Sub' },
     })
-    expect(partial).toHaveLength(0)
+    expect(partial).toHaveLength(1)
   })
 })

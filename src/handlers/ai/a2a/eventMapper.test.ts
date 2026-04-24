@@ -363,4 +363,44 @@ describe('processA2AEvent', () => {
       expect(parts).toHaveLength(0)
     })
   })
+
+  describe('error emission', () => {
+    it('emits error for JSON-RPC errors', () => {
+      const event: A2ASSEEvent = {
+        jsonrpc: '2.0',
+        id: 1,
+        error: { code: -32600, message: 'Invalid request' },
+      }
+
+      const parts = processA2AEvent(event, createA2ASession())
+      const error = (parts[0] as { type: 'error'; error: Error }).error
+
+      expect(error).toBeInstanceOf(Error)
+      expect(error.message).toContain('Invalid request')
+    })
+
+    it('emits error for failed task status with message text', () => {
+      const parts = processA2AEvent(
+        makeStatusUpdateEvent('failed', {
+          message: {
+            parts: [{ text: 'Something went wrong' }],
+          },
+        }),
+        createA2ASession()
+      )
+      const error = (parts[0] as { type: 'error'; error: Error }).error
+
+      expect(error.message).toBe('Something went wrong')
+    })
+
+    it('emits error for canceled task', () => {
+      const parts = processA2AEvent(
+        makeStatusUpdateEvent('canceled'),
+        createA2ASession()
+      )
+      const error = (parts[0] as { type: 'error'; error: Error }).error
+
+      expect(error).toBeInstanceOf(Error)
+    })
+  })
 })
