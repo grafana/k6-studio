@@ -1,4 +1,4 @@
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { CheckState, NavigateToPageEvent } from '@/schemas/recording'
 
 export type NodeId = string

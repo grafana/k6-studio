@@ -1,7 +1,7 @@
 import { Replayer } from 'rrweb'
 
 import { ElementHighlights } from '@/components/Browser/ElementHighlights'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 interface SelectorHighlightsProps {
   player: Replayer | null

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { ElementHighlights } from '@/components/Browser/ElementHighlights'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 import { useStudioClient } from './StudioClientProvider'
 

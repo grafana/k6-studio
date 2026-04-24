@@ -1,4 +1,4 @@
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
@@ -96,10 +96,7 @@ export function getNodeSelector(selector: ElementSelector): ActionLocator {
   )
 }
 
-export function isSelectorEqual(
-  a: ActionLocator,
-  b: ActionLocator
-): boolean {
+export function isSelectorEqual(a: ActionLocator, b: ActionLocator): boolean {
   switch (a.type) {
     case 'css':
       return b.type === 'css' && a.selector === b.selector

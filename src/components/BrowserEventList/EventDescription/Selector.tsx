@@ -1,6 +1,6 @@
 import { getNodeSelector } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 

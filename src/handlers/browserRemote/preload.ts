@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 import { BrowserRemoteHandlers } from './types'
 

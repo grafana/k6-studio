@@ -10,7 +10,7 @@ import {
   WholeWordIcon,
 } from 'lucide-react'
 
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { RoleLocatorIcon } from './RoleLocatorIcon'

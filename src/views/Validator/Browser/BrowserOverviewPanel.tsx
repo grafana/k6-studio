@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import { PersistentTabs } from '@/components/primitives/PersistentTabs'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 import { DebugSession } from '../types'
 

@@ -1,4 +1,5 @@
-import { ActionLocator, AnyBrowserAction } from '@/main/runner/schema'
+import { AnyBrowserAction } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 export interface LocatorOptions {
   current: ActionLocator['type']

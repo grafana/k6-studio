@@ -4,7 +4,7 @@ import { XIcon } from 'lucide-react'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
 import { useContainerElement } from '@/components/primitives/ContainerProvider'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 import { RecordingContext } from '@/views/Recorder/RecordingContext'
 

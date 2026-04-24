@@ -1,5 +1,5 @@
 import { InjectedScript } from '@/browser/injectedScript'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 let _injectedScript: InjectedScript | null = null
 

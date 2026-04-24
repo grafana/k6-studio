@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 import { AriaRole, ComponentType } from 'react'
 
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 /**
  * The complete list of ARIA roles. Fill in icons as needed. If no specific icon is

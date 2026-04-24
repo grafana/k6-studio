@@ -1,6 +1,6 @@
 import { Locator } from 'k6/browser'
 
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 import { ProxyOptions } from '../utils'
 

@@ -1,7 +1,7 @@
 import { Flex } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 import { ComboBox, TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'

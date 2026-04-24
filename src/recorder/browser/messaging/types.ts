@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 
-import { ActionLocatorSchema } from '@/main/runner/schema'
+import { ActionLocatorSchema } from '@/schemas/locator'
 import { BrowserEventSchema } from '@/schemas/recording'
 
 export const InBrowserSettingsSchema = z.object({

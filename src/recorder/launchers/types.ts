@@ -1,5 +1,5 @@
-import { ActionLocator } from '@/main/runner/schema'
 import { LaunchBrowserErrorReason } from '@/recorder/types'
+import { ActionLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 import { EventEmitter } from '@/utils/events'
 

@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 
 import { Flex } from '@/components/primitives/Flex'
 import { Table } from '@/components/primitives/Table'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 
 import { EventDescription } from './EventDescription'

@@ -1,8 +1,8 @@
 import { ChildProcess, spawn } from 'child_process'
 import logger from 'electron-log/main'
 
-import { ActionLocator } from '@/main/runner/schema'
 import { BrowserServer } from '@/recorder/server'
+import { ActionLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'

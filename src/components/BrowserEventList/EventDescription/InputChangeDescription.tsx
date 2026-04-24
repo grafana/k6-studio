@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { InputChangeEvent } from '@/schemas/recording'
 
 import { Selector } from './Selector'

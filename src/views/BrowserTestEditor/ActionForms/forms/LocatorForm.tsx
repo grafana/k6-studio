@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react'
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
 import { useHighlightSelector } from '@/components/HighlightSelectorProvider'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { LocatorOptions } from '../../types'

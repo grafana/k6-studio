@@ -1,4 +1,4 @@
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { WaitForEvent } from '@/schemas/recording'
 
 import { Selector } from './Selector'

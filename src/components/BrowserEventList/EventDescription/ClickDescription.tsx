@@ -1,5 +1,5 @@
 import { ClickPill } from '@/components/Browser/ClickPill'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { ClickEvent } from '@/schemas/recording'
 
 import { Selector } from './Selector'

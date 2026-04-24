@@ -1,5 +1,5 @@
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { AssertEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 

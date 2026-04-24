@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { findElementsBySelector } from '@/utils/selectors'
 
 import { Bounds } from './types'

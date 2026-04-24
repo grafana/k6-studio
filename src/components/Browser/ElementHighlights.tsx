@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { ComponentProps, forwardRef } from 'react'
 
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 
 import { useHighlightedElements } from './ElementHighlights.hooks'
 import { Overlay } from './Overlay'

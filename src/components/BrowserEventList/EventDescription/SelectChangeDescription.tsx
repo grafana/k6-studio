@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 
 import { formatOption, SelectOptions } from '@/components/Browser/SelectOptions'
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { SelectChangeEvent } from '@/schemas/recording'
 
 import { Selector } from './Selector'

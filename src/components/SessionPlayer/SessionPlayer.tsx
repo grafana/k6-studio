@@ -4,7 +4,7 @@ import { css } from '@emotion/react'
 import { Flex, Box } from '@radix-ui/themes'
 import { ReactNode, useState } from 'react'
 
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { DebugSession } from '@/views/Validator/types'
 
 import { AddressBar } from './AddressBar'

@@ -1,7 +1,7 @@
 import { Flex, ScrollArea } from '@radix-ui/themes'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
-import { ActionLocator } from '@/main/runner/schema'
+import { ActionLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 
 interface BrowserEventLogProps {
