@@ -42,16 +42,19 @@ export function initialize() {
 
   ipcMain.handle(
     DataFileHandler.LoadPreview,
-    async (_, fileName: string): Promise<DataFilePreview> => {
-      const fileType = fileName.split('.').pop()
-      const filePath = path.join(DATA_FILES_PATH, fileName)
+    async (_, filePath: string): Promise<DataFilePreview> => {
+      const resolvedPath = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(DATA_FILES_PATH, filePath)
+
+      const fileType = path.extname(resolvedPath).slice(1)
 
       invariant(
         fileType === 'csv' || fileType === 'json',
         'Unsupported file type'
       )
 
-      const data = await readFile(filePath, {
+      const data = await readFile(resolvedPath, {
         flag: 'r',
         encoding: 'utf-8',
       })

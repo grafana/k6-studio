@@ -238,7 +238,7 @@ export function BrowserTestEditor() {
   const file = useCurrentFile('browser-test')
   const navigate = useNavigate()
 
-  const { data, isLoading } = useBrowserTest(file.fileName)
+  const { data, isLoading } = useBrowserTest(file.path)
 
   if (isLoading) {
     return null
@@ -251,7 +251,7 @@ export function BrowserTestEditor() {
 
   return (
     <HighlightLocatorProvider>
-      <BrowserTestEditorView key={file.fileName} file={file} data={data} />
+      <BrowserTestEditorView key={file.path} file={file} data={data} />
     </HighlightLocatorProvider>
   )
 }

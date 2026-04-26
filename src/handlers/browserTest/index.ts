@@ -37,10 +37,14 @@ export function initialize() {
     return filePath
   })
 
-  ipcMain.handle(BrowserTestHandler.Open, async (_, fileName: string) => {
+  ipcMain.handle(BrowserTestHandler.Open, async (_, filePath: string) => {
     console.info(`${BrowserTestHandler.Open} event received`)
 
-    const data = await readFile(path.join(BROWSER_TESTS_PATH, fileName), {
+    const resolvedPath = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(BROWSER_TESTS_PATH, filePath)
+
+    const data = await readFile(resolvedPath, {
       encoding: 'utf-8',
       flag: 'r',
     })
