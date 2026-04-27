@@ -3,8 +3,6 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { debounce } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { emitScript } from '@/codegen/browser'
 import { convertActionsToTest } from '@/codegen/browser/test'
@@ -14,8 +12,6 @@ import {
 } from '@/components/primitives/ResizablePanel'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
-import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
 import { queryClient } from '@/utils/query'
 
 import {
@@ -24,17 +20,6 @@ import {
 } from './actionAdapters'
 import { createActionInstance } from './actionEditorRegistry'
 import { BrowserActionInstance } from './types'
-
-export function useBrowserTestFile(): StudioFile {
-  const { fileName } = useParams()
-  invariant(fileName, 'fileName is required')
-
-  return {
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-    type: 'browser-test',
-  }
-}
 
 export function useBrowserTest(fileName: string) {
   return useQuery<BrowserTestFile>({

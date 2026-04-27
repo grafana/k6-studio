@@ -1,26 +1,24 @@
 import { Grid } from '@radix-ui/themes'
 import { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import invariant from 'tiny-invariant'
+import { useNavigate } from 'react-router-dom'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { TableSkeleton } from '@/components/TableSkeleton'
+import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { getRoutePath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { useDataFilePreview } from './DataFile.hooks'
 import { DataFileControls } from './DataFileControls'
 import { DataFileTable } from './DataFileTable'
 
 export function DataFile() {
-  const { fileName } = useParams()
+  const file = useCurrentFile('data-file')
   const navigate = useNavigate()
   const showToast = useToast()
-  invariant(fileName, 'fileName is required')
 
-  const { data: preview, isLoading, isError } = useDataFilePreview(fileName)
+  const { data: preview, isLoading, isError } = useDataFilePreview(file.fileName)
 
   useEffect(() => {
     if (isError) {
@@ -39,17 +37,8 @@ export function DataFile() {
   return (
     <View
       title="Data file preview"
-      subTitle={
-        <FileNameHeader
-          file={{
-            fileName,
-            displayName: getFileNameWithoutExtension(fileName),
-            type: 'data-file',
-          }}
-          showExt
-        />
-      }
-      actions={<DataFileControls fileName={fileName} />}
+      subTitle={<FileNameHeader file={file} showExt />}
+      actions={<DataFileControls file={file} />}
       loading={isLoading}
     >
       <Grid
