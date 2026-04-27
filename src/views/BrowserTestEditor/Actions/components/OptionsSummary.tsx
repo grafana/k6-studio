@@ -7,13 +7,21 @@ type OptionsSummaryProps = {
   label?: string
 }
 
+const KEY_LABELS: Record<string, string> = {
+  waitForNavigation: 'wait for navigation',
+}
+
 export function OptionsSummary({
   options,
   label = 'Options:',
 }: OptionsSummaryProps) {
   const entries = Object.entries(normalizeOptions(options)).filter(
-    ([, value]) => {
+    ([key, value]) => {
       if (value === undefined || value === null) {
+        return false
+      }
+
+      if (value === false && key in KEY_LABELS) {
         return false
       }
 
@@ -33,12 +41,22 @@ export function OptionsSummary({
       {entries.map(([key, value]) => (
         <span key={key}>
           <Code color="gray" size="1">
-            {key}={renderValue(key, value)}
+            {renderEntry(key, value)}
           </Code>
         </span>
       ))}
     </Flex>
   )
+}
+
+function renderEntry(key: string, value: OptionValue) {
+  const label = KEY_LABELS[key] ?? key
+
+  if (typeof value === 'boolean') {
+    return label
+  }
+
+  return `${label}=${renderValue(key, value)}`
 }
 
 function renderValue(key: string, value: OptionValue) {

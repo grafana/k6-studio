@@ -394,6 +394,9 @@ function buildBrowserNodeGraphFromActions(
             alt: false,
             meta: false,
           },
+          waitForNavigation: action.options?.waitForNavigation
+            ? { page: getPage() }
+            : undefined,
           inputs: {
             locator: getLocator(action.locator),
           },

@@ -1,6 +1,69 @@
 import { describe, expect, it } from 'vitest'
 
-import { convertEventsToTest } from './test'
+import { BrowserActionInstance } from '@/views/BrowserTestEditor/types'
+
+import { convertActionsToTest, convertEventsToTest } from './test'
+
+type ClickActionInstance = Extract<
+  BrowserActionInstance,
+  { method: 'locator.click' }
+>
+
+function clickAction(
+  options?: ClickActionInstance['options']
+): ClickActionInstance {
+  return {
+    id: 'click-action',
+    method: 'locator.click',
+    locator: {
+      current: 'css',
+      values: { css: { type: 'css', selector: 'button' } },
+    },
+    options,
+  }
+}
+
+describe('convertActionsToTest', () => {
+  it('should not wait for navigation when click options omit waitForNavigation', () => {
+    const test = convertActionsToTest({
+      browserActions: [clickAction()],
+    })
+
+    const clickNode = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+
+    expect(clickNode).toBeDefined()
+    expect(clickNode?.waitForNavigation).toBeUndefined()
+  })
+
+  it('should wait for navigation when click options.waitForNavigation is true', () => {
+    const test = convertActionsToTest({
+      browserActions: [clickAction({ waitForNavigation: true })],
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+    const pageNode = nodes.find((node) => node.type === 'page')
+    const clickNode = nodes.find((node) => node.type === 'click')
+
+    expect(pageNode).toBeDefined()
+    expect(clickNode?.waitForNavigation).toEqual({
+      page: { nodeId: pageNode?.nodeId },
+    })
+  })
+
+  it('should not wait for navigation when click options.waitForNavigation is false', () => {
+    const test = convertActionsToTest({
+      browserActions: [clickAction({ waitForNavigation: false })],
+    })
+
+    const clickNode = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+
+    expect(clickNode?.waitForNavigation).toBeUndefined()
+  })
+})
 
 describe('convertEventsToTest', () => {
   it('should not wait for navigation when submit-form is not followed by an implicit navigation', () => {

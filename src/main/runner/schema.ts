@@ -133,6 +133,7 @@ const LocatorClickOptionSchema = z
         ])
       )
     ),
+    waitForNavigation: safe(z.boolean()),
   })
   .passthrough()
 
