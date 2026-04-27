@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { dirname, join, parse } from 'pathe'
+import { parse } from 'pathe'
 import { useNavigate } from 'react-router-dom'
 
 import { useActiveFilePath } from '@/hooks/useCurrentFile'
@@ -22,7 +22,15 @@ export function useRenameFile(file: StudioFile) {
       // There's a slight delay between the add and remove callbacks being triggered,
       // causing the UI to flicker because it thinks the renamed file is actually
       // a new file. To prevent this, we optimistically update the file list.
-      const newPath = join(dirname(file.path), newName)
+      // Preserve the original path separators to match what the file watcher will report
+      const lastSeparatorIndex = Math.max(
+        file.path.lastIndexOf('/'),
+        file.path.lastIndexOf('\\')
+      )
+      const newPath =
+        lastSeparatorIndex === -1
+          ? newName
+          : file.path.slice(0, lastSeparatorIndex + 1) + newName
       const updatedFile = {
         ...file,
         path: newPath,
