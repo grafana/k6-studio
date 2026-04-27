@@ -3,19 +3,13 @@ import {
   LocatorClickAction,
   LocatorDoubleClickAction,
 } from '@/main/runner/schema'
+import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 
 export function toClickDetails(
   action: LocatorClickAction | LocatorDoubleClickAction
 ): ClickDetails {
-  const modifiers = action.options?.modifiers ?? []
-
   return {
-    button: action.options?.button ?? 'left',
-    modifiers: {
-      alt: modifiers.includes('Alt'),
-      ctrl: modifiers.includes('Control'),
-      meta: modifiers.includes('Meta'),
-      shift: modifiers.includes('Shift'),
-    },
+    button: toClickButton(action.options),
+    modifiers: toClickModifiers(action.options?.modifiers),
   }
 }
