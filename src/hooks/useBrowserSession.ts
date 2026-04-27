@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { createReplayEvent } from '@/main/runner/rrweb'
-import {
-  BrowserDebuggerEvent,
-  BrowserReplayEvent,
-  isBrowserActionEvent,
-} from '@/main/runner/schema'
+import { BrowserDebuggerEvent, BrowserReplayEvent } from '@/main/runner/schema'
 
 interface BrowserSession {
   actions: BrowserDebuggerEvent[]
@@ -76,7 +72,7 @@ export function useBrowserSession() {
 
         // Abort all actions that were running when the script stopped.
         const actions = session.actions.map((action) => {
-          if (action.state !== 'begin' || !isBrowserActionEvent(action)) {
+          if (action.state !== 'begin') {
             return action
           }
 
@@ -95,9 +91,7 @@ export function useBrowserSession() {
 
         // Insert action end events for all actions that were running when the script stopped.
         const actionEnds = session.actions
-          .filter(
-            (action) => action.state === 'begin' && isBrowserActionEvent(action)
-          )
+          .filter((action) => action.state === 'begin')
           .map((action) =>
             createReplayEvent({
               tag: 'action-end',
