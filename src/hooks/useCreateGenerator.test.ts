@@ -3,7 +3,7 @@ import { act } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getRoutePath } from '@/routeMap'
+import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 
 import { useCreateGenerator } from './useCreateGenerator'
@@ -11,9 +11,11 @@ import { useCreateGenerator } from './useCreateGenerator'
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(),
 }))
-vi.mock('@/routeMap', () => ({
-  getRoutePath: vi.fn(),
-}))
+vi.mock('@/routeMap', () => {
+  return {
+    getViewPath: vi.fn(),
+  }
+})
 vi.mock('@/store/ui/useToast', () => ({
   useToast: vi.fn(),
 }))
@@ -34,13 +36,13 @@ describe('useCreateGenerator', () => {
   })
 
   it('should navigate to the correct path on successful generator creation', async () => {
-    const fileName = 'test-file.json'
-    const routePath = '/generator/test-file.json'
+    const filePath = '/some/path/test-file.json'
+    const routePath = `/generator/${encodeURIComponent(filePath)}`
 
-    vi.mocked(getRoutePath).mockReturnValue(routePath)
+    vi.mocked(getViewPath).mockReturnValue(routePath)
     vi.stubGlobal('studio', {
       generator: {
-        createGenerator: vi.fn().mockResolvedValue(fileName),
+        createGenerator: vi.fn().mockResolvedValue(filePath),
         saveGenerator: vi.fn(),
         loadGenerator: vi.fn(),
       },
@@ -53,7 +55,9 @@ describe('useCreateGenerator', () => {
     })
 
     expect(window.studio.generator.createGenerator).toHaveBeenCalledWith('')
-    expect(navigate).toHaveBeenCalledWith(routePath)
+    expect(navigate).toHaveBeenCalledWith(
+      '/generator/%2Fsome%2Fpath%2Ftest-file.json'
+    )
   })
 
   it('should show a toast message on failure', async () => {
