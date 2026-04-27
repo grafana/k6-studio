@@ -19,15 +19,16 @@ export function getStudioFileFromPath(
   filePath: string
 ): StudioFile | undefined {
   const normalizedPath = pathe.normalize(filePath)
+  const parsed = pathe.parse(normalizedPath)
   const file = {
-    displayName: pathe.parse(normalizedPath).name,
-    fileName: pathe.basename(normalizedPath),
+    displayName: parsed.name,
+    fileName: parsed.base,
     path: normalizedPath,
   }
 
   if (
     normalizedPath.startsWith(pathe.normalize(RECORDINGS_PATH)) &&
-    pathe.extname(normalizedPath) === '.har'
+    parsed.ext === '.har'
   ) {
     return {
       type: 'recording',
@@ -37,7 +38,7 @@ export function getStudioFileFromPath(
 
   if (
     normalizedPath.startsWith(pathe.normalize(BROWSER_TESTS_PATH)) &&
-    pathe.extname(normalizedPath) === K6_BROWSER_TEST_FILE_EXTENSION
+    parsed.ext === K6_BROWSER_TEST_FILE_EXTENSION
   ) {
     return {
       type: 'browser-test',
@@ -47,7 +48,7 @@ export function getStudioFileFromPath(
 
   if (
     normalizedPath.startsWith(pathe.normalize(GENERATORS_PATH)) &&
-    pathe.extname(normalizedPath) === K6_GENERATOR_FILE_EXTENSION
+    parsed.ext === K6_GENERATOR_FILE_EXTENSION
   ) {
     return {
       type: 'generator',
@@ -57,7 +58,7 @@ export function getStudioFileFromPath(
 
   if (
     normalizedPath.startsWith(pathe.normalize(SCRIPTS_PATH)) &&
-    pathe.extname(normalizedPath) === '.js'
+    parsed.ext === '.js'
   ) {
     return {
       type: 'script',
@@ -67,8 +68,7 @@ export function getStudioFileFromPath(
 
   if (
     normalizedPath.startsWith(pathe.normalize(DATA_FILES_PATH)) &&
-    (pathe.extname(normalizedPath) === '.json' ||
-      pathe.extname(normalizedPath) === '.csv')
+    (parsed.ext === '.json' || parsed.ext === '.csv')
   ) {
     return {
       type: 'data-file',
