@@ -52,7 +52,12 @@ export function EditableAction({
           </IconButton>
         </Tooltip>
       </Flex>
-      {'options' in action && <OptionsSummary options={action.options} />}
+      {'options' in action && (
+        <OptionsSummary
+          options={action.options}
+          excludeKeys={editor.summaryExcludeKeys}
+        />
+      )}
     </Flex>
   )
 }
