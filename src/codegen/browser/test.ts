@@ -5,6 +5,7 @@ import {
   BrowserEvent,
   BrowserEventTarget,
 } from '@/schemas/recording'
+import { toClickButton, toClickModifiers } from '@/utils/clickOptions'
 import { exhaustive } from '@/utils/typescript'
 import {
   BrowserActionInstance,
@@ -387,13 +388,8 @@ function buildBrowserNodeGraphFromActions(
         return {
           type: 'click',
           nodeId: crypto.randomUUID(),
-          button: 'left',
-          modifiers: {
-            ctrl: false,
-            shift: false,
-            alt: false,
-            meta: false,
-          },
+          button: toClickButton(action.options),
+          modifiers: toClickModifiers(action.options?.modifiers),
           waitForNavigation: action.options?.waitForNavigation
             ? { page: getPage() }
             : undefined,

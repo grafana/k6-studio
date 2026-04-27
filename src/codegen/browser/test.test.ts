@@ -1,69 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { BrowserActionInstance } from '@/views/BrowserTestEditor/types'
+import { buildClickAction } from '@/test/factories/browserActions'
 
 import { convertActionsToTest, convertEventsToTest } from './test'
-
-type ClickActionInstance = Extract<
-  BrowserActionInstance,
-  { method: 'locator.click' }
->
-
-function clickAction(
-  options?: ClickActionInstance['options']
-): ClickActionInstance {
-  return {
-    id: 'click-action',
-    method: 'locator.click',
-    locator: {
-      current: 'css',
-      values: { css: { type: 'css', selector: 'button' } },
-    },
-    options,
-  }
-}
-
-describe('convertActionsToTest', () => {
-  it('should not wait for navigation when click options omit waitForNavigation', () => {
-    const test = convertActionsToTest({
-      browserActions: [clickAction()],
-    })
-
-    const clickNode = test.defaultScenario?.nodes.find(
-      (node) => node.type === 'click'
-    )
-
-    expect(clickNode).toBeDefined()
-    expect(clickNode?.waitForNavigation).toBeUndefined()
-  })
-
-  it('should wait for navigation when click options.waitForNavigation is true', () => {
-    const test = convertActionsToTest({
-      browserActions: [clickAction({ waitForNavigation: true })],
-    })
-
-    const nodes = test.defaultScenario?.nodes ?? []
-    const pageNode = nodes.find((node) => node.type === 'page')
-    const clickNode = nodes.find((node) => node.type === 'click')
-
-    expect(pageNode).toBeDefined()
-    expect(clickNode?.waitForNavigation).toEqual({
-      page: { nodeId: pageNode?.nodeId },
-    })
-  })
-
-  it('should not wait for navigation when click options.waitForNavigation is false', () => {
-    const test = convertActionsToTest({
-      browserActions: [clickAction({ waitForNavigation: false })],
-    })
-
-    const clickNode = test.defaultScenario?.nodes.find(
-      (node) => node.type === 'click'
-    )
-
-    expect(clickNode?.waitForNavigation).toBeUndefined()
-  })
-})
 
 describe('convertEventsToTest', () => {
   it('should not wait for navigation when submit-form is not followed by an implicit navigation', () => {
@@ -142,5 +81,95 @@ describe('convertEventsToTest', () => {
         nodeId: 'tab-1',
       },
     })
+  })
+})
+
+describe('convertActionsToTest', () => {
+  it('defaults to a left click when no options are set', () => {
+    const test = convertActionsToTest({
+      browserActions: [buildClickAction({ options: undefined })],
+    })
+
+    const click = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+    expect(click?.button).toBe('left')
+  })
+
+  it('reads options.button so middle and right clicks reach the IR', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { button: 'right' } }),
+        buildClickAction({ options: { button: 'middle' } }),
+      ],
+    })
+
+    const clicks =
+      test.defaultScenario?.nodes.filter((node) => node.type === 'click') ?? []
+    expect(clicks.map((c) => c.button)).toEqual(['right', 'middle'])
+  })
+
+  it('translates options.modifiers into the IR modifier flags', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({
+          options: { button: 'left', modifiers: ['Control', 'Shift'] },
+        }),
+      ],
+    })
+
+    const click = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+    expect(click?.modifiers).toEqual({
+      ctrl: true,
+      shift: true,
+      alt: false,
+      meta: false,
+    })
+  })
+
+  it('does not wait for navigation when click options omit waitForNavigation', () => {
+    const test = convertActionsToTest({
+      browserActions: [buildClickAction({ options: undefined })],
+    })
+
+    const clickNode = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+
+    expect(clickNode).toBeDefined()
+    expect(clickNode?.waitForNavigation).toBeUndefined()
+  })
+
+  it('waits for navigation when click options.waitForNavigation is true', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { waitForNavigation: true } }),
+      ],
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+    const pageNode = nodes.find((node) => node.type === 'page')
+    const clickNode = nodes.find((node) => node.type === 'click')
+
+    expect(pageNode).toBeDefined()
+    expect(clickNode?.waitForNavigation).toEqual({
+      page: { nodeId: pageNode?.nodeId },
+    })
+  })
+
+  it('does not wait for navigation when click options.waitForNavigation is false', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { waitForNavigation: false } }),
+      ],
+    })
+
+    const clickNode = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+
+    expect(clickNode?.waitForNavigation).toBeUndefined()
   })
 })

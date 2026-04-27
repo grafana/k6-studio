@@ -1,8 +1,9 @@
 import { css } from '@emotion/react'
 import { Grid } from '@radix-ui/themes'
 
-import { LocatorClickAction } from '@/main/runner/schema'
+import { LocatorClickAction, LocatorClickButton } from '@/main/runner/schema'
 
+import { ClickButtonForm } from '../../ActionForms/forms/ClickButtonForm'
 import { ClickOptionsForm } from '../../ActionForms/forms/ClickOptionsForm'
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { WithEditorMetadata } from '../../types'
@@ -19,6 +20,13 @@ export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
     onChange({ ...action, locator })
   }
 
+  const handleChangeButton = (button: LocatorClickButton) => {
+    onChange({
+      ...action,
+      options: { ...action.options, button },
+    })
+  }
+
   const handleChangeOptions = (
     options: Partial<NonNullable<LocatorClickAction['options']>>
   ) => {
@@ -33,7 +41,7 @@ export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
 
   return (
     <Grid
-      columns="max-content minmax(0, max-content) 1fr"
+      columns="max-content max-content minmax(0, max-content) 1fr"
       gap="2"
       align="center"
       width="100%"
@@ -43,7 +51,11 @@ export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
         }
       `}
     >
-      Click
+      <ClickButtonForm
+        value={action.options?.button}
+        onChange={handleChangeButton}
+      />
+      click on
       <LocatorForm state={action.locator} onChange={handleChangeLocator} />
       <ClickOptionsForm
         options={action.options}

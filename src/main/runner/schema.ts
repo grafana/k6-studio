@@ -372,6 +372,14 @@ export type GenericPageAction = z.infer<typeof GenericPageActionSchema>
 export type LocatorCheckAction = z.infer<typeof LocatorCheckActionSchema>
 export type LocatorClearAction = z.infer<typeof LocatorClearActionSchema>
 export type LocatorClickAction = z.infer<typeof LocatorClickActionSchema>
+
+export type LocatorClickButton = NonNullable<
+  NonNullable<LocatorClickAction['options']>['button']
+>
+
+export type LocatorClickModifier = NonNullable<
+  NonNullable<LocatorClickAction['options']>['modifiers']
+>[number]
 export type LocatorDoubleClickAction = z.infer<
   typeof LocatorDoubleClickActionSchema
 >
