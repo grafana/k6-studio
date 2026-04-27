@@ -52,7 +52,7 @@ export function OptionsSummary({
 function renderEntry(key: string, value: OptionValue) {
   const label = KEY_LABELS[key] ?? key
 
-  if (typeof value === 'boolean') {
+  if (typeof value === 'boolean' && key in KEY_LABELS) {
     return label
   }
 

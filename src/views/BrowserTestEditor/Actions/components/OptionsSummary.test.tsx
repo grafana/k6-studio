@@ -36,4 +36,9 @@ describe('OptionsSummary', () => {
     )
     expect(container.firstChild).toBeNull()
   })
+
+  it('renders unmapped boolean as key=value', () => {
+    render(<OptionsSummary options={{ force: false }} />)
+    expect(screen.getByText('force=false')).toBeDefined()
+  })
 })
