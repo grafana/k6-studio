@@ -1,7 +1,7 @@
 import { ipcMain, nativeTheme, shell, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import { unlink, readdir, access, rename } from 'fs/promises'
-import path from 'path'
+import * as pathe from 'pathe'
 import invariant from 'tiny-invariant'
 
 import { INVALID_FILENAME_CHARS } from '@/constants/files'
@@ -65,29 +65,29 @@ export function initialize() {
     console.info(`${UIHandler.GetFiles} event received`)
     const recordings = (await readdir(RECORDINGS_PATH, { withFileTypes: true }))
       .filter((f) => f.isFile())
-      .map((f) => getStudioFileFromPath(path.join(RECORDINGS_PATH, f.name)))
+      .map((f) => getStudioFileFromPath(pathe.join(RECORDINGS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
     const generators = (await readdir(GENERATORS_PATH, { withFileTypes: true }))
       .filter((f) => f.isFile())
-      .map((f) => getStudioFileFromPath(path.join(GENERATORS_PATH, f.name)))
+      .map((f) => getStudioFileFromPath(pathe.join(GENERATORS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
     const browserTests = (
       await readdir(BROWSER_TESTS_PATH, { withFileTypes: true })
     )
       .filter((f) => f.isFile())
-      .map((f) => getStudioFileFromPath(path.join(BROWSER_TESTS_PATH, f.name)))
+      .map((f) => getStudioFileFromPath(pathe.join(BROWSER_TESTS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
     const scripts = (await readdir(SCRIPTS_PATH, { withFileTypes: true }))
       .filter((f) => f.isFile() && !f.name.endsWith(TEMP_SCRIPT_SUFFIX))
-      .map((f) => getStudioFileFromPath(path.join(SCRIPTS_PATH, f.name)))
+      .map((f) => getStudioFileFromPath(pathe.join(SCRIPTS_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
     const dataFiles = (await readdir(DATA_FILES_PATH, { withFileTypes: true }))
       .filter((f) => f.isFile())
-      .map((f) => getStudioFileFromPath(path.join(DATA_FILES_PATH, f.name)))
+      .map((f) => getStudioFileFromPath(pathe.join(DATA_FILES_PATH, f.name)))
       .filter((f) => typeof f !== 'undefined')
 
     return {

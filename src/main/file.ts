@@ -1,5 +1,5 @@
 import os from 'os'
-import path from 'path'
+import * as pathe from 'pathe'
 
 import {
   K6_BROWSER_TEST_FILE_EXTENSION,
@@ -18,15 +18,16 @@ import { exhaustive } from '@/utils/typescript'
 export function getStudioFileFromPath(
   filePath: string
 ): StudioFile | undefined {
+  const normalizedPath = pathe.normalize(filePath)
   const file = {
-    displayName: path.parse(filePath).name,
-    fileName: path.basename(filePath),
-    path: filePath,
+    displayName: pathe.parse(normalizedPath).name,
+    fileName: pathe.basename(normalizedPath),
+    path: normalizedPath,
   }
 
   if (
-    filePath.startsWith(RECORDINGS_PATH) &&
-    path.extname(filePath) === '.har'
+    normalizedPath.startsWith(pathe.normalize(RECORDINGS_PATH)) &&
+    pathe.extname(normalizedPath) === '.har'
   ) {
     return {
       type: 'recording',
@@ -35,8 +36,8 @@ export function getStudioFileFromPath(
   }
 
   if (
-    filePath.startsWith(BROWSER_TESTS_PATH) &&
-    path.extname(filePath) === K6_BROWSER_TEST_FILE_EXTENSION
+    normalizedPath.startsWith(pathe.normalize(BROWSER_TESTS_PATH)) &&
+    pathe.extname(normalizedPath) === K6_BROWSER_TEST_FILE_EXTENSION
   ) {
     return {
       type: 'browser-test',
@@ -45,8 +46,8 @@ export function getStudioFileFromPath(
   }
 
   if (
-    filePath.startsWith(GENERATORS_PATH) &&
-    path.extname(filePath) === K6_GENERATOR_FILE_EXTENSION
+    normalizedPath.startsWith(pathe.normalize(GENERATORS_PATH)) &&
+    pathe.extname(normalizedPath) === K6_GENERATOR_FILE_EXTENSION
   ) {
     return {
       type: 'generator',
@@ -54,7 +55,10 @@ export function getStudioFileFromPath(
     }
   }
 
-  if (filePath.startsWith(SCRIPTS_PATH) && path.extname(filePath) === '.js') {
+  if (
+    normalizedPath.startsWith(pathe.normalize(SCRIPTS_PATH)) &&
+    pathe.extname(normalizedPath) === '.js'
+  ) {
     return {
       type: 'script',
       ...file,
@@ -62,8 +66,9 @@ export function getStudioFileFromPath(
   }
 
   if (
-    filePath.startsWith(DATA_FILES_PATH) &&
-    (path.extname(filePath) === '.json' || path.extname(filePath) === '.csv')
+    normalizedPath.startsWith(pathe.normalize(DATA_FILES_PATH)) &&
+    (pathe.extname(normalizedPath) === '.json' ||
+      pathe.extname(normalizedPath) === '.csv')
   ) {
     return {
       type: 'data-file',
@@ -77,15 +82,15 @@ export function getFilePath(
 ) {
   switch (file.type) {
     case 'recording':
-      return path.join(RECORDINGS_PATH, file.fileName)
+      return pathe.join(RECORDINGS_PATH, file.fileName)
     case 'generator':
-      return path.join(GENERATORS_PATH, file.fileName)
+      return pathe.join(GENERATORS_PATH, file.fileName)
     case 'browser-test':
-      return path.join(BROWSER_TESTS_PATH, file.fileName)
+      return pathe.join(BROWSER_TESTS_PATH, file.fileName)
     case 'script':
-      return path.join(SCRIPTS_PATH, file.fileName)
+      return pathe.join(SCRIPTS_PATH, file.fileName)
     case 'data-file':
-      return path.join(DATA_FILES_PATH, file.fileName)
+      return pathe.join(DATA_FILES_PATH, file.fileName)
     default:
       return exhaustive(file.type)
   }
@@ -94,7 +99,7 @@ export function getFilePath(
 export function expandHomeDir(inputPath?: string) {
   if (!inputPath) return inputPath
   if (inputPath.startsWith('~')) {
-    return path.join(os.homedir(), inputPath.slice(1))
+    return pathe.join(os.homedir(), inputPath.slice(1))
   }
   return inputPath
 }
