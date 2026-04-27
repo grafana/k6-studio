@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 export const CssNodeSelectorSchema = z.object({
   type: z.literal('css'),
