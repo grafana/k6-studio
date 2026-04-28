@@ -1,7 +1,6 @@
 import { Button, Flex, Text } from '@radix-ui/themes'
 import {
   ExternalLink as ExternalLinkIcon,
-  KeyIcon,
   LinkIcon,
   RefreshCw,
 } from 'lucide-react'
@@ -9,9 +8,6 @@ import {
 import grotCrashed from '@/assets/grot-crashed.svg'
 import { ExternalLink } from '@/components/ExternalLink'
 import { useAssistantSignOut } from '@/hooks/useAssistantAuth'
-import { useSettingsChanged } from '@/hooks/useSettings'
-import { useFeaturesStore } from '@/store/features'
-import { useStudioUIStore } from '@/store/ui'
 
 import { AssistantErrorInfo, classifyError } from './utils/classifyError'
 
@@ -22,109 +18,6 @@ interface AutoCorrelationErrorProps {
 }
 
 export function ErrorMessage({
-  error,
-  onRetry,
-  onReset,
-}: AutoCorrelationErrorProps) {
-  const isGrafanaAssistant = useFeaturesStore(
-    (state) => state.features['grafana-assistant']
-  )
-
-  if (isGrafanaAssistant) {
-    return (
-      <GrafanaAssistantError
-        error={error}
-        onRetry={onRetry}
-        onReset={onReset}
-      />
-    )
-  }
-
-  return <OpenAiError error={error} onRetry={onRetry} />
-}
-
-function OpenAiError({
-  error,
-  onRetry,
-}: Pick<AutoCorrelationErrorProps, 'error' | 'onRetry'>) {
-  const errorMessage = error.message.toLowerCase()
-  const openSettingsDialog = useStudioUIStore(
-    (state) => state.openSettingsDialog
-  )
-
-  useSettingsChanged(() => {
-    onRetry()
-  })
-
-  const openSettingsButton = (
-    <Button onClick={() => openSettingsDialog('ai')}>
-      <KeyIcon />
-      Settings
-    </Button>
-  )
-
-  if (errorMessage.includes('incorrect api key')) {
-    return (
-      <MessageContent
-        title="Incorrect API key"
-        message="The OpenAI API key is incorrect or has been revoked. Check your API key in settings."
-      >
-        {openSettingsButton}
-      </MessageContent>
-    )
-  }
-
-  if (errorMessage.includes('insufficient_quota')) {
-    return (
-      <MessageContent
-        title="Quota exceeded"
-        message={
-          <>
-            You have exceeded your OpenAI API quota. Check your{' '}
-            <ExternalLink href="https://platform.openai.com/account/billing">
-              plan and billing details
-            </ExternalLink>{' '}
-            on the OpenAI platform.
-          </>
-        }
-      >
-        {openSettingsButton}
-      </MessageContent>
-    )
-  }
-
-  if (errorMessage.includes('context window')) {
-    return (
-      <MessageContent
-        title="Token usage limit exceeded"
-        message="The recording exceeds the token limit. Try reducing the number of allowed hosts in your recording or work with a smaller recording."
-      />
-    )
-  }
-
-  if (errorMessage.includes('rate limit')) {
-    return (
-      <MessageContent
-        title="Too many requests"
-        message="You have exceeded the API rate limit. Wait a moment and try again."
-      >
-        {retryButton(onRetry)}
-      </MessageContent>
-    )
-  }
-
-  return (
-    <MessageContent
-      title="Something went wrong"
-      message="An unexpected error occurred during autocorrelation. Click retry to try again or report an issue if problem persists."
-    >
-      {retryButton(onRetry)}
-      {reportIssueButton}
-    </MessageContent>
-  )
-}
-
-function GrafanaAssistantError({
   error,
   onRetry,
   onReset,

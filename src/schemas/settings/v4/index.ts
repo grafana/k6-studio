@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import * as v5 from '../v5'
+
 const RegularProxySettingsSchema = z.object({
   mode: z.literal('regular'),
   port: z
@@ -121,7 +123,12 @@ export const AppSettingsSchema = z.object({
 export type AppSettings = z.infer<typeof AppSettingsSchema>
 export type UpstreamProxySettings = z.infer<typeof UpstreamProxySettingsSchema>
 
-// TODO: Migrate settings to the next version
-export function migrate(settings: z.infer<typeof AppSettingsSchema>) {
-  return { ...settings }
+export function migrate(
+  settings: z.infer<typeof AppSettingsSchema>
+): v5.AppSettings {
+  const { ai: _ai, ...rest } = settings
+  return {
+    ...rest,
+    version: '5.0',
+  }
 }

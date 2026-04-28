@@ -7,20 +7,6 @@ vi.mock('@/hooks/useAssistantAuth', () => ({
   useAssistantSignOut: () => ({ mutate: vi.fn() }),
 }))
 
-vi.mock('@/hooks/useSettings', () => ({
-  useSettingsChanged: vi.fn(),
-}))
-
-vi.mock('@/store/features', () => ({
-  useFeaturesStore: (
-    selector: (state: { features: Record<string, boolean> }) => boolean
-  ) => selector({ features: { 'grafana-assistant': true } }),
-}))
-
-vi.mock('@/store/ui', () => ({
-  useStudioUIStore: () => vi.fn(),
-}))
-
 vi.mock('@/assets/grot-crashed.svg', () => ({
   default: 'grot-crashed.svg',
 }))
@@ -32,7 +18,7 @@ const baseProps = {
 
 afterEach(cleanup)
 
-describe('ErrorMessage (grafana-assistant)', () => {
+describe('ErrorMessage', () => {
   it('renders "Session expired" for HTTP 401 error text', () => {
     render(
       <ErrorMessage
