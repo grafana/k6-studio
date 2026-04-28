@@ -307,6 +307,90 @@ function toAssertionMethod(
   }
 }
 
+function buildAssertionFields(
+  method: ReturnType<typeof toAssertionMethod>,
+  name: string,
+  args: unknown[]
+) {
+  switch (method) {
+    case 'toBeChecked':
+    case 'toBeDisabled':
+    case 'toBeEditable':
+    case 'toBeEmpty':
+    case 'toBeEnabled':
+    case 'toBeHidden':
+    case 'toBeVisible':
+      return {
+        method,
+        options: args.length > 0 ? (args[0] as object) : undefined,
+      }
+
+    case 'toHaveAttribute':
+      return {
+        method,
+        attribute: args[0] as string,
+        options: args.length > 1 ? (args[1] as object) : undefined,
+      }
+
+    case 'toHaveText':
+    case 'toContainText':
+    case 'toHaveTitle':
+      return {
+        method,
+        expected: serializeValue(args[0]),
+        options: args.length > 1 ? (args[1] as object) : undefined,
+      }
+
+    case 'toHaveValue':
+      return {
+        method,
+        value: args[0] as string,
+        options: args.length > 1 ? (args[1] as object) : undefined,
+      }
+
+    case 'toBe':
+    case 'toEqual':
+    case 'toContain':
+    case 'toContainEqual':
+    case 'toBeInstanceOf':
+      return { method, expected: serializeValue(args[0]) }
+
+    case 'toBeCloseTo':
+      return {
+        method,
+        expected: args[0] as number,
+        precision: args.length >= 2 ? (args[1] as number) : undefined,
+      }
+
+    case 'toBeGreaterThan':
+    case 'toBeGreaterThanOrEqual':
+    case 'toBeLessThan':
+    case 'toBeLessThanOrEqual':
+      return { method, expected: args[0] as number | bigint }
+
+    case 'toBeDefined':
+    case 'toBeFalsy':
+    case 'toBeNaN':
+    case 'toBeNull':
+    case 'toBeTruthy':
+    case 'toBeUndefined':
+      return { method }
+
+    case 'toHaveLength':
+      return { method, expected: args[0] as number }
+
+    case 'toHaveProperty':
+      return {
+        method,
+        keyPath: args[0] as string,
+        expected: args[1] !== undefined ? serializeValue(args[1]) : undefined,
+      }
+
+    default:
+      return { method, name, args: args.map(serializeValue) }
+  }
+}
+
 export function beginAssertion(
   name: string,
   negated: boolean,
@@ -326,10 +410,8 @@ export function beginAssertion(
     timestamp: { started: Date.now() },
     actual: serializeValue(actual),
     assertion: {
-      method: method,
-      name: method === '*' ? name : undefined,
+      ...buildAssertionFields(method, name, args),
       negated,
-      args: args.map(serializeValue),
     } as AssertionBeginEvent['assertion'],
   })
 }

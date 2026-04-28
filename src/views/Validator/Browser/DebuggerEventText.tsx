@@ -233,26 +233,26 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       )
 
     case 'toHaveAttribute':
-      if (assertion.args.length === 2) {
+      if (assertion.value !== undefined) {
         return (
           <>
             Expect {actual} to{not} have attribute{' '}
-            <Value value={assertion.args[0]} /> equal to{' '}
-            <Value value={assertion.args[1]} />
+            <Value value={assertion.attribute} /> equal to{' '}
+            <Value value={assertion.value} />
           </>
         )
       }
       return (
         <>
           Expect {actual} to{not} have attribute{' '}
-          <Value value={assertion.args[0]} />
+          <Value value={assertion.attribute} />
         </>
       )
 
     case 'toHaveText':
       return (
         <>
-          Expect {actual} to{not} have text <Value value={assertion.args[0]} />
+          Expect {actual} to{not} have text <Value value={assertion.expected} />
         </>
       )
 
@@ -260,38 +260,39 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} contain text{' '}
-          <Value value={assertion.args[0]} />
+          <Value value={assertion.expected} />
         </>
       )
 
     case 'toHaveTitle':
       return (
         <>
-          Expect {actual} to{not} have title <Value value={assertion.args[0]} />
+          Expect {actual} to{not} have title{' '}
+          <Value value={assertion.expected} />
         </>
       )
 
     case 'toHaveValue':
       return (
         <>
-          Expect {actual} to{not} have value <Value value={assertion.args[0]} />
+          Expect {actual} to{not} have value <Value value={assertion.value} />
         </>
       )
 
     case 'toBe':
       return (
         <>
-          Expect {actual} to{not} be <Value value={assertion.args[0]} />
+          Expect {actual} to{not} be <Value value={assertion.expected} />
         </>
       )
 
     case 'toBeCloseTo':
-      if (assertion.args.length === 2) {
+      if (assertion.precision !== undefined) {
         return (
           <>
             Expect {actual} to{not} be close to{' '}
-            <Value value={assertion.args[0]} /> (precision:{' '}
-            <Value value={assertion.args[1]} />)
+            <Value value={assertion.expected} /> (precision:{' '}
+            <Value value={assertion.precision} />)
           </>
         )
       }
@@ -299,7 +300,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be close to{' '}
-          <Value value={assertion.args[0]} />
+          <Value value={assertion.expected} />
         </>
       )
 
@@ -307,7 +308,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be greater than{' '}
-          <Value value={Number(assertion.args[0])} />
+          <Value value={Number(assertion.expected)} />
         </>
       )
 
@@ -315,7 +316,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be greater than or equal to{' '}
-          <Value value={Number(assertion.args[0])} />
+          <Value value={Number(assertion.expected)} />
         </>
       )
 
@@ -323,7 +324,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be less than{' '}
-          <Value value={Number(assertion.args[0])} />
+          <Value value={Number(assertion.expected)} />
         </>
       )
 
@@ -331,7 +332,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be less than or equal to{' '}
-          <Value value={Number(assertion.args[0])} />
+          <Value value={Number(assertion.expected)} />
         </>
       )
 
@@ -353,7 +354,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be an instance of{' '}
-          <Value value={assertion.args[0]} />
+          <Value value={assertion.expected} />
         </>
       )
 
@@ -389,14 +390,14 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} be equal to{' '}
-          <Value value={assertion.args[0]} />
+          <Value value={assertion.expected} />
         </>
       )
 
     case 'toContain':
       return (
         <>
-          Expect {actual} to{not} contain <Value value={assertion.args[0]} />
+          Expect {actual} to{not} contain <Value value={assertion.expected} />
         </>
       )
 
@@ -404,7 +405,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} contain an item equal to{' '}
-          <Value value={assertion.args[0]} />
+          <Value value={assertion.expected} />
         </>
       )
 
@@ -412,17 +413,17 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} have length{' '}
-          <Value value={assertion.args[0]} />
+          <Value value={assertion.expected} />
         </>
       )
 
     case 'toHaveProperty':
-      if (assertion.args.length === 2) {
+      if (assertion.expected !== undefined) {
         return (
           <>
             Expect {actual} to{not} have property{' '}
-            <Value value={assertion.args[0]} /> equal to{' '}
-            <Value value={assertion.args[1]} />
+            <Value value={assertion.keyPath} /> equal to{' '}
+            <Value value={assertion.expected} />
           </>
         )
       }
@@ -430,7 +431,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
       return (
         <>
           Expect {actual} to{not} have property{' '}
-          <Value value={assertion.args[0]} />
+          <Value value={assertion.keyPath} />
         </>
       )
 

@@ -435,207 +435,189 @@ const TextMatchOptionsSchema = RetryConfigSchema.extend({
   useInnerText: z.boolean().optional(),
 })
 
-function optionalArg<T extends z.ZodTypeAny>(schema: T) {
-  return z.union([z.tuple([]), z.tuple([schema])])
-}
-
 // Locator assertions
 const ExpectToBeCheckedSchema = z.object({
   method: z.literal('toBeChecked'),
   negated: z.boolean(),
-  args: optionalArg(RetryConfigSchema.partial()),
+  options: RetryConfigSchema.partial().optional(),
 })
 
 const ExpectToBeDisabledSchema = z.object({
   method: z.literal('toBeDisabled'),
   negated: z.boolean(),
-  args: optionalArg(RetryConfigSchema.partial()),
+  options: RetryConfigSchema.partial().optional(),
 })
 
 const ExpectToBeEditableSchema = z.object({
   method: z.literal('toBeEditable'),
   negated: z.boolean(),
-  args: optionalArg(RetryConfigSchema.partial()),
+  options: RetryConfigSchema.partial().optional(),
 })
 
 const ExpectToBeEmptySchema = z.object({
   method: z.literal('toBeEmpty'),
   negated: z.boolean(),
-  args: optionalArg(RetryConfigSchema.partial()),
+  options: RetryConfigSchema.partial().optional(),
 })
 
 const ExpectToBeEnabledSchema = z.object({
   method: z.literal('toBeEnabled'),
   negated: z.boolean(),
-  args: optionalArg(RetryConfigSchema.partial()),
+  options: RetryConfigSchema.partial().optional(),
 })
 
 const ExpectToBeHiddenSchema = z.object({
   method: z.literal('toBeHidden'),
   negated: z.boolean(),
-  args: optionalArg(RetryConfigSchema.partial()),
+  options: RetryConfigSchema.partial().optional(),
 })
 
 const ExpectToBeVisibleSchema = z.object({
   method: z.literal('toBeVisible'),
   negated: z.boolean(),
-  args: optionalArg(RetryConfigSchema.partial()),
+  options: RetryConfigSchema.partial().optional(),
 })
 
 const ExpectToHaveAttributeSchema = z.object({
   method: z.literal('toHaveAttribute'),
   negated: z.boolean(),
-  args: z.union([z.tuple([z.string()]), z.tuple([z.string(), z.string()])]),
+  attribute: z.string(),
+  value: z.string().optional(),
 })
 
 const ExpectToHaveTextSchema = z.object({
   method: z.literal('toHaveText'),
   negated: z.boolean(),
   // RegExp | string — RegExp does not survive JSON serialization
-  args: z.union([
-    z.tuple([SerializedValueSchema]),
-    z.tuple([SerializedValueSchema, TextMatchOptionsSchema.partial()]),
-  ]),
+  expected: SerializedValueSchema,
+  options: TextMatchOptionsSchema.partial().optional(),
 })
 
 const ExpectToContainTextSchema = z.object({
   method: z.literal('toContainText'),
   negated: z.boolean(),
-  args: z.union([
-    z.tuple([SerializedValueSchema]),
-    z.tuple([SerializedValueSchema, TextMatchOptionsSchema.partial()]),
-  ]),
+  expected: SerializedValueSchema,
+  options: TextMatchOptionsSchema.partial().optional(),
 })
 
 const ExpectToHaveTitleSchema = z.object({
   method: z.literal('toHaveTitle'),
   negated: z.boolean(),
-  args: z.union([
-    z.tuple([SerializedValueSchema]),
-    z.tuple([SerializedValueSchema, RetryConfigSchema.partial()]),
-  ]),
+  expected: SerializedValueSchema,
+  options: RetryConfigSchema.partial().optional(),
 })
 
 const ExpectToHaveValueSchema = z.object({
   method: z.literal('toHaveValue'),
   negated: z.boolean(),
-  args: z.union([
-    z.tuple([z.string()]),
-    z.tuple([z.string(), RetryConfigSchema.partial()]),
-  ]),
+  value: z.string(),
+  options: RetryConfigSchema.partial().optional(),
 })
 
 // Generic value assertions
 const ExpectToBeSchema = z.object({
   method: z.literal('toBe'),
   negated: z.boolean(),
-  args: z.tuple([SerializedValueSchema]),
+  expected: SerializedValueSchema,
 })
 
 const ExpectToBeCloseToSchema = z.object({
   method: z.literal('toBeCloseTo'),
   negated: z.boolean(),
-  args: z.union([z.tuple([z.number()]), z.tuple([z.number(), z.number()])]),
+  expected: z.number(),
+  precision: z.number().optional(),
 })
 
 const ExpectToBeGreaterThanSchema = z.object({
   method: z.literal('toBeGreaterThan'),
   negated: z.boolean(),
-  args: z.tuple([z.union([z.number(), z.bigint()])]),
+  expected: z.union([z.number(), z.bigint()]),
 })
 
 const ExpectToBeGreaterThanOrEqualSchema = z.object({
   method: z.literal('toBeGreaterThanOrEqual'),
   negated: z.boolean(),
-  args: z.tuple([z.union([z.number(), z.bigint()])]),
+  expected: z.union([z.number(), z.bigint()]),
 })
 
 const ExpectToBeLessThanSchema = z.object({
   method: z.literal('toBeLessThan'),
   negated: z.boolean(),
-  args: z.tuple([z.union([z.number(), z.bigint()])]),
+  expected: z.union([z.number(), z.bigint()]),
 })
 
 const ExpectToBeLessThanOrEqualSchema = z.object({
   method: z.literal('toBeLessThanOrEqual'),
   negated: z.boolean(),
-  args: z.tuple([z.union([z.number(), z.bigint()])]),
+  expected: z.union([z.number(), z.bigint()]),
 })
 
 const ExpectToBeDefinedSchema = z.object({
   method: z.literal('toBeDefined'),
   negated: z.boolean(),
-  args: z.tuple([]),
 })
 
 const ExpectToBeFalsySchema = z.object({
   method: z.literal('toBeFalsy'),
   negated: z.boolean(),
-  args: z.tuple([]),
 })
 
 const ExpectToBeInstanceOfSchema = z.object({
   method: z.literal('toBeInstanceOf'),
   negated: z.boolean(),
   // Function does not survive JSON serialization
-  args: z.tuple([SerializedValueSchema]),
+  expected: SerializedValueSchema,
 })
 
 const ExpectToBeNaNSchema = z.object({
   method: z.literal('toBeNaN'),
   negated: z.boolean(),
-  args: z.tuple([]),
 })
 
 const ExpectToBeNullSchema = z.object({
   method: z.literal('toBeNull'),
   negated: z.boolean(),
-  args: z.tuple([]),
 })
 
 const ExpectToBeTruthySchema = z.object({
   method: z.literal('toBeTruthy'),
   negated: z.boolean(),
-  args: z.tuple([]),
 })
 
 const ExpectToBeUndefinedSchema = z.object({
   method: z.literal('toBeUndefined'),
   negated: z.boolean(),
-  args: z.tuple([]),
 })
 
 const ExpectToEqualSchema = z.object({
   method: z.literal('toEqual'),
   negated: z.boolean(),
-  args: z.tuple([SerializedValueSchema]),
+  expected: SerializedValueSchema,
 })
 
 const ExpectToContainSchema = z.object({
   method: z.literal('toContain'),
   negated: z.boolean(),
-  args: z.tuple([SerializedValueSchema]),
+  expected: SerializedValueSchema,
 })
 
 const ExpectToContainEqualSchema = z.object({
   method: z.literal('toContainEqual'),
   negated: z.boolean(),
-  args: z.tuple([SerializedValueSchema]),
+  expected: SerializedValueSchema,
 })
 
 const ExpectToHaveLengthSchema = z.object({
   method: z.literal('toHaveLength'),
   negated: z.boolean(),
-  args: z.tuple([z.number()]),
+  expected: z.number(),
 })
 
 const ExpectToHavePropertySchema = z.object({
   method: z.literal('toHaveProperty'),
   negated: z.boolean(),
-  args: z.union([
-    z.tuple([z.string()]),
-    z.tuple([z.string(), SerializedValueSchema]),
-  ]),
+  keyPath: z.string(),
+  expected: SerializedValueSchema.optional(),
 })
 
 const GenericAssertionSchema = z.object({
