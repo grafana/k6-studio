@@ -40,7 +40,7 @@ export function initializeLogger() {
   log.errorHandler.startCatching()
 
   log.transports.file.fileName = 'k6-studio.log'
-  log.transports.file.level = 'error'
+  log.transports.file.level = 'info'
 
   if (process.env.NODE_ENV === 'development') {
     log.transports.file.fileName = 'k6-studio-dev.log'
