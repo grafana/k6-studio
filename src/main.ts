@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/electron/main'
-import { app, BrowserWindow, nativeTheme } from 'electron'
+import { app, autoUpdater, BrowserWindow, nativeTheme } from 'electron'
 import log from 'electron-log/main'
 import isSquirrelStartup from 'electron-squirrel-startup'
 import path from 'path'
@@ -26,10 +26,7 @@ import { getAppIcon, getPlatform } from './utils/electron'
 import { setupProjectStructure } from './utils/workspace'
 
 if (process.env.NODE_ENV !== 'development') {
-  // handle auto updates
-  updateElectronApp({ logger: log.scope('autoUpdater') })
-
-  // initialize Sentry
+  // initialize Sentry first so the autoUpdater error listener below can report
   Sentry.init({
     dsn: SENTRY_DSN,
     integrations: [Sentry.electronMinidumpIntegration()],
@@ -42,6 +39,15 @@ if (process.env.NODE_ENV !== 'development') {
       return null
     },
   })
+
+  // update-electron-app swallows autoUpdater errors at info level via its
+  // default logger, so we capture them directly to surface silent failures.
+  autoUpdater.on('error', (err) => {
+    Sentry.captureException(err, { tags: { component: 'autoUpdater' } })
+  })
+
+  // handle auto updates
+  updateElectronApp({ logger: log.scope('autoUpdater') })
 }
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
