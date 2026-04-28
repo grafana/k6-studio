@@ -1,5 +1,5 @@
 import { EventType, type eventWithTime } from '@rrweb/types'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 /**
  * Creates a fault-tolerant schema that returns `undefined` on failure. This is used
@@ -317,6 +317,14 @@ export type GenericPageAction = z.infer<typeof GenericPageActionSchema>
 export type LocatorCheckAction = z.infer<typeof LocatorCheckActionSchema>
 export type LocatorClearAction = z.infer<typeof LocatorClearActionSchema>
 export type LocatorClickAction = z.infer<typeof LocatorClickActionSchema>
+
+export type LocatorClickButton = NonNullable<
+  NonNullable<LocatorClickAction['options']>['button']
+>
+
+export type LocatorClickModifier = NonNullable<
+  NonNullable<LocatorClickAction['options']>['modifiers']
+>[number]
 export type LocatorDoubleClickAction = z.infer<
   typeof LocatorDoubleClickActionSchema
 >
@@ -385,7 +393,10 @@ interface ObjectValue {
 
 const ObjectValueSchema: z.ZodType<ObjectValue> = z.object({
   type: z.literal('object'),
-  value: z.record(z.lazy(() => SerializedValueSchema)),
+  value: z.record(
+    z.string(),
+    z.lazy(() => SerializedValueSchema)
+  ),
 })
 
 export type SerializedValue =

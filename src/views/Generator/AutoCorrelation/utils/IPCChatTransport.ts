@@ -5,17 +5,7 @@ import {
   UIMessageChunk,
 } from 'ai'
 
-import {
-  StreamChatChunk,
-  StreamChatRequest,
-  TokenUsage,
-} from '@/handlers/ai/types'
-import { AiProvider } from '@/types/features'
-
-interface IPCChatTransportOptions {
-  provider: AiProvider
-  onUsage?: (usage: TokenUsage) => void
-}
+import { StreamChatChunk, StreamChatRequest } from '@/handlers/ai/types'
 
 /**
  * Custom ChatTransport implementation that uses Electron IPC for communication
@@ -24,14 +14,6 @@ interface IPCChatTransportOptions {
 export class IPCChatTransport<
   Message extends UIMessage,
 > implements ChatTransport<Message> {
-  private provider: AiProvider
-  private onUsage?: (usage: TokenUsage) => void
-
-  constructor(options: IPCChatTransportOptions) {
-    this.provider = options.provider
-    this.onUsage = options.onUsage
-  }
-
   sendMessages(
     options: {
       trigger: 'submit-message' | 'regenerate-message'
@@ -53,18 +35,13 @@ export class IPCChatTransport<
       messages: options.messages,
       headers,
       body: options.body,
-      provider: this.provider,
     }
 
-    const onUsageCallback = this.onUsage
-
-    // Create a ReadableStream that will receive chunks via IPC
     return Promise.resolve(
       new ReadableStream<UIMessageChunk>({
         start(controller) {
           const stream = window.studio.ai.streamChat(request)
 
-          // Set up listeners for stream events
           const removeChunkListener = stream.onChunk(
             (data: StreamChatChunk) => {
               controller.enqueue(data.chunk)
@@ -76,15 +53,11 @@ export class IPCChatTransport<
             }
           )
 
-          const removeEndListener = stream.onEnd((usage) => {
-            if (usage && onUsageCallback) {
-              onUsageCallback(usage)
-            }
+          const removeEndListener = stream.onEnd(() => {
             controller.close()
             cleanup()
           })
 
-          // Handle abort signal
           if (options.abortSignal) {
             options.abortSignal.addEventListener('abort', () => {
               stream.abort()

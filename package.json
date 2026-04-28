@@ -1,7 +1,7 @@
 {
   "name": "k6-studio",
   "productName": "k6 Studio",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "description": "k6 Studio",
   "repository": "github:grafana/k6-studio",
   "main": ".vite/build/main.js",
@@ -79,7 +79,6 @@
   "license": "AGPL-3.0-only",
   "private": true,
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.23",
     "@ai-sdk/react": "^2.0.95",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
@@ -110,7 +109,6 @@
     "@sentry/vite-plugin": "^2.23.0",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-query": "^5.55.4",
-    "@testing-library/dom": "^10.4.1",
     "@types/plist": "^3.0.5",
     "@typescript-eslint/typescript-estree": "^8.21.0",
     "@vitejs/plugin-react": "^4.7.0",
@@ -142,6 +140,7 @@
     "node-forge": "^1.3.2",
     "openid-client": "^6.1.7",
     "papaparse": "^5.5.1",
+    "pathe": "^2.0.3",
     "plist": "^3.1.0",
     "prettier": "^3.3.2",
     "react": "^19.2.4",

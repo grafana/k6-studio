@@ -5,14 +5,21 @@ type OptionValue = string | number | boolean | null | undefined
 type OptionsSummaryProps = {
   options: unknown
   label?: string
+  excludeKeys?: readonly string[]
 }
 
 export function OptionsSummary({
   options,
   label = 'Options:',
+  excludeKeys,
 }: OptionsSummaryProps) {
+  const excluded = new Set(excludeKeys)
   const entries = Object.entries(normalizeOptions(options)).filter(
-    ([, value]) => {
+    ([key, value]) => {
+      if (excluded.has(key)) {
+        return false
+      }
+
       if (value === undefined || value === null) {
         return false
       }

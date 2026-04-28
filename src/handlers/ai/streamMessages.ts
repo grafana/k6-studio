@@ -16,10 +16,7 @@ export async function streamMessages<Tools extends ToolSet, PARTIAL_OUTPUT>(
     })
   }
 
-  const usageData = await response.usage
-
   webContents.send(AiHandler.StreamChatEnd, {
     id: requestId,
-    usage: usageData,
   })
 }

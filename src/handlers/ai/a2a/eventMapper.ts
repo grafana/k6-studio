@@ -41,19 +41,9 @@ export function processA2AEvent(
   session: ActiveA2ASession
 ): LanguageModelV2StreamPart[] {
   if (event.error) {
-    log.error(
-      LOG_PREFIX,
-      `A2A error (${event.error.code}):`,
-      event.error.message
-    )
-    return [
-      {
-        type: 'error',
-        error: new Error(
-          `A2A error (${event.error.code}): ${event.error.message}`
-        ),
-      },
-    ]
+    const message = `A2A error (${event.error.code}): ${event.error.message}`
+    log.error(LOG_PREFIX, message)
+    return [{ type: 'error', error: new Error(message) }]
   }
 
   const result = event.result

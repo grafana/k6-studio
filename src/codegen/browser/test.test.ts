@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { convertEventsToTest } from './test'
+import { buildClickAction } from '@/test/factories/browserActions'
+
+import { convertActionsToTest, convertEventsToTest } from './test'
 
 describe('convertEventsToTest', () => {
   it('should not wait for navigation when submit-form is not followed by an implicit navigation', () => {
@@ -78,6 +80,52 @@ describe('convertEventsToTest', () => {
       page: {
         nodeId: 'tab-1',
       },
+    })
+  })
+})
+
+describe('convertActionsToTest', () => {
+  it('defaults to a left click when no options are set', () => {
+    const test = convertActionsToTest({
+      browserActions: [buildClickAction({ options: undefined })],
+    })
+
+    const click = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+    expect(click?.button).toBe('left')
+  })
+
+  it('reads options.button so middle and right clicks reach the IR', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { button: 'right' } }),
+        buildClickAction({ options: { button: 'middle' } }),
+      ],
+    })
+
+    const clicks =
+      test.defaultScenario?.nodes.filter((node) => node.type === 'click') ?? []
+    expect(clicks.map((c) => c.button)).toEqual(['right', 'middle'])
+  })
+
+  it('translates options.modifiers into the IR modifier flags', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({
+          options: { button: 'left', modifiers: ['Control', 'Shift'] },
+        }),
+      ],
+    })
+
+    const click = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+    expect(click?.modifiers).toEqual({
+      ctrl: true,
+      shift: true,
+      alt: false,
+      meta: false,
     })
   })
 })

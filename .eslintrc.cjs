@@ -24,6 +24,7 @@ module.exports = {
     'install-k6.js',
     '.eslintrc.cjs',
     '**/__snapshots__/',
+    'src/browser/injectedScript.js',
   ],
   plugins: [
     'import',
