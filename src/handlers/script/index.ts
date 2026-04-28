@@ -138,6 +138,8 @@ export function initialize() {
           title: 'Script exported successfully',
           status: 'success',
         })
+
+        return filePath
       } catch (error) {
         sendToast(browserWindow.webContents, {
           title: 'Failed to export the script',

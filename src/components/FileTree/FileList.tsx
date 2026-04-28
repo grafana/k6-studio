@@ -1,6 +1,6 @@
 import { css } from '@emotion/react'
 
-import { useActiveFileName } from '@/hooks/useCurrentFile'
+import { useActiveFilePath } from '@/hooks/useCurrentFile'
 
 import { File, NoFileMessage } from './File'
 import { FileItem } from './types'
@@ -11,7 +11,7 @@ interface FileListProps {
 }
 
 export function FileList({ files, noFilesMessage }: FileListProps) {
-  const activeFileName = useActiveFileName()
+  const activeFilePath = useActiveFilePath()
 
   if (files.length === 0) {
     return <NoFileMessage message={noFilesMessage} />
@@ -27,7 +27,7 @@ export function FileList({ files, noFilesMessage }: FileListProps) {
     >
       {files.map((file) => (
         <li key={file.displayName}>
-          <File file={file} isSelected={file.fileName === activeFileName} />
+          <File file={file} isSelected={file.path === activeFilePath} />
         </li>
       ))}
     </ul>

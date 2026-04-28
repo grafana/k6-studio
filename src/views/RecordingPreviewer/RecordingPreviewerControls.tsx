@@ -9,7 +9,7 @@ import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { getRoutePath } from '@/routeMap'
+import { getRoutePath, getViewPath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
@@ -61,12 +61,10 @@ export function RecordingPreviewControls({
 
     emitScript(test)
       .then((script) => window.studio.script.saveScript(script, fileName))
-      .then(() => {
-        navigate(
-          getRoutePath('validator', {
-            fileName: encodeURIComponent(fileName),
-          })
-        )
+      .then((filePath) => {
+        if (!filePath) return
+
+        navigate(getViewPath('script', filePath))
       })
       .catch((err) => {
         console.error(err)

@@ -1,14 +1,15 @@
 import { useMutation } from '@tanstack/react-query'
+import { parse } from 'pathe'
 import { useNavigate } from 'react-router-dom'
 
-import { useActiveFileName } from '@/hooks/useCurrentFile'
+import { useActiveFilePath } from '@/hooks/useCurrentFile'
+import { getViewPath } from '@/routeMap'
 import { useStudioUIStore } from '@/store/ui'
 import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension, getViewPath } from '@/utils/file'
 import { queryClient } from '@/utils/query'
 
 export function useRenameFile(file: StudioFile) {
-  const activeFileName = useActiveFileName()
+  const activeFilePath = useActiveFilePath()
 
   const navigate = useNavigate()
   const addFile = useStudioUIStore((state) => state.addFile)
@@ -21,16 +22,26 @@ export function useRenameFile(file: StudioFile) {
       // There's a slight delay between the add and remove callbacks being triggered,
       // causing the UI to flicker because it thinks the renamed file is actually
       // a new file. To prevent this, we optimistically update the file list.
+      // Preserve the original path separators to match what the file watcher will report
+      const lastSeparatorIndex = Math.max(
+        file.path.lastIndexOf('/'),
+        file.path.lastIndexOf('\\')
+      )
+      const newPath =
+        lastSeparatorIndex === -1
+          ? newName
+          : file.path.slice(0, lastSeparatorIndex + 1) + newName
       const updatedFile = {
         ...file,
-        displayName: getFileNameWithoutExtension(newName),
+        path: newPath,
+        displayName: parse(newName).name,
         fileName: newName,
       }
 
       removeFile(file)
       addFile(updatedFile)
 
-      if (activeFileName !== file.fileName) {
+      if (activeFilePath !== file.path) {
         return
       }
 
@@ -41,7 +52,7 @@ export function useRenameFile(file: StudioFile) {
         )
       }
 
-      navigate(getViewPath(file.type, newName), { replace: true })
+      navigate(getViewPath(file.type, newPath), { replace: true })
     },
   })
 }

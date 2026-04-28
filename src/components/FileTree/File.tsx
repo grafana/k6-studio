@@ -6,7 +6,8 @@ import { useBoolean } from 'react-use'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useRenameFile } from '@/hooks/useRenameFile'
-import { getFileExtension, getViewPath } from '@/utils/file'
+import { getViewPath } from '@/routeMap'
+import { getFileExtension } from '@/utils/file'
 
 import { HighlightedText } from '../HighlightedText'
 
@@ -131,7 +132,7 @@ function EditableFile({
             }
           `,
         ]}
-        to={getViewPath(file.type, file.fileName)}
+        to={getViewPath(file.type, file.path)}
       >
         <HighlightedText text={file.displayName} matches={file.matches} />
       </NavLink>
