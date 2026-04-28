@@ -7,7 +7,6 @@ import { useGeneratorStore } from '@/store/generator'
 import { ErrorMessage } from './ErrorMessage'
 import { IntroductionMessage } from './IntroductionMessage'
 import { SuggestedRules } from './SuggestedRules'
-import { TokenUsageIndicator } from './TokenUsageIndicator'
 import { ValidationResults } from './ValidationResults'
 import { CorrelationStatus } from './types'
 import { useGenerateRules } from './useGenerateRules'
@@ -38,8 +37,6 @@ export function AutoCorrelation({
     stop,
     restart,
     reset,
-    tokenUsage,
-    provider,
   } = useGenerateRules({
     clearValidation: clearValidation,
   })
@@ -119,18 +116,13 @@ export function AutoCorrelation({
 
       <Flex
         gap="3"
-        justify={provider === 'openai' ? 'between' : 'end'}
+        justify="end"
         align="center"
         p="3"
         css={{
           borderTop: '1px solid var(--gray-5)',
         }}
       >
-        {provider === 'openai' && (
-          <div>
-            <TokenUsageIndicator tokenUsage={tokenUsage} />
-          </div>
-        )}
         <Flex gap="3">
           <Button
             variant="outline"
