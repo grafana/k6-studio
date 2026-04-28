@@ -1,10 +1,10 @@
 import { ipcRenderer } from 'electron'
 
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 import { BrowserRemoteHandlers } from './types'
 
-export function highlightElement(selector: ActionLocator | null) {
+export function highlightElement(selector: ElementLocator | null) {
   ipcRenderer.send(BrowserRemoteHandlers.HighlightElement, selector)
 }
 

@@ -1,13 +1,13 @@
 import { Locator } from '@/components/Browser/Locator'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 import { useHighlightSelector } from '../../../components/HighlightSelectorProvider'
 
-interface BrowserActionLocatorProps {
-  locator: ActionLocator
+interface BrowserElementLocatorProps {
+  locator: ElementLocator
 }
 
-export function BrowserActionLocator({ locator }: BrowserActionLocatorProps) {
+export function BrowserElementLocator({ locator }: BrowserElementLocatorProps) {
   const setHighlightedSelector = useHighlightSelector()
 
   const handleHighlightChange = (highlighted: boolean) => {

@@ -1,4 +1,4 @@
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { CheckState, NavigateToPageEvent } from '@/schemas/recording'
 
 export type NodeId = string
@@ -17,7 +17,7 @@ export interface PageNode extends NodeBase {
 
 export interface LocatorNode extends NodeBase {
   type: 'locator'
-  selector: ActionLocator
+  selector: ElementLocator
   inputs: {
     page: NodeRef
   }

@@ -2,7 +2,7 @@ import { ChildProcess, spawn } from 'child_process'
 import logger from 'electron-log/main'
 
 import { BrowserServer } from '@/recorder/server'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 import { ChromeDevToolsClient, Transport } from '@/utils/cdp/client'
 import { PipeTransport } from '@/utils/cdp/transports/pipe'
@@ -99,7 +99,7 @@ class CDPRecordingSession
     })
   }
 
-  highlightElement(selector: ActionLocator | null): void {
+  highlightElement(selector: ElementLocator | null): void {
     this.#server.send({ type: 'highlight-elements', selector })
   }
 

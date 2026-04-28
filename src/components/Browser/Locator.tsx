@@ -10,13 +10,13 @@ import {
   WholeWordIcon,
 } from 'lucide-react'
 
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { RoleLocatorIcon } from './RoleLocatorIcon'
 
 interface LocatorComponentProps extends LucideProps {
-  locator: ActionLocator
+  locator: ElementLocator
 }
 
 function quote(str: string) {
@@ -91,7 +91,7 @@ export function LocatorText({ locator }: LocatorComponentProps) {
 }
 
 interface LocatorProps {
-  locator: ActionLocator
+  locator: ElementLocator
   onHighlightChange?: (highlighted: boolean) => void
 }
 

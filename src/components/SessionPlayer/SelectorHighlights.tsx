@@ -1,11 +1,11 @@
 import { Replayer } from 'rrweb'
 
 import { ElementHighlights } from '@/components/Browser/ElementHighlights'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 interface SelectorHighlightsProps {
   player: Replayer | null
-  selector: ActionLocator | null
+  selector: ElementLocator | null
 }
 
 export function SelectorHighlights({

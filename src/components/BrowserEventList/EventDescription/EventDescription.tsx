@@ -1,4 +1,4 @@
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
@@ -13,7 +13,7 @@ import { WaitForDescription } from './WaitForDescription'
 interface EventDescriptionProps {
   event: BrowserEvent
   onNavigate: (url: string) => void
-  onHighlight: (selector: ActionLocator | null) => void
+  onHighlight: (selector: ElementLocator | null) => void
 }
 
 export function EventDescription({

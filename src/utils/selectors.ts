@@ -1,5 +1,5 @@
 import { InjectedScript } from '@/browser/injectedScript'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 let _injectedScript: InjectedScript | null = null
 
@@ -21,12 +21,12 @@ function attrBody(attr: string, value: string, exact?: boolean): string {
 }
 
 /**
- * Find elements in the DOM using an ActionLocator.
+ * Find elements in the DOM using an ElementLocator.
  * Uses the same selector engine as k6 browser (Playwright) for consistent behavior.
  */
 export function findElementsBySelector(
   container: HTMLElement,
-  selector: ActionLocator
+  selector: ElementLocator
 ): Element[] {
   const script = getInjectedScript()
 

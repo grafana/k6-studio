@@ -57,7 +57,7 @@ const GetByTextLocatorSchema = z.object({
   options: TextLocatorOptions,
 })
 
-export const ActionLocatorSchema = z.discriminatedUnion('type', [
+export const ElementLocatorSchema = z.discriminatedUnion('type', [
   CssLocatorSchema,
   GetByRoleLocatorSchema,
   GetByTestIdLocatorSchema,
@@ -68,4 +68,4 @@ export const ActionLocatorSchema = z.discriminatedUnion('type', [
   GetByTextLocatorSchema,
 ])
 
-export type ActionLocator = z.infer<typeof ActionLocatorSchema>
+export type ElementLocator = z.infer<typeof ElementLocatorSchema>

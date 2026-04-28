@@ -1,13 +1,13 @@
 import { ipcMain } from 'electron'
 
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 import { BrowserRemoteHandlers } from './types'
 
 export function initialize() {
   ipcMain.on(
     BrowserRemoteHandlers.HighlightElement,
-    (_event, selector: ActionLocator | null) => {
+    (_event, selector: ElementLocator | null) => {
       k6StudioState.currentRecordingSession?.highlightElement(selector)
     }
   )

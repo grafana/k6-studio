@@ -1,17 +1,17 @@
-import { getNodeSelector } from '@/codegen/browser/selectors'
+import { getElementLocator } from '@/codegen/browser/selectors'
 import { Locator } from '@/components/Browser/Locator'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
 import { useIsRecording } from '@/views/Recorder/RecordingContext'
 
 interface SelectorProps {
   selectors: ElementSelector
-  onHighlight: (selector: ActionLocator | null) => void
+  onHighlight: (selector: ElementLocator | null) => void
 }
 
 export function Selector({ selectors, onHighlight }: SelectorProps) {
   const isRecording = useIsRecording()
-  const locator = getNodeSelector(selectors)
+  const locator = getElementLocator(selectors)
 
   const handleHighlightChange = (highlighted: boolean) => {
     if (!highlighted) {

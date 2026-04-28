@@ -1,5 +1,5 @@
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { AssertEvent } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
@@ -7,7 +7,7 @@ import { Selector } from './Selector'
 
 interface AssertDescriptionProps {
   event: AssertEvent
-  onHighlight: (selector: ActionLocator | null) => void
+  onHighlight: (selector: ElementLocator | null) => void
 }
 
 export function AssertDescription({

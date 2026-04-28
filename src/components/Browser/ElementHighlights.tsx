@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { ComponentProps, forwardRef } from 'react'
 
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 import { useHighlightedElements } from './ElementHighlights.hooks'
 import { Overlay } from './Overlay'
@@ -32,7 +32,7 @@ const ElementOutline = forwardRef<HTMLDivElement, ElementHighlightProps>(
 
 interface ElementHighlightsProps {
   element: HTMLElement | null
-  selector: ActionLocator | null
+  selector: ElementLocator | null
 }
 
 /**

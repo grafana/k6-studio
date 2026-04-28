@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react'
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
 import { useHighlightSelector } from '@/components/HighlightSelectorProvider'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
 
 import { LocatorOptions } from '../../types'
@@ -30,7 +30,7 @@ import {
   GetByTitleForm,
 } from './locators'
 
-const LOCATOR_TYPES: Record<ActionLocator['type'], string> = {
+const LOCATOR_TYPES: Record<ElementLocator['type'], string> = {
   role: 'ARIA Role',
   label: 'Form label',
   alt: 'Alt text',
@@ -57,9 +57,11 @@ export function LocatorForm({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
   const [touchedTypes, setTouchedTypes] = useState(
-    new Set<ActionLocator['type']>()
+    new Set<ElementLocator['type']>()
   )
-  const [dirtyTypes, setDirtyTypes] = useState(new Set<ActionLocator['type']>())
+  const [dirtyTypes, setDirtyTypes] = useState(
+    new Set<ElementLocator['type']>()
+  )
 
   const currentLocator = values[current] ?? initializeLocatorValues(current)
 
@@ -116,7 +118,7 @@ export function LocatorForm({
     onChange({ current: type, values: nextValues })
   }
 
-  const handleLocatorChange = (locator: ActionLocator) => {
+  const handleLocatorChange = (locator: ElementLocator) => {
     setDirtyTypes((prev) => {
       return addIfAbsent(prev, current)
     })
@@ -195,9 +197,9 @@ export function LocatorForm({
 }
 
 interface LocatorFieldsFormProps {
-  locator: ActionLocator
+  locator: ElementLocator
   errors?: Record<string, string>
-  onChange: (locator: ActionLocator) => void
+  onChange: (locator: ElementLocator) => void
   onBlur?: () => void
   suggestedRoles?: string[]
 }
@@ -288,7 +290,7 @@ function LocatorFieldsForm({
   }
 }
 
-function validateLocator(locator: ActionLocator) {
+function validateLocator(locator: ElementLocator) {
   const fieldErrors: Record<string, string> = {}
 
   switch (locator.type) {
@@ -368,7 +370,7 @@ function DisplayValue({
   )
 }
 
-function ExactMatchIndicator({ locator }: { locator: ActionLocator }) {
+function ExactMatchIndicator({ locator }: { locator: ElementLocator }) {
   if (locator.type === 'testid' || locator.type === 'css') {
     return null
   }
@@ -385,7 +387,7 @@ function ExactMatchIndicator({ locator }: { locator: ActionLocator }) {
   return null
 }
 
-function initializeLocatorValues(type: ActionLocator['type']): ActionLocator {
+function initializeLocatorValues(type: ElementLocator['type']): ElementLocator {
   switch (type) {
     case 'css':
       return { type, selector: '' }

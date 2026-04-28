@@ -1,7 +1,7 @@
 import { Flex } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 import { ComboBox, TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
@@ -23,12 +23,12 @@ function toRoleOptions(roles: string[]) {
   return roles.map((role) => ({ value: role, label: role }))
 }
 
-type RoleLocator = Extract<ActionLocator, { type: 'role' }>
+type RoleLocator = Extract<ElementLocator, { type: 'role' }>
 
 interface GetByRoleFormProps {
   locator: RoleLocator
   errors?: Record<string, string>
-  onChange: (locator: ActionLocator) => void
+  onChange: (locator: ElementLocator) => void
   onBlur?: () => void
   suggestedRoles?: string[]
 }

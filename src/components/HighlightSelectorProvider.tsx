@@ -1,10 +1,10 @@
 import { createContext, ReactNode, useContext, useState } from 'react'
 
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
-type SetHighlightedSelector = (selector: ActionLocator | null) => void
+type SetHighlightedSelector = (selector: ElementLocator | null) => void
 
-const stateContext = createContext<ActionLocator | null | undefined>(undefined)
+const stateContext = createContext<ElementLocator | null | undefined>(undefined)
 const dispatchContext = createContext<SetHighlightedSelector | undefined>(
   undefined
 )
@@ -17,7 +17,7 @@ export function HighlightSelectorProvider({
   children,
 }: HighlightSelectorProviderProps) {
   const [highlightedSelector, setHighlightedSelector] =
-    useState<ActionLocator | null>(null)
+    useState<ElementLocator | null>(null)
 
   return (
     <stateContext.Provider value={highlightedSelector}>

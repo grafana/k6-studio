@@ -1,8 +1,8 @@
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
-function getRoleSelector(selectors: ElementSelector): ActionLocator | null {
+function getRoleSelector(selectors: ElementSelector): ElementLocator | null {
   if (selectors.role === undefined) {
     return null
   }
@@ -16,7 +16,7 @@ function getRoleSelector(selectors: ElementSelector): ActionLocator | null {
   }
 }
 
-function getAltTextSelector(selectors: ElementSelector): ActionLocator | null {
+function getAltTextSelector(selectors: ElementSelector): ElementLocator | null {
   if (selectors.alt === undefined) {
     return null
   }
@@ -28,7 +28,7 @@ function getAltTextSelector(selectors: ElementSelector): ActionLocator | null {
   }
 }
 
-function getLabelSelector(selectors: ElementSelector): ActionLocator | null {
+function getLabelSelector(selectors: ElementSelector): ElementLocator | null {
   if (selectors.label === undefined) {
     return null
   }
@@ -42,7 +42,7 @@ function getLabelSelector(selectors: ElementSelector): ActionLocator | null {
 
 function getPlaceholderSelector(
   selectors: ElementSelector
-): ActionLocator | null {
+): ElementLocator | null {
   if (selectors.placeholder === undefined) {
     return null
   }
@@ -54,7 +54,7 @@ function getPlaceholderSelector(
   }
 }
 
-function getTitleSelector(selectors: ElementSelector): ActionLocator | null {
+function getTitleSelector(selectors: ElementSelector): ElementLocator | null {
   if (selectors.title === undefined) {
     return null
   }
@@ -66,7 +66,7 @@ function getTitleSelector(selectors: ElementSelector): ActionLocator | null {
   }
 }
 
-function getTestIdSelector(selectors: ElementSelector): ActionLocator | null {
+function getTestIdSelector(selectors: ElementSelector): ElementLocator | null {
   if (selectors.testId === undefined || selectors.testId.trim() === '') {
     return null
   }
@@ -77,14 +77,14 @@ function getTestIdSelector(selectors: ElementSelector): ActionLocator | null {
   }
 }
 
-function getCssSelector(selectors: ElementSelector): ActionLocator {
+function getCssSelector(selectors: ElementSelector): ElementLocator {
   return {
     type: 'css',
     selector: selectors.css,
   }
 }
 
-export function getNodeSelector(selector: ElementSelector): ActionLocator {
+export function getElementLocator(selector: ElementSelector): ElementLocator {
   return (
     getRoleSelector(selector) ??
     getLabelSelector(selector) ??
@@ -96,7 +96,7 @@ export function getNodeSelector(selector: ElementSelector): ActionLocator {
   )
 }
 
-export function isSelectorEqual(a: ActionLocator, b: ActionLocator): boolean {
+export function isSelectorEqual(a: ElementLocator, b: ElementLocator): boolean {
   switch (a.type) {
     case 'css':
       return b.type === 'css' && a.selector === b.selector

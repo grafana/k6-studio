@@ -11,7 +11,7 @@ import {
   LocatorOptions,
 } from '@/views/BrowserTestEditor/types'
 
-import { isSelectorEqual, getNodeSelector } from './selectors'
+import { isSelectorEqual, getElementLocator } from './selectors'
 import {
   TestNode,
   PageNode,
@@ -98,7 +98,7 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     // await input.type("Hello")
     // await input.press("Enter")
 
-    const selector = getNodeSelector(target.selectors)
+    const selector = getElementLocator(target.selectors)
 
     if (
       previousLocator === null ||

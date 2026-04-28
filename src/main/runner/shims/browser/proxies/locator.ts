@@ -1,6 +1,6 @@
 import { Locator } from 'k6/browser'
 
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 import { ProxyOptions } from '../utils'
 
@@ -8,7 +8,7 @@ import { isLocatorMethod } from './utils'
 
 export function locatorProxy(
   target: Locator,
-  locator: ActionLocator
+  locator: ElementLocator
 ): ProxyOptions<Locator> {
   return {
     target,

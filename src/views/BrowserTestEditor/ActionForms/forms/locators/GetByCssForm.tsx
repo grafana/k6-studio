@@ -2,16 +2,16 @@ import { css } from '@emotion/react'
 import { TextArea } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 import { toFieldErrors } from '../utils'
 
-type CssLocator = Extract<ActionLocator, { type: 'css' }>
+type CssLocator = Extract<ElementLocator, { type: 'css' }>
 
 interface GetByCssFormProps {
   locator: CssLocator
   errors?: Record<string, string>
-  onChange: (locator: ActionLocator) => void
+  onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 

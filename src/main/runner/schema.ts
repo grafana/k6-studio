@@ -1,7 +1,7 @@
 import { EventType, type eventWithTime } from '@rrweb/types'
 import { z } from 'zod/v4'
 
-import { ActionLocatorSchema } from '@/schemas/locator'
+import { ElementLocatorSchema } from '@/schemas/locator'
 
 /**
  * Creates a fault-tolerant schema that returns `undefined` on failure. This is used
@@ -72,38 +72,38 @@ const LocatorClickOptionSchema = z
 
 const LocatorClickActionSchema = z.object({
   method: z.literal('locator.click'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: LocatorClickOptionSchema.optional(),
 })
 
 const LocatorDoubleClickActionSchema = z.object({
   method: z.literal('locator.dblclick'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: LocatorClickOptionSchema.optional(),
 })
 
 const LocatorFillActionSchema = z.object({
   method: z.literal('locator.fill'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   value: z.string(),
   options: GenericOptions.optional(),
 })
 
 const LocatorCheckActionSchema = z.object({
   method: z.literal('locator.check'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
 const LocatorUncheckActionSchema = z.object({
   method: z.literal('locator.uncheck'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
 const LocatorSelectOptionActionSchema = z.object({
   method: z.literal('locator.selectOption'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   values: z.array(
     z.object({
       value: z.string().optional(),
@@ -116,7 +116,7 @@ const LocatorSelectOptionActionSchema = z.object({
 
 const LocatorWaitForActionSchema = z.object({
   method: z.literal('locator.waitFor'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: z
     .object({
       state: z
@@ -134,53 +134,53 @@ const LocatorWaitForActionSchema = z.object({
 
 const LocatorHoverActionSchema = z.object({
   method: z.literal('locator.hover'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
 const LocatorSetCheckedActionSchema = z.object({
   method: z.literal('locator.setChecked'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   checked: z.boolean(),
   options: GenericOptions.optional(),
 })
 
 const LocatorTypeActionSchema = z.object({
   method: z.literal('locator.type'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   text: z.string(),
   options: GenericOptions.optional(),
 })
 
 const LocatorPressActionSchema = z.object({
   method: z.literal('locator.press'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   key: z.string(),
   options: GenericOptions.optional(),
 })
 
 const LocatorClearActionSchema = z.object({
   method: z.literal('locator.clear'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
 const LocatorTapActionSchema = z.object({
   method: z.literal('locator.tap'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
 const LocatorFocusActionSchema = z.object({
   method: z.literal('locator.focus'),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   options: GenericOptions.optional(),
 })
 
 const GenericLocatorActionSchema = z.object({
   method: z.literal('locator.*'),
   name: z.string(),
-  locator: ActionLocatorSchema,
+  locator: ElementLocatorSchema,
   args: z.array(z.unknown()),
 })
 

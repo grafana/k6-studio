@@ -1,12 +1,12 @@
 import { ClickPill } from '@/components/Browser/ClickPill'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { ClickEvent } from '@/schemas/recording'
 
 import { Selector } from './Selector'
 
 interface ClickDescriptionProps {
   event: ClickEvent
-  onHighlight: (selector: ActionLocator | null) => void
+  onHighlight: (selector: ElementLocator | null) => void
 }
 
 export function ClickDescription({

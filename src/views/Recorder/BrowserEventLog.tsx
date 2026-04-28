@@ -1,7 +1,7 @@
 import { Flex, ScrollArea } from '@radix-ui/themes'
 
 import { BrowserEventList } from '@/components/BrowserEventList'
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
 
 interface BrowserEventLogProps {
@@ -13,7 +13,7 @@ export function BrowserEventLog({ events }: BrowserEventLogProps) {
     window.studio.browserRemote.navigateTo(url)
   }
 
-  const handleHighlight = (selector: ActionLocator | null) => {
+  const handleHighlight = (selector: ElementLocator | null) => {
     window.studio.browserRemote.highlightElement(selector)
   }
 

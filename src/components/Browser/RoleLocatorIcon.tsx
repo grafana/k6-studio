@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 import { AriaRole, ComponentType } from 'react'
 
-import { ActionLocator } from '@/schemas/locator'
+import { ElementLocator } from '@/schemas/locator'
 
 /**
  * The complete list of ARIA roles. Fill in icons as needed. If no specific icon is
@@ -110,7 +110,7 @@ const icons: { [P in AriaRole]: ComponentType<LucideProps> | null } = {
 }
 
 interface RoleLocatorIconProps extends LucideProps {
-  selector: Extract<ActionLocator, { type: 'role' }>
+  selector: Extract<ElementLocator, { type: 'role' }>
 }
 
 export function RoleLocatorIcon({ selector, ...props }: RoleLocatorIconProps) {
