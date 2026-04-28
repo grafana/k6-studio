@@ -543,6 +543,24 @@ declare module 'https://jslib.k6.io/k6-testing/*/index.js' {
       ? never
       : K]: ValidMatchers<Received>[K]
   }
+  export interface ExpectationPassed {
+    state: 'pass'
+  }
+  export interface ExpectationFailed {
+    state: 'fail'
+    message: {
+      custom?: string
+    }
+    error: AnyError
+  }
+  export interface ExpectationError {
+    state: 'error'
+    error: unknown
+  }
+  export type ExpectationResult =
+    | ExpectationPassed
+    | ExpectationFailed
+    | ExpectationError
   export interface OnBeginContext {
     negated: boolean
     matcher: {
@@ -558,17 +576,7 @@ declare module 'https://jslib.k6.io/k6-testing/*/index.js' {
       args: unknown[]
     }
     received: unknown
-    result:
-      | {
-          passed: true
-        }
-      | {
-          passed: false
-          message: {
-            custom?: string
-          }
-          error: AnyError
-        }
+    result: ExpectationResult
   }
   export interface ExpectPlugin<State = unknown> {
     name: string
