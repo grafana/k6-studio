@@ -42,6 +42,9 @@ interface OnEndContext {
 }
 
 if ('use' in expect && typeof expect.use === 'function') {
+  console.log(
+    'Registering k6-studio-tracking plugin for enhanced assertion tracking'
+  )
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   expect.use({
     name: 'k6-studio-tracking',

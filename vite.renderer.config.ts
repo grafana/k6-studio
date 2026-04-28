@@ -13,7 +13,9 @@ export default defineConfig((env) => {
   const { root, mode, forgeConfigSelf } = forgeEnv
   const name = forgeConfigSelf.name ?? ''
 
-  const { K6_TESTING_OVERRIDE } = getDotEnv({})
+  const { K6_TESTING_OVERRIDE } = getDotEnv({
+    K6_TESTING_OVERRIDE: '',
+  })
 
   return {
     root,

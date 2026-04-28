@@ -152,7 +152,9 @@ export function pluginHotRestart(command: 'reload' | 'restart'): Plugin {
   }
 }
 
-export function getDotEnv(defaults: Record<string, string>) {
+export function getDotEnv<T extends Record<string, string>>(
+  defaults: T
+): T & Record<string, string> {
   const env = {
     ...defaults,
     ...dotenv.config().parsed,
@@ -160,5 +162,5 @@ export function getDotEnv(defaults: Record<string, string>) {
 
   return Object.fromEntries(
     Object.entries(env).map(([key, value]) => [key, JSON.stringify(value)])
-  )
+  ) as T & Record<string, string>
 }

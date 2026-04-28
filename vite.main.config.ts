@@ -23,6 +23,7 @@ export default defineConfig((env) => {
       K6_API_URL: 'https://api.k6.io/cloud/v6',
       GRAFANA_API_URL: 'https://grafana.com/api',
       GRAFANA_COM_URL: 'https://grafana.com',
+      K6_TESTING_OVERRIDE: '',
     }),
   }
 
