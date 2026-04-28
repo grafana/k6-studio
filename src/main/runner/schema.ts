@@ -911,8 +911,23 @@ export type BrowserDebuggerEvent =
   | BrowserDebuggerBeginEvent
   | BrowserDebuggerEndEvent
 
-export function isBrowserActionEvent(
-  event: BrowserDebuggerEvent
-): event is BrowserActionEvent {
-  return 'action' in event
+export function isBrowserAssertion(event: BrowserAssertionEvent) {
+  switch (event.assertion.method) {
+    case 'toBeChecked':
+    case 'toBeDisabled':
+    case 'toBeEditable':
+    case 'toBeEmpty':
+    case 'toBeEnabled':
+    case 'toBeHidden':
+    case 'toBeVisible':
+    case 'toHaveAttribute':
+    case 'toHaveText':
+    case 'toContainText':
+    case 'toHaveTitle':
+    case 'toHaveValue':
+      return true
+
+    default:
+      return false
+  }
 }

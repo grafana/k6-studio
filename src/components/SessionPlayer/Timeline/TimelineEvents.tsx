@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { Reset } from '@radix-ui/themes'
 import { MouseEvent, useRef, useState } from 'react'
 
-import { BrowserActionEvent, BrowserDebuggerEvent } from '@/main/runner/schema'
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
 
 import { Time } from '../types'
 
@@ -18,7 +18,7 @@ function isIntersecting(previous: Segment, current: Segment) {
 interface TimelineEventsProps {
   disabled?: boolean
   time: Time
-  actions: BrowserActionEvent[]
+  actions: BrowserDebuggerEvent[]
   onSeek: (time: number) => void
 }
 
@@ -162,7 +162,7 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
                 z-index: 1;
               }
 
-              &[data-status='success'] {
+              &[data-status='pass'] {
                 background-color: var(--green-9);
               }
 
