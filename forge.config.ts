@@ -38,9 +38,14 @@ function getPostMakeHook() {
   return async (forgeConfig: ForgeConfig, makeResults: ForgeMakeResult[]) => {
     const artifactPaths = makeResults.flatMap((o) => o.artifacts)
 
-    const signingPromises = artifactPaths.map((filePath) => {
-      return spawnSignFile(filePath)
-    })
+    // Only sign .exe artifacts. Signing the Squirrel *.nupkg via NuGet's
+    // package-signing format changes its size, but MakerSquirrel has already
+    // written the original size + sha1 into the RELEASES file by this point.
+    // The mismatch makes Squirrel.Windows abort updates with a checksum error
+    // and the "restart to update" dialog never fires.
+    const signingPromises = artifactPaths
+      .filter((filePath) => filePath.toLowerCase().endsWith('.exe'))
+      .map((filePath) => spawnSignFile(filePath))
 
     await Promise.all(signingPromises)
     return makeResults
