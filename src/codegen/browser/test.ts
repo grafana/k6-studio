@@ -390,6 +390,9 @@ function buildBrowserNodeGraphFromActions(
           nodeId: crypto.randomUUID(),
           button: toClickButton(action.options),
           modifiers: toClickModifiers(action.options?.modifiers),
+          waitForNavigation: action.options?.waitForNavigation
+            ? { page: getPage() }
+            : undefined,
           inputs: {
             locator: getLocator(action.locator),
           },

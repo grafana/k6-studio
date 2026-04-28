@@ -128,4 +128,48 @@ describe('convertActionsToTest', () => {
       meta: false,
     })
   })
+
+  it('does not wait for navigation when click options omit waitForNavigation', () => {
+    const test = convertActionsToTest({
+      browserActions: [buildClickAction({ options: undefined })],
+    })
+
+    const clickNode = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+
+    expect(clickNode).toBeDefined()
+    expect(clickNode?.waitForNavigation).toBeUndefined()
+  })
+
+  it('waits for navigation when click options.waitForNavigation is true', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { waitForNavigation: true } }),
+      ],
+    })
+
+    const nodes = test.defaultScenario?.nodes ?? []
+    const pageNode = nodes.find((node) => node.type === 'page')
+    const clickNode = nodes.find((node) => node.type === 'click')
+
+    expect(pageNode).toBeDefined()
+    expect(clickNode?.waitForNavigation).toEqual({
+      page: { nodeId: pageNode?.nodeId },
+    })
+  })
+
+  it('does not wait for navigation when click options.waitForNavigation is false', () => {
+    const test = convertActionsToTest({
+      browserActions: [
+        buildClickAction({ options: { waitForNavigation: false } }),
+      ],
+    })
+
+    const clickNode = test.defaultScenario?.nodes.find(
+      (node) => node.type === 'click'
+    )
+
+    expect(clickNode?.waitForNavigation).toBeUndefined()
+  })
 })

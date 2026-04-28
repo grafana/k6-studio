@@ -1,8 +1,10 @@
+import { css } from '@emotion/react'
 import { Grid } from '@radix-ui/themes'
 
 import { LocatorClickAction, LocatorClickButton } from '@/main/runner/schema'
 
 import { ClickButtonForm } from '../../ActionForms/forms/ClickButtonForm'
+import { ClickOptionsForm } from '../../ActionForms/forms/ClickOptionsForm'
 import { LocatorForm } from '../../ActionForms/forms/LocatorForm'
 import { WithEditorMetadata } from '../../types'
 
@@ -25,12 +27,29 @@ export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
     })
   }
 
+  const handleChangeOptions = (
+    options: Partial<NonNullable<LocatorClickAction['options']>>
+  ) => {
+    onChange({
+      ...action,
+      options: {
+        ...action.options,
+        ...options,
+      },
+    })
+  }
+
   return (
     <Grid
       columns="max-content max-content minmax(0, max-content) 1fr"
       gap="2"
       align="center"
       width="100%"
+      css={css`
+        > :last-child {
+          justify-self: end;
+        }
+      `}
     >
       <ClickButtonForm
         value={action.options?.button}
@@ -38,6 +57,10 @@ export function ClickActionBody({ action, onChange }: ClickActionBodyProps) {
       />
       click on
       <LocatorForm state={action.locator} onChange={handleChangeLocator} />
+      <ClickOptionsForm
+        options={action.options}
+        onChange={handleChangeOptions}
+      />
     </Grid>
   )
 }

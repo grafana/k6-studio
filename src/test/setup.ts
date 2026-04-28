@@ -20,7 +20,10 @@ if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = vi.fn()
 }
 
-if (typeof HTMLElement !== 'undefined' && !HTMLElement.prototype.hasPointerCapture) {
+if (
+  typeof HTMLElement !== 'undefined' &&
+  !HTMLElement.prototype.hasPointerCapture
+) {
   HTMLElement.prototype.hasPointerCapture = vi.fn(() => false)
   HTMLElement.prototype.releasePointerCapture = vi.fn()
 }

@@ -16,11 +16,7 @@ interface ClickButtonFormProps {
 export function ClickButtonForm({ value, onChange }: ClickButtonFormProps) {
   return (
     <Select.Root size="1" value={value ?? 'left'} onValueChange={onChange}>
-      <Select.Trigger
-        variant="soft"
-        color="gray"
-        aria-label="Mouse button"
-      />
+      <Select.Trigger variant="soft" color="gray" aria-label="Mouse button" />
       <Select.Content>
         {BUTTON_OPTIONS.map((option) => (
           <Select.Item key={option.value} value={option.value}>
