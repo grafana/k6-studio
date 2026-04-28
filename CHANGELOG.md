@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.1](https://github.com/grafana/k6-studio/compare/v1.13.0...v1.13.1) (2026-04-28)
+
+
+### Internal Changes
+
+* **browser:** Add wait for navigation option to click action ([#1199](https://github.com/grafana/k6-studio/issues/1199)) ([f6693fa](https://github.com/grafana/k6-studio/commit/f6693facd14c31ec862975700a51adea26aa761a))
+
 ## [1.13.0](https://github.com/grafana/k6-studio/compare/v1.12.0...v1.13.0) (2026-04-28)
 
 
