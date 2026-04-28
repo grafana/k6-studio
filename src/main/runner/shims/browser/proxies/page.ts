@@ -15,6 +15,8 @@ declare module 'k6/browser' {
 }
 
 export function pageProxy(target: Page): ProxyOptions<Page> {
+  // There's no way of checking if an object is a Page instance, but by adding a symbol
+  // property we can check for its existence and apply special serialization of the page.
   target[pageDetail] = true
 
   if (shouldInstrument(target)) {

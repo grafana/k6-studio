@@ -47,7 +47,7 @@ export const instrumentScript = ({
         node.source.raw = JSON.stringify(relativePath)
       }
 
-      if (node.source.value === 'https://jslib.k6.io/k6-testing/1.') {
+      if (node.source.value === 'https://jslib.k6.io/k6-testing/') {
         node.source.value = relativePath
         node.source.raw = JSON.stringify(relativePath)
       }
@@ -67,6 +67,8 @@ export const instrumentScript = ({
     },
   })
 
+  // If a k6-testing override has been we'll replace any existing import of the k6-testing library
+  // and instead insert an import with the provided override.
   if (K6_TESTING_OVERRIDE) {
     const overrideImport = importDeclaration({
       source: string(K6_TESTING_OVERRIDE),

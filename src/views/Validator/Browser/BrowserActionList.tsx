@@ -8,29 +8,6 @@ import { DebuggerEventError } from './DebuggerEventError'
 import { DebuggerEventStatusIcon } from './DebuggerEventStatusIcon'
 import { DebuggerEventText } from './DebuggerEventText'
 
-const itemStyles = css`
-  display: grid;
-  grid-template-columns: 24px 1fr auto;
-  align-items: center;
-  padding: var(--space-2);
-  gap: var(--space-2);
-  border-bottom: 1px solid var(--gray-5);
-`
-
-const iconStyles = css`
-  svg.lucide {
-    min-width: 20px;
-    min-height: 20px;
-  }
-`
-
-const textStyles = css`
-  flex: 1 1 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`
-
 interface BrowserActionItemProps {
   event: BrowserDebuggerEvent
 }
@@ -38,17 +15,38 @@ interface BrowserActionItemProps {
 function DebuggerEventItem({ event }: BrowserActionItemProps) {
   return (
     <Text asChild size="1">
-      <li css={itemStyles}>
+      <li
+        css={css`
+          display: grid;
+          grid-template-columns: 24px 1fr auto;
+          align-items: center;
+          padding: var(--space-2);
+          gap: var(--space-2);
+          border-bottom: 1px solid var(--gray-5);
+        `}
+      >
         <Flex
           minWidth="20px"
           justify="center"
           align="center"
           gap="2"
-          css={iconStyles}
+          css={css`
+            svg.lucide {
+              min-width: 20px;
+              min-height: 20px;
+            }
+          `}
         >
           <DebuggerEventStatusIcon event={event} />
         </Flex>
-        <Box css={textStyles}>
+        <Box
+          css={css`
+            flex: 1 1 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          `}
+        >
           <DebuggerEventText event={event} />
         </Box>
         <Box pr="2">

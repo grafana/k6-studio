@@ -17,6 +17,8 @@ export function locatorProxy(
   target: Locator,
   locator: ActionLocator
 ): ProxyOptions<Locator> {
+  // There's no API to get whether the locator was created using getByRole, getByText, etc. so we assign
+  // that information to the locator object itself so it can be used in serialization and tracking.
   target[locatorDetail] = locator
 
   return {
