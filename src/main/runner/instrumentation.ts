@@ -2,6 +2,12 @@ import { parse } from '@typescript-eslint/typescript-estree'
 import { generate } from 'astring'
 import path from 'path'
 
+import {
+  identifier,
+  importDeclaration,
+  namedImport,
+  string,
+} from '@/codegen/estree'
 import { baseProps, NodeType } from '@/codegen/estree/nodes'
 import { traverse } from '@/codegen/estree/traverse'
 import { readResource } from '@/utils/resources'
@@ -40,6 +46,11 @@ export const instrumentScript = ({
         node.source.value = relativePath
         node.source.raw = JSON.stringify(relativePath)
       }
+
+      if (node.source.value === 'https://jslib.k6.io/k6-testing/') {
+        node.source.value = relativePath
+        node.source.raw = JSON.stringify(relativePath)
+      }
     },
     [NodeType.VariableDeclarator](node) {
       if (
@@ -55,6 +66,30 @@ export const instrumentScript = ({
       }
     },
   })
+
+  // If a k6-testing override has been we'll replace any existing import of the k6-testing library
+  // and instead insert an import with the provided override.
+  if (K6_TESTING_OVERRIDE) {
+    const overrideImport = importDeclaration({
+      source: string(K6_TESTING_OVERRIDE),
+      specifiers: [
+        namedImport({
+          imported: identifier('expect'),
+          local: identifier('expect'),
+        }),
+      ],
+    })
+
+    entryAst.body = [
+      overrideImport,
+      ...entryAst.body.filter((node) => {
+        return (
+          node.type !== NodeType.ImportDeclaration ||
+          !node.source.value.startsWith('https://jslib.k6.io/k6-testing/')
+        )
+      }),
+    ]
+  }
 
   return generate(entryAst)
 }

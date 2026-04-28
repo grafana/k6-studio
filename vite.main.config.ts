@@ -1,5 +1,4 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin'
-import * as dotenv from 'dotenv'
 import type { ConfigEnv, UserConfig } from 'vite'
 import { defineConfig, mergeConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
@@ -7,20 +6,10 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import {
   getBuildConfig,
   getBuildDefine,
+  getDotEnv,
   getExternal,
   pluginHotRestart,
 } from './vite.base.config'
-
-function getDotEnv(defaults: Record<string, string>) {
-  const env = {
-    ...defaults,
-    ...dotenv.config().parsed,
-  }
-
-  return Object.fromEntries(
-    Object.entries(env).map(([key, value]) => [key, JSON.stringify(value)])
-  )
-}
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
@@ -34,6 +23,7 @@ export default defineConfig((env) => {
       K6_API_URL: 'https://api.k6.io/cloud/v6',
       GRAFANA_API_URL: 'https://grafana.com/api',
       GRAFANA_COM_URL: 'https://grafana.com',
+      K6_TESTING_OVERRIDE: '',
     }),
   }
 

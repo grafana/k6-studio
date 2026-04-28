@@ -4,12 +4,23 @@ import { ActionLocator } from '@/main/runner/schema'
 
 import { ProxyOptions } from '../utils'
 
+import { locatorDetail } from './symbols'
 import { isLocatorMethod } from './utils'
+
+declare module 'k6/browser' {
+  interface Locator {
+    [locatorDetail]: ActionLocator
+  }
+}
 
 export function locatorProxy(
   target: Locator,
   locator: ActionLocator
 ): ProxyOptions<Locator> {
+  // There's no API to get whether the locator was created using getByRole, getByText, etc. so we assign
+  // that information to the locator object itself so it can be used in serialization and tracking.
+  target[locatorDetail] = locator
+
   return {
     target,
     tracking: {
@@ -137,7 +148,7 @@ export function locatorProxy(
       },
 
       $default(method, ...args) {
-        if (isLocatorMethod(method)) {
+        if (typeof method === 'symbol' || isLocatorMethod(method)) {
           return null
         }
 

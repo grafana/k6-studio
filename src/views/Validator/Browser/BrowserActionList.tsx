@@ -1,19 +1,18 @@
 import { css } from '@emotion/react'
 import { Box, Flex, Reset, Text } from '@radix-ui/themes'
 
-import { BrowserActionEvent } from '@/main/runner/schema'
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
 
-import { BrowserActionStatusIcon } from './BrowserActionStatusIcon'
-import { BrowserActionText } from './BrowserActionText'
 import { BrowserActionTimer } from './BrowserActionTimer'
+import { DebuggerEventError } from './DebuggerEventError'
+import { DebuggerEventStatusIcon } from './DebuggerEventStatusIcon'
+import { DebuggerEventText } from './DebuggerEventText'
 
 interface BrowserActionItemProps {
-  event: BrowserActionEvent
+  event: BrowserDebuggerEvent
 }
 
-function BrowserActionItem({ event }: BrowserActionItemProps) {
-  const result = event.type === 'end' ? event.result : null
-
+function DebuggerEventItem({ event }: BrowserActionItemProps) {
   return (
     <Text asChild size="1">
       <li
@@ -23,7 +22,6 @@ function BrowserActionItem({ event }: BrowserActionItemProps) {
           align-items: center;
           padding: var(--space-2);
           gap: var(--space-2);
-
           border-bottom: 1px solid var(--gray-5);
         `}
       >
@@ -39,7 +37,7 @@ function BrowserActionItem({ event }: BrowserActionItemProps) {
             }
           `}
         >
-          <BrowserActionStatusIcon event={event} />
+          <DebuggerEventStatusIcon event={event} />
         </Flex>
         <Box
           css={css`
@@ -49,39 +47,30 @@ function BrowserActionItem({ event }: BrowserActionItemProps) {
             white-space: nowrap;
           `}
         >
-          <BrowserActionText action={event.action} />
+          <DebuggerEventText event={event} />
         </Box>
         <Box pr="2">
           <BrowserActionTimer
             started={event.timestamp.started}
-            ended={event.type === 'end' && event.timestamp.ended}
+            ended={event.state === 'end' && event.timestamp.ended}
           />
         </Box>
-        {result?.type === 'error' && (
-          <Box
-            css={css`
-              color: var(--red-11);
-              grid-column: 2 / span 1;
-            `}
-          >
-            Error: {result.error}
-          </Box>
-        )}
+        <DebuggerEventError event={event} />
       </li>
     </Text>
   )
 }
 
 interface BrowserActionListProps {
-  actions: BrowserActionEvent[]
+  actions: BrowserDebuggerEvent[]
 }
 
 export function BrowserActionList({ actions }: BrowserActionListProps) {
   return (
     <Reset>
       <ul>
-        {actions.map((action) => (
-          <BrowserActionItem key={action.eventId} event={action} />
+        {actions.map((event) => (
+          <DebuggerEventItem key={event.eventId} event={event} />
         ))}
       </ul>
     </Reset>

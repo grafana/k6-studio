@@ -143,9 +143,7 @@ export function Generator() {
   return (
     <View
       title="Generator"
-      subTitle={
-        <FileNameHeader file={file} isDirty={isDirty} />
-      }
+      subTitle={<FileNameHeader file={file} isDirty={isDirty} />}
       actions={
         <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }
