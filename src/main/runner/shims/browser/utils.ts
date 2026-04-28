@@ -329,7 +329,7 @@ function buildAssertionFields(
       return {
         method,
         attribute: args[0] as string,
-        options: args.length > 1 ? (args[1] as object) : undefined,
+        value: args.length > 1 ? (args[1] as string) : undefined,
       }
 
     case 'toHaveText':

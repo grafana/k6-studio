@@ -7,8 +7,10 @@ import {
 import { getInitialStages } from '@/utils/generator'
 import { ImmerStateCreator } from '@/utils/typescript'
 
-interface SharedIterationsState
-  extends Omit<SharedIterationsOptions, 'executor'> {
+interface SharedIterationsState extends Omit<
+  SharedIterationsOptions,
+  'executor'
+> {
   setVus: (value: SharedIterationsOptions['vus']) => void
   setIterations: (value: SharedIterationsOptions['iterations']) => void
 }

@@ -166,6 +166,10 @@ function Segment({ time, disabled, segment, onSeek }: SegmentProps) {
                 background-color: var(--green-9);
               }
 
+              &[data-status='fail'] {
+                background-color: var(--red-9);
+              }
+
               &[data-status='error'] {
                 background-color: var(--red-9);
               }

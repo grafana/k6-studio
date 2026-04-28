@@ -13,7 +13,7 @@ jobs:
       contents: write
       pull-requests: write
       id-token: write
-      
+
     runs-on: ubuntu-latest
     steps:
       - name: Retrieve release app credentials

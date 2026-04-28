@@ -36,9 +36,8 @@ interface OnBeginContext {
 
 interface OnEndContext {
   result:
-    | { state: 'pass' }
-    | { state: 'fail'; message: { custom?: string }; error: unknown }
-    | { state: 'error'; error: unknown }
+    | { passed: true }
+    | { passed: false; message: { custom?: string }; error: unknown }
 }
 
 if ('use' in expect && typeof expect.use === 'function') {
@@ -54,20 +53,13 @@ if ('use' in expect && typeof expect.use === 'function') {
       )
     },
     onEnd(context: OnEndContext, state: AssertionBeginEvent | null) {
-      const result =
-        context.result.state === 'pass'
-          ? { type: 'pass' }
-          : context.result.state === 'fail'
-            ? {
-                type: 'fail',
-                message: context.result.message.custom,
-                error: context.result.error,
-              }
-            : {
-                type: 'error',
-                message: String(context.result.error),
-                error: context.result.error,
-              }
+      const result = context.result.passed
+        ? { type: 'pass' }
+        : {
+            type: 'fail',
+            message: context.result.message.custom,
+            error: context.result.error,
+          }
 
       endAssertion(state, result as AssertionEndEvent['result'])
     },
