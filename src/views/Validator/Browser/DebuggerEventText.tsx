@@ -360,14 +360,14 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
     case 'toBeNaN':
       return (
         <>
-          Expect {actual} to{not} be NaN
+          Expect {actual} to{not} be <Value value={NaN} />
         </>
       )
 
     case 'toBeNull':
       return (
         <>
-          Expect {actual} to{not} be null
+          Expect {actual} to{not} be <Value value={null} />
         </>
       )
 
@@ -381,7 +381,7 @@ function BrowserAssertionText({ event }: BrowserAssertionTextProps) {
     case 'toBeUndefined':
       return (
         <>
-          Expect {actual} to{not} be undefined
+          Expect {actual} to{not} be <Value value={{ type: 'undefined' }} />
         </>
       )
 
