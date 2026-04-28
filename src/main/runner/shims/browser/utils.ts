@@ -266,130 +266,38 @@ export function createProxy<T extends object>({
   })
 }
 
-function toAssertionMethod(
-  name: string
-): AssertionBeginEvent['assertion']['method'] {
-  switch (name) {
-    case 'toBeChecked':
-    case 'toBeDisabled':
-    case 'toBeEditable':
-    case 'toBeEmpty':
-    case 'toBeEnabled':
-    case 'toBeHidden':
-    case 'toBeVisible':
-    case 'toHaveAttribute':
-    case 'toHaveText':
-    case 'toContainText':
-    case 'toHaveTitle':
-    case 'toHaveValue':
-    case 'toBe':
-    case 'toBeCloseTo':
-    case 'toBeGreaterThan':
-    case 'toBeGreaterThanOrEqual':
-    case 'toBeLessThan':
-    case 'toBeLessThanOrEqual':
-    case 'toBeDefined':
-    case 'toBeFalsy':
-    case 'toBeInstanceOf':
-    case 'toBeNaN':
-    case 'toBeNull':
-    case 'toBeTruthy':
-    case 'toBeUndefined':
-    case 'toEqual':
-    case 'toContain':
-    case 'toContainEqual':
-    case 'toHaveLength':
-    case 'toHaveProperty':
-      return name
-
-    default:
-      return '*'
-  }
-}
-
-function buildAssertionFields(
-  method: ReturnType<typeof toAssertionMethod>,
-  name: string,
-  args: unknown[]
-) {
-  switch (method) {
-    case 'toBeChecked':
-    case 'toBeDisabled':
-    case 'toBeEditable':
-    case 'toBeEmpty':
-    case 'toBeEnabled':
-    case 'toBeHidden':
-    case 'toBeVisible':
-      return {
-        method,
-        options: args.length > 0 ? (args[0] as object) : undefined,
-      }
-
-    case 'toHaveAttribute':
-      return {
-        method,
-        attribute: args[0] as string,
-        options: args.length > 1 ? (args[1] as object) : undefined,
-      }
-
-    case 'toHaveText':
-    case 'toContainText':
-    case 'toHaveTitle':
-      return {
-        method,
-        expected: serializeValue(args[0]),
-        options: args.length > 1 ? (args[1] as object) : undefined,
-      }
-
-    case 'toHaveValue':
-      return {
-        method,
-        value: args[0] as string,
-        options: args.length > 1 ? (args[1] as object) : undefined,
-      }
-
-    case 'toBe':
-    case 'toEqual':
-    case 'toContain':
-    case 'toContainEqual':
-    case 'toBeInstanceOf':
-      return { method, expected: serializeValue(args[0]) }
-
-    case 'toBeCloseTo':
-      return {
-        method,
-        expected: args[0] as number,
-        precision: args.length >= 2 ? (args[1] as number) : undefined,
-      }
-
-    case 'toBeGreaterThan':
-    case 'toBeGreaterThanOrEqual':
-    case 'toBeLessThan':
-    case 'toBeLessThanOrEqual':
-      return { method, expected: args[0] as number | bigint }
-
-    case 'toBeDefined':
-    case 'toBeFalsy':
-    case 'toBeNaN':
-    case 'toBeNull':
-    case 'toBeTruthy':
-    case 'toBeUndefined':
-      return { method }
-
-    case 'toHaveLength':
-      return { method, expected: args[0] as number }
-
-    case 'toHaveProperty':
-      return {
-        method,
-        keyPath: args[0] as string,
-        expected: args[1] !== undefined ? serializeValue(args[1]) : undefined,
-      }
-
-    default:
-      return { method, name, args: args.map(serializeValue) }
-  }
-}
+const KNOWN_MATCHERS = new Set([
+  'toBeChecked',
+  'toBeDisabled',
+  'toBeEditable',
+  'toBeEmpty',
+  'toBeEnabled',
+  'toBeHidden',
+  'toBeVisible',
+  'toHaveAttribute',
+  'toHaveText',
+  'toContainText',
+  'toHaveTitle',
+  'toHaveValue',
+  'toBe',
+  'toBeCloseTo',
+  'toBeGreaterThan',
+  'toBeGreaterThanOrEqual',
+  'toBeLessThan',
+  'toBeLessThanOrEqual',
+  'toBeDefined',
+  'toBeFalsy',
+  'toBeInstanceOf',
+  'toBeNaN',
+  'toBeNull',
+  'toBeTruthy',
+  'toBeUndefined',
+  'toEqual',
+  'toContain',
+  'toContainEqual',
+  'toHaveLength',
+  'toHaveProperty',
+])
 
 export function beginAssertion(
   name: string,
@@ -401,8 +309,6 @@ export function beginAssertion(
     return null
   }
 
-  const method = toAssertionMethod(name)
-
   return sendBeginEvent({
     type: 'assertion',
     state: 'begin',
@@ -410,9 +316,11 @@ export function beginAssertion(
     timestamp: { started: Date.now() },
     actual: serializeValue(actual),
     assertion: {
-      ...buildAssertionFields(method, name, args),
+      name,
+      matcher: KNOWN_MATCHERS.has(name) ? name : undefined,
       negated,
-    } as AssertionBeginEvent['assertion'],
+      args: args.map(serializeValue),
+    } as unknown as AssertionBeginEvent['assertion'],
   })
 }
 

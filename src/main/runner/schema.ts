@@ -436,207 +436,401 @@ export const SerializedValueSchema: z.ZodType<SerializedValue> = z.lazy(() =>
 // Assertion Schemas
 // =============================================================================
 
-const RetryConfigSchema = z.object({
-  timeout: z.number().optional(),
-  interval: z.number().optional(),
-})
+// options?: Partial<RetryConfig> — shared arg shape for locator matchers
+const withOptions = z.union([z.tuple([]), z.tuple([z.unknown()])])
 
-const TextMatchOptionsSchema = RetryConfigSchema.extend({
-  ignoreCase: z.boolean().optional(),
-  useInnerText: z.boolean().optional(),
-})
+// with text match options
+const withExpectedAndOptions = z.union([
+  z.tuple([SerializedValueSchema]),
+  z.tuple([SerializedValueSchema, z.unknown()]),
+])
 
 // Locator assertions
-const ExpectToBeCheckedSchema = z.object({
-  method: z.literal('toBeChecked'),
-  negated: z.boolean(),
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToBeCheckedSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeChecked'),
+    negated: z.boolean(),
+    args: withOptions,
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeDisabledSchema = z.object({
-  method: z.literal('toBeDisabled'),
-  negated: z.boolean(),
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToBeDisabledSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeDisabled'),
+    negated: z.boolean(),
+    args: withOptions,
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeEditableSchema = z.object({
-  method: z.literal('toBeEditable'),
-  negated: z.boolean(),
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToBeEditableSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeEditable'),
+    negated: z.boolean(),
+    args: withOptions,
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeEmptySchema = z.object({
-  method: z.literal('toBeEmpty'),
-  negated: z.boolean(),
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToBeEmptySchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeEmpty'),
+    negated: z.boolean(),
+    args: withOptions,
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeEnabledSchema = z.object({
-  method: z.literal('toBeEnabled'),
-  negated: z.boolean(),
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToBeEnabledSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeEnabled'),
+    negated: z.boolean(),
+    args: withOptions,
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeHiddenSchema = z.object({
-  method: z.literal('toBeHidden'),
-  negated: z.boolean(),
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToBeHiddenSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeHidden'),
+    negated: z.boolean(),
+    args: withOptions,
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeVisibleSchema = z.object({
-  method: z.literal('toBeVisible'),
-  negated: z.boolean(),
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToBeVisibleSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeVisible'),
+    negated: z.boolean(),
+    args: withOptions,
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToHaveAttributeSchema = z.object({
-  method: z.literal('toHaveAttribute'),
-  negated: z.boolean(),
-  attribute: z.string(),
-  value: z.string().optional(),
-})
+const ExpectToHaveAttributeSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toHaveAttribute'),
+    negated: z.boolean(),
+    // (attribute: string, expectedValue?: string)
+    args: z.union([z.tuple([z.string()]), z.tuple([z.string(), z.string()])]),
+  })
+  .transform(({ matcher, negated, args }) => {
+    const [attribute, value] = args
+    return {
+      method: matcher,
+      negated,
+      attribute,
+      ...(value !== undefined ? { value } : {}),
+    }
+  })
 
-const ExpectToHaveTextSchema = z.object({
-  method: z.literal('toHaveText'),
-  negated: z.boolean(),
-  // RegExp | string — RegExp does not survive JSON serialization
-  expected: SerializedValueSchema,
-  options: TextMatchOptionsSchema.partial().optional(),
-})
+const ExpectToHaveTextSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toHaveText'),
+    negated: z.boolean(),
+    // (expected: RegExp | string, options?) — RegExp does not survive JSON serialization
+    args: withExpectedAndOptions,
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToContainTextSchema = z.object({
-  method: z.literal('toContainText'),
-  negated: z.boolean(),
-  expected: SerializedValueSchema,
-  options: TextMatchOptionsSchema.partial().optional(),
-})
+const ExpectToContainTextSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toContainText'),
+    negated: z.boolean(),
+    // (expected: RegExp | string, options?)
+    args: withExpectedAndOptions,
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToHaveTitleSchema = z.object({
-  method: z.literal('toHaveTitle'),
-  negated: z.boolean(),
-  expected: SerializedValueSchema,
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToHaveTitleSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toHaveTitle'),
+    negated: z.boolean(),
+    // (expected: RegExp | string, options?)
+    args: withExpectedAndOptions,
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToHaveValueSchema = z.object({
-  method: z.literal('toHaveValue'),
-  negated: z.boolean(),
-  value: z.string(),
-  options: RetryConfigSchema.partial().optional(),
-})
+const ExpectToHaveValueSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toHaveValue'),
+    negated: z.boolean(),
+    // (value: string, options?)
+    args: z.union([z.tuple([z.string()]), z.tuple([z.string(), z.unknown()])]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    value: args[0],
+  }))
 
 // Generic value assertions
-const ExpectToBeSchema = z.object({
-  method: z.literal('toBe'),
-  negated: z.boolean(),
-  expected: SerializedValueSchema,
-})
+const ExpectToBeSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBe'),
+    negated: z.boolean(),
+    // (expected: unknown)
+    args: z.tuple([SerializedValueSchema]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToBeCloseToSchema = z.object({
-  method: z.literal('toBeCloseTo'),
-  negated: z.boolean(),
-  expected: z.number(),
-  precision: z.number().optional(),
-})
+const ExpectToBeCloseToSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeCloseTo'),
+    negated: z.boolean(),
+    // (expected: number, precision?: number)
+    args: z.union([z.tuple([z.number()]), z.tuple([z.number(), z.number()])]),
+  })
+  .transform(({ matcher, negated, args }) => {
+    const [expected, precision] = args
+    return {
+      method: matcher,
+      negated,
+      expected,
+      ...(precision !== undefined ? { precision } : {}),
+    }
+  })
 
-const ExpectToBeGreaterThanSchema = z.object({
-  method: z.literal('toBeGreaterThan'),
-  negated: z.boolean(),
-  expected: z.union([z.number(), z.bigint()]),
-})
+// serializeValue(bigint) coerces to Number(), so the wire value is always z.number()
+const ExpectToBeGreaterThanSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeGreaterThan'),
+    negated: z.boolean(),
+    // (expected: number | bigint)
+    args: z.tuple([z.number()]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToBeGreaterThanOrEqualSchema = z.object({
-  method: z.literal('toBeGreaterThanOrEqual'),
-  negated: z.boolean(),
-  expected: z.union([z.number(), z.bigint()]),
-})
+const ExpectToBeGreaterThanOrEqualSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeGreaterThanOrEqual'),
+    negated: z.boolean(),
+    // (expected: number | bigint)
+    args: z.tuple([z.number()]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToBeLessThanSchema = z.object({
-  method: z.literal('toBeLessThan'),
-  negated: z.boolean(),
-  expected: z.union([z.number(), z.bigint()]),
-})
+const ExpectToBeLessThanSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeLessThan'),
+    negated: z.boolean(),
+    // (expected: number | bigint)
+    args: z.tuple([z.number()]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToBeLessThanOrEqualSchema = z.object({
-  method: z.literal('toBeLessThanOrEqual'),
-  negated: z.boolean(),
-  expected: z.union([z.number(), z.bigint()]),
-})
+const ExpectToBeLessThanOrEqualSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeLessThanOrEqual'),
+    negated: z.boolean(),
+    // (expected: number | bigint)
+    args: z.tuple([z.number()]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToBeDefinedSchema = z.object({
-  method: z.literal('toBeDefined'),
-  negated: z.boolean(),
-})
+const ExpectToBeDefinedSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeDefined'),
+    negated: z.boolean(),
+    args: z.tuple([]),
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeFalsySchema = z.object({
-  method: z.literal('toBeFalsy'),
-  negated: z.boolean(),
-})
+const ExpectToBeFalsySchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeFalsy'),
+    negated: z.boolean(),
+    args: z.tuple([]),
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeInstanceOfSchema = z.object({
-  method: z.literal('toBeInstanceOf'),
-  negated: z.boolean(),
-  // Function does not survive JSON serialization
-  expected: SerializedValueSchema,
-})
+const ExpectToBeInstanceOfSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeInstanceOf'),
+    negated: z.boolean(),
+    // (expected: Function) — does not survive JSON serialization
+    args: z.tuple([SerializedValueSchema]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToBeNaNSchema = z.object({
-  method: z.literal('toBeNaN'),
-  negated: z.boolean(),
-})
+const ExpectToBeNaNSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeNaN'),
+    negated: z.boolean(),
+    args: z.tuple([]),
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeNullSchema = z.object({
-  method: z.literal('toBeNull'),
-  negated: z.boolean(),
-})
+const ExpectToBeNullSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeNull'),
+    negated: z.boolean(),
+    args: z.tuple([]),
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeTruthySchema = z.object({
-  method: z.literal('toBeTruthy'),
-  negated: z.boolean(),
-})
+const ExpectToBeTruthySchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeTruthy'),
+    negated: z.boolean(),
+    args: z.tuple([]),
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToBeUndefinedSchema = z.object({
-  method: z.literal('toBeUndefined'),
-  negated: z.boolean(),
-})
+const ExpectToBeUndefinedSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toBeUndefined'),
+    negated: z.boolean(),
+    args: z.tuple([]),
+  })
+  .transform(({ matcher, negated }) => ({ method: matcher, negated }))
 
-const ExpectToEqualSchema = z.object({
-  method: z.literal('toEqual'),
-  negated: z.boolean(),
-  expected: SerializedValueSchema,
-})
+const ExpectToEqualSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toEqual'),
+    negated: z.boolean(),
+    // (expected: unknown)
+    args: z.tuple([SerializedValueSchema]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToContainSchema = z.object({
-  method: z.literal('toContain'),
-  negated: z.boolean(),
-  expected: SerializedValueSchema,
-})
+const ExpectToContainSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toContain'),
+    negated: z.boolean(),
+    // (expected: ItemType<Received>)
+    args: z.tuple([SerializedValueSchema]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToContainEqualSchema = z.object({
-  method: z.literal('toContainEqual'),
-  negated: z.boolean(),
-  expected: SerializedValueSchema,
-})
+const ExpectToContainEqualSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toContainEqual'),
+    negated: z.boolean(),
+    // (expected: unknown)
+    args: z.tuple([SerializedValueSchema]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToHaveLengthSchema = z.object({
-  method: z.literal('toHaveLength'),
-  negated: z.boolean(),
-  expected: z.number(),
-})
+const ExpectToHaveLengthSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toHaveLength'),
+    negated: z.boolean(),
+    // (expected: number)
+    args: z.tuple([z.number()]),
+  })
+  .transform(({ matcher, negated, args }) => ({
+    method: matcher,
+    negated,
+    expected: args[0],
+  }))
 
-const ExpectToHavePropertySchema = z.object({
-  method: z.literal('toHaveProperty'),
-  negated: z.boolean(),
-  keyPath: z.string(),
-  expected: SerializedValueSchema.optional(),
-})
+const ExpectToHavePropertySchema = z
+  .object({
+    name: z.string(),
+    matcher: z.literal('toHaveProperty'),
+    negated: z.boolean(),
+    // (keyPath: string, expected?: unknown)
+    args: z.union([
+      z.tuple([z.string()]),
+      z.tuple([z.string(), SerializedValueSchema]),
+    ]),
+  })
+  .transform(({ matcher, negated, args }) => {
+    const [keyPath, expected] = args
+    return {
+      method: matcher,
+      negated,
+      keyPath,
+      ...(expected !== undefined ? { expected } : {}),
+    }
+  })
 
-const GenericAssertionSchema = z.object({
-  method: z.literal('*'),
-  name: z.string(),
-  negated: z.boolean(),
-  args: z.array(SerializedValueSchema),
-})
+const GenericAssertionSchema = z
+  .object({
+    name: z.string(),
+    matcher: z.undefined().optional(),
+    negated: z.boolean(),
+    args: z.array(SerializedValueSchema),
+  })
+  .transform(({ name, negated, args }) => ({
+    method: '*' as const,
+    name,
+    negated,
+    args,
+  }))
 
 export const AnyAssertionSchema = z.union([
   ExpectToBeCheckedSchema,
