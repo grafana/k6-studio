@@ -1,6 +1,5 @@
-// @ts-expect-error - This is just a temporary shim to test things.
 // eslint-disable-next-line import/no-unresolved
-import { expect } from 'https://gist.githubusercontent.com/allansson/5cd3942fd9f028b274769adbdfc44250/raw/f8cf49c6dc7884fe71f2675f6744e2ad881b9fb7/k6-testing.js'
+import { expect } from 'https://jslib.k6.io/k6-testing/0.6.1/index.js'
 import { BrowserContext, browser } from 'k6/browser'
 
 import type { AssertionBeginEvent, AssertionEndEvent } from '../../schema'
@@ -42,36 +41,38 @@ interface OnEndContext {
     | { state: 'error'; error: unknown }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-expect.use({
-  name: 'k6-studio-tracking',
-  onBegin(context: OnBeginContext) {
-    return beginAssertion(
-      context.matcher.name,
-      context.negated,
-      context.received,
-      context.matcher.args
-    )
-  },
-  onEnd(context: OnEndContext, state: AssertionBeginEvent | null) {
-    const result =
-      context.result.state === 'pass'
-        ? { type: 'pass' }
-        : context.result.state === 'fail'
-          ? {
-              type: 'fail',
-              message: context.result.message,
-              error: context.result.error,
-            }
-          : {
-              type: 'error',
-              message: String(context.result.error),
-              error: context.result.error,
-            }
+if ('use' in expect && typeof expect.use === 'function') {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  expect.use({
+    name: 'k6-studio-tracking',
+    onBegin(context: OnBeginContext) {
+      return beginAssertion(
+        context.matcher.name,
+        context.negated,
+        context.received,
+        context.matcher.args
+      )
+    },
+    onEnd(context: OnEndContext, state: AssertionBeginEvent | null) {
+      const result =
+        context.result.state === 'pass'
+          ? { type: 'pass' }
+          : context.result.state === 'fail'
+            ? {
+                type: 'fail',
+                message: context.result.message.custom,
+                error: context.result.error,
+              }
+            : {
+                type: 'error',
+                message: String(context.result.error),
+                error: context.result.error,
+              }
 
-    endAssertion(state, result as AssertionEndEvent['result'])
-  },
-})
+      endAssertion(state, result as AssertionEndEvent['result'])
+    },
+  })
+}
 
 // NOTE: This placeholder is replaced with the actual session replay script during the instrumentation process.
 const SESSION_REPLAY_SCRIPT = ''

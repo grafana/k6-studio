@@ -1,3 +1,4 @@
+import * as dotenv from 'dotenv'
 import { readFileSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import type { AddressInfo } from 'node:net'
@@ -149,4 +150,15 @@ export function pluginHotRestart(command: 'reload' | 'restart'): Plugin {
       }
     },
   }
+}
+
+export function getDotEnv(defaults: Record<string, string>) {
+  const env = {
+    ...defaults,
+    ...dotenv.config().parsed,
+  }
+
+  return Object.fromEntries(
+    Object.entries(env).map(([key, value]) => [key, JSON.stringify(value)])
+  )
 }

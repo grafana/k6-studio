@@ -16,6 +16,13 @@ export function DebuggerEventError({ event }: DebuggerEventErrorProps) {
     return null
   }
 
+  // At some point we should display a formatted error message to the user,
+  // but for now we'll just rely on the user being able to inspect the values
+  // in the action list and console output.
+  if (event.type === 'assertion' && event.result.type === 'fail') {
+    return null
+  }
+
   return (
     <Box
       css={css`
@@ -24,17 +31,7 @@ export function DebuggerEventError({ event }: DebuggerEventErrorProps) {
       `}
     >
       {event.type === 'action' && <>Error: {event.result.error}</>}
-      {event.type === 'assertion' && (
-        <>
-          Assertion failed:{' '}
-          {event.result.type === 'fail' && (
-            <pre>
-              <code>{JSON.stringify(event.result.error, null, 2)}</code>
-            </pre>
-          )}
-          {event.result.type === 'error' && event.result.message}
-        </>
-      )}
+      {event.type === 'assertion' && <>Error: {event.result.message}</>}
     </Box>
   )
 }
