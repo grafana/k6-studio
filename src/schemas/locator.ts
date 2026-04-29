@@ -69,3 +69,11 @@ export const ElementLocatorSchema = z.discriminatedUnion('type', [
 ])
 
 export type ElementLocator = z.infer<typeof ElementLocatorSchema>
+export type CssLocator = z.infer<typeof CssLocatorSchema>
+export type RoleLocator = z.infer<typeof GetByRoleLocatorSchema>
+export type TestIdLocator = z.infer<typeof GetByTestIdLocatorSchema>
+export type AltLocator = z.infer<typeof GetByAltTextLocatorSchema>
+export type LabelLocator = z.infer<typeof GetByLabelLocatorSchema>
+export type PlaceholderLocator = z.infer<typeof GetByPlaceholderLocatorSchema>
+export type TitleLocator = z.infer<typeof GetByTitleLocatorSchema>
+export type TextLocator = z.infer<typeof GetByTextLocatorSchema>

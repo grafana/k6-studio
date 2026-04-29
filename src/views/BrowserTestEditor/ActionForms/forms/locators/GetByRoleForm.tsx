@@ -1,7 +1,7 @@
 import { Flex } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, RoleLocator } from '@/schemas/locator'
 
 import { ComboBox, TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
@@ -22,8 +22,6 @@ const DEFAULT_ROLES = [
 function toRoleOptions(roles: string[]) {
   return roles.map((role) => ({ value: role, label: role }))
 }
-
-type RoleLocator = Extract<ElementLocator, { type: 'role' }>
 
 interface GetByRoleFormProps {
   locator: RoleLocator

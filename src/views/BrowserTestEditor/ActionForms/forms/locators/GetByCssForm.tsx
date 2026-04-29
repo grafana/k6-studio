@@ -2,11 +2,9 @@ import { css } from '@emotion/react'
 import { TextArea } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, CssLocator } from '@/schemas/locator'
 
 import { toFieldErrors } from '../utils'
-
-type CssLocator = Extract<ElementLocator, { type: 'css' }>
 
 interface GetByCssFormProps {
   locator: CssLocator

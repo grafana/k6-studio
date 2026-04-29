@@ -1,10 +1,8 @@
 import { FieldGroup } from '@/components/Form'
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, TitleLocator } from '@/schemas/locator'
 
 import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
-
-type TitleLocator = Extract<ElementLocator, { type: 'title' }>
 
 interface GetByTitleFormProps {
   locator: TitleLocator

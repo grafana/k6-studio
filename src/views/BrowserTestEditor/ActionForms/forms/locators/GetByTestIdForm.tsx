@@ -1,11 +1,9 @@
 import { TextField } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
-import { ElementLocator } from '@/schemas/locator'
+import { ElementLocator, TestIdLocator } from '@/schemas/locator'
 
 import { toFieldErrors } from '../utils'
-
-type TestIdLocator = Extract<ElementLocator, { type: 'testid' }>
 
 interface GetByTestIdFormProps {
   locator: TestIdLocator
