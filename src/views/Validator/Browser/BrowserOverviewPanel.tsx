@@ -12,13 +12,13 @@ import { DebugSession } from '../types'
 interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
-  highlightedSelector: ElementLocator | null
+  highlightedLocator: ElementLocator | null
 }
 
 export function BrowserOverviewPanel({
   script,
   session,
-  highlightedSelector,
+  highlightedLocator,
 }: BrowserOverviewPanelProps) {
   const [tab, setTab] = useState('script')
 
@@ -69,7 +69,7 @@ export function BrowserOverviewPanel({
           <SessionPlayer
             key={session.id}
             session={session}
-            highlightedSelector={highlightedSelector}
+            highlightedLocator={highlightedLocator}
           />
         </PersistentTabs.Content>
       </Flex>

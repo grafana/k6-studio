@@ -110,11 +110,11 @@ const icons: { [P in AriaRole]: ComponentType<LucideProps> | null } = {
 }
 
 interface RoleLocatorIconProps extends LucideProps {
-  selector: Extract<ElementLocator, { type: 'role' }>
+  locator: Extract<ElementLocator, { type: 'role' }>
 }
 
-export function RoleLocatorIcon({ selector, ...props }: RoleLocatorIconProps) {
-  const Component = icons[selector.role] ?? SpeechIcon
+export function RoleLocatorIcon({ locator, ...props }: RoleLocatorIconProps) {
+  const Component = icons[locator.role] ?? SpeechIcon
 
   return <Component {...props} />
 }

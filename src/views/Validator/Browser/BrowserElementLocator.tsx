@@ -1,23 +1,23 @@
 import { Locator } from '@/components/Browser/Locator'
 import { ElementLocator } from '@/schemas/locator'
 
-import { useHighlightSelector } from '../../../components/HighlightSelectorProvider'
+import { useHighlightLocator } from '../../../components/HighlightLocatorProvider'
 
 interface BrowserElementLocatorProps {
   locator: ElementLocator
 }
 
 export function BrowserElementLocator({ locator }: BrowserElementLocatorProps) {
-  const setHighlightedSelector = useHighlightSelector()
+  const setHighlightedLocator = useHighlightLocator()
 
   const handleHighlightChange = (highlighted: boolean) => {
     if (!highlighted) {
-      setHighlightedSelector(null)
+      setHighlightedLocator(null)
 
       return
     }
 
-    setHighlightedSelector(locator)
+    setHighlightedLocator(locator)
   }
 
   return <Locator locator={locator} onHighlightChange={handleHighlightChange} />

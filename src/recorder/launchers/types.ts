@@ -10,7 +10,7 @@ export interface RecordingSessionEventMap {
 }
 
 export interface RecordingSession extends EventEmitter<RecordingSessionEventMap> {
-  highlightElement(selector: ElementLocator | null): void
+  highlightElement(locator: ElementLocator | null): void
   navigateTo(url: string): void
   stop(): void
 }

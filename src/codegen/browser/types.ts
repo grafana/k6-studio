@@ -17,7 +17,7 @@ export interface PageNode extends NodeBase {
 
 export interface LocatorNode extends NodeBase {
   type: 'locator'
-  selector: ElementLocator
+  locator: ElementLocator
   inputs: {
     page: NodeRef
   }

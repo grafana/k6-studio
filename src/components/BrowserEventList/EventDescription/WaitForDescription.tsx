@@ -5,7 +5,7 @@ import { Selector } from './Selector'
 
 interface WaitForDescriptionProps {
   event: WaitForEvent
-  onHighlight: (selector: ElementLocator | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function WaitForDescription({

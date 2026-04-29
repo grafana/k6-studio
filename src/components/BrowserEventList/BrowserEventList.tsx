@@ -11,7 +11,7 @@ import { EventIcon } from './EventIcon'
 interface BrowserEventListProps {
   events: BrowserEvent[]
   onNavigate: (url: string) => void
-  onHighlight: (selector: ElementLocator | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function BrowserEventList({

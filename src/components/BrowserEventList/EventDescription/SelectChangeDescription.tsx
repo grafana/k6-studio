@@ -9,7 +9,7 @@ import { Selector } from './Selector'
 
 interface SelectChangeDescriptionProps {
   event: SelectChangeEvent
-  onHighlight: (selector: ElementLocator | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function SelectChangeDescription({

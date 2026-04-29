@@ -6,7 +6,7 @@ import { Selector } from './Selector'
 
 interface ClickDescriptionProps {
   event: ClickEvent
-  onHighlight: (selector: ElementLocator | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function ClickDescription({

@@ -47,7 +47,7 @@ export function LocatorIcon({ locator, ...props }: LocatorComponentProps) {
       return <CaseSensitiveIcon {...props} />
 
     case 'role':
-      return <RoleLocatorIcon selector={locator} {...props} />
+      return <RoleLocatorIcon locator={locator} {...props} />
 
     default:
       return exhaustive(locator)

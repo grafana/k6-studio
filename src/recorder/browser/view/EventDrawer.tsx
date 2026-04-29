@@ -42,10 +42,10 @@ export function EventDrawer({ open, events, onOpenChange }: EventDrawerProps) {
   const container = useContainerElement()
   const [settings, setSettings] = useInBrowserSettings()
 
-  const handleHighlight = (selector: ElementLocator | null) => {
+  const handleHighlight = (locator: ElementLocator | null) => {
     client.send({
       type: 'highlight-elements',
-      selector,
+      locator,
     })
   }
 

@@ -3,19 +3,16 @@ import { Replayer } from 'rrweb'
 import { ElementHighlights } from '@/components/Browser/ElementHighlights'
 import { ElementLocator } from '@/schemas/locator'
 
-interface SelectorHighlightsProps {
+interface LocatorHighlightsProps {
   player: Replayer | null
-  selector: ElementLocator | null
+  locator: ElementLocator | null
 }
 
-export function SelectorHighlights({
-  player,
-  selector,
-}: SelectorHighlightsProps) {
+export function LocatorHighlights({ player, locator }: LocatorHighlightsProps) {
   return (
     <ElementHighlights
       element={player?.iframe?.contentDocument?.documentElement ?? null}
-      selector={selector}
+      locator={locator}
     />
   )
 }

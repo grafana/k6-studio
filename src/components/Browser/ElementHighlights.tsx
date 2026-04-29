@@ -32,7 +32,7 @@ const ElementOutline = forwardRef<HTMLDivElement, ElementHighlightProps>(
 
 interface ElementHighlightsProps {
   element: HTMLElement | null
-  selector: ElementLocator | null
+  locator: ElementLocator | null
 }
 
 /**
@@ -40,9 +40,9 @@ interface ElementHighlightsProps {
  */
 export function ElementHighlights({
   element,
-  selector,
+  locator,
 }: ElementHighlightsProps) {
-  const highlights = useHighlightedElements(element, selector)
+  const highlights = useHighlightedElements(element, locator)
 
   if (highlights === null) {
     return null

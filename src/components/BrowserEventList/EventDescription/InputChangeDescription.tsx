@@ -69,7 +69,7 @@ function MaskedValue({ sensitive, value }: SensitiveValueProps) {
 
 interface InputChangeDescriptionProps {
   event: InputChangeEvent
-  onHighlight: (selector: ElementLocator | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function InputChangeDescription({

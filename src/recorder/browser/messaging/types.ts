@@ -36,7 +36,7 @@ export const EventsRecordedSchema = z.object({
 
 export const HighlightElementsSchema = z.object({
   type: z.literal('highlight-elements'),
-  selector: ElementLocatorSchema.nullable(),
+  locator: ElementLocatorSchema.nullable(),
 })
 
 export const NavigateSchema = z.object({

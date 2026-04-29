@@ -62,23 +62,23 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
   // We always inline locator nodes for readability. If we implement better
   // logic for generating variable names, then we could consider declaring
   // a variable for it if there are multiple references.
-  switch (node.selector.type) {
+  switch (node.locator.type) {
     case 'role':
       context.inline(node, {
         type: 'NewRoleLocatorExpression',
         role: {
           type: 'StringLiteral',
-          value: node.selector.role,
+          value: node.locator.role,
         },
-        options: node.selector.options?.name
+        options: node.locator.options?.name
           ? {
               type: 'RoleLocatorOptionsExpression',
               name: {
                 // getByRole creates an internal selector, e.g. internal:role=link[name='Hello's] that is passed
                 // to the browser. Since the string literal value is wrapped in single quotes, we need to escape
                 // any single quotes in the name. Bug report: https://github.com/grafana/k6/issues/5360
-                value: node.selector.options.name.replaceAll("'", "\\'"),
-                exact: node.selector.options.exact || undefined,
+                value: node.locator.options.name.replaceAll("'", "\\'"),
+                exact: node.locator.options.exact || undefined,
               },
             }
           : null,
@@ -91,13 +91,13 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewLabelLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.label,
+          value: node.locator.label,
         },
         page,
-        options: node.selector.options?.exact
+        options: node.locator.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.selector.options.exact,
+              exact: node.locator.options.exact,
             }
           : null,
       })
@@ -108,13 +108,13 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewPlaceholderLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.placeholder,
+          value: node.locator.placeholder,
         },
         page,
-        options: node.selector.options?.exact
+        options: node.locator.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.selector.options.exact,
+              exact: node.locator.options.exact,
             }
           : null,
       })
@@ -125,13 +125,13 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewTitleLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.title,
+          value: node.locator.title,
         },
         page,
-        options: node.selector.options?.exact
+        options: node.locator.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.selector.options.exact,
+              exact: node.locator.options.exact,
             }
           : null,
       })
@@ -142,13 +142,13 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewAltTextLocatorExpression',
         text: {
           type: 'StringLiteral',
-          value: node.selector.text,
+          value: node.locator.text,
         },
         page,
-        options: node.selector.options?.exact
+        options: node.locator.options?.exact
           ? {
               type: 'TextLocatorOptionsExpression',
-              exact: node.selector.options.exact,
+              exact: node.locator.options.exact,
             }
           : null,
       })
@@ -159,7 +159,7 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewTestIdLocatorExpression',
         testId: {
           type: 'StringLiteral',
-          value: node.selector.testId,
+          value: node.locator.testId,
         },
         page,
       })
@@ -170,7 +170,7 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
         type: 'NewCssLocatorExpression',
         selector: {
           type: 'StringLiteral',
-          value: node.selector.selector,
+          value: node.locator.selector,
         },
         page,
       })
@@ -182,7 +182,7 @@ function emitLocatorNode(context: IntermediateContext, node: m.LocatorNode) {
       )
 
     default:
-      exhaustive(node.selector)
+      exhaustive(node.locator)
   }
 }
 

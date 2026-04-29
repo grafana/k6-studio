@@ -6,7 +6,7 @@ import { useIsRecording } from '@/views/Recorder/RecordingContext'
 
 interface SelectorProps {
   selectors: ElementSelector
-  onHighlight: (selector: ElementLocator | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function Selector({ selectors, onHighlight }: SelectorProps) {

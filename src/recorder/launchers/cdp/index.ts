@@ -99,8 +99,8 @@ class CDPRecordingSession
     })
   }
 
-  highlightElement(selector: ElementLocator | null): void {
-    this.#server.send({ type: 'highlight-elements', selector })
+  highlightElement(locator: ElementLocator | null): void {
+    this.#server.send({ type: 'highlight-elements', locator })
   }
 
   navigateTo(url: string): void {

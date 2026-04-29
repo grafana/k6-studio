@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react'
 
 import { LocatorIcon, LocatorText } from '@/components/Browser/Locator'
 import { FieldGroup } from '@/components/Form'
-import { useHighlightSelector } from '@/components/HighlightSelectorProvider'
+import { useHighlightLocator } from '@/components/HighlightLocatorProvider'
 import { ElementLocator } from '@/schemas/locator'
 import { exhaustive } from '@/utils/typescript'
 
@@ -52,7 +52,7 @@ export function LocatorForm({
   onChange,
   suggestedRoles,
 }: LocatorFormProps) {
-  const highlightSelector = useHighlightSelector()
+  const highlightSelector = useHighlightLocator()
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 

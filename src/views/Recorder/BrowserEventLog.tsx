@@ -13,8 +13,8 @@ export function BrowserEventLog({ events }: BrowserEventLogProps) {
     window.studio.browserRemote.navigateTo(url)
   }
 
-  const handleHighlight = (selector: ElementLocator | null) => {
-    window.studio.browserRemote.highlightElement(selector)
+  const handleHighlight = (locator: ElementLocator | null) => {
+    window.studio.browserRemote.highlightElement(locator)
   }
 
   return (

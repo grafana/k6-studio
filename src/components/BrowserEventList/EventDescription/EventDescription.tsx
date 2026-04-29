@@ -13,7 +13,7 @@ import { WaitForDescription } from './WaitForDescription'
 interface EventDescriptionProps {
   event: BrowserEvent
   onNavigate: (url: string) => void
-  onHighlight: (selector: ElementLocator | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function EventDescription({

@@ -7,7 +7,7 @@ import { Selector } from './Selector'
 
 interface AssertDescriptionProps {
   event: AssertEvent
-  onHighlight: (selector: ElementLocator | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function AssertDescription({

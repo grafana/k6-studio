@@ -2,7 +2,7 @@ import { ElementLocator } from '@/schemas/locator'
 import { ElementSelector } from '@/schemas/recording'
 import { exhaustive } from '@/utils/typescript'
 
-function getRoleSelector(selectors: ElementSelector): ElementLocator | null {
+function getRoleLocator(selectors: ElementSelector): ElementLocator | null {
   if (selectors.role === undefined) {
     return null
   }
@@ -16,7 +16,7 @@ function getRoleSelector(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getAltTextSelector(selectors: ElementSelector): ElementLocator | null {
+function getAltTextLocator(selectors: ElementSelector): ElementLocator | null {
   if (selectors.alt === undefined) {
     return null
   }
@@ -28,7 +28,7 @@ function getAltTextSelector(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getLabelSelector(selectors: ElementSelector): ElementLocator | null {
+function getLabelLocator(selectors: ElementSelector): ElementLocator | null {
   if (selectors.label === undefined) {
     return null
   }
@@ -40,7 +40,7 @@ function getLabelSelector(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getPlaceholderSelector(
+function getPlaceholderLocator(
   selectors: ElementSelector
 ): ElementLocator | null {
   if (selectors.placeholder === undefined) {
@@ -54,7 +54,7 @@ function getPlaceholderSelector(
   }
 }
 
-function getTitleSelector(selectors: ElementSelector): ElementLocator | null {
+function getTitleLocator(selectors: ElementSelector): ElementLocator | null {
   if (selectors.title === undefined) {
     return null
   }
@@ -66,7 +66,7 @@ function getTitleSelector(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getTestIdSelector(selectors: ElementSelector): ElementLocator | null {
+function getTestIdLocator(selectors: ElementSelector): ElementLocator | null {
   if (selectors.testId === undefined || selectors.testId.trim() === '') {
     return null
   }
@@ -77,7 +77,7 @@ function getTestIdSelector(selectors: ElementSelector): ElementLocator | null {
   }
 }
 
-function getCssSelector(selectors: ElementSelector): ElementLocator {
+function getCssLocator(selectors: ElementSelector): ElementLocator {
   return {
     type: 'css',
     selector: selectors.css,
@@ -86,17 +86,17 @@ function getCssSelector(selectors: ElementSelector): ElementLocator {
 
 export function getElementLocator(selector: ElementSelector): ElementLocator {
   return (
-    getRoleSelector(selector) ??
-    getLabelSelector(selector) ??
-    getAltTextSelector(selector) ??
-    getPlaceholderSelector(selector) ??
-    getTitleSelector(selector) ??
-    getTestIdSelector(selector) ??
-    getCssSelector(selector)
+    getRoleLocator(selector) ??
+    getLabelLocator(selector) ??
+    getAltTextLocator(selector) ??
+    getPlaceholderLocator(selector) ??
+    getTitleLocator(selector) ??
+    getTestIdLocator(selector) ??
+    getCssLocator(selector)
   )
 }
 
-export function isSelectorEqual(a: ElementLocator, b: ElementLocator): boolean {
+export function isLocatorEqual(a: ElementLocator, b: ElementLocator): boolean {
   switch (a.type) {
     case 'css':
       return b.type === 'css' && a.selector === b.selector

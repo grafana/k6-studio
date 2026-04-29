@@ -7,8 +7,8 @@ import { BrowserRemoteHandlers } from './types'
 export function initialize() {
   ipcMain.on(
     BrowserRemoteHandlers.HighlightElement,
-    (_event, selector: ElementLocator | null) => {
-      k6StudioState.currentRecordingSession?.highlightElement(selector)
+    (_event, locator: ElementLocator | null) => {
+      k6StudioState.currentRecordingSession?.highlightElement(locator)
     }
   )
 

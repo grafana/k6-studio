@@ -12,7 +12,7 @@ import {
   LocatorOptions,
 } from '@/views/BrowserTestEditor/types'
 
-import { isSelectorEqual, getElementLocator } from './selectors'
+import { isLocatorEqual, getElementLocator } from './selectors'
 import {
   TestNode,
   PageNode,
@@ -99,17 +99,17 @@ function buildBrowserNodeGraphFromEvents(events: BrowserEvent[]) {
     // await input.type("Hello")
     // await input.press("Enter")
 
-    const selector = getElementLocator(target.selectors)
+    const locator = getElementLocator(target.selectors)
 
     if (
       previousLocator === null ||
-      !isSelectorEqual(selector, previousLocator.selector) ||
+      !isLocatorEqual(locator, previousLocator.locator) ||
       previousLocator.inputs.page.nodeId !== page.nodeId
     ) {
       previousLocator = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
-        selector,
+        locator,
         inputs: {
           page,
         },
@@ -335,13 +335,13 @@ function buildBrowserNodeGraphFromActions(
 
     if (
       previousLocatorNode === null ||
-      !isSelectorEqual(currentLocator, previousLocatorNode.selector) ||
+      !isLocatorEqual(currentLocator, previousLocatorNode.locator) ||
       previousLocatorNode.inputs.page.nodeId !== getPage().nodeId
     ) {
       previousLocatorNode = {
         type: 'locator',
         nodeId: crypto.randomUUID(),
-        selector: currentLocator,
+        locator: currentLocator,
         inputs: {
           page: getPage(),
         },

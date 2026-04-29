@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { findElementsBySelector } from './selectors'
+import { findElementsByLocator } from './selectors'
 
-describe('findElementsBySelector', () => {
+describe('findElementsByLocator', () => {
   it('matches role name with substring when exact is false', () => {
     document.body.innerHTML = '<button type="button">Submit</button>'
-    const matches = findElementsBySelector(document.body, {
+    const matches = findElementsByLocator(document.body, {
       type: 'role',
       role: 'button',
       options: { name: 'Sub', exact: false },
@@ -16,14 +16,14 @@ describe('findElementsBySelector', () => {
 
   it('matches role name only exactly when exact is true', () => {
     document.body.innerHTML = '<button type="button">Submit</button>'
-    const partial = findElementsBySelector(document.body, {
+    const partial = findElementsByLocator(document.body, {
       type: 'role',
       role: 'button',
       options: { name: 'Sub', exact: true },
     })
     expect(partial).toHaveLength(0)
 
-    const full = findElementsBySelector(document.body, {
+    const full = findElementsByLocator(document.body, {
       type: 'role',
       role: 'button',
       options: { name: 'Submit', exact: true },
@@ -33,7 +33,7 @@ describe('findElementsBySelector', () => {
 
   it('defaults role name to substring match when exact is omitted', () => {
     document.body.innerHTML = '<button type="button">Submit</button>'
-    const partial = findElementsBySelector(document.body, {
+    const partial = findElementsByLocator(document.body, {
       type: 'role',
       role: 'button',
       options: { name: 'Sub' },

@@ -11,13 +11,13 @@ import { useStudioClient } from './StudioClientProvider'
 export function RemoteHighlights() {
   const client = useStudioClient()
 
-  const [selector, setSelector] = useState<ElementLocator | null>(null)
+  const [locator, setLocator] = useState<ElementLocator | null>(null)
 
   useEffect(() => {
     return client.on('highlight-elements', ({ data }) => {
-      setSelector(data.selector)
+      setLocator(data.locator)
     })
   }, [client])
 
-  return <ElementHighlights element={document.body} selector={selector} />
+  return <ElementHighlights element={document.body} locator={locator} />
 }
