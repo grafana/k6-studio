@@ -1,6 +1,6 @@
 const isWindows =
-  (globalThis.window && globalThis.window.studio.platform === 'win32') ||
-  (globalThis.process && process.platform === 'win32')
+  (globalThis.window && globalThis.window.studio?.platform === 'win32') ||
+  (globalThis.process && globalThis.process.platform === 'win32')
 
 export const sep = isWindows ? '\\' : '/'
 

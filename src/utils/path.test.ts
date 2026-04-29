@@ -4,7 +4,7 @@ import type * as PathModule from './path'
 
 async function importPath(platform: string): Promise<typeof PathModule> {
   vi.resetModules()
-  vi.stubGlobal('process', { ...process, platform })
+  vi.stubGlobal('window', { ...window, studio: { platform } })
   return import('./path')
 }
 
