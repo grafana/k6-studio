@@ -5,20 +5,20 @@ import { useEffect, useState } from 'react'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
 import { PersistentTabs } from '@/components/primitives/PersistentTabs'
-import { NodeSelector } from '@/schemas/selectors'
+import { ElementLocator } from '@/schemas/locator'
 
 import { DebugSession } from '../types'
 
 interface BrowserOverviewPanelProps {
   script: string
   session: DebugSession
-  highlightedSelector: NodeSelector | null
+  highlightedLocator: ElementLocator | null
 }
 
 export function BrowserOverviewPanel({
   script,
   session,
-  highlightedSelector,
+  highlightedLocator,
 }: BrowserOverviewPanelProps) {
   const [tab, setTab] = useState('script')
 
@@ -69,7 +69,7 @@ export function BrowserOverviewPanel({
           <SessionPlayer
             key={session.id}
             session={session}
-            highlightedSelector={highlightedSelector}
+            highlightedLocator={highlightedLocator}
           />
         </PersistentTabs.Content>
       </Flex>

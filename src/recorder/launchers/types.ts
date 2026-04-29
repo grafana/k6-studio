@@ -1,6 +1,6 @@
 import { LaunchBrowserErrorReason } from '@/recorder/types'
+import { ElementLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 import { EventEmitter } from '@/utils/events'
 
 export interface RecordingSessionEventMap {
@@ -10,7 +10,7 @@ export interface RecordingSessionEventMap {
 }
 
 export interface RecordingSession extends EventEmitter<RecordingSessionEventMap> {
-  highlightElement(selector: NodeSelector | null): void
+  highlightElement(locator: ElementLocator | null): void
   navigateTo(url: string): void
   stop(): void
 }

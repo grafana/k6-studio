@@ -31,7 +31,7 @@ export function TextAssertionEditor({
     return () => {
       client.send({
         type: 'highlight-elements',
-        selector: null,
+        locator: null,
       })
     }
   }, [client])

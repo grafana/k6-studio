@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { NodeSelector } from '@/schemas/selectors'
-import { findElementsBySelector } from '@/utils/selectors'
+import { ElementLocator } from '@/schemas/locator'
+import { findElementsByLocator } from '@/utils/selectors'
 
 import { Bounds } from './types'
 import { getElementBounds } from './utils'
@@ -15,20 +15,20 @@ interface Highlight {
 
 export function useHighlightedElements(
   element: HTMLElement | null,
-  selector: NodeSelector | null
+  locator: ElementLocator | null
 ) {
   const idCounter = useRef(0)
   const [highlights, setHighlights] = useState<Highlight[] | null>(null)
 
   useEffect(() => {
-    if (element === null || selector === null) {
+    if (element === null || locator === null) {
       setHighlights(null)
 
       return
     }
 
     try {
-      const elements = findElementsBySelector(element, selector)
+      const elements = findElementsByLocator(element, locator)
       const highlights = elements.map((element) => {
         const bounds = getElementBounds(element)
 
@@ -43,10 +43,10 @@ export function useHighlightedElements(
     } catch {
       setHighlights([])
     }
-  }, [element, selector])
+  }, [element, locator])
 
   useEffect(() => {
-    if (element === null || selector === null) {
+    if (element === null || locator === null) {
       return
     }
 
@@ -70,7 +70,7 @@ export function useHighlightedElements(
     return () => {
       observer.disconnect()
     }
-  }, [element, selector])
+  }, [element, locator])
 
   return useDebouncedValue({
     value: highlights,

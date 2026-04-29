@@ -5,12 +5,12 @@ import { Flex, Box } from '@radix-ui/themes'
 import { ReactNode, useState } from 'react'
 
 import { isBrowserAssertion } from '@/main/runner/schema'
-import { NodeSelector } from '@/schemas/selectors'
+import { ElementLocator } from '@/schemas/locator'
 import { DebugSession } from '@/views/Validator/types'
 
 import { AddressBar } from './AddressBar'
+import { LocatorHighlights } from './LocatorHighlights'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
-import { SelectorHighlights } from './SelectorHighlights'
 import { usePlayer } from './SessionPlayer.hooks'
 import { getPageState } from './SessionPlayer.utils'
 import { Viewport } from './Viewport'
@@ -29,7 +29,7 @@ interface SessionPlayerProps {
   placeholder?: string
   initialPage?: Page
   initialContent?: ReactNode
-  highlightedSelector: NodeSelector | null
+  highlightedLocator: ElementLocator | null
 }
 
 export function SessionPlayer({
@@ -37,7 +37,7 @@ export function SessionPlayer({
   placeholder = 'Enter a URL to start...',
   initialPage = DEFAULT_PAGE,
   initialContent,
-  highlightedSelector,
+  highlightedLocator,
 }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
 
@@ -108,9 +108,9 @@ export function SessionPlayer({
               }}
             />
             {pageState === 'loaded' && (
-              <SelectorHighlights
+              <LocatorHighlights
                 player={player}
-                selector={highlightedSelector ?? null}
+                locator={highlightedLocator ?? null}
               />
             )}
           </Box>

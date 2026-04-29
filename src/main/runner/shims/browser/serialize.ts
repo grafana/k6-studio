@@ -1,4 +1,6 @@
-import { ActionLocator, SerializedValue } from '../../schema'
+import { ElementLocator } from '@/schemas/locator'
+
+import { SerializedValue } from '../../schema'
 
 import { locatorDetail, pageDetail } from './proxies/symbols'
 
@@ -37,7 +39,7 @@ export function serializeValue(value: unknown): SerializedValue {
       if (locatorDetail in value) {
         return {
           type: 'locator',
-          locator: value[locatorDetail] as ActionLocator,
+          locator: value[locatorDetail] as ElementLocator,
         }
       }
 

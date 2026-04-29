@@ -1,5 +1,5 @@
+import { ElementLocator } from '@/schemas/locator'
 import { BrowserEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 import { exhaustive } from '@/utils/typescript'
 
 import { AssertDescription } from './AssertDescription'
@@ -13,7 +13,7 @@ import { WaitForDescription } from './WaitForDescription'
 interface EventDescriptionProps {
   event: BrowserEvent
   onNavigate: (url: string) => void
-  onHighlight: (selector: NodeSelector | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function EventDescription({

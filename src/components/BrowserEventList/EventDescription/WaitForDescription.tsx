@@ -1,11 +1,11 @@
+import { ElementLocator } from '@/schemas/locator'
 import { WaitForEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 
 import { Selector } from './Selector'
 
 interface WaitForDescriptionProps {
   event: WaitForEvent
-  onHighlight: (selector: NodeSelector | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function WaitForDescription({
