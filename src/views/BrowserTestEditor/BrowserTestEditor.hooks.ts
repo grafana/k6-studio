@@ -145,6 +145,10 @@ export function useBrowserTestState(
     setState([...state, action])
   }
 
+  const addActionInstance = (action: BrowserActionInstance) => {
+    setState([...state, action])
+  }
+
   const updateAction = (updatedAction: BrowserActionInstance) => {
     const newActions = state.map((action) =>
       action.id === updatedAction.id ? updatedAction : action
@@ -183,6 +187,7 @@ export function useBrowserTestState(
     actions: state,
     plainActions,
     addAction,
+    addActionInstance,
     updateAction,
     removeAction,
     reorderActions,

@@ -174,6 +174,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                             <ReplayContextMenu
                               position={contextMenuPos}
                               onClose={() => setContextMenuPos(null)}
+                              onAddAction={test.addActionInstance}
                             />
                           )}
                         </PersistentTabs.Content>
