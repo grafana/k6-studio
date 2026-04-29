@@ -11,7 +11,7 @@ import { DebugSession } from '@/views/Validator/types'
 import { AddressBar } from './AddressBar'
 import { OnSeekEvent, PlaybackControls } from './PlaybackControls'
 import { SelectorHighlights } from './SelectorHighlights'
-import { usePlayer } from './SessionPlayer.hooks'
+import { ContextMenuEvent, usePlayer } from './SessionPlayer.hooks'
 import { getPageState } from './SessionPlayer.utils'
 import { Viewport } from './Viewport'
 import { Page } from './types'
@@ -31,6 +31,8 @@ interface SessionPlayerProps {
   initialContent?: ReactNode
   highlightedSelector: NodeSelector | null
   interactive?: boolean
+  onContextMenu?: (pos: ContextMenuEvent) => void
+  onClick?: () => void
 }
 
 export function SessionPlayer({
@@ -40,6 +42,8 @@ export function SessionPlayer({
   initialContent,
   highlightedSelector,
   interactive = false,
+  onContextMenu,
+  onClick,
 }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
 
@@ -47,6 +51,8 @@ export function SessionPlayer({
     session,
     mount,
     interactive,
+    onContextMenu,
+    onClick,
   })
 
   const handleSeek = ({ time, commit }: OnSeekEvent) => {

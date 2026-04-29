@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
 import { Flex, Tabs, Text } from '@radix-ui/themes'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import LogoGradient from '@/assets/logo-gradient.svg'
@@ -11,6 +12,7 @@ import {
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
+import { ContextMenuEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
 import {
   LogsSection,
   useConsoleFilter,
@@ -35,6 +37,7 @@ import {
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
+import { ReplayContextMenu } from './ReplayContextMenu'
 
 interface BrowserTestEditorViewProps {
   file: StudioFile
@@ -49,6 +52,10 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const consoleFilter = useConsoleFilter()
   const highlightedSelector = useHighlightedSelector()
+
+  const [contextMenuPos, setContextMenuPos] = useState<ContextMenuEvent | null>(
+    null
+  )
 
   const test = useBrowserTestState(data)
 
@@ -160,7 +167,15 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                             }
                             session={session}
                             highlightedSelector={highlightedSelector}
+                            onContextMenu={setContextMenuPos}
+                            onClick={() => setContextMenuPos(null)}
                           />
+                          {contextMenuPos !== null && (
+                            <ReplayContextMenu
+                              position={contextMenuPos}
+                              onClose={() => setContextMenuPos(null)}
+                            />
+                          )}
                         </PersistentTabs.Content>
                         <PersistentTabs.Content
                           css={css`

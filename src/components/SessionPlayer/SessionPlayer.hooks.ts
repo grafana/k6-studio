@@ -64,16 +64,26 @@ interface Pages {
   current: Page
 }
 
+export type ContextMenuEvent = {
+  x: number
+  y: number
+  target: HTMLElement
+}
+
 interface UsePlayerOptions {
   session: DebugSession
   mount: HTMLDivElement | null
   interactive?: boolean
+  onContextMenu?: (pos: ContextMenuEvent) => void
+  onClick?: () => void
 }
 
 export function usePlayer({
   session,
   mount,
   interactive = false,
+  onContextMenu,
+  onClick,
 }: UsePlayerOptions) {
   const events = session.browser.replay
 
@@ -146,6 +156,14 @@ export function usePlayer({
     setPlayer(newPlayer)
   }, [player, mount, session.state, events])
 
+  const onContextMenuRef = useRef(onContextMenu)
+  const onClickRef = useRef(onClick)
+
+  useEffect(() => {
+    onContextMenuRef.current = onContextMenu
+    onClickRef.current = onClick
+  })
+
   useEffect(() => {
     if (!player || !interactive) {
       return
@@ -164,16 +182,48 @@ export function usePlayer({
         e.preventDefault()
       }
 
-      const events = ['click', 'submit', 'contextmenu', 'keydown', 'keypress']
+      const handleClick = (e: Event) => {
+        e.preventDefault()
+        onClickRef.current?.()
+      }
 
-      for (const ev of events) {
+      const handleContextMenu = (ev: PointerEvent) => {
+        ev.preventDefault()
+
+        const iframe = player.iframe
+
+        if (!iframe) {
+          return
+        }
+
+        const rect = iframe.getBoundingClientRect()
+
+        const x = rect.left + (ev.clientX / iframe.offsetWidth) * rect.width
+        const y = rect.top + (ev.clientY / iframe.offsetHeight) * rect.height
+
+        onContextMenuRef.current?.({
+          x,
+          y,
+          target: ev.target as HTMLElement,
+        })
+      }
+
+      const blockedEvents = ['submit', 'keydown', 'keypress']
+
+      for (const ev of blockedEvents) {
         target.addEventListener(ev, preventInteraction, true)
       }
 
+      target.addEventListener('click', handleClick, true)
+      target.addEventListener('contextmenu', handleContextMenu, true)
+
       return () => {
-        for (const ev of events) {
+        for (const ev of blockedEvents) {
           target.removeEventListener(ev, preventInteraction, true)
         }
+
+        target.removeEventListener('click', handleClick, true)
+        target.removeEventListener('contextmenu', handleContextMenu, true)
       }
     }
 
