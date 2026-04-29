@@ -10,8 +10,9 @@ import {
 import { ReactNode } from 'react'
 
 import { Tooltip } from '@/components/primitives/Tooltip'
-import { ActionLocator, SerializedValue } from '@/main/runner/schema'
-import { BrowserActionLocator } from '@/views/Validator/Browser/BrowserActionLocator'
+import { SerializedValue } from '@/main/runner/schema'
+import { ElementLocator } from '@/schemas/locator'
+import { BrowserElementLocator } from '@/views/Validator/Browser/BrowserElementLocator'
 
 type ValueProps = CodeProps & {
   tooltip?: string
@@ -180,11 +181,11 @@ function SymbolValue({ value }: { value: string }) {
 }
 
 interface LocatorValueProps {
-  locator: ActionLocator
+  locator: ElementLocator
 }
 
 function LocatorValue({ locator }: LocatorValueProps) {
-  return <BrowserActionLocator locator={locator} />
+  return <BrowserElementLocator locator={locator} />
 }
 
 function PageValue() {

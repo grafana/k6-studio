@@ -1,16 +1,14 @@
 import { TextField } from '@radix-ui/themes'
 
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/main/runner/schema'
+import { ElementLocator, TestIdLocator } from '@/schemas/locator'
 
 import { toFieldErrors } from '../utils'
-
-type TestIdLocator = Extract<ActionLocator, { type: 'testid' }>
 
 interface GetByTestIdFormProps {
   locator: TestIdLocator
   errors?: Record<string, string>
-  onChange: (locator: ActionLocator) => void
+  onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 

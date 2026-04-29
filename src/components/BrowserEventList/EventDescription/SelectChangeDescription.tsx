@@ -2,14 +2,14 @@ import { css } from '@emotion/react'
 
 import { formatOption, SelectOptions } from '@/components/Browser/SelectOptions'
 import { Tooltip } from '@/components/primitives/Tooltip'
+import { ElementLocator } from '@/schemas/locator'
 import { SelectChangeEvent } from '@/schemas/recording'
-import { NodeSelector } from '@/schemas/selectors'
 
 import { Selector } from './Selector'
 
 interface SelectChangeDescriptionProps {
   event: SelectChangeEvent
-  onHighlight: (selector: NodeSelector | null) => void
+  onHighlight: (locator: ElementLocator | null) => void
 }
 
 export function SelectChangeDescription({

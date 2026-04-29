@@ -2,7 +2,7 @@ import { Theme } from '@radix-ui/themes'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import { HighlightSelectorProvider } from '@/components/HighlightSelectorProvider'
+import { HighlightLocatorProvider } from '@/components/HighlightLocatorProvider'
 import { LocatorClickAction } from '@/main/runner/schema'
 import { buildClickAction } from '@/test/factories/browserActions'
 
@@ -18,9 +18,9 @@ function renderBody(
 ) {
   return render(
     <Theme>
-      <HighlightSelectorProvider>
+      <HighlightLocatorProvider>
         <ClickActionBody action={action} onChange={onChange} />
-      </HighlightSelectorProvider>
+      </HighlightLocatorProvider>
     </Theme>
   )
 }
