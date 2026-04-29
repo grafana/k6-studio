@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Text } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form'
-import { z } from 'zod/v4'
+import type { z } from 'zod/v4'
 
 import { ExternalLink } from '@/components/ExternalLink'
 import { Table } from '@/components/Table'

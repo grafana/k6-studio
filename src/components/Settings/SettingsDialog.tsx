@@ -5,7 +5,7 @@ import { findIndex, sortBy } from 'lodash-es'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { z } from 'zod/v4'
+import type { z } from 'zod/v4'
 
 import { useSaveSettings, useSettings } from '@/hooks/useSettings'
 import { AppSettingsSchema } from '@/schemas/settings'

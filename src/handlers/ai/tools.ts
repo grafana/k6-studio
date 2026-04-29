@@ -1,3 +1,4 @@
+import type { FlexibleSchema } from '@ai-sdk/provider-utils'
 import { asSchema, JSONSchema7, tool, ToolSet } from 'ai'
 import { z } from 'zod/v4'
 
@@ -35,7 +36,7 @@ export function getToolDefinitionsForA2A(): RemoteToolDefinition[] {
   return Object.entries(tools).map(([name, toolDef]) => ({
     name,
     description: toolDef.description ?? '',
-    inputSchema: asSchema(toolDef.inputSchema as Parameters<typeof asSchema>[0])
+    inputSchema: asSchema(toolDef.inputSchema as FlexibleSchema<unknown>)
       .jsonSchema,
   }))
 }
