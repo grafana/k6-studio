@@ -10,7 +10,7 @@ import {
 import { ComponentProps, ReactNode } from 'react'
 
 import { Toolbar } from '@/components/primitives/Toolbar'
-import { ElementRole } from '@/recorder/browser/utils/aria'
+import { ElementRole } from '@/utils/dom/aria'
 
 import {
   findAssociatedControl,

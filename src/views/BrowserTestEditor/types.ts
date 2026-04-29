@@ -3,7 +3,9 @@ import { ElementLocator } from '@/schemas/locator'
 
 export interface LocatorOptions {
   current: ElementLocator['type']
-  values: Partial<Record<ElementLocator['type'], ElementLocator>>
+  values: {
+    [Type in ElementLocator['type']]?: Extract<ElementLocator, { type: Type }>
+  }
 }
 
 export type WithEditorMetadata<T> = (T extends { locator: ElementLocator }

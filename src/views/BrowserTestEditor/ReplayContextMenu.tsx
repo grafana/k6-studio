@@ -1,11 +1,13 @@
 import { DropdownMenu } from '@radix-ui/themes'
+import { useMemo } from 'react'
 
 import { ContextMenuEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
-import { getElementRoles } from '@/recorder/browser/utils/aria'
+import { getAriaDetails } from '@/utils/dom/aria'
+import { findInteractiveElement } from '@/utils/dom/dom'
+import { generateSelectors } from '@/utils/dom/selectors'
 
 import {
   buildLocatorOptions,
-  getInteractiveTarget,
   isCheckbox,
   isRadio,
   isSelect,
@@ -24,15 +26,21 @@ export function ReplayContextMenu({
   onClose,
   onAddAction,
 }: ReplayContextMenuProps) {
-  const target = getInteractiveTarget(position.target)
-  const locator = buildLocatorOptions(target)
-  const roles = [...getElementRoles(target)].map((r) => r.role)
+  const target = findInteractiveElement(position.target) ?? position.target
+
+  const aria = useMemo(() => getAriaDetails(target), [target])
+
+  const locator = useMemo(() => {
+    const selectors = generateSelectors(target, aria)
+
+    return buildLocatorOptions(selectors)
+  }, [aria, target])
 
   const isGeneric =
-    !isTextInput(target, roles) &&
-    !isCheckbox(target, roles) &&
-    !isRadio(target, roles) &&
-    !isSelect(target, roles)
+    !isTextInput(target, aria.roles) &&
+    !isCheckbox(target, aria.roles) &&
+    !isRadio(target, aria.roles) &&
+    !isSelect(target, aria.roles)
 
   return (
     <DropdownMenu.Root open onOpenChange={(open) => !open && onClose()}>
@@ -49,7 +57,7 @@ export function ReplayContextMenu({
         />
       </DropdownMenu.Trigger>
       <DropdownMenu.Content size="1">
-        {isTextInput(target, roles) && (
+        {isTextInput(target, aria.roles) && (
           <>
             <DropdownMenu.Item
               onClick={() =>
@@ -76,7 +84,7 @@ export function ReplayContextMenu({
             </DropdownMenu.Item>
           </>
         )}
-        {isCheckbox(target, roles) && (
+        {isCheckbox(target, aria.roles) && (
           <>
             <DropdownMenu.Item
               onClick={() =>
@@ -102,7 +110,7 @@ export function ReplayContextMenu({
             </DropdownMenu.Item>
           </>
         )}
-        {isRadio(target, roles) && (
+        {isRadio(target, aria.roles) && (
           <DropdownMenu.Item
             onClick={() =>
               onAddAction({
@@ -115,7 +123,7 @@ export function ReplayContextMenu({
             Check
           </DropdownMenu.Item>
         )}
-        {isSelect(target, roles) && (
+        {isSelect(target, aria.roles) && (
           <DropdownMenu.Item
             onClick={() =>
               onAddAction({
