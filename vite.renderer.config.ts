@@ -5,13 +5,17 @@ import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { version } from './package.json'
-import { pluginExposeRenderer } from './vite.base.config'
+import { getDotEnv, pluginExposeRenderer } from './vite.base.config'
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
   const forgeEnv = env as ConfigEnv<'renderer'>
   const { root, mode, forgeConfigSelf } = forgeEnv
   const name = forgeConfigSelf.name ?? ''
+
+  const { K6_TESTING_OVERRIDE } = getDotEnv({
+    K6_TESTING_OVERRIDE: '',
+  })
 
   return {
     root,
@@ -51,6 +55,7 @@ export default defineConfig((env) => {
         process.env.GRAFANA_COM_URL ?? 'https://grafana.com'
       ),
       TARGET_PLATFORM: JSON.stringify(process.platform),
+      K6_TESTING_OVERRIDE,
     },
     clearScreen: false,
   } as UserConfig

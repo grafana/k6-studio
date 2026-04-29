@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { createReplayEvent } from '@/main/runner/rrweb'
-import { BrowserActionEvent, BrowserReplayEvent } from '@/main/runner/schema'
+import { BrowserDebuggerEvent, BrowserReplayEvent } from '@/main/runner/schema'
 
 interface BrowserSession {
-  actions: BrowserActionEvent[]
+  actions: BrowserDebuggerEvent[]
   replay: BrowserReplayEvent[]
 }
 
@@ -15,43 +15,45 @@ export function useBrowserSession() {
   })
 
   useEffect(() => {
-    return window.studio.script.onBrowserAction((event) => {
-      if (event.type === 'begin') {
+    return window.studio.script.onBrowserAction(
+      (event: BrowserDebuggerEvent) => {
+        if (event.state === 'begin') {
+          setBrowserSession((session) => ({
+            ...session,
+            actions: [...session.actions, event],
+            replay: [
+              ...session.replay,
+              createReplayEvent({
+                tag: 'action-begin',
+                payload: {
+                  actionId: event.eventId,
+                },
+                timestamp: event.timestamp.started,
+              }),
+            ],
+          }))
+
+          return
+        }
+
         setBrowserSession((session) => ({
           ...session,
-          actions: [...session.actions, event],
+          actions: session.actions.map((action) =>
+            action.eventId === event.eventId ? event : action
+          ),
           replay: [
             ...session.replay,
             createReplayEvent({
-              tag: 'action-begin',
+              tag: 'action-end',
               payload: {
                 actionId: event.eventId,
               },
-              timestamp: event.timestamp.started,
+              timestamp: event.timestamp.ended,
             }),
           ],
         }))
-
-        return
       }
-
-      setBrowserSession((session) => ({
-        ...session,
-        actions: session.actions.map((action) =>
-          action.eventId === event.eventId ? event : action
-        ),
-        replay: [
-          ...session.replay,
-          createReplayEvent({
-            tag: 'action-end',
-            payload: {
-              actionId: event.eventId,
-            },
-            timestamp: event.timestamp.ended,
-          }),
-        ],
-      }))
-    })
+    )
   }, [])
 
   useEffect(() => {
@@ -69,27 +71,27 @@ export function useBrowserSession() {
         const now = Date.now()
 
         // Abort all actions that were running when the script stopped.
-        const actions: BrowserActionEvent[] = session.actions.map((action) => {
-          if (action.type !== 'begin') {
+        const actions = session.actions.map((action) => {
+          if (action.state !== 'begin') {
             return action
           }
 
           return {
             ...action,
-            type: 'end',
+            state: 'end' as const,
             timestamp: {
               ...action.timestamp,
               ended: now,
             },
             result: {
-              type: 'aborted',
+              type: 'aborted' as const,
             },
           }
         })
 
         // Insert action end events for all actions that were running when the script stopped.
         const actionEnds = session.actions
-          .filter((action) => action.type === 'begin')
+          .filter((action) => action.state === 'begin')
           .map((action) =>
             createReplayEvent({
               tag: 'action-end',
