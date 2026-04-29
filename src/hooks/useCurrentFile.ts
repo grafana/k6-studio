@@ -1,8 +1,8 @@
-import { parse } from 'pathe'
 import { useParams } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { StudioFile, StudioFileType } from '@/types'
+import * as path from '@/utils/path'
 
 export function useActiveFilePath() {
   const { filePath } = useParams<{ filePath: string }>()
@@ -15,7 +15,7 @@ export function useCurrentFile(type: StudioFileType): StudioFile {
 
   invariant(filePath, 'filePath param is required')
 
-  const { base, name } = parse(filePath)
+  const { base, name } = path.parse(filePath)
 
   return {
     type,
