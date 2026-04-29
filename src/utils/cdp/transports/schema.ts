@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 const ChromeEventSchema = z.object({
   sessionId: z.string().optional(),
@@ -8,12 +8,12 @@ const ChromeEventSchema = z.object({
 
 const ChromeResultSchema = z.object({
   id: z.number(),
-  result: z.record(z.unknown()),
+  result: z.record(z.string(), z.unknown()),
 })
 
 const ChromeErrorSchema = z.object({
   id: z.number(),
-  error: z.record(z.unknown()),
+  error: z.record(z.string(), z.unknown()),
 })
 
 export const ChromeResponseSchema = z.union([

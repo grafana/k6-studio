@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import { getUserAgent } from '@/utils/cloud'
 
@@ -16,11 +16,10 @@ export function getHeaders({ stackId, token }: CloudCredentials) {
   }
 }
 
-export async function parse<
-  Output = unknown,
-  Def extends z.ZodTypeDef = z.ZodTypeDef,
-  Input = Output,
->(response: Response, schema: z.ZodSchema<Output, Def, Input>) {
+export async function parse<Output = unknown, Input = Output>(
+  response: Response,
+  schema: z.ZodType<Output, Input>
+) {
   const data: unknown = await response.json()
 
   return schema.parse(data)

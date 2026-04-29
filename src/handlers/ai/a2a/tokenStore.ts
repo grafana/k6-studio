@@ -2,7 +2,7 @@ import { app } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import { decryptString, encryptString } from '@/main/encryption'
 
@@ -16,7 +16,7 @@ const AssistantTokenDataSchema = z.object({
 
 const AssistantTokenStoreSchema = z.object({
   version: z.literal('1.0'),
-  tokens: z.record(AssistantTokenDataSchema),
+  tokens: z.record(z.string(), AssistantTokenDataSchema),
 })
 
 export type AssistantTokenData = z.infer<typeof AssistantTokenDataSchema>

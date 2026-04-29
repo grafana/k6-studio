@@ -7,9 +7,11 @@ import {
   UseFieldArrayRemove,
   useFormContext,
 } from 'react-hook-form'
+import { z } from 'zod/v4'
 
 import { FieldGroup, ControlledSelect } from '@/components/Form'
-import { ThresholdData, Threshold } from '@/types/testOptions'
+import { ThresholdDataSchema } from '@/schemas/generator'
+import { Threshold } from '@/types/testOptions'
 
 import {
   THRESHOLD_METRICS_OPTIONS,
@@ -18,9 +20,11 @@ import {
   getMetricUnit,
 } from './Thresholds.utils'
 
+type ThresholdFormInput = z.input<typeof ThresholdDataSchema>
+
 type ThresholdRowProps = {
   index: number
-  field: FieldArrayWithId<ThresholdData, 'thresholds', 'id'>
+  field: FieldArrayWithId<ThresholdFormInput, 'thresholds', 'id'>
   remove: UseFieldArrayRemove
 }
 
@@ -31,7 +35,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
     control,
     watch,
     setValue,
-  } = useFormContext<ThresholdData>()
+  } = useFormContext<ThresholdFormInput>()
 
   const threshold = watch('thresholds')[index] as Threshold
 

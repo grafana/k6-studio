@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 export const LogEntrySchema = z.object({
   level: z.enum(['info', 'debug', 'warning', 'error']),

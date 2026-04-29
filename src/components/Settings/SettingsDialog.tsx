@@ -5,6 +5,7 @@ import { findIndex, sortBy } from 'lodash-es'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { z } from 'zod/v4'
 
 import { useSaveSettings, useSettings } from '@/hooks/useSettings'
 import { AppSettingsSchema } from '@/schemas/settings'
@@ -33,7 +34,11 @@ export const SettingsDialog = () => {
     setSelectedTab(selectedSettingsTab)
   }, [isOpen, selectedSettingsTab])
 
-  const formMethods = useForm<AppSettings>({
+  const formMethods = useForm<
+    z.input<typeof AppSettingsSchema>,
+    unknown,
+    AppSettings
+  >({
     resolver: zodResolver(AppSettingsSchema),
     shouldFocusError: true,
     values: settings,

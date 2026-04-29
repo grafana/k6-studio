@@ -1,5 +1,5 @@
 import logger from 'electron-log/main'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import { EventEmitter } from '@/utils/events'
 import { safeJsonParse } from '@/utils/json'

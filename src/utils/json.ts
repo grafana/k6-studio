@@ -1,27 +1,23 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 export function safeJsonParse<T extends object>(value: string) {
   try {
     return JSON.parse(value) as T
-  } catch (error) {
+  } catch {
     return undefined
   }
 }
 
-export function parseJsonAsSchema<
-  Output = unknown,
-  Def extends z.ZodTypeDef = z.ZodTypeDef,
-  Input = Output,
->(
+export function parseJsonAsSchema<Output = unknown, Input = Output>(
   value: string,
-  schema: z.ZodType<Output, Def, Input>
-): z.SafeParseReturnType<Input, Output> {
+  schema: z.ZodType<Output, Input>
+): z.ZodSafeParseResult<Output> {
   try {
     return schema.safeParse(JSON.parse(value))
   } catch {
     return {
       success: false,
       error: new z.ZodError([]),
-    }
+    } as z.ZodSafeParseResult<Output>
   }
 }

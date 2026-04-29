@@ -3,6 +3,7 @@ import { Box, Button, Callout, Flex, ScrollArea } from '@radix-ui/themes'
 import { ChevronLeftIcon, InfoIcon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
+import { z } from 'zod/v4'
 
 import { TestRuleSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'
@@ -58,7 +59,11 @@ export function RuleEditor({ rule }: RuleEditorProps) {
 
   const updateRule = useGeneratorStore((state) => state.updateRule)
 
-  const formMethods = useForm<TestRule>({
+  const formMethods = useForm<
+    z.input<typeof TestRuleSchema>,
+    unknown,
+    TestRule
+  >({
     resolver: zodResolver(TestRuleSchema),
     defaultValues: rule,
     shouldFocusError: false,

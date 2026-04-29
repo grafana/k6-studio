@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import * as GeneratorSchema from '@/schemas/generator'
 

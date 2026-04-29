@@ -2,12 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Text } from '@radix-ui/themes'
 import { useCallback, useEffect } from 'react'
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form'
+import { z } from 'zod/v4'
 
 import { ExternalLink } from '@/components/ExternalLink'
 import { Table } from '@/components/Table'
 import { ThresholdDataSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'
-import { Threshold, ThresholdData } from '@/types/testOptions'
+import { ThresholdData } from '@/types/testOptions'
 
 import { ThresholdRow } from './ThresholdRow'
 
@@ -15,7 +16,11 @@ export function Thresholds() {
   const thresholds = useGeneratorStore((store) => store.thresholds)
   const setThresholds = useGeneratorStore((store) => store.setThresholds)
 
-  const formMethods = useForm<{ thresholds: Threshold[] }>({
+  const formMethods = useForm<
+    z.input<typeof ThresholdDataSchema>,
+    unknown,
+    ThresholdData
+  >({
     resolver: zodResolver(ThresholdDataSchema),
     shouldFocusError: false,
     defaultValues: {
@@ -25,7 +30,7 @@ export function Thresholds() {
 
   const { handleSubmit, control, watch } = formMethods
 
-  const { append, remove, fields } = useFieldArray<ThresholdData>({
+  const { append, remove, fields } = useFieldArray({
     control,
     name: 'thresholds',
   })

@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 import { once } from 'node:events'
 import http from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 import { cancelledPage, successPage } from './assistantAuthCallbackPage'
 

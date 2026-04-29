@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 export const AvailableLoadZonesSchema = z.enum([
   'amazon:us:columbus',
@@ -36,23 +36,21 @@ export const LoadZoneItemSchema = z.object({
 
 export const LoadZoneSchema = z.object({
   distribution: z.enum(['even', 'manual']),
-  zones: z.array(LoadZoneItemSchema).refine(
-    (data) => {
-      if (data.length === 0) {
-        return true
-      }
-
-      const totalPercentage = currentLoadZonePercentage(data)
-      return totalPercentage === 100
-    },
-    (data) => {
-      const totalPercentage = currentLoadZonePercentage(data)
-      return {
-        message: `Total percentage must be 100 (currently ${totalPercentage})`,
-        path: ['root'],
-      }
+  zones: z.array(LoadZoneItemSchema).superRefine((data, ctx) => {
+    if (data.length === 0) {
+      return
     }
-  ),
+
+    const totalPercentage = currentLoadZonePercentage(data)
+    if (totalPercentage !== 100) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Total percentage must be 100 (currently ${totalPercentage})`,
+        input: data,
+        path: ['root'],
+      })
+    }
+  }),
 })
 
 function currentLoadZonePercentage(data: { percent: number }[]) {

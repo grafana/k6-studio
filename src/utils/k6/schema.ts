@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 const CloudOptionsSchema = z.object({
   name: z.string().optional(),
@@ -21,7 +21,7 @@ const ScenarioBaseSchema = z.object({
 export const TestOptionsSchema = z
   .object({
     cloud: CloudOptionsSchema.optional(),
-    scenarios: z.record(ScenarioBaseSchema).optional(),
+    scenarios: z.record(z.string(), ScenarioBaseSchema).optional(),
   })
   .passthrough()
 
