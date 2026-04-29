@@ -4,6 +4,7 @@ import { css } from '@emotion/react'
 import { Flex, Box } from '@radix-ui/themes'
 import { ReactNode, useState } from 'react'
 
+import { isBrowserAssertion } from '@/main/runner/schema'
 import { NodeSelector } from '@/schemas/selectors'
 import { DebugSession } from '@/views/Validator/types'
 
@@ -120,7 +121,9 @@ export function SessionPlayer({
         disabled={session.state === 'pending'}
         streaming={session.state === 'running'}
         time={time}
-        actions={session.browser.actions}
+        actions={session.browser.actions.filter(
+          (action) => action.type === 'action' || isBrowserAssertion(action)
+        )}
         onPlay={handlePlay}
         onPause={handlePause}
         onSeek={handleSeek}

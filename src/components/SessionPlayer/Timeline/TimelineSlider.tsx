@@ -3,11 +3,11 @@ import * as SliderPrimitive from '@radix-ui/react-slider'
 import { useCallback } from 'react'
 
 import { useTheme } from '@/hooks/useTheme'
-import { BrowserActionEvent } from '@/main/runner/schema'
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
 
 import { Time } from '../types'
 
-import { TimelineActions } from './TimelineActions'
+import { TimelineEvents } from './TimelineEvents'
 
 const rangeStyles = {
   container: {
@@ -35,7 +35,7 @@ const rangeStyles = {
 interface TimelineSliderProps {
   className?: string
   time: Time
-  actions: BrowserActionEvent[]
+  actions: BrowserDebuggerEvent[]
   disabled?: boolean
   onSeek: (time: number, commit: boolean) => void
 }
@@ -120,7 +120,7 @@ export function TimelineSlider({
             box-shadow: inset 0 0 0 1px var(--gray-a6);
           `}
         >
-          <TimelineActions
+          <TimelineEvents
             time={time}
             disabled={disabled}
             actions={actions}

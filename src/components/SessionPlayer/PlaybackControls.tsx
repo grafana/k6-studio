@@ -1,7 +1,7 @@
 import { css } from '@emotion/react'
 import { Text, Flex } from '@radix-ui/themes'
 
-import { BrowserActionEvent } from '@/main/runner/schema'
+import { BrowserDebuggerEvent } from '@/main/runner/schema'
 
 import { PlayButton } from './PlayButton'
 import { formatTime } from './PlaybackControls.utils'
@@ -18,7 +18,7 @@ interface PlaybackControlsProps {
   disabled: boolean
   streaming: boolean
   time: Time
-  actions: BrowserActionEvent[]
+  actions: BrowserDebuggerEvent[]
   onPlay: () => void
   onPause: () => void
   onSeek: ({ time, commit }: OnSeekEvent) => void
