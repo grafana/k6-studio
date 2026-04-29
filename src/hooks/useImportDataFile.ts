@@ -1,9 +1,9 @@
 import log from 'electron-log/renderer'
-import { parse } from 'pathe'
 import { useCallback } from 'react'
 
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
+import * as path from '@/utils/path'
 
 export function useImportDataFile() {
   const showToast = useToast()
@@ -14,7 +14,7 @@ export function useImportDataFile() {
       const filePath = await window.studio.data.importFile()
 
       if (filePath) {
-        const { base, name } = parse(filePath)
+        const { base, name } = path.parse(filePath)
 
         showToast({
           title: `Imported ${base}`,

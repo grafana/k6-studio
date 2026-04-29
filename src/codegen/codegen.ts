@@ -6,10 +6,10 @@ import { GeneratorFileData } from '@/types/generator'
 import { CustomCodeValue, ParameterizationRule, TestRule } from '@/types/rules'
 import { DataFile, Variable } from '@/types/testData'
 import { ThinkTime } from '@/types/testOptions'
-import { getFileNameWithoutExtension } from '@/utils/file'
 import { safeBtoa } from '@/utils/format'
 import { groupProxyData } from '@/utils/groups'
 import { getContentTypeWithCharsetHeader } from '@/utils/headers'
+import * as path from '@/utils/path'
 import { exhaustive } from '@/utils/typescript'
 
 import {
@@ -100,7 +100,7 @@ export function generateDataFileDeclarations(files: DataFile[]): string {
 
   const fileKeyValuePairs = files
     .map(({ name }) => {
-      const displayName = getFileNameWithoutExtension(name)
+      const displayName = path.name(name)
       const isCSV = name.toLowerCase().endsWith('csv')
 
       if (isCSV) {
