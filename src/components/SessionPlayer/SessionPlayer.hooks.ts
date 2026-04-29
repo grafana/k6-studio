@@ -67,9 +67,14 @@ interface Pages {
 interface UsePlayerOptions {
   session: DebugSession
   mount: HTMLDivElement | null
+  interactive?: boolean
 }
 
-export function usePlayer({ session, mount }: UsePlayerOptions) {
+export function usePlayer({
+  session,
+  mount,
+  interactive = false,
+}: UsePlayerOptions) {
   const events = session.browser.replay
 
   const [player, setPlayer] = useState<EnhancedReplayer | null>(null)
@@ -140,6 +145,54 @@ export function usePlayer({ session, mount }: UsePlayerOptions) {
 
     setPlayer(newPlayer)
   }, [player, mount, session.state, events])
+
+  useEffect(() => {
+    if (!player || !interactive) {
+      return
+    }
+
+    player.enableInteract()
+
+    const addListeners = () => {
+      const target = player.iframe?.contentDocument?.documentElement
+
+      if (!target) {
+        return () => {}
+      }
+
+      const preventInteraction = (e: Event) => {
+        e.preventDefault()
+      }
+
+      const events = ['click', 'submit', 'contextmenu', 'keydown', 'keypress']
+
+      for (const ev of events) {
+        target.addEventListener(ev, preventInteraction, true)
+      }
+
+      return () => {
+        for (const ev of events) {
+          target.removeEventListener(ev, preventInteraction, true)
+        }
+      }
+    }
+
+    const handleSnapshotRebuilt = () => {
+      cleanupListeners()
+      cleanupListeners = addListeners()
+    }
+
+    let cleanupListeners = addListeners()
+
+    player.on(ReplayerEvents.FullsnapshotRebuilded, handleSnapshotRebuilt)
+
+    return () => {
+      player.disableInteract()
+      player.off(ReplayerEvents.FullsnapshotRebuilded, handleSnapshotRebuilt)
+
+      cleanupListeners()
+    }
+  }, [player, interactive])
 
   // Keep track of the current time for non-streaming playback.
   useEffect(() => {

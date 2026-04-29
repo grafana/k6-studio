@@ -30,6 +30,7 @@ interface SessionPlayerProps {
   initialPage?: Page
   initialContent?: ReactNode
   highlightedSelector: NodeSelector | null
+  interactive?: boolean
 }
 
 export function SessionPlayer({
@@ -38,12 +39,14 @@ export function SessionPlayer({
   initialPage = DEFAULT_PAGE,
   initialContent,
   highlightedSelector,
+  interactive = false,
 }: SessionPlayerProps) {
   const [mount, setMount] = useState<HTMLDivElement | null>(null)
 
   const { loading, state, time, page, play, pause, seek, player } = usePlayer({
     session,
     mount,
+    interactive,
   })
 
   const handleSeek = ({ time, commit }: OnSeekEvent) => {

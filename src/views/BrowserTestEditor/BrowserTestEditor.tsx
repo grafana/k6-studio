@@ -130,6 +130,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                         >
                           <SessionPlayer
                             key={session.id}
+                            interactive
                             initialPage={{
                               title: 'k6 Studio',
                               href: '',
