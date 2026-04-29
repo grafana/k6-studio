@@ -55,7 +55,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const previewScript = useBrowserScriptPreview(test.actions)
   const validatorScript = useValidatorScript(test.actions)
 
-  const { session, startDebugging } = useDebugSession({
+  const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'raw',
     content: validatorScript,
     name: file.fileName,
@@ -82,6 +82,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
           session={session}
           isDirty={test.isDirty}
           onStartDebugging={startDebugging}
+          onStopDebugging={stopDebugging}
           onSave={handleSave}
         />
       }
