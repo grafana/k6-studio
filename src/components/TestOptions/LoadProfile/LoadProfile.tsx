@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Text } from '@radix-ui/themes'
-import { isEqual } from 'lodash-es'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
@@ -33,10 +32,12 @@ export function LoadProfile({ value, onChange, executors }: LoadProfileProps) {
     [onChange]
   )
 
-  // Keep form synced when external value changes
+  // Keep form synced when external value changes. JSON-based compare
+  // normalizes optional fields (which deep-equal sees as distinct from
+  // missing) so a value reference change without semantic change is a no-op.
   useEffect(() => {
     const current = getValues()
-    if (!isEqual(current, value)) {
+    if (JSON.stringify(current) !== JSON.stringify(value)) {
       reset(value)
     }
   }, [value, reset, getValues])

@@ -1,5 +1,4 @@
 import { Button, Text } from '@radix-ui/themes'
-import { isEqual } from 'lodash-es'
 import { createContext, useCallback, useEffect } from 'react'
 import { FormProvider, Resolver, useForm, useFieldArray } from 'react-hook-form'
 
@@ -40,10 +39,12 @@ export function Thresholds<M extends string>({
 
   const { handleSubmit, control, watch, reset, getValues } = formMethods
 
-  // Keep form synced when external value changes (e.g. dialog reopened)
+  // Keep form synced when external value changes (e.g. dialog reopened).
+  // JSON-based compare normalizes optional fields so reference-only changes
+  // don't trigger a redundant reset.
   useEffect(() => {
     const current = getValues('thresholds')
-    if (!isEqual(current, value)) {
+    if (JSON.stringify(current) !== JSON.stringify(value)) {
       reset({ thresholds: value })
     }
   }, [value, reset, getValues])
