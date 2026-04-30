@@ -1,6 +1,6 @@
-import { Button } from '@radix-ui/themes'
 import { SettingsIcon } from 'lucide-react'
 
+import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { TestOptionsDialog } from '@/components/TestOptions'
 import { BrowserTestOptions, BrowserThreshold } from '@/schemas/browserTest'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
@@ -23,10 +23,9 @@ export function BrowserTestOptionsButton({
   return (
     <TestOptionsDialog
       trigger={
-        <Button variant="ghost" size="1" color="gray">
+        <ButtonWithTooltip variant="ghost" color="gray" tooltip="Test options">
           <SettingsIcon />
-          Test options
-        </Button>
+        </ButtonWithTooltip>
       }
       tabs={['loadProfile', 'thresholds', 'loadZones']}
       loadProfile={{

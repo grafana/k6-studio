@@ -75,9 +75,9 @@ export function BrowserTestEditorControls({
             <DownloadIcon />
           </IconButton>
         </Tooltip>
+        {testOptionsButton}
       </Flex>
       <Flex gap="4" align="center" pl="2">
-        {testOptionsButton}
         <Button
           variant="ghost"
           onClick={onStartDebugging}
