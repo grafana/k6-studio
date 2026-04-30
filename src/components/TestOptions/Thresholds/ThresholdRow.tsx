@@ -11,16 +11,10 @@ import {
 import { FieldGroup, ControlledSelect } from '@/components/Form'
 
 import { MetricsConfigContext } from './Thresholds'
-import { THRESHOLD_CONDITIONS_OPTIONS } from './Thresholds.utils'
-
-interface ThresholdLikeRow {
-  id: string
-  metric: string
-  statistic: string
-  condition: string
-  value: number
-  stopTest: boolean
-}
+import {
+  THRESHOLD_CONDITIONS_OPTIONS,
+  ThresholdLikeRow,
+} from './Thresholds.utils'
 
 interface ThresholdFormShape {
   thresholds: ThresholdLikeRow[]
@@ -46,7 +40,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
     setValue,
   } = useFormContext<ThresholdFormShape>()
 
-  const threshold = watch('thresholds')[index]
+  const threshold = watch(`thresholds.${index}`)
 
   // Reset statistic when metric changes to one that doesn't support the current statistic
   useEffect(() => {
@@ -54,7 +48,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
 
     const availableStatistics = metricsConfig
       .getStatisticOptions(threshold.metric)
-      .map((option) => option.value as string)
+      .map((option) => option.value)
     if (!availableStatistics.includes(threshold.statistic)) {
       const newStatistic = availableStatistics[0]
       if (newStatistic) {

@@ -1,7 +1,7 @@
 import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
-import { debounce } from 'lodash-es'
+import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { emitScript } from '@/codegen/browser'
@@ -213,12 +213,7 @@ export function useBrowserTestState(
   )
 
   const isDirty = useMemo(() => {
-    const actionsChanged =
-      plainActions.length !== actions.length ||
-      JSON.stringify(plainActions) !== JSON.stringify(actions)
-    const settingsChanged =
-      JSON.stringify(settingsState) !== JSON.stringify(settings)
-    return actionsChanged || settingsChanged
+    return !isEqual(plainActions, actions) || !isEqual(settingsState, settings)
   }, [plainActions, actions, settingsState, settings])
 
   return {

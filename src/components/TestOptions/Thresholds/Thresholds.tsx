@@ -1,26 +1,14 @@
 import { Button, Text } from '@radix-ui/themes'
+import { isEqual } from 'lodash-es'
 import { createContext, useCallback, useEffect } from 'react'
 import { FormProvider, Resolver, useForm, useFieldArray } from 'react-hook-form'
-import { z } from 'zod'
 
 import { ExternalLink } from '@/components/ExternalLink'
 import { Table } from '@/components/Table'
-import {
-  ThresholdConditionSchema,
-  ThresholdStatisticSchema,
-} from '@/schemas/generator'
 
 import { ThresholdRow } from './ThresholdRow'
+import type { ThresholdLikeRow } from './Thresholds.utils'
 import { MetricsConfig } from './createMetricsConfig'
-
-interface ThresholdLikeRow {
-  id: string
-  metric: string
-  statistic: z.infer<typeof ThresholdStatisticSchema>
-  condition: z.infer<typeof ThresholdConditionSchema>
-  value: number
-  stopTest: boolean
-}
 
 interface ThresholdsProps<M extends string> {
   value: Array<ThresholdLikeRow & { metric: M }>
@@ -55,7 +43,7 @@ export function Thresholds<M extends string>({
   // Keep form synced when external value changes (e.g. dialog reopened)
   useEffect(() => {
     const current = getValues('thresholds')
-    if (JSON.stringify(current) !== JSON.stringify(value)) {
+    if (!isEqual(current, value)) {
       reset({ thresholds: value })
     }
   }, [value, reset, getValues])

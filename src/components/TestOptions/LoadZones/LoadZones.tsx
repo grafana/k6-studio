@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Text, Button, Switch, Flex, Callout, Tooltip } from '@radix-ui/themes'
+import { isEqual } from 'lodash-es'
 import { CircleXIcon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
 import {
@@ -47,7 +48,7 @@ export function LoadZones({ value, onChange }: LoadZonesProps) {
   // Keep form synced when external value changes (e.g. dialog reopened)
   useEffect(() => {
     const current = getValues()
-    if (JSON.stringify(current) !== JSON.stringify(value)) {
+    if (!isEqual(current, value)) {
       reset(value)
     }
   }, [value, reset, getValues])

@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Text } from '@radix-ui/themes'
+import { isEqual } from 'lodash-es'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
@@ -23,7 +24,7 @@ export function LoadProfile({ value, onChange, executors }: LoadProfileProps) {
   })
   const { watch, handleSubmit, reset, getValues } = formMethods
 
-  const data = watch()
+  const executor = watch('executor')
 
   const onSubmit = useCallback(
     (next: LoadProfileExecutorOptions) => {
@@ -35,7 +36,7 @@ export function LoadProfile({ value, onChange, executors }: LoadProfileProps) {
   // Keep form synced when external value changes
   useEffect(() => {
     const current = getValues()
-    if (JSON.stringify(current) !== JSON.stringify(value)) {
+    if (!isEqual(current, value)) {
       reset(value)
     }
   }, [value, reset, getValues])
@@ -54,7 +55,7 @@ export function LoadProfile({ value, onChange, executors }: LoadProfileProps) {
       </Text>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Executor executors={executors} />
-        <ExecutorOptions executor={data.executor} />
+        <ExecutorOptions executor={executor} />
       </form>
     </FormProvider>
   )
