@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { defaultBrowserTestOptions } from '@/schemas/browserTest'
 import type { BrowserTestFile } from '@/schemas/browserTest'
+import { createBrowserTestFile } from '@/test/factories/browserTest'
 
 import { useBrowserTestState } from './BrowserTestEditor.hooks'
 
@@ -66,6 +67,60 @@ describe('useBrowserTestState', () => {
 
   it('isDirty=false when no changes', () => {
     const { result } = renderHook(() => useBrowserTestState(baseFile))
+    expect(result.current.isDirty).toBe(false)
+  })
+})
+
+describe('useBrowserTestState settings round-trip', () => {
+  it('uses default settings when factory builds default file', () => {
+    const file = createBrowserTestFile()
+    const { result } = renderHook(() => useBrowserTestState(file))
+    expect(result.current.settings).toEqual(defaultBrowserTestOptions)
+    expect(result.current.isDirty).toBe(false)
+  })
+
+  it('round-trips settings through state changes', () => {
+    const file = createBrowserTestFile()
+    const { result } = renderHook(() => useBrowserTestState(file))
+
+    const newThreshold = {
+      id: 't1',
+      metric: 'browser_web_vital_lcp' as const,
+      statistic: 'p(95)' as const,
+      condition: '<' as const,
+      value: 1500,
+      stopTest: false,
+    }
+    act(() => {
+      result.current.setThresholds([newThreshold])
+    })
+    expect(result.current.settings.thresholds).toEqual([newThreshold])
+    expect(result.current.isDirty).toBe(true)
+
+    // settings reflect what would be saved to file
+    const wouldSave = {
+      version: '2.0' as const,
+      actions: result.current.plainActions,
+      settings: result.current.settings,
+    }
+    expect(wouldSave.settings.thresholds[0]?.metric).toBe(
+      'browser_web_vital_lcp'
+    )
+  })
+
+  it('factory accepts threshold overrides', () => {
+    const file = createBrowserTestFile({
+      settings: {
+        ...defaultBrowserTestOptions,
+        loadProfile: { executor: 'shared-iterations', vus: 5, iterations: 25 },
+      },
+    })
+    const { result } = renderHook(() => useBrowserTestState(file))
+    expect(result.current.settings.loadProfile).toEqual({
+      executor: 'shared-iterations',
+      vus: 5,
+      iterations: 25,
+    })
     expect(result.current.isDirty).toBe(false)
   })
 })
