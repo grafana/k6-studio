@@ -1,7 +1,7 @@
 import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
-import { debounce, isEqual } from 'lodash-es'
+import { debounce } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { emitScript } from '@/codegen/browser'
@@ -213,7 +213,13 @@ export function useBrowserTestState(
   )
 
   const isDirty = useMemo(() => {
-    return !isEqual(plainActions, actions) || !isEqual(settingsState, settings)
+    // JSON-based compare normalizes undefined fields (which `lodash.isEqual`
+    // treats as distinct from missing) so cleared inputs match their
+    // JSON-roundtripped saved counterparts.
+    return (
+      JSON.stringify(plainActions) !== JSON.stringify(actions) ||
+      JSON.stringify(settingsState) !== JSON.stringify(settings)
+    )
   }, [plainActions, actions, settingsState, settings])
 
   return {
