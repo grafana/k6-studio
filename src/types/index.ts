@@ -91,6 +91,7 @@ export interface StudioFile {
   type: 'recording' | 'generator' | 'script' | 'data-file' | 'browser-test'
   displayName: string
   fileName: string
+  path: string
 }
 
 export type StudioFileType = StudioFile['type']
