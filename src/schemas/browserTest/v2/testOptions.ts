@@ -51,8 +51,6 @@ export type BrowserThresholdMetric = z.infer<
 export const defaultBrowserTestOptions: BrowserTestOptions = {
   loadProfile: {
     executor: 'shared-iterations',
-    vus: 1,
-    iterations: 1,
   },
   thresholds: [],
   cloud: { loadZones: { distribution: 'even', zones: [] } },
