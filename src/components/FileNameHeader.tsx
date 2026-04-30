@@ -16,7 +16,7 @@ import { FileTypeToLabel } from '@/constants/files'
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useRenameFile } from '@/hooks/useRenameFile'
 import { StudioFile } from '@/types'
-import { getFileExtension } from '@/utils/file'
+import * as path from '@/utils/path'
 
 import { FieldGroup } from './Form'
 
@@ -35,7 +35,7 @@ export function FileNameHeader({
 }: FileNameHeaderProps) {
   const subTitleRef = useRef<HTMLHeadingElement>(null)
   const hasEllipsis = useOverflowCheck(subTitleRef)
-  const fileExtension = getFileExtension(file.fileName)
+  const fileExtension = path.extname(file.fileName).slice(1)
 
   return (
     <>
@@ -75,7 +75,7 @@ interface RenameFileDialogProps {
 function RenameFileDialog({ file }: RenameFileDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { mutateAsync, isPending } = useRenameFile(file)
-  const fileExtension = getFileExtension(file.fileName)
+  const fileExtension = path.extname(file.fileName).slice(1)
 
   const {
     register,

@@ -6,8 +6,8 @@ import { AlertTriangleIcon, PlusIcon } from 'lucide-react'
 import { useGeneratorStore } from '@/store/generator'
 import { useStudioUIStore } from '@/store/ui'
 import { useToast } from '@/store/ui/useToast'
-import { getFileNameWithoutExtension } from '@/utils/file'
 import { harToProxyData } from '@/utils/harToProxyData'
+import * as path from '@/utils/path'
 
 export function RecordingSelector({
   compact = false,
@@ -88,13 +88,13 @@ export function RecordingSelector({
                 `}
               />
             )}
-            {getFileNameWithoutExtension(recordingPath)}
+            {path.name(recordingPath)}
           </Flex>
         </Select.Trigger>
         <Select.Content position="popper">
           {isRecordingMissing && (
             <Select.Item value={recordingPath} disabled>
-              {getFileNameWithoutExtension(recordingPath)}
+              {path.name(recordingPath)}
             </Select.Item>
           )}
           {recordings.map((recording) => (

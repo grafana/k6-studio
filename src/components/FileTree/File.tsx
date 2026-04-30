@@ -6,7 +6,8 @@ import { useBoolean } from 'react-use'
 
 import { useOverflowCheck } from '@/hooks/useOverflowCheck'
 import { useRenameFile } from '@/hooks/useRenameFile'
-import { getFileExtension, getViewPath } from '@/utils/file'
+import { getViewPath } from '@/routeMap'
+import * as path from '@/utils/path'
 
 import { HighlightedText } from '../HighlightedText'
 
@@ -83,7 +84,7 @@ function EditableFile({
 
   const { mutateAsync: renameFile } = useRenameFile(file)
 
-  const fileExtension = getFileExtension(file.fileName)
+  const fileExtension = path.extname(file.fileName).slice(1)
 
   const handleSave = async (newValue: string) => {
     const newFileName = `${newValue.trim()}.${fileExtension}`
@@ -131,7 +132,7 @@ function EditableFile({
             }
           `,
         ]}
-        to={getViewPath(file.type, file.fileName)}
+        to={getViewPath(file.type, file.path)}
       >
         <HighlightedText text={file.displayName} matches={file.matches} />
       </NavLink>

@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { GeneratorIcon, RecorderIcon, ValidatorIcon } from '@/components/icons'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { getRoutePath } from '@/routeMap'
+import { getRoutePath, getViewPath } from '@/routeMap'
 
 import { NavigationCard } from './NavigationCard'
 
@@ -22,7 +22,7 @@ export function Home() {
       return
     }
 
-    navigate(getRoutePath('validator', { fileName: encodeURIComponent(path) }))
+    navigate(getViewPath('script', path))
   }
 
   return (

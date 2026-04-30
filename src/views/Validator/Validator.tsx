@@ -6,7 +6,7 @@ import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
-import { getRoutePath } from '@/routeMap'
+import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
 
@@ -19,7 +19,7 @@ interface ValidatorProps {
 }
 
 function Content({ file }: ValidatorProps) {
-  const { data, isLoading } = useScript(file.fileName)
+  const { data, isLoading } = useScript(file.path)
 
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
@@ -28,7 +28,7 @@ function Content({ file }: ValidatorProps) {
 
   const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'file',
-    path: file.fileName,
+    path: file.path,
   })
 
   const isRunning = session?.state === 'running'
@@ -40,11 +40,7 @@ function Content({ file }: ValidatorProps) {
       return
     }
 
-    navigate(
-      getRoutePath('validator', {
-        fileName: encodeURIComponent(newScriptPath),
-      })
-    )
+    navigate(getViewPath('script', newScriptPath))
   }, [navigate])
 
   async function handleDebugScript() {
@@ -110,7 +106,7 @@ function Content({ file }: ValidatorProps) {
       </Flex>
       <RunInCloudDialog
         open={showRunInCloudDialog}
-        script={{ type: 'file', path: file.fileName }}
+        script={{ type: 'file', path: file.path }}
         onOpenChange={setShowRunInCloudDialog}
       />
     </View>
@@ -120,5 +116,5 @@ function Content({ file }: ValidatorProps) {
 export function Validator() {
   const file = useCurrentFile('script')
 
-  return <Content key={file.fileName} file={file} />
+  return <Content key={file.path} file={file} />
 }
