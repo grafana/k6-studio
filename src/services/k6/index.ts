@@ -1,5 +1,5 @@
 import log from 'electron-log/main'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { Stack } from '@/types/auth'
 import { timeout } from '@/utils/async'

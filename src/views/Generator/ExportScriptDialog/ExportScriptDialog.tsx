@@ -5,7 +5,7 @@ import { FileCode2Icon } from 'lucide-react'
 import { useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
-import type { z } from 'zod/v4'
+import type { z } from 'zod'
 
 import {
   ExportScriptDialogData,

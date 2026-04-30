@@ -1,6 +1,6 @@
 import type { FlexibleSchema } from '@ai-sdk/provider-utils'
 import { asSchema, JSONSchema7, tool, ToolSet } from 'ai'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import {
   BaseExtractorSchema,

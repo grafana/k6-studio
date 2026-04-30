@@ -1,5 +1,5 @@
 import log from 'electron-log/main'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { LOG_PREFIX } from './constants'
 import { safeResponseText } from './helpers'

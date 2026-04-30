@@ -1,4 +1,4 @@
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 export function CloudList<Output = unknown, Input = Output>(
   item: z.ZodType<Output, Input>

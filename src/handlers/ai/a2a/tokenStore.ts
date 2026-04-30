@@ -2,7 +2,7 @@ import { app } from 'electron'
 import log from 'electron-log/main'
 import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { decryptString, encryptString } from '@/main/encryption'
 

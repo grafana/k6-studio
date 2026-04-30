@@ -21,7 +21,7 @@ import {
 import { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { FieldGroup } from '@/components/Form'
 import { ProxyHealthWarning } from '@/components/ProxyHealthWarning'

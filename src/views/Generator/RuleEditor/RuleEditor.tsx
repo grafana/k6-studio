@@ -3,7 +3,7 @@ import { Box, Button, Callout, Flex, ScrollArea } from '@radix-ui/themes'
 import { ChevronLeftIcon, InfoIcon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
 import { FormProvider, useForm, useFormContext } from 'react-hook-form'
-import type { z } from 'zod/v4'
+import type { z } from 'zod'
 
 import { TestRuleSchema } from '@/schemas/generator'
 import { useGeneratorStore } from '@/store/generator'

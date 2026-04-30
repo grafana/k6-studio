@@ -7,7 +7,7 @@ import {
   UseFieldArrayRemove,
   useFormContext,
 } from 'react-hook-form'
-import type { z } from 'zod/v4'
+import type { z } from 'zod'
 
 import { FieldGroup, ControlledSelect } from '@/components/Form'
 import { ThresholdDataSchema } from '@/schemas/generator'

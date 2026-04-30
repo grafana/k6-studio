@@ -1,4 +1,4 @@
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 export const SleepTypeSchema = z.enum(['groups', 'requests', 'iterations'])
 

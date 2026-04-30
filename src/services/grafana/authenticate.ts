@@ -9,7 +9,7 @@ import {
   ServerMetadata,
   TokenEndpointResponse,
 } from 'openid-client'
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 const TokenResponseSchema = z.object({
   access_token: z.string(),

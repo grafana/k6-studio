@@ -1,4 +1,4 @@
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 const ChromeEventSchema = z.object({
   sessionId: z.string().optional(),
