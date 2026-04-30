@@ -11,7 +11,7 @@ import {
   EllipsisVerticalIcon,
   SaveIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
 
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
@@ -29,6 +29,7 @@ interface BrowserTestEditorControlsProps {
   isDirty: boolean
   onStartDebugging: () => void
   onSave: () => void
+  testOptionsButton: ReactNode
 }
 
 export function BrowserTestEditorControls({
@@ -38,6 +39,7 @@ export function BrowserTestEditorControls({
   isDirty,
   onStartDebugging,
   onSave,
+  testOptionsButton,
 }: BrowserTestEditorControlsProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
@@ -74,6 +76,7 @@ export function BrowserTestEditorControls({
           </IconButton>
         </Tooltip>
       </Flex>
+      {testOptionsButton}
       <Flex gap="4" align="center" pl="2">
         <Button
           variant="ghost"

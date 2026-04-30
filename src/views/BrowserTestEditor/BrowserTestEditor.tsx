@@ -34,6 +34,7 @@ import {
   useValidatorScript,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
+import { BrowserTestOptionsButton } from './BrowserTestOptionsButton'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
 
 interface BrowserTestEditorViewProps {
@@ -87,6 +88,14 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
           isDirty={test.isDirty}
           onStartDebugging={startDebugging}
           onSave={handleSave}
+          testOptionsButton={
+            <BrowserTestOptionsButton
+              settings={test.settings}
+              onLoadProfileChange={test.setLoadProfile}
+              onThresholdsChange={test.setThresholds}
+              onLoadZonesChange={test.setLoadZones}
+            />
+          }
         />
       }
     >
