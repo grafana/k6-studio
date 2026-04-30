@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
-import { extractUniqueJsonPaths } from '@/store/generator/slices/recording.utils'
+import { extractUniqueJsonPaths } from '@/store/generator/slices/json.utils'
 import { ProxyData } from '@/types'
 import { GeneratorFileData } from '@/types/generator'
 import { exhaustive } from '@/utils/typescript'

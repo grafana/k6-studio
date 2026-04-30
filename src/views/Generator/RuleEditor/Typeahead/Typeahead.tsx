@@ -1,46 +1,102 @@
-import { Box, Card, TextField } from '@radix-ui/themes'
-import { forwardRef, ComponentProps } from 'react'
+import { Box, Card, Text, TextField } from '@radix-ui/themes'
+import { ComponentProps, forwardRef, useLayoutEffect, useRef } from 'react'
 
 import { SuggestionMode, useTypeahead } from './useTypeahead'
 
-export type TypeaheadProps = ComponentProps<typeof TextField.Root> & {
-  options: string[]
+export type TypeaheadGetOptionsRequest = {
+  /**
+   * Query for suggestions
+   */
+  query: string
+  /**
+   * suggestion mode can be one of following:  onDot, onFirstKey, onThirdKey
+   */
   mode: SuggestionMode
+  /**
+   * Limit the number of suggestions
+   */
+  limit: number
 }
+export type TypeaheadGetOptions = (
+  args: TypeaheadGetOptionsRequest
+) => Promise<string[]>
+export type TypeaheadConfig = {
+  /**
+   * suggestion mode can be one of following:  onDot, onFirstKey, onThirdKey
+   */
+  mode: SuggestionMode
+  /**
+   * Async function that retrieves data lazily
+   */
+  getOptions: TypeaheadGetOptions
+  /**
+   * Optional limit per async invocation of getOptions
+   */
+  optionsLimit?: number
+}
+
+export type TypeaheadProps = ComponentProps<typeof TextField.Root> &
+  TypeaheadConfig
 
 export const Typeahead = forwardRef<HTMLInputElement, TypeaheadProps>(
   (props, ref) => {
-    const { options, mode } = props
-    const { inputProps, filteredOptions, isFocused, dropdownProps } =
-      useTypeahead(options, props, mode)
+    const { getOptions, optionsLimit = 50, mode } = props
+    const { inputProps, isFocused, dropdownProps, activeIndex, optionsQuery } =
+      useTypeahead(
+        {
+          getOptions,
+          optionsLimit,
+          mode,
+        },
+        props
+      )
+
+    const optionRefs = useRef<Array<HTMLDivElement | null>>([])
+    const isOptionIndexSelected =
+      optionRefs.current && activeIndex && optionRefs.current[activeIndex]
+    const isOptionsAvailable =
+      !optionsQuery.isLoading &&
+      !optionsQuery.isError &&
+      optionsQuery.data &&
+      optionsQuery.data.length > 0
+
+    useLayoutEffect(() => {
+      if (!isOptionIndexSelected) {
+        return
+      }
+      const el = optionRefs.current[activeIndex]
+      if (!el) return
+
+      el.scrollIntoView({ block: 'nearest' })
+    }, [isOptionIndexSelected, activeIndex])
 
     return (
       <Box style={{ position: 'relative' }}>
         <TextField.Root {...inputProps} ref={ref} />
 
-        {isFocused && filteredOptions.length > 0 && (
+        {isFocused && isOptionsAvailable && (
           <Card role="listbox">
             <div
               style={{
-                top: '0',
-                maxHeight: 'calc(100vh - 200px)',
-                left: 0,
-                background: 'var(--color-panel)', // automatically switch themes
+                maxHeight: '200px',
                 overflowY: 'auto',
-                right: 0,
+                background: 'var(--color-panel)',
                 zIndex: 100,
               }}
             >
-              {filteredOptions.map((option, idx) => (
+              {optionsQuery.data.map((option, idx) => (
                 <Box
                   key={option}
+                  ref={(node) => {
+                    optionRefs.current[idx] = node as unknown as HTMLDivElement
+                  }}
                   id={`typeahead-option-${option}`}
                   onMouseEnter={dropdownProps.onMouseEnter}
                   onMouseLeave={dropdownProps.onMouseLeave}
                   onMouseDown={() => dropdownProps.onMouseDown(option)}
                   style={dropdownProps.style(idx)}
                 >
-                  {option}
+                  <Text size="2">{option}</Text>
                 </Box>
               ))}
             </div>

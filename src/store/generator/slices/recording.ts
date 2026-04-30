@@ -1,5 +1,8 @@
+import { queryStaticJsonPaths } from '@/store/generator/slices/json.utils'
 import { ProxyData } from '@/types'
 import { ImmerStateCreator } from '@/utils/typescript'
+import { TypeaheadGetOptionsRequest } from '@/views/Generator/RuleEditor/Typeahead/Typeahead'
+import { SuggestionMode } from '@/views/Generator/RuleEditor/Typeahead/useTypeahead'
 
 import {
   shouldResetAllowList,
@@ -20,6 +23,17 @@ interface Actions {
   setAllowlist: (value: string[]) => void
   setIncludeStaticAssets: (value: boolean) => void
   setShowAllowlistDialog: (value: boolean) => void
+  getResponseJsonPathSuggestion: (
+    requestConfig: TypeaheadGetOptionsRequest
+  ) => Promise<string[]>
+  getRequestJsonPathSuggestion: (
+    requestConfig: TypeaheadGetOptionsRequest
+  ) => Promise<string[]>
+}
+
+export type QueryJsonPathConfig = {
+  limit?: number
+  mode: SuggestionMode
 }
 
 export type PreGeneratedJsonPaths = {
@@ -32,7 +46,8 @@ export type RecordingSliceStore = State &
   }
 
 export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
-  set
+  set,
+  get
 ) => ({
   metadata: {
     requestJsonPaths: [],
@@ -43,6 +58,25 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
   allowlist: [],
   includeStaticAssets: false,
   showAllowlistDialog: false,
+  getResponseJsonPathSuggestion: async (
+    requestConfig: TypeaheadGetOptionsRequest
+  ) => {
+    const { mode, query } = requestConfig
+    const state = get()
+    const options = state.metadata.responseJsonPaths
+    const id = state.recordingPath
+    return queryStaticJsonPaths(id, query, mode, options)
+  },
+  getRequestJsonPathSuggestion: async (
+    requestConfig: TypeaheadGetOptionsRequest
+  ) => {
+    const { mode, query } = requestConfig
+
+    const state = get()
+    const options = state.metadata.requestJsonPaths
+    const id = state.recordingPath
+    return queryStaticJsonPaths(id, query, mode, options)
+  },
   setRecording: (requests: ProxyData[], path: string) =>
     set((state) => {
       if (shouldResetAllowList({ requests, allowList: state.allowlist })) {
