@@ -3,6 +3,7 @@ import {
   DropdownMenu,
   Flex,
   IconButton,
+  Spinner,
   Tooltip,
 } from '@radix-ui/themes'
 import {
@@ -28,6 +29,7 @@ interface BrowserTestEditorControlsProps {
   session: DebugSession
   isDirty: boolean
   onStartDebugging: () => void
+  onStopDebugging: () => void
   onSave: () => void
 }
 
@@ -37,6 +39,7 @@ export function BrowserTestEditorControls({
   session,
   isDirty,
   onStartDebugging,
+  onStopDebugging,
   onSave,
 }: BrowserTestEditorControlsProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
@@ -75,13 +78,17 @@ export function BrowserTestEditorControls({
         </Tooltip>
       </Flex>
       <Flex gap="4" align="center" pl="2">
-        <Button
-          variant="ghost"
-          onClick={onStartDebugging}
-          loading={session.state === 'running'}
-        >
-          <CircleCheckBigIcon /> Validate
-        </Button>
+        {session.state === 'running' && (
+          <Button variant="ghost" onClick={onStopDebugging}>
+            <Spinner />
+            Stop
+          </Button>
+        )}
+        {session.state !== 'running' && (
+          <Button variant="ghost" onClick={onStartDebugging}>
+            <CircleCheckBigIcon /> Validate
+          </Button>
+        )}
         <Button onClick={() => setIsRunInCloudDialogOpen(true)}>
           <GrafanaIcon /> Run in Grafana Cloud
         </Button>
