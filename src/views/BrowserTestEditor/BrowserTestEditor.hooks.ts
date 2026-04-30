@@ -87,39 +87,50 @@ export function useBrowserTestEditorLayout() {
 }
 
 export function useBrowserScriptPreview(
-  browserActions: BrowserActionInstance[]
+  browserActions: BrowserActionInstance[],
+  settings?: BrowserTestOptions
 ) {
   const [preview, setPreview] = useState('')
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const generatePreview = useCallback(
-    debounce(async (actions: BrowserActionInstance[]) => {
-      try {
-        const test = convertActionsToTest({
-          browserActions: actions,
-        })
+    debounce(
+      async (
+        actions: BrowserActionInstance[],
+        currentSettings: BrowserTestOptions | undefined
+      ) => {
+        try {
+          const test = convertActionsToTest({
+            browserActions: actions,
+            settings: currentSettings,
+          })
 
-        const script = await emitScript(test)
-        setPreview(script)
-      } catch (error) {
-        setPreview(
-          `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
-        )
-      }
-    }, 300),
+          const script = await emitScript(test)
+          setPreview(script)
+        } catch (error) {
+          setPreview(
+            `// Failed to generate script preview:\n// ${error instanceof Error ? error.message : String(error)}`
+          )
+        }
+      },
+      300
+    ),
     []
   )
 
   useEffect(() => {
-    void generatePreview(browserActions)
+    void generatePreview(browserActions, settings)
 
     return () => generatePreview.cancel()
-  }, [browserActions, generatePreview])
+  }, [browserActions, settings, generatePreview])
 
   return preview
 }
 
-export function useValidatorScript(browserActions: BrowserActionInstance[]) {
+export function useValidatorScript(
+  browserActions: BrowserActionInstance[],
+  settings?: BrowserTestOptions
+) {
   // We add a timeout to the end of the script to give the page time to load the page, so that
   // there's something that the user can interact with. If we don't do this, k6 will stop before
   // any DOM mutations have been recorded.
@@ -135,7 +146,7 @@ export function useValidatorScript(browserActions: BrowserActionInstance[]) {
     [browserActions]
   )
 
-  return useBrowserScriptPreview(validatorActions)
+  return useBrowserScriptPreview(validatorActions, settings)
 }
 
 export function useBrowserTestState(

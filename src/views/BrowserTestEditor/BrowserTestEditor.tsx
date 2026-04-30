@@ -53,8 +53,8 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const test = useBrowserTestState(data)
 
-  const previewScript = useBrowserScriptPreview(test.actions)
-  const validatorScript = useValidatorScript(test.actions)
+  const previewScript = useBrowserScriptPreview(test.actions, test.settings)
+  const validatorScript = useValidatorScript(test.actions, test.settings)
 
   const { session, startDebugging } = useDebugSession({
     type: 'raw',

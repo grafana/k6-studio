@@ -1,3 +1,5 @@
+import { BrowserTestOptions } from '@/schemas/browserTest'
+
 export interface Identifier {
   type: 'Identifier'
   name: string
@@ -289,4 +291,5 @@ export type DefaultScenario = Scenario & {
 export interface Test {
   defaultScenario?: DefaultScenario
   scenarios: Record<string, Scenario>
+  settings?: BrowserTestOptions
 }

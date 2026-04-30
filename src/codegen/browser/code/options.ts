@@ -1,6 +1,14 @@
 import { TSESTree as ts } from '@typescript-eslint/types'
 
-import { fromObjectLiteral } from '@/codegen/estree'
+import { fromObjectLiteral, fromArrayLiteral } from '@/codegen/estree'
+import {
+  generateCloudOptions,
+  generateThresholds,
+} from '@/codegen/options.shared'
+import {
+  BrowserTestOptions,
+  defaultBrowserTestOptions,
+} from '@/schemas/browserTest'
 import { exhaustive } from '@/utils/typescript'
 
 import * as ir from '../intermediate/ast'
@@ -84,8 +92,8 @@ function isBrowserScenario(scenario: ir.Scenario) {
   return scenario.body.some(visit)
 }
 
-function emitBrowserOptions(_scenario: ir.Scenario) {
-  if (!isBrowserScenario(_scenario)) {
+function emitBrowserOptions(scenario: ir.Scenario) {
+  if (!isBrowserScenario(scenario)) {
     return undefined
   }
 
@@ -96,44 +104,132 @@ function emitBrowserOptions(_scenario: ir.Scenario) {
   })
 }
 
-function emitSharedIterationsExecutor(
-  options: ts.ObjectExpression | undefined,
+function emitExecutor(
+  scenario: ir.Scenario,
+  loadProfile: BrowserTestOptions['loadProfile'],
   exec?: string
-) {
-  return fromObjectLiteral({
-    executor: 'shared-iterations',
-    exec,
-    options,
-  })
-}
-
-function emitExecutor(scenario: ir.Scenario, exec?: string) {
+): ts.ObjectExpression {
   const options = emitBrowserOptions(scenario)
 
-  return emitSharedIterationsExecutor(options, exec)
+  if (loadProfile.executor === 'shared-iterations') {
+    return fromObjectLiteral({
+      executor: 'shared-iterations',
+      exec,
+      vus: loadProfile.vus,
+      iterations: loadProfile.iterations,
+      options,
+    })
+  }
+
+  if (loadProfile.executor === 'ramping-vus') {
+    return fromObjectLiteral({
+      executor: 'ramping-vus',
+      exec,
+      stages: fromArrayLiteral(
+        loadProfile.stages.map((s) =>
+          fromObjectLiteral({ target: s.target, duration: s.duration })
+        )
+      ),
+      options,
+    })
+  }
+
+  return exhaustive(loadProfile)
 }
 
-function emitScenarioOptions({ defaultScenario, scenarios }: ir.Test) {
+function emitScenarioOptions(
+  test: ir.Test,
+  loadProfile: BrowserTestOptions['loadProfile']
+): ts.ObjectExpression {
+  const { defaultScenario, scenarios } = test
+
   const withDefaultScenario = defaultScenario
     ? {
-        [defaultScenario.name ?? 'default']: emitExecutor(defaultScenario),
+        [defaultScenario.name ?? 'default']: emitExecutor(
+          defaultScenario,
+          loadProfile
+        ),
       }
     : {}
 
   const withNamedScenarios = Object.entries(scenarios).reduce(
     (acc, [name, scenario]) => {
-      acc[name] = emitExecutor(scenario, name)
-
+      acc[name] = emitExecutor(scenario, loadProfile, name)
       return acc
     },
-    withDefaultScenario
+    withDefaultScenario as Record<string, ts.ObjectExpression>
   )
 
   return fromObjectLiteral(withNamedScenarios)
 }
 
-export function emitOptions(test: ir.Test) {
+function emitThresholds(
+  thresholds: BrowserTestOptions['thresholds']
+): ts.ObjectExpression {
+  const data = generateThresholds(thresholds)
+
+  const entries = Object.entries(data).reduce(
+    (acc, [metric, conditions]) => {
+      acc[metric] = fromArrayLiteral(
+        conditions.map((c) => {
+          if (typeof c === 'string') {
+            return c
+          }
+          return fromObjectLiteral({
+            threshold: c.threshold,
+            abortOnFail: c.abortOnFail,
+          })
+        })
+      )
+      return acc
+    },
+    {} as Record<string, ts.Expression>
+  )
+
+  return fromObjectLiteral(entries)
+}
+
+function emitCloudOptions(
+  cloud: BrowserTestOptions['cloud']
+): ts.ObjectExpression | undefined {
+  const result = generateCloudOptions(cloud)
+
+  if (!('cloud' in result) || result.cloud === undefined) {
+    return undefined
+  }
+
+  const distribution = result.cloud.distribution
+  const zoneEntries = Object.entries(distribution).reduce(
+    (acc, [key, zone]) => {
+      acc[key] = fromObjectLiteral({
+        loadZone: zone.loadZone,
+        percent: zone.percent,
+      })
+      return acc
+    },
+    {} as Record<string, ts.Expression>
+  )
+
   return fromObjectLiteral({
-    scenarios: emitScenarioOptions(test),
+    distribution: fromObjectLiteral(zoneEntries),
   })
+}
+
+export function emitOptions(test: ir.Test): ts.ObjectExpression {
+  const settings = test.settings ?? defaultBrowserTestOptions
+
+  const data: Record<string, ts.Expression | undefined> = {
+    scenarios: emitScenarioOptions(test, settings.loadProfile),
+  }
+
+  const cloud = emitCloudOptions(settings.cloud)
+  if (cloud !== undefined) {
+    data.cloud = cloud
+  }
+
+  if (settings.thresholds.length > 0) {
+    data.thresholds = emitThresholds(settings.thresholds)
+  }
+
+  return fromObjectLiteral(data)
 }

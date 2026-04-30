@@ -519,5 +519,6 @@ export function toIntermediateAst(test: m.Test): ir.Test {
     defaultScenario:
       test.defaultScenario && emitDefaultScenario(test.defaultScenario),
     scenarios: Object.fromEntries(scenarios),
+    settings: test.settings,
   }
 }
