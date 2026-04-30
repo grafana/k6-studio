@@ -15,6 +15,9 @@ export function parseJsonAsSchema<Output = unknown, Input = Output>(
   try {
     return schema.safeParse(JSON.parse(value))
   } catch {
-    return schema.safeParse(undefined)
+    return {
+      success: false as const,
+      error: new z.ZodError([]) as z.ZodError<Output>,
+    }
   }
 }
