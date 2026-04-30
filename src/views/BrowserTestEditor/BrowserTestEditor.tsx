@@ -19,7 +19,7 @@ import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
 import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { routeMap } from '@/routeMap'
-import { BrowserTestFile } from '@/schemas/browserTest/v1'
+import { BrowserTestFile } from '@/schemas/browserTest'
 import { StudioFile } from '@/types'
 
 import { NetworkInspector } from '../Validator/Browser/NetworkInspector'

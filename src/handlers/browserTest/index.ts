@@ -6,8 +6,9 @@ import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
 import { BROWSER_TESTS_PATH } from '@/constants/workspace'
 import {
   BrowserTestFile,
-  BrowserTestFileSchema,
-} from '@/schemas/browserTest/v1'
+  BrowserTestFileDataSchema,
+  defaultBrowserTestOptions,
+} from '@/schemas/browserTest'
 import { trackEvent } from '@/services/usageTracking'
 import { UsageEventName } from '@/services/usageTracking/types'
 import { createFileWithUniqueName } from '@/utils/fileSystem'
@@ -19,8 +20,9 @@ export function initialize() {
     console.info(`${BrowserTestHandler.Create} event received`)
 
     const emptyBrowserTest: BrowserTestFile = {
-      version: '1.0',
+      version: '2.0',
       actions: [],
+      settings: defaultBrowserTestOptions,
     }
 
     const fileName = await createFileWithUniqueName({
@@ -45,7 +47,7 @@ export function initialize() {
       flag: 'r',
     })
 
-    return BrowserTestFileSchema.parse(JSON.parse(data))
+    return BrowserTestFileDataSchema.parse(JSON.parse(data))
   })
 
   ipcMain.handle(

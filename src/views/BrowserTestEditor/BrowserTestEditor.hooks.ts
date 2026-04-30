@@ -10,7 +10,7 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { BrowserTestFile } from '@/schemas/browserTest/v1'
+import { BrowserTestFile } from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
 import { queryClient } from '@/utils/query'
 
