@@ -1,56 +1,74 @@
 import { Table, TextField, Checkbox, IconButton, Flex } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
-import { useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 import {
   Controller,
   FieldArrayWithId,
   UseFieldArrayRemove,
   useFormContext,
 } from 'react-hook-form'
-import type { z } from 'zod'
 
 import { FieldGroup, ControlledSelect } from '@/components/Form'
-import { ThresholdDataSchema } from '@/schemas/generator'
-import { Threshold } from '@/types/testOptions'
 
-import {
-  THRESHOLD_METRICS_OPTIONS,
-  getStatisticOptions,
-  THRESHOLD_CONDITIONS_OPTIONS,
-  getMetricUnit,
-} from './Thresholds.utils'
+import { MetricsConfigContext } from './Thresholds'
+import { THRESHOLD_CONDITIONS_OPTIONS } from './Thresholds.utils'
 
-type ThresholdFormInput = z.input<typeof ThresholdDataSchema>
+interface ThresholdLikeRow {
+  id: string
+  metric: string
+  statistic: string
+  condition: string
+  value: number
+  stopTest: boolean
+}
+
+interface ThresholdFormShape {
+  thresholds: ThresholdLikeRow[]
+}
 
 type ThresholdRowProps = {
   index: number
-  field: FieldArrayWithId<ThresholdFormInput, 'thresholds', 'id'>
+  field: FieldArrayWithId<ThresholdFormShape, 'thresholds', 'id'>
   remove: UseFieldArrayRemove
 }
 
 export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
+  const metricsConfig = useContext(MetricsConfigContext)
+  if (!metricsConfig) {
+    throw new Error('ThresholdRow must be rendered inside Thresholds')
+  }
+
   const {
     register,
     formState: { errors },
     control,
     watch,
     setValue,
-  } = useFormContext<ThresholdFormInput>()
+  } = useFormContext<ThresholdFormShape>()
 
-  const threshold = watch('thresholds')[index] as Threshold
+  const threshold = watch('thresholds')[index]
 
-  // Handle selected statistic when the metric field changes
+  // Reset statistic when metric changes to one that doesn't support the current statistic
   useEffect(() => {
-    const availableStatistics = getStatisticOptions(threshold.metric).map(
-      (option) => option.value
-    )
+    if (!threshold) return
+
+    const availableStatistics = metricsConfig
+      .getStatisticOptions(threshold.metric)
+      .map((option) => option.value as string)
     if (!availableStatistics.includes(threshold.statistic)) {
       const newStatistic = availableStatistics[0]
       if (newStatistic) {
         setValue(`thresholds.${index}.statistic`, newStatistic)
       }
     }
-  }, [threshold.metric, threshold.statistic, index, setValue])
+  }, [
+    threshold,
+    threshold?.metric,
+    threshold?.statistic,
+    index,
+    setValue,
+    metricsConfig,
+  ])
 
   return (
     <Table.Row key={field.id}>
@@ -59,7 +77,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
           <ControlledSelect
             control={control}
             name={`thresholds.${index}.metric`}
-            options={THRESHOLD_METRICS_OPTIONS}
+            options={metricsConfig.options}
           />
         </FieldGroup>
       </Table.Cell>
@@ -73,7 +91,9 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             control={control}
             name={`thresholds.${index}.statistic`}
             options={
-              threshold?.metric ? getStatisticOptions(threshold.metric) : []
+              threshold?.metric
+                ? metricsConfig.getStatisticOptions(threshold.metric)
+                : []
             }
           />
         </FieldGroup>
@@ -109,7 +129,9 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             {...register(`thresholds.${index}.value`, { valueAsNumber: true })}
           >
             <TextField.Slot side="right">
-              {threshold?.metric ? getMetricUnit(threshold.metric) : ''}
+              {threshold?.metric
+                ? metricsConfig.getMetricUnit(threshold.metric)
+                : ''}
             </TextField.Slot>
           </TextField.Root>
         </FieldGroup>
