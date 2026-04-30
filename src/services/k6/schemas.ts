@@ -1,10 +1,8 @@
 import { z } from 'zod'
 
-export function CloudList<
-  Output = unknown,
-  Def extends z.ZodTypeDef = z.ZodTypeDef,
-  Input = Output,
->(item: z.ZodSchema<Output, Def, Input>) {
+export function CloudList<Output = unknown, Input = Output>(
+  item: z.ZodType<Output, Input>
+) {
   return z.object({
     value: z.array(item),
   })

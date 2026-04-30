@@ -87,7 +87,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.13.0",
     "@hookform/error-message": "^2.0.1",
-    "@hookform/resolvers": "^3.9.0",
+    "@hookform/resolvers": "^5.2.2",
     "@medv/finder": "^4.0.2",
     "@microlink/react-json-view": "^1.27.0",
     "@monaco-editor/react": "^4.7.0",
@@ -157,7 +157,7 @@
     "update-electron-app": "^3.1.2",
     "use-konami": "^1.0.1",
     "ws": "^8.18.0",
-    "zod": "^3.23.8",
+    "zod": "^4.4.1",
     "zustand": "^4.5.7"
   },
   "lint-staged": {
