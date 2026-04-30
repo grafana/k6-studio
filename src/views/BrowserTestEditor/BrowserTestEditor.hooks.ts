@@ -10,8 +10,14 @@ import {
   useDefaultLayout,
   usePanelCallbackRef,
 } from '@/components/primitives/ResizablePanel'
-import { BrowserTestFile } from '@/schemas/browserTest'
+import {
+  BrowserTestFile,
+  BrowserTestOptions,
+  BrowserThreshold,
+  defaultBrowserTestOptions,
+} from '@/schemas/browserTest'
 import { useToast } from '@/store/ui/useToast'
+import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { queryClient } from '@/utils/query'
 
 import {
@@ -135,30 +141,34 @@ export function useValidatorScript(browserActions: BrowserActionInstance[]) {
 export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
-  const { actions = [] } = browserTestFile ?? {}
-  const [state, setState] = useState<BrowserActionInstance[]>(
+  const { actions = [], settings = defaultBrowserTestOptions } =
+    browserTestFile ?? {}
+
+  const [actionState, setActionState] = useState<BrowserActionInstance[]>(
     actions.map(toBrowserActionInstance)
   )
+  const [settingsState, setSettingsState] =
+    useState<BrowserTestOptions>(settings)
 
   const addAction = (method: BrowserActionInstance['method']) => {
     const action = createActionInstance(method)
-    setState([...state, action])
+    setActionState([...actionState, action])
   }
 
   const updateAction = (updatedAction: BrowserActionInstance) => {
-    const newActions = state.map((action) =>
-      action.id === updatedAction.id ? updatedAction : action
+    setActionState(
+      actionState.map((action) =>
+        action.id === updatedAction.id ? updatedAction : action
+      )
     )
-    setState(newActions)
   }
 
   const removeAction = (id: string) => {
-    const newActions = state.filter((actionWithId) => actionWithId.id !== id)
-    setState(newActions)
+    setActionState(actionState.filter((action) => action.id !== id))
   }
 
   const reorderActions = useCallback((activeId: string, overId: string) => {
-    setState((prev) => {
+    setActionState((prev) => {
       const oldIndex = prev.findIndex((a) => a.id === activeId)
       const newIndex = prev.findIndex((a) => a.id === overId)
       if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
@@ -168,24 +178,49 @@ export function useBrowserTestState(
     })
   }, [])
 
-  const plainActions = useMemo(() => {
-    return state.map(fromBrowserActionInstance)
-  }, [state])
+  const setLoadProfile = useCallback(
+    (loadProfile: LoadProfileExecutorOptions) =>
+      setSettingsState((s) => ({ ...s, loadProfile })),
+    []
+  )
+
+  const setThresholds = useCallback(
+    (thresholds: BrowserThreshold[]) =>
+      setSettingsState((s) => ({ ...s, thresholds })),
+    []
+  )
+
+  const setLoadZones = useCallback(
+    (loadZones: LoadZoneData) =>
+      setSettingsState((s) => ({ ...s, cloud: { loadZones } })),
+    []
+  )
+
+  const plainActions = useMemo(
+    () => actionState.map(fromBrowserActionInstance),
+    [actionState]
+  )
 
   const isDirty = useMemo(() => {
-    return (
+    const actionsChanged =
       plainActions.length !== actions.length ||
       JSON.stringify(plainActions) !== JSON.stringify(actions)
-    )
-  }, [plainActions, actions])
+    const settingsChanged =
+      JSON.stringify(settingsState) !== JSON.stringify(settings)
+    return actionsChanged || settingsChanged
+  }, [plainActions, actions, settingsState, settings])
 
   return {
-    actions: state,
+    actions: actionState,
     plainActions,
     addAction,
     updateAction,
     removeAction,
     reorderActions,
+    settings: settingsState,
+    setLoadProfile,
+    setThresholds,
+    setLoadZones,
     isDirty,
   }
 }

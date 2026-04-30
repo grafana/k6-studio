@@ -66,7 +66,11 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       return
     }
 
-    const browserTestData = { ...data, actions: test.plainActions }
+    const browserTestData: BrowserTestFile = {
+      ...data,
+      actions: test.plainActions,
+      settings: test.settings,
+    }
 
     void saveBrowserTest(browserTestData)
   }
