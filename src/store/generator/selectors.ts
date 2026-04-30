@@ -1,6 +1,6 @@
 import { type GeneratorStore } from '@/store/generator'
 import { GeneratorFileData } from '@/types/generator'
-import { TestOptions } from '@/types/testOptions'
+import { LoadProfileExecutorOptions, TestOptions } from '@/types/testOptions'
 import { isNonStaticAssetResponse } from '@/utils/staticAssets'
 import { exhaustive } from '@/utils/typescript'
 
@@ -102,6 +102,12 @@ export function selectHasVerificationRule(state: GeneratorStore) {
 
 export function selectHasGroups(state: GeneratorStore) {
   return state.requests.some((request) => request.group)
+}
+
+export function selectLoadProfileExecutorOptions(
+  state: GeneratorStore
+): LoadProfileExecutorOptions {
+  return selectLoadProfile(state)
 }
 
 export function selectSelectedRuleIndex(state: GeneratorStore) {
