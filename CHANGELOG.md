@@ -1,5 +1,90 @@
 # Changelog
 
+## [1.13.0](https://github.com/grafana/k6-studio/compare/v1.12.0...v1.13.0) (2026-04-28)
+
+
+### Features
+
+* Add source column to log panels ([#1166](https://github.com/grafana/k6-studio/issues/1166)) ([a5da647](https://github.com/grafana/k6-studio/commit/a5da6473bea02bda6bfd139291ee5b8ff1f4d42e))
+* **assistant:** Replace OpenAI integration with Grafana Assistant ([#1190](https://github.com/grafana/k6-studio/issues/1190)) ([7e929b6](https://github.com/grafana/k6-studio/commit/7e929b6e9a8feb7c1ac225d8b68a00de0af7a040))
+* **browser:** Action markers in timeline of session replay ([#1092](https://github.com/grafana/k6-studio/issues/1092)) ([29f6533](https://github.com/grafana/k6-studio/commit/29f6533202dfff440c3a7d1d07bc6afec4f78718))
+* **browser:** Display browser event count in in-browser toolbar when recording ([122e001](https://github.com/grafana/k6-studio/commit/122e0015540926302a1eef56c08a40c66b178ff5))
+* **browser:** Format select options based on type ([#1173](https://github.com/grafana/k6-studio/issues/1173)) ([b96f477](https://github.com/grafana/k6-studio/commit/b96f477d781c8d440fe1fdfd6bcb11a748ca9b50))
+* **browser:** Highlight elements when hovering selector in debugger view ([7715df4](https://github.com/grafana/k6-studio/commit/7715df43d3c7a10ab804d3f22a9b436ad47ffd55))
+* **browser:** Setting to limit click events to buttons and links ([#1176](https://github.com/grafana/k6-studio/issues/1176)) ([dac9c9d](https://github.com/grafana/k6-studio/commit/dac9c9d07707fc1497308e8d6f481019417ca63c))
+* **browser:** Support all selector types in recorder highlighting ([#1130](https://github.com/grafana/k6-studio/issues/1130)) ([04eef0f](https://github.com/grafana/k6-studio/commit/04eef0f18a1a7938cc6a5837b67b761477850c50))
+* Improve app startup time ([#1144](https://github.com/grafana/k6-studio/issues/1144)) ([7e122fe](https://github.com/grafana/k6-studio/commit/7e122fe942e824bb4e3a9e7da8c20928c290aaac))
+
+
+### Bug Fixes
+
+* Patch high and medium CVEs in tar and dompurify ([#1184](https://github.com/grafana/k6-studio/issues/1184)) ([a08a3f1](https://github.com/grafana/k6-studio/commit/a08a3f1bb3a05c90b1b8c121d55ba5e015910b0b))
+* Prevent AutoCorrelation controls jumping when token usage hidden ([#1185](https://github.com/grafana/k6-studio/issues/1185)) ([81fa2a5](https://github.com/grafana/k6-studio/commit/81fa2a508b0aa5fc0df6fb2eb0b33e0ea9e9b85a))
+* recent url ignore casing ([#1134](https://github.com/grafana/k6-studio/issues/1134)) ([7080090](https://github.com/grafana/k6-studio/commit/7080090f93266cc48379f1d47af1af098ee14374))
+* remove extra headers in script ([#1132](https://github.com/grafana/k6-studio/issues/1132)) ([a89ba62](https://github.com/grafana/k6-studio/commit/a89ba62b770ebea3de7c8c2fe45162bdbba8126a))
+* Scripts time out when form submit does not cause a navigation ([#1131](https://github.com/grafana/k6-studio/issues/1131)) ([9c561c5](https://github.com/grafana/k6-studio/commit/9c561c5425381ca7076f59300db789ac77dbde10))
+* Skip nupkg signing to restore Windows autoupdate ([#1201](https://github.com/grafana/k6-studio/issues/1201)) ([6605d3a](https://github.com/grafana/k6-studio/commit/6605d3ae41d04b343e7faa1812c4aaf18ad103a8))
+* Uncheck action is never generated in browser test scripts ([#1148](https://github.com/grafana/k6-studio/issues/1148)) ([3b1ee4a](https://github.com/grafana/k6-studio/commit/3b1ee4a86f6707e9f840b9d3553bf80af5ccfcd5))
+
+
+### Internal Changes
+
+* Add agent and mcp configuration ([#1142](https://github.com/grafana/k6-studio/issues/1142)) ([555be75](https://github.com/grafana/k6-studio/commit/555be75ac808f1446af86f18a8cd73386d515e27))
+* **assistant:** Add Assistant authentication ([#1136](https://github.com/grafana/k6-studio/issues/1136)) ([1751ba2](https://github.com/grafana/k6-studio/commit/1751ba207ee681c4570f426b25be04f577eb3b14))
+* **assistant:** Add assistant backend ([#1154](https://github.com/grafana/k6-studio/issues/1154)) ([8367389](https://github.com/grafana/k6-studio/commit/83673898f045f1c7fda0f9469b2c093596b3b900))
+* **assistant:** Classify and display errors in AutoCorrelation ([#1187](https://github.com/grafana/k6-studio/issues/1187)) ([145f4dc](https://github.com/grafana/k6-studio/commit/145f4dcb3b7318c1965c1a559a58cf1ecccff93c))
+* **assistant:** Enable autocorrelation with Grafana Assistant ([#1165](https://github.com/grafana/k6-studio/issues/1165)) ([775a3bb](https://github.com/grafana/k6-studio/commit/775a3bb696dd04902d3755cb7c6006032901f632))
+* **assistant:** Track sign-in and autocorrelation outcome events ([#1189](https://github.com/grafana/k6-studio/issues/1189)) ([2bf3f95](https://github.com/grafana/k6-studio/commit/2bf3f9585ed250313764ba4410b61a2a81840b97))
+* **assistant:** Wake hibernating Grafana stacks before assistant connection ([#1171](https://github.com/grafana/k6-studio/issues/1171)) ([06ecf1f](https://github.com/grafana/k6-studio/commit/06ecf1f73dd1c96bd666bfa96617e824281ec29d))
+* **browser:** Add Check/Uncheck action to Browser Test Editor ([#1163](https://github.com/grafana/k6-studio/issues/1163)) ([cd164a1](https://github.com/grafana/k6-studio/commit/cd164a1e603e9d4be365dc2475d7984c25787526))
+* **browser:** Add Clear input action ([#1167](https://github.com/grafana/k6-studio/issues/1167)) ([d310064](https://github.com/grafana/k6-studio/commit/d31006484bf9bca213a6ae4f85a53554ac6c1ede))
+* **browser:** Add Click action support to Browser Test Editor ([#1156](https://github.com/grafana/k6-studio/issues/1156)) ([d6a1e14](https://github.com/grafana/k6-studio/commit/d6a1e142e9386c8cf63c02efda18b120d591f51b))
+* **browser:** Add drag-and-drop reordering to browser test actions ([eadf821](https://github.com/grafana/k6-studio/commit/eadf82188a4adcb4d496ac305c14144c6be19f95))
+* **browser:** Add exact option to text-based locators ([#1152](https://github.com/grafana/k6-studio/issues/1152)) ([53dec50](https://github.com/grafana/k6-studio/commit/53dec5068128f2d9ef7381cab0c3b1ee86297763))
+* **browser:** Add Select Option action to Browser Test Editor ([#1164](https://github.com/grafana/k6-studio/issues/1164)) ([36b41da](https://github.com/grafana/k6-studio/commit/36b41dabd132e214767b084bac5a4b26913a5535))
+* **browser:** Add session replay to browser test editor ([#1183](https://github.com/grafana/k6-studio/issues/1183)) ([85e7b69](https://github.com/grafana/k6-studio/commit/85e7b69dc7c7a7176d49cb6e5e71922895e3cee6))
+* **browser:** Add support for fill action to Browser Test Editor ([#1157](https://github.com/grafana/k6-studio/issues/1157)) ([f8f61f7](https://github.com/grafana/k6-studio/commit/f8f61f7e3bd0f7e521581a2e8ac67edbda973107))
+* **browser:** Add wait for element action ([#1093](https://github.com/grafana/k6-studio/issues/1093)) ([efa3b16](https://github.com/grafana/k6-studio/commit/efa3b16f4df9b82d87c0b9f36bd9ef004161d8a7))
+* **browser:** Add waitForTimeout to editor and debugger ([#1169](https://github.com/grafana/k6-studio/issues/1169)) ([96383c9](https://github.com/grafana/k6-studio/commit/96383c988a3f4fcdf9e68730f08e366b32f1780a))
+* **browser:** Highlight elements in replay when hovering/editing locators ([#1186](https://github.com/grafana/k6-studio/issues/1186)) ([641d4a1](https://github.com/grafana/k6-studio/commit/641d4a1d944f10efa1d9a9fc3ced73e72eafd8ef))
+* **browser:** Support middle and right click in browser test editor ([#1198](https://github.com/grafana/k6-studio/issues/1198)) ([f704709](https://github.com/grafana/k6-studio/commit/f7047094c90ef3367d29c914cb77956bc65447b2))
+
+
+### Dependency Updates
+
+* Bump `vite` to `^6.4.1`, `vitest` to `^4.1.2`, and `@vitejs/plugin-react` to `^4.7.0` ([#1141](https://github.com/grafana/k6-studio/issues/1141)) ([38d5967](https://github.com/grafana/k6-studio/commit/38d59675c960b8b53a5e0aa0eccb12cab708bfe2))
+* Bump lucide-react to v1.3.0 ([#1140](https://github.com/grafana/k6-studio/issues/1140)) ([4803148](https://github.com/grafana/k6-studio/commit/48031489203618f0340964c26c3c0c19623a9ee0))
+* Fix accidental downgrade of typescript and some other dependencies ([#1179](https://github.com/grafana/k6-studio/issues/1179)) ([1eeeb7e](https://github.com/grafana/k6-studio/commit/1eeeb7ebc4a8e83414a8bae2a5942875507b38d6))
+
+
+### Documentation
+
+* Add instructions for compiling local binaries  ([#1108](https://github.com/grafana/k6-studio/issues/1108)) ([b9cd8eb](https://github.com/grafana/k6-studio/commit/b9cd8ebf0385c915a6c3eebb5cf638eccf46f540))
+
+
+### Miscellaneous Chores
+
+* Add local claude setting files and folders to gitignore ([#1194](https://github.com/grafana/k6-studio/issues/1194)) ([0ddbceb](https://github.com/grafana/k6-studio/commit/0ddbceb0054db09f9cbb20c94769fd2dc3bd0800))
+* **deps:** lock file maintenance ([#1149](https://github.com/grafana/k6-studio/issues/1149)) ([910fcb5](https://github.com/grafana/k6-studio/commit/910fcb5d83aa61b94d555bcce6e84f7995f62bc0))
+* **deps:** lock file maintenance ([#1181](https://github.com/grafana/k6-studio/issues/1181)) ([21baa41](https://github.com/grafana/k6-studio/commit/21baa41a0805b3052a025741d4a19c67ea214d42))
+* **deps:** lock file maintenance ([#1192](https://github.com/grafana/k6-studio/issues/1192)) ([a3a3374](https://github.com/grafana/k6-studio/commit/a3a33749f7be3a19041e1d2b01da3bb7dde5153a))
+* **deps:** update dependency electron to v40.8.5 [security] ([#1146](https://github.com/grafana/k6-studio/issues/1146)) ([9376504](https://github.com/grafana/k6-studio/commit/93765042b1449de32b385db4adea329744cfb570))
+* **deps:** update dependency lodash-es to v4.18.1 [security] ([#1145](https://github.com/grafana/k6-studio/issues/1145)) ([8134c9a](https://github.com/grafana/k6-studio/commit/8134c9a34a0fa9fe3fd5a9ea1024d677efcdf982))
+* **deps:** update dependency node-forge to v1.4.0 [security] ([#1138](https://github.com/grafana/k6-studio/issues/1138)) ([97b12b3](https://github.com/grafana/k6-studio/commit/97b12b32d8740e45e82506a99ba6c977c879a90c))
+* **deps:** update dependency undici to v7.24.0 [security] ([#1122](https://github.com/grafana/k6-studio/issues/1122)) ([05557b5](https://github.com/grafana/k6-studio/commit/05557b5f72d6030a399bb9fa103def775c654e0b))
+* **deps:** update dependency vite to v6.4.2 [security] ([#1151](https://github.com/grafana/k6-studio/issues/1151)) ([a6e7aa6](https://github.com/grafana/k6-studio/commit/a6e7aa6e6e25cb7efd615f31588174c9d9914bd3))
+* Migrate recording + browser event schema to Zod v4 ([#1195](https://github.com/grafana/k6-studio/issues/1195)) ([763ee12](https://github.com/grafana/k6-studio/commit/763ee1209ef615c1d918e087b29b22140725fb30))
+* Remove browser extension support ([#1160](https://github.com/grafana/k6-studio/issues/1160)) ([892e6af](https://github.com/grafana/k6-studio/commit/892e6af77acdc2ec0f57803692ab102b8e271612))
+* Upgrade browser test schema to use zod/v4 ([#1188](https://github.com/grafana/k6-studio/issues/1188)) ([d237b05](https://github.com/grafana/k6-studio/commit/d237b05bab55537ca7a784512efcb4d4a685eb04))
+* Upgrade rrweb to latest alpha ([#1168](https://github.com/grafana/k6-studio/issues/1168)) ([1b23fb6](https://github.com/grafana/k6-studio/commit/1b23fb6abc5de3c8bec1b39a578fdbe8e108043f))
+
+
+### Code Refactoring
+
+* Add shared hook for handling fileName route param ([#1193](https://github.com/grafana/k6-studio/issues/1193)) ([929bae0](https://github.com/grafana/k6-studio/commit/929bae084fd54ddd4fedadd9c750cf32df85b815))
+* **browser:** Use same selector library as k6 browser for greater accuracy ([#1191](https://github.com/grafana/k6-studio/issues/1191)) ([4b73f58](https://github.com/grafana/k6-studio/commit/4b73f58a4512cb4637fffa8a2f1aa0b2eb78919d))
+* Move all recorder logic into single folder ([#1172](https://github.com/grafana/k6-studio/issues/1172)) ([0a6370d](https://github.com/grafana/k6-studio/commit/0a6370dd122096aaccce776edf1fd011615e802d))
+
 ## [1.12.0](https://github.com/grafana/k6-studio/compare/v1.11.1...v1.12.0) (2026-03-17)
 
 

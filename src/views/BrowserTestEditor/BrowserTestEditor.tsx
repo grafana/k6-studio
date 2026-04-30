@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom'
 import LogoGradient from '@/assets/logo-gradient.svg'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import {
-  HighlightSelectorProvider,
-  useHighlightedSelector,
-} from '@/components/HighlightSelectorProvider'
+  HighlightLocatorProvider,
+  useHighlightedLocator,
+} from '@/components/HighlightLocatorProvider'
 import { View } from '@/components/Layout/View'
 import { ReadOnlyEditor } from '@/components/Monaco/ReadOnlyEditor'
 import { SessionPlayer } from '@/components/SessionPlayer/SessionPlayer'
@@ -17,6 +17,7 @@ import {
 } from '@/components/Validator/LogsSection'
 import { PersistentTabs } from '@/components/primitives/PersistentTabs'
 import { Group, Panel, Separator } from '@/components/primitives/ResizablePanel'
+import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { routeMap } from '@/routeMap'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { StudioFile } from '@/types'
@@ -28,7 +29,6 @@ import {
   useBrowserScriptPreview,
   useBrowserTest,
   useBrowserTestEditorLayout,
-  useBrowserTestFile,
   useBrowserTestState,
   useSaveBrowserTest,
   useValidatorScript,
@@ -48,7 +48,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.fileName)
 
   const consoleFilter = useConsoleFilter()
-  const highlightedSelector = useHighlightedSelector()
+  const highlightedLocator = useHighlightedLocator()
 
   const test = useBrowserTestState(data)
 
@@ -158,7 +158,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                               </Flex>
                             }
                             session={session}
-                            highlightedSelector={highlightedSelector}
+                            highlightedLocator={highlightedLocator}
                           />
                         </PersistentTabs.Content>
                         <PersistentTabs.Content
@@ -234,7 +234,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 }
 
 export function BrowserTestEditor() {
-  const file = useBrowserTestFile()
+  const file = useCurrentFile('browser-test')
   const navigate = useNavigate()
 
   const { data, isLoading } = useBrowserTest(file.fileName)
@@ -249,8 +249,8 @@ export function BrowserTestEditor() {
   }
 
   return (
-    <HighlightSelectorProvider>
+    <HighlightLocatorProvider>
       <BrowserTestEditorView key={file.fileName} file={file} data={data} />
-    </HighlightSelectorProvider>
+    </HighlightLocatorProvider>
   )
 }

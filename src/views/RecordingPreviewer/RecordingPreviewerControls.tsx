@@ -2,14 +2,14 @@ import { css } from '@emotion/react'
 import { Button, DropdownMenu, Flex, IconButton, Text } from '@radix-ui/themes'
 import { ChevronDownIcon, EllipsisVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { emitScript } from '@/codegen/browser'
 import { convertEventsToTest } from '@/codegen/browser/test'
 import { DeleteFileDialog } from '@/components/DeleteFileDialog'
 import { useCreateGenerator } from '@/hooks/useCreateGenerator'
 import { useDeleteFile } from '@/hooks/useDeleteFile'
-import { getRoutePath } from '@/routeMap'
+import { getRoutePath, getViewPath } from '@/routeMap'
 import { BrowserEvent } from '@/schemas/recording'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
@@ -29,7 +29,6 @@ export function RecordingPreviewControls({
   const showToast = useToast()
   const navigate = useNavigate()
   const createTestGenerator = useCreateGenerator()
-  const { fileName } = useParams()
 
   // TODO: https://github.com/grafana/k6-studio/issues/277
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -38,7 +37,7 @@ export function RecordingPreviewControls({
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const isDiscardable = Boolean(state?.discardable)
 
-  const handleCreateGenerator = () => createTestGenerator(fileName)
+  const handleCreateGenerator = () => createTestGenerator(file.fileName)
 
   const handleDelete = useDeleteFile({
     file,
@@ -62,12 +61,10 @@ export function RecordingPreviewControls({
 
     emitScript(test)
       .then((script) => window.studio.script.saveScript(script, fileName))
-      .then(() => {
-        navigate(
-          getRoutePath('validator', {
-            fileName: encodeURIComponent(fileName),
-          })
-        )
+      .then((filePath) => {
+        if (!filePath) return
+
+        navigate(getViewPath('script', filePath))
       })
       .catch((err) => {
         console.error(err)

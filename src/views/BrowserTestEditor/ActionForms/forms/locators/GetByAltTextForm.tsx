@@ -1,15 +1,13 @@
 import { FieldGroup } from '@/components/Form'
-import { ActionLocator } from '@/main/runner/schema'
+import { ElementLocator, AltLocator } from '@/schemas/locator'
 
 import { TextFieldWithExactToggle } from '../../components'
 import { toFieldErrors } from '../utils'
 
-type AltLocator = Extract<ActionLocator, { type: 'alt' }>
-
 interface GetByAltTextFormProps {
   locator: AltLocator
   errors?: Record<string, string>
-  onChange: (locator: ActionLocator) => void
+  onChange: (locator: ElementLocator) => void
   onBlur?: () => void
 }
 

@@ -5,21 +5,21 @@ import { useNavigate } from 'react-router-dom'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { RunInCloudDialog } from '@/components/RunInCloudDialog/RunInCloudDialog'
-import { getRoutePath } from '@/routeMap'
+import { useCurrentFile } from '@/hooks/useCurrentFile'
+import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 import { StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 import { Debugger } from './Debugger'
-import { useDebugSession, useScript, useScriptPath } from './Validator.hooks'
+import { useDebugSession, useScript } from './Validator.hooks'
 import { ValidatorControls } from './ValidatorControls'
 
 interface ValidatorProps {
-  scriptPath: string
+  file: StudioFile
 }
 
-function Content({ scriptPath }: ValidatorProps) {
-  const { data, isLoading } = useScript(scriptPath)
+function Content({ file }: ValidatorProps) {
+  const { data, isLoading } = useScript(file.path)
 
   const [showRunInCloudDialog, setShowRunInCloudDialog] = useState(false)
 
@@ -28,16 +28,10 @@ function Content({ scriptPath }: ValidatorProps) {
 
   const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'file',
-    path: scriptPath,
+    path: file.path,
   })
 
   const isRunning = session?.state === 'running'
-
-  const file: StudioFile = {
-    type: 'script',
-    fileName: scriptPath,
-    displayName: getFileNameWithoutExtension(scriptPath),
-  }
 
   const handleSelectExternalScript = useCallback(async () => {
     const newScriptPath = await window.studio.script.showScriptSelectDialog()
@@ -46,18 +40,10 @@ function Content({ scriptPath }: ValidatorProps) {
       return
     }
 
-    navigate(
-      getRoutePath('validator', {
-        fileName: encodeURIComponent(newScriptPath),
-      })
-    )
+    navigate(getViewPath('script', newScriptPath))
   }, [navigate])
 
   async function handleDebugScript() {
-    if (!scriptPath) {
-      return
-    }
-
     await startDebugging()
   }
 
@@ -118,22 +104,17 @@ function Content({ scriptPath }: ValidatorProps) {
           onDebugScript={handleDebugScript}
         />
       </Flex>
-      {scriptPath !== undefined && (
-        <RunInCloudDialog
-          open={showRunInCloudDialog}
-          script={{
-            type: 'file',
-            path: scriptPath,
-          }}
-          onOpenChange={setShowRunInCloudDialog}
-        />
-      )}
+      <RunInCloudDialog
+        open={showRunInCloudDialog}
+        script={{ type: 'file', path: file.path }}
+        onOpenChange={setShowRunInCloudDialog}
+      />
     </View>
   )
 }
 
 export function Validator() {
-  const scriptPath = useScriptPath()
+  const file = useCurrentFile('script')
 
-  return <Content key={scriptPath} scriptPath={scriptPath} />
+  return <Content key={file.path} file={file} />
 }

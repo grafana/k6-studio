@@ -21,6 +21,7 @@ export function getStudioFileFromPath(
   const file = {
     displayName: path.parse(filePath).name,
     fileName: path.basename(filePath),
+    path: filePath,
   }
 
   if (

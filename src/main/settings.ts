@@ -4,7 +4,6 @@ import { existsSync, readFileSync } from 'fs'
 import { writeFile, open } from 'fs/promises'
 import path from 'path'
 
-import { resetOpenAiModel } from '@/handlers/ai/model'
 import { configureSystemProxy } from '@/services/http'
 
 import { AppSettingsSchema } from '../schemas/settings'
@@ -13,11 +12,10 @@ import { getPlatform } from '../utils/electron'
 import { safeJsonParse } from '../utils/json'
 import { getExecutableNameFromPlist } from '../utils/plist'
 
-import { encryptString, decryptString } from './encryption'
 import { stopProxyProcess, launchProxyAndAttachEmitter } from './proxy'
 
 export const defaultSettings: AppSettings = {
-  version: '4.0',
+  version: '5.0',
   proxy: {
     mode: 'regular',
     port: 6000,
@@ -28,7 +26,6 @@ export const defaultSettings: AppSettings = {
   windowState: { width: 1200, height: 800, x: 0, y: 0, isMaximized: true },
   telemetry: { usageReport: true, errorReport: true },
   appearance: { theme: 'system' },
-  ai: { provider: 'openai' },
 }
 
 const fileName =
@@ -38,11 +35,37 @@ const fileName =
 const filePath = path.join(app.getPath('userData'), fileName)
 
 /**
- * Initializes the settings file if it doesn't exist or is invalid
+ * If an older-version settings file exists on disk, migrate it and
+ * rewrite it so deprecated fields (e.g. the OpenAI api key from v4)
+ * don't sit on the user's machine after they upgrade.
  */
 export async function initSettings() {
-  if (!existsSync(filePath) || !isSettingsJsonObject()) {
+  if (!existsSync(filePath)) {
     return writeFile(filePath, JSON.stringify(defaultSettings))
+  }
+
+  const raw = readFileSync(filePath, 'utf-8')
+  const rawParsed = safeJsonParse<{ version?: unknown }>(raw)
+
+  if (!rawParsed) {
+    return writeFile(filePath, JSON.stringify(defaultSettings))
+  }
+
+  const result = AppSettingsSchema.safeParse({
+    ...defaultSettings,
+    ...rawParsed,
+  })
+
+  if (!result.success) {
+    log.error(
+      'Failed to migrate settings file, resetting to defaults',
+      result.error
+    )
+    return writeFile(filePath, JSON.stringify(defaultSettings))
+  }
+
+  if (rawParsed.version !== result.data.version) {
+    await writeFile(filePath, JSON.stringify(result.data))
   }
 }
 
@@ -80,10 +103,6 @@ export async function saveSettings(settings: Partial<AppSettings>) {
   const currentSettings = await getSettings()
   const newSettings = { ...currentSettings, ...settings }
 
-  if (currentSettings.ai.apiKey !== newSettings.ai.apiKey) {
-    newSettings.ai.apiKey = processApiKeyForStorage(newSettings.ai.apiKey)
-  }
-
   await writeFile(filePath, JSON.stringify(newSettings))
   return getSettingsDiff(currentSettings, settings)
 }
@@ -111,15 +130,6 @@ function getSettingsDiff(
   }
 
   return diff
-}
-
-/***
- * Ensures the file is in JSON format (including not being empty)
- * @returns whether or not the file is a JSON object
- */
-function isSettingsJsonObject() {
-  const settings = readFileSync(filePath, 'utf-8')
-  return safeJsonParse(settings.toString()) !== undefined
 }
 
 export async function selectBrowserExecutable() {
@@ -182,34 +192,4 @@ export async function applySettings(
     k6StudioState.appSettings.appearance = modifiedSettings.appearance
     nativeTheme.themeSource = k6StudioState.appSettings.appearance.theme
   }
-
-  if (modifiedSettings.ai) {
-    k6StudioState.appSettings.ai = modifiedSettings.ai
-    resetOpenAiModel()
-  }
-}
-
-function processApiKeyForStorage(
-  apiKey: string | undefined
-): string | undefined {
-  if (apiKey === undefined || apiKey.trim() === '') {
-    return undefined
-  }
-
-  try {
-    return encryptString(apiKey)
-  } catch (error) {
-    log.error('Failed to encrypt API key during save:', error)
-    throw error
-  }
-}
-
-export async function getDecryptedAiKey() {
-  const settings = await getSettings()
-
-  if (!settings.ai.apiKey) {
-    return undefined
-  }
-
-  return decryptString(settings.ai.apiKey)
 }

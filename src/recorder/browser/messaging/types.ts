@@ -1,7 +1,7 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
+import { ElementLocatorSchema } from '@/schemas/locator'
 import { BrowserEventSchema } from '@/schemas/recording'
-import { NodeSelectorSchema } from '@/schemas/selectors'
 
 export const InBrowserSettingsSchema = z.object({
   toolbox: z.object({
@@ -36,7 +36,7 @@ export const EventsRecordedSchema = z.object({
 
 export const HighlightElementsSchema = z.object({
   type: z.literal('highlight-elements'),
-  selector: NodeSelectorSchema.nullable(),
+  locator: ElementLocatorSchema.nullable(),
 })
 
 export const NavigateSchema = z.object({

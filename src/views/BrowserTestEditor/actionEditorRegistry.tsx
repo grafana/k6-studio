@@ -42,6 +42,7 @@ interface ActionEditorDefinition<M extends BrowserActionInstance['method']> {
   icon: ReactNode
   render: (props: ActionEditorProps<M>) => ReactElement
   create: () => ActionByMethod<M>
+  summaryExcludeKeys?: readonly string[]
 }
 
 type ActionEditorRegistry = {
@@ -154,6 +155,7 @@ const actionEditors: ActionEditorRegistry = {
         },
       },
     }),
+    summaryExcludeKeys: ['button'],
   },
   'locator.fill': {
     icon: <TextCursorInputIcon aria-hidden="true" />,

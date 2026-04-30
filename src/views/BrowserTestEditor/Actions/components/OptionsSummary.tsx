@@ -5,15 +5,30 @@ type OptionValue = string | number | boolean | null | undefined
 type OptionsSummaryProps = {
   options: unknown
   label?: string
+  excludeKeys?: readonly string[]
+}
+
+const KEY_LABELS: Record<string, string> = {
+  waitForNavigation: 'wait for navigation',
 }
 
 export function OptionsSummary({
   options,
   label = 'Options:',
+  excludeKeys,
 }: OptionsSummaryProps) {
+  const excluded = new Set(excludeKeys)
   const entries = Object.entries(normalizeOptions(options)).filter(
-    ([, value]) => {
+    ([key, value]) => {
+      if (excluded.has(key)) {
+        return false
+      }
+
       if (value === undefined || value === null) {
+        return false
+      }
+
+      if (value === false && key in KEY_LABELS) {
         return false
       }
 
@@ -33,12 +48,22 @@ export function OptionsSummary({
       {entries.map(([key, value]) => (
         <span key={key}>
           <Code color="gray" size="1">
-            {key}={renderValue(key, value)}
+            {renderEntry(key, value)}
           </Code>
         </span>
       ))}
     </Flex>
   )
+}
+
+function renderEntry(key: string, value: OptionValue) {
+  const label = KEY_LABELS[key] ?? key
+
+  if (typeof value === 'boolean' && key in KEY_LABELS) {
+    return label
+  }
+
+  return `${label}=${renderValue(key, value)}`
 }
 
 function renderValue(key: string, value: OptionValue) {

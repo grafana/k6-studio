@@ -7,14 +7,13 @@ import useKeyboardJs from 'react-use/lib/useKeyboardJs'
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
 import { HttpRequestDetails } from '@/components/WebLogView/HttpRequestDetails'
+import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { getRoutePath } from '@/routeMap'
 import { useGeneratorStore, selectGeneratorData } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { ProxyData } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
 
 import {
-  useGeneratorParams,
   useIsGeneratorDirty,
   useLoadGeneratorFile,
   useLoadHarFile,
@@ -32,7 +31,8 @@ export function Generator() {
   const showToast = useToast()
   const navigate = useNavigate()
 
-  const { fileName } = useGeneratorParams()
+  const file = useCurrentFile('generator')
+  const { fileName } = file
 
   const {
     data: generatorFileData,
@@ -143,16 +143,7 @@ export function Generator() {
   return (
     <View
       title="Generator"
-      subTitle={
-        <FileNameHeader
-          file={{
-            fileName,
-            displayName: getFileNameWithoutExtension(fileName),
-            type: 'generator',
-          }}
-          isDirty={isDirty}
-        />
-      }
+      subTitle={<FileNameHeader file={file} isDirty={isDirty} />}
       actions={
         <GeneratorControls onSave={handleSaveGenerator} isDirty={isDirty} />
       }

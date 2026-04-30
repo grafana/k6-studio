@@ -4,10 +4,15 @@ import { LogEntry } from '@/schemas/k6'
 
 import {
   ActionBeginEvent,
-  ActionEndEvent,
-  ActionResult,
+  ActionResultSchema,
   AnyBrowserAction,
+  AssertionBeginEvent,
+  AssertionEndEvent,
+  BrowserDebuggerBeginEvent,
+  BrowserDebuggerEndEvent,
 } from '../../schema'
+
+import { serializeValue } from './serialize'
 
 export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
   ? `http://localhost:${__ENV.K6_TRACKING_SERVER_PORT}`
@@ -17,7 +22,12 @@ export const TRACKING_SERVER_URL = __ENV.K6_TRACKING_SERVER_PORT
  * Never proxy actions originating from the k6-testing library.
  */
 function isTestingLibrary() {
-  return new Error().stack?.includes('k6-testing') ?? false
+  const stack = new Error().stack ?? ''
+
+  return (
+    stack.includes('k6-testing') ||
+    stack.includes('https://gist.githubusercontent.com')
+  )
 }
 
 export function createSequence() {
@@ -49,24 +59,7 @@ export function trackLog(entry: LogEntry) {
     })
 }
 
-function begin(action: AnyBrowserAction | undefined | null) {
-  if (TRACKING_SERVER_URL === null) {
-    return null
-  }
-
-  if (action === undefined || action === null) {
-    return null
-  }
-
-  const event = {
-    type: 'begin',
-    eventId: nextId(),
-    timestamp: {
-      started: Date.now(),
-    },
-    action,
-  } satisfies ActionBeginEvent
-
+function sendBeginEvent<T extends BrowserDebuggerBeginEvent>(event: T) {
   try {
     const body = JSON.stringify(event)
 
@@ -82,33 +75,53 @@ function begin(action: AnyBrowserAction | undefined | null) {
   return event
 }
 
-function end(event: ActionBeginEvent | null, result: ActionResult) {
-  if (event === null) {
-    return
-  }
-
+function sendEndEvent<T extends BrowserDebuggerEndEvent>(event: T) {
   try {
-    const body = {
-      ...event,
-      type: 'end',
-      timestamp: {
-        ...event.timestamp,
-        ended: Date.now(),
-      },
-      result,
-    } satisfies ActionEndEvent
+    const body = JSON.stringify(event)
 
-    http.post(
-      `${TRACKING_SERVER_URL}/track/${event.eventId}/end`,
-      JSON.stringify(body),
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
+    http.post(`${TRACKING_SERVER_URL}/track/${event.eventId}/end`, body, {
+      headers: { 'Content-Type': 'application/json' },
+    })
   } catch {
     // We don't want to interfere with the script execution so
     // we swallow all errors here.
   }
+}
+
+function beginAction(action: AnyBrowserAction | undefined | null) {
+  if (TRACKING_SERVER_URL === null) {
+    return null
+  }
+
+  if (action === undefined || action === null) {
+    return null
+  }
+
+  return sendBeginEvent({
+    type: 'action',
+    state: 'begin',
+    eventId: nextId(),
+    timestamp: {
+      started: Date.now(),
+    },
+    action,
+  })
+}
+
+function endAction(event: ActionBeginEvent | null, result: ActionResultSchema) {
+  if (event === null) {
+    return
+  }
+
+  sendEndEvent({
+    ...event,
+    state: 'end',
+    timestamp: {
+      ...event.timestamp,
+      ended: Date.now(),
+    },
+    result,
+  })
 }
 
 // Type inference won't work without using the `any` type.
@@ -196,11 +209,11 @@ export function createProxy<T extends object>({
       // values based on the provided configuration.
       return function (...args: ArgsOf<T[keyof T]>): unknown {
         const action = track?.(...args)
-        const eventId = begin(action)
+        const eventId = beginAction(action)
 
         const handleSuccess = (result: unknown) => {
-          end(eventId, {
-            type: 'success',
+          endAction(eventId, {
+            type: 'pass',
             returnValue: result,
           })
 
@@ -227,7 +240,7 @@ export function createProxy<T extends object>({
         }
 
         const handleError = (error: unknown) => {
-          end(eventId, {
+          endAction(eventId, {
             type: 'error',
             error: String(error),
           })
@@ -250,6 +263,83 @@ export function createProxy<T extends object>({
         }
       }
     },
+  })
+}
+
+const KNOWN_MATCHERS = new Set([
+  'toBeChecked',
+  'toBeDisabled',
+  'toBeEditable',
+  'toBeEmpty',
+  'toBeEnabled',
+  'toBeHidden',
+  'toBeVisible',
+  'toHaveAttribute',
+  'toHaveText',
+  'toContainText',
+  'toHaveTitle',
+  'toHaveValue',
+  'toBe',
+  'toBeCloseTo',
+  'toBeGreaterThan',
+  'toBeGreaterThanOrEqual',
+  'toBeLessThan',
+  'toBeLessThanOrEqual',
+  'toBeDefined',
+  'toBeFalsy',
+  'toBeInstanceOf',
+  'toBeNaN',
+  'toBeNull',
+  'toBeTruthy',
+  'toBeUndefined',
+  'toEqual',
+  'toContain',
+  'toContainEqual',
+  'toHaveLength',
+  'toHaveProperty',
+])
+
+export function beginAssertion(
+  name: string,
+  negated: boolean,
+  actual: unknown,
+  args: unknown[]
+): AssertionBeginEvent | null {
+  if (TRACKING_SERVER_URL === null) {
+    return null
+  }
+
+  return sendBeginEvent({
+    type: 'assertion',
+    state: 'begin',
+    eventId: nextId(),
+    timestamp: { started: Date.now() },
+    actual: serializeValue(actual),
+    assertion: {
+      name,
+      matcher: KNOWN_MATCHERS.has(name) ? name : undefined,
+      negated,
+      args: args.map(serializeValue),
+    } as unknown as AssertionBeginEvent['assertion'],
+  })
+}
+
+export function endAssertion(
+  event: AssertionBeginEvent | null,
+  result: AssertionEndEvent['result']
+) {
+  if (event === null) {
+    return
+  }
+
+  sendEndEvent({
+    ...event,
+    state: 'end',
+    timestamp: {
+      ...event.timestamp,
+      ended: Date.now(),
+    },
+    result,
   })
 }
 

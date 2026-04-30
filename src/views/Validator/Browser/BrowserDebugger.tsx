@@ -14,9 +14,9 @@ import {
 } from '@/components/primitives/ResizablePanel'
 
 import {
-  HighlightSelectorProvider,
-  useHighlightedSelector,
-} from '../../../components/HighlightSelectorProvider'
+  HighlightLocatorProvider,
+  useHighlightedLocator,
+} from '../../../components/HighlightLocatorProvider'
 import { DebugSession } from '../types'
 
 import { BrowserActionsPanel } from './BrowserActionsPanel'
@@ -34,7 +34,7 @@ export function BrowserDebuggerContent({
   session,
   onDebugScript,
 }: BrowserDebuggerProps) {
-  const highlightedSelector = useHighlightedSelector()
+  const highlightedLocator = useHighlightedLocator()
 
   const [drawer, setDrawer] = usePanelCallbackRef()
 
@@ -84,7 +84,7 @@ export function BrowserDebuggerContent({
                 <BrowserOverviewPanel
                   script={script}
                   session={session}
-                  highlightedSelector={highlightedSelector}
+                  highlightedLocator={highlightedLocator}
                 />
               </Panel>
               <Separator />
@@ -140,8 +140,8 @@ export function BrowserDebuggerContent({
 
 export function BrowserDebugger(props: BrowserDebuggerProps) {
   return (
-    <HighlightSelectorProvider>
+    <HighlightLocatorProvider>
       <BrowserDebuggerContent {...props} />
-    </HighlightSelectorProvider>
+    </HighlightLocatorProvider>
   )
 }

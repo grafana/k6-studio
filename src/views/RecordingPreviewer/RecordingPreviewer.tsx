@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import invariant from 'tiny-invariant'
 
 import { FileNameHeader } from '@/components/FileNameHeader'
 import { View } from '@/components/Layout/View'
+import { useCurrentFile } from '@/hooks/useCurrentFile'
 import { useProxyDataGroups } from '@/hooks/useProxyDataGroups'
 import { BrowserEvent } from '@/schemas/recording'
-import { ProxyData, StudioFile } from '@/types'
-import { getFileNameWithoutExtension } from '@/utils/file'
+import { ProxyData } from '@/types'
 import { harToProxyData } from '@/utils/harToProxyData'
 
 import { RecordingInspector } from '../Recorder/RecordingInspector'
@@ -19,21 +19,14 @@ export function RecordingPreviewer() {
   const [browserEvents, setBrowserEvents] = useState<BrowserEvent[]>([])
 
   const [isLoading, setIsLoading] = useState(true)
-  const { fileName } = useParams()
+  const file = useCurrentFile('recording')
   const navigate = useNavigate()
-
-  invariant(fileName, 'fileName is required')
-  const file: StudioFile = {
-    fileName,
-    displayName: getFileNameWithoutExtension(fileName),
-    type: 'recording',
-  }
 
   useEffect(() => {
     ;(async () => {
       setIsLoading(true)
       setProxyData([])
-      const har = await window.studio.har.openFile(fileName)
+      const har = await window.studio.har.openFile(file.fileName)
       setIsLoading(false)
 
       invariant(har, 'Failed to open file')
@@ -46,7 +39,7 @@ export function RecordingPreviewer() {
       setProxyData([])
       setBrowserEvents([])
     }
-  }, [fileName, navigate])
+  }, [file.fileName, navigate])
 
   const groups = useProxyDataGroups(proxyData)
 

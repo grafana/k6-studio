@@ -69,7 +69,7 @@ export function useElementHighlight(element: TrackedElement | null) {
   useEffect(() => {
     client.send({
       type: 'highlight-elements',
-      selector: element && {
+      locator: element && {
         type: 'css',
         selector: element.target.selectors.css,
       },
@@ -80,7 +80,7 @@ export function useElementHighlight(element: TrackedElement | null) {
     return () => {
       client.send({
         type: 'highlight-elements',
-        selector: null,
+        locator: null,
       })
     }
   }, [client])

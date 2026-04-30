@@ -1,6 +1,4 @@
-import { LanguageModelUsage, UIMessage, UIMessageChunk } from 'ai'
-
-import { AiProvider } from '@/types/features'
+import { UIMessage, UIMessageChunk } from 'ai'
 
 export enum AiHandler {
   StreamChat = 'ai:streamChat',
@@ -16,7 +14,6 @@ export interface StreamChatRequest {
   messages: UIMessage[]
   headers?: Record<string, string>
   body?: object
-  provider?: AiProvider
 }
 
 export interface StreamChatChunk {
@@ -24,11 +21,8 @@ export interface StreamChatChunk {
   chunk?: UIMessageChunk
 }
 
-export type TokenUsage = LanguageModelUsage
-
 export interface StreamChatEnd {
   id: string
-  usage?: TokenUsage
 }
 
 export interface AbortStreamChatRequest {

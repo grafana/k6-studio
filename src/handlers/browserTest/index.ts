@@ -23,7 +23,7 @@ export function initialize() {
       actions: [],
     }
 
-    const fileName = await createFileWithUniqueName({
+    const filePath = await createFileWithUniqueName({
       data: JSON.stringify(emptyBrowserTest, null, 2),
       directory: BROWSER_TESTS_PATH,
       ext: K6_BROWSER_TEST_FILE_EXTENSION,
@@ -34,7 +34,7 @@ export function initialize() {
       event: UsageEventName.BrowserTestCreated,
     })
 
-    return fileName
+    return filePath
   })
 
   ipcMain.handle(BrowserTestHandler.Open, async (_, fileName: string) => {

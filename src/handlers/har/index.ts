@@ -17,7 +17,7 @@ export function initialize() {
     async (_, data: Recording, prefix: string) => {
       console.info(`${HarHandler.SaveFile} event received`)
 
-      const fileName = await createFileWithUniqueName({
+      const filePath = await createFileWithUniqueName({
         data: JSON.stringify(data, null, 2),
         directory: RECORDINGS_PATH,
         ext: '.har',
@@ -28,7 +28,7 @@ export function initialize() {
         event: UsageEventName.RecordingCreated,
       })
 
-      return fileName
+      return filePath
     }
   )
 

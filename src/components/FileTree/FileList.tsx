@@ -1,5 +1,6 @@
 import { css } from '@emotion/react'
-import { useParams } from 'react-router-dom'
+
+import { useActiveFilePath } from '@/hooks/useCurrentFile'
 
 import { File, NoFileMessage } from './File'
 import { FileItem } from './types'
@@ -7,11 +8,10 @@ import { FileItem } from './types'
 interface FileListProps {
   files: FileItem[]
   noFilesMessage: string
-  onOpenFile?: (path: string) => void
 }
 
 export function FileList({ files, noFilesMessage }: FileListProps) {
-  const { fileName: currentFile } = useParams()
+  const activeFilePath = useActiveFilePath()
 
   if (files.length === 0) {
     return <NoFileMessage message={noFilesMessage} />
@@ -27,7 +27,7 @@ export function FileList({ files, noFilesMessage }: FileListProps) {
     >
       {files.map((file) => (
         <li key={file.displayName}>
-          <File file={file} isSelected={file.fileName === currentFile} />
+          <File file={file} isSelected={file.path === activeFilePath} />
         </li>
       ))}
     </ul>

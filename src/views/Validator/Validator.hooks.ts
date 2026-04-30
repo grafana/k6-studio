@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { nanoid } from 'nanoid'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import invariant from 'tiny-invariant'
 
 import { Script } from '@/handlers/cloud/types'
 import { useBrowserSession } from '@/hooks/useBrowserSession'
@@ -11,14 +9,6 @@ import { useRunChecks } from '@/hooks/useRunChecks'
 import { useRunLogs } from '@/hooks/useRunLogs'
 
 import { DebuggerState } from './types'
-
-export function useScriptPath() {
-  const { fileName } = useParams()
-
-  invariant(fileName, 'fileName param is required')
-
-  return fileName
-}
 
 export function useScript(fileName: string) {
   return useQuery({

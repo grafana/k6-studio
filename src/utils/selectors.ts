@@ -1,5 +1,5 @@
 import { InjectedScript } from '@/browser/injectedScript'
-import { NodeSelector } from '@/schemas/selectors'
+import { ElementLocator } from '@/schemas/locator'
 
 let _injectedScript: InjectedScript | null = null
 
@@ -21,35 +21,35 @@ function attrBody(attr: string, value: string, exact?: boolean): string {
 }
 
 /**
- * Find elements in the DOM using a NodeSelector.
+ * Find elements in the DOM using an ElementLocator.
  * Uses the same selector engine as k6 browser (Playwright) for consistent behavior.
  */
-export function findElementsBySelector(
+export function findElementsByLocator(
   container: HTMLElement,
-  selector: NodeSelector
+  locator: ElementLocator
 ): Element[] {
   const script = getInjectedScript()
 
   let parts: { name: string; body: string }[]
 
-  switch (selector.type) {
+  switch (locator.type) {
     case 'css':
-      parts = [{ name: 'css', body: selector.selector }]
+      parts = [{ name: 'css', body: locator.selector }]
       break
 
-    case 'test-id':
+    case 'testid':
       parts = [
         {
           name: 'internal:attr',
-          body: `[data-testid=${JSON.stringify(selector.testId)}s]`,
+          body: `[data-testid=${JSON.stringify(locator.testId)}s]`,
         },
       ]
       break
 
     case 'role': {
-      let body = selector.role
-      if (selector.name !== undefined) {
-        body += `[name=${JSON.stringify(selector.name.value)}${selector.name.exact === true ? 's' : 'i'}]`
+      let body = locator.role
+      if (locator.options?.name !== undefined) {
+        body += `[name=${JSON.stringify(locator.options.name)}${locator.options.exact === true ? 's' : 'i'}]`
       }
       parts = [{ name: 'internal:role', body }]
       break
@@ -59,7 +59,7 @@ export function findElementsBySelector(
       parts = [
         {
           name: 'internal:attr',
-          body: attrBody('alt', selector.text.value, selector.text.exact),
+          body: attrBody('alt', locator.text, locator.options?.exact),
         },
       ]
       break
@@ -68,7 +68,7 @@ export function findElementsBySelector(
       parts = [
         {
           name: 'internal:label',
-          body: textMatcherBody(selector.text.value, selector.text.exact),
+          body: textMatcherBody(locator.label, locator.options?.exact),
         },
       ]
       break
@@ -79,8 +79,8 @@ export function findElementsBySelector(
           name: 'internal:attr',
           body: attrBody(
             'placeholder',
-            selector.text.value,
-            selector.text.exact
+            locator.placeholder,
+            locator.options?.exact
           ),
         },
       ]
@@ -90,7 +90,7 @@ export function findElementsBySelector(
       parts = [
         {
           name: 'internal:text',
-          body: textMatcherBody(selector.text.value, selector.text.exact),
+          body: textMatcherBody(locator.text, locator.options?.exact),
         },
       ]
       break
@@ -99,7 +99,7 @@ export function findElementsBySelector(
       parts = [
         {
           name: 'internal:attr',
-          body: attrBody('title', selector.text.value, selector.text.exact),
+          body: attrBody('title', locator.title, locator.options?.exact),
         },
       ]
       break

@@ -40,5 +40,5 @@ export async function createFileWithUniqueName({
     }
   } while (!fileCreated)
 
-  return uniqueFileName
+  return path.join(directory, uniqueFileName)
 }
