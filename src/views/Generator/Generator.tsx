@@ -46,7 +46,7 @@ export function Generator() {
     error: harError,
   } = useLoadHarFile(generatorFileData?.recordingPath)
 
-  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(fileName)
+  const { mutateAsync: saveGenerator } = useSaveGeneratorFile(file.path)
 
   const isLoading = isLoadingGenerator || isLoadingRecording
 
