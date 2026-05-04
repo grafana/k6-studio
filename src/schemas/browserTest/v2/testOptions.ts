@@ -32,6 +32,10 @@ export const BrowserThresholdSchema = z.object({
   stopTest: z.boolean().default(false),
 })
 
+export const BrowserThresholdDataSchema = z.object({
+  thresholds: z.array(BrowserThresholdSchema),
+})
+
 export const BrowserTestOptionsSchema = z.object({
   loadProfile: LoadProfileExecutorOptionsSchema,
   thresholds: z.array(BrowserThresholdSchema).default([]),

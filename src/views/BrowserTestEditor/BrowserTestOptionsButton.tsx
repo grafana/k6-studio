@@ -1,8 +1,13 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { SettingsIcon } from 'lucide-react'
 
 import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { TestOptionsDialog } from '@/components/TestOptions'
-import { BrowserTestOptions, BrowserThreshold } from '@/schemas/browserTest'
+import {
+  BrowserTestOptions,
+  BrowserThreshold,
+  BrowserThresholdDataSchema,
+} from '@/schemas/browserTest'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 
 import { BROWSER_METRICS_CONFIG } from './browserThresholdMetrics'
@@ -37,6 +42,7 @@ export function BrowserTestOptionsButton({
         value: settings.thresholds,
         onChange: onThresholdsChange,
         metricsConfig: BROWSER_METRICS_CONFIG,
+        resolver: zodResolver(BrowserThresholdDataSchema),
       }}
       loadZones={{
         value: settings.cloud.loadZones,
