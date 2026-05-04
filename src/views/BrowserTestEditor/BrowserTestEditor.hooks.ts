@@ -18,7 +18,6 @@ import {
   fromBrowserActionInstance,
   toBrowserActionInstance,
 } from './actionAdapters'
-import { createActionInstance } from './actionEditorRegistry'
 import { BrowserActionInstance } from './types'
 
 export function useBrowserTest(fileName: string) {
@@ -140,8 +139,7 @@ export function useBrowserTestState(
     actions.map(toBrowserActionInstance)
   )
 
-  const addAction = (method: BrowserActionInstance['method']) => {
-    const action = createActionInstance(method)
+  const addAction = (action: BrowserActionInstance) => {
     setState([...state, action])
   }
 

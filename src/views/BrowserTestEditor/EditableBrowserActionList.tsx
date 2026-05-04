@@ -9,14 +9,25 @@ import {
 import { CirclePlusIcon } from 'lucide-react'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
-import { AnyBrowserAction } from '@/main/runner/schema'
 
 import { SortableBrowserActionList } from './SortableBrowserActionList'
+import {
+  createCheckAction,
+  createClearAction,
+  createClickAction,
+  createFillAction,
+  createGoToAction,
+  createPageReloadAction,
+  createSelectOptionAction,
+  createUncheckAction,
+  createWaitForAction,
+  createWaitForTimeoutAction,
+} from './actionFactories'
 import { BrowserActionInstance } from './types'
 
 interface EditableBrowserActionListProps {
   actions: BrowserActionInstance[]
-  onAddAction: (method: BrowserActionInstance['method']) => void
+  onAddAction: (action: BrowserActionInstance) => void
   onRemoveAction: (actionId: string) => void
   onChangeAction: (action: BrowserActionInstance) => void
   onReorderActions: (activeId: string, overId: string) => void
@@ -64,7 +75,7 @@ export function EditableBrowserActionList({
 }
 
 interface NewActionMenuProps {
-  onAddAction: (method: AnyBrowserAction['method']) => void
+  onAddAction: (action: BrowserActionInstance) => void
 }
 
 function NewActionMenu({ onAddAction }: NewActionMenuProps) {
@@ -76,76 +87,42 @@ function NewActionMenu({ onAddAction }: NewActionMenuProps) {
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('locator.click')
-          }}
-        >
+        <DropdownMenu.Item onClick={() => onAddAction(createClickAction())}>
           Click element
         </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('locator.fill')
-          }}
-        >
+        <DropdownMenu.Item onClick={() => onAddAction(createFillAction())}>
           Fill input
         </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('locator.clear')
-          }}
-        >
+        <DropdownMenu.Item onClick={() => onAddAction(createClearAction())}>
           Clear input
         </DropdownMenu.Item>
         <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('locator.selectOption')
-          }}
+          onClick={() => onAddAction(createSelectOptionAction())}
         >
           Select option
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
-        <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('locator.check')
-          }}
-        >
+        <DropdownMenu.Item onClick={() => onAddAction(createCheckAction())}>
           Check input
         </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('locator.uncheck')
-          }}
-        >
+        <DropdownMenu.Item onClick={() => onAddAction(createUncheckAction())}>
           Uncheck input
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
-        <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('locator.waitFor')
-          }}
-        >
+        <DropdownMenu.Item onClick={() => onAddAction(createWaitForAction())}>
           Wait for element
         </DropdownMenu.Item>
         <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('page.waitForTimeout')
-          }}
+          onClick={() => onAddAction(createWaitForTimeoutAction())}
         >
           Wait for timeout
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
-        <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('page.goto')
-          }}
-        >
+        <DropdownMenu.Item onClick={() => onAddAction(createGoToAction())}>
           Navigate to URL
         </DropdownMenu.Item>
         <DropdownMenu.Item
-          onClick={() => {
-            onAddAction('page.reload')
-          }}
+          onClick={() => onAddAction(createPageReloadAction())}
         >
           Reload page
         </DropdownMenu.Item>
