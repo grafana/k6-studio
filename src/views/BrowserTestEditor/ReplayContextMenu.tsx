@@ -1,41 +1,32 @@
 import { DropdownMenu } from '@radix-ui/themes'
-import { useMemo } from 'react'
 
-import { ContextMenuEvent } from '@/components/SessionPlayer/SessionPlayer.hooks'
-import { getAriaDetails } from '@/utils/dom/aria'
-import { findInteractiveElement } from '@/utils/dom/dom'
-import { generateSelectors } from '@/utils/dom/selectors'
+import { AriaDetails } from '@/schemas/recording'
 
 import {
-  buildLocatorOptions,
   isCheckbox,
   isRadio,
   isSelect,
   isTextInput,
-} from './contextMenuActions'
-import { BrowserActionInstance } from './types'
+} from './ReplayContextMenu.utils'
+import { BrowserActionInstance, LocatorOptions } from './types'
 
 interface ReplayContextMenuProps {
-  position: ContextMenuEvent
+  target: Element
+  position: { x: number; y: number }
+  aria: AriaDetails
+  locator: LocatorOptions
   onClose: () => void
   onAddAction: (action: BrowserActionInstance) => void
 }
 
 export function ReplayContextMenu({
+  target,
   position,
+  aria,
+  locator,
   onClose,
   onAddAction,
 }: ReplayContextMenuProps) {
-  const target = findInteractiveElement(position.target) ?? position.target
-
-  const aria = useMemo(() => getAriaDetails(target), [target])
-
-  const locator = useMemo(() => {
-    const selectors = generateSelectors(target, aria)
-
-    return buildLocatorOptions(selectors)
-  }, [aria, target])
-
   const isGeneric =
     !isTextInput(target, aria.roles) &&
     !isCheckbox(target, aria.roles) &&
@@ -56,7 +47,7 @@ export function ReplayContextMenu({
           }}
         />
       </DropdownMenu.Trigger>
-      <DropdownMenu.Content size="1">
+      <DropdownMenu.Content size="1" align="center">
         {isTextInput(target, aria.roles) && (
           <>
             <DropdownMenu.Item

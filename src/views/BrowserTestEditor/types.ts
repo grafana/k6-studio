@@ -1,5 +1,6 @@
 import { AnyBrowserAction } from '@/main/runner/schema'
 import { ElementLocator } from '@/schemas/locator'
+import { AriaDetails } from '@/schemas/recording'
 
 export interface LocatorOptions {
   current: ElementLocator['type']
@@ -13,3 +14,14 @@ export type WithEditorMetadata<T> = (T extends { locator: ElementLocator }
   : T) & { id: string }
 
 export type BrowserActionInstance = WithEditorMetadata<AnyBrowserAction>
+
+export interface ContextMenuState {
+  type: 'context-menu'
+  target: Element
+  position: {
+    x: number
+    y: number
+  }
+  aria: AriaDetails
+  locator: LocatorOptions
+}

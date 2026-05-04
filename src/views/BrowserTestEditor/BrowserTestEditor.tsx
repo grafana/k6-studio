@@ -38,6 +38,8 @@ import {
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
 import { ReplayContextMenu } from './ReplayContextMenu'
+import { createContextMenuState } from './ReplayContextMenu.utils'
+import { ContextMenuState } from './types'
 
 interface BrowserTestEditorViewProps {
   file: StudioFile
@@ -53,9 +55,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const consoleFilter = useConsoleFilter()
   const highlightedLocator = useHighlightedLocator()
 
-  const [contextMenuPos, setContextMenuPos] = useState<ContextMenuEvent | null>(
-    null
-  )
+  const [state, setState] = useState<ContextMenuState | null>(null)
 
   const test = useBrowserTestState(data)
 
@@ -76,6 +76,10 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     const browserTestData = { ...data, actions: test.plainActions }
 
     void saveBrowserTest(browserTestData)
+  }
+
+  const handleContextMenu = (event: ContextMenuEvent) => {
+    setState(createContextMenuState(event))
   }
 
   return (
@@ -167,13 +171,16 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                             }
                             session={session}
                             highlightedLocator={highlightedLocator}
-                            onContextMenu={setContextMenuPos}
-                            onClick={() => setContextMenuPos(null)}
+                            onClick={() => setState(null)}
+                            onContextMenu={handleContextMenu}
                           />
-                          {contextMenuPos !== null && (
+                          {state !== null && (
                             <ReplayContextMenu
-                              position={contextMenuPos}
-                              onClose={() => setContextMenuPos(null)}
+                              target={state.target}
+                              position={state.position}
+                              aria={state.aria}
+                              locator={state.locator}
+                              onClose={() => setState(null)}
                               onAddAction={test.addActionInstance}
                             />
                           )}
