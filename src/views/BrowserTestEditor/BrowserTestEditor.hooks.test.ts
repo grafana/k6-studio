@@ -144,6 +144,54 @@ describe('useBrowserTestState settings round-trip', () => {
     expect(result.current.isDirty).toBe(false)
   })
 
+  it('isDirty clears after reload strips ramping-only shadow fields from shared-iterations', () => {
+    const customStages = [
+      { target: 10, duration: '2m' as const },
+      { target: 30, duration: '4m' as const },
+    ]
+    const before: BrowserTestFile = {
+      version: '2.0',
+      actions: [],
+      settings: {
+        ...defaultBrowserTestOptions,
+        loadProfile: { executor: 'shared-iterations' },
+      },
+    }
+    const { result, rerender } = renderHook(
+      ({ file }: { file: BrowserTestFile }) => useBrowserTestState(file),
+      { initialProps: { file: before } }
+    )
+
+    act(() => {
+      result.current.setLoadProfile({
+        executor: 'ramping-vus',
+        stages: customStages,
+      })
+    })
+    act(() => {
+      result.current.setLoadProfile({
+        executor: 'shared-iterations',
+        vus: 2,
+        iterations: 5,
+      })
+    })
+    expect(result.current.isDirty).toBe(true)
+
+    const after: BrowserTestFile = {
+      ...before,
+      settings: {
+        ...defaultBrowserTestOptions,
+        loadProfile: {
+          executor: 'shared-iterations',
+          vus: 2,
+          iterations: 5,
+        },
+      },
+    }
+    rerender({ file: after })
+    expect(result.current.isDirty).toBe(false)
+  })
+
   it('factory accepts threshold overrides', () => {
     const file = createBrowserTestFile({
       settings: {

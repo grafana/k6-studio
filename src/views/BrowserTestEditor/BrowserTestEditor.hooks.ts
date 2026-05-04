@@ -181,6 +181,20 @@ export function useBrowserTestState(
     })
   )
 
+  useEffect(() => {
+    const { settings: fileSettings } = browserTestFile ?? {}
+    const resolvedSettings = fileSettings ?? defaultBrowserTestOptions
+    const nextSettings: BrowserTestOptions = {
+      ...resolvedSettings,
+      loadProfile: withSeededStages(resolvedSettings.loadProfile),
+    }
+    setSettingsState((prev) =>
+      isEqual(stripUndefined(prev), stripUndefined(nextSettings))
+        ? prev
+        : nextSettings
+    )
+  }, [browserTestFile])
+
   const addAction = (method: BrowserActionInstance['method']) => {
     const action = createActionInstance(method)
     setActionState([...actionState, action])
