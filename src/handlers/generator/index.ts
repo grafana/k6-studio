@@ -50,11 +50,7 @@ export function initialize() {
     async (_, filePath: string): Promise<GeneratorFileData> => {
       console.log(`${GeneratorHandler.Open} event received`)
 
-      const resolvedPath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(GENERATORS_PATH, filePath)
-
-      const data = await readFile(resolvedPath, {
+      const data = await readFile(filePath, {
         encoding: 'utf-8',
         flag: 'r',
       })

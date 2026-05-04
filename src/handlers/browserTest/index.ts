@@ -1,6 +1,5 @@
 import { ipcMain } from 'electron'
 import { readFile, writeFile } from 'fs/promises'
-import path from 'path'
 
 import { K6_BROWSER_TEST_FILE_EXTENSION } from '@/constants/files'
 import { BROWSER_TESTS_PATH } from '@/constants/workspace'
@@ -40,11 +39,7 @@ export function initialize() {
   ipcMain.handle(BrowserTestHandler.Open, async (_, filePath: string) => {
     console.info(`${BrowserTestHandler.Open} event received`)
 
-    const resolvedPath = path.isAbsolute(filePath)
-      ? filePath
-      : path.join(BROWSER_TESTS_PATH, filePath)
-
-    const data = await readFile(resolvedPath, {
+    const data = await readFile(filePath, {
       encoding: 'utf-8',
       flag: 'r',
     })
