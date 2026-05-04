@@ -143,24 +143,25 @@ function emitScenarioOptions(
 ): ts.ObjectExpression {
   const { defaultScenario, scenarios } = test
 
-  const withDefaultScenario = defaultScenario
-    ? {
-        [defaultScenario.name ?? 'default']: emitExecutor(
-          defaultScenario,
-          loadProfile
-        ),
-      }
-    : {}
+  const withDefaultScenario: Record<string, ts.ObjectExpression> =
+    defaultScenario
+      ? {
+          [defaultScenario.name ?? 'default']: emitExecutor(
+            defaultScenario,
+            loadProfile
+          ),
+        }
+      : {}
 
-  const withNamedScenarios = Object.entries(scenarios).reduce(
-    (acc, [name, scenario]) => {
-      acc[name] = emitExecutor(scenario, loadProfile, name)
-      return acc
-    },
-    withDefaultScenario as Record<string, ts.ObjectExpression>
+  const namedEntries = Object.entries(scenarios).map(
+    ([name, scenario]) =>
+      [name, emitExecutor(scenario, loadProfile, name)] as const
   )
 
-  return fromObjectLiteral(withNamedScenarios)
+  return fromObjectLiteral({
+    ...withDefaultScenario,
+    ...Object.fromEntries(namedEntries),
+  })
 }
 
 function emitThresholds(
@@ -168,25 +169,24 @@ function emitThresholds(
 ): ts.ObjectExpression {
   const data = generateThresholds(thresholds)
 
-  const entries = Object.entries(data).reduce(
-    (acc, [metric, conditions]) => {
-      acc[metric] = fromArrayLiteral(
-        conditions.map((condition) => {
-          if (typeof condition === 'string') {
-            return condition
-          }
-          return fromObjectLiteral({
-            threshold: condition.threshold,
-            abortOnFail: condition.abortOnFail,
+  return fromObjectLiteral(
+    Object.fromEntries(
+      Object.entries(data).map(([metric, conditions]) => [
+        metric,
+        fromArrayLiteral(
+          conditions.map((condition) => {
+            if (typeof condition === 'string') {
+              return condition
+            }
+            return fromObjectLiteral({
+              threshold: condition.threshold,
+              abortOnFail: condition.abortOnFail,
+            })
           })
-        })
-      )
-      return acc
-    },
-    {} as Record<string, ts.Expression>
+        ),
+      ])
+    )
   )
-
-  return fromObjectLiteral(entries)
 }
 
 function emitCloudOptions(
@@ -198,20 +198,18 @@ function emitCloudOptions(
     return undefined
   }
 
-  const distribution = result.cloud.distribution
-  const zoneEntries = Object.entries(distribution).reduce(
-    (acc, [key, zone]) => {
-      acc[key] = fromObjectLiteral({
-        loadZone: zone.loadZone,
-        percent: zone.percent,
-      })
-      return acc
-    },
-    {} as Record<string, ts.Expression>
-  )
-
   return fromObjectLiteral({
-    distribution: fromObjectLiteral(zoneEntries),
+    distribution: fromObjectLiteral(
+      Object.fromEntries(
+        Object.entries(result.cloud.distribution).map(([key, zone]) => [
+          key,
+          fromObjectLiteral({
+            loadZone: zone.loadZone,
+            percent: zone.percent,
+          }),
+        ])
+      )
+    ),
   })
 }
 

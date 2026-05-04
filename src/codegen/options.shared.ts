@@ -1,7 +1,6 @@
 import { LoadZoneData } from '@/types/testOptions'
 
-type Threshold = {
-  id: string
+type ThresholdShape = {
   metric: string
   statistic: string
   condition: string
@@ -14,26 +13,20 @@ type AbortableThreshold = {
   abortOnFail: boolean
 }
 
-export function generateThresholds(thresholds: Threshold[]) {
-  const result: Record<string, Array<string | AbortableThreshold>> = {}
-
-  thresholds.forEach((threshold) => {
-    const key = threshold.metric
-
-    if (!result[key]) {
-      result[key] = []
-    }
-
-    const thresholdValue = `${threshold.statistic}${threshold.condition}${threshold.value}`
-
-    if (threshold.stopTest) {
-      result[key].push({ threshold: thresholdValue, abortOnFail: true })
-    } else {
-      result[key].push(thresholdValue)
-    }
-  })
-
-  return result
+export function generateThresholds<T extends ThresholdShape>(
+  thresholds: readonly T[]
+) {
+  return thresholds.reduce<Record<string, Array<string | AbortableThreshold>>>(
+    (acc, { metric, statistic, condition, value, stopTest }) => {
+      const expression = `${statistic}${condition}${value}`
+      const entry: string | AbortableThreshold = stopTest
+        ? { threshold: expression, abortOnFail: true }
+        : expression
+      acc[metric] = [...(acc[metric] ?? []), entry]
+      return acc
+    },
+    {}
+  )
 }
 
 export function generateCloudOptions({
@@ -51,11 +44,10 @@ export function generateCloudOptions({
 }
 
 export function generateLoadZones(loadZones: LoadZoneData['zones']) {
-  const result: Record<string, { loadZone: string; percent: number }> = {}
-
-  loadZones.forEach(({ loadZone, percent }) => {
-    result[`'${loadZone}'`] = { loadZone, percent }
-  })
-
-  return result
+  return Object.fromEntries(
+    loadZones.map(({ loadZone, percent }) => [
+      `'${loadZone}'`,
+      { loadZone, percent },
+    ])
+  )
 }

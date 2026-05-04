@@ -1,7 +1,7 @@
 import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
-import { debounce } from 'lodash-es'
+import { debounce, isEqual } from 'lodash-es'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { emitScript } from '@/codegen/browser'
@@ -19,6 +19,7 @@ import {
 import { useToast } from '@/store/ui/useToast'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
+import { stripUndefined } from '@/utils/object'
 import { queryClient } from '@/utils/query'
 
 import {
@@ -241,17 +242,17 @@ export function useBrowserTestState(
   )
 
   const isDirty = useMemo(() => {
-    // JSON-based compare normalizes undefined fields (which `lodash.isEqual`
-    // treats as distinct from missing) so cleared inputs match their
-    // JSON-roundtripped saved counterparts. Baseline widens stages to match
-    // the in-memory state so the seeded defaults aren't seen as edits.
+    // Baseline widens stages to match the in-memory state so seeded defaults
+    // aren't seen as edits. Compare strips undefined keys (RHF emits cleared
+    // inputs as `key: undefined`, while Zod parse drops them entirely) and
+    // ignores key order (Zod can reorder after a save+reload roundtrip).
     const baseline = {
       ...settings,
       loadProfile: withSeededStages(settings.loadProfile),
     }
     return (
-      JSON.stringify(plainActions) !== JSON.stringify(actions) ||
-      JSON.stringify(settingsState) !== JSON.stringify(baseline)
+      !isEqual(stripUndefined(plainActions), stripUndefined(actions)) ||
+      !isEqual(stripUndefined(settingsState), stripUndefined(baseline))
     )
   }, [plainActions, actions, settingsState, settings])
 

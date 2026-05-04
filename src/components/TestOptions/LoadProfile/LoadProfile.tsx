@@ -1,10 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Text } from '@radix-ui/themes'
-import { useCallback, useEffect } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
+import { FormProvider } from 'react-hook-form'
 
 import { LoadProfileExecutorOptionsSchema } from '@/schemas/generator'
 import { LoadProfileExecutorOptions } from '@/types/testOptions'
+
+import { useControlledForm } from '../useControlledForm'
 
 import { Executor } from './components/Executor'
 import { ExecutorOptions } from './components/ExecutorOptions'
@@ -16,37 +17,14 @@ interface LoadProfileProps {
 }
 
 export function LoadProfile({ value, onChange, executors }: LoadProfileProps) {
-  const formMethods = useForm<LoadProfileExecutorOptions>({
+  const formMethods = useControlledForm<LoadProfileExecutorOptions>({
+    value,
+    onChange,
     resolver: zodResolver(LoadProfileExecutorOptionsSchema),
-    shouldFocusError: false,
-    defaultValues: value,
   })
-  const { watch, handleSubmit, reset, getValues } = formMethods
+  const { watch, handleSubmit } = formMethods
 
   const executor = watch('executor')
-
-  const onSubmit = useCallback(
-    (next: LoadProfileExecutorOptions) => {
-      onChange(next)
-    },
-    [onChange]
-  )
-
-  // Keep form synced when external value changes. JSON-based compare
-  // normalizes optional fields (which deep-equal sees as distinct from
-  // missing) so a value reference change without semantic change is a no-op.
-  useEffect(() => {
-    const current = getValues()
-    if (JSON.stringify(current) !== JSON.stringify(value)) {
-      reset(value)
-    }
-  }, [value, reset, getValues])
-
-  // Submit onChange
-  useEffect(() => {
-    const subscription = watch(() => handleSubmit(onSubmit)())
-    return () => subscription.unsubscribe()
-  }, [watch, handleSubmit, onSubmit])
 
   return (
     <FormProvider {...formMethods}>
@@ -54,7 +32,7 @@ export function LoadProfile({ value, onChange, executors }: LoadProfileProps) {
         Control how k6 schedules VUs and iterations to model your desired load
         profile.
       </Text>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onChange)}>
         <Executor executors={executors} />
         <ExecutorOptions executor={executor} />
       </form>

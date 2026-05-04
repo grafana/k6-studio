@@ -1,19 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Text, Button, Switch, Flex, Callout, Tooltip } from '@radix-ui/themes'
 import { CircleXIcon } from 'lucide-react'
-import { useCallback, useEffect } from 'react'
-import {
-  FormProvider,
-  useForm,
-  useFieldArray,
-  useFormContext,
-} from 'react-hook-form'
+import { useEffect } from 'react'
+import { FormProvider, useFieldArray, useFormContext } from 'react-hook-form'
 
 import { ExternalLink } from '@/components/ExternalLink'
 import { FieldGroup } from '@/components/Form'
 import { Table } from '@/components/Table'
 import { LoadZoneSchema } from '@/schemas/generator/v1/loadZone'
 import { LoadZoneData } from '@/types/testOptions'
+
+import { useControlledForm } from '../useControlledForm'
 
 import { LoadZoneRow } from './LoadZoneRow'
 import {
@@ -28,10 +25,10 @@ interface LoadZonesProps {
 }
 
 export function LoadZones({ value, onChange }: LoadZonesProps) {
-  const formMethods = useForm<LoadZoneData>({
+  const formMethods = useControlledForm<LoadZoneData>({
+    value,
+    onChange,
     resolver: zodResolver(LoadZoneSchema),
-    shouldFocusError: false,
-    defaultValues: value,
   })
 
   const {
@@ -39,20 +36,9 @@ export function LoadZones({ value, onChange }: LoadZonesProps) {
     watch,
     control,
     setValue,
-    reset,
     getValues,
     formState: { errors },
   } = formMethods
-
-  // Keep form synced when external value changes (e.g. dialog reopened).
-  // JSON-based compare normalizes optional fields so reference-only changes
-  // don't trigger a redundant reset.
-  useEffect(() => {
-    const current = getValues()
-    if (JSON.stringify(current) !== JSON.stringify(value)) {
-      reset(value)
-    }
-  }, [value, reset, getValues])
 
   const { append, remove, fields } = useFieldArray<LoadZoneData>({
     control,
@@ -71,35 +57,25 @@ export function LoadZones({ value, onChange }: LoadZonesProps) {
     })
   }
 
-  const onSubmit = useCallback(
-    (data: LoadZoneData) => {
-      onChange(data)
-    },
-    [onChange]
-  )
-
-  // Submit onChange
-  useEffect(() => {
-    const subscription = watch(() => handleSubmit(onSubmit)())
-    return () => subscription.unsubscribe()
-  }, [watch, handleSubmit, onSubmit])
-
-  // Evenly distribute load zones if distribution is set to "even"
   useEffect(() => {
     if (distribution !== 'even') return
 
-    const basePercent = Math.floor(100 / fields.length)
-    const remainder = 100 % fields.length
+    const zones = getValues('zones')
+    const basePercent = Math.floor(100 / zones.length)
+    const remainder = 100 % zones.length
 
-    fields.forEach((_, index) => {
-      const percent = index < remainder ? basePercent + 1 : basePercent
-      setValue(`zones.${index}.percent`, percent)
-    })
-  }, [distribution, fields, setValue])
+    setValue(
+      'zones',
+      zones.map((zone, index) => ({
+        ...zone,
+        percent: index < remainder ? basePercent + 1 : basePercent,
+      }))
+    )
+  }, [distribution, fields.length, getValues, setValue])
 
   return (
     <FormProvider {...formMethods}>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onChange)}>
         <Text size="2" as="p" mb="4">
           Configure the geographical zones that the load test should be run
           from. Learn more about load zones in the{' '}

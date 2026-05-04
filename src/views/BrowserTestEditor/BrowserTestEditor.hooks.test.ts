@@ -111,6 +111,39 @@ describe('useBrowserTestState settings round-trip', () => {
     )
   })
 
+  it('isDirty clears when saved settings reload with reordered keys', () => {
+    const before: BrowserTestFile = {
+      version: '2.0',
+      actions: [],
+      settings: {
+        ...defaultBrowserTestOptions,
+        loadProfile: { executor: 'shared-iterations' },
+      },
+    }
+    const { result, rerender } = renderHook(
+      ({ file }: { file: BrowserTestFile }) => useBrowserTestState(file),
+      { initialProps: { file: before } }
+    )
+    act(() => {
+      result.current.setLoadProfile({
+        executor: 'shared-iterations',
+        vus: 5,
+      })
+    })
+    expect(result.current.isDirty).toBe(true)
+
+    const after: BrowserTestFile = {
+      version: '2.0',
+      actions: [],
+      settings: {
+        ...defaultBrowserTestOptions,
+        loadProfile: { executor: 'shared-iterations', vus: 5 },
+      },
+    }
+    rerender({ file: after })
+    expect(result.current.isDirty).toBe(false)
+  })
+
   it('factory accepts threshold overrides', () => {
     const file = createBrowserTestFile({
       settings: {

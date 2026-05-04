@@ -1,6 +1,6 @@
 import { Table, TextField, Checkbox, IconButton, Flex } from '@radix-ui/themes'
 import { Trash2Icon } from 'lucide-react'
-import { useContext, useEffect } from 'react'
+import { useEffect } from 'react'
 import {
   Controller,
   FieldArrayWithId,
@@ -10,28 +10,29 @@ import {
 
 import { FieldGroup, ControlledSelect } from '@/components/Form'
 
-import { MetricsConfigContext } from './Thresholds'
 import {
   THRESHOLD_CONDITIONS_OPTIONS,
   ThresholdLikeRow,
 } from './Thresholds.utils'
+import { MetricsConfig } from './createMetricsConfig'
 
 interface ThresholdFormShape {
   thresholds: ThresholdLikeRow[]
 }
 
-type ThresholdRowProps = {
+type ThresholdRowProps<M extends string> = {
   index: number
   field: FieldArrayWithId<ThresholdFormShape, 'thresholds', 'id'>
   remove: UseFieldArrayRemove
+  metricsConfig: MetricsConfig<M>
 }
 
-export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
-  const metricsConfig = useContext(MetricsConfigContext)
-  if (!metricsConfig) {
-    throw new Error('ThresholdRow must be rendered inside Thresholds')
-  }
-
+export function ThresholdRow<M extends string>({
+  field,
+  index,
+  remove,
+  metricsConfig,
+}: ThresholdRowProps<M>) {
   const {
     register,
     formState: { errors },
@@ -41,28 +42,22 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
   } = useFormContext<ThresholdFormShape>()
 
   const threshold = watch(`thresholds.${index}`)
+  const metric = threshold?.metric
+  const statistic = threshold?.statistic
 
-  // Reset statistic when metric changes to one that doesn't support the current statistic
   useEffect(() => {
-    if (!threshold) return
+    if (metric === undefined || statistic === undefined) return
 
     const availableStatistics = metricsConfig
-      .getStatisticOptions(threshold.metric)
+      .getStatisticOptions(metric as M)
       .map((option) => option.value)
-    if (!availableStatistics.includes(threshold.statistic)) {
+    if (!availableStatistics.includes(statistic)) {
       const newStatistic = availableStatistics[0]
       if (newStatistic) {
         setValue(`thresholds.${index}.statistic`, newStatistic)
       }
     }
-  }, [
-    threshold,
-    threshold?.metric,
-    threshold?.statistic,
-    index,
-    setValue,
-    metricsConfig,
-  ])
+  }, [metric, statistic, index, setValue, metricsConfig])
 
   return (
     <Table.Row key={field.id}>
@@ -86,7 +81,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
             name={`thresholds.${index}.statistic`}
             options={
               threshold?.metric
-                ? metricsConfig.getStatisticOptions(threshold.metric)
+                ? metricsConfig.getStatisticOptions(threshold.metric as M)
                 : []
             }
           />
@@ -124,7 +119,7 @@ export function ThresholdRow({ field, index, remove }: ThresholdRowProps) {
           >
             <TextField.Slot side="right">
               {threshold?.metric
-                ? metricsConfig.getMetricUnit(threshold.metric)
+                ? metricsConfig.getMetricUnit(threshold.metric as M)
                 : ''}
             </TextField.Slot>
           </TextField.Root>

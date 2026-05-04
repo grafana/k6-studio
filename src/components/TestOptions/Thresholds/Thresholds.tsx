@@ -1,9 +1,11 @@
 import { Button, Text } from '@radix-ui/themes'
-import { createContext, useCallback, useEffect } from 'react'
-import { FormProvider, Resolver, useForm, useFieldArray } from 'react-hook-form'
+import { useCallback, useMemo } from 'react'
+import { FormProvider, Resolver, useFieldArray } from 'react-hook-form'
 
 import { ExternalLink } from '@/components/ExternalLink'
 import { Table } from '@/components/Table'
+
+import { useControlledForm } from '../useControlledForm'
 
 import { ThresholdRow } from './ThresholdRow'
 import type { ThresholdLikeRow } from './Thresholds.utils'
@@ -19,10 +21,6 @@ interface ThresholdsProps<M extends string> {
   resolver?: Resolver<any>
 }
 
-export const MetricsConfigContext = createContext<MetricsConfig<string> | null>(
-  null
-)
-
 export function Thresholds<M extends string>({
   value,
   onChange,
@@ -30,41 +28,29 @@ export function Thresholds<M extends string>({
   resolver,
 }: ThresholdsProps<M>) {
   type Row = ThresholdLikeRow & { metric: M }
+  type FormShape = { thresholds: Row[] }
 
-  const formMethods = useForm<{ thresholds: Row[] }>({
-    shouldFocusError: false,
-    defaultValues: { thresholds: value },
-    resolver: resolver as Resolver<{ thresholds: Row[] }> | undefined,
+  const wrappedValue = useMemo<FormShape>(
+    () => ({ thresholds: value }),
+    [value]
+  )
+  const handleChange = useCallback(
+    (data: FormShape) => onChange(data.thresholds),
+    [onChange]
+  )
+
+  const formMethods = useControlledForm<FormShape>({
+    value: wrappedValue,
+    onChange: handleChange,
+    resolver: resolver as Resolver<FormShape> | undefined,
   })
 
-  const { handleSubmit, control, watch, reset, getValues } = formMethods
-
-  // Keep form synced when external value changes (e.g. dialog reopened).
-  // JSON-based compare normalizes optional fields so reference-only changes
-  // don't trigger a redundant reset.
-  useEffect(() => {
-    const current = getValues('thresholds')
-    if (JSON.stringify(current) !== JSON.stringify(value)) {
-      reset({ thresholds: value })
-    }
-  }, [value, reset, getValues])
+  const { handleSubmit, control } = formMethods
 
   const { append, remove, fields } = useFieldArray({
     control,
     name: 'thresholds',
   })
-
-  const onSubmit = useCallback(
-    (data: { thresholds: Row[] }) => {
-      onChange(data.thresholds)
-    },
-    [onChange]
-  )
-
-  useEffect(() => {
-    const subscription = watch(() => handleSubmit(onSubmit)())
-    return () => subscription.unsubscribe()
-  }, [watch, handleSubmit, onSubmit])
 
   function handleAddThreshold(event: React.MouseEvent) {
     event.preventDefault()
@@ -89,60 +75,57 @@ export function Thresholds<M extends string>({
   }
 
   return (
-    <MetricsConfigContext.Provider
-      value={metricsConfig as unknown as MetricsConfig<string>}
-    >
-      <FormProvider {...formMethods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Text size="2" as="p" mb="4">
-            Define pass/fail criteria for your test metrics across all URLs.
-            Learn more about thresholds in the{' '}
-            <ExternalLink href="https://grafana.com/docs/k6/latest/using-k6/thresholds">
-              docs
-            </ExternalLink>
-            .
-          </Text>
-          <Table.Root size="1" variant="surface" layout="fixed">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell width="210px">
-                  Metric
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="160px">
-                  Statistic
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="100px">
-                  Condition
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="145px">
-                  Value
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="80px">
-                  Stop Test
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell width="59px" />
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {fields.map((field, index) => (
-                <ThresholdRow
-                  key={field.id}
-                  field={field}
-                  index={index}
-                  remove={remove}
-                />
-              ))}
-              <Table.Row>
-                <Table.RowHeaderCell colSpan={7} justify="center">
-                  <Button variant="ghost" onClick={handleAddThreshold}>
-                    Add threshold
-                  </Button>
-                </Table.RowHeaderCell>
-              </Table.Row>
-            </Table.Body>
-          </Table.Root>
-        </form>
-      </FormProvider>
-    </MetricsConfigContext.Provider>
+    <FormProvider {...formMethods}>
+      <form onSubmit={handleSubmit(handleChange)}>
+        <Text size="2" as="p" mb="4">
+          Define pass/fail criteria for your test metrics across all URLs. Learn
+          more about thresholds in the{' '}
+          <ExternalLink href="https://grafana.com/docs/k6/latest/using-k6/thresholds">
+            docs
+          </ExternalLink>
+          .
+        </Text>
+        <Table.Root size="1" variant="surface" layout="fixed">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell width="210px">
+                Metric
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="160px">
+                Statistic
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="100px">
+                Condition
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="145px">
+                Value
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="80px">
+                Stop Test
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="59px" />
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {fields.map((field, index) => (
+              <ThresholdRow
+                key={field.id}
+                field={field}
+                index={index}
+                remove={remove}
+                metricsConfig={metricsConfig}
+              />
+            ))}
+            <Table.Row>
+              <Table.RowHeaderCell colSpan={7} justify="center">
+                <Button variant="ghost" onClick={handleAddThreshold}>
+                  Add threshold
+                </Button>
+              </Table.RowHeaderCell>
+            </Table.Row>
+          </Table.Body>
+        </Table.Root>
+      </form>
+    </FormProvider>
   )
 }
