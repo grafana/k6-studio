@@ -107,7 +107,10 @@ export function selectHasGroups(state: GeneratorStore) {
 export function selectLoadProfileExecutorOptions(
   state: GeneratorStore
 ): LoadProfileExecutorOptions {
-  return selectLoadProfile(state)
+  const { executor, stages, vus, iterations } = state
+  // Always pass all executor-specific fields so the LoadProfile form defaultValues
+  // retain e.g. stages while shared-iterations is active (Zod strips extras on parse).
+  return { executor, stages, vus, iterations }
 }
 
 export function selectSelectedRuleIndex(state: GeneratorStore) {
