@@ -33,6 +33,7 @@ const studio = {
   browserRemote,
   cloud,
   ai,
+  platform: process.platform,
 } as const
 
 contextBridge.exposeInMainWorld('studio', studio)

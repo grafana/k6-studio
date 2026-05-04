@@ -41,7 +41,6 @@ interface ActionEditorProps<M extends BrowserActionInstance['method']> {
 interface ActionEditorDefinition<M extends BrowserActionInstance['method']> {
   icon: ReactNode
   render: (props: ActionEditorProps<M>) => ReactElement
-  create: () => ActionByMethod<M>
   summaryExcludeKeys?: readonly string[]
 }
 
@@ -59,102 +58,30 @@ const notImplementedRender = <M extends BrowserActionInstance['method']>({
   </>
 )
 
-const notImplementedCreate = <M extends BrowserActionInstance['method']>(
-  method: M
-) => {
-  return () => {
-    throw new Error(`Action ${method} not implemented yet`)
-  }
-}
-
 const actionEditors: ActionEditorRegistry = {
   'locator.check': {
     icon: <SquareCheckBigIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <CheckActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'locator.check',
-      locator: {
-        current: 'role',
-        values: {
-          role: {
-            type: 'role',
-            role: 'checkbox',
-            options: {
-              exact: false,
-            },
-          },
-        },
-      },
-    }),
   },
   'locator.uncheck': {
     icon: <SquareIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <UncheckActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'locator.uncheck',
-      locator: {
-        current: 'role',
-        values: {
-          role: {
-            type: 'role',
-            role: 'checkbox',
-            options: {
-              exact: false,
-            },
-          },
-        },
-      },
-    }),
   },
   'locator.clear': {
     icon: <EraserIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <ClearActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'locator.clear',
-      locator: {
-        current: 'role',
-        values: {
-          role: {
-            type: 'role',
-            role: 'textbox',
-            options: {
-              exact: false,
-            },
-          },
-        },
-      },
-    }),
   },
   'locator.click': {
     icon: <MousePointerClickIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <ClickActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'locator.click',
-      locator: {
-        current: 'role',
-        values: {
-          role: {
-            type: 'role',
-            role: 'button',
-            options: {
-              exact: false,
-            },
-          },
-        },
-      },
-    }),
     summaryExcludeKeys: ['button'],
   },
   'locator.fill': {
@@ -162,98 +89,34 @@ const actionEditors: ActionEditorRegistry = {
     render: ({ action, onChange }) => (
       <FillActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'locator.fill',
-      value: '',
-      locator: {
-        current: 'role',
-        values: {
-          role: {
-            type: 'role',
-            role: 'textbox',
-            options: {
-              exact: false,
-            },
-          },
-        },
-      },
-    }),
   },
   'locator.selectOption': {
     icon: <ListChecksIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <SelectOptionActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'locator.selectOption',
-      values: [{ value: '' }],
-      locator: {
-        current: 'role',
-        values: {
-          role: {
-            type: 'role',
-            role: 'combobox',
-            options: {
-              exact: false,
-            },
-          },
-        },
-      },
-    }),
   },
   'page.goto': {
     icon: <GlobeIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <GoToActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'page.goto',
-      url: 'https://example.com',
-    }),
   },
   'page.reload': {
     icon: <RefreshCwIcon aria-hidden="true" />,
     render: () => <PageReloadActionBody />,
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'page.reload',
-    }),
   },
   'page.waitForTimeout': {
     icon: <ClockIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <WaitForTimeoutActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'page.waitForTimeout',
-      timeout: 1000,
-    }),
   },
   'locator.waitFor': {
     icon: <TimerIcon aria-hidden="true" />,
     render: ({ action, onChange }) => (
       <WaitForActionBody action={action} onChange={onChange} />
     ),
-    create: () => ({
-      id: crypto.randomUUID(),
-      method: 'locator.waitFor',
-      locator: {
-        current: 'role',
-        values: {
-          role: {
-            type: 'role',
-            role: '',
-            options: {
-              exact: false,
-            },
-          },
-        },
-      },
-    }),
   },
 }
 
@@ -269,7 +132,6 @@ export function getActionEditor<M extends BrowserActionInstance['method']>(
   return {
     icon: notImplementedIcon,
     render: notImplementedRender,
-    create: notImplementedCreate(method),
   } as ActionEditorDefinition<M>
 }
 
@@ -277,8 +139,4 @@ export function getActionEditorForAction<A extends BrowserActionInstance>(
   action: A
 ): ActionEditorDefinition<A['method']> {
   return getActionEditor(action.method)
-}
-
-export function createActionInstance(method: BrowserActionInstance['method']) {
-  return getActionEditor(method).create()
 }

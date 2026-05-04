@@ -51,7 +51,7 @@ class EnhancedReplayer extends Replayer {
   }
 
   getTotalTime() {
-    return this.getMetaData().totalTime
+    return Math.max(0, this.getMetaData().totalTime)
   }
 
   getCurrentTimestamp() {

@@ -21,7 +21,7 @@ const ScenarioBaseSchema = z.object({
 export const TestOptionsSchema = z
   .object({
     cloud: CloudOptionsSchema.optional(),
-    scenarios: z.record(ScenarioBaseSchema).optional(),
+    scenarios: z.record(z.string(), ScenarioBaseSchema).optional(),
   })
   .passthrough()
 

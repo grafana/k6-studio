@@ -14,12 +14,12 @@ const StackInfoSchema = z.object({
 
 const UserProfilesSchema = z.object({
   currentStack: z.string(),
-  stacks: z.record(StackInfoSchema),
+  stacks: z.record(z.string(), StackInfoSchema),
 })
 
 export const ProfileSchema = z.object({
   version: z.literal('1.0'),
-  tokens: z.record(z.string()),
+  tokens: z.record(z.string(), z.string()),
   profiles: UserProfilesSchema,
 })
 

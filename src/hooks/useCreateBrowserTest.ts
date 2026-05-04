@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { getRoutePath } from '@/routeMap'
+import { getViewPath } from '@/routeMap'
 import { useToast } from '@/store/ui/useToast'
 
 export function useCreateBrowserTest() {
@@ -12,11 +12,7 @@ export function useCreateBrowserTest() {
     try {
       const fileName = await window.studio.browserTest.create()
 
-      navigate(
-        getRoutePath('browserTestEditor', {
-          fileName: encodeURIComponent(fileName),
-        })
-      )
+      navigate(getViewPath('browser-test', fileName))
     } catch {
       showToast({
         status: 'error',

@@ -2,6 +2,7 @@ import { ProxyData } from '@/types'
 import { ImmerStateCreator } from '@/utils/typescript'
 
 import {
+  extractUniqueJsonPaths,
   shouldResetAllowList,
   shouldShowAllowListDialog,
 } from './recording.utils'
@@ -61,6 +62,10 @@ export const createRecordingSlice: ImmerStateCreator<RecordingSliceStore> = (
 
       state.requests = requests
       state.recordingPath = path
+
+      const { requestJsonPaths, responseJsonPaths } =
+        extractUniqueJsonPaths(requests)
+      state.metadata = { requestJsonPaths, responseJsonPaths }
     }),
   resetRecording: () =>
     set((state) => {

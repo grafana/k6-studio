@@ -31,7 +31,7 @@ export function saveScript(script: string, fileName: string) {
     ScriptHandler.Save,
     script,
     fileName
-  ) as Promise<void>
+  ) as Promise<string | undefined>
 }
 
 export function runScript(scriptPath: string) {

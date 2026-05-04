@@ -5,6 +5,7 @@ import { FileCode2Icon } from 'lucide-react'
 import { useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useLocalStorage } from 'react-use'
+import type { z } from 'zod'
 
 import {
   ExportScriptDialogData,
@@ -31,7 +32,11 @@ export function ExportScriptDialog({
 }: ExportScriptDialogProps) {
   const scripts = useStudioUIStore((store) => store.scripts)
 
-  const formMethods = useForm<ExportScriptDialogData>({
+  const formMethods = useForm<
+    z.input<typeof ExportScriptDialogSchema>,
+    unknown,
+    ExportScriptDialogData
+  >({
     resolver: zodResolver(ExportScriptDialogSchema),
     defaultValues: {
       scriptName,
