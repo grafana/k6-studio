@@ -16,7 +16,10 @@ const baseFile: BrowserTestFile = {
 describe('useBrowserTestState', () => {
   it('returns default settings when settings absent on file', () => {
     const { result } = renderHook(() => useBrowserTestState(baseFile))
-    expect(result.current.settings).toEqual(defaultBrowserTestOptions)
+    // State carries default stages alongside the active branch so the form
+    // can validate when the user switches to ramping-vus.
+    expect(result.current.settings).toMatchObject(defaultBrowserTestOptions)
+    expect(result.current.isDirty).toBe(false)
   })
 
   it('setLoadProfile updates settings and marks dirty', () => {
@@ -28,7 +31,7 @@ describe('useBrowserTestState', () => {
         iterations: 10,
       })
     })
-    expect(result.current.settings.loadProfile).toEqual({
+    expect(result.current.settings.loadProfile).toMatchObject({
       executor: 'shared-iterations',
       vus: 5,
       iterations: 10,
@@ -75,7 +78,7 @@ describe('useBrowserTestState settings round-trip', () => {
   it('uses default settings when factory builds default file', () => {
     const file = createBrowserTestFile()
     const { result } = renderHook(() => useBrowserTestState(file))
-    expect(result.current.settings).toEqual(defaultBrowserTestOptions)
+    expect(result.current.settings).toMatchObject(defaultBrowserTestOptions)
     expect(result.current.isDirty).toBe(false)
   })
 
@@ -116,7 +119,7 @@ describe('useBrowserTestState settings round-trip', () => {
       },
     })
     const { result } = renderHook(() => useBrowserTestState(file))
-    expect(result.current.settings.loadProfile).toEqual({
+    expect(result.current.settings.loadProfile).toMatchObject({
       executor: 'shared-iterations',
       vus: 5,
       iterations: 25,
