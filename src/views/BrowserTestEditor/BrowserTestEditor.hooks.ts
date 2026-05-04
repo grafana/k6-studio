@@ -12,7 +12,6 @@ import {
 } from '@/components/primitives/ResizablePanel'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
-import { basename } from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 import {
