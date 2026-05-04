@@ -49,7 +49,7 @@ export function ThresholdRow<M extends string>({
     if (metric === undefined || statistic === undefined) return
 
     const availableStatistics = metricsConfig
-      .getStatisticOptions(metric as M)
+      .getStatisticOptions(metric)
       .map((option) => option.value)
     if (!availableStatistics.includes(statistic)) {
       const newStatistic = availableStatistics[0]
@@ -81,7 +81,7 @@ export function ThresholdRow<M extends string>({
             name={`thresholds.${index}.statistic`}
             options={
               threshold?.metric
-                ? metricsConfig.getStatisticOptions(threshold.metric as M)
+                ? metricsConfig.getStatisticOptions(threshold.metric)
                 : []
             }
           />
@@ -119,7 +119,7 @@ export function ThresholdRow<M extends string>({
           >
             <TextField.Slot side="right">
               {threshold?.metric
-                ? metricsConfig.getMetricUnit(threshold.metric as M)
+                ? metricsConfig.getMetricUnit(threshold.metric)
                 : ''}
             </TextField.Slot>
           </TextField.Root>

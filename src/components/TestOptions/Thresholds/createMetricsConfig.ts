@@ -1,4 +1,5 @@
 import { ThresholdStatstic } from '@/types/testOptions'
+import { typedEntries } from '@/utils/object'
 import { exhaustive } from '@/utils/typescript'
 
 export type MetricUnit = '' | 'ms' | 'reqs' | 'bytes' | '%'
@@ -17,21 +18,22 @@ export interface StatisticOption {
 
 export interface MetricsConfig<M extends string = string> {
   options: Array<{ value: M; label: string }>
-  getStatisticOptions: (metric: M) => StatisticOption[]
-  getMetricUnit: (metric: M) => MetricUnit
+  getStatisticOptions: (metric: string) => StatisticOption[]
+  getMetricUnit: (metric: string) => MetricUnit
 }
 
 export function createMetricsConfig<M extends string>(
   metricsMap: Record<M, MetricMeta>
 ): MetricsConfig<M> {
-  const options = (Object.entries(metricsMap) as Array<[M, MetricMeta]>).map(
-    ([value, { label }]) => ({ value, label })
-  )
+  const entries = typedEntries(metricsMap)
+  const options = entries.map(([value, { label }]) => ({ value, label }))
+  const metaByMetric = new Map<string, MetricMeta>(entries)
 
-  function getStatisticOptions(metric: M): StatisticOption[] {
-    const { type } = metricsMap[metric]
+  function getStatisticOptions(metric: string): StatisticOption[] {
+    const meta = metaByMetric.get(metric)
+    if (!meta) return []
 
-    switch (type) {
+    switch (meta.type) {
       case 'counter':
         return [{ label: 'Count', value: 'count' }]
       case 'rate':
@@ -47,12 +49,12 @@ export function createMetricsConfig<M extends string>(
           { label: 'Min', value: 'min' },
         ]
       default:
-        return exhaustive(type)
+        return exhaustive(meta.type)
     }
   }
 
-  function getMetricUnit(metric: M): MetricUnit {
-    return metricsMap[metric].unit
+  function getMetricUnit(metric: string): MetricUnit {
+    return metaByMetric.get(metric)?.unit ?? ''
   }
 
   return { options, getStatisticOptions, getMetricUnit }

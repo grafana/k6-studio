@@ -55,13 +55,12 @@ export function Thresholds<M extends string>({
   function handleAddThreshold(event: React.MouseEvent) {
     event.preventDefault()
 
-    const firstMetric = metricsConfig.options[0]?.value as M
+    const firstMetric = metricsConfig.options[0]?.value
+    if (firstMetric === undefined) return
+
     const firstStatistic =
       metricsConfig.getStatisticOptions(firstMetric)[0]?.value
-
-    if (firstMetric === undefined || firstStatistic === undefined) {
-      return
-    }
+    if (firstStatistic === undefined) return
 
     const newRow: Row = {
       id: crypto.randomUUID(),
