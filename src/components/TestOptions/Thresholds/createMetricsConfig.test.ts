@@ -19,7 +19,7 @@ describe('createMetricsConfig', () => {
 
   it('returns trend statistics for trend metrics', () => {
     const opts = config.getStatisticOptions('response_time')
-    expect(opts.map((o) => o.value)).toEqual([
+    expect(opts.map((option) => option.value)).toEqual([
       'p(99)',
       'p(95)',
       'p(90)',

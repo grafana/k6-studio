@@ -17,13 +17,13 @@ export function TestOptions() {
   const loadProfile = useGeneratorStore(
     useShallow(selectLoadProfileExecutorOptions)
   )
-  const setLoadProfile = useGeneratorStore((s) => s.setLoadProfile)
+  const setLoadProfile = useGeneratorStore((store) => store.setLoadProfile)
 
-  const thresholds = useGeneratorStore((s) => s.thresholds)
-  const setThresholds = useGeneratorStore((s) => s.setThresholds)
+  const thresholds = useGeneratorStore((store) => store.thresholds)
+  const setThresholds = useGeneratorStore((store) => store.setThresholds)
 
-  const loadZones = useGeneratorStore((s) => s.loadZones)
-  const setLoadZones = useGeneratorStore((s) => s.setLoadZones)
+  const loadZones = useGeneratorStore((store) => store.loadZones)
+  const setLoadZones = useGeneratorStore((store) => store.setLoadZones)
 
   return (
     <TestOptionsDialog

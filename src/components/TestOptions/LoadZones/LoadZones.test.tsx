@@ -31,8 +31,8 @@ describe('LoadZones (controlled)', () => {
       expect(lastCall).toBeDefined()
       const last = lastCall![0]
       expect(last.zones).toHaveLength(3)
-      expect(last.zones.reduce((s, z) => s + z.percent, 0)).toBe(100)
-      const percents = last.zones.map((z) => z.percent)
+      expect(last.zones.reduce((sum, zone) => sum + zone.percent, 0)).toBe(100)
+      const percents = last.zones.map((zone) => zone.percent)
       expect(Math.max(...percents) - Math.min(...percents)).toBeLessThanOrEqual(
         1
       )

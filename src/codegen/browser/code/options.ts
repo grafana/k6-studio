@@ -126,8 +126,8 @@ function emitExecutor(
       executor: 'ramping-vus',
       exec,
       stages: fromArrayLiteral(
-        loadProfile.stages.map((s) =>
-          fromObjectLiteral({ target: s.target, duration: s.duration })
+        loadProfile.stages.map((stage) =>
+          fromObjectLiteral({ target: stage.target, duration: stage.duration })
         )
       ),
       options,
@@ -171,13 +171,13 @@ function emitThresholds(
   const entries = Object.entries(data).reduce(
     (acc, [metric, conditions]) => {
       acc[metric] = fromArrayLiteral(
-        conditions.map((c) => {
-          if (typeof c === 'string') {
-            return c
+        conditions.map((condition) => {
+          if (typeof condition === 'string') {
+            return condition
           }
           return fromObjectLiteral({
-            threshold: c.threshold,
-            abortOnFail: c.abortOnFail,
+            threshold: condition.threshold,
+            abortOnFail: condition.abortOnFail,
           })
         })
       )

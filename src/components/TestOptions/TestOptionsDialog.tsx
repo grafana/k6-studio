@@ -64,7 +64,7 @@ export function TestOptionsDialog<M extends string>({
       <Inset>
         <Tabs.Root
           value={selectedTab}
-          onValueChange={(v) => setSelectedTab(v as TabId)}
+          onValueChange={(value) => setSelectedTab(value as TabId)}
         >
           <Tabs.List
             css={css`
