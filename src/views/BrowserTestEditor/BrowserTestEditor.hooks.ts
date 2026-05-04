@@ -2,7 +2,6 @@ import { arrayMove } from '@dnd-kit/sortable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
 import { debounce } from 'lodash-es'
-import { basename } from 'pathe'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { emitScript } from '@/codegen/browser'
@@ -13,6 +12,7 @@ import {
 } from '@/components/primitives/ResizablePanel'
 import { BrowserTestFile } from '@/schemas/browserTest/v1'
 import { useToast } from '@/store/ui/useToast'
+import { basename } from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 import {

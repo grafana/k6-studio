@@ -1,11 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import log from 'electron-log/renderer'
-import { basename } from 'pathe'
 import { useCallback } from 'react'
 
 import { selectGeneratorData, useGeneratorStore } from '@/store/generator'
 import { useToast } from '@/store/ui/useToast'
 import { GeneratorFileData } from '@/types/generator'
+import { basename } from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 import { exportScript, loadGeneratorFile, loadHarFile } from './Generator.utils'
