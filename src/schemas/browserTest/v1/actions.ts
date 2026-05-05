@@ -39,12 +39,6 @@ const PageCloseActionSchema = z.object({
   method: z.literal('page.close'),
 })
 
-const GenericPageActionSchema = z.object({
-  method: z.literal('page.*'),
-  name: z.string(),
-  args: z.array(z.unknown()),
-})
-
 const LocatorClickOptionSchema = z
   .object({
     button: safe(
@@ -171,30 +165,13 @@ const LocatorFocusActionSchema = z.object({
   options: GenericOptions.optional(),
 })
 
-const GenericLocatorActionSchema = z.object({
-  method: z.literal('locator.*'),
-  name: z.string(),
-  locator: ElementLocatorSchema,
-  args: z.array(z.unknown()),
-})
-
-const GenericBrowserContextActionSchema = z.object({
-  method: z.literal('browserContext.*'),
-  name: z.string(),
-  args: z.array(z.unknown()),
-})
-
 export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
-  // BrowserContext actions
-  GenericBrowserContextActionSchema,
-
   // Page actions
   PageGotoActionSchema,
   PageReloadActionSchema,
   PageWaitForNavigationActionSchema,
   PageWaitForTimeoutActionSchema,
   PageCloseActionSchema,
-  GenericPageActionSchema,
 
   // Locator actions
   LocatorCheckActionSchema,
@@ -211,7 +188,6 @@ export const AnyBrowserActionSchema = z.discriminatedUnion('method', [
   LocatorTypeActionSchema,
   LocatorUncheckActionSchema,
   LocatorWaitForActionSchema,
-  GenericLocatorActionSchema,
 ])
 
 export type PageGotoAction = z.infer<typeof PageGotoActionSchema>
@@ -222,7 +198,6 @@ export type PageWaitForNavigationAction = z.infer<
 export type PageWaitForTimeoutAction = z.infer<
   typeof PageWaitForTimeoutActionSchema
 >
-export type GenericPageAction = z.infer<typeof GenericPageActionSchema>
 
 export type LocatorCheckAction = z.infer<typeof LocatorCheckActionSchema>
 export type LocatorClearAction = z.infer<typeof LocatorClearActionSchema>
@@ -252,11 +227,5 @@ export type LocatorTapAction = z.infer<typeof LocatorTapActionSchema>
 export type LocatorTypeAction = z.infer<typeof LocatorTypeActionSchema>
 export type LocatorUncheckAction = z.infer<typeof LocatorUncheckActionSchema>
 export type LocatorWaitForAction = z.infer<typeof LocatorWaitForActionSchema>
-
-export type GenericLocatorAction = z.infer<typeof GenericLocatorActionSchema>
-
-export type GenericBrowserContextAction = z.infer<
-  typeof GenericBrowserContextActionSchema
->
 
 export type AnyBrowserAction = z.infer<typeof AnyBrowserActionSchema>

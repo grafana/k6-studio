@@ -13,9 +13,6 @@ export type BrowserTestFile = z.infer<typeof BrowserTestFileSchema>
 
 export type {
   AnyBrowserAction,
-  GenericBrowserContextAction,
-  GenericLocatorAction,
-  GenericPageAction,
   LocatorCheckAction,
   LocatorClearAction,
   LocatorClickAction,
