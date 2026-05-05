@@ -29,7 +29,12 @@ export function NewTestMenu() {
     <DropdownMenu.Root>
       <Tooltip content="New test" side="right">
         <DropdownMenu.Trigger>
-          <IconButton aria-label="New test" variant="ghost" size="1">
+          <IconButton
+            aria-label="New test"
+            variant="ghost"
+            size="1"
+            color="gray"
+          >
             <PlusIcon />
           </IconButton>
         </DropdownMenu.Trigger>

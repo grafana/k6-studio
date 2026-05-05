@@ -1,5 +1,5 @@
 import { Button, DropdownMenu } from '@radix-ui/themes'
-import { CirclePlusIcon } from 'lucide-react'
+import { PlusIcon } from 'lucide-react'
 
 import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 
@@ -12,8 +12,8 @@ export function CreateTestButton() {
 
   if (!isBrowserEditorEnabled) {
     return (
-      <Button variant="soft" onClick={() => handleCreateHTTPTest()}>
-        <CirclePlusIcon /> Create test
+      <Button size="1" variant="soft" onClick={() => handleCreateHTTPTest()}>
+        <PlusIcon /> Create test
       </Button>
     )
   }
@@ -21,11 +21,11 @@ export function CreateTestButton() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <Button variant="soft">
-          <CirclePlusIcon /> Create test
+        <Button size="1" variant="soft">
+          <PlusIcon /> Create test
         </Button>
       </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
+      <DropdownMenu.Content size="1">
         <DropdownMenu.Item onSelect={() => handleCreateHTTPTest()}>
           HTTP test
         </DropdownMenu.Item>
