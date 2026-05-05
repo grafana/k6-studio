@@ -5,7 +5,7 @@ import { LogEntry } from '@/schemas/k6'
 import {
   ActionBeginEvent,
   ActionResultSchema,
-  AnyBrowserAction,
+  AnyBrowserDebugEvent,
   AssertionBeginEvent,
   AssertionEndEvent,
   BrowserDebuggerBeginEvent,
@@ -88,7 +88,7 @@ function sendEndEvent<T extends BrowserDebuggerEndEvent>(event: T) {
   }
 }
 
-function beginAction(action: AnyBrowserAction | undefined | null) {
+function beginAction(action: AnyBrowserDebugEvent | undefined | null) {
   if (TRACKING_SERVER_URL === null) {
     return null
   }
@@ -134,7 +134,7 @@ type ArgsOf<T> = T extends AnyFunction ? Parameters<T> : never
 
 type TrackingFn<T extends AnyFunction> = (
   ...args: Parameters<T>
-) => AnyBrowserAction
+) => AnyBrowserDebugEvent
 
 type ProxyFn<T extends AnyFunction> = (
   target: Unwrap<ReturnType<T>>,
@@ -149,7 +149,7 @@ export interface ProxyOptions<T extends object> {
     $default?: (
       method: keyof T,
       ...args: ArgsOf<T[keyof T]>
-    ) => AnyBrowserAction | null
+    ) => AnyBrowserDebugEvent | null
   }
   proxies: {
     [P in keyof T]?: T[P] extends AnyFunction ? ProxyFn<T[P]> : never
