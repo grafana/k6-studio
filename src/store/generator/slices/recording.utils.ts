@@ -1,7 +1,7 @@
 import { uniq } from 'lodash-es'
 
-import { ProxyData } from '@/types'
-import type { HarHeader } from '@/types/recording'
+import { useFeaturesStore } from '@/store/features'
+import { Header, ProxyData } from '@/types'
 
 export function extractUniqueHosts(requests: ProxyData[]) {
   return uniq(requests.map((request) => request.request.host).filter(Boolean))
@@ -127,21 +127,12 @@ function parseToJsonPaths(content: string): string[] {
   return paths
 }
 
-/**
- * Takes a set of headers and determines if its of json content type
- */
-export function isJsonContentType(headerValues: HarHeader[]): boolean {
-  return headerValues.some((header) => {
-    const name = header.name
-    const value = header.value
-    if (!name || !value) {
-      return false
-    }
-    return (
-      name.toLowerCase() === 'content-type' &&
-      value.toLowerCase().includes('application/json')
-    )
-  })
+function isJsonContent(headers: Header[]): boolean {
+  return headers.some(
+    ([name, value]) =>
+      name?.toLowerCase() === 'content-type' &&
+      value?.toLowerCase().includes('application/json')
+  )
 }
 
 export function extractUniqueJsonPaths(requests: ProxyData[]): {
@@ -151,9 +142,24 @@ export function extractUniqueJsonPaths(requests: ProxyData[]): {
   const requestJsonPaths = new Set<string>()
   const responseJsonPaths = new Set<string>()
 
-  for (const proxy of requests) {
-    proxy.request?.jsonPaths?.forEach((path) => requestJsonPaths.add(path))
-    proxy.response?.jsonPaths?.forEach((path) => responseJsonPaths.add(path))
+  if (!useFeaturesStore.getState().features['typeahead-json']) {
+    return {
+      requestJsonPaths: [],
+      responseJsonPaths: [],
+    }
+  }
+
+  for (const { request, response } of requests) {
+    if (request.content && isJsonContent(request.headers)) {
+      generateJsonPaths(request.content).forEach((path) =>
+        requestJsonPaths.add(path)
+      )
+    }
+    if (response?.content && isJsonContent(response.headers)) {
+      generateJsonPaths(response.content).forEach((path) =>
+        responseJsonPaths.add(path)
+      )
+    }
   }
 
   return {

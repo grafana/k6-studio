@@ -34,12 +34,11 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
     useState(false)
   const [isRunInCloudDialogOpen, setIsRunInCloudDialogOpen] = useState(false)
   const file = useCurrentFile('generator')
-  const { fileName } = file
   const { preview, hasError } = useScriptPreview()
   const proxyStatus = useProxyStatus()
   const isScriptExportable = !hasError && !!preview
 
-  const handleExportScript = useScriptExport(fileName)
+  const handleExportScript = useScriptExport(file.path)
 
   const handleDelete = useDeleteFile({
     file,
@@ -118,7 +117,7 @@ export function GeneratorControls({ onSave, isDirty }: GeneratorControlsProps) {
         <>
           <RunInCloudDialog
             open={isRunInCloudDialogOpen}
-            script={{ type: 'raw', name: fileName, content: preview }}
+            script={{ type: 'raw', name: file.fileName, content: preview }}
             onOpenChange={setIsRunInCloudDialogOpen}
           />
           <ValidatorDialog

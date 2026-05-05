@@ -52,13 +52,10 @@ export function initialize() {
 
   ipcMain.handle(
     BrowserTestHandler.Save,
-    async (_, fileName: string, data: BrowserTestFile) => {
+    async (_, filePath: string, data: BrowserTestFile) => {
       console.info(`${BrowserTestHandler.Save} event received`)
 
-      await writeFile(
-        path.join(BROWSER_TESTS_PATH, fileName),
-        JSON.stringify(data, null, 2)
-      )
+      await writeFile(filePath, JSON.stringify(data, null, 2))
 
       trackEvent({
         event: UsageEventName.BrowserTestUpdated,

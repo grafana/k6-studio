@@ -15,10 +15,10 @@ export function open(fileName: string) {
   ) as Promise<BrowserTestFile>
 }
 
-export function save(fileName: string, data: BrowserTestFile) {
+export function save(filePath: string, data: BrowserTestFile) {
   return ipcRenderer.invoke(
     BrowserTestHandler.Save,
-    fileName,
+    filePath,
     data
   ) as Promise<void>
 }

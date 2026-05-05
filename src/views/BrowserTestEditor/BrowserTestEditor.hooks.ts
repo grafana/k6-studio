@@ -20,13 +20,13 @@ import { useToast } from '@/store/ui/useToast'
 import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { getInitialStages } from '@/utils/generator'
 import { stripUndefined } from '@/utils/object'
+import { basename } from '@/utils/path'
 import { queryClient } from '@/utils/query'
 
 import {
   fromBrowserActionInstance,
   toBrowserActionInstance,
 } from './actionAdapters'
-import { createActionInstance } from './actionEditorRegistry'
 import { BrowserActionInstance } from './types'
 
 export function useBrowserTest(fileName: string) {
@@ -38,14 +38,14 @@ export function useBrowserTest(fileName: string) {
   })
 }
 
-export function useSaveBrowserTest(fileName: string) {
+export function useSaveBrowserTest(filePath: string) {
   const showToast = useToast()
 
   return useMutation({
     mutationFn: async (data: BrowserTestFile) => {
-      await window.studio.browserTest.save(fileName, data)
+      await window.studio.browserTest.save(filePath, data)
       await queryClient.invalidateQueries({
-        queryKey: ['browserTest', fileName],
+        queryKey: ['browserTest', basename(filePath)],
       })
     },
 
@@ -195,8 +195,7 @@ export function useBrowserTestState(
     )
   }, [browserTestFile])
 
-  const addAction = (method: BrowserActionInstance['method']) => {
-    const action = createActionInstance(method)
+  const addAction = (action: BrowserActionInstance) => {
     setActionState([...actionState, action])
   }
 

@@ -46,7 +46,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
   const { drawerLayout, mainLayout, setDrawer, onTabClick } =
     useBrowserTestEditorLayout()
 
-  const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.fileName)
+  const { mutateAsync: saveBrowserTest } = useSaveBrowserTest(file.path)
 
   const consoleFilter = useConsoleFilter()
   const highlightedLocator = useHighlightedLocator()
