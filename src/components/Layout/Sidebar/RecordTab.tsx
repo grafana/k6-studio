@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 import { FileList } from '@/components/FileList'
 import { getRoutePath } from '@/routeMap'
+import { StudioFile } from '@/types'
 
 import { useFiles } from './Sidebar.hooks'
 import { SidebarEmptyState } from './SidebarEmptyState'
@@ -41,34 +42,56 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
         }
         onCollapseSidebar={onCollapseSidebar}
       />
-      {isEmpty.recordings ? (
-        <SidebarEmptyState
-          message="Capture HTTP traffic and browser events to start building tests."
-          action={
-            <Button asChild size="1" variant="ghost">
-              <Link to={getRoutePath('recorder')}>
-                <PlusIcon /> Start recording
-              </Link>
-            </Button>
-          }
-        />
-      ) : (
-        <>
-          <SidebarSearchBar
-            filter={searchTerm}
-            placeholder="Search recordings..."
-            onChange={setSearchTerm}
-          />
-          <ScrollArea scrollbars="vertical">
-            <Flex direction="column" gap="2" py="2">
-              <FileList
-                files={recordings}
-                noFilesMessage="No recordings found"
-              />
-            </Flex>
-          </ScrollArea>
-        </>
-      )}
+      <RecordingsBody
+        isEmpty={isEmpty.recordings}
+        recordings={recordings}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
+    </>
+  )
+}
+
+interface RecordingsBodyProps {
+  isEmpty: boolean
+  recordings: StudioFile[]
+  searchTerm: string
+  onSearchChange: (value: string) => void
+}
+
+function RecordingsBody({
+  isEmpty,
+  recordings,
+  searchTerm,
+  onSearchChange,
+}: RecordingsBodyProps) {
+  if (isEmpty) {
+    return (
+      <SidebarEmptyState
+        message="Capture HTTP traffic and browser events to start building tests."
+        action={
+          <Button asChild size="1" variant="ghost">
+            <Link to={getRoutePath('recorder')}>
+              <PlusIcon /> Start recording
+            </Link>
+          </Button>
+        }
+      />
+    )
+  }
+
+  return (
+    <>
+      <SidebarSearchBar
+        filter={searchTerm}
+        placeholder="Search recordings..."
+        onChange={onSearchChange}
+      />
+      <ScrollArea scrollbars="vertical">
+        <Flex direction="column" gap="2" py="2">
+          <FileList files={recordings} noFilesMessage="No recordings found" />
+        </Flex>
+      </ScrollArea>
     </>
   )
 }
