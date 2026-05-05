@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@radix-ui/themes'
 import { SettingsIcon } from 'lucide-react'
 
-import { ButtonWithTooltip } from '@/components/ButtonWithTooltip'
 import { TestOptionsDialog } from '@/components/TestOptions'
 import {
   BrowserTestOptions,
@@ -28,9 +28,9 @@ export function BrowserTestOptionsButton({
   return (
     <TestOptionsDialog
       trigger={
-        <ButtonWithTooltip variant="ghost" color="gray" tooltip="Test options">
-          <SettingsIcon />
-        </ButtonWithTooltip>
+        <Button variant="ghost" size="1" color="gray">
+          <SettingsIcon /> Test options
+        </Button>
       }
       tabs={['loadProfile', 'thresholds', 'loadZones']}
       loadProfile={{

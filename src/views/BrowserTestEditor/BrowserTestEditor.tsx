@@ -89,14 +89,6 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
           onStartDebugging={startDebugging}
           onStopDebugging={stopDebugging}
           onSave={handleSave}
-          testOptionsButton={
-            <BrowserTestOptionsButton
-              options={test.options}
-              onLoadProfileChange={test.setLoadProfile}
-              onThresholdsChange={test.setThresholds}
-              onLoadZonesChange={test.setLoadZones}
-            />
-          }
         />
       }
     >
@@ -199,6 +191,14 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                       onRemoveAction={test.removeAction}
                       onChangeAction={test.updateAction}
                       onReorderActions={test.reorderActions}
+                      optionsButton={
+                        <BrowserTestOptionsButton
+                          options={test.options}
+                          onLoadProfileChange={test.setLoadProfile}
+                          onThresholdsChange={test.setThresholds}
+                          onLoadZonesChange={test.setLoadZones}
+                        />
+                      }
                     />
                   </Panel>
                 </Group>
