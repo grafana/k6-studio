@@ -1,3 +1,4 @@
+import { BrowserTestOptions } from '@/schemas/browserTest'
 import { ElementLocator } from '@/schemas/locator'
 import { CheckState, NavigateToPageEvent } from '@/schemas/recording'
 
@@ -177,4 +178,5 @@ export type DefaultScenario = Scenario & {
 export interface Test {
   defaultScenario?: DefaultScenario
   scenarios: Record<string, Scenario>
+  options?: BrowserTestOptions
 }

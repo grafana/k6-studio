@@ -12,16 +12,20 @@ const EXECUTOR_LABEL_MAP: Record<
   'shared-iterations': 'Shared iterations',
 }
 
-const options = Object.entries(EXECUTOR_LABEL_MAP).map(([value, label]) => ({
-  label,
-  value,
-}))
+interface ExecutorProps {
+  executors: ReadonlyArray<LoadProfileExecutorOptions['executor']>
+}
 
-export function Executor() {
+export function Executor({ executors }: ExecutorProps) {
   const {
     control,
     formState: { errors },
   } = useFormContext()
+
+  const options = executors.map((value) => ({
+    label: EXECUTOR_LABEL_MAP[value],
+    value,
+  }))
 
   return (
     <FieldGroup label="Executor" errors={errors} name="executor">

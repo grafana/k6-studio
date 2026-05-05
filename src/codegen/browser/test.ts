@@ -1,5 +1,6 @@
 import { keyBy } from 'lodash-es'
 
+import { BrowserTestOptions } from '@/schemas/browserTest'
 import {
   Assertion,
   BrowserEvent,
@@ -497,13 +498,16 @@ export function convertEventsToTest({ browserEvents }: Recording): Test {
 
 export function convertActionsToTest({
   browserActions,
+  options,
 }: {
   browserActions: BrowserActionInstance[]
+  options?: BrowserTestOptions
 }): Test {
   return {
     defaultScenario: {
       nodes: buildBrowserNodeGraphFromActions(browserActions),
     },
     scenarios: {},
+    options,
   }
 }
