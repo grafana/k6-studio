@@ -10,7 +10,6 @@ import { RunTab } from './RunTab'
 
 interface SidebarProps {
   activeTab: SidebarTab
-  isExpanded?: boolean
   onCollapseSidebar: () => void
 }
 

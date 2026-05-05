@@ -103,7 +103,6 @@ export function Layout() {
         >
           <Sidebar
             activeTab={activeTab}
-            isExpanded={isSidebarExpanded}
             onCollapseSidebar={() => setIsSidebarExpanded(false)}
           />
         </Allotment.Pane>
