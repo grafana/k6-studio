@@ -91,7 +91,7 @@ export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
           <SidebarEmptyState
             message="Import CSV or JSON files to use in parameterization rules."
             action={
-              <Button size="1" variant="soft" onClick={handleImportDataFile}>
+              <Button size="1" variant="ghost" onClick={handleImportDataFile}>
                 <UploadIcon /> Import data file
               </Button>
             }

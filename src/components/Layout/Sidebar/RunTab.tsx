@@ -32,9 +32,9 @@ export function RunTab({ onCollapseSidebar }: RunTabProps) {
         <SidebarEmptyState
           message="Create a test or open an external k6 script to debug it."
           action={
-            <Flex gap="2" wrap="wrap" justify="center">
+            <Flex gap="4" wrap="wrap" justify="center">
               <CreateTestButton />
-              <Button size="1" variant="soft" onClick={handleOpenScript}>
+              <Button size="1" variant="ghost" onClick={handleOpenScript}>
                 <FolderOpenIcon /> Open script
               </Button>
             </Flex>

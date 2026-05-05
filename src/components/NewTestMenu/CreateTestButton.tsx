@@ -21,7 +21,7 @@ export function CreateTestButton() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <Button size="1" variant="soft">
+        <Button size="1" variant="ghost">
           <PlusIcon /> Create test
         </Button>
       </DropdownMenu.Trigger>

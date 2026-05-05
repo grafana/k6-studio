@@ -45,7 +45,7 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
         <SidebarEmptyState
           message="Capture HTTP traffic and browser events to start building tests."
           action={
-            <Button asChild size="1" variant="soft">
+            <Button asChild size="1" variant="ghost">
               <Link to={getRoutePath('recorder')}>
                 <PlusIcon /> Start recording
               </Link>
