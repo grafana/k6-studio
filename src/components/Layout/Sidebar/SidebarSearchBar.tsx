@@ -2,8 +2,6 @@ import { Box } from '@radix-ui/themes'
 
 import { SearchField } from '@/components/SearchField'
 
-import { SIDEBAR_DIVIDER } from './Sidebar.styles'
-
 interface SidebarSearchBarProps {
   filter: string
   placeholder: string
@@ -16,7 +14,7 @@ export function SidebarSearchBar({
   onChange,
 }: SidebarSearchBarProps) {
   return (
-    <Box p="3" css={{ borderBottom: SIDEBAR_DIVIDER }}>
+    <Box p="3" css={{ borderBottom: '1px solid var(--gray-a3)' }}>
       <SearchField
         filter={filter}
         placeholder={placeholder}
