@@ -1,12 +1,10 @@
-import { DropdownMenu } from '@radix-ui/themes'
+import { DropdownMenu, IconButton, Tooltip } from '@radix-ui/themes'
 import { MonitorIcon, PlusIcon, ServerCogIcon, VideoIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
 import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 import { getRoutePath } from '@/routeMap'
-
-import { VerticalTabButton } from './VerticalTabButton'
 
 export function CreateNewPopover() {
   const navigate = useNavigate()
@@ -18,11 +16,13 @@ export function CreateNewPopover() {
 
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <div>
-          <VerticalTabButton icon={<PlusIcon />} tooltip="Create new" />
-        </div>
-      </DropdownMenu.Trigger>
+      <Tooltip content="Create new" side="right">
+        <DropdownMenu.Trigger>
+          <IconButton aria-label="Create new" variant="soft" size="3">
+            <PlusIcon style={{ width: 20, height: 20, strokeWidth: 2 }} />
+          </IconButton>
+        </DropdownMenu.Trigger>
+      </Tooltip>
       <DropdownMenu.Content size="1">
         <RichDropdownMenuItem
           label="Recording"
