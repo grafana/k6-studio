@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
-import { AnyBrowserActionSchema } from '@/main/runner/schema'
-
+import { AnyBrowserActionSchema } from './actions'
 import { BrowserTestOptionsSchema } from './testOptions'
 
 export const BrowserTestFileSchema = z.object({
@@ -11,5 +10,29 @@ export const BrowserTestFileSchema = z.object({
 })
 
 export type BrowserTestFile = z.infer<typeof BrowserTestFileSchema>
+
+export type {
+  AnyBrowserAction,
+  LocatorCheckAction,
+  LocatorClearAction,
+  LocatorClickAction,
+  LocatorClickButton,
+  LocatorClickModifier,
+  LocatorDoubleClickAction,
+  LocatorFillAction,
+  LocatorFocusAction,
+  LocatorHoverAction,
+  LocatorPressAction,
+  LocatorSelectOptionAction,
+  LocatorSetCheckedAction,
+  LocatorTapAction,
+  LocatorTypeAction,
+  LocatorUncheckAction,
+  LocatorWaitForAction,
+  PageGotoAction,
+  PageReloadAction,
+  PageWaitForNavigationAction,
+  PageWaitForTimeoutAction,
+} from './actions'
 
 export * from './testOptions'

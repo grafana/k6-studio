@@ -1,6 +1,6 @@
 import { Grid } from '@radix-ui/themes'
 
-import { PageGotoAction } from '@/main/runner/schema'
+import { PageGotoAction } from '@/schemas/browserTest'
 
 import { UrlForm } from '../../ActionForms/forms/UrlForm'
 import { WithEditorMetadata } from '../../types'
