@@ -17,6 +17,7 @@ export type BrowserActionInstance = WithEditorMetadata<AnyBrowserAction>
 
 export interface ContextMenuState {
   type: 'context-menu'
+  key: string
   target: Element
   position: {
     x: number

@@ -109,6 +109,7 @@ export function createContextMenuState(
 
   return {
     type: 'context-menu',
+    key: crypto.randomUUID(),
     target,
     position: {
       x: event.x,

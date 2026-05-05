@@ -142,7 +142,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                         >
                           <SessionPlayer
                             key={session.id}
-                            interactive
+                            interactive={session.state !== 'running'}
                             initialPage={{
                               title: 'k6 Studio',
                               href: '',
@@ -181,6 +181,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                           />
                           {state !== null && (
                             <ReplayContextMenu
+                              key={state.key}
                               target={state.target}
                               position={state.position}
                               aria={state.aria}
