@@ -34,6 +34,7 @@ import {
   useValidatorScript,
 } from './BrowserTestEditor.hooks'
 import { BrowserTestEditorControls } from './BrowserTestEditorControls'
+import { BrowserTestOptionsButton } from './BrowserTestOptionsButton'
 import { EditableBrowserActionList } from './EditableBrowserActionList'
 
 interface BrowserTestEditorViewProps {
@@ -52,8 +53,8 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const test = useBrowserTestState(data)
 
-  const previewScript = useBrowserScriptPreview(test.actions)
-  const validatorScript = useValidatorScript(test.actions)
+  const previewScript = useBrowserScriptPreview(test.actions, test.options)
+  const validatorScript = useValidatorScript(test.actions, test.options)
 
   const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'raw',
@@ -66,7 +67,11 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
       return
     }
 
-    const browserTestData = { ...data, actions: test.plainActions }
+    const browserTestData: BrowserTestFile = {
+      ...data,
+      actions: test.plainActions,
+      options: test.options,
+    }
 
     void saveBrowserTest(browserTestData)
   }
@@ -186,6 +191,14 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                       onRemoveAction={test.removeAction}
                       onChangeAction={test.updateAction}
                       onReorderActions={test.reorderActions}
+                      optionsButton={
+                        <BrowserTestOptionsButton
+                          options={test.options}
+                          onLoadProfileChange={test.setLoadProfile}
+                          onThresholdsChange={test.setThresholds}
+                          onLoadZonesChange={test.setLoadZones}
+                        />
+                      }
                     />
                   </Panel>
                 </Group>

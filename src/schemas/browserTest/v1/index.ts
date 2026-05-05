@@ -1,10 +1,12 @@
-import { z } from 'zod/v4'
+import { z } from 'zod'
 
 import { AnyBrowserActionSchema } from './actions'
+import { BrowserTestOptionsSchema } from './testOptions'
 
 export const BrowserTestFileSchema = z.object({
   version: z.literal('1.0'),
   actions: AnyBrowserActionSchema.array(),
+  options: BrowserTestOptionsSchema,
 })
 
 export type BrowserTestFile = z.infer<typeof BrowserTestFileSchema>
@@ -35,3 +37,5 @@ export type {
   PageWaitForNavigationAction,
   PageWaitForTimeoutAction,
 } from './actions'
+
+export * from './testOptions'
