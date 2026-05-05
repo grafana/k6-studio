@@ -8,7 +8,7 @@ import { createBrowserTestFile } from '@/test/factories/browserTest'
 import { useBrowserTestState } from './BrowserTestEditor.hooks'
 
 const baseFile: BrowserTestFile = {
-  version: '2.0',
+  version: '1.0',
   actions: [],
   settings: defaultBrowserTestOptions,
 }
@@ -102,7 +102,7 @@ describe('useBrowserTestState settings round-trip', () => {
 
     // settings reflect what would be saved to file
     const wouldSave = {
-      version: '2.0' as const,
+      version: '1.0' as const,
       actions: result.current.plainActions,
       settings: result.current.settings,
     }
@@ -113,7 +113,7 @@ describe('useBrowserTestState settings round-trip', () => {
 
   it('isDirty clears when saved settings reload with reordered keys', () => {
     const before: BrowserTestFile = {
-      version: '2.0',
+      version: '1.0',
       actions: [],
       settings: {
         ...defaultBrowserTestOptions,
@@ -133,7 +133,7 @@ describe('useBrowserTestState settings round-trip', () => {
     expect(result.current.isDirty).toBe(true)
 
     const after: BrowserTestFile = {
-      version: '2.0',
+      version: '1.0',
       actions: [],
       settings: {
         ...defaultBrowserTestOptions,
@@ -150,7 +150,7 @@ describe('useBrowserTestState settings round-trip', () => {
       { target: 30, duration: '4m' as const },
     ]
     const before: BrowserTestFile = {
-      version: '2.0',
+      version: '1.0',
       actions: [],
       settings: {
         ...defaultBrowserTestOptions,
