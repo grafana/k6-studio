@@ -132,6 +132,38 @@ describe('useFiles', () => {
     })
   })
 
+  it('flags only categories with zero files as empty when search is blank', () => {
+    mockStore({
+      recordings: [makeFile({ type: 'recording', fileName: 'r1' })],
+      generators: [],
+      browserTests: [],
+      scripts: [],
+      dataFiles: [makeFile({ type: 'data-file', fileName: 'd1' })],
+    })
+
+    const { result } = renderHook(() => useFiles(''))
+
+    expect(result.current.isEmpty).toEqual({
+      recordings: false,
+      tests: true,
+      scripts: true,
+      dataFiles: false,
+    })
+  })
+
+  it('does not flag categories as empty when search term is set', () => {
+    mockStore({ recordings: [], generators: [], scripts: [], dataFiles: [] })
+
+    const { result } = renderHook(() => useFiles('foo'))
+
+    expect(result.current.isEmpty).toEqual({
+      recordings: false,
+      tests: false,
+      scripts: false,
+      dataFiles: false,
+    })
+  })
+
   it('filters via fuzzy search across all categories', () => {
     mockStore({
       recordings: [

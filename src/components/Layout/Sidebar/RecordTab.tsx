@@ -1,16 +1,15 @@
-import { css } from '@emotion/react'
 import { Button, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
 import { PlusIcon, VideoIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileList } from '@/components/FileList'
-import { SearchField } from '@/components/SearchField'
 import { getRoutePath } from '@/routeMap'
 
 import { useFiles } from './Sidebar.hooks'
+import { SidebarEmptyState } from './SidebarEmptyState'
 import { SidebarHeader } from './SidebarHeader'
+import { SidebarSearchBar } from './SidebarSearchBar'
 
 interface RecordTabProps {
   onCollapseSidebar: () => void
@@ -18,8 +17,7 @@ interface RecordTabProps {
 
 export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const { recordings, counts } = useFiles(searchTerm)
-  const isEmpty = counts.recordings === 0 && searchTerm === ''
+  const { recordings, isEmpty } = useFiles(searchTerm)
 
   return (
     <>
@@ -33,6 +31,7 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
               aria-label="New recording"
               variant="ghost"
               size="1"
+              color="gray"
             >
               <Link to={getRoutePath('recorder')}>
                 <PlusIcon />
@@ -42,12 +41,11 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
         }
         onCollapseSidebar={onCollapseSidebar}
       />
-      {isEmpty ? (
-        <EmptyMessage
-          px="3"
+      {isEmpty.recordings ? (
+        <SidebarEmptyState
           message="Capture HTTP traffic and browser events to start building tests."
           action={
-            <Button asChild variant="soft">
+            <Button asChild size="1" variant="soft">
               <Link to={getRoutePath('recorder')}>
                 <PlusIcon /> Start recording
               </Link>
@@ -56,18 +54,13 @@ export function RecordTab({ onCollapseSidebar }: RecordTabProps) {
         />
       ) : (
         <>
-          <SearchField
-            css={css`
-              margin: var(--space-2) var(--space-3);
-              height: var(--space-5);
-            `}
+          <SidebarSearchBar
             filter={searchTerm}
-            placeholder={'Search recordings...'}
-            size="1"
+            placeholder="Search recordings..."
             onChange={setSearchTerm}
           />
           <ScrollArea scrollbars="vertical">
-            <Flex direction="column" gap="2" pb="2">
+            <Flex direction="column" gap="2" py="2">
               <FileList
                 files={recordings}
                 noFilesMessage="No recordings found"

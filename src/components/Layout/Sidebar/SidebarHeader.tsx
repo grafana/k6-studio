@@ -3,6 +3,8 @@ import { Flex, IconButton } from '@radix-ui/themes'
 import { PanelLeftCloseIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
+import { SIDEBAR_DIVIDER } from './Sidebar.styles'
+
 interface SidebarHeaderProps {
   icon: ReactNode
   title: string
@@ -28,6 +30,7 @@ export function SidebarHeader({
         font-weight: 600;
         text-transform: uppercase;
         color: ${variant === 'primary' ? 'var(--gray-12)' : 'var(--gray-11)'};
+        border-bottom: ${SIDEBAR_DIVIDER};
       `}
     >
       {icon}

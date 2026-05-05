@@ -1,4 +1,3 @@
-import { css } from '@emotion/react'
 import { Button, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
 import {
   FileSpreadsheetIcon,
@@ -8,10 +7,8 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileList } from '@/components/FileList'
 import { CreateTestButton, NewTestMenu } from '@/components/NewTestMenu'
-import { SearchField } from '@/components/SearchField'
 import {
   Group,
   Panel,
@@ -21,7 +18,9 @@ import {
 import { useImportDataFile } from '@/hooks/useImportDataFile'
 
 import { useFiles } from './Sidebar.hooks'
+import { SidebarEmptyState } from './SidebarEmptyState'
 import { SidebarHeader } from './SidebarHeader'
+import { SidebarSearchBar } from './SidebarSearchBar'
 
 interface BuildTabProps {
   onCollapseSidebar: () => void
@@ -29,16 +28,13 @@ interface BuildTabProps {
 
 export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const { tests, dataFiles, counts } = useFiles(searchTerm)
+  const { tests, dataFiles, isEmpty } = useFiles(searchTerm)
   const handleImportDataFile = useImportDataFile()
 
   const layout = useDefaultLayout({
     groupId: 'sidebar-build-tab',
     storage: localStorage,
   })
-
-  const isTestsEmpty = counts.tests === 0 && searchTerm === ''
-  const isDataFilesEmpty = counts.dataFiles === 0 && searchTerm === ''
 
   return (
     <Group {...layout} id="sidebar-build-tab" orientation="vertical">
@@ -50,26 +46,20 @@ export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
             actions={<NewTestMenu />}
             onCollapseSidebar={onCollapseSidebar}
           />
-          {isTestsEmpty ? (
-            <EmptyMessage
-              px="3"
+          {isEmpty.tests ? (
+            <SidebarEmptyState
               message="Build a test from scratch or transform a recording into one."
               action={<CreateTestButton />}
             />
           ) : (
             <>
-              <SearchField
-                css={css`
-                  margin: var(--space-2) var(--space-3);
-                  height: var(--space-5);
-                `}
+              <SidebarSearchBar
                 filter={searchTerm}
-                placeholder={'Search tests...'}
-                size="1"
+                placeholder="Search tests..."
                 onChange={setSearchTerm}
               />
               <ScrollArea scrollbars="vertical">
-                <Flex direction="column" gap="2" pb="2">
+                <Flex direction="column" gap="2" py="2">
                   <FileList files={tests} noFilesMessage="No tests found" />
                 </Flex>
               </ScrollArea>
@@ -97,19 +87,18 @@ export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
           variant="secondary"
           onCollapseSidebar={onCollapseSidebar}
         />
-        {isDataFilesEmpty ? (
-          <EmptyMessage
-            px="3"
+        {isEmpty.dataFiles ? (
+          <SidebarEmptyState
             message="Import CSV or JSON files to use in parameterization rules."
             action={
-              <Button variant="soft" onClick={handleImportDataFile}>
+              <Button size="1" variant="soft" onClick={handleImportDataFile}>
                 <UploadIcon /> Import data file
               </Button>
             }
           />
         ) : (
           <ScrollArea scrollbars="vertical">
-            <Flex direction="column" gap="2" pb="2">
+            <Flex direction="column" gap="2" py="2">
               <FileList
                 files={dataFiles}
                 noFilesMessage="No data files found"

@@ -54,8 +54,16 @@ export function useFiles(searchTerm: string) {
       dataFiles: dataFiles.length,
     }
 
+    const isFirstTimeEmpty = searchTerm === ''
+    const isEmpty = {
+      recordings: counts.recordings === 0 && isFirstTimeEmpty,
+      tests: counts.tests === 0 && isFirstTimeEmpty,
+      scripts: counts.scripts === 0 && isFirstTimeEmpty,
+      dataFiles: counts.dataFiles === 0 && isFirstTimeEmpty,
+    }
+
     if (searchTerm.match(/^\s*$/)) {
-      return { recordings, tests, scripts, dataFiles, counts }
+      return { recordings, tests, scripts, dataFiles, counts, isEmpty }
     }
 
     return {
@@ -64,6 +72,7 @@ export function useFiles(searchTerm: string) {
       scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
       dataFiles: searchIndex.dataFiles.search(searchTerm).map(withMatches),
       counts,
+      isEmpty,
     }
   }, [recordings, tests, scripts, dataFiles, searchIndex, searchTerm])
 }
