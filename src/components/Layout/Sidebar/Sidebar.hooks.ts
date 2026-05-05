@@ -17,8 +17,12 @@ export function useFiles(searchTerm: string) {
   const scripts = useStudioUIStore((s) => orderByFileName(s.scripts))
   const dataFiles = useStudioUIStore((s) => orderByFileName(s.dataFiles))
 
-  const tests = [...generators, ...browserTests].sort((a, b) =>
-    a.displayName.localeCompare(b.displayName)
+  const tests = useMemo(
+    () =>
+      [...generators, ...browserTests].sort((a, b) =>
+        a.displayName.localeCompare(b.displayName)
+      ),
+    [generators, browserTests]
   )
 
   const searchIndex = useMemo(() => {
@@ -43,8 +47,15 @@ export function useFiles(searchTerm: string) {
   }, [recordings, tests, scripts, dataFiles])
 
   return useMemo(() => {
+    const counts = {
+      recordings: recordings.length,
+      tests: tests.length,
+      scripts: scripts.length,
+      dataFiles: dataFiles.length,
+    }
+
     if (searchTerm.match(/^\s*$/)) {
-      return { recordings, tests, scripts, dataFiles }
+      return { recordings, tests, scripts, dataFiles, counts }
     }
 
     return {
@@ -52,6 +63,7 @@ export function useFiles(searchTerm: string) {
       tests: searchIndex.tests.search(searchTerm).map(withMatches),
       scripts: searchIndex.scripts.search(searchTerm).map(withMatches),
       dataFiles: searchIndex.dataFiles.search(searchTerm).map(withMatches),
+      counts,
     }
   }, [recordings, tests, scripts, dataFiles, searchIndex, searchTerm])
 }

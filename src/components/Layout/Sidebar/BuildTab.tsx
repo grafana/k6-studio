@@ -1,10 +1,16 @@
 import { css } from '@emotion/react'
-import { Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
-import { PlusIcon, WrenchIcon } from 'lucide-react'
+import { Button, Flex, IconButton, ScrollArea, Tooltip } from '@radix-ui/themes'
+import {
+  FileSpreadsheetIcon,
+  PlusIcon,
+  UploadIcon,
+  WrenchIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 
+import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileList } from '@/components/FileList'
-import { NewTestMenu } from '@/components/NewTestMenu'
+import { CreateTestButton, NewTestMenu } from '@/components/NewTestMenu'
 import { SearchField } from '@/components/SearchField'
 import {
   Group,
@@ -23,13 +29,16 @@ interface BuildTabProps {
 
 export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const { tests, dataFiles } = useFiles(searchTerm)
+  const { tests, dataFiles, counts } = useFiles(searchTerm)
   const handleImportDataFile = useImportDataFile()
 
   const layout = useDefaultLayout({
     groupId: 'sidebar-build-tab',
     storage: localStorage,
   })
+
+  const isTestsEmpty = counts.tests === 0 && searchTerm === ''
+  const isDataFilesEmpty = counts.dataFiles === 0 && searchTerm === ''
 
   return (
     <Group {...layout} id="sidebar-build-tab" orientation="vertical">
@@ -41,27 +50,37 @@ export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
             actions={<NewTestMenu />}
             onCollapseSidebar={onCollapseSidebar}
           />
-          <SearchField
-            css={css`
-              margin: var(--space-2) var(--space-3);
-              height: var(--space-5);
-            `}
-            filter={searchTerm}
-            placeholder={'Search tests...'}
-            size="1"
-            onChange={setSearchTerm}
-          />
-          <ScrollArea scrollbars="vertical">
-            <Flex direction="column" gap="2" pb="2">
-              <FileList files={tests} noFilesMessage="No tests found" />
-            </Flex>
-          </ScrollArea>
+          {isTestsEmpty ? (
+            <EmptyMessage
+              px="3"
+              message="Build a test from scratch or transform a recording into one."
+              action={<CreateTestButton />}
+            />
+          ) : (
+            <>
+              <SearchField
+                css={css`
+                  margin: var(--space-2) var(--space-3);
+                  height: var(--space-5);
+                `}
+                filter={searchTerm}
+                placeholder={'Search tests...'}
+                size="1"
+                onChange={setSearchTerm}
+              />
+              <ScrollArea scrollbars="vertical">
+                <Flex direction="column" gap="2" pb="2">
+                  <FileList files={tests} noFilesMessage="No tests found" />
+                </Flex>
+              </ScrollArea>
+            </>
+          )}
         </Flex>
       </Panel>
       <Separator />
       <Panel minSize={200} defaultSize="20%" id="sidebar-build-tab-data-files">
         <SidebarHeader
-          icon={<WrenchIcon />}
+          icon={<FileSpreadsheetIcon />}
           title="Data files"
           actions={
             <Tooltip content="Import data file" side="right">
@@ -78,11 +97,26 @@ export function BuildTab({ onCollapseSidebar }: BuildTabProps) {
           variant="secondary"
           onCollapseSidebar={onCollapseSidebar}
         />
-        <ScrollArea scrollbars="vertical">
-          <Flex direction="column" gap="2" pb="2">
-            <FileList files={dataFiles} noFilesMessage="No data files found" />
-          </Flex>
-        </ScrollArea>
+        {isDataFilesEmpty ? (
+          <EmptyMessage
+            px="3"
+            message="Import CSV or JSON files to use in parameterization rules."
+            action={
+              <Button variant="soft" onClick={handleImportDataFile}>
+                <UploadIcon /> Import data file
+              </Button>
+            }
+          />
+        ) : (
+          <ScrollArea scrollbars="vertical">
+            <Flex direction="column" gap="2" pb="2">
+              <FileList
+                files={dataFiles}
+                noFilesMessage="No data files found"
+              />
+            </Flex>
+          </ScrollArea>
+        )}
       </Panel>
     </Group>
   )
