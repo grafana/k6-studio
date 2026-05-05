@@ -48,17 +48,25 @@ export function File({ file, isSelected }: FileProps) {
       <Grid
         columns="min-content 1fr auto"
         align="center"
-        pr="4"
         pl="3"
+        pr="2"
         css={css`
           & > button {
             opacity: 0;
+            width: 0;
+            overflow: hidden;
+            padding-inline: 0;
+            pointer-events: none;
           }
 
           &:hover > button,
           & > button:focus,
           & > button[data-state='open'] {
             opacity: 1;
+            width: auto;
+            overflow: visible;
+            padding-inline: revert;
+            pointer-events: auto;
           }
 
           &:hover {
