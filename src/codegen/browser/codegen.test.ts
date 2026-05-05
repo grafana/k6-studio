@@ -1423,7 +1423,7 @@ it('emits options with thresholds, ramping-vus stages, and cloud loadZones', asy
   const script = await emitScript({
     defaultScenario: { nodes: [] },
     scenarios: {},
-    settings: {
+    options: {
       loadProfile: {
         executor: 'ramping-vus',
         stages: [
@@ -1458,13 +1458,13 @@ it('emits options with thresholds, ramping-vus stages, and cloud loadZones', asy
   )
 })
 
-it('emits minimal options when settings has empty thresholds and zones', async ({
+it('emits minimal options when options has empty thresholds and zones', async ({
   expect,
 }) => {
   const script = await emitScript({
     defaultScenario: { nodes: [] },
     scenarios: {},
-    settings: defaultBrowserTestOptions,
+    options: defaultBrowserTestOptions,
   })
 
   await expect(script).toMatchFileSnapshot(

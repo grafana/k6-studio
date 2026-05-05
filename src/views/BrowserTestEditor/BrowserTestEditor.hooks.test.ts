@@ -10,19 +10,19 @@ import { useBrowserTestState } from './BrowserTestEditor.hooks'
 const baseFile: BrowserTestFile = {
   version: '1.0',
   actions: [],
-  settings: defaultBrowserTestOptions,
+  options: defaultBrowserTestOptions,
 }
 
 describe('useBrowserTestState', () => {
-  it('returns default settings when settings absent on file', () => {
+  it('returns default options when options absent on file', () => {
     const { result } = renderHook(() => useBrowserTestState(baseFile))
     // State carries default stages alongside the active branch so the form
     // can validate when the user switches to ramping-vus.
-    expect(result.current.settings).toMatchObject(defaultBrowserTestOptions)
+    expect(result.current.options).toMatchObject(defaultBrowserTestOptions)
     expect(result.current.isDirty).toBe(false)
   })
 
-  it('setLoadProfile updates settings and marks dirty', () => {
+  it('setLoadProfile updates options and marks dirty', () => {
     const { result } = renderHook(() => useBrowserTestState(baseFile))
     act(() => {
       result.current.setLoadProfile({
@@ -31,7 +31,7 @@ describe('useBrowserTestState', () => {
         iterations: 10,
       })
     })
-    expect(result.current.settings.loadProfile).toMatchObject({
+    expect(result.current.options.loadProfile).toMatchObject({
       executor: 'shared-iterations',
       vus: 5,
       iterations: 10,
@@ -54,7 +54,7 @@ describe('useBrowserTestState', () => {
     act(() => {
       result.current.setThresholds(next)
     })
-    expect(result.current.settings.thresholds).toEqual(next)
+    expect(result.current.options.thresholds).toEqual(next)
   })
 
   it('setLoadZones replaces load zones', () => {
@@ -65,7 +65,7 @@ describe('useBrowserTestState', () => {
         zones: [{ id: '1', loadZone: 'amazon:us:columbus', percent: 100 }],
       })
     })
-    expect(result.current.settings.cloud.loadZones.zones).toHaveLength(1)
+    expect(result.current.options.cloud.loadZones.zones).toHaveLength(1)
   })
 
   it('isDirty=false when no changes', () => {
@@ -74,15 +74,15 @@ describe('useBrowserTestState', () => {
   })
 })
 
-describe('useBrowserTestState settings round-trip', () => {
-  it('uses default settings when factory builds default file', () => {
+describe('useBrowserTestState options round-trip', () => {
+  it('uses default options when factory builds default file', () => {
     const file = createBrowserTestFile()
     const { result } = renderHook(() => useBrowserTestState(file))
-    expect(result.current.settings).toMatchObject(defaultBrowserTestOptions)
+    expect(result.current.options).toMatchObject(defaultBrowserTestOptions)
     expect(result.current.isDirty).toBe(false)
   })
 
-  it('round-trips settings through state changes', () => {
+  it('round-trips options through state changes', () => {
     const file = createBrowserTestFile()
     const { result } = renderHook(() => useBrowserTestState(file))
 
@@ -97,25 +97,25 @@ describe('useBrowserTestState settings round-trip', () => {
     act(() => {
       result.current.setThresholds([newThreshold])
     })
-    expect(result.current.settings.thresholds).toEqual([newThreshold])
+    expect(result.current.options.thresholds).toEqual([newThreshold])
     expect(result.current.isDirty).toBe(true)
 
-    // settings reflect what would be saved to file
+    // options reflect what would be saved to file
     const wouldSave = {
       version: '1.0' as const,
       actions: result.current.plainActions,
-      settings: result.current.settings,
+      options: result.current.options,
     }
-    expect(wouldSave.settings.thresholds[0]?.metric).toBe(
+    expect(wouldSave.options.thresholds[0]?.metric).toBe(
       'browser_web_vital_lcp'
     )
   })
 
-  it('isDirty clears when saved settings reload with reordered keys', () => {
+  it('isDirty clears when saved options reload with reordered keys', () => {
     const before: BrowserTestFile = {
       version: '1.0',
       actions: [],
-      settings: {
+      options: {
         ...defaultBrowserTestOptions,
         loadProfile: { executor: 'shared-iterations' },
       },
@@ -135,7 +135,7 @@ describe('useBrowserTestState settings round-trip', () => {
     const after: BrowserTestFile = {
       version: '1.0',
       actions: [],
-      settings: {
+      options: {
         ...defaultBrowserTestOptions,
         loadProfile: { executor: 'shared-iterations', vus: 5 },
       },
@@ -152,7 +152,7 @@ describe('useBrowserTestState settings round-trip', () => {
     const before: BrowserTestFile = {
       version: '1.0',
       actions: [],
-      settings: {
+      options: {
         ...defaultBrowserTestOptions,
         loadProfile: { executor: 'shared-iterations' },
       },
@@ -179,7 +179,7 @@ describe('useBrowserTestState settings round-trip', () => {
 
     const after: BrowserTestFile = {
       ...before,
-      settings: {
+      options: {
         ...defaultBrowserTestOptions,
         loadProfile: {
           executor: 'shared-iterations',
@@ -194,13 +194,13 @@ describe('useBrowserTestState settings round-trip', () => {
 
   it('factory accepts threshold overrides', () => {
     const file = createBrowserTestFile({
-      settings: {
+      options: {
         ...defaultBrowserTestOptions,
         loadProfile: { executor: 'shared-iterations', vus: 5, iterations: 25 },
       },
     })
     const { result } = renderHook(() => useBrowserTestState(file))
-    expect(result.current.settings.loadProfile).toMatchObject({
+    expect(result.current.options.loadProfile).toMatchObject({
       executor: 'shared-iterations',
       vus: 5,
       iterations: 25,

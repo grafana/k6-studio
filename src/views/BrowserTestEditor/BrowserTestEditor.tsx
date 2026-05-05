@@ -53,8 +53,8 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
 
   const test = useBrowserTestState(data)
 
-  const previewScript = useBrowserScriptPreview(test.actions, test.settings)
-  const validatorScript = useValidatorScript(test.actions, test.settings)
+  const previewScript = useBrowserScriptPreview(test.actions, test.options)
+  const validatorScript = useValidatorScript(test.actions, test.options)
 
   const { session, startDebugging, stopDebugging } = useDebugSession({
     type: 'raw',
@@ -70,7 +70,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
     const browserTestData: BrowserTestFile = {
       ...data,
       actions: test.plainActions,
-      settings: test.settings,
+      options: test.options,
     }
 
     void saveBrowserTest(browserTestData)
@@ -91,7 +91,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
           onSave={handleSave}
           testOptionsButton={
             <BrowserTestOptionsButton
-              settings={test.settings}
+              options={test.options}
               onLoadProfileChange={test.setLoadProfile}
               onThresholdsChange={test.setThresholds}
               onLoadZonesChange={test.setLoadZones}

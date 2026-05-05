@@ -90,7 +90,7 @@ export function useBrowserTestEditorLayout() {
 
 export function useBrowserScriptPreview(
   browserActions: BrowserActionInstance[],
-  settings?: BrowserTestOptions
+  options?: BrowserTestOptions
 ) {
   const [preview, setPreview] = useState('')
 
@@ -99,12 +99,12 @@ export function useBrowserScriptPreview(
     debounce(
       async (
         actions: BrowserActionInstance[],
-        currentSettings: BrowserTestOptions | undefined
+        currentOptions: BrowserTestOptions | undefined
       ) => {
         try {
           const test = convertActionsToTest({
             browserActions: actions,
-            settings: currentSettings,
+            options: currentOptions,
           })
 
           const script = await emitScript(test)
@@ -121,17 +121,17 @@ export function useBrowserScriptPreview(
   )
 
   useEffect(() => {
-    void generatePreview(browserActions, settings)
+    void generatePreview(browserActions, options)
 
     return () => generatePreview.cancel()
-  }, [browserActions, settings, generatePreview])
+  }, [browserActions, options, generatePreview])
 
   return preview
 }
 
 export function useValidatorScript(
   browserActions: BrowserActionInstance[],
-  settings?: BrowserTestOptions
+  options?: BrowserTestOptions
 ) {
   // We add a timeout to the end of the script to give the page time to load the page, so that
   // there's something that the user can interact with. If we don't do this, k6 will stop before
@@ -148,7 +148,7 @@ export function useValidatorScript(
     [browserActions]
   )
 
-  return useBrowserScriptPreview(validatorActions, settings)
+  return useBrowserScriptPreview(validatorActions, options)
 }
 
 // Browser tests start with `shared-iterations` and no stages, but the
@@ -168,30 +168,28 @@ function withSeededStages(
 export function useBrowserTestState(
   browserTestFile: BrowserTestFile | undefined
 ) {
-  const { actions = [], settings = defaultBrowserTestOptions } =
+  const { actions = [], options = defaultBrowserTestOptions } =
     browserTestFile ?? {}
 
   const [actionState, setActionState] = useState<BrowserActionInstance[]>(
     actions.map(toBrowserActionInstance)
   )
-  const [settingsState, setSettingsState] = useState<BrowserTestOptions>(
-    () => ({
-      ...settings,
-      loadProfile: withSeededStages(settings.loadProfile),
-    })
-  )
+  const [optionsState, setOptionsState] = useState<BrowserTestOptions>(() => ({
+    ...options,
+    loadProfile: withSeededStages(options.loadProfile),
+  }))
 
   useEffect(() => {
-    const { settings: fileSettings } = browserTestFile ?? {}
-    const resolvedSettings = fileSettings ?? defaultBrowserTestOptions
-    const nextSettings: BrowserTestOptions = {
-      ...resolvedSettings,
-      loadProfile: withSeededStages(resolvedSettings.loadProfile),
+    const { options: fileOptions } = browserTestFile ?? {}
+    const resolvedOptions = fileOptions ?? defaultBrowserTestOptions
+    const nextOptions: BrowserTestOptions = {
+      ...resolvedOptions,
+      loadProfile: withSeededStages(resolvedOptions.loadProfile),
     }
-    setSettingsState((prev) =>
-      isEqual(stripUndefined(prev), stripUndefined(nextSettings))
+    setOptionsState((prev) =>
+      isEqual(stripUndefined(prev), stripUndefined(nextOptions))
         ? prev
-        : nextSettings
+        : nextOptions
     )
   }, [browserTestFile])
 
@@ -224,7 +222,7 @@ export function useBrowserTestState(
 
   const setLoadProfile = useCallback(
     (loadProfile: LoadProfileExecutorOptions) =>
-      setSettingsState((prev) => ({
+      setOptionsState((prev) => ({
         ...prev,
         // Merge so inactive-branch fields (e.g. user's stages while
         // shared-iterations is active) survive an executor switch. Codegen
@@ -239,13 +237,13 @@ export function useBrowserTestState(
 
   const setThresholds = useCallback(
     (thresholds: BrowserThreshold[]) =>
-      setSettingsState((prev) => ({ ...prev, thresholds })),
+      setOptionsState((prev) => ({ ...prev, thresholds })),
     []
   )
 
   const setLoadZones = useCallback(
     (loadZones: LoadZoneData) =>
-      setSettingsState((prev) => ({ ...prev, cloud: { loadZones } })),
+      setOptionsState((prev) => ({ ...prev, cloud: { loadZones } })),
     []
   )
 
@@ -260,14 +258,14 @@ export function useBrowserTestState(
     // inputs as `key: undefined`, while Zod parse drops them entirely) and
     // ignores key order (Zod can reorder after a save+reload roundtrip).
     const baseline = {
-      ...settings,
-      loadProfile: withSeededStages(settings.loadProfile),
+      ...options,
+      loadProfile: withSeededStages(options.loadProfile),
     }
     return (
       !isEqual(stripUndefined(plainActions), stripUndefined(actions)) ||
-      !isEqual(stripUndefined(settingsState), stripUndefined(baseline))
+      !isEqual(stripUndefined(optionsState), stripUndefined(baseline))
     )
-  }, [plainActions, actions, settingsState, settings])
+  }, [plainActions, actions, optionsState, options])
 
   return {
     actions: actionState,
@@ -276,7 +274,7 @@ export function useBrowserTestState(
     updateAction,
     removeAction,
     reorderActions,
-    settings: settingsState,
+    options: optionsState,
     setLoadProfile,
     setThresholds,
     setLoadZones,

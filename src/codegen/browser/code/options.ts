@@ -214,19 +214,19 @@ function emitCloudOptions(
 }
 
 export function emitOptions(test: ir.Test): ts.ObjectExpression {
-  const settings = test.settings ?? defaultBrowserTestOptions
+  const options = test.options ?? defaultBrowserTestOptions
 
   const data: Record<string, ts.Expression | undefined> = {
-    scenarios: emitScenarioOptions(test, settings.loadProfile),
+    scenarios: emitScenarioOptions(test, options.loadProfile),
   }
 
-  const cloud = emitCloudOptions(settings.cloud)
+  const cloud = emitCloudOptions(options.cloud)
   if (cloud !== undefined) {
     data.cloud = cloud
   }
 
-  if (settings.thresholds.length > 0) {
-    data.thresholds = emitThresholds(settings.thresholds)
+  if (options.thresholds.length > 0) {
+    data.thresholds = emitThresholds(options.thresholds)
   }
 
   return fromObjectLiteral(data)

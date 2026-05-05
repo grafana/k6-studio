@@ -16,7 +16,7 @@ export function createBrowserTestFile(
   return {
     version: '1.0',
     actions: [],
-    settings: defaultBrowserTestOptions,
+    options: defaultBrowserTestOptions,
     ...overrides,
   }
 }

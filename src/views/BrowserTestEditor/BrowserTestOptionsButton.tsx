@@ -13,14 +13,14 @@ import { LoadProfileExecutorOptions, LoadZoneData } from '@/types/testOptions'
 import { BROWSER_METRICS_CONFIG } from './browserThresholdMetrics'
 
 interface BrowserTestOptionsButtonProps {
-  settings: BrowserTestOptions
+  options: BrowserTestOptions
   onLoadProfileChange: (next: LoadProfileExecutorOptions) => void
   onThresholdsChange: (next: BrowserThreshold[]) => void
   onLoadZonesChange: (next: LoadZoneData) => void
 }
 
 export function BrowserTestOptionsButton({
-  settings,
+  options,
   onLoadProfileChange,
   onThresholdsChange,
   onLoadZonesChange,
@@ -34,18 +34,18 @@ export function BrowserTestOptionsButton({
       }
       tabs={['loadProfile', 'thresholds', 'loadZones']}
       loadProfile={{
-        value: settings.loadProfile,
+        value: options.loadProfile,
         onChange: onLoadProfileChange,
         executors: ['ramping-vus', 'shared-iterations'],
       }}
       thresholds={{
-        value: settings.thresholds,
+        value: options.thresholds,
         onChange: onThresholdsChange,
         metricsConfig: BROWSER_METRICS_CONFIG,
         resolver: zodResolver(BrowserThresholdDataSchema),
       }}
       loadZones={{
-        value: settings.cloud.loadZones,
+        value: options.cloud.loadZones,
         onChange: onLoadZonesChange,
       }}
     />

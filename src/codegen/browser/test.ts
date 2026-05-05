@@ -498,16 +498,16 @@ export function convertEventsToTest({ browserEvents }: Recording): Test {
 
 export function convertActionsToTest({
   browserActions,
-  settings,
+  options,
 }: {
   browserActions: BrowserActionInstance[]
-  settings?: BrowserTestOptions
+  options?: BrowserTestOptions
 }): Test {
   return {
     defaultScenario: {
       nodes: buildBrowserNodeGraphFromActions(browserActions),
     },
     scenarios: {},
-    settings,
+    options,
   }
 }

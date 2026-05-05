@@ -7,7 +7,7 @@ import { BrowserTestOptionsSchema } from './testOptions'
 export const BrowserTestFileSchema = z.object({
   version: z.literal('1.0'),
   actions: AnyBrowserActionSchema.array(),
-  settings: BrowserTestOptionsSchema,
+  options: BrowserTestOptionsSchema,
 })
 
 export type BrowserTestFile = z.infer<typeof BrowserTestFileSchema>

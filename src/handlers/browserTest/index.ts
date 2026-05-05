@@ -22,7 +22,7 @@ export function initialize() {
     const emptyBrowserTest: BrowserTestFile = {
       version: '1.0',
       actions: [],
-      settings: defaultBrowserTestOptions,
+      options: defaultBrowserTestOptions,
     }
 
     const filePath = await createFileWithUniqueName({
