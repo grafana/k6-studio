@@ -182,7 +182,7 @@ function BrowserTestEditorView({ file, data }: BrowserTestEditorViewProps) {
                               aria={state.aria}
                               locator={state.locator}
                               onClose={() => setState(null)}
-                              onAddAction={test.addActionInstance}
+                              onAddAction={test.addAction}
                             />
                           )}
                         </PersistentTabs.Content>

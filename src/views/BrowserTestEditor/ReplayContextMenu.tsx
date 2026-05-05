@@ -8,6 +8,15 @@ import {
   isSelect,
   isTextInput,
 } from './ReplayContextMenu.utils'
+import {
+  createCheckAction,
+  createClearAction,
+  createClickAction,
+  createFillAction,
+  createSelectOptionAction,
+  createUncheckAction,
+  createWaitForAction,
+} from './actionFactories'
 import { BrowserActionInstance, LocatorOptions } from './types'
 
 interface ReplayContextMenuProps {
@@ -51,25 +60,12 @@ export function ReplayContextMenu({
         {isTextInput(target, aria.roles) && (
           <>
             <DropdownMenu.Item
-              onClick={() =>
-                onAddAction({
-                  id: crypto.randomUUID(),
-                  method: 'locator.fill',
-                  value: '',
-                  locator,
-                })
-              }
+              onClick={() => onAddAction(createFillAction({ locator }))}
             >
               Fill input
             </DropdownMenu.Item>
             <DropdownMenu.Item
-              onClick={() =>
-                onAddAction({
-                  id: crypto.randomUUID(),
-                  method: 'locator.clear',
-                  locator,
-                })
-              }
+              onClick={() => onAddAction(createClearAction({ locator }))}
             >
               Clear input
             </DropdownMenu.Item>
@@ -78,24 +74,12 @@ export function ReplayContextMenu({
         {isCheckbox(target, aria.roles) && (
           <>
             <DropdownMenu.Item
-              onClick={() =>
-                onAddAction({
-                  id: crypto.randomUUID(),
-                  method: 'locator.check',
-                  locator,
-                })
-              }
+              onClick={() => onAddAction(createCheckAction({ locator }))}
             >
               Check
             </DropdownMenu.Item>
             <DropdownMenu.Item
-              onClick={() =>
-                onAddAction({
-                  id: crypto.randomUUID(),
-                  method: 'locator.uncheck',
-                  locator,
-                })
-              }
+              onClick={() => onAddAction(createUncheckAction({ locator }))}
             >
               Uncheck
             </DropdownMenu.Item>
@@ -103,52 +87,27 @@ export function ReplayContextMenu({
         )}
         {isRadio(target, aria.roles) && (
           <DropdownMenu.Item
-            onClick={() =>
-              onAddAction({
-                id: crypto.randomUUID(),
-                method: 'locator.check',
-                locator,
-              })
-            }
+            onClick={() => onAddAction(createCheckAction({ locator }))}
           >
             Check
           </DropdownMenu.Item>
         )}
         {isSelect(target, aria.roles) && (
           <DropdownMenu.Item
-            onClick={() =>
-              onAddAction({
-                id: crypto.randomUUID(),
-                method: 'locator.selectOption',
-                values: [{ value: '' }],
-                locator,
-              })
-            }
+            onClick={() => onAddAction(createSelectOptionAction({ locator }))}
           >
             Select option
           </DropdownMenu.Item>
         )}
         {isGeneric && (
           <DropdownMenu.Item
-            onClick={() =>
-              onAddAction({
-                id: crypto.randomUUID(),
-                method: 'locator.click',
-                locator,
-              })
-            }
+            onClick={() => onAddAction(createClickAction({ locator }))}
           >
             Click
           </DropdownMenu.Item>
         )}
         <DropdownMenu.Item
-          onClick={() =>
-            onAddAction({
-              id: crypto.randomUUID(),
-              method: 'locator.waitFor',
-              locator,
-            })
-          }
+          onClick={() => onAddAction(createWaitForAction({ locator }))}
         >
           Wait for element
         </DropdownMenu.Item>
