@@ -1,16 +1,14 @@
 import { Button, DropdownMenu } from '@radix-ui/themes'
 import { CirclePlusIcon } from 'lucide-react'
 
-import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
-import { useCreateGenerator } from '@/hooks/useCreateGenerator'
-import { useFeaturesStore } from '@/store/features'
+import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 
 export function CreateTestButton() {
-  const handleCreateHTTPTest = useCreateGenerator()
-  const handleCreateBrowserTest = useCreateBrowserTest()
-  const isBrowserEditorEnabled = useFeaturesStore(
-    (state) => state.features['browser-test-editor']
-  )
+  const {
+    handleCreateHTTPTest,
+    handleCreateBrowserTest,
+    isBrowserEditorEnabled,
+  } = useCreateTestActions()
 
   if (!isBrowserEditorEnabled) {
     return (

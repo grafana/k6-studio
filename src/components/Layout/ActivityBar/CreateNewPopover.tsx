@@ -3,20 +3,18 @@ import { MonitorIcon, PlusIcon, ServerCogIcon, VideoIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { RichDropdownMenuItem } from '@/components/RichDropdownMenuItem'
-import { useCreateBrowserTest } from '@/hooks/useCreateBrowserTest'
-import { useCreateGenerator } from '@/hooks/useCreateGenerator'
+import { useCreateTestActions } from '@/hooks/useCreateTestActions'
 import { getRoutePath } from '@/routeMap'
-import { useFeaturesStore } from '@/store/features'
 
 import { VerticalTabButton } from './VerticalTabButton'
 
 export function CreateNewPopover() {
   const navigate = useNavigate()
-  const handleCreateHTTPTest = useCreateGenerator()
-  const handleCreateBrowserTest = useCreateBrowserTest()
-  const isBrowserEditorEnabled = useFeaturesStore(
-    (state) => state.features['browser-test-editor']
-  )
+  const {
+    handleCreateHTTPTest,
+    handleCreateBrowserTest,
+    isBrowserEditorEnabled,
+  } = useCreateTestActions()
 
   return (
     <DropdownMenu.Root>

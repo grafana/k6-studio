@@ -2,13 +2,12 @@ import { css } from '@emotion/react'
 import { Button, Flex, ScrollArea } from '@radix-ui/themes'
 import { CircleCheckIcon, FileBracesIcon } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { EmptyMessage } from '@/components/EmptyMessage'
 import { FileList } from '@/components/FileList'
 import { CreateTestButton, NewTestMenu } from '@/components/NewTestMenu'
 import { SearchField } from '@/components/SearchField'
-import { getViewPath } from '@/routeMap'
+import { useOpenExternalScript } from '@/hooks/useOpenExternalScript'
 
 import { useFiles } from './Sidebar.hooks'
 import { SidebarHeader } from './SidebarHeader'
@@ -20,14 +19,8 @@ interface RunTabProps {
 export function RunTab({ onCollapseSidebar }: RunTabProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const { scripts, counts } = useFiles(searchTerm)
-  const navigate = useNavigate()
+  const handleOpenScript = useOpenExternalScript()
   const isEmpty = counts.scripts === 0 && searchTerm === ''
-
-  const handleOpenScript = async () => {
-    const path = await window.studio.script.showScriptSelectDialog()
-    if (!path) return
-    navigate(getViewPath('script', path))
-  }
 
   return (
     <>
